@@ -1,2 +1,2 @@
 # bash_r
-practice on Rusy
+practice on Rust
