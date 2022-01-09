@@ -4,6 +4,8 @@
 use std::io;
 use std::io::Write;
 
+use nix::unistd::{fork, ForkResult};
+
 fn prompt() {
     print!("$ ");
     io::stdout().flush().unwrap();
@@ -21,7 +23,17 @@ fn main() {
     let line = read_line();
     let args = line.split(" ");
 
-    for s in args {
-        println!("{}", s)
+    match fork() {
+        Ok(ForkResult::Child) => {
+            for s in args {
+                println!("{}", s)
+            }
+        }
+        Ok(ForkResult::Parent { child: _, .. }) => {
+            for s in args {
+                println!("{}", s)
+            }
+        }
+        Err(err) => panic!("Failed to fork. {}", err),
     }
 }
