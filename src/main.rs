@@ -19,6 +19,9 @@ fn main() {
 
     prompt();
     let line = read_line();
+    let args = line.split(" ");
 
-    println!("{}", line);
+    for s in args {
+        println!("{}", s)
+    }
 }
