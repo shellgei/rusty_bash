@@ -3,9 +3,10 @@
 
 use std::io;
 use std::io::Write;
+use std::process::Command;
+use std::process;
 
-use nix::unistd::{fork, ForkResult};
-
+use nix::unistd::{fork, ForkResult}; 
 fn prompt() {
     print!("$ ");
     io::stdout().flush().unwrap();
@@ -21,18 +22,14 @@ fn main() {
 
     prompt();
     let line = read_line();
-    let args = line.split(" ");
 
     match fork() {
         Ok(ForkResult::Child) => {
-            for s in args {
-                println!("{}", s)
-            }
+            let args: Vec<&str> = line.trim().split(" ").collect();
+            Command::new(args[0]).args(&args[1..]).spawn().expect("Failed to run the command");
         }
         Ok(ForkResult::Parent { child: _, .. }) => {
-            for s in args {
-                println!("{}", s)
-            }
+            process::exit(0);
         }
         Err(err) => panic!("Failed to fork. {}", err),
     }
