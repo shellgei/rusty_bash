@@ -9,28 +9,38 @@ use std::process;
 use nix::unistd::{fork, ForkResult}; 
 fn prompt() {
     print!("$ ");
-    io::stdout().flush().unwrap();
+    io::stdout()
+        .flush()
+        .unwrap();
 }
 
 fn read_line() -> String {
     let mut line = String::new();
-    io::stdin().read_line(&mut line).expect("Failed to read line");
-    return line;
+    io::stdin()
+        .read_line(&mut line)
+        .expect("Failed to read line");
+    line
 }
 
 fn main() {
-
     prompt();
     let line = read_line();
 
     match fork() {
         Ok(ForkResult::Child) => {
-            let args: Vec<&str> = line.trim().split(" ").collect();
-            Command::new(args[0]).args(&args[1..]).spawn().expect("Failed to run the command");
+            let args: Vec<&str> = line
+                .trim()
+                .split(" ")
+                .collect();
+
+            Command::new(args[0])
+                .args(&args[1..])
+                .spawn()
+                .expect("Failed to run the command");
         }
         Ok(ForkResult::Parent { child: _, .. }) => {
             process::exit(0);
         }
-        Err(err) => panic!("Failed to fork. {}", err),
+        Err(err) => panic!("Failed to fork. {}", err)
     }
 }
