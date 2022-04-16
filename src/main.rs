@@ -3,10 +3,9 @@
 
 use std::io;
 use std::io::Write;
-use std::process::Command;
-use std::process;
+use std::ffi::CString;
 
-use nix::unistd::{fork, ForkResult, Pid}; 
+use nix::unistd::{execv, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 
 fn prompt() {
@@ -30,10 +29,11 @@ fn run_ext_command(line: String) {
         .split(" ")
         .collect();
 
-    Command::new(args[0])
-        .args(&args[1..])
-        .spawn()
-        .expect("Failed to run the command.");
+    let dir = CString::new("/bin/echo").unwrap();
+    let com = CString::new(args[1]).unwrap();
+    println!("{:?}", com);
+
+    execv(&dir, &[&com.clone()]).expect("Failed to execute");
 }
 
 fn wait_ext_command(child: Pid) {
@@ -42,14 +42,15 @@ fn wait_ext_command(child: Pid) {
         WaitStatus::Exited(pid, status) => {
             if status != 0 {
                 println!("Pid: {:?}, Exit with {:?}", pid, status);
-            }
+            };
         }
         WaitStatus::Signaled(pid, signal, _) => {
             println!("Pid: {:?}, Signal: {:?}", pid, signal)
         }
-        _ => println!("Unknown error"),
+        _ => {
+            println!("Unknown error")
+        }
     }
-    process::exit(0);
 }
 
 fn main_loop() {
@@ -71,4 +72,5 @@ fn main() {
     loop {
         main_loop();
     }
+//    process::exit(0);
 }
