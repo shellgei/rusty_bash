@@ -5,7 +5,7 @@ use std::io;
 use std::io::Write;
 use std::ffi::CString;
 
-use nix::unistd::{execv, fork, ForkResult, Pid}; 
+use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 
 fn prompt() {
@@ -24,16 +24,19 @@ fn read_line() -> String {
 }
 
 fn run_ext_command(line: String) {
-    let args: Vec<&str> = line
+    let words: Vec<CString> = line
         .trim()
         .split(" ")
-        .collect();
+        .map(|x| CString::new(x).unwrap())
+        .collect::<Vec<_>>();
 
-    let dir = CString::new("/bin/echo").unwrap();
-    let com = CString::new(args[1]).unwrap();
-    println!("{:?}", com);
+    let array = words.into_boxed_slice();
 
-    execv(&dir, &[&com.clone()]).expect("Failed to execute");
+    //execvp(&args[0], &[&args[0], &args[1]]).unwrap();
+    //execvp(&words[0], &[words.iter().map(|x| x.as_ref()).collect()]).expect("Cannot exec");
+    //execvp(&words[0], &*array).expect("Cannot exec");
+    execvp(&array[0], &*array).expect("Cannot exec");
+
 }
 
 fn wait_ext_command(child: Pid) {
@@ -57,14 +60,16 @@ fn main_loop() {
     prompt();
     let line = read_line();
 
-    match fork() {
-        Ok(ForkResult::Child) => {
-            run_ext_command(line)
-        }
-        Ok(ForkResult::Parent { child } ) => {
-            wait_ext_command(child)
-        }
-        Err(err) => panic!("Failed to fork. {}", err)
+    unsafe {
+      match fork() {
+          Ok(ForkResult::Child) => {
+              run_ext_command(line)
+          }
+          Ok(ForkResult::Parent { child } ) => {
+              wait_ext_command(child)
+          }
+          Err(err) => panic!("Failed to fork. {}", err)
+      }
     }
 }
 
