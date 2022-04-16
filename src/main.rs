@@ -32,9 +32,6 @@ fn run_ext_command(line: String) {
 
     let array = words.into_boxed_slice();
 
-    //execvp(&args[0], &[&args[0], &args[1]]).unwrap();
-    //execvp(&words[0], &[words.iter().map(|x| x.as_ref()).collect()]).expect("Cannot exec");
-    //execvp(&words[0], &*array).expect("Cannot exec");
     execvp(&array[0], &*array).expect("Cannot exec");
 
 }
@@ -62,13 +59,9 @@ fn main_loop() {
 
     unsafe {
       match fork() {
-          Ok(ForkResult::Child) => {
-              run_ext_command(line)
-          }
-          Ok(ForkResult::Parent { child } ) => {
-              wait_ext_command(child)
-          }
-          Err(err) => panic!("Failed to fork. {}", err)
+          Ok(ForkResult::Child) => run_ext_command(line),
+          Ok(ForkResult::Parent { child } ) => wait_ext_command(child),
+          Err(err) => panic!("Failed to fork. {}", err),
       }
     }
 }
