@@ -8,6 +8,23 @@ use std::ffi::CString;
 use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 
+mod parser {
+    use std::ffi::CString;
+
+    // job or function comment or blank (finally) 
+    pub fn top_level_element(line: String) -> (bool, Box<[CString]>) {
+        //only a command is recognized currently
+        let words: Vec<CString> = line
+            .trim()
+            .split(" ")
+            .map(|x| CString::new(x).unwrap())
+            .collect::<Vec<_>>();
+    
+        let array = words.into_boxed_slice();
+        (true, array)
+    }
+}
+
 fn prompt() {
     print!("$ ");
     io::stdout()
@@ -23,17 +40,19 @@ fn read_line() -> String {
     line
 }
 
-fn run_ext_command(line: String) {
-    let words: Vec<CString> = line
-        .trim()
-        .split(" ")
-        .map(|x| CString::new(x).unwrap())
-        .collect::<Vec<_>>();
-
-    let array = words.into_boxed_slice();
-
+fn exec(array: Box<[CString]>) {
     execvp(&array[0], &*array).expect("Cannot exec");
+}
 
+fn run_ext_command(array: Box<[CString]>) {
+
+    unsafe {
+      match fork() {
+          Ok(ForkResult::Child) => exec(array),
+          Ok(ForkResult::Parent { child } ) => wait_ext_command(child),
+          Err(err) => panic!("Failed to fork. {}", err),
+      }
+    }
 }
 
 fn wait_ext_command(child: Pid) {
@@ -50,25 +69,22 @@ fn wait_ext_command(child: Pid) {
         _ => {
             println!("Unknown error")
         }
-    }
-}
-
-fn main_loop() {
-    prompt();
-    let line = read_line();
-
-    unsafe {
-      match fork() {
-          Ok(ForkResult::Child) => run_ext_command(line),
-          Ok(ForkResult::Parent { child } ) => wait_ext_command(child),
-          Err(err) => panic!("Failed to fork. {}", err),
-      }
-    }
+    };
 }
 
 fn main() {
     loop {
-        main_loop();
+        prompt();
+        let line = read_line();
+        let ans = parser::top_level_element(line);
+        run_ext_command(ans.1);
     }
-//    process::exit(0);
+}
+
+
+#[test]
+fn parse() -> () {
+    let ans = parser::top_level_element("echo hoge".to_string());
+    assert_eq!(ans.1[0], CString::new("echo").unwrap());
+    assert_eq!(ans.1[1], CString::new("hoge").unwrap());
 }
