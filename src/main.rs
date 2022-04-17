@@ -8,22 +8,7 @@ use std::ffi::CString;
 use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 
-mod parser {
-    use std::ffi::CString;
-
-    // job or function comment or blank (finally) 
-    pub fn top_level_element(line: String) -> (bool, Box<[CString]>) {
-        //only a command is recognized currently
-        let words: Vec<CString> = line
-            .trim()
-            .split(" ")
-            .map(|x| CString::new(x).unwrap())
-            .collect::<Vec<_>>();
-    
-        let array = words.into_boxed_slice();
-        (true, array)
-    }
-}
+mod parser;
 
 fn prompt() {
     print!("$ ");
