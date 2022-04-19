@@ -5,12 +5,19 @@ trait Element {
     fn info(&self);
 }
 
+struct Core {
+    elems: Vec<Box<dyn Element>>,
+    text: String,
+    text_pos: u32
+}
+
 struct Comment {
-    text: String
+    core: Core
 }
 
 impl Element for Comment {
     fn info(&self){
-        println!("{}", self.text);
+        println!("({}[byte] text)", self.core.text_pos);
+        println!("{}", self.core.text);
     }
 }
