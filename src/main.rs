@@ -9,12 +9,7 @@ use nix::unistd::{execvp, fork, ForkResult, Pid};
 use nix::sys::wait::*;
 
 mod parser;
-
-struct Elements {
-    elems: Vec<Elements>,
-    text: String,
-    text_position: u32
-}
+mod bash_elements;
 
 fn prompt() {
     print!("$ ");
