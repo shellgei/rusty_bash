@@ -10,6 +10,12 @@ use nix::sys::wait::*;
 
 mod parser;
 
+struct Elements {
+    elems: Vec<Elements>,
+    text: String,
+    text_position: u32
+}
+
 fn prompt() {
     print!("$ ");
     io::stdout()
