@@ -4,10 +4,7 @@
 use std::io;
 use std::io::Write;
 
-//use nix::unistd::{execvp, fork, ForkResult, Pid}; 
-//use nix::sys::wait::*;
-
-mod parser;
+mod bash_parser;
 mod bash_elements;
 
 use bash_elements::Element;
@@ -31,9 +28,9 @@ fn main() {
     loop {
         prompt();
         let line = read_line();
-        match parser::top_level_element(line) {
+        match bash_parser::top_level_element(line) {
             Some(ans) => ans.exec(),
-            _ => panic!("")
+            None => panic!("")
         }
     }
 }
@@ -41,7 +38,7 @@ fn main() {
 
 #[test]
 fn parse() -> () {
-    let ans = parser::top_level_element("echo hoge".to_string());
+    let ans = bash_parser::top_level_element("echo hoge".to_string());
     assert_eq!(ans.1[0], CString::new("echo").unwrap());
     assert_eq!(ans.1[1], CString::new("hoge").unwrap());
 }
