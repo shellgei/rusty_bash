@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use std::any::Any;
 use std::ffi::CString;
 use super::bash_elements::{CommandWithArgs,Arg,Core,Element};
 
@@ -22,15 +23,16 @@ pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
 
 
     for w in words {
-        let mut arg = Arg{core: Core::new(), evaluated_text: "".to_string()};
+        let mut arg = Arg{core: Core::new()};
         arg.core.text = w.clone();
-        arg.exec();
+    //    arg.exec();
+    //    println!("{}", arg.evaluated_text);
         ans.core.elems.push(Box::new(arg));
     };
 
     /*
-    for e in ans.core.elems {
-        println!("{}", e.evaluated_text);
+    for e in &ans.core.elems {
+        e.info();
     };
     */
     

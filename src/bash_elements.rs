@@ -29,7 +29,8 @@ impl Core {
 
 pub trait Element {
     fn info(&self);
-    fn exec(&mut self);
+    //fn eval(&self) -> Vec<CString>;
+    fn exec(&self);
 }
 
 /* command arg arg arg ... */
@@ -66,7 +67,11 @@ impl Element for CommandWithArgs {
         self.core.info();
     }
 
-    fn exec(&mut self){
+    fn exec(&self){
+        for e in self.core.elems.iter() {
+            e.info();
+        }
+
         unsafe {
           match fork() {
               Ok(ForkResult::Child) => self.exec_command(),
@@ -81,7 +86,7 @@ impl Element for CommandWithArgs {
 /* arg */
 pub struct Arg {
     pub core: Core,
-    pub evaluated_text: String,
+//    pub evaluated_text: Box<String>,
 }
 
 impl Element for Arg {
@@ -89,7 +94,6 @@ impl Element for Arg {
         self.core.info();
     }
 
-    fn exec(&mut self){
-        self.evaluated_text = self.core.text.clone();
+    fn exec(&self){
     }
 }
