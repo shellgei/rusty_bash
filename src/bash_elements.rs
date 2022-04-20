@@ -27,7 +27,7 @@ impl Core {
     }
 }
 
-trait Element {
+pub trait Element {
     fn info(&self);
     fn exec(&self);
 }
@@ -37,13 +37,12 @@ pub struct CommandWithArgs {
     pub args: Box<[CString]>
 }
 
-
 impl CommandWithArgs {
     fn exec_command(&self) {
         execvp(&self.args[0], &*self.args).expect("Cannot exec");
     }
   
-    fn wait_ext_command(child: Pid) {
+    fn wait_command(child: Pid) {
         match waitpid(child, None)
             .expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
@@ -59,20 +58,18 @@ impl CommandWithArgs {
             }
         };
     }
-    /*
 }
 
 impl Element for CommandWithArgs {
-*/
     fn info(&self){
         self.core.info();
     }
 
-    pub fn exec(&self){
+    fn exec(&self){
         unsafe {
           match fork() {
               Ok(ForkResult::Child) => self.exec_command(),
-              Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_ext_command(child),
+              Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
               Err(err) => panic!("Failed to fork. {}", err),
           }
         }

@@ -3,13 +3,14 @@
 
 use std::io;
 use std::io::Write;
-//use std::ffi::CString;
 
 //use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 //use nix::sys::wait::*;
 
 mod parser;
 mod bash_elements;
+
+use bash_elements::Element;
 
 fn prompt() {
     print!("$ ");
