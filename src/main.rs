@@ -62,8 +62,11 @@ fn main() {
     loop {
         prompt();
         let line = read_line();
-        let ans = parser::top_level_element(line);
-        run_ext_command(ans.1);
+        //let ans = parser::top_level_element(line);
+        match parser::top_level_element(line) {
+            Some(ans) => run_ext_command(ans.args),
+            _ => panic!("")
+        }
     }
 }
 
