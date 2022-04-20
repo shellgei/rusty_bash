@@ -29,7 +29,7 @@ fn main() {
         prompt();
         let line = read_line();
         match bash_parser::top_level_element(line) {
-            Some(ans) => ans.exec(),
+            Some(mut ans) => ans.exec(),
             None => panic!("")
         }
     }

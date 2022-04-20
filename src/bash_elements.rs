@@ -7,9 +7,9 @@ use nix::sys::wait::*;
 use std::ffi::CString;
 
 pub struct Core {
-    elems: Vec<Box<dyn Element>>,
-    text: String,
-    text_pos: u32
+    pub elems: Vec<Box<dyn Element>>,
+    pub text: String,
+    pub text_pos: u32
 }
 
 impl Core {
@@ -29,9 +29,10 @@ impl Core {
 
 pub trait Element {
     fn info(&self);
-    fn exec(&self);
+    fn exec(&mut self);
 }
 
+/* command arg arg arg ... */
 pub struct CommandWithArgs {
     pub core: Core,
     pub args: Box<[CString]>
@@ -65,7 +66,7 @@ impl Element for CommandWithArgs {
         self.core.info();
     }
 
-    fn exec(&self){
+    fn exec(&mut self){
         unsafe {
           match fork() {
               Ok(ForkResult::Child) => self.exec_command(),
@@ -77,3 +78,18 @@ impl Element for CommandWithArgs {
 }
 
 
+/* arg */
+pub struct Arg {
+    pub core: Core,
+    pub evaluated_text: String,
+}
+
+impl Element for Arg {
+    fn info(&self){
+        self.core.info();
+    }
+
+    fn exec(&mut self){
+        self.evaluated_text = self.core.text.clone();
+    }
+}
