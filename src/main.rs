@@ -3,10 +3,10 @@
 
 use std::io;
 use std::io::Write;
-use std::ffi::CString;
+//use std::ffi::CString;
 
-use nix::unistd::{execvp, fork, ForkResult, Pid}; 
-use nix::sys::wait::*;
+//use nix::unistd::{execvp, fork, ForkResult, Pid}; 
+//use nix::sys::wait::*;
 
 mod parser;
 mod bash_elements;
@@ -26,45 +26,12 @@ fn read_line() -> String {
     line
 }
 
-fn exec(array: Box<[CString]>) {
-    execvp(&array[0], &*array).expect("Cannot exec");
-}
-
-fn run_ext_command(array: Box<[CString]>) {
-
-    unsafe {
-      match fork() {
-          Ok(ForkResult::Child) => exec(array),
-          Ok(ForkResult::Parent { child } ) => wait_ext_command(child),
-          Err(err) => panic!("Failed to fork. {}", err),
-      }
-    }
-}
-
-fn wait_ext_command(child: Pid) {
-    match waitpid(child, None)
-        .expect("Faild to wait child process.") {
-        WaitStatus::Exited(pid, status) => {
-            if status != 0 {
-                println!("Pid: {:?}, Exit with {:?}", pid, status);
-            };
-        }
-        WaitStatus::Signaled(pid, signal, _) => {
-            println!("Pid: {:?}, Signal: {:?}", pid, signal)
-        }
-        _ => {
-            println!("Unknown error")
-        }
-    };
-}
-
 fn main() {
     loop {
         prompt();
         let line = read_line();
-        //let ans = parser::top_level_element(line);
         match parser::top_level_element(line) {
-            Some(ans) => run_ext_command(ans.args),
+            Some(ans) => ans.exec(),
             _ => panic!("")
         }
     }
