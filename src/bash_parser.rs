@@ -1,9 +1,8 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::any::Any;
 use std::ffi::CString;
-use super::bash_elements::{CommandWithArgs,Arg,Core,Element};
+use super::bash_elements::{CommandWithArgs,Tree};
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(line: String) -> Option<CommandWithArgs> {
@@ -12,8 +11,8 @@ pub fn top_level_element(line: String) -> Option<CommandWithArgs> {
 }
 
 pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
-    let mut ans = CommandWithArgs{core: Core::new(), args: Box::new([])};
-    ans.core.text = line.clone();
+    let mut ans = CommandWithArgs{tree: Tree::new(), args: Box::new([])};
+    ans.tree.text = line.clone();
 
     let words: Vec<String> = line
         .trim()
@@ -23,19 +22,10 @@ pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
 
 
     for w in words {
-        let mut arg = Arg{core: Core::new()};
-        arg.core.text = w.clone();
-    //    arg.exec();
-    //    println!("{}", arg.evaluated_text);
-        ans.core.elems.push(Box::new(arg));
+        let tree = Tree{elems: Vec::new(), text: w.clone(), text_pos: 0};
+        ans.tree.elems.push(tree);
     };
 
-    /*
-    for e in &ans.core.elems {
-        e.info();
-    };
-    */
-    
     let raw_words: Vec<CString> = line
         .trim()
         .split(" ")

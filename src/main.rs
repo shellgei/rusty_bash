@@ -7,7 +7,7 @@ use std::io::Write;
 mod bash_parser;
 mod bash_elements;
 
-use bash_elements::Element;
+//use bash_elements::Element;
 
 fn prompt() {
     print!("$ ");
@@ -29,7 +29,7 @@ fn main() {
         prompt();
         let line = read_line();
         match bash_parser::top_level_element(line) {
-            Some(mut ans) => ans.exec(),
+            Some(ans) => ans.exec(),
             None => panic!("")
         }
     }

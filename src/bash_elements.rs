@@ -6,20 +6,22 @@ use nix::sys::wait::*;
 
 use std::ffi::CString;
 
-pub struct Core {
-    pub elems: Vec<Box<dyn Element>>,
+pub struct Tree {
+    pub elems: Vec<Tree>,
     pub text: String,
     pub text_pos: u32
 }
 
-impl Core {
+impl Tree {
+    /*
     fn info(&self){
         println!("({}[byte] text)", self.text_pos);
         println!("{}", self.text);
     }
+    */
 
-    pub fn new() -> Core{
-        Core{
+    pub fn new() -> Tree{
+        Tree{
             elems: Vec::new(),
             text: "".to_string(),
             text_pos: 0
@@ -27,15 +29,17 @@ impl Core {
     }
 }
 
+/*
 pub trait Element {
     fn info(&self);
     //fn eval(&self) -> Vec<CString>;
     fn exec(&self);
 }
+*/
 
 /* command arg arg arg ... */
 pub struct CommandWithArgs {
-    pub core: Core,
+    pub tree: Tree,
     pub args: Box<[CString]>
 }
 
@@ -60,17 +64,23 @@ impl CommandWithArgs {
             }
         };
     }
+    /*
 }
 
 impl Element for CommandWithArgs {
+*/
+    /*
     fn info(&self){
-        self.core.info();
+        self.tree.info();
     }
+    */
 
-    fn exec(&self){
-        for e in self.core.elems.iter() {
+    pub fn exec(&self){
+        /*
+        for e in self.tree.elems.iter() {
             e.info();
         }
+        */
 
         unsafe {
           match fork() {
@@ -84,16 +94,9 @@ impl Element for CommandWithArgs {
 
 
 /* arg */
+/*
 pub struct Arg {
-    pub core: Core,
+    pub tree: Tree,
 //    pub evaluated_text: Box<String>,
 }
-
-impl Element for Arg {
-    fn info(&self){
-        self.core.info();
-    }
-
-    fn exec(&self){
-    }
-}
+*/
