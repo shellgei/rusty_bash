@@ -6,32 +6,24 @@ use nix::sys::wait::*;
 
 use std::ffi::CString;
 
-#[derive(Debug)]
-pub struct Tree {
-    pub elems: Vec<Tree>,
+/* arg */
+pub struct Arg {
     pub text: String,
     pub text_pos: u32
 }
 
-impl Tree {
-    pub fn new() -> Tree{
-        Tree{
-            elems: Vec::new(),
-            text: "".to_string(),
-            text_pos: 0
-        }
-    }
-}
-
 /* command arg arg arg ... */
 pub struct CommandWithArgs {
-    pub tree: Tree,
+    //pub tree: Tree,
+    pub args: Vec<Arg>,
+    pub text: String,
+    pub text_pos: u32
 }
 
 impl CommandWithArgs {
     fn exec_command(&self) {
         let mut args = Vec::<CString>::new();
-        for e in &self.tree.elems {
+        for e in &self.args {
             args.push(CString::new(e.text.clone()).unwrap());
         }
 
@@ -56,23 +48,6 @@ impl CommandWithArgs {
     }
 
     pub fn exec(&self){
-
-
-    /*
-    let raw_words: Vec<CString> = line
-        .trim()
-        .split(" ")
-        .map(|x| CString::new(x).unwrap())
-        .collect();
-
-    ans.args = raw_words.into_boxed_slice();
-    */
-        /*
-        for e in self.tree.elems.iter() {
-            e.info();
-        }
-        */
-
         unsafe {
           match fork() {
               Ok(ForkResult::Child) => self.exec_command(),
@@ -84,10 +59,3 @@ impl CommandWithArgs {
 }
 
 
-/* arg */
-/*
-pub struct Arg {
-    pub tree: Tree,
-//    pub evaluated_text: Box<String>,
-}
-*/

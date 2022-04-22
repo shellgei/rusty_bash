@@ -1,8 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-//use std::ffi::CString;
-use super::elements::{CommandWithArgs,Tree};
+use super::elements::{CommandWithArgs,Arg};
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(line: String) -> Option<CommandWithArgs> {
@@ -11,8 +10,10 @@ pub fn top_level_element(line: String) -> Option<CommandWithArgs> {
 }
 
 pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
-    let mut ans = CommandWithArgs{tree: Tree::new()};
-    ans.tree.text = line.clone();
+    let mut ans = CommandWithArgs{
+                     args: vec!(),
+                     text: line.clone(),
+                     text_pos: 0};
 
     let words: Vec<String> = line
         .trim()
@@ -22,8 +23,7 @@ pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
 
 
     for w in words {
-        let tree = Tree{elems: Vec::new(), text: w.clone(), text_pos: 0};
-        ans.tree.elems.push(tree);
+        ans.args.push(Arg{text: w.clone(), text_pos: 0});
     };
 
     Some(ans)
