@@ -30,8 +30,8 @@ fn main() {
         let line = read_line();
         let elem = parser::top_level_element(line);
         if let Ok(e) = elem.downcast::<CommandWithArgs>() {
-            e.exec()
-        }
+            e.exec();
+        };
     }
 }
 

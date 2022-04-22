@@ -30,5 +30,9 @@ pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
         ans.args.push(Arg{text: w.clone(), text_pos: 0});
     };
 
-    Some(ans)
+    if ans.args[0].text.len() > 0 {
+        Some(ans)
+    }else{
+        None
+    }
 }
