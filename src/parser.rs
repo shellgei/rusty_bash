@@ -5,12 +5,11 @@ use std::any::Any;
 use super::elements::{CommandWithArgs,Arg};
 
 // job or function comment or blank (finally) 
-//pub fn top_level_element(line: String) -> Option<CommandWithArgs> {
 pub fn top_level_element(line: String) -> Box<dyn Any> {
     //only a command is recognized currently
     match command_with_args(line) {
         Some(result) => Box::new(result),
-        None => panic!("!!"),
+        None => Box::new(0)
     }
 }
 
