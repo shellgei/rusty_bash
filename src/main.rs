@@ -29,9 +29,8 @@ fn main() {
         prompt();
         let line = read_line();
         let elem = parser::top_level_element(line);
-        match elem.downcast::<CommandWithArgs>() {
-            Ok(e) => e.exec(),
-            _ => println!("else"),
+        if let Ok(e) = elem.downcast::<CommandWithArgs>() {
+            e.exec()
         }
     }
 }
