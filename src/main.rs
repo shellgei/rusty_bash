@@ -4,10 +4,10 @@
 use std::io;
 use std::io::Write;
 
-mod bash_parser;
-mod bash_elements;
+mod parser;
+mod elements;
 
-//use bash_elements::Element;
+//use elements::Element;
 
 fn prompt() {
     print!("$ ");
@@ -28,7 +28,7 @@ fn main() {
     loop {
         prompt();
         let line = read_line();
-        match bash_parser::top_level_element(line) {
+        match parser::top_level_element(line) {
             Some(ans) => ans.exec(),
             None => panic!("")
         }
@@ -38,7 +38,7 @@ fn main() {
 
 #[test]
 fn parse() -> () {
-    let ans = bash_parser::top_level_element("echo hoge".to_string());
+    let ans = parser::top_level_element("echo hoge".to_string());
     assert_eq!(ans.1[0], CString::new("echo").unwrap());
     assert_eq!(ans.1[1], CString::new("hoge").unwrap());
 }
