@@ -6,6 +6,7 @@ use nix::sys::wait::*;
 
 use std::ffi::CString;
 
+#[derive(Debug)]
 pub struct Tree {
     pub elems: Vec<Tree>,
     pub text: String,
@@ -13,13 +14,6 @@ pub struct Tree {
 }
 
 impl Tree {
-    /*
-    fn info(&self){
-        println!("({}[byte] text)", self.text_pos);
-        println!("{}", self.text);
-    }
-    */
-
     pub fn new() -> Tree{
         Tree{
             elems: Vec::new(),
@@ -29,23 +23,19 @@ impl Tree {
     }
 }
 
-/*
-pub trait Element {
-    fn info(&self);
-    //fn eval(&self) -> Vec<CString>;
-    fn exec(&self);
-}
-*/
-
 /* command arg arg arg ... */
 pub struct CommandWithArgs {
     pub tree: Tree,
-    pub args: Box<[CString]>
 }
 
 impl CommandWithArgs {
     fn exec_command(&self) {
-        execvp(&self.args[0], &*self.args).expect("Cannot exec");
+        let mut args = Vec::<CString>::new();
+        for e in &self.tree.elems {
+            args.push(CString::new(e.text.clone()).unwrap());
+        }
+
+        execvp(&args[0], &*args).expect("Cannot exec");
     }
   
     fn wait_command(child: Pid) {
@@ -64,18 +54,19 @@ impl CommandWithArgs {
             }
         };
     }
-    /*
-}
-
-impl Element for CommandWithArgs {
-*/
-    /*
-    fn info(&self){
-        self.tree.info();
-    }
-    */
 
     pub fn exec(&self){
+
+
+    /*
+    let raw_words: Vec<CString> = line
+        .trim()
+        .split(" ")
+        .map(|x| CString::new(x).unwrap())
+        .collect();
+
+    ans.args = raw_words.into_boxed_slice();
+    */
         /*
         for e in self.tree.elems.iter() {
             e.info();
