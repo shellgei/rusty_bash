@@ -7,14 +7,15 @@ use nix::sys::wait::*;
 use std::ffi::CString;
 
 /* arg */
+#[derive(Debug)]
 pub struct Arg {
     pub text: String,
     pub text_pos: u32
 }
 
 /* command arg arg arg ... */
+#[derive(Debug)]
 pub struct CommandWithArgs {
-    //pub tree: Tree,
     pub args: Vec<Arg>,
     pub text: String,
     pub text_pos: u32

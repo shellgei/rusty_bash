@@ -7,7 +7,7 @@ use std::io::Write;
 mod parser;
 mod elements;
 
-//use elements::Element;
+use elements::CommandWithArgs;
 
 fn prompt() {
     print!("$ ");
@@ -28,9 +28,10 @@ fn main() {
     loop {
         prompt();
         let line = read_line();
-        match parser::top_level_element(line) {
-            Some(ans) => ans.exec(),
-            None => panic!("")
+        let elem = parser::top_level_element(line);
+        match elem.downcast::<CommandWithArgs>() {
+            Ok(e) => e.exec(),
+            _ => println!("else"),
         }
     }
 }

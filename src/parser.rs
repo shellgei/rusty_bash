@@ -1,12 +1,17 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use std::any::Any;
 use super::elements::{CommandWithArgs,Arg};
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(line: String) -> Option<CommandWithArgs> {
+//pub fn top_level_element(line: String) -> Option<CommandWithArgs> {
+pub fn top_level_element(line: String) -> Box<dyn Any> {
     //only a command is recognized currently
-    command_with_args(line)
+    match command_with_args(line) {
+        Some(result) => Box::new(result),
+        None => panic!("!!"),
+    }
 }
 
 pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
