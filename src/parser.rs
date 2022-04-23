@@ -14,20 +14,20 @@ pub struct ReadingText {
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut ReadingText) -> Box<dyn Any> {
     //only a command is recognized currently
-    if let Some(result) = command_with_args(text.remaining.clone()) {
+    if let Some(result) = command_with_args(text) {
         text.remaining = "".to_string();
         return Box::new(result)
     }
     Box::new(0)
 }
 
-pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
+pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
     let mut ans = CommandWithArgs{
                      args: vec!(),
-                     text: line.clone(),
+                     text: text.remaining.clone(),
                      text_pos: 0};
 
-    let words: Vec<String> = line
+    let words: Vec<String> = text.remaining.clone()
         .trim()
         .split(" ")
         .map(|x| x.to_string())
@@ -44,7 +44,6 @@ pub fn command_with_args(line: String) -> Option<CommandWithArgs> {
     }
 }
 
-/*
-pub fn arg(line: String) -> (Option<Arg>, String) {
+pub fn arg(text: &mut ReadingText) -> Option<Arg> {
+    None
 }
-*/
