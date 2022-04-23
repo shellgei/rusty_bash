@@ -10,22 +10,12 @@ mod elements;
 use parser::ReadingText;
 use elements::CommandWithArgs;
 
-fn prompt() {
-    print!("$ ");
+fn prompt(text: &ReadingText) {
+    print!("{} $ ", text.to_lineno+1);
     io::stdout()
         .flush()
         .unwrap();
 }
-
-/*
-fn read_line() -> String {
-    let mut line = String::new();
-    io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-    line
-}
-*/
 
 fn read_line(text: &mut ReadingText) {
     let mut line = String::new();
@@ -33,11 +23,18 @@ fn read_line(text: &mut ReadingText) {
         .read_line(&mut line)
         .expect("Failed to read line");
 
-    text.remaining += &line;
+    text.to_lineno += 1;
+
+    if text.remaining.len() == 0{
+        text.from_lineno = text.to_lineno;
+        text.remaining = line;
+    }else{
+        text.remaining += &line;
+    };
 }
 
 fn main() {
-    let mut readingText = ReadingText{
+    let mut input = ReadingText{
         remaining: "".to_string(),
         from_lineno: 0,
         to_lineno: 0,
@@ -45,9 +42,9 @@ fn main() {
     };
 
     loop {
-        prompt();
-        read_line(&mut readingText);
-        let elem = parser::top_level_element(&mut readingText);
+        prompt(&input);
+        read_line(&mut input);
+        let elem = parser::top_level_element(&mut input);
         if let Ok(e) = elem.downcast::<CommandWithArgs>() {
             e.exec();
         };
