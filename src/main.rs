@@ -25,8 +25,9 @@ fn read_line(text: &mut ReadingText) {
 
     text.to_lineno += 1;
 
-    if text.remaining.len() == 0{
+    if text.remaining.len() == 0 {
         text.from_lineno = text.to_lineno;
+        text.pos_in_line = 0;
         text.remaining = line;
     }else{
         text.remaining += &line;

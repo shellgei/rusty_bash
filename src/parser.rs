@@ -8,7 +8,7 @@ pub struct ReadingText {
     pub remaining: String,
     pub from_lineno: u32,
     pub to_lineno: u32,
-    pub pos_in_line: u32,
+    pub pos_in_line: usize,
 }
 
 // job or function comment or blank (finally) 
@@ -27,6 +27,12 @@ pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
                      text: text.remaining.clone(),
                      text_pos: 0};
 
+    while let Some(result) = arg(text) {
+        ans.args.push(result);
+    }
+
+    /*
+
     let words: Vec<String> = text.remaining.clone()
         .trim()
         .split(" ")
@@ -36,8 +42,9 @@ pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
     for w in words {
         ans.args.push(Arg{text: w.clone(), text_pos: 0});
     };
+    */
 
-    if ans.args[0].text.len() > 0 {
+    if ans.args.len() > 0 {
         Some(ans)
     }else{
         None
@@ -45,5 +52,34 @@ pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
 }
 
 pub fn arg(text: &mut ReadingText) -> Option<Arg> {
+    if text.remaining.len() == 0 {
+        return None;
+    };
+
+    let mut skip = 0;
+    for ch in text.remaining.chars() {
+        if ch == ' ' || ch == '\n' || ch == '\t' {
+            skip += 1;
+        }else{
+            break;
+        }
+    };
+
+    let mut pos = 0;
+    for ch in text.remaining[skip..].chars() {
+        if ch == ' ' || ch == '\n' || ch == '\t' {
+            let ans = Arg{
+                    text: text.remaining[skip..skip+pos].to_string(),
+                    text_pos: text.pos_in_line + skip,
+                 };
+
+            text.pos_in_line += skip + pos;
+            text.remaining = text.remaining[skip+pos..].to_string();
+            return Some(ans);
+        }else{
+            pos += ch.len_utf8();
+        };
+    };
+
     None
 }

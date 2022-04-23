@@ -10,7 +10,7 @@ use std::ffi::CString;
 #[derive(Debug)]
 pub struct Arg {
     pub text: String,
-    pub text_pos: u32
+    pub text_pos: usize
 }
 
 /* command arg arg arg ... */
@@ -18,7 +18,7 @@ pub struct Arg {
 pub struct CommandWithArgs {
     pub args: Vec<Arg>,
     pub text: String,
-    pub text_pos: u32
+    pub text_pos: usize
 }
 
 impl CommandWithArgs {
