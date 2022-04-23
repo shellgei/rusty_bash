@@ -31,19 +31,6 @@ pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
         ans.args.push(result);
     }
 
-    /*
-
-    let words: Vec<String> = text.remaining.clone()
-        .trim()
-        .split(" ")
-        .map(|x| x.to_string())
-        .collect();
-
-    for w in words {
-        ans.args.push(Arg{text: w.clone(), text_pos: 0});
-    };
-    */
-
     if ans.args.len() > 0 {
         Some(ans)
     }else{
