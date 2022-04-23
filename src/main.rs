@@ -35,10 +35,17 @@ fn main() {
     }
 }
 
-
 #[test]
 fn parse() -> () {
-    let ans = parser::top_level_element("echo hoge".to_string());
-    assert_eq!(ans.1[0], CString::new("echo").unwrap());
-    assert_eq!(ans.1[1], CString::new("hoge").unwrap());
+    let elem = parser::top_level_element("echo hoge".to_string());
+    if let Ok(e) = elem.downcast::<CommandWithArgs>(){
+        assert_eq!(e.args[0].text, "echo");
+        assert_eq!(e.args[1].text, "hoge");
+    }else{
+        panic!("not parsed as a command");
+    }
+}
+
+#[test]
+fn command_test() -> (){
 }
