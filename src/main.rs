@@ -3,6 +3,7 @@
 
 use std::io;
 use std::io::Write;
+use std::process::exit;
 
 mod parser;
 mod elements;
@@ -19,9 +20,14 @@ fn prompt(text: &ReadingText) {
 
 fn read_line(text: &mut ReadingText) {
     let mut line = String::new();
-    io::stdin()
+
+    let len = io::stdin()
         .read_line(&mut line)
         .expect("Failed to read line");
+
+    if len == 0 {
+        exit(0);
+    }
 
     text.to_lineno += 1;
 
