@@ -76,7 +76,14 @@ fn main() {
 
 #[test]
 fn parse() -> () {
-    let elem = parser::top_level_element("echo hoge".to_string());
+    let mut input = ReadingText{
+        remaining: "echo hoge\n".to_string(),
+        from_lineno: 1,
+        to_lineno: 1,
+        pos_in_line: 0,
+    };
+
+    let elem = parser::top_level_element(&mut input);
     if let Ok(e) = elem.downcast::<CommandWithArgs>(){
         assert_eq!(e.args[0].text, "echo");
         assert_eq!(e.args[1].text, "hoge");
@@ -85,6 +92,3 @@ fn parse() -> () {
     }
 }
 
-#[test]
-fn command_test() -> (){
-}
