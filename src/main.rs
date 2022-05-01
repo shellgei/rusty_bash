@@ -4,12 +4,15 @@
 use std::io;
 use std::io::Write;
 use std::process::exit;
+use std::path::Path;
+use std::os::linux::fs::MetadataExt;
 
 mod parser;
 mod elements;
 
 use parser::ReadingText;
 use elements::CommandWithArgs;
+use std::process;
 
 fn prompt(text: &ReadingText) {
     print!("{} $ ", text.to_lineno+1);
@@ -40,6 +43,14 @@ fn read_line(text: &mut ReadingText) {
     };
 }
 
+fn is_interactive(pid: u32) -> bool {
+    let std_path = format!("/proc/{}/fd/0", pid);
+    match Path::new(&std_path).metadata() {
+        Ok(metadata) => metadata.st_mode() == 8592, 
+        Err(err) => panic!("{}", err),
+    }
+}
+
 fn main() {
     let mut input = ReadingText{
         remaining: "".to_string(),
@@ -48,8 +59,13 @@ fn main() {
         pos_in_line: 0,
     };
 
+    let pid = process::id();
+    let mode_interactive = is_interactive(pid);
+
     loop {
-        prompt(&input);
+        if mode_interactive {
+            prompt(&input);
+        };
         read_line(&mut input);
         let elem = parser::top_level_element(&mut input);
         if let Ok(e) = elem.downcast::<CommandWithArgs>() {
