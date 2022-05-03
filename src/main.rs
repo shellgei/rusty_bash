@@ -13,6 +13,7 @@ mod elements;
 use parser::ReadingText;
 use elements::CommandWithArgs;
 use std::process;
+use crate::elements::BashElem;
 
 fn prompt(text: &ReadingText) {
     print!("{} $ ", text.to_lineno+1);
@@ -69,7 +70,7 @@ fn main() {
         read_line(&mut input);
         let elem = parser::top_level_element(&mut input);
         if let Ok(e) = elem.downcast::<CommandWithArgs>() {
-            e.print();
+            eprintln!("{}", e.parse_info());
             e.exec();
         };
     }

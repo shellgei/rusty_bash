@@ -8,6 +8,10 @@ use nix::sys::wait::*;
 use std::any::Any;
 use std::ffi::CString;
 
+pub trait BashElem {
+    fn parse_info(&self) -> String;
+}
+
 /* delimiter */
 #[derive(Debug)]
 pub struct Delim {
@@ -37,11 +41,26 @@ pub struct CommandWithArgs {
     pub text_pos: usize
 }
 
-impl CommandWithArgs {
-    pub fn print(&self) {
-        eprintln!("\x1b[34m{}\x1b[m", self.text);
-    }
 
+impl BashElem for CommandWithArgs {
+    fn parse_info(&self) -> String {
+        let mut ans = format!("\x1b[34mcommand: '{}'\x1b[m\n", self.text);
+
+        for elem in &self.elems {
+            if let Some(e) = elem.downcast_ref::<Arg>(){
+                ans += &format!("    \x1b[34marg      : '{}'\x1b[m\n", e.text).to_string();
+            }else if let Some(e) = elem.downcast_ref::<Delim>(){
+                ans += &format!("    \x1b[34mdelimiter: '{}'\x1b[m\n", e.text).to_string();
+            }else if let Some(e) = elem.downcast_ref::<Eoc>(){
+                ans += &format!("    \x1b[34mend mark : '{}'\x1b[m\n", e.text).to_string();
+            }
+        };
+        
+        ans
+    }
+}
+
+impl CommandWithArgs {
     fn exec_command(&self) {
         let mut args = Vec::<CString>::new();
 
@@ -81,5 +100,3 @@ impl CommandWithArgs {
         }
     }
 }
-
-
