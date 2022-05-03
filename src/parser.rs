@@ -23,28 +23,26 @@ pub fn top_level_element(text: &mut ReadingText) -> Box<dyn Any> {
 
 pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
     let mut ans = CommandWithArgs{
-                     args: vec!(),
-                     delims: vec!(),
-                     end: vec!(),
+                     elems: vec!(),
                      text: text.remaining.clone(),
                      text_pos: 0};
 
     if let Some(result) = delimiter(text){
-        ans.delims.push(result);
+        ans.elems.push(Box::new(result));
     }
 
     while let Some(result) = arg(text) {
-        ans.args.push(result);
+        ans.elems.push(Box::new(result));
 
         if let Some(result) = delimiter(text){
-            ans.delims.push(result);
+            ans.elems.push(Box::new(result));
         }else if let Some(result) = end_of_command(text){
-            ans.end.push(result);
+            ans.elems.push(Box::new(result));
             break;
         }
     }
 
-    if ans.args.len() > 0 {
+    if ans.elems.len() > 0 {
         Some(ans)
     }else{
         None

@@ -1,9 +1,11 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 //
+//
 use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 
+use std::any::Any;
 use std::ffi::CString;
 
 /* delimiter */
@@ -30,9 +32,7 @@ pub struct Arg {
 /* command: delim arg delim arg delim arg ... eoc */
 #[derive(Debug)]
 pub struct CommandWithArgs {
-    pub args: Vec<Arg>,
-    pub delims: Vec<Delim>,
-    pub end: Vec<Eoc>,
+    pub elems: Vec<Box<dyn Any>>,
     pub text: String,
     pub text_pos: usize
 }
@@ -44,9 +44,12 @@ impl CommandWithArgs {
 
     fn exec_command(&self) {
         let mut args = Vec::<CString>::new();
-        for e in &self.args {
-            args.push(CString::new(e.text.clone()).unwrap());
-        }
+
+        for elem in &self.elems {
+            if let Some(e) = elem.downcast_ref::<Arg>(){
+                args.push(CString::new(e.text.clone()).unwrap());
+            };
+        };
 
         execvp(&args[0], &*args).expect("Cannot exec");
     }
@@ -70,11 +73,11 @@ impl CommandWithArgs {
 
     pub fn exec(&self){
         unsafe {
-          match fork() {
-              Ok(ForkResult::Child) => self.exec_command(),
-              Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
-              Err(err) => panic!("Failed to fork. {}", err),
-          }
+            match fork() {
+                Ok(ForkResult::Child) => self.exec_command(),
+                Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
+                Err(err) => panic!("Failed to fork. {}", err),
+            }
         }
     }
 }
