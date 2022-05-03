@@ -12,8 +12,14 @@ com=$(dirname $0)/target/release/bash_r
 res=$($com <<< 'echo hoge')
 [ "$res" = "hoge" ]
 
-#res=$($com <<< 'echo hoge;')
-#[ "$res" = "hoge" ]
+res=$($com <<< ' echo hoge')
+[ "$res" = "hoge" ]
+
+res=$($com <<< '	echo hoge')
+[ "$res" = "hoge" ]
+
+res=$($com <<< 'echo hoge;')
+[ "$res" = "hoge" ]
 
 trap "" EXIT
 echo TEST OK

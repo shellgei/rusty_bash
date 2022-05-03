@@ -6,6 +6,20 @@ use nix::sys::wait::*;
 
 use std::ffi::CString;
 
+/* delimiter */
+#[derive(Debug)]
+pub struct Delim {
+    pub text: String,
+    pub text_pos: usize
+}
+
+/* end of command */
+#[derive(Debug)]
+pub struct Eoc {
+    pub text: String,
+    pub text_pos: usize
+}
+
 /* arg */
 #[derive(Debug)]
 pub struct Arg {
@@ -17,6 +31,8 @@ pub struct Arg {
 #[derive(Debug)]
 pub struct CommandWithArgs {
     pub args: Vec<Arg>,
+    pub delims: Vec<Delim>,
+    pub end: Vec<Eoc>,
     pub text: String,
     pub text_pos: usize
 }
