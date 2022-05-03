@@ -27,7 +27,7 @@ pub struct Arg {
     pub text_pos: usize
 }
 
-/* command arg arg arg ... */
+/* command: delim arg delim arg delim arg ... eoc */
 #[derive(Debug)]
 pub struct CommandWithArgs {
     pub args: Vec<Arg>,
@@ -38,6 +38,10 @@ pub struct CommandWithArgs {
 }
 
 impl CommandWithArgs {
+    pub fn print(&self) {
+        eprintln!("\x1b[34m{}\x1b[m", self.text);
+    }
+
     fn exec_command(&self) {
         let mut args = Vec::<CString>::new();
         for e in &self.args {

@@ -69,6 +69,7 @@ fn main() {
         read_line(&mut input);
         let elem = parser::top_level_element(&mut input);
         if let Ok(e) = elem.downcast::<CommandWithArgs>() {
+            e.print();
             e.exec();
         };
     }
