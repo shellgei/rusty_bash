@@ -5,14 +5,16 @@
 use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 
-use std::any::Any;
 use std::ffi::CString;
 
 pub trait BashElem {
-    fn blue_string(text: String) -> String {
+    fn blue_string(&self, text: String) -> String {
         format!("\x1b[34m{}\x1b[m", text)
     }
     fn parse_info(&self) -> String;
+    fn eval(&self) -> Option<String> {
+        return None
+    }
 }
 
 /* delimiter */
@@ -52,12 +54,15 @@ impl BashElem for Arg {
     fn parse_info(&self) -> String {
         format!("    arg      : '{}'\n", self.text.clone())
     }
+
+    fn eval(&self) -> Option<String> {
+        Some(self.text.clone())
+    }
 }
 
 /* command: delim arg delim arg delim arg ... eoc */
-#[derive(Debug)]
 pub struct CommandWithArgs {
-    pub elems: Vec<Box<dyn Any>>,
+    pub elems: Vec<Box<dyn BashElem>>,
     pub text: String,
     pub text_pos: usize
 }
@@ -67,16 +72,10 @@ impl BashElem for CommandWithArgs {
     fn parse_info(&self) -> String {
         let mut ans = format!("command: '{}'\n", self.text);
         for elem in &self.elems {
-            if let Some(e) = elem.downcast_ref::<Arg>(){
-                ans += &e.parse_info();
-            }else if let Some(e) = elem.downcast_ref::<Delim>(){
-                ans += &e.parse_info();
-            }else if let Some(e) = elem.downcast_ref::<Eoc>(){
-                ans += &e.parse_info();
-            }
+            ans += &elem.parse_info();
         };
         
-        Self::blue_string(ans)
+        self.blue_string(ans)
     }
 }
 
@@ -85,9 +84,9 @@ impl CommandWithArgs {
         let mut args = Vec::<CString>::new();
 
         for elem in &self.elems {
-            if let Some(e) = elem.downcast_ref::<Arg>(){
-                args.push(CString::new(e.text.clone()).unwrap());
-            };
+            if let Some(arg) = &elem.eval() {
+                args.push(CString::new(arg.clone()).unwrap());
+            }
         };
 
         execvp(&args[0], &*args).expect("Cannot exec");
