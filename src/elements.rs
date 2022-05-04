@@ -9,6 +9,9 @@ use std::any::Any;
 use std::ffi::CString;
 
 pub trait BashElem {
+    fn blue_string(text: String) -> String {
+        format!("\x1b[34m{}\x1b[m", text)
+    }
     fn parse_info(&self) -> String;
 }
 
@@ -19,6 +22,12 @@ pub struct Delim {
     pub text_pos: usize
 }
 
+impl BashElem for Delim {
+    fn parse_info(&self) -> String {
+        format!("    delimiter: '{}'\n", self.text.clone())
+    }
+}
+
 /* end of command */
 #[derive(Debug)]
 pub struct Eoc {
@@ -26,11 +35,23 @@ pub struct Eoc {
     pub text_pos: usize
 }
 
+impl BashElem for Eoc {
+    fn parse_info(&self) -> String {
+        format!("    end mark : '{}'\n", self.text.clone())
+    }
+}
+
 /* arg */
 #[derive(Debug)]
 pub struct Arg {
     pub text: String,
     pub text_pos: usize
+}
+
+impl BashElem for Arg {
+    fn parse_info(&self) -> String {
+        format!("    arg      : '{}'\n", self.text.clone())
+    }
 }
 
 /* command: delim arg delim arg delim arg ... eoc */
@@ -44,19 +65,18 @@ pub struct CommandWithArgs {
 
 impl BashElem for CommandWithArgs {
     fn parse_info(&self) -> String {
-        let mut ans = format!("\x1b[34mcommand: '{}'\x1b[m\n", self.text);
-
+        let mut ans = format!("command: '{}'\n", self.text);
         for elem in &self.elems {
             if let Some(e) = elem.downcast_ref::<Arg>(){
-                ans += &format!("    \x1b[34marg      : '{}'\x1b[m\n", e.text).to_string();
+                ans += &e.parse_info();
             }else if let Some(e) = elem.downcast_ref::<Delim>(){
-                ans += &format!("    \x1b[34mdelimiter: '{}'\x1b[m\n", e.text).to_string();
+                ans += &e.parse_info();
             }else if let Some(e) = elem.downcast_ref::<Eoc>(){
-                ans += &format!("    \x1b[34mend mark : '{}'\x1b[m\n", e.text).to_string();
+                ans += &e.parse_info();
             }
         };
         
-        ans
+        Self::blue_string(ans)
     }
 }
 
