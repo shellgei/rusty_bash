@@ -11,7 +11,6 @@ mod parser;
 mod elements;
 
 use parser::ReadingText;
-use elements::CommandWithArgs;
 use std::process;
 use crate::elements::BashElem;
 
@@ -68,11 +67,7 @@ fn main() {
             prompt(&input);
         };
         read_line(&mut input);
-        let elem = parser::top_level_element(&mut input);
-        if let Ok(e) = elem.downcast::<CommandWithArgs>() {
-            eprintln!("{}", e.parse_info());
-            e.exec();
-        };
+        parser::top_level_element(&mut input).exec();
     }
 }
 

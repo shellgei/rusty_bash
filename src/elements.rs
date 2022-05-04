@@ -4,7 +4,6 @@
 //
 use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
-
 use std::ffi::CString;
 
 pub trait BashElem {
@@ -12,8 +11,17 @@ pub trait BashElem {
         format!("\x1b[34m{}\x1b[m", text)
     }
     fn parse_info(&self) -> String;
+    fn exec(&self){}
     fn eval(&self) -> Option<String> {
         return None
+    }
+}
+
+/* empty element */
+pub struct Empty { }
+impl BashElem for Empty {
+    fn parse_info(&self) -> String {
+        "".to_string()
     }
 }
 
@@ -67,7 +75,6 @@ pub struct CommandWithArgs {
     pub text_pos: usize
 }
 
-
 impl BashElem for CommandWithArgs {
     fn parse_info(&self) -> String {
         let mut ans = format!("command: '{}'\n", self.text);
@@ -76,6 +83,16 @@ impl BashElem for CommandWithArgs {
         };
         
         self.blue_string(ans)
+    }
+
+    fn exec(&self){
+        unsafe {
+            match fork() {
+                Ok(ForkResult::Child) => self.exec_command(),
+                Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
+                Err(err) => panic!("Failed to fork. {}", err),
+            }
+        }
     }
 }
 
@@ -107,15 +124,5 @@ impl CommandWithArgs {
                 println!("Unknown error")
             }
         };
-    }
-
-    pub fn exec(&self){
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => self.exec_command(),
-                Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
-        }
     }
 }
