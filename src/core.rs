@@ -21,7 +21,7 @@ impl Flags {
 }
 
 pub struct ShellCore {
-    pub internal_commands: HashMap<String, fn() -> i32>,
+    pub internal_commands: HashMap<String, fn(args: &Vec<String>) -> i32>,
     pub vars: HashMap<&'static str, String>,
     pub flags: Flags,
 }
@@ -39,11 +39,15 @@ impl ShellCore {
         conf
     }
 
-    pub fn exit() -> i32 {
+    pub fn exit(_args: &Vec<String>) -> i32 {
         exit(0);
     }
 
-    pub fn exec_internal_command(f: fn() -> i32) -> i32{
-        f()
+    pub fn get_internal_command(&self, name: &String) -> Option<fn(args: &Vec<String>) -> i32> {
+        if self.internal_commands.contains_key(name) {
+            Some(self.internal_commands[name])
+        }else{
+            None
+        }
     }
 }

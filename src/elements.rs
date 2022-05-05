@@ -89,7 +89,8 @@ impl BashElem for CommandWithArgs {
     fn exec(&self, conf: &mut ShellCore){
         let args = self.eval_args();
 
-        if self.exec_internal_command(&args, conf) {
+        if let Some(func) = conf.get_internal_command(&args[0]) {
+            func(&args);
             return;
         }
 
@@ -125,16 +126,6 @@ impl CommandWithArgs {
         execvp(&cargs[0], &*cargs).expect("Cannot exec");
     }
 
-    fn exec_internal_command(&self, args: &Vec<String>, conf: &mut ShellCore) -> bool {
-        if conf.internal_commands.contains_key(&args[0]) {
-            ShellCore::exec_internal_command(conf.internal_commands[&args[0]]);
-            true
-        }else{
-            false
-        }
-
-    }
-  
     fn wait_command(child: Pid) {
         match waitpid(child, None)
             .expect("Faild to wait child process.") {
