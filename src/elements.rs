@@ -87,13 +87,15 @@ impl BashElem for CommandWithArgs {
     }
 
     fn exec(&self, conf: &mut ShellCore){
-        if self.exec_internal_command(conf) {
+        let args = self.make_cstring();
+
+        if self.exec_internal_command(&args, conf) {
             return;
         }
 
         unsafe {
             match fork() {
-                Ok(ForkResult::Child) => self.exec_external_command(conf),
+                Ok(ForkResult::Child) => self.exec_external_command(&args, conf),
                 Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
                 Err(err) => panic!("Failed to fork. {}", err),
             }
@@ -102,7 +104,7 @@ impl BashElem for CommandWithArgs {
 }
 
 impl CommandWithArgs {
-    fn exec_external_command(&self, _conf: &mut ShellCore) {
+    fn make_cstring(&self) -> Vec<CString> {
         let mut args = Vec::<CString>::new();
 
         for elem in &self.elems {
@@ -111,18 +113,14 @@ impl CommandWithArgs {
             }
         };
 
+        args
+    }
+
+    fn exec_external_command(&self, args: &[CString], _conf: &mut ShellCore) {
         execvp(&args[0], &*args).expect("Cannot exec");
     }
 
-    fn exec_internal_command(&self, conf: &mut ShellCore) -> bool {
-        let mut args = Vec::<CString>::new();
-
-        for elem in &self.elems {
-            if let Some(arg) = &elem.eval() {
-                args.push(CString::new(arg.clone()).unwrap());
-            }
-        };
-
+    fn exec_internal_command(&self, args: &[CString], conf: &mut ShellCore) -> bool {
         if conf.internal_commands.contains_key(&args[0]) {
             ShellCore::exec_internal_command(conf.internal_commands[&args[0]]);
             true
