@@ -6,6 +6,7 @@ use std::io::Write;
 use std::process::exit;
 use std::path::Path;
 use std::os::linux::fs::MetadataExt;
+use std::env;
 
 mod parser;
 mod elements;
@@ -55,6 +56,15 @@ fn is_interactive(pid: u32) -> bool {
 }
 
 fn main() {
+    let mut config = ShellCore::new();
+    let args: Vec<String> = env::args().collect();
+
+    for arg in &args {
+        if arg == "-d" {
+            config.flags.d = true;
+        };
+    };
+
     let mut input = ReadingText{
         remaining: "".to_string(),
         from_lineno: 0,
@@ -62,7 +72,6 @@ fn main() {
         pos_in_line: 0,
     };
 
-    let mut config = ShellCore::new();
 
     let pid = process::id();
     config.vars.insert("PID", pid.to_string());

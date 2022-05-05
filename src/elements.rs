@@ -18,6 +18,13 @@ pub trait BashElem {
     }
 }
 
+#[derive(Debug)]
+pub struct TextPos {
+    pub lineno: u32,
+    pub pos: u32,
+    pub length: usize,
+}
+
 /* empty element */
 pub struct Empty { }
 impl BashElem for Empty {
@@ -30,7 +37,8 @@ impl BashElem for Empty {
 #[derive(Debug)]
 pub struct Delim {
     pub text: String,
-    pub text_pos: usize
+    //pub text_pos: usize
+    pub pos: TextPos,
 }
 
 impl BashElem for Delim {
@@ -43,7 +51,8 @@ impl BashElem for Delim {
 #[derive(Debug)]
 pub struct Eoc {
     pub text: String,
-    pub text_pos: usize
+    //pub text_pos: usize
+    pub pos: TextPos,
 }
 
 impl BashElem for Eoc {
@@ -56,7 +65,8 @@ impl BashElem for Eoc {
 #[derive(Debug)]
 pub struct Arg {
     pub text: String,
-    pub text_pos: usize
+    //pub text_pos: usize
+    pub pos: TextPos,
 }
 
 impl BashElem for Arg {
@@ -117,12 +127,15 @@ impl CommandWithArgs {
         args
     }
 
-    fn exec_external_command(&self, args: &Vec<String>, _conf: &mut ShellCore) {
+    fn exec_external_command(&self, args: &Vec<String>, conf: &mut ShellCore) {
         let cargs: Vec<CString> = args
             .iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect();
 
+        if conf.flags.d {
+            eprintln!("{}", self.parse_info());
+        };
         execvp(&cargs[0], &*cargs).expect("Cannot exec");
     }
 

@@ -1,2 +1,8 @@
 # bash_r
-practice on Rust
+
+to be a bash clone written with Rust
+
+## Options
+
+* -d: output debug information
+

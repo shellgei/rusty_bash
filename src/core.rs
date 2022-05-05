@@ -8,6 +8,7 @@ pub struct Flags {
     pub v: bool,
     pub x: bool,
     pub i: bool,
+    pub d: bool,
 }
 
 impl Flags {
@@ -16,6 +17,7 @@ impl Flags {
             v: false, 
             x: false,
             i: false,
+            d: false,
         }
     }
 }

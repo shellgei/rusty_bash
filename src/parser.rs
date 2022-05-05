@@ -2,14 +2,15 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::BashElem;
-use super::elements::{CommandWithArgs, Arg, Delim, Eoc, Empty};
+use super::elements::{TextPos, CommandWithArgs, Arg, Delim, Eoc, Empty};
 use crate::ShellCore;
+
 
 pub struct ReadingText {
     pub remaining: String,
     pub from_lineno: u32,
     pub to_lineno: u32,
-    pub pos_in_line: usize,
+    pub pos_in_line: u32,
 }
 
 // job or function comment or blank (finally) 
@@ -58,10 +59,10 @@ pub fn arg(text: &mut ReadingText) -> Option<Arg> {
         if ch == ' ' || ch == '\n' || ch == '\t' || ch == ';' {
             let ans = Arg{
                     text: text.remaining[0..pos].to_string(),
-                    text_pos: text.pos_in_line,
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos}
                  };
 
-            text.pos_in_line += pos;
+            text.pos_in_line += pos as u32;
             text.remaining = text.remaining[pos..].to_string();
             return Some(ans);
         }else{
@@ -85,10 +86,11 @@ pub fn delimiter(text: &mut ReadingText) -> Option<Delim> {
     if length != 0 {
         let ans = Delim{
             text: text.remaining[0..length].to_string(),
-            text_pos: text.pos_in_line + length,
+         //   text_pos: text.pos_in_line + length,
+            pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line + length as u32, length: length}
         };
 
-        text.pos_in_line += length;
+        text.pos_in_line += length as u32;
         text.remaining = text.remaining[length..].to_string();
         return Some(ans);
     };
@@ -105,7 +107,8 @@ pub fn end_of_command(text: &mut ReadingText) -> Option<Eoc> {
     if ch == ";" || ch == "\n" {
         let ans = Eoc{
             text: ch.to_string(),
-            text_pos: text.pos_in_line + 1,
+            //text_pos: text.pos_in_line + 1,
+            pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line + 1, length: 1}
         };
 
         text.pos_in_line += 1;
