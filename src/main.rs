@@ -65,7 +65,7 @@ fn main() {
     let mut config = Config::new();
 
     let pid = process::id();
-//    let mode_interactive = is_interactive(pid);
+    config.vars.insert("PID", pid.to_string());
     config.flags.i = is_interactive(pid);
 
     loop {
