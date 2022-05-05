@@ -9,10 +9,13 @@ use std::os::linux::fs::MetadataExt;
 
 mod parser;
 mod elements;
+mod system;
 
 use parser::ReadingText;
+use system::Config;
 use std::process;
 use crate::elements::BashElem;
+
 
 fn prompt(text: &ReadingText) {
     print!("{} $ ", text.to_lineno+1);
@@ -59,15 +62,18 @@ fn main() {
         pos_in_line: 0,
     };
 
+    let mut config = Config::new();
+
     let pid = process::id();
-    let mode_interactive = is_interactive(pid);
+//    let mode_interactive = is_interactive(pid);
+    config.flags.i = is_interactive(pid);
 
     loop {
-        if mode_interactive {
+        if config.flags.i {
             prompt(&input);
         };
         read_line(&mut input);
-        parser::top_level_element(&mut input).exec();
+        parser::top_level_element(&mut input, &mut config).exec();
     }
 }
 

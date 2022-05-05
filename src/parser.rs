@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-//use std::any::Any;
 use crate::BashElem;
 use super::elements::{CommandWithArgs, Arg, Delim, Eoc, Empty};
+use crate::Config;
 
 pub struct ReadingText {
     pub remaining: String,
@@ -13,7 +13,7 @@ pub struct ReadingText {
 }
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut ReadingText) -> Box<dyn BashElem> {
+pub fn top_level_element(text: &mut ReadingText, _config: &mut Config) -> Box<dyn BashElem> {
     //only a command is recognized currently
     if let Some(result) = command_with_args(text) {
         text.remaining = "".to_string();
