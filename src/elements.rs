@@ -87,7 +87,7 @@ impl BashElem for CommandWithArgs {
     }
 
     fn exec(&self, conf: &mut ShellCore){
-        let args = self.make_cstring();
+        let args = self.eval_args();
 
         if self.exec_internal_command(&args, conf) {
             return;
@@ -104,23 +104,28 @@ impl BashElem for CommandWithArgs {
 }
 
 impl CommandWithArgs {
-    fn make_cstring(&self) -> Vec<CString> {
-        let mut args = Vec::<CString>::new();
+    fn eval_args(&self) -> Vec<String> {
+        let mut args = Vec::<String>::new();
 
         for elem in &self.elems {
             if let Some(arg) = &elem.eval() {
-                args.push(CString::new(arg.clone()).unwrap());
+                args.push(arg.clone());
             }
         };
 
         args
     }
 
-    fn exec_external_command(&self, args: &[CString], _conf: &mut ShellCore) {
-        execvp(&args[0], &*args).expect("Cannot exec");
+    fn exec_external_command(&self, args: &Vec<String>, _conf: &mut ShellCore) {
+        let cargs: Vec<CString> = args
+            .iter()
+            .map(|a| CString::new(a.to_string()).unwrap())
+            .collect();
+
+        execvp(&cargs[0], &*cargs).expect("Cannot exec");
     }
 
-    fn exec_internal_command(&self, args: &[CString], conf: &mut ShellCore) -> bool {
+    fn exec_internal_command(&self, args: &Vec<String>, conf: &mut ShellCore) -> bool {
         if conf.internal_commands.contains_key(&args[0]) {
             ShellCore::exec_internal_command(conf.internal_commands[&args[0]]);
             true

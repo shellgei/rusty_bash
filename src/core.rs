@@ -3,7 +3,6 @@
 
 use std::collections::HashMap;
 use std::process::exit;
-use std::ffi::CString;
 
 pub struct Flags {
     pub v: bool,
@@ -22,7 +21,7 @@ impl Flags {
 }
 
 pub struct ShellCore {
-    pub internal_commands: HashMap<CString, fn() -> i32>,
+    pub internal_commands: HashMap<String, fn() -> i32>,
     pub vars: HashMap<&'static str, String>,
     pub flags: Flags,
 }
@@ -35,7 +34,7 @@ impl ShellCore {
             flags: Flags::new(),
         };
 
-        conf.internal_commands.insert(CString::new("exit").unwrap(), Self::exit);
+        conf.internal_commands.insert("exit".to_string(), Self::exit);
 
         conf
     }
