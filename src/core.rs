@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::collections::HashMap;
+use std::process::exit;
+use std::ffi::CString;
 
 pub struct Flags {
     pub v: bool,
@@ -19,16 +21,30 @@ impl Flags {
     }
 }
 
-pub struct Config {
+pub struct ShellCore {
+    pub internal_commands: HashMap<CString, fn() -> i32>,
     pub vars: HashMap<&'static str, String>,
     pub flags: Flags,
 }
 
-impl Config {
-    pub fn new() -> Config {
-        Config{
+impl ShellCore {
+    pub fn new() -> ShellCore {
+        let mut conf = ShellCore{
+            internal_commands: HashMap::new(),
             vars: HashMap::new(),
             flags: Flags::new(),
-        }
+        };
+
+        conf.internal_commands.insert(CString::new("exit").unwrap(), Self::exit);
+
+        conf
+    }
+
+    pub fn exit() -> i32 {
+        exit(0);
+    }
+
+    pub fn exec_internal_command(f: fn() -> i32) -> i32{
+        f()
     }
 }

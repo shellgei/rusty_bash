@@ -5,13 +5,14 @@
 use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 use std::ffi::CString;
+use crate::ShellCore;
 
 pub trait BashElem {
     fn blue_string(&self, text: String) -> String {
         format!("\x1b[34m{}\x1b[m", text)
     }
     fn parse_info(&self) -> String;
-    fn exec(&self){}
+    fn exec(&self, _conf: &mut ShellCore){}
     fn eval(&self) -> Option<String> {
         return None
     }
@@ -85,10 +86,14 @@ impl BashElem for CommandWithArgs {
         self.blue_string(ans)
     }
 
-    fn exec(&self){
+    fn exec(&self, conf: &mut ShellCore){
+        if self.exec_internal_command(conf) {
+            return;
+        }
+
         unsafe {
             match fork() {
-                Ok(ForkResult::Child) => self.exec_command(),
+                Ok(ForkResult::Child) => self.exec_external_command(conf),
                 Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
                 Err(err) => panic!("Failed to fork. {}", err),
             }
@@ -97,7 +102,7 @@ impl BashElem for CommandWithArgs {
 }
 
 impl CommandWithArgs {
-    fn exec_command(&self) {
+    fn exec_external_command(&self, _conf: &mut ShellCore) {
         let mut args = Vec::<CString>::new();
 
         for elem in &self.elems {
@@ -107,6 +112,24 @@ impl CommandWithArgs {
         };
 
         execvp(&args[0], &*args).expect("Cannot exec");
+    }
+
+    fn exec_internal_command(&self, conf: &mut ShellCore) -> bool {
+        let mut args = Vec::<CString>::new();
+
+        for elem in &self.elems {
+            if let Some(arg) = &elem.eval() {
+                args.push(CString::new(arg.clone()).unwrap());
+            }
+        };
+
+        if conf.internal_commands.contains_key(&args[0]) {
+            ShellCore::exec_internal_command(conf.internal_commands[&args[0]]);
+            true
+        }else{
+            false
+        }
+
     }
   
     fn wait_command(child: Pid) {

@@ -3,7 +3,7 @@
 
 use crate::BashElem;
 use super::elements::{CommandWithArgs, Arg, Delim, Eoc, Empty};
-use crate::Config;
+use crate::ShellCore;
 
 pub struct ReadingText {
     pub remaining: String,
@@ -13,7 +13,7 @@ pub struct ReadingText {
 }
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut ReadingText, _config: &mut Config) -> Box<dyn BashElem> {
+pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Box<dyn BashElem> {
     //only a command is recognized currently
     if let Some(result) = command_with_args(text) {
         text.remaining = "".to_string();

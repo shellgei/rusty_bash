@@ -9,10 +9,10 @@ use std::os::linux::fs::MetadataExt;
 
 mod parser;
 mod elements;
-mod system;
+mod core;
 
 use parser::ReadingText;
-use system::Config;
+use crate::core::ShellCore;
 use std::process;
 use crate::elements::BashElem;
 
@@ -62,7 +62,7 @@ fn main() {
         pos_in_line: 0,
     };
 
-    let mut config = Config::new();
+    let mut config = ShellCore::new();
 
     let pid = process::id();
     config.vars.insert("PID", pid.to_string());
@@ -73,7 +73,7 @@ fn main() {
             prompt(&input);
         };
         read_line(&mut input);
-        parser::top_level_element(&mut input, &mut config).exec();
+        parser::top_level_element(&mut input, &mut config).exec(&mut config);
     }
 }
 
