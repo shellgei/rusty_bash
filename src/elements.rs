@@ -25,6 +25,15 @@ pub struct TextPos {
     pub length: usize,
 }
 
+impl TextPos {
+    pub fn text(&self) -> String {
+        format!("lineno: {}, pos: {}, length: {}", 
+                self.lineno.to_string(),
+                self.pos.to_string(),
+                self.length.to_string())
+    }
+}
+
 /* empty element */
 pub struct Empty { }
 impl BashElem for Empty {
@@ -43,7 +52,7 @@ pub struct Delim {
 
 impl BashElem for Delim {
     fn parse_info(&self) -> String {
-        format!("    delimiter: '{}'\n", self.text.clone())
+        format!("    delimiter: '{}' ({})\n", self.text.clone(), self.pos.text())
     }
 }
 
@@ -57,7 +66,8 @@ pub struct Eoc {
 
 impl BashElem for Eoc {
     fn parse_info(&self) -> String {
-        format!("    end mark : '{}'\n", self.text.clone())
+        format!("    end mark : '{}' ({})\n", self.text.clone(), self.pos.text())
+
     }
 }
 
@@ -71,7 +81,7 @@ pub struct Arg {
 
 impl BashElem for Arg {
     fn parse_info(&self) -> String {
-        format!("    arg      : '{}'\n", self.text.clone())
+        format!("    arg      : '{}' ({})\n", self.text.clone(), self.pos.text())
     }
 
     fn eval(&self) -> Option<String> {
