@@ -68,7 +68,7 @@ pub fn read_line(left: u16) -> String{
                     cur_move(x+widths[cur_pos], y, &mut stdout);
                 }else{
                     let line_len = widths.iter().fold(0, |line_len, w| line_len + w);
-                    cur_move(left+line_len, y, &mut stdout);
+                    cur_move(left+line_len+1, y, &mut stdout);
                     cur_pos = chars.len();
                 };
             },
