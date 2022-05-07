@@ -72,6 +72,10 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
                     hist_ptr = 0;
                 };
 
+                /* THIS IMPLEMENTATION IS TOO SLOW */
+                /* To get the width of each charcter on the terminal, 
+                 * this implementation output each charcter one by one,
+                 * and obtain the cursor position. This procedure is too slow. */
                 chars.clear();
                 widths.len();
                 rewrite_line(left, y, "".to_string(), &mut stdout);
@@ -96,6 +100,10 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
                     continue;
                 }
 
+                /* THIS IMPLEMENTATION IS TOO SLOW */
+                /* To get the width of each charcter on the terminal, 
+                 * this implementation output each charcter one by one,
+                 * and obtain the cursor position. This procedure is too slow. */
                 chars.clear();
                 widths.len();
                 rewrite_line(left, y, "".to_string(), &mut stdout);
