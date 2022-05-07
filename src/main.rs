@@ -1,8 +1,11 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use termion::raw::IntoRawMode;
+use termion::{event};
+use termion::input::TermRead;
 use std::io;
-use std::io::Write;
+use std::io::{Write, stdout, stdin};
 use std::process::exit;
 use std::path::Path;
 use std::os::linux::fs::MetadataExt;
@@ -25,7 +28,7 @@ fn prompt(text: &ReadingText) {
         .unwrap();
 }
 
-fn read_line(text: &mut ReadingText) {
+fn read_line() -> String {
     let mut line = String::new();
 
     let len = io::stdin()
@@ -35,7 +38,11 @@ fn read_line(text: &mut ReadingText) {
     if len == 0 {
         exit(0);
     }
+    line
+}
 
+
+fn add_line(text: &mut ReadingText, line: String) {
     text.to_lineno += 1;
 
     if text.remaining.len() == 0 {
@@ -53,6 +60,36 @@ fn is_interactive(pid: u32) -> bool {
         Ok(metadata) => metadata.st_mode() == 8592, 
         Err(err) => panic!("{}", err),
     }
+}
+
+fn read_term_line() -> String{
+    let mut line = "".to_string();
+
+    let stdin = stdin();
+    let mut stdout = stdout().into_raw_mode().unwrap();
+    stdout.flush().unwrap();
+
+    for c in stdin.keys() {
+        match c {
+            Ok(event::Key::Ctrl('c')) => {
+                line = "".to_string();
+                write!(stdout, "^C\n").unwrap();
+                break;
+            },
+            Ok(event::Key::Char(c)) => {
+                    write!(stdout, "{}", c).unwrap();
+                    line += &c.to_string();
+                    stdout.flush().unwrap();
+                    if c == '\n' {
+                        break;
+                    };
+            },
+            _ => {},
+        }
+    }
+    write!(stdout, "\r").unwrap();
+    stdout.flush().unwrap();
+    line
 }
 
 fn main() {
@@ -78,30 +115,13 @@ fn main() {
     config.flags.i = is_interactive(pid);
 
     loop {
-        if config.flags.i {
+        let line = if config.flags.i {
             prompt(&input);
+            read_term_line()
+        }else{
+            read_line()
         };
-        read_line(&mut input);
+        add_line(&mut input, line);
         parser::top_level_element(&mut input, &mut config).exec(&mut config);
     }
 }
-
-/*
-#[test]
-fn parse() -> () {
-    let mut input = ReadingText{
-        remaining: "echo hoge\n".to_string(),
-        from_lineno: 1,
-        to_lineno: 1,
-        pos_in_line: 0,
-    };
-
-    let elem = parser::top_level_element(&mut input);
-    if let Ok(e) = elem.downcast::<CommandWithArgs>(){
-        assert_eq!(e.args[0].text, "echo");
-        assert_eq!(e.args[1].text, "hoge");
-    }else{
-        panic!("not parsed as a command");
-    }
-}
-*/
