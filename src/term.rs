@@ -19,7 +19,7 @@ pub fn prompt(text: &String) -> u16 {
     prompt.len().try_into().unwrap()
 }
 
-fn left_cur_pos(pos: usize) -> usize {
+fn left_ch_ptr(pos: usize) -> usize {
     if pos == 0 {
         0
     }else{
@@ -43,7 +43,7 @@ fn rewrite_line(left: u16, y: u16, text: String, stdout: &mut RawTerminal<Stdout
 pub fn read_line(left: u16) -> String{
     let mut chars: Vec<char> = vec!();
     let mut widths = vec!();
-    let mut cur_pos = 0;
+    let mut ch_ptr = 0;
 
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
@@ -57,26 +57,26 @@ pub fn read_line(left: u16) -> String{
                 break;
             },
             event::Key::Left => {
-                cur_pos = left_cur_pos(cur_pos);
-                if x-widths[cur_pos] > left {
-                    cur_move(x-widths[cur_pos], y, &mut stdout);
+                ch_ptr = left_ch_ptr(ch_ptr);
+                if x-widths[ch_ptr] > left {
+                    cur_move(x-widths[ch_ptr], y, &mut stdout);
                 };
             },
             event::Key::Right => {
-                if chars.len() > cur_pos+1 {
-                    cur_pos += 1;
-                    cur_move(x+widths[cur_pos], y, &mut stdout);
+                if chars.len() > ch_ptr+1 {
+                    ch_ptr += 1;
+                    cur_move(x+widths[ch_ptr], y, &mut stdout);
                 }else{
                     let line_len = widths.iter().fold(0, |line_len, w| line_len + w);
                     cur_move(left+line_len+1, y, &mut stdout);
-                    cur_pos = chars.len();
+                    ch_ptr = chars.len();
                 };
             },
             event::Key::Backspace => {
-                cur_pos = left_cur_pos(cur_pos);
-                chars.remove(cur_pos);
+                ch_ptr = left_ch_ptr(ch_ptr);
+                chars.remove(ch_ptr);
                 rewrite_line(left, y, chars.iter().collect::<String>(), &mut stdout);
-                cur_move(x-widths[cur_pos], y, &mut stdout);
+                cur_move(x-widths[ch_ptr], y, &mut stdout);
             },
             event::Key::Char(c) => {
                     if c == '\n' {
@@ -84,17 +84,17 @@ pub fn read_line(left: u16) -> String{
                         chars.push(c);
                         break;
                     }
-                    chars.insert(cur_pos, c);
-                    cur_pos += 1;
+                    chars.insert(ch_ptr, c);
+                    ch_ptr += 1;
 
                     /* output the line before the cursor */
-                    rewrite_line(left, y, chars[0..cur_pos].iter().collect::<String>(), &mut stdout);
+                    rewrite_line(left, y, chars[0..ch_ptr].iter().collect::<String>(), &mut stdout);
                     let (new_x, new_y) = stdout.cursor_pos().unwrap();
-                    widths.insert(cur_pos-1, new_x - x);
+                    widths.insert(ch_ptr-1, new_x - x);
 
                     /* output the line after the cursor */
                     write!(stdout, "{}{}",
-                           chars[cur_pos..].iter().collect::<String>(), 
+                           chars[ch_ptr..].iter().collect::<String>(), 
                            termion::cursor::Goto(new_x, new_y),
                     ).unwrap();
                     stdout.flush().unwrap();
