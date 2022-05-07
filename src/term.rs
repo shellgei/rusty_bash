@@ -4,17 +4,19 @@
 use std::io;
 use std::io::{Write, stdout, stdin};
 use termion::{event};
+use termion::cursor::DetectCursorPos;
 use termion::raw::IntoRawMode;
 use termion::input::TermRead;
 
-pub fn prompt(text: &String) {
-    print!("{} $ ", text);
-    io::stdout()
-        .flush()
-        .unwrap();
+pub fn prompt(text: &String) -> usize {
+    let prompt = format!("{} $ ", text);
+    print!("{}", prompt);
+    io::stdout().flush().unwrap();
+
+    prompt.len()
 }
 
-pub fn read_line() -> String{
+pub fn read_line(left: usize) -> String{
     let mut line = "".to_string();
 
     let stdin = stdin();
@@ -22,13 +24,19 @@ pub fn read_line() -> String{
     stdout.flush().unwrap();
 
     for c in stdin.keys() {
-        match c {
-            Ok(event::Key::Ctrl('c')) => {
+        match c.unwrap() {
+            event::Key::Ctrl('c') => {
                 line = "".to_string();
                 write!(stdout, "^C\n").unwrap();
                 break;
             },
-            Ok(event::Key::Char(c)) => {
+            event::Key::Left => {
+                let (x, y) = stdout.cursor_pos().unwrap();
+                if x-1 > left as u16 {
+                    write!(stdout, "{}", termion::cursor::Goto(x-1, y)).unwrap();
+                };
+            },
+            event::Key::Char(c) => {
                     write!(stdout, "{}", c).unwrap();
                     line += &c.to_string();
                     stdout.flush().unwrap();

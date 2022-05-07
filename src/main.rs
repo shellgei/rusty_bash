@@ -72,8 +72,8 @@ fn main() {
 
     loop {
         let line = if config.flags.i {
-            term::prompt(&format!("{}", input.to_lineno+1));
-            term::read_line()
+            let len_prompt = term::prompt(&format!("{}", input.to_lineno+1));
+            term::read_line(len_prompt)
         }else{
             read_line()
         };
