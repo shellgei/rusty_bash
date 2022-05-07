@@ -1,32 +1,19 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use termion::raw::IntoRawMode;
-use termion::{event};
-use termion::input::TermRead;
-use std::io;
-use std::io::{Write, stdout, stdin};
-use std::process::exit;
-use std::path::Path;
-use std::os::linux::fs::MetadataExt;
-use std::env;
-
 mod parser;
 mod elements;
 mod core;
+mod term;
 
-use parser::ReadingText;
+use std::{io,env,process};
+use std::process::exit;
+use std::path::Path;
+use std::os::linux::fs::MetadataExt;
+
 use crate::core::ShellCore;
-use std::process;
 use crate::elements::BashElem;
-
-
-fn prompt(text: &ReadingText) {
-    print!("{} $ ", text.to_lineno+1);
-    io::stdout()
-        .flush()
-        .unwrap();
-}
+use crate::parser::ReadingText;
 
 fn read_line() -> String {
     let mut line = String::new();
@@ -40,7 +27,6 @@ fn read_line() -> String {
     }
     line
 }
-
 
 fn add_line(text: &mut ReadingText, line: String) {
     text.to_lineno += 1;
@@ -60,36 +46,6 @@ fn is_interactive(pid: u32) -> bool {
         Ok(metadata) => metadata.st_mode() == 8592, 
         Err(err) => panic!("{}", err),
     }
-}
-
-fn read_term_line() -> String{
-    let mut line = "".to_string();
-
-    let stdin = stdin();
-    let mut stdout = stdout().into_raw_mode().unwrap();
-    stdout.flush().unwrap();
-
-    for c in stdin.keys() {
-        match c {
-            Ok(event::Key::Ctrl('c')) => {
-                line = "".to_string();
-                write!(stdout, "^C\n").unwrap();
-                break;
-            },
-            Ok(event::Key::Char(c)) => {
-                    write!(stdout, "{}", c).unwrap();
-                    line += &c.to_string();
-                    stdout.flush().unwrap();
-                    if c == '\n' {
-                        break;
-                    };
-            },
-            _ => {},
-        }
-    }
-    write!(stdout, "\r").unwrap();
-    stdout.flush().unwrap();
-    line
 }
 
 fn main() {
@@ -116,8 +72,8 @@ fn main() {
 
     loop {
         let line = if config.flags.i {
-            prompt(&input);
-            read_term_line()
+            term::prompt(&format!("{}", input.to_lineno+1));
+            term::read_line()
         }else{
             read_line()
         };
