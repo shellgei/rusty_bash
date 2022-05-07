@@ -36,6 +36,10 @@ pub fn read_line(left: usize) -> String{
                     write!(stdout, "{}", termion::cursor::Goto(x-1, y)).unwrap();
                 };
             },
+            event::Key::Backspace => {
+                let (x, y) = stdout.cursor_pos().unwrap();
+                write!(stdout, "{}{}", termion::cursor::Goto(x-1, y), termion::clear::UntilNewline ).unwrap();
+            }
             event::Key::Char(c) => {
                     write!(stdout, "{}", c).unwrap();
                     line += &c.to_string();
