@@ -32,6 +32,11 @@ fn cur_move(x: u16, y: u16, stdout: &mut RawTerminal<Stdout>){
     stdout.flush().unwrap();
 }
 
+fn append(c: char, stdout: &mut RawTerminal<Stdout>){
+    write!(stdout, "{}", c).unwrap();
+    stdout.flush().unwrap();
+}
+
 fn rewrite_line(left: u16, y: u16, text: String, stdout: &mut RawTerminal<Stdout>){
     write!(stdout, "{}{}{}",
            termion::cursor::Goto(left+1, y),
@@ -44,6 +49,7 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
     let mut chars: Vec<char> = vec!();
     let mut widths = vec!();
     let mut ch_ptr = 0;
+    let mut hist_ptr = history.len() as i32;
 
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
@@ -57,8 +63,51 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
                 break;
             },
             event::Key::Up => {
-                rewrite_line(left, y, history[0].clone(), &mut stdout);
-                chars = history[0].chars().collect();
+                if history.len() == 0 {
+                    continue;
+                };
+
+                hist_ptr -= 1;
+                if hist_ptr < 0 {
+                    hist_ptr = 0;
+                };
+
+                chars.clear();
+                widths.len();
+                rewrite_line(left, y, "".to_string(), &mut stdout);
+                let mut pos = left;
+                for c in history[hist_ptr as usize].chars() {
+                    chars.push(c);
+                    append(c, &mut stdout);
+                    let (new_x, _) = stdout.cursor_pos().unwrap();
+                    widths.push(new_x - pos);
+                    pos = stdout.cursor_pos().unwrap().0;
+                }
+                ch_ptr = widths.len();
+            },
+            event::Key::Down => {
+                if history.len() == 0 {
+                    continue;
+                };
+
+                hist_ptr += 1;
+                if history.len() as i32 <= hist_ptr {
+                    hist_ptr = history.len() as i32;
+                    continue;
+                }
+
+                chars.clear();
+                widths.len();
+                rewrite_line(left, y, "".to_string(), &mut stdout);
+                let mut pos = left;
+                for c in history[hist_ptr as usize].chars() {
+                    chars.push(c);
+                    append(c, &mut stdout);
+                    let (new_x, _) = stdout.cursor_pos().unwrap();
+                    widths.push(new_x - pos);
+                    pos = stdout.cursor_pos().unwrap().0;
+                }
+                ch_ptr = widths.len();
             },
             event::Key::Left => {
                 ch_ptr = left_ch_ptr(ch_ptr);
@@ -77,10 +126,17 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
                 };
             },
             event::Key::Backspace => {
+                if chars.len() == 0 {
+                    continue;
+                };
+
                 ch_ptr = left_ch_ptr(ch_ptr);
                 chars.remove(ch_ptr);
                 rewrite_line(left, y, chars.iter().collect::<String>(), &mut stdout);
-                cur_move(x-widths[ch_ptr], y, &mut stdout);
+
+                if x - widths[ch_ptr] >= left {
+                    cur_move(x-widths[ch_ptr], y, &mut stdout);
+                }
             },
             event::Key::Char(c) => {
                     if c == '\n' {
