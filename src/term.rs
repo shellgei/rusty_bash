@@ -16,43 +16,79 @@ pub fn prompt(text: &String) -> usize {
     prompt.len()
 }
 
+fn left_cur_pos(pos: usize) -> usize {
+    if pos == 0 {
+        0
+    }else{
+        pos - 1
+    }
+}
+
 pub fn read_line(left: usize) -> String{
-    let mut line = "".to_string();
+    let mut chars: Vec<char> = vec!();
+    let mut widths = vec!();
+    let mut cur_pos = 0;
 
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
     stdout.flush().unwrap();
 
     for c in stdin.keys() {
+        let (x, y) = stdout.cursor_pos().unwrap();
         match c.unwrap() {
             event::Key::Ctrl('c') => {
-                line = "".to_string();
+                chars.clear();
                 write!(stdout, "^C\n").unwrap();
                 break;
             },
             event::Key::Left => {
-                let (x, y) = stdout.cursor_pos().unwrap();
-                if x-1 > left as u16 {
-                    write!(stdout, "{}", termion::cursor::Goto(x-1, y)).unwrap();
+                cur_pos = left_cur_pos(cur_pos);
+           //     println!("{:?}", chars);
+
+                if x-widths[cur_pos] > left as u16 {
+                    write!(stdout, "{}", termion::cursor::Goto(x-widths[cur_pos], y)).unwrap();
                 };
+                stdout.flush().unwrap();
             },
             event::Key::Backspace => {
-                let (x, y) = stdout.cursor_pos().unwrap();
-                write!(stdout, "{}{}", termion::cursor::Goto(x-1, y), termion::clear::UntilNewline ).unwrap();
-            }
+                cur_pos = left_cur_pos(cur_pos);
+                chars.remove(cur_pos);
+
+                write!(stdout, "{}{}",
+                       termion::cursor::Goto(x-widths[cur_pos], y), termion::clear::UntilNewline )
+                    .unwrap();
+                stdout.flush().unwrap();
+            },
             event::Key::Char(c) => {
                     write!(stdout, "{}", c).unwrap();
-                    line += &c.to_string();
-                    stdout.flush().unwrap();
                     if c == '\n' {
+                        chars.push(c);
                         break;
                     };
+
+                    chars.insert(cur_pos, c);
+                    cur_pos += 1;
+
+                    /*
+                    if chars.len() != cur_pos {
+                        let right = chars[cur_pos+1..].iter().collect::<String>();
+                        write!(stdout, "{}{}{}{}", 
+                               termion::cursor::Goto(x, y),
+                               termion::clear::UntilNewline,
+                               right,
+                               termion::cursor::Goto(x+chars[cur_pos], y)
+                               ).unwrap();
+                    };
+                    */
+                    stdout.flush().unwrap();
+                    let (new_x, _) = stdout.cursor_pos().unwrap();
+                    widths.push(new_x - x);
             },
             _ => {},
         }
     }
     write!(stdout, "\r").unwrap();
     stdout.flush().unwrap();
-    line
+    chars.iter().collect::<String>()
 }
 
