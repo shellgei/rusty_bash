@@ -42,12 +42,27 @@ pub fn read_line(left: u16) -> String{
                 write!(stdout, "^C\n").unwrap();
                 break;
             },
-            event::Key::Left => { //implemented 
+            event::Key::Left => {
                 cur_pos = left_cur_pos(cur_pos);
                 if x-widths[cur_pos] > left as u16 {
                     write!(stdout, "{}", termion::cursor::Goto(x-widths[cur_pos], y)).unwrap();
                 };
                 stdout.flush().unwrap();
+            },
+            event::Key::Right => {
+                if chars.len() > cur_pos+1 {
+                    cur_pos += 1;
+                    write!(stdout, "{}", termion::cursor::Goto(x+widths[cur_pos], y)).unwrap();
+                    stdout.flush().unwrap();
+                }else{
+                    write!(stdout, "{}{}{}",
+                           termion::cursor::Goto(left+1, y),
+                           termion::clear::UntilNewline,
+                           chars.iter().collect::<String>(), 
+                    ).unwrap();
+                    stdout.flush().unwrap();
+                    cur_pos = chars.len();
+                };
             },
             event::Key::Backspace => {
                 cur_pos = left_cur_pos(cur_pos);
