@@ -40,7 +40,7 @@ fn rewrite_line(left: u16, y: u16, text: String, stdout: &mut RawTerminal<Stdout
     stdout.flush().unwrap();
 }
 
-pub fn read_line(left: u16) -> String{
+pub fn read_line(left: u16, history: &Vec<String>) -> String{
     let mut chars: Vec<char> = vec!();
     let mut widths = vec!();
     let mut ch_ptr = 0;
@@ -55,6 +55,10 @@ pub fn read_line(left: u16) -> String{
                 chars.clear();
                 write!(stdout, "^C\n").unwrap();
                 break;
+            },
+            event::Key::Up => {
+                rewrite_line(left, y, history[0].clone(), &mut stdout);
+                chars = history[0].chars().collect();
             },
             event::Key::Left => {
                 ch_ptr = left_ch_ptr(ch_ptr);

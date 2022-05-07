@@ -25,6 +25,7 @@ impl Flags {
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(args: &Vec<String>) -> i32>,
     pub vars: HashMap<&'static str, String>,
+    pub history: Vec<String>,
     pub flags: Flags,
 }
 
@@ -33,6 +34,7 @@ impl ShellCore {
         let mut conf = ShellCore{
             internal_commands: HashMap::new(),
             vars: HashMap::new(),
+            history: Vec::new(),
             flags: Flags::new(),
         };
 
