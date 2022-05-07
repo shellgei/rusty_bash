@@ -3,17 +3,19 @@
 
 use std::io;
 use std::io::{Write, stdout, stdin};
+use std::convert::TryInto;
+
 use termion::{event};
 use termion::cursor::DetectCursorPos;
 use termion::raw::IntoRawMode;
 use termion::input::TermRead;
 
-pub fn prompt(text: &String) -> usize {
+pub fn prompt(text: &String) -> u16 {
     let prompt = format!("{} $ ", text);
     print!("{}", prompt);
     io::stdout().flush().unwrap();
 
-    prompt.len()
+    prompt.len().try_into().unwrap()
 }
 
 fn left_cur_pos(pos: usize) -> usize {
@@ -24,14 +26,13 @@ fn left_cur_pos(pos: usize) -> usize {
     }
 }
 
-pub fn read_line(left: usize) -> String{
+pub fn read_line(left: u16) -> String{
     let mut chars: Vec<char> = vec!();
     let mut widths = vec!();
     let mut cur_pos = 0;
 
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
-    stdout.flush().unwrap();
 
     for c in stdin.keys() {
         let (x, y) = stdout.cursor_pos().unwrap();
@@ -41,10 +42,8 @@ pub fn read_line(left: usize) -> String{
                 write!(stdout, "^C\n").unwrap();
                 break;
             },
-            event::Key::Left => {
+            event::Key::Left => { //implemented 
                 cur_pos = left_cur_pos(cur_pos);
-           //     println!("{:?}", chars);
-
                 if x-widths[cur_pos] > left as u16 {
                     write!(stdout, "{}", termion::cursor::Goto(x-widths[cur_pos], y)).unwrap();
                 };
@@ -53,36 +52,41 @@ pub fn read_line(left: usize) -> String{
             event::Key::Backspace => {
                 cur_pos = left_cur_pos(cur_pos);
                 chars.remove(cur_pos);
-
-                write!(stdout, "{}{}",
-                       termion::cursor::Goto(x-widths[cur_pos], y), termion::clear::UntilNewline )
+                write!(stdout, "{}{}{}{}",
+                       termion::cursor::Goto(left+1, y),
+                       termion::clear::UntilNewline,
+                       chars.iter().collect::<String>(), 
+                       termion::cursor::Goto(x-widths[cur_pos], y))
                     .unwrap();
+
                 stdout.flush().unwrap();
             },
             event::Key::Char(c) => {
-                    write!(stdout, "{}", c).unwrap();
                     if c == '\n' {
+                        write!(stdout, "{}", c).unwrap();
                         chars.push(c);
                         break;
-                    };
-
+                    }
                     chars.insert(cur_pos, c);
                     cur_pos += 1;
 
-                    /*
-                    if chars.len() != cur_pos {
-                        let right = chars[cur_pos+1..].iter().collect::<String>();
-                        write!(stdout, "{}{}{}{}", 
-                               termion::cursor::Goto(x, y),
-                               termion::clear::UntilNewline,
-                               right,
-                               termion::cursor::Goto(x+chars[cur_pos], y)
-                               ).unwrap();
-                    };
-                    */
+                    /* output the line before the cursor */
+                    write!(stdout, "{}{}{}",
+                           termion::cursor::Goto(left+1, y),
+                           termion::clear::UntilNewline,
+                           chars[0..cur_pos].iter().collect::<String>(), 
+                    ).unwrap();
                     stdout.flush().unwrap();
-                    let (new_x, _) = stdout.cursor_pos().unwrap();
-                    widths.push(new_x - x);
+
+                    let (new_x, new_y) = stdout.cursor_pos().unwrap();
+                    widths.insert(cur_pos-1, new_x - x);
+
+                    /* output the line after the cursor */
+                    write!(stdout, "{}{}",
+                           chars[cur_pos..].iter().collect::<String>(), 
+                           termion::cursor::Goto(new_x, new_y),
+                    ).unwrap();
+                    stdout.flush().unwrap();
             },
             _ => {},
         }
