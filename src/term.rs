@@ -15,12 +15,20 @@ use crate::core::History;
 
 struct Writer {
     pub stdout: RawTerminal<Stdout>, 
+    pub chars: Vec<char>,
+    pub widths: Vec<u8>,
+    pub ch_ptr: i32,
+    pub hist_ptr: usize,
 }
 
 impl Writer {
-    pub fn new() -> Writer{
+    pub fn new(hist_size: usize) -> Writer{
         Writer {
-            stdout: stdout().into_raw_mode().unwrap()
+            stdout: stdout().into_raw_mode().unwrap(),
+            chars: vec!(),
+            widths: vec!(),
+            ch_ptr: 0,
+            hist_ptr: hist_size,
         }
     }
 
@@ -40,6 +48,29 @@ impl Writer {
     pub fn cursor_pos(&mut self) -> (u16, u16) {
         self.stdout.cursor_pos().unwrap()
     }
+
+    pub fn write_history(&mut self, left: u16, y: u16, inc: i32, history: &Vec<History>){
+        if history.len() == 0 {
+            return;
+        }
+
+        if self.hist_ptr as i32 + inc < 0 {
+            self.hist_ptr = 0;
+        }else{
+            self.hist_ptr = (self.hist_ptr as i32 + inc) as usize;
+        }
+
+        if self.hist_ptr >= history.len() {
+            self.hist_ptr = history.len();
+            return;
+        }
+
+        let h = &history[self.hist_ptr as usize];
+        self.rewrite_line(left, y, h.commandline.to_string());
+        self.chars = h.commandline.chars().collect();
+        self.widths = h.charwidths.clone();
+        self.ch_ptr = self.widths.len() as i32;
+    }
 }
 
 pub fn prompt(text: &String) -> u16 {
@@ -50,7 +81,7 @@ pub fn prompt(text: &String) -> u16 {
     prompt.len().try_into().unwrap()
 }
 
-fn left_ch_ptr(pos: usize) -> usize {
+fn left_ch_ptr(pos: i32) -> i32 {
     if pos == 0 {
         0
     }else{
@@ -59,106 +90,67 @@ fn left_ch_ptr(pos: usize) -> usize {
 }
 
 pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
-    let mut chars: Vec<char> = vec!();
-    let mut widths: Vec<u8> = vec!();
-    let mut ch_ptr = 0;
-    let mut hist_ptr = history.len() as i32;
-
-    let mut writer = Writer::new();
-    /*
-    let mut writer = Writer {
-        stdout: stdout().into_raw_mode().unwrap()
-    };
-    */
+    let mut writer = Writer::new(history.len());
 
     for c in stdin().keys() {
         let (x, y) = writer.cursor_pos();
         match c.unwrap() {
             event::Key::Ctrl('c') => {
-                chars.clear();
+                writer.chars.clear();
                 write!(writer.stdout, "^C\n").unwrap();
                 break;
-            },
-            event::Key::Up => {
-                if history.len() == 0 {
-                    continue;
-                };
-
-                hist_ptr -= 1;
-                if hist_ptr < 0 {
-                    hist_ptr = 0;
-                };
-
-                let h = &history[hist_ptr as usize];
-                writer.rewrite_line(left, y, h.commandline.to_string());
-                chars = h.commandline.chars().collect();
-                widths = h.charwidths.clone();
-                ch_ptr = widths.len();
-
+            }, event::Key::Up => {
+                writer.write_history(left, y, -1, &history);
             },
             event::Key::Down => {
-                if history.len() == 0 {
-                    continue;
-                };
-
-                hist_ptr += 1;
-                if history.len() as i32 <= hist_ptr {
-                    hist_ptr = history.len() as i32;
-                    continue;
-                }
-
-                let h = &history[hist_ptr as usize];
-                writer.rewrite_line(left, y, h.commandline.to_string());
-                chars = h.commandline.chars().collect();
-                widths = h.charwidths.clone();
-                ch_ptr = widths.len();
+                writer.write_history(left, y, 1, &history);
             },
             event::Key::Left => {
-                ch_ptr = left_ch_ptr(ch_ptr);
-                if x-widths[ch_ptr] as u16 > left {
-                    writer.cur_move(x-widths[ch_ptr] as u16, y);
+                writer.ch_ptr = left_ch_ptr(writer.ch_ptr);
+                if x-writer.widths[writer.ch_ptr as usize] as u16 > left {
+                    writer.cur_move(x-writer.widths[writer.ch_ptr as usize] as u16, y);
                 };
             },
             event::Key::Right => {
-                if chars.len() > ch_ptr+1 {
-                    ch_ptr += 1;
-                    writer.cur_move(x+widths[ch_ptr] as u16, y);
+                if writer.chars.len() as i32 > writer.ch_ptr+1 {
+                    writer.ch_ptr += 1;
+                    writer.cur_move(x+writer.widths[writer.ch_ptr as usize] as u16, y);
                 }else{
-                    let line_len: u16 = widths.iter().fold(0, |line_len, w| line_len + (*w as u16));
+                    let line_len: u16 = writer.widths.iter().fold(0, |line_len, w| line_len + (*w as u16));
                     writer.cur_move(left+line_len+1, y);
-                    ch_ptr = chars.len();
+                    writer.ch_ptr = writer.chars.len() as i32;
                 };
             },
             event::Key::Backspace => {
-                if chars.len() == 0 {
+                if writer.chars.len() == 0 {
                     continue;
                 };
 
-                ch_ptr = left_ch_ptr(ch_ptr);
-                chars.remove(ch_ptr);
-                writer.rewrite_line(left, y, chars.iter().collect());
+                writer.ch_ptr = left_ch_ptr(writer.ch_ptr);
+                writer.chars.remove(writer.ch_ptr as usize);
+                writer.rewrite_line(left, y, writer.chars.iter().collect());
 
-                if x - widths[ch_ptr] as u16 >= left {
-                    writer.cur_move(x-widths[ch_ptr] as u16, y);
+                if x - writer.widths[writer.ch_ptr as usize] as u16 >= left {
+                    writer.cur_move(x-writer.widths[writer.ch_ptr as usize] as u16, y);
                 }
             },
             event::Key::Char(c) => {
                     if c == '\n' {
                         write!(writer.stdout, "{}", c).unwrap();
-                        chars.push(c);
+                        writer.chars.push(c);
                         break;
                     }
-                    chars.insert(ch_ptr, c);
-                    ch_ptr += 1;
+                    writer.chars.insert(writer.ch_ptr as usize, c);
+                    writer.ch_ptr += 1;
 
                     /* output the line before the cursor */
-                    writer.rewrite_line(left, y, chars[0..ch_ptr].iter().collect());
+                    writer.rewrite_line(left, y, writer.chars[0..writer.ch_ptr as usize].iter().collect());
                     let (new_x, new_y) = writer.cursor_pos();
-                    widths.insert(ch_ptr-1, (new_x - x) as u8);
+                    writer.widths.insert(writer.ch_ptr as usize -1, (new_x - x) as u8);
 
                     /* output the line after the cursor */
                     write!(writer.stdout, "{}{}",
-                           chars[ch_ptr..].iter().collect::<String>(), 
+                           writer.chars[writer.ch_ptr as usize ..].iter().collect::<String>(), 
                            termion::cursor::Goto(new_x, new_y),
                     ).unwrap();
                     writer.stdout.flush().unwrap();
@@ -168,11 +160,11 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
     }
     write!(writer.stdout, "\r").unwrap();
     writer.stdout.flush().unwrap();
-    let ans = chars.iter().collect::<String>();
+    let ans = writer.chars.iter().collect::<String>();
 
     history.push(History{
         commandline: ans.trim_end().to_string(),
-        charwidths: widths});
+        charwidths: writer.widths});
     ans
 }
 
