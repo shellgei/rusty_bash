@@ -113,6 +113,28 @@ impl Writer {
         write!(self.stdout, "{}", termion::cursor::Goto(new_x, y)).unwrap();
         self.stdout.flush().unwrap();
     }
+
+    fn insert(&mut self, c: char, x: u16, y: u16) {
+        if self.ch_ptr > self.chars.len() {
+            return;
+        };
+
+        self.chars.insert(self.ch_ptr, c);
+        self.ch_ptr += 1;
+
+        /* output the line before the cursor */
+        self.rewrite_line(y, self.chars[0..self.ch_ptr].iter().collect());
+        let (new_x, new_y) = self.cursor_pos();
+        self.widths.insert(self.ch_ptr-1, (new_x - x) as u8);
+
+        /* output the line after the cursor */
+        write!(self.stdout, "{}{}",
+               self.chars[self.ch_ptr..].iter().collect::<String>(), 
+               termion::cursor::Goto(new_x, new_y),
+        ).unwrap();
+
+        self.stdout.flush().unwrap();
+    }
 }
 
 pub fn prompt(text: &String) -> u16 {
@@ -135,34 +157,16 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
                 write!(writer.stdout, "^C\n").unwrap();
                 break;
             },
+            event::Key::Char('\n') => {
+                write!(writer.stdout, "{}", '\n').unwrap();
+                break;
+            },
             event::Key::Up => writer.write_history(y, -1, &history),
             event::Key::Down => writer.write_history(y, 1, &history),
             event::Key::Left => writer.move_cursor(-1, y),
             event::Key::Right => writer.move_cursor(1, y),
             event::Key::Backspace => writer.remove(x, y),
-            event::Key::Char('\n') => {
-                    write!(writer.stdout, "{}", '\n').unwrap();
-                    break;
-            },
-            event::Key::Char(c) => {
-                if writer.ch_ptr <= writer.chars.len() {
-                    writer.chars.insert(writer.ch_ptr, c);
-                    writer.ch_ptr += 1;
-
-                    /* output the line before the cursor */
-                    writer.rewrite_line(y, writer.chars[0..writer.ch_ptr].iter().collect());
-                    let (new_x, new_y) = writer.cursor_pos();
-                    writer.widths.insert(writer.ch_ptr-1, (new_x - x) as u8);
-
-                    /* output the line after the cursor */
-                    write!(writer.stdout, "{}{}",
-                           writer.chars[writer.ch_ptr..].iter().collect::<String>(), 
-                           termion::cursor::Goto(new_x, new_y),
-                    ).unwrap();
-
-                    writer.stdout.flush().unwrap();
-                };
-            },
+            event::Key::Char(c) => writer.insert(c, x, y),
             _ => {},
         }
     }
