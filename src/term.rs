@@ -47,7 +47,7 @@ impl Writer {
         self.stdout.cursor_pos().unwrap()
     }
 
-    pub fn write_history(&mut self, y: u16, inc: i32, history: &Vec<History>){
+    pub fn write_history(&mut self, inc: i32, history: &Vec<History>){
         if history.len() == 0 {
             return;
         }
@@ -63,6 +63,7 @@ impl Writer {
             return;
         }
 
+        let y = self.cursor_pos().1;
         let h = &history[self.hist_ptr as usize];
         self.rewrite_line(y, h.commandline.to_string());
         self.chars.clear();
@@ -88,14 +89,21 @@ impl Writer {
        }
     }
 
-    fn move_cursor(&mut self, inc: i32, y: u16) {
+    fn move_cursor(&mut self, inc: i32) {
         self.move_char_ptr(inc);
-        let line_len: u16 = self.widths[0..self.ch_ptr].iter().fold(0, |line_len, w| line_len + (*w as u16));
-        write!(self.stdout, "{}", termion::cursor::Goto(self.left_shift+line_len+1, y)).unwrap();
+        let line_len: u16 = self.widths[0..self.ch_ptr]
+            .iter()
+            .fold(0, |line_len, w| line_len + (*w as u16));
+
+        let y = self.cursor_pos().1;
+        write!(self.stdout, "{}",
+               termion::cursor::Goto(self.left_shift+line_len+1, y)
+               ).unwrap();
         self.stdout.flush().unwrap();
     }
 
-    fn remove(&mut self, x: u16, y: u16) {
+    fn remove(&mut self) {
+        let (x, y) = self.cursor_pos();
         if self.chars.len() == 0 {
             return;
         };
@@ -114,7 +122,8 @@ impl Writer {
         self.stdout.flush().unwrap();
     }
 
-    fn insert(&mut self, c: char, x: u16, y: u16) {
+    fn insert(&mut self, c: char) {
+        let (x, y) = self.cursor_pos();
         if self.ch_ptr > self.chars.len() {
             return;
         };
@@ -150,7 +159,6 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
     let mut writer = Writer::new(history.len(), left);
 
     for c in stdin().keys() {
-        let (x, y) = writer.cursor_pos();
         match c.unwrap() {
             event::Key::Ctrl('c') => {
                 writer.chars.clear();
@@ -161,12 +169,12 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
                 write!(writer.stdout, "{}", '\n').unwrap();
                 break;
             },
-            event::Key::Up => writer.write_history(y, -1, &history),
-            event::Key::Down => writer.write_history(y, 1, &history),
-            event::Key::Left => writer.move_cursor(-1, y),
-            event::Key::Right => writer.move_cursor(1, y),
-            event::Key::Backspace => writer.remove(x, y),
-            event::Key::Char(c) => writer.insert(c, x, y),
+            event::Key::Up        => writer.write_history(-1, &history),
+            event::Key::Down      => writer.write_history(1, &history),
+            event::Key::Left      => writer.move_cursor(-1),
+            event::Key::Right     => writer.move_cursor(1),
+            event::Key::Backspace => writer.remove(),
+            event::Key::Char(c)   => writer.insert(c),
             _ => {},
         }
     }
