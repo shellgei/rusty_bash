@@ -15,12 +15,12 @@ use crate::core::History;
 
 
 struct Writer {
-    pub stdout: RawTerminal<Stdout>, 
-    pub chars: Vec<char>,
-    pub widths: Vec<u8>,
-    pub ch_ptr: usize,
-    pub hist_ptr: usize,
-    pub left_shift: u16,
+    stdout: RawTerminal<Stdout>, 
+    chars: Vec<char>,
+    widths: Vec<u8>,
+    ch_ptr: usize,
+    hist_ptr: usize,
+    left_shift: u16,
 }
 
 impl Writer {
@@ -52,11 +52,11 @@ impl Writer {
             return;
         }
 
-        if self.hist_ptr as i32 + inc < 0 {
-            self.hist_ptr = 0;
+        self.hist_ptr = if self.hist_ptr as i32 + inc < 0 {
+            0
         }else{
-            self.hist_ptr = (self.hist_ptr as i32 + inc) as usize;
-        }
+            (self.hist_ptr as i32 + inc) as usize
+        };
 
         if self.hist_ptr >= history.len() {
             self.hist_ptr = history.len();
@@ -144,6 +144,10 @@ impl Writer {
 
         self.stdout.flush().unwrap();
     }
+
+    fn end(&mut self, text: &str) {
+        write!(self.stdout, "{}", text).unwrap();
+    }
 }
 
 pub fn prompt(text: &String) -> u16 {
@@ -162,11 +166,11 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
         match c.unwrap() {
             event::Key::Ctrl('c') => {
                 writer.chars.clear();
-                write!(writer.stdout, "^C\r\n").unwrap();
+                writer.end("^C\r\n");
                 break;
             },
             event::Key::Char('\n') => {
-                write!(writer.stdout, "\r\n").unwrap();
+                writer.end("\r\n");
                 break;
             },
             event::Key::Up        => writer.write_history(-1, &history),
@@ -183,4 +187,3 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
     history.push(History{commandline: ans.clone(), charwidths: writer.widths});
     ans + "\n"
 }
-
