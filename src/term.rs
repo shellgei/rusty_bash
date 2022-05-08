@@ -13,6 +13,7 @@ use termion::input::TermRead;
 
 use crate::core::History;
 
+
 struct Writer {
     pub stdout: RawTerminal<Stdout>, 
     pub chars: Vec<char>,
@@ -126,10 +127,12 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
 
                 writer.move_char_ptr(-1);
                 writer.chars.remove(writer.ch_ptr);
+                let removed_width = writer.widths[writer.ch_ptr];
+                writer.widths.remove(writer.ch_ptr);
                 writer.rewrite_line(y, writer.chars.iter().collect());
 
-                if x - writer.widths[writer.ch_ptr] as u16 >= left {
-                    write!(writer.stdout, "{}", termion::cursor::Goto(x-writer.widths[writer.ch_ptr] as u16, y)).unwrap();
+                if x - removed_width as u16 >= left {
+                    write!(writer.stdout, "{}", termion::cursor::Goto(x-removed_width as u16, y)).unwrap();
                     writer.stdout.flush().unwrap();
                 }
             },
