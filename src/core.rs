@@ -22,10 +22,15 @@ impl Flags {
     }
 }
 
+pub struct History {
+    pub commandline: String,
+    pub charwidths: Vec<u8>, 
+}
+
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(args: &Vec<String>) -> i32>,
     pub vars: HashMap<&'static str, String>,
-    pub history: Vec<String>,
+    pub history: Vec<History>,
     pub flags: Flags,
 }
 

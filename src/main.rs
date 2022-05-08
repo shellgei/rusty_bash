@@ -73,11 +73,10 @@ fn main() {
     loop {
         let line = if core.flags.i {
             let len_prompt = term::prompt(&format!("{}", input.to_lineno+1));
-            term::read_line(len_prompt, &core.history)
+            term::read_line(len_prompt, &mut core.history)
         }else{
             read_line()
         };
-        core.history.push(line.trim_end().to_string());
         add_line(&mut input, line);
         parser::top_level_element(&mut input, &mut core).exec(&mut core);
     }

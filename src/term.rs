@@ -11,6 +11,8 @@ use termion::cursor::DetectCursorPos;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 
+use crate::core::History;
+
 pub fn prompt(text: &String) -> u16 {
     let prompt = format!("{} $ ", text);
     print!("{}", prompt);
@@ -45,9 +47,9 @@ fn rewrite_line(left: u16, y: u16, text: String, stdout: &mut RawTerminal<Stdout
     stdout.flush().unwrap();
 }
 
-pub fn read_line(left: u16, history: &Vec<String>) -> String{
+pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
     let mut chars: Vec<char> = vec!();
-    let mut widths = vec!();
+    let mut widths: Vec<u8> = vec!();
     let mut ch_ptr = 0;
     let mut hist_ptr = history.len() as i32;
 
@@ -72,22 +74,12 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
                     hist_ptr = 0;
                 };
 
-                /* THIS IMPLEMENTATION IS TOO SLOW */
-                /* To get the width of each charcter on the terminal, 
-                 * this implementation output each charcter one by one,
-                 * and obtain the cursor position. This procedure is too slow. */
-                chars.clear();
-                widths.len();
-                rewrite_line(left, y, "".to_string(), &mut stdout);
-                let mut pos = left;
-                for c in history[hist_ptr as usize].chars() {
-                    chars.push(c);
-                    append(c, &mut stdout);
-                    let (new_x, _) = stdout.cursor_pos().unwrap();
-                    widths.push(new_x - pos);
-                    pos = stdout.cursor_pos().unwrap().0;
-                }
+                let h = &history[hist_ptr as usize];
+                rewrite_line(left, y, h.commandline.to_string(), &mut stdout);
+                chars = h.commandline.chars().collect();
+                widths = h.charwidths.clone();
                 ch_ptr = widths.len();
+
             },
             event::Key::Down => {
                 if history.len() == 0 {
@@ -100,35 +92,24 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
                     continue;
                 }
 
-                /* THIS IMPLEMENTATION IS TOO SLOW */
-                /* To get the width of each charcter on the terminal, 
-                 * this implementation output each charcter one by one,
-                 * and obtain the cursor position. This procedure is too slow. */
-                chars.clear();
-                widths.len();
-                rewrite_line(left, y, "".to_string(), &mut stdout);
-                let mut pos = left;
-                for c in history[hist_ptr as usize].chars() {
-                    chars.push(c);
-                    append(c, &mut stdout);
-                    let (new_x, _) = stdout.cursor_pos().unwrap();
-                    widths.push(new_x - pos);
-                    pos = stdout.cursor_pos().unwrap().0;
-                }
+                let h = &history[hist_ptr as usize];
+                rewrite_line(left, y, h.commandline.to_string(), &mut stdout);
+                chars = h.commandline.chars().collect();
+                widths = h.charwidths.clone();
                 ch_ptr = widths.len();
             },
             event::Key::Left => {
                 ch_ptr = left_ch_ptr(ch_ptr);
-                if x-widths[ch_ptr] > left {
-                    cur_move(x-widths[ch_ptr], y, &mut stdout);
+                if x-widths[ch_ptr] as u16 > left {
+                    cur_move(x-widths[ch_ptr] as u16, y, &mut stdout);
                 };
             },
             event::Key::Right => {
                 if chars.len() > ch_ptr+1 {
                     ch_ptr += 1;
-                    cur_move(x+widths[ch_ptr], y, &mut stdout);
+                    cur_move(x+widths[ch_ptr] as u16, y, &mut stdout);
                 }else{
-                    let line_len = widths.iter().fold(0, |line_len, w| line_len + w);
+                    let line_len: u16 = widths.iter().fold(0, |line_len, w| line_len + (*w as u16));
                     cur_move(left+line_len+1, y, &mut stdout);
                     ch_ptr = chars.len();
                 };
@@ -142,8 +123,8 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
                 chars.remove(ch_ptr);
                 rewrite_line(left, y, chars.iter().collect::<String>(), &mut stdout);
 
-                if x - widths[ch_ptr] >= left {
-                    cur_move(x-widths[ch_ptr], y, &mut stdout);
+                if x - widths[ch_ptr] as u16 >= left {
+                    cur_move(x-widths[ch_ptr] as u16, y, &mut stdout);
                 }
             },
             event::Key::Char(c) => {
@@ -158,7 +139,7 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
                     /* output the line before the cursor */
                     rewrite_line(left, y, chars[0..ch_ptr].iter().collect::<String>(), &mut stdout);
                     let (new_x, new_y) = stdout.cursor_pos().unwrap();
-                    widths.insert(ch_ptr-1, new_x - x);
+                    widths.insert(ch_ptr-1, (new_x - x) as u8);
 
                     /* output the line after the cursor */
                     write!(stdout, "{}{}",
@@ -172,6 +153,11 @@ pub fn read_line(left: u16, history: &Vec<String>) -> String{
     }
     write!(stdout, "\r").unwrap();
     stdout.flush().unwrap();
-    chars.iter().collect::<String>()
+    let ans = chars.iter().collect::<String>();
+
+    history.push(History{
+        commandline: ans.trim_end().to_string(),
+        charwidths: widths});
+    ans
 }
 
