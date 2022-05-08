@@ -88,10 +88,29 @@ impl Writer {
        }
     }
 
-    fn move_cursor(&mut self, inc: i32, y: u16){
+    fn move_cursor(&mut self, inc: i32, y: u16) {
         self.move_char_ptr(inc);
         let line_len: u16 = self.widths[0..self.ch_ptr].iter().fold(0, |line_len, w| line_len + (*w as u16));
         write!(self.stdout, "{}", termion::cursor::Goto(self.left_shift+line_len+1, y)).unwrap();
+        self.stdout.flush().unwrap();
+    }
+
+    fn remove(&mut self, x: u16, y: u16) {
+        if self.chars.len() == 0 {
+            return;
+        };
+
+        self.move_char_ptr(-1);
+        self.chars.remove(self.ch_ptr);
+        let new_x = if x >= self.widths[self.ch_ptr] as u16 {
+            x - self.widths[self.ch_ptr] as u16
+        }else{
+            self.left_shift
+        };
+
+        self.widths.remove(self.ch_ptr);
+        self.rewrite_line(y, self.chars.iter().collect());
+        write!(self.stdout, "{}", termion::cursor::Goto(new_x, y)).unwrap();
         self.stdout.flush().unwrap();
     }
 }
@@ -120,48 +139,31 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
             event::Key::Down => writer.write_history(y, 1, &history),
             event::Key::Left => writer.move_cursor(-1, y),
             event::Key::Right => writer.move_cursor(1, y),
-            event::Key::Backspace => {
-                if writer.chars.len() == 0 {
-                    continue;
-                };
-
-                writer.move_char_ptr(-1);
-                writer.chars.remove(writer.ch_ptr);
-                let removed_width = writer.widths[writer.ch_ptr];
-                writer.widths.remove(writer.ch_ptr);
-                writer.rewrite_line(y, writer.chars.iter().collect());
-
-                if x - removed_width as u16 >= left {
-                    write!(writer.stdout, "{}", termion::cursor::Goto(x-removed_width as u16, y)).unwrap();
-                    writer.stdout.flush().unwrap();
-                }
-            },
+            event::Key::Backspace => writer.remove(x, y),
             event::Key::Char(c) => {
-                    if c == '\n' {
-                        write!(writer.stdout, "{}", c).unwrap();
-                        writer.chars.push(c);
-                        break;
-                    }
+                if c == '\n' {
+                    write!(writer.stdout, "{}", c).unwrap();
+                    writer.chars.push(c);
+                    break;
+                }
 
-                    if writer.ch_ptr <= writer.chars.len() {
-                        writer.chars.insert(writer.ch_ptr, c);
-                        writer.ch_ptr += 1;
+                if writer.ch_ptr <= writer.chars.len() {
+                    writer.chars.insert(writer.ch_ptr, c);
+                    writer.ch_ptr += 1;
 
-                        /* output the line before the cursor */
-                        writer.rewrite_line(y, writer.chars[0..writer.ch_ptr].iter().collect());
-                        let (new_x, new_y) = writer.cursor_pos();
-                        writer.widths.insert(writer.ch_ptr-1, (new_x - x) as u8);
-    
-                        /* output the line after the cursor */
-                        write!(writer.stdout, "{}{}",
-                               writer.chars[writer.ch_ptr..].iter().collect::<String>(), 
-                               termion::cursor::Goto(new_x, new_y),
-                        ).unwrap();
-                    }else{
-                        eprintln!("ch_ptr: {}, {}", writer.ch_ptr, writer.chars.len());
-                    };
+                    /* output the line before the cursor */
+                    writer.rewrite_line(y, writer.chars[0..writer.ch_ptr].iter().collect());
+                    let (new_x, new_y) = writer.cursor_pos();
+                    writer.widths.insert(writer.ch_ptr-1, (new_x - x) as u8);
+
+                    /* output the line after the cursor */
+                    write!(writer.stdout, "{}{}",
+                           writer.chars[writer.ch_ptr..].iter().collect::<String>(), 
+                           termion::cursor::Goto(new_x, new_y),
+                    ).unwrap();
 
                     writer.stdout.flush().unwrap();
+                };
             },
             _ => {},
         }
