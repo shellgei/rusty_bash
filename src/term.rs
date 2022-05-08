@@ -162,11 +162,11 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
         match c.unwrap() {
             event::Key::Ctrl('c') => {
                 writer.chars.clear();
-                write!(writer.stdout, "^C\n").unwrap();
+                write!(writer.stdout, "^C\r\n").unwrap();
                 break;
             },
             event::Key::Char('\n') => {
-                write!(writer.stdout, "{}", '\n').unwrap();
+                write!(writer.stdout, "\r\n").unwrap();
                 break;
             },
             event::Key::Up        => writer.write_history(-1, &history),
@@ -181,10 +181,6 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
 
     let ans = writer.chars.iter().collect::<String>();
     history.push(History{commandline: ans.clone(), charwidths: writer.widths});
-
-    write!(writer.stdout, "\r").unwrap();
-    writer.stdout.flush().unwrap();
-
     ans + "\n"
 }
 
