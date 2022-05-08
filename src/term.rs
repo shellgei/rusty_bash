@@ -140,13 +140,11 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
             event::Key::Left => writer.move_cursor(-1, y),
             event::Key::Right => writer.move_cursor(1, y),
             event::Key::Backspace => writer.remove(x, y),
-            event::Key::Char(c) => {
-                if c == '\n' {
-                    write!(writer.stdout, "{}", c).unwrap();
-                    writer.chars.push(c);
+            event::Key::Char('\n') => {
+                    write!(writer.stdout, "{}", '\n').unwrap();
                     break;
-                }
-
+            },
+            event::Key::Char(c) => {
                 if writer.ch_ptr <= writer.chars.len() {
                     writer.chars.insert(writer.ch_ptr, c);
                     writer.ch_ptr += 1;
@@ -169,14 +167,12 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
         }
     }
 
+    let ans = writer.chars.iter().collect::<String>();
+    history.push(History{commandline: ans.clone(), charwidths: writer.widths});
+
     write!(writer.stdout, "\r").unwrap();
     writer.stdout.flush().unwrap();
-    let ans = writer.chars.iter().collect::<String>();
 
-    history.push(History{
-        commandline: ans[0..ans.len()-1].to_string(),
-        charwidths: writer.widths});
-
-    ans
+    ans + "\n"
 }
 
