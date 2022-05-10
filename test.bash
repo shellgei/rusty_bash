@@ -32,7 +32,7 @@ res=$($com << 'EOF'
 echo "\"" "\\" a\ \ bc
 EOF
 )
-[ "$res" = '\" \\ a\ \ bc' ]
+[ "$res" = '" \ a  bc' ]
 
 trap "" EXIT
 echo TEST OK

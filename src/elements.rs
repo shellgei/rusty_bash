@@ -86,9 +86,32 @@ impl BashElem for Arg {
 
     fn eval(&self) -> Option<String> {
         match self.quote {
-            None => Some(self.text.clone()),
-            _ => Some(self.text[1..self.text.len()-1].to_string().clone()),
+            Some('\'') => Some(self.text[1..self.text.len()-1].to_string().clone()),
+            Some('"')  => Some(Arg::remove_escape(&self.text[1..self.text.len()-1].to_string().clone())),
+            _          => Some(Arg::remove_escape(&self.text.clone())),
         }
+    }
+}
+
+impl Arg {
+    fn remove_escape(text: &String) -> String{
+        let mut escaped = false;
+        let mut ans = "".to_string();
+        
+        for ch in text.chars() {
+            if escaped {
+                ans.push(ch);
+                escaped = false;
+            }else{ //not secaped
+                if ch == '\\' {
+                    escaped = true;
+                }else{
+                    ans.push(ch);
+                    escaped = false;
+                };
+            };
+        }
+        ans
     }
 }
 
