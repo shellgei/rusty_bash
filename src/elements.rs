@@ -75,8 +75,8 @@ impl BashElem for Eoc {
 #[derive(Debug)]
 pub struct Arg {
     pub text: String,
-    //pub text_pos: usize
     pub pos: TextPos,
+    pub quote: Option<char>,
 }
 
 impl BashElem for Arg {
@@ -85,7 +85,10 @@ impl BashElem for Arg {
     }
 
     fn eval(&self) -> Option<String> {
-        Some(self.text.clone())
+        match self.quote {
+            None => Some(self.text.clone()),
+            _ => Some(self.text[1..self.text.len()-1].to_string().clone()),
+        }
     }
 }
 

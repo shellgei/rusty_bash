@@ -53,13 +53,47 @@ pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
     }
 }
 
+// single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut ReadingText) -> Option<Arg> {
+    if let Some(a) = quoted_arg(text, '\'') {
+        return Some(a);
+    }else if let Some(a) = quoted_arg(text, '"') {
+        return Some(a);
+    };
+
     let mut pos = 0;
     for ch in text.remaining.chars() {
         if ch == ' ' || ch == '\n' || ch == '\t' || ch == ';' {
             let ans = Arg{
                     text: text.remaining[0..pos].to_string(),
-                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos}
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    quote: None, 
+                 };
+
+            text.pos_in_line += pos as u32;
+            text.remaining = text.remaining[pos..].to_string();
+            return Some(ans);
+        }else{
+            pos += ch.len_utf8();
+        };
+    };
+
+    None
+}
+
+pub fn quoted_arg(text: &mut ReadingText, q: char) -> Option<Arg> {
+    if text.remaining.chars().nth(0) != Some(q) {
+        return None;
+    }
+
+    let mut pos = 1;
+    for ch in text.remaining[1..].chars() {
+        if ch == q {
+            pos += 1;
+            let ans = Arg{
+                    text: text.remaining[0..pos].to_string(),
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    quote: Some(q), 
                  };
 
             text.pos_in_line += pos as u32;

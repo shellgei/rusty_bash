@@ -21,5 +21,12 @@ res=$($com <<< '	echo hoge')
 res=$($com <<< 'echo hoge;')
 [ "$res" = "hoge" ]
 
+### ARG TEST ###
+res=$($com <<- EOF
+echo 'a'
+EOF
+)
+[ "$res" = "a" ]
+
 trap "" EXIT
 echo TEST OK
