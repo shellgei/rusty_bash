@@ -22,7 +22,7 @@ res=$($com <<< 'echo hoge;')
 [ "$res" = "hoge" ]
 
 ### ARG TEST ###
-res=$($com <<- EOF
+res=$($com << 'EOF'
 echo 'a' "b  b" cc  c
 EOF
 )
