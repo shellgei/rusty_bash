@@ -23,10 +23,16 @@ res=$($com <<< 'echo hoge;')
 
 ### ARG TEST ###
 res=$($com <<- EOF
-echo 'a'
+echo 'a' "b  b" cc  c
 EOF
 )
-[ "$res" = "a" ]
+[ "$res" = "a b  b cc c" ]
+
+res=$($com << 'EOF'
+echo "\"" "\\"
+EOF
+)
+[ "$res" = '\" \\' ]
 
 trap "" EXIT
 echo TEST OK

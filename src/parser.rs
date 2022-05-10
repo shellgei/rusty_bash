@@ -55,9 +55,9 @@ pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
 
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut ReadingText) -> Option<Arg> {
-    if let Some(a) = quoted_arg(text, '\'') {
+    if let Some(a) = single_quoted_arg(text) {
         return Some(a);
-    }else if let Some(a) = quoted_arg(text, '"') {
+    }else if let Some(a) = double_quoted_arg(text) {
         return Some(a);
     };
 
@@ -81,26 +81,59 @@ pub fn arg(text: &mut ReadingText) -> Option<Arg> {
     None
 }
 
-pub fn quoted_arg(text: &mut ReadingText, q: char) -> Option<Arg> {
-    if text.remaining.chars().nth(0) != Some(q) {
+pub fn single_quoted_arg(text: &mut ReadingText) -> Option<Arg> {
+    if text.remaining.chars().nth(0) != Some('\'') {
         return None;
     }
 
     let mut pos = 1;
     for ch in text.remaining[1..].chars() {
-        if ch == q {
+        if ch != '\'' {
+            pos += ch.len_utf8();
+        }else{
             pos += 1;
             let ans = Arg{
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
-                    quote: Some(q), 
+                    quote: Some('\''), 
                  };
 
             text.pos_in_line += pos as u32;
             text.remaining = text.remaining[pos..].to_string();
             return Some(ans);
-        }else{
+        };
+    };
+
+    None
+}
+
+pub fn double_quoted_arg(text: &mut ReadingText) -> Option<Arg> {
+    if text.remaining.chars().nth(0) != Some('"') {
+        return None;
+    }
+
+    let mut pos = 1;
+    let mut escaped = false;
+    for ch in text.remaining[1..].chars() {
+        if escaped || (!escaped && ch == '\\') {
             pos += ch.len_utf8();
+            escaped = !escaped;
+            continue;
+        };
+
+        if ch != '"' {
+            pos += ch.len_utf8();
+        }else{
+            pos += 1;
+            let ans = Arg{
+                    text: text.remaining[0..pos].to_string(),
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    quote: Some('"'), 
+                 };
+
+            text.pos_in_line += pos as u32;
+            text.remaining = text.remaining[pos..].to_string();
+            return Some(ans);
         };
     };
 
