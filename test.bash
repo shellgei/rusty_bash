@@ -29,10 +29,10 @@ EOF
 [ "$res" = "a b  b cc c" ]
 
 res=$($com << 'EOF'
-echo "\"" "\\"
+echo "\"" "\\" a\ \ bc
 EOF
 )
-[ "$res" = '\" \\' ]
+[ "$res" = '\" \\ a\ \ bc' ]
 
 trap "" EXIT
 echo TEST OK

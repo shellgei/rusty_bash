@@ -62,7 +62,14 @@ pub fn arg(text: &mut ReadingText) -> Option<Arg> {
     };
 
     let mut pos = 0;
+    let mut escaped = false;
     for ch in text.remaining.chars() {
+        if escaped || (!escaped && ch == '\\') {
+            pos += ch.len_utf8();
+            escaped = !escaped;
+            continue;
+        };
+
         if ch == ' ' || ch == '\n' || ch == '\t' || ch == ';' {
             let ans = Arg{
                     text: text.remaining[0..pos].to_string(),
