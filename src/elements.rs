@@ -71,9 +71,16 @@ impl BashElem for Eoc {
     }
 }
 
-/* arg */
 #[derive(Debug)]
 pub struct Arg {
+    pub text: String,
+    pub pos: TextPos,
+    pub subargs: Vec<SubArg>
+}
+
+/* arg, subarg */
+#[derive(Debug)]
+pub struct SubArg {
     pub text: String,
     pub pos: TextPos,
     pub quote: Option<char>,
@@ -85,15 +92,32 @@ impl BashElem for Arg {
     }
 
     fn eval(&self) -> Option<String> {
+        let mut ans = "".to_string();
+        for sub in &self.subargs {
+            if let Some(s) = sub.eval(){
+                ans += &s;
+            };
+        }
+
+        Some(ans)
+    }
+}
+
+impl BashElem for SubArg {
+    fn parse_info(&self) -> String {
+        format!("    arg      : '{}' ({})\n", self.text.clone(), self.pos.text())
+    }
+
+    fn eval(&self) -> Option<String> {
         match self.quote {
             Some('\'') => Some(self.text[1..self.text.len()-1].to_string().clone()),
-            Some('"')  => Some(Arg::remove_escape(&self.text[1..self.text.len()-1].to_string().clone())),
-            _          => Some(Arg::remove_escape(&self.text.clone())),
+            Some('"')  => Some(SubArg::remove_escape(&self.text[1..self.text.len()-1].to_string().clone())),
+            _          => Some(SubArg::remove_escape(&self.text.clone())),
         }
     }
 }
 
-impl Arg {
+impl SubArg {
     fn remove_escape(text: &String) -> String{
         let mut escaped = false;
         let mut ans = "".to_string();

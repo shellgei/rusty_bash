@@ -21,7 +21,11 @@ res=$($com <<< '	echo hoge')
 res=$($com <<< 'echo hoge;')
 [ "$res" = "hoge" ]
 
-### ARG TEST ###
+#### ARG TEST ###
+
+res=$($com <<< 'echo aaa"bbb"')
+[ "$res" = "aaabbb" ]
+
 res=$($com << 'EOF'
 echo 'a' "b  b" cc  c
 EOF
@@ -33,6 +37,17 @@ echo "\"" "\\" a\ \ bc
 EOF
 )
 [ "$res" = '" \ a  bc' ]
+
+## brace expansion
+#
+#res=$($com << 'EOF'
+#echo {a,b}{cc,dd}
+#EOF
+#)
+#[ "$res" = 'acc add bcc bdd' ]
+
+res=$($com <<< 'echo hoge"hoge";')
+[ "$res" = "hogehoge" ]
 
 trap "" EXIT
 echo TEST OK
