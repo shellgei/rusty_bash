@@ -49,7 +49,7 @@ impl Arg {
         };
 
         if ans.len() == 0 {
-            ans.push(text.clone());
+            ans.push(text.clone().replace("\\*", "*"));
         };
         //eprintln!("ANS: {:?}", ans);
         ans
@@ -105,10 +105,12 @@ impl BashElem for SubArg {
         let mut ans = vec!();
         if let Some(q) = self.quote {
             if q == '\'' {
-                ans.push(self.text[1..self.text.len()-1].to_string().clone());
+                let s = self.text[1..self.text.len()-1].to_string().clone();
+                ans.push(s.replace("*", "\\*")); //escape file glob
             }else{
-                ans.push(SubArg::remove_escape(&self.text[1..self.text.len()-1].to_string().clone()));
-            }
+                let s = SubArg::remove_escape(&self.text[1..self.text.len()-1].to_string().clone());
+                ans.push(s.replace("*", "\\*")); //escape file glob
+            };
             return ans;
         };
 

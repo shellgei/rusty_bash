@@ -82,5 +82,8 @@ EOF
 )
 [ "$res" = "test.bash" ]
 
+res=$($com <<< 'echo "*"')
+[ "$res" = "*" ]
+
 trap "" EXIT
 echo TEST OK
