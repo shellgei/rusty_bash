@@ -49,7 +49,9 @@ impl Arg {
         };
 
         if ans.len() == 0 {
-            ans.push(text.clone().replace("\\*", "*"));
+            let s = text.clone().replace("\\*", "*").replace("\\\\", "\\");
+            //eprintln!("deescaped: {}", s);
+            ans.push(s);
         };
         //eprintln!("ANS: {:?}", ans);
         ans
@@ -106,10 +108,14 @@ impl BashElem for SubArg {
         if let Some(q) = self.quote {
             if q == '\'' {
                 let s = self.text[1..self.text.len()-1].to_string().clone();
-                ans.push(s.replace("*", "\\*")); //escape file glob
+                let es = s.replace("\\", "\\\\").replace("*", "\\*"); //escape file glob
+                //eprintln!("escaped: {}", es);
+                ans.push(es);
             }else{
-                let s = SubArg::remove_escape(&self.text[1..self.text.len()-1].to_string().clone());
-                ans.push(s.replace("*", "\\*")); //escape file glob
+                let s = SubArg::remove_escape_dq(&self.text[1..self.text.len()-1].to_string().clone());
+                let es = s.replace("\\", "\\\\").replace("*", "\\*"); //escape file glob
+                //eprintln!("escaped: {}", es);
+                ans.push(es);
             };
             return ans;
         };
@@ -160,5 +166,31 @@ impl SubArg {
             };
         }
         ans
+    }
+
+    fn remove_escape_dq(text: &String) -> String{
+        text.clone().replace("\\\"", "\"").replace("\\\\", "\\")
+        /*
+        let mut escaped = false;
+        let mut ans = "".to_string();
+        
+        for ch in text.chars() {
+            if escaped {
+                if ch != '\\' && ch != '"' {
+                    ans.push('\\');
+                };
+                ans.push(ch);
+                escaped = false;
+            }else{ //not secaped
+                if ch == '\\' {
+                    escaped = true;
+                }else{
+                    ans.push(ch);
+                    escaped = false;
+                };
+            };
+        }
+        ans
+        */
     }
 }
