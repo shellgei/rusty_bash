@@ -2,7 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ReadingText;
-use crate::elements::{TextPos, Arg, SubArg};
+use crate::elements::{TextPos};
+use crate::elements_args::{Arg, SubArg};
 
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut ReadingText) -> Option<Arg> {

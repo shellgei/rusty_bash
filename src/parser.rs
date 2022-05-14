@@ -1,11 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod args;
-
 use crate::BashElem;
 use super::elements::{TextPos, CommandWithArgs, Delim, Eoc, Empty};
-use super::parser::args::*;
+use crate::parser_args::arg;
 use crate::ShellCore;
 
 pub struct ReadingText {
