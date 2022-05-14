@@ -44,22 +44,21 @@ impl BashElem for Arg {
         format!("    arg      : '{}' ({})\n", self.text.clone(), self.pos.text())
     }
 
-    fn eval(&self) -> Option<String> {
+    fn eval(&self) -> Vec<String> {
         let subevals = self.subargs
             .iter()
             .map(|sub| sub.eval())
             .collect::<Vec<Vec<String>>>();
 
         if subevals.len() == 0 {
-            return None;
+            return vec!();
         };
 
         let mut strings = vec!();
         for ss in subevals {
-            //eprintln!("subeval: {:?}", ss);
             strings = Arg::combine(&strings, &ss);
         }
-        Some(strings.join(" "))
+        strings
     }
 }
 

@@ -12,8 +12,8 @@ pub trait BashElem {
     }
     fn parse_info(&self) -> String;
     fn exec(&self, _conf: &mut ShellCore){}
-    fn eval(&self) -> Option<String> {
-        return None
+    fn eval(&self) -> Vec<String> {
+        vec!()
     }
 }
 
@@ -110,8 +110,8 @@ impl CommandWithArgs {
         let mut args = Vec::<String>::new();
 
         for elem in &self.elems {
-            if let Some(arg) = &elem.eval() {
-                args.push(arg.clone());
+            for s in &elem.eval() {
+                args.push(s.clone());
             }
         };
 
