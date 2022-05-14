@@ -92,14 +92,13 @@ impl BashElem for Arg {
     }
 
     fn eval(&self) -> Option<String> {
-        let mut ans = "".to_string();
-        for sub in &self.subargs {
-            if let Some(s) = sub.eval(){
-                ans += &s;
-            };
-        }
+        let v = self.subargs
+            .iter()
+            .map(|sub| if let Some(s) = sub.eval(){s}else{"".to_string()})
+            .collect::<Vec<String>>()
+            .join("");
 
-        Some(ans)
+        Some(v)
     }
 }
 
