@@ -4,8 +4,9 @@ trap "echo TEST NG; exit 1" EXIT
 
 cargo build --release
 
+cd $(dirname $0)
 
-com=$(dirname $0)/target/release/bash_r
+com=../target/release/bash_r
 
 ### SIMPLE COMMAND TEST ###
 
@@ -72,6 +73,14 @@ echo {a,b}{c,d}へ{e,f}
 EOF
 )
 [ "$res" = 'acへe acへf adへe adへf bcへe bcへf bdへe bdへf' ]
+
+# glob test
+
+res=$($com << 'EOF'
+ls *.bash
+EOF
+)
+[ "$res" = "test.bash" ]
 
 trap "" EXIT
 echo TEST OK

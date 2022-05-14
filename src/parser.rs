@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::BashElem;
-use super::elements::{TextPos, CommandWithArgs, Delim, Eoc, Empty};
+use super::evaluator::{TextPos, CommandWithArgs, Delim, Eoc, Empty};
 use crate::parser_args::arg;
 use crate::ShellCore;
 

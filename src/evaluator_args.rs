@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::TextPos;
+use crate::evaluator::TextPos;
 use crate::BashElem;
+use glob::glob;
 
 #[derive(Debug)]
 pub struct Arg {
@@ -27,6 +28,30 @@ impl Arg {
                 ans.push(lstr.clone() + &rstr.clone());
             }
         }
+        ans
+    }
+
+    fn expand_glob(text: &String) -> Vec<String> {
+        let mut ans: Vec<String> = vec!();
+
+        if let Ok(path) = glob(&text) {
+            for dir in path {
+                match dir {
+                    Ok(d) => {
+                        if let Some(s) = d.to_str() {
+                            ans.push(s.to_string());
+                        };
+                        //eprintln!("PROG: {:?}", ans);
+                    },
+                    _ => (),
+                }
+            };
+        };
+
+        if ans.len() == 0 {
+            ans.push(text.clone());
+        };
+        //eprintln!("ANS: {:?}", ans);
         ans
     }
 }
@@ -58,17 +83,23 @@ impl BashElem for Arg {
         for ss in subevals {
             strings = Arg::combine(&strings, &ss);
         }
-        strings
+        //eprintln!("strings: {:?}", strings);
+
+        let mut globed_strings = vec!();
+        for s in strings {
+            for gs in Arg::expand_glob(&s) {
+                globed_strings.push(gs);
+            }
+        }
+        //eprintln!("globed strings: {:?}", globed_strings);
+        globed_strings
     }
 }
 
-//impl BashElem for SubArg {
-impl SubArg {
-    /*
+impl BashElem for SubArg {
     fn parse_info(&self) -> String {
         format!("    arg      : '{}' ({})\n", self.text.clone(), self.pos.text())
     }
-    */
 
     fn eval(&self) -> Vec<String> {
         let mut ans = vec!();

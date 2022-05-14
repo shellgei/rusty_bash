@@ -3,8 +3,8 @@
 
 mod parser;
 mod parser_args;
-mod elements;
-mod elements_args;
+mod evaluator;
+mod evaluator_args;
 mod core;
 mod term;
 
@@ -14,7 +14,7 @@ use std::path::Path;
 use std::os::linux::fs::MetadataExt;
 
 use crate::core::ShellCore;
-use crate::elements::BashElem;
+use crate::evaluator::BashElem;
 use crate::parser::ReadingText;
 
 fn read_line() -> String {
