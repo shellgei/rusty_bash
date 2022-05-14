@@ -25,6 +25,8 @@ pub fn arg(text: &mut ReadingText) -> Option<Arg> {
 pub fn subarg(text: &mut ReadingText) -> Option<SubArg> {
     if let Some(a) = subarg_normal(text) {
         return Some(a);
+    }else if let Some(a) = subarg_braced(text) {
+        return Some(a);
     }else if let Some(a) = subarg_single_qt(text) {
         return Some(a);
     }else if let Some(a) = subarg_double_qt(text) {
@@ -35,7 +37,7 @@ pub fn subarg(text: &mut ReadingText) -> Option<SubArg> {
 
 pub fn subarg_normal(text: &mut ReadingText) -> Option<SubArg> {
     if let Some(ch) = text.remaining.chars().nth(0) {
-        if ch == ' ' || ch == '\n' || ch == '\t' || ch == '"' || ch == '\'' || ch == ';' {
+        if ch == ' ' || ch == '\n' || ch == '\t' || ch == '"' || ch == '\'' || ch == ';' || ch == '{' {
             return None;
         };
     }else{
@@ -51,11 +53,12 @@ pub fn subarg_normal(text: &mut ReadingText) -> Option<SubArg> {
             continue;
         };
 
-        if ch == ' ' || ch == '\n' || ch == '\t' || ch == ';' || ch == '\'' || ch == '"' {
+        if ch == ' ' || ch == '\n' || ch == '\t' || ch == ';' || ch == '\'' || ch == '"' || ch == '{' {
             let ans = SubArg{
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
                     quote: None, 
+                    braced: false,
                  };
 
             text.pos_in_line += pos as u32;
@@ -84,6 +87,7 @@ pub fn subarg_single_qt(text: &mut ReadingText) -> Option<SubArg> {
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
                     quote: Some('\''), 
+                    braced: false,
                  };
 
             text.pos_in_line += pos as u32;
@@ -117,6 +121,7 @@ pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArg> {
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
                     quote: Some('"'), 
+                    braced: false,
                  };
 
             text.pos_in_line += pos as u32;
@@ -128,3 +133,56 @@ pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArg> {
     None
 }
 
+pub fn subarg_braced(text: &mut ReadingText) -> Option<SubArg> {
+    if let Some(ch) = text.remaining.chars().nth(0) {
+        if ch != '{' {
+            return None;
+        };
+    }else{
+        return None;
+    };
+
+    let mut pos = 0;
+    let mut escaped = false;
+    let mut comma = false;
+    for ch in text.remaining.chars() {
+        if escaped || (!escaped && ch == '\\') {
+            pos += ch.len_utf8();
+            escaped = !escaped;
+            continue;
+        };
+
+        if ch == ',' && !escaped {
+            comma = true;
+        }
+
+        if ch == ' ' || ch == '\n' || ch == '\t' || ch == ';' || ch == '\'' || ch == '"' {
+            let ans = SubArg{
+                    text: text.remaining[0..pos].to_string(),
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    quote: None, 
+                    braced: false,
+                 };
+
+            text.pos_in_line += pos as u32;
+            text.remaining = text.remaining[pos..].to_string();
+            return Some(ans);
+        }else if ch == '}'{
+            pos += ch.len_utf8();
+            let ans = SubArg{
+                    text: text.remaining[0..pos].to_string(),
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    quote: None, 
+                    braced: comma,
+                 };
+
+            text.pos_in_line += pos as u32;
+            text.remaining = text.remaining[pos..].to_string();
+            return Some(ans);
+        }else{
+            pos += ch.len_utf8();
+        };
+    };
+
+    None
+}
