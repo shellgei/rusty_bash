@@ -177,25 +177,3 @@ pub fn subarg_braced(text: &mut ReadingText) -> Option<SubArgBraced> {
 
     None
 }
-
-pub fn expand_brace(text: &String) -> Vec<String>{
-    let mut ans = vec!();
-    let mut tmp = "".to_string();
-    let stripped = text[1..text.len()-1].to_string().clone();
-    let mut escaped = false;
-    for ch in stripped.chars() {
-        if escaped {
-            escaped = false;
-            tmp.push(ch);
-        }else if ch == '\\' {
-            escaped = true;
-        }else if ch == ',' {
-            ans.push(tmp);
-            tmp = "".to_string();
-        }else{
-            tmp.push(ch);
-        };
-    }
-    ans.push(tmp);
-    ans
-}

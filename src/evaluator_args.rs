@@ -4,7 +4,6 @@
 use crate::evaluator::TextPos;
 use crate::BashElem;
 use glob::glob;
-use crate::parser_args::expand_brace;
 
 pub struct Arg {
     pub text: String,
@@ -193,7 +192,26 @@ pub struct SubArgBraced {
 
 impl ArgElem for SubArgBraced {
     fn eval(&self) -> Vec<String> {
-        expand_brace(&self.text)
+        //TODO: 真面目にパースしてsubargsにブレース内の要素を入れていく
+        let mut ans = vec!();
+        let mut tmp = "".to_string();
+        let stripped = self.text[1..self.text.len()-1].to_string().clone();
+        let mut escaped = false;
+        for ch in stripped.chars() {
+            if escaped {
+                escaped = false;
+                tmp.push(ch);
+            }else if ch == '\\' {
+                escaped = true;
+            }else if ch == ',' {
+                ans.push(tmp);
+                tmp = "".to_string();
+            }else{
+                tmp.push(ch);
+            };
+        }
+        ans.push(tmp);
+        ans
     }
 
     fn get_text(&self) -> String {
