@@ -14,19 +14,13 @@ pub struct Arg {
 
 impl Arg {
     fn combine(left: &Vec<String>, right: &Vec<String>) -> Vec<String> {
-        let mut ans = vec!();
-
         if left.len() == 0 {
-            for rstr in right {
-                ans.push(rstr.clone());
-            }
-            return ans;
+            return right.clone();
         };
 
+        let mut ans = vec!();
         for lstr in left {
-            for rstr in right {
-                ans.push(lstr.clone() + &rstr.clone());
-            }
+            ans.append( &mut right.iter().map(|r| lstr.clone() + &r.clone()).collect() );
         }
         ans
     }
