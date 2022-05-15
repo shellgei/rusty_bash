@@ -4,12 +4,13 @@
 use crate::evaluator::TextPos;
 use crate::BashElem;
 use glob::glob;
+use crate::parser_args::expand_brace;
 
-#[derive(Debug)]
 pub struct Arg {
     pub text: String,
     pub pos: TextPos,
-    pub subargs: Vec<SubArg>
+//    pub subargs: Vec<SubArg>
+    pub subargs: Vec<Box<dyn ArgElem>>
 }
 
 impl Arg {
@@ -56,14 +57,6 @@ impl Arg {
     }
 }
 
-#[derive(Debug)]
-pub struct SubArg {
-    pub text: String,
-    pub pos: TextPos,
-    pub quote: Option<char>,
-    pub braced: bool,
-}
-
 impl BashElem for Arg {
     fn parse_info(&self) -> String {
         format!("    arg      : '{}' ({})\n", self.text.clone(), self.pos.text())
@@ -96,18 +89,39 @@ impl BashElem for Arg {
     }
 }
 
-impl BashElem for SubArg {
+pub trait ArgElem {
+    fn eval(&self) -> Vec<String> {
+        vec!()
+    }
+
+    fn get_text(&self) -> String;
+    fn get_length(&self) -> usize;
+}
+
+pub struct SubArg {
+    pub text: String,
+    pub pos: TextPos,
+//    pub quote: Option<char>,
+    pub braced: bool,
+}
+
+impl ArgElem for SubArg {
+    /*
     fn parse_info(&self) -> String {
         format!("    arg      : '{}' ({})\n", self.text.clone(), self.pos.text())
     }
+    */
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
+
+    fn get_length(&self) -> usize {
+        self.pos.length
+    }
 
     fn eval(&self) -> Vec<String> {
-        if let Some(_q) = self.quote {
-            let strip = self.text[1..self.text.len()-1].to_string().clone();
-            let s = strip.replace("\\", "\\\\").replace("*", "\\*"); //escape for file glob
-            vec!(s)
-        }else if self.braced {
-            SubArg::expand_brace(&self.text)
+        if self.braced {
+            expand_brace(&self.text)
         }else{
             vec!(self.text.clone())
         }
@@ -134,26 +148,46 @@ impl SubArg {
         }
         ans
     }
+}
 
-    fn expand_brace(text: &String) -> Vec<String>{
-        let mut ans = vec!();
-        let mut tmp = "".to_string();
-        let stripped = text[1..text.len()-1].to_string().clone();
-        let mut escaped = false;
-        for ch in stripped.chars() {
-            if escaped {
-                escaped = false;
-                tmp.push(ch);
-            }else if ch == '\\' {
-                escaped = true;
-            }else if ch == ',' {
-                ans.push(tmp);
-                tmp = "".to_string();
-            }else{
-                tmp.push(ch);
-            };
-        }
-        ans.push(tmp);
-        ans
+pub struct SubArgDoubleQuoted {
+    pub text: String,
+    pub pos: TextPos,
+}
+
+impl ArgElem for SubArgDoubleQuoted {
+    fn eval(&self) -> Vec<String> {
+        let strip = self.text[1..self.text.len()-1].to_string();
+        let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
+        vec!(s)
+    }
+
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
+
+    fn get_length(&self) -> usize {
+        self.pos.length
+    }
+}
+
+pub struct SubArgSingleQuoted {
+    pub text: String,
+    pub pos: TextPos,
+}
+
+impl ArgElem for SubArgSingleQuoted {
+    fn eval(&self) -> Vec<String> {
+        let strip = self.text[1..self.text.len()-1].to_string();
+        let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
+        vec!(s)
+    }
+
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
+
+    fn get_length(&self) -> usize {
+        self.pos.length
     }
 }
