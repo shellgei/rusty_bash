@@ -88,7 +88,7 @@ impl BashElem for Arg {
         let mut globed_strings = vec!();
         for s in strings {
             for gs in Arg::expand_glob(&s) {
-                globed_strings.push(gs);
+                globed_strings.push(SubArg::remove_escape(&gs));
             }
         }
         //eprintln!("globed strings: {:?}", globed_strings);
@@ -103,13 +103,17 @@ impl BashElem for SubArg {
 
     fn eval(&self) -> Vec<String> {
         let mut ans = vec!();
-        if let Some(q) = self.quote {
+        if let Some(_q) = self.quote {
             let strip = self.text[1..self.text.len()-1].to_string().clone();
+            let s = strip.replace("\\", "\\\\").replace("*", "\\*"); //escape file glob
+            /*
             let s = if q == '\'' {
                 strip.replace("\\", "\\\\").replace("*", "\\*") //escape file glob
             }else{
-                strip.replace("\\\"", "\"").replace("*", "\\*") //escape for file glob
+                //strip.replace("\\\"", "\"").replace("*", "\\*").replace("\\", "\\\\") //escape for file glob
+                strip.replace("*", "\\*").replace("\\", "\\\\") //escape for file glob
             };
+            */
             ans.push(s);
             return ans;
         };
@@ -132,11 +136,11 @@ impl BashElem for SubArg {
                 };
             }
             ans.push(tmp);
-            //eprintln!("expanded: {:?}", ans);
             return ans;
         };
 
-        ans.push(SubArg::remove_escape(&self.text.clone()));
+        //ans.push(SubArg::remove_escape(&self.text.clone()));
+        ans.push(self.text.clone());
         ans
     }
 }
