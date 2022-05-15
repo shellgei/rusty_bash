@@ -100,7 +100,6 @@ pub trait ArgElem {
 pub struct SubArg {
     pub text: String,
     pub pos: TextPos,
-    pub braced: bool,
 }
 
 impl ArgElem for SubArg {
@@ -189,7 +188,6 @@ impl ArgElem for SubArgSingleQuoted {
 pub struct SubArgBraced {
     pub text: String,
     pub pos: TextPos,
-    pub braced: bool,
     pub subargs: Vec<Box<dyn ArgElem>>
 }
 

@@ -60,7 +60,6 @@ pub fn subarg_normal(text: &mut ReadingText) -> Option<SubArg> {
             let ans = SubArg{
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
-                    braced: false,
                  };
 
             text.pos_in_line += pos as u32;
@@ -165,7 +164,6 @@ pub fn subarg_braced(text: &mut ReadingText) -> Option<SubArgBraced> {
             let ans = SubArgBraced{
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
-                    braced: comma,
                     subargs: vec!(),
                  };
 
