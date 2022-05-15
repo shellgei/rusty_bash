@@ -102,46 +102,15 @@ impl BashElem for SubArg {
     }
 
     fn eval(&self) -> Vec<String> {
-        let mut ans = vec!();
         if let Some(_q) = self.quote {
             let strip = self.text[1..self.text.len()-1].to_string().clone();
-            let s = strip.replace("\\", "\\\\").replace("*", "\\*"); //escape file glob
-            /*
-            let s = if q == '\'' {
-                strip.replace("\\", "\\\\").replace("*", "\\*") //escape file glob
-            }else{
-                //strip.replace("\\\"", "\"").replace("*", "\\*").replace("\\", "\\\\") //escape for file glob
-                strip.replace("*", "\\*").replace("\\", "\\\\") //escape for file glob
-            };
-            */
-            ans.push(s);
-            return ans;
-        };
-
-        if self.braced {
-            let mut tmp = "".to_string();
-            let stripped = self.text[1..self.text.len()-1].to_string().clone();
-            let mut escaped = false;
-            for ch in stripped.chars() {
-                if escaped {
-                    escaped = false;
-                    tmp.push(ch);
-                }else if ch == '\\' {
-                    escaped = true;
-                }else if ch == ',' {
-                    ans.push(tmp);
-                    tmp = "".to_string();
-                }else{
-                    tmp.push(ch);
-                };
-            }
-            ans.push(tmp);
-            return ans;
-        };
-
-        //ans.push(SubArg::remove_escape(&self.text.clone()));
-        ans.push(self.text.clone());
-        ans
+            let s = strip.replace("\\", "\\\\").replace("*", "\\*"); //escape for file glob
+            vec!(s)
+        }else if self.braced {
+            SubArg::expand_brace(&self.text)
+        }else{
+            vec!(self.text.clone())
+        }
     }
 }
 
@@ -163,6 +132,28 @@ impl SubArg {
                 };
             };
         }
+        ans
+    }
+
+    fn expand_brace(text: &String) -> Vec<String>{
+        let mut ans = vec!();
+        let mut tmp = "".to_string();
+        let stripped = text[1..text.len()-1].to_string().clone();
+        let mut escaped = false;
+        for ch in stripped.chars() {
+            if escaped {
+                escaped = false;
+                tmp.push(ch);
+            }else if ch == '\\' {
+                escaped = true;
+            }else if ch == ',' {
+                ans.push(tmp);
+                tmp = "".to_string();
+            }else{
+                tmp.push(ch);
+            };
+        }
+        ans.push(tmp);
         ans
     }
 }

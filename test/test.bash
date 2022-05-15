@@ -85,5 +85,8 @@ EOF
 res=$($com <<< 'echo "*"')
 [ "$res" = "*" ]
 
+#res=$($com <<< 'echo {a,b{c,d},e}')
+#[ "$res" = "a bc bd e" ]
+
 trap "" EXIT
 echo TEST OK
