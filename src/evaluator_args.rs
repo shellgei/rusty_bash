@@ -20,7 +20,12 @@ impl Arg {
 
         let mut ans = vec!();
         for lstr in left {
-            ans.append( &mut right.iter().map(|r| lstr.clone() + &r.clone()).collect() );
+            let mut con = right
+                .iter()
+                .map(|r| lstr.clone() + &r.clone())
+                .collect();
+
+            ans.append(&mut con);
         }
         ans
     }
@@ -35,7 +40,6 @@ impl Arg {
                         if let Some(s) = d.to_str() {
                             ans.push(s.to_string());
                         };
-                        //eprintln!("PROG: {:?}", ans);
                     },
                     _ => (),
                 }
@@ -100,17 +104,13 @@ impl BashElem for SubArg {
     fn eval(&self) -> Vec<String> {
         let mut ans = vec!();
         if let Some(q) = self.quote {
-            if q == '\'' {
-                let s = self.text[1..self.text.len()-1].to_string().clone();
-                let es = s.replace("\\", "\\\\").replace("*", "\\*"); //escape file glob
-                //eprintln!("escaped: {}", es);
-                ans.push(es);
+            let strip = self.text[1..self.text.len()-1].to_string().clone();
+            let s = if q == '\'' {
+                strip.replace("\\", "\\\\").replace("*", "\\*") //escape file glob
             }else{
-                let s = SubArg::remove_escape_dq(&self.text[1..self.text.len()-1].to_string().clone());
-                let es = s.replace("\\", "\\\\").replace("*", "\\*"); //escape file glob
-                //eprintln!("escaped: {}", es);
-                ans.push(es);
+                strip.replace("\\\"", "\"").replace("*", "\\*") //escape for file glob
             };
+            ans.push(s);
             return ans;
         };
 
@@ -160,31 +160,5 @@ impl SubArg {
             };
         }
         ans
-    }
-
-    fn remove_escape_dq(text: &String) -> String{
-        text.clone().replace("\\\"", "\"").replace("\\\\", "\\")
-        /*
-        let mut escaped = false;
-        let mut ans = "".to_string();
-        
-        for ch in text.chars() {
-            if escaped {
-                if ch != '\\' && ch != '"' {
-                    ans.push('\\');
-                };
-                ans.push(ch);
-                escaped = false;
-            }else{ //not secaped
-                if ch == '\\' {
-                    escaped = true;
-                }else{
-                    ans.push(ch);
-                    escaped = false;
-                };
-            };
-        }
-        ans
-        */
     }
 }
