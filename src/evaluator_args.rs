@@ -9,7 +9,6 @@ use crate::parser_args::expand_brace;
 pub struct Arg {
     pub text: String,
     pub pos: TextPos,
-//    pub subargs: Vec<SubArg>
     pub subargs: Vec<Box<dyn ArgElem>>
 }
 
@@ -101,7 +100,6 @@ pub trait ArgElem {
 pub struct SubArg {
     pub text: String,
     pub pos: TextPos,
-//    pub quote: Option<char>,
     pub braced: bool,
 }
 
@@ -120,11 +118,7 @@ impl ArgElem for SubArg {
     }
 
     fn eval(&self) -> Vec<String> {
-        if self.braced {
-            expand_brace(&self.text)
-        }else{
-            vec!(self.text.clone())
-        }
+        vec!(self.text.clone())
     }
 }
 
@@ -181,6 +175,27 @@ impl ArgElem for SubArgSingleQuoted {
         let strip = self.text[1..self.text.len()-1].to_string();
         let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
         vec!(s)
+    }
+
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
+
+    fn get_length(&self) -> usize {
+        self.pos.length
+    }
+}
+
+pub struct SubArgBraced {
+    pub text: String,
+    pub pos: TextPos,
+    pub braced: bool,
+    pub subargs: Vec<Box<dyn ArgElem>>
+}
+
+impl ArgElem for SubArgBraced {
+    fn eval(&self) -> Vec<String> {
+        expand_brace(&self.text)
     }
 
     fn get_text(&self) -> String {
