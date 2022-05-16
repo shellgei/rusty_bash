@@ -7,10 +7,13 @@ use std::ffi::CString;
 use crate::ShellCore;
 
 pub trait BashElem {
-    fn blue_string(&self, text: String) -> String {
-        format!("\x1b[34m{}\x1b[m", text)
+    fn blue_string(&self, strings: &Vec<String>) -> Vec<String> {
+        strings
+            .iter()
+            .map(|s| format!("\x1b[34m{}\x1b[m", s))
+            .collect()
     }
-    fn parse_info(&self) -> String;
+    fn parse_info(&self) -> Vec<String>;
     fn exec(&self, _conf: &mut ShellCore){}
     fn eval(&self) -> Vec<String> {
         vec!()
@@ -36,8 +39,8 @@ impl TextPos {
 /* empty element */
 pub struct Empty { }
 impl BashElem for Empty {
-    fn parse_info(&self) -> String {
-        "".to_string()
+    fn parse_info(&self) -> Vec<String> {
+        vec!()
     }
 }
 
@@ -49,8 +52,8 @@ pub struct Delim {
 }
 
 impl BashElem for Delim {
-    fn parse_info(&self) -> String {
-        format!("    delimiter: '{}' ({})\n", self.text.clone(), self.pos.text())
+    fn parse_info(&self) -> Vec<String> {
+        vec!(format!("    delimiter: '{}' ({})\n", self.text.clone(), self.pos.text()))
     }
 }
 
@@ -63,8 +66,8 @@ pub struct Eoc {
 }
 
 impl BashElem for Eoc {
-    fn parse_info(&self) -> String {
-        format!("    end mark : '{}' ({})\n", self.text.clone(), self.pos.text())
+    fn parse_info(&self) -> Vec<String> {
+        vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.pos.text()))
 
     }
 }
@@ -77,13 +80,13 @@ pub struct CommandWithArgs {
 }
 
 impl BashElem for CommandWithArgs {
-    fn parse_info(&self) -> String {
-        let mut ans = format!("command: '{}'\n", self.text);
+    fn parse_info(&self) -> Vec<String> {
+        let mut ans = vec!(format!("command: '{}'\n", self.text));
         for elem in &self.elems {
-            ans += &elem.parse_info();
+            ans.append(&mut elem.parse_info());
         };
         
-        self.blue_string(ans)
+        self.blue_string(&ans)
     }
 
     fn exec(&self, conf: &mut ShellCore){
@@ -124,7 +127,9 @@ impl CommandWithArgs {
             .collect();
 
         if conf.flags.d {
-            eprintln!("{}", self.parse_info());
+            for s in self.parse_info() {
+                eprintln!("{}", s);
+            };
         };
         execvp(&cargs[0], &*cargs).expect("Cannot exec");
     }

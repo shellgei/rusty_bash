@@ -86,8 +86,8 @@ EOF
 )
 [ "$res" = 'a b,c d,e f' ]
 
-#res=$($com <<< 'echo {a,b{c,d},e}')
-#[ "$res" = "a bc bd e" ]
+res=$($com <<< 'echo {a,b{c,d},e}')
+[ "$res" = "a bc bd e" ]
 
 # glob test
 

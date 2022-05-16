@@ -67,12 +67,14 @@ pub fn arg_in_brace(text: &mut ReadingText) -> Option<Arg> {
 
 pub fn subarg_in_brace(text: &mut ReadingText) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_braced(text) {
+        eprintln!("SUBARG_BRACED: {}", a.get_text());
         return Some(Box::new(a));
     }else if let Some(a) = subarg_single_qt(text) {
         return Some(Box::new(a));
     }else if let Some(a) = subarg_double_qt(text) {
         return Some(Box::new(a));
     }else if let Some(a) = subarg_normal_in_brace(text) {
+        eprintln!("SUBARG_NORMAL: {}", a.get_text());
         return Some(Box::new(a));
     }
     None
@@ -134,7 +136,7 @@ pub fn subarg_normal_in_brace(text: &mut ReadingText) -> Option<SubArg> {
             continue;
         };
 
-        if ch == ',' || ch == '}' {
+        if ch == ',' || ch == '}' || ch == '{' {
             let ans = SubArg{
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
@@ -214,8 +216,6 @@ pub fn subarg_braced(text: &mut ReadingText) -> Option<SubArgBraced> {
         return None;
     };
     
-    let level = 1;
-
     let mut ans = SubArgBraced {
         text: "{".to_string(),
         pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 1},

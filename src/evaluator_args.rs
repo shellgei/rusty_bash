@@ -56,8 +56,13 @@ impl Arg {
 }
 
 impl BashElem for Arg {
-    fn parse_info(&self) -> String {
-        format!("    arg      : '{}' ({})\n", self.text.clone(), self.pos.text())
+    fn parse_info(&self) -> Vec<String> {
+        let mut ans = vec!(format!("    arg      : '{}' ({})", self.text.clone(), self.pos.text()));
+        for sub in &self.subargs {
+            ans.push("        subarg      : ".to_owned() + &*sub.get_text());
+        };
+
+        ans
     }
 
     fn eval(&self) -> Vec<String> {
