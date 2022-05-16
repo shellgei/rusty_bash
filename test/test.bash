@@ -85,6 +85,12 @@ EOF
 res=$($com <<< 'echo "*"')
 [ "$res" = "*" ]
 
+res=$($com << 'EOF'
+echo {a,"b,c",'d,e',f}
+EOF
+)
+[ "$res" = 'a b,c d,e f' ]
+
 #res=$($com <<< 'echo {a,b{c,d},e}')
 #[ "$res" = "a bc bd e" ]
 

@@ -81,6 +81,26 @@ pub fn delimiter(text: &mut ReadingText) -> Option<Delim> {
     None
 }
 
+pub fn single_char_delimiter(text: &mut ReadingText, symbol: char) -> Option<Delim> {
+    if let Some(ch) = text.remaining.chars().nth(0) {
+        if ch == symbol {
+            let ans = Delim{
+                text: text.remaining[0..1].to_string(),
+                pos: TextPos{
+                    lineno: text.from_lineno,
+                    pos: text.pos_in_line,
+                    length: 1
+                }
+            };
+
+            text.pos_in_line += 1;
+            text.remaining = text.remaining[1..].to_string();
+            return Some(ans);
+        };
+    };
+
+    None
+}
 pub fn end_of_command(text: &mut ReadingText) -> Option<Eoc> {
     if text.remaining.len() == 0 {
         return None;

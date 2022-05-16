@@ -45,7 +45,6 @@ impl BashElem for Empty {
 #[derive(Debug)]
 pub struct Delim {
     pub text: String,
-    //pub text_pos: usize
     pub pos: TextPos,
 }
 

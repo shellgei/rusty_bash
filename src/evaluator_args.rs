@@ -187,30 +187,21 @@ impl ArgElem for SubArgSingleQuoted {
 pub struct SubArgBraced {
     pub text: String,
     pub pos: TextPos,
-    pub subargs: Vec<Box<dyn ArgElem>>
+    pub args: Vec<Arg>
 }
 
 impl ArgElem for SubArgBraced {
     fn eval(&self) -> Vec<String> {
-        //TODO: 真面目にパースしてsubargsにブレース内の要素を入れていく
+        if self.args.len() == 0{
+            return vec!("{}".to_string());
+        }else if self.args.len() == 1{
+            return vec!("{".to_owned() + &self.args[0].text.clone() + "}");
+        };
+
         let mut ans = vec!();
-        let mut tmp = "".to_string();
-        let stripped = self.text[1..self.text.len()-1].to_string().clone();
-        let mut escaped = false;
-        for ch in stripped.chars() {
-            if escaped {
-                escaped = false;
-                tmp.push(ch);
-            }else if ch == '\\' {
-                escaped = true;
-            }else if ch == ',' {
-                ans.push(tmp);
-                tmp = "".to_string();
-            }else{
-                tmp.push(ch);
-            };
-        }
-        ans.push(tmp);
+        for arg in &self.args {
+            ans.append(&mut arg.eval());
+        };
         ans
     }
 
