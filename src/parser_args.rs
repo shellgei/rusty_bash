@@ -67,14 +67,12 @@ pub fn arg_in_brace(text: &mut ReadingText) -> Option<Arg> {
 
 pub fn subarg_in_brace(text: &mut ReadingText) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_braced(text) {
-        eprintln!("SUBARG_BRACED: {}", a.get_text());
         return Some(Box::new(a));
     }else if let Some(a) = subarg_single_qt(text) {
         return Some(Box::new(a));
     }else if let Some(a) = subarg_double_qt(text) {
         return Some(Box::new(a));
     }else if let Some(a) = subarg_normal_in_brace(text) {
-        eprintln!("SUBARG_NORMAL: {}", a.get_text());
         return Some(Box::new(a));
     }
     None
