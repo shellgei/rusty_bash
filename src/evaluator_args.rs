@@ -47,9 +47,28 @@ impl Arg {
 
         if ans.len() == 0 {
             let s = text.clone().replace("\\*", "*").replace("\\\\", "\\");
-            //eprintln!("deescaped: {}", s);
             ans.push(s);
         };
+        ans
+    }
+
+    pub fn remove_escape(text: &String) -> String{
+        let mut escaped = false;
+        let mut ans = "".to_string();
+        
+        for ch in text.chars() {
+            if escaped {
+                ans.push(ch);
+                escaped = false;
+            }else{ //not secaped
+                if ch == '\\' {
+                    escaped = true;
+                }else{
+                    ans.push(ch);
+                    escaped = false;
+                };
+            };
+        }
         ans
     }
 }
@@ -79,16 +98,6 @@ impl BashElem for Arg {
             strings = Arg::combine(&strings, &ss);
         }
         strings
-
-        /*
-        let mut globed_strings = vec!();
-        for s in strings {
-            for gs in Arg::expand_glob(&s) {
-                globed_strings.push(SubArg::remove_escape(&gs));
-            }
-        }
-        globed_strings
-        */
     }
 }
 
@@ -107,11 +116,6 @@ pub struct SubArg {
 }
 
 impl ArgElem for SubArg {
-    /*
-    fn parse_info(&self) -> String {
-        format!("    arg      : '{}' ({})\n", self.text.clone(), self.pos.text())
-    }
-    */
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -125,27 +129,6 @@ impl ArgElem for SubArg {
     }
 }
 
-impl SubArg {
-    pub fn remove_escape(text: &String) -> String{
-        let mut escaped = false;
-        let mut ans = "".to_string();
-        
-        for ch in text.chars() {
-            if escaped {
-                ans.push(ch);
-                escaped = false;
-            }else{ //not secaped
-                if ch == '\\' {
-                    escaped = true;
-                }else{
-                    ans.push(ch);
-                    escaped = false;
-                };
-            };
-        }
-        ans
-    }
-}
 
 pub struct SubArgDoubleQuoted {
     pub text: String,

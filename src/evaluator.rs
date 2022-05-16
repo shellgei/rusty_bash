@@ -6,8 +6,6 @@ use nix::sys::wait::*;
 use std::ffi::CString;
 use crate::ShellCore;
 use crate::evaluator_args::Arg;
-use crate::evaluator_args::SubArg;
-
 
 pub trait BashElem {
     fn blue_string(&self, strings: &Vec<String>) -> Vec<String> {
@@ -112,20 +110,17 @@ impl BashElem for CommandWithArgs {
 
 impl CommandWithArgs {
     fn eval_args(&self) -> Vec<String> {
-        let mut args = Vec::<String>::new();
+        let mut args = vec!();
 
         for elem in &self.elems {
             for s in &elem.eval() {
-                let mut ss = Arg::expand_glob(&s.clone());
-                args.append(&mut ss);
+                args.append(&mut Arg::expand_glob(&s.clone()));
             }
         };
 
-        let mut ans = vec!();
-        for arg in args {
-            ans.push(SubArg::remove_escape(&arg));
-        }
-        ans
+        args.iter()
+            .map(|a| Arg::remove_escape(&a))
+            .collect()
     }
 
     fn exec_external_command(&self, args: &Vec<String>, conf: &mut ShellCore) {
