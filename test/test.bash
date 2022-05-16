@@ -74,6 +74,21 @@ EOF
 )
 [ "$res" = 'acへe acへf adへe adへf bcへe bcへf bdへe bdへf' ]
 
+res=$($com << 'EOF'
+echo {,b,c}{a,b}
+EOF
+)
+[ "$res" = 'a b ba bb ca cb' ]
+
+res=$($com << 'EOF'
+echo {a,"b,c",'d,e',f}
+EOF
+)
+[ "$res" = 'a b,c d,e f' ]
+
+#res=$($com <<< 'echo {a,b{c,d},e}')
+#[ "$res" = "a bc bd e" ]
+
 # glob test
 
 res=$($com << 'EOF'
@@ -85,14 +100,6 @@ EOF
 res=$($com <<< 'echo "*"')
 [ "$res" = "*" ]
 
-res=$($com << 'EOF'
-echo {a,"b,c",'d,e',f}
-EOF
-)
-[ "$res" = 'a b,c d,e f' ]
-
-#res=$($com <<< 'echo {a,b{c,d},e}')
-#[ "$res" = "a bc bd e" ]
 
 trap "" EXIT
 echo TEST OK

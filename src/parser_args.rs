@@ -44,6 +44,18 @@ pub fn arg_in_brace(text: &mut ReadingText) -> Option<Arg> {
         subargs: vec!(),
     };
 
+    if let Some(ch) = text.remaining.chars().nth(0) {
+        if ch == ',' || ch == '}' {
+            let tmp = SubArg{
+                text: "".to_string(),
+                pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
+            };
+            ans.subargs.push(Box::new(tmp));
+
+            return Some(ans);
+        }
+    };
+
     while let Some(result) = subarg_in_brace(text) {
         ans.text += &(*result).get_text();
         ans.pos.length += (*result).get_length();
@@ -201,6 +213,8 @@ pub fn subarg_braced(text: &mut ReadingText) -> Option<SubArgBraced> {
     }else{
         return None;
     };
+    
+    let level = 1;
 
     let mut ans = SubArgBraced {
         text: "{".to_string(),
