@@ -5,6 +5,9 @@ use nix::unistd::{execvp, fork, ForkResult, Pid};
 use nix::sys::wait::*;
 use std::ffi::CString;
 use crate::ShellCore;
+use crate::evaluator_args::Arg;
+use crate::evaluator_args::SubArg;
+
 
 pub trait BashElem {
     fn blue_string(&self, strings: &Vec<String>) -> Vec<String> {
@@ -113,11 +116,16 @@ impl CommandWithArgs {
 
         for elem in &self.elems {
             for s in &elem.eval() {
-                args.push(s.clone());
+                let mut ss = Arg::expand_glob(&s.clone());
+                args.append(&mut ss);
             }
         };
 
-        args
+        let mut ans = vec!();
+        for arg in args {
+            ans.push(SubArg::remove_escape(&arg));
+        }
+        ans
     }
 
     fn exec_external_command(&self, args: &Vec<String>, conf: &mut ShellCore) {

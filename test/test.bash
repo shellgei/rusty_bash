@@ -89,6 +89,9 @@ EOF
 res=$($com <<< 'echo {a,b{c,d},e}')
 [ "$res" = "a bc bd e" ]
 
+res=$($com <<< 'echo {a,*}zzzzz')
+[ "$res" = "azzzzz *zzzzz" ]
+
 # glob test
 
 res=$($com << 'EOF'

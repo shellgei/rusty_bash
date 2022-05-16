@@ -29,7 +29,7 @@ impl Arg {
         ans
     }
 
-    fn expand_glob(text: &String) -> Vec<String> {
+    pub fn expand_glob(text: &String) -> Vec<String> {
         let mut ans: Vec<String> = vec!();
 
         if let Ok(path) = glob(&text) {
@@ -50,7 +50,6 @@ impl Arg {
             //eprintln!("deescaped: {}", s);
             ans.push(s);
         };
-        //eprintln!("ANS: {:?}", ans);
         ans
     }
 }
@@ -79,16 +78,17 @@ impl BashElem for Arg {
         for ss in subevals {
             strings = Arg::combine(&strings, &ss);
         }
-        //eprintln!("strings: {:?}", strings);
+        strings
 
+        /*
         let mut globed_strings = vec!();
         for s in strings {
             for gs in Arg::expand_glob(&s) {
                 globed_strings.push(SubArg::remove_escape(&gs));
             }
         }
-        //eprintln!("globed strings: {:?}", globed_strings);
         globed_strings
+        */
     }
 }
 
@@ -126,7 +126,7 @@ impl ArgElem for SubArg {
 }
 
 impl SubArg {
-    fn remove_escape(text: &String) -> String{
+    pub fn remove_escape(text: &String) -> String{
         let mut escaped = false;
         let mut ans = "".to_string();
         
