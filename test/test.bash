@@ -103,6 +103,14 @@ EOF
 res=$($com <<< 'echo "*"')
 [ "$res" = "*" ]
 
+### DIRECTORY TEST ###
+
+res=$($com << 'EOF'
+cd /
+pwd
+EOF
+)
+[ "$res" = "/" ]
 
 trap "" EXIT
 echo TEST OK
