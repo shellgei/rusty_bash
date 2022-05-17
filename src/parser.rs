@@ -15,6 +15,10 @@ pub struct ReadingText {
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Box<dyn BashElem> {
+    if let Some(delim) = single_char_delimiter(text, '\n') {
+        return Box::new(delim);
+    };
+
     //only a command is recognized currently
     if let Some(result) = command_with_args(text) {
         text.remaining = "".to_string();
