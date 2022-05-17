@@ -3,6 +3,7 @@
 
 use std::collections::HashMap;
 use std::process::exit;
+use std::env;
 
 pub struct Flags {
     pub v: bool,
@@ -44,12 +45,21 @@ impl ShellCore {
         };
 
         conf.internal_commands.insert("exit".to_string(), Self::exit);
+        conf.internal_commands.insert("cd".to_string(), Self::pwd);
 
         conf
     }
 
     pub fn exit(_args: &Vec<String>) -> i32 {
         exit(0);
+    }
+
+    pub fn pwd(_args: &Vec<String>) -> i32 {
+            match env::current_dir() {
+                Ok(path) => println!("{}", path.display()),
+                _        => panic!("Cannot get current dir"),
+            }
+            0
     }
 
     pub fn get_internal_command(&self, name: &String) -> Option<fn(args: &Vec<String>) -> i32> {
