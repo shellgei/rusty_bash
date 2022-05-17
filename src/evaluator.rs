@@ -91,10 +91,10 @@ impl BashElem for CommandWithArgs {
     }
 
     fn exec(&self, conf: &mut ShellCore){
-        let args = self.eval_args();
+        let mut args = self.eval_args();
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
-            func(&args);
+            func(&mut args);
             return;
         }
 

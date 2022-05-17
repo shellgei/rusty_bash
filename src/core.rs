@@ -30,7 +30,7 @@ pub struct History {
 }
 
 pub struct ShellCore {
-    pub internal_commands: HashMap<String, fn(args: &Vec<String>) -> i32>,
+    pub internal_commands: HashMap<String, fn(args: &mut Vec<String>) -> i32>,
     pub vars: HashMap<&'static str, String>,
     pub history: Vec<History>,
     pub flags: Flags,
@@ -52,11 +52,11 @@ impl ShellCore {
         conf
     }
 
-    pub fn exit(_args: &Vec<String>) -> i32 {
+    pub fn exit(_args: &mut Vec<String>) -> i32 {
         exit(0);
     }
 
-    pub fn pwd(_args: &Vec<String>) -> i32 {
+    pub fn pwd(_args: &mut Vec<String>) -> i32 {
         match env::current_dir() {
             Ok(path) => println!("{}", path.display()),
             _        => panic!("Cannot get current dir"),
@@ -64,10 +64,13 @@ impl ShellCore {
         0
     }
 
-    pub fn cd(args: &Vec<String>) -> i32 {
-        if args.len() < 1 {
-            return 1;
-        }
+    pub fn cd(args: &mut Vec<String>) -> i32 {
+        if args.len() == 0 {
+            eprintln!("Bug of this shell");
+        }else if args.len() == 1 {
+            let var = env::var("HOME").expect("HOME is not defined");
+            args.push(var);
+        };
 
         let path = Path::new(&args[1]);
         if env::set_current_dir(&path).is_ok() {
@@ -78,7 +81,7 @@ impl ShellCore {
         }
     }
 
-    pub fn get_internal_command(&self, name: &String) -> Option<fn(args: &Vec<String>) -> i32> {
+    pub fn get_internal_command(&self, name: &String) -> Option<fn(args: &mut Vec<String>) -> i32> {
         if self.internal_commands.contains_key(name) {
             Some(self.internal_commands[name])
         }else{
