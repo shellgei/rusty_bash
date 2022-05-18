@@ -151,8 +151,17 @@ impl Writer {
 }
 
 pub fn prompt() -> u16 {
+    let home = if let Ok(h) = env::var("HOME"){
+        h
+    }else{
+        "unknown".to_string()
+    };
+
     let path = if let Ok(p) = env::current_dir(){
-        p.into_os_string().into_string().unwrap()
+        p.into_os_string()
+            .into_string()
+            .unwrap()
+            .replace(&home, "~")
     }else{
         "no_path".to_string()
     };
