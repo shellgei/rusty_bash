@@ -74,7 +74,7 @@ fn main() {
 
     loop {
         let line = if core.flags.i {
-            let len_prompt = term::prompt(&format!("{}", input.to_lineno+1));
+            let len_prompt = term::prompt();
             term::read_line(len_prompt, &mut core.history)
         }else{
             read_line()

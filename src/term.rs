@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::io;
+use std::env;
 use std::io::{Write, stdout, stdin};
-use std::convert::TryInto;
 use std::io::Stdout;
 
 use termion::{event};
@@ -150,14 +150,33 @@ impl Writer {
     }
 }
 
-pub fn prompt(text: &String) -> u16 {
-    let prompt = format!("{} $ ", text);
-    print!("{}", prompt);
+pub fn prompt() -> u16 {
+    let path = if let Ok(p) = env::current_dir(){
+        p.into_os_string().into_string().unwrap()
+    }else{
+        "no_path".to_string()
+    };
+
+    let user = if let Ok(u) = env::var("USER"){
+        u
+    }else{
+        "unknown".to_string()
+    };
+
+    /*
+    let host = if let Ok(h) = env::var("HOSTNAME"){
+        h
+    }else{
+        "unknown".to_string()
+    };*/
+
+    print!("\x1b[33m\x1b[1m{}@somehost\x1b[m\x1b[m ", user);
+    print!("\x1b[35m\x1b[1m{}\x1b[m\x1b[m", path);
+    print!("$ ");
     io::stdout().flush().unwrap();
 
-    prompt.len().try_into().unwrap()
+    (user.len() + path.len() + 10 + 2) as u16
 }
-
 
 pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
     let mut writer = Writer::new(history.len(), left);
