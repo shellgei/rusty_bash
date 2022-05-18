@@ -57,7 +57,7 @@ fn get_hostname() -> String{
 
         let mut fullname = String::new();
         if let Ok(_) = file.read_to_string(&mut fullname) {
-            return fullname;
+            return fullname.trim_end().to_string();
         }
     }
 
@@ -89,7 +89,7 @@ fn main() {
 
     loop {
         let line = if core.flags.i {
-            let len_prompt = term::prompt();
+            let len_prompt = term::prompt(&mut core);
             term::read_line(len_prompt, &mut core.history)
         }else{
             read_line()
