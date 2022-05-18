@@ -172,19 +172,18 @@ pub fn prompt() -> u16 {
         "unknown".to_string()
     };
 
-    /*
     let host = if let Ok(h) = env::var("HOSTNAME"){
         h
     }else{
         "unknown".to_string()
-    };*/
+    };
 
-    print!("\x1b[33m\x1b[1m{}@somehost\x1b[m\x1b[m ", user);
+    print!("\x1b[33m\x1b[1m{}@{}\x1b[m\x1b[m ", user, host);
     print!("\x1b[35m\x1b[1m{}\x1b[m\x1b[m", path);
     print!("$ ");
     io::stdout().flush().unwrap();
 
-    (user.len() + path.len() + 10 + 2) as u16
+    (user.len() + host.len() + path.len() + 10 + 2) as u16
 }
 
 pub fn read_line(left: u16, history: &mut Vec<History>) -> String{

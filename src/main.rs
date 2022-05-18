@@ -12,6 +12,8 @@ use std::{io,env,process};
 use std::process::exit;
 use std::path::Path;
 use std::os::linux::fs::MetadataExt;
+use std::fs::File;
+use std::io::Read;
 
 use crate::core::ShellCore;
 use crate::evaluator::BashElem;
@@ -50,6 +52,18 @@ fn is_interactive(pid: u32) -> bool {
     }
 }
 
+fn get_hostname() -> String{
+    if let Ok(mut file) = File::open("/etc/hostname") {
+
+        let mut fullname = String::new();
+        if let Ok(_) = file.read_to_string(&mut fullname) {
+            return fullname;
+        }
+    }
+
+    "unknown".to_string()
+}
+
 fn main() {
     let mut core = ShellCore::new();
     let args: Vec<String> = env::args().collect();
@@ -70,6 +84,7 @@ fn main() {
 
     let pid = process::id();
     core.vars.insert("PID", pid.to_string());
+    core.vars.insert("HOSTNAME", get_hostname());
     core.flags.i = is_interactive(pid);
 
     loop {
