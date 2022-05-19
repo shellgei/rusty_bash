@@ -13,8 +13,7 @@ use termion::input::TermRead;
 
 use crate::core::History;
 use crate::ShellCore;
-
-use glob::glob;
+use crate::utils::eval_glob;
 
 struct Writer {
     stdout: RawTerminal<Stdout>, 
@@ -125,20 +124,8 @@ impl Writer {
     }
 
     fn tab_completion(&mut self) {
-        let mut ans: Vec<String> = vec!();
         let s: String = self.last_arg() + "*";
-        if let Ok(path) = glob(&s) {
-            for dir in path {
-                match dir {
-                    Ok(d) => {
-                        if let Some(s) = d.to_str() {
-                            ans.push(s.to_string());
-                        };
-                    },
-                    _ => (),
-                }
-            };
-        };
+        let ans = eval_glob(&s);
         eprintln!("\n{:?}", ans);
     }
 

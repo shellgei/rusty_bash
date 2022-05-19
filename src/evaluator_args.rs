@@ -3,7 +3,7 @@
 
 use crate::evaluator::TextPos;
 use crate::BashElem;
-use glob::glob;
+use crate::utils::eval_glob;
 
 pub struct Arg {
     pub text: String,
@@ -30,20 +30,7 @@ impl Arg {
     }
 
     pub fn expand_glob(text: &String) -> Vec<String> {
-        let mut ans: Vec<String> = vec!();
-
-        if let Ok(path) = glob(&text) {
-            for dir in path {
-                match dir {
-                    Ok(d) => {
-                        if let Some(s) = d.to_str() {
-                            ans.push(s.to_string());
-                        };
-                    },
-                    _ => (),
-                }
-            };
-        };
+        let mut ans = eval_glob(text);
 
         if ans.len() == 0 {
             let s = text.clone().replace("\\*", "*").replace("\\\\", "\\");

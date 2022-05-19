@@ -7,6 +7,7 @@ mod evaluator;
 mod evaluator_args;
 mod core;
 mod term;
+mod utils;
 
 use std::{io,env,process};
 use std::process::exit;
