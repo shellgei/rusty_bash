@@ -14,6 +14,8 @@ use termion::input::TermRead;
 use crate::core::History;
 use crate::ShellCore;
 
+use glob::glob;
+
 struct Writer {
     stdout: RawTerminal<Stdout>, 
     chars: Vec<char>,
@@ -102,6 +104,24 @@ impl Writer {
         self.stdout.flush().unwrap();
     }
 
+    fn tab_completion(&mut self) {
+        let mut ans: Vec<String> = vec!();
+        let s: String = self.chars.iter().collect::<String>() + "*";
+        if let Ok(path) = glob(&s) {
+            for dir in path {
+                match dir {
+                    Ok(d) => {
+                        if let Some(s) = d.to_str() {
+                            ans.push(s.to_string());
+                        };
+                    },
+                    _ => (),
+                }
+            };
+        };
+        eprintln!("\n{:?}", ans);
+    }
+
     fn remove(&mut self) {
         let (x, y) = self.cursor_pos();
         if self.chars.len() == 0 {
@@ -174,7 +194,7 @@ pub fn prompt(core: &mut ShellCore) -> u16 {
 
     let host = core.vars["HOSTNAME"].clone();
 
-    print!("\x1b[33m\x1b[1m{}@{}\x1b[m\x1b[m ", user, host);
+    print!("\x1b[33m\x1b[1m{}@{}\x1b[m\x1b[m:", user, host);
     print!("\x1b[35m\x1b[1m{}\x1b[m\x1b[m", path);
     print!("$ ");
     io::stdout().flush().unwrap();
@@ -196,13 +216,14 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
                 writer.end("\r\n");
                 break;
             },
-            event::Key::Up        => writer.write_history(-1, &history),
-            event::Key::Down      => writer.write_history(1, &history),
-            event::Key::Left      => writer.move_cursor(-1),
-            event::Key::Right     => writer.move_cursor(1),
-            event::Key::Backspace => writer.remove(),
-            event::Key::Char(c)   => writer.insert(c),
-            _ => {},
+            event::Key::Up         => writer.write_history(-1, &history),
+            event::Key::Down       => writer.write_history(1, &history),
+            event::Key::Left       => writer.move_cursor(-1),
+            event::Key::Right      => writer.move_cursor(1),
+            event::Key::Backspace  => writer.remove(),
+            event::Key::Char('\t') => writer.tab_completion(),
+            event::Key::Char(c)    => writer.insert(c),
+            _  => {},
         }
     }
 

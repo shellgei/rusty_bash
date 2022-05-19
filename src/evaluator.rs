@@ -4,6 +4,7 @@
 use nix::unistd::{execvp, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 use std::ffi::CString;
+use std::process::exit;
 use crate::ShellCore;
 use crate::evaluator_args::Arg;
 
@@ -134,7 +135,12 @@ impl CommandWithArgs {
                 eprintln!("{}", s);
             };
         };
-        execvp(&cargs[0], &*cargs).expect("Cannot exec");
+
+        if let Ok(_) = execvp(&cargs[0], &*cargs){
+        }
+
+        eprintln!("Command not found");
+        exit(127);
     }
 
     fn wait_command(child: Pid) {
