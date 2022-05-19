@@ -3,7 +3,7 @@
 
 use crate::evaluator::TextPos;
 use crate::BashElem;
-use crate::utils::eval_glob;
+use crate::utils::{combine,eval_glob};
 
 pub struct Arg {
     pub text: String,
@@ -12,6 +12,7 @@ pub struct Arg {
 }
 
 impl Arg {
+    /*
     fn combine(left: &Vec<String>, right: &Vec<String>) -> Vec<String> {
         if left.len() == 0 {
             return right.clone();
@@ -27,7 +28,7 @@ impl Arg {
             ans.append(&mut con);
         }
         ans
-    }
+    }*/
 
     pub fn expand_glob(text: &String) -> Vec<String> {
         let mut ans = eval_glob(text);
@@ -82,7 +83,7 @@ impl BashElem for Arg {
 
         let mut strings = vec!();
         for ss in subevals {
-            strings = Arg::combine(&strings, &ss);
+            strings = combine(&strings, &ss);
         }
         strings
     }

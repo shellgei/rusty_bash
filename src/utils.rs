@@ -20,3 +20,20 @@ pub fn eval_glob(globstr: &String) -> Vec<String> {
     };
     ans
 }
+
+pub fn combine(left: &Vec<String>, right: &Vec<String>) -> Vec<String> {
+    if left.len() == 0 {
+        return right.clone();
+    };
+
+    let mut ans = vec!();
+    for lstr in left {
+        let mut con = right
+            .iter()
+            .map(|r| lstr.clone() + &r.clone())
+            .collect();
+
+        ans.append(&mut con);
+    }
+    ans
+}
