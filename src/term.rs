@@ -104,9 +104,29 @@ impl Writer {
         self.stdout.flush().unwrap();
     }
 
+    fn last_arg(&self) -> String {
+        let mut escaped = false;
+        let mut pos = 0;
+        let mut counter = 0;
+        for ch in self.chars.clone() {
+            if escaped{
+                escaped = false;
+            }else if ch == '\\' {
+                escaped = true;
+            }
+
+            if !escaped && ch == ' '{
+                pos = counter+1;
+            }
+            counter += 1;
+        }
+
+        self.chars[pos..].iter().collect::<String>()
+    }
+
     fn tab_completion(&mut self) {
         let mut ans: Vec<String> = vec!();
-        let s: String = self.chars.iter().collect::<String>() + "*";
+        let s: String = self.last_arg() + "*";
         if let Ok(path) = glob(&s) {
             for dir in path {
                 match dir {
