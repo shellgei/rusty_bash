@@ -15,6 +15,31 @@ use crate::core::History;
 use crate::ShellCore;
 use crate::utils::eval_glob;
 
+fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
+    if strs.len() < 2 {
+        return false;
+    };
+
+    let ch0: char;
+    if let Some(ch) = &strs[0].chars().nth(nth){
+        ch0 = *ch;
+    }else{
+        return false;
+    }
+
+    for s in strs {
+        if let Some(ch) = s.chars().nth(nth){
+            if ch != ch0{
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    true
+}
+
 struct Writer {
     stdout: RawTerminal<Stdout>, 
     chars: Vec<char>,
@@ -126,6 +151,17 @@ impl Writer {
     fn tab_completion(&mut self) {
         let s: String = self.last_arg() + "*";
         let ans = eval_glob(&s);
+
+        /*
+        if ans.len() == 1 {
+            let mut counter = ans[0].len() + 1 - s.len();
+            while counter < ans[0].len() {
+                self.insert(ans[0].chars().nth(counter));
+                counter += 1;
+            }
+        }
+        */
+
         eprintln!("\n{:?}", ans);
     }
 
