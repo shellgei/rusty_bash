@@ -148,19 +148,21 @@ impl Writer {
         self.chars[pos..].iter().collect::<String>()
     }
 
-    fn tab_completion(&mut self, tab_num: u32) {
+    fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
         let s: String = self.last_arg() + "*";
         let ans = eval_glob(&s);
 
         if ans.len() == 0 || ans.len() > 2 {
             return;
         }else if tab_num == 2 {
-	        println!("\r");
+	        write!(self.stdout, "\r\n").unwrap();
 	        for f in ans {
-	            print!("{}        ", f.trim_end());
-	            self.stdout.flush().unwrap();
+	            write!(self.stdout, "{}        ", f).unwrap();
 	        }
-	        println!("\r");
+	        write!(self.stdout, "\r\n").unwrap();
+            self.stdout.flush().unwrap();
+
+            prompt(core);
             return;
         };
 
@@ -263,8 +265,8 @@ pub fn prompt(core: &mut ShellCore) -> u16 {
     (user.len() + host.len() + path.len() + 2 + 2) as u16
 }
 
-pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
-    let mut writer = Writer::new(history.len(), left);
+pub fn read_line(left: u16, core: &mut ShellCore) -> String{
+    let mut writer = Writer::new(core.history.len(), left);
     let mut tab_num = 0;
 
     for c in stdin().keys() {
@@ -278,12 +280,12 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
                 writer.end("\r\n");
                 break;
             },
-            event::Key::Up         => writer.write_history(-1, &history),
-            event::Key::Down       => writer.write_history(1, &history),
+            event::Key::Up         => writer.write_history(-1, &core.history),
+            event::Key::Down       => writer.write_history(1, &core.history),
             event::Key::Left       => writer.move_cursor(-1),
             event::Key::Right      => writer.move_cursor(1),
             event::Key::Backspace  => writer.remove(),
-            event::Key::Char('\t') => writer.tab_completion(tab_num+1),
+            event::Key::Char('\t') => writer.tab_completion(tab_num+1, core),
             event::Key::Char(ch)    => writer.insert(*ch),
             _  => {},
         }
@@ -296,6 +298,6 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
     }
 
     let ans = writer.chars.iter().collect::<String>();
-    history.push(History{commandline: ans.clone(), charwidths: writer.widths});
+    core.history.push(History{commandline: ans.clone(), charwidths: writer.widths});
     ans + "\n"
 }
