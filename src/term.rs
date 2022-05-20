@@ -148,40 +148,21 @@ impl Writer {
         self.chars[pos..].iter().collect::<String>()
     }
 
-    fn query_completion(&mut self) {
-        let s: String = self.last_arg() + "*";
-        let files = eval_glob(&s);
-
-        println!("\r");
-        for f in files {
-            print!("{}        ", f.trim_end());
-            self.stdout.flush().unwrap();
-        }
-        println!("\r");
-
-        /*
-        let base_len = self.last_arg().len();
-
-        if ans.len() == 1 {
-            for ch in ans[0][base_len..].chars() {
-                self.insert(ch);
-            }
-        }else{
-            for (i, ch) in ans[0][base_len..].chars().enumerate() {
-                if compare_nth_char(i+base_len, &ans) {
-                    self.insert(ch);
-                }else{
-                    break;
-                }
-            }
-        }
-        */
-       // eprintln!("\n{:?}", ans);
-    }
-
-    fn tab_completion(&mut self) {
+    fn tab_completion(&mut self, tab_num: u32) {
         let s: String = self.last_arg() + "*";
         let ans = eval_glob(&s);
+
+        if ans.len() == 0 || ans.len() > 2 {
+            return;
+        }else if tab_num == 2 {
+	        println!("\r");
+	        for f in ans {
+	            print!("{}        ", f.trim_end());
+	            self.stdout.flush().unwrap();
+	        }
+	        println!("\r");
+            return;
+        };
 
         let base_len = self.last_arg().len();
 
@@ -302,13 +283,7 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
             event::Key::Left       => writer.move_cursor(-1),
             event::Key::Right      => writer.move_cursor(1),
             event::Key::Backspace  => writer.remove(),
-            event::Key::Char('\t') => {
-                if tab_num == 0 {
-                    writer.tab_completion();
-                }else if tab_num == 1 { 
-                    writer.query_completion();
-                }
-            },
+            event::Key::Char('\t') => writer.tab_completion(tab_num+1),
             event::Key::Char(ch)    => writer.insert(*ch),
             _  => {},
         }
