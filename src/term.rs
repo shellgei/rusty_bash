@@ -148,6 +148,30 @@ impl Writer {
         self.chars[pos..].iter().collect::<String>()
     }
 
+    fn query_completion(&mut self) {
+        let s: String = self.last_arg() + "*";
+        let ans = eval_glob(&s);
+
+        /*
+        let base_len = self.last_arg().len();
+
+        if ans.len() == 1 {
+            for ch in ans[0][base_len..].chars() {
+                self.insert(ch);
+            }
+        }else{
+            for (i, ch) in ans[0][base_len..].chars().enumerate() {
+                if compare_nth_char(i+base_len, &ans) {
+                    self.insert(ch);
+                }else{
+                    break;
+                }
+            }
+        }
+        */
+        eprintln!("\n{:?}", ans);
+    }
+
     fn tab_completion(&mut self) {
         let s: String = self.last_arg() + "*";
         let ans = eval_glob(&s);
@@ -253,9 +277,10 @@ pub fn prompt(core: &mut ShellCore) -> u16 {
 
 pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
     let mut writer = Writer::new(history.len(), left);
+    let mut on_tab = false;
 
     for c in stdin().keys() {
-        match c.unwrap() {
+        match &c.as_ref().unwrap() {
             event::Key::Ctrl('c') => {
                 writer.chars.clear();
                 writer.end("^C\r\n");
@@ -270,9 +295,20 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
             event::Key::Left       => writer.move_cursor(-1),
             event::Key::Right      => writer.move_cursor(1),
             event::Key::Backspace  => writer.remove(),
-            event::Key::Char('\t') => writer.tab_completion(),
-            event::Key::Char(c)    => writer.insert(c),
+            event::Key::Char('\t') => {
+                if on_tab {
+                    writer.query_completion();
+                }else{
+                    writer.tab_completion();
+                    on_tab = true;
+                }
+            },
+            event::Key::Char(ch)    => writer.insert(*ch),
             _  => {},
+        }
+
+        if c.unwrap() != event::Key::Char('\t') {
+            on_tab = false;
         }
     }
 
