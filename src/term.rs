@@ -152,17 +152,15 @@ impl Writer {
         let s: String = self.last_arg() + "*";
         let ans = eval_glob(&s);
 
-        /*
+        let base_len = self.last_arg().len();
+
+        //let mut counter = ans[0].len() + 1 - s.len();
         if ans.len() == 1 {
-            let mut counter = ans[0].len() + 1 - s.len();
-            while counter < ans[0].len() {
-                self.insert(ans[0].chars().nth(counter));
-                counter += 1;
+            for ch in ans[0][base_len..].chars() {
+                self.insert(ch);
             }
         }
-        */
-
-        eprintln!("\n{:?}", ans);
+        //eprintln!("\n{:?}", ans);
     }
 
     fn remove(&mut self) {
