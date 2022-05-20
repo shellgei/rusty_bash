@@ -150,7 +150,14 @@ impl Writer {
 
     fn query_completion(&mut self) {
         let s: String = self.last_arg() + "*";
-        let ans = eval_glob(&s);
+        let files = eval_glob(&s);
+
+        println!("\r");
+        for f in files {
+            print!("{}        ", f.trim_end());
+            self.stdout.flush().unwrap();
+        }
+        println!("\r");
 
         /*
         let base_len = self.last_arg().len();
@@ -169,7 +176,7 @@ impl Writer {
             }
         }
         */
-        eprintln!("\n{:?}", ans);
+       // eprintln!("\n{:?}", ans);
     }
 
     fn tab_completion(&mut self) {
@@ -277,7 +284,7 @@ pub fn prompt(core: &mut ShellCore) -> u16 {
 
 pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
     let mut writer = Writer::new(history.len(), left);
-    let mut on_tab = false;
+    let mut tab_num = 0;
 
     for c in stdin().keys() {
         match &c.as_ref().unwrap() {
@@ -296,11 +303,10 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
             event::Key::Right      => writer.move_cursor(1),
             event::Key::Backspace  => writer.remove(),
             event::Key::Char('\t') => {
-                if on_tab {
-                    writer.query_completion();
-                }else{
+                if tab_num == 0 {
                     writer.tab_completion();
-                    on_tab = true;
+                }else if tab_num == 1 { 
+                    writer.query_completion();
                 }
             },
             event::Key::Char(ch)    => writer.insert(*ch),
@@ -308,7 +314,9 @@ pub fn read_line(left: u16, history: &mut Vec<History>) -> String{
         }
 
         if c.unwrap() != event::Key::Char('\t') {
-            on_tab = false;
+            tab_num = 0;
+        }else{
+            tab_num += 1;
         }
     }
 
