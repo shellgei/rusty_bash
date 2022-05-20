@@ -161,8 +161,9 @@ impl Writer {
 	        }
 	        write!(self.stdout, "\r\n").unwrap();
             self.stdout.flush().unwrap();
-
             prompt(core);
+            let (_, y) = self.cursor_pos();
+            self.rewrite_line(y, self.chars.iter().collect());
             return;
         };
 
