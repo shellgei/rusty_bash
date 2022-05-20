@@ -159,6 +159,14 @@ impl Writer {
             for ch in ans[0][base_len..].chars() {
                 self.insert(ch);
             }
+        }else{
+            for (i, ch) in ans[0][base_len..].chars().enumerate() {
+                if compare_nth_char(i+base_len, &ans) {
+                    self.insert(ch);
+                }else{
+                    break;
+                }
+            }
         }
         //eprintln!("\n{:?}", ans);
     }
