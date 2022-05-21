@@ -70,20 +70,21 @@ pub fn arg_in_brace(text: &mut ReadingText) -> Option<Arg> {
 
 pub fn subarg_in_brace(text: &mut ReadingText) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_braced(text) {
-        return Some(Box::new(a));
+        Some(Box::new(a))
     }else if let Some(a) = subarg_single_qt(text) {
-        return Some(Box::new(a));
+        Some(Box::new(a))
     }else if let Some(a) = subarg_double_qt(text) {
-        return Some(Box::new(a));
+        Some(Box::new(a))
     }else if let Some(a) = subarg_normal_in_brace(text) {
-        return Some(Box::new(a));
+        Some(Box::new(a))
+    }else{
+        None
     }
-    None
 }
 
 pub fn subarg_normal(text: &mut ReadingText) -> Option<SubArg> {
     if let Some(ch) = text.remaining.chars().nth(0) {
-        if ch == ' ' || ch == '\n' || ch == '\t' || ch == '"' || ch == '\'' || ch == ';' {
+        if let Some(_) = " \n\t\"';".find(ch) {
             return None;
         };
     }else{

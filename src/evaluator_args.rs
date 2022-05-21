@@ -28,17 +28,10 @@ impl Arg {
         let mut ans = "".to_string();
         
         for ch in text.chars() {
-            if escaped {
+            if escaped || ch != '\\' {
                 ans.push(ch);
-                escaped = false;
-            }else{ //not secaped
-                if ch == '\\' {
-                    escaped = true;
-                }else{
-                    ans.push(ch);
-                    escaped = false;
-                };
             };
+            escaped = !escaped && ch == '\\';
         }
         ans
     }
