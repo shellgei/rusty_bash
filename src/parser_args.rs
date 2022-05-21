@@ -185,26 +185,22 @@ pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArgDoubleQuoted> {
     let backup = text.clone();
 
     let mut ans = SubArgDoubleQuoted {
-        text: "\"".to_string(),
+        text: "".to_string(),
         pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
         subargs: vec!(),
     };
 
     if let Some(_) = single_char_delimiter(text, '"') {
-        ans.text += &"\"";
     }else{
         return None;
     }
 
     loop {
         if let Some(a) = subarg_variable_braced(text) {
-            ans.text += &a.text;
             ans.subargs.push(Box::new(a));
         }else if let Some(a) = subarg_variable_non_braced(text) {
-            ans.text += &a.text;
             ans.subargs.push(Box::new(a));
         }else if let Some(a) = string_in_double_qt(text) {
-            ans.text += &a.text;
             ans.subargs.push(Box::new(a));
         }else{
             break;
@@ -212,11 +208,16 @@ pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArgDoubleQuoted> {
     }
 
     if let Some(_) = single_char_delimiter(text, '"') {
-        ans.text += &"\"";
     }else{
-        *text = backup;
+        text.rewind(backup);
         return None;
     }
+
+    let mut text = "\"".to_string();
+    for a in &ans.subargs {
+        text += &a.get_text();
+    }
+    ans.text = text + "\"";
 
     Some(ans)
 }

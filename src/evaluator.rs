@@ -38,15 +38,6 @@ impl TextPos {
     }
 }
 
-/*
-pub struct Empty { }
-impl BashElem for Empty {
-    fn parse_info(&self) -> Vec<String> {
-        vec!()
-    }
-}
-*/
-
 /* delimiter */
 #[derive(Debug)]
 pub struct Delim {

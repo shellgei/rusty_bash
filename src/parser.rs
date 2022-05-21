@@ -14,11 +14,31 @@ pub struct ReadingText {
     pub pos_in_line: u32,
 }
 
+impl ReadingText {
+    pub fn new() -> ReadingText {
+        ReadingText {
+            remaining: "".to_string(),
+            from_lineno: 0,
+            to_lineno: 0,
+            pos_in_line: 0,
+        }
+    }
+
+    pub fn rewind(&mut self, backup: ReadingText) {
+        self.remaining = backup.remaining.clone();
+        self.from_lineno = backup.from_lineno;
+        self.to_lineno = backup.to_lineno;
+        self.pos_in_line = backup.pos_in_line;
+    }
+}
+
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Option<Box<dyn BashElem>> {
     if text.remaining.len() == 0 {
         return None;
     };
+
+    let backup = text.clone();
 
     if let Some(delim) = single_char_delimiter(text, '\n') {
         return Some(Box::new(delim));
@@ -29,6 +49,7 @@ pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Opt
         return Some(Box::new(result));
     }
 
+    text.rewind(backup);
     None
 }
 

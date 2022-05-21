@@ -116,9 +116,7 @@ impl ArgElem for SubArgDoubleQuoted {
             text += &sub[0];
         };
 
-        //let strip = text[1..text.len()-1].to_string();
-        let strip = text.to_string();
-        let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
+        let s = text.replace("\\", "\\\\").replace("*", "\\*"); 
         vec!(s)
     }
 

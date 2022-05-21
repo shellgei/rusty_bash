@@ -75,12 +75,7 @@ fn main() {
         };
     };
 
-    let mut input = ReadingText{
-        remaining: "".to_string(),
-        from_lineno: 0,
-        to_lineno: 0,
-        pos_in_line: 0,
-    };
+    let mut input = ReadingText::new();
 
 
     let pid = process::id();
