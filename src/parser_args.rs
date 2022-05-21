@@ -185,6 +185,22 @@ pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArgDoubleQuoted> {
         return None;
     }
 
+    let mut ans = SubArgDoubleQuoted {
+        text: "".to_string(),
+        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
+        subargs: vec!(),
+    };
+
+
+    if let Some(a) = string_in_double_qt(text) {
+        ans.subargs.push(Box::new(a));
+        //return Some
+    }
+    Some(ans)
+}
+
+pub fn string_in_double_qt(text: &mut ReadingText) -> Option<SubArg> {
+
     let mut pos = 1;
     let mut escaped = false;
     for ch in text.remaining[1..].chars() {
@@ -198,7 +214,7 @@ pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArgDoubleQuoted> {
             pos += ch.len_utf8();
         }else{
             pos += 1;
-            let ans = SubArgDoubleQuoted{
+            let ans = SubArg{
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
                  };

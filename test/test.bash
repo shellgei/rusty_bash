@@ -39,6 +39,12 @@ EOF
 )
 [ "$res" = '" \ a  bc' ]
 
+res=$($com << 'EOF'
+echo "a'b'c"
+EOF
+)
+[ "$res" = "a'b'c" ]
+
 res=$($com <<< 'echo hoge"hoge";')
 [ "$res" = "hogehoge" ]
 
@@ -49,6 +55,12 @@ res=$($com <<< 'echo ${SHELL}')
 
 res=$($com <<< 'echo $SHELL')
 [ "$res" = "rustybash" ]
+
+res=$($com << 'EOF'
+echo "a${SHELL}'b'c"
+EOF
+)
+[ "$res" = "arustybash'b'c" ]
 
 # brace expansion
 
