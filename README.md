@@ -6,6 +6,10 @@
 2. きれいに書けば「コードレベルでカスタマイズできるbashになるんじゃないか」と色気が出た
 3. ということで開発中
 
+## 現在の実装
+
+* [test/test.bash](https://github.com/ryuichiueda/rusty_bash/blob/main/test/test.bash)を見ると分かる。
+
 ## 開発への参加方法
 
 とりあえずルールがまだないけど、がんばって対応します。
