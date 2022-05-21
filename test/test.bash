@@ -6,7 +6,7 @@ cargo build --release
 
 cd $(dirname $0)
 
-com=../target/release/bash_r
+com=../target/release/rusty_bash
 
 ### SIMPLE COMMAND TEST ###
 
