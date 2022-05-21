@@ -6,6 +6,7 @@ use super::evaluator::{TextPos, CommandWithArgs, Delim, Eoc};
 use crate::parser_args::arg;
 use crate::ShellCore;
 
+#[derive(Clone)]
 pub struct ReadingText {
     pub remaining: String,
     pub from_lineno: u32,

@@ -180,40 +180,62 @@ pub fn subarg_single_qt(text: &mut ReadingText) -> Option<SubArgSingleQuoted> {
     None
 }
 
+/* parser for a string such as "aaa${var}" */
 pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArgDoubleQuoted> {
-    if text.remaining.chars().nth(0) != Some('"') {
-        return None;
-    }
+    let backup = text.clone();
 
     let mut ans = SubArgDoubleQuoted {
-        text: "".to_string(),
+        text: "\"".to_string(),
         pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
         subargs: vec!(),
     };
 
-
-    if let Some(a) = string_in_double_qt(text) {
-        ans.subargs.push(Box::new(a));
-        //return Some
+    if let Some(_) = single_char_delimiter(text, '"') {
+        ans.text += &"\"";
+    }else{
+        return None;
     }
+
+    loop {
+        if let Some(a) = subarg_variable_braced(text) {
+            ans.text += &a.text;
+            ans.subargs.push(Box::new(a));
+        }else if let Some(a) = subarg_variable_non_braced(text) {
+            ans.text += &a.text;
+            ans.subargs.push(Box::new(a));
+        }else if let Some(a) = string_in_double_qt(text) {
+            ans.text += &a.text;
+            ans.subargs.push(Box::new(a));
+        }else{
+            break;
+        };
+    }
+
+    if let Some(_) = single_char_delimiter(text, '"') {
+        ans.text += &"\"";
+    }else{
+        *text = backup;
+        return None;
+    }
+
     Some(ans)
 }
 
 pub fn string_in_double_qt(text: &mut ReadingText) -> Option<SubArg> {
+    if text.remaining.chars().nth(0) == Some('"'){
+        return None;
+    };
 
-    let mut pos = 1;
+    let mut pos = 0;
     let mut escaped = false;
-    for ch in text.remaining[1..].chars() {
+    for ch in text.remaining.chars() {
         if escaped || (!escaped && ch == '\\') {
             pos += ch.len_utf8();
             escaped = !escaped;
             continue;
         };
 
-        if ch != '"' {
-            pos += ch.len_utf8();
-        }else{
-            pos += 1;
+        if ch == '"' || ch == '$' {
             let ans = SubArg{
                     text: text.remaining[0..pos].to_string(),
                     pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
@@ -223,6 +245,7 @@ pub fn string_in_double_qt(text: &mut ReadingText) -> Option<SubArg> {
             text.remaining = text.remaining[pos..].to_string();
             return Some(ans);
         };
+        pos += ch.len_utf8();
     };
 
     None

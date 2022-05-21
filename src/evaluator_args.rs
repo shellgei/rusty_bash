@@ -46,7 +46,8 @@ impl Arg {
 
 impl BashElem for Arg {
     fn parse_info(&self) -> Vec<String> {
-        let mut ans = vec!(format!("    arg      : '{}' ({})", self.text.clone(), self.pos.text()));
+        let mut ans = vec!(format!("    arg      : '{}' ({})",
+                              self.text.clone(), self.pos.text()));
         for sub in &self.subargs {
             ans.push("        subarg      : ".to_owned() + &*sub.get_text());
         };
@@ -115,7 +116,8 @@ impl ArgElem for SubArgDoubleQuoted {
             text += &sub[0];
         };
 
-        let strip = text[1..text.len()-1].to_string();
+        //let strip = text[1..text.len()-1].to_string();
+        let strip = text.to_string();
         let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
         vec!(s)
     }
