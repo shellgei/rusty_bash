@@ -79,7 +79,7 @@ impl BashElem for Eoc {
 pub struct CommandWithArgs {
     pub elems: Vec<Box<dyn BashElem>>,
     pub text: String,
-    pub text_pos: usize
+    //pub pos: TextPos,
 }
 
 impl BashElem for CommandWithArgs {

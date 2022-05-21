@@ -33,20 +33,24 @@ pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Opt
 
 pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
     let mut ans = CommandWithArgs{
-                     elems: vec!(),
-                     text: text.remaining.clone(),
-                     text_pos: 0};
+        elems: vec!(),
+        text: "".to_string(),
+    };
 
     if let Some(result) = delimiter(text){
+        ans.text += &result.text;
         ans.elems.push(Box::new(result));
     }
 
     while let Some(result) = arg(text) {
+        ans.text += &result.text;
         ans.elems.push(Box::new(result));
 
         if let Some(result) = delimiter(text){
+            ans.text += &result.text;
             ans.elems.push(Box::new(result));
         }else if let Some(result) = end_of_command(text){
+            ans.text += &result.text;
             ans.elems.push(Box::new(result));
             break;
         }
