@@ -6,9 +6,6 @@
 2. きれいに書けば「コードレベルでカスタマイズできるbashになるんじゃないか」と色気が出た
 3. ということで開発中
 
-## 現在の開発情報
-
-* [test/test.bash](https://github.com/ryuichiueda/rusty_bash/blob/main/test/test.bash)を見ると分かる。
 
 ## 開発への参加方法
 
@@ -29,7 +26,7 @@
 
 ## シェルとしての機能
 
-だんだんbashに近づいてくるはず。
+だんだんbashに近づいてくるはず。現在のインタプリタとしての機能は、[test/test.bash](https://github.com/ryuichiueda/rusty_bash/blob/main/test/test.bash)を見ると分かる。
 
 
 ### bashにない独自オプション
