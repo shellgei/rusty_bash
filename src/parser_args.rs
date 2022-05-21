@@ -15,7 +15,7 @@ pub fn arg(text: &mut ReadingText) -> Option<Arg> {
     };
 
     while let Some(result) = subarg(text) {
-        ans.text += &(*result).get_text();
+        ans.text += &(*result).text();
         ans.pos.length += (*result).get_length();
         ans.subargs.push(result);
     };
@@ -60,7 +60,7 @@ pub fn arg_in_brace(text: &mut ReadingText) -> Option<Arg> {
     };
 
     while let Some(result) = subarg_in_brace(text) {
-        ans.text += &(*result).get_text();
+        ans.text += &(*result).text();
         ans.pos.length += (*result).get_length();
         ans.subargs.push(result);
     };
@@ -215,7 +215,7 @@ pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArgDoubleQuoted> {
 
     let mut text = "\"".to_string();
     for a in &ans.subargs {
-        text += &a.get_text();
+        text += &a.text();
     }
     ans.text = text + "\"";
 

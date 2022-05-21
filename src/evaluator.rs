@@ -20,6 +20,8 @@ pub trait BashElem {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
         vec!()
     }
+
+    fn text(&self) -> String { String::new() }
 }
 
 #[derive(Debug)]
@@ -55,7 +57,6 @@ impl BashElem for Delim {
 #[derive(Debug)]
 pub struct Eoc {
     pub text: String,
-    //pub text_pos: usize
     pub pos: TextPos,
 }
 

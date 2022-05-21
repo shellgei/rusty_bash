@@ -49,7 +49,7 @@ impl BashElem for Arg {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
                               self.text.clone(), self.pos.text()));
         for sub in &self.subargs {
-            ans.push("        subarg      : ".to_owned() + &*sub.get_text());
+            ans.push("        subarg      : ".to_owned() + &*sub.text());
         };
 
         ans
@@ -78,7 +78,7 @@ pub trait ArgElem {
         vec!()
     }
 
-    fn get_text(&self) -> String;
+    fn text(&self) -> String;
     fn get_length(&self) -> usize;
 }
 
@@ -88,7 +88,7 @@ pub struct SubArg {
 }
 
 impl ArgElem for SubArg {
-    fn get_text(&self) -> String {
+    fn text(&self) -> String {
         self.text.clone()
     }
 
@@ -120,7 +120,7 @@ impl ArgElem for SubArgDoubleQuoted {
         vec!(s)
     }
 
-    fn get_text(&self) -> String {
+    fn text(&self) -> String {
         self.text.clone()
     }
 
@@ -141,7 +141,7 @@ impl ArgElem for SubArgSingleQuoted {
         vec!(s)
     }
 
-    fn get_text(&self) -> String {
+    fn text(&self) -> String {
         self.text.clone()
     }
 
@@ -171,7 +171,7 @@ impl ArgElem for SubArgBraced {
         ans
     }
 
-    fn get_text(&self) -> String {
+    fn text(&self) -> String {
         self.text.clone()
     }
 
@@ -195,7 +195,7 @@ impl ArgElem for SubArgVariable {
         vec!(conf.get_var(&name))
     }
 
-    fn get_text(&self) -> String {
+    fn text(&self) -> String {
         self.text.clone()
     }
 
