@@ -25,7 +25,7 @@ Rustはじめてさわったのが2022年1月という初心者がやってい�
 だんだんbashに近づいてくるはず。
 
 
-## bashにない独自オプション
+### bashにない独自オプション
 
 * -d: output debug information
 
