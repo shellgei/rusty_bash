@@ -47,6 +47,9 @@ res=$($com <<< 'echo hoge"hoge";')
 res=$($com <<< 'echo ${SHELL}')
 [ "$res" = "rustybash" ]
 
+res=$($com <<< 'echo $SHELL')
+[ "$res" = "rustybash" ]
+
 # brace expansion
 
 res=$($com << 'EOF'

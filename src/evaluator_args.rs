@@ -180,12 +180,11 @@ pub struct SubArgVariable {
 
 impl ArgElem for SubArgVariable {
     fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
-        let name = if self.text.chars().nth(self.text.len()-1) == Some('}') {
+        let name = if self.text.rfind('}') == Some(self.text.len()-1) {
             self.text[2..self.text.len()-1].to_string()
         }else{
             self.text[1..].to_string()
         };
-
         vec!(conf.get_var(&name))
     }
 
