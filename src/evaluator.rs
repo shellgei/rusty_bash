@@ -38,13 +38,14 @@ impl TextPos {
     }
 }
 
-/* empty element */
+/*
 pub struct Empty { }
 impl BashElem for Empty {
     fn parse_info(&self) -> Vec<String> {
         vec!()
     }
 }
+*/
 
 /* delimiter */
 #[derive(Debug)]
@@ -55,7 +56,7 @@ pub struct Delim {
 
 impl BashElem for Delim {
     fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    delimiter: '{}' ({})\n", self.text.clone(), self.pos.text()))
+        vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.pos.text()))
     }
 }
 
@@ -83,7 +84,7 @@ pub struct CommandWithArgs {
 
 impl BashElem for CommandWithArgs {
     fn parse_info(&self) -> Vec<String> {
-        let mut ans = vec!(format!("command: '{}'\n", self.text));
+        let mut ans = vec!(format!("command: '{}'", self.text));
         for elem in &self.elems {
             ans.append(&mut elem.parse_info());
         };

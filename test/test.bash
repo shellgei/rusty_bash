@@ -120,6 +120,12 @@ EOF
 )
 [ "$res" = "/" ]
 
+### COMMAND BOUNDARY TEST ###
+
+res=$($com <<< 'echo hoge;echo hoge')
+[ "$res" = "hoge
+hoge" ]
+
 
 trap "" EXIT
 echo TEST OK

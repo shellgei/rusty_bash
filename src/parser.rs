@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::BashElem;
-use super::evaluator::{TextPos, CommandWithArgs, Delim, Eoc, Empty};
+use super::evaluator::{TextPos, CommandWithArgs, Delim, Eoc};
 use crate::parser_args::arg;
 use crate::ShellCore;
 
@@ -14,19 +14,21 @@ pub struct ReadingText {
 }
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Box<dyn BashElem> {
+pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Option<Box<dyn BashElem>> {
+    if text.remaining.len() == 0 {
+        return None;
+    };
+
     if let Some(delim) = single_char_delimiter(text, '\n') {
-        return Box::new(delim);
+        return Some(Box::new(delim));
     };
 
     //only a command is recognized currently
     if let Some(result) = command_with_args(text) {
-        text.remaining = "".to_string();
-        return Box::new(result)
+        return Some(Box::new(result));
     }
 
-    let e = Empty{};
-    Box::new(e)
+    None
 }
 
 pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {

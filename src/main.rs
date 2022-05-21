@@ -17,7 +17,7 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::core::ShellCore;
-use crate::evaluator::BashElem;
+use crate::evaluator::{BashElem};
 use crate::parser::ReadingText;
 
 fn read_line() -> String {
@@ -97,6 +97,8 @@ fn main() {
             read_line()
         };
         add_line(&mut input, line);
-        parser::top_level_element(&mut input, &mut core).exec(&mut core);
+        while let Some(e) = parser::top_level_element(&mut input, &mut core){
+            e.exec(&mut core);
+        }
     }
 }
