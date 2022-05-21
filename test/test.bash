@@ -42,6 +42,11 @@ EOF
 res=$($com <<< 'echo hoge"hoge";')
 [ "$res" = "hogehoge" ]
 
+# variable
+
+res=$($com <<< 'echo ${SHELL}')
+[ "$res" = "rustybash" ]
+
 # brace expansion
 
 res=$($com << 'EOF'
@@ -111,6 +116,7 @@ pwd
 EOF
 )
 [ "$res" = "/" ]
+
 
 trap "" EXIT
 echo TEST OK

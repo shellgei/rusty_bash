@@ -31,7 +31,7 @@ pub struct History {
 
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(args: &mut Vec<String>) -> i32>,
-    pub vars: HashMap<&'static str, String>,
+    pub vars: HashMap<String, String>,
     pub history: Vec<History>,
     pub flags: Flags,
 }
@@ -52,6 +52,28 @@ impl ShellCore {
         conf
     }
 
+    pub fn get_var(&self, key: &String) -> String {
+        if let Some(s) = self.vars.get(&key as &str){
+            return s.to_string();
+        };
+
+        if let Ok(s) = env::var(&key) {
+            return s.to_string();
+        };
+
+        "".to_string()
+    }
+
+    pub fn get_internal_command(&self, name: &String) -> Option<fn(args: &mut Vec<String>) -> i32> {
+        if self.internal_commands.contains_key(name) {
+            Some(self.internal_commands[name])
+        }else{
+            None
+        }
+    }
+    /////////////////////////////////
+    /* INTERNAL COMMANDS HEREAFTER */
+    /////////////////////////////////
     pub fn exit(_args: &mut Vec<String>) -> i32 {
         exit(0);
     }
@@ -78,14 +100,6 @@ impl ShellCore {
         }else{
             eprintln!("Not exist directory");
             1
-        }
-    }
-
-    pub fn get_internal_command(&self, name: &String) -> Option<fn(args: &mut Vec<String>) -> i32> {
-        if self.internal_commands.contains_key(name) {
-            Some(self.internal_commands[name])
-        }else{
-            None
         }
     }
 }

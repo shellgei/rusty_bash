@@ -84,8 +84,9 @@ fn main() {
 
 
     let pid = process::id();
-    core.vars.insert("PID", pid.to_string());
-    core.vars.insert("HOSTNAME", get_hostname());
+    core.vars.insert("PID".to_string(), pid.to_string());
+    core.vars.insert("HOSTNAME".to_string(), get_hostname());
+    core.vars.insert("SHELL".to_string(), "rustybash".to_string());
     core.flags.i = is_interactive(pid);
 
     loop {
