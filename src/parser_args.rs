@@ -82,17 +82,11 @@ pub fn arg_in_brace(text: &mut ReadingText) -> Option<Arg> {
 }
 
 pub fn subarg_in_brace(text: &mut ReadingText) -> Option<Box<dyn ArgElem>> {
-    if let Some(a) = subarg_braced(text) {
-        Some(Box::new(a))
-    }else if let Some(a) = subarg_single_qt(text) {
-        Some(Box::new(a))
-    }else if let Some(a) = subarg_double_qt(text) {
-        Some(Box::new(a))
-    }else if let Some(a) = subarg_normal_in_brace(text) {
-        Some(Box::new(a))
-    }else{
-        None
-    }
+    if let Some(a)      = subarg_braced(text)          {Some(Box::new(a))}
+    else if let Some(a) = subarg_single_qt(text)       {Some(Box::new(a))}
+    else if let Some(a) = subarg_double_qt(text)       {Some(Box::new(a))}
+    else if let Some(a) = subarg_normal_in_brace(text) {Some(Box::new(a))}
+    else{None}
 }
 
 pub fn subarg_normal(text: &mut ReadingText) -> Option<SubArg> {
@@ -120,10 +114,10 @@ pub fn subarg_normal(text: &mut ReadingText) -> Option<SubArg> {
             text.pos_in_line += pos as u32;
             text.remaining = text.remaining[pos..].to_string();
             return Some(ans);
-        }else{
-            pos += ch.len_utf8();
-            first = false;
         };
+
+        pos += ch.len_utf8();
+        first = false;
     };
 
     None
