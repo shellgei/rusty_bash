@@ -5,7 +5,9 @@ use crate::BashElem;
 use super::evaluator::{TextPos, CommandWithArgs, Delim, Eoc};
 use crate::parser_args::arg;
 use crate::ShellCore;
+use crate::Feeder;
 
+/*
 #[derive(Clone)]
 pub struct Feeder {
     pub remaining: String,
@@ -31,6 +33,7 @@ impl Feeder {
         self.pos_in_line = backup.pos_in_line;
     }
 }
+*/
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn BashElem>> {

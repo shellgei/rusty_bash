@@ -8,6 +8,7 @@ mod evaluator_args;
 mod core;
 mod term;
 mod utils;
+mod feeder;
 
 use std::{io,env,process};
 use std::process::exit;
@@ -18,7 +19,7 @@ use std::io::Read;
 
 use crate::core::ShellCore;
 use crate::evaluator::{BashElem};
-use crate::parser::Feeder;
+use crate::feeder::Feeder;
 
 fn read_line() -> String {
     let mut line = String::new();
