@@ -2,10 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::BashElem;
-use super::evaluator::{DebugInfo, CommandWithArgs, Delim, Eoc};
+use super::evaluator::{CommandWithArgs, Delim, Eoc};
 use crate::parser_args::arg;
 use crate::ShellCore;
 use crate::Feeder;
+use crate::debuginfo::DebugInfo;
 
 
 // job or function comment or blank (finally) 

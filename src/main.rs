@@ -9,6 +9,7 @@ mod core;
 mod term;
 mod utils;
 mod feeder;
+mod debuginfo;
 
 use std::{io,env,process};
 use std::process::exit;

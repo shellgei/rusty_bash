@@ -8,18 +8,16 @@ use std::process::exit;
 use crate::ShellCore;
 use crate::evaluator_args::Arg;
 use crate::utils::blue_string;
-use crate::Feeder;
+use crate::debuginfo::DebugInfo;
 
 pub trait BashElem {
     fn parse_info(&self) -> Vec<String>;
     fn exec(&self, _conf: &mut ShellCore){}
-    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
-        vec!()
-    }
-
+    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
     fn text(&self) -> String { String::new() }
 }
 
+/*
 #[derive(Debug)]
 pub struct DebugInfo {
     pub lineno: u32,
@@ -43,6 +41,7 @@ impl DebugInfo {
         }
     }
 }
+*/
 
 /* delimiter */
 #[derive(Debug)]

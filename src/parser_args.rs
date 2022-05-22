@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::evaluator::{DebugInfo};
+use crate::debuginfo::{DebugInfo};
 use crate::evaluator_args::{Arg, SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable};
 use crate::parser::single_char_delimiter;
 
