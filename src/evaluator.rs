@@ -8,6 +8,7 @@ use std::process::exit;
 use crate::ShellCore;
 use crate::evaluator_args::Arg;
 use crate::utils::blue_string;
+use crate::Feeder;
 
 pub trait BashElem {
     fn parse_info(&self) -> Vec<String>;
@@ -23,13 +24,23 @@ pub trait BashElem {
 pub struct DebugInfo {
     pub lineno: u32,
     pub pos: u32,
+    pub comment: String,
 }
 
 impl DebugInfo {
     pub fn text(&self) -> String {
-        format!("lineno: {}, pos: {}", 
+        format!("lineno: {}, pos: {} {}", 
                 self.lineno.to_string(),
-                self.pos.to_string())
+                self.pos.to_string(),
+                self.comment)
+    }
+
+    pub fn init(f: &Feeder) -> DebugInfo {
+        DebugInfo {
+            lineno: f.from_lineno,
+            pos: f.pos_in_line,
+            comment: "".to_string()
+        }
     }
 }
 

@@ -7,33 +7,6 @@ use crate::parser_args::arg;
 use crate::ShellCore;
 use crate::Feeder;
 
-/*
-#[derive(Clone)]
-pub struct Feeder {
-    pub remaining: String,
-    pub from_lineno: u32,
-    pub to_lineno: u32,
-    pub pos_in_line: u32,
-}
-
-impl Feeder {
-    pub fn new() -> Feeder {
-        Feeder {
-            remaining: "".to_string(),
-            from_lineno: 0,
-            to_lineno: 0,
-            pos_in_line: 0,
-        }
-    }
-
-    pub fn rewind(&mut self, backup: Feeder) {
-        self.remaining = backup.remaining.clone();
-        self.from_lineno = backup.from_lineno;
-        self.to_lineno = backup.to_lineno;
-        self.pos_in_line = backup.pos_in_line;
-    }
-}
-*/
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn BashElem>> {
@@ -101,10 +74,7 @@ pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
     if length != 0 {
         let ans = Delim{
             text: text.remaining[0..length].to_string(),
-            debug: DebugInfo{
-                lineno: text.from_lineno,
-                pos: text.pos_in_line,
-            }
+            debug: DebugInfo::init(text),
         };
 
         text.pos_in_line += length as u32;
@@ -120,10 +90,7 @@ pub fn single_char_delimiter(text: &mut Feeder, symbol: char) -> Option<Delim> {
         if ch == symbol {
             let ans = Delim{
                 text: text.remaining[0..1].to_string(),
-                debug: DebugInfo{
-                    lineno: text.from_lineno,
-                    pos: text.pos_in_line,
-                }
+                debug: DebugInfo::init(&text),
             };
 
             text.pos_in_line += 1;
@@ -143,10 +110,7 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if ch == ";" || ch == "\n" {
         let ans = Eoc{
             text: ch.to_string(),
-            debug: DebugInfo{
-                lineno: text.from_lineno,
-                pos: text.pos_in_line,
-            }
+            debug: DebugInfo::init(&text),
         };
 
         text.pos_in_line += 1;
