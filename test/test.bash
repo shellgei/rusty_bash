@@ -138,6 +138,15 @@ res=$($com <<< 'echo hoge;echo hoge')
 [ "$res" = "hoge
 hoge" ]
 
+### COMMENT TEST ###
+
+res=$($com << 'EOF'
+echo hello #HEHEHEHEHEあいうえお
+echo world
+EOF
+)
+[ "$res" = 'hello
+world' ]
 
 trap "" EXIT
 echo TEST OK

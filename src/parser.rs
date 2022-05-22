@@ -1,13 +1,14 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::elems_executable::{Executable, CommandWithArgs};
+use super::elems_executable::{Executable, BlankPart, CommandWithArgs};
 use super::elems_in_command::{ArgDelimiter, Eoc};
 use super::elems_in_arg::{DelimiterInArg};
 use crate::parser_args::arg;
 use crate::ShellCore;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
+use crate::utils::exist;
 
 
 // job or function comment or blank (finally) 
@@ -18,6 +19,10 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<B
 
     let backup = text.clone();
 
+    if let Some(result) = blank_part(text) {
+        return Some(Box::new(result));
+    }
+
     //only a command is recognized currently
     if let Some(result) = command_with_args(text) {
         return Some(Box::new(result));
@@ -27,10 +32,16 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<B
     None
 }
 
-pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
-    let mut ans = CommandWithArgs{
+pub fn blank_part(text: &mut Feeder) -> Option<BlankPart> {
+    let mut ans = BlankPart{
         elems: vec!(),
         text: "".to_string(),
+    };
+
+    if let Some(result) = delimiter(text){
+        ans.text += &result.text;
+        ans.elems.push(Box::new(result));
+        return Some(ans)
     };
 
     if let Some(eoc) = end_of_command(text) {
@@ -38,11 +49,13 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         ans.elems.push(Box::new(eoc));
         return Some(ans);
     };
+    None
+}
 
-    if let Some(result) = delimiter(text){
-        ans.text += &result.text;
-        ans.elems.push(Box::new(result));
-        return Some(ans)
+pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
+    let mut ans = CommandWithArgs{
+        elems: vec!(),
+        text: "".to_string(),
     };
 
     while let Some(result) = arg(text) {
@@ -52,7 +65,9 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         if let Some(result) = delimiter(text){
             ans.text += &result.text;
             ans.elems.push(Box::new(result));
-        }else if let Some(result) = end_of_command(text){
+        }
+
+        if let Some(result) = end_of_command(text){
             ans.text += &result.text;
             ans.elems.push(Box::new(result));
             break;
@@ -108,13 +123,17 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
         return None;
     };
 
-    let ch = text.nth(0);
-    if ch == ';' || ch == '\n' {
+    if exist(text.nth(0), ";\n") {
         let ans = Eoc{
             text: text.consume(1),
             debug: DebugInfo::init(&text),
         };
-
+        return Some(ans);
+    }else if text.nth(0) == '#' {
+        let ans = Eoc{
+            text: text.consume(text.len()),
+            debug: DebugInfo::init(&text),
+        };
         return Some(ans);
     };
 

@@ -25,6 +25,7 @@ impl SingleCommandElem for ArgDelimiter {
     }
 }
 
+/* ;, \n, and comment */
 #[derive(Debug)]
 pub struct Eoc {
     pub text: String,

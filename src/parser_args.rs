@@ -6,14 +6,8 @@ use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg};
 use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable};
 use crate::parser::{arg_delimiter,delimiter_in_arg};
+use crate::utils::exist;
 
-fn exist(ch: char, chars: &str) -> bool{
-    if let Some(_) = chars.to_string().find(ch) {
-        true
-    }else{
-        false
-    }
-}
 
 
 // single quoted arg or double quoted arg or non quoted arg 

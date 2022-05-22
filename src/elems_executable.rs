@@ -16,6 +16,14 @@ pub trait Executable {
     fn exec(&self, _conf: &mut ShellCore) {}
 }
 
+pub struct BlankPart {
+    pub elems: Vec<Box<dyn SingleCommandElem>>,
+    pub text: String,
+}
+
+impl Executable for BlankPart {
+}
+
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {
     pub elems: Vec<Box<dyn SingleCommandElem>>,
@@ -24,11 +32,22 @@ pub struct CommandWithArgs {
 }
 
 impl Executable for CommandWithArgs {
-    fn exec(&self, conf: &mut ShellCore){
-        let mut args = self.eval_args(conf);
-        if args.len() == 0 {
-            return;
+    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
+        let mut args = vec!();
+
+        for elem in &self.elems {
+            for s in &elem.eval(conf) {
+                args.append(&mut Arg::expand_glob(&s.clone()));
+            }
         };
+
+        args.iter()
+            .map(|a| Arg::remove_escape(&a))
+            .collect()
+    }
+
+    fn exec(&self, conf: &mut ShellCore){
+        let mut args = self.eval(conf);
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
             func(&mut args);
@@ -54,20 +73,6 @@ impl CommandWithArgs {
         };
         
         blue_string(&ans)
-    }
-
-    fn eval_args(&self, conf: &mut ShellCore) -> Vec<String> {
-        let mut args = vec!();
-
-        for elem in &self.elems {
-            for s in &elem.eval(conf) {
-                args.append(&mut Arg::expand_glob(&s.clone()));
-            }
-        };
-
-        args.iter()
-            .map(|a| Arg::remove_escape(&a))
-            .collect()
     }
 
     fn exec_external_command(&self, args: &Vec<String>, conf: &mut ShellCore) {

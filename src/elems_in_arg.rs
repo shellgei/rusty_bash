@@ -12,7 +12,6 @@ pub trait ArgElem {
     }
 
     fn text(&self) -> String;
-//    fn get_length(&self) -> usize;
 }
 
 pub struct SubArg {
@@ -29,7 +28,6 @@ impl ArgElem for SubArg {
         vec!(self.text.clone())
     }
 }
-
 
 pub struct SubArgDoubleQuoted {
     pub text: String,
