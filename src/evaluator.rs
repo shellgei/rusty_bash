@@ -23,15 +23,13 @@ pub trait BashElem {
 pub struct TextPos {
     pub lineno: u32,
     pub pos: u32,
-    pub length: usize,
 }
 
 impl TextPos {
     pub fn text(&self) -> String {
-        format!("lineno: {}, pos: {}, length: {}", 
+        format!("lineno: {}, pos: {}", 
                 self.lineno.to_string(),
-                self.pos.to_string(),
-                self.length.to_string())
+                self.pos.to_string())
     }
 }
 

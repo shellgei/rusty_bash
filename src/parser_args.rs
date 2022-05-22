@@ -26,13 +26,13 @@ fn check_head(text: &String, chars: &str) -> bool{
 pub fn arg(text: &mut Feeder) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
-        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
+        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
         subargs: vec!(),
     };
 
     while let Some(result) = subarg(text) {
         ans.text += &(*result).text();
-        ans.pos.length += (*result).get_length();
+        //ans.pos.length += (*result).get_length();
         ans.subargs.push(result);
     };
 
@@ -59,14 +59,14 @@ pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
-        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
+        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
         subargs: vec!(),
     };
 
     if check_head(&text.remaining, ",}"){ // zero length arg
         let tmp = SubArg{
             text: "".to_string(),
-            pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
+            pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
         };
         ans.subargs.push(Box::new(tmp));
         return Some(ans);
@@ -74,7 +74,7 @@ pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
 
     while let Some(result) = subarg_in_brace(text) {
         ans.text += &(*result).text();
-        ans.pos.length += (*result).get_length();
+        //ans.pos.length += (*result).get_length();
         ans.subargs.push(result);
     };
 
@@ -108,7 +108,7 @@ pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
         if exist(ch, " \n\t;'\"") || (!first && ch == '{') {
             let ans = SubArg{
                     text: text.remaining[0..pos].to_string(),
-                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
                  };
 
             text.pos_in_line += pos as u32;
@@ -140,7 +140,7 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
         if exist(ch, ",}{") {
             let ans = SubArg{
                     text: text.remaining[0..pos].to_string(),
-                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
                  };
 
             text.pos_in_line += pos as u32;
@@ -166,7 +166,7 @@ pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
             pos += 1;
             let ans = SubArgSingleQuoted{
                     text: text.remaining[0..pos].to_string(),
-                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
                  };
 
             text.pos_in_line += pos as u32;
@@ -184,7 +184,7 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
 
     let mut ans = SubArgDoubleQuoted {
         text: "".to_string(),
-        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
+        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
         subargs: vec!(),
     };
 
@@ -238,7 +238,7 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
         //if ch == '"' || ch == '$' {
             let ans = SubArg{
                     text: text.remaining[0..pos].to_string(),
-                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
                  };
 
             text.pos_in_line += pos as u32;
@@ -262,7 +262,7 @@ pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
         if let Some(_) = " {,;\n".find(ch) {
             let ans = SubArgVariable{
                     text: text.remaining[0..pos].to_string(),
-                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+                    pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
                  };
 
             text.pos_in_line += pos as u32;
@@ -290,7 +290,7 @@ pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
 
         let ans = SubArgVariable{
             text: text.remaining[0..pos].to_string(),
-            pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: pos},
+            pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
         };
 
         text.pos_in_line += pos as u32;
@@ -309,21 +309,21 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     
     let mut ans = SubArgBraced {
         text: "{".to_string(),
-        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 1},
+        pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line},
         args: vec!(),
     };
 
     while let Some(arg) = arg_in_brace(text) {
         ans.text += &arg.text.clone();
-        ans.pos.length += arg.pos.length;
+        //ans.pos.length += arg.pos.length;
         ans.args.push(arg); 
         if let Some(_) = single_char_delimiter(text, ',') {
             ans.text += ",";
-            ans.pos.length += 1;
+            //ans.pos.length += 1;
             continue;
         }else if let Some(_) = single_char_delimiter(text, '}') {
             ans.text += "}";
-            ans.pos.length += 1;
+            //ans.pos.length += 1;
             break;
         };
     };

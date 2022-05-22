@@ -104,7 +104,6 @@ pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
             pos: TextPos{
                 lineno: text.from_lineno,
                 pos: text.pos_in_line,
-                length: length
             }
         };
 
@@ -124,7 +123,6 @@ pub fn single_char_delimiter(text: &mut Feeder, symbol: char) -> Option<Delim> {
                 pos: TextPos{
                     lineno: text.from_lineno,
                     pos: text.pos_in_line,
-                    length: 1
                 }
             };
 
@@ -148,7 +146,6 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
             pos: TextPos{
                 lineno: text.from_lineno,
                 pos: text.pos_in_line,
-                length: 1
             }
         };
 

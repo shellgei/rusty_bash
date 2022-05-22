@@ -86,7 +86,7 @@ impl ArgElem for SubArg {
     }
 
     fn get_length(&self) -> usize {
-        self.pos.length
+        self.text.len()
     }
 
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
@@ -118,7 +118,7 @@ impl ArgElem for SubArgDoubleQuoted {
     }
 
     fn get_length(&self) -> usize {
-        self.pos.length
+        self.text.len()
     }
 }
 
@@ -139,7 +139,7 @@ impl ArgElem for SubArgSingleQuoted {
     }
 
     fn get_length(&self) -> usize {
-        self.pos.length
+        self.text.len()
     }
 }
 
@@ -169,7 +169,7 @@ impl ArgElem for SubArgBraced {
     }
 
     fn get_length(&self) -> usize {
-        self.pos.length
+        self.text.len()
     }
 }
 
@@ -193,6 +193,6 @@ impl ArgElem for SubArgVariable {
     }
 
     fn get_length(&self) -> usize {
-        self.pos.length
+        self.text.len()
     }
 }
