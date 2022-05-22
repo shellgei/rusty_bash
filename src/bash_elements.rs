@@ -6,9 +6,9 @@ use nix::sys::wait::*;
 use std::ffi::CString;
 use std::process::exit;
 use crate::ShellCore;
-use crate::evaluator_args::Arg;
-use crate::utils::blue_string;
+use crate::utils::{blue_string, eval_glob, combine};
 use crate::debuginfo::DebugInfo;
+use crate::arg_elements::ArgElem;
 
 pub trait BashElem {
     fn parse_info(&self) -> Vec<String>;
@@ -39,18 +39,6 @@ pub struct Eoc {
 impl BashElem for Eoc {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
-    }
-}
-
-#[derive(Debug)]
-pub struct Quote {
-    pub text: String,
-    pub debug: DebugInfo,
-}
-
-impl BashElem for Quote {
-    fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    quote : '{}' ({})\n", self.text.clone(), self.debug.text()))
     }
 }
 
@@ -138,5 +126,65 @@ impl CommandWithArgs {
                 println!("Unknown error")
             }
         };
+    }
+}
+
+pub struct Arg {
+    pub text: String,
+    pub pos: DebugInfo,
+    pub subargs: Vec<Box<dyn ArgElem>>
+}
+
+impl Arg {
+    pub fn expand_glob(text: &String) -> Vec<String> {
+        let mut ans = eval_glob(text);
+
+        if ans.len() == 0 {
+            let s = text.clone().replace("\\*", "*").replace("\\\\", "\\");
+            ans.push(s);
+        };
+        ans
+    }
+
+    pub fn remove_escape(text: &String) -> String{
+        let mut escaped = false;
+        let mut ans = "".to_string();
+        
+        for ch in text.chars() {
+            if escaped || ch != '\\' {
+                ans.push(ch);
+            };
+            escaped = !escaped && ch == '\\';
+        }
+        ans
+    }
+}
+
+impl BashElem for Arg {
+    fn parse_info(&self) -> Vec<String> {
+        let mut ans = vec!(format!("    arg      : '{}' ({})",
+                              self.text.clone(), self.pos.text()));
+        for sub in &self.subargs {
+            ans.push("        subarg      : ".to_owned() + &*sub.text());
+        };
+
+        ans
+    }
+
+    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
+        let subevals = self.subargs
+            .iter()
+            .map(|sub| sub.eval(conf))
+            .collect::<Vec<Vec<String>>>();
+
+        if subevals.len() == 0 {
+            return vec!();
+        };
+
+        let mut strings = vec!();
+        for ss in subevals {
+            strings = combine(&strings, &ss);
+        }
+        strings
     }
 }

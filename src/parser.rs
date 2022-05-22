@@ -2,7 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::BashElem;
-use super::evaluator::{CommandWithArgs, ArgDelimiter, Eoc, Quote};
+use super::bash_elements::{CommandWithArgs, ArgDelimiter, Eoc};
+use super::arg_elements::{DelimiterInArg};
 use crate::parser_args::arg;
 use crate::ShellCore;
 use crate::Feeder;
@@ -91,9 +92,9 @@ pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {
     }
 }
 
-pub fn quote(text: &mut Feeder, symbol: char) -> Option<Quote> {
+pub fn delimiter_in_arg(text: &mut Feeder, symbol: char) -> Option<DelimiterInArg> {
     if text.nth(0) == symbol {
-        Some( Quote{ text: text.consume(1), debug: DebugInfo::init(&text),})
+        Some( DelimiterInArg{ text: text.consume(1), debug: DebugInfo::init(&text),})
     }else{
         None
     }

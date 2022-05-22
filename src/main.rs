@@ -3,8 +3,8 @@
 
 mod parser;
 mod parser_args;
-mod evaluator;
-mod evaluator_args;
+mod bash_elements;
+mod arg_elements;
 mod core;
 mod term;
 mod utils;
@@ -19,7 +19,7 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::core::ShellCore;
-use crate::evaluator::{BashElem};
+use crate::bash_elements::{BashElem};
 use crate::feeder::Feeder;
 
 fn read_line() -> String {
