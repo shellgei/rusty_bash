@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::BashElem;
-use super::bash_elements::{CommandWithArgs, ArgDelimiter, Eoc};
-use super::arg_elements::{DelimiterInArg};
+use crate::SingleCommandElem;
+use super::single_command_elems::{CommandWithArgs, ArgDelimiter, Eoc};
+use super::arg_elems::{DelimiterInArg};
 use crate::parser_args::arg;
 use crate::ShellCore;
 use crate::Feeder;
@@ -11,7 +11,7 @@ use crate::debuginfo::DebugInfo;
 
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn BashElem>> {
+pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn SingleCommandElem>> {
     if text.len() == 0 {
         return None;
     };

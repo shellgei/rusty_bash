@@ -2,9 +2,9 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::debuginfo::DebugInfo;
-use crate::BashElem;
+use crate::SingleCommandElem;
 use crate::ShellCore;
-use crate::bash_elements::Arg;
+use crate::single_command_elems::Arg;
 
 pub trait ArgElem {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {

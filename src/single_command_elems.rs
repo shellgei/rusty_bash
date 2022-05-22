@@ -8,9 +8,9 @@ use std::process::exit;
 use crate::ShellCore;
 use crate::utils::{blue_string, eval_glob, combine};
 use crate::debuginfo::DebugInfo;
-use crate::arg_elements::ArgElem;
+use crate::arg_elems::ArgElem;
 
-pub trait BashElem {
+pub trait SingleCommandElem {
     fn parse_info(&self) -> Vec<String>;
     fn exec(&self, _conf: &mut ShellCore){}
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
@@ -24,7 +24,7 @@ pub struct ArgDelimiter {
     pub debug: DebugInfo,
 }
 
-impl BashElem for ArgDelimiter {
+impl SingleCommandElem for ArgDelimiter {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.text()))
     }
@@ -36,7 +36,7 @@ pub struct Eoc {
     pub debug: DebugInfo,
 }
 
-impl BashElem for Eoc {
+impl SingleCommandElem for Eoc {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
     }
@@ -44,12 +44,12 @@ impl BashElem for Eoc {
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {
-    pub elems: Vec<Box<dyn BashElem>>,
+    pub elems: Vec<Box<dyn SingleCommandElem>>,
     pub text: String,
     //pub debug: DebugInfo,
 }
 
-impl BashElem for CommandWithArgs {
+impl SingleCommandElem for CommandWithArgs {
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("command: '{}'", self.text));
         for elem in &self.elems {
@@ -160,7 +160,7 @@ impl Arg {
     }
 }
 
-impl BashElem for Arg {
+impl SingleCommandElem for Arg {
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
                               self.text.clone(), self.pos.text()));
