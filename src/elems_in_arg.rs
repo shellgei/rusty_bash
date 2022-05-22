@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::SingleCommandElem;
 use crate::ShellCore;
-use crate::single_command_elems::Arg;
+use crate::elems_in_command::Arg;
 
 pub trait ArgElem {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {

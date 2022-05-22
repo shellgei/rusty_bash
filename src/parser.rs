@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::executable_elems::{CommandWithArgs};
-use super::single_command_elems::{ArgDelimiter, Eoc};
-use super::arg_elems::{DelimiterInArg};
+use super::elems_executable::{CommandWithArgs};
+use super::elems_in_command::{ArgDelimiter, Eoc};
+use super::elems_in_arg::{DelimiterInArg};
 use crate::parser_args::arg;
 use crate::ShellCore;
 use crate::Feeder;

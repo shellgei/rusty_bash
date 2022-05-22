@@ -9,7 +9,7 @@ use std::process::exit;
 use crate::SingleCommandElem;
 use crate::ShellCore;
 use crate::utils::blue_string;
-use crate::single_command_elems::Arg;
+use crate::elems_in_command::Arg;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {

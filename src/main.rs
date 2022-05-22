@@ -3,9 +3,9 @@
 
 mod parser;
 mod parser_args;
-mod executable_elems;
-mod single_command_elems;
-mod arg_elems;
+mod elems_executable;
+mod elems_in_command;
+mod elems_in_arg;
 mod core;
 mod term;
 mod utils;
@@ -20,7 +20,7 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::core::ShellCore;
-use crate::single_command_elems::{SingleCommandElem};
+use crate::elems_in_command::{SingleCommandElem};
 use crate::feeder::Feeder;
 
 fn read_line() -> String {

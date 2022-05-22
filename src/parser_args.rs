@@ -3,8 +3,8 @@
 
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
-use crate::single_command_elems::{Arg};
-use crate::arg_elems::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable};
+use crate::elems_in_command::{Arg};
+use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable};
 use crate::parser::{arg_delimiter,delimiter_in_arg};
 
 fn exist(ch: char, chars: &str) -> bool{

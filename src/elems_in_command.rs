@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::utils::{eval_glob, combine};
 use crate::debuginfo::DebugInfo;
-use crate::arg_elems::ArgElem;
+use crate::elems_in_arg::ArgElem;
 
 pub trait SingleCommandElem {
     fn parse_info(&self) -> Vec<String>;
