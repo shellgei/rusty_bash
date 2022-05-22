@@ -95,7 +95,7 @@ pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
     let mut first = true;
     let mut pos = 0;
     let mut escaped = false;
-    for ch in text.remaining.chars() {
+    for ch in text.chars() {
         if escaped || (!escaped && ch == '\\') {
             pos += ch.len_utf8();
             escaped = !escaped;
@@ -105,12 +105,9 @@ pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
 
         if exist(ch, " \n\t;'\"") || (!first && ch == '{') {
             let ans = SubArg{
-                    text: text.remaining[0..pos].to_string(),
+                    text: text.consume(pos),
                     pos: DebugInfo::init(text),
                  };
-
-            text.pos_in_line += pos as u32;
-            text.remaining = text.remaining[pos..].to_string();
             return Some(ans);
         };
 
@@ -128,7 +125,7 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
 
     let mut pos = 0;
     let mut escaped = false;
-    for ch in text.remaining.chars() {
+    for ch in text.chars() {
         if escaped || (!escaped && ch == '\\') {
             pos += ch.len_utf8();
             escaped = !escaped;
@@ -137,12 +134,10 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
 
         if exist(ch, ",}{") {
             let ans = SubArg{
-                    text: text.remaining[0..pos].to_string(),
+                    text: text.consume(pos),
                     pos: DebugInfo::init(text),
                  };
 
-            text.pos_in_line += pos as u32;
-            text.remaining = text.remaining[pos..].to_string();
             return Some(ans);
         }
         pos += ch.len_utf8();
@@ -157,18 +152,16 @@ pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
     };
 
     let mut pos = 1;
-    for ch in text.remaining[1..].chars() {
+    for ch in text.chars_after(1) {
         if ch != '\'' {
             pos += ch.len_utf8();
         }else{
             pos += 1;
             let ans = SubArgSingleQuoted{
-                    text: text.remaining[0..pos].to_string(),
+                    text: text.consume(pos),
                     pos: DebugInfo::init(text),
                  };
 
-            text.pos_in_line += pos as u32;
-            text.remaining = text.remaining[pos..].to_string();
             return Some(ans);
         };
     };
@@ -225,7 +218,7 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
 
     let mut pos = 0;
     let mut escaped = false;
-    for ch in text.remaining.chars() {
+    for ch in text.chars() {
         if escaped || (!escaped && ch == '\\') {
             pos += ch.len_utf8();
             escaped = !escaped;
@@ -235,12 +228,10 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
         if exist(ch, "\"$") {
         //if ch == '"' || ch == '$' {
             let ans = SubArg{
-                    text: text.remaining[0..pos].to_string(),
+                    text: text.consume(pos),
                     pos: DebugInfo::init(text),
                  };
 
-            text.pos_in_line += pos as u32;
-            text.remaining = text.remaining[pos..].to_string();
             return Some(ans);
         };
         pos += ch.len_utf8();
@@ -251,21 +242,18 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
 
 pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
     if !check_head(&text.remaining, "$") ||
-       text.remaining.chars().nth(1) == Some('{') {
+       text.chars().nth(1) == Some('{') {
         return None;
     };
 
     let mut pos = 1;
-    for ch in text.remaining[1..].chars() {
+    for ch in text.chars_after(1) {
         if let Some(_) = " {,;\n".find(ch) {
-            let ans = SubArgVariable{
-                    text: text.remaining[0..pos].to_string(),
+            return Some(
+                SubArgVariable{
+                    text: text.consume(pos),
                     pos: DebugInfo::init(text),
-                 };
-
-            text.pos_in_line += pos as u32;
-            text.remaining = text.remaining[pos..].to_string();
-            return Some(ans);
+                 })
         };
         pos += ch.len_utf8();
     };
@@ -274,26 +262,22 @@ pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
 }
 
 pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
-    if text.remaining.chars().nth(0) != Some('$') ||
-       text.remaining.chars().nth(1) != Some('{') {
+    if text.chars().nth(0) != Some('$') ||
+       text.chars().nth(1) != Some('{') {
         return None;
     }
 
     let mut pos = 2;
-    for ch in text.remaining[2..].chars() {
+    for ch in text.chars_after(2) {
         pos += ch.len_utf8();
         if ch != '}' {
             continue;
         }
 
-        let ans = SubArgVariable{
-            text: text.remaining[0..pos].to_string(),
+        return Some( SubArgVariable{
+            text: text.consume(pos),
             pos: DebugInfo::init(text),
-        };
-
-        text.pos_in_line += pos as u32;
-        text.remaining = text.remaining[pos..].to_string();
-        return Some(ans);
+        } )
     };
 
     None
@@ -307,22 +291,18 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     
     let mut ans = SubArgBraced {
         text: "{".to_string(),
-        //pos: DebugInfo::init(text),
         pos: DebugInfo::init(text),
         args: vec!(),
     };
 
     while let Some(arg) = arg_in_brace(text) {
         ans.text += &arg.text.clone();
-        //ans.pos.length += arg.pos.length;
         ans.args.push(arg); 
         if let Some(_) = single_char_delimiter(text, ',') {
             ans.text += ",";
-            //ans.pos.length += 1;
             continue;
         }else if let Some(_) = single_char_delimiter(text, '}') {
             ans.text += "}";
-            //ans.pos.length += 1;
             break;
         };
     };

@@ -37,7 +37,7 @@ fn read_line() -> String {
 fn add_line(text: &mut Feeder, line: String) {
     text.to_lineno += 1;
 
-    if text.remaining.len() == 0 {
+    if text.len() == 0 {
         text.from_lineno = text.to_lineno;
         text.pos_in_line = 0;
         text.remaining = line;

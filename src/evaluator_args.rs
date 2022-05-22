@@ -85,12 +85,6 @@ impl ArgElem for SubArg {
         self.text.clone()
     }
 
-    /*
-    fn get_length(&self) -> usize {
-        self.text.len()
-    }
-    */
-
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
         vec!(self.text.clone())
     }
@@ -198,9 +192,4 @@ impl ArgElem for SubArgVariable {
     fn text(&self) -> String {
         self.text.clone()
     }
-
-    /*
-    fn get_length(&self) -> usize {
-        self.text.len()
-    }*/
 }

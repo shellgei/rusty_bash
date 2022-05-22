@@ -10,7 +10,7 @@ use crate::Feeder;
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn BashElem>> {
-    if text.remaining.len() == 0 {
+    if text.len() == 0 {
         return None;
     };
 
@@ -63,22 +63,19 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
 
 pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
     let mut length = 0;
-    for ch in text.remaining.chars() {
+    for ch in text.chars() {
         if ch == ' ' || ch == '\t' {
             length += 1;
         }else{
             break;
-        }
+        };
     };
 
     if length != 0 {
         let ans = Delim{
-            text: text.remaining[0..length].to_string(),
+            text: text.consume(length),
             debug: DebugInfo::init(text),
         };
-
-        text.pos_in_line += length as u32;
-        text.remaining = text.remaining[length..].to_string();
         return Some(ans);
     };
 
@@ -86,15 +83,12 @@ pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
 }
 
 pub fn single_char_delimiter(text: &mut Feeder, symbol: char) -> Option<Delim> {
-    if let Some(ch) = text.remaining.chars().nth(0) {
+    if let Some(ch) = text.chars().nth(0) {
         if ch == symbol {
             let ans = Delim{
-                text: text.remaining[0..1].to_string(),
+                text: text.consume(1),
                 debug: DebugInfo::init(&text),
             };
-
-            text.pos_in_line += 1;
-            text.remaining = text.remaining[1..].to_string();
             return Some(ans);
         };
     };
@@ -102,19 +96,17 @@ pub fn single_char_delimiter(text: &mut Feeder, symbol: char) -> Option<Delim> {
     None
 }
 pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
-    if text.remaining.len() == 0 {
+    if text.len() == 0 {
         return None;
     };
 
     let ch = &text.remaining[0..1];
     if ch == ";" || ch == "\n" {
         let ans = Eoc{
-            text: ch.to_string(),
+            text: text.consume(1),
             debug: DebugInfo::init(&text),
         };
 
-        text.pos_in_line += 1;
-        text.remaining = text.remaining[1..].to_string();
         return Some(ans);
     };
 
