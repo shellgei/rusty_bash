@@ -37,3 +37,10 @@ pub fn combine(left: &Vec<String>, right: &Vec<String>) -> Vec<String> {
     }
     ans
 }
+
+pub fn blue_string(strings: &Vec<String>) -> Vec<String> {
+    strings
+        .iter()
+        .map(|s| format!("\x1b[34m{}\x1b[m", s))
+        .collect()
+}

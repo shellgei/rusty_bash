@@ -7,14 +7,9 @@ use std::ffi::CString;
 use std::process::exit;
 use crate::ShellCore;
 use crate::evaluator_args::Arg;
+use crate::utils::blue_string;
 
 pub trait BashElem {
-    fn blue_string(&self, strings: &Vec<String>) -> Vec<String> {
-        strings
-            .iter()
-            .map(|s| format!("\x1b[34m{}\x1b[m", s))
-            .collect()
-    }
     fn parse_info(&self) -> Vec<String>;
     fn exec(&self, _conf: &mut ShellCore){}
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
@@ -81,7 +76,7 @@ impl BashElem for CommandWithArgs {
             ans.append(&mut elem.parse_info());
         };
         
-        self.blue_string(&ans)
+        blue_string(&ans)
     }
 
     fn exec(&self, conf: &mut ShellCore){
