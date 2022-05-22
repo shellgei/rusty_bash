@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::elems_executable::{CommandWithArgs};
+use super::elems_executable::{Executable, CommandWithArgs};
 use super::elems_in_command::{ArgDelimiter, Eoc};
 use super::elems_in_arg::{DelimiterInArg};
 use crate::parser_args::arg;
@@ -11,7 +11,7 @@ use crate::debuginfo::DebugInfo;
 
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<CommandWithArgs> {
+pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn Executable>> {
     if text.len() == 0 {
         return None;
     };
@@ -20,7 +20,7 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<C
 
     //only a command is recognized currently
     if let Some(result) = command_with_args(text) {
-        return Some(result);
+        return Some(Box::new(result));
     }
 
     text.rewind(backup);

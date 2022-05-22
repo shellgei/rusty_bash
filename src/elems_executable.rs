@@ -11,6 +11,11 @@ use crate::ShellCore;
 use crate::utils::blue_string;
 use crate::elems_in_command::Arg;
 
+pub trait Executable {
+    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
+    fn exec(&self, _conf: &mut ShellCore) {}
+}
+
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {
     pub elems: Vec<Box<dyn SingleCommandElem>>,
@@ -18,17 +23,8 @@ pub struct CommandWithArgs {
     //pub debug: DebugInfo,
 }
 
-impl CommandWithArgs {
-    fn parse_info(&self) -> Vec<String> {
-        let mut ans = vec!(format!("command: '{}'", self.text));
-        for elem in &self.elems {
-            ans.append(&mut elem.parse_info());
-        };
-        
-        blue_string(&ans)
-    }
-
-    pub fn exec(&self, conf: &mut ShellCore){
+impl Executable for CommandWithArgs {
+    fn exec(&self, conf: &mut ShellCore){
         let mut args = self.eval_args(conf);
         if args.len() == 0 {
             return;
@@ -46,6 +42,18 @@ impl CommandWithArgs {
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
+    }
+}
+
+
+impl CommandWithArgs {
+    fn parse_info(&self) -> Vec<String> {
+        let mut ans = vec!(format!("command: '{}'", self.text));
+        for elem in &self.elems {
+            ans.append(&mut elem.parse_info());
+        };
+        
+        blue_string(&ans)
     }
 
     fn eval_args(&self, conf: &mut ShellCore) -> Vec<String> {
