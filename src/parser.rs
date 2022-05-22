@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::SingleCommandElem;
-use super::single_command_elems::{CommandWithArgs, ArgDelimiter, Eoc};
+use super::executable_elems::{CommandWithArgs};
+use super::single_command_elems::{ArgDelimiter, Eoc};
 use super::arg_elems::{DelimiterInArg};
 use crate::parser_args::arg;
 use crate::ShellCore;
@@ -11,20 +11,16 @@ use crate::debuginfo::DebugInfo;
 
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn SingleCommandElem>> {
+pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<CommandWithArgs> {
     if text.len() == 0 {
         return None;
     };
 
     let backup = text.clone();
 
-    if let Some(eoc) = end_of_command(text) {
-        return Some(Box::new(eoc));
-    };
-
     //only a command is recognized currently
     if let Some(result) = command_with_args(text) {
-        return Some(Box::new(result));
+        return Some(result);
     }
 
     text.rewind(backup);
@@ -37,10 +33,17 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         text: "".to_string(),
     };
 
+    if let Some(eoc) = end_of_command(text) {
+        ans.text += &eoc.text;
+        ans.elems.push(Box::new(eoc));
+        return Some(ans);
+    };
+
     if let Some(result) = delimiter(text){
         ans.text += &result.text;
         ans.elems.push(Box::new(result));
-    }
+        return Some(ans)
+    };
 
     while let Some(result) = arg(text) {
         ans.text += &result.text;

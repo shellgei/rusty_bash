@@ -3,6 +3,7 @@
 
 mod parser;
 mod parser_args;
+mod executable_elems;
 mod single_command_elems;
 mod arg_elems;
 mod core;
@@ -88,7 +89,6 @@ fn main() {
             read_line()
         };
         input.add_line(line);
-        //add_line(&mut input, line);
         while let Some(e) = parser::top_level_element(&mut input, &mut core){
             e.exec(&mut core);
         }
