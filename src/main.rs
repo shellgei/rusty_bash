@@ -18,7 +18,7 @@ use std::io::Read;
 
 use crate::core::ShellCore;
 use crate::evaluator::{BashElem};
-use crate::parser::ReadingText;
+use crate::parser::Feeder;
 
 fn read_line() -> String {
     let mut line = String::new();
@@ -33,7 +33,7 @@ fn read_line() -> String {
     line
 }
 
-fn add_line(text: &mut ReadingText, line: String) {
+fn add_line(text: &mut Feeder, line: String) {
     text.to_lineno += 1;
 
     if text.remaining.len() == 0 {
@@ -75,7 +75,7 @@ fn main() {
         };
     };
 
-    let mut input = ReadingText::new();
+    let mut input = Feeder::new();
 
 
     let pid = process::id();

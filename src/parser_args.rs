@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ReadingText;
+use crate::Feeder;
 use crate::evaluator::{TextPos};
 use crate::evaluator_args::{Arg, SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable};
 use crate::parser::single_char_delimiter;
@@ -23,7 +23,7 @@ fn check_head(text: &String, chars: &str) -> bool{
 }
 
 // single quoted arg or double quoted arg or non quoted arg 
-pub fn arg(text: &mut ReadingText) -> Option<Arg> {
+pub fn arg(text: &mut Feeder) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
         pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
@@ -39,7 +39,7 @@ pub fn arg(text: &mut ReadingText) -> Option<Arg> {
     Some(ans)
 }
 
-pub fn subarg(text: &mut ReadingText) -> Option<Box<dyn ArgElem>> {
+pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text) {
         return Some(Box::new(a));
     }else if let Some(a) = subarg_variable_non_braced(text) {
@@ -56,7 +56,7 @@ pub fn subarg(text: &mut ReadingText) -> Option<Box<dyn ArgElem>> {
     None
 }
 
-pub fn arg_in_brace(text: &mut ReadingText) -> Option<Arg> {
+pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
         pos: TextPos{lineno: text.from_lineno, pos: text.pos_in_line, length: 0},
@@ -81,7 +81,7 @@ pub fn arg_in_brace(text: &mut ReadingText) -> Option<Arg> {
     Some(ans)
 }
 
-pub fn subarg_in_brace(text: &mut ReadingText) -> Option<Box<dyn ArgElem>> {
+pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a)      = subarg_braced(text)          {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)       {Some(Box::new(a))}
     else if let Some(a) = subarg_double_qt(text)       {Some(Box::new(a))}
@@ -89,7 +89,7 @@ pub fn subarg_in_brace(text: &mut ReadingText) -> Option<Box<dyn ArgElem>> {
     else{None}
 }
 
-pub fn subarg_normal(text: &mut ReadingText) -> Option<SubArg> {
+pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
     if check_head(&text.remaining, " \n\t\"';"){
         return None;
     };
@@ -123,7 +123,7 @@ pub fn subarg_normal(text: &mut ReadingText) -> Option<SubArg> {
     None
 }
 
-pub fn subarg_normal_in_brace(text: &mut ReadingText) -> Option<SubArg> {
+pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
     if check_head(&text.remaining, ",}"){
         return None;
     };
@@ -153,7 +153,7 @@ pub fn subarg_normal_in_brace(text: &mut ReadingText) -> Option<SubArg> {
     None
 }
 
-pub fn subarg_single_qt(text: &mut ReadingText) -> Option<SubArgSingleQuoted> {
+pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
     if !check_head(&text.remaining, "'"){
         return None;
     };
@@ -179,7 +179,7 @@ pub fn subarg_single_qt(text: &mut ReadingText) -> Option<SubArgSingleQuoted> {
 }
 
 /* parser for a string such as "aaa${var}" */
-pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArgDoubleQuoted> {
+pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
     let backup = text.clone();
 
     let mut ans = SubArgDoubleQuoted {
@@ -220,7 +220,7 @@ pub fn subarg_double_qt(text: &mut ReadingText) -> Option<SubArgDoubleQuoted> {
     Some(ans)
 }
 
-pub fn string_in_double_qt(text: &mut ReadingText) -> Option<SubArg> {
+pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
     if check_head(&text.remaining, "\""){
         return None;
     };
@@ -251,7 +251,7 @@ pub fn string_in_double_qt(text: &mut ReadingText) -> Option<SubArg> {
     None
 }
 
-pub fn subarg_variable_non_braced(text: &mut ReadingText) -> Option<SubArgVariable> {
+pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
     if !check_head(&text.remaining, "$") ||
        text.remaining.chars().nth(1) == Some('{') {
         return None;
@@ -275,7 +275,7 @@ pub fn subarg_variable_non_braced(text: &mut ReadingText) -> Option<SubArgVariab
     None
 }
 
-pub fn subarg_variable_braced(text: &mut ReadingText) -> Option<SubArgVariable> {
+pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
     if text.remaining.chars().nth(0) != Some('$') ||
        text.remaining.chars().nth(1) != Some('{') {
         return None;
@@ -301,7 +301,7 @@ pub fn subarg_variable_braced(text: &mut ReadingText) -> Option<SubArgVariable> 
     None
 }
 
-pub fn subarg_braced(text: &mut ReadingText) -> Option<SubArgBraced> {
+pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     if let Some(_) = single_char_delimiter(text, '{') {
     }else{
         return None;

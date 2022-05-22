@@ -7,16 +7,16 @@ use crate::parser_args::arg;
 use crate::ShellCore;
 
 #[derive(Clone)]
-pub struct ReadingText {
+pub struct Feeder {
     pub remaining: String,
     pub from_lineno: u32,
     pub to_lineno: u32,
     pub pos_in_line: u32,
 }
 
-impl ReadingText {
-    pub fn new() -> ReadingText {
-        ReadingText {
+impl Feeder {
+    pub fn new() -> Feeder {
+        Feeder {
             remaining: "".to_string(),
             from_lineno: 0,
             to_lineno: 0,
@@ -24,7 +24,7 @@ impl ReadingText {
         }
     }
 
-    pub fn rewind(&mut self, backup: ReadingText) {
+    pub fn rewind(&mut self, backup: Feeder) {
         self.remaining = backup.remaining.clone();
         self.from_lineno = backup.from_lineno;
         self.to_lineno = backup.to_lineno;
@@ -33,7 +33,7 @@ impl ReadingText {
 }
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Option<Box<dyn BashElem>> {
+pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn BashElem>> {
     if text.remaining.len() == 0 {
         return None;
     };
@@ -53,7 +53,7 @@ pub fn top_level_element(text: &mut ReadingText, _config: &mut ShellCore) -> Opt
     None
 }
 
-pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
+pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
     let mut ans = CommandWithArgs{
         elems: vec!(),
         text: "".to_string(),
@@ -85,7 +85,7 @@ pub fn command_with_args(text: &mut ReadingText) -> Option<CommandWithArgs> {
     }
 }
 
-pub fn delimiter(text: &mut ReadingText) -> Option<Delim> {
+pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
     let mut length = 0;
     for ch in text.remaining.chars() {
         if ch == ' ' || ch == '\t' {
@@ -113,7 +113,7 @@ pub fn delimiter(text: &mut ReadingText) -> Option<Delim> {
     None
 }
 
-pub fn single_char_delimiter(text: &mut ReadingText, symbol: char) -> Option<Delim> {
+pub fn single_char_delimiter(text: &mut Feeder, symbol: char) -> Option<Delim> {
     if let Some(ch) = text.remaining.chars().nth(0) {
         if ch == symbol {
             let ans = Delim{
@@ -133,7 +133,7 @@ pub fn single_char_delimiter(text: &mut ReadingText, symbol: char) -> Option<Del
 
     None
 }
-pub fn end_of_command(text: &mut ReadingText) -> Option<Eoc> {
+pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if text.remaining.len() == 0 {
         return None;
     };
