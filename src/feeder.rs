@@ -5,10 +5,10 @@ use std::str::Chars;
 
 #[derive(Clone)]
 pub struct Feeder {
-    pub remaining: String,
-    pub from_lineno: u32,
-    pub to_lineno: u32,
-    pub pos_in_line: u32,
+    remaining: String,
+    from_lineno: u32,
+    to_lineno: u32,
+    pos_in_line: u32,
 }
 
 impl Feeder {
@@ -19,6 +19,14 @@ impl Feeder {
             to_lineno: 0,
             pos_in_line: 0,
         }
+    }
+
+    pub fn lineno(&self) -> (u32, u32) {
+        (self.from_lineno, self.to_lineno)
+    }
+
+    pub fn pos(&self) -> u32 {
+        self.pos_in_line
     }
 
     pub fn len(&self) -> usize {
@@ -33,6 +41,14 @@ impl Feeder {
         self.remaining[s..].chars()
     }
 
+    pub fn nth(&self, p: usize) -> char {
+        if let Some(c) = self.remaining.chars().nth(p){
+            c
+        }else{
+            panic!("Parser error")
+        }
+    }
+
     pub fn rewind(&mut self, backup: Feeder) {
         self.remaining = backup.remaining.clone();
         self.from_lineno = backup.from_lineno;
@@ -40,12 +56,34 @@ impl Feeder {
         self.pos_in_line = backup.pos_in_line;
     }
 
-    pub fn consume(&mut self, cutpos: usize) -> String{
+    pub fn consume(&mut self, cutpos: usize) -> String {
         let cut = self.remaining[0..cutpos].to_string();
         self.pos_in_line += cutpos as u32;
         self.remaining = self.remaining[cutpos..].to_string();
 
         cut
+    }
+
+    pub fn add_line(&mut self, line: String) {
+        self.to_lineno += 1;
+
+        if self.remaining.len() == 0 {
+            self.from_lineno = self.to_lineno;
+            self.pos_in_line = 0;
+            self.remaining = line;
+        }else{
+            self.remaining += &line;
+        };
+    }
+
+    pub fn check_head(&self, chars: &str) -> bool{
+        let ch = self.nth(0);
+
+        if let Some(_) = chars.to_string().find(ch){
+            true
+        }else{
+            false
+        }
     }
 }
 

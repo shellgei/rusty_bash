@@ -14,13 +14,6 @@ fn exist(ch: char, chars: &str) -> bool{
     }
 }
 
-fn check_head(text: &String, chars: &str) -> bool{
-    if let Some(ch) = text.chars().nth(0) {
-        exist(ch, chars)
-    }else{
-        false
-    }
-}
 
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut Feeder) -> Option<Arg> {
@@ -62,7 +55,7 @@ pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
         subargs: vec!(),
     };
 
-    if check_head(&text.remaining, ",}"){ // zero length arg
+    if text.check_head(",}"){ // zero length arg
         let tmp = SubArg{
             text: "".to_string(),
             pos: DebugInfo::init(text),
@@ -88,7 +81,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 }
 
 pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
-    if check_head(&text.remaining, " \n\t\"';"){
+    if text.check_head(" \n\t\"';"){
         return None;
     };
 
@@ -119,7 +112,7 @@ pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
 }
 
 pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
-    if check_head(&text.remaining, ",}"){
+    if text.check_head(",}"){
         return None;
     };
 
@@ -147,7 +140,7 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
 }
 
 pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
-    if !check_head(&text.remaining, "'"){
+    if !text.check_head("'"){
         return None;
     };
 
@@ -212,7 +205,7 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
 }
 
 pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
-    if check_head(&text.remaining, "\""){
+    if text.check_head("\""){
         return None;
     };
 
@@ -241,8 +234,7 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
 }
 
 pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
-    if !check_head(&text.remaining, "$") ||
-       text.chars().nth(1) == Some('{') {
+    if !text.check_head("$") || text.nth(1) == '{' {
         return None;
     };
 

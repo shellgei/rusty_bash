@@ -34,17 +34,11 @@ fn read_line() -> String {
     line
 }
 
+/*
 fn add_line(text: &mut Feeder, line: String) {
-    text.to_lineno += 1;
-
-    if text.len() == 0 {
-        text.from_lineno = text.to_lineno;
-        text.pos_in_line = 0;
-        text.remaining = line;
-    }else{
-        text.remaining += &line;
-    };
+    text.add_line(line);
 }
+*/
 
 fn is_interactive(pid: u32) -> bool {
     let std_path = format!("/proc/{}/fd/0", pid);
@@ -92,7 +86,8 @@ fn main() {
         }else{
             read_line()
         };
-        add_line(&mut input, line);
+        input.add_line(line);
+        //add_line(&mut input, line);
         while let Some(e) = parser::top_level_element(&mut input, &mut core){
             e.exec(&mut core);
         }

@@ -100,8 +100,9 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
         return None;
     };
 
-    let ch = &text.remaining[0..1];
-    if ch == ";" || ch == "\n" {
+    //let ch = &text.remaining[0..1];
+    let ch = text.nth(0);
+    if ch == ';' || ch == '\n' {
         let ans = Eoc{
             text: text.consume(1),
             debug: DebugInfo::init(&text),

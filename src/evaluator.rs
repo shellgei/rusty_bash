@@ -37,8 +37,8 @@ impl DebugInfo {
 
     pub fn init(f: &Feeder) -> DebugInfo {
         DebugInfo {
-            lineno: f.from_lineno,
-            pos: f.pos_in_line,
+            lineno: f.lineno().0,
+            pos: f.pos(),
             comment: "".to_string()
         }
     }
