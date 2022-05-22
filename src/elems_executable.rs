@@ -30,6 +30,14 @@ pub struct Substitutions {
 }
 
 impl Executable for Substitutions {
+    fn exec(&self, conf: &mut ShellCore) {
+        for e in &self.elems {
+            let sub = e.eval(conf);
+            if sub.len() == 2{
+                conf.vars.insert(sub[0].clone(), sub[1].clone());
+            };
+        };
+    }
 }
 
 /* command: delim arg delim arg delim arg ... eoc */

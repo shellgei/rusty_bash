@@ -14,6 +14,21 @@ pub trait ArgElem {
     fn text(&self) -> String;
 }
 
+pub struct VarName {
+    pub text: String,
+    pub pos: DebugInfo,
+}
+
+impl ArgElem for VarName {
+    fn text(&self) -> String {
+        self.text.clone()
+    }
+
+    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
+        vec!(self.text.clone())
+    }
+}
+
 pub struct SubArg {
     pub text: String,
     pub pos: DebugInfo,

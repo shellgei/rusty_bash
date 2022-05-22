@@ -3,8 +3,8 @@
 
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
-use crate::elems_in_command::{Arg};
-use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable};
+use crate::elems_in_command::{Arg, Substitution};
+use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
 use crate::parser::{arg_delimiter,delimiter_in_arg};
 use crate::utils::exist;
 
@@ -288,4 +288,61 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     };
 
     Some(ans)
+}
+
+pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
+    let backup = text.clone();
+
+    let mut ans = Substitution{
+        text: "".to_string(),
+        var: VarName{ text: "".to_string(), pos: DebugInfo::init(text) },
+        value: Arg{ text: "".to_string(), pos: DebugInfo::init(text), subargs: vec!()},
+        debug: DebugInfo::init(text)};
+
+    if let Some(a) = varname(text){
+        ans.text += &a.text;
+        ans.var = a;
+    }else{
+        return None;
+    };
+
+    if let Some(_) = delimiter_in_arg(text, '=') {
+        ans.text += "=";
+    }else{
+        text.rewind(backup);
+        return None;
+    }
+
+    if let Some(a) = arg(text){
+        ans.text += &a.text;
+        ans.value = a;
+    }else{
+        text.rewind(backup);
+        return None;
+    };
+
+    Some(ans)
+}
+
+pub fn varname(text: &mut Feeder) -> Option<VarName> {
+    let mut pos = 0;
+    for ch in text.chars() {
+        if ch == '=' {
+            if pos == 0 {
+                return None;
+            }
+
+            let ans = VarName{
+                    text: text.consume(pos),
+                    pos: DebugInfo::init(text),
+                 };
+            return Some(ans);
+        }else if !((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_') {
+            return None;
+        }
+
+        pos += ch.len_utf8();
+    };
+
+    None
 }

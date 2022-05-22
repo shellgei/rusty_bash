@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::elems_executable::{Executable, BlankPart, CommandWithArgs};
+use super::elems_executable::{Substitutions, Executable, BlankPart, CommandWithArgs};
 use super::elems_in_command::{ArgDelimiter, Eoc};
 use super::elems_in_arg::{DelimiterInArg};
-use crate::parser_args::arg;
+use crate::parser_args::{arg,substitution};
 use crate::ShellCore;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
@@ -18,6 +18,10 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<B
     };
 
     let backup = text.clone();
+
+    if let Some(result) = substitutions(text) {
+        return Some(Box::new(result));
+    }
 
     if let Some(result) = blank_part(text) {
         return Some(Box::new(result));
@@ -51,6 +55,35 @@ pub fn blank_part(text: &mut Feeder) -> Option<BlankPart> {
     };
     None
 }
+
+pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
+    let backup = text.clone();
+    let mut ans = Substitutions {elems: vec!(), text: "".to_string(),}; 
+
+    while let Some(result) = substitution(text) {
+        ans.text += &result.text;
+        ans.elems.push(Box::new(result));
+
+        if let Some(result) = delimiter(text){
+            ans.text += &result.text;
+            ans.elems.push(Box::new(result));
+        }
+
+        if let Some(result) = end_of_command(text){
+            ans.text += &result.text;
+            ans.elems.push(Box::new(result));
+            break;
+        }
+    }
+
+    if ans.elems.len() > 0 {
+        Some(ans)
+    }else{
+        text.rewind(backup);
+        None
+    }
+}
+
 
 pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
     let mut ans = CommandWithArgs{

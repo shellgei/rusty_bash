@@ -50,17 +50,16 @@ res=$($com <<< 'echo hoge"hoge";')
 
 # variable
 
-res=$($com <<< 'echo ${SHELL}')
-[ "$res" = "rustybash" ]
-
-res=$($com <<< 'echo $SHELL')
-[ "$res" = "rustybash" ]
-
 res=$($com << 'EOF'
-echo "a${SHELL}'b'c"
+abc=あいうえお
+echo $abc
+echo ${abc}
+echo "a${abc}'b'c"
 EOF
 )
-[ "$res" = "arustybash'b'c" ]
+[ "$res" = "あいうえお
+あいうえお
+aあいうえお'b'c" ]
 
 # brace expansion
 
