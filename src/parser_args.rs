@@ -32,20 +32,13 @@ pub fn arg(text: &mut Feeder) -> Option<Arg> {
 }
 
 pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
-    if let Some(a) = subarg_variable_braced(text) {
-        return Some(Box::new(a));
-    }else if let Some(a) = subarg_variable_non_braced(text) {
-        return Some(Box::new(a));
-    }else if let Some(a) = subarg_braced(text) {
-        return Some(Box::new(a));
-    }else if let Some(a) = subarg_normal(text) {
-        return Some(Box::new(a));
-    }else if let Some(a) = subarg_single_qt(text) {
-        return Some(Box::new(a));
-    }else if let Some(a) = subarg_double_qt(text) {
-        return Some(Box::new(a));
-    }
-    None
+    if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
+    else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
+    else if let Some(a) = subarg_braced(text)              {Some(Box::new(a))}
+    else if let Some(a) = subarg_normal(text)              {Some(Box::new(a))}
+    else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
+    else if let Some(a) = subarg_double_qt(text)           {Some(Box::new(a))}
+    else                                                   {None}
 }
 
 pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
