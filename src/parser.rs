@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::BashElem;
-use super::evaluator::{TextPos, CommandWithArgs, Delim, Eoc};
+use super::evaluator::{DebugInfo, CommandWithArgs, Delim, Eoc};
 use crate::parser_args::arg;
 use crate::ShellCore;
 use crate::Feeder;
@@ -101,7 +101,7 @@ pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
     if length != 0 {
         let ans = Delim{
             text: text.remaining[0..length].to_string(),
-            pos: TextPos{
+            debug: DebugInfo{
                 lineno: text.from_lineno,
                 pos: text.pos_in_line,
             }
@@ -120,7 +120,7 @@ pub fn single_char_delimiter(text: &mut Feeder, symbol: char) -> Option<Delim> {
         if ch == symbol {
             let ans = Delim{
                 text: text.remaining[0..1].to_string(),
-                pos: TextPos{
+                debug: DebugInfo{
                     lineno: text.from_lineno,
                     pos: text.pos_in_line,
                 }
@@ -143,7 +143,7 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if ch == ";" || ch == "\n" {
         let ans = Eoc{
             text: ch.to_string(),
-            pos: TextPos{
+            debug: DebugInfo{
                 lineno: text.from_lineno,
                 pos: text.pos_in_line,
             }

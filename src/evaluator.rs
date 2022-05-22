@@ -20,12 +20,12 @@ pub trait BashElem {
 }
 
 #[derive(Debug)]
-pub struct TextPos {
+pub struct DebugInfo {
     pub lineno: u32,
     pub pos: u32,
 }
 
-impl TextPos {
+impl DebugInfo {
     pub fn text(&self) -> String {
         format!("lineno: {}, pos: {}", 
                 self.lineno.to_string(),
@@ -37,12 +37,12 @@ impl TextPos {
 #[derive(Debug)]
 pub struct Delim {
     pub text: String,
-    pub pos: TextPos,
+    pub debug: DebugInfo,
 }
 
 impl BashElem for Delim {
     fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.pos.text()))
+        vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.text()))
     }
 }
 
@@ -50,12 +50,12 @@ impl BashElem for Delim {
 #[derive(Debug)]
 pub struct Eoc {
     pub text: String,
-    pub pos: TextPos,
+    pub debug: DebugInfo,
 }
 
 impl BashElem for Eoc {
     fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.pos.text()))
+        vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
 
     }
 }
@@ -64,7 +64,7 @@ impl BashElem for Eoc {
 pub struct CommandWithArgs {
     pub elems: Vec<Box<dyn BashElem>>,
     pub text: String,
-    //pub pos: TextPos,
+    //pub debug: DebugInfo,
 }
 
 impl BashElem for CommandWithArgs {

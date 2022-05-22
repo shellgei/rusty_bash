@@ -1,14 +1,14 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::evaluator::TextPos;
+use crate::evaluator::DebugInfo;
 use crate::BashElem;
 use crate::utils::{combine,eval_glob};
 use crate::ShellCore;
 
 pub struct Arg {
     pub text: String,
-    pub pos: TextPos,
+    pub pos: DebugInfo,
     pub subargs: Vec<Box<dyn ArgElem>>
 }
 
@@ -72,12 +72,12 @@ pub trait ArgElem {
     }
 
     fn text(&self) -> String;
-    fn get_length(&self) -> usize;
+//    fn get_length(&self) -> usize;
 }
 
 pub struct SubArg {
     pub text: String,
-    pub pos: TextPos,
+    pub pos: DebugInfo,
 }
 
 impl ArgElem for SubArg {
@@ -85,9 +85,11 @@ impl ArgElem for SubArg {
         self.text.clone()
     }
 
+    /*
     fn get_length(&self) -> usize {
         self.text.len()
     }
+    */
 
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
         vec!(self.text.clone())
@@ -97,7 +99,7 @@ impl ArgElem for SubArg {
 
 pub struct SubArgDoubleQuoted {
     pub text: String,
-    pub pos: TextPos,
+    pub pos: DebugInfo,
     pub subargs: Vec<Box<dyn ArgElem>>
 }
 
@@ -117,14 +119,16 @@ impl ArgElem for SubArgDoubleQuoted {
         self.text.clone()
     }
 
+    /*
     fn get_length(&self) -> usize {
         self.text.len()
     }
+    */
 }
 
 pub struct SubArgSingleQuoted {
     pub text: String,
-    pub pos: TextPos,
+    pub pos: DebugInfo,
 }
 
 impl ArgElem for SubArgSingleQuoted {
@@ -138,14 +142,16 @@ impl ArgElem for SubArgSingleQuoted {
         self.text.clone()
     }
 
+    /*
     fn get_length(&self) -> usize {
         self.text.len()
     }
+    */
 }
 
 pub struct SubArgBraced {
     pub text: String,
-    pub pos: TextPos,
+    pub pos: DebugInfo,
     pub args: Vec<Arg>
 }
 
@@ -168,14 +174,15 @@ impl ArgElem for SubArgBraced {
         self.text.clone()
     }
 
+    /*
     fn get_length(&self) -> usize {
         self.text.len()
-    }
+    }*/
 }
 
 pub struct SubArgVariable {
     pub text: String,
-    pub pos: TextPos,
+    pub pos: DebugInfo,
 }
 
 impl ArgElem for SubArgVariable {
@@ -192,7 +199,8 @@ impl ArgElem for SubArgVariable {
         self.text.clone()
     }
 
+    /*
     fn get_length(&self) -> usize {
         self.text.len()
-    }
+    }*/
 }
