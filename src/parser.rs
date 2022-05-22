@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::BashElem;
-use super::evaluator::{CommandWithArgs, Delim, Eoc};
+use super::evaluator::{CommandWithArgs, ArgDelimiter, Eoc, Quote};
 use crate::parser_args::arg;
 use crate::ShellCore;
 use crate::Feeder;
@@ -17,8 +17,8 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<B
 
     let backup = text.clone();
 
-    if let Some(delim) = single_char_delimiter(text, '\n') {
-        return Some(Box::new(delim));
+    if let Some(eoc) = end_of_command(text) {
+        return Some(Box::new(eoc));
     };
 
     //only a command is recognized currently
@@ -62,7 +62,7 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
     }
 }
 
-pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
+pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
     let mut length = 0;
     for ch in text.chars() {
         if ch == ' ' || ch == '\t' {
@@ -73,7 +73,7 @@ pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
     };
 
     if length != 0 {
-        let ans = Delim{
+        let ans = ArgDelimiter{
             text: text.consume(length),
             debug: DebugInfo::init(text),
         };
@@ -83,25 +83,27 @@ pub fn delimiter(text: &mut Feeder) -> Option<Delim> {
     None
 }
 
-pub fn single_char_delimiter(text: &mut Feeder, symbol: char) -> Option<Delim> {
-    if let Some(ch) = text.chars().nth(0) {
-        if ch == symbol {
-            let ans = Delim{
-                text: text.consume(1),
-                debug: DebugInfo::init(&text),
-            };
-            return Some(ans);
-        };
-    };
-
-    None
+pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {
+    if text.nth(0) == symbol {
+        Some( ArgDelimiter{ text: text.consume(1), debug: DebugInfo::init(&text),})
+    }else{
+        None
+    }
 }
+
+pub fn quote(text: &mut Feeder, symbol: char) -> Option<Quote> {
+    if text.nth(0) == symbol {
+        Some( Quote{ text: text.consume(1), debug: DebugInfo::init(&text),})
+    }else{
+        None
+    }
+}
+
 pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if text.len() == 0 {
         return None;
     };
 
-    //let ch = &text.remaining[0..1];
     let ch = text.nth(0);
     if ch == ';' || ch == '\n' {
         let ans = Eoc{

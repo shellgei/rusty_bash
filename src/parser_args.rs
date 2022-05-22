@@ -4,7 +4,7 @@
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::evaluator_args::{Arg, SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable};
-use crate::parser::single_char_delimiter;
+use crate::parser::{arg_delimiter,quote};
 
 fn exist(ch: char, chars: &str) -> bool{
     if let Some(_) = chars.to_string().find(ch) {
@@ -172,7 +172,7 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
         subargs: vec!(),
     };
 
-    if let Some(_) = single_char_delimiter(text, '"') {
+    if let Some(_) = quote(text, '"') {
     }else{
         return None;
     }
@@ -189,7 +189,7 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
         };
     }
 
-    if let Some(_) = single_char_delimiter(text, '"') {
+    if let Some(_) = quote(text, '"') {
     }else{
         text.rewind(backup);
         return None;
@@ -276,7 +276,7 @@ pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
 }
 
 pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
-    if let Some(_) = single_char_delimiter(text, '{') {
+    if let Some(_) = quote(text, '{') {
     }else{
         return None;
     };
@@ -290,10 +290,10 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     while let Some(arg) = arg_in_brace(text) {
         ans.text += &arg.text.clone();
         ans.args.push(arg); 
-        if let Some(_) = single_char_delimiter(text, ',') {
+        if let Some(_) = arg_delimiter(text, ',') {
             ans.text += ",";
             continue;
-        }else if let Some(_) = single_char_delimiter(text, '}') {
+        }else if let Some(_) = quote(text, '}') {
             ans.text += "}";
             break;
         };

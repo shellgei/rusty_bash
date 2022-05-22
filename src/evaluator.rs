@@ -17,46 +17,19 @@ pub trait BashElem {
     fn text(&self) -> String { String::new() }
 }
 
-/*
-#[derive(Debug)]
-pub struct DebugInfo {
-    pub lineno: u32,
-    pub pos: u32,
-    pub comment: String,
-}
-
-impl DebugInfo {
-    pub fn text(&self) -> String {
-        format!("lineno: {}, pos: {} {}", 
-                self.lineno.to_string(),
-                self.pos.to_string(),
-                self.comment)
-    }
-
-    pub fn init(f: &Feeder) -> DebugInfo {
-        DebugInfo {
-            lineno: f.lineno().0,
-            pos: f.pos(),
-            comment: "".to_string()
-        }
-    }
-}
-*/
-
 /* delimiter */
 #[derive(Debug)]
-pub struct Delim {
+pub struct ArgDelimiter {
     pub text: String,
     pub debug: DebugInfo,
 }
 
-impl BashElem for Delim {
+impl BashElem for ArgDelimiter {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.text()))
     }
 }
 
-/* end of command */
 #[derive(Debug)]
 pub struct Eoc {
     pub text: String,
@@ -66,7 +39,18 @@ pub struct Eoc {
 impl BashElem for Eoc {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
+    }
+}
 
+#[derive(Debug)]
+pub struct Quote {
+    pub text: String,
+    pub debug: DebugInfo,
+}
+
+impl BashElem for Quote {
+    fn parse_info(&self) -> Vec<String> {
+        vec!(format!("    quote : '{}' ({})\n", self.text.clone(), self.debug.text()))
     }
 }
 
