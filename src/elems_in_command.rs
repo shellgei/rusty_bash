@@ -6,7 +6,7 @@ use crate::utils::{eval_glob, combine};
 use crate::debuginfo::DebugInfo;
 use crate::elems_in_arg::ArgElem;
 
-pub trait SingleCommandElem {
+pub trait CommandPart {
     fn parse_info(&self) -> Vec<String>;
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
     fn text(&self) -> String { String::new() }
@@ -19,7 +19,7 @@ pub struct ArgDelimiter {
     pub debug: DebugInfo,
 }
 
-impl SingleCommandElem for ArgDelimiter {
+impl CommandPart for ArgDelimiter {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.text()))
     }
@@ -32,7 +32,7 @@ pub struct Eoc {
     pub debug: DebugInfo,
 }
 
-impl SingleCommandElem for Eoc {
+impl CommandPart for Eoc {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
     }
@@ -69,7 +69,7 @@ impl Arg {
     }
 }
 
-impl SingleCommandElem for Arg {
+impl CommandPart for Arg {
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
                               self.text.clone(), self.pos.text()));

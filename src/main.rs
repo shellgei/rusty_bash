@@ -20,7 +20,7 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::core::ShellCore;
-use crate::elems_in_command::{SingleCommandElem};
+use crate::elems_in_command::{CommandPart};
 use crate::feeder::Feeder;
 
 fn read_line() -> String {

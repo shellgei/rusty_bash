@@ -6,7 +6,7 @@ use nix::sys::wait::*;
 use std::ffi::CString;
 use std::process::exit;
 
-use crate::SingleCommandElem;
+use crate::CommandPart;
 use crate::ShellCore;
 use crate::utils::blue_string;
 use crate::elems_in_command::Arg;
@@ -17,16 +17,24 @@ pub trait Executable {
 }
 
 pub struct BlankPart {
-    pub elems: Vec<Box<dyn SingleCommandElem>>,
+    pub elems: Vec<Box<dyn CommandPart>>,
     pub text: String,
 }
 
 impl Executable for BlankPart {
 }
 
+pub struct Substitutions {
+    pub elems: Vec<Box<dyn CommandPart>>,
+    pub text: String,
+}
+
+impl Executable for Substitutions {
+}
+
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {
-    pub elems: Vec<Box<dyn SingleCommandElem>>,
+    pub elems: Vec<Box<dyn CommandPart>>,
     pub text: String,
     //pub debug: DebugInfo,
 }
