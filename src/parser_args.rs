@@ -8,8 +8,6 @@ use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, Sub
 use crate::parser::{arg_delimiter,delimiter_in_arg};
 use crate::utils::exist;
 
-
-
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut Feeder) -> Option<Arg> {
     let mut ans = Arg{
@@ -232,7 +230,6 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
         };
 
         if exist(ch, "\"$") {
-        //if ch == '"' || ch == '$' {
             let ans = SubArg{
                     text: text.consume(pos),
                     pos: DebugInfo::init(text),
@@ -251,19 +248,12 @@ pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
         return None;
     };
 
-    let mut pos = 1;
-    for ch in text.chars_after(1) {
-        if let Some(_) = " {,;\n".find(ch) {
-            return Some(
-                SubArgVariable{
-                    text: text.consume(pos),
-                    pos: DebugInfo::init(text),
-                 })
-        };
-        pos += ch.len_utf8();
-    };
-
-    None
+    let pos = scanner_varname(&text, 1);
+    Some(
+        SubArgVariable{
+            text: text.consume(pos),
+            pos: DebugInfo::init(text),
+        })
 }
 
 pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
@@ -349,9 +339,9 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
     Some(ans)
 }
 
-fn scanner_varname(text: &Feeder) -> usize {
-    let mut pos = 0;
-    for ch in text.chars() {
+fn scanner_varname(text: &Feeder, start: usize) -> usize {
+    let mut pos = start;
+    for ch in text.chars_after(start) {
         if !((ch >= '0' && ch <= '9') ||(ch >= 'A' && ch <= 'Z') 
         || (ch >= 'a' && ch <= 'z') || ch == '_'){
             break;
@@ -362,14 +352,10 @@ fn scanner_varname(text: &Feeder) -> usize {
 }
 
 pub fn varname(text: &mut Feeder) -> Option<VarName> {
-    let pos = scanner_varname(&text);
+    let pos = scanner_varname(&text, 0);
     if pos == 0 {
         return None;
     };
 
-    if text.nth(pos) == '=' {
-        Some( VarName{text: text.consume(pos), pos: DebugInfo::init(text) })
-    }else{
-        None
-    }
+    Some( VarName{text: text.consume(pos), pos: DebugInfo::init(text) })
 }
