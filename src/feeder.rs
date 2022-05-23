@@ -76,8 +76,8 @@ impl Feeder {
         };
     }
 
-    pub fn check_head(&self, chars: &str) -> bool{
-        let ch = self.nth(0);
+    pub fn match_at(&self, pos: usize, chars: &str) -> bool{
+        let ch = self.nth(pos);
 
         if let Some(_) = chars.to_string().find(ch){
             true

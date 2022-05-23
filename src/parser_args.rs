@@ -53,7 +53,7 @@ pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
-    else if let Some(a) = subarg_normal(text)              {Some(Box::new(a))}
+    else if let Some(a) = subvalue_normal(text)              {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
     else if let Some(a) = subarg_double_qt(text)           {Some(Box::new(a))}
     else                                                   {None}
@@ -66,7 +66,7 @@ pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
         subargs: vec!(),
     };
 
-    if text.check_head(",}"){ // zero length arg
+    if text.match_at(0, ",}"){ // zero length arg
         let tmp = SubArg{
             text: "".to_string(),
             pos: DebugInfo::init(text),
@@ -91,39 +91,53 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     else{None}
 }
 
-pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
-    if text.check_head(" \n\t\"';"){
+pub fn scanner_subarg_no_quote(text: &Feeder, start: usize) -> usize {
+    let mut pos = start;
+    let mut escaped = false;
+    for ch in text.chars_after(start) {
+        if escaped || ch == '\\' {
+            escaped = !escaped;
+        }else if exist(ch, " \n\t\"';{}") {
+            break;
+        };
+            
+        pos += ch.len_utf8();
+    }
+    pos
+}
+
+pub fn scanner_subvalue_no_quote(text: &Feeder, start: usize) -> usize {
+    let mut pos = start;
+    let mut escaped = false;
+    for ch in text.chars_after(start) {
+        if escaped || ch == '\\' {
+            escaped = !escaped;
+        }else if exist(ch, " \n\t\"';") {
+            break;
+        };
+        pos += ch.len_utf8();
+    }
+    pos
+}
+
+pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArg> {
+    let pos = scanner_subvalue_no_quote(&text, 0);
+    if pos == 0 {
         return None;
     };
+    Some( SubArg{text: text.consume(pos), pos: DebugInfo::init(text) } )
+}
 
-    let mut first = true;
-    let mut pos = 0;
-    let mut escaped = false;
-    for ch in text.chars() {
-        if escaped || (!escaped && ch == '\\') {
-            pos += ch.len_utf8();
-            escaped = !escaped;
-            first = false;
-            continue;
-        };
-
-        if exist(ch, " \n\t;'\"") || (!first && ch == '{') {
-            let ans = SubArg{
-                    text: text.consume(pos),
-                    pos: DebugInfo::init(text),
-                 };
-            return Some(ans);
-        };
-
-        pos += ch.len_utf8();
-        first = false;
+pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
+    let pos = scanner_subarg_no_quote(&text, 0);
+    if pos == 0 {
+        return None;
     };
-
-    None
+    Some( SubArg{text: text.consume(pos), pos: DebugInfo::init(text) } )
 }
 
 pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
-    if text.check_head(",}"){
+    if text.match_at(0, ",}"){
         return None;
     };
 
@@ -151,7 +165,7 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
 }
 
 pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
-    if !text.check_head("'"){
+    if !text.match_at(0, "'"){
         return None;
     };
 
@@ -216,7 +230,7 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
 }
 
 pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
-    if text.check_head("\""){
+    if text.nth(0) == '"' {
         return None;
     };
 
@@ -244,7 +258,7 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
 }
 
 pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
-    if !text.check_head("$") || text.nth(1) == '{' {
+    if !(text.nth(0) == '$') || text.nth(1) == '{' {
         return None;
     };
 
@@ -257,25 +271,16 @@ pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
 }
 
 pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
-    if text.chars().nth(0) != Some('$') ||
-       text.chars().nth(1) != Some('{') {
+    if !(text.nth(0) == '$' && text.nth(1) == '{') {
         return None;
     }
 
-    let mut pos = 2;
-    for ch in text.chars_after(2) {
-        pos += ch.len_utf8();
-        if ch != '}' {
-            continue;
-        }
-
-        return Some( SubArgVariable{
-            text: text.consume(pos),
-            pos: DebugInfo::init(text),
-        } )
-    };
-
-    None
+    let pos = scanner_varname(&text, 2);
+    if text.nth(pos) == '}' {
+        Some( SubArgVariable{ text: text.consume(pos+1), pos: DebugInfo::init(text) })
+    }else{
+        None
+    }
 }
 
 pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
@@ -293,6 +298,7 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     while let Some(arg) = arg_in_brace(text) {
         ans.text += &arg.text.clone();
         ans.args.push(arg); 
+
         if let Some(_) = arg_delimiter(text, ',') {
             ans.text += ",";
             continue;
