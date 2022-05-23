@@ -55,11 +55,24 @@ abc=あいうえお
 echo $abc
 echo ${abc}
 echo "a${abc}'b'c"
+abc=
+echo $abc
 EOF
 )
 [ "$res" = "あいうえお
 あいうえお
 aあいうえお'b'c" ]
+
+res=$($com <<< 'a={a,b}{c,d};echo $a')
+[ "$res" = "{a,b}{c,d}" ]
+
+res=$($com << 'EOF'
+abc=あいうえお
+def=${abc}かきくけこ
+echo $def
+EOF
+)
+[ "$res" = "あいうえおかきくけこ" ]
 
 # brace expansion
 
