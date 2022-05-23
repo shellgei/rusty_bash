@@ -349,25 +349,27 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
     Some(ans)
 }
 
-pub fn varname(text: &mut Feeder) -> Option<VarName> {
+fn scanner_varname(text: &Feeder) -> usize {
     let mut pos = 0;
     for ch in text.chars() {
-        if ch == '=' {
-            if pos == 0 {
-                return None;
-            }
-
-            let ans = VarName{
-                    text: text.consume(pos),
-                    pos: DebugInfo::init(text),
-                 };
-            return Some(ans);
-        }else if !((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_') {
-            return None;
+        if !((ch >= '0' && ch <= '9') ||(ch >= 'A' && ch <= 'Z') 
+        || (ch >= 'a' && ch <= 'z') || ch == '_'){
+            break;
         }
+        pos += 1;
+    }
+    pos
+}
 
-        pos += ch.len_utf8();
+pub fn varname(text: &mut Feeder) -> Option<VarName> {
+    let pos = scanner_varname(&text);
+    if pos == 0 {
+        return None;
     };
 
-    None
+    if text.nth(pos) == '=' {
+        Some( VarName{text: text.consume(pos), pos: DebugInfo::init(text) })
+    }else{
+        None
+    }
 }
