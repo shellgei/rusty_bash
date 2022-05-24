@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::utils::exist;
 
 pub fn scanner_subarg_no_quote(text: &Feeder, start: usize) -> usize {
     scanner_escaped_string(text, " \n\t\"';{}", start)
@@ -30,7 +29,7 @@ fn scanner_escaped_string(text: &Feeder, ng_chars: &str, start: usize) -> usize 
     for ch in text.chars_after(start) {
         if escaped || ch == '\\' {
             escaped = !escaped;
-        }else if exist(ch, ng_chars) {
+        }else if let Some(_) = ng_chars.find(ch) {
             break;
         };
         pos += ch.len_utf8();

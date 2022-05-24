@@ -45,10 +45,3 @@ pub fn blue_string(strings: &Vec<String>) -> Vec<String> {
         .collect()
 }
 
-pub fn exist(ch: char, chars: &str) -> bool{
-    if let Some(_) = chars.to_string().find(ch) {
-        true
-    }else{
-        false
-    }
-}

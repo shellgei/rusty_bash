@@ -6,7 +6,6 @@ use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg, Substitution};
 use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
 use crate::parser::{arg_delimiter,delimiter_in_arg};
-use crate::utils::exist;
 use crate::scanner::{scanner_varname,scanner_subarg_no_quote,scanner_subvalue_no_quote};
 
 // single quoted arg or double quoted arg or non quoted arg 
@@ -122,7 +121,7 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
             continue;
         };
 
-        if exist(ch, ",}{") {
+        if let Some(_) = ",}{".find(ch) {
             let ans = SubArg{
                     text: text.consume(pos),
                     pos: DebugInfo::init(text),
@@ -215,7 +214,7 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
             continue;
         };
 
-        if exist(ch, "\"$") {
+        if let Some(_) = "\"$".find(ch) {
             let ans = SubArg{
                     text: text.consume(pos),
                     pos: DebugInfo::init(text),

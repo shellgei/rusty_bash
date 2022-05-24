@@ -8,8 +8,6 @@ use crate::parser_args::{arg,substitution};
 use crate::ShellCore;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
-use crate::utils::exist;
-
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn Executable>> {
@@ -156,7 +154,8 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
         return None;
     };
 
-    if exist(text.nth(0), ";\n") {
+    if text.match_at(0, ";\n") {
+    //if exist(text.nth(0), ";\n") {
         let ans = Eoc{
             text: text.consume(1),
             debug: DebugInfo::init(&text),
