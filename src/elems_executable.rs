@@ -5,6 +5,7 @@ use nix::unistd::{execvpe, fork, ForkResult, Pid};
 use nix::sys::wait::*;
 use std::ffi::CString;
 use std::process::exit;
+use std::env;
 
 use crate::CommandPart;
 use crate::ShellCore;
@@ -100,6 +101,8 @@ impl CommandWithArgs {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
         };
+
+        //env::set_var("LANG", "C");
 
         let envs: Vec<CString> = std::env::vars()
             .map(|v| format!("{}={}", v.0, v.1))
