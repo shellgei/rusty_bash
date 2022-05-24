@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{execvp, fork, ForkResult, Pid}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid}; 
 use nix::sys::wait::*;
 use std::ffi::CString;
 use std::process::exit;
@@ -98,13 +98,15 @@ impl CommandWithArgs {
             .collect();
 
         if conf.flags.d {
-            for s in self.parse_info() {
-                eprintln!("{}", s);
-            };
+            eprintln!("{}", self.parse_info().join("\n"));
         };
 
-        if let Ok(_) = execvp(&cargs[0], &*cargs){
-        }
+        let envs: Vec<CString> = std::env::vars()
+            .map(|v| format!("{}={}", v.0, v.1))
+            .map(|a| CString::new(a.to_string()).unwrap())
+            .collect();
+
+        let _ = execvpe(&cargs[0], &*cargs, &envs);
 
         eprintln!("Command not found");
         exit(127);

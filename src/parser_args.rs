@@ -39,7 +39,7 @@ pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
-    else if let Some(a) = subvalue_normal(text)              {Some(Box::new(a))}
+    else if let Some(a) = subvalue_normal(text)            {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
     else if let Some(a) = subarg_double_qt(text)           {Some(Box::new(a))}
     else                                                   {None}
