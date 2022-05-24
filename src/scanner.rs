@@ -3,13 +3,13 @@
 
 use crate::Feeder;
 
-fn scanner_escaped_string(text: &Feeder, ng_chars: &str, start: usize) -> usize {
-    let mut pos = start;
+fn scanner_escaped_string(text: &Feeder, from: usize, to: &str) -> usize {
+    let mut pos = from;
     let mut escaped = false;
-    for ch in text.chars_after(start) {
+    for ch in text.chars_after(from) {
         if escaped || ch == '\\' {
             escaped = !escaped;
-        }else if let Some(_) = ng_chars.find(ch) {
+        }else if let Some(_) = to.find(ch) {
             break;
         };
         pos += ch.len_utf8();
@@ -17,17 +17,28 @@ fn scanner_escaped_string(text: &Feeder, ng_chars: &str, start: usize) -> usize 
     pos
 }
 
-pub fn scanner_subarg_no_quote(text: &Feeder, start: usize) -> usize {
-    scanner_escaped_string(text, " \n\t\"';{}", start)
+pub fn scanner_string(text: &Feeder, from: usize, to: &str) -> usize {
+    let mut pos = from;
+    for ch in text.chars_after(from) {
+        if let Some(_) = to.find(ch) {
+            break;
+        };
+        pos += ch.len_utf8();
+    }
+    pos
 }
 
-pub fn scanner_subvalue_no_quote(text: &Feeder, start: usize) -> usize {
-    scanner_escaped_string(text, " \n\t\"';", start)
+pub fn scanner_subarg_no_quote(text: &Feeder, from: usize) -> usize {
+    scanner_escaped_string(text, from, " \n\t\"';{}")
 }
 
-pub fn scanner_varname(text: &Feeder, start: usize) -> usize {
-    let mut pos = start;
-    for ch in text.chars_after(start) {
+pub fn scanner_subvalue_no_quote(text: &Feeder, from: usize) -> usize {
+    scanner_escaped_string(text, from, " \n\t\"';")
+}
+
+pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
+    let mut pos = from;
+    for ch in text.chars_after(from) {
         if !((ch >= '0' && ch <= '9') ||(ch >= 'A' && ch <= 'Z') 
         || (ch >= 'a' && ch <= 'z') || ch == '_'){
             break;
@@ -37,6 +48,6 @@ pub fn scanner_varname(text: &Feeder, start: usize) -> usize {
     pos
 }
 
-pub fn scanner_subarg_normal_in_brace(text: &Feeder, start: usize) -> usize {
-    scanner_escaped_string(text, ",{}", start)
+pub fn scanner_subarg_normal_in_brace(text: &Feeder, from: usize) -> usize {
+    scanner_escaped_string(text, from, ",{}")
 }

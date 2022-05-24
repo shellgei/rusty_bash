@@ -6,7 +6,6 @@ use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg, Substitution};
 use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
 use crate::parser::{arg_delimiter,delimiter_in_arg};
-//use crate::scanner::{scanner_varname,scanner_subarg_no_quote,scanner_subvalue_no_quote};
 use crate::scanner::*;
 
 // single quoted arg or double quoted arg or non quoted arg 
@@ -122,22 +121,8 @@ pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
         return None;
     };
 
-    let mut pos = 1;
-    for ch in text.chars_after(1) {
-        if ch != '\'' {
-            pos += ch.len_utf8();
-        }else{
-            pos += 1;
-            let ans = SubArgSingleQuoted{
-                    text: text.consume(pos),
-                    pos: DebugInfo::init(text),
-                 };
-
-            return Some(ans);
-        };
-    };
-
-    None
+    let pos = scanner_string(text, 1, "'");
+    Some(SubArgSingleQuoted{text: text.consume(pos+1), pos: DebugInfo::init(text)})
 }
 
 /* parser for a string such as "aaa${var}" */
