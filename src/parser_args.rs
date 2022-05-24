@@ -92,7 +92,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 }
 
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArg> {
-    let pos = scanner_subvalue_no_quote(&text, 0);
+    let pos = scanner_escaped_string(text, 0, " \n\t\"';");
     if pos == 0 {
         return None;
     };
@@ -100,7 +100,7 @@ pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArg> {
 }
 
 pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
-    let pos = scanner_subarg_no_quote(&text, 0);
+    let pos = scanner_escaped_string(text, 0, " \n\t\"';{}");
     if pos == 0 {
         return None;
     };
@@ -112,7 +112,7 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
         return None;
     };
     
-    let pos = scanner_subarg_normal_in_brace(text, 0);
+    let pos = scanner_escaped_string(text, 0, ",{}");
     Some( SubArg{ text: text.consume(pos), pos: DebugInfo::init(text) })
 }
 
@@ -172,6 +172,9 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
         return None;
     };
 
+    let pos = scanner_escaped_string(text, 0, "\"$");
+
+    /*
     let mut pos = 0;
     let mut escaped = false;
     for ch in text.chars() {
@@ -182,17 +185,20 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
         };
 
         if let Some(_) = "\"$".find(ch) {
+        */
             let ans = SubArg{
                     text: text.consume(pos),
                     pos: DebugInfo::init(text),
                  };
 
             return Some(ans);
+            /*
         };
         pos += ch.len_utf8();
     };
 
     None
+    */
 }
 
 pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
