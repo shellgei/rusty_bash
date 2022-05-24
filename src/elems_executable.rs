@@ -10,7 +10,7 @@ use std::env;
 use crate::CommandPart;
 use crate::ShellCore;
 use crate::utils::blue_string;
-use crate::elems_in_command::Arg;
+use crate::elems_in_command::{Arg, Substitution};
 
 pub trait Executable {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
@@ -43,6 +43,7 @@ impl Executable for Substitutions {
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {
+    pub vars: Vec<Box<Substitution>>,
     pub elems: Vec<Box<dyn CommandPart>>,
     pub text: String,
     //pub debug: DebugInfo,
@@ -73,7 +74,7 @@ impl Executable for CommandWithArgs {
 
         unsafe {
             match fork() {
-                Ok(ForkResult::Child) => self.exec_external_command(&args, conf),
+                Ok(ForkResult::Child) => self.exec_external_command(&args, &self.vars, conf),
                 Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
                 Err(err) => panic!("Failed to fork. {}", err),
             }
@@ -92,7 +93,7 @@ impl CommandWithArgs {
         blue_string(&ans)
     }
 
-    fn exec_external_command(&self, args: &Vec<String>, conf: &mut ShellCore) {
+    fn exec_external_command(&self, args: &Vec<String>, vars: &Vec<Box<Substitution>>, conf: &mut ShellCore) {
         let cargs: Vec<CString> = args
             .iter()
             .map(|a| CString::new(a.to_string()).unwrap())
@@ -102,7 +103,11 @@ impl CommandWithArgs {
             eprintln!("{}", self.parse_info().join("\n"));
         };
 
-        //env::set_var("LANG", "C");
+        for v in vars {
+            let key = (*v).var.text.clone();
+            let value =  (*v).value.eval(conf).join(" ");
+            env::set_var(key, value);
+        }
 
         let envs: Vec<CString> = std::env::vars()
             .map(|v| format!("{}={}", v.0, v.1))

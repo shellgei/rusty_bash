@@ -48,32 +48,6 @@ EOF
 res=$($com <<< 'echo hoge"hoge";')
 [ "$res" = "hogehoge" ]
 
-# variable
-
-res=$($com << 'EOF'
-abc=あいうえお
-echo $abc
-echo ${abc}
-echo "a${abc}'b'c"
-abc=
-echo $abc
-EOF
-)
-[ "$res" = "あいうえお
-あいうえお
-aあいうえお'b'c" ]
-
-res=$($com <<< 'a={a,b}{c,d};echo $a')
-[ "$res" = "{a,b}{c,d}" ]
-
-res=$($com << 'EOF'
-abc=あいうえお
-def=${abc}かきくけこ
-echo $def
-EOF
-)
-[ "$res" = "あいうえおかきくけこ" ]
-
 # brace expansion
 
 res=$($com << 'EOF'
@@ -159,6 +133,39 @@ EOF
 )
 [ "$res" = 'hello
 world' ]
+
+### VARIABLE TEST ###
+
+res=$($com << 'EOF'
+abc=あいうえお
+echo $abc
+echo ${abc}
+echo "a${abc}'b'c"
+abc=
+echo $abc
+EOF
+)
+[ "$res" = "あいうえお
+あいうえお
+aあいうえお'b'c" ]
+
+res=$($com <<< 'a={a,b}{c,d};echo $a')
+[ "$res" = "{a,b}{c,d}" ]
+
+res=$($com << 'EOF'
+abc=あいうえお
+def=${abc}かきくけこ
+echo $def
+EOF
+)
+[ "$res" = "あいうえおかきくけこ" ]
+
+
+#LANG=C date
+#Tue May 24 21:18:32 JST 2022
+res=$($com <<< 'LANG=C TZ= date -d 2000-01-01')
+[ "$res" = "Sat Jan  1 00:00:00 UTC 2000" ]
+
 
 trap "" EXIT
 echo TEST OK

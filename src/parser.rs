@@ -17,11 +17,11 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<B
 
     let backup = text.clone();
 
-    if let Some(result) = substitutions(text) {
+    if let Some(result) = blank_part(text) {
         return Some(Box::new(result));
     }
 
-    if let Some(result) = blank_part(text) {
+    if let Some(result) = substitutions(text) {
         return Some(Box::new(result));
     }
 
@@ -67,11 +67,14 @@ pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
             ans.elems.push(Box::new(result));
         }
 
-        if let Some(result) = end_of_command(text){
-            ans.text += &result.text;
-            ans.elems.push(Box::new(result));
-            break;
-        }
+    }
+
+    if let Some(result) = end_of_command(text){
+        ans.text += &result.text;
+        ans.elems.push(Box::new(result));
+    }else{
+        text.rewind(backup);
+        return None;
     }
 
     if ans.elems.len() > 0 {
@@ -85,9 +88,20 @@ pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
 
 pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
     let mut ans = CommandWithArgs{
+        vars: vec!(),
         elems: vec!(),
         text: "".to_string(),
     };
+
+    while let Some(result) = substitution(text) {
+        ans.text += &result.text;
+        ans.vars.push(Box::new(result));
+
+        if let Some(result) = delimiter(text){
+            ans.text += &result.text;
+            ans.elems.push(Box::new(result));
+        }
+    }
 
     while let Some(result) = arg(text, true) {
         ans.text += &result.text;
