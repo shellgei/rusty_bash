@@ -10,6 +10,7 @@ mod core;
 mod term;
 mod utils;
 mod feeder;
+mod scanner;
 mod debuginfo;
 
 use std::{io,env,process};

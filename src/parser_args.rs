@@ -7,6 +7,7 @@ use crate::elems_in_command::{Arg, Substitution};
 use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
 use crate::parser::{arg_delimiter,delimiter_in_arg};
 use crate::utils::exist;
+use crate::scanner::{scanner_varname,scanner_subarg_no_quote,scanner_subvalue_no_quote};
 
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut Feeder) -> Option<Arg> {
@@ -89,35 +90,6 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     else if let Some(a) = subarg_double_qt(text)       {Some(Box::new(a))}
     else if let Some(a) = subarg_normal_in_brace(text) {Some(Box::new(a))}
     else{None}
-}
-
-pub fn scanner_subarg_no_quote(text: &Feeder, start: usize) -> usize {
-    let mut pos = start;
-    let mut escaped = false;
-    for ch in text.chars_after(start) {
-        if escaped || ch == '\\' {
-            escaped = !escaped;
-        }else if exist(ch, " \n\t\"';{}") {
-            break;
-        };
-            
-        pos += ch.len_utf8();
-    }
-    pos
-}
-
-pub fn scanner_subvalue_no_quote(text: &Feeder, start: usize) -> usize {
-    let mut pos = start;
-    let mut escaped = false;
-    for ch in text.chars_after(start) {
-        if escaped || ch == '\\' {
-            escaped = !escaped;
-        }else if exist(ch, " \n\t\"';") {
-            break;
-        };
-        pos += ch.len_utf8();
-    }
-    pos
 }
 
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArg> {
@@ -343,18 +315,6 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
     };
 
     Some(ans)
-}
-
-fn scanner_varname(text: &Feeder, start: usize) -> usize {
-    let mut pos = start;
-    for ch in text.chars_after(start) {
-        if !((ch >= '0' && ch <= '9') ||(ch >= 'A' && ch <= 'Z') 
-        || (ch >= 'a' && ch <= 'z') || ch == '_'){
-            break;
-        }
-        pos += 1;
-    }
-    pos
 }
 
 pub fn varname(text: &mut Feeder) -> Option<VarName> {
