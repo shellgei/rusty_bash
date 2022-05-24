@@ -166,6 +166,13 @@ EOF
 res=$($com <<< 'LANG=C TZ= date -d 2000-01-01')
 [ "$res" = "Sat Jan  1 00:00:00 UTC 2000" ]
 
+res=$($com << 'EOF'
+LANG=C
+TZ= date -d 2000-01-01
+EOF
+)
+[ "$res" = "Sat Jan  1 00:00:00 UTC 2000" ]
+
 
 trap "" EXIT
 echo TEST OK

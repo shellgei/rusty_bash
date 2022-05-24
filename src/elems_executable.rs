@@ -32,14 +32,37 @@ pub struct Substitutions {
 
 impl Executable for Substitutions {
     fn exec(&self, conf: &mut ShellCore) {
+        if conf.flags.d {
+            eprintln!("{}", self.parse_info().join("\n"));
+        };
+
         for e in &self.elems {
             let sub = e.eval(conf);
-            if sub.len() == 2{
-                conf.vars.insert(sub[0].clone(), sub[1].clone());
+            if sub.len() != 2{
+                continue;
+            };
+
+            let (key, value) = (sub[0].clone(), sub[1].clone());
+            if let Ok(_) = env::var(&key) {
+                env::set_var(key, value);
+            }else{
+                conf.vars.insert(key, value);
             };
         };
     }
 }
+
+impl Substitutions {
+    fn parse_info(&self) -> Vec<String> {
+        let mut ans = vec!(format!("substitutions: '{}'", self.text));
+        for elem in &self.elems {
+            ans.append(&mut elem.parse_info());
+        };
+        
+        blue_string(&ans)
+    }
+}
+
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {
