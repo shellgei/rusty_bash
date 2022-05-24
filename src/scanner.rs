@@ -3,6 +3,20 @@
 
 use crate::Feeder;
 
+fn scanner_escaped_string(text: &Feeder, ng_chars: &str, start: usize) -> usize {
+    let mut pos = start;
+    let mut escaped = false;
+    for ch in text.chars_after(start) {
+        if escaped || ch == '\\' {
+            escaped = !escaped;
+        }else if let Some(_) = ng_chars.find(ch) {
+            break;
+        };
+        pos += ch.len_utf8();
+    }
+    pos
+}
+
 pub fn scanner_subarg_no_quote(text: &Feeder, start: usize) -> usize {
     scanner_escaped_string(text, " \n\t\"';{}", start)
 }
@@ -18,21 +32,11 @@ pub fn scanner_varname(text: &Feeder, start: usize) -> usize {
         || (ch >= 'a' && ch <= 'z') || ch == '_'){
             break;
         }
-        pos += 1;
+        pos += ch.len_utf8();
     }
     pos
 }
 
-fn scanner_escaped_string(text: &Feeder, ng_chars: &str, start: usize) -> usize {
-    let mut pos = start;
-    let mut escaped = false;
-    for ch in text.chars_after(start) {
-        if escaped || ch == '\\' {
-            escaped = !escaped;
-        }else if let Some(_) = ng_chars.find(ch) {
-            break;
-        };
-        pos += ch.len_utf8();
-    }
-    pos
+pub fn scanner_subarg_normal_in_brace(text: &Feeder, start: usize) -> usize {
+    scanner_escaped_string(text, ",{}", start)
 }

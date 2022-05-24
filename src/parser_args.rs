@@ -6,7 +6,8 @@ use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg, Substitution};
 use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
 use crate::parser::{arg_delimiter,delimiter_in_arg};
-use crate::scanner::{scanner_varname,scanner_subarg_no_quote,scanner_subvalue_no_quote};
+//use crate::scanner::{scanner_varname,scanner_subarg_no_quote,scanner_subvalue_no_quote};
+use crate::scanner::*;
 
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut Feeder) -> Option<Arg> {
@@ -111,28 +112,9 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
     if text.match_at(0, ",}"){
         return None;
     };
-
-    let mut pos = 0;
-    let mut escaped = false;
-    for ch in text.chars() {
-        if escaped || (!escaped && ch == '\\') {
-            pos += ch.len_utf8();
-            escaped = !escaped;
-            continue;
-        };
-
-        if let Some(_) = ",}{".find(ch) {
-            let ans = SubArg{
-                    text: text.consume(pos),
-                    pos: DebugInfo::init(text),
-                 };
-
-            return Some(ans);
-        }
-        pos += ch.len_utf8();
-    };
-
-    None
+    
+    let pos = scanner_subarg_normal_in_brace(text, 0);
+    Some( SubArg{ text: text.consume(pos), pos: DebugInfo::init(text) })
 }
 
 pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
