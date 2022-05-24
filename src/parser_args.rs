@@ -9,30 +9,16 @@ use crate::parser::{arg_delimiter,delimiter_in_arg};
 use crate::scanner::*;
 
 // single quoted arg or double quoted arg or non quoted arg 
-pub fn arg(text: &mut Feeder) -> Option<Arg> {
+pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
         pos: DebugInfo::init(text),
         subargs: vec!(),
     };
 
-    while let Some(result) = subarg(text) {
-        ans.text += &(*result).text();
-        ans.subargs.push(result);
-    };
+    let sub = if expand_brace{subarg}else{subvalue};
 
-    Some(ans)
-}
-
-// right hand of var=value
-pub fn value(text: &mut Feeder) -> Option<Arg> {
-    let mut ans = Arg{
-        text: "".to_string(),
-        pos: DebugInfo::init(text),
-        subargs: vec!(),
-    };
-
-    while let Some(result) = subvalue(text) {
+    while let Some(result) = sub(text) {
         ans.text += &(*result).text();
         ans.subargs.push(result);
     };
@@ -173,32 +159,7 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
     };
 
     let pos = scanner_escaped_string(text, 0, "\"$");
-
-    /*
-    let mut pos = 0;
-    let mut escaped = false;
-    for ch in text.chars() {
-        if escaped || (!escaped && ch == '\\') {
-            pos += ch.len_utf8();
-            escaped = !escaped;
-            continue;
-        };
-
-        if let Some(_) = "\"$".find(ch) {
-        */
-            let ans = SubArg{
-                    text: text.consume(pos),
-                    pos: DebugInfo::init(text),
-                 };
-
-            return Some(ans);
-            /*
-        };
-        pos += ch.len_utf8();
-    };
-
-    None
-    */
+    Some( SubArg{text: text.consume(pos), pos: DebugInfo::init(text)})
 }
 
 pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
@@ -278,7 +239,7 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
         return None;
     }
 
-    if let Some(a) = value(text){
+    if let Some(a) = arg(text, false){
         ans.text += &a.text;
         ans.value = a;
     }else{

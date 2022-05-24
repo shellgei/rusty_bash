@@ -89,7 +89,7 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         text: "".to_string(),
     };
 
-    while let Some(result) = arg(text) {
+    while let Some(result) = arg(text, true) {
         ans.text += &result.text;
         ans.elems.push(Box::new(result));
 
