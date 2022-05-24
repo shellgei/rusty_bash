@@ -5,32 +5,11 @@ use crate::Feeder;
 use crate::utils::exist;
 
 pub fn scanner_subarg_no_quote(text: &Feeder, start: usize) -> usize {
-    let mut pos = start;
-    let mut escaped = false;
-    for ch in text.chars_after(start) {
-        if escaped || ch == '\\' {
-            escaped = !escaped;
-        }else if exist(ch, " \n\t\"';{}") {
-            break;
-        };
-            
-        pos += ch.len_utf8();
-    }
-    pos
+    scanner_escaped_string(text, " \n\t\"';{}", start)
 }
 
 pub fn scanner_subvalue_no_quote(text: &Feeder, start: usize) -> usize {
-    let mut pos = start;
-    let mut escaped = false;
-    for ch in text.chars_after(start) {
-        if escaped || ch == '\\' {
-            escaped = !escaped;
-        }else if exist(ch, " \n\t\"';") {
-            break;
-        };
-        pos += ch.len_utf8();
-    }
-    pos
+    scanner_escaped_string(text, " \n\t\"';", start)
 }
 
 pub fn scanner_varname(text: &Feeder, start: usize) -> usize {
@@ -45,3 +24,16 @@ pub fn scanner_varname(text: &Feeder, start: usize) -> usize {
     pos
 }
 
+fn scanner_escaped_string(text: &Feeder, ng_chars: &str, start: usize) -> usize {
+    let mut pos = start;
+    let mut escaped = false;
+    for ch in text.chars_after(start) {
+        if escaped || ch == '\\' {
+            escaped = !escaped;
+        }else if exist(ch, ng_chars) {
+            break;
+        };
+        pos += ch.len_utf8();
+    }
+    pos
+}
