@@ -88,12 +88,6 @@ impl ArgElem for SubArgSingleQuoted {
     fn text(&self) -> String {
         self.text.clone()
     }
-
-    /*
-    fn get_length(&self) -> usize {
-        self.text.len()
-    }
-    */
 }
 
 pub struct SubArgBraced {
@@ -107,7 +101,12 @@ impl ArgElem for SubArgBraced {
         if self.args.len() == 0{
             return vec!("{}".to_string());
         }else if self.args.len() == 1{
-            return vec!("{".to_owned() + &self.args[0].text.clone() + "}");
+            let mut ans = "{".to_string();
+            for s in self.args[0].eval(conf) {
+                ans += &s;
+            };
+            ans += "}";
+            return vec!(ans);
         };
 
         let mut ans = vec!();
