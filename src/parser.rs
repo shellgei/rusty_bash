@@ -17,18 +17,9 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<B
 
     let backup = text.clone();
 
-    if let Some(result) = blank_part(text) {
-        return Some(Box::new(result));
-    }
-
-    if let Some(result) = substitutions(text) {
-        return Some(Box::new(result));
-    }
-
-    //only a command is recognized currently
-    if let Some(result) = command_with_args(text) {
-        return Some(Box::new(result));
-    }
+    if let Some(result) = blank_part(text)       {return Some(Box::new(result));}
+    if let Some(result) = substitutions(text)    {return Some(Box::new(result));}
+    if let Some(result) = command_with_args(text){return Some(Box::new(result));}
 
     text.rewind(backup);
     None
@@ -60,7 +51,6 @@ pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
         if let Some(result) = delimiter(text){
             ans.push(Box::new(result));
         }
-
     }
 
     if let Some(result) = end_of_command(text){
@@ -80,34 +70,25 @@ pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
 
 
 pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
-    let mut ans = CommandWithArgs{
-        vars: vec!(),
-        elems: vec!(),
-        text: "".to_string(),
-    };
+    let mut ans = CommandWithArgs::new();
 
     while let Some(result) = substitution(text) {
-        ans.text += &result.text;
-        ans.vars.push(Box::new(result));
+        ans.push_vars(result);
 
         if let Some(result) = delimiter(text){
-            ans.text += &result.text;
-            ans.elems.push(Box::new(result));
+            ans.push_elems(Box::new(result));
         }
     }
 
     while let Some(result) = arg(text, true) {
-        ans.text += &result.text;
-        ans.elems.push(Box::new(result));
+        ans.push_elems(Box::new(result));
 
         if let Some(result) = delimiter(text){
-            ans.text += &result.text;
-            ans.elems.push(Box::new(result));
+            ans.push_elems(Box::new(result));
         }
 
         if let Some(result) = end_of_command(text){
-            ans.text += &result.text;
-            ans.elems.push(Box::new(result));
+            ans.push_elems(Box::new(result));
             break;
         }
     }

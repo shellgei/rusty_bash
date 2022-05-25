@@ -134,6 +134,26 @@ impl Executable for CommandWithArgs {
     }
 }
 
+impl CommandWithArgs {
+    pub fn new() -> CommandWithArgs{
+        CommandWithArgs {
+            vars: vec!(),
+            elems: vec!(),
+            text: "".to_string(),
+        }
+    }
+
+    pub fn push_vars(&mut self, s: Substitution){
+        self.text += &s.text();
+        self.vars.push(Box::new(s));
+    }
+
+    pub fn push_elems(&mut self, s: Box<dyn CommandPart>){
+        self.text += &s.text();
+        self.elems.push(s);
+    }
+}
+
 
 impl CommandWithArgs {
     fn parse_info(&self) -> Vec<String> {
