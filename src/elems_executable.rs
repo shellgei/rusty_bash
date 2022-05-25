@@ -7,8 +7,7 @@ use std::ffi::CString;
 use std::process::exit;
 use std::env;
 
-use crate::CommandPart;
-use crate::ShellCore;
+use crate::{ShellCore,Feeder,CommandPart};
 use crate::utils::blue_string;
 use crate::elems_in_command::{Arg, Substitution};
 
@@ -19,7 +18,7 @@ pub trait Executable {
 
 pub struct BlankPart {
     pub elems: Vec<Box<dyn CommandPart>>,
-    pub text: String,
+    text: String,
 }
 
 impl Executable for BlankPart {
@@ -37,11 +36,19 @@ impl BlankPart {
         self.text += &s.text();
         self.elems.push(s);
     }
+
+    pub fn judge(ans: BlankPart) -> Option<BlankPart> {
+        if ans.elems.len() > 0 {
+              Some(ans)
+        }else{
+            None
+        }
+    }
 }
 
 pub struct Substitutions {
     pub elems: Vec<Box<dyn CommandPart>>,
-    pub text: String,
+    text: String,
 }
 
 impl Substitutions {
@@ -52,6 +59,13 @@ impl Substitutions {
         }
     }
 
+    pub fn judge(ans: Substitutions) -> Option<Substitutions> {
+        if ans.elems.len() > 0 {
+              Some(ans)
+        }else{
+            None
+        }
+    }
 }
 
 impl Executable for Substitutions {
@@ -95,9 +109,9 @@ impl Substitutions {
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {
-    pub vars: Vec<Box<Substitution>>,
+    vars: Vec<Box<Substitution>>,
     pub elems: Vec<Box<dyn CommandPart>>,
-    pub text: String,
+    text: String,
     //pub debug: DebugInfo,
 }
 
@@ -152,10 +166,16 @@ impl CommandWithArgs {
         self.text += &s.text();
         self.elems.push(s);
     }
-}
 
+    pub fn judge(ans: CommandWithArgs, text: &mut Feeder, backup: Feeder) -> Option<CommandWithArgs> {
+        if ans.elems.len() > 0 {
+              Some(ans)
+        }else{
+            text.rewind(backup);
+            None
+        }
+    }
 
-impl CommandWithArgs {
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("command: '{}'", self.text));
         for elem in &self.elems {

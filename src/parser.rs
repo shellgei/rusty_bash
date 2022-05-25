@@ -34,11 +34,7 @@ pub fn blank_part(text: &mut Feeder) -> Option<BlankPart> {
         else{break;};
     };
 
-    if ans.elems.len() > 0 {
-          Some(ans)
-    }else{
-        None
-    }
+    BlankPart::judge(ans)
 }
 
 pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
@@ -60,12 +56,7 @@ pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
         return None;
     }
 
-    if ans.elems.len() > 0 {
-        Some(ans)
-    }else{
-        text.rewind(backup);
-        None
-    }
+    Substitutions::judge(ans)
 }
 
 
@@ -73,33 +64,28 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
     let backup = text.clone();
     let mut ans = CommandWithArgs::new();
 
-    while let Some(result) = substitution(text) {
-        ans.push_vars(result);
+    while let Some(s) = substitution(text) {
+        ans.push_vars(s);
 
-        if let Some(result) = delimiter(text){
-            ans.push_elems(Box::new(result));
+        if let Some(d) = delimiter(text){
+            ans.push_elems(Box::new(d));
         }
     }
 
-    while let Some(result) = arg(text, true) {
-        ans.push_elems(Box::new(result));
+    while let Some(a) = arg(text, true) {
+        ans.push_elems(Box::new(a));
 
-        if let Some(result) = delimiter(text){
-            ans.push_elems(Box::new(result));
+        if let Some(d) = delimiter(text){
+            ans.push_elems(Box::new(d));
         }
 
-        if let Some(result) = end_of_command(text){
-            ans.push_elems(Box::new(result));
+        if let Some(e) = end_of_command(text){
+            ans.push_elems(Box::new(e));
             break;
         }
     }
 
-    if ans.elems.len() > 0 {
-        Some(ans)
-    }else{
-        text.rewind(backup);
-        None
-    }
+    CommandWithArgs::judge(ans, text, backup)
 }
 
 pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
@@ -125,7 +111,7 @@ pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
 
 pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {
     if text.nth(0) == symbol {
-        Some( ArgDelimiter{ text: text.consume(1), debug: DebugInfo::init(&text),})
+        Some( ArgDelimiter{ text: text.consume(1), debug: DebugInfo::init(&text)})
     }else{
         None
     }
@@ -133,7 +119,7 @@ pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {
 
 pub fn delimiter_in_arg(text: &mut Feeder, symbol: char) -> Option<DelimiterInArg> {
     if text.nth(0) == symbol {
-        Some( DelimiterInArg{ text: text.consume(1), debug: DebugInfo::init(&text),})
+        Some( DelimiterInArg{ text: text.consume(1), debug: DebugInfo::init(&text)})
     }else{
         None
     }
