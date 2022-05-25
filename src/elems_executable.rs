@@ -37,7 +37,7 @@ impl BlankPart {
         self.elems.push(s);
     }
 
-    pub fn judge(ans: BlankPart) -> Option<BlankPart> {
+    pub fn return_if_valid(ans: BlankPart) -> Option<BlankPart> {
         if ans.elems.len() > 0 {
               Some(ans)
         }else{
@@ -59,7 +59,7 @@ impl Substitutions {
         }
     }
 
-    pub fn judge(ans: Substitutions) -> Option<Substitutions> {
+    pub fn return_if_valid(ans: Substitutions) -> Option<Substitutions> {
         if ans.elems.len() > 0 {
               Some(ans)
         }else{
@@ -167,7 +167,7 @@ impl CommandWithArgs {
         self.elems.push(s);
     }
 
-    pub fn judge(ans: CommandWithArgs, text: &mut Feeder, backup: Feeder) -> Option<CommandWithArgs> {
+    pub fn return_if_valid(ans: CommandWithArgs, text: &mut Feeder, backup: Feeder) -> Option<CommandWithArgs> {
         if ans.elems.len() > 0 {
               Some(ans)
         }else{

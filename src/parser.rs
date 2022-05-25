@@ -35,7 +35,7 @@ pub fn blank_part(text: &mut Feeder) -> Option<BlankPart> {
         else{break;};
     };
 
-    BlankPart::judge(ans)
+    BlankPart::return_if_valid(ans)
 }
 
 pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
@@ -57,7 +57,7 @@ pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
         return None;
     }
 
-    Substitutions::judge(ans)
+    Substitutions::return_if_valid(ans)
 }
 
 
@@ -86,12 +86,12 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         }
     }
 
-    CommandWithArgs::judge(ans, text, backup)
+    CommandWithArgs::return_if_valid(ans, text, backup)
 }
 
 pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
     let pos = scanner_delimiter(text, 0);
-    ArgDelimiter::judge(text, pos)
+    ArgDelimiter::return_if_valid(text, pos)
 }
 
 pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {

@@ -29,7 +29,7 @@ impl CommandPart for ArgDelimiter {
 }
 
 impl ArgDelimiter{
-    pub fn judge(text: &mut Feeder, pos: usize) -> Option<ArgDelimiter> {
+    pub fn return_if_valid(text: &mut Feeder, pos: usize) -> Option<ArgDelimiter> {
         if pos == 0 {
             return None;
         };
