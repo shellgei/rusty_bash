@@ -70,6 +70,7 @@ pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
 
 
 pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
+    let backup = text.clone();
     let mut ans = CommandWithArgs::new();
 
     while let Some(result) = substitution(text) {
@@ -96,6 +97,7 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
     if ans.elems.len() > 0 {
         Some(ans)
     }else{
+        text.rewind(backup);
         None
     }
 }
