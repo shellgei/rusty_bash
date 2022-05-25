@@ -37,16 +37,17 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<B
 pub fn blank_part(text: &mut Feeder) -> Option<BlankPart> {
     let mut ans = BlankPart::new();
 
-    if let Some(result) = delimiter(text){
-        ans.push(Box::new(result));
-        return Some(ans);
+    loop {
+        if let Some(d) = delimiter(text)          {ans.push(Box::new(d));}
+        else if let Some(e) = end_of_command(text){ans.push(Box::new(e));}
+        else{break;};
     };
 
-    if let Some(eoc) = end_of_command(text) {
-        ans.push(Box::new(eoc));
-        return Some(ans);
-    };
-    None
+    if ans.elems.len() > 0 {
+          Some(ans)
+    }else{
+        None
+    }
 }
 
 pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
