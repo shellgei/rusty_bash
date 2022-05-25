@@ -226,8 +226,8 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
     }
 
     let backup = text.clone();
-    let var_part = VarName{text: text.consume(varname_pos), pos: DebugInfo::init(text) };
-    text.consume(1);
+    let var_part = VarName::new(text, varname_pos);
+    text.consume(1); // = 
     if let Some(value_part) = arg(text, false){
         Some(Substitution::new(text, var_part, value_part))
     }else{ // cases where the value goes the next line

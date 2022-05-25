@@ -4,6 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::CommandPart;
 use crate::ShellCore;
+use crate::Feeder;
 use crate::elems_in_command::Arg;
 
 pub trait ArgElem {
@@ -17,6 +18,15 @@ pub trait ArgElem {
 pub struct VarName {
     pub text: String,
     pub pos: DebugInfo,
+}
+
+impl VarName {
+    pub fn new(text: &mut Feeder, length: usize) -> VarName{
+        VarName{
+            text: text.consume(length),
+            pos: DebugInfo::init(text),
+        }
+    }
 }
 
 impl ArgElem for VarName {
