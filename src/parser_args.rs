@@ -229,15 +229,9 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
     let var_part = VarName{text: text.consume(varname_pos), pos: DebugInfo::init(text) };
     text.consume(1);
     if let Some(value_part) = arg(text, false){
-        Some( Substitution{
-            text: var_part.text.clone() + "=" + &value_part.text.clone(),
-            var: var_part,
-            value: value_part,
-            debug: DebugInfo::init(text)}
-        )
+        Some(Substitution::new(text, var_part, value_part))
     }else{ // cases where the value goes the next line
         text.rewind(backup);
         None
     }
-
 }

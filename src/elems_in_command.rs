@@ -5,6 +5,7 @@ use crate::ShellCore;
 use crate::utils::{eval_glob, combine};
 use crate::debuginfo::DebugInfo;
 use crate::elems_in_arg::{VarName, ArgElem};
+use crate::Feeder;
 
 pub trait CommandPart {
     fn parse_info(&self) -> Vec<String>;
@@ -40,9 +41,20 @@ impl CommandPart for Eoc {
 
 pub struct Substitution {
     pub text: String,
-    pub var: VarName,
+    pub name: VarName,
     pub value: Arg,
     pub debug: DebugInfo,
+}
+
+impl Substitution {
+    pub fn new(text: &Feeder, name: VarName, value: Arg) -> Substitution{
+        Substitution {
+            text: name.text.clone() + "=" + &value.text.clone(),
+            name: name, 
+            value: value,
+            debug: DebugInfo::init(text)
+        }
+    }
 }
 
 impl CommandPart for Substitution {
@@ -52,7 +64,7 @@ impl CommandPart for Substitution {
 
     fn eval(&self, conf: &mut ShellCore) -> Vec<String> { 
         let mut ans = vec!();
-        ans.push(self.var.text.clone());
+        ans.push(self.name.text.clone());
         
         let mut v = "".to_string();
         for s in self.value.eval(conf){

@@ -127,7 +127,7 @@ impl CommandWithArgs {
         };
 
         for v in vars {
-            let key = (*v).var.text.clone();
+            let key = (*v).name.text.clone();
             let value =  (*v).value.eval(conf).join(" ");
             env::set_var(key, value);
         }
