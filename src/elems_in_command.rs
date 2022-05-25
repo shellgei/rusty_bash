@@ -28,6 +28,16 @@ impl CommandPart for ArgDelimiter {
     fn text(&self) -> String { self.text.clone() }
 }
 
+impl ArgDelimiter{
+    pub fn judge(text: &mut Feeder, pos: usize) -> Option<ArgDelimiter> {
+        if pos == 0 {
+            return None;
+        };
+
+        Some(ArgDelimiter{text: text.consume(pos), debug: DebugInfo::init(text)})
+    }
+}
+
 /* ;, \n, and comment */
 #[derive(Debug)]
 pub struct Eoc {

@@ -8,6 +8,7 @@ use crate::parser_args::{arg,substitution};
 use crate::ShellCore;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
+use crate::scanner::scanner_delimiter;
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn Executable>> {
@@ -89,24 +90,8 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
 }
 
 pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
-    let mut length = 0;
-    for ch in text.chars() {
-        if ch == ' ' || ch == '\t' {
-            length += 1;
-        }else{
-            break;
-        };
-    };
-
-    if length != 0 {
-        let ans = ArgDelimiter{
-            text: text.consume(length),
-            debug: DebugInfo::init(text),
-        };
-        return Some(ans);
-    };
-
-    None
+    let pos = scanner_delimiter(text, 0);
+    ArgDelimiter::judge(text, pos)
 }
 
 pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {

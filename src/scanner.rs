@@ -17,6 +17,18 @@ pub fn scanner_escaped_string(text: &Feeder, from: usize, to: &str) -> usize {
     pos
 }
 
+pub fn scanner_delimiter(text: &Feeder, from: usize) -> usize {
+    let mut pos = from;
+    for ch in text.chars_after(from) {
+        if ch == ' ' || ch == '\t' {
+            pos += ch.len_utf8();
+        }else{
+            break;
+        };
+    }
+    pos
+}
+
 pub fn scanner_string(text: &Feeder, from: usize, to: &str) -> usize {
     let mut pos = from;
     for ch in text.chars_after(from) {

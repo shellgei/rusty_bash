@@ -33,9 +33,11 @@ impl Feeder {
         self.remaining.len()
     }
 
+    /*
     pub fn chars(&self) -> Chars {
         self.remaining.chars()
     }
+    */
 
     pub fn chars_after(&self, s: usize) -> Chars {
         self.remaining[s..].chars()
