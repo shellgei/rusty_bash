@@ -219,34 +219,26 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
 }
 
 pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
-    let backup = text.clone();
-
-    let mut ans = Substitution{
-        text: "".to_string(),
-        var: VarName{ text: "".to_string(), pos: DebugInfo::init(text) },
-        value: Arg{ text: "".to_string(), pos: DebugInfo::init(text), subargs: vec!()},
-        debug: DebugInfo::init(text)};
-
-    if let Some(a) = varname(text){
-        ans.text += &a.text;
-        ans.var = a;
-    }else{
-        return None;
-    };
-
-    if let Some(_) = delimiter_in_arg(text, '=') {
-        ans.text += "=";
-    }else{
-        text.rewind(backup);
+    let varname_pos = scanner_varname(text, 0);
+    let equal_pos = scanner_string(text, varname_pos, "=");
+    if equal_pos != varname_pos {
         return None;
     }
+
+    let var_part = VarName{text: text.consume(varname_pos), pos: DebugInfo::init(text) };
+    text.consume(1);
+
+    let mut ans = Substitution{
+        text: var_part.text.clone(),
+        var: var_part,
+        value: Arg{ text: "".to_string(), pos: DebugInfo::init(text), subargs: vec!()},
+        debug: DebugInfo::init(text)};
 
     if let Some(a) = arg(text, false){
         ans.text += &a.text;
         ans.value = a;
     }else{
-        text.rewind(backup);
-        return None;
+        panic!("Shell parse bug");
     };
 
     Some(ans)
