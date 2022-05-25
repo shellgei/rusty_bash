@@ -24,6 +24,8 @@ impl CommandPart for ArgDelimiter {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.text()))
     }
+
+    fn text(&self) -> String { self.text.clone() }
 }
 
 /* ;, \n, and comment */
@@ -37,6 +39,8 @@ impl CommandPart for Eoc {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
     }
+
+    fn text(&self) -> String { self.text.clone() }
 }
 
 pub struct Substitution {
@@ -74,6 +78,8 @@ impl CommandPart for Substitution {
 
         ans
     }
+
+    fn text(&self) -> String { self.text.clone() }
 }
 
 pub struct Arg {
@@ -134,4 +140,6 @@ impl CommandPart for Arg {
         }
         strings
     }
+
+    fn text(&self) -> String { self.text.clone() }
 }

@@ -35,20 +35,15 @@ pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<B
 }
 
 pub fn blank_part(text: &mut Feeder) -> Option<BlankPart> {
-    let mut ans = BlankPart{
-        elems: vec!(),
-        text: "".to_string(),
-    };
+    let mut ans = BlankPart::new();
 
     if let Some(result) = delimiter(text){
-        ans.text += &result.text;
-        ans.elems.push(Box::new(result));
-        return Some(ans)
+        ans.push(Box::new(result));
+        return Some(ans);
     };
 
     if let Some(eoc) = end_of_command(text) {
-        ans.text += &eoc.text;
-        ans.elems.push(Box::new(eoc));
+        ans.push(Box::new(eoc));
         return Some(ans);
     };
     None
@@ -56,22 +51,19 @@ pub fn blank_part(text: &mut Feeder) -> Option<BlankPart> {
 
 pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
     let backup = text.clone();
-    let mut ans = Substitutions {elems: vec!(), text: "".to_string(),}; 
+    let mut ans = Substitutions::new();
 
     while let Some(result) = substitution(text) {
-        ans.text += &result.text;
-        ans.elems.push(Box::new(result));
+        ans.push(Box::new(result));
 
         if let Some(result) = delimiter(text){
-            ans.text += &result.text;
-            ans.elems.push(Box::new(result));
+            ans.push(Box::new(result));
         }
 
     }
 
     if let Some(result) = end_of_command(text){
-        ans.text += &result.text;
-        ans.elems.push(Box::new(result));
+        ans.push(Box::new(result));
     }else{
         text.rewind(backup);
         return None;

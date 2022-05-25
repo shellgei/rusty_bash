@@ -25,9 +25,33 @@ pub struct BlankPart {
 impl Executable for BlankPart {
 }
 
+impl BlankPart {
+    pub fn new() -> BlankPart{
+        BlankPart {
+            elems: vec!(),
+            text: "".to_string(),
+        }
+    }
+
+    pub fn push(&mut self, s: Box<dyn CommandPart>){
+        self.text += &s.text();
+        self.elems.push(s);
+    }
+}
+
 pub struct Substitutions {
     pub elems: Vec<Box<dyn CommandPart>>,
     pub text: String,
+}
+
+impl Substitutions {
+    pub fn new() -> Substitutions{
+        Substitutions {
+            elems: vec!(),
+            text: "".to_string(),
+        }
+    }
+
 }
 
 impl Executable for Substitutions {
@@ -60,6 +84,11 @@ impl Substitutions {
         };
         
         blue_string(&ans)
+    }
+
+    pub fn push(&mut self, s: Box<dyn CommandPart>){
+        self.text += &s.text();
+        self.elems.push(s);
     }
 }
 
