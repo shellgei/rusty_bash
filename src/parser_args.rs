@@ -225,14 +225,19 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
         return None;
     }
 
+    let backup = text.clone();
     let var_part = VarName{text: text.consume(varname_pos), pos: DebugInfo::init(text) };
     text.consume(1);
-    let value_part = if let Some(a) = arg(text, false){a}else{panic!("Shell parse bug");};
+    if let Some(value_part) = arg(text, false){
+        Some( Substitution{
+            text: var_part.text.clone() + "=" + &value_part.text.clone(),
+            var: var_part,
+            value: value_part,
+            debug: DebugInfo::init(text)}
+        )
+    }else{ // cases where the value goes the next line
+        text.rewind(backup);
+        None
+    }
 
-    Some( Substitution{
-        text: var_part.text.clone() + "=" + &value_part.text.clone(),
-        var: var_part,
-        value: value_part,
-        debug: DebugInfo::init(text)}
-    )
 }
