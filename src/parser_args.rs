@@ -227,28 +227,12 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
 
     let var_part = VarName{text: text.consume(varname_pos), pos: DebugInfo::init(text) };
     text.consume(1);
+    let value_part = if let Some(a) = arg(text, false){a}else{panic!("Shell parse bug");};
 
-    let mut ans = Substitution{
-        text: var_part.text.clone(),
+    Some( Substitution{
+        text: var_part.text.clone() + "=" + &value_part.text.clone(),
         var: var_part,
-        value: Arg{ text: "".to_string(), pos: DebugInfo::init(text), subargs: vec!()},
-        debug: DebugInfo::init(text)};
-
-    if let Some(a) = arg(text, false){
-        ans.text += &a.text;
-        ans.value = a;
-    }else{
-        panic!("Shell parse bug");
-    };
-
-    Some(ans)
-}
-
-pub fn varname(text: &mut Feeder) -> Option<VarName> {
-    let pos = scanner_varname(&text, 0);
-    if pos == 0 {
-        return None;
-    };
-
-    Some( VarName{text: text.consume(pos), pos: DebugInfo::init(text) })
+        value: value_part,
+        debug: DebugInfo::init(text)}
+    )
 }
