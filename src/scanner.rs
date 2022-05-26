@@ -51,3 +51,15 @@ pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
     }
     pos
 }
+
+pub fn scanner_end(text: &Feeder, from: usize) -> usize {
+    if text.match_at(from, ";\n") {
+        return from+1;
+    }
+
+    if text.match_at(from, "#") {
+        return text.len() - from;
+    }
+
+    return from;
+}

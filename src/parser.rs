@@ -8,7 +8,7 @@ use crate::parser_args::{arg,substitution};
 use crate::ShellCore;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
-use crate::scanner::scanner_delimiter;
+use crate::scanner::{scanner_end, scanner_delimiter};
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn Executable>> {
@@ -115,20 +115,13 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
         return None;
     };
 
-    if text.match_at(0, ";\n") {
-    //if exist(text.nth(0), ";\n") {
-        let ans = Eoc{
-            text: text.consume(1),
-            debug: DebugInfo::init(&text),
-        };
-        return Some(ans);
-    }else if text.nth(0) == '#' {
-        let ans = Eoc{
-            text: text.consume(text.len()),
-            debug: DebugInfo::init(&text),
-        };
-        return Some(ans);
+    let pos = scanner_end(text, 0);
+    if pos == 0 {
+        return None;
     };
 
-    None
+    Some( Eoc{
+        text: text.consume(pos),
+        debug: DebugInfo::init(&text),
+    })
 }
