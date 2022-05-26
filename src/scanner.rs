@@ -58,7 +58,7 @@ pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
     }
 
     if text.match_at(from, "#") {
-        return text.len() - from;
+        return scanner_until(text, from, "\n");
     }
 
     return from;
