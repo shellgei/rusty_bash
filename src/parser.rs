@@ -93,14 +93,6 @@ pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
     ArgDelimiter::return_if_valid(text, pos)
 }
 
-pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {
-    if text.nth(0) == symbol {
-        Some( ArgDelimiter{ text: text.consume(1), debug: DebugInfo::init(&text)})
-    }else{
-        None
-    }
-}
-
 pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if text.len() == 0 {
         return None;
@@ -111,8 +103,5 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
         return None;
     };
 
-    Some( Eoc{
-        text: text.consume(pos),
-        debug: DebugInfo::init(&text),
-    })
+    Some(Eoc{text: text.consume(pos), debug: DebugInfo::init(&text)})
 }

@@ -5,7 +5,6 @@ use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg, Substitution};
 use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
-use crate::parser::{arg_delimiter};
 use crate::scanner::*;
 
 // single quoted arg or double quoted arg or non quoted arg 
@@ -207,10 +206,11 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
         ans.text += &arg.text.clone();
         ans.args.push(arg); 
 
-        if let Some(_) = arg_delimiter(text, ',') {
+        if scanner_until(text, 0, ",") == 0 {
+            text.consume(1);
             ans.text += ",";
             continue;
-        }else if scanner_until(text, 0, "}") == 0{
+        }else if scanner_until(text, 0, "}") == 0 {
             text.consume(1);
             ans.text += "}";
             break;
