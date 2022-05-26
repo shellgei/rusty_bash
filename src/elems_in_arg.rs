@@ -39,12 +39,12 @@ impl ArgElem for VarName {
     }
 }
 
-pub struct SubArg {
+pub struct SubArgNonQuoted {
     pub text: String,
     pub pos: DebugInfo,
 }
 
-impl ArgElem for SubArg {
+impl ArgElem for SubArgNonQuoted {
     fn text(&self) -> String {
         self.text.clone()
     }

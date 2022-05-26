@@ -4,7 +4,7 @@
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg, Substitution};
-use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
+use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
 use crate::scanner::*;
 
 // single quoted arg or double quoted arg or non quoted arg 
@@ -52,7 +52,7 @@ pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
     };
 
     if text.match_at(0, ",}"){ // zero length arg
-        let tmp = SubArg{
+        let tmp = SubArgNonQuoted{
             text: "".to_string(),
             pos: DebugInfo::init(text),
         };
@@ -78,29 +78,29 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     else{None}
 }
 
-pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArg> {
+pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     let pos = scanner_until_escape(text, 0, " \n\t\"';");
     if pos == 0{
         return None;
     };
-    Some( SubArg{text: text.consume(pos), pos: DebugInfo::init(text) } )
+    Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
 }
 
-pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
+pub fn subarg_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     let pos = scanner_until_escape(text, 0, " \n\t\"';{}");
     if pos == 0 {
         return None;
     };
-    Some( SubArg{text: text.consume(pos), pos: DebugInfo::init(text) } )
+    Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
 }
 
-pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
+pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     if text.match_at(0, ",}"){
         return None;
     };
     
     let pos = scanner_until_escape(text, 0, ",{}");
-    Some( SubArg{ text: text.consume(pos), pos: DebugInfo::init(text) })
+    Some( SubArgNonQuoted{ text: text.consume(pos), pos: DebugInfo::init(text) })
 }
 
 pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
@@ -154,13 +154,13 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
     Some(ans)
 }
 
-pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
+pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     if text.nth(0) == '"' {
         return None;
     };
 
     let pos = scanner_until_escape(text, 0, "\"$");
-    Some( SubArg{text: text.consume(pos), pos: DebugInfo::init(text)})
+    Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text)})
 }
 
 pub fn subarg_variable_non_braced(text: &mut Feeder) -> Option<SubArgVariable> {
