@@ -80,7 +80,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 }
 
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArg> {
-    let pos = scanner_escaped_string(text, 0, " \n\t\"';");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';");
     if pos == 0{
         return None;
     };
@@ -88,7 +88,7 @@ pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArg> {
 }
 
 pub fn subarg_normal(text: &mut Feeder) -> Option<SubArg> {
-    let pos = scanner_escaped_string(text, 0, " \n\t\"';{}");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';{}");
     if pos == 0 {
         return None;
     };
@@ -100,7 +100,7 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArg> {
         return None;
     };
     
-    let pos = scanner_escaped_string(text, 0, ",{}");
+    let pos = scanner_until_escape(text, 0, ",{}");
     Some( SubArg{ text: text.consume(pos), pos: DebugInfo::init(text) })
 }
 
@@ -109,7 +109,7 @@ pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
         return None;
     };
 
-    let pos = scanner_string(text, 1, "'");
+    let pos = scanner_until(text, 1, "'");
     Some(SubArgSingleQuoted{text: text.consume(pos+1), pos: DebugInfo::init(text)})
 }
 
@@ -123,7 +123,7 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
         subargs: vec!(),
     };
 
-    if scanner_string(text, 0, "\"") != 0 {
+    if scanner_until(text, 0, "\"") != 0 {
         return None;
     }
     text.consume(1);
@@ -140,7 +140,7 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
         };
     }
 
-    if scanner_string(text, 0, "\"") != 0 {
+    if scanner_until(text, 0, "\"") != 0 {
         text.rewind(backup);
         return None;
     }
@@ -160,7 +160,7 @@ pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArg> {
         return None;
     };
 
-    let pos = scanner_escaped_string(text, 0, "\"$");
+    let pos = scanner_until_escape(text, 0, "\"$");
     Some( SubArg{text: text.consume(pos), pos: DebugInfo::init(text)})
 }
 
@@ -191,7 +191,7 @@ pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
 }
 
 pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
-    let pos = scanner_string(text, 0, "{");
+    let pos = scanner_until(text, 0, "{");
     if pos != 0 {
         return None;
     }
@@ -210,7 +210,7 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
         if let Some(_) = arg_delimiter(text, ',') {
             ans.text += ",";
             continue;
-        }else if scanner_string(text, 0, "}") == 0{
+        }else if scanner_until(text, 0, "}") == 0{
             text.consume(1);
             ans.text += "}";
             break;
@@ -222,7 +222,7 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
 
 pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
     let varname_pos = scanner_varname(text, 0);
-    let equal_pos = scanner_string(text, varname_pos, "=");
+    let equal_pos = scanner_until(text, varname_pos, "=");
     if equal_pos != varname_pos {
         return None;
     }

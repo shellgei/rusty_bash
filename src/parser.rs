@@ -7,7 +7,7 @@ use crate::parser_args::{arg,substitution};
 use crate::ShellCore;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
-use crate::scanner::{scanner_end, scanner_delimiter};
+use crate::scanner::{scanner_end, scanner_while};
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn Executable>> {
@@ -89,7 +89,7 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
 }
 
 pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
-    let pos = scanner_delimiter(text, 0);
+    let pos = scanner_while(text, 0, " \t");
     ArgDelimiter::return_if_valid(text, pos)
 }
 
@@ -100,16 +100,6 @@ pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {
         None
     }
 }
-
-/*
-pub fn delimiter_in_arg(text: &mut Feeder, symbol: char) -> Option<DelimiterInArg> {
-    if text.nth(0) == symbol {
-        Some( DelimiterInArg{ text: text.consume(1), debug: DebugInfo::init(&text)})
-    }else{
-        None
-    }
-}
-*/
 
 pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if text.len() == 0 {

@@ -3,7 +3,7 @@
 
 use crate::Feeder;
 
-pub fn scanner_escaped_string(text: &Feeder, from: usize, to: &str) -> usize {
+pub fn scanner_until_escape(text: &Feeder, from: usize, to: &str) -> usize {
     let mut pos = from;
     let mut escaped = false;
     for ch in text.chars_after(from) {
@@ -17,10 +17,10 @@ pub fn scanner_escaped_string(text: &Feeder, from: usize, to: &str) -> usize {
     pos
 }
 
-pub fn scanner_delimiter(text: &Feeder, from: usize) -> usize {
+pub fn scanner_while(text: &Feeder, from: usize, chars: &str) -> usize {
     let mut pos = from;
     for ch in text.chars_after(from) {
-        if ch == ' ' || ch == '\t' {
+        if let Some(_) = chars.find(ch) {
             pos += ch.len_utf8();
         }else{
             break;
@@ -29,7 +29,7 @@ pub fn scanner_delimiter(text: &Feeder, from: usize) -> usize {
     pos
 }
 
-pub fn scanner_string(text: &Feeder, from: usize, to: &str) -> usize {
+pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
     let mut pos = from;
     for ch in text.chars_after(from) {
         if let Some(_) = to.find(ch) {
