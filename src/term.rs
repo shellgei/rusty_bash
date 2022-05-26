@@ -152,7 +152,7 @@ impl Writer {
         let s: String = self.last_arg() + "*";
         let ans = eval_glob(&s);
 
-        if ans.len() == 0 || ans.len() > 2 {
+        if ans.len() == 0 || tab_num > 2 {
             return;
         }else if tab_num == 2 {
 	        write!(self.stdout, "\r\n").unwrap();
