@@ -7,7 +7,7 @@ use crate::parser_args::{arg,substitution};
 use crate::ShellCore;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
-use crate::scanner::{scanner_end, scanner_while};
+use crate::scanner::{scanner_end_of_com, scanner_while};
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn Executable>> {
@@ -106,7 +106,7 @@ pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
         return None;
     };
 
-    let pos = scanner_end(text, 0);
+    let pos = scanner_end_of_com(text, 0);
     if pos == 0 {
         return None;
     };
