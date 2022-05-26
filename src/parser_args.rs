@@ -194,10 +194,9 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     if pos != 0 {
         return None;
     }
-    text.consume(1);
     
     let mut ans = SubArgBraced {
-        text: "{".to_string(),
+        text: text.consume(1),
         pos: DebugInfo::init(text),
         args: vec!(),
     };
@@ -207,12 +206,10 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
         ans.args.push(arg); 
 
         if scanner_until(text, 0, ",") == 0 {
-            text.consume(1);
-            ans.text += ",";
+            ans.text += &text.consume(1);
             continue;
         }else if scanner_until(text, 0, "}") == 0 {
-            text.consume(1);
-            ans.text += "}";
+            ans.text += &text.consume(1);
             break;
         };
     };
