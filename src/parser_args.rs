@@ -5,7 +5,7 @@ use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg, Substitution};
 use crate::elems_in_arg::{SubArg, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
-use crate::parser::{arg_delimiter,delimiter_in_arg};
+use crate::parser::{arg_delimiter};
 use crate::scanner::*;
 
 // single quoted arg or double quoted arg or non quoted arg 
@@ -81,7 +81,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArg> {
     let pos = scanner_escaped_string(text, 0, " \n\t\"';");
-    if pos == 0 {
+    if pos == 0{
         return None;
     };
     Some( SubArg{text: text.consume(pos), pos: DebugInfo::init(text) } )
@@ -123,10 +123,10 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
         subargs: vec!(),
     };
 
-    if let Some(_) = delimiter_in_arg(text, '"') {
-    }else{
+    if scanner_string(text, 0, "\"") != 0 {
         return None;
     }
+    text.consume(1);
 
     loop {
         if let Some(a) = subarg_variable_braced(text) {
@@ -140,11 +140,11 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
         };
     }
 
-    if let Some(_) = delimiter_in_arg(text, '"') {
-    }else{
+    if scanner_string(text, 0, "\"") != 0 {
         text.rewind(backup);
         return None;
     }
+    text.consume(1);
 
     let mut text = "\"".to_string();
     for a in &ans.subargs {
@@ -191,10 +191,11 @@ pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
 }
 
 pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
-    if let Some(_) = delimiter_in_arg(text, '{') {
-    }else{
+    let pos = scanner_string(text, 0, "{");
+    if pos != 0 {
         return None;
-    };
+    }
+    text.consume(1);
     
     let mut ans = SubArgBraced {
         text: "{".to_string(),
@@ -209,7 +210,8 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
         if let Some(_) = arg_delimiter(text, ',') {
             ans.text += ",";
             continue;
-        }else if let Some(_) = delimiter_in_arg(text, '}') {
+        }else if scanner_string(text, 0, "}") == 0{
+            text.consume(1);
             ans.text += "}";
             break;
         };

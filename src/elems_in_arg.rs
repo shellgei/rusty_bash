@@ -150,15 +150,3 @@ impl ArgElem for SubArgVariable {
         self.text.clone()
     }
 }
-
-#[derive(Debug)]
-pub struct DelimiterInArg {
-    pub text: String,
-    pub debug: DebugInfo,
-}
-
-impl ArgElem for DelimiterInArg {
-    fn text(&self) -> String {
-        self.text.clone()
-    }
-}

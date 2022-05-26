@@ -3,7 +3,6 @@
 
 use super::elems_executable::{Substitutions, Executable, BlankPart, CommandWithArgs};
 use super::elems_in_command::{ArgDelimiter, Eoc};
-use super::elems_in_arg::{DelimiterInArg};
 use crate::parser_args::{arg,substitution};
 use crate::ShellCore;
 use crate::Feeder;
@@ -102,6 +101,7 @@ pub fn arg_delimiter(text: &mut Feeder, symbol: char) -> Option<ArgDelimiter> {
     }
 }
 
+/*
 pub fn delimiter_in_arg(text: &mut Feeder, symbol: char) -> Option<DelimiterInArg> {
     if text.nth(0) == symbol {
         Some( DelimiterInArg{ text: text.consume(1), debug: DebugInfo::init(&text)})
@@ -109,6 +109,7 @@ pub fn delimiter_in_arg(text: &mut Feeder, symbol: char) -> Option<DelimiterInAr
         None
     }
 }
+*/
 
 pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if text.len() == 0 {
