@@ -150,3 +150,31 @@ impl ArgElem for SubArgVariable {
         self.text.clone()
     }
 }
+
+pub struct SubArgCommandSub {
+    pub text: String,
+    pub pos: DebugInfo,
+}
+
+impl ArgElem for SubArgCommandSub {
+    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
+        vec!()
+    }
+
+    fn text(&self) -> String {
+        self.text.clone()
+    }
+        /*
+        let name = if self.text.rfind('}') == Some(self.text.len()-1) {
+            self.text[2..self.text.len()-1].to_string()
+        }else{
+            self.text[1..].to_string()
+        };
+        vec!(conf.get_var(&name))
+    }
+
+    fn text(&self) -> String {
+        self.text.clone()
+    }
+    */
+}

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use glob::glob;
+use crate::env;
 
 pub fn eval_glob(globstr: &String) -> Vec<String> {
     let mut ans = vec!();
@@ -15,6 +16,34 @@ pub fn eval_glob(globstr: &String) -> Vec<String> {
             };
         };
     };
+    ans
+}
+
+pub fn search_commands(globstr: &String) -> Vec<String> {
+    let dirs = 
+    if let Ok(p) = env::var("PATH") {
+        p.split(':').map(|s| s.to_string()).collect()
+    }else{
+        vec!()
+    };
+
+    let mut ans: Vec<String> = vec!();
+    for d in dirs {
+        if let Ok(path) = glob(&(d + "/" + globstr)) {
+            for dir in path {
+                match dir {
+                    Ok(d) => {
+                        if let Some(s) = d.to_str() {
+                            ans.push(s.to_string());
+                        };
+                    },
+                    _ => (),
+                }
+            };
+        };
+    };
+
+    eprintln!("COMMANDS: {:?}", ans);
     ans
 }
 

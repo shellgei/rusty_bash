@@ -63,7 +63,14 @@ fn get_hostname() -> String{
     "unknown".to_string()
 }
 
+use crate::utils::search_commands;
+
 fn main() {
+    /*
+    search_commands(&"ecaaa*".to_string());
+    exit(0);
+    */
+
     let mut core = ShellCore::new();
     let args: Vec<String> = env::args().collect();
 
