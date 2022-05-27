@@ -148,24 +148,43 @@ impl Writer {
         self.chars[pos..].iter().collect::<String>()
     }
 
-    fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
+    fn show_file_candidates(&mut self, core: &mut ShellCore) {
         let s: String = self.last_arg() + "*";
         let ans = eval_glob(&s);
-
-        if ans.len() == 0 || tab_num > 2 {
-            return;
-        }else if tab_num == 2 {
-	        write!(self.stdout, "\r\n").unwrap();
-	        for f in ans {
-	            write!(self.stdout, "{}        ", f).unwrap();
-	        }
-	        write!(self.stdout, "\r\n").unwrap();
-            self.stdout.flush().unwrap();
-            prompt(core);
-            let (_, y) = self.cursor_pos();
-            self.rewrite_line(y, self.chars.iter().collect());
+        if ans.len() == 0 {
             return;
         };
+
+	    write!(self.stdout, "\r\n").unwrap();
+	    for f in ans {
+	        write!(self.stdout, "{}        ", f).unwrap();
+	    }
+	    write!(self.stdout, "\r\n").unwrap();
+        self.stdout.flush().unwrap();
+        prompt(core);
+        let (_, y) = self.cursor_pos();
+        self.rewrite_line(y, self.chars.iter().collect());
+        return;
+    }
+
+    fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
+        if tab_num == 2 {
+            self.show_file_candidates(core);
+            return;
+        }else if tab_num > 2 {
+            return;
+        };
+
+        if self.chars.iter().collect::<String>() == self.last_arg() {
+            return;
+        };
+
+        let s: String = self.last_arg() + "*";
+        let ans = eval_glob(&s);
+        if ans.len() == 0 {
+            return;
+        };
+
 
         let base_len = self.last_arg().len();
 

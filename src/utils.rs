@@ -4,18 +4,15 @@
 use glob::glob;
 
 pub fn eval_glob(globstr: &String) -> Vec<String> {
-    let mut ans: Vec<String> = vec!();
+    let mut ans = vec!();
 
     if let Ok(path) = glob(&globstr) {
         for dir in path {
-            match dir {
-                Ok(d) => {
-                    if let Some(s) = d.to_str() {
+            if let Ok(d) = dir {
+                if let Some(s) = d.to_str() {
                         ans.push(s.to_string());
-                    };
-                },
-                _ => (),
-            }
+                };
+            };
         };
     };
     ans
