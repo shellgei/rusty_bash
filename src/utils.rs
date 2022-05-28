@@ -20,8 +20,7 @@ pub fn eval_glob(globstr: &String) -> Vec<String> {
 }
 
 pub fn search_commands(globstr: &String) -> Vec<String> {
-    let dirs = 
-    if let Ok(p) = env::var("PATH") {
+    let dirs = if let Ok(p) = env::var("PATH") {
         p.split(':').map(|s| s.to_string()).collect()
     }else{
         vec!()
@@ -43,7 +42,6 @@ pub fn search_commands(globstr: &String) -> Vec<String> {
         };
     };
 
-    eprintln!("COMMANDS: {:?}", ans);
     ans
 }
 

@@ -3,6 +3,7 @@
 
 use std::io;
 use std::env;
+use std::collections::HashSet;
 use std::io::{Write, stdout, stdin};
 use std::io::Stdout;
 
@@ -13,7 +14,8 @@ use termion::input::TermRead;
 
 use crate::core::History;
 use crate::ShellCore;
-use crate::utils::eval_glob;
+use crate::utils::{eval_glob, search_commands};
+
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     if strs.len() < 2 {
@@ -168,14 +170,61 @@ impl Writer {
     }
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
-        if tab_num == 2 {
-            self.show_file_candidates(core);
-            return;
-        }else if tab_num > 2 {
+        if tab_num > 2 {
             return;
         };
 
         if self.chars.iter().collect::<String>() == self.last_arg() {
+            let paths = search_commands(&(self.chars.iter().collect::<String>() + "*"));
+
+            let mut coms = HashSet::<String>::new();
+            for p in paths {
+                if let Some(com) = p.split("/").last() {
+                    coms.insert(com.to_string());
+                };
+            }
+
+            let keys: Vec<String> = coms.into_iter().collect();
+            if tab_num == 2 {
+    	        write!(self.stdout, "\r\n").unwrap();
+    	        for f in keys {
+    	            write!(self.stdout, "{}        ", f).unwrap();
+    	        }
+    	        write!(self.stdout, "\r\n").unwrap();
+                self.stdout.flush().unwrap();
+                prompt(core);
+                return;
+            };
+
+            let base_len = self.last_arg().len();
+            if keys.len() == 1 {
+                    for ch in keys[0][base_len..].chars() {
+                        self.insert(ch);
+                    }
+                return;
+            }else{
+                for (i, ch) in keys[0][base_len..].chars().enumerate() {
+                    if compare_nth_char(i+base_len, &keys) {
+                        self.insert(ch);
+                    }else{
+                        break;
+                    }
+                }
+                return;
+            };
+
+    	    write!(self.stdout, "\r\n").unwrap();
+    	    for f in keys {
+    	        write!(self.stdout, "{}        ", f).unwrap();
+    	    }
+    	    write!(self.stdout, "\r\n").unwrap();
+            self.stdout.flush().unwrap();
+            prompt(core);
+            return;
+        };
+
+        if tab_num == 2 {
+            self.show_file_candidates(core);
             return;
         };
 
@@ -185,10 +234,7 @@ impl Writer {
             return;
         };
 
-
         let base_len = self.last_arg().len();
-
-        //let mut counter = ans[0].len() + 1 - s.len();
         if ans.len() == 1 {
             for ch in ans[0][base_len..].chars() {
                 self.insert(ch);
@@ -202,7 +248,6 @@ impl Writer {
                 }
             }
         }
-        //eprintln!("\n{:?}", ans);
     }
 
     fn remove(&mut self) {
