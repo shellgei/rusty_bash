@@ -169,57 +169,54 @@ impl Writer {
         return;
     }
 
+
+    fn command_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
+        let paths = search_commands(&(self.chars.iter().collect::<String>() + "*"));
+
+        let mut coms = HashSet::<String>::new();
+        for p in paths {
+            if let Some(com) = p.split("/").last() {
+                coms.insert(com.to_string());
+            };
+        }
+
+        let keys: Vec<String> = coms.into_iter().collect();
+        if tab_num == 2 {
+	        write!(self.stdout, "\r\n").unwrap();
+	        for f in keys {
+	            write!(self.stdout, "{}        ", f).unwrap();
+	        }
+	        write!(self.stdout, "\r\n").unwrap();
+            self.stdout.flush().unwrap();
+            prompt(core);
+            return;
+        };
+
+        let base_len = self.last_arg().len();
+        if keys.len() == 1 {
+                for ch in keys[0][base_len..].chars() {
+                    self.insert(ch);
+                }
+            return;
+        }else{
+            for (i, ch) in keys[0][base_len..].chars().enumerate() {
+                if compare_nth_char(i+base_len, &keys) {
+                    self.insert(ch);
+                }else{
+                    break;
+                }
+            }
+            return;
+        };
+    }
+
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
         if tab_num > 2 {
             return;
         };
 
         if self.chars.iter().collect::<String>() == self.last_arg() {
-            let paths = search_commands(&(self.chars.iter().collect::<String>() + "*"));
-
-            let mut coms = HashSet::<String>::new();
-            for p in paths {
-                if let Some(com) = p.split("/").last() {
-                    coms.insert(com.to_string());
-                };
-            }
-
-            let keys: Vec<String> = coms.into_iter().collect();
-            if tab_num == 2 {
-    	        write!(self.stdout, "\r\n").unwrap();
-    	        for f in keys {
-    	            write!(self.stdout, "{}        ", f).unwrap();
-    	        }
-    	        write!(self.stdout, "\r\n").unwrap();
-                self.stdout.flush().unwrap();
-                prompt(core);
-                return;
-            };
-
-            let base_len = self.last_arg().len();
-            if keys.len() == 1 {
-                    for ch in keys[0][base_len..].chars() {
-                        self.insert(ch);
-                    }
-                return;
-            }else{
-                for (i, ch) in keys[0][base_len..].chars().enumerate() {
-                    if compare_nth_char(i+base_len, &keys) {
-                        self.insert(ch);
-                    }else{
-                        break;
-                    }
-                }
-                return;
-            };
-
-    	    write!(self.stdout, "\r\n").unwrap();
-    	    for f in keys {
-    	        write!(self.stdout, "{}        ", f).unwrap();
-    	    }
-    	    write!(self.stdout, "\r\n").unwrap();
-            self.stdout.flush().unwrap();
-            prompt(core);
+            self.command_completion(tab_num, core);
             return;
         };
 
