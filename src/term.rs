@@ -11,7 +11,7 @@ use termion::cursor::DetectCursorPos;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 
-use crate::core::History;
+//use crate::core::History;
 use crate::ShellCore;
 use crate::term_completion::*;
 
@@ -25,6 +25,17 @@ pub struct Writer {
     ch_ptr: usize,
     hist_ptr: usize,
     left_shift: u16,
+}
+
+fn char_to_width(c: char) -> u8{
+    let s: &str = &c.to_string();
+    UnicodeWidthStr::width(s) as u8
+}
+
+fn chars_to_width(chars: Vec<char>) -> u32 {
+    chars.iter()
+        .map(|c| char_to_width(*c))
+        .fold(0, |line_len, w| line_len + (w as u32))
 }
 
 impl Writer {
@@ -51,7 +62,7 @@ impl Writer {
         self.stdout.cursor_pos().unwrap()
     }
 
-    pub fn write_history(&mut self, inc: i32, history: &Vec<History>){
+    pub fn write_history(&mut self, inc: i32, history: &Vec<String>){
         if history.len() == 0 {
             return;
         }
@@ -69,16 +80,19 @@ impl Writer {
 
         let y = self.cursor_pos().1;
         let h = &history[self.hist_ptr as usize];
-        self.rewrite_line(y, h.commandline.to_string());
+        self.rewrite_line(y, h.to_string());
         self.chars.clear();
         self.widths.clear();
-        self.chars = h.commandline.chars().collect();
-        self.widths = h.charwidths.clone();
-        self.ch_ptr = self.widths.len();
+        self.chars = h.chars().collect();
+        self.widths = h.chars().map(char_to_width).collect();
+        
+        self.ch_ptr = self.chars.len();
 
+        /*
         if self.chars.len() != self.widths.len() {
             panic!("Broken history data: \n\r{:?}, \n\r{:?}\n\r", self.chars, self.widths);
         };
+        */
     }
 
     fn move_char_ptr(&mut self, inc: i32){
@@ -95,9 +109,7 @@ impl Writer {
 
     fn move_cursor(&mut self, inc: i32) {
         self.move_char_ptr(inc);
-        let line_len: u16 = self.widths[0..self.ch_ptr]
-            .iter()
-            .fold(0, |line_len, w| line_len + (*w as u16));
+        let line_len: u16 = chars_to_width(self.chars[0..self.ch_ptr].to_vec()) as u16;
 
         let y = self.cursor_pos().1;
         write!(self.stdout, "{}",
@@ -153,8 +165,9 @@ impl Writer {
 
         self.move_char_ptr(-1);
         self.chars.remove(self.ch_ptr);
-        let new_x = if x >= self.widths[self.ch_ptr] as u16 {
-            x - self.widths[self.ch_ptr] as u16
+        let w = char_to_width(self.chars[self.ch_ptr]);
+        let new_x = if x >= w as u16 {
+            x - w as u16
         }else{
             self.left_shift
         };
@@ -172,17 +185,17 @@ impl Writer {
         };
 
         self.chars.insert(self.ch_ptr, c);
-        let s: &str = &c.to_string();
-        let width = UnicodeWidthStr::width(s) as u8;
+        let width = char_to_width(c);
         self.widths.insert(self.ch_ptr, width);
         self.ch_ptr += 1;
 
-        /* output the line before the cursor */
-        write!(self.stdout, "{}{}",
-               self.chars[self.ch_ptr-1..].iter().collect::<String>(), 
-               termion::cursor::Goto(x + width as u16, y),
-        ).unwrap();
-
+        if self.ch_ptr == self.chars.len() {
+            write!(self.stdout, "{}", c.to_string()).unwrap();
+        }else{
+            write!(self.stdout, "{}", self.chars[self.ch_ptr-1..].iter().collect::<String>()).unwrap();
+        }
+    
+        write!(self.stdout, "{}", termion::cursor::Goto(x + width as u16, y)).unwrap();
         self.stdout.flush().unwrap();
     }
 
@@ -256,6 +269,6 @@ pub fn read_line(left: u16, core: &mut ShellCore) -> String{
     }
 
     let ans = writer.chars.iter().collect::<String>();
-    core.history.push(History{commandline: ans.clone(), charwidths: writer.widths});
+    core.history.push(ans.clone());
     ans + "\n"
 }
