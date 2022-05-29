@@ -145,16 +145,16 @@ impl Writer {
         self.previous_fold_points_num = self.fold_points.len();
         self.fold_points.clear();
 
-        let mut prev_point = 0;
         let mut i: usize = 0;
         let mut sum_length: u32 = 0;
+        let mut shift = self.left_shift;
         for ch in &self.chars {
             sum_length += char_to_width(*ch) as u32;
 
-            if wx < sum_length + self.left_shift as u32 {
+            if wx < sum_length + shift as u32 {
+                shift = 0;
                 sum_length = char_to_width(*ch) as u32;
                 self.fold_points.push(i);
-                prev_point = i;
             }
             i += 1;
         }
@@ -213,7 +213,6 @@ impl Writer {
         let mut last: usize = 0;
         if wx < chars_to_width(&self.chars) + self.left_shift as u32 {
             self.calculate_fold_points();
-            //if self.chars.len() - 2 == self.fold_points.last();
             if self.fold_points.len() > self.previous_fold_points_num {
                 println!("");
             };
@@ -222,9 +221,9 @@ impl Writer {
             let mut counter = 0;
             for n in self.fold_points.clone() {
                 if counter == 0{
-                    write!(self.stdout, "{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
+                    write!(self.stdout, "\r{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
                 }else{
-                    write!(self.stdout, "{}", termion::cursor::Goto(1, line)).unwrap();
+                    write!(self.stdout, "\r{}", termion::cursor::Goto(1, line)).unwrap();
                 };
 
                 write!(self.stdout, "{}{}\r\n",
@@ -235,7 +234,9 @@ impl Writer {
                 last = n;
             };
 
-            self.rewrite_line(self.left_shift, self.chars[last..].iter().collect::<String>());
+            write!(self.stdout, "{}{}",
+                    termion::clear::UntilNewline,
+                    self.chars[last..].iter().collect::<String>()).unwrap();
             self.stdout.flush().unwrap();
             return;
         }
