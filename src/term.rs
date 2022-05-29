@@ -211,12 +211,19 @@ impl Writer {
         if wx < chars_to_width(&self.chars) + self.left_shift as u32 {
             self.calculate_fold_points();
             let mut line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
+            let mut counter = 0;
             for n in self.fold_points.clone() {
-                write!(self.stdout, "{}{}{}\r\n",
-                    termion::cursor::Goto(self.left_shift+1, line),
+                if counter == 0{
+                    write!(self.stdout, "{}", termion::cursor::Goto(self.left_shift+1, line));
+                }else{
+                    write!(self.stdout, "{}", termion::cursor::Goto(0, line));
+                };
+
+                write!(self.stdout, "{}{}\r\n",
                     termion::clear::UntilNewline,
                     self.chars[last..n].iter().collect::<String>()).unwrap();
                 line += 1;
+                counter += 1;
                 last = n;
             };
 
