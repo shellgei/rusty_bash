@@ -169,6 +169,17 @@ impl Writer {
         return;
     }
 
+    fn show_command_candidates(&mut self, keys: Vec<String>, core: &mut ShellCore) {
+	    write!(self.stdout, "\r\n").unwrap();
+	    for f in keys {
+	        write!(self.stdout, "{}        ", f).unwrap();
+	    }
+	    write!(self.stdout, "\r\n").unwrap();
+        self.stdout.flush().unwrap();
+        prompt(core);
+        let (_, y) = self.cursor_pos();
+        self.rewrite_line(y, self.chars.iter().collect());
+    }
 
     fn command_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
         let paths = search_commands(&(self.chars.iter().collect::<String>() + "*"));
@@ -182,21 +193,15 @@ impl Writer {
 
         let keys: Vec<String> = coms.into_iter().collect();
         if tab_num == 2 {
-	        write!(self.stdout, "\r\n").unwrap();
-	        for f in keys {
-	            write!(self.stdout, "{}        ", f).unwrap();
-	        }
-	        write!(self.stdout, "\r\n").unwrap();
-            self.stdout.flush().unwrap();
-            prompt(core);
+            self.show_command_candidates(keys, core);
             return;
         };
 
         let base_len = self.last_arg().len();
         if keys.len() == 1 {
-                for ch in keys[0][base_len..].chars() {
-                    self.insert(ch);
-                }
+            for ch in keys[0][base_len..].chars() {
+                self.insert(ch);
+            }
             return;
         }else{
             for (i, ch) in keys[0][base_len..].chars().enumerate() {
