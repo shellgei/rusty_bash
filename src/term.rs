@@ -42,6 +42,103 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     true
 }
 
+
+fn file_completion(writer: &mut Writer){
+    let s: String = writer.last_arg() + "*";
+    let ans = eval_glob(&s);
+    if ans.len() == 0 {
+        return;
+    };
+
+    let base_len = writer.last_arg().len();
+    if ans.len() == 1 {
+        for ch in ans[0][base_len..].chars() {
+            writer.insert(ch);
+        }
+    }else{
+        for (i, ch) in ans[0][base_len..].chars().enumerate() {
+            if compare_nth_char(i+base_len, &ans) {
+                writer.insert(ch);
+            }else{
+                break;
+            }
+        }
+    }
+}
+
+
+fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
+    let s: String = writer.last_arg() + "*";
+    let ans = eval_glob(&s);
+    if ans.len() == 0 {
+        return;
+    };
+
+    write!(writer.stdout, "\r\n").unwrap();
+    for f in ans {
+        write!(writer.stdout, "{}        ", f).unwrap();
+    }
+    write!(writer.stdout, "\r\n").unwrap();
+    writer.stdout.flush().unwrap();
+    prompt(core);
+    let (_, y) = writer.cursor_pos();
+    writer.rewrite_line(y, writer.chars.iter().collect());
+    return;
+}
+
+fn command_completion(writer: &mut Writer, tab_num: u32, core: &mut ShellCore) {
+    let paths = search_commands(&(writer.chars.iter().collect::<String>() + "*"));
+
+    let mut coms = HashSet::<String>::new();
+    for p in paths {
+        if let Some(com) = p.split("/").last() {
+            coms.insert(com.to_string());
+        };
+    }
+
+    let keys: Vec<String> = coms.into_iter().collect();
+
+    let base_len = writer.last_arg().len();
+    if keys.len() == 1 {
+        for ch in keys[0][base_len..].chars() {
+            writer.insert(ch);
+        }
+        return;
+    }else{
+        for (i, ch) in keys[0][base_len..].chars().enumerate() {
+            if compare_nth_char(i+base_len, &keys) {
+                writer.insert(ch);
+            }else{
+                break;
+            }
+        }
+        return;
+    };
+}
+
+fn show_command_candidates(writer: &mut Writer, tab_num: u32, core: &mut ShellCore) {
+    let paths = search_commands(&(writer.chars.iter().collect::<String>() + "*"));
+
+    let mut coms = HashSet::<String>::new();
+    for p in paths {
+        if let Some(com) = p.split("/").last() {
+            coms.insert(com.to_string());
+        };
+    }
+
+    let keys: Vec<String> = coms.into_iter().collect();
+
+    write!(writer.stdout, "\r\n").unwrap();
+    for f in keys {
+        write!(writer.stdout, "{}        ", f).unwrap();
+    }
+    write!(writer.stdout, "\r\n").unwrap();
+    writer.stdout.flush().unwrap();
+    prompt(core);
+    let (_, y) = writer.cursor_pos();
+    writer.rewrite_line(y, writer.chars.iter().collect());
+}
+
 struct Writer {
     stdout: RawTerminal<Stdout>, 
     chars: Vec<char>,
@@ -150,70 +247,6 @@ impl Writer {
         self.chars[pos..].iter().collect::<String>()
     }
 
-    fn show_file_candidates(&mut self, core: &mut ShellCore) {
-        let s: String = self.last_arg() + "*";
-        let ans = eval_glob(&s);
-        if ans.len() == 0 {
-            return;
-        };
-
-	    write!(self.stdout, "\r\n").unwrap();
-	    for f in ans {
-	        write!(self.stdout, "{}        ", f).unwrap();
-	    }
-	    write!(self.stdout, "\r\n").unwrap();
-        self.stdout.flush().unwrap();
-        prompt(core);
-        let (_, y) = self.cursor_pos();
-        self.rewrite_line(y, self.chars.iter().collect());
-        return;
-    }
-
-    fn show_command_candidates(&mut self, keys: Vec<String>, core: &mut ShellCore) {
-	    write!(self.stdout, "\r\n").unwrap();
-	    for f in keys {
-	        write!(self.stdout, "{}        ", f).unwrap();
-	    }
-	    write!(self.stdout, "\r\n").unwrap();
-        self.stdout.flush().unwrap();
-        prompt(core);
-        let (_, y) = self.cursor_pos();
-        self.rewrite_line(y, self.chars.iter().collect());
-    }
-
-    fn command_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
-        let paths = search_commands(&(self.chars.iter().collect::<String>() + "*"));
-
-        let mut coms = HashSet::<String>::new();
-        for p in paths {
-            if let Some(com) = p.split("/").last() {
-                coms.insert(com.to_string());
-            };
-        }
-
-        let keys: Vec<String> = coms.into_iter().collect();
-        if tab_num == 2 {
-            self.show_command_candidates(keys, core);
-            return;
-        };
-
-        let base_len = self.last_arg().len();
-        if keys.len() == 1 {
-            for ch in keys[0][base_len..].chars() {
-                self.insert(ch);
-            }
-            return;
-        }else{
-            for (i, ch) in keys[0][base_len..].chars().enumerate() {
-                if compare_nth_char(i+base_len, &keys) {
-                    self.insert(ch);
-                }else{
-                    break;
-                }
-            }
-            return;
-        };
-    }
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
         if tab_num > 2 {
@@ -221,36 +254,21 @@ impl Writer {
         };
 
         if self.chars.iter().collect::<String>() == self.last_arg() {
-            self.command_completion(tab_num, core);
-            return;
-        };
-
-        if tab_num == 2 {
-            self.show_file_candidates(core);
-            return;
-        };
-
-        let s: String = self.last_arg() + "*";
-        let ans = eval_glob(&s);
-        if ans.len() == 0 {
-            return;
-        };
-
-        let base_len = self.last_arg().len();
-        if ans.len() == 1 {
-            for ch in ans[0][base_len..].chars() {
-                self.insert(ch);
-            }
+            if tab_num == 1 {
+                command_completion(self, tab_num, core);
+            }else{
+                show_command_candidates(self, tab_num, core);
+            };
         }else{
-            for (i, ch) in ans[0][base_len..].chars().enumerate() {
-                if compare_nth_char(i+base_len, &ans) {
-                    self.insert(ch);
-                }else{
-                    break;
-                }
-            }
-        }
+            if tab_num == 1 {
+                file_completion(self);
+            }else if tab_num == 2 {
+                show_file_candidates(self, core);
+                return;
+            };
+        };
     }
+
 
     fn remove(&mut self) {
         let (x, y) = self.cursor_pos();
