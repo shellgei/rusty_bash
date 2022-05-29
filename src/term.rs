@@ -21,7 +21,6 @@ use unicode_width::UnicodeWidthStr;
 pub struct Writer {
     pub stdout: RawTerminal<Stdout>, 
     pub chars: Vec<char>,
-    widths: Vec<u8>,
     ch_ptr: usize,
     hist_ptr: usize,
     left_shift: u16,
@@ -43,7 +42,6 @@ impl Writer {
         Writer {
             stdout: stdout().into_raw_mode().unwrap(),
             chars: vec!(),
-            widths: vec!(),
             ch_ptr: 0,
             hist_ptr: hist_size,
             left_shift: left_shift,
@@ -82,17 +80,9 @@ impl Writer {
         let h = &history[self.hist_ptr as usize];
         self.rewrite_line(y, h.to_string());
         self.chars.clear();
-        self.widths.clear();
         self.chars = h.chars().collect();
-        self.widths = h.chars().map(char_to_width).collect();
         
         self.ch_ptr = self.chars.len();
-
-        /*
-        if self.chars.len() != self.widths.len() {
-            panic!("Broken history data: \n\r{:?}, \n\r{:?}\n\r", self.chars, self.widths);
-        };
-        */
     }
 
     fn move_char_ptr(&mut self, inc: i32){
@@ -172,7 +162,6 @@ impl Writer {
             self.left_shift
         };
 
-        self.widths.remove(self.ch_ptr);
         self.rewrite_line(y, self.chars.iter().collect());
         write!(self.stdout, "{}", termion::cursor::Goto(new_x, y)).unwrap();
         self.stdout.flush().unwrap();
@@ -186,7 +175,6 @@ impl Writer {
 
         self.chars.insert(self.ch_ptr, c);
         let width = char_to_width(c);
-        self.widths.insert(self.ch_ptr, width);
         self.ch_ptr += 1;
 
         if self.ch_ptr == self.chars.len() {
