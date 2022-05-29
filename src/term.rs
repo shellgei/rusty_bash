@@ -22,6 +22,7 @@ pub struct Writer {
     pub stdout: RawTerminal<Stdout>, 
     pub chars: Vec<char>,
     pub fold_points: Vec<usize>,
+    pub previous_fold_points_num: usize, 
     ch_ptr: usize,
     hist_ptr: usize,
     left_shift: u16,
@@ -44,6 +45,7 @@ impl Writer {
             stdout: stdout().into_raw_mode().unwrap(),
             chars: vec!(),
             fold_points: vec!(),
+            previous_fold_points_num: 0,
             ch_ptr: 0,
             hist_ptr: hist_size,
             left_shift: left_shift,
@@ -140,6 +142,7 @@ impl Writer {
 
     fn calculate_fold_points(&mut self){
         let (wx, _) = self.terminal_size();
+        self.previous_fold_points_num = self.fold_points.len();
         self.fold_points.clear();
 
         let mut prev_point = 0;
@@ -211,11 +214,13 @@ impl Writer {
         if wx < chars_to_width(&self.chars) + self.left_shift as u32 {
             self.calculate_fold_points();
             //if self.chars.len() - 2 == self.fold_points.last();
+            if self.fold_points.len() > self.previous_fold_points_num {
+                println!("");
+            };
 
             let mut line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
             let mut counter = 0;
             for n in self.fold_points.clone() {
-      //          write!(self.stdout, "{}", termion::cursor::Goto(1, line)).unwrap();
                 if counter == 0{
                     write!(self.stdout, "{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
                 }else{
