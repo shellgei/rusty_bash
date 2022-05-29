@@ -154,8 +154,8 @@ impl Writer {
         };
 
         self.move_char_ptr(-1);
-        self.chars.remove(self.ch_ptr);
         let w = char_to_width(self.chars[self.ch_ptr]);
+        self.chars.remove(self.ch_ptr);
         let new_x = if x >= w as u16 {
             x - w as u16
         }else{
