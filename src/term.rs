@@ -213,11 +213,14 @@ impl Writer {
             let mut line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
             let mut counter = 0;
             for n in self.fold_points.clone() {
+                write!(self.stdout, "{}", termion::cursor::Goto(1, line)).unwrap();
+                /*
                 if counter == 0{
-                    write!(self.stdout, "{}", termion::cursor::Goto(self.left_shift+1, line));
+                   // write!(self.stdout, "{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
                 }else{
-                    write!(self.stdout, "{}", termion::cursor::Goto(0, line));
+                    write!(self.stdout, "{}", termion::cursor::Goto(1, line)).unwrap();
                 };
+                */
 
                 write!(self.stdout, "{}{}\r\n",
                     termion::clear::UntilNewline,
