@@ -6,7 +6,7 @@ use std::env;
 use std::io::{Write, stdout, stdin};
 use std::io::Stdout;
 
-use termion::{event};
+use termion::{event,terminal_size};
 use termion::cursor::DetectCursorPos;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
@@ -21,6 +21,7 @@ use unicode_width::UnicodeWidthStr;
 pub struct Writer {
     pub stdout: RawTerminal<Stdout>, 
     pub chars: Vec<char>,
+    pub fold_points: Vec<usize>,
     ch_ptr: usize,
     hist_ptr: usize,
     left_shift: u16,
@@ -31,7 +32,7 @@ fn char_to_width(c: char) -> u8{
     UnicodeWidthStr::width(s) as u8
 }
 
-fn chars_to_width(chars: Vec<char>) -> u32 {
+fn chars_to_width(chars: &Vec<char>) -> u32 {
     chars.iter()
         .map(|c| char_to_width(*c))
         .fold(0, |line_len, w| line_len + (w as u32))
@@ -42,6 +43,7 @@ impl Writer {
         Writer {
             stdout: stdout().into_raw_mode().unwrap(),
             chars: vec!(),
+            fold_points: vec!(),
             ch_ptr: 0,
             hist_ptr: hist_size,
             left_shift: left_shift,
@@ -58,6 +60,14 @@ impl Writer {
 
     pub fn cursor_pos(&mut self) -> (u16, u16) {
         self.stdout.cursor_pos().unwrap()
+    }
+
+    pub fn terminal_size(&mut self) -> (u32, u32) {
+        if let Ok((wx, wy)) = terminal_size(){
+            (wx as u32, wy as u32)
+        }else{
+            panic!("Cannot get terminal size");
+        }
     }
 
     pub fn write_history(&mut self, inc: i32, history: &Vec<String>){
@@ -99,7 +109,7 @@ impl Writer {
 
     fn move_cursor(&mut self, inc: i32) {
         self.move_char_ptr(inc);
-        let line_len: u16 = chars_to_width(self.chars[0..self.ch_ptr].to_vec()) as u16;
+        let line_len: u16 = chars_to_width(&self.chars[0..self.ch_ptr].to_vec()) as u16;
 
         let y = self.cursor_pos().1;
         write!(self.stdout, "{}",
@@ -128,6 +138,24 @@ impl Writer {
         self.chars[pos..].iter().collect::<String>()
     }
 
+    fn calculate_fold_points(&mut self){
+        let (wx, _) = self.terminal_size();
+        self.fold_points.clear();
+
+        let mut prev_point = 0;
+        let mut i: usize = 0;
+        let mut sum_length: u32 = 0;
+        for ch in &self.chars {
+            sum_length += char_to_width(*ch) as u32;
+
+            if wx < sum_length + self.left_shift as u32 {
+                sum_length = char_to_width(*ch) as u32;
+                self.fold_points.push(i);
+                prev_point = i;
+            }
+            i += 1;
+        }
+    }
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
         if self.chars.iter().collect::<String>() == self.last_arg() {
@@ -168,6 +196,8 @@ impl Writer {
     }
 
     pub fn insert(&mut self, c: char) {
+        let (wx, _) = self.terminal_size();
+
         let (x, y) = self.cursor_pos();
         if self.ch_ptr > self.chars.len() {
             return;
@@ -177,10 +207,25 @@ impl Writer {
         let width = char_to_width(c);
         self.ch_ptr += 1;
 
+        let mut last: usize = 0;
+        if wx < chars_to_width(&self.chars) + self.left_shift as u32 {
+            self.calculate_fold_points();
+            write!(self.stdout, "{}", termion::cursor::Goto(self.left_shift, y-self.fold_points.len() as u16)).unwrap();
+            for n in self.fold_points.clone() {
+                self.rewrite_line(self.left_shift, self.chars[last..n].iter().collect::<String>());
+                write!(self.stdout, "\r\n");
+                last = n;
+            };
+
+            self.rewrite_line(self.left_shift, self.chars[last..].iter().collect::<String>());
+            self.stdout.flush().unwrap();
+            return;
+        }
+
         if self.ch_ptr == self.chars.len() {
             write!(self.stdout, "{}", c.to_string()).unwrap();
         }else{
-            write!(self.stdout, "{}", self.chars[self.ch_ptr-1..].iter().collect::<String>()).unwrap();
+            write!(self.stdout, "{}", self.chars[self.ch_ptr-last-1..].iter().collect::<String>()).unwrap();
         }
     
         write!(self.stdout, "{}", termion::cursor::Goto(x + width as u16, y)).unwrap();
