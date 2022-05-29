@@ -15,6 +15,8 @@ use crate::core::History;
 use crate::ShellCore;
 use crate::term_completion::*;
 
+extern crate unicode_width;
+use unicode_width::UnicodeWidthStr;
 
 pub struct Writer {
     pub stdout: RawTerminal<Stdout>, 
@@ -170,17 +172,15 @@ impl Writer {
         };
 
         self.chars.insert(self.ch_ptr, c);
+        let s: &str = &c.to_string();
+        let width = UnicodeWidthStr::width(s) as u8;
+        self.widths.insert(self.ch_ptr, width);
         self.ch_ptr += 1;
 
         /* output the line before the cursor */
-        self.rewrite_line(y, self.chars[0..self.ch_ptr].iter().collect());
-        let (new_x, new_y) = self.cursor_pos();
-        self.widths.insert(self.ch_ptr-1, (new_x - x) as u8);
-
-        /* output the line after the cursor */
         write!(self.stdout, "{}{}",
-               self.chars[self.ch_ptr..].iter().collect::<String>(), 
-               termion::cursor::Goto(new_x, new_y),
+               self.chars[self.ch_ptr-1..].iter().collect::<String>(), 
+               termion::cursor::Goto(x + width as u16, y),
         ).unwrap();
 
         self.stdout.flush().unwrap();
