@@ -3,7 +3,6 @@
 
 use std::io;
 use std::env;
-use std::collections::HashSet;
 use std::io::{Write, stdout, stdin};
 use std::io::Stdout;
 
@@ -14,134 +13,12 @@ use termion::input::TermRead;
 
 use crate::core::History;
 use crate::ShellCore;
-use crate::utils::{eval_glob, search_commands};
+use crate::term_completion::*;
 
 
-fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
-    if strs.len() < 2 {
-        return false;
-    };
-
-    let ch0: char;
-    if let Some(ch) = &strs[0].chars().nth(nth){
-        ch0 = *ch;
-    }else{
-        return false;
-    }
-
-    for s in strs {
-        if let Some(ch) = s.chars().nth(nth){
-            if ch != ch0{
-                return false;
-            }
-        }else{
-            return false;
-        }
-    }
-
-    true
-}
-
-
-fn file_completion(writer: &mut Writer){
-    let s: String = writer.last_arg() + "*";
-    let ans = eval_glob(&s);
-    if ans.len() == 0 {
-        return;
-    };
-
-    let base_len = writer.last_arg().len();
-    if ans.len() == 1 {
-        for ch in ans[0][base_len..].chars() {
-            writer.insert(ch);
-        }
-    }else{
-        for (i, ch) in ans[0][base_len..].chars().enumerate() {
-            if compare_nth_char(i+base_len, &ans) {
-                writer.insert(ch);
-            }else{
-                break;
-            }
-        }
-    }
-}
-
-
-fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
-    let s: String = writer.last_arg() + "*";
-    let ans = eval_glob(&s);
-    if ans.len() == 0 {
-        return;
-    };
-
-    write!(writer.stdout, "\r\n").unwrap();
-    for f in ans {
-        write!(writer.stdout, "{}        ", f).unwrap();
-    }
-    write!(writer.stdout, "\r\n").unwrap();
-    writer.stdout.flush().unwrap();
-    prompt(core);
-    let (_, y) = writer.cursor_pos();
-    writer.rewrite_line(y, writer.chars.iter().collect());
-    return;
-}
-
-fn command_completion(writer: &mut Writer, tab_num: u32, core: &mut ShellCore) {
-    let paths = search_commands(&(writer.chars.iter().collect::<String>() + "*"));
-
-    let mut coms = HashSet::<String>::new();
-    for p in paths {
-        if let Some(com) = p.split("/").last() {
-            coms.insert(com.to_string());
-        };
-    }
-
-    let keys: Vec<String> = coms.into_iter().collect();
-
-    let base_len = writer.last_arg().len();
-    if keys.len() == 1 {
-        for ch in keys[0][base_len..].chars() {
-            writer.insert(ch);
-        }
-        return;
-    }else{
-        for (i, ch) in keys[0][base_len..].chars().enumerate() {
-            if compare_nth_char(i+base_len, &keys) {
-                writer.insert(ch);
-            }else{
-                break;
-            }
-        }
-        return;
-    };
-}
-
-fn show_command_candidates(writer: &mut Writer, tab_num: u32, core: &mut ShellCore) {
-    let paths = search_commands(&(writer.chars.iter().collect::<String>() + "*"));
-
-    let mut coms = HashSet::<String>::new();
-    for p in paths {
-        if let Some(com) = p.split("/").last() {
-            coms.insert(com.to_string());
-        };
-    }
-
-    let keys: Vec<String> = coms.into_iter().collect();
-
-    write!(writer.stdout, "\r\n").unwrap();
-    for f in keys {
-        write!(writer.stdout, "{}        ", f).unwrap();
-    }
-    write!(writer.stdout, "\r\n").unwrap();
-    writer.stdout.flush().unwrap();
-    prompt(core);
-    let (_, y) = writer.cursor_pos();
-    writer.rewrite_line(y, writer.chars.iter().collect());
-}
-
-struct Writer {
-    stdout: RawTerminal<Stdout>, 
-    chars: Vec<char>,
+pub struct Writer {
+    pub stdout: RawTerminal<Stdout>, 
+    pub chars: Vec<char>,
     widths: Vec<u8>,
     ch_ptr: usize,
     hist_ptr: usize,
@@ -227,7 +104,7 @@ impl Writer {
         self.stdout.flush().unwrap();
     }
 
-    fn last_arg(&self) -> String {
+    pub fn last_arg(&self) -> String {
         let mut escaped = false;
         let mut pos = 0;
         let mut counter = 0;
@@ -249,15 +126,11 @@ impl Writer {
 
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
-        if tab_num > 2 {
-            return;
-        };
-
         if self.chars.iter().collect::<String>() == self.last_arg() {
             if tab_num == 1 {
-                command_completion(self, tab_num, core);
-            }else{
-                show_command_candidates(self, tab_num, core);
+                command_completion(self);
+            }else if tab_num == 2 {
+                show_command_candidates(self, core);
             };
         }else{
             if tab_num == 1 {
@@ -290,7 +163,7 @@ impl Writer {
         self.stdout.flush().unwrap();
     }
 
-    fn insert(&mut self, c: char) {
+    pub fn insert(&mut self, c: char) {
         let (x, y) = self.cursor_pos();
         if self.ch_ptr > self.chars.len() {
             return;

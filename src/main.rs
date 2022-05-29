@@ -12,6 +12,7 @@ mod utils;
 mod feeder;
 mod scanner;
 mod debuginfo;
+mod term_completion;
 
 use std::{io,env,process};
 use std::process::exit;
