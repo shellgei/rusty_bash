@@ -39,6 +39,10 @@ fn chars_to_width(chars: &Vec<char>) -> u32 {
         .fold(0, |line_len, w| line_len + (w as u32))
 }
 
+fn chars_to_string(chars: &Vec<char>) -> String {
+    chars.iter().collect::<String>()
+}
+
 impl Writer {
     pub fn new(hist_size: usize, left_shift: u16) -> Writer{
         Writer {
@@ -210,45 +214,23 @@ impl Writer {
         let width = char_to_width(c);
         self.ch_ptr += 1;
 
-        let mut last: usize = 0;
         if wx < chars_to_width(&self.chars) + self.left_shift as u32 {
             self.calculate_fold_points();
             if self.fold_points.len() > self.previous_fold_points_num {
                 println!("");
             };
 
-            let mut line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
+            let line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
             write!(self.stdout, "\r{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
-            self.rewrite_line(line, self.chars.iter().collect::<String>());
-            /*
-            let mut counter = 0;
-            for n in self.fold_points.clone() {
-                if counter == 0{
-                    write!(self.stdout, "\r{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
-                }else{
-                    write!(self.stdout, "\r{}", termion::cursor::Goto(1, line)).unwrap();
-                };
-
-                write!(self.stdout, "{}{}\r\n",
-                    termion::clear::UntilNewline,
-                    self.chars[last..n].iter().collect::<String>()).unwrap();
-                line += 1;
-                counter += 1;
-                last = n;
-            };
-
-            write!(self.stdout, "{}{}",
-                    termion::clear::UntilNewline,
-                    self.chars[last..].iter().collect::<String>()).unwrap();
-            self.stdout.flush().unwrap();
-            */
+           // self.rewrite_line(line, self.chars.iter().collect::<String>());
+            self.rewrite_line(line, chars_to_string(&self.chars));
             return;
         }
 
         if self.ch_ptr == self.chars.len() {
             write!(self.stdout, "{}", c.to_string()).unwrap();
         }else{
-            write!(self.stdout, "{}", self.chars[self.ch_ptr-last-1..].iter().collect::<String>()).unwrap();
+            write!(self.stdout, "{}", self.chars[self.ch_ptr-1..].iter().collect::<String>()).unwrap();
         }
     
         write!(self.stdout, "{}", termion::cursor::Goto(x + width as u16, y)).unwrap();
@@ -324,7 +306,7 @@ pub fn read_line(left: u16, core: &mut ShellCore) -> String{
         }
     }
 
-    let ans = writer.chars.iter().collect::<String>();
+    let ans = chars_to_string(&writer.chars);//writer.chars.iter().collect::<String>();
     core.history.push(ans.clone());
     ans + "\n"
 }
