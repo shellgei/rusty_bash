@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use std::io::{Write};
 
 use crate::ShellCore;
-use crate::utils::{eval_glob, search_commands};
+use crate::utils::{eval_glob, search_commands, chars_to_string};
 
 use crate::term::Writer;
 use crate::term::prompt;
@@ -98,7 +98,7 @@ pub fn command_completion(writer: &mut Writer){
             writer.insert(ch);
         }
         return;
-    }else{
+    }else if keys.len() > 1 {
         for (i, ch) in keys[0][base_len..].chars().enumerate() {
             if compare_nth_char(i+base_len, &keys) {
                 writer.insert(ch);
@@ -111,7 +111,7 @@ pub fn command_completion(writer: &mut Writer){
 }
 
 pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
-    let paths = search_commands(&(writer.chars.iter().collect::<String>() + "*"));
+    let paths = search_commands(&(chars_to_string(&writer.chars) + "*"));
 
     let mut coms = HashSet::<String>::new();
     for p in paths {

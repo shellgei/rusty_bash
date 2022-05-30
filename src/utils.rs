@@ -4,6 +4,10 @@
 use glob::glob;
 use crate::env;
 
+pub fn chars_to_string(chars: &Vec<char>) -> String {
+    chars.iter().collect::<String>()
+}
+
 pub fn eval_glob(globstr: &String) -> Vec<String> {
     let mut ans = vec!();
 

@@ -15,6 +15,8 @@ use termion::input::TermRead;
 use crate::ShellCore;
 use crate::term_completion::*;
 
+use crate::utils::chars_to_string;
+
 extern crate unicode_width;
 use unicode_width::UnicodeWidthStr;
 
@@ -37,10 +39,6 @@ fn chars_to_width(chars: &Vec<char>) -> u32 {
     chars.iter()
         .map(|c| char_to_width(*c))
         .fold(0, |line_len, w| line_len + (w as u32))
-}
-
-fn chars_to_string(chars: &Vec<char>) -> String {
-    chars.iter().collect::<String>()
 }
 
 impl Writer {
@@ -141,7 +139,7 @@ impl Writer {
             counter += 1;
         }
 
-        self.chars[pos..].iter().collect::<String>()
+        chars_to_string(&self.chars[pos..].to_vec())
     }
 
     fn calculate_fold_points(&mut self){
@@ -165,7 +163,7 @@ impl Writer {
     }
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
-        if self.chars.iter().collect::<String>() == self.last_arg() {
+        if chars_to_string(&self.chars) == self.last_arg() {
             if tab_num == 1 {
                 command_completion(self);
             }else if tab_num == 2 {
@@ -222,7 +220,6 @@ impl Writer {
 
             let line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
             write!(self.stdout, "\r{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
-           // self.rewrite_line(line, self.chars.iter().collect::<String>());
             self.rewrite_line(line, chars_to_string(&self.chars));
             return;
         }
@@ -230,7 +227,7 @@ impl Writer {
         if self.ch_ptr == self.chars.len() {
             write!(self.stdout, "{}", c.to_string()).unwrap();
         }else{
-            write!(self.stdout, "{}", self.chars[self.ch_ptr-1..].iter().collect::<String>()).unwrap();
+            write!(self.stdout, "{}", chars_to_string(&self.chars[self.ch_ptr-1..].to_vec())).unwrap();
         }
     
         write!(self.stdout, "{}", termion::cursor::Goto(x + width as u16, y)).unwrap();
