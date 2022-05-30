@@ -5,7 +5,6 @@ use std::io;
 use std::env;
 use std::io::{Write, stdout, stdin};
 use std::io::Stdout;
-use std::convert::TryInto;
 
 use termion::{event,terminal_size};
 use termion::cursor::DetectCursorPos;
@@ -113,6 +112,7 @@ impl Writer {
         self.chars = h.chars().collect();
         
         self.ch_ptr = self.chars.len();
+        self.calculate_fold_points();
     }
 
     fn move_char_ptr(&mut self, inc: i32){
