@@ -218,6 +218,9 @@ impl Writer {
             };
 
             let mut line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
+            write!(self.stdout, "\r{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
+            self.rewrite_line(line, self.chars.iter().collect::<String>());
+            /*
             let mut counter = 0;
             for n in self.fold_points.clone() {
                 if counter == 0{
@@ -238,6 +241,7 @@ impl Writer {
                     termion::clear::UntilNewline,
                     self.chars[last..].iter().collect::<String>()).unwrap();
             self.stdout.flush().unwrap();
+            */
             return;
         }
 
