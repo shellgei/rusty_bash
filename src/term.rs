@@ -5,13 +5,13 @@ use std::io;
 use std::env;
 use std::io::{Write, stdout, stdin};
 use std::io::Stdout;
+use std::convert::TryInto;
 
 use termion::{event,terminal_size};
 use termion::cursor::DetectCursorPos;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 
-//use crate::core::History;
 use crate::ShellCore;
 use crate::term_completion::*;
 
@@ -25,6 +25,7 @@ pub struct Writer {
     pub chars: Vec<char>,
     pub fold_points: Vec<usize>,
     pub previous_fold_points_num: usize, 
+    pub erased_line_num: usize,
     ch_ptr: usize,
     hist_ptr: usize,
     left_shift: u16,
@@ -48,6 +49,7 @@ impl Writer {
             chars: vec!(),
             fold_points: vec!(),
             previous_fold_points_num: 0,
+            erased_line_num: 0,
             ch_ptr: 0,
             hist_ptr: hist_size,
             left_shift: left_shift,
@@ -64,6 +66,20 @@ impl Writer {
 
     pub fn cursor_pos(&mut self) -> (u16, u16) {
         self.stdout.cursor_pos().unwrap()
+    }
+
+    pub fn ch_ptr_to_multiline_origin(&mut self) -> (usize, u16) { 
+        let mut y = 0;
+        let mut x_from = 0;
+        for p in &self.fold_points {
+            if self.ch_ptr <= *p {
+                break;
+            }
+            x_from = *p;
+            y += 1;
+        };
+
+        (x_from, y)
     }
 
     pub fn terminal_size(&mut self) -> (u32, u32) {
@@ -112,12 +128,25 @@ impl Writer {
     }
 
     fn move_cursor(&mut self, inc: i32) {
+        let (_, old_line_no) = self.ch_ptr_to_multiline_origin();
         self.move_char_ptr(inc);
-        let line_len: u16 = chars_to_width(&self.chars[0..self.ch_ptr].to_vec()) as u16;
+        let (org_x, line_no) = self.ch_ptr_to_multiline_origin();
+        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
 
-        let y = self.cursor_pos().1;
+        let x = if line_no == 0{
+            self.left_shift+line_len+1
+        }else{
+            line_len+1
+        };
+
+        let y = if old_line_no == line_no{
+            self.cursor_pos().1
+        }else{
+            self.cursor_pos().1 + line_no - old_line_no
+        };
+
         write!(self.stdout, "{}",
-               termion::cursor::Goto(self.left_shift+line_len+1, y)
+               termion::cursor::Goto(x, y)
                ).unwrap();
         self.stdout.flush().unwrap();
     }
