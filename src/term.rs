@@ -210,22 +210,35 @@ impl Writer {
 
 
     fn remove(&mut self) {
-        let (x, y) = self.cursor_pos();
         if self.chars.len() == 0 {
             return;
         };
 
+        let (_, old_line_no) = self.ch_ptr_to_multiline_origin();
         self.move_char_ptr(-1);
-        let w = char_to_width(self.chars[self.ch_ptr]);
+
         self.chars.remove(self.ch_ptr);
-        let new_x = if x >= w as u16 {
-            x - w as u16
+
+        let (org_x, line_no) = self.ch_ptr_to_multiline_origin();
+        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
+
+        let x = if line_no == 0{
+            self.left_shift+line_len+1
         }else{
-            self.left_shift
+            line_len+1
         };
 
-        self.rewrite_line(y, self.chars.iter().collect());
-        write!(self.stdout, "{}", termion::cursor::Goto(new_x, y)).unwrap();
+        let y = if old_line_no == line_no{
+            self.cursor_pos().1
+        }else{
+            self.cursor_pos().1 + line_no - old_line_no
+        };
+
+        self.rewrite_line(y - line_no, self.chars.iter().collect());
+
+        write!(self.stdout, "{}", 
+               termion::cursor::Goto(x, y),
+        ).unwrap();
         self.stdout.flush().unwrap();
     }
 
