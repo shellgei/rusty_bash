@@ -260,36 +260,29 @@ impl Writer {
     }
 
     pub fn insert(&mut self, c: char) {
-        let (wx, _) = self.terminal_size();
-
-        let (x, y) = self.cursor_pos();
-        if self.ch_ptr > self.chars.len() {
-            return;
-        };
+        let (_, old_org_y) = self.ch_ptr_to_multiline_origin();
 
         self.chars.insert(self.ch_ptr, c);
-        let width = char_to_width(c);
-        self.ch_ptr += 1;
+        self.move_char_ptr(1);
+        self.calculate_fold_points();
 
-        if wx < chars_to_width(&self.chars) + self.left_shift as u32 {
-            self.calculate_fold_points();
-            if self.fold_points.len() > self.previous_fold_points_num {
-                println!("");
-            };
-        
-            let line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
-            write!(self.stdout, "\r{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
-            self.rewrite_line(line, chars_to_string(&self.chars));
-            return;
-        }
+        let (org_x, org_y) = self.ch_ptr_to_multiline_origin();
+        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
 
-        if self.ch_ptr == self.chars.len() {
-            write!(self.stdout, "{}", c.to_string()).unwrap();
+        let x = if org_y == 0{
+            self.left_shift+line_len+1
         }else{
-            write!(self.stdout, "{}", chars_to_string(&self.chars[self.ch_ptr-1..].to_vec())).unwrap();
-        }
-    
-        write!(self.stdout, "{}", termion::cursor::Goto(x + width as u16, y)).unwrap();
+            line_len+1
+        };
+
+        let y = if old_org_y == org_y{
+            self.cursor_pos().1
+        }else{
+            self.cursor_pos().1 + org_y - old_org_y
+        };
+
+        self.write_multi_line(y, org_y);
+        write!(self.stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
         self.stdout.flush().unwrap();
     }
 
