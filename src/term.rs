@@ -234,11 +234,23 @@ impl Writer {
             self.cursor_pos().1 + line_no - old_line_no
         };
 
-        self.rewrite_line(y - line_no, self.chars.iter().collect());
-
-        write!(self.stdout, "{}", 
-               termion::cursor::Goto(x, y),
+        write!(self.stdout, "{}{}", 
+               termion::cursor::Goto(self.left_shift , y - line_no),
+               termion::clear::UntilNewline,
         ).unwrap();
+
+        let mut clear_y: u16 = y - line_no + 1;
+        let (_, wy) = self.terminal_size();
+        while clear_y <= wy as u16 {
+            write!(self.stdout, "{}{}", 
+                   termion::cursor::Goto(0 , clear_y),
+                   termion::clear::UntilNewline,
+            ).unwrap();
+            clear_y += 1;
+        }
+
+        self.rewrite_line(y - line_no, self.chars.iter().collect());
+        write!(self.stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
         self.stdout.flush().unwrap();
     }
 
