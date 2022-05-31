@@ -208,38 +208,13 @@ impl Writer {
         };
     }
 
-
-    fn remove(&mut self) {
-        if self.chars.len() == 0 {
-            return;
-        };
-
-        let (_, old_line_no) = self.ch_ptr_to_multiline_origin();
-        self.move_char_ptr(-1);
-
-        self.chars.remove(self.ch_ptr);
-
-        let (org_x, line_no) = self.ch_ptr_to_multiline_origin();
-        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
-
-        let x = if line_no == 0{
-            self.left_shift+line_len+1
-        }else{
-            line_len+1
-        };
-
-        let y = if old_line_no == line_no{
-            self.cursor_pos().1
-        }else{
-            self.cursor_pos().1 + line_no - old_line_no
-        };
-
+    fn write_multi_line(&mut self, y: u16, org_y: u16) {
         write!(self.stdout, "{}{}", 
-               termion::cursor::Goto(self.left_shift , y - line_no),
+               termion::cursor::Goto(self.left_shift , y - org_y),
                termion::clear::UntilNewline,
         ).unwrap();
 
-        let mut clear_y: u16 = y - line_no + 1;
+        let mut clear_y: u16 = y - org_y + 1;
         let (_, wy) = self.terminal_size();
         while clear_y <= wy as u16 {
             write!(self.stdout, "{}{}", 
@@ -249,7 +224,37 @@ impl Writer {
             clear_y += 1;
         }
 
-        self.rewrite_line(y - line_no, self.chars.iter().collect());
+        self.rewrite_line(y - org_y, self.chars.iter().collect());
+        //write!(self.stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
+        //self.stdout.flush().unwrap();
+    }
+
+    fn remove(&mut self) {
+        if self.chars.len() == 0 {
+            return;
+        };
+
+        let (_, old_org_y) = self.ch_ptr_to_multiline_origin();
+        self.move_char_ptr(-1);
+
+        self.chars.remove(self.ch_ptr);
+
+        let (org_x, org_y) = self.ch_ptr_to_multiline_origin();
+        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
+
+        let x = if org_y == 0{
+            self.left_shift+line_len+1
+        }else{
+            line_len+1
+        };
+
+        let y = if old_org_y == org_y{
+            self.cursor_pos().1
+        }else{
+            self.cursor_pos().1 + org_y - old_org_y
+        };
+
+        self.write_multi_line(y, org_y);
         write!(self.stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
         self.stdout.flush().unwrap();
     }
@@ -271,7 +276,7 @@ impl Writer {
             if self.fold_points.len() > self.previous_fold_points_num {
                 println!("");
             };
-
+        
             let line = if y > self.fold_points.len() as u16{y-self.fold_points.len() as u16}else{0};
             write!(self.stdout, "\r{}", termion::cursor::Goto(self.left_shift+1, line)).unwrap();
             self.rewrite_line(line, chars_to_string(&self.chars));
