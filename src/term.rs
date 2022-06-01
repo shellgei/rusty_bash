@@ -225,8 +225,27 @@ impl Writer {
         }
 
         self.rewrite_line(y - org_y, self.chars.iter().collect());
-        //write!(self.stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
-        //self.stdout.flush().unwrap();
+    }
+
+    fn rewrite_multi_line(&mut self, old_org_y: u16) {
+        let (org_x, org_y) = self.ch_ptr_to_multiline_origin();
+        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
+
+        let x = if org_y == 0{
+            self.left_shift+line_len+1
+        }else{
+            line_len+1
+        };
+
+        let y = if old_org_y == org_y{
+            self.cursor_pos().1
+        }else{
+            self.cursor_pos().1 + org_y - old_org_y
+        };
+
+        self.write_multi_line(y, org_y);
+        write!(self.stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
+        self.stdout.flush().unwrap();
     }
 
     fn remove(&mut self) {
@@ -236,27 +255,9 @@ impl Writer {
 
         let (_, old_org_y) = self.ch_ptr_to_multiline_origin();
         self.move_char_ptr(-1);
-
         self.chars.remove(self.ch_ptr);
 
-        let (org_x, org_y) = self.ch_ptr_to_multiline_origin();
-        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
-
-        let x = if org_y == 0{
-            self.left_shift+line_len+1
-        }else{
-            line_len+1
-        };
-
-        let y = if old_org_y == org_y{
-            self.cursor_pos().1
-        }else{
-            self.cursor_pos().1 + org_y - old_org_y
-        };
-
-        self.write_multi_line(y, org_y);
-        write!(self.stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
-        self.stdout.flush().unwrap();
+        self.rewrite_multi_line(old_org_y);
     }
 
     pub fn insert(&mut self, c: char) {
@@ -266,24 +267,7 @@ impl Writer {
         self.move_char_ptr(1);
         self.calculate_fold_points();
 
-        let (org_x, org_y) = self.ch_ptr_to_multiline_origin();
-        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
-
-        let x = if org_y == 0{
-            self.left_shift+line_len+1
-        }else{
-            line_len+1
-        };
-
-        let y = if old_org_y == org_y{
-            self.cursor_pos().1
-        }else{
-            self.cursor_pos().1 + org_y - old_org_y
-        };
-
-        self.write_multi_line(y, org_y);
-        write!(self.stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
-        self.stdout.flush().unwrap();
+        self.rewrite_multi_line(old_org_y);
     }
 
     fn end(&mut self, text: &str) {
