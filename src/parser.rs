@@ -4,24 +4,28 @@
 use super::elems_executable::{Substitutions, Executable, BlankPart, CommandWithArgs};
 use super::elems_in_command::{ArgDelimiter, Eoc};
 use crate::parser_args::{arg,substitution};
-use crate::ShellCore;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
 use crate::scanner::{scanner_end_of_com, scanner_while};
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut Feeder, _config: &mut ShellCore) -> Option<Box<dyn Executable>> {
+pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn Executable>> {
     if text.len() == 0 {
         return None;
     };
 
-    let backup = text.clone();
+//    let backup = text.clone();
 
     if let Some(result) = blank_part(text)       {return Some(Box::new(result));}
     if let Some(result) = substitutions(text)    {return Some(Box::new(result));}
     if let Some(result) = command_with_args(text){return Some(Box::new(result));}
 
-    text.rewind(backup);
+ //   text.rewind(backup);
+    if text.error_occuring {
+        text.consume(text.len());
+        eprintln!("{}", text.error_reason);
+        text.error_occuring = false;
+    };
     None
 }
 
@@ -73,6 +77,14 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
     }
 
     while let Some(a) = arg(text, true) {
+        if text.len() != 0 {
+            if text.nth(0) == ')' || text.nth(0) == '(' {
+                text.error_occuring = true;
+                text.error_reason = "Unexpected token found".to_string();
+                text.rewind(backup);
+                return None;
+            };
+        };
         ans.push_elems(Box::new(a));
 
         if let Some(d) = delimiter(text){
@@ -80,7 +92,7 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         }
 
         if let Some(e) = end_of_command(text){
-            ans.push_elems(Box::new(e));
+            ans.set_eof(e);
             break;
         }
     }

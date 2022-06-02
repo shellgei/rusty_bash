@@ -91,7 +91,7 @@ fn main() {
             read_line()
         };
         input.add_line(line);
-        while let Some(e) = parser::top_level_element(&mut input, &mut core){
+        while let Some(e) = parser::top_level_element(&mut input){
             e.exec(&mut core);
         }
     }

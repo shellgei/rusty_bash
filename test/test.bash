@@ -48,6 +48,9 @@ EOF
 res=$($com <<< 'echo hoge"hoge";')
 [ "$res" = "hogehoge" ]
 
+res=$($com <<< 'echo )')
+[ "$res" = "" ]
+
 # brace expansion
 
 res=$($com << 'EOF'
@@ -108,6 +111,11 @@ EOF
 
 res=$($com <<< 'echo "*"')
 [ "$res" = "*" ]
+
+# command expansion
+
+#res=$($com <<< 'echo "$(echo hoge)"')
+#[ "$res" = "hoge" ]
 
 ### DIRECTORY TEST ###
 

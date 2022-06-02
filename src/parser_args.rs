@@ -4,8 +4,9 @@
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg, Substitution};
-use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName};
+use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName, SubArgCommandExp};
 use crate::scanner::*;
+use crate::parser::command_with_args;
 
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
@@ -27,6 +28,7 @@ pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
 
 pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
+    else if let Some(a) = subarg_command_expansion(text)   {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
     else if let Some(a) = subarg_braced(text)              {Some(Box::new(a))}
     else if let Some(a) = subarg_normal(text)              {Some(Box::new(a))}
@@ -79,7 +81,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 }
 
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';)");
     if pos == 0{
         return None;
     };
@@ -87,7 +89,7 @@ pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
 }
 
 pub fn subarg_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';{}");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';{}()");
     if pos == 0 {
         return None;
     };
@@ -99,7 +101,7 @@ pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArgNonQuoted> {
         return None;
     };
     
-    let pos = scanner_until_escape(text, 0, ",{}");
+    let pos = scanner_until_escape(text, 0, ",{}()");
     Some( SubArgNonQuoted{ text: text.consume(pos), pos: DebugInfo::init(text) })
 }
 
@@ -187,6 +189,39 @@ pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
     }else{
         None
     }
+}
+
+pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
+    if !(text.nth(0) == '$' && text.nth(1) == '(') {
+        return None;
+    }
+
+    let backup = text.clone();
+    text.consume(2);
+    let mut command_txt;
+
+    if let Some(e) = command_with_args(text){
+        command_txt = e.text();
+
+        if let Some(ref lst) = e.eoc {
+            if lst.text != ")" {
+                text.rewind(backup);
+                return None;
+            };
+        }else{
+            eprintln!("NO EOC");
+        }
+
+        let ans = Some (SubArgCommandExp {
+            text: "$(".to_owned() + &command_txt,
+            pos: DebugInfo::init(text),
+            com: e}
+        );
+
+        eprintln!("AAA: {:?}", "$(".to_owned() + &command_txt);
+        return ans;
+    };
+    None
 }
 
 pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {

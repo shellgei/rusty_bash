@@ -6,6 +6,7 @@ use crate::CommandPart;
 use crate::ShellCore;
 use crate::Feeder;
 use crate::elems_in_command::Arg;
+use crate::elems_executable::CommandWithArgs;
 
 pub trait ArgElem {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
@@ -151,12 +152,13 @@ impl ArgElem for SubArgVariable {
     }
 }
 
-pub struct SubArgCommandSub {
+pub struct SubArgCommandExp {
     pub text: String,
     pub pos: DebugInfo,
+    pub com: CommandWithArgs, 
 }
 
-impl ArgElem for SubArgCommandSub {
+impl ArgElem for SubArgCommandExp {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
         vec!()
     }
@@ -164,17 +166,4 @@ impl ArgElem for SubArgCommandSub {
     fn text(&self) -> String {
         self.text.clone()
     }
-        /*
-        let name = if self.text.rfind('}') == Some(self.text.len()-1) {
-            self.text[2..self.text.len()-1].to_string()
-        }else{
-            self.text[1..].to_string()
-        };
-        vec!(conf.get_var(&name))
-    }
-
-    fn text(&self) -> String {
-        self.text.clone()
-    }
-    */
 }

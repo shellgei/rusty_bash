@@ -24,13 +24,6 @@ impl Flags {
     }
 }
 
-/*
-pub struct History {
-    pub commandline: String,
-    //pub charwidths: Vec<u8>, 
-}
-*/
-
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(args: &mut Vec<String>) -> i32>,
     pub vars: HashMap<String, String>,

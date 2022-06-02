@@ -9,6 +9,8 @@ pub struct Feeder {
     from_lineno: u32,
     to_lineno: u32,
     pos_in_line: u32,
+    pub error_occuring: bool,
+    pub error_reason: String,
 }
 
 impl Feeder {
@@ -18,6 +20,8 @@ impl Feeder {
             from_lineno: 0,
             to_lineno: 0,
             pos_in_line: 0,
+            error_occuring: false,
+            error_reason: "".to_string(),
         }
     }
 
@@ -32,12 +36,6 @@ impl Feeder {
     pub fn len(&self) -> usize {
         self.remaining.len()
     }
-
-    /*
-    pub fn chars(&self) -> Chars {
-        self.remaining.chars()
-    }
-    */
 
     pub fn chars_after(&self, s: usize) -> Chars {
         self.remaining[s..].chars()
@@ -86,6 +84,10 @@ impl Feeder {
         }else{
             false
         }
+    }
+
+    pub fn text(&self) -> String {
+        self.remaining.clone()
     }
 }
 
