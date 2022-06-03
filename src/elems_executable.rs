@@ -1,13 +1,12 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, close, pipe}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, pipe, read}; 
 use nix::sys::wait::*;
 use std::ffi::CString;
 use std::process::exit;
 use std::env;
-use std::fs::File;
-use std::os::unix::io::IntoRawFd;
+use std::os::unix::prelude::RawFd;
 
 use crate::{ShellCore,Feeder,CommandPart};
 use crate::utils::blue_string;
@@ -140,17 +139,18 @@ impl Executable for CommandWithArgs {
             return;
         }
 
+        let mut infd = 0;
+        let mut outfd = 1;
         if self.expansion {
-            eprintln!("expansion");
-            let mut p = pipe().expect("Pipe cannot open");
-
-            //dup2(f.into_raw_fd(), 1);
+            let p = pipe().expect("Pipe cannot open");
+            infd = p.0;
+            outfd = p.1;
         };
 
         unsafe {
             match fork() {
-                Ok(ForkResult::Child) => self.exec_external_command(&args, &self.vars, conf),
-                Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child),
+                Ok(ForkResult::Child) => self.exec_external_command(&args, &self.vars, outfd, conf),
+                Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child, infd),
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
@@ -167,9 +167,10 @@ impl CommandWithArgs {
         }
     }
 
+    /*
     pub fn text(&self) -> String{
         self.text.clone()
-    }
+    }*/
 
     pub fn push_vars(&mut self, s: Substitution){
         self.text += &s.text();
@@ -212,15 +213,14 @@ impl CommandWithArgs {
         blue_string(&ans)
     }
 
-    fn exec_external_command(&self, args: &Vec<String>, vars: &Vec<Box<Substitution>>, conf: &mut ShellCore) {
-        /*
+    fn exec_external_command(&self, args: &Vec<String>,
+                             vars: &Vec<Box<Substitution>>,
+                             outfd: RawFd,
+                             conf: &mut ShellCore) {
         if self.expansion {
-            eprintln!("expansion");
-            let mut f = File::create("a").expect("file not found");
-
-            dup2(f.into_raw_fd(), 1);
+            eprintln!("{}", outfd);
+            let _ = dup2(outfd, 1);
         };
-        */
 
         let cargs: Vec<CString> = args
             .iter()
@@ -248,7 +248,20 @@ impl CommandWithArgs {
         exit(127);
     }
 
-    fn wait_command(child: Pid) {
+    fn wait_command(child: Pid, infd: RawFd) {
+
+        if infd != 0 {
+            let mut ch = [0;1000];
+            while let Ok(n) = read(infd, &mut ch) {
+                let s = String::from_utf8(ch[..n].to_vec()).unwrap();
+                eprintln!("READ: {}", s);
+    
+                if n < 1000 {
+                    break;
+                };
+            };
+        }
+
         match waitpid(child, None)
             .expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
