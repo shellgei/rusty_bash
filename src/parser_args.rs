@@ -21,6 +21,10 @@ pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
     while let Some(result) = sub(text) {
         ans.text += &(*result).text();
         ans.subargs.push(result);
+
+        if text.len() == 0 {
+            break;
+        };
     };
 
     Some(ans)
@@ -196,33 +200,18 @@ pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
         return None;
     }
 
-    /*
-    let backup = text.clone();
-    text.consume(2);
-    let mut command_txt;
+    let pos = scanner_end_of_bracket(text, 2, ')');
+    let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
 
-    if let Some(e) = command_with_args(text){
-        command_txt = e.text();
-
-        if let Some(ref lst) = e.eoc {
-            if lst.text != ")" {
-                text.rewind(backup);
-                return None;
-            };
-        }else{
-            eprintln!("NO EOC");
-        }
-
+    if let Some(e) = command_with_args(&mut sub_feeder){
         let ans = Some (SubArgCommandExp {
-            text: "$(".to_owned() + &command_txt,
+            text: text.consume(pos+1),
             pos: DebugInfo::init(text),
             com: e}
         );
 
-        eprintln!("AAA: {:?}", "$(".to_owned() + &command_txt);
         return ans;
     };
-    */
     None
 }
 

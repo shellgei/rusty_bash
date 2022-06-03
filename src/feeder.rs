@@ -25,6 +25,12 @@ impl Feeder {
         }
     }
 
+    pub fn new_with(text: String) -> Feeder {
+        let mut ans = Feeder::new();
+        ans.remaining = text;
+        ans
+    }
+
     pub fn lineno(&self) -> (u32, u32) {
         (self.from_lineno, self.to_lineno)
     }
@@ -88,6 +94,10 @@ impl Feeder {
 
     pub fn text(&self) -> String {
         self.remaining.clone()
+    }
+
+    pub fn from_to(&self, from: usize, to: usize) -> String {
+        self.remaining[from..to].to_string()
     }
 }
 

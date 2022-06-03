@@ -14,13 +14,10 @@ pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn Executable>> {
         return None;
     };
 
-//    let backup = text.clone();
-
     if let Some(result) = blank_part(text)       {return Some(Box::new(result));}
     if let Some(result) = substitutions(text)    {return Some(Box::new(result));}
     if let Some(result) = command_with_args(text){return Some(Box::new(result));}
 
- //   text.rewind(backup);
     if text.error_occuring {
         text.consume(text.len());
         eprintln!("{}", text.error_reason);
@@ -91,6 +88,10 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
             ans.push_elems(Box::new(d));
         }
 
+        if text.len() == 0 {
+            break;
+        };
+
         if let Some(e) = end_of_command(text){
             ans.push_elems(Box::new(e));
             break;
@@ -107,6 +108,7 @@ pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
 
 pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if text.len() == 0 {
+     //   return Some(Eoc{text: "".to_string(), debug: DebugInfo::init(&text)});
         return None;
     };
 
