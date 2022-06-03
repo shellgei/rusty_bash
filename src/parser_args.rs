@@ -196,6 +196,7 @@ pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
         return None;
     }
 
+    /*
     let backup = text.clone();
     text.consume(2);
     let mut command_txt;
@@ -221,6 +222,7 @@ pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
         eprintln!("AAA: {:?}", "$(".to_owned() + &command_txt);
         return ans;
     };
+    */
     None
 }
 

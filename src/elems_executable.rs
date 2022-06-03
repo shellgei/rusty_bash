@@ -9,7 +9,7 @@ use std::env;
 
 use crate::{ShellCore,Feeder,CommandPart};
 use crate::utils::blue_string;
-use crate::elems_in_command::{Arg, Substitution, Eoc};
+use crate::elems_in_command::{Arg, Substitution};
 
 pub trait Executable {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
@@ -111,7 +111,6 @@ impl Substitutions {
 pub struct CommandWithArgs {
     vars: Vec<Box<Substitution>>,
     pub elems: Vec<Box<dyn CommandPart>>,
-    pub eoc: Option<Eoc>,
     text: String,
     //pub debug: DebugInfo,
 }
@@ -155,7 +154,7 @@ impl CommandWithArgs {
             vars: vec!(),
             elems: vec!(),
             text: "".to_string(),
-            eoc: None,
+            //eoc: None,
         }
     }
 
@@ -173,10 +172,12 @@ impl CommandWithArgs {
         self.elems.push(s);
     }
 
+    /*
     pub fn set_eof(&mut self, e: Eoc){
         self.text += &e.text();
         self.eoc = Some(e);
     }
+    */
 
     pub fn return_if_valid(ans: CommandWithArgs, text: &mut Feeder, backup: Feeder) -> Option<CommandWithArgs> {
         if ans.elems.len() > 0 {
@@ -193,9 +194,11 @@ impl CommandWithArgs {
             ans.append(&mut elem.parse_info());
         };
 
+        /*
         if let Some(e) = &self.eoc {
             ans.append(&mut e.parse_info());
         }
+        */
         
         blue_string(&ans)
     }

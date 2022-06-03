@@ -92,7 +92,7 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         }
 
         if let Some(e) = end_of_command(text){
-            ans.set_eof(e);
+            ans.push_elems(Box::new(e));
             break;
         }
     }
