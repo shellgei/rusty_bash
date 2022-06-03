@@ -6,7 +6,7 @@ use crate::CommandPart;
 use crate::ShellCore;
 use crate::Feeder;
 use crate::elems_in_command::Arg;
-use crate::elems_executable::CommandWithArgs;
+use crate::elems_executable::{CommandWithArgs, Executable};
 
 pub trait ArgElem {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
@@ -159,7 +159,8 @@ pub struct SubArgCommandExp {
 }
 
 impl ArgElem for SubArgCommandExp {
-    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
+        self.com.exec(conf);
         vec!()
     }
 
