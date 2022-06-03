@@ -137,6 +137,8 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
     loop {
         if let Some(a) = subarg_variable_braced(text) {
             ans.subargs.push(Box::new(a));
+        }else if let Some(a) = subarg_command_expansion(text) {
+            ans.subargs.push(Box::new(a));
         }else if let Some(a) = subarg_variable_non_braced(text) {
             ans.subargs.push(Box::new(a));
         }else if let Some(a) = string_in_double_qt(text) {
