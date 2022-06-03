@@ -253,6 +253,9 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
     if equal_pos != varname_pos {
         return None;
     }
+    if equal_pos == text.len() {
+        return None;
+    }
 
     let backup = text.clone();
     let var_part = VarName::new(text, varname_pos);
