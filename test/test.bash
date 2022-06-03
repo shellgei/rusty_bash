@@ -123,6 +123,9 @@ res=$($com <<< 'echo hoge$(echo hoge)')
 res=$($com <<< 'echo "hoge$(echo hoge)"')
 [ "$res" = "hogehoge" ]
 
+res=$($com <<< 'echo "$(seq 5)"')
+[ "$res" = "1 2 3 4 5" ]
+
 ### DIRECTORY TEST ###
 
 res=$($com << 'EOF'
