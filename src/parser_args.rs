@@ -43,6 +43,7 @@ pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 
 pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
+    else if let Some(a) = subarg_command_expansion(text)   {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
     else if let Some(a) = subvalue_normal(text)            {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
@@ -85,7 +86,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 }
 
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';)");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';)$");
     if pos == 0{
         return None;
     };
@@ -93,7 +94,7 @@ pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
 }
 
 pub fn subarg_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';{}()");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$");
     if pos == 0 {
         return None;
     };

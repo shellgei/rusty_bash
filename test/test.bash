@@ -117,6 +117,9 @@ res=$($com <<< 'echo "*"')
 res=$($com <<< 'echo $(echo hoge)hoge')
 [ "$res" = "hogehoge" ]
 
+res=$($com <<< 'echo hoge$(echo hoge)')
+[ "$res" = "hogehoge" ]
+
 ### DIRECTORY TEST ###
 
 res=$($com << 'EOF'
