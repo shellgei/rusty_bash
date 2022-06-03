@@ -14,7 +14,7 @@ use crate::elems_in_command::{Arg, Substitution};
 
 pub trait Executable {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
-    fn exec(&self, _conf: &mut ShellCore) {}
+    fn exec(&self, _conf: &mut ShellCore) -> String { "".to_string() }
 }
 
 pub struct BlankPart {
@@ -70,7 +70,7 @@ impl Substitutions {
 }
 
 impl Executable for Substitutions {
-    fn exec(&self, conf: &mut ShellCore) {
+    fn exec(&self, conf: &mut ShellCore) -> String {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
         };
@@ -88,6 +88,8 @@ impl Executable for Substitutions {
                 conf.vars.insert(key, value);
             };
         };
+
+        "".to_string()
     }
 }
 
@@ -131,12 +133,12 @@ impl Executable for CommandWithArgs {
             .collect()
     }
 
-    fn exec(&self, conf: &mut ShellCore){
+    fn exec(&self, conf: &mut ShellCore) -> String{
         let mut args = self.eval(conf);
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
             func(&mut args);
-            return;
+            return "".to_string();
         }
 
         let mut infd = 0;
@@ -147,13 +149,22 @@ impl Executable for CommandWithArgs {
             outfd = p.1;
         };
 
+        let mut return_string = "".to_string();
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => self.exec_external_command(&args, &self.vars, outfd, conf),
-                Ok(ForkResult::Parent { child } ) => CommandWithArgs::wait_command(child, infd),
+                Ok(ForkResult::Parent { child } ) => return_string = CommandWithArgs::wait_command(child, infd),
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
+
+        if let Some(c) = return_string.chars().last() {
+            if c == '\n' {
+                return return_string[0..return_string.len()-1].to_string();
+            }
+        }
+
+        return_string
     }
 }
 
@@ -218,7 +229,6 @@ impl CommandWithArgs {
                              outfd: RawFd,
                              conf: &mut ShellCore) {
         if self.expansion {
-            eprintln!("{}", outfd);
             let _ = dup2(outfd, 1);
         };
 
@@ -248,14 +258,13 @@ impl CommandWithArgs {
         exit(127);
     }
 
-    fn wait_command(child: Pid, infd: RawFd) {
+    fn wait_command(child: Pid, infd: RawFd) -> String {
+        let mut ans = "".to_string();
 
         if infd != 0 {
             let mut ch = [0;1000];
             while let Ok(n) = read(infd, &mut ch) {
-                let s = String::from_utf8(ch[..n].to_vec()).unwrap();
-                eprintln!("READ: {}", s);
-    
+                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
                 if n < 1000 {
                     break;
                 };
@@ -276,6 +285,8 @@ impl CommandWithArgs {
                 println!("Unknown error")
             }
         };
+
+        ans
     }
 }
 

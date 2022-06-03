@@ -114,8 +114,8 @@ res=$($com <<< 'echo "*"')
 
 # command expansion
 
-#res=$($com <<< 'echo "$(echo hoge)"')
-#[ "$res" = "hoge" ]
+res=$($com <<< 'echo $(echo hoge)hoge')
+[ "$res" = "hogehoge" ]
 
 ### DIRECTORY TEST ###
 

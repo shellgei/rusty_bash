@@ -160,8 +160,7 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
-        self.com.exec(conf);
-        vec!()
+        vec!(self.com.exec(conf))
     }
 
     fn text(&self) -> String {
