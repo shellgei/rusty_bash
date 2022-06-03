@@ -203,11 +203,12 @@ pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
     let pos = scanner_end_of_bracket(text, 2, ')');
     let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
 
-    if let Some(e) = command_with_args(&mut sub_feeder){
+    if let Some(mut e) = command_with_args(&mut sub_feeder){
+        e.expansion = true;
         let ans = Some (SubArgCommandExp {
             text: text.consume(pos+1),
             pos: DebugInfo::init(text),
-            com: e}
+            com: e }
         );
 
         return ans;

@@ -1,11 +1,13 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, close, pipe}; 
 use nix::sys::wait::*;
 use std::ffi::CString;
 use std::process::exit;
 use std::env;
+use std::fs::File;
+use std::os::unix::io::IntoRawFd;
 
 use crate::{ShellCore,Feeder,CommandPart};
 use crate::utils::blue_string;
@@ -112,7 +114,7 @@ pub struct CommandWithArgs {
     vars: Vec<Box<Substitution>>,
     pub elems: Vec<Box<dyn CommandPart>>,
     text: String,
-    //pub debug: DebugInfo,
+    pub expansion: bool,
 }
 
 impl Executable for CommandWithArgs {
@@ -138,6 +140,13 @@ impl Executable for CommandWithArgs {
             return;
         }
 
+        if self.expansion {
+            eprintln!("expansion");
+            let mut p = pipe().expect("Pipe cannot open");
+
+            //dup2(f.into_raw_fd(), 1);
+        };
+
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => self.exec_external_command(&args, &self.vars, conf),
@@ -154,7 +163,7 @@ impl CommandWithArgs {
             vars: vec!(),
             elems: vec!(),
             text: "".to_string(),
-            //eoc: None,
+            expansion: false,
         }
     }
 
@@ -204,6 +213,15 @@ impl CommandWithArgs {
     }
 
     fn exec_external_command(&self, args: &Vec<String>, vars: &Vec<Box<Substitution>>, conf: &mut ShellCore) {
+        /*
+        if self.expansion {
+            eprintln!("expansion");
+            let mut f = File::create("a").expect("file not found");
+
+            dup2(f.into_raw_fd(), 1);
+        };
+        */
+
         let cargs: Vec<CString> = args
             .iter()
             .map(|a| CString::new(a.to_string()).unwrap())
