@@ -275,8 +275,8 @@ pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
         return None;
     };
 
-    let mut fd = 0;
-    let mut dir = "".to_string();
+    let mut fd;
+    let dir;
     if text.nth(arrow_pos) == '<' {
         fd = 0;
         dir = '<'.to_string();

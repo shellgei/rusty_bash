@@ -40,7 +40,7 @@ impl BlankPart {
 
     pub fn return_if_valid(ans: BlankPart) -> Option<BlankPart> {
         if ans.elems.len() > 0 {
-              Some(ans)
+            Some(ans)
         }else{
             None
         }
@@ -62,7 +62,7 @@ impl Substitutions {
 
     pub fn return_if_valid(ans: Substitutions) -> Option<Substitutions> {
         if ans.elems.len() > 0 {
-              Some(ans)
+            Some(ans)
         }else{
             None
         }
@@ -117,6 +117,7 @@ pub struct CommandWithArgs {
     pub redirects: Vec<Box<Redirect>>,
     text: String,
     pub expansion: bool,
+    pub infd: RawFd,
     pub outfd: RawFd,
 }
 
@@ -143,22 +144,20 @@ impl Executable for CommandWithArgs {
             return s;
         }
 
-        let mut infd = 0;
-        let mut outfd = 1;
         if self.expansion {
             let p = pipe().expect("Pipe cannot open");
-            infd = p.0;
-            outfd = p.1;
+            self.infd = p.0;
+            self.outfd = p.1;
         };
 
         let mut return_string = "".to_string();
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    self.exec_external_command(&mut args, outfd, conf)
+                    self.exec_external_command(&mut args, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    return_string = CommandWithArgs::wait_command(child, infd)
+                    return_string = self.wait_command(child)
                 },
                 Err(err) => {
                     panic!("Failed to fork. {}", err)
@@ -184,6 +183,7 @@ impl CommandWithArgs {
             redirects: vec!(),
             text: "".to_string(),
             expansion: false,
+            infd: 0,
             outfd: 1,
         }
     }
@@ -235,12 +235,10 @@ impl CommandWithArgs {
     }
 
     fn exec_external_command(&mut self, args: &Vec<String>,
-                             outfd: RawFd,
                              conf: &mut ShellCore) {
-        if self.expansion {
-            self.outfd = outfd;
-            let _ = dup2(outfd, 1);
-        };
+        //if self.outfd != 1 {
+            let _ = dup2(self.outfd, 1);
+        //};
 
         let cargs: Vec<CString> = args
             .iter()
@@ -268,12 +266,12 @@ impl CommandWithArgs {
         exit(127);
     }
 
-    fn wait_command(child: Pid, infd: RawFd) -> String {
+    fn wait_command(&self, child: Pid) -> String {
         let mut ans = "".to_string();
 
-        if infd != 0 {
+        if self.infd != 0 {
             let mut ch = [0;1000];
-            while let Ok(n) = read(infd, &mut ch) {
+            while let Ok(n) = read(self.infd, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
                 if n < 1000 {
                     break;
