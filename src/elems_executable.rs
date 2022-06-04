@@ -10,7 +10,7 @@ use std::os::unix::prelude::RawFd;
 
 use crate::{ShellCore,Feeder,CommandPart};
 use crate::utils::blue_string;
-use crate::elems_in_command::{Arg, Substitution};
+use crate::elems_in_command::{Arg, Substitution, Redirect};
 
 pub trait Executable {
     fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
@@ -113,7 +113,8 @@ impl Substitutions {
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct CommandWithArgs {
     vars: Vec<Box<Substitution>>,
-    pub elems: Vec<Box<dyn CommandPart>>,
+    pub args: Vec<Box<dyn CommandPart>>,
+    pub redirects: Vec<Box<Redirect>>,
     text: String,
     pub expansion: bool,
 }
@@ -122,8 +123,8 @@ impl Executable for CommandWithArgs {
     fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
         let mut args = vec!();
 
-        for elem in &self.elems {
-            for s in &elem.eval(conf) {
+        for arg in &self.args {
+            for s in &arg.eval(conf) {
                 args.append(&mut Arg::expand_glob(&s.clone()));
             }
         };
@@ -178,7 +179,8 @@ impl CommandWithArgs {
     pub fn new() -> CommandWithArgs{
         CommandWithArgs {
             vars: vec!(),
-            elems: vec!(),
+            args: vec!(),
+            redirects: vec!(),
             text: "".to_string(),
             expansion: false,
         }
@@ -196,7 +198,7 @@ impl CommandWithArgs {
 
     pub fn push_elems(&mut self, s: Box<dyn CommandPart>){
         self.text += &s.text();
-        self.elems.push(s);
+        self.args.push(s);
     }
 
     /*
@@ -207,7 +209,7 @@ impl CommandWithArgs {
     */
 
     pub fn return_if_valid(ans: CommandWithArgs, text: &mut Feeder, backup: Feeder) -> Option<CommandWithArgs> {
-        if ans.elems.len() > 0 {
+        if ans.args.len() > 0 {
               Some(ans)
         }else{
             text.rewind(backup);
@@ -217,7 +219,7 @@ impl CommandWithArgs {
 
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("command: '{}'", self.text));
-        for elem in &self.elems {
+        for elem in &self.args {
             ans.append(&mut elem.parse_info());
         };
 

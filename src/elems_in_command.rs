@@ -153,3 +153,10 @@ impl CommandPart for Arg {
 
     fn text(&self) -> String { self.text.clone() }
 }
+
+pub struct Redirect {
+    pub text: String,
+    pub pos: DebugInfo,
+    pub fd: u8,
+    pub path: String,
+}
