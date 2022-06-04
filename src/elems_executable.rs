@@ -140,10 +140,10 @@ impl Executable for CommandWithArgs {
         let mut args = self.eval(conf);
 
         if self.outfd == 1 {
-        if let Some(func) = conf.get_internal_command(&args[0]) {
-            let (s, _status) = func(conf, &mut args, self.outfd);
-            return "".to_string();
-        }
+            if let Some(func) = conf.get_internal_command(&args[0]) {
+                let _status = func(conf, &mut args);
+                return "".to_string();
+            }
         }
 
         let mut return_string = "".to_string();
@@ -234,8 +234,7 @@ impl CommandWithArgs {
 
         if self.outfd != 1 {
             if let Some(func) = conf.get_internal_command(&args[0]) {
-                let (s, status) = func(conf, args, self.outfd);
-                exit(status);
+                exit(func(conf, args));
             }
         }
 
