@@ -139,9 +139,11 @@ impl Executable for CommandWithArgs {
     fn exec(&mut self, conf: &mut ShellCore) -> String{
         let mut args = self.eval(conf);
 
+        if self.outfd == 1 {
         if let Some(func) = conf.get_internal_command(&args[0]) {
             let (s, _status) = func(conf, &mut args, self.outfd);
-            return s;
+            return "".to_string();
+        }
         }
 
         let mut return_string = "".to_string();
@@ -227,11 +229,15 @@ impl CommandWithArgs {
         blue_string(&ans)
     }
 
-    fn exec_external_command(&mut self, args: &Vec<String>,
-                             conf: &mut ShellCore) {
-        //if self.outfd != 1 {
-            let _ = dup2(self.outfd, 1);
-        //};
+    fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+        let _ = dup2(self.outfd, 1);
+
+        if self.outfd != 1 {
+            if let Some(func) = conf.get_internal_command(&args[0]) {
+                let (s, status) = func(conf, args, self.outfd);
+                exit(status);
+            }
+        }
 
         let cargs: Vec<CString> = args
             .iter()

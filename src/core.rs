@@ -92,6 +92,7 @@ impl ShellCore {
     pub fn pwd(&mut self, _args: &mut Vec<String>, outfd: RawFd) -> (String, i32) {
         if let Some(p) = env::current_dir().expect("Cannot get current dir").to_str() {
             if outfd != 1 {
+                println!("{}", p.to_string());
                 return (p.to_string(), 0);
             }else{
                 println!("{}", p.to_string());
