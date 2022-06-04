@@ -101,14 +101,11 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
                 ans.redirects.push(Box::new(r));
             }
             break;
-        }else if text.len() == 0 {
+        }
+
+        if text.len() == 0 {
             break;
-        }else if text.nth(0) == '<' || text.nth(0) == '>' {
-            text.error_occuring = true;
-            text.error_reason = "Unexpected token found".to_string();
-            text.rewind(backup);
-            return None;
-        };
+        }
 
         if let Some(e) = end_of_command(text){
             ans.push_elems(Box::new(e));

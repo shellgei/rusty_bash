@@ -158,5 +158,6 @@ pub struct Redirect {
     pub text: String,
     pub pos: DebugInfo,
     pub fd: u8,
+    pub direction_str: String,
     pub path: String,
 }

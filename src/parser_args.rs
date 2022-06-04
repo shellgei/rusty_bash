@@ -269,6 +269,43 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
 }
 
 pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
+    let arrow_pos = scanner_until(text, 0, "<>");
 
-    None
+    if text.len() < arrow_pos+1 {
+        return None;
+    };
+
+    let mut fd = 0;
+    let mut dir = "".to_string();
+    if text.nth(arrow_pos) == '<' {
+        fd = 0;
+        dir = '<'.to_string();
+    }else if text.nth(arrow_pos) == '>' {
+        fd = 1;
+        dir = '>'.to_string();
+    }else{
+        return None;
+    };
+
+    /* read the number before the arrow */
+    if arrow_pos != 0 {
+        if let Ok(num) = text.from_to(0, arrow_pos).parse::<u8>() {
+            fd = num;
+        }else{
+            return None;
+        }
+    };
+
+    /* extract the file name */
+    let start = scanner_while(text, arrow_pos+1, " ");
+    let end = scanner_until_escape(text, start, " ");
+    let path = text.from_to(start, end);
+
+    Some( Redirect {
+        text: text.consume(end),
+        pos: DebugInfo::init(text),
+        fd: fd,
+        direction_str: dir,
+        path: path,
+    })
 }
