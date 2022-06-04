@@ -7,6 +7,7 @@ use crate::ShellCore;
 use crate::Feeder;
 use crate::elems_in_command::Arg;
 use crate::elems_executable::{CommandWithArgs, Executable};
+use nix::unistd::{pipe}; 
 
 pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
@@ -160,7 +161,9 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        //Is it OK?
+        let p = pipe().expect("Pipe cannot open");
+        self.com.infd = p.0;
+        self.com.outfd = p.1;
         vec!(self.com.exec(conf).replace("\n", " "))
     }
 

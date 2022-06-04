@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, pipe, read}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, read}; 
 use nix::sys::wait::*;
 use std::ffi::CString;
 use std::process::exit;
@@ -116,7 +116,7 @@ pub struct CommandWithArgs {
     pub args: Vec<Box<dyn CommandPart>>,
     pub redirects: Vec<Box<Redirect>>,
     text: String,
-    pub expansion: bool,
+    //pub expansion: bool,
     pub infd: RawFd,
     pub outfd: RawFd,
 }
@@ -140,15 +140,9 @@ impl Executable for CommandWithArgs {
         let mut args = self.eval(conf);
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
-            let (s, _status) = func(conf, &mut args, self.expansion);
+            let (s, _status) = func(conf, &mut args, self.outfd);
             return s;
         }
-
-        if self.expansion {
-            let p = pipe().expect("Pipe cannot open");
-            self.infd = p.0;
-            self.outfd = p.1;
-        };
 
         let mut return_string = "".to_string();
         unsafe {
@@ -182,7 +176,6 @@ impl CommandWithArgs {
             args: vec!(),
             redirects: vec!(),
             text: "".to_string(),
-            expansion: false,
             infd: 0,
             outfd: 1,
         }

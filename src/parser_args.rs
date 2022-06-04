@@ -206,8 +206,7 @@ pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
     let pos = scanner_end_of_bracket(text, 2, ')');
     let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
 
-    if let Some(mut e) = command_with_args(&mut sub_feeder){
-        e.expansion = true;
+    if let Some(e) = command_with_args(&mut sub_feeder){
         let ans = Some (SubArgCommandExp {
             text: text.consume(pos+1),
             pos: DebugInfo::init(text),
