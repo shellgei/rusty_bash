@@ -3,7 +3,7 @@
 
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
-use crate::elems_in_command::{Arg, Substitution};
+use crate::elems_in_command::{Arg, Substitution, Redirect};
 use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName, SubArgCommandExp};
 use crate::scanner::*;
 use crate::parser::command_with_args;
@@ -86,7 +86,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 }
 
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';)$");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';)$<>");
     if pos == 0{
         return None;
     };
@@ -94,7 +94,7 @@ pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
 }
 
 pub fn subarg_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>");
     if pos == 0 {
         return None;
     };
@@ -266,4 +266,9 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
         text.rewind(backup);
         None
     }
+}
+
+pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
+
+    None
 }

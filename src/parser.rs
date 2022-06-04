@@ -3,7 +3,7 @@
 
 use super::elems_executable::{Substitutions, Executable, BlankPart, CommandWithArgs};
 use super::elems_in_command::{ArgDelimiter, Eoc};
-use crate::parser_args::{arg,substitution};
+use crate::parser_args::{arg, substitution, redirect};
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
 use crate::scanner::{scanner_end_of_com, scanner_while};
@@ -65,6 +65,9 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
     let backup = text.clone();
     let mut ans = CommandWithArgs::new();
 
+    //TODO: bash permits redirections here. 
+
+    /* A command starts with substitutions. */
     while let Some(s) = substitution(text) {
         ans.push_vars(s);
 
@@ -73,6 +76,9 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         }
     }
 
+    //TODO: bash permits redirections here. 
+
+    /* Then one or more arguments exist. */
     while let Some(a) = arg(text, true) {
         if text.len() != 0 {
             if text.nth(0) == ')' || text.nth(0) == '(' {
@@ -88,8 +94,20 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
             ans.push_elems(Box::new(d));
         }
 
-        if text.len() == 0 {
+        /* When a redirect is found. The command ends with redirects. */
+        if let Some(r) = redirect(text){
+            ans.redirects.push(Box::new(r));
+            while let Some(r) = redirect(text){
+                ans.redirects.push(Box::new(r));
+            }
             break;
+        }else if text.len() == 0 {
+            break;
+        }else if text.nth(0) == '<' || text.nth(0) == '>' {
+            text.error_occuring = true;
+            text.error_reason = "Unexpected token found".to_string();
+            text.rewind(backup);
+            return None;
         };
 
         if let Some(e) = end_of_command(text){

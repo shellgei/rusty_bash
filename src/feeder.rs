@@ -51,7 +51,7 @@ impl Feeder {
         if let Some(c) = self.remaining.chars().nth(p){
             c
         }else{
-            panic!("Parser error")
+            panic!("Parser error: no {}th character in {}", p, self.remaining)
         }
     }
 
