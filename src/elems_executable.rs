@@ -137,8 +137,8 @@ impl Executable for CommandWithArgs {
         let mut args = self.eval(conf);
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
-            func(conf, &mut args);
-            return "".to_string();
+            let (s, _status) = func(conf, &mut args, self.expansion);
+            return s;
         }
 
         let mut infd = 0;
@@ -152,9 +152,15 @@ impl Executable for CommandWithArgs {
         let mut return_string = "".to_string();
         unsafe {
             match fork() {
-                Ok(ForkResult::Child) => self.exec_external_command(&args, &self.vars, outfd, conf),
-                Ok(ForkResult::Parent { child } ) => return_string = CommandWithArgs::wait_command(child, infd),
-                Err(err) => panic!("Failed to fork. {}", err),
+                Ok(ForkResult::Child) => {
+                    self.exec_external_command(&args, &self.vars, outfd, conf)
+                },
+                Ok(ForkResult::Parent { child } ) => {
+                    return_string = CommandWithArgs::wait_command(child, infd)
+                },
+                Err(err) => {
+                    panic!("Failed to fork. {}", err)
+                },
             }
         }
 

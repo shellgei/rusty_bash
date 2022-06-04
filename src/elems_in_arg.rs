@@ -160,9 +160,7 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
-        //let ans = self.com.exec(conf).split("\n").map(|s| s.to_string()).collect();
-        //eprintln!("{:?}", ans);
-        //ans
+        //Is it OK?
         vec!(self.com.exec(conf).replace("\n", " "))
     }
 

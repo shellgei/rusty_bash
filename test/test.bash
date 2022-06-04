@@ -126,6 +126,9 @@ res=$($com <<< 'echo "hoge$(echo hoge)"')
 res=$($com <<< 'echo "$(seq 5)"')
 [ "$res" = "1 2 3 4 5" ]
 
+res=$($com <<< 'cd /;echo "$(pwd)x"') #internal command
+[ "$res" = "/x" ]
+
 ### DIRECTORY TEST ###
 
 res=$($com << 'EOF'

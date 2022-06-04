@@ -27,7 +27,7 @@ impl Flags {
 }
 
 pub struct ShellCore {
-    pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
+    pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>, ret_string: bool) -> (String, i32)>,
     pub vars: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: Flags,
@@ -61,7 +61,8 @@ impl ShellCore {
         "".to_string()
     }
 
-    pub fn get_internal_command(&self, name: &String) -> Option<fn(&mut ShellCore, args: &mut Vec<String>) -> i32> {
+    pub fn get_internal_command(&self, name: &String) 
+        -> Option<fn(&mut ShellCore, args: &mut Vec<String>, ret_string: bool) -> (String, i32)> {
         if self.internal_commands.contains_key(name) {
             Some(self.internal_commands[name])
         }else{
@@ -71,7 +72,7 @@ impl ShellCore {
     /////////////////////////////////
     /* INTERNAL COMMANDS HEREAFTER */
     /////////////////////////////////
-    pub fn exit(&mut self, _args: &mut Vec<String>) -> i32 {
+    pub fn exit(&mut self, _args: &mut Vec<String>, _ret_string: bool) -> (String, i32) {
         let home = env::var("HOME").expect("HOME is not defined");
         let mut hist_file = OpenOptions::new()
                                     .write(true)
@@ -87,15 +88,20 @@ impl ShellCore {
         exit(0);
     }
 
-    pub fn pwd(&mut self, _args: &mut Vec<String>) -> i32 {
-        match env::current_dir() {
-            Ok(path) => println!("{}", path.display()),
-            _        => panic!("Cannot get current dir"),
-        }
-        0
+    pub fn pwd(&mut self, _args: &mut Vec<String>, ret_string: bool) -> (String, i32) {
+        if let Some(p) = env::current_dir().expect("Cannot get current dir").to_str() {
+            if ret_string {
+                return (p.to_string(), 0);
+            }else{
+                println!("{}", p.to_string());
+                return ("".to_string(), 0);
+            }
+        };
+
+        panic!("Cannot get current dir");
     }
 
-    pub fn cd(&mut self, args: &mut Vec<String>) -> i32 {
+    pub fn cd(&mut self, args: &mut Vec<String>, _ret_string: bool) -> (String, i32) {
         if args.len() == 0 {
             eprintln!("Bug of this shell");
         }else if args.len() == 1 {
@@ -105,10 +111,10 @@ impl ShellCore {
 
         let path = Path::new(&args[1]);
         if env::set_current_dir(&path).is_ok() {
-            0
+            ("".to_string(), 0)
         }else{
             eprintln!("Not exist directory");
-            1
+            ("".to_string(), 1)
         }
     }
 }
