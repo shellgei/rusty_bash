@@ -3,8 +3,8 @@
 
 use std::io;
 use std::env;
-use std::io::{Write, stdout, stdin};
-use std::io::Stdout;
+use std::io::{Write, stdout, stdin, Stdout, BufReader};
+use std::fs::File;
 
 use termion::{event,terminal_size};
 use termion::cursor::DetectCursorPos;
@@ -18,6 +18,8 @@ use crate::utils::chars_to_string;
 
 extern crate unicode_width;
 use unicode_width::UnicodeWidthStr;
+extern crate rev_lines;
+use rev_lines::RevLines;
 
 pub struct Writer {
     pub stdout: RawTerminal<Stdout>, 
@@ -26,7 +28,7 @@ pub struct Writer {
     pub previous_fold_points_num: usize, 
     pub erased_line_num: usize,
     ch_ptr: usize,
-    hist_ptr: usize,
+    hist_ptr: i32,
     left_shift: u16,
 }
 
@@ -42,7 +44,7 @@ fn chars_to_width(chars: &Vec<char>) -> u32 {
 }
 
 impl Writer {
-    pub fn new(hist_size: usize, left_shift: u16) -> Writer{
+    pub fn new(hist_len: usize, left_shift: u16) -> Writer{
         Writer {
             stdout: stdout().into_raw_mode().unwrap(),
             chars: vec!(),
@@ -50,7 +52,7 @@ impl Writer {
             previous_fold_points_num: 0,
             erased_line_num: 0,
             ch_ptr: 0,
-            hist_ptr: hist_size,
+            hist_ptr: hist_len as i32,
             left_shift: left_shift,
         }
     }
@@ -89,28 +91,37 @@ impl Writer {
         }
     }
 
-    pub fn write_history(&mut self, inc: i32, history: &Vec<String>){
-        if history.len() == 0 {
-            return;
-        }
+    pub fn call_history_from_file(&mut self) -> String {
+        let home = env::var("HOME").expect("HOME is not defined");
+        let pos = - self.hist_ptr - 1;
 
-        self.hist_ptr = if self.hist_ptr as i32 + inc < 0 {
-            0
-        }else{
-            (self.hist_ptr as i32 + inc) as usize
+        if let Ok(hist_file) = File::open(home + "/.bash_history"){
+            let mut rev_lines = RevLines::new(BufReader::new(hist_file)).unwrap();
+            if let Some(s) = rev_lines.nth(pos as usize) {
+                return s;
+            };
         };
 
-        if self.hist_ptr >= history.len() {
-            self.hist_ptr = history.len();
-            return;
-        }
+        "".to_string()
+    }
+
+    pub fn call_history(&mut self, inc: i32, history: &Vec<String>){
+        self.hist_ptr += inc;
+        let len = history.len() as i32;
+
+        let h = if self.hist_ptr < 0 {
+            self.call_history_from_file()
+        }else if self.hist_ptr < len {
+            history[self.hist_ptr as usize].to_string()
+        }else{
+            self.hist_ptr = len;
+            "".to_string()
+        };
 
         let y = self.cursor_pos().1;
-        let h = &history[self.hist_ptr as usize];
-        self.rewrite_line(y, h.to_string());
+        self.rewrite_line(y, h.clone());
         self.chars.clear();
         self.chars = h.chars().collect();
-        
         self.ch_ptr = self.chars.len();
         self.calculate_fold_points();
     }
@@ -322,8 +333,8 @@ pub fn read_line(left: u16, core: &mut ShellCore) -> String{
                 writer.end("\r\n");
                 break;
             },
-            event::Key::Up         => writer.write_history(-1, &core.history),
-            event::Key::Down       => writer.write_history(1, &core.history),
+            event::Key::Up         => writer.call_history(-1, &core.history),
+            event::Key::Down       => writer.call_history(1, &core.history),
             event::Key::Left       => writer.move_cursor(-1),
             event::Key::Right      => writer.move_cursor(1),
             event::Key::Backspace  => writer.remove(),
@@ -339,7 +350,9 @@ pub fn read_line(left: u16, core: &mut ShellCore) -> String{
         }
     }
 
-    let ans = chars_to_string(&writer.chars);//writer.chars.iter().collect::<String>();
-    core.history.push(ans.clone());
+    let ans = chars_to_string(&writer.chars);
+    if ans.len() != 0 {
+        core.history.push(ans.clone());
+    };
     ans + "\n"
 }
