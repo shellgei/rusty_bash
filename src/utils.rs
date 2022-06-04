@@ -34,14 +34,11 @@ pub fn search_commands(globstr: &String) -> Vec<String> {
     for d in dirs {
         if let Ok(path) = glob(&(d + "/" + globstr)) {
             for dir in path {
-                match dir {
-                    Ok(d) => {
-                        if let Some(s) = d.to_str() {
-                            ans.push(s.to_string());
-                        };
-                    },
-                    _ => (),
-                }
+                if let Ok(d) = dir {
+                    if let Some(s) = d.to_str() {
+                        ans.push(s.to_string());
+                    };
+                };
             };
         };
     };
