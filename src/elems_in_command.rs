@@ -9,7 +9,7 @@ use crate::Feeder;
 
 pub trait CommandPart {
     fn parse_info(&self) -> Vec<String>;
-    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
     fn text(&self) -> String { String::new() }
 }
 
@@ -76,7 +76,7 @@ impl CommandPart for Substitution {
         vec!(format!("    substitution: '{}' ({})\n", self.text.clone(), self.debug.text()))
     }
 
-    fn eval(&self, conf: &mut ShellCore) -> Vec<String> { 
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> { 
         let mut ans = vec!();
         ans.push(self.name.text.clone());
         
@@ -134,11 +134,11 @@ impl CommandPart for Arg {
         ans
     }
 
-    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
-        let subevals = self.subargs
-            .iter()
-            .map(|sub| sub.eval(conf))
-            .collect::<Vec<Vec<String>>>();
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
+        let mut subevals = vec!();
+        for sa in &mut self.subargs {
+            subevals.push(sa.eval(conf));
+        }
 
         if subevals.len() == 0 {
             return vec!();

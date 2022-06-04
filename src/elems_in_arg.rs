@@ -9,7 +9,7 @@ use crate::elems_in_command::Arg;
 use crate::elems_executable::{CommandWithArgs, Executable};
 
 pub trait ArgElem {
-    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
         vec!()
     }
 
@@ -35,7 +35,7 @@ impl ArgElem for VarName {
         self.text.clone()
     }
 
-    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
         vec!(self.text.clone())
     }
 }
@@ -50,7 +50,7 @@ impl ArgElem for SubArgNonQuoted {
         self.text.clone()
     }
 
-    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
         vec!(self.text.clone())
     }
 }
@@ -62,9 +62,9 @@ pub struct SubArgDoubleQuoted {
 }
 
 impl ArgElem for SubArgDoubleQuoted {
-    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut text = "".to_string();
-        for a in &self.subargs {
+        for a in &mut self.subargs {
             let sub = a.eval(conf);
             text += &sub[0];
         };
@@ -90,7 +90,7 @@ pub struct SubArgSingleQuoted {
 }
 
 impl ArgElem for SubArgSingleQuoted {
-    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
         let strip = self.text[1..self.text.len()-1].to_string();
         let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
         vec!(s)
@@ -108,7 +108,7 @@ pub struct SubArgBraced {
 }
 
 impl ArgElem for SubArgBraced {
-    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         if self.args.len() == 0{
             return vec!("{}".to_string());
         }else if self.args.len() == 1{
@@ -121,7 +121,7 @@ impl ArgElem for SubArgBraced {
         };
 
         let mut ans = vec!();
-        for arg in &self.args {
+        for arg in &mut self.args {
             ans.append(&mut arg.eval(conf));
         };
         ans
@@ -138,7 +138,7 @@ pub struct SubArgVariable {
 }
 
 impl ArgElem for SubArgVariable {
-    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let name = if self.text.rfind('}') == Some(self.text.len()-1) {
             self.text[2..self.text.len()-1].to_string()
         }else{
@@ -159,7 +159,7 @@ pub struct SubArgCommandExp {
 }
 
 impl ArgElem for SubArgCommandExp {
-    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         //Is it OK?
         vec!(self.com.exec(conf).replace("\n", " "))
     }

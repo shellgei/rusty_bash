@@ -13,8 +13,8 @@ use crate::utils::blue_string;
 use crate::elems_in_command::{Arg, Substitution, Redirect};
 
 pub trait Executable {
-    fn eval(&self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
-    fn exec(&self, _conf: &mut ShellCore) -> String { "".to_string() }
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
+    fn exec(&mut self, _conf: &mut ShellCore) -> String { "".to_string() }
 }
 
 pub struct BlankPart {
@@ -70,12 +70,12 @@ impl Substitutions {
 }
 
 impl Executable for Substitutions {
-    fn exec(&self, conf: &mut ShellCore) -> String {
+    fn exec(&mut self, conf: &mut ShellCore) -> String {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
         };
 
-        for e in &self.elems {
+        for e in &mut self.elems {
             let sub = e.eval(conf);
             if sub.len() != 2{
                 continue;
@@ -117,13 +117,14 @@ pub struct CommandWithArgs {
     pub redirects: Vec<Box<Redirect>>,
     text: String,
     pub expansion: bool,
+    pub outfd: RawFd,
 }
 
 impl Executable for CommandWithArgs {
-    fn eval(&self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut args = vec!();
 
-        for arg in &self.args {
+        for arg in &mut self.args {
             for s in &arg.eval(conf) {
                 args.append(&mut Arg::expand_glob(&s.clone()));
             }
@@ -134,7 +135,7 @@ impl Executable for CommandWithArgs {
             .collect()
     }
 
-    fn exec(&self, conf: &mut ShellCore) -> String{
+    fn exec(&mut self, conf: &mut ShellCore) -> String{
         let mut args = self.eval(conf);
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
@@ -154,7 +155,7 @@ impl Executable for CommandWithArgs {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    self.exec_external_command(&args, &self.vars, outfd, conf)
+                    self.exec_external_command(&mut args, outfd, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     return_string = CommandWithArgs::wait_command(child, infd)
@@ -183,6 +184,7 @@ impl CommandWithArgs {
             redirects: vec!(),
             text: "".to_string(),
             expansion: false,
+            outfd: 1,
         }
     }
 
@@ -232,11 +234,11 @@ impl CommandWithArgs {
         blue_string(&ans)
     }
 
-    fn exec_external_command(&self, args: &Vec<String>,
-                             vars: &Vec<Box<Substitution>>,
+    fn exec_external_command(&mut self, args: &Vec<String>,
                              outfd: RawFd,
                              conf: &mut ShellCore) {
         if self.expansion {
+            self.outfd = outfd;
             let _ = dup2(outfd, 1);
         };
 
@@ -249,7 +251,7 @@ impl CommandWithArgs {
             eprintln!("{}", self.parse_info().join("\n"));
         };
 
-        for v in vars {
+        for v in &mut self.vars {
             let key = (*v).name.text.clone();
             let value =  (*v).value.eval(conf).join(" ");
             env::set_var(key, value);
