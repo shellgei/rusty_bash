@@ -5,6 +5,9 @@ use std::collections::HashMap;
 use std::process::exit;
 use std::env;
 use std::path::Path;
+use std::fs::File;
+use std::fs::OpenOptions;
+use std::io::Write;
 
 pub struct Flags {
     pub v: bool,
@@ -25,7 +28,7 @@ impl Flags {
 }
 
 pub struct ShellCore {
-    pub internal_commands: HashMap<String, fn(args: &mut Vec<String>) -> i32>,
+    pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
     pub vars: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: Flags,
@@ -59,7 +62,7 @@ impl ShellCore {
         "".to_string()
     }
 
-    pub fn get_internal_command(&self, name: &String) -> Option<fn(args: &mut Vec<String>) -> i32> {
+    pub fn get_internal_command(&self, name: &String) -> Option<fn(&mut ShellCore, args: &mut Vec<String>) -> i32> {
         if self.internal_commands.contains_key(name) {
             Some(self.internal_commands[name])
         }else{
@@ -69,11 +72,23 @@ impl ShellCore {
     /////////////////////////////////
     /* INTERNAL COMMANDS HEREAFTER */
     /////////////////////////////////
-    pub fn exit(_args: &mut Vec<String>) -> i32 {
+    pub fn exit(&mut self, _args: &mut Vec<String>) -> i32 {
+        let home = env::var("HOME").expect("HOME is not defined");
+        if let Ok(mut hist_file) = OpenOptions::new()
+                                    .write(true)
+                                    .append(true)
+                                    .open(home + "/.bash_history"){
+            for h in &self.history {
+                eprintln!("{}", h);
+                write!(hist_file, "{}\n", h).expect("Cannot write history");
+            };
+            let _ = hist_file.flush();
+        };
+
         exit(0);
     }
 
-    pub fn pwd(_args: &mut Vec<String>) -> i32 {
+    pub fn pwd(&mut self, _args: &mut Vec<String>) -> i32 {
         match env::current_dir() {
             Ok(path) => println!("{}", path.display()),
             _        => panic!("Cannot get current dir"),
@@ -81,7 +96,7 @@ impl ShellCore {
         0
     }
 
-    pub fn cd(args: &mut Vec<String>) -> i32 {
+    pub fn cd(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() == 0 {
             eprintln!("Bug of this shell");
         }else if args.len() == 1 {

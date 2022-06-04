@@ -137,7 +137,7 @@ impl Executable for CommandWithArgs {
         let mut args = self.eval(conf);
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
-            func(&mut args);
+            func(conf, &mut args);
             return "".to_string();
         }
 
