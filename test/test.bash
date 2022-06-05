@@ -225,5 +225,11 @@ EOF
 )
 [ "$res" = "2" ]
 
+res=$($com << 'EOF' 
+ls -d /hogehgoe 2>&1
+EOF
+)
+[ "$(echo $res | wc -l)" = "1" ]
+
 trap "" EXIT
 echo TEST OK

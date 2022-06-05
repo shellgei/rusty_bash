@@ -14,6 +14,12 @@ use crate::utils::blue_string;
 use crate::elems_in_command::{Arg, Substitution, Redirect};
 use std::fs::OpenOptions;
 
+fn redirect_to_file(from: RawFd, to: RawFd){
+    close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
+    dup2(from, to).expect("Can't copy file descriptors");
+    close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
+}
+
 pub trait Executable {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
     fn exec(&mut self, _conf: &mut ShellCore) -> String { "".to_string() }
@@ -164,12 +170,6 @@ impl Executable for CommandWithArgs {
     }
 }
 
-fn redirect(from: RawFd, to: RawFd){
-    close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
-    dup2(from, to).expect("Can't copy file descriptors");
-    close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
-}
-
 impl CommandWithArgs {
     pub fn new() -> CommandWithArgs{
         CommandWithArgs {
@@ -183,26 +183,40 @@ impl CommandWithArgs {
         }
     }
 
-    fn set_file_io(&self, r: &Box<Redirect>){
+    fn set_redirect_fds(&self, r: &Box<Redirect>){
+        if let Ok(num) = r.path[1..].parse::<i32>(){
+            dup2(num, r.left_fd).expect("Invalid fd");
+        }else{
+            panic!("Invalid fd number");
+        }
+    }
+
+    fn set_redirect(&self, r: &Box<Redirect>){
+        if r.path.len() == 0 {
+            panic!("Invalid redirect");
+        }
+
         if r.direction_str == ">" {
+            if r.path.chars().nth(0) == Some('&') {
+                self.set_redirect_fds(r);
+                return;
+            }
+
             if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
-                //self.outfd = file.into_raw_fd();
-                redirect(file.into_raw_fd(), r.left_fd);
+                redirect_to_file(file.into_raw_fd(), r.left_fd);
             }else{
                 panic!("Cannot open the file: {}", r.path);
             };
         }else if r.direction_str == "&>" {
             if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
-                close(1);
-                dup2(file.into_raw_fd(), 1);
-                close(2);
-                dup2(1, 2);
+                redirect_to_file(file.into_raw_fd(), 1);
+                dup2(1, 2).expect("Redirection error on &>");
             }else{
                 panic!("Cannot open the file: {}", r.path);
             };
         }else if r.direction_str == "<" {
             if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
-                redirect(file.into_raw_fd(), r.left_fd);
+                redirect_to_file(file.into_raw_fd(), r.left_fd);
             }else{
                 panic!("Cannot open the file: {}", r.path);
             };
@@ -211,11 +225,11 @@ impl CommandWithArgs {
 
     fn set_io(&mut self) {
         if self.expansion { // the case of command expansion
-            redirect(self.pipe_outfd, 1);
+            redirect_to_file(self.pipe_outfd, 1);
         }
 
         for r in &self.redirects {
-            self.set_file_io(r);
+            self.set_redirect(r);
         };
 
     }
