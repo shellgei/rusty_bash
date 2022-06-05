@@ -217,5 +217,13 @@ cat /tmp/.rusty_bash
 rm /tmp/.rusty_bash
 EOF
 
+res=$($com << 'EOF' 
+ls -d / aaaaaaaaaaaaaaaaaaaa &> /tmp/.rusty_bash
+wc -l < /tmp/.rusty_bash
+rm /tmp/.rusty_bash
+EOF
+)
+[ "$res" = "2" ]
+
 trap "" EXIT
 echo TEST OK

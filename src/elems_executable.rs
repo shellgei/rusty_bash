@@ -164,9 +164,9 @@ impl Executable for CommandWithArgs {
     }
 }
 
-fn dup(from: RawFd, to: RawFd){
+fn redirect(from: RawFd, to: RawFd){
     close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
-    let _ = dup2(from, to).expect("Can't copy file descriptors");
+    dup2(from, to).expect("Can't copy file descriptors");
     close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
 }
 
@@ -185,18 +185,24 @@ impl CommandWithArgs {
 
     fn set_file_io(&self, r: &Box<Redirect>){
         if r.direction_str == ">" {
-            if let Ok(file) = OpenOptions::new().write(true).create(true).open(&r.path){
+            if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
                 //self.outfd = file.into_raw_fd();
-                dup(file.into_raw_fd(), r.fd);
+                redirect(file.into_raw_fd(), r.left_fd);
             }else{
                 panic!("Cannot open the file: {}", r.path);
             };
         }else if r.direction_str == "&>" {
+            if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
+                close(1);
+                dup2(file.into_raw_fd(), 1);
+                close(2);
+                dup2(1, 2);
+            }else{
                 panic!("Cannot open the file: {}", r.path);
+            };
         }else if r.direction_str == "<" {
             if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
-                //self.infd = file.into_raw_fd();
-                dup(file.into_raw_fd(), 0);
+                redirect(file.into_raw_fd(), r.left_fd);
             }else{
                 panic!("Cannot open the file: {}", r.path);
             };
@@ -205,7 +211,7 @@ impl CommandWithArgs {
 
     fn set_io(&mut self) {
         if self.expansion { // the case of command expansion
-            dup(self.pipe_outfd, 1);
+            redirect(self.pipe_outfd, 1);
         }
 
         for r in &self.redirects {
@@ -306,14 +312,14 @@ impl CommandWithArgs {
             .expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
                 if status != 0 {
-                    println!("Pid: {:?}, Exit with {:?}", pid, status);
+                    eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
                 };
             }
             WaitStatus::Signaled(pid, signal, _) => {
-                println!("Pid: {:?}, Signal: {:?}", pid, signal)
+                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
             }
             _ => {
-                println!("Unknown error")
+                eprintln!("Unknown error")
             }
         };
 

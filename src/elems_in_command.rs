@@ -157,7 +157,7 @@ impl CommandPart for Arg {
 pub struct Redirect {
     pub text: String,
     pub pos: DebugInfo,
-    pub fd: i32,
+    pub left_fd: i32,
     pub direction_str: String,
     pub path: String,
 }

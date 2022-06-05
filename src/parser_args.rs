@@ -268,7 +268,34 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
 }
 
 pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
+    if let Some(r) = and_arrow_redirect(text){
+        return Some(r);
+    }
+
     number_arrow_redirect(text)
+}
+
+pub fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
+    if text.len() < 3 {
+        return None;
+    };
+
+    if text.nth(0) == '&' && text.nth(1) == '>' {
+        /* extract the file name */
+        let start = scanner_while(text, 2, " ");
+        let end = scanner_until_escape(text, start, " \t\n");
+        let path = text.from_to(start, end);
+
+        Some( Redirect {
+            text: text.consume(end),
+            pos: DebugInfo::init(text),
+            left_fd: -1,
+            direction_str: "&>".to_string(),
+            path: path,
+        })
+    }else{
+        None
+    }
 }
 
 /* > < 2> 0< 1> */
@@ -308,7 +335,7 @@ pub fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
     Some( Redirect {
         text: text.consume(end),
         pos: DebugInfo::init(text),
-        fd: fd,
+        left_fd: fd,
         direction_str: dir,
         path: path,
     })
