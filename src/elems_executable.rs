@@ -238,6 +238,7 @@ impl CommandWithArgs {
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
         self.set_io(conf);
+
         if self.infd != 0 {
             close(0);
             let _ = dup2(self.infd, 0);

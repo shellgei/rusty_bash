@@ -193,6 +193,15 @@ EOF
 )
 [ "$res" = "Sat Jan  1 00:00:00 UTC 2000" ]
 
+### REDIRECTION ###
+
+res=$($com << 'EOF'
+echo text > /tmp/.rusty_bash
+wc < /tmp/.rusty_bash
+rm /tmp/.rusty_bash
+EOF
+)
+[ "$res" = "1 1 5" ]
 
 trap "" EXIT
 echo TEST OK
