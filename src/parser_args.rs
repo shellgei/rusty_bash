@@ -297,7 +297,7 @@ pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
 
     /* extract the file name */
     let start = scanner_while(text, arrow_pos+1, " ");
-    let end = scanner_until_escape(text, start, " ");
+    let end = scanner_until_escape(text, start, " \t\n");
     let path = text.from_to(start, end);
 
     Some( Redirect {

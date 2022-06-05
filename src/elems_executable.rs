@@ -7,10 +7,12 @@ use std::ffi::CString;
 use std::process::exit;
 use std::env;
 use std::os::unix::prelude::RawFd;
+use std::os::unix::io::IntoRawFd;
 
 use crate::{ShellCore,Feeder,CommandPart};
 use crate::utils::blue_string;
 use crate::elems_in_command::{Arg, Substitution, Redirect};
+use std::fs::OpenOptions;
 
 pub trait Executable {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
@@ -116,24 +118,14 @@ pub struct CommandWithArgs {
     pub args: Vec<Box<dyn CommandPart>>,
     pub redirects: Vec<Box<Redirect>>,
     text: String,
-    //pub expansion: bool,
     pub infd: RawFd,
     pub outfd: RawFd,
 }
 
 impl Executable for CommandWithArgs {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        let mut args = vec!();
-
-        for arg in &mut self.args {
-            for s in &arg.eval(conf) {
-                args.append(&mut Arg::expand_glob(&s.clone()));
-            }
-        };
-
-        args.iter()
-            .map(|a| Arg::remove_escape(&a))
-            .collect()
+        self.set_io(conf);
+        self.eval_args(conf)
     }
 
     fn exec(&mut self, conf: &mut ShellCore) -> String{
@@ -183,10 +175,34 @@ impl CommandWithArgs {
         }
     }
 
-    /*
-    pub fn text(&self) -> String{
-        self.text.clone()
-    }*/
+    fn set_io(&mut self, conf: &mut ShellCore) {
+        for r in &self.redirects {
+            if let Ok(mut file) = OpenOptions::new().write(true).create(true).open(&r.path){
+                if r.direction_str == ">" {
+                    self.outfd = file.into_raw_fd();
+                }else if r.direction_str == "<" {
+                    self.infd = file.into_raw_fd();
+                };
+            }else{
+                panic!("Cannot open the file: {}", r.path);
+            }
+            
+        };
+    }
+
+    fn eval_args(&mut self, conf: &mut ShellCore) -> Vec<String> {
+        let mut args = vec!();
+
+        for arg in &mut self.args {
+            for s in &arg.eval(conf) {
+                args.append(&mut Arg::expand_glob(&s.clone()));
+            }
+        };
+
+        args.iter()
+            .map(|a| Arg::remove_escape(&a))
+            .collect()
+    }
 
     pub fn push_vars(&mut self, s: Substitution){
         self.text += &s.text();
@@ -197,13 +213,6 @@ impl CommandWithArgs {
         self.text += &s.text();
         self.args.push(s);
     }
-
-    /*
-    pub fn set_eof(&mut self, e: Eoc){
-        self.text += &e.text();
-        self.eoc = Some(e);
-    }
-    */
 
     pub fn return_if_valid(ans: CommandWithArgs, text: &mut Feeder, backup: Feeder) -> Option<CommandWithArgs> {
         if ans.args.len() > 0 {
@@ -220,16 +229,11 @@ impl CommandWithArgs {
             ans.append(&mut elem.parse_info());
         };
 
-        /*
-        if let Some(e) = &self.eoc {
-            ans.append(&mut e.parse_info());
-        }
-        */
-        
         blue_string(&ans)
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+        //let _ = dup2(0, self.infd);
         let _ = dup2(self.outfd, 1);
 
         if self.outfd != 1 {
