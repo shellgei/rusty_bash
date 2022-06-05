@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, read}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, read, close}; 
 use nix::sys::wait::*;
 use std::ffi::CString;
 use std::process::exit;
@@ -177,16 +177,20 @@ impl CommandWithArgs {
 
     fn set_io(&mut self, conf: &mut ShellCore) {
         for r in &self.redirects {
-            if let Ok(mut file) = OpenOptions::new().write(true).create(true).open(&r.path){
-                if r.direction_str == ">" {
+            if r.direction_str == ">" {
+                if let Ok(mut file) = OpenOptions::new().write(true).create(true).open(&r.path){
                     self.outfd = file.into_raw_fd();
-                }else if r.direction_str == "<" {
-                    self.infd = file.into_raw_fd();
+                }else{
+                    panic!("Cannot open the file: {}", r.path);
                 };
-            }else{
-                panic!("Cannot open the file: {}", r.path);
-            }
-            
+            }else if r.direction_str == "<" {
+                if let Ok(mut file) = OpenOptions::new().read(true).open(&r.path){
+                    self.infd = file.into_raw_fd();
+                    //eprintln!("{}", self.infd);
+                }else{
+                    panic!("Cannot open the file: {}", r.path);
+                };
+            }; 
         };
     }
 
@@ -233,8 +237,17 @@ impl CommandWithArgs {
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        //let _ = dup2(0, self.infd);
-        let _ = dup2(self.outfd, 1);
+        if self.infd != 0 {
+            close(0);
+            let _ = dup2(self.infd, 0);
+            close(self.infd);
+        };
+
+        if self.outfd != 1 {
+            close(1);
+            let _ = dup2(self.outfd, 1);
+            close(self.outfd);
+        };
 
         if self.outfd != 1 {
             if let Some(func) = conf.get_internal_command(&args[0]) {
