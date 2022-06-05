@@ -120,6 +120,7 @@ pub struct CommandWithArgs {
     text: String,
     pub infd: RawFd,
     pub outfd: RawFd,
+    pub errfd: RawFd,
 }
 
 impl Executable for CommandWithArgs {
@@ -172,21 +173,21 @@ impl CommandWithArgs {
             text: "".to_string(),
             infd: 0,
             outfd: 1,
+            errfd: 2,
         }
     }
 
-    fn set_io(&mut self, conf: &mut ShellCore) {
+    fn set_io(&mut self) {
         for r in &self.redirects {
             if r.direction_str == ">" {
-                if let Ok(mut file) = OpenOptions::new().write(true).create(true).open(&r.path){
+                if let Ok(file) = OpenOptions::new().write(true).create(true).open(&r.path){
                     self.outfd = file.into_raw_fd();
                 }else{
                     panic!("Cannot open the file: {}", r.path);
                 };
             }else if r.direction_str == "<" {
-                if let Ok(mut file) = OpenOptions::new().read(true).open(&r.path){
+                if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
                     self.infd = file.into_raw_fd();
-                    //eprintln!("{}", self.infd);
                 }else{
                     panic!("Cannot open the file: {}", r.path);
                 };
@@ -237,18 +238,18 @@ impl CommandWithArgs {
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        self.set_io(conf);
+        self.set_io();
 
         if self.infd != 0 {
-            close(0);
-            let _ = dup2(self.infd, 0);
-            close(self.infd);
+            close(0).expect("Can't close stdin");
+            dup2(self.infd, 0).expect("Can't copy input file descriptor");
+            close(self.infd).expect("Can't close input file descriptor");
         };
 
         if self.outfd != 1 {
-            close(1);
-            let _ = dup2(self.outfd, 1);
-            close(self.outfd);
+            close(1).expect("Can't close stdout");
+            let _ = dup2(self.outfd, 1).expect("Can't copy output file descriptor");
+            close(self.outfd).expect("Can't close output file descriptor");
 
             if let Some(func) = conf.get_internal_command(&args[0]) {
                 exit(func(conf, args));
