@@ -118,9 +118,9 @@ pub struct CommandWithArgs {
     pub args: Vec<Box<dyn CommandPart>>,
     pub redirects: Vec<Box<Redirect>>,
     text: String,
-    pub infd: RawFd,
-    pub outfd: RawFd,
-    pub errfd: RawFd,
+    pub as_string: bool,
+    pub pipe_outfd: RawFd,
+    pub pipe_infd: RawFd,
 }
 
 impl Executable for CommandWithArgs {
@@ -132,7 +132,7 @@ impl Executable for CommandWithArgs {
     fn exec(&mut self, conf: &mut ShellCore) -> String{
         let mut args = self.eval(conf);
 
-        if self.outfd == 1 {
+        if !self.as_string {
             if let Some(func) = conf.get_internal_command(&args[0]) {
                 let _status = func(conf, &mut args);
                 return "".to_string();
@@ -177,34 +177,39 @@ impl CommandWithArgs {
             args: vec!(),
             redirects: vec!(),
             text: "".to_string(),
-            infd: 0,
-            outfd: 1,
-            errfd: 2,
+            as_string: false,
+            pipe_outfd: 1,
+            pipe_infd: 0,
+        }
+    }
+
+    fn set_file_io(&self, r: &Box<Redirect>){
+        if r.direction_str == ">" {
+            if let Ok(file) = OpenOptions::new().write(true).create(true).open(&r.path){
+                //self.outfd = file.into_raw_fd();
+                dup(file.into_raw_fd(), r.fd);
+            }else{
+                panic!("Cannot open the file: {}", r.path);
+            };
+        }else if r.direction_str == "&>" {
+                panic!("Cannot open the file: {}", r.path);
+        }else if r.direction_str == "<" {
+            if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
+                //self.infd = file.into_raw_fd();
+                dup(file.into_raw_fd(), 0);
+            }else{
+                panic!("Cannot open the file: {}", r.path);
+            };
         }
     }
 
     fn set_io(&mut self) {
-        if self.outfd != 1 { // the case of command expansion
-            dup(self.outfd, 1);
+        if self.as_string { // the case of command expansion
+            dup(self.pipe_outfd, 1);
         }
 
         for r in &self.redirects {
-            if r.direction_str == ">" {
-                if let Ok(file) = OpenOptions::new().write(true).create(true).open(&r.path){
-                    self.outfd = file.into_raw_fd();
-                    dup(self.outfd, r.fd);
-                }else{
-                    panic!("Cannot open the file: {}", r.path);
-                };
-            }else if r.direction_str == "<" {
-                if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
-                    self.infd = file.into_raw_fd();
-                    dup(self.infd, 0);
-                }else{
-                    panic!("Cannot open the file: {}", r.path);
-                };
-            }; 
-
+            self.set_file_io(r);
         };
 
     }
@@ -287,9 +292,9 @@ impl CommandWithArgs {
     fn wait_command(&self, child: Pid) -> String {
         let mut ans = "".to_string();
 
-        if self.infd != 0 {
+        if self.as_string {
             let mut ch = [0;1000];
-            while let Ok(n) = read(self.infd, &mut ch) {
+            while let Ok(n) = read(self.pipe_infd, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
                 if n < 1000 {
                     break;

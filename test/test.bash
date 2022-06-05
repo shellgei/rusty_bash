@@ -203,6 +203,14 @@ EOF
 )
 [ "$res" = "1 1 5" ]
 
+res=$($com << 'EOF'
+echo text 1> /tmp/.rusty_bash
+wc 0< /tmp/.rusty_bash
+rm /tmp/.rusty_bash
+EOF
+)
+[ "$res" = "1 1 5" ]
+
 $com << 'EOF' | grep 'aaaa'
 ls aaaaaaaaaaaaaaaaaaaaaa 2> /tmp/.rusty_bash
 cat /tmp/.rusty_bash 

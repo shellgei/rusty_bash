@@ -86,7 +86,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 }
 
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';)$<>");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';)$<>&");
     if pos == 0{
         return None;
     };
@@ -94,7 +94,7 @@ pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
 }
 
 pub fn subarg_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>");
+    let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>&");
     if pos == 0 {
         return None;
     };
@@ -268,6 +268,11 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
 }
 
 pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
+    number_arrow_redirect(text)
+}
+
+/* > < 2> 0< 1> */
+pub fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
     let arrow_pos = scanner_until(text, 0, "<>");
 
     if text.len() < arrow_pos+1 {
