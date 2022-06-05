@@ -118,7 +118,7 @@ pub struct CommandWithArgs {
     pub args: Vec<Box<dyn CommandPart>>,
     pub redirects: Vec<Box<Redirect>>,
     text: String,
-    pub as_string: bool,
+    pub expansion: bool,
     pub pipe_outfd: RawFd,
     pub pipe_infd: RawFd,
 }
@@ -132,7 +132,7 @@ impl Executable for CommandWithArgs {
     fn exec(&mut self, conf: &mut ShellCore) -> String{
         let mut args = self.eval(conf);
 
-        if !self.as_string {
+        if !self.expansion {
             if let Some(func) = conf.get_internal_command(&args[0]) {
                 let _status = func(conf, &mut args);
                 return "".to_string();
@@ -177,7 +177,7 @@ impl CommandWithArgs {
             args: vec!(),
             redirects: vec!(),
             text: "".to_string(),
-            as_string: false,
+            expansion: false,
             pipe_outfd: 1,
             pipe_infd: 0,
         }
@@ -204,7 +204,7 @@ impl CommandWithArgs {
     }
 
     fn set_io(&mut self) {
-        if self.as_string { // the case of command expansion
+        if self.expansion { // the case of command expansion
             dup(self.pipe_outfd, 1);
         }
 
@@ -292,7 +292,7 @@ impl CommandWithArgs {
     fn wait_command(&self, child: Pid) -> String {
         let mut ans = "".to_string();
 
-        if self.as_string {
+        if self.expansion {
             let mut ch = [0;1000];
             while let Ok(n) = read(self.pipe_infd, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();

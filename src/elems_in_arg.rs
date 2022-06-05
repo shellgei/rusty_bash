@@ -161,7 +161,7 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        self.com.as_string = true;
+        self.com.expansion = true;
         let p = pipe().expect("Pipe cannot open");
         self.com.pipe_infd = p.0;
         self.com.pipe_outfd = p.1;
