@@ -126,8 +126,8 @@ pub struct CommandWithArgs {
     pub redirects: Vec<Box<Redirect>>,
     text: String,
     pub expansion: bool,
-    pub pipe_outfd: RawFd,
-    pub pipe_infd: RawFd,
+    pub outfd_expansion: RawFd,
+    pub infd_expansion: RawFd,
 }
 
 impl Executable for CommandWithArgs {
@@ -141,8 +141,8 @@ impl Executable for CommandWithArgs {
 
         if self.expansion {
             let p = pipe().expect("Pipe cannot open");
-            self.pipe_infd = p.0;
-            self.pipe_outfd = p.1;
+            self.infd_expansion = p.0;
+            self.outfd_expansion = p.1;
         }
 
         if !self.expansion {
@@ -185,8 +185,8 @@ impl CommandWithArgs {
             redirects: vec!(),
             text: "".to_string(),
             expansion: false,
-            pipe_outfd: 1,
-            pipe_infd: 0,
+            outfd_expansion: 1,
+            infd_expansion: 0,
         }
     }
 
@@ -232,7 +232,7 @@ impl CommandWithArgs {
 
     fn set_io(&mut self) {
         if self.expansion { // the case of command expansion
-            redirect_to_file(self.pipe_outfd, 1);
+            redirect_to_file(self.outfd_expansion, 1);
         }
 
         for r in &self.redirects {
@@ -320,7 +320,7 @@ impl CommandWithArgs {
 
         if self.expansion {
             let mut ch = [0;1000];
-            while let Ok(n) = read(self.pipe_infd, &mut ch) {
+            while let Ok(n) = read(self.infd_expansion, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
                 if n < 1000 {
                     break;
