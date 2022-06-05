@@ -124,7 +124,7 @@ pub struct CommandWithArgs {
 
 impl Executable for CommandWithArgs {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        self.set_io(conf);
+        //self.set_io(conf);
         self.eval_args(conf)
     }
 
@@ -237,6 +237,7 @@ impl CommandWithArgs {
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+        self.set_io(conf);
         if self.infd != 0 {
             close(0);
             let _ = dup2(self.infd, 0);
@@ -247,9 +248,7 @@ impl CommandWithArgs {
             close(1);
             let _ = dup2(self.outfd, 1);
             close(self.outfd);
-        };
 
-        if self.outfd != 1 {
             if let Some(func) = conf.get_internal_command(&args[0]) {
                 exit(func(conf, args));
             }
