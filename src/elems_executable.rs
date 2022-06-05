@@ -8,6 +8,7 @@ use std::process::exit;
 use std::env;
 use std::os::unix::prelude::RawFd;
 use std::os::unix::io::IntoRawFd;
+use nix::unistd::pipe;
 
 use crate::{ShellCore,Feeder,CommandPart};
 use crate::utils::blue_string;
@@ -138,6 +139,12 @@ impl Executable for CommandWithArgs {
     fn exec(&mut self, conf: &mut ShellCore) -> String{
         let mut args = self.eval(conf);
 
+        if self.expansion {
+            let p = pipe().expect("Pipe cannot open");
+            self.pipe_infd = p.0;
+            self.pipe_outfd = p.1;
+        }
+
         if !self.expansion {
             if let Some(func) = conf.get_internal_command(&args[0]) {
                 let _status = func(conf, &mut args);
@@ -231,7 +238,6 @@ impl CommandWithArgs {
         for r in &self.redirects {
             self.set_redirect(r);
         };
-
     }
 
     fn eval_args(&mut self, conf: &mut ShellCore) -> Vec<String> {

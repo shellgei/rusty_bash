@@ -231,5 +231,11 @@ EOF
 )
 [ "$(echo $res | wc -l)" = "1" ]
 
+res=$($com << 'EOF' 
+echo $(ls /aaaa 2>&1)x
+EOF
+)
+echo "$res" | grep x | grep ls
+
 trap "" EXIT
 echo TEST OK
