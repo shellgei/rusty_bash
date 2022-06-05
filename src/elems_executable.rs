@@ -164,6 +164,12 @@ impl Executable for CommandWithArgs {
     }
 }
 
+fn dup(from: RawFd, to: RawFd){
+    close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
+    let _ = dup2(from, to).expect("Can't copy file descriptors");
+    close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
+}
+
 impl CommandWithArgs {
     pub fn new() -> CommandWithArgs{
         CommandWithArgs {
@@ -178,21 +184,29 @@ impl CommandWithArgs {
     }
 
     fn set_io(&mut self) {
+        if self.outfd != 1 { // the case of command expansion
+            dup(self.outfd, 1);
+        }
+
         for r in &self.redirects {
             if r.direction_str == ">" {
                 if let Ok(file) = OpenOptions::new().write(true).create(true).open(&r.path){
                     self.outfd = file.into_raw_fd();
+                    dup(self.outfd, 1);
                 }else{
                     panic!("Cannot open the file: {}", r.path);
                 };
             }else if r.direction_str == "<" {
                 if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
                     self.infd = file.into_raw_fd();
+                    dup(self.infd, 0);
                 }else{
                     panic!("Cannot open the file: {}", r.path);
                 };
             }; 
+
         };
+
     }
 
     fn eval_args(&mut self, conf: &mut ShellCore) -> Vec<String> {
@@ -240,20 +254,8 @@ impl CommandWithArgs {
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
         self.set_io();
 
-        if self.infd != 0 {
-            close(0).expect("Can't close stdin");
-            dup2(self.infd, 0).expect("Can't copy input file descriptor");
-            close(self.infd).expect("Can't close input file descriptor");
-        };
-
-        if self.outfd != 1 {
-            close(1).expect("Can't close stdout");
-            let _ = dup2(self.outfd, 1).expect("Can't copy output file descriptor");
-            close(self.outfd).expect("Can't close output file descriptor");
-
-            if let Some(func) = conf.get_internal_command(&args[0]) {
-                exit(func(conf, args));
-            }
+        if let Some(func) = conf.get_internal_command(&args[0]) {
+            exit(func(conf, args));
         }
 
         let cargs: Vec<CString> = args
