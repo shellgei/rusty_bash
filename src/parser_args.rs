@@ -288,7 +288,7 @@ pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
 
     /* read the number before the arrow */
     if arrow_pos != 0 {
-        if let Ok(num) = text.from_to(0, arrow_pos).parse::<u8>() {
+        if let Ok(num) = text.from_to(0, arrow_pos).parse::<i32>() {
             fd = num;
         }else{
             return None;

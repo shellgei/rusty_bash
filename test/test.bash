@@ -203,5 +203,11 @@ EOF
 )
 [ "$res" = "1 1 5" ]
 
+$com << 'EOF' | grep 'aaaa'
+ls aaaaaaaaaaaaaaaaaaaaaa 2> /tmp/.rusty_bash
+cat /tmp/.rusty_bash 
+rm /tmp/.rusty_bash
+EOF
+
 trap "" EXIT
 echo TEST OK

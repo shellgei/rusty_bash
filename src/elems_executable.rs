@@ -192,7 +192,7 @@ impl CommandWithArgs {
             if r.direction_str == ">" {
                 if let Ok(file) = OpenOptions::new().write(true).create(true).open(&r.path){
                     self.outfd = file.into_raw_fd();
-                    dup(self.outfd, 1);
+                    dup(self.outfd, r.fd);
                 }else{
                     panic!("Cannot open the file: {}", r.path);
                 };
