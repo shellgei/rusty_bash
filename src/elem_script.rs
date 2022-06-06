@@ -24,25 +24,3 @@ pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn Executable>> {
     };
     None
 }
-
-/*
-pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
-    let pos = scanner_while(text, 0, " \t");
-    ArgDelimiter::return_if_valid(text, pos)
-}
-*/
-
-/*
-pub fn Eoc::parse(text: &mut Feeder) -> Option<Eoc> {
-    if text.len() == 0 {
-        return None;
-    };
-
-    let pos = scanner_end_of_com(text, 0);
-    if pos == 0 {
-        return None;
-    };
-
-    Some(Eoc{text: text.consume(pos), debug: DebugInfo::init(&text)})
-}
-*/

@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod parser;
+mod elem_script;
 mod parser_args;
 mod elem_blankpart;
 mod elem_command;
@@ -95,7 +95,7 @@ fn main() {
             read_line()
         };
         input.add_line(line);
-        while let Some(mut e) = parser::top_level_element(&mut input){
+        while let Some(mut e) = elem_script::top_level_element(&mut input){
             e.exec(&mut core);
         }
     }
