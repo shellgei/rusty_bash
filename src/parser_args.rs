@@ -13,9 +13,9 @@ pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     else if let Some(a) = subarg_command_expansion(text)   {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
     else if let Some(a) = subarg_braced(text)              {Some(Box::new(a))}
-    else if let Some(a) = subarg_normal(text)              {Some(Box::new(a))}
+    else if let Some(a) = SubArgNonQuoted::parse(text)     {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
-    else if let Some(a) = subarg_double_qt(text)           {Some(Box::new(a))}
+    else if let Some(a) = SubArgDoubleQuoted::parse(text)  {Some(Box::new(a))}
     else                                                   {None}
 }
 
@@ -23,9 +23,9 @@ pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
     else if let Some(a) = subarg_command_expansion(text)   {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
-    else if let Some(a) = SubArgNonQuoted::parse(text)     {Some(Box::new(a))}
+    else if let Some(a) = SubArgNonQuoted::parse2(text)    {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
-    else if let Some(a) = subarg_double_qt(text)           {Some(Box::new(a))}
+    else if let Some(a) = SubArgDoubleQuoted::parse(text)  {Some(Box::new(a))}
     else                                                   {None}
 }
 
@@ -34,36 +34,9 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     else if let Some(a) = subarg_variable_non_braced(text){Some(Box::new(a))}
     else if let Some(a) = subarg_braced(text)             {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)          {Some(Box::new(a))}
-    else if let Some(a) = subarg_double_qt(text)          {Some(Box::new(a))}
-    else if let Some(a) = subarg_normal_in_brace(text)    {Some(Box::new(a))}
+    else if let Some(a) = SubArgDoubleQuoted::parse(text) {Some(Box::new(a))}
+    else if let Some(a) = SubArgNonQuoted::parse3(text)   {Some(Box::new(a))}
     else{None}
-}
-
-/*
-pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';)$<>&");
-    if pos == 0{
-        return None;
-    };
-    Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
-}
-*/
-
-pub fn subarg_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>&");
-    if pos == 0 {
-        return None;
-    };
-    Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
-}
-
-pub fn subarg_normal_in_brace(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    if text.match_at(0, ",}"){
-        return None;
-    };
-    
-    let pos = scanner_until_escape(text, 0, ",{}()");
-    Some( SubArgNonQuoted{ text: text.consume(pos), pos: DebugInfo::init(text) })
 }
 
 pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
@@ -76,6 +49,7 @@ pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
 }
 
 /* parser for a string such as "aaa${var}" */
+/*
 pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
     let backup = text.clone();
 
@@ -118,6 +92,7 @@ pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
 
     Some(ans)
 }
+*/
 
 pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     if text.nth(0) == '"' {

@@ -7,7 +7,13 @@ use crate::ShellCore;
 use crate::Feeder;
 use crate::elem_arg::Arg;
 use crate::elem_command::{Command, Executable};
-use crate::scanner::scanner_until_escape;
+use crate::scanner::*;
+
+use crate::parser_args::subarg_variable_braced;
+use crate::parser_args::subarg_command_expansion;
+use crate::parser_args::subarg_variable_non_braced;
+use crate::parser_args::string_in_double_qt;
+
 
 pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
@@ -58,11 +64,28 @@ impl ArgElem for SubArgNonQuoted {
 
 impl SubArgNonQuoted {
     pub fn parse(text: &mut Feeder) -> Option<SubArgNonQuoted> {
+        let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>&");
+        if pos == 0{
+            return None;
+        };
+        Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
+    }
+
+    pub fn parse2(text: &mut Feeder) -> Option<SubArgNonQuoted> {
         let pos = scanner_until_escape(text, 0, " \n\t\"';)$<>&");
         if pos == 0{
             return None;
         };
         Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
+    }
+
+    pub fn parse3(text: &mut Feeder) -> Option<SubArgNonQuoted> {
+        if text.match_at(0, ",}"){
+            return None;
+        };
+        
+        let pos = scanner_until_escape(text, 0, ",{}()");
+        Some( SubArgNonQuoted{ text: text.consume(pos), pos: DebugInfo::init(text) })
     }
 }
 
@@ -93,6 +116,53 @@ impl ArgElem for SubArgDoubleQuoted {
         self.text.len()
     }
     */
+}
+
+
+impl SubArgDoubleQuoted {
+/* parser for a string such as "aaa${var}" */
+    pub fn parse(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
+        let backup = text.clone();
+    
+        let mut ans = SubArgDoubleQuoted {
+            text: "".to_string(),
+            pos: DebugInfo::init(text),
+            subargs: vec!(),
+        };
+    
+        if scanner_until(text, 0, "\"") != 0 {
+            return None;
+        }
+        text.consume(1);
+    
+        loop {
+            if let Some(a) = subarg_variable_braced(text) {
+                ans.subargs.push(Box::new(a));
+            }else if let Some(a) = subarg_command_expansion(text) {
+                ans.subargs.push(Box::new(a));
+            }else if let Some(a) = subarg_variable_non_braced(text) {
+                ans.subargs.push(Box::new(a));
+            }else if let Some(a) = string_in_double_qt(text) {
+                ans.subargs.push(Box::new(a));
+            }else{
+                break;
+            };
+        }
+    
+        if scanner_until(text, 0, "\"") != 0 {
+            text.rewind(backup);
+            return None;
+        }
+        text.consume(1);
+    
+        let mut text = "\"".to_string();
+        for a in &ans.subargs {
+            text += &a.text();
+        }
+        ans.text = text + "\"";
+    
+        Some(ans)
+    }
 }
 
 pub struct SubArgSingleQuoted {
