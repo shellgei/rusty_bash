@@ -13,20 +13,20 @@ use crate::parser::delimiter;
 use crate::parser::end_of_command;
 
 
-pub struct Substitutions {
+pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandPart>>,
     text: String,
 }
 
-impl Substitutions {
-    pub fn new() -> Substitutions{
-        Substitutions {
+impl SetVariables {
+    pub fn new() -> SetVariables{
+        SetVariables {
             elems: vec!(),
             text: "".to_string(),
         }
     }
 
-    pub fn return_if_valid(ans: Substitutions) -> Option<Substitutions> {
+    pub fn return_if_valid(ans: SetVariables) -> Option<SetVariables> {
         if ans.elems.len() > 0 {
             Some(ans)
         }else{
@@ -35,7 +35,7 @@ impl Substitutions {
     }
 }
 
-impl Executable for Substitutions {
+impl Executable for SetVariables {
     fn exec(&mut self, conf: &mut ShellCore) -> String {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
@@ -59,7 +59,7 @@ impl Executable for Substitutions {
     }
 }
 
-impl Substitutions {
+impl SetVariables {
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("substitutions: '{}'", self.text));
         for elem in &self.elems {
@@ -74,9 +74,9 @@ impl Substitutions {
         self.elems.push(s);
     }
 
-    pub fn parse(text: &mut Feeder) -> Option<Substitutions> {
+    pub fn parse(text: &mut Feeder) -> Option<SetVariables> {
         let backup = text.clone();
-        let mut ans = Substitutions::new();
+        let mut ans = SetVariables::new();
     
         while let Some(result) = substitution(text) {
             ans.push(Box::new(result));
@@ -93,6 +93,6 @@ impl Substitutions {
             return None;
         }
     
-        Substitutions::return_if_valid(ans)
+        SetVariables::return_if_valid(ans)
     }
 }

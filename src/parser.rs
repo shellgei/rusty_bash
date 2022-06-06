@@ -4,7 +4,7 @@
 use super::elem_command::{Executable};
 use super::elems_in_command::{ArgDelimiter, Eoc};
 use crate::elem_blankpart::BlankPart;
-use crate::elem_substitutions::Substitutions;
+use crate::elem_setvars::SetVariables;
 use crate::elem_command::Command;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
@@ -16,9 +16,9 @@ pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn Executable>> {
         return None;
     };
 
-    if let Some(result) = BlankPart::parse(text)     {return Some(Box::new(result));}
-    if let Some(result) = Substitutions::parse(text) {return Some(Box::new(result));}
-    if let Some(result) = Command::parse(text)       {return Some(Box::new(result));}
+    if let Some(result) = BlankPart::parse(text)    {return Some(Box::new(result));}
+    if let Some(result) = SetVariables::parse(text) {return Some(Box::new(result));}
+    if let Some(result) = Command::parse(text)      {return Some(Box::new(result));}
 
     if text.error_occuring {
         text.consume(text.len());

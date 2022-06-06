@@ -3,7 +3,7 @@
 
 mod parser;
 mod parser_args;
-mod elem_substitutions;
+mod elem_setvars;
 mod elem_command;
 mod elem_blankpart;
 mod elems_in_command;
