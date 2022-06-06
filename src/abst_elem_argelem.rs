@@ -3,7 +3,8 @@
 
 use crate::Feeder;
 use crate::ShellCore;
-use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
+use crate::elems_in_arg::{SubArgBraced, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
+use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 
 pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {

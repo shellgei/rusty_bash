@@ -2,19 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::debuginfo::DebugInfo;
-use crate::ElemOfCommand;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::elem_arg::Arg;
-use crate::elem_command::{Command};
 use crate::scanner::*;
 
-use crate::elem_arg::arg_in_brace;
 use crate::abst_elem_argelem::ArgElem;
-use crate::elem_script::Executable;
-use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 
-/*
 pub struct SubArgNonQuoted {
     pub text: String,
     pub pos: DebugInfo,
@@ -65,8 +58,8 @@ impl SubArgNonQuoted {
         Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text)})
     }
 }
-*/
 
+/*
 pub struct SubArgDoubleQuoted {
     pub text: String,
     pub pos: DebugInfo,
@@ -320,3 +313,4 @@ impl SubArgCommandExp {
 }
 
 
+*/

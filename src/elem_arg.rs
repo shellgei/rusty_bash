@@ -8,10 +8,10 @@ use crate::Feeder;
 use crate::scanner::scanner_while;
 use crate::abst_elem_argelem::subarg;
 use crate::abst_elem_argelem::subvalue;
-use crate::elems_in_arg::SubArgNonQuoted;
 use crate::abst_elem_argelem::subarg_in_brace;
 use crate::scanner::scanner_end_of_com;
 use crate::abst_elem_argelem::ArgElem;
+use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 
 pub trait ElemOfCommand {
     fn parse_info(&self) -> Vec<String>;

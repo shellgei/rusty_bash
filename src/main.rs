@@ -8,6 +8,7 @@ mod elem_blankpart;
 mod elem_command;
 mod elem_redirect;
 mod elem_setvars;
+mod elem_subarg_non_quoted;
 mod elem_substitution;
 mod elem_varname;
 mod elems_in_arg;
