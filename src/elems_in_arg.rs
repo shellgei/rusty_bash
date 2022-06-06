@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::debuginfo::DebugInfo;
-use crate::CommandPart;
+use crate::ElemOfCommand;
 use crate::ShellCore;
 use crate::Feeder;
 use crate::elems_in_command::Arg;

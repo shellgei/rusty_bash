@@ -2,13 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elem_command::Executable;
-use crate::CommandPart;
+use crate::ElemOfCommand;
 use crate::Feeder;
 use crate::parser::delimiter;
 use crate::parser::end_of_command;
 
 pub struct BlankPart {
-    pub elems: Vec<Box<dyn CommandPart>>,
+    pub elems: Vec<Box<dyn ElemOfCommand>>,
     text: String,
 }
 
@@ -23,7 +23,7 @@ impl BlankPart {
         }
     }
 
-    pub fn push(&mut self, s: Box<dyn CommandPart>){
+    pub fn push(&mut self, s: Box<dyn ElemOfCommand>){
         self.text += &s.text();
         self.elems.push(s);
     }

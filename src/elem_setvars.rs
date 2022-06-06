@@ -3,7 +3,7 @@
 
 use std::env;
 
-use crate::{ShellCore,CommandPart};
+use crate::{ShellCore,ElemOfCommand};
 use crate::utils::blue_string;
 use crate::elem_command::Executable;
 
@@ -14,7 +14,7 @@ use crate::parser::end_of_command;
 
 
 pub struct SetVariables {
-    pub elems: Vec<Box<dyn CommandPart>>,
+    pub elems: Vec<Box<dyn ElemOfCommand>>,
     text: String,
 }
 
@@ -69,7 +69,7 @@ impl SetVariables {
         blue_string(&ans)
     }
 
-    pub fn push(&mut self, s: Box<dyn CommandPart>){
+    pub fn push(&mut self, s: Box<dyn ElemOfCommand>){
         self.text += &s.text();
         self.elems.push(s);
     }

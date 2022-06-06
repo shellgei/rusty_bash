@@ -9,7 +9,7 @@ use std::os::unix::prelude::RawFd;
 use std::os::unix::io::IntoRawFd;
 use nix::unistd::pipe;
 
-use crate::{ShellCore,Feeder,CommandPart};
+use crate::{ShellCore,Feeder,ElemOfCommand};
 use crate::utils::blue_string;
 use crate::elems_in_command::{Arg, Substitution, Redirect};
 use std::fs::OpenOptions;
@@ -37,7 +37,7 @@ pub trait Executable {
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {
     vars: Vec<Box<Substitution>>,
-    pub args: Vec<Box<dyn CommandPart>>,
+    pub args: Vec<Box<dyn ElemOfCommand>>,
     pub redirects: Vec<Box<Redirect>>,
     text: String,
     pub expansion: bool,
@@ -174,7 +174,7 @@ impl Command {
         self.vars.push(Box::new(s));
     }
 
-    pub fn push_elems(&mut self, s: Box<dyn CommandPart>){
+    pub fn push_elems(&mut self, s: Box<dyn ElemOfCommand>){
         self.text += &s.text();
         self.args.push(s);
     }
