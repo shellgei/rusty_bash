@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::elem_command::{Executable};
-use super::elems_in_command::{ArgDelimiter, Eoc};
+use super::elem_arg::{ArgDelimiter, Eoc};
 use crate::elem_blankpart::BlankPart;
 use crate::elem_setvars::SetVariables;
 use crate::elem_command::Command;

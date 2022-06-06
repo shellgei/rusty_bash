@@ -114,11 +114,3 @@ impl ElemOfCommand for Arg {
 
     fn text(&self) -> String { self.text.clone() }
 }
-
-pub struct Redirect {
-    pub text: String,
-    pub pos: DebugInfo,
-    pub left_fd: i32,
-    pub direction_str: String,
-    pub path: String,
-}

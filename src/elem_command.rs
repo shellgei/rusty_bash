@@ -11,7 +11,7 @@ use nix::unistd::pipe;
 
 use crate::{ShellCore,Feeder,ElemOfCommand};
 use crate::utils::blue_string;
-use crate::elems_in_command::{Arg, Redirect};
+use crate::elem_arg::{Arg};
 use std::fs::OpenOptions;
 
 use nix::sys::wait::*;
@@ -19,7 +19,7 @@ use nix::sys::wait::*;
 use crate::elem_substitution::Substitution;
 use crate::parser::delimiter;
 use crate::parser_args::arg;
-use crate::parser_args::redirect;
+use crate::elem_redirect::Redirect;
 use crate::parser::end_of_command;
 
 
@@ -296,7 +296,7 @@ impl Command {
     
             /* When a redirect is found. The command ends with redirects. */
             let mut exist = false;
-            while let Some(r) = redirect(text){
+            while let Some(r) = Redirect::parse(text){
                 exist = true;
                 ans.redirects.push(Box::new(r));
                 if let Some(d) = delimiter(text){

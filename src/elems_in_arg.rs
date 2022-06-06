@@ -5,7 +5,7 @@ use crate::debuginfo::DebugInfo;
 use crate::ElemOfCommand;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::elems_in_command::Arg;
+use crate::elem_arg::Arg;
 use crate::elem_command::{Command, Executable};
 
 pub trait ArgElem {

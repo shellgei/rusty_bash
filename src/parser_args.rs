@@ -4,7 +4,7 @@
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::elem_command::Command;
-use crate::elems_in_command::{Arg, Redirect};
+use crate::elem_arg::{Arg};
 use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
 use crate::scanner::*;
 
@@ -244,101 +244,4 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     };
 
     Some(ans)
-}
-
-/*
-pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
-    let varname_pos = scanner_varname(text, 0);
-    let equal_pos = scanner_until(text, varname_pos, "=");
-    if equal_pos != varname_pos {
-        return None;
-    }
-    if equal_pos == text.len() {
-        return None;
-    }
-
-    let backup = text.clone();
-    let var_part = VarName::new(text, varname_pos);
-    text.consume(1); // = 
-    if let Some(value_part) = arg(text, false){
-        Some(Substitution::new(text, var_part, value_part))
-    }else{ // cases where the value goes the next line
-        text.rewind(backup);
-        None
-    }
-}
-*/
-
-pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
-    if let Some(r) = and_arrow_redirect(text){
-        return Some(r);
-    }
-
-    number_arrow_redirect(text)
-}
-
-pub fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
-    if text.len() < 3 {
-        return None;
-    };
-
-    if text.nth(0) == '&' && text.nth(1) == '>' {
-        /* extract the file name */
-        let start = scanner_while(text, 2, " ");
-        let end = scanner_until_escape(text, start, " \t\n");
-        let path = text.from_to(start, end);
-
-        Some( Redirect {
-            text: text.consume(end),
-            pos: DebugInfo::init(text),
-            left_fd: -1,
-            direction_str: "&>".to_string(),
-            path: path,
-        })
-    }else{
-        None
-    }
-}
-
-/* > < 2> 0< 1> */
-pub fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
-    let arrow_pos = scanner_until(text, 0, "<>");
-
-    if text.len() < arrow_pos+1 {
-        return None;
-    };
-
-    let mut fd;
-    let dir;
-    if text.nth(arrow_pos) == '<' {
-        fd = 0;
-        dir = '<'.to_string();
-    }else if text.nth(arrow_pos) == '>' {
-        fd = 1;
-        dir = '>'.to_string();
-    }else{
-        return None;
-    };
-
-    /* read the number before the arrow */
-    if arrow_pos != 0 {
-        if let Ok(num) = text.from_to(0, arrow_pos).parse::<i32>() {
-            fd = num;
-        }else{
-            return None;
-        }
-    };
-
-    /* extract the file name */
-    let start = scanner_while(text, arrow_pos+1, " ");
-    let end = scanner_until_escape(text, start, " \t\n");
-    let path = text.from_to(start, end);
-
-    Some( Redirect {
-        text: text.consume(end),
-        pos: DebugInfo::init(text),
-        left_fd: fd,
-        direction_str: dir,
-        path: path,
-    })
 }
