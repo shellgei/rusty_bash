@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::elems_executable::{Substitutions, Executable, BlankPart};
-use super::elem_command::{Command};
+use super::elem_substitutions::{Substitutions};
+use super::elem_blankpart::{BlankPart};
+use super::elem_command::{Command, Executable};
 use super::elems_in_command::{ArgDelimiter, Eoc};
 use crate::parser_args::{arg, substitution, redirect};
 use crate::Feeder;

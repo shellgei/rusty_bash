@@ -5,42 +5,8 @@ use std::env;
 
 use crate::{ShellCore,CommandPart};
 use crate::utils::blue_string;
+use crate::elem_command::Executable;
 
-
-pub trait Executable {
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
-    fn exec(&mut self, _conf: &mut ShellCore) -> String { "".to_string() }
-}
-
-pub struct BlankPart {
-    pub elems: Vec<Box<dyn CommandPart>>,
-    text: String,
-}
-
-impl Executable for BlankPart {
-}
-
-impl BlankPart {
-    pub fn new() -> BlankPart{
-        BlankPart {
-            elems: vec!(),
-            text: "".to_string(),
-        }
-    }
-
-    pub fn push(&mut self, s: Box<dyn CommandPart>){
-        self.text += &s.text();
-        self.elems.push(s);
-    }
-
-    pub fn return_if_valid(ans: BlankPart) -> Option<BlankPart> {
-        if ans.elems.len() > 0 {
-            Some(ans)
-        }else{
-            None
-        }
-    }
-}
 
 pub struct Substitutions {
     pub elems: Vec<Box<dyn CommandPart>>,

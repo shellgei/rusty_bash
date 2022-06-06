@@ -6,8 +6,7 @@ use crate::CommandPart;
 use crate::ShellCore;
 use crate::Feeder;
 use crate::elems_in_command::Arg;
-use crate::elems_executable::{Executable};
-use crate::elem_command::{Command};
+use crate::elem_command::{Command, Executable};
 
 pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
