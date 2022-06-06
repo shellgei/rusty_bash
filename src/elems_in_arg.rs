@@ -10,7 +10,6 @@ use crate::elem_command::{Command, Executable};
 use crate::scanner::*;
 
 use crate::parser_args::subarg_variable_braced;
-use crate::parser_args::subarg_command_expansion;
 use crate::parser_args::subarg_variable_non_braced;
 use crate::parser_args::string_in_double_qt;
 use crate::elem_arg::arg_in_brace;
@@ -139,7 +138,7 @@ impl SubArgDoubleQuoted {
         loop {
             if let Some(a) = subarg_variable_braced(text) {
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = subarg_command_expansion(text) {
+            }else if let Some(a) = SubArgCommandExp::parse(text) {
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = subarg_variable_non_braced(text) {
                 ans.subargs.push(Box::new(a));
@@ -278,5 +277,27 @@ impl ArgElem for SubArgCommandExp {
 
     fn text(&self) -> String {
         self.text.clone()
+    }
+}
+
+impl SubArgCommandExp {
+    pub fn parse(text: &mut Feeder) -> Option<SubArgCommandExp> {
+        if !(text.nth(0) == '$' && text.nth(1) == '(') {
+            return None;
+        }
+    
+        let pos = scanner_end_of_bracket(text, 2, ')');
+        let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
+    
+        if let Some(e) = Command::parse(&mut sub_feeder){
+            let ans = Some (SubArgCommandExp {
+                text: text.consume(pos+1),
+                pos: DebugInfo::init(text),
+                com: e }
+            );
+    
+            return ans;
+        };
+        None
     }
 }

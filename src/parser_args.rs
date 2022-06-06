@@ -3,13 +3,12 @@
 
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
-use crate::elem_command::Command;
 use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
 use crate::scanner::*;
 
 pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
-    else if let Some(a) = subarg_command_expansion(text)   {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandExp::parse(text)    {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
     else if let Some(a) = SubArgBraced::parse(text)        {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse(text)     {Some(Box::new(a))}
@@ -20,7 +19,7 @@ pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 
 pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
-    else if let Some(a) = subarg_command_expansion(text)   {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandExp::parse(text)    {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse2(text)    {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
@@ -82,52 +81,3 @@ pub fn subarg_variable_braced(text: &mut Feeder) -> Option<SubArgVariable> {
     }
 }
 
-pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
-    if !(text.nth(0) == '$' && text.nth(1) == '(') {
-        return None;
-    }
-
-    let pos = scanner_end_of_bracket(text, 2, ')');
-    let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
-
-    if let Some(e) = Command::parse(&mut sub_feeder){
-        let ans = Some (SubArgCommandExp {
-            text: text.consume(pos+1),
-            pos: DebugInfo::init(text),
-            com: e }
-        );
-
-        return ans;
-    };
-    None
-}
-
-/*
-pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
-    let pos = scanner_until(text, 0, "{");
-    if pos != 0 {
-        return None;
-    }
-    
-    let mut ans = SubArgBraced {
-        text: text.consume(1),
-        pos: DebugInfo::init(text),
-        args: vec!(),
-    };
-
-    while let Some(arg) = arg_in_brace(text) {
-        ans.text += &arg.text.clone();
-        ans.args.push(arg); 
-
-        if scanner_until(text, 0, ",") == 0 {
-            ans.text += &text.consume(1);
-            continue;
-        }else if scanner_until(text, 0, "}") == 0 {
-            ans.text += &text.consume(1);
-            break;
-        };
-    };
-
-    Some(ans)
-}
-*/
