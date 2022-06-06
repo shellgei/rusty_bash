@@ -95,11 +95,15 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         }
 
         /* When a redirect is found. The command ends with redirects. */
-        if let Some(r) = redirect(text){
+        let mut exist = false;
+        while let Some(r) = redirect(text){
+            exist = true;
             ans.redirects.push(Box::new(r));
-            while let Some(r) = redirect(text){
-                ans.redirects.push(Box::new(r));
+            if let Some(d) = delimiter(text){
+                ans.push_elems(Box::new(d));
             }
+        }
+        if exist {
             break;
         }
 

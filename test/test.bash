@@ -237,5 +237,14 @@ EOF
 )
 echo "$res" | grep x | grep ls
 
+res=$($com << 'EOF'
+ls aaaaaaaaaaaaaaaaaaa > /tmp/.rusty_bash 2>&1
+wc -l < /tmp/.rusty_bash
+rm /tmp/.rusty_bash
+EOF
+)
+
+[ "$res" = "1" ]
+
 trap "" EXIT
 echo TEST OK
