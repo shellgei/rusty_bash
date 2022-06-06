@@ -13,31 +13,6 @@ use crate::elem_arg::arg_in_brace;
 use crate::abst_elem_argelem::ArgElem;
 use crate::elem_script::Executable;
 
-
-pub struct VarName {
-    pub text: String,
-    pub pos: DebugInfo,
-}
-
-impl VarName {
-    pub fn new(text: &mut Feeder, length: usize) -> VarName{
-        VarName{
-            text: text.consume(length),
-            pos: DebugInfo::init(text),
-        }
-    }
-}
-
-impl ArgElem for VarName {
-    fn text(&self) -> String {
-        self.text.clone()
-    }
-
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
-        vec!(self.text.clone())
-    }
-}
-
 pub struct SubArgNonQuoted {
     pub text: String,
     pub pos: DebugInfo,
