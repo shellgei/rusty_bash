@@ -19,17 +19,13 @@ use nix::sys::wait::*;
 
 use crate::elem_substitution::Substitution;
 use crate::elem_redirect::Redirect;
+use crate::elem_script::Executable;
 
 
 fn redirect_to_file(from: RawFd, to: RawFd){
     close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
     dup2(from, to).expect("Can't copy file descriptors");
     close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
-}
-
-pub trait Executable {
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
-    fn exec(&mut self, _conf: &mut ShellCore) -> String { "".to_string() }
 }
 
 /* command: delim arg delim arg delim arg ... eoc */

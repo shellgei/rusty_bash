@@ -5,7 +5,7 @@ use std::env;
 
 use crate::{ShellCore,ElemOfCommand};
 use crate::utils::blue_string;
-use crate::elem_command::Executable;
+use crate::elem_script::Executable;
 
 use crate::Feeder;
 use crate::elem_substitution::Substitution;

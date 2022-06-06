@@ -6,11 +6,12 @@ use crate::ElemOfCommand;
 use crate::ShellCore;
 use crate::Feeder;
 use crate::elem_arg::Arg;
-use crate::elem_command::{Command, Executable};
+use crate::elem_command::{Command};
 use crate::scanner::*;
 
 use crate::elem_arg::arg_in_brace;
 use crate::abst_elem_argelem::ArgElem;
+use crate::elem_script::Executable;
 
 
 pub struct VarName {
