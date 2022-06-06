@@ -8,7 +8,7 @@ use std::env;
 use std::os::unix::prelude::RawFd;
 use std::os::unix::io::IntoRawFd;
 use nix::unistd::pipe;
-use crate::elem_arg::Eoc;
+use crate::elem_end_of_command::Eoc;
 
 use crate::{ShellCore,Feeder,ElemOfCommand};
 use crate::utils::blue_string;

@@ -5,48 +5,12 @@ use crate::ShellCore;
 use crate::utils::{eval_glob, combine};
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::abst_elem_argelem::subarg;
-use crate::abst_elem_argelem::subvalue;
-use crate::abst_elem_argelem::subarg_in_brace;
-use crate::scanner::scanner_end_of_com;
-use crate::abst_elem_argelem::ArgElem;
+use crate::abst_arg_elem::subarg;
+use crate::abst_arg_elem::subvalue;
+use crate::abst_arg_elem::subarg_in_brace;
+use crate::abst_arg_elem::ArgElem;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
-
-pub trait ElemOfCommand {
-    fn parse_info(&self) -> Vec<String>;
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
-    fn text(&self) -> String { String::new() }
-}
-
-/* ;, \n, and comment */
-#[derive(Debug)]
-pub struct Eoc {
-    pub text: String,
-    pub debug: DebugInfo,
-}
-
-impl ElemOfCommand for Eoc {
-    fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
-    }
-
-    fn text(&self) -> String { self.text.clone() }
-}
-
-impl Eoc {
-    pub fn parse(text: &mut Feeder) -> Option<Eoc> {
-        if text.len() == 0 {
-            return None;
-        };
-    
-        let pos = scanner_end_of_com(text, 0);
-        if pos == 0 {
-            return None;
-        };
-    
-        Some(Eoc{text: text.consume(pos), debug: DebugInfo::init(&text)})
-    }
-}
+use crate::ElemOfCommand;
 
 pub struct Arg {
     pub text: String,

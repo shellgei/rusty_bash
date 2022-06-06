@@ -1,9 +1,11 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod abst_elem_argelem;
+mod abst_arg_elem;
+mod abst_command_elem;
 mod elem_arg;
 mod elem_arg_delimiter;
+mod elem_end_of_command;
 mod elem_script;
 mod elem_blankpart;
 mod elem_command;
@@ -33,7 +35,7 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::core::ShellCore;
-use crate::elem_arg::{ElemOfCommand};
+use crate::abst_command_elem::{ElemOfCommand};
 use crate::feeder::Feeder;
 
 fn read_line() -> String {
