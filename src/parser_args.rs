@@ -4,33 +4,9 @@
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::elem_command::Command;
-use crate::elem_arg::{Arg};
+use crate::elem_arg::arg_in_brace;
 use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
 use crate::scanner::*;
-
-/*
-// single quoted arg or double quoted arg or non quoted arg 
-pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
-    let mut ans = Arg{
-        text: "".to_string(),
-        pos: DebugInfo::init(text),
-        subargs: vec!(),
-    };
-
-    let sub = if expand_brace{subarg}else{subvalue};
-
-    while let Some(result) = sub(text) {
-        ans.text += &(*result).text();
-        ans.subargs.push(result);
-
-        if text.len() == 0 {
-            break;
-        };
-    };
-
-    Some(ans)
-}
-*/
 
 pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
@@ -53,6 +29,7 @@ pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     else                                                   {None}
 }
 
+/*
 pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
@@ -76,6 +53,7 @@ pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
 
     Some(ans)
 }
+*/
 
 pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)         {Some(Box::new(a))}

@@ -9,6 +9,10 @@ use crate::Feeder;
 use crate::scanner::scanner_while;
 use crate::parser_args::subarg;
 use crate::parser_args::subvalue;
+use crate::elems_in_arg::SubArgNonQuoted;
+use crate::parser_args::subarg_in_brace;
+
+
 
 pub trait ElemOfCommand {
     fn parse_info(&self) -> Vec<String>;
@@ -143,4 +147,28 @@ impl ElemOfCommand for Arg {
     }
 
     fn text(&self) -> String { self.text.clone() }
+}
+
+pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
+    let mut ans = Arg{
+        text: "".to_string(),
+        pos: DebugInfo::init(text),
+        subargs: vec!(),
+    };
+
+    if text.match_at(0, ",}"){ // zero length arg
+        let tmp = SubArgNonQuoted{
+            text: "".to_string(),
+            pos: DebugInfo::init(text),
+        };
+        ans.subargs.push(Box::new(tmp));
+        return Some(ans);
+    };
+
+    while let Some(result) = subarg_in_brace(text) {
+        ans.text += &(*result).text();
+        ans.subargs.push(result);
+    };
+
+    Some(ans)
 }
