@@ -11,11 +11,34 @@ pub fn chars_to_string(chars: &Vec<char>) -> String {
 pub fn eval_glob(globstr: &String) -> Vec<String> {
     let mut ans = vec!();
 
-    if let Ok(path) = glob(&globstr) {
+    let home = env::var("HOME").expect("Home is not set");
+    let mut g = globstr.clone();
+
+    let mut tilde_expansion = false;
+    if g.len() > 0 {
+        if let Some('~') = g.chars().nth(0) {
+            tilde_expansion = true;
+        }
+        if g.len() > 1 {
+            if let Some('*') = g.chars().nth(1) {
+                tilde_expansion = false;
+            }
+        }
+    }
+
+    if tilde_expansion {
+        g = g.replacen("~", &home, 1);
+    };
+
+    if let Ok(path) = glob(&g) {
         for dir in path {
             if let Ok(d) = dir {
                 if let Some(s) = d.to_str() {
+                    if let Some('/') = g.chars().last() {
+                        ans.push(s.to_string() + "/");
+                    }else{
                         ans.push(s.to_string());
+                    }
                 };
             };
         };

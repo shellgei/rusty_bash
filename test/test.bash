@@ -129,6 +129,21 @@ res=$($com <<< 'echo "$(seq 5)"')
 res=$($com <<< 'cd /;echo "$(pwd)x"') #internal command
 [ "$res" = "/x" ]
 
+# expansion of tilde
+
+res=$($com <<< 'echo ~')
+[ "$res" = "$HOME" ]
+
+res=$($com <<< 'echo ~/')
+[ "$res" = "$HOME/" ]
+
+res=$($com <<< 'echo ~a')
+[ "$res" = "~a" ]
+
+res=$($com <<< 'echo ~*')
+[ "$res" = "~*" ]
+
+
 ### DIRECTORY TEST ###
 
 res=$($com << 'EOF'
