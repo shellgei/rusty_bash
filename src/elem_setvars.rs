@@ -9,7 +9,7 @@ use crate::elem_command::Executable;
 
 use crate::Feeder;
 use crate::elem_substitution::Substitution;
-use crate::parser::delimiter;
+use crate::elem_arg::ArgDelimiter;
 use crate::parser::end_of_command;
 
 
@@ -81,7 +81,7 @@ impl SetVariables {
         while let Some(result) = Substitution::parse(text) {
             ans.push(Box::new(result));
     
-            if let Some(result) = delimiter(text){
+            if let Some(result) = ArgDelimiter::parse(text){
                 ans.push(Box::new(result));
             }
         }

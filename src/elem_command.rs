@@ -11,14 +11,12 @@ use nix::unistd::pipe;
 
 use crate::{ShellCore,Feeder,ElemOfCommand};
 use crate::utils::blue_string;
-use crate::elem_arg::{Arg};
+use crate::elem_arg::{Arg, ArgDelimiter};
 use std::fs::OpenOptions;
 
 use nix::sys::wait::*;
 
 use crate::elem_substitution::Substitution;
-use crate::parser::delimiter;
-use crate::parser_args::arg;
 use crate::elem_redirect::Redirect;
 use crate::parser::end_of_command;
 
@@ -271,7 +269,7 @@ impl Command {
         while let Some(s) = Substitution::parse(text) {
             ans.push_vars(s);
     
-            if let Some(d) = delimiter(text){
+            if let Some(d) = ArgDelimiter::parse(text){
                 ans.push_elems(Box::new(d));
             }
         }
@@ -279,7 +277,7 @@ impl Command {
         //TODO: bash permits redirections here. 
     
         /* Then one or more arguments exist. */
-        while let Some(a) = arg(text, true) {
+        while let Some(a) = Arg::parse(text, true) {
             if text.len() != 0 {
                 if text.nth(0) == ')' || text.nth(0) == '(' {
                     text.error_occuring = true;
@@ -290,7 +288,7 @@ impl Command {
             };
             ans.push_elems(Box::new(a));
     
-            if let Some(d) = delimiter(text){
+            if let Some(d) = ArgDelimiter::parse(text){
                 ans.push_elems(Box::new(d));
             }
     
@@ -299,7 +297,7 @@ impl Command {
             while let Some(r) = Redirect::parse(text){
                 exist = true;
                 ans.redirects.push(Box::new(r));
-                if let Some(d) = delimiter(text){
+                if let Some(d) = ArgDelimiter::parse(text){
                     ans.push_elems(Box::new(d));
                 }
             }

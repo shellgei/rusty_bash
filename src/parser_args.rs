@@ -8,6 +8,7 @@ use crate::elem_arg::{Arg};
 use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
 use crate::scanner::*;
 
+/*
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
     let mut ans = Arg{
@@ -29,6 +30,7 @@ pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
 
     Some(ans)
 }
+*/
 
 pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}

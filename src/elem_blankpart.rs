@@ -2,9 +2,9 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elem_command::Executable;
+use crate::elem_arg::ArgDelimiter;
 use crate::ElemOfCommand;
 use crate::Feeder;
-use crate::parser::delimiter;
 use crate::parser::end_of_command;
 
 pub struct BlankPart {
@@ -40,7 +40,7 @@ impl BlankPart {
         let mut ans = BlankPart::new();
     
         loop {
-            if let Some(d) = delimiter(text)          {ans.push(Box::new(d));}
+            if let Some(d) = ArgDelimiter::parse(text)          {ans.push(Box::new(d));}
             else if let Some(e) = end_of_command(text){ans.push(Box::new(e));}
             else{break;};
         };

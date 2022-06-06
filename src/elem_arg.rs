@@ -6,6 +6,9 @@ use crate::utils::{eval_glob, combine};
 use crate::debuginfo::DebugInfo;
 use crate::elems_in_arg::{ArgElem};
 use crate::Feeder;
+use crate::scanner::scanner_while;
+use crate::parser_args::subarg;
+use crate::parser_args::subvalue;
 
 pub trait ElemOfCommand {
     fn parse_info(&self) -> Vec<String>;
@@ -35,6 +38,11 @@ impl ArgDelimiter{
         };
 
         Some(ArgDelimiter{text: text.consume(pos), debug: DebugInfo::init(text)})
+    }
+
+    pub fn parse(text: &mut Feeder) -> Option<ArgDelimiter> {
+        let pos = scanner_while(text, 0, " \t");
+        ArgDelimiter::return_if_valid(text, pos)
     }
 }
 
@@ -81,6 +89,28 @@ impl Arg {
             escaped = !escaped && ch == '\\';
         }
         ans
+    }
+
+    // single quoted arg or double quoted arg or non quoted arg 
+    pub fn parse(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
+        let mut ans = Arg{
+            text: "".to_string(),
+            pos: DebugInfo::init(text),
+            subargs: vec!(),
+        };
+    
+        let sub = if expand_brace{subarg}else{subvalue};
+    
+        while let Some(result) = sub(text) {
+            ans.text += &(*result).text();
+            ans.subargs.push(result);
+    
+            if text.len() == 0 {
+                break;
+            };
+        };
+    
+        Some(ans)
     }
 }
 
