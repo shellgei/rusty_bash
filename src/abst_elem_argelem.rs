@@ -3,11 +3,12 @@
 
 use crate::Feeder;
 use crate::ShellCore;
-use crate::elems_in_arg::{SubArgVariable, SubArgCommandExp};
+use crate::elem_subarg_command_expansion::SubArgCommandExp;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_double_quoted::SubArgDoubleQuoted;
 use crate::elem_subarg_single_quoted::SubArgSingleQuoted;
 use crate::elem_subarg_braced::SubArgBraced;
+use crate::elem_subarg_variable::SubArgVariable;
 
 pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
