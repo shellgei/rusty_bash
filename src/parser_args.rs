@@ -23,37 +23,11 @@ pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
     else if let Some(a) = subarg_command_expansion(text)   {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
-    else if let Some(a) = subvalue_normal(text)            {Some(Box::new(a))}
+    else if let Some(a) = SubArgNonQuoted::parse(text)     {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
     else if let Some(a) = subarg_double_qt(text)           {Some(Box::new(a))}
     else                                                   {None}
 }
-
-/*
-pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
-    let mut ans = Arg{
-        text: "".to_string(),
-        pos: DebugInfo::init(text),
-        subargs: vec!(),
-    };
-
-    if text.match_at(0, ",}"){ // zero length arg
-        let tmp = SubArgNonQuoted{
-            text: "".to_string(),
-            pos: DebugInfo::init(text),
-        };
-        ans.subargs.push(Box::new(tmp));
-        return Some(ans);
-    };
-
-    while let Some(result) = subarg_in_brace(text) {
-        ans.text += &(*result).text();
-        ans.subargs.push(result);
-    };
-
-    Some(ans)
-}
-*/
 
 pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)         {Some(Box::new(a))}
@@ -65,6 +39,7 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     else{None}
 }
 
+/*
 pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     let pos = scanner_until_escape(text, 0, " \n\t\"';)$<>&");
     if pos == 0{
@@ -72,6 +47,7 @@ pub fn subvalue_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     };
     Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
 }
+*/
 
 pub fn subarg_normal(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>&");

@@ -7,6 +7,7 @@ use crate::ShellCore;
 use crate::Feeder;
 use crate::elem_arg::Arg;
 use crate::elem_command::{Command, Executable};
+use crate::scanner::scanner_until_escape;
 
 pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
@@ -52,6 +53,16 @@ impl ArgElem for SubArgNonQuoted {
 
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
         vec!(self.text.clone())
+    }
+}
+
+impl SubArgNonQuoted {
+    pub fn parse(text: &mut Feeder) -> Option<SubArgNonQuoted> {
+        let pos = scanner_until_escape(text, 0, " \n\t\"';)$<>&");
+        if pos == 0{
+            return None;
+        };
+        Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
     }
 }
 
