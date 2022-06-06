@@ -2,9 +2,16 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::debuginfo::{DebugInfo};
-use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
-use crate::scanner::*;
+use crate::ShellCore;
+use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
+
+pub trait ArgElem {
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
+        vec!()
+    }
+
+    fn text(&self) -> String;
+}
 
 pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = SubArgVariable::parse2(text)          {Some(Box::new(a))}
@@ -37,22 +44,3 @@ pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     else{None}
 }
 
-/*
-pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
-    if !text.match_at(0, "'"){
-        return None;
-    };
-
-    let pos = scanner_until(text, 1, "'");
-    Some(SubArgSingleQuoted{text: text.consume(pos+1), pos: DebugInfo::init(text)})
-}
-
-pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-    if text.nth(0) == '"' {
-        return None;
-    };
-
-    let pos = scanner_until_escape(text, 0, "\"$");
-    Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text)})
-}
-*/

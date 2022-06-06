@@ -10,15 +10,8 @@ use crate::elem_command::{Command, Executable};
 use crate::scanner::*;
 
 use crate::elem_arg::arg_in_brace;
+use crate::abst_elem_argelem::ArgElem;
 
-
-pub trait ArgElem {
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
-        vec!()
-    }
-
-    fn text(&self) -> String;
-}
 
 pub struct VarName {
     pub text: String,
