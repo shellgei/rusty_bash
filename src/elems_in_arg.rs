@@ -9,7 +9,6 @@ use crate::elem_arg::Arg;
 use crate::elem_command::{Command, Executable};
 use crate::scanner::*;
 
-use crate::parser_args::string_in_double_qt;
 use crate::elem_arg::arg_in_brace;
 
 
@@ -85,6 +84,15 @@ impl SubArgNonQuoted {
         let pos = scanner_until_escape(text, 0, ",{}()");
         Some( SubArgNonQuoted{ text: text.consume(pos), pos: DebugInfo::init(text) })
     }
+
+    pub fn parse4(text: &mut Feeder) -> Option<SubArgNonQuoted> {
+        if text.nth(0) == '"' {
+            return None;
+        };
+    
+        let pos = scanner_until_escape(text, 0, "\"$");
+        Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text)})
+    }
 }
 
 pub struct SubArgDoubleQuoted {
@@ -140,7 +148,7 @@ impl SubArgDoubleQuoted {
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = SubArgVariable::parse(text) {
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = string_in_double_qt(text) {
+            }else if let Some(a) = SubArgNonQuoted::parse4(text) {
                 ans.subargs.push(Box::new(a));
             }else{
                 break;
@@ -177,6 +185,17 @@ impl ArgElem for SubArgSingleQuoted {
 
     fn text(&self) -> String {
         self.text.clone()
+    }
+}
+
+impl SubArgSingleQuoted {
+    pub fn parse(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
+        if !text.match_at(0, "'"){
+            return None;
+        };
+    
+        let pos = scanner_until(text, 1, "'");
+        Some(SubArgSingleQuoted{text: text.consume(pos+1), pos: DebugInfo::init(text)})
     }
 }
 
@@ -327,3 +346,5 @@ impl SubArgCommandExp {
         None
     }
 }
+
+
