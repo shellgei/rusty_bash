@@ -13,6 +13,7 @@ use crate::parser_args::subarg_variable_braced;
 use crate::parser_args::subarg_command_expansion;
 use crate::parser_args::subarg_variable_non_braced;
 use crate::parser_args::string_in_double_qt;
+use crate::elem_arg::arg_in_brace;
 
 
 pub trait ArgElem {
@@ -210,6 +211,36 @@ impl ArgElem for SubArgBraced {
 
     fn text(&self) -> String {
         self.text.clone()
+    }
+}
+
+impl SubArgBraced {
+    pub fn parse(text: &mut Feeder) -> Option<SubArgBraced> {
+        let pos = scanner_until(text, 0, "{");
+        if pos != 0 {
+            return None;
+        }
+        
+        let mut ans = SubArgBraced {
+            text: text.consume(1),
+            pos: DebugInfo::init(text),
+            args: vec!(),
+        };
+    
+        while let Some(arg) = arg_in_brace(text) {
+            ans.text += &arg.text.clone();
+            ans.args.push(arg); 
+    
+            if scanner_until(text, 0, ",") == 0 {
+                ans.text += &text.consume(1);
+                continue;
+            }else if scanner_until(text, 0, "}") == 0 {
+                ans.text += &text.consume(1);
+                break;
+            };
+        };
+    
+        Some(ans)
     }
 }
 

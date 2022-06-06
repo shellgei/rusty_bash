@@ -4,7 +4,6 @@
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::elem_command::Command;
-use crate::elem_arg::arg_in_brace;
 use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
 use crate::scanner::*;
 
@@ -12,7 +11,7 @@ pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)          {Some(Box::new(a))}
     else if let Some(a) = subarg_command_expansion(text)   {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text) {Some(Box::new(a))}
-    else if let Some(a) = subarg_braced(text)              {Some(Box::new(a))}
+    else if let Some(a) = SubArgBraced::parse(text)        {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse(text)     {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)           {Some(Box::new(a))}
     else if let Some(a) = SubArgDoubleQuoted::parse(text)  {Some(Box::new(a))}
@@ -32,7 +31,7 @@ pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
 pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = subarg_variable_braced(text)         {Some(Box::new(a))}
     else if let Some(a) = subarg_variable_non_braced(text){Some(Box::new(a))}
-    else if let Some(a) = subarg_braced(text)             {Some(Box::new(a))}
+    else if let Some(a) = SubArgBraced::parse(text)       {Some(Box::new(a))}
     else if let Some(a) = subarg_single_qt(text)          {Some(Box::new(a))}
     else if let Some(a) = SubArgDoubleQuoted::parse(text) {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse3(text)   {Some(Box::new(a))}
@@ -47,52 +46,6 @@ pub fn subarg_single_qt(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
     let pos = scanner_until(text, 1, "'");
     Some(SubArgSingleQuoted{text: text.consume(pos+1), pos: DebugInfo::init(text)})
 }
-
-/* parser for a string such as "aaa${var}" */
-/*
-pub fn subarg_double_qt(text: &mut Feeder) -> Option<SubArgDoubleQuoted> {
-    let backup = text.clone();
-
-    let mut ans = SubArgDoubleQuoted {
-        text: "".to_string(),
-        pos: DebugInfo::init(text),
-        subargs: vec!(),
-    };
-
-    if scanner_until(text, 0, "\"") != 0 {
-        return None;
-    }
-    text.consume(1);
-
-    loop {
-        if let Some(a) = subarg_variable_braced(text) {
-            ans.subargs.push(Box::new(a));
-        }else if let Some(a) = subarg_command_expansion(text) {
-            ans.subargs.push(Box::new(a));
-        }else if let Some(a) = subarg_variable_non_braced(text) {
-            ans.subargs.push(Box::new(a));
-        }else if let Some(a) = string_in_double_qt(text) {
-            ans.subargs.push(Box::new(a));
-        }else{
-            break;
-        };
-    }
-
-    if scanner_until(text, 0, "\"") != 0 {
-        text.rewind(backup);
-        return None;
-    }
-    text.consume(1);
-
-    let mut text = "\"".to_string();
-    for a in &ans.subargs {
-        text += &a.text();
-    }
-    ans.text = text + "\"";
-
-    Some(ans)
-}
-*/
 
 pub fn string_in_double_qt(text: &mut Feeder) -> Option<SubArgNonQuoted> {
     if text.nth(0) == '"' {
@@ -149,6 +102,7 @@ pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
     None
 }
 
+/*
 pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     let pos = scanner_until(text, 0, "{");
     if pos != 0 {
@@ -176,3 +130,4 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
 
     Some(ans)
 }
+*/
