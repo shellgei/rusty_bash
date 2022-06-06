@@ -6,7 +6,7 @@ use crate::debuginfo::{DebugInfo};
 use crate::elems_in_command::{Arg, Substitution, Redirect};
 use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName, SubArgCommandExp};
 use crate::scanner::*;
-use crate::parser::command_with_args;
+use crate::elem_command::command_with_args;
 
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {

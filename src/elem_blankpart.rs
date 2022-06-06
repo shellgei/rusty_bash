@@ -3,6 +3,9 @@
 
 use crate::elem_command::Executable;
 use crate::CommandPart;
+use crate::Feeder;
+use crate::parser::delimiter;
+use crate::parser::end_of_command;
 
 pub struct BlankPart {
     pub elems: Vec<Box<dyn CommandPart>>,
@@ -32,4 +35,16 @@ impl BlankPart {
             None
         }
     }
+}
+
+pub fn blank_part(text: &mut Feeder) -> Option<BlankPart> {
+    let mut ans = BlankPart::new();
+
+    loop {
+        if let Some(d) = delimiter(text)          {ans.push(Box::new(d));}
+        else if let Some(e) = end_of_command(text){ans.push(Box::new(e));}
+        else{break;};
+    };
+
+    BlankPart::return_if_valid(ans)
 }
