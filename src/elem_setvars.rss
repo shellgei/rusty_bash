@@ -10,7 +10,6 @@ use crate::elem_command::Executable;
 use crate::Feeder;
 use crate::elem_substitution::Substitution;
 use crate::elem_arg::ArgDelimiter;
-use crate::elem_arg::Eoc;
 
 
 pub struct SetVariables {
@@ -86,7 +85,7 @@ impl SetVariables {
             }
         }
     
-        if let Some(result) = Eoc::parse(text){
+        if let Some(result) = end_of_command(text){
             ans.push(Box::new(result));
         }else{
             text.rewind(backup);

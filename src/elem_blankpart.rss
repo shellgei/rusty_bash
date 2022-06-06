@@ -5,7 +5,6 @@ use crate::elem_command::Executable;
 use crate::elem_arg::ArgDelimiter;
 use crate::ElemOfCommand;
 use crate::Feeder;
-use crate::elem_arg::Eoc;
 
 pub struct BlankPart {
     pub elems: Vec<Box<dyn ElemOfCommand>>,
@@ -41,7 +40,7 @@ impl BlankPart {
     
         loop {
             if let Some(d) = ArgDelimiter::parse(text)          {ans.push(Box::new(d));}
-            else if let Some(e) = Eoc::parse(text){ans.push(Box::new(e));}
+            else if let Some(e) = end_of_command(text){ans.push(Box::new(e));}
             else{break;};
         };
     

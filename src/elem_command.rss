@@ -8,7 +8,6 @@ use std::env;
 use std::os::unix::prelude::RawFd;
 use std::os::unix::io::IntoRawFd;
 use nix::unistd::pipe;
-use crate::elem_arg::Eoc;
 
 use crate::{ShellCore,Feeder,ElemOfCommand};
 use crate::utils::blue_string;
@@ -309,7 +308,7 @@ impl Command {
                 break;
             }
     
-            if let Some(e) = Eoc::parse(text){
+            if let Some(e) = end_of_command(text){
                 ans.push_elems(Box::new(e));
                 break;
             }
