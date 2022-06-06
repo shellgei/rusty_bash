@@ -6,7 +6,7 @@ mod abst_command_elem;
 mod elem_arg;
 mod elem_arg_delimiter;
 mod elem_end_of_command;
-mod elem_script;
+mod abst_hand_input_unit;
 mod elem_blankpart;
 mod elem_command;
 mod elem_redirect;
@@ -104,7 +104,7 @@ fn main() {
             read_line()
         };
         input.add_line(line);
-        while let Some(mut e) = elem_script::top_level_element(&mut input){
+        while let Some(mut e) = abst_hand_input_unit::top_level_element(&mut input){
             e.exec(&mut core);
         }
     }
