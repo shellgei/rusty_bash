@@ -3,6 +3,7 @@
 
 use std::collections::HashSet;
 use std::io::{Write};
+use crate::env;
 
 use crate::ShellCore;
 use crate::utils::{eval_glob, search_commands, chars_to_string};
@@ -36,22 +37,27 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     true
 }
 
-
 pub fn file_completion(writer: &mut Writer){
     let s: String = writer.last_arg() + "*";
+
     let ans = eval_glob(&s);
     if ans.len() == 0 {
         return;
     };
 
+    //TODO: ~ should be replaced for other users.
+    let home = env::var("HOME").expect("Home is not set");
     let base_len = writer.last_arg().len();
     if ans.len() == 1 {
-        for ch in ans[0][base_len..].chars() {
+        let (x, y) = writer.cursor_pos();
+        let a = ans[0].replacen(&home, "~", 1);
+        for ch in a[base_len..].chars() {
             writer.insert(ch);
         }
     }else{
-        for (i, ch) in ans[0][base_len..].chars().enumerate() {
-            if compare_nth_char(i+base_len, &ans) {
+        let a: Vec<String> = ans.iter().map(|x| x.replacen(&home, "~", 1)).collect();
+        for (i, ch) in a[0][base_len..].chars().enumerate() {
+            if compare_nth_char(i+base_len, &a) {
                 writer.insert(ch);
             }else{
                 break;
