@@ -9,8 +9,6 @@ use crate::elem_arg::Arg;
 use crate::elem_command::{Command, Executable};
 use crate::scanner::*;
 
-use crate::parser_args::subarg_variable_braced;
-use crate::parser_args::subarg_variable_non_braced;
 use crate::parser_args::string_in_double_qt;
 use crate::elem_arg::arg_in_brace;
 
@@ -136,11 +134,11 @@ impl SubArgDoubleQuoted {
         text.consume(1);
     
         loop {
-            if let Some(a) = subarg_variable_braced(text) {
+            if let Some(a) = SubArgVariable::parse2(text) {
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = SubArgCommandExp::parse(text) {
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = subarg_variable_non_braced(text) {
+            }else if let Some(a) = SubArgVariable::parse(text) {
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = string_in_double_qt(text) {
                 ans.subargs.push(Box::new(a));
@@ -260,6 +258,34 @@ impl ArgElem for SubArgVariable {
 
     fn text(&self) -> String {
         self.text.clone()
+    }
+}
+
+impl SubArgVariable {
+    pub fn parse(text: &mut Feeder) -> Option<SubArgVariable> {
+        if !(text.nth(0) == '$') || text.nth(1) == '{' {
+            return None;
+        };
+    
+        let pos = scanner_varname(&text, 1);
+        Some(
+            SubArgVariable{
+                text: text.consume(pos),
+                pos: DebugInfo::init(text),
+            })
+    }
+    
+    pub fn parse2(text: &mut Feeder) -> Option<SubArgVariable> {
+        if !(text.nth(0) == '$' && text.nth(1) == '{') {
+            return None;
+        }
+    
+        let pos = scanner_varname(&text, 2);
+        if text.nth(pos) == '}' {
+            Some( SubArgVariable{ text: text.consume(pos+1), pos: DebugInfo::init(text) })
+        }else{
+            None
+        }
     }
 }
 
