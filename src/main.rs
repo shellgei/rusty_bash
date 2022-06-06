@@ -4,6 +4,7 @@
 mod parser;
 mod parser_args;
 mod elems_executable;
+mod elem_command;
 mod elems_in_command;
 mod elems_in_arg;
 mod core;
