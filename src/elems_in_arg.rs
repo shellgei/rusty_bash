@@ -14,6 +14,7 @@ use crate::abst_elem_argelem::ArgElem;
 use crate::elem_script::Executable;
 
 
+/*
 pub struct SubArgSingleQuoted {
     pub text: String,
     pub pos: DebugInfo,
@@ -41,6 +42,7 @@ impl SubArgSingleQuoted {
         Some(SubArgSingleQuoted{text: text.consume(pos+1), pos: DebugInfo::init(text)})
     }
 }
+*/
 
 pub struct SubArgBraced {
     pub text: String,
