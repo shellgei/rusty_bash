@@ -7,13 +7,13 @@ use crate::elem_command::Command;
 use crate::Feeder;
 use crate::ShellCore;
 
-pub trait Executable {
+pub trait HandInputUnit {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
     fn exec(&mut self, _conf: &mut ShellCore) -> String { "".to_string() }
 }
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn Executable>> {
+pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn HandInputUnit>> {
     if text.len() == 0 {
         return None;
     };

@@ -20,7 +20,7 @@ use nix::sys::wait::*;
 
 use crate::elem_substitution::Substitution;
 use crate::elem_redirect::Redirect;
-use crate::elem_script::Executable;
+use crate::elem_script::HandInputUnit;
 
 
 fn redirect_to_file(from: RawFd, to: RawFd){
@@ -40,7 +40,7 @@ pub struct Command {
     pub infd_expansion: RawFd,
 }
 
-impl Executable for Command {
+impl HandInputUnit for Command {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         //self.set_io(conf);
         self.eval_args(conf)

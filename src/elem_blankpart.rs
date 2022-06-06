@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elem_script::Executable;
+use crate::elem_script::HandInputUnit;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::CommandElem;
 use crate::Feeder;
@@ -12,7 +12,7 @@ pub struct BlankPart {
     text: String,
 }
 
-impl Executable for BlankPart {
+impl HandInputUnit for BlankPart {
 }
 
 impl BlankPart {
