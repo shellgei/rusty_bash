@@ -11,12 +11,12 @@ use nix::unistd::pipe;
 
 use crate::{ShellCore,Feeder,ElemOfCommand};
 use crate::utils::blue_string;
-use crate::elems_in_command::{Arg, Substitution, Redirect};
+use crate::elems_in_command::{Arg, Redirect};
 use std::fs::OpenOptions;
 
 use nix::sys::wait::*;
 
-use crate::parser_args::substitution;
+use crate::elem_substitution::Substitution;
 use crate::parser::delimiter;
 use crate::parser_args::arg;
 use crate::parser_args::redirect;
@@ -268,7 +268,7 @@ impl Command {
         //TODO: bash permits redirections here. 
     
         /* A command starts with substitutions. */
-        while let Some(s) = substitution(text) {
+        while let Some(s) = Substitution::parse(text) {
             ans.push_vars(s);
     
             if let Some(d) = delimiter(text){

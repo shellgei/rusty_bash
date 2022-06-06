@@ -4,8 +4,9 @@
 mod parser;
 mod parser_args;
 mod elem_setvars;
-mod elem_command;
 mod elem_blankpart;
+mod elem_command;
+mod elem_substitution;
 mod elems_in_command;
 mod elems_in_arg;
 mod core;

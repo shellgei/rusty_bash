@@ -8,7 +8,7 @@ use crate::utils::blue_string;
 use crate::elem_command::Executable;
 
 use crate::Feeder;
-use crate::parser_args::substitution;
+use crate::elem_substitution::Substitution;
 use crate::parser::delimiter;
 use crate::parser::end_of_command;
 
@@ -78,7 +78,7 @@ impl SetVariables {
         let backup = text.clone();
         let mut ans = SetVariables::new();
     
-        while let Some(result) = substitution(text) {
+        while let Some(result) = Substitution::parse(text) {
             ans.push(Box::new(result));
     
             if let Some(result) = delimiter(text){

@@ -4,8 +4,8 @@
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
 use crate::elem_command::Command;
-use crate::elems_in_command::{Arg, Substitution, Redirect};
-use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName, SubArgCommandExp};
+use crate::elems_in_command::{Arg, Redirect};
+use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, SubArgCommandExp};
 use crate::scanner::*;
 
 // single quoted arg or double quoted arg or non quoted arg 
@@ -246,6 +246,7 @@ pub fn subarg_braced(text: &mut Feeder) -> Option<SubArgBraced> {
     Some(ans)
 }
 
+/*
 pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
     let varname_pos = scanner_varname(text, 0);
     let equal_pos = scanner_until(text, varname_pos, "=");
@@ -266,6 +267,7 @@ pub fn substitution(text: &mut Feeder) -> Option<Substitution> {
         None
     }
 }
+*/
 
 pub fn redirect(text: &mut Feeder) -> Option<Redirect> {
     if let Some(r) = and_arrow_redirect(text){
