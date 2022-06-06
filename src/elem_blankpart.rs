@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elem_script::Executable;
-use crate::elem_arg::ArgDelimiter;
+use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::ElemOfCommand;
 use crate::Feeder;
 use crate::elem_arg::Eoc;

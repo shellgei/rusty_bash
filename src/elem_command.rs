@@ -12,7 +12,8 @@ use crate::elem_arg::Eoc;
 
 use crate::{ShellCore,Feeder,ElemOfCommand};
 use crate::utils::blue_string;
-use crate::elem_arg::{Arg, ArgDelimiter};
+use crate::elem_arg::Arg;
+use crate::elem_arg_delimiter::ArgDelimiter;
 use std::fs::OpenOptions;
 
 use nix::sys::wait::*;
