@@ -11,9 +11,11 @@ pub fn chars_to_string(chars: &Vec<char>) -> String {
 pub fn eval_glob(globstr: &String) -> Vec<String> {
     let mut ans = vec!();
 
-    let home = env::var("HOME").expect("Home is not set");
     let mut g = globstr.clone();
 
+    //expansion of tilde
+    //TODO: ~root or ~other_user should be replaced but not implemented.
+    let home = env::var("HOME").expect("Home is not set");
     let mut tilde_expansion = false;
     if g.len() > 0 {
         if let Some('~') = g.chars().nth(0) {
@@ -30,11 +32,13 @@ pub fn eval_glob(globstr: &String) -> Vec<String> {
         g = g.replacen("~", &home, 1);
     };
 
+    //TODO: too ugly
     if let Ok(path) = glob(&g) {
         for dir in path {
             if let Ok(d) = dir {
                 if let Some(s) = d.to_str() {
                     if let Some('/') = g.chars().last() {
+                        // the library omits the last / 
                         ans.push(s.to_string() + "/");
                     }else{
                         ans.push(s.to_string());
