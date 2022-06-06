@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::elems_executable::{Substitutions, Executable, BlankPart, CommandWithArgs};
+use super::elems_executable::{Substitutions, Executable, BlankPart, Command};
 use super::elems_in_command::{ArgDelimiter, Eoc};
 use crate::parser_args::{arg, substitution, redirect};
 use crate::Feeder;
@@ -61,9 +61,9 @@ pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
 }
 
 
-pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
+pub fn command_with_args(text: &mut Feeder) -> Option<Command> {
     let backup = text.clone();
-    let mut ans = CommandWithArgs::new();
+    let mut ans = Command::new();
 
     //TODO: bash permits redirections here. 
 
@@ -117,7 +117,7 @@ pub fn command_with_args(text: &mut Feeder) -> Option<CommandWithArgs> {
         }
     }
 
-    CommandWithArgs::return_if_valid(ans, text, backup)
+    Command::return_if_valid(ans, text, backup)
 }
 
 pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {

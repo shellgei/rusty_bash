@@ -120,7 +120,7 @@ impl Substitutions {
 
 
 /* command: delim arg delim arg delim arg ... eoc */
-pub struct CommandWithArgs {
+pub struct Command {
     vars: Vec<Box<Substitution>>,
     pub args: Vec<Box<dyn CommandPart>>,
     pub redirects: Vec<Box<Redirect>>,
@@ -130,7 +130,7 @@ pub struct CommandWithArgs {
     pub infd_expansion: RawFd,
 }
 
-impl Executable for CommandWithArgs {
+impl Executable for Command {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         //self.set_io(conf);
         self.eval_args(conf)
@@ -177,9 +177,9 @@ impl Executable for CommandWithArgs {
     }
 }
 
-impl CommandWithArgs {
-    pub fn new() -> CommandWithArgs{
-        CommandWithArgs {
+impl Command {
+    pub fn new() -> Command{
+        Command {
             vars: vec!(),
             args: vec!(),
             redirects: vec!(),
@@ -264,7 +264,7 @@ impl CommandWithArgs {
         self.args.push(s);
     }
 
-    pub fn return_if_valid(ans: CommandWithArgs, text: &mut Feeder, backup: Feeder) -> Option<CommandWithArgs> {
+    pub fn return_if_valid(ans: Command, text: &mut Feeder, backup: Feeder) -> Option<Command> {
         if ans.args.len() > 0 {
               Some(ans)
         }else{
