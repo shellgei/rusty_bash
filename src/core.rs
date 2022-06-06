@@ -42,6 +42,8 @@ impl ShellCore {
             flags: Flags::new(),
         };
 
+        conf.vars.insert("?".to_string(), 0.to_string());
+
         conf.internal_commands.insert("exit".to_string(), Self::exit);
         conf.internal_commands.insert("pwd".to_string(), Self::pwd);
         conf.internal_commands.insert("cd".to_string(), Self::cd);

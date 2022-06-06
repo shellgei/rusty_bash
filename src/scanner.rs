@@ -41,6 +41,12 @@ pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
 }
 
 pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
+    if text.len() == from {
+        return from;
+    }else if text.nth(from) == '?' {
+        return from+1;
+    };
+
     let mut pos = from;
     for ch in text.chars_after(from) {
         if !((ch >= '0' && ch <= '9') ||(ch >= 'A' && ch <= 'Z') 

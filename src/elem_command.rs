@@ -57,7 +57,8 @@ impl HandInputUnit for Command {
 
         if !self.expansion {
             if let Some(func) = conf.get_internal_command(&args[0]) {
-                let _status = func(conf, &mut args);
+                let status = func(conf, &mut args);
+                conf.vars.insert("?".to_string(), status.to_string());
                 return "".to_string();
             }
         }
@@ -69,7 +70,7 @@ impl HandInputUnit for Command {
                     self.exec_external_command(&mut args, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    return_string = self.wait_command(child)
+                    return_string = self.wait_command(child, conf)
                 },
                 Err(err) => {
                     panic!("Failed to fork. {}", err)
@@ -225,7 +226,7 @@ impl Command {
         exit(127);
     }
 
-    fn wait_command(&self, child: Pid) -> String {
+    fn wait_command(&self, child: Pid, conf: &mut ShellCore) -> String {
         let mut ans = "".to_string();
 
         if self.expansion {
@@ -241,11 +242,13 @@ impl Command {
         match waitpid(child, None)
             .expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
+                conf.vars.insert("?".to_string(), status.to_string());
                 if status != 0 {
                     eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
-                };
+                }
             }
             WaitStatus::Signaled(pid, signal, _) => {
+                conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
                 eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
             }
             _ => {

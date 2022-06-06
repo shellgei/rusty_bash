@@ -181,8 +181,6 @@ EOF
 [ "$res" = "あいうえおかきくけこ" ]
 
 
-#LANG=C date
-#Tue May 24 21:18:32 JST 2022
 res=$($com <<< 'LANG=C TZ= date -d 2000-01-01')
 [ "$res" = "Sat Jan  1 00:00:00 UTC 2000" ]
 
@@ -192,6 +190,11 @@ TZ= date -d 2000-01-01
 EOF
 )
 [ "$res" = "Sat Jan  1 00:00:00 UTC 2000" ]
+
+# special variable
+
+res=$($com <<< 'ls aaaaaaa; echo $?')
+[ "$res" = "2" ]
 
 ### REDIRECTION ###
 
