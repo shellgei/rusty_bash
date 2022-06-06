@@ -10,7 +10,7 @@ use std::os::unix::io::IntoRawFd;
 use nix::unistd::pipe;
 use crate::elem_end_of_command::Eoc;
 
-use crate::{ShellCore,Feeder,ElemOfCommand};
+use crate::{ShellCore,Feeder,CommandElem};
 use crate::utils::blue_string;
 use crate::elem_arg::Arg;
 use crate::elem_arg_delimiter::ArgDelimiter;
@@ -32,7 +32,7 @@ fn redirect_to_file(from: RawFd, to: RawFd){
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {
     vars: Vec<Box<Substitution>>,
-    pub args: Vec<Box<dyn ElemOfCommand>>,
+    pub args: Vec<Box<dyn CommandElem>>,
     pub redirects: Vec<Box<Redirect>>,
     text: String,
     pub expansion: bool,
@@ -169,7 +169,7 @@ impl Command {
         self.vars.push(Box::new(s));
     }
 
-    pub fn push_elems(&mut self, s: Box<dyn ElemOfCommand>){
+    pub fn push_elems(&mut self, s: Box<dyn CommandElem>){
         self.text += &s.text();
         self.args.push(s);
     }

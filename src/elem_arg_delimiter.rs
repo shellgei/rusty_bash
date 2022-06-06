@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::scanner::scanner_while;
-use crate::ElemOfCommand;
+use crate::CommandElem;
 
 /* delimiter */
 #[derive(Debug)]
@@ -13,7 +13,7 @@ pub struct ArgDelimiter {
     pub debug: DebugInfo,
 }
 
-impl ElemOfCommand for ArgDelimiter {
+impl CommandElem for ArgDelimiter {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.text()))
     }

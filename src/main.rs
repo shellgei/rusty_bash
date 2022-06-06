@@ -35,7 +35,7 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::core::ShellCore;
-use crate::abst_command_elem::{ElemOfCommand};
+use crate::abst_command_elem::{CommandElem};
 use crate::feeder::Feeder;
 
 fn read_line() -> String {

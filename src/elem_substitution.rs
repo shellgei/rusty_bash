@@ -8,7 +8,7 @@ use crate::elem_arg::Arg;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
 use crate::scanner::scanner_until;
-use crate::ElemOfCommand;
+use crate::CommandElem;
 
 
 pub struct Substitution {
@@ -50,7 +50,7 @@ impl Substitution {
     }
 }
 
-impl ElemOfCommand for Substitution {
+impl CommandElem for Substitution {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    substitution: '{}' ({})\n", self.text.clone(), self.debug.text()))
     }

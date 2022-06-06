@@ -3,7 +3,7 @@
 
 use crate::ShellCore;
 
-pub trait ElemOfCommand {
+pub trait CommandElem {
     fn parse_info(&self) -> Vec<String>;
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
     fn text(&self) -> String { String::new() }

@@ -10,7 +10,7 @@ use crate::abst_arg_elem::subvalue;
 use crate::abst_arg_elem::subarg_in_brace;
 use crate::abst_arg_elem::ArgElem;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
-use crate::ElemOfCommand;
+use crate::CommandElem;
 
 pub struct Arg {
     pub text: String,
@@ -65,7 +65,7 @@ impl Arg {
     }
 }
 
-impl ElemOfCommand for Arg {
+impl CommandElem for Arg {
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
                               self.text.clone(), self.pos.text()));

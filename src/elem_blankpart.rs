@@ -3,12 +3,12 @@
 
 use crate::elem_script::Executable;
 use crate::elem_arg_delimiter::ArgDelimiter;
-use crate::ElemOfCommand;
+use crate::CommandElem;
 use crate::Feeder;
 use crate::elem_end_of_command::Eoc;
 
 pub struct BlankPart {
-    pub elems: Vec<Box<dyn ElemOfCommand>>,
+    pub elems: Vec<Box<dyn CommandElem>>,
     text: String,
 }
 
@@ -23,7 +23,7 @@ impl BlankPart {
         }
     }
 
-    pub fn push(&mut self, s: Box<dyn ElemOfCommand>){
+    pub fn push(&mut self, s: Box<dyn CommandElem>){
         self.text += &s.text();
         self.elems.push(s);
     }

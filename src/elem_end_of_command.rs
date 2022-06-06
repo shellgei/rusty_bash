@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::scanner::scanner_end_of_com;
-use crate::ElemOfCommand;
+use crate::CommandElem;
 
 /* ;, \n, and comment */
 #[derive(Debug)]
@@ -13,7 +13,7 @@ pub struct Eoc {
     pub debug: DebugInfo,
 }
 
-impl ElemOfCommand for Eoc {
+impl CommandElem for Eoc {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
     }
