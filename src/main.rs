@@ -104,7 +104,7 @@ fn main() {
             read_line()
         };
         input.add_line(line);
-        while let Some(mut e) = abst_hand_input_unit::top_level_element(&mut input){
+        while let Some(mut e) = abst_hand_input_unit::hand_input_unit(&mut input){
             e.exec(&mut core);
         }
     }

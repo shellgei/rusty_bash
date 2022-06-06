@@ -13,7 +13,7 @@ pub trait HandInputUnit {
 }
 
 // job or function comment or blank (finally) 
-pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn HandInputUnit>> {
+pub fn hand_input_unit(text: &mut Feeder) -> Option<Box<dyn HandInputUnit>> {
     if text.len() == 0 {
         return None;
     };
