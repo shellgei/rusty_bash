@@ -13,7 +13,6 @@ use crate::parser::delimiter;
 use crate::parser::end_of_command;
 
 
-
 pub struct Substitutions {
     pub elems: Vec<Box<dyn CommandPart>>,
     text: String,
@@ -74,26 +73,26 @@ impl Substitutions {
         self.text += &s.text();
         self.elems.push(s);
     }
-}
 
-pub fn substitutions(text: &mut Feeder) -> Option<Substitutions> {
-    let backup = text.clone();
-    let mut ans = Substitutions::new();
-
-    while let Some(result) = substitution(text) {
-        ans.push(Box::new(result));
-
-        if let Some(result) = delimiter(text){
+    pub fn parse(text: &mut Feeder) -> Option<Substitutions> {
+        let backup = text.clone();
+        let mut ans = Substitutions::new();
+    
+        while let Some(result) = substitution(text) {
             ans.push(Box::new(result));
+    
+            if let Some(result) = delimiter(text){
+                ans.push(Box::new(result));
+            }
         }
+    
+        if let Some(result) = end_of_command(text){
+            ans.push(Box::new(result));
+        }else{
+            text.rewind(backup);
+            return None;
+        }
+    
+        Substitutions::return_if_valid(ans)
     }
-
-    if let Some(result) = end_of_command(text){
-        ans.push(Box::new(result));
-    }else{
-        text.rewind(backup);
-        return None;
-    }
-
-    Substitutions::return_if_valid(ans)
 }

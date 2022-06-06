@@ -3,13 +3,12 @@
 
 use super::elem_command::{Executable};
 use super::elems_in_command::{ArgDelimiter, Eoc};
+use crate::elem_blankpart::BlankPart;
+use crate::elem_substitutions::Substitutions;
+use crate::elem_command::Command;
 use crate::Feeder;
 use crate::debuginfo::DebugInfo;
 use crate::scanner::{scanner_end_of_com, scanner_while};
-
-use crate::elem_blankpart::blank_part;
-use crate::elem_substitutions::substitutions;
-use crate::elem_command::command_with_args;
 
 // job or function comment or blank (finally) 
 pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn Executable>> {
@@ -17,9 +16,9 @@ pub fn top_level_element(text: &mut Feeder) -> Option<Box<dyn Executable>> {
         return None;
     };
 
-    if let Some(result) = blank_part(text)       {return Some(Box::new(result));}
-    if let Some(result) = substitutions(text)    {return Some(Box::new(result));}
-    if let Some(result) = command_with_args(text){return Some(Box::new(result));}
+    if let Some(result) = BlankPart::parse(text)     {return Some(Box::new(result));}
+    if let Some(result) = Substitutions::parse(text) {return Some(Box::new(result));}
+    if let Some(result) = Command::parse(text)       {return Some(Box::new(result));}
 
     if text.error_occuring {
         text.consume(text.len());
@@ -36,7 +35,6 @@ pub fn delimiter(text: &mut Feeder) -> Option<ArgDelimiter> {
 
 pub fn end_of_command(text: &mut Feeder) -> Option<Eoc> {
     if text.len() == 0 {
-     //   return Some(Eoc{text: "".to_string(), debug: DebugInfo::init(&text)});
         return None;
     };
 

@@ -260,63 +260,63 @@ impl Command {
 
         ans
     }
-}
 
-pub fn command_with_args(text: &mut Feeder) -> Option<Command> {
-    let backup = text.clone();
-    let mut ans = Command::new();
-
-    //TODO: bash permits redirections here. 
-
-    /* A command starts with substitutions. */
-    while let Some(s) = substitution(text) {
-        ans.push_vars(s);
-
-        if let Some(d) = delimiter(text){
-            ans.push_elems(Box::new(d));
-        }
-    }
-
-    //TODO: bash permits redirections here. 
-
-    /* Then one or more arguments exist. */
-    while let Some(a) = arg(text, true) {
-        if text.len() != 0 {
-            if text.nth(0) == ')' || text.nth(0) == '(' {
-                text.error_occuring = true;
-                text.error_reason = "Unexpected token found".to_string();
-                text.rewind(backup);
-                return None;
-            };
-        };
-        ans.push_elems(Box::new(a));
-
-        if let Some(d) = delimiter(text){
-            ans.push_elems(Box::new(d));
-        }
-
-        /* When a redirect is found. The command ends with redirects. */
-        let mut exist = false;
-        while let Some(r) = redirect(text){
-            exist = true;
-            ans.redirects.push(Box::new(r));
+    pub fn parse(text: &mut Feeder) -> Option<Command> {
+        let backup = text.clone();
+        let mut ans = Command::new();
+    
+        //TODO: bash permits redirections here. 
+    
+        /* A command starts with substitutions. */
+        while let Some(s) = substitution(text) {
+            ans.push_vars(s);
+    
             if let Some(d) = delimiter(text){
                 ans.push_elems(Box::new(d));
             }
         }
-        if exist {
-            break;
+    
+        //TODO: bash permits redirections here. 
+    
+        /* Then one or more arguments exist. */
+        while let Some(a) = arg(text, true) {
+            if text.len() != 0 {
+                if text.nth(0) == ')' || text.nth(0) == '(' {
+                    text.error_occuring = true;
+                    text.error_reason = "Unexpected token found".to_string();
+                    text.rewind(backup);
+                    return None;
+                };
+            };
+            ans.push_elems(Box::new(a));
+    
+            if let Some(d) = delimiter(text){
+                ans.push_elems(Box::new(d));
+            }
+    
+            /* When a redirect is found. The command ends with redirects. */
+            let mut exist = false;
+            while let Some(r) = redirect(text){
+                exist = true;
+                ans.redirects.push(Box::new(r));
+                if let Some(d) = delimiter(text){
+                    ans.push_elems(Box::new(d));
+                }
+            }
+            if exist {
+                break;
+            }
+    
+            if text.len() == 0 {
+                break;
+            }
+    
+            if let Some(e) = end_of_command(text){
+                ans.push_elems(Box::new(e));
+                break;
+            }
         }
-
-        if text.len() == 0 {
-            break;
-        }
-
-        if let Some(e) = end_of_command(text){
-            ans.push_elems(Box::new(e));
-            break;
-        }
+    
+        Command::return_if_valid(ans, text, backup)
     }
-
-    Command::return_if_valid(ans, text, backup)
 }

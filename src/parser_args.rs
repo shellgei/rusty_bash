@@ -3,10 +3,10 @@
 
 use crate::Feeder;
 use crate::debuginfo::{DebugInfo};
+use crate::elem_command::Command;
 use crate::elems_in_command::{Arg, Substitution, Redirect};
 use crate::elems_in_arg::{SubArgNonQuoted, SubArgBraced, ArgElem, SubArgSingleQuoted, SubArgDoubleQuoted, SubArgVariable, VarName, SubArgCommandExp};
 use crate::scanner::*;
-use crate::elem_command::command_with_args;
 
 // single quoted arg or double quoted arg or non quoted arg 
 pub fn arg(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
@@ -206,7 +206,7 @@ pub fn subarg_command_expansion(text: &mut Feeder) -> Option<SubArgCommandExp> {
     let pos = scanner_end_of_bracket(text, 2, ')');
     let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
 
-    if let Some(e) = command_with_args(&mut sub_feeder){
+    if let Some(e) = Command::parse(&mut sub_feeder){
         let ans = Some (SubArgCommandExp {
             text: text.consume(pos+1),
             pos: DebugInfo::init(text),
