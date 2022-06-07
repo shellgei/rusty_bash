@@ -25,7 +25,7 @@ impl ArgElem for SubArgTildeUser {
 }
 
 impl SubArgTildeUser {
-    pub fn parse(text: &mut Feeder) -> Option<SubArgTildeUser> {
+    pub fn parse(text: &mut Feeder, in_brace: bool) -> Option<SubArgTildeUser> {
         if text.len() == 0 {
             return None;
         }
@@ -33,12 +33,15 @@ impl SubArgTildeUser {
             return None;
         }
 
-        let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>&*:/");
+        let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>&*:/,");
         if pos == 0{
             return None;
         };
 
-        if text.len() > pos && !(text.nth(pos) == ':' || text.nth(pos) == '/' || text.nth(pos) == '\n') {
+        if !in_brace && text.len() > pos && !(text.nth(pos) == ':' || text.nth(pos) == '/' || text.nth(pos) == '\n') {
+            return None;
+        }
+        if in_brace && text.len() > pos && !(text.nth(pos) == ':' || text.nth(pos) == '/' || text.nth(pos) == '\n' || text.nth(pos) == ',') {
             return None;
         }
 

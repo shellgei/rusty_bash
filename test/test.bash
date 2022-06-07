@@ -152,6 +152,8 @@ home=$(tail -n 1 /etc/passwd | awk -F: '{print $(NF-1)}')
 res=$($com <<< "echo ~$user")
 [ "$res" = "$home" ]
 
+res=$($com <<< "echo {~$user,a}")
+[ "$res" = "$home a" ]
 
 ### DIRECTORY TEST ###
 

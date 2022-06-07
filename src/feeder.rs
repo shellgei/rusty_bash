@@ -92,7 +92,8 @@ impl Feeder {
         }
     }
 
-/*    pub fn text(&self) -> String {
+    /*
+    pub fn text(&self) -> String {
         self.remaining.clone()
     }*/
 

@@ -51,7 +51,7 @@ impl Arg {
             subargs: vec!(),
         };
 
-        if let Some(result) = SubArgTildeUser::parse(text) {
+        if let Some(result) = SubArgTildeUser::parse(text, false) {
             ans.text += &result.text();
             ans.subargs.push(Box::new(result));
         }
@@ -117,6 +117,11 @@ pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
         ans.subargs.push(Box::new(tmp));
         return Some(ans);
     };
+
+    if let Some(result) = SubArgTildeUser::parse(text, true) {
+        ans.text += &result.text();
+        ans.subargs.push(Box::new(result));
+    }
 
     while let Some(result) = subarg_in_brace(text) {
         ans.text += &(*result).text();
