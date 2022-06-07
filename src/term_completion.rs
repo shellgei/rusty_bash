@@ -86,21 +86,36 @@ pub fn scanner_user_path(text: String) -> usize {
     pos
 }
 
-pub fn file_completion(writer: &mut Writer){
-    let mut s: String = writer.last_arg() + "*";
-
-    let tilde_user_pos = scanner_user_path(s.clone());
-    let home = if tilde_user_pos == 1 {
+pub fn expand_tilde(path: &String) -> (String, String, String, usize){
+    let org_length = scanner_user_path(path.clone());
+    let home = if org_length == 1 {
         env::var("HOME").expect("Home is not set")
-    }else if let Some(h) = get_home(s[1..tilde_user_pos].to_string()) {
+    }else if org_length == 0{
+        "".to_string()
+    }else if let Some(h) = get_home(path[1..org_length].to_string()) {
         h
     }else{
         "".to_string()
     };
 
+    let org = path[0..org_length].to_string();
+
     if home.len() != 0 {
-        s = s.replacen(&s[0..tilde_user_pos].to_string(), &home, 1);
+        let h = home.clone();
+        (home, org, path.replacen(&path[0..org_length].to_string(), &h, 1), org_length)
+    }else{
+        (home, org, path.to_string(), org_length)
     }
+}
+
+pub fn restore_tilde(path: &String, home: &String, org: &String) -> String {
+    //eprintln!("{}, {}", home, org);
+    path.replacen(home, org, 1)
+}
+
+pub fn file_completion(writer: &mut Writer){
+    let s: String = writer.last_arg() + "*";
+    let (home, org, s, org_length) = expand_tilde(&s);
 
     let ans = eval_glob(&s);
     if ans.len() == 0 {
@@ -108,12 +123,11 @@ pub fn file_completion(writer: &mut Writer){
     };
 
     //TODO: ~ should be replaced for other users.
-    let home = env::var("HOME").expect("Home is not set");
     let base_len = writer.last_arg().len();
     if ans.len() == 1 {
-        //let (x, y) = writer.cursor_pos();
         let a = if home.len() != 0 {
-            ans[0].replacen(&home, &s[0..tilde_user_pos].to_string(), 1).clone()
+            //eprintln!("{}, {}", ans[0], org);
+            restore_tilde(&ans[0], &home, &org)
         }else{
             ans[0].clone()
         };
@@ -122,10 +136,11 @@ pub fn file_completion(writer: &mut Writer){
         }
     }else{
         let a: Vec<String> = if home.len() != 0 {
-            ans.iter().map(|x| x.replacen(&home, &s[0..tilde_user_pos].to_string(), 1)).collect()
+            ans.iter().map(|x| restore_tilde(&x, &home, &org)).collect()
         }else{
             ans
         };
+
         for (i, ch) in a[0][base_len..].chars().enumerate() {
             if compare_nth_char(i+base_len, &a) {
                 writer.insert(ch);
@@ -139,6 +154,8 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let s: String = writer.last_arg() + "*";
+    let (home, org, s, org_length) = expand_tilde(&s);
+
     let ans = eval_glob(&s);
     if ans.len() == 0 {
         return;
@@ -146,7 +163,7 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
 
     write!(writer.stdout, "\r\n").unwrap();
     for f in ans {
-        write!(writer.stdout, "{}        ", f).unwrap();
+        write!(writer.stdout, "{}\t", restore_tilde(&f, &home, &org)).unwrap();
     }
     write!(writer.stdout, "\r\n").unwrap();
     writer.stdout.flush().unwrap();
