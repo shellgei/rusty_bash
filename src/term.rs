@@ -57,13 +57,14 @@ impl Writer {
         }
     }
 
+    /*
     pub fn rewrite_line_from(&mut self, x: u16, y: u16, text: String){
         write!(self.stdout, "{}{}{}",
                termion::cursor::Goto(x, y),
                termion::clear::UntilNewline,
                text).unwrap();
         self.stdout.flush().unwrap();
-    }
+    }*/
 
     pub fn rewrite_line(&mut self, y: u16, text: String){
         write!(self.stdout, "{}{}{}",

@@ -49,7 +49,7 @@ pub fn file_completion(writer: &mut Writer){
     let home = env::var("HOME").expect("Home is not set");
     let base_len = writer.last_arg().len();
     if ans.len() == 1 {
-        let (x, y) = writer.cursor_pos();
+        //let (x, y) = writer.cursor_pos();
         let a = ans[0].replacen(&home, "~", 1);
         for ch in a[base_len..].chars() {
             writer.insert(ch);
