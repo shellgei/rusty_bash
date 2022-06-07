@@ -86,7 +86,7 @@ pub fn scanner_user_path(text: String) -> usize {
     pos
 }
 
-pub fn expand_tilde(path: &String) -> (String, String, String, usize){
+pub fn expand_tilde(path: &String) -> (String, String, String){
     let org_length = scanner_user_path(path.clone());
     let home = if org_length == 1 {
         env::var("HOME").expect("Home is not set")
@@ -102,15 +102,15 @@ pub fn expand_tilde(path: &String) -> (String, String, String, usize){
 
     if home.len() != 0 {
         let h = home.clone();
-        (path.replacen(&path[0..org_length].to_string(), &h, 1), home, org, org_length)
+        (path.replacen(&path[0..org_length].to_string(), &h, 1), home, org)
     }else{
-        (path.to_string(), home, org, org_length)
+        (path.to_string(), home, org)
     }
 }
 
 pub fn file_completion(writer: &mut Writer){
     let s: String = writer.last_arg() + "*";
-    let (s, home, org, org_length) = expand_tilde(&s);
+    let (s, home, org) = expand_tilde(&s);
 
     let ans = eval_glob(&s);
     if ans.len() == 0 {
@@ -147,7 +147,7 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let s: String = writer.last_arg() + "*";
-    let (s, home, org, org_length) = expand_tilde(&s);
+    let (s, home, org) = expand_tilde(&s);
 
     let ans = eval_glob(&s);
     if ans.len() == 0 {
