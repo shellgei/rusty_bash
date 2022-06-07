@@ -41,7 +41,7 @@ impl SubArgTildeUser {
         if !in_brace && text.len() > pos && !(text.nth(pos) == ':' || text.nth(pos) == '/' || text.nth(pos) == '\n') {
             return None;
         }
-        if in_brace && text.len() > pos && !(text.nth(pos) == ':' || text.nth(pos) == '/' || text.nth(pos) == '\n' || text.nth(pos) == ',') {
+        if in_brace && text.len() > pos && !(text.nth(pos) == ':' || text.nth(pos) == '/' || text.nth(pos) == '\n' || text.nth(pos) == ',' || text.nth(pos) == '}' ) {
             return None;
         }
 
