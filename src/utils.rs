@@ -3,6 +3,8 @@
 
 use glob::glob;
 use crate::env;
+use std::io::{BufRead, BufReader};
+use std::fs::OpenOptions;
 
 pub fn chars_to_string(chars: &Vec<char>) -> String {
     chars.iter().collect::<String>()
@@ -10,27 +12,7 @@ pub fn chars_to_string(chars: &Vec<char>) -> String {
 
 pub fn eval_glob(globstr: &String) -> Vec<String> {
     let mut ans = vec!();
-
-    let mut g = globstr.clone();
-
-    //expansion of tilde
-    //TODO: ~root or ~other_user should be replaced but not implemented.
-    let home = env::var("HOME").expect("Home is not set");
-    let mut tilde_expansion = false;
-    if g.len() > 0 {
-        if let Some('~') = g.chars().nth(0) {
-            tilde_expansion = true;
-        }
-        if g.len() > 1 {
-            if let Some('*') = g.chars().nth(1) {
-                tilde_expansion = false;
-            }
-        }
-    }
-
-    if tilde_expansion {
-        g = g.replacen("~", &home, 1);
-    };
+    let g = globstr.clone();
 
     //TODO: too ugly
     if let Ok(path) = glob(&g) {
@@ -95,5 +77,78 @@ pub fn blue_string(strings: &Vec<String>) -> Vec<String> {
         .iter()
         .map(|s| format!("\x1b[34m{}\x1b[m", s))
         .collect()
+}
+
+pub fn expand_tilde(path: &String) -> (String, String, String){
+    let org_length = scanner_user_path(path.clone());
+    let home = if org_length == 1 {
+        env::var("HOME").expect("Home is not set")
+    }else if org_length == 0{
+        "".to_string()
+    }else if let Some(h) = get_home(path[1..org_length].to_string()) {
+        h
+    }else{
+        "".to_string()
+    };
+
+    let org = path[0..org_length].to_string();
+
+    if home.len() != 0 {
+        let h = home.clone();
+        (path.replacen(&path[0..org_length].to_string(), &h, 1), home, org)
+    }else{
+        (path.to_string(), home, org)
+    }
+}
+
+pub fn scanner_user_path(text: String) -> usize {
+    if text.len() == 0 {
+        return 0;
+    }
+
+    let mut pos = 0;
+    for ch in text.chars() {
+        if pos == 0 && ch != '~' {
+            return 0;
+        }
+
+        if "/:\n *".find(ch) != None {
+            break;
+        }
+        pos += ch.len_utf8();
+    }
+
+    pos
+}
+
+
+fn get_home(user: String) -> Option<String> {
+    if let Ok(file) = OpenOptions::new().read(true).open("/etc/passwd"){
+        let br = BufReader::new(file);
+        for ln in br.lines() {
+            if let Ok(line) = ln {
+                if line.len() < user.len(){
+                    continue;
+                }
+
+                let split = line.split(':').collect::<Vec<&str>>();
+                if let Some(u) = split.iter().nth(0){
+                    if u.to_string() == user {
+                        return passwd_to_home(line);
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
+fn passwd_to_home(line: String) -> Option<String> {
+    let split = line.rsplit(':').collect::<Vec<&str>>();
+    if let Some(s) = split.iter().nth(1) {
+        return Some(s.to_string());
+    }
+    None
 }
 

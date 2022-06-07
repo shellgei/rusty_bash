@@ -1,45 +1,13 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::io::{Write, BufRead, BufReader};
-use std::fs::OpenOptions;
+use std::io::Write;
 use std::collections::HashSet;
 
-use crate::env;
 use crate::ShellCore;
-use crate::utils::{eval_glob, search_commands, chars_to_string};
+use crate::utils::{eval_glob, search_commands, chars_to_string, expand_tilde};
 use crate::term::Writer;
 use crate::term::prompt;
-
-fn passwd_to_home(line: String) -> Option<String> {
-    let split = line.rsplit(':').collect::<Vec<&str>>();
-    if let Some(s) = split.iter().nth(1) {
-        return Some(s.to_string());
-    }
-    None
-}
-
-fn get_home(user: String) -> Option<String> {
-    if let Ok(file) = OpenOptions::new().read(true).open("/etc/passwd"){
-        let br = BufReader::new(file);
-        for ln in br.lines() {
-            if let Ok(line) = ln {
-                if line.len() < user.len(){
-                    continue;
-                }
-
-                let split = line.split(':').collect::<Vec<&str>>();
-                if let Some(u) = split.iter().nth(0){
-                    if u.to_string() == user {
-                        return passwd_to_home(line);
-                    }
-                }
-            }
-        }
-    }
-    
-    None
-}
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     if strs.len() < 2 {
@@ -64,48 +32,6 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     }
 
     true
-}
-
-pub fn scanner_user_path(text: String) -> usize {
-    if text.len() == 0 {
-        return 0;
-    }
-
-    let mut pos = 0;
-    for ch in text.chars() {
-        if pos == 0 && ch != '~' {
-            return 0;
-        }
-
-        if "/:\n *".find(ch) != None {
-            break;
-        }
-        pos += ch.len_utf8();
-    }
-
-    pos
-}
-
-pub fn expand_tilde(path: &String) -> (String, String, String){
-    let org_length = scanner_user_path(path.clone());
-    let home = if org_length == 1 {
-        env::var("HOME").expect("Home is not set")
-    }else if org_length == 0{
-        "".to_string()
-    }else if let Some(h) = get_home(path[1..org_length].to_string()) {
-        h
-    }else{
-        "".to_string()
-    };
-
-    let org = path[0..org_length].to_string();
-
-    if home.len() != 0 {
-        let h = home.clone();
-        (path.replacen(&path[0..org_length].to_string(), &h, 1), home, org)
-    }else{
-        (path.to_string(), home, org)
-    }
 }
 
 pub fn file_completion(writer: &mut Writer){

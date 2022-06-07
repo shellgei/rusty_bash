@@ -134,6 +134,9 @@ res=$($com <<< 'cd /;echo "$(pwd)x"') #internal command
 res=$($com <<< 'echo ~')
 [ "$res" = "$HOME" ]
 
+res=$($com <<< 'echo "~"')
+[ "$res" = "~" ]
+
 res=$($com <<< 'echo ~/')
 [ "$res" = "$HOME/" ]
 
@@ -142,6 +145,12 @@ res=$($com <<< 'echo ~a')
 
 res=$($com <<< 'echo ~*')
 [ "$res" = "~*" ]
+
+user=$(tail -n 1 /etc/passwd | awk -F: '{print $1}')
+home=$(tail -n 1 /etc/passwd | awk -F: '{print $(NF-1)}')
+
+res=$($com <<< "echo ~$user")
+[ "$res" = "$home" ]
 
 
 ### DIRECTORY TEST ###

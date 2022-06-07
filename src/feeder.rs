@@ -92,11 +92,9 @@ impl Feeder {
         }
     }
 
-    /*
-    pub fn text(&self) -> String {
+/*    pub fn text(&self) -> String {
         self.remaining.clone()
-    }
-    */
+    }*/
 
     pub fn from_to(&self, from: usize, to: usize) -> String {
         self.remaining[from..to].to_string()

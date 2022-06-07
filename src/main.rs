@@ -16,6 +16,7 @@ mod elem_subarg_command_expansion;
 mod elem_subarg_double_quoted;
 mod elem_subarg_non_quoted;
 mod elem_subarg_single_quoted;
+mod elem_subarg_tilde;
 mod elem_subarg_variable;
 mod elem_substitution;
 mod elem_varname;

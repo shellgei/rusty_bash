@@ -9,6 +9,7 @@ use crate::abst_arg_elem::subarg;
 use crate::abst_arg_elem::subvalue;
 use crate::abst_arg_elem::subarg_in_brace;
 use crate::abst_arg_elem::ArgElem;
+use crate::elem_subarg_tilde::SubArgTildeUser;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::CommandElem;
 
@@ -49,6 +50,11 @@ impl Arg {
             pos: DebugInfo::init(text),
             subargs: vec!(),
         };
+
+        if let Some(result) = SubArgTildeUser::parse(text) {
+            ans.text += &result.text();
+            ans.subargs.push(Box::new(result));
+        }
     
         let sub = if expand_brace{subarg}else{subvalue};
     
