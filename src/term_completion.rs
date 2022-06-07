@@ -102,32 +102,25 @@ pub fn expand_tilde(path: &String) -> (String, String, String, usize){
 
     if home.len() != 0 {
         let h = home.clone();
-        (home, org, path.replacen(&path[0..org_length].to_string(), &h, 1), org_length)
+        (path.replacen(&path[0..org_length].to_string(), &h, 1), home, org, org_length)
     }else{
-        (home, org, path.to_string(), org_length)
+        (path.to_string(), home, org, org_length)
     }
-}
-
-pub fn restore_tilde(path: &String, home: &String, org: &String) -> String {
-    //eprintln!("{}, {}", home, org);
-    path.replacen(home, org, 1)
 }
 
 pub fn file_completion(writer: &mut Writer){
     let s: String = writer.last_arg() + "*";
-    let (home, org, s, org_length) = expand_tilde(&s);
+    let (s, home, org, org_length) = expand_tilde(&s);
 
     let ans = eval_glob(&s);
     if ans.len() == 0 {
         return;
     };
 
-    //TODO: ~ should be replaced for other users.
     let base_len = writer.last_arg().len();
     if ans.len() == 1 {
         let a = if home.len() != 0 {
-            //eprintln!("{}, {}", ans[0], org);
-            restore_tilde(&ans[0], &home, &org)
+            ans[0].replacen(&home, &org, 1)
         }else{
             ans[0].clone()
         };
@@ -136,7 +129,7 @@ pub fn file_completion(writer: &mut Writer){
         }
     }else{
         let a: Vec<String> = if home.len() != 0 {
-            ans.iter().map(|x| restore_tilde(&x, &home, &org)).collect()
+            ans.iter().map(|x| x.replacen(&home, &org, 1)).collect()
         }else{
             ans
         };
@@ -154,7 +147,7 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let s: String = writer.last_arg() + "*";
-    let (home, org, s, org_length) = expand_tilde(&s);
+    let (s, home, org, org_length) = expand_tilde(&s);
 
     let ans = eval_glob(&s);
     if ans.len() == 0 {
@@ -163,7 +156,7 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
 
     write!(writer.stdout, "\r\n").unwrap();
     for f in ans {
-        write!(writer.stdout, "{}\t", restore_tilde(&f, &home, &org)).unwrap();
+        write!(writer.stdout, "{}\t", f.replacen(&home, &org, 1)).unwrap();
     }
     write!(writer.stdout, "\r\n").unwrap();
     writer.stdout.flush().unwrap();
