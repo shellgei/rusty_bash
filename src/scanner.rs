@@ -74,3 +74,4 @@ pub fn scanner_end_of_bracket(text: &Feeder, from: usize, to: char) -> usize {
     //temporary implementation
     scanner_until(text, from, &to.to_string())
 }
+
