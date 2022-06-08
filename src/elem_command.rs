@@ -277,6 +277,7 @@ impl Command {
         //TODO: bash permits redirections here. 
     
         /* Then one or more arguments exist. */
+        let mut first = true;
         while let Some(a) = Arg::parse(text, true, conf) {
             if text.len() != 0 {
                 if text.nth(0) == ')' || text.nth(0) == '(' {
@@ -286,7 +287,23 @@ impl Command {
                     return None;
                 };
             };
-            ans.push_elems(Box::new(a));
+            //check of alias
+            if first {
+                first = false;
+                if let Some(alias) = conf.aliases.get(&a.text){
+                    let mut sub_feeder = Feeder::new_with(alias.to_string());
+                    while let Some(a) = Arg::parse(&mut sub_feeder, true, conf) {
+                        ans.push_elems(Box::new(a));
+                        if let Some(d) = ArgDelimiter::parse(&mut sub_feeder){
+                            ans.push_elems(Box::new(d));
+                        }
+                    }
+                }else{
+                    ans.push_elems(Box::new(a));
+                }
+            }else{
+                ans.push_elems(Box::new(a));
+            };
     
             if let Some(d) = ArgDelimiter::parse(text){
                 ans.push_elems(Box::new(d));

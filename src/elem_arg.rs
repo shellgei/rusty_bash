@@ -45,6 +45,10 @@ impl Arg {
 
     // single quoted arg or double quoted arg or non quoted arg 
     pub fn parse(text: &mut Feeder, expand_brace: bool, conf: &mut ShellCore) -> Option<Arg> {
+        if text.len() == 0 {
+            return None;
+        }
+
         let mut ans = Arg{
             text: "".to_string(),
             pos: DebugInfo::init(text),
