@@ -13,14 +13,14 @@ pub trait HandInputUnit {
 }
 
 // job or function comment or blank (finally) 
-pub fn hand_input_unit(text: &mut Feeder) -> Option<Box<dyn HandInputUnit>> {
+pub fn hand_input_unit(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn HandInputUnit>> {
     if text.len() == 0 {
         return None;
     };
 
-    if let Some(result) = BlankPart::parse(text)    {return Some(Box::new(result));}
-    if let Some(result) = SetVariables::parse(text) {return Some(Box::new(result));}
-    if let Some(result) = Command::parse(text)      {return Some(Box::new(result));}
+    if let Some(result) = BlankPart::parse(text)       {return Some(Box::new(result));}
+    if let Some(result) = SetVariables::parse(text, conf)    {return Some(Box::new(result));}
+    if let Some(result) = Command::parse(text, conf)   {return Some(Box::new(result));}
 
     if text.error_occuring {
         text.consume(text.len());

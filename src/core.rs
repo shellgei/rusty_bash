@@ -7,7 +7,6 @@ use std::env;
 use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::Write;
-use crate::scanner::scanner_until;
 
 pub struct Flags {
     pub v: bool,
@@ -30,7 +29,7 @@ impl Flags {
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
     pub vars: HashMap<String, String>,
-    pub aliases: HashMap<String, Vec<String>>,
+    pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: Flags,
 }
@@ -123,16 +122,15 @@ impl ShellCore {
     pub fn alias(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() < 1 {
             for (k, v) in self.aliases.iter() {
-                println!("alias {}='{}'", k, v.join(" ")); 
+                println!("alias {}='{}'", k, v);
             }
             return 0;
         }
 
         if let Some(com) = self.aliases.get(&args[1]) {
-            println!("alias {}='{}'", &args[1], com.join(" ")); 
+            println!("alias {}='{}'", &args[1], com);
             return 0;
         }
-
 
         let elems = args[1].split('=').collect::<Vec<&str>>();
         if elems.len() < 2 {
@@ -140,8 +138,7 @@ impl ShellCore {
             return 1;
         }
 
-        eprintln!("{:?}", elems);
-
+        self.aliases.insert(elems[0].to_string(), elems[1..].join("="));
         0
     }
 }

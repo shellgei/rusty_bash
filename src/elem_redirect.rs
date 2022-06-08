@@ -3,7 +3,6 @@
 
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-
 use crate::scanner::*;
 
 pub struct Redirect {

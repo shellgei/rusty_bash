@@ -43,7 +43,7 @@ impl ArgElem for SubArgBraced {
 }
 
 impl SubArgBraced {
-    pub fn parse(text: &mut Feeder) -> Option<SubArgBraced> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgBraced> {
         let pos = scanner_until(text, 0, "{");
         if pos != 0 {
             return None;
@@ -55,7 +55,7 @@ impl SubArgBraced {
             args: vec!(),
         };
     
-        while let Some(arg) = arg_in_brace(text) {
+        while let Some(arg) = arg_in_brace(text, conf) {
             ans.text += &arg.text.clone();
             ans.args.push(arg); 
     

@@ -18,33 +18,33 @@ pub trait ArgElem {
     fn text(&self) -> String;
 }
 
-pub fn subarg(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
-    if let Some(a) = SubArgVariable::parse2(text)          {Some(Box::new(a))}
-    else if let Some(a) = SubArgCommandExp::parse(text)    {Some(Box::new(a))}
+pub fn subarg(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem>> {
+    if let Some(a) = SubArgVariable::parse2(text)                {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandExp::parse(text, conf)    {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)      {Some(Box::new(a))}
-    else if let Some(a) = SubArgBraced::parse(text)        {Some(Box::new(a))}
+    else if let Some(a) = SubArgBraced::parse(text, conf)        {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse(text)     {Some(Box::new(a))}
     else if let Some(a) = SubArgSingleQuoted::parse(text) {Some(Box::new(a))}
-    else if let Some(a) = SubArgDoubleQuoted::parse(text)  {Some(Box::new(a))}
+    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf)  {Some(Box::new(a))}
     else                                                   {None}
 }
 
-pub fn subvalue(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
+pub fn subvalue(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = SubArgVariable::parse2(text)          {Some(Box::new(a))}
-    else if let Some(a) = SubArgCommandExp::parse(text)    {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandExp::parse(text, conf)    {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)      {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse2(text)    {Some(Box::new(a))}
     else if let Some(a) = SubArgSingleQuoted::parse(text) {Some(Box::new(a))}
-    else if let Some(a) = SubArgDoubleQuoted::parse(text)  {Some(Box::new(a))}
+    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf)  {Some(Box::new(a))}
     else                                                   {None}
 }
 
-pub fn subarg_in_brace(text: &mut Feeder) -> Option<Box<dyn ArgElem>> {
+pub fn subarg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = SubArgVariable::parse2(text)         {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)     {Some(Box::new(a))}
-    else if let Some(a) = SubArgBraced::parse(text)       {Some(Box::new(a))}
+    else if let Some(a) = SubArgBraced::parse(text, conf)       {Some(Box::new(a))}
     else if let Some(a) = SubArgSingleQuoted::parse(text) {Some(Box::new(a))}
-    else if let Some(a) = SubArgDoubleQuoted::parse(text) {Some(Box::new(a))}
+    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf) {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse3(text)   {Some(Box::new(a))}
     else{None}
 }

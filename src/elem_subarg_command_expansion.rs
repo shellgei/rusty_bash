@@ -28,7 +28,7 @@ impl ArgElem for SubArgCommandExp {
 }
 
 impl SubArgCommandExp {
-    pub fn parse(text: &mut Feeder) -> Option<SubArgCommandExp> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgCommandExp> {
         if !(text.nth(0) == '$' && text.nth(1) == '(') {
             return None;
         }
@@ -36,7 +36,7 @@ impl SubArgCommandExp {
         let pos = scanner_end_of_bracket(text, 2, ')');
         let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
     
-        if let Some(e) = Command::parse(&mut sub_feeder){
+        if let Some(e) = Command::parse(&mut sub_feeder, conf){
             let ans = Some (SubArgCommandExp {
                 text: text.consume(pos+1),
                 pos: DebugInfo::init(text),

@@ -44,7 +44,7 @@ impl Arg {
     }
 
     // single quoted arg or double quoted arg or non quoted arg 
-    pub fn parse(text: &mut Feeder, expand_brace: bool) -> Option<Arg> {
+    pub fn parse(text: &mut Feeder, expand_brace: bool, conf: &mut ShellCore) -> Option<Arg> {
         let mut ans = Arg{
             text: "".to_string(),
             pos: DebugInfo::init(text),
@@ -58,7 +58,7 @@ impl Arg {
     
         let sub = if expand_brace{subarg}else{subvalue};
     
-        while let Some(result) = sub(text) {
+        while let Some(result) = sub(text, conf) {
             ans.text += &(*result).text();
             ans.subargs.push(result);
     
@@ -102,7 +102,7 @@ impl CommandElem for Arg {
     fn text(&self) -> String { self.text.clone() }
 }
 
-pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
+pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
         pos: DebugInfo::init(text),
@@ -123,7 +123,7 @@ pub fn arg_in_brace(text: &mut Feeder) -> Option<Arg> {
         ans.subargs.push(Box::new(result));
     }
 
-    while let Some(result) = subarg_in_brace(text) {
+    while let Some(result) = subarg_in_brace(text, conf) {
         ans.text += &(*result).text();
         ans.subargs.push(result);
     };

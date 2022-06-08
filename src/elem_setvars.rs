@@ -74,11 +74,11 @@ impl SetVariables {
         self.elems.push(s);
     }
 
-    pub fn parse(text: &mut Feeder) -> Option<SetVariables> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SetVariables> {
         let backup = text.clone();
         let mut ans = SetVariables::new();
     
-        while let Some(result) = Substitution::parse(text) {
+        while let Some(result) = Substitution::parse(text, conf) {
             ans.push(Box::new(result));
     
             if let Some(result) = ArgDelimiter::parse(text){

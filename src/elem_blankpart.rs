@@ -40,8 +40,8 @@ impl BlankPart {
         let mut ans = BlankPart::new();
     
         loop {
-            if let Some(d) = ArgDelimiter::parse(text)          {ans.push(Box::new(d));}
-            else if let Some(e) = Eoc::parse(text){ans.push(Box::new(e));}
+            if let Some(d) = ArgDelimiter::parse(text) {ans.push(Box::new(d));}
+            else if let Some(e) = Eoc::parse(text)     {ans.push(Box::new(e));}
             else{break;};
         };
     

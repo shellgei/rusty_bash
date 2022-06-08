@@ -259,14 +259,14 @@ impl Command {
         ans
     }
 
-    pub fn parse(text: &mut Feeder) -> Option<Command> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
         let backup = text.clone();
         let mut ans = Command::new();
     
         //TODO: bash permits redirections here. 
     
         /* A command starts with substitutions. */
-        while let Some(s) = Substitution::parse(text) {
+        while let Some(s) = Substitution::parse(text, conf) {
             ans.push_vars(s);
     
             if let Some(d) = ArgDelimiter::parse(text){
@@ -277,7 +277,7 @@ impl Command {
         //TODO: bash permits redirections here. 
     
         /* Then one or more arguments exist. */
-        while let Some(a) = Arg::parse(text, true) {
+        while let Some(a) = Arg::parse(text, true, conf) {
             if text.len() != 0 {
                 if text.nth(0) == ')' || text.nth(0) == '(' {
                     text.error_occuring = true;

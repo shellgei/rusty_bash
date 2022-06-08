@@ -28,7 +28,7 @@ impl Substitution {
         }
     }
 
-    pub fn parse(text: &mut Feeder) -> Option<Substitution> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Substitution> {
         let varname_pos = scanner_varname(text, 0);
         let equal_pos = scanner_until(text, varname_pos, "=");
         if equal_pos != varname_pos {
@@ -41,7 +41,7 @@ impl Substitution {
         let backup = text.clone();
         let var_part = VarName::new(text, varname_pos);
         text.consume(1); // = 
-        if let Some(value_part) = Arg::parse(text, false){
+        if let Some(value_part) = Arg::parse(text, false, conf){
             Some(Substitution::new(text, var_part, value_part))
         }else{ // cases where the value goes the next line
             text.rewind(backup);
