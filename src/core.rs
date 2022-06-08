@@ -7,6 +7,7 @@ use std::env;
 use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::Write;
+use crate::scanner::scanner_until;
 
 pub struct Flags {
     pub v: bool,
@@ -27,8 +28,9 @@ impl Flags {
 }
 
 pub struct ShellCore {
-    pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>,) -> i32>,
+    pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
     pub vars: HashMap<String, String>,
+    pub aliases: HashMap<String, Vec<String>>,
     pub history: Vec<String>,
     pub flags: Flags,
 }
@@ -38,6 +40,7 @@ impl ShellCore {
         let mut conf = ShellCore{
             internal_commands: HashMap::new(),
             vars: HashMap::new(),
+            aliases: HashMap::new(),
             history: Vec::new(),
             flags: Flags::new(),
         };
@@ -47,6 +50,7 @@ impl ShellCore {
         conf.internal_commands.insert("exit".to_string(), Self::exit);
         conf.internal_commands.insert("pwd".to_string(), Self::pwd);
         conf.internal_commands.insert("cd".to_string(), Self::cd);
+        conf.internal_commands.insert("alias".to_string(), Self::alias);
 
         conf
     }
@@ -74,7 +78,7 @@ impl ShellCore {
     /////////////////////////////////
     /* INTERNAL COMMANDS HEREAFTER */
     /////////////////////////////////
-    pub fn exit(&mut self, _args: &mut Vec<String>,) -> i32 {
+    pub fn exit(&mut self, _args: &mut Vec<String>) -> i32 {
         let home = env::var("HOME").expect("HOME is not defined");
         let mut hist_file = OpenOptions::new()
                                     .write(true)
@@ -90,7 +94,7 @@ impl ShellCore {
         exit(0);
     }
 
-    pub fn pwd(&mut self, _args: &mut Vec<String>,) -> i32 {
+    pub fn pwd(&mut self, _args: &mut Vec<String>) -> i32 {
         if let Some(p) = env::current_dir().expect("Cannot get current dir").to_str() {
             println!("{}", p.to_string());
             return 0;
@@ -99,7 +103,7 @@ impl ShellCore {
         panic!("Cannot get current dir");
     }
 
-    pub fn cd(&mut self, args: &mut Vec<String>,) -> i32 {
+    pub fn cd(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() == 0 {
             eprintln!("Bug of this shell");
         }else if args.len() == 1 {
@@ -114,5 +118,30 @@ impl ShellCore {
             eprintln!("Not exist directory");
             1
         }
+    }
+
+    pub fn alias(&mut self, args: &mut Vec<String>) -> i32 {
+        if args.len() < 1 {
+            for (k, v) in self.aliases.iter() {
+                println!("alias {}='{}'", k, v.join(" ")); 
+            }
+            return 0;
+        }
+
+        if let Some(com) = self.aliases.get(&args[1]) {
+            println!("alias {}='{}'", &args[1], com.join(" ")); 
+            return 0;
+        }
+
+
+        let elems = args[1].split('=').collect::<Vec<&str>>();
+        if elems.len() < 2 {
+            eprintln!("bash: alias: {} not found", &args[1]);
+            return 1;
+        }
+
+        eprintln!("{:?}", elems);
+
+        0
     }
 }
