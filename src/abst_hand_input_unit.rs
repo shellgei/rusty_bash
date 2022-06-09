@@ -3,7 +3,7 @@
 
 use crate::elem_blankpart::BlankPart;
 use crate::elem_setvars::SetVariables;
-use crate::elem_command::Command;
+use crate::elem_pipeline::Pipeline;
 use crate::Feeder;
 use crate::ShellCore;
 
@@ -20,7 +20,7 @@ pub fn hand_input_unit(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dy
 
     if let Some(result) = BlankPart::parse(text)          {return Some(Box::new(result));}
     if let Some(result) = SetVariables::parse(text, conf) {return Some(Box::new(result));}
-    if let Some(result) = Command::parse(text, conf)      {return Some(Box::new(result));}
+    if let Some(result) = Pipeline::parse(text, conf)     {return Some(Box::new(result));}
 
     if text.error_occuring {
         text.consume(text.len());

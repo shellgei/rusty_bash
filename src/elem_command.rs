@@ -34,7 +34,7 @@ pub struct Command {
     vars: Vec<Box<Substitution>>,
     pub args: Vec<Box<dyn CommandElem>>,
     pub redirects: Vec<Box<Redirect>>,
-    text: String,
+    pub text: String,
     pub expansion: bool,
     pub outfd_expansion: RawFd,
     pub infd_expansion: RawFd,
