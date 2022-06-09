@@ -46,7 +46,7 @@ impl HandInputUnit for Command {
         self.eval_args(conf)
     }
 
-    fn exec(&mut self, conf: &mut ShellCore) -> String{
+    fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String) {
         let mut args = self.eval(conf);
 
         if self.expansion {
@@ -59,7 +59,7 @@ impl HandInputUnit for Command {
             if let Some(func) = conf.get_internal_command(&args[0]) {
                 let status = func(conf, &mut args);
                 conf.vars.insert("?".to_string(), status.to_string());
-                return "".to_string();
+                return (None, "".to_string());
             }
         }
 
@@ -70,7 +70,13 @@ impl HandInputUnit for Command {
                     self.exec_external_command(&mut args, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    return_string = self.wait_command(child, conf)
+                    return_string = self.wait_command(child, conf);
+                    if let Some(c) = return_string.chars().last() {
+                    if c == '\n' {
+                        return (Some(child), return_string[0..return_string.len()-1].to_string());
+                    }
+                    return (Some(child), return_string);
+        }
                 },
                 Err(err) => {
                     panic!("Failed to fork. {}", err)
@@ -78,13 +84,8 @@ impl HandInputUnit for Command {
             }
         }
 
-        if let Some(c) = return_string.chars().last() {
-            if c == '\n' {
-                return return_string[0..return_string.len()-1].to_string();
-            }
-        }
 
-        return_string
+        (None, "".to_string())
     }
 }
 

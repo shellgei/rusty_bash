@@ -19,7 +19,8 @@ pub struct SubArgCommandExp {
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         self.com.expansion = true;
-        vec!(self.com.exec(conf).replace("\n", " "))
+        let (_, s) = self.com.exec(conf);
+        vec!(s.replace("\n", " "))
     }
 
     fn text(&self) -> String {

@@ -25,11 +25,10 @@ impl HandInputUnit for Pipeline {
         self.commands[x-1].eval(conf)
     }
 
-    fn exec(&mut self, conf: &mut ShellCore) -> String{
+    fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String){
         let x = self.commands.len();
-        eprintln!("{}", x);
         if x == 0 {
-            return "".to_string();
+            return (None, "".to_string());
         }
         self.commands[x-1].exec(conf)
     }

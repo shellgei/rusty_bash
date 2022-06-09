@@ -11,6 +11,7 @@ use crate::Feeder;
 use crate::elem_substitution::Substitution;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
+use nix::unistd::Pid;
 
 
 pub struct SetVariables {
@@ -36,7 +37,7 @@ impl SetVariables {
 }
 
 impl HandInputUnit for SetVariables {
-    fn exec(&mut self, conf: &mut ShellCore) -> String {
+    fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String) {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
         };
@@ -55,7 +56,7 @@ impl HandInputUnit for SetVariables {
             };
         };
 
-        "".to_string()
+        (None, "".to_string())
     }
 }
 
