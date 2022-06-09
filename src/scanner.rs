@@ -59,7 +59,7 @@ pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
 }
 
 pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
-    if text.match_at(from, ";\n") {
+    if text.match_at(from, ";\n|") {
         return from+1;
     }
 
