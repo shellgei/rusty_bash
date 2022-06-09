@@ -39,6 +39,12 @@ use crate::core::ShellCore;
 use crate::abst_command_elem::{CommandElem};
 use crate::feeder::Feeder;
 
+use std::fs::OpenOptions;
+use std::io::BufReader;
+use std::io::BufRead;
+use crate::elem_command::Command;
+use crate::abst_hand_input_unit::HandInputUnit;
+
 fn read_line() -> String {
     let mut line = String::new();
 
@@ -52,17 +58,41 @@ fn read_line() -> String {
     line
 }
 
-/*
-fn add_line(text: &mut Feeder, line: String) {
-    text.add_line(line);
-}
-*/
-
 fn is_interactive(pid: u32) -> bool {
     let std_path = format!("/proc/{}/fd/0", pid);
     match Path::new(&std_path).metadata() {
         Ok(metadata) => metadata.st_mode() == 8592, 
         Err(err) => panic!("{}", err),
+    }
+}
+
+/* This function will be replaced "source" in future. */
+fn read_bashrc(core: &mut ShellCore){
+    let home = if let Ok(h) = env::var("HOME"){
+        h
+    }else{
+        panic!("Home is not set");
+    };
+
+    if let Ok(file) = OpenOptions::new().read(true).open(home + "/.bashrc"){
+        let br = BufReader::new(file);
+        for ln in br.lines() {
+            match ln {
+                Ok(mut line) => {
+                    line = line.trim_start().to_string();
+                    if line.len() < 7 {
+                        continue; 
+                    };
+                    if &line[0..5] == "alias" {
+                        let mut f = Feeder::new_with(line);
+                        if let Some(mut c) = Command::parse(&mut f, core) {
+                            c.exec(core);
+                        }
+                    }
+                },
+                _ => break,
+            }
+        }
     }
 }
 
@@ -88,15 +118,15 @@ fn main() {
         };
     };
 
-    let mut input = Feeder::new();
-
-
     let pid = process::id();
     core.vars.insert("PID".to_string(), pid.to_string());
     core.vars.insert("HOSTNAME".to_string(), get_hostname());
     core.vars.insert("SHELL".to_string(), "rustybash".to_string());
     core.flags.i = is_interactive(pid);
 
+    read_bashrc(&mut core);
+
+    let mut input = Feeder::new();
     loop {
         let line = if core.flags.i {
             let len_prompt = term::prompt(&mut core);

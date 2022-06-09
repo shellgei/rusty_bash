@@ -120,7 +120,7 @@ impl ShellCore {
     }
 
     pub fn alias(&mut self, args: &mut Vec<String>) -> i32 {
-        if args.len() < 1 {
+        if args.len() <= 1 {
             for (k, v) in self.aliases.iter() {
                 println!("alias {}='{}'", k, v);
             }
