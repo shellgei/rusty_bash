@@ -5,6 +5,10 @@ use crate::{ShellCore, Feeder};
 use crate::abst_hand_input_unit::HandInputUnit;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
+use nix::sys::wait::waitpid;
+use nix::unistd::Pid;
+use nix::unistd::read;
+use nix::sys::wait::WaitStatus;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
@@ -37,6 +41,39 @@ impl Pipeline {
             commands: vec!(),
             text: "".to_string(),
         }
+    }
+
+    fn wait_command(&self, com: &Command, child: Pid, conf: &mut ShellCore) -> String {
+        let mut ans = "".to_string();
+
+        if com.expansion {
+            let mut ch = [0;1000];
+            while let Ok(n) = read(com.infd_expansion, &mut ch) {
+                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+                if n < 1000 {
+                    break;
+                };
+            };
+        }
+
+        match waitpid(child, None)
+            .expect("Faild to wait child process.") {
+            WaitStatus::Exited(pid, status) => {
+                conf.vars.insert("?".to_string(), status.to_string());
+                if status != 0 {
+                    eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
+                }
+            }
+            WaitStatus::Signaled(pid, signal, _) => {
+                conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
+                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
+            }
+            _ => {
+                eprintln!("Unknown error")
+            }
+        };
+
+        ans
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
