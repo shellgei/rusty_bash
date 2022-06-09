@@ -19,6 +19,7 @@ mod elem_subarg_single_quoted;
 mod elem_subarg_tilde;
 mod elem_subarg_variable;
 mod elem_substitution;
+mod elem_pipeline;
 mod elem_varname;
 mod core;
 mod term;

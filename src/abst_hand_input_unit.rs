@@ -18,9 +18,9 @@ pub fn hand_input_unit(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dy
         return None;
     };
 
-    if let Some(result) = BlankPart::parse(text)       {return Some(Box::new(result));}
-    if let Some(result) = SetVariables::parse(text, conf)    {return Some(Box::new(result));}
-    if let Some(result) = Command::parse(text, conf)   {return Some(Box::new(result));}
+    if let Some(result) = BlankPart::parse(text)          {return Some(Box::new(result));}
+    if let Some(result) = SetVariables::parse(text, conf) {return Some(Box::new(result));}
+    if let Some(result) = Command::parse(text, conf)      {return Some(Box::new(result));}
 
     if text.error_occuring {
         text.consume(text.len());
