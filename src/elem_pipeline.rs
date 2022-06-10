@@ -20,17 +20,14 @@ pub struct Pipeline {
 impl HandInputUnit for Pipeline {
 
     fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String){
+        if self.expansion {
+            self.set_command_expansion_pipe();
+        }
+
         let x = self.commands.len();
         if x == 0 {
             return (None, "".to_string());
         }
-        self.commands[x-1].expansion = self.expansion;
-        if self.expansion {
-            let p = pipe().expect("Pipe cannot open");
-            self.commands[x-1].infd_expansion = p.0;
-            self.commands[x-1].outfd_expansion = p.1;
-        }
-
         let (pid_opt, _) = self.commands[x-1].exec(conf);
 
         if let Some(pid) = pid_opt {
@@ -49,6 +46,15 @@ impl Pipeline {
             expansion: false,
             text: "".to_string(),
         }
+    }
+
+    fn set_command_expansion_pipe(&mut self){
+        let x = self.commands.len();
+        let c = &mut self.commands[x-1];
+        let p = pipe().expect("Pipe cannot open");
+        c.infd_expansion = p.0;
+        c.outfd_expansion = p.1;
+        c.expansion = true;
     }
 
     fn wait_command(&self, com: &Command, child: Pid, conf: &mut ShellCore) -> String {
