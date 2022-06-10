@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::elem_command::{Command};
+use crate::elem_pipeline::{Pipeline};
 use crate::scanner::*;
 
 use crate::abst_arg_elem::ArgElem;
@@ -13,7 +13,7 @@ use crate::abst_hand_input_unit::HandInputUnit;
 pub struct SubArgCommandExp {
     pub text: String,
     pub pos: DebugInfo,
-    pub com: Command, 
+    pub com: Pipeline, 
 }
 
 impl ArgElem for SubArgCommandExp {
@@ -37,7 +37,7 @@ impl SubArgCommandExp {
         let pos = scanner_end_of_bracket(text, 2, ')');
         let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
     
-        if let Some(e) = Command::parse(&mut sub_feeder, conf){
+        if let Some(e) = Pipeline::parse(&mut sub_feeder, conf){
             let ans = Some (SubArgCommandExp {
                 text: text.consume(pos+1),
                 pos: DebugInfo::init(text),

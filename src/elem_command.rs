@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, read, close}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, close}; 
 use std::ffi::CString;
 use std::process::exit;
 use std::env;
@@ -15,8 +15,6 @@ use crate::utils::blue_string;
 use crate::elem_arg::Arg;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use std::fs::OpenOptions;
-
-use nix::sys::wait::*;
 
 use crate::elem_substitution::Substitution;
 use crate::elem_redirect::Redirect;
@@ -63,20 +61,13 @@ impl HandInputUnit for Command {
             }
         }
 
-        let mut return_string = "".to_string();
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
                     self.exec_external_command(&mut args, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    return_string = self.wait_command(child, conf);
-                    if let Some(c) = return_string.chars().last() {
-                    if c == '\n' {
-                        return (Some(child), return_string[0..return_string.len()-1].to_string());
-                    }
-                    return (Some(child), return_string);
-        }
+                    return (Some(child), "".to_string());
                 },
                 Err(err) => {
                     panic!("Failed to fork. {}", err)
@@ -227,6 +218,7 @@ impl Command {
         exit(127);
     }
 
+    /*
     fn wait_command(&self, child: Pid, conf: &mut ShellCore) -> String {
         let mut ans = "".to_string();
 
@@ -259,6 +251,7 @@ impl Command {
 
         ans
     }
+    */
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
         let backup = text.clone();

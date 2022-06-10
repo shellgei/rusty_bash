@@ -14,15 +14,19 @@ use nix::sys::wait::WaitStatus;
 pub struct Pipeline {
     pub commands: Vec<Command>,
     text: String,
+    pub expansion: bool,
 }
 
 impl HandInputUnit for Pipeline {
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
+        vec!()
+            /*
         let x = self.commands.len();
         if x == 0 {
             return vec!();
         }
         self.commands[x-1].eval(conf)
+        */
     }
 
     fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String){
@@ -30,7 +34,15 @@ impl HandInputUnit for Pipeline {
         if x == 0 {
             return (None, "".to_string());
         }
-        self.commands[x-1].exec(conf)
+        self.commands[x-1].expansion = self.expansion;
+        let (pid_opt, _) = self.commands[x-1].exec(conf);
+
+        if let Some(pid) = pid_opt {
+            let result_string = self.wait_command(&self.commands[x-1], pid, conf);
+            (None, result_string)
+        }else{
+            (None, "".to_string())
+        }
     }
 }
 
@@ -38,6 +50,7 @@ impl Pipeline {
     pub fn new() -> Pipeline{
         Pipeline {
             commands: vec!(),
+            expansion: false,
             text: "".to_string(),
         }
     }
@@ -72,6 +85,11 @@ impl Pipeline {
             }
         };
 
+        if let Some(c) = ans.chars().last() {
+            if c == '\n' {
+                return ans[0..ans.len()-1].to_string();
+            }
+        }
         ans
     }
 
