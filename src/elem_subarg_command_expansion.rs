@@ -20,7 +20,6 @@ impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         self.com.expansion = true;
         let _ = self.com.exec(conf);
-        //vec!(s.replace("\n", " "))
         vec!(self.com.expansion_str.replace("\n", " "))
     }
 
