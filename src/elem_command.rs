@@ -30,6 +30,7 @@ pub struct Command {
     pub expansion: bool, 
     pub outfd_expansion: RawFd,
     pub infd_expansion: RawFd,
+    pub pid: Option<Pid>,
 }
 
 impl HandInputUnit for Command {
@@ -67,6 +68,7 @@ impl Command {
             expansion: false,
             outfd_expansion: 1,
             infd_expansion: 0,
+            pid: None,
         }
     }
 

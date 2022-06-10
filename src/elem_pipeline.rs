@@ -24,10 +24,25 @@ impl HandInputUnit for Pipeline {
             self.set_command_expansion_pipe();
         }
 
+        for c in self.commands.iter_mut().rev() {
+            let (pid, _) = c.exec(conf);
+            c.pid = pid;
+        }
+
+        let mut s = "".to_string();
+        for c in &self.commands {
+            if let Some(p) = c.pid {
+                s += &self.wait_command(&c, p, conf);
+            };
+        }
+        (None, s)
+
+        /*
         let x = self.commands.len();
         if x == 0 {
             return (None, "".to_string());
         }
+
         let (pid_opt, _) = self.commands[x-1].exec(conf);
 
         if let Some(pid) = pid_opt {
@@ -36,6 +51,7 @@ impl HandInputUnit for Pipeline {
         }else{
             (None, "".to_string())
         }
+        */
     }
 }
 
