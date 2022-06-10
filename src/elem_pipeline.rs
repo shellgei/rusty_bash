@@ -29,11 +29,8 @@ impl HandInputUnit for Pipeline {
         let len = self.commands.len();
         let mut prevfd = -1 as RawFd;
         for (i, c) in self.commands.iter_mut().enumerate() {
-            if i == 0 {
-                c.head = true;
-            }if i == len-1 {
-                c.tail = true;
-            };
+            c.head = i == 0;
+            c.tail = i == len-1;
 
             if !c.tail {
                 let p = pipe().expect("Pipe cannot open");
@@ -46,7 +43,7 @@ impl HandInputUnit for Pipeline {
 
 
             c.pid = c.exec(conf);
-            if !c.tail {
+            if c.outfd_pipeline >= 0 {
                 close(c.outfd_pipeline).expect("Cannot close outfd");
                 prevfd = c.infd_pipeline;
             }
@@ -55,14 +52,6 @@ impl HandInputUnit for Pipeline {
         for c in &self.commands {
             if let Some(p) = c.pid {
                 self.expansion_str += &self.wait_command(&c, p, conf);
-                /*
-                if c.infd_pipeline >= 0 {
-                    close(c.infd_pipeline).expect("Cannot close the infd");
-                }
-                if c.outfd_pipeline >= 0 {
-                    close(c.outfd_pipeline).expect("Cannot close the outfd");
-                }
-                */
             }
         }
         None
