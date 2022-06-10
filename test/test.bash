@@ -275,5 +275,10 @@ EOF
 
 [ "$res" = "1" ]
 
+### PIPELINE ###
+
+res=$($com <<< 'echo abc | rev')
+[ "$res" = "cba" ]
+
 trap "" EXIT
 echo TEST OK

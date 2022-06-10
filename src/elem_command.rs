@@ -3,7 +3,7 @@
 
 use std::env;
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, close}; 
 use std::ffi::CString;
 use std::process::exit;
 use std::os::unix::prelude::RawFd;
@@ -30,7 +30,12 @@ pub struct Command {
     pub expansion: bool, 
     pub outfd_expansion: RawFd,
     pub infd_expansion: RawFd,
+    pub outfd_pipeline: RawFd,
+    pub infd_pipeline: RawFd,
+    pub previnfd_pipeline: RawFd,
     pub pid: Option<Pid>,
+    pub head: bool,
+    pub tail: bool,
 }
 
 impl HandInputUnit for Command {
@@ -48,8 +53,14 @@ impl HandInputUnit for Command {
 
         unsafe {
             match fork() {
-                Ok(ForkResult::Child) => self.exec_external_command(&mut args, conf),
-                Ok(ForkResult::Parent { child } ) => return Some(child),
+                Ok(ForkResult::Child) => {
+                    self.set_child_io();
+                    self.exec_external_command(&mut args, conf)
+                },
+                Ok(ForkResult::Parent { child } ) => {
+                    self.set_parent_io();
+                    return Some(child)
+                },
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
@@ -68,7 +79,12 @@ impl Command {
             expansion: false,
             outfd_expansion: 1,
             infd_expansion: 0,
+            outfd_pipeline: -1,
+            infd_pipeline: -1,
+            previnfd_pipeline: -1,
             pid: None,
+            head: false,
+            tail: false,
         }
     }
 
@@ -126,6 +142,9 @@ impl Command {
         }
     }
 
+    fn set_parent_io(&mut self) {
+    }
+
     fn set_child_io(&mut self) {
         if self.expansion { // the case of command expansion
             dup_and_close(self.outfd_expansion, 1);
@@ -134,6 +153,23 @@ impl Command {
         for r in &self.redirects {
             self.set_redirect(r);
         };
+
+        if self.head {
+            if self.infd_pipeline != -1 {
+                close(self.infd_pipeline).expect("a");
+            }
+            if self.outfd_pipeline != -1 {
+                dup_and_close(self.outfd_pipeline, 1);
+            }
+        }
+
+        if !self.head {
+            if self.previnfd_pipeline != -1 {
+                //close(4).expect("a");
+                dup_and_close(self.previnfd_pipeline, 0);
+            }
+        }
+
     }
 
     pub fn push_vars(&mut self, s: Substitution){
@@ -165,7 +201,6 @@ impl Command {
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        self.set_child_io();
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
             exit(func(conf, args));

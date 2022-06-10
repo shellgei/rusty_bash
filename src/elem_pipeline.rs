@@ -6,9 +6,10 @@ use crate::abst_hand_input_unit::HandInputUnit;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::sys::wait::waitpid;
-use nix::unistd::{Pid, pipe};
+use nix::unistd::{Pid, pipe, close};
 use nix::unistd::read;
 use nix::sys::wait::WaitStatus;
+use std::os::unix::prelude::RawFd;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
@@ -25,13 +26,43 @@ impl HandInputUnit for Pipeline {
             self.set_command_expansion_pipe();
         }
 
-        for c in self.commands.iter_mut().rev() {
+        let len = self.commands.len();
+        let mut prevfd = -1 as RawFd;
+        for (i, c) in self.commands.iter_mut().enumerate() {
+            if i == 0 {
+                c.head = true;
+            }if i == len-1 {
+                c.tail = true;
+            };
+
+            if !c.tail {
+                let p = pipe().expect("Pipe cannot open");
+                c.infd_pipeline = p.0;
+                c.outfd_pipeline = p.1;
+            }
+            if !c.head{
+                c.previnfd_pipeline = prevfd;
+            }
+
+
             c.pid = c.exec(conf);
+            if !c.tail {
+                close(c.outfd_pipeline).expect("Cannot close outfd");
+                prevfd = c.infd_pipeline;
+            }
         }
 
         for c in &self.commands {
             if let Some(p) = c.pid {
                 self.expansion_str += &self.wait_command(&c, p, conf);
+                /*
+                if c.infd_pipeline >= 0 {
+                    close(c.infd_pipeline).expect("Cannot close the infd");
+                }
+                if c.outfd_pipeline >= 0 {
+                    close(c.outfd_pipeline).expect("Cannot close the outfd");
+                }
+                */
             }
         }
         None
@@ -64,11 +95,23 @@ impl Pipeline {
             let mut ch = [0;1000];
             while let Ok(n) = read(com.infd_expansion, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+  //              eprintln!("PIPE {}", ans);
                 if n < 1000 {
                     break;
                 };
             };
         }
+
+        /*
+            let mut ch = [0;1000];
+            while let Ok(n) = read(com.infd_pipeline, &mut ch) {
+                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+                eprintln!("PIPE {}", ans);
+                if n < 1000 {
+                    break;
+                };
+            };
+            */
 
         match waitpid(child, None)
             .expect("Faild to wait child process.") {
