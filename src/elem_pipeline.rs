@@ -6,7 +6,7 @@ use crate::abst_hand_input_unit::HandInputUnit;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::sys::wait::waitpid;
-use nix::unistd::Pid;
+use nix::unistd::{Pid, pipe};
 use nix::unistd::read;
 use nix::sys::wait::WaitStatus;
 
@@ -25,6 +25,12 @@ impl HandInputUnit for Pipeline {
             return (None, "".to_string());
         }
         self.commands[x-1].expansion = self.expansion;
+        if self.expansion {
+            let p = pipe().expect("Pipe cannot open");
+            self.commands[x-1].infd_expansion = p.0;
+            self.commands[x-1].outfd_expansion = p.1;
+        }
+
         let (pid_opt, _) = self.commands[x-1].exec(conf);
 
         if let Some(pid) = pid_opt {

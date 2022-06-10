@@ -3,7 +3,7 @@
 
 use std::env;
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, pipe}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2}; 
 use std::ffi::CString;
 use std::process::exit;
 use std::os::unix::prelude::RawFd;
@@ -26,7 +26,8 @@ pub struct Command {
     pub args: Vec<Box<dyn CommandElem>>,
     pub redirects: Vec<Box<Redirect>>,
     pub text: String,
-    pub expansion: bool,
+    /* The followings are set by the pipeline element. */
+    pub expansion: bool, 
     pub outfd_expansion: RawFd,
     pub infd_expansion: RawFd,
 }
@@ -36,13 +37,7 @@ impl HandInputUnit for Command {
     fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String) {
         let mut args = self.eval(conf);
 
-        if self.expansion {
-            let p = pipe().expect("Pipe cannot open");
-            self.infd_expansion = p.0;
-            self.outfd_expansion = p.1;
-        }
-
-        if !self.expansion {
+        if !self.expansion { // This sentence avoids an unnecessary fork for an internal command.
             if let Some(func) = conf.get_internal_command(&args[0]) {
                 let status = func(conf, &mut args);
                 conf.vars.insert("?".to_string(), status.to_string());
@@ -57,7 +52,6 @@ impl HandInputUnit for Command {
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
-
 
         (None, "".to_string())
     }
@@ -130,7 +124,7 @@ impl Command {
         }
     }
 
-    fn set_io(&mut self) {
+    fn set_child_io(&mut self) {
         if self.expansion { // the case of command expansion
             dup_and_close(self.outfd_expansion, 1);
         }
@@ -169,7 +163,7 @@ impl Command {
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        self.set_io();
+        self.set_child_io();
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
             exit(func(conf, args));
