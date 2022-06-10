@@ -59,15 +59,9 @@ impl HandInputUnit for Command {
 
         unsafe {
             match fork() {
-                Ok(ForkResult::Child) => {
-                    self.exec_external_command(&mut args, conf)
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    return (Some(child), "".to_string());
-                },
-                Err(err) => {
-                    panic!("Failed to fork. {}", err)
-                },
+                Ok(ForkResult::Child) => self.exec_external_command(&mut args, conf),
+                Ok(ForkResult::Parent { child } ) => return (Some(child), "".to_string()),
+                Err(err) => panic!("Failed to fork. {}", err),
             }
         }
 
@@ -90,8 +84,17 @@ impl Command {
     }
 
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        //self.set_io(conf);
-        self.eval_args(conf)
+        let mut args = vec!();
+
+        for arg in &mut self.args {
+            for s in &arg.eval(conf) {
+                args.append(&mut Arg::expand_glob(&s.clone()));
+            }
+        };
+
+        args.iter()
+            .map(|a| Arg::remove_escape(&a))
+            .collect()
     }
 
     fn set_redirect_fds(&self, r: &Box<Redirect>){
@@ -142,20 +145,6 @@ impl Command {
         for r in &self.redirects {
             self.set_redirect(r);
         };
-    }
-
-    fn eval_args(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        let mut args = vec!();
-
-        for arg in &mut self.args {
-            for s in &arg.eval(conf) {
-                args.append(&mut Arg::expand_glob(&s.clone()));
-            }
-        };
-
-        args.iter()
-            .map(|a| Arg::remove_escape(&a))
-            .collect()
     }
 
     pub fn push_vars(&mut self, s: Substitution){
