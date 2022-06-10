@@ -39,10 +39,6 @@ pub struct Command {
 }
 
 impl HandInputUnit for Command {
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        //self.set_io(conf);
-        self.eval_args(conf)
-    }
 
     fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String) {
         let mut args = self.eval(conf);
@@ -91,6 +87,11 @@ impl Command {
             outfd_expansion: 1,
             infd_expansion: 0,
         }
+    }
+
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
+        //self.set_io(conf);
+        self.eval_args(conf)
     }
 
     fn set_redirect_fds(&self, r: &Box<Redirect>){

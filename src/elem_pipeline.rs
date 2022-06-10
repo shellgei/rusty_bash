@@ -18,16 +18,6 @@ pub struct Pipeline {
 }
 
 impl HandInputUnit for Pipeline {
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
-        vec!()
-            /*
-        let x = self.commands.len();
-        if x == 0 {
-            return vec!();
-        }
-        self.commands[x-1].eval(conf)
-        */
-    }
 
     fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String){
         let x = self.commands.len();
