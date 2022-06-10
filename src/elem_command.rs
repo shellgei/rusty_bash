@@ -208,41 +208,6 @@ impl Command {
         exit(127);
     }
 
-    /*
-    fn wait_command(&self, child: Pid, conf: &mut ShellCore) -> String {
-        let mut ans = "".to_string();
-
-        if self.expansion {
-            let mut ch = [0;1000];
-            while let Ok(n) = read(self.infd_expansion, &mut ch) {
-                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-                if n < 1000 {
-                    break;
-                };
-            };
-        }
-
-        match waitpid(child, None)
-            .expect("Faild to wait child process.") {
-            WaitStatus::Exited(pid, status) => {
-                conf.vars.insert("?".to_string(), status.to_string());
-                if status != 0 {
-                    eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
-                }
-            }
-            WaitStatus::Signaled(pid, signal, _) => {
-                conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
-            }
-            _ => {
-                eprintln!("Unknown error")
-            }
-        };
-
-        ans
-    }
-    */
-
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
         let backup = text.clone();
         let mut ans = Command::new();
