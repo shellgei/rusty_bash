@@ -5,6 +5,8 @@ use glob::glob;
 use crate::env;
 use std::io::{BufRead, BufReader};
 use std::fs::OpenOptions;
+use nix::unistd::{close, dup2};
+use std::os::unix::prelude::RawFd;
 
 pub fn chars_to_string(chars: &Vec<char>) -> String {
     chars.iter().collect::<String>()
@@ -152,3 +154,8 @@ fn passwd_to_home(line: String) -> Option<String> {
     None
 }
 
+pub fn dup_and_close(from: RawFd, to: RawFd){
+    close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
+    dup2(from, to).expect("Can't copy file descriptors");
+    close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
+}

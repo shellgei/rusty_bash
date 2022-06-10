@@ -1,31 +1,24 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, close}; 
+use std::env;
+
+use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, pipe}; 
 use std::ffi::CString;
 use std::process::exit;
-use std::env;
 use std::os::unix::prelude::RawFd;
 use std::os::unix::io::IntoRawFd;
-use nix::unistd::pipe;
-use crate::elem_end_of_command::Eoc;
-
-use crate::{ShellCore,Feeder,CommandElem};
-use crate::utils::blue_string;
-use crate::elem_arg::Arg;
-use crate::elem_arg_delimiter::ArgDelimiter;
 use std::fs::OpenOptions;
 
-use crate::elem_substitution::Substitution;
-use crate::elem_redirect::Redirect;
+use crate::{ShellCore,Feeder,CommandElem};
+use crate::utils::{blue_string, dup_and_close};
+
 use crate::abst_hand_input_unit::HandInputUnit;
-
-
-fn redirect_to_file(from: RawFd, to: RawFd){
-    close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
-    dup2(from, to).expect("Can't copy file descriptors");
-    close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
-}
+use crate::elem_arg::Arg;
+use crate::elem_arg_delimiter::ArgDelimiter;
+use crate::elem_end_of_command::Eoc;
+use crate::elem_redirect::Redirect;
+use crate::elem_substitution::Substitution;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {
@@ -117,20 +110,20 @@ impl Command {
             }
 
             if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
-                redirect_to_file(file.into_raw_fd(), r.left_fd);
+                dup_and_close(file.into_raw_fd(), r.left_fd);
             }else{
                 panic!("Cannot open the file: {}", r.path);
             };
         }else if r.direction_str == "&>" {
             if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
-                redirect_to_file(file.into_raw_fd(), 1);
+                dup_and_close(file.into_raw_fd(), 1);
                 dup2(1, 2).expect("Redirection error on &>");
             }else{
                 panic!("Cannot open the file: {}", r.path);
             };
         }else if r.direction_str == "<" {
             if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
-                redirect_to_file(file.into_raw_fd(), r.left_fd);
+                dup_and_close(file.into_raw_fd(), r.left_fd);
             }else{
                 panic!("Cannot open the file: {}", r.path);
             };
@@ -139,7 +132,7 @@ impl Command {
 
     fn set_io(&mut self) {
         if self.expansion { // the case of command expansion
-            redirect_to_file(self.outfd_expansion, 1);
+            dup_and_close(self.outfd_expansion, 1);
         }
 
         for r in &self.redirects {
