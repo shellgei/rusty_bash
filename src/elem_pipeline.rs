@@ -6,10 +6,9 @@ use crate::abst_hand_input_unit::HandInputUnit;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::sys::wait::waitpid;
-use nix::unistd::{Pid, pipe, close};
+use nix::unistd::{Pid, pipe};
 use nix::unistd::read;
 use nix::sys::wait::WaitStatus;
-use std::os::unix::prelude::RawFd;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
@@ -27,7 +26,7 @@ impl HandInputUnit for Pipeline {
         }
 
         let len = self.commands.len();
-        let mut prevfd = -1 as RawFd;
+        let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
             c.head = i == 0;
             c.tail = i == len-1;
@@ -37,16 +36,16 @@ impl HandInputUnit for Pipeline {
                 c.infd_pipeline = p.0;
                 c.outfd_pipeline = p.1;
             }
-            if !c.head{
-                c.previnfd_pipeline = prevfd;
-            }
-
+            c.previnfd_pipeline = prevfd;
 
             c.pid = c.exec(conf);
+            prevfd = c.set_parent_io();
+            /*
             if c.outfd_pipeline >= 0 {
                 close(c.outfd_pipeline).expect("Cannot close outfd");
-                prevfd = c.infd_pipeline;
             }
+            prevfd = c.infd_pipeline;
+            */
         }
 
         for c in &self.commands {

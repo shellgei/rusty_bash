@@ -58,7 +58,7 @@ impl HandInputUnit for Command {
                     self.exec_external_command(&mut args, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    self.set_parent_io();
+                    //self.set_parent_io();
                     return Some(child)
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
@@ -142,7 +142,11 @@ impl Command {
         }
     }
 
-    fn set_parent_io(&mut self) {
+    pub fn set_parent_io(&mut self) -> RawFd {
+        if self.outfd_pipeline >= 0 {
+            close(self.outfd_pipeline).expect("Cannot close outfd");
+        }
+        return self.infd_pipeline;
     }
 
     fn set_child_io(&mut self) {

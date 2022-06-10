@@ -280,5 +280,8 @@ EOF
 res=$($com <<< 'echo abc | rev')
 [ "$res" = "cba" ]
 
+#res=$($com <<< 'echo abc | rev | rev')
+#[ "$res" = "abc" ]
+
 trap "" EXIT
 echo TEST OK
