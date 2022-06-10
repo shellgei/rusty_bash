@@ -28,10 +28,7 @@ impl HandInputUnit for Pipeline {
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
-            c.head = i == 0;
-            c.tail = i == len-1;
-
-            if !c.tail {
+            if i != len-1 {
                 let p = pipe().expect("Pipe cannot open");
                 c.pipein = p.0;
                 c.pipeout = p.1;

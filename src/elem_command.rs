@@ -34,8 +34,6 @@ pub struct Command {
     pub pipein: RawFd,
     pub prevpipein: RawFd,
     pub pid: Option<Pid>,
-    pub head: bool,
-    pub tail: bool,
 }
 
 impl HandInputUnit for Command {
@@ -83,8 +81,6 @@ impl Command {
             pipein: -1,
             prevpipein: -1,
             pid: None,
-            head: false,
-            tail: false,
         }
     }
 
