@@ -280,8 +280,8 @@ EOF
 res=$($com <<< 'echo abc | rev')
 [ "$res" = "cba" ]
 
-#res=$($com <<< 'echo abc | rev | rev')
-#[ "$res" = "abc" ]
+res=$($com <<< 'echo abc | rev | tr abc def')
+[ "$res" = "fed" ]
 
 trap "" EXIT
 echo TEST OK

@@ -33,19 +33,13 @@ impl HandInputUnit for Pipeline {
 
             if !c.tail {
                 let p = pipe().expect("Pipe cannot open");
-                c.infd_pipeline = p.0;
-                c.outfd_pipeline = p.1;
+                c.pipein = p.0;
+                c.pipeout = p.1;
             }
-            c.previnfd_pipeline = prevfd;
+            c.prevpipein = prevfd;
 
             c.pid = c.exec(conf);
             prevfd = c.set_parent_io();
-            /*
-            if c.outfd_pipeline >= 0 {
-                close(c.outfd_pipeline).expect("Cannot close outfd");
-            }
-            prevfd = c.infd_pipeline;
-            */
         }
 
         for c in &self.commands {
@@ -92,7 +86,7 @@ impl Pipeline {
 
         /*
             let mut ch = [0;1000];
-            while let Ok(n) = read(com.infd_pipeline, &mut ch) {
+            while let Ok(n) = read(com.pipein, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
                 eprintln!("PIPE {}", ans);
                 if n < 1000 {

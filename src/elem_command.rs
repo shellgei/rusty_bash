@@ -30,9 +30,9 @@ pub struct Command {
     pub expansion: bool, 
     pub outfd_expansion: RawFd,
     pub infd_expansion: RawFd,
-    pub outfd_pipeline: RawFd,
-    pub infd_pipeline: RawFd,
-    pub previnfd_pipeline: RawFd,
+    pub pipeout: RawFd,
+    pub pipein: RawFd,
+    pub prevpipein: RawFd,
     pub pid: Option<Pid>,
     pub head: bool,
     pub tail: bool,
@@ -79,9 +79,9 @@ impl Command {
             expansion: false,
             outfd_expansion: 1,
             infd_expansion: 0,
-            outfd_pipeline: -1,
-            infd_pipeline: -1,
-            previnfd_pipeline: -1,
+            pipeout: -1,
+            pipein: -1,
+            prevpipein: -1,
             pid: None,
             head: false,
             tail: false,
@@ -143,10 +143,10 @@ impl Command {
     }
 
     pub fn set_parent_io(&mut self) -> RawFd {
-        if self.outfd_pipeline >= 0 {
-            close(self.outfd_pipeline).expect("Cannot close outfd");
+        if self.pipeout >= 0 {
+            close(self.pipeout).expect("Cannot close outfd");
         }
-        return self.infd_pipeline;
+        return self.pipein;
     }
 
     fn set_child_io(&mut self) {
@@ -158,20 +158,15 @@ impl Command {
             self.set_redirect(r);
         };
 
-        if self.head {
-            if self.infd_pipeline != -1 {
-                close(self.infd_pipeline).expect("a");
-            }
-            if self.outfd_pipeline != -1 {
-                dup_and_close(self.outfd_pipeline, 1);
-            }
+        if self.pipein != -1 {
+            close(self.pipein).expect("a");
+        }
+        if self.pipeout != -1 {
+            dup_and_close(self.pipeout, 1);
         }
 
-        if !self.head {
-            if self.previnfd_pipeline != -1 {
-                //close(4).expect("a");
-                dup_and_close(self.previnfd_pipeline, 0);
-            }
+        if self.prevpipein != -1 {
+            dup_and_close(self.prevpipein, 0);
         }
 
     }
