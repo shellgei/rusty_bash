@@ -9,8 +9,7 @@ use crate::ShellCore;
 use nix::unistd::Pid;
 
 pub trait HandInputUnit {
-    //fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
-    fn exec(&mut self, _conf: &mut ShellCore) -> (Option<Pid>, String) { (None, "".to_string()) }
+    fn exec(&mut self, _conf: &mut ShellCore) -> Option<Pid> { None }
 }
 
 // job or function comment or blank (finally) 

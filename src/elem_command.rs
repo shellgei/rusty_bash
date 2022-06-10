@@ -35,26 +35,26 @@ pub struct Command {
 
 impl HandInputUnit for Command {
 
-    fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String) {
+    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid> {
         let mut args = self.eval(conf);
 
         if !self.expansion { // This sentence avoids an unnecessary fork for an internal command.
             if let Some(func) = conf.get_internal_command(&args[0]) {
                 let status = func(conf, &mut args);
                 conf.vars.insert("?".to_string(), status.to_string());
-                return (None, "".to_string());
+                return None
             }
         }
 
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => self.exec_external_command(&mut args, conf),
-                Ok(ForkResult::Parent { child } ) => return (Some(child), "".to_string()),
+                Ok(ForkResult::Parent { child } ) => return Some(child),
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
 
-        (None, "".to_string())
+        None
     }
 }
 

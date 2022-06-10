@@ -37,7 +37,7 @@ impl SetVariables {
 }
 
 impl HandInputUnit for SetVariables {
-    fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String) {
+    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid> {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
         };
@@ -56,7 +56,7 @@ impl HandInputUnit for SetVariables {
             };
         };
 
-        (None, "".to_string())
+        None
     }
 }
 

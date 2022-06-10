@@ -15,17 +15,18 @@ pub struct Pipeline {
     pub commands: Vec<Command>,
     text: String,
     pub expansion: bool,
+    pub expansion_str: String, 
 }
 
 impl HandInputUnit for Pipeline {
 
-    fn exec(&mut self, conf: &mut ShellCore) -> (Option<Pid>, String){
+    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
         if self.expansion {
             self.set_command_expansion_pipe();
         }
 
         for c in self.commands.iter_mut().rev() {
-            let (pid, _) = c.exec(conf);
+            let pid = c.exec(conf);
             c.pid = pid;
         }
 
@@ -35,23 +36,8 @@ impl HandInputUnit for Pipeline {
                 s += &self.wait_command(&c, p, conf);
             };
         }
-        (None, s)
-
-        /*
-        let x = self.commands.len();
-        if x == 0 {
-            return (None, "".to_string());
-        }
-
-        let (pid_opt, _) = self.commands[x-1].exec(conf);
-
-        if let Some(pid) = pid_opt {
-            let result_string = self.wait_command(&self.commands[x-1], pid, conf);
-            (None, result_string)
-        }else{
-            (None, "".to_string())
-        }
-        */
+        self.expansion_str = s;
+        None
     }
 }
 
@@ -60,6 +46,7 @@ impl Pipeline {
         Pipeline {
             commands: vec!(),
             expansion: false,
+            expansion_str: "".to_string(),
             text: "".to_string(),
         }
     }
