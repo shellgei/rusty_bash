@@ -228,28 +228,6 @@ impl Command {
         exit(127);
     }
 
-    fn parse_substitutions(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) {
-        while let Some(s) = Substitution::parse(text, conf) {
-            ans.push_vars(s);
-    
-            if let Some(d) = ArgDelimiter::parse(text){
-                ans.push_elems(Box::new(d));
-            }
-        }
-    }
-
-    fn parse_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {
-        let mut exist = false;
-        while let Some(r) = Redirect::parse(text){
-            exist = true;
-            ans.redirects.push(Box::new(r));
-            if let Some(d) = ArgDelimiter::parse(text){
-                ans.push_elems(Box::new(d));
-            }
-        }
-        exist
-    }
-
     fn replace_alias(text: &mut Feeder, conf: &mut ShellCore) {
         let compos = scanner_until_escape(text, 0, " \n");
         let com = text.from_to(0, compos);
@@ -271,36 +249,41 @@ impl Command {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
         let backup = text.clone();
         let mut ans = Command::new();
-    
-        //TODO: bash permits redirections here. 
-    
-        /* A command starts with substitutions. */
-        Command::parse_substitutions(text, conf, &mut ans);
-    
-        //TODO: bash permits redirections here. 
-    
-        /* Then one or more arguments exist. */
+
+        /* substitutions and redirects before the command */
+        loop {
+            if let Some(d) = ArgDelimiter::parse(text){
+                ans.push_elems(Box::new(d));
+            }
+
+            if let Some(r) = Redirect::parse(text){
+                ans.text += &r.text;
+                ans.redirects.push(Box::new(r));
+            }else if let Some(s) = Substitution::parse(text, conf) {
+                ans.push_vars(s);
+            }else{
+                break;
+            }
+        }
+
         Command::replace_alias(text, conf);
 
-        while let Some(a) = Arg::parse(text, true, conf) {
+        /* args and redirects */
+        loop {
+            if let Some(r) = Redirect::parse(text){
+                ans.text += &r.text;
+                ans.redirects.push(Box::new(r));
+            }else if let Some(a) = Arg::parse(text, true, conf) {
+                ans.push_elems(Box::new(a));
+            }
 
             if Command::unexpected_symbol(text) {
                 text.rewind(backup);
                 return None;
             }
             
-            ans.push_elems(Box::new(a));
-    
             if let Some(d) = ArgDelimiter::parse(text){
                 ans.push_elems(Box::new(d));
-            }
-    
-            /* When a redirect is found. The command ends with redirects. */
-            if Command::parse_redirects(text, conf, &mut ans) {
-                if let Some(e) = Eoc::parse(text){
-                    ans.push_elems(Box::new(e));
-                }
-                break;
             }
     
             if text.len() == 0 {

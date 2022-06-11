@@ -275,6 +275,28 @@ EOF
 
 [ "$res" = "1" ]
 
+res=$($com << 'EOF'
+2>/tmp/.rusty_bash echo hoge
+rm /tmp/.rusty_bash
+EOF
+)
+[ "$res" = "hoge" ]
+
+res=$($com << 'EOF'
+echo 2>/tmp/.rusty_bash hoge
+rm /tmp/.rusty_bash
+EOF
+)
+[ "$res" = "hoge" ]
+
+res=$($com << 'EOF'
+A=B >/tmp/.rusty_bash C=D echo hoge
+cat /tmp/.rusty_bash
+rm /tmp/.rusty_bash
+EOF
+)
+[ "$res" = "hoge" ]
+
 ### PIPELINE ###
 
 res=$($com <<< 'echo abc | rev')
