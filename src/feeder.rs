@@ -70,6 +70,10 @@ impl Feeder {
         cut
     }
 
+    pub fn replace(&mut self, from: &str, to: &str) {
+        self.remaining = self.remaining.replacen(from, to, 1);
+    }
+
     pub fn add_line(&mut self, line: String) {
         self.to_lineno += 1;
 
@@ -92,10 +96,9 @@ impl Feeder {
         }
     }
 
-    /*
-    pub fn text(&self) -> String {
+    pub fn _text(&self) -> String {
         self.remaining.clone()
-    }*/
+    }
 
     pub fn from_to(&self, from: usize, to: usize) -> String {
         self.remaining[from..to].to_string()

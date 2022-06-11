@@ -19,6 +19,7 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
+use crate::scanner::scanner_until_escape;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {
@@ -245,7 +246,13 @@ impl Command {
         //TODO: bash permits redirections here. 
     
         /* Then one or more arguments exist. */
-        let mut first = true;
+        //alias check and replace
+        let compos = scanner_until_escape(text, 0, " \n");
+        let com = text.from_to(0, compos);
+        if let Some(alias) = conf.aliases.get(&com){
+            text.replace(&com, alias);
+        }
+
         while let Some(a) = Arg::parse(text, true, conf) {
             if text.len() != 0 {
                 if text.nth(0) == ')' || text.nth(0) == '(' {
@@ -255,23 +262,7 @@ impl Command {
                     return None;
                 };
             };
-            //check of alias
-            if first {
-                first = false;
-                if let Some(alias) = conf.aliases.get(&a.text){
-                    let mut sub_feeder = Feeder::new_with(alias.to_string());
-                    while let Some(a) = Arg::parse(&mut sub_feeder, true, conf) {
-                        ans.push_elems(Box::new(a));
-                        if let Some(d) = ArgDelimiter::parse(&mut sub_feeder){
-                            ans.push_elems(Box::new(d));
-                        }
-                    }
-                }else{
-                    ans.push_elems(Box::new(a));
-                }
-            }else{
-                ans.push_elems(Box::new(a));
-            };
+            ans.push_elems(Box::new(a));
     
             if let Some(d) = ArgDelimiter::parse(text){
                 ans.push_elems(Box::new(d));
