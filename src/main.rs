@@ -6,7 +6,7 @@ mod abst_command_elem;
 mod elem_arg;
 mod elem_arg_delimiter;
 mod elem_end_of_command;
-mod abst_hand_input_unit;
+mod abst_script_elem;
 mod elem_blankpart;
 mod elem_command;
 mod elem_redirect;
@@ -44,7 +44,7 @@ use std::fs::OpenOptions;
 use std::io::BufReader;
 use std::io::BufRead;
 use crate::elem_command::Command;
-use crate::abst_hand_input_unit::HandInputUnit;
+use crate::abst_script_elem::ScriptElem;
 
 fn read_line() -> String {
     let mut line = String::new();
@@ -136,7 +136,7 @@ fn main() {
             read_line()
         };
         input.add_line(line);
-        while let Some(mut e) = abst_hand_input_unit::hand_input_unit(&mut input, &mut core){
+        while let Some(mut e) = abst_script_elem::hand_input_unit(&mut input, &mut core){
             e.exec(&mut core);
         }
     }

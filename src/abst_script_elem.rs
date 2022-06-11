@@ -8,12 +8,12 @@ use crate::Feeder;
 use crate::ShellCore;
 use nix::unistd::Pid;
 
-pub trait HandInputUnit {
+pub trait ScriptElem {
     fn exec(&mut self, _conf: &mut ShellCore) -> Option<Pid> { None }
 }
 
 // job or function comment or blank (finally) 
-pub fn hand_input_unit(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn HandInputUnit>> {
+pub fn hand_input_unit(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ScriptElem>> {
     if text.len() == 0 {
         return None;
     };

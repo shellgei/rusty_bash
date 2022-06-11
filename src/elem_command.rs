@@ -13,7 +13,7 @@ use std::fs::OpenOptions;
 use crate::{ShellCore,Feeder,CommandElem};
 use crate::utils::{blue_string, dup_and_close};
 
-use crate::abst_hand_input_unit::HandInputUnit;
+use crate::abst_script_elem::ScriptElem;
 use crate::elem_arg::Arg;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
@@ -37,7 +37,7 @@ pub struct Command {
     pub pid: Option<Pid>,
 }
 
-impl HandInputUnit for Command {
+impl ScriptElem for Command {
 
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid> {
         let mut args = self.eval(conf);

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_hand_input_unit::HandInputUnit;
+use crate::abst_script_elem::ScriptElem;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::sys::wait::waitpid;
@@ -18,7 +18,7 @@ pub struct Pipeline {
     pub expansion_str: String, 
 }
 
-impl HandInputUnit for Pipeline {
+impl ScriptElem for Pipeline {
 
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
         if self.expansion {

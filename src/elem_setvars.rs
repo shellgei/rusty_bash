@@ -5,7 +5,7 @@ use std::env;
 
 use crate::{ShellCore,CommandElem};
 use crate::utils::blue_string;
-use crate::abst_hand_input_unit::HandInputUnit;
+use crate::abst_script_elem::ScriptElem;
 
 use crate::Feeder;
 use crate::elem_substitution::Substitution;
@@ -36,7 +36,7 @@ impl SetVariables {
     }
 }
 
-impl HandInputUnit for SetVariables {
+impl ScriptElem for SetVariables {
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid> {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
