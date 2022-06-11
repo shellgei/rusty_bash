@@ -11,6 +11,7 @@ use crate::Feeder;
 use crate::elem_substitution::Substitution;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
+use crate::elem_redirect::Redirect;
 use nix::unistd::Pid;
 
 
@@ -79,8 +80,16 @@ impl SetVariables {
         let backup = text.clone();
         let mut ans = SetVariables::new();
     
-        while let Some(result) = Substitution::parse(text, conf) {
-            ans.push(Box::new(result));
+        loop {
+            if let Some(result) = Substitution::parse(text, conf) {
+                ans.push(Box::new(result));
+            }else if let Some(r) = Redirect::parse(text){
+                ans.text += &r.text;
+                // TODO: bash doesn't ignore redirects but this shell ignores.
+            //    ans.redirects.push(Box::new(r));
+            }else{
+                break;
+            }
     
             if let Some(result) = ArgDelimiter::parse(text){
                 ans.push(Box::new(result));
