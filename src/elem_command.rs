@@ -238,6 +238,18 @@ impl Command {
         }
     }
 
+    fn parse_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {
+        let mut exist = false;
+        while let Some(r) = Redirect::parse(text){
+            exist = true;
+            ans.redirects.push(Box::new(r));
+            if let Some(d) = ArgDelimiter::parse(text){
+                ans.push_elems(Box::new(d));
+            }
+        }
+        exist
+    }
+
     fn replace_alias(text: &mut Feeder, conf: &mut ShellCore) {
         let compos = scanner_until_escape(text, 0, " \n");
         let com = text.from_to(0, compos);
@@ -269,6 +281,7 @@ impl Command {
     
         /* Then one or more arguments exist. */
         Command::replace_alias(text, conf);
+
         while let Some(a) = Arg::parse(text, true, conf) {
 
             if Command::unexpected_symbol(text) {
@@ -283,15 +296,10 @@ impl Command {
             }
     
             /* When a redirect is found. The command ends with redirects. */
-            let mut exist = false;
-            while let Some(r) = Redirect::parse(text){
-                exist = true;
-                ans.redirects.push(Box::new(r));
-                if let Some(d) = ArgDelimiter::parse(text){
-                    ans.push_elems(Box::new(d));
+            if Command::parse_redirects(text, conf, &mut ans) {
+                if let Some(e) = Eoc::parse(text){
+                    ans.push_elems(Box::new(e));
                 }
-            }
-            if exist {
                 break;
             }
     
