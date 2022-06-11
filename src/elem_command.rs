@@ -178,15 +178,6 @@ impl Command {
         self.args.push(s);
     }
 
-    pub fn return_if_valid(ans: Command, text: &mut Feeder, backup: Feeder) -> Option<Command> {
-        if ans.args.len() > 0 {
-              Some(ans)
-        }else{
-            text.rewind(backup);
-            None
-        }
-    }
-
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("command: '{}'", self.text));
         for elem in &self.args {
@@ -246,11 +237,7 @@ impl Command {
         return true;
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
-        let backup = text.clone();
-        let mut ans = Command::new();
-
-        /* substitutions and redirects before the command */
+    fn substitutions_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) {
         loop {
             if let Some(d) = ArgDelimiter::parse(text){
                 ans.push_elems(Box::new(d));
@@ -265,10 +252,9 @@ impl Command {
                 break;
             }
         }
+    }
 
-        Command::replace_alias(text, conf);
-
-        /* args and redirects */
+    fn args_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {
         loop {
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
@@ -278,8 +264,7 @@ impl Command {
             }
 
             if Command::unexpected_symbol(text) {
-                text.rewind(backup);
-                return None;
+                return false;
             }
             
             if let Some(d) = ArgDelimiter::parse(text){
@@ -295,7 +280,22 @@ impl Command {
                 break;
             }
         }
-    
-        Command::return_if_valid(ans, text, backup)
+
+        ans.args.len() > 0
+    }
+
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
+        let backup = text.clone();
+        let mut ans = Command::new();
+
+        Command::substitutions_and_redirects(text, conf, &mut ans);
+        Command::replace_alias(text, conf);
+
+        if Command::args_and_redirects(text, conf, &mut ans) {
+            Some(ans)
+        }else{
+            text.rewind(backup);
+            None
+        }
     }
 }
