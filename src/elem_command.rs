@@ -42,11 +42,10 @@ impl ScriptElem for Command {
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid> {
         let mut args = self.eval(conf);
 
-        if !self.expansion { // This sentence avoids an unnecessary fork for an internal command.
-            if let Some(func) = conf.get_internal_command(&args[0]) {
-                let status = func(conf, &mut args);
-                conf.vars.insert("?".to_string(), status.to_string());
-                return None
+        // This sentence avoids an unnecessary fork for an internal command.
+        if !self.expansion && self.pipeout == -1 && self.pipein == -1 { 
+            if self.run_on_this_process(&mut args, conf) {
+                return None;
             }
         }
 
@@ -82,6 +81,16 @@ impl Command {
             pipein: -1,
             prevpipein: -1,
             pid: None,
+        }
+    }
+
+    fn run_on_this_process(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) -> bool {
+        if let Some(func) = conf.get_internal_command(&args[0]) {
+            let status = func(conf, args);
+            conf.vars.insert("?".to_string(), status.to_string());
+            true
+        }else{
+            false
         }
     }
 
