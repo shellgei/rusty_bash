@@ -57,15 +57,6 @@ impl Writer {
         }
     }
 
-    /*
-    pub fn rewrite_line_from(&mut self, x: u16, y: u16, text: String){
-        write!(self.stdout, "{}{}{}",
-               termion::cursor::Goto(x, y),
-               termion::clear::UntilNewline,
-               text).unwrap();
-        self.stdout.flush().unwrap();
-    }*/
-
     pub fn rewrite_line(&mut self, y: u16, text: String){
         write!(self.stdout, "{}{}{}",
                termion::cursor::Goto(self.left_shift+1, y),
@@ -155,6 +146,13 @@ impl Writer {
             ).unwrap();
         self.stdout.flush().unwrap();
         self.ch_ptr = 0;
+    }
+
+    fn move_cursor_to_tail(&mut self) {
+        let y = self.cursor_pos().1;
+        let org_y = self.ch_ptr_to_multiline_origin().1;
+        self.rewrite_line(y - org_y, chars_to_string(&self.chars));
+        self.ch_ptr = self.chars.len();
     }
 
     fn move_cursor(&mut self, inc: i32) {
@@ -344,11 +342,14 @@ pub fn read_line(left: u16, core: &mut ShellCore) -> String{
     for c in stdin().keys() {
         match &c.as_ref().unwrap() {
             event::Key::Ctrl('a') => writer.move_cursor_to_head(),
+            event::Key::Ctrl('b') => writer.move_cursor(-1),
             event::Key::Ctrl('c') => {
                 writer.chars.clear();
                 writer.end("^C\r\n");
                 break;
             },
+            event::Key::Ctrl('e') => writer.move_cursor_to_tail(),
+            event::Key::Ctrl('f') => writer.move_cursor(1),
             event::Key::Char('\n') => {
                 writer.end("\r\n");
                 break;
