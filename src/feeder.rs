@@ -70,6 +70,10 @@ impl Feeder {
         cut
     }
 
+    pub fn unget(&mut self, s: String) {
+        self.remaining = s + &self.remaining;
+    }
+
     pub fn replace(&mut self, from: &str, to: &str) {
         self.remaining = self.remaining.replacen(from, to, 1);
     }
