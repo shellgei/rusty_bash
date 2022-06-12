@@ -7,6 +7,7 @@ use crate::elem_pipeline::Pipeline;
 use crate::Feeder;
 use crate::ShellCore;
 use nix::unistd::Pid;
+use crate::elem_compound_paren::CompoundParen;
 
 pub trait ScriptElem {
     fn exec(&mut self, _conf: &mut ShellCore) -> Option<Pid> { None }
@@ -18,9 +19,10 @@ pub fn hand_input_unit(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dy
         return None;
     };
 
-    if let Some(result) = BlankPart::parse(text)          {return Some(Box::new(result));}
-    if let Some(result) = SetVariables::parse(text, conf) {return Some(Box::new(result));}
-    if let Some(result) = Pipeline::parse(text, conf)     {return Some(Box::new(result));}
+    if let Some(result) = CompoundParen::parse(text, conf) {return Some(Box::new(result));}
+    if let Some(result) = BlankPart::parse(text)           {return Some(Box::new(result));}
+    if let Some(result) = SetVariables::parse(text, conf)  {return Some(Box::new(result));}
+    if let Some(result) = Pipeline::parse(text, conf)      {return Some(Box::new(result));}
 
     if text.error_occuring {
         text.consume(text.len());
