@@ -147,6 +147,16 @@ impl Writer {
        }
     }
 
+    fn move_cursor_to_head(&mut self) {
+        let y = self.cursor_pos().1;
+        let org_y = self.ch_ptr_to_multiline_origin().1;
+        write!(self.stdout, "{}",
+               termion::cursor::Goto(self.left_shift + 1, y - org_y)
+            ).unwrap();
+        self.stdout.flush().unwrap();
+        self.ch_ptr = 0;
+    }
+
     fn move_cursor(&mut self, inc: i32) {
         let (_, old_line_no) = self.ch_ptr_to_multiline_origin();
         self.move_char_ptr(inc);
@@ -333,6 +343,7 @@ pub fn read_line(left: u16, core: &mut ShellCore) -> String{
 
     for c in stdin().keys() {
         match &c.as_ref().unwrap() {
+            event::Key::Ctrl('a') => writer.move_cursor_to_head(),
             event::Key::Ctrl('c') => {
                 writer.chars.clear();
                 writer.end("^C\r\n");
