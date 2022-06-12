@@ -9,11 +9,12 @@ use nix::sys::wait::waitpid;
 use nix::unistd::{Pid, pipe};
 use nix::unistd::read;
 use nix::sys::wait::WaitStatus;
+use crate::scanner::scanner_end_paren;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
     pub commands: Vec<Command>,
-    text: String,
+    pub text: String,
     pub expansion: bool,
     pub expansion_str: String, 
 }
@@ -134,8 +135,14 @@ impl Pipeline {
                     break;
                 }
 
+        eprintln!("parse pipe: {}", text._text());
                 if let Some(d) = ArgDelimiter::parse(text) {
                     ans.text += &d.text.clone();
+                }
+
+                let subshell_end = scanner_end_paren(text, 0);
+                if subshell_end == 1 {
+                    break;
                 }
 
                 /*

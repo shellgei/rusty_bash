@@ -34,17 +34,23 @@ impl SubArgCommandExp {
             return None;
         }
     
-        let pos = scanner_end_of_bracket(text, 2, ')');
-        let mut sub_feeder = Feeder::new_with(text.from_to(2, pos));
+        let backup = text.clone();
+        text.consume(2);
+
+        if let Some(e) = Pipeline::parse(text, conf){
+
+            if scanner_end_paren(text, 0) == 1 {
+                let ans = SubArgCommandExp {
+                    text: e.text.clone() + ")",
+                    pos: DebugInfo::init(text),
+                    com: e };
     
-        if let Some(e) = Pipeline::parse(&mut sub_feeder, conf){
-            let ans = Some (SubArgCommandExp {
-                text: text.consume(pos+1),
-                pos: DebugInfo::init(text),
-                com: e }
-            );
-    
-            return ans;
+                text.consume(1);
+                return Some(ans);
+            }else{
+                text.rewind(backup);
+                return None;
+            }
         };
         None
     }

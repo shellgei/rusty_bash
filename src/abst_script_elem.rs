@@ -19,15 +19,16 @@ pub fn hand_input_unit(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dy
         return None;
     };
 
+    if text.nth(0) == ')' {
+        eprintln!("Unexpected symbol: )");
+        return None;
+    }
+
     if let Some(result) = CompoundParen::parse(text, conf) {return Some(Box::new(result));}
     if let Some(result) = BlankPart::parse(text)           {return Some(Box::new(result));}
     if let Some(result) = SetVariables::parse(text, conf)  {return Some(Box::new(result));}
     if let Some(result) = Pipeline::parse(text, conf)      {return Some(Box::new(result));}
 
-    if text.error_occuring {
-        text.consume(text.len());
-        eprintln!("{}", text.error_reason);
-        text.error_occuring = false;
-    };
+    eprintln!("Unknown phrase");
     None
 }

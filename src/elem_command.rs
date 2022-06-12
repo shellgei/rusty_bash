@@ -236,16 +236,6 @@ impl Command {
         }
     }
 
-    fn unexpected_symbol(text: &mut Feeder) -> bool {
-        if scanner_while(text, 0, "()") == 0 {
-            return false;
-        }
-
-        text.error_occuring = true;
-        text.error_reason = "Unexpected token found".to_string();
-        return true;
-    }
-
     fn substitutions_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) {
         loop {
             if let Some(d) = ArgDelimiter::parse(text){
@@ -272,9 +262,11 @@ impl Command {
                 ans.push_elems(Box::new(a));
             }
 
+            /*
             if Command::unexpected_symbol(text) {
                 return false;
             }
+            */
             
             if let Some(d) = ArgDelimiter::parse(text){
                 ans.push_elems(Box::new(d));
@@ -284,8 +276,14 @@ impl Command {
                 break;
             }
     
+
             if let Some(e) = Eoc::parse(text){
                 ans.push_elems(Box::new(e));
+                break;
+            }
+
+            let subshell_end = scanner_end_paren(text, 0);
+            if subshell_end == 1 {
                 break;
             }
         }
