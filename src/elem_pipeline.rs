@@ -13,6 +13,7 @@ use crate::scanner::scanner_end_paren;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
+    //pub commands: Vec<Box<dyn ScriptElem>>,
     pub commands: Vec<Command>,
     pub text: String,
     pub expansion: bool,
@@ -35,7 +36,7 @@ impl ScriptElem for Pipeline {
             };
             c.set_pipe(p.0, p.1, prevfd);
 
-            c.pid = c.exec(conf);
+            let _ = c.exec(conf);
             prevfd = c.set_parent_io();
         }
 

@@ -57,6 +57,7 @@ impl ScriptElem for Command {
                     self.exec_external_command(&mut args, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
+                    self.pid = Some(child);
                     //self.set_parent_io();
                     return Some(child)
                 },
