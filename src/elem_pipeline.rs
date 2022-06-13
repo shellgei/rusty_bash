@@ -47,6 +47,14 @@ impl ScriptElem for Pipeline {
         }
         None
     }
+
+    /*
+    fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
+        self.infd_expansion = pin;
+        self.outfd_expansion = pout;
+        self.expansion = true;
+    }
+    */
 }
 
 impl Pipeline {
@@ -63,9 +71,12 @@ impl Pipeline {
         let x = self.commands.len();
         let c = &mut self.commands[x-1];
         let p = pipe().expect("Pipe cannot open");
+        /*
         c.infd_expansion = p.0;
         c.outfd_expansion = p.1;
         c.expansion = true;
+        */
+        c.set_expansion(p.0, p.1);
     }
 
     fn wait(&self, com: &Command, child: Pid, conf: &mut ShellCore) -> String {

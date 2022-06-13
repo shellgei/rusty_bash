@@ -78,6 +78,12 @@ impl ScriptElem for Command {
     }
 
     fn get_expansion_infd(&self) -> RawFd { self.infd_expansion }
+
+    fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
+        self.infd_expansion = pin;
+        self.outfd_expansion = pout;
+        self.expansion = true;
+    }
 }
 
 impl Command {
