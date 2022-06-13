@@ -41,8 +41,8 @@ impl ScriptElem for Pipeline {
         }
 
         for c in &self.commands {
-            if let Some(p) = c.pid {
-                self.expansion_str += &self.wait_command(&c, p, conf);
+            if let Some(p) = c.get_pid() {
+                self.expansion_str += &self.wait(&c, p, conf);
             }
         }
         None
@@ -68,12 +68,13 @@ impl Pipeline {
         c.expansion = true;
     }
 
-    fn wait_command(&self, com: &Command, child: Pid, conf: &mut ShellCore) -> String {
+    fn wait(&self, com: &Command, child: Pid, conf: &mut ShellCore) -> String {
         let mut ans = "".to_string();
 
         if com.expansion {
             let mut ch = [0;1000];
-            while let Ok(n) = read(com.infd_expansion, &mut ch) {
+            //while let Ok(n) = read(com.infd_expansion, &mut ch) {
+            while let Ok(n) = read(com.get_expansion_infd(), &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
                 if n < 1000 {
                     break;

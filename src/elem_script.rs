@@ -13,6 +13,9 @@ use std::os::unix::prelude::RawFd;
 pub trait ScriptElem {
     fn exec(&mut self, _conf: &mut ShellCore) -> Option<Pid> { None }
     fn set_pipe(&mut self, _pin: RawFd, _pout: RawFd, _pprev: RawFd) { }
+    fn get_pid(&self) -> Option<Pid> { None }
+    fn set_parent_io(&mut self) -> RawFd { -1 }
+    fn get_expansion_infd(&self) -> RawFd { -1 }
 }
 
 pub struct Script {

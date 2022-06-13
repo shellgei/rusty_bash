@@ -58,7 +58,6 @@ impl ScriptElem for Command {
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     self.pid = Some(child);
-                    //self.set_parent_io();
                     return Some(child)
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
@@ -73,6 +72,12 @@ impl ScriptElem for Command {
         self.pipeout = pout;
         self.prevpipein = pprev;
     }
+
+    fn get_pid(&self) -> Option<Pid> {
+        self.pid
+    }
+
+    fn get_expansion_infd(&self) -> RawFd { self.infd_expansion }
 }
 
 impl Command {
