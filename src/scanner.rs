@@ -71,6 +71,10 @@ pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
 }
 
 pub fn scanner_end_paren(text: &Feeder, from: usize) -> usize {
+    if text.len() == 0 {
+        return 0;
+    }
+
     if text.match_at(from, ")") {
         return from+1;
     }

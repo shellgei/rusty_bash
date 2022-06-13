@@ -14,7 +14,7 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use nix::unistd::Pid;
-
+use crate::scanner::scanner_end_paren;
 
 pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandElem>>,
@@ -96,8 +96,9 @@ impl SetVariables {
                 ans.push(Box::new(result));
             }
         }
-    
-        if let Some(result) = Eoc::parse(text){
+
+        if scanner_end_paren(text, 0) == 1 {
+        }else if let Some(result) = Eoc::parse(text){
             ans.push(Box::new(result));
         }else{
             text.rewind(backup);

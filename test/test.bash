@@ -318,5 +318,8 @@ res=$($com <<< '(echo hoge | rev;echo hoge)')
 [ "$res" = "egoh
 hoge" ]
 
+#res=$($com <<< '(A=B);echo $A')
+#[ "$res" = "" ]
+
 trap "" EXIT
 echo TEST OK

@@ -15,7 +15,6 @@ pub struct Script {
 }
 
 impl ScriptElem for Script {
-
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
         for p in &mut self.elems {
             p.exec(conf);
@@ -46,9 +45,9 @@ impl Script {
     
         loop {
             if let Some(result) = CompoundParen::parse(text, conf) {ans.elems.push(Box::new(result));}
-            if let Some(result) = BlankPart::parse(text)           {ans.elems.push(Box::new(result));}
-            if let Some(result) = SetVariables::parse(text, conf)  {ans.elems.push(Box::new(result));}
-            if let Some(result) = Pipeline::parse(text, conf)      {ans.elems.push(Box::new(result));}
+            else if let Some(result) = BlankPart::parse(text)           {ans.elems.push(Box::new(result));}
+            else if let Some(result) = SetVariables::parse(text, conf)  {ans.elems.push(Box::new(result));}
+            else if let Some(result) = Pipeline::parse(text, conf)      {ans.elems.push(Box::new(result));}
 
             if text.len() == 0 {
                 break;

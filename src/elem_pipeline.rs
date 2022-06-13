@@ -44,14 +44,6 @@ impl ScriptElem for Pipeline {
         }
         None
     }
-
-    /*
-    fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
-        self.infd_expansion = pin;
-        self.outfd_expansion = pout;
-        self.expansion = true;
-    }
-    */
 }
 
 impl Pipeline {
