@@ -8,7 +8,7 @@ use crate::elem_arg::Arg;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
 use crate::scanner::scanner_until;
-use crate::CommandElem;
+use crate::abst_command_elem::CommandElem;
 
 
 pub struct Substitution {

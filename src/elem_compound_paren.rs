@@ -2,15 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_script_elem::ScriptElem;
+use crate::elem_script::ScriptElem;
 use nix::unistd::{Pid};
-//use crate::elem_script::Script;
-use crate::elem_pipeline::Pipeline;
+use crate::elem_script::Script;
 
 
 /* ( script ) */
 pub struct CompoundParen {
-    pub script: Option<Pipeline>,
+    pub script: Option<Script>,
     text: String,
 }
 
@@ -41,7 +40,7 @@ impl CompoundParen {
         text.consume(1);
         let mut ans = CompoundParen::new();
 
-        if let Some(s) = Pipeline::parse(text, conf) {
+        if let Some(s) = Script::parse(text, conf, false) {
             ans.text = "(".to_owned() + &s.text + ")";
             ans.script = Some(s);
         }

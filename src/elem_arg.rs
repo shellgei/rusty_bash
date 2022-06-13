@@ -11,7 +11,7 @@ use crate::abst_arg_elem::subarg_in_brace;
 use crate::abst_arg_elem::ArgElem;
 use crate::elem_subarg_tilde::SubArgTildeUser;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
-use crate::CommandElem;
+use crate::abst_command_elem::CommandElem;
 
 pub struct Arg {
     pub text: String,

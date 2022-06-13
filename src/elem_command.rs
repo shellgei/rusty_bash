@@ -10,10 +10,11 @@ use std::os::unix::prelude::RawFd;
 use std::os::unix::io::IntoRawFd;
 use std::fs::OpenOptions;
 
-use crate::{ShellCore,Feeder,CommandElem};
+use crate::{ShellCore,Feeder};
+use crate::abst_command_elem::CommandElem;
 use crate::utils::{blue_string, dup_and_close};
 
-use crate::abst_script_elem::ScriptElem;
+use crate::elem_script::ScriptElem;
 use crate::elem_arg::Arg;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
