@@ -29,12 +29,11 @@ impl ScriptElem for Pipeline {
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
+            let mut p = (-1, -1);
             if i != len-1 {
-                let p = pipe().expect("Pipe cannot open");
-                c.pipein = p.0;
-                c.pipeout = p.1;
-            }
-            c.prevpipein = prevfd;
+                p = pipe().expect("Pipe cannot open");
+            };
+            c.set_pipe(p.0, p.1, prevfd);
 
             c.pid = c.exec(conf);
             prevfd = c.set_parent_io();

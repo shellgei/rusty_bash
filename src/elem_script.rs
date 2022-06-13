@@ -8,9 +8,11 @@ use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::elem_blankpart::BlankPart;
 use crate::elem_compound_paren::CompoundParen;
+use std::os::unix::prelude::RawFd;
 
 pub trait ScriptElem {
     fn exec(&mut self, _conf: &mut ShellCore) -> Option<Pid> { None }
+    fn set_pipe(&mut self, _pin: RawFd, _pout: RawFd, _pprev: RawFd) { }
 }
 
 pub struct Script {

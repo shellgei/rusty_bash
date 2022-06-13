@@ -66,6 +66,12 @@ impl ScriptElem for Command {
 
         None
     }
+
+    fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
+        self.pipein = pin;
+        self.pipeout = pout;
+        self.prevpipein = pprev;
+    }
 }
 
 impl Command {
