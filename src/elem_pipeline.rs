@@ -14,7 +14,7 @@ use crate::scanner::scanner_end_paren;
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
     //pub commands: Vec<Box<dyn ScriptElem>>,
-    pub commands: Vec<Command>,
+    pub commands: Vec<Box<Command>>,
     pub text: String,
     pub expansion: bool,
     pub expansion_str: String, 
@@ -130,7 +130,7 @@ impl Pipeline {
                 }
 
                 ans.text += &c.text.clone();
-                ans.commands.push(c);
+                ans.commands.push(Box::new(c));
 
                 if eoc != "|" {
                     break;
