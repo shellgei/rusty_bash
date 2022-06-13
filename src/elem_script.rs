@@ -48,10 +48,25 @@ impl Script {
 
         let mut ans = Script::new();
     
-        if let Some(result) = CompoundParen::parse(text, conf) {ans.elems.push(Box::new(result));}
-        if let Some(result) = BlankPart::parse(text)           {ans.elems.push(Box::new(result));}
-        if let Some(result) = SetVariables::parse(text, conf)  {ans.elems.push(Box::new(result));}
-        if let Some(result) = Pipeline::parse(text, conf)      {ans.elems.push(Box::new(result));}
+        loop {
+            if let Some(result) = CompoundParen::parse(text, conf) {ans.elems.push(Box::new(result));}
+            if let Some(result) = BlankPart::parse(text)           {ans.elems.push(Box::new(result));}
+            if let Some(result) = SetVariables::parse(text, conf)  {ans.elems.push(Box::new(result));}
+            if let Some(result) = Pipeline::parse(text, conf)      {ans.elems.push(Box::new(result));}
+
+            if text.len() == 0 {
+                break;
+            };
+        
+            if text.nth(0) == ')' {
+                eprintln!("Unexpected symbol: )");
+                return None;
+            }
+
+            if !next {
+                break;
+            }
+        }
     
         if ans.elems.len() > 0 {
             Some(ans)
