@@ -5,16 +5,13 @@ use crate::{ShellCore, Feeder};
 use crate::elem_script::ScriptElem;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
-use nix::sys::wait::waitpid;
 use nix::unistd::{Pid, pipe};
-use nix::unistd::read;
-use nix::sys::wait::WaitStatus;
 use crate::scanner::scanner_end_paren;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
-    //pub commands: Vec<Box<dyn ScriptElem>>,
-    pub commands: Vec<Box<Command>>,
+    pub commands: Vec<Box<dyn ScriptElem>>,
+    //pub commands: Vec<Box<Command>>,
     pub text: String,
     pub expansion: bool,
     pub expansion_str: String, 
@@ -71,52 +68,7 @@ impl Pipeline {
         let x = self.commands.len();
         let c = &mut self.commands[x-1];
         let p = pipe().expect("Pipe cannot open");
-        /*
-        c.infd_expansion = p.0;
-        c.outfd_expansion = p.1;
-        c.expansion = true;
-        */
         c.set_expansion(p.0, p.1);
-    }
-
-    fn wait(&self, com: &Command, child: Pid, conf: &mut ShellCore) -> String {
-        let mut ans = "".to_string();
-
-        //if com.expansion {
-        if com.is_expansion() {
-            let mut ch = [0;1000];
-            //while let Ok(n) = read(com.infd_expansion, &mut ch) {
-            while let Ok(n) = read(com.get_expansion_infd(), &mut ch) {
-                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-                if n < 1000 {
-                    break;
-                };
-            };
-        }
-
-        match waitpid(child, None)
-            .expect("Faild to wait child process.") {
-            WaitStatus::Exited(pid, status) => {
-                conf.vars.insert("?".to_string(), status.to_string());
-                if status != 0 {
-                    eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
-                }
-            }
-            WaitStatus::Signaled(pid, signal, _) => {
-                conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
-            }
-            _ => {
-                eprintln!("Unknown error")
-            }
-        };
-
-        if let Some(c) = ans.chars().last() {
-            if c == '\n' {
-                return ans[0..ans.len()-1].to_string();
-            }
-        }
-        ans
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {

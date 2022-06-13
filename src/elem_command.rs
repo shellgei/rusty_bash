@@ -86,6 +86,13 @@ impl ScriptElem for Command {
     }
 
     fn is_expansion(&self) -> bool { self.expansion }
+
+    fn set_parent_io(&mut self) -> RawFd {
+        if self.pipeout >= 0 {
+            close(self.pipeout).expect("Cannot close outfd");
+        }
+        return self.pipein;
+    }
 }
 
 impl Command {
@@ -167,13 +174,6 @@ impl Command {
                 panic!("Cannot open the file: {}", r.path);
             };
         }
-    }
-
-    pub fn set_parent_io(&mut self) -> RawFd {
-        if self.pipeout >= 0 {
-            close(self.pipeout).expect("Cannot close outfd");
-        }
-        return self.pipein;
     }
 
     fn set_child_io(&mut self) {
