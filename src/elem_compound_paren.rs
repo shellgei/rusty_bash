@@ -6,6 +6,7 @@ use crate::abst_script_elem::ScriptElem;
 use nix::unistd::{Pid, fork, ForkResult};
 use crate::elem_script::Script;
 use nix::sys::wait::{WaitStatus, waitpid};
+use std::process::exit;
 
 /* ( script ) */
 pub struct CompoundParen {
@@ -16,33 +17,24 @@ pub struct CompoundParen {
 
 impl ScriptElem for CompoundParen {
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
-        if let Some(s) = &mut self.script {
-            return s.exec(conf);
-        };
-
-        None
-        /*
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
                     //self.set_child_io();
                     if let Some(s) = &mut self.script {
-                        return s.exec(conf);
+                        self.pid = s.exec(conf);
+                        exit(conf.vars["?"].parse::<i32>().unwrap());
                     };
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    if let Some(s) = &self.script {
-                    eprintln!("WAIT");
-                        self.wait(&s, child, conf);
-                    };
-                    return None;
+                    self.wait(child, conf);
+                    return Some(child);
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
 
         None
-        */
     }
 }
 
@@ -78,8 +70,8 @@ impl CompoundParen {
         Some(ans)
     }
 
-    fn wait(&self, com: &Script, child: Pid, conf: &mut ShellCore) -> String {
-        let mut ans = "".to_string();
+    fn wait(&self, child: Pid, conf: &mut ShellCore) -> String {
+        let ans = "".to_string();
 
         match waitpid(child, None).expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
@@ -97,11 +89,13 @@ impl CompoundParen {
             }
         };
 
+        /*
         if let Some(c) = ans.chars().last() {
             if c == '\n' {
                 return ans[0..ans.len()-1].to_string();
             }
         }
+        */
         ans
     }
 
