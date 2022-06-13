@@ -59,8 +59,7 @@ impl Script {
             };
         
             if text.nth(0) == ')' {
-                eprintln!("Unexpected symbol: )");
-                return None;
+                break;
             }
 
             if !next {

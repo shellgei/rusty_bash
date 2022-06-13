@@ -40,7 +40,7 @@ impl CompoundParen {
         text.consume(1);
         let mut ans = CompoundParen::new();
 
-        if let Some(s) = Script::parse(text, conf, false) {
+        if let Some(s) = Script::parse(text, conf, true) {
             ans.text = "(".to_owned() + &s.text + ")";
             ans.script = Some(s);
         }

@@ -305,5 +305,18 @@ res=$($com <<< 'echo abc | rev')
 res=$($com <<< 'echo abc | rev | tr abc def')
 [ "$res" = "fed" ]
 
+### COMPOUND COMMAND ###
+
+res=$($com <<< '(echo hoge)')
+[ "$res" = "hoge" ]
+
+res=$($com <<< '(echo hoge;echo hoge)')
+[ "$res" = "hoge
+hoge" ]
+
+res=$($com <<< '(echo hoge | rev;echo hoge)')
+[ "$res" = "egoh
+hoge" ]
+
 trap "" EXIT
 echo TEST OK
