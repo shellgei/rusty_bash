@@ -6,7 +6,7 @@ use std::env;
 use crate::ShellCore;
 use crate::abst_command_elem::CommandElem;
 use crate::utils::blue_string;
-use crate::elem_script::ScriptElem;
+use crate::abst_script_elem::ScriptElem;
 
 use crate::Feeder;
 use crate::elem_substitution::Substitution;

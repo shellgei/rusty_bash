@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elem_script::ScriptElem;
+use crate::abst_script_elem::ScriptElem;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{Pid, pipe};

@@ -3,6 +3,7 @@
 
 mod abst_arg_elem;
 mod abst_command_elem;
+mod abst_script_elem;
 mod elem_arg;
 mod elem_arg_delimiter;
 mod elem_compound_paren;
@@ -45,7 +46,7 @@ use std::fs::OpenOptions;
 use std::io::BufReader;
 use std::io::BufRead;
 use crate::elem_command::Command;
-use crate::elem_script::ScriptElem;
+use crate::abst_script_elem::ScriptElem;
 use crate::elem_script::Script;
 
 fn read_line() -> String {
