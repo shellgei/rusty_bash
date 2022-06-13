@@ -84,6 +84,8 @@ impl ScriptElem for Command {
         self.outfd_expansion = pout;
         self.expansion = true;
     }
+
+    fn is_expansion(&self) -> bool { self.expansion }
 }
 
 impl Command {

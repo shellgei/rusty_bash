@@ -82,7 +82,8 @@ impl Pipeline {
     fn wait(&self, com: &Command, child: Pid, conf: &mut ShellCore) -> String {
         let mut ans = "".to_string();
 
-        if com.expansion {
+        //if com.expansion {
+        if com.is_expansion() {
             let mut ch = [0;1000];
             //while let Ok(n) = read(com.infd_expansion, &mut ch) {
             while let Ok(n) = read(com.get_expansion_infd(), &mut ch) {
