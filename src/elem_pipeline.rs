@@ -75,23 +75,11 @@ impl Pipeline {
             let mut ch = [0;1000];
             while let Ok(n) = read(com.infd_expansion, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-  //              eprintln!("PIPE {}", ans);
                 if n < 1000 {
                     break;
                 };
             };
         }
-
-        /*
-            let mut ch = [0;1000];
-            while let Ok(n) = read(com.pipein, &mut ch) {
-                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-                eprintln!("PIPE {}", ans);
-                if n < 1000 {
-                    break;
-                };
-            };
-            */
 
         match waitpid(child, None)
             .expect("Faild to wait child process.") {
@@ -135,7 +123,6 @@ impl Pipeline {
                     break;
                 }
 
-        eprintln!("parse pipe: {}", text._text());
                 if let Some(d) = ArgDelimiter::parse(text) {
                     ans.text += &d.text.clone();
                 }
@@ -144,17 +131,6 @@ impl Pipeline {
                 if subshell_end == 1 {
                     break;
                 }
-
-                /*
-
-                if text.len() == 0{
-                    break;
-                }
-
-                if text.nth(0) != '|' {
-                    break;
-                }
-                */
 
             }else{
                 break;
