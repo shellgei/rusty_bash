@@ -11,10 +11,7 @@ use crate::scanner::scanner_end_paren;
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
-    //pub commands: Vec<Box<Command>>,
     pub text: String,
-//    pub expansion: bool,
-//    pub expansion_str: String, 
 }
 
 impl ScriptElem for Pipeline {
@@ -46,8 +43,6 @@ impl Pipeline {
     pub fn new() -> Pipeline{
         Pipeline {
             commands: vec!(),
-            //expansion: false,
-            //expansion_str: "".to_string(),
             text: "".to_string(),
         }
     }

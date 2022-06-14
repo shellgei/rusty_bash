@@ -77,8 +77,9 @@ impl ScriptElem for Command {
         self.pid
     }
 
-    fn get_expansion_infd(&self) -> RawFd { self.infd_expansion }
+    //fn get_expansion_infd(&self) -> RawFd { self.infd_expansion }
 
+    /*
     fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
         self.infd_expansion = pin;
         self.outfd_expansion = pout;
@@ -86,6 +87,7 @@ impl ScriptElem for Command {
     }
 
     fn is_expansion(&self) -> bool { self.expansion }
+    */
 
     fn set_parent_io(&mut self) -> RawFd {
         if self.pipeout >= 0 {

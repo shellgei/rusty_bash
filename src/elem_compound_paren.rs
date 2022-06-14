@@ -50,12 +50,6 @@ impl ScriptElem for CompoundParen {
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
-
-    fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
-        self.infd_expansion = pin;
-        self.outfd_expansion = pout;
-//        self.expansion = true;
-    }
 }
 
 impl CompoundParen {
@@ -69,6 +63,11 @@ impl CompoundParen {
             expansion: false,
             expansion_str: "".to_string(),
         }
+    }
+
+    fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
+        self.infd_expansion = pin;
+        self.outfd_expansion = pout;
     }
 
     fn set_command_expansion_pipe(&mut self){
