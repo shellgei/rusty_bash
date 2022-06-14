@@ -13,17 +13,13 @@ pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
     //pub commands: Vec<Box<Command>>,
     pub text: String,
-    pub expansion: bool,
-    pub expansion_str: String, 
+//    pub expansion: bool,
+//    pub expansion_str: String, 
 }
 
 impl ScriptElem for Pipeline {
 
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
-        if self.expansion {
-            self.set_command_expansion_pipe();
-        }
-
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
@@ -39,7 +35,7 @@ impl ScriptElem for Pipeline {
 
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
-                self.expansion_str += &self.wait(p, conf);
+                self.wait(p, conf);
             }
         }
         None
@@ -50,17 +46,10 @@ impl Pipeline {
     pub fn new() -> Pipeline{
         Pipeline {
             commands: vec!(),
-            expansion: false,
-            expansion_str: "".to_string(),
+            //expansion: false,
+            //expansion_str: "".to_string(),
             text: "".to_string(),
         }
-    }
-
-    fn set_command_expansion_pipe(&mut self){
-        let x = self.commands.len();
-        let c = &mut self.commands[x-1];
-        let p = pipe().expect("Pipe cannot open");
-        c.set_expansion(p.0, p.1);
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
