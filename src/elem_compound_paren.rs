@@ -21,14 +21,11 @@ impl ScriptElem for CompoundParen {
                 Ok(ForkResult::Child) => {
                     //self.set_child_io();
                     if let Some(s) = &mut self.script {
-                        //self.pid = s.exec(conf);
                         s.exec(conf);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
                     };
                 },
                 Ok(ForkResult::Parent { child } ) => {
-   //                 self.wait(child, conf);
-                    eprintln!("{}", child);
                     self.pid = Some(child);
                     return Some(child);
                 },
