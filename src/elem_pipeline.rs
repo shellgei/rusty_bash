@@ -39,7 +39,7 @@ impl ScriptElem for Pipeline {
 
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
-                self.expansion_str += &self.wait(&c, p, conf);
+                self.expansion_str += &self.wait(p, conf);
             }
         }
         None

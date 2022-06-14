@@ -22,7 +22,7 @@ impl ScriptElem for Script {
 
         for c in &self.elems {
             if let Some(p) = c.get_pid() {
-                self.wait(&c, p, conf);
+                self.wait(p, conf);
             }
         }
 

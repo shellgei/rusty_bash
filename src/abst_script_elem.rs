@@ -6,7 +6,6 @@ use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
-use nix::unistd::read;
 
 pub trait ScriptElem {
     fn exec(&mut self, _conf: &mut ShellCore) -> Option<Pid> { None }
@@ -17,19 +16,8 @@ pub trait ScriptElem {
     fn set_parent_io(&mut self) -> RawFd { -1 }
     fn get_expansion_infd(&self) -> RawFd { -1 }
 
-    fn wait(&self, com: &Box<dyn ScriptElem>, child: Pid, conf: &mut ShellCore) -> String {
-        let mut ans = "".to_string();
-
-        if com.is_expansion() {
-            let mut ch = [0;1000];
-            //while let Ok(n) = read(com.infd_expansion, &mut ch) {
-            while let Ok(n) = read(com.get_expansion_infd(), &mut ch) {
-                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-                if n < 1000 {
-                    break;
-                };
-            };
-        }
+    fn wait(&self, child: Pid, conf: &mut ShellCore) -> String {
+        //let mut ans = "".to_string();
 
         match waitpid(child, None).expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
@@ -47,12 +35,16 @@ pub trait ScriptElem {
             }
         };
 
+        /*
         if let Some(c) = ans.chars().last() {
             if c == '\n' {
                 return ans[0..ans.len()-1].to_string();
             }
         }
         ans
+        */
+
+        "".to_string()
     }
 }
 
