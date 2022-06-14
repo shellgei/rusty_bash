@@ -7,6 +7,7 @@ use nix::unistd::{Pid, fork, ForkResult, pipe};
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use std::process::exit;
+use crate::utils::dup_and_close;
 
 /* ( script ) */
 pub struct CompoundParen {
@@ -29,6 +30,9 @@ impl ScriptElem for CompoundParen {
             match fork() {
                 Ok(ForkResult::Child) => {
                     //self.set_child_io();
+                    if self.expansion {
+                        dup_and_close(self.outfd_expansion, 1);
+                    }
                     if let Some(s) = &mut self.script {
                         s.exec(conf);
                         exit(conf.vars["?"].parse::<i32>().unwrap());

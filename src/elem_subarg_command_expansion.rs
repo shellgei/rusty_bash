@@ -60,16 +60,15 @@ impl SubArgCommandExp {
     fn wait(&self, child: Pid, conf: &mut ShellCore) -> String {
         let mut ans = "".to_string();
 
-        if self.com.expansion {
             let mut ch = [0;1000];
             //while let Ok(n) = read(com.infd_expansion, &mut ch) {
-            while let Ok(n) = read(self.com.get_expansion_infd(), &mut ch) {
+            while let Ok(n) = read(self.com.infd_expansion, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
                 if n < 1000 {
                     break;
                 };
             };
-        }
+            eprintln!("READ {}", ans);
 
         match waitpid(child, None).expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
