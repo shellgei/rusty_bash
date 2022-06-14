@@ -6,6 +6,8 @@ use crate::ShellCore;
 use crate::Feeder;
 use crate::elem_pipeline::{Pipeline};
 use crate::scanner::*;
+use nix::unistd::{read, Pid};
+use nix::sys::wait::{waitpid, WaitStatus};
 
 use crate::abst_arg_elem::ArgElem;
 use crate::abst_script_elem::ScriptElem;
@@ -19,8 +21,11 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        self.com.expansion = true;
-        let _ = self.com.exec(conf);
+        //self.com.expansion = true;
+        if let Some(pid) = self.com.exec(conf) {
+            self.wait(pid, conf);
+        }
+
         vec!(self.com.expansion_str.replace("\n", " "))
     }
 
@@ -38,7 +43,8 @@ impl SubArgCommandExp {
         let backup = text.clone();
         text.consume(1);
 
-        if let Some(e) = CompoundParen::parse(text, conf){
+        if let Some(mut e) = CompoundParen::parse(text, conf){
+            e.expansion = true;
             let ans = SubArgCommandExp {
                 text: "$".to_owned() + &e.text.clone(),
                 pos: DebugInfo::init(text),
@@ -49,5 +55,43 @@ impl SubArgCommandExp {
             text.rewind(backup);
             None
         }
+    }
+
+    fn wait(&self, child: Pid, conf: &mut ShellCore) -> String {
+        let mut ans = "".to_string();
+
+        if self.com.expansion {
+            let mut ch = [0;1000];
+            //while let Ok(n) = read(com.infd_expansion, &mut ch) {
+            while let Ok(n) = read(self.com.get_expansion_infd(), &mut ch) {
+                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+                if n < 1000 {
+                    break;
+                };
+            };
+        }
+
+        match waitpid(child, None).expect("Faild to wait child process.") {
+            WaitStatus::Exited(pid, status) => {
+                conf.vars.insert("?".to_string(), status.to_string());
+                if status != 0 { 
+                    eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
+                }
+            }
+            WaitStatus::Signaled(pid, signal, _) => {
+                conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
+                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
+            }
+            _ => {
+                eprintln!("Unknown error")
+            }
+        };
+
+        if let Some(c) = ans.chars().last() {
+            if c == '\n' {
+                return ans[0..ans.len()-1].to_string();
+            }
+        }
+        ans
     }
 }
