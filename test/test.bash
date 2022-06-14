@@ -129,6 +129,9 @@ res=$($com <<< 'echo "$(seq 5)"')
 res=$($com <<< 'cd /;echo "$(pwd)x"') #internal command
 [ "$res" = "/x" ]
 
+#$com <<< 'ls $(echo / /)'
+#[ $? -eq 0 ]
+
 # expansion of tilde
 
 res=$($com <<< 'echo ~')
@@ -257,7 +260,7 @@ EOF
 res=$($com << 'EOF' 
 ls -d /hogehgoe 2>&1
 EOF
-)
+) || true
 [ "$(echo $res | wc -l)" = "1" ]
 
 res=$($com << 'EOF' 

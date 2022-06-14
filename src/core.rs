@@ -90,7 +90,12 @@ impl ShellCore {
         };
         hist_file.flush().expect("Cannot flush the history file");
 
-        exit(0);
+        if let Ok(status) = self.get_var(&"?".to_string()).to_string().parse::<i32>(){
+            exit(status);
+        }else{
+            eprintln!("Shell internal error");
+            exit(1);
+        }
     }
 
     pub fn pwd(&mut self, _args: &mut Vec<String>) -> i32 {

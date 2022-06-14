@@ -49,7 +49,7 @@ use crate::elem_command::Command;
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_script::Script;
 
-fn read_line() -> String {
+fn read_line() -> Option<String> {
     let mut line = String::new();
 
     let len = io::stdin()
@@ -57,9 +57,9 @@ fn read_line() -> String {
         .expect("Failed to read line");
 
     if len == 0 {
-        exit(0);
+        return None;
     }
-    line
+    Some(line)
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -136,15 +136,23 @@ fn main() {
             let len_prompt = term::prompt(&mut core);
             term::read_line(len_prompt, &mut core)
         }else{
-            read_line()
+            if let Some(s) = read_line() {
+                s
+            }else{
+                break;
+            }
         };
         input.add_line(line);
-        /*
-        while let Some(mut e) = elem_script::hand_input_unit(&mut input, &mut core){
-            e.exec(&mut core);
-        }*/
         while let Some(mut e) = Script::parse(&mut input, &mut core, false){
             e.exec(&mut core);
         }
     }
+
+    if let Ok(status) = core.get_var(&"?".to_string()).to_string().parse::<i32>(){
+        exit(status);
+    }else{
+        eprintln!("Shell internal error");
+        exit(1);
+    }
+
 }
