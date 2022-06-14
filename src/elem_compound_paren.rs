@@ -14,8 +14,8 @@ pub struct CompoundParen {
     pub script: Option<Script>,
     pub text: String,
     pid: Option<Pid>, 
-    pub infd_expansion: RawFd,
-    pub outfd_expansion: RawFd,
+    pub pipein: RawFd,
+    pub pipeout: RawFd,
     pub expansion: bool,
     pub expansion_str: String,
 }
@@ -31,7 +31,7 @@ impl ScriptElem for CompoundParen {
                 Ok(ForkResult::Child) => {
                     //self.set_child_io();
                     if self.expansion {
-                        dup_and_close(self.outfd_expansion, 1);
+                        dup_and_close(self.pipeout, 1);
                     }
                     if let Some(s) = &mut self.script {
                         s.exec(conf);
@@ -58,16 +58,16 @@ impl CompoundParen {
             script: None,
             pid: None,
             text: "".to_string(),
-            infd_expansion: -1,
-            outfd_expansion: -1,
+            pipein: -1,
+            pipeout: -1,
             expansion: false,
             expansion_str: "".to_string(),
         }
     }
 
     fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
-        self.infd_expansion = pin;
-        self.outfd_expansion = pout;
+        self.pipein = pin;
+        self.pipeout = pout;
     }
 
     fn set_command_expansion_pipe(&mut self){

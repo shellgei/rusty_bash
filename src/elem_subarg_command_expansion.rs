@@ -58,8 +58,7 @@ impl SubArgCommandExp {
         let mut ans = "".to_string();
 
         let mut ch = [0;1000];
-        //while let Ok(n) = read(com.infd_expansion, &mut ch) {
-        while let Ok(n) = read(self.com.infd_expansion, &mut ch) {
+        while let Ok(n) = read(self.com.pipein, &mut ch) {
             ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
             if n < 1000 {
                 break;

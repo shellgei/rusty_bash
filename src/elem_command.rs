@@ -29,9 +29,6 @@ pub struct Command {
     pub redirects: Vec<Box<Redirect>>,
     pub text: String,
     /* The followings are set by the pipeline element. */
-    pub expansion: bool, 
-    pub outfd_expansion: RawFd,
-    pub infd_expansion: RawFd,
     pub pipeout: RawFd,
     pub pipein: RawFd,
     pub prevpipein: RawFd,
@@ -44,7 +41,7 @@ impl ScriptElem for Command {
         let mut args = self.eval(conf);
 
         // This sentence avoids an unnecessary fork for an internal command.
-        if !self.expansion && self.pipeout == -1 && self.pipein == -1 { 
+        if self.pipeout == -1 && self.pipein == -1 { 
             if self.run_on_this_process(&mut args, conf) {
                 return None;
             }
@@ -77,18 +74,6 @@ impl ScriptElem for Command {
         self.pid
     }
 
-    //fn get_expansion_infd(&self) -> RawFd { self.infd_expansion }
-
-    /*
-    fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
-        self.infd_expansion = pin;
-        self.outfd_expansion = pout;
-        self.expansion = true;
-    }
-
-    fn is_expansion(&self) -> bool { self.expansion }
-    */
-
     fn set_parent_io(&mut self) -> RawFd {
         if self.pipeout >= 0 {
             close(self.pipeout).expect("Cannot close outfd");
@@ -104,9 +89,6 @@ impl Command {
             args: vec!(),
             redirects: vec!(),
             text: "".to_string(),
-            expansion: false,
-            outfd_expansion: 1,
-            infd_expansion: 0,
             pipeout: -1,
             pipein: -1,
             prevpipein: -1,
@@ -179,10 +161,6 @@ impl Command {
     }
 
     fn set_child_io(&mut self) {
-        if self.expansion { // the case of command expansion
-            dup_and_close(self.outfd_expansion, 1);
-        }
-
         for r in &self.redirects {
             self.set_redirect(r);
         };
@@ -285,12 +263,6 @@ impl Command {
                 ans.push_elems(Box::new(a));
             }
 
-            /*
-            if Command::unexpected_symbol(text) {
-                return false;
-            }
-            */
-            
             if let Some(d) = ArgDelimiter::parse(text){
                 ans.push_elems(Box::new(d));
             }
@@ -298,7 +270,6 @@ impl Command {
             if text.len() == 0 {
                 break;
             }
-    
 
             if let Some(e) = Eoc::parse(text){
                 ans.push_elems(Box::new(e));

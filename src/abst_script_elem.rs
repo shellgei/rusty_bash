@@ -10,11 +10,8 @@ use nix::sys::wait::WaitStatus;
 pub trait ScriptElem {
     fn exec(&mut self, _conf: &mut ShellCore) -> Option<Pid> { None }
     fn set_pipe(&mut self, _pin: RawFd, _pout: RawFd, _pprev: RawFd) { }
-  //  fn set_expansion(&mut self, _pin: RawFd, _pout: RawFd) { }
-  //  fn is_expansion(&self) -> bool { false }
     fn get_pid(&self) -> Option<Pid> { None }
     fn set_parent_io(&mut self) -> RawFd { -1 }
-  //  fn get_expansion_infd(&self) -> RawFd { -1 }
 
     fn wait(&self, child: Pid, conf: &mut ShellCore) {
         match waitpid(child, None).expect("Faild to wait child process.") {
