@@ -4,8 +4,6 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::elem_pipeline::{Pipeline};
-use crate::scanner::*;
 use nix::unistd::{read, Pid};
 use nix::sys::wait::{waitpid, WaitStatus};
 
@@ -21,12 +19,11 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        //self.com.expansion = true;
         if let Some(pid) = self.com.exec(conf) {
-            self.wait(pid, conf);
+            return vec!(self.wait(pid, conf).replace("\n", " "));
         }
 
-        vec!(self.com.expansion_str.replace("\n", " "))
+        vec!()
     }
 
     fn text(&self) -> String {
@@ -60,15 +57,14 @@ impl SubArgCommandExp {
     fn wait(&self, child: Pid, conf: &mut ShellCore) -> String {
         let mut ans = "".to_string();
 
-            let mut ch = [0;1000];
-            //while let Ok(n) = read(com.infd_expansion, &mut ch) {
-            while let Ok(n) = read(self.com.infd_expansion, &mut ch) {
-                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-                if n < 1000 {
-                    break;
-                };
+        let mut ch = [0;1000];
+        //while let Ok(n) = read(com.infd_expansion, &mut ch) {
+        while let Ok(n) = read(self.com.infd_expansion, &mut ch) {
+            ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+            if n < 1000 {
+                break;
             };
-            eprintln!("READ {}", ans);
+        };
 
         match waitpid(child, None).expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
