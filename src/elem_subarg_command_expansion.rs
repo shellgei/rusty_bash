@@ -9,11 +9,12 @@ use crate::scanner::*;
 
 use crate::abst_arg_elem::ArgElem;
 use crate::abst_script_elem::ScriptElem;
+use crate::elem_compound_paren::CompoundParen;
 
 pub struct SubArgCommandExp {
     pub text: String,
     pub pos: DebugInfo,
-    pub com: Pipeline, 
+    pub com: CompoundParen, 
 }
 
 impl ArgElem for SubArgCommandExp {
@@ -30,28 +31,23 @@ impl ArgElem for SubArgCommandExp {
 
 impl SubArgCommandExp {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgCommandExp> {
-        if !(text.nth(0) == '$' && text.nth(1) == '(') {
+        if text.len() == 0 || text.nth(0) != '$' {
             return None;
         }
     
         let backup = text.clone();
-        text.consume(2);
+        text.consume(1);
 
-        if let Some(e) = Pipeline::parse(text, conf){
-
-            if scanner_end_paren(text, 0) == 1 {
-                let ans = SubArgCommandExp {
-                    text: e.text.clone() + ")",
-                    pos: DebugInfo::init(text),
-                    com: e };
+        if let Some(e) = CompoundParen::parse(text, conf){
+            let ans = SubArgCommandExp {
+                text: "$".to_owned() + &e.text.clone(),
+                pos: DebugInfo::init(text),
+                com: e };
     
-                text.consume(1);
-                return Some(ans);
-            }else{
-                text.rewind(backup);
-                return None;
-            }
-        };
-        None
+            return Some(ans);
+        }else{
+            text.rewind(backup);
+            None
+        }
     }
 }

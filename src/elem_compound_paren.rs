@@ -10,8 +10,10 @@ use std::process::exit;
 /* ( script ) */
 pub struct CompoundParen {
     pub script: Option<Script>,
-    text: String,
+    pub text: String,
     pid: Option<Pid>, 
+    pub expansion: bool,
+    pub expansion_str: String,
 }
 
 impl ScriptElem for CompoundParen {
@@ -45,6 +47,8 @@ impl CompoundParen {
             script: None,
             pid: None,
             text: "".to_string(),
+            expansion: false,
+            expansion_str: "".to_string(),
         }
     }
 
