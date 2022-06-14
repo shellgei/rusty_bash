@@ -16,9 +16,16 @@ pub struct Script {
 
 impl ScriptElem for Script {
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
-        for p in &mut self.elems {
-            p.exec(conf);
+        for e in &mut self.elems {
+            e.exec(conf);
         }
+
+        for c in &self.elems {
+            if let Some(p) = c.get_pid() {
+                self.wait(&c, p, conf);
+            }
+        }
+
         None
     }
 }

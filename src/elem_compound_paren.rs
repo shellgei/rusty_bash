@@ -5,7 +5,6 @@ use crate::{ShellCore, Feeder};
 use crate::abst_script_elem::ScriptElem;
 use nix::unistd::{Pid, fork, ForkResult};
 use crate::elem_script::Script;
-use nix::sys::wait::{WaitStatus, waitpid};
 use std::process::exit;
 
 /* ( script ) */
@@ -22,12 +21,15 @@ impl ScriptElem for CompoundParen {
                 Ok(ForkResult::Child) => {
                     //self.set_child_io();
                     if let Some(s) = &mut self.script {
-                        self.pid = s.exec(conf);
+                        //self.pid = s.exec(conf);
+                        s.exec(conf);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
                     };
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    self.wait(child, conf);
+   //                 self.wait(child, conf);
+                    eprintln!("{}", child);
+                    self.pid = Some(child);
                     return Some(child);
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
@@ -36,6 +38,8 @@ impl ScriptElem for CompoundParen {
 
         None
     }
+
+    fn get_pid(&self) -> Option<Pid> { self.pid }
 }
 
 impl CompoundParen {
@@ -70,6 +74,7 @@ impl CompoundParen {
         Some(ans)
     }
 
+    /*
     fn wait(&self, child: Pid, conf: &mut ShellCore) -> String {
         let ans = "".to_string();
 
@@ -89,14 +94,7 @@ impl CompoundParen {
             }
         };
 
-        /*
-        if let Some(c) = ans.chars().last() {
-            if c == '\n' {
-                return ans[0..ans.len()-1].to_string();
-            }
-        }
-        */
         ans
     }
-
+*/
 }
