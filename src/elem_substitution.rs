@@ -44,8 +44,8 @@ impl Substitution {
         if let Some(value_part) = Arg::parse(text, false, conf){
             Some(Substitution::new(text, var_part, value_part))
         }else{ // cases where the value goes the next line
-            text.rewind(backup);
-            None
+            let empty_arg = Arg::new();
+            Some(Substitution::new(text, var_part, empty_arg))
         }
     }
 }

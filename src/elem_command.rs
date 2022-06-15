@@ -255,12 +255,14 @@ impl Command {
     }
 
     fn args_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {
+        let mut ok = false;
         loop {
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
                 ans.redirects.push(Box::new(r));
             }else if let Some(a) = Arg::parse(text, true, conf) {
                 ans.push_elems(Box::new(a));
+                ok = true;
             }
 
             if let Some(d) = ArgDelimiter::parse(text){
@@ -276,13 +278,12 @@ impl Command {
                 break;
             }
 
-            let subshell_end = scanner_end_paren(text, 0);
-            if subshell_end == 1 {
+            if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
                 break;
             }
         }
 
-        ans.args.len() > 0
+        ok
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {

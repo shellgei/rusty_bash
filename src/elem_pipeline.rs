@@ -7,6 +7,7 @@ use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{Pid, pipe};
 use crate::scanner::scanner_end_paren;
+use crate::elem_compound_paren::CompoundParen;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
@@ -51,29 +52,41 @@ impl Pipeline {
         let mut ans = Pipeline::new();
 
         loop {
+            let mut eoc = "".to_string();
             if let Some(c) = Command::parse(text, conf) {
-                let mut eoc = "".to_string();
-                if let Some(e) = c.args.last() {
-                    eoc = e.text();
-                }
-
+                eoc = if let Some(e) = c.args.last() {
+                    e.text()
+                }else{
+                    "".to_string()
+                };
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
-
-                if eoc != "|" {
-                    break;
-                }
-
-                if let Some(d) = ArgDelimiter::parse(text) {
-                    ans.text += &d.text.clone();
-                }
-
-                let subshell_end = scanner_end_paren(text, 0);
-                if subshell_end == 1 {
-                    break;
-                }
-
+            }else if let Some(c) = CompoundParen::parse(text, conf) {
+                eoc = "".to_string();
+                    /*
+                eoc = 
+                    if let Some(e) = c.args.last() {
+                    e.text()
+                }else{
+                    "".to_string()
+                };
+                */
+                ans.text += &c.text.clone();
+                ans.commands.push(Box::new(c));
             }else{
+                break;
+            }
+
+            if eoc != "|" {
+                break;
+            }
+
+            if let Some(d) = ArgDelimiter::parse(text) {
+                ans.text += &d.text.clone();
+            }
+
+            let subshell_end = scanner_end_paren(text, 0);
+            if subshell_end == 1 {
                 break;
             }
         }

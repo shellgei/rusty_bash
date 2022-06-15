@@ -20,6 +20,14 @@ pub struct Arg {
 }
 
 impl Arg {
+    pub fn new() -> Arg {
+        Arg {
+            text: "".to_string(),
+            pos: DebugInfo{lineno: 0, pos: 0, comment: "".to_string()},
+            subargs: vec!(),
+        }
+    }
+
     pub fn expand_glob(text: &String) -> Vec<String> {
         let mut ans = eval_glob(text);
 
@@ -71,7 +79,11 @@ impl Arg {
             };
         };
     
-        Some(ans)
+        if ans.text.len() > 0 {
+            Some(ans)
+        }else{
+            None
+        }
     }
 }
 

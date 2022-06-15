@@ -86,8 +86,6 @@ impl SetVariables {
                 ans.push(Box::new(result));
             }else if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
-                // TODO: bash doesn't ignore redirects but this shell ignores.
-            //    ans.redirects.push(Box::new(r));
             }else{
                 break;
             }
