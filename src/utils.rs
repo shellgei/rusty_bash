@@ -12,9 +12,36 @@ pub fn chars_to_string(chars: &Vec<char>) -> String {
     chars.iter().collect::<String>()
 }
 
+fn is_glob(s: &String) -> bool {
+    //TODO: too crude
+    for ch in s.chars() {
+        if ch == '*' || ch == '[' || ch == '?' {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+fn glob_pos(s: &String) -> usize {
+    let mut c = 0;
+    for ch in s.chars() {
+        c += ch.len_utf8();
+        if ch == '*' || ch == '[' || ch == '?' {
+            return c;
+        }
+    }
+    return c;
+}
+*/
+
 pub fn eval_glob(globstr: &String) -> Vec<String> {
+    if ! is_glob(globstr) {
+        return vec!();
+    }
+
     let mut ans = vec!();
-    let g = globstr.clone();
+    let g = globstr.to_string();
 
     //TODO: too ugly
     if let Ok(path) = glob(&g) {

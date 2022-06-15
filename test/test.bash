@@ -112,6 +112,12 @@ EOF
 res=$($com <<< 'echo "*"')
 [ "$res" = "*" ]
 
+res=$($com <<< 'echo /')
+[ "$res" = "/" ]
+
+#$com <<< 'echo //*' | grep -F '//' 
+#$com <<< 'echo /*////' | grep -Fv '//'
+
 # command expansion
 
 res=$($com <<< 'echo $(echo hoge)hoge')
