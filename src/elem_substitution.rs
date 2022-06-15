@@ -38,7 +38,6 @@ impl Substitution {
             return None;
         }
     
-        let backup = text.clone();
         let var_part = VarName::new(text, varname_pos);
         text.consume(1); // = 
         if let Some(value_part) = Arg::parse(text, false, conf){

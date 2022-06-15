@@ -52,34 +52,34 @@ impl Pipeline {
         let mut ans = Pipeline::new();
 
         loop {
-            let mut eoc = "".to_string();
             if let Some(c) = Command::parse(text, conf) {
-                eoc = if let Some(e) = c.args.last() {
+                let eoc = if let Some(e) = c.args.last() {
                     e.text()
                 }else{
                     "".to_string()
                 };
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
+
+                if eoc != "|" {
+                    break;
+                }
             }else if let Some(c) = CompoundParen::parse(text, conf) {
-                eoc = "".to_string();
-                    /*
-                eoc = 
-                    if let Some(e) = c.args.last() {
-                    e.text()
+                let eoc = if let Some(e) = &c.eoc {
+                    e.text.clone()
                 }else{
                     "".to_string()
                 };
-                */
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
+
+                if eoc != "|" {
+                    break;
+                }
             }else{
                 break;
             }
 
-            if eoc != "|" {
-                break;
-            }
 
             if let Some(d) = ArgDelimiter::parse(text) {
                 ans.text += &d.text.clone();

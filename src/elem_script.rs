@@ -6,7 +6,6 @@ use nix::unistd::Pid;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::elem_blankpart::BlankPart;
-use crate::elem_compound_paren::CompoundParen;
 use crate::ScriptElem;
 
 pub struct Script {
@@ -51,8 +50,7 @@ impl Script {
         let mut ans = Script::new();
     
         loop {
-            if let Some(result) = CompoundParen::parse(text, conf) {ans.elems.push(Box::new(result));}
-            else if let Some(result) = BlankPart::parse(text)           {ans.elems.push(Box::new(result));}
+            if let Some(result) = BlankPart::parse(text)           {ans.elems.push(Box::new(result));}
             else if let Some(result) = SetVariables::parse(text, conf)  {ans.elems.push(Box::new(result));}
             else if let Some(result) = Pipeline::parse(text, conf)      {ans.elems.push(Box::new(result));}
 

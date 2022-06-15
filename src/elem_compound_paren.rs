@@ -11,6 +11,8 @@ use crate::utils::dup_and_close;
 use crate::elem_redirect::Redirect;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
+use crate::elem_end_of_command::Eoc;
+use crate::elem_arg_delimiter::ArgDelimiter;
 
 /* ( script ) */
 pub struct CompoundParen {
@@ -24,6 +26,7 @@ pub struct CompoundParen {
     pub expansion: bool,
     pub expansion_str: String,
     pub prevpipein: RawFd,
+    pub eoc: Option<Eoc>,
 }
 
 impl ScriptElem for CompoundParen {
@@ -84,6 +87,7 @@ impl CompoundParen {
             expansion: false,
             expansion_str: "".to_string(),
             prevpipein: -1,
+            eoc: None,
         }
     }
 
@@ -117,6 +121,15 @@ impl CompoundParen {
         }
 
         text.consume(1);
+
+        if let Some(d) = ArgDelimiter::parse(text){
+            ans.text += &d.text;
+        }
+        if let Some(e) = Eoc::parse(text){
+            ans.text += &e.text;
+            ans.eoc = Some(e);
+        }
+
         Some(ans)
     }
 

@@ -333,5 +333,8 @@ res=$($com <<< '(A=B);echo $A')
 res=$($com <<< 'echo abc | (rev)')
 [ "$res" = "cba" ]
 
+res=$($com <<< '(echo abc) | rev')
+[ "$res" = "cba" ]
+
 trap "" EXIT
 echo TEST OK
