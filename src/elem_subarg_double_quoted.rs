@@ -22,8 +22,7 @@ impl ArgElem for SubArgDoubleQuoted {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut text = "".to_string();
         for a in &mut self.subargs {
-            let sub = a.eval(conf);
-            text += &sub[0];
+            text += &a.eval(conf).join(" ");
         };
 
         let s = text.replace("\\", "\\\\").replace("*", "\\*"); 
