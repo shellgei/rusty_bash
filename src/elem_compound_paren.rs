@@ -122,8 +122,17 @@ impl CompoundParen {
 
         text.consume(1);
 
-        if let Some(d) = ArgDelimiter::parse(text){
-            ans.text += &d.text;
+        loop {
+            if let Some(d) = ArgDelimiter::parse(text){
+                ans.text += &d.text;
+            }
+
+            if let Some(r) = Redirect::parse(text){
+                    ans.text += &r.text;
+                    ans.redirects.push(Box::new(r));
+            }else{
+                break;
+            }
         }
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;

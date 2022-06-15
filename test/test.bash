@@ -336,5 +336,13 @@ res=$($com <<< 'echo abc | (rev)')
 res=$($com <<< '(echo abc) | rev')
 [ "$res" = "cba" ]
 
+res=$($com << 'EOF'
+(ls aaaaa) 2> /tmp/.rusty_bash
+cat /tmp/.rusty_bash | wc -l
+rm /tmp/.rusty_bash
+EOF
+)
+[ "$res" -gt 1 ]
+
 trap "" EXIT
 echo TEST OK
