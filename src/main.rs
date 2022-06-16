@@ -39,7 +39,6 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::core::ShellCore;
-//use crate::abst_command_elem::{CommandElem};
 use crate::feeder::Feeder;
 
 use std::fs::OpenOptions;
@@ -113,6 +112,10 @@ fn get_hostname() -> String{
 }
 
 fn main() {
+    /* Ignore Ctrl+C (Childlen will receive instead.) */
+    ctrlc::set_handler(move || { })
+    .expect("Unable to set the Ctrl+C handler.");
+
     let mut core = ShellCore::new();
     let args: Vec<String> = env::args().collect();
 
@@ -148,7 +151,8 @@ fn main() {
         }
     }
 
-    if let Ok(status) = core.get_var(&"?".to_string()).to_string().parse::<i32>(){
+    if let Ok(status) = core.get_var(&"?".to_string())
+                        .to_string().parse::<i32>(){
         exit(status);
     }else{
         eprintln!("Shell internal error");
