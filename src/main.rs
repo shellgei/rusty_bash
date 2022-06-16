@@ -7,6 +7,7 @@ mod abst_script_elem;
 mod elem_arg;
 mod elem_arg_delimiter;
 mod elem_compound_paren;
+mod elem_compound_brace;
 mod elem_end_of_command;
 mod elem_script;
 mod elem_blankpart;

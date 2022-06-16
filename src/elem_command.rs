@@ -273,6 +273,8 @@ impl Command {
             }else if let Some(a) = Arg::parse(text, true, conf) {
                 ans.push_elems(Box::new(a));
                 ok = true;
+            }else{
+                break;
             }
 
             if let Some(d) = ArgDelimiter::parse(text){
@@ -286,13 +288,16 @@ impl Command {
             if let Some(e) = Eoc::parse(text){
                 ans.text += &e.text;
                 ans.eoc = Some(e);
-               // ans.push_elems(Box::new(e));
                 break;
             }
 
             if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
                 break;
             }
+            /*
+            if scanner_end_brace(text, 0) == 1 || scanner_start_brace(text, 0) == 1 {
+                break;
+            }*/
         }
 
         ok
@@ -301,6 +306,10 @@ impl Command {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
         let backup = text.clone();
         let mut ans = Command::new();
+
+        if scanner_start_brace(text, 0) == 1 {
+            return None;
+        };
 
         Command::substitutions_and_redirects(text, conf, &mut ans);
         Command::replace_alias(text, conf);

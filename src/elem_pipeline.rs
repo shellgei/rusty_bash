@@ -8,6 +8,7 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{Pid, pipe};
 use crate::scanner::scanner_end_paren;
 use crate::elem_compound_paren::CompoundParen;
+use crate::elem_compound_brace::CompoundBrace;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
@@ -57,6 +58,10 @@ impl Pipeline {
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
             }else if let Some(mut c) = CompoundParen::parse(text, conf) {
+                eocs = c.get_eoc_string();
+                ans.text += &c.text.clone();
+                ans.commands.push(Box::new(c));
+            }else if let Some(mut c) = CompoundBrace::parse(text, conf) {
                 eocs = c.get_eoc_string();
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
