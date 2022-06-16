@@ -1,4 +1,6 @@
 #!/bin/bash -exv
+# SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
+# SPDX-License-Identifier: BSD-3-Clause
 
 trap "echo TEST NG; exit 1" EXIT
 
