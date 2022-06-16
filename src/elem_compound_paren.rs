@@ -73,6 +73,14 @@ impl ScriptElem for CompoundParen {
         }
         return self.pipein;
     }
+
+    fn get_eoc_string(&mut self) -> String {
+        if let Some(e) = &self.eoc {
+            return e.text.clone();
+        }
+
+        "".to_string()
+    }
 }
 
 impl CompoundParen {

@@ -12,6 +12,7 @@ pub trait ScriptElem {
     fn set_pipe(&mut self, _pin: RawFd, _pout: RawFd, _pprev: RawFd) { }
     fn get_pid(&self) -> Option<Pid> { None }
     fn set_parent_io(&mut self) -> RawFd { -1 }
+    fn get_eoc_string(&mut self) -> String { "".to_string() }
 
     fn wait(&self, child: Pid, conf: &mut ShellCore) {
         match waitpid(child, None).expect("Faild to wait child process.") {

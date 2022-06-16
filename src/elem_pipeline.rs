@@ -51,27 +51,22 @@ impl Pipeline {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
 
-        loop {
-            let mut has_pipe = false;
-            if let Some(c) = Command::parse(text, conf) {
-                if let Some(e) = c.args.last() {
-                    has_pipe = e.text() == "|";
-                }
 
+        loop {
+            let eocs;
+            if let Some(mut c) = Command::parse(text, conf) {
+                eocs = c.get_eoc_string();
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
-            }else if let Some(c) = CompoundParen::parse(text, conf) {
-                if let Some(e) = &c.eoc {
-                    has_pipe = e.text.clone() == "|";
-                }
-
+            }else if let Some(mut c) = CompoundParen::parse(text, conf) {
+                eocs = c.get_eoc_string();
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
             }else{
                 break;
             }
 
-            if ! has_pipe {
+            if eocs != "|" {
                 break;
             }
 

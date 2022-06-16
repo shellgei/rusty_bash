@@ -26,6 +26,7 @@ use crate::scanner::*;
 pub struct Command {
     vars: Vec<Box<Substitution>>,
     pub args: Vec<Box<dyn CommandElem>>,
+    pub eoc: Option<Eoc>,
     pub redirects: Vec<Box<Redirect>>,
     pub text: String,
     /* The followings are set by the pipeline element. */
@@ -80,6 +81,14 @@ impl ScriptElem for Command {
         }
         return self.pipein;
     }
+
+    fn get_eoc_string(&mut self) -> String {
+        if let Some(e) = &self.eoc {
+            return e.text.clone();
+        }
+
+        "".to_string()
+    }
 }
 
 impl Command {
@@ -88,6 +97,7 @@ impl Command {
             vars: vec!(),
             args: vec!(),
             redirects: vec!(),
+            eoc: None,
             text: "".to_string(),
             pipeout: -1,
             pipein: -1,
@@ -274,7 +284,9 @@ impl Command {
             }
 
             if let Some(e) = Eoc::parse(text){
-                ans.push_elems(Box::new(e));
+                ans.text += &e.text;
+                ans.eoc = Some(e);
+               // ans.push_elems(Box::new(e));
                 break;
             }
 
