@@ -110,9 +110,17 @@ impl ShellCore {
     pub fn cd(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() == 0 {
             eprintln!("Bug of this shell");
-        }else if args.len() == 1 {
+        }else if args.len() == 1 { //only "cd"
             let var = env::var("HOME").expect("HOME is not defined");
             args.push(var);
+        }else if args.len() == 2 && args[1] == "-" { // cd -
+            if let Some(old) = self.vars.get("OLDPWD") {
+                args[1] = old.to_string();
+            }
+        };
+
+        if let Ok(f) = env::current_dir() {
+            self.vars.insert("OLDPWD".to_string(), f.display().to_string());
         };
 
         let path = Path::new(&args[1]);
