@@ -9,7 +9,6 @@ use nix::unistd::{Pid, pipe};
 use crate::scanner::scanner_end_paren;
 use crate::elem_compound_paren::CompoundParen;
 
-/* command: delim arg delim arg delim arg ... eoc */
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
     pub text: String,
@@ -50,7 +49,6 @@ impl Pipeline {
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
-
 
         loop {
             let eocs;
