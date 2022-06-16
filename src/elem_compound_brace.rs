@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_script_elem::ScriptElem;
-use nix::unistd::{Pid, fork, ForkResult, pipe, close, dup2};
+use nix::unistd::{Pid, fork, ForkResult, close, dup2};
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use std::process::exit;
@@ -35,27 +35,23 @@ pub struct CompoundBrace {
     pid: Option<Pid>, 
     pub pipein: RawFd,
     pub pipeout: RawFd,
-    /* The followings are set by a pipeline or a com expansion. */
-    pub expansion: bool,
-    pub expansion_str: String,
+    /* The followings are set by a pipeline.  */
     pub prevpipein: RawFd,
     pub eoc: Option<Eoc>,
 }
 
 impl ScriptElem for CompoundBrace {
     fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
-        if self.expansion {
-            self.set_command_expansion_pipe();
+        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 && self.redirects.len() == 0 {
+            if let Some(s) = &mut self.script {
+                return s.exec(conf);
+            };
         }
 
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    if self.expansion {
-                        dup_and_close(self.pipeout, 1);
-                    }else{
-                        self.set_child_io();
-                    }
+                    self.set_child_io();
                     if let Some(s) = &mut self.script {
                         s.exec(conf);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
@@ -105,21 +101,9 @@ impl CompoundBrace {
             text: "".to_string(),
             pipein: -1,
             pipeout: -1,
-            expansion: false,
-            expansion_str: "".to_string(),
             prevpipein: -1,
             eoc: None,
         }
-    }
-
-    fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
-        self.pipein = pin;
-        self.pipeout = pout;
-    }
-
-    fn set_command_expansion_pipe(&mut self){
-        let p = pipe().expect("Pipe cannot open");
-        self.set_expansion(p.0, p.1);
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundBrace> {

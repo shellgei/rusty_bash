@@ -137,8 +137,8 @@ res=$($com <<< 'echo "$(seq 5)"')
 res=$($com <<< 'cd /;echo "$(pwd)x"') #internal command
 [ "$res" = "/x" ]
 
-#$com <<< 'ls $(echo / /)'
-#[ $? -eq 0 ]
+$com <<< 'ls $(echo / /)'
+[ $? -eq 0 ]
 
 # expansion of tilde
 
@@ -321,7 +321,17 @@ res=$($com <<< 'echo abc | rev | tr abc def')
 res=$($com <<< '(echo hoge)')
 [ "$res" = "hoge" ]
 
+res=$($com <<< '{echo hoge; }')
+[ "$res" = "hoge" ]
+
+res=$($com <<< '{echo hoge }' ; echo $?)
+[ "$res" = "1" ]
+
 res=$($com <<< '(echo hoge;echo hoge)')
+[ "$res" = "hoge
+hoge" ]
+
+res=$($com <<< '{echo hoge;echo hoge ; }')
 [ "$res" = "hoge
 hoge" ]
 
@@ -329,8 +339,15 @@ res=$($com <<< '(echo hoge | rev;echo hoge)')
 [ "$res" = "egoh
 hoge" ]
 
+res=$($com <<< '{echo hoge | rev;echo hoge ; }')
+[ "$res" = "egoh
+hoge" ]
+
 res=$($com <<< '(A=B);echo $A')
 [ "$res" = "" ]
+
+res=$($com <<< '{A=B ; };echo $A')
+[ "$res" = "B" ]
 
 res=$($com <<< 'echo abc | (rev)')
 [ "$res" = "cba" ]

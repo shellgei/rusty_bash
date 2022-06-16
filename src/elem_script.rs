@@ -48,7 +48,6 @@ impl Script {
         }
 
         let mut ans = Script::new();
-        let backup = text.clone();
     
         loop {
             if let Some(result) = BlankPart::parse(text)                {
@@ -80,6 +79,7 @@ impl Script {
             Some(ans)
         }else{
             eprintln!("Unknown phrase");
+            conf.vars.insert("?".to_string(), "1".to_string());
             text.consume(text.len());
             None
         }

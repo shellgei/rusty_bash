@@ -93,6 +93,7 @@ pub fn scanner_start_paren(text: &Feeder, from: usize) -> usize {
     return from;
 }
 
+/*
 pub fn scanner_end_brace(text: &Feeder, from: usize) -> usize {
     if text.len() == 0 {
         return 0;
@@ -103,6 +104,7 @@ pub fn scanner_end_brace(text: &Feeder, from: usize) -> usize {
     }
     return from;
 }
+*/
 
 pub fn scanner_start_brace(text: &Feeder, from: usize) -> usize {
     if text.len() == 0 {
