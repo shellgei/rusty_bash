@@ -53,27 +53,27 @@ impl Pipeline {
 
         loop {
             if let Some(c) = Command::parse(text, conf) {
-                let eoc = if let Some(e) = c.args.last() {
-                    e.text()
-                }else{
-                    "".to_string()
-                };
+                let mut has_pipe = false;
+                if let Some(e) = c.args.last() {
+                    has_pipe = e.text() == "|";
+                }
+
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
 
-                if eoc != "|" {
+                if ! has_pipe {
                     break;
                 }
             }else if let Some(c) = CompoundParen::parse(text, conf) {
-                let eoc = if let Some(e) = &c.eoc {
-                    e.text.clone()
-                }else{
-                    "".to_string()
-                };
+                let mut has_pipe = false;
+                if let Some(e) = &c.eoc {
+                    has_pipe = e.text.clone() == "|";
+                }
+
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
 
-                if eoc != "|" {
+                if ! has_pipe {
                     break;
                 }
             }else{
