@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 use std::process::exit;
-use std::env;
+use std::{fs,env};
 use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -119,12 +119,15 @@ impl ShellCore {
             }
         };
 
-        if let Ok(f) = env::current_dir() {
-            self.vars.insert("OLDPWD".to_string(), f.display().to_string());
+        if let Ok(old) = env::current_dir() {
+            self.vars.insert("OLDPWD".to_string(), old.display().to_string());
         };
 
         let path = Path::new(&args[1]);
         if env::set_current_dir(&path).is_ok() {
+            if let Ok(full) = fs::canonicalize(path) {
+                self.vars.insert("PWD".to_string(), full.display().to_string());
+            }
             0
         }else{
             eprintln!("Not exist directory");
