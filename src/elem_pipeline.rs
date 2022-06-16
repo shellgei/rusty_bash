@@ -74,8 +74,7 @@ impl Pipeline {
                 ans.text += &d.text.clone();
             }
 
-            let subshell_end = scanner_end_paren(text, 0);
-            if subshell_end == 1 {
+            if scanner_end_paren(text, 0) == 1 {
                 break;
             }
         }
