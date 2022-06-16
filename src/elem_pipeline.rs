@@ -52,34 +52,28 @@ impl Pipeline {
         let mut ans = Pipeline::new();
 
         loop {
+            let mut has_pipe = false;
             if let Some(c) = Command::parse(text, conf) {
-                let mut has_pipe = false;
                 if let Some(e) = c.args.last() {
                     has_pipe = e.text() == "|";
                 }
 
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
-
-                if ! has_pipe {
-                    break;
-                }
             }else if let Some(c) = CompoundParen::parse(text, conf) {
-                let mut has_pipe = false;
                 if let Some(e) = &c.eoc {
                     has_pipe = e.text.clone() == "|";
                 }
 
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
-
-                if ! has_pipe {
-                    break;
-                }
             }else{
                 break;
             }
 
+            if ! has_pipe {
+                break;
+            }
 
             if let Some(d) = ArgDelimiter::parse(text) {
                 ans.text += &d.text.clone();
