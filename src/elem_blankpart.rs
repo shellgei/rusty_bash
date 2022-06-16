@@ -9,7 +9,7 @@ use crate::elem_end_of_command::Eoc;
 
 pub struct BlankPart {
     pub elems: Vec<Box<dyn CommandElem>>,
-    text: String,
+    pub text: String,
 }
 
 impl ScriptElem for BlankPart {

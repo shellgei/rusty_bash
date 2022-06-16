@@ -14,6 +14,19 @@ use std::os::unix::io::IntoRawFd;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_arg_delimiter::ArgDelimiter;
 
+fn tail_check(s: &String) -> bool{
+    for ch in s.chars().rev() {
+        match ch {
+            ' ' => continue,
+            '\n' => return true,
+            ';' => return true,
+            '\t' => return true,
+            _ => return false,
+        }
+    }
+    false
+}
+
 /* ( script ) */
 pub struct CompoundBrace {
     pub script: Option<Script>,
@@ -119,6 +132,12 @@ impl CompoundBrace {
         let mut ans = CompoundBrace::new();
 
         if let Some(s) = Script::parse(text, conf, true) {
+            //eprintln!("script: {}", s.text);
+            if ! tail_check(&s.text){
+                text.rewind(backup);
+                return None;
+            }
+
             ans.text = "{".to_owned() + &s.text + "}";
             ans.script = Some(s);
         }

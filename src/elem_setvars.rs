@@ -18,7 +18,7 @@ use crate::scanner::scanner_end_paren;
 
 pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandElem>>,
-    text: String,
+    pub text: String,
 }
 
 impl SetVariables {

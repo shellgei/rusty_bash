@@ -48,11 +48,19 @@ impl Script {
         }
 
         let mut ans = Script::new();
+        let backup = text.clone();
     
         loop {
-            if let Some(result) = BlankPart::parse(text)                {ans.elems.push(Box::new(result));}
-            else if let Some(result) = SetVariables::parse(text, conf)  {ans.elems.push(Box::new(result));}
-            else if let Some(result) = Pipeline::parse(text, conf)      {ans.elems.push(Box::new(result));}
+            if let Some(result) = BlankPart::parse(text)                {
+                ans.text += &result.text;
+                ans.elems.push(Box::new(result));
+            }else if let Some(result) = SetVariables::parse(text, conf) {
+                ans.text += &result.text;
+                ans.elems.push(Box::new(result));
+            }else if let Some(result) = Pipeline::parse(text, conf) {
+                ans.text += &result.text;
+                ans.elems.push(Box::new(result));
+            }
             else {break}
 
             if text.len() == 0 {
@@ -72,6 +80,7 @@ impl Script {
             Some(ans)
         }else{
             eprintln!("Unknown phrase");
+            text.consume(text.len());
             None
         }
     }
