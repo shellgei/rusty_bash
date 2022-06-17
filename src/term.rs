@@ -335,7 +335,7 @@ pub fn prompt(core: &mut ShellCore) -> u16 {
     (user.len() + host.len() + path.len() + 2 + 2) as u16
 }
 
-pub fn read_line(left: u16, core: &mut ShellCore) -> String{
+pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> String{
     let mut writer = Writer::new(core.history.len(), left);
     let mut tab_num = 0;
 

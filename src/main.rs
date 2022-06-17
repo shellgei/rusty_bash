@@ -49,7 +49,7 @@ use crate::elem_command::Command;
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_script::Script;
 
-fn read_line() -> Option<String> {
+fn read_line_stdin() -> Option<String> {
     let mut line = String::new();
 
     let len = io::stdin()
@@ -134,20 +134,20 @@ fn main() {
 
     read_bashrc(&mut core);
 
-    let mut input = Feeder::new();
+    let mut feeder = Feeder::new();
     loop {
         let line = if core.flags.i {
             let len_prompt = term::prompt(&mut core);
-            term::read_line(len_prompt, &mut core)
+            term::read_line_terminal(len_prompt, &mut core)
         }else{
-            if let Some(s) = read_line() {
+            if let Some(s) = read_line_stdin() {
                 s
             }else{
                 break;
             }
         };
-        input.add_line(line);
-        while let Some(mut e) = Script::parse(&mut input, &mut core, false){
+        feeder.add_line(line);
+        while let Some(mut e) = Script::parse(&mut feeder, &mut core, false){
             e.exec(&mut core);
         }
     }
