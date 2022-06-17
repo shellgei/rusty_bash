@@ -402,5 +402,12 @@ EOF
 [ "$res" = "a
 b" ]
 
+res=$($com << 'EOF'
+echo abc |
+rev
+EOF
+)
+[ "$res" = "cba" ]
+
 trap "" EXIT
 echo TEST OK

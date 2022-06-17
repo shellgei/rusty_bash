@@ -76,6 +76,11 @@ impl Pipeline {
                 ans.text += &d.text.clone();
             }
 
+            if eocs == "|" && text.len() == 1 && text.nth(0) == '\n' {
+                text.consume(1);
+                text.feed_additional_line(conf);
+            }
+
             if scanner_end_paren(text, 0) == 1 {
                 break;
             }
