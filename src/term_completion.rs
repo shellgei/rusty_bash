@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use crate::ShellCore;
 use crate::utils::{eval_glob, search_commands, chars_to_string, expand_tilde};
 use crate::term::Writer;
-use crate::term::prompt;
+use crate::term::prompt_normal;
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     if strs.len() < 2 {
@@ -86,7 +86,7 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     }
     write!(writer.stdout, "\r\n").unwrap();
     writer.stdout.flush().unwrap();
-    prompt(core, true);
+    prompt_normal(core);
     let (_, y) = writer.cursor_pos();
     writer.rewrite_line(y, writer.chars.iter().collect());
     return;
@@ -140,7 +140,7 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
     }
     write!(writer.stdout, "\r\n").unwrap();
     writer.stdout.flush().unwrap();
-    prompt(core, true);
+    prompt_normal(core);
     let (_, y) = writer.cursor_pos();
     writer.rewrite_line(y, writer.chars.iter().collect());
 }

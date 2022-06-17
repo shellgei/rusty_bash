@@ -88,7 +88,7 @@ impl Feeder {
 
     fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
         let line = if core.flags.i {
-            let len_prompt = term::prompt(core, true);
+            let len_prompt = term::prompt_additional();
             term::read_line_terminal(len_prompt, core)
         }else{
             if let Some(s) = read_line_stdin() {
@@ -103,7 +103,7 @@ impl Feeder {
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
         let line = if core.flags.i {
-            let len_prompt = term::prompt(core, false);
+            let len_prompt = term::prompt_normal(core);
             term::read_line_terminal(len_prompt, core)
         }else{
             if let Some(s) = read_line_stdin() {

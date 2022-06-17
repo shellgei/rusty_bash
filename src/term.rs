@@ -303,13 +303,13 @@ impl Writer {
     }
 }
 
-pub fn prompt(core: &mut ShellCore, full: bool) -> u16 {
-    if !full {
-        print!("> ");
-        io::stdout().flush().unwrap();
-        return 2;
-    }
+pub fn prompt_additional() -> u16 {
+    print!("> ");
+    io::stdout().flush().unwrap();
+    return 2;
+}
 
+pub fn prompt_normal(core: &mut ShellCore) -> u16 {
     let home = env::var("HOME").unwrap_or("unknown".to_string());
 
     let path = if let Ok(p) = env::current_dir(){
