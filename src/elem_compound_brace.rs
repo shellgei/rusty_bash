@@ -110,24 +110,35 @@ impl CompoundBrace {
             return None;
         }
 
-        let backup = text.clone();
-        text.consume(1);
+        let mut backup = text.clone();
         let mut ans = CompoundBrace::new();
 
-        if let Some(s) = Script::parse(text, conf, true) {
-            //eprintln!("script: {}", s.text);
-            if ! tail_check(&s.text){
+        loop {
+            text.consume(1);
+            if let Some(s) = Script::parse(text, conf, true) {
+                //eprintln!("script: {}", s.text);
+                if ! tail_check(&s.text){
+                    text.rewind(backup);
+                    return None;
+                }
+    
+                ans.text = "{".to_owned() + &s.text + "}";
+                ans.script = Some(s);
+            }else{
+                backup = text.rewind_feed_backup(&backup, conf);
+                continue;
+            }
+    
+            /*
+            if text.len() == 0 || text.nth(0) != '}' {
                 text.rewind(backup);
                 return None;
+            }*/
+            if text.len() == 0 || text.nth(0) != '}' {
+                backup = text.rewind_feed_backup(&backup, conf);
+            }else{
+                break;
             }
-
-            ans.text = "{".to_owned() + &s.text + "}";
-            ans.script = Some(s);
-        }
-
-        if text.len() == 0 || text.nth(0) != '}' {
-            text.rewind(backup);
-            return None;
         }
 
         text.consume(1);

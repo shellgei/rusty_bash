@@ -139,6 +139,12 @@ impl Feeder {
         };
     }
 
+    pub fn rewind_feed_backup(&mut self, backup: &Feeder, conf: &mut ShellCore) -> Feeder {
+        self.rewind(backup.clone());
+        self.feed_additional_line(conf);
+        self.clone()
+    }
+
     pub fn match_at(&self, pos: usize, chars: &str) -> bool{
         let ch = self.nth(pos);
         chars.to_string().find(ch) != None
