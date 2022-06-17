@@ -113,17 +113,21 @@ impl CompoundParen {
         }
 
         let backup = text.clone();
-        text.consume(1);
         let mut ans = CompoundParen::new();
 
-        if let Some(s) = Script::parse(text, conf, true) {
-            ans.text = "(".to_owned() + &s.text + ")";
-            ans.script = Some(s);
-        }
+        loop{
+            text.consume(1);
+            if let Some(s) = Script::parse(text, conf, true) {
+                ans.text = "(".to_owned() + &s.text + ")";
+                ans.script = Some(s);
+            }
 
-        if text.len() == 0 || text.nth(0) != ')' {
-            text.rewind(backup);
-            return None;
+            if text.len() == 0 || text.nth(0) != ')' {
+                text.rewind(backup.clone());
+                text.feed_additional_line(conf);
+            }else{
+                break;
+            }
         }
 
         text.consume(1);
@@ -145,6 +149,7 @@ impl CompoundParen {
             ans.eoc = Some(e);
         }
 
+        eprintln!("ANS: {}", ans.text);
         Some(ans)
     }
 
