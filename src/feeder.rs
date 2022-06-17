@@ -98,6 +98,23 @@ impl Feeder {
             }
         };
         self.add_line(line);
+
+        while self.from_to_as_chars(self.len_as_chars()-2, self.len_as_chars()) == "\\\n" {
+            self.remaining = self.from_to_as_chars(0, self.len_as_chars()-2);
+
+            let line = if core.flags.i {
+                let len_prompt = term::prompt(core, additional);
+                term::read_line_terminal(len_prompt, core)
+            }else{
+                if let Some(s) = read_line_stdin() {
+                    s
+                }else{
+                    return false;
+                }
+            };
+            self.add_line(line);
+        }
+
         true
     }
 
@@ -124,6 +141,19 @@ impl Feeder {
 
     pub fn from_to(&self, from: usize, to: usize) -> String {
         self.remaining[from..to].to_string()
+    }
+
+    pub fn len_as_chars(&self) -> usize {
+        self.remaining.chars().count()
+    }
+
+    pub fn from_to_as_chars(&self, from: usize, to: usize) -> String {
+        self.remaining
+            .chars()
+            .enumerate()
+            .filter(|e| e.0 >= from && e.0 < to)
+            .map(|e| e.1)
+            .collect()
     }
 }
 

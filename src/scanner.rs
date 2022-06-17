@@ -81,6 +81,7 @@ pub fn scanner_end_paren(text: &Feeder, from: usize) -> usize {
     return from;
 }
 
+/*
 pub fn scanner_continue_nextline(text: &Feeder, from: usize) -> usize {
     if text.len() < from + 2 {
         return from;
@@ -89,7 +90,7 @@ pub fn scanner_continue_nextline(text: &Feeder, from: usize) -> usize {
         return from+2;
     }
     0
-}
+}*/
 
 /* TODO: these scanners should be summarized. */ 
 pub fn scanner_start_paren(text: &Feeder, from: usize) -> usize {
