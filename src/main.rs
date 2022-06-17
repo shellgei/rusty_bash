@@ -32,7 +32,7 @@ mod scanner;
 mod debuginfo;
 mod term_completion;
 
-use std::{io,env,process};
+use std::{env,process};
 use std::process::exit;
 use std::path::Path;
 use std::os::linux::fs::MetadataExt;
@@ -49,18 +49,6 @@ use crate::elem_command::Command;
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_script::Script;
 
-fn read_line_stdin() -> Option<String> {
-    let mut line = String::new();
-
-    let len = io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-
-    if len == 0 {
-        return None;
-    }
-    Some(line)
-}
 
 fn is_interactive(pid: u32) -> bool {
     let std_path = format!("/proc/{}/fd/0", pid);
@@ -136,17 +124,9 @@ fn main() {
 
     let mut feeder = Feeder::new();
     loop {
-        let line = if core.flags.i {
-            let len_prompt = term::prompt(&mut core);
-            term::read_line_terminal(len_prompt, &mut core)
-        }else{
-            if let Some(s) = read_line_stdin() {
-                s
-            }else{
-                break;
-            }
-        };
-        feeder.add_line(line);
+        if !feeder.feed_line(&mut core) {
+            break;
+        }
         while let Some(mut e) = Script::parse(&mut feeder, &mut core, false){
             e.exec(&mut core);
         }

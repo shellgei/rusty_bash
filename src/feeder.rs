@@ -1,7 +1,23 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use std::io;
 use std::str::Chars;
+use crate::ShellCore;
+use crate::term;
+
+fn read_line_stdin() -> Option<String> {
+    let mut line = String::new();
+
+    let len = io::stdin()
+        .read_line(&mut line)
+        .expect("Failed to read line");
+
+    if len == 0 {
+        return None;
+    }
+    Some(line)
+}
 
 #[derive(Clone)]
 pub struct Feeder {
@@ -74,16 +90,26 @@ impl Feeder {
         cut
     }
 
-    /*
-    pub fn unget(&mut self, s: String) {
-        self.remaining = s + &self.remaining;
-    }*/
-
     pub fn replace(&mut self, from: &str, to: &str) {
         self.remaining = self.remaining.replacen(from, to, 1);
     }
 
-    pub fn add_line(&mut self, line: String) {
+    pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
+        let line = if core.flags.i {
+            let len_prompt = term::prompt(core);
+            term::read_line_terminal(len_prompt, core)
+        }else{
+            if let Some(s) = read_line_stdin() {
+                s
+            }else{
+                return false;
+            }
+        };
+        self.add_line(line);
+        true
+    }
+
+    fn add_line(&mut self, line: String) {
         self.to_lineno += 1;
 
         if self.remaining.len() == 0 {
