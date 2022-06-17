@@ -22,19 +22,6 @@ fn is_glob(s: &String) -> bool {
     return false;
 }
 
-/*
-fn glob_pos(s: &String) -> usize {
-    let mut c = 0;
-    for ch in s.chars() {
-        c += ch.len_utf8();
-        if ch == '*' || ch == '[' || ch == '?' {
-            return c;
-        }
-    }
-    return c;
-}
-*/
-
 pub fn eval_glob(globstr: &String) -> Vec<String> {
     if ! is_glob(globstr) {
         return vec!();

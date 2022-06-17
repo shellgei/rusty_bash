@@ -108,11 +108,7 @@ fn main() {
     let mut core = ShellCore::new();
     let args: Vec<String> = env::args().collect();
 
-    for arg in &args {
-        if arg == "-d" {
-            core.flags.d = true;
-        };
-    };
+    core.flags.d = args.iter().any(|a| a.clone() == "-d");
 
     let pid = process::id();
     core.vars.insert("PID".to_string(), pid.to_string());

@@ -123,12 +123,7 @@ impl Feeder {
 
     pub fn match_at(&self, pos: usize, chars: &str) -> bool{
         let ch = self.nth(pos);
-
-        if let Some(_) = chars.to_string().find(ch){
-            true
-        }else{
-            false
-        }
+        chars.to_string().find(ch) != None
     }
 
     pub fn _text(&self) -> String {
