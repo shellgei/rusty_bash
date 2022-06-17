@@ -382,5 +382,25 @@ EOF
 )
 [ "$res" = "abc" ]
 
+res=$($com << 'EOF'
+(
+echo a
+echo b
+)
+EOF
+)
+[ "$res" = "a
+b" ]
+
+res=$($com << 'EOF'
+{
+echo a
+echo b
+}
+EOF
+)
+[ "$res" = "a
+b" ]
+
 trap "" EXIT
 echo TEST OK
