@@ -71,12 +71,10 @@ impl SubArgDoubleQuoted {
         }
         text.consume(1);
     
-        let mut text = "\"".to_string();
-        for a in &ans.subargs {
-            text += &a.text();
-        }
-        ans.text = text + "\"";
-    
+        ans.text = "\"".to_owned() 
+             + &ans.subargs.iter().map(|a| a.text()).collect::<Vec<_>>().join("")
+             + "\"";
+
         Some(ans)
     }
 }

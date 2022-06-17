@@ -139,19 +139,22 @@ pub fn scanner_user_path(text: String) -> usize {
 
 
 fn get_home(user: String) -> Option<String> {
-    if let Ok(file) = OpenOptions::new().read(true).open("/etc/passwd"){
-        let br = BufReader::new(file);
-        for ln in br.lines() {
-            if let Ok(line) = ln {
-                if line.len() < user.len(){
-                    continue;
-                }
+    let file = if let Ok(f) = OpenOptions::new().read(true).open("/etc/passwd"){
+        f
+    }else{
+        return None;
+    };
 
-                let split = line.split(':').collect::<Vec<&str>>();
-                if let Some(u) = split.iter().nth(0){
-                    if u.to_string() == user {
-                        return passwd_to_home(line);
-                    }
+    for ln in BufReader::new(file).lines() {
+        if let Ok(line) = ln {
+            if line.len() < user.len(){
+                continue;
+            }
+
+            let split = line.split(':').collect::<Vec<&str>>();
+            if let Some(u) = split.iter().nth(0){
+                if u.to_string() == user {
+                    return passwd_to_home(line);
                 }
             }
         }
