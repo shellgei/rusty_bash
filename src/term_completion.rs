@@ -86,7 +86,7 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     }
     write!(writer.stdout, "\r\n").unwrap();
     writer.stdout.flush().unwrap();
-    prompt(core);
+    prompt(core, true);
     let (_, y) = writer.cursor_pos();
     writer.rewrite_line(y, writer.chars.iter().collect());
     return;
@@ -140,7 +140,7 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
     }
     write!(writer.stdout, "\r\n").unwrap();
     writer.stdout.flush().unwrap();
-    prompt(core);
+    prompt(core, true);
     let (_, y) = writer.cursor_pos();
     writer.rewrite_line(y, writer.chars.iter().collect());
 }

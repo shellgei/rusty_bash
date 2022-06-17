@@ -303,12 +303,14 @@ impl Writer {
     }
 }
 
-pub fn prompt(core: &mut ShellCore) -> u16 {
-    let home = if let Ok(h) = env::var("HOME"){
-        h
-    }else{
-        "unknown".to_string()
-    };
+pub fn prompt(core: &mut ShellCore, full: bool) -> u16 {
+    if !full {
+        print!("> ");
+        io::stdout().flush().unwrap();
+        return 2;
+    }
+
+    let home = env::var("HOME").unwrap_or("unknown".to_string());
 
     let path = if let Ok(p) = env::current_dir(){
         p.into_os_string()
@@ -319,12 +321,7 @@ pub fn prompt(core: &mut ShellCore) -> u16 {
         "no_path".to_string()
     };
 
-    let user = if let Ok(u) = env::var("USER"){
-        u
-    }else{
-        "unknown".to_string()
-    };
-
+    let user = env::var("USER").unwrap_or("unknown".to_string());
     let host = core.vars["HOSTNAME"].clone();
 
     print!("\x1b[33m\x1b[1m{}@{}\x1b[m\x1b[m:", user, host);

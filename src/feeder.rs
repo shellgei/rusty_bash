@@ -86,9 +86,9 @@ impl Feeder {
         self.remaining = self.remaining.replacen(from, to, 1);
     }
 
-    pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
+    pub fn feed_line(&mut self, core: &mut ShellCore, additional: bool) -> bool {
         let line = if core.flags.i {
-            let len_prompt = term::prompt(core);
+            let len_prompt = term::prompt(core, !additional);
             term::read_line_terminal(len_prompt, core)
         }else{
             if let Some(s) = read_line_stdin() {

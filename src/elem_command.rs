@@ -283,6 +283,11 @@ impl Command {
                 break;
             }
 
+            if scanner_continue_nextline(text, 0) == 2 {
+                text.consume(2);
+                text.feed_line(conf, true);
+            }
+
             if let Some(e) = Eoc::parse(text){
                 ans.text += &e.text;
                 ans.eoc = Some(e);

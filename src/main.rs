@@ -120,7 +120,7 @@ fn main() {
 
     let mut feeder = Feeder::new();
     loop {
-        if !feeder.feed_line(&mut core) {
+        if !feeder.feed_line(&mut core, false) {
             break;
         }
         while let Some(mut e) = Script::parse(&mut feeder, &mut core, false){
