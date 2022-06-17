@@ -41,10 +41,11 @@ pub struct CompoundBrace {
 }
 
 impl ScriptElem for CompoundBrace {
-    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
+    fn exec(&mut self, conf: &mut ShellCore) {
         if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 && self.redirects.len() == 0 {
             if let Some(s) = &mut self.script {
-                return s.exec(conf);
+                s.exec(conf);
+                return;
             };
         }
 
@@ -59,13 +60,11 @@ impl ScriptElem for CompoundBrace {
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     self.pid = Some(child);
-                    return Some(child);
+                    return;
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
-
-        None
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }

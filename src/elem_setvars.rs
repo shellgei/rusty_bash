@@ -13,7 +13,6 @@ use crate::elem_substitution::Substitution;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
-use nix::unistd::Pid;
 use crate::scanner::scanner_end_paren;
 
 pub struct SetVariables {
@@ -39,7 +38,7 @@ impl SetVariables {
 }
 
 impl ScriptElem for SetVariables {
-    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid> {
+    fn exec(&mut self, conf: &mut ShellCore) {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
         };
@@ -57,8 +56,6 @@ impl ScriptElem for SetVariables {
                 conf.vars.insert(key, value);
             };
         };
-
-        None
     }
 }
 

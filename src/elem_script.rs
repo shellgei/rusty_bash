@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use nix::unistd::Pid;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::elem_blankpart::BlankPart;
@@ -14,18 +13,15 @@ pub struct Script {
 }
 
 impl ScriptElem for Script {
-    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
-        for e in &mut self.elems {
-            e.exec(conf);
-        }
+    fn exec(&mut self, conf: &mut ShellCore) {
+        self.elems.iter_mut()
+            .for_each(|e| e.exec(conf));
 
         for c in &self.elems {
             if let Some(p) = c.get_pid() {
                 self.wait(p, conf);
             }
         }
-
-        None
     }
 }
 
@@ -62,15 +58,7 @@ impl Script {
             }
             else {break}
 
-            if text.len() == 0 {
-                break;
-            };
-        
-            if text.nth(0) == ')' {
-                break;
-            }
-
-            if !next {
+            if text.len() == 0 || text.nth(0) == ')' || !next {
                 break;
             }
         }

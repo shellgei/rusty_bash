@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::abst_script_elem::ScriptElem;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
-use nix::unistd::{Pid, pipe};
+use nix::unistd::pipe;
 use crate::scanner::scanner_end_paren;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
@@ -17,7 +17,7 @@ pub struct Pipeline {
 
 impl ScriptElem for Pipeline {
 
-    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
+    fn exec(&mut self, conf: &mut ShellCore) {
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
@@ -36,7 +36,6 @@ impl ScriptElem for Pipeline {
                 self.wait(p, conf);
             }
         }
-        None
     }
 }
 

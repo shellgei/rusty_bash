@@ -38,13 +38,13 @@ pub struct Command {
 
 impl ScriptElem for Command {
 
-    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid> {
+    fn exec(&mut self, conf: &mut ShellCore) {
         let mut args = self.eval(conf);
 
         // This sentence avoids an unnecessary fork for an internal command.
         if self.pipeout == -1 && self.pipein == -1 { 
             if self.run_on_this_process(&mut args, conf) {
-                return None;
+                return;
             }
         }
 
@@ -56,13 +56,11 @@ impl ScriptElem for Command {
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     self.pid = Some(child);
-                    return Some(child)
+                    return;
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
-
-        None
     }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {

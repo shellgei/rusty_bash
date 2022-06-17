@@ -19,7 +19,8 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        if let Some(pid) = self.com.exec(conf) {
+        self.com.exec(conf);
+        if let Some(pid) = self.com.get_pid() {
             let s: Vec<String> = self.wait(pid, conf)
                 .replace(" ", "\n")
                 .split("\n")

@@ -30,7 +30,7 @@ pub struct CompoundParen {
 }
 
 impl ScriptElem for CompoundParen {
-    fn exec(&mut self, conf: &mut ShellCore) -> Option<Pid>{
+    fn exec(&mut self, conf: &mut ShellCore) {
         if self.expansion {
             self.set_command_expansion_pipe();
         }
@@ -50,13 +50,11 @@ impl ScriptElem for CompoundParen {
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     self.pid = Some(child);
-                    return Some(child);
+                    return;
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
-
-        None
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
