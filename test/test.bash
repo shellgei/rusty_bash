@@ -373,5 +373,14 @@ EOF
 )
 [ "$res" = "a b c" ]
 
+res=$($com << 'EOF'
+ec\
+ho a\
+b\
+c
+EOF
+)
+[ "$res" = "abc" ]
+
 trap "" EXIT
 echo TEST OK
