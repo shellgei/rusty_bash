@@ -363,5 +363,15 @@ EOF
 )
 [ "$res" -gt 1 ]
 
+### MULTILINE INPUT ###
+
+res=$($com << 'EOF'
+echo a \
+b \
+c
+EOF
+)
+[ "$res" = "a b c" ]
+
 trap "" EXIT
 echo TEST OK
