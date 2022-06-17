@@ -174,7 +174,7 @@ impl Command {
         };
 
         if self.pipein != -1 {
-            close(self.pipein).expect("a");
+            close(self.pipein).expect("Cannot close in-pipe");
         }
         if self.pipeout != -1 {
             dup_and_close(self.pipeout, 1);
@@ -292,10 +292,6 @@ impl Command {
             if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
                 break;
             }
-            /*
-            if scanner_end_brace(text, 0) == 1 || scanner_start_brace(text, 0) == 1 {
-                break;
-            }*/
         }
 
         ok

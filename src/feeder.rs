@@ -25,10 +25,6 @@ pub struct Feeder {
     from_lineno: u32,
     to_lineno: u32,
     pos_in_line: u32,
-    /*
-    pub error_occuring: bool,
-    pub error_reason: String,
-    */
 }
 
 impl Feeder {
@@ -38,10 +34,6 @@ impl Feeder {
             from_lineno: 0,
             to_lineno: 0,
             pos_in_line: 0,
-            /*
-            error_occuring: false,
-            error_reason: "".to_string(),
-            */
         }
     }
 
