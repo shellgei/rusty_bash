@@ -41,6 +41,9 @@ impl SubArgNonQuoted {
     }
 
     pub fn parse3(text: &mut Feeder) -> Option<SubArgNonQuoted> {
+        if text.len() == 0 {
+            return None;
+        }
         if text.match_at(0, ",}"){
             return None;
         };

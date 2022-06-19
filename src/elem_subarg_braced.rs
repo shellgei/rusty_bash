@@ -44,6 +44,10 @@ impl ArgElem for SubArgBraced {
 
 impl SubArgBraced {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgBraced> {
+        if text.len() == 0 {
+            return None;
+        }
+
         let pos = scanner_until(text, 0, "{");
         if pos != 0 {
             return None;
@@ -58,6 +62,10 @@ impl SubArgBraced {
         while let Some(arg) = arg_in_brace(text, conf) {
             ans.text += &arg.text.clone();
             ans.args.push(arg); 
+
+            if text.len() == 0 {
+                break;
+            }
     
             if scanner_until(text, 0, ",") == 0 {
                 ans.text += &text.consume(1);

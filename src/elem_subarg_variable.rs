@@ -30,7 +30,7 @@ impl ArgElem for SubArgVariable {
 
 impl SubArgVariable {
     pub fn parse(text: &mut Feeder) -> Option<SubArgVariable> {
-        if !(text.nth(0) == '$') || text.nth(1) == '{' {
+        if text.len() == 0 || !(text.nth(0) == '$') || text.nth(1) == '{' {
             return None;
         };
     
@@ -43,7 +43,7 @@ impl SubArgVariable {
     }
     
     pub fn parse2(text: &mut Feeder) -> Option<SubArgVariable> {
-        if !(text.nth(0) == '$' && text.nth(1) == '{') {
+        if text.len() == 0 || !(text.nth(0) == '$' && text.nth(1) == '{') {
             return None;
         }
     

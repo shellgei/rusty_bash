@@ -28,7 +28,7 @@ impl ArgElem for SubArgSingleQuoted {
 
 impl SubArgSingleQuoted {
     pub fn parse(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
-        if !text.match_at(0, "'"){
+        if text.len() == 0 || !text.match_at(0, "'"){
             return None;
         };
     

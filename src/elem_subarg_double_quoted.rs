@@ -38,6 +38,10 @@ impl ArgElem for SubArgDoubleQuoted {
 impl SubArgDoubleQuoted {
 /* parser for a string such as "aaa${var}" */
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgDoubleQuoted> {
+        if text.len() == 0 {
+            return None;
+        }
+
         let backup = text.clone();
     
         let mut ans = SubArgDoubleQuoted {
