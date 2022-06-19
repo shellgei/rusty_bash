@@ -339,9 +339,15 @@ res=$($com <<< '(echo hoge | rev;echo hoge)')
 [ "$res" = "egoh
 hoge" ]
 
+#res=$($com <<< 'echo abc | ( echo a ; rev ) | tr -d \\n')
+#[ "$res" = "acba" ]
+
 res=$($com <<< '{echo hoge | rev;echo hoge ; }')
 [ "$res" = "egoh
 hoge" ]
+
+#res=$($com <<< 'echo abc | { echo a ; rev ; } | tr -d \\n')
+#[ "$res" = "acba" ]
 
 res=$($com <<< '(A=B);echo $A')
 [ "$res" = "" ]
@@ -420,6 +426,27 @@ somefunc
 EOF
 )
 [ "$res" = "a" ]
+
+res=$($com << 'EOF'
+somefunc () {
+	echo abc
+}
+
+somefunc | rev
+EOF
+)
+[ "$res" = "cba" ]
+
+#res=$($com << 'EOF'
+#somefunc () {
+#	echo a
+#	rev
+#}
+#
+#echo abc | somefunc | tr -d '\n'
+#EOF
+#)
+#[ "$res" = "acba" ]
 
 trap "" EXIT
 echo TEST OK

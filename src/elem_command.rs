@@ -11,11 +11,11 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::abst_command_elem::CommandElem;
 use crate::utils::blue_string;
-use crate::Script;
 
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_arg::Arg;
 use crate::elem_arg_delimiter::ArgDelimiter;
+use crate::elem_compound_brace::CompoundBrace;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
@@ -143,7 +143,7 @@ impl Command {
     fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
         if let Some(text) = conf.get_function(&args[0]) {
             let mut feeder = Feeder::new_with(text);
-            if let Some(mut f) = Script::parse(&mut feeder, conf, true) {
+            if let Some(mut f) = CompoundBrace::parse(&mut feeder, conf) {
                 f.exec(conf);
             }else{
                 panic!("Shell internal error on function");

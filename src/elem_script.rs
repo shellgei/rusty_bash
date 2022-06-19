@@ -51,7 +51,7 @@ impl Script {
             if let Some(f) = Function::parse(text, conf)            {
                 ans.text += &f.text;
      //           ans.elems.push(Box::new(result));
-                conf.functions.insert(f.name, f.body.script.text);
+                conf.functions.insert(f.name, f.body.text);
                 is_function = true;
             }else if let Some(result) = BlankPart::parse(text)           {
                 ans.text += &result.text;
