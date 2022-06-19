@@ -3,18 +3,16 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_script_elem::ScriptElem;
-use nix::unistd::{Pid, close, dup2, fork, ForkResult};
+use nix::unistd::{Pid, close, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use std::process::exit;
 use crate::utils_io::dup_and_close;
 use crate::elem_redirect::Redirect;
-use std::fs::OpenOptions;
-use std::os::unix::io::IntoRawFd;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
-use crate::utils_io::set_redirect_fds;
+use crate::utils_io::*;
 
 /* ( script ) */
 pub struct Function {
@@ -134,7 +132,7 @@ impl Function {
 
     fn set_child_io(&mut self) {
         for r in &self.redirects {
-            self.set_redirect(r);
+            set_redirect(r);
         };
 
         if self.pipein != -1 {
@@ -148,37 +146,5 @@ impl Function {
             dup_and_close(self.prevpipein, 0);
         }
 
-    }
-
-    fn set_redirect(&self, r: &Box<Redirect>){
-        if r.path.len() == 0 {
-            panic!("Invalid redirect");
-        }
-
-        if r.direction_str == ">" {
-            if r.path.chars().nth(0) == Some('&') {
-                set_redirect_fds(r);
-                return;
-            }
-
-            if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
-                dup_and_close(file.into_raw_fd(), r.left_fd);
-            }else{
-                panic!("Cannot open the file: {}", r.path);
-            };
-        }else if r.direction_str == "&>" {
-            if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
-                dup_and_close(file.into_raw_fd(), 1);
-                dup2(1, 2).expect("Redirection error on &>");
-            }else{
-                panic!("Cannot open the file: {}", r.path);
-            };
-        }else if r.direction_str == "<" {
-            if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
-                dup_and_close(file.into_raw_fd(), r.left_fd);
-            }else{
-                panic!("Cannot open the file: {}", r.path);
-            };
-        }
     }
 }

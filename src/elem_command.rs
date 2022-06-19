@@ -3,12 +3,10 @@
 
 use std::env;
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, dup2, close}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid, close}; 
 use std::ffi::CString;
 use std::process::exit;
 use std::os::unix::prelude::RawFd;
-use std::os::unix::io::IntoRawFd;
-use std::fs::OpenOptions;
 
 use crate::{ShellCore,Feeder};
 use crate::abst_command_elem::CommandElem;
@@ -22,7 +20,7 @@ use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
 use crate::scanner::*;
-use crate::utils_io::set_redirect_fds;
+use crate::utils_io::*;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {
@@ -130,41 +128,9 @@ impl Command {
             .collect()
     }
 
-    fn set_redirect(&self, r: &Box<Redirect>){
-        if r.path.len() == 0 {
-            panic!("Invalid redirect");
-        }
-
-        if r.direction_str == ">" {
-            if r.path.chars().nth(0) == Some('&') {
-                set_redirect_fds(r);
-                return;
-            }
-
-            if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
-                dup_and_close(file.into_raw_fd(), r.left_fd);
-            }else{
-                panic!("Cannot open the file: {}", r.path);
-            };
-        }else if r.direction_str == "&>" {
-            if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
-                dup_and_close(file.into_raw_fd(), 1);
-                dup2(1, 2).expect("Redirection error on &>");
-            }else{
-                panic!("Cannot open the file: {}", r.path);
-            };
-        }else if r.direction_str == "<" {
-            if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
-                dup_and_close(file.into_raw_fd(), r.left_fd);
-            }else{
-                panic!("Cannot open the file: {}", r.path);
-            };
-        }
-    }
-
     fn set_child_io(&mut self) {
         for r in &self.redirects {
-            self.set_redirect(r);
+            set_redirect(r);
         };
 
         if self.pipein != -1 {
@@ -276,12 +242,6 @@ impl Command {
             if text.len() == 0 {
                 break;
             }
-
-            /*
-            if scanner_continue_nextline(text, 0) == 2 {
-                text.consume(2);
-                text.feed_line(conf, true);
-            }*/
 
             if let Some(e) = Eoc::parse(text){
                 ans.text += &e.text;
