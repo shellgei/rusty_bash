@@ -11,6 +11,7 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::abst_command_elem::CommandElem;
 use crate::utils::blue_string;
+use crate::Script;
 
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_arg::Arg;
@@ -18,6 +19,7 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
+use crate::elem_function::Function;
 use crate::scanner::*;
 use crate::utils_io::*;
 
@@ -97,7 +99,6 @@ impl Command {
     }
 
     fn run_on_this_process(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) -> bool {
-
         if let Some(func) = conf.get_internal_command(&args[0]) {
             let status = func(conf, args);
             conf.vars.insert("?".to_string(), status.to_string());
@@ -141,6 +142,21 @@ impl Command {
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+        if conf.functions.contains_key(&args[0]) {
+            eprintln!("found");
+            if let Some(text) = conf.get_function(&args[0]) {
+                eprintln!("function '{}'", text);
+                let mut feeder = Feeder::new_with(text);
+                if let Some(mut f) = Script::parse(&mut feeder, conf, true) {
+                    f.exec(conf);
+                    exit(0);
+                }else{
+                    panic!("Shell internal error on function");
+                }
+            }else{
+                panic!("Shell internal error on function");
+            }
+        }
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
             exit(func(conf, args));

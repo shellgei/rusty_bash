@@ -29,7 +29,7 @@ impl Flags {
 
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
-    pub functions: HashMap<String, Script>,
+    pub functions: HashMap<String, String>,
     pub vars: HashMap<String, String>,
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
@@ -67,6 +67,16 @@ impl ShellCore {
         };
 
         "".to_string()
+    }
+
+    pub fn get_function(&mut self, name: &String) -> Option<String> {
+        if self.functions.contains_key(name) {
+            if let Some(s) = self.functions.get(name) {
+                return Some(s.clone());
+            }
+        }
+
+        None
     }
 
     pub fn get_internal_command(&self, name: &String) 
