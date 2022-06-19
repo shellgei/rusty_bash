@@ -73,6 +73,7 @@ impl ScriptElem for CompoundParen {
     }
 
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
+    fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
         if let Some(e) = &self.eoc {

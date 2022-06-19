@@ -68,6 +68,7 @@ impl ScriptElem for Function {
     }
 
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
+    fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
 }
 
 impl Function {

@@ -70,3 +70,9 @@ pub fn set_child_io(pin: RawFd, pout: RawFd, previn: RawFd, redirects: &Vec<Box<
     }
 
 }
+
+pub fn set_parent_io(pout: RawFd) {
+    if pout >= 0 {
+        close(pout).expect("Cannot close outfd");
+    };
+}

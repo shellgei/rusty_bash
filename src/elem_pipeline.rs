@@ -9,6 +9,7 @@ use nix::unistd::pipe;
 use crate::scanner::scanner_end_paren;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
+use crate::utils_io::set_parent_io;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
@@ -28,7 +29,8 @@ impl ScriptElem for Pipeline {
             c.set_pipe(p.0, p.1, prevfd);
 
             let _ = c.exec(conf);
-            c.set_parent_io();
+            //c.set_parent_io();
+            set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();
         }
 
