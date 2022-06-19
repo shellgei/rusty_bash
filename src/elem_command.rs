@@ -22,6 +22,7 @@ use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
 use crate::scanner::*;
+use crate::utils_io::set_redirect_fds;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {
@@ -129,14 +130,6 @@ impl Command {
             .collect()
     }
 
-    fn set_redirect_fds(&self, r: &Box<Redirect>){
-        if let Ok(num) = r.path[1..].parse::<i32>(){
-            dup2(num, r.left_fd).expect("Invalid fd");
-        }else{
-            panic!("Invalid fd number");
-        }
-    }
-
     fn set_redirect(&self, r: &Box<Redirect>){
         if r.path.len() == 0 {
             panic!("Invalid redirect");
@@ -144,7 +137,7 @@ impl Command {
 
         if r.direction_str == ">" {
             if r.path.chars().nth(0) == Some('&') {
-                self.set_redirect_fds(r);
+                set_redirect_fds(r);
                 return;
             }
 

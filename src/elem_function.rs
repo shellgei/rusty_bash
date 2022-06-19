@@ -14,7 +14,7 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
-
+use crate::utils_io::set_redirect_fds;
 
 /* ( script ) */
 pub struct Function {
@@ -150,14 +150,6 @@ impl Function {
 
     }
 
-    fn set_redirect_fds(&self, r: &Box<Redirect>){
-        if let Ok(num) = r.path[1..].parse::<i32>(){
-            dup2(num, r.left_fd).expect("Invalid fd");
-        }else{
-            panic!("Invalid fd number");
-        }
-    }
-
     fn set_redirect(&self, r: &Box<Redirect>){
         if r.path.len() == 0 {
             panic!("Invalid redirect");
@@ -165,7 +157,7 @@ impl Function {
 
         if r.direction_str == ">" {
             if r.path.chars().nth(0) == Some('&') {
-                self.set_redirect_fds(r);
+                set_redirect_fds(r);
                 return;
             }
 

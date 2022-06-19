@@ -13,6 +13,7 @@ use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_arg_delimiter::ArgDelimiter;
+use crate::utils_io::set_redirect_fds;
 
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
@@ -176,14 +177,6 @@ impl CompoundBrace {
 
     }
 
-    fn set_redirect_fds(&self, r: &Box<Redirect>){
-        if let Ok(num) = r.path[1..].parse::<i32>(){
-            dup2(num, r.left_fd).expect("Invalid fd");
-        }else{
-            panic!("Invalid fd number");
-        }
-    }
-
     fn set_redirect(&self, r: &Box<Redirect>){
         if r.path.len() == 0 {
             panic!("Invalid redirect");
@@ -191,7 +184,7 @@ impl CompoundBrace {
 
         if r.direction_str == ">" {
             if r.path.chars().nth(0) == Some('&') {
-                self.set_redirect_fds(r);
+                set_redirect_fds(r);
                 return;
             }
 
