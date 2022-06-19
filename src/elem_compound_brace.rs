@@ -10,6 +10,7 @@ use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::utils_io::*;
+use std::process::exit;
 
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
@@ -49,6 +50,7 @@ impl ScriptElem for CompoundBrace {
                 Ok(ForkResult::Child) => {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
                     self.script.exec(conf);
+                    exit(conf.vars["?"].parse::<i32>().unwrap());
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     self.pid = Some(child);
