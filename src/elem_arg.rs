@@ -29,25 +29,38 @@ impl Arg {
     }
 
     pub fn expand_glob(text: &String) -> Vec<String> {
+        //eprintln!("BEFORE GLOB: {}", text);
         let mut ans = eval_glob(text);
 
         if ans.len() == 0 {
             let s = text.clone().replace("\\*", "*").replace("\\\\", "\\");
             ans.push(s);
         };
+        //eprintln!("AFTER AFTER GLOB: {}", ans[0]);
         ans
     }
 
     pub fn remove_escape(text: &String) -> String{
+        //eprintln!("BEFORE REM ESC: {}", text);
         let mut escaped = false;
         let mut ans = "".to_string();
+
+        let deescape_target = |c: char| {
+            "$*\" \\`{};()^<>?[]'!".chars().any(|x| x == c)
+        };
         
         for ch in text.chars() {
             if escaped || ch != '\\' {
+                /* \n \t \a ... should not be de-escaped. */
+                //if escaped && ch != '*' && ch != '"' && ch != ' ' && ch != '\\' && ch != '`' {
+                if escaped && !deescape_target(ch) {
+                    ans.push('\\');
+                }
                 ans.push(ch);
             };
             escaped = !escaped && ch == '\\';
         }
+        //eprintln!("AFTER REM ESC: {}", ans);
         ans
     }
 
@@ -112,6 +125,7 @@ impl CommandElem for Arg {
         for ss in subevals {
             strings = combine(&strings, &ss);
         }
+        //eprintln!("ARG_EVAL: {:?}", strings);
         strings
     }
 

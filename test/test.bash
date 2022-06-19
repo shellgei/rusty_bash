@@ -41,6 +41,9 @@ EOF
 )
 [ "$res" = '" \ a  bc' ]
 
+res=$($com <<< 'echo "\a\n\$\`\{\}"')
+[ "$res" = '\a\n$`{}' ]
+
 res=$($com << 'EOF'
 echo "a'b'c"
 EOF

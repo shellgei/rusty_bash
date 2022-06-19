@@ -17,7 +17,6 @@ pub struct Pipeline {
 }
 
 impl ScriptElem for Pipeline {
-
     fn exec(&mut self, conf: &mut ShellCore) {
         let len = self.commands.len();
         let mut prevfd = -1;

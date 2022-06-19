@@ -40,6 +40,7 @@ impl ScriptElem for Command {
 
     fn exec(&mut self, conf: &mut ShellCore) {
         let mut args = self.eval(conf);
+        //eprintln!("COM_EXEC: {:?}", args[1]);
 
         // This sentence avoids an unnecessary fork for an internal command.
         if self.pipeout == -1 && self.pipein == -1 { 
