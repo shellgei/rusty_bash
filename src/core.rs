@@ -7,7 +7,6 @@ use std::{fs,env};
 use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::Write;
-use crate::Script;
 
 pub struct Flags {
     pub v: bool,

@@ -45,12 +45,14 @@ impl Script {
         }
 
         let mut ans = Script::new();
+        let mut is_function = false;
     
         loop {
             if let Some(f) = Function::parse(text, conf)            {
                 ans.text += &f.text;
      //           ans.elems.push(Box::new(result));
                 conf.functions.insert(f.name, f.body.script.text);
+                is_function = true;
             }else if let Some(result) = BlankPart::parse(text)           {
                 ans.text += &result.text;
                 ans.elems.push(Box::new(result));
@@ -68,7 +70,7 @@ impl Script {
             }
         }
     
-        if ans.elems.len() > 0 {
+        if ans.elems.len() > 0 || is_function {
             Some(ans)
         }else{
             eprintln!("Unknown phrase");

@@ -19,7 +19,6 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
-use crate::elem_function::Function;
 use crate::scanner::*;
 use crate::utils_io::*;
 
@@ -143,9 +142,7 @@ impl Command {
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
         if conf.functions.contains_key(&args[0]) {
-            eprintln!("found");
             if let Some(text) = conf.get_function(&args[0]) {
-                eprintln!("function '{}'", text);
                 let mut feeder = Feeder::new_with(text);
                 if let Some(mut f) = Script::parse(&mut feeder, conf, true) {
                     f.exec(conf);
