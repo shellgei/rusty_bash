@@ -22,9 +22,7 @@ pub struct Function {
     pid: Option<Pid>, 
     pub pipein: RawFd,
     pub pipeout: RawFd,
-    /* The followings are set by a pipeline.  */
     pub prevpipein: RawFd,
-    //pub eoc: Option<Eoc>,
 }
 
 impl ScriptElem for Function {
@@ -40,7 +38,6 @@ impl ScriptElem for Function {
             match fork() {
                 Ok(ForkResult::Child) => {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
-                    //self.set_child_io();
                     if let Some(s) = &mut self.body {
                         s.exec(conf);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
@@ -63,22 +60,14 @@ impl ScriptElem for Function {
         self.prevpipein = pprev;
     }
 
-    fn set_parent_io(&mut self) -> RawFd {
+    fn set_parent_io(&mut self) {
         if self.pipeout >= 0 {
             close(self.pipeout).expect("Cannot close outfd");
-        }
-        return self.pipein;
+        };
+       // return self.pipein;
     }
 
-    /*
-    fn get_eoc_string(&mut self) -> String {
-        if let Some(e) = &self.eoc {
-            return e.text.clone();
-        }
-
-        "".to_string()
-    }
-    */
+    fn get_pipe_end(&mut self) -> RawFd { self.pipein }
 }
 
 impl Function {

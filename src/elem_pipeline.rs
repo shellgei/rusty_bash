@@ -28,7 +28,8 @@ impl ScriptElem for Pipeline {
             c.set_pipe(p.0, p.1, prevfd);
 
             let _ = c.exec(conf);
-            prevfd = c.set_parent_io();
+            c.set_parent_io();
+            prevfd = c.get_pipe_end();
         }
 
         for c in &self.commands {

@@ -73,12 +73,13 @@ impl ScriptElem for CompoundBrace {
         self.prevpipein = pprev;
     }
 
-    fn set_parent_io(&mut self) -> RawFd {
+    fn set_parent_io(&mut self) {
         if self.pipeout >= 0 {
             close(self.pipeout).expect("Cannot close outfd");
-        }
-        return self.pipein;
+        };
     }
+
+    fn get_pipe_end(&mut self) -> RawFd { self.pipein }
 
     fn get_eoc_string(&mut self) -> String {
         if let Some(e) = &self.eoc {
