@@ -29,29 +29,33 @@ impl Function {
          }
 
          let backup = text.clone();
-         let name = VarName::new(text, var_pos);
+         let mut name = VarName::new(text, var_pos);
+         let _ = ArgDelimiter::parse(text);
 
-        let _ = ArgDelimiter::parse(text);
+         if name.text == "function" {
+             name = VarName::new(text, var_pos);
+             let _ = ArgDelimiter::parse(text);
+         }
 
-        if text.len() == 0 || text.nth(0) != '(' {
-            text.rewind(backup);
-            return None;
-        }
-        text.consume(1);
-
-        if text.len() == 0 || text.nth(0) != ')' {
-            text.rewind(backup);
-            return None;
-        }
-        text.consume(1);
-
-        let _ = ArgDelimiter::parse(text);
-
-        if let Some(c) = CompoundBrace::parse(text, conf){
-            Some( Function::new(name.text, c) )
-        }else{
-            text.rewind(backup);
-            None
-        }
+         if text.len() == 0 || text.nth(0) != '(' {
+             text.rewind(backup);
+             return None;
+         }
+         text.consume(1);
+ 
+         if text.len() == 0 || text.nth(0) != ')' {
+             text.rewind(backup);
+             return None;
+         }
+         text.consume(1);
+ 
+         let _ = ArgDelimiter::parse(text);
+ 
+         if let Some(c) = CompoundBrace::parse(text, conf){
+             Some( Function::new(name.text, c) )
+         }else{
+             text.rewind(backup);
+             None
+         }
     }
 }

@@ -432,6 +432,16 @@ EOF
 [ "$res" = "a" ]
 
 res=$($com << 'EOF'
+function somefunc () {
+	echo a
+}
+
+somefunc
+EOF
+)
+[ "$res" = "a" ]
+
+res=$($com << 'EOF'
 somefunc () {
 	echo abc
 }
