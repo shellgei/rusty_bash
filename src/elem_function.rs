@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_script_elem::ScriptElem;
-use nix::unistd::{Pid, close, fork, ForkResult};
+use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use std::process::exit;
 use crate::elem_redirect::Redirect;
@@ -60,12 +60,13 @@ impl ScriptElem for Function {
         self.prevpipein = pprev;
     }
 
+    /*
     fn set_parent_io(&mut self) {
         if self.pipeout >= 0 {
             close(self.pipeout).expect("Cannot close outfd");
         };
        // return self.pipein;
-    }
+    }*/
 
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.pipeout }

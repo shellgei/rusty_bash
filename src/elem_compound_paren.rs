@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_script_elem::ScriptElem;
-use nix::unistd::{Pid, fork, ForkResult, pipe, close};
+use nix::unistd::{Pid, fork, ForkResult, pipe};
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use std::process::exit;
@@ -65,12 +65,14 @@ impl ScriptElem for CompoundParen {
         self.prevpipein = pprev;
     }
 
+    /*
     fn set_parent_io(&mut self) {
         if self.pipeout >= 0 {
             close(self.pipeout).expect("Cannot close outfd");
         }
 //        return self.pipein;
     }
+    */
 
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.pipeout }

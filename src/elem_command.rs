@@ -3,7 +3,7 @@
 
 use std::env;
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid, close}; 
+use nix::unistd::{execvpe, fork, ForkResult, Pid}; 
 use std::ffi::CString;
 use std::process::exit;
 use std::os::unix::prelude::RawFd;
@@ -72,12 +72,14 @@ impl ScriptElem for Command {
         self.pid
     }
 
+    /*
     fn set_parent_io(&mut self) {
         if self.pipeout >= 0 {
             close(self.pipeout).expect("Cannot close outfd");
         };
 //        return self.pipein;
     }
+    */
 
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
