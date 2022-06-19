@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elem_function::Function;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::elem_blankpart::BlankPart;
@@ -46,7 +47,10 @@ impl Script {
         let mut ans = Script::new();
     
         loop {
-            if let Some(result) = BlankPart::parse(text)                {
+            if let Some(result) = Function::parse(text, conf)            {
+                ans.text += &result.text;
+                ans.elems.push(Box::new(result));
+            }else if let Some(result) = BlankPart::parse(text)           {
                 ans.text += &result.text;
                 ans.elems.push(Box::new(result));
             }else if let Some(result) = SetVariables::parse(text, conf) {

@@ -7,7 +7,6 @@ use crate::Feeder;
 
 use crate::abst_arg_elem::ArgElem;
 
-
 pub struct VarName {
     pub text: String,
     pub pos: DebugInfo,
