@@ -120,6 +120,7 @@ res=$($com <<< 'echo "*"')
 res=$($com <<< 'echo /')
 [ "$res" = "/" ]
 
+#The following checks trivial difference between bash and this.
 #$com <<< 'echo //*' | grep -F '//' 
 #$com <<< 'echo /*////' | grep -Fv '//'
 
@@ -342,15 +343,15 @@ res=$($com <<< '(echo hoge | rev;echo hoge)')
 [ "$res" = "egoh
 hoge" ]
 
-#res=$($com <<< 'echo abc | ( echo a ; rev ) | tr -d \\n')
-#[ "$res" = "acba" ]
+res=$($com <<< 'echo abc | ( echo a ; rev ) | tr -d \\n')
+[ "$res" = "acba" ]
 
 res=$($com <<< '{echo hoge | rev;echo hoge ; }')
 [ "$res" = "egoh
 hoge" ]
 
-#res=$($com <<< 'echo abc | { echo a ; rev ; } | tr -d \\n')
-#[ "$res" = "acba" ]
+res=$($com <<< 'echo abc | { echo a ; rev ; } | tr -d \\n')
+[ "$res" = "acba" ]
 
 res=$($com <<< '(A=B);echo $A')
 [ "$res" = "" ]
@@ -440,16 +441,16 @@ EOF
 )
 [ "$res" = "cba" ]
 
-#res=$($com << 'EOF'
-#somefunc () {
-#	echo a
-#	rev
-#}
-#
-#echo abc | somefunc | tr -d '\n'
-#EOF
-#)
-#[ "$res" = "acba" ]
+res=$($com << 'EOF'
+somefunc () {
+	echo a
+	rev
+}
+
+echo abc | somefunc | tr -d '\n'
+EOF
+)
+[ "$res" = "acba" ]
 
 trap "" EXIT
 echo TEST OK
