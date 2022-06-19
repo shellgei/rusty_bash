@@ -409,17 +409,17 @@ EOF
 )
 [ "$res" = "cba" ]
 
-### FUNCTION ###
-
-res=$($com << 'EOF'
-somefunc () {
-	echo a
-}
-
-somefunc
-EOF
-)
-[ "$res" = "a" ]
+#### FUNCTION ###
+#
+#res=$($com << 'EOF'
+#somefunc () {
+#	echo a
+#}
+#
+#somefunc
+#EOF
+#)
+#[ "$res" = "a" ]
 
 trap "" EXIT
 echo TEST OK

@@ -6,7 +6,7 @@ use crate::abst_script_elem::ScriptElem;
 use nix::unistd::{Pid, close, dup2, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use std::process::exit;
-use crate::utils::dup_and_close;
+use crate::utils_io::dup_and_close;
 use crate::elem_redirect::Redirect;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;

@@ -7,7 +7,7 @@ use nix::unistd::{Pid, fork, ForkResult, pipe, close, dup2};
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use std::process::exit;
-use crate::utils::dup_and_close;
+use crate::utils_io::dup_and_close;
 use crate::elem_redirect::Redirect;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
@@ -97,14 +97,10 @@ impl CompoundParen {
         }
     }
 
-    fn set_expansion(&mut self, pin: RawFd, pout: RawFd) {
-        self.pipein = pin;
-        self.pipeout = pout;
-    }
-
     fn set_command_expansion_pipe(&mut self){
         let p = pipe().expect("Pipe cannot open");
-        self.set_expansion(p.0, p.1);
+        self.pipein = p.0;
+        self.pipeout = p.1;
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundParen> {

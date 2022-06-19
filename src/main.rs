@@ -28,6 +28,7 @@ mod elem_varname;
 mod core;
 mod term;
 mod utils;
+mod utils_io;
 mod feeder;
 mod scanner;
 mod debuginfo;

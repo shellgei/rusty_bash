@@ -7,7 +7,7 @@ use nix::unistd::{Pid, fork, ForkResult, close, dup2};
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use std::process::exit;
-use crate::utils::dup_and_close;
+use crate::utils_io::dup_and_close;
 use crate::elem_redirect::Redirect;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
@@ -129,11 +129,6 @@ impl CompoundBrace {
                 continue;
             }
     
-            /*
-            if text.len() == 0 || text.nth(0) != '}' {
-                text.rewind(backup);
-                return None;
-            }*/
             if text.len() == 0 || text.nth(0) != '}' {
                 backup = text.rewind_feed_backup(&backup, conf);
             }else{
@@ -169,7 +164,7 @@ impl CompoundBrace {
         };
 
         if self.pipein != -1 {
-            close(self.pipein).expect("a");
+            close(self.pipein).expect("Cannot close input side of pipe");
         }
         if self.pipeout != -1 {
             dup_and_close(self.pipeout, 1);

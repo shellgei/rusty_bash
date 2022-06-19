@@ -12,7 +12,8 @@ use std::fs::OpenOptions;
 
 use crate::{ShellCore,Feeder};
 use crate::abst_command_elem::CommandElem;
-use crate::utils::{blue_string, dup_and_close};
+use crate::utils::blue_string;
+use crate::utils_io::dup_and_close;
 
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_arg::Arg;
