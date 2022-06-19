@@ -6,7 +6,6 @@ use crate::abst_script_elem::ScriptElem;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
-use std::process::exit;
 use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_arg_delimiter::ArgDelimiter;
@@ -53,7 +52,7 @@ impl ScriptElem for CompoundBrace {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
                     if let Some(s) = &mut self.script {
                         s.exec(conf);
-                        exit(conf.vars["?"].parse::<i32>().unwrap());
+                        //exit(conf.vars["?"].parse::<i32>().unwrap());
                     };
                 },
                 Ok(ForkResult::Parent { child } ) => {

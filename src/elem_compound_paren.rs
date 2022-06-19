@@ -41,7 +41,6 @@ impl ScriptElem for CompoundParen {
                         dup_and_close(self.pipeout, 1);
                     }else{
                         set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
-                       // self.set_child_io();
                     }
                     if let Some(s) = &mut self.script {
                         s.exec(conf);
