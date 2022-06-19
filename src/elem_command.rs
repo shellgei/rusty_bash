@@ -140,19 +140,23 @@ impl Command {
         blue_string(&ans)
     }
 
-    fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        if conf.functions.contains_key(&args[0]) {
-            if let Some(text) = conf.get_function(&args[0]) {
-                let mut feeder = Feeder::new_with(text);
-                if let Some(mut f) = Script::parse(&mut feeder, conf, true) {
-                    f.exec(conf);
-                    exit(0);
-                }else{
-                    panic!("Shell internal error on function");
-                }
+    fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+        if let Some(text) = conf.get_function(&args[0]) {
+            let mut feeder = Feeder::new_with(text);
+            if let Some(mut f) = Script::parse(&mut feeder, conf, true) {
+                f.exec(conf);
             }else{
                 panic!("Shell internal error on function");
             }
+        }else{
+            panic!("Shell internal error on function");
+        }
+    }
+
+    fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+        if conf.functions.contains_key(&args[0]) {
+            self.exec_function(args, conf);
+            exit(0);
         }
 
         if let Some(func) = conf.get_internal_command(&args[0]) {
