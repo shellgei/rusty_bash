@@ -26,7 +26,7 @@ fn tail_check(s: &String) -> bool{
 
 /* ( script ) */
 pub struct CompoundBrace {
-    pub script: Option<Script>,
+    pub script: Script,
     pub redirects: Vec<Box<Redirect>>,
     pub text: String,
     pid: Option<Pid>, 
@@ -40,20 +40,15 @@ pub struct CompoundBrace {
 impl ScriptElem for CompoundBrace {
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 && self.redirects.len() == 0 {
-            if let Some(s) = &mut self.script {
-                s.exec(conf);
-                return;
-            };
-        }
+             self.script.exec(conf);
+             return;
+        };
 
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
-                    if let Some(s) = &mut self.script {
-                        s.exec(conf);
-                        //exit(conf.vars["?"].parse::<i32>().unwrap());
-                    };
+                    self.script.exec(conf);
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     self.pid = Some(child);
@@ -92,9 +87,9 @@ impl ScriptElem for CompoundBrace {
 }
 
 impl CompoundBrace {
-    pub fn new() -> CompoundBrace{
+    pub fn new(script: Script) -> CompoundBrace{
         CompoundBrace {
-            script: None,
+            script: script,
             pid: None,
             redirects: vec!(),
             text: "".to_string(),
@@ -111,7 +106,7 @@ impl CompoundBrace {
         }
 
         let mut backup = text.clone();
-        let mut ans = CompoundBrace::new();
+        let mut ans;
 
         loop {
             text.consume(1);
@@ -122,8 +117,10 @@ impl CompoundBrace {
                     return None;
                 }
     
-                ans.text = "{".to_owned() + &s.text + "}";
-                ans.script = Some(s);
+                let text = "{".to_owned() + &s.text.clone() + "}";
+                ans = CompoundBrace::new(s);
+                ans.text = text;
+                //ans.script = Some(s);
             }else{
                 backup = text.rewind_feed_backup(&backup, conf);
                 continue;

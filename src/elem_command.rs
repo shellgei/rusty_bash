@@ -97,6 +97,7 @@ impl Command {
     }
 
     fn run_on_this_process(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) -> bool {
+
         if let Some(func) = conf.get_internal_command(&args[0]) {
             let status = func(conf, args);
             conf.vars.insert("?".to_string(), status.to_string());

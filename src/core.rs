@@ -7,6 +7,7 @@ use std::{fs,env};
 use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::Write;
+use crate::Script;
 
 pub struct Flags {
     pub v: bool,
@@ -28,6 +29,7 @@ impl Flags {
 
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
+    pub functions: HashMap<String, Script>,
     pub vars: HashMap<String, String>,
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
@@ -38,6 +40,7 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut conf = ShellCore{
             internal_commands: HashMap::new(),
+            functions: HashMap::new(),
             vars: HashMap::new(),
             aliases: HashMap::new(),
             history: Vec::new(),
@@ -74,6 +77,7 @@ impl ShellCore {
             None
         }
     }
+
     /////////////////////////////////
     /* INTERNAL COMMANDS HEREAFTER */
     /////////////////////////////////

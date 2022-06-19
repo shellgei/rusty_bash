@@ -47,9 +47,10 @@ impl Script {
         let mut ans = Script::new();
     
         loop {
-            if let Some(result) = Function::parse(text, conf)            {
-                ans.text += &result.text;
-                ans.elems.push(Box::new(result));
+            if let Some(f) = Function::parse(text, conf)            {
+                ans.text += &f.text;
+     //           ans.elems.push(Box::new(result));
+                conf.functions.insert(f.name, f.body.script);
             }else if let Some(result) = BlankPart::parse(text)           {
                 ans.text += &result.text;
                 ans.elems.push(Box::new(result));
