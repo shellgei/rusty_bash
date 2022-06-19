@@ -6,7 +6,6 @@ use crate::abst_script_elem::ScriptElem;
 use nix::unistd::{Pid, close, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use std::process::exit;
-use crate::utils_io::dup_and_close;
 use crate::elem_redirect::Redirect;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_compound_brace::CompoundBrace;
@@ -40,7 +39,8 @@ impl ScriptElem for Function {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    self.set_child_io();
+                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
+                    //self.set_child_io();
                     if let Some(s) = &mut self.body {
                         s.exec(conf);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
@@ -128,23 +128,5 @@ impl Function {
             return None;
         }
         Some(ans)
-    }
-
-    fn set_child_io(&mut self) {
-        for r in &self.redirects {
-            set_redirect(r);
-        };
-
-        if self.pipein != -1 {
-            close(self.pipein).expect("a");
-        }
-        if self.pipeout != -1 {
-            dup_and_close(self.pipeout, 1);
-        }
-
-        if self.prevpipein != -1 {
-            dup_and_close(self.prevpipein, 0);
-        }
-
     }
 }

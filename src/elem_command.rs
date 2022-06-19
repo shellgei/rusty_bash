@@ -11,7 +11,6 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::abst_command_elem::CommandElem;
 use crate::utils::blue_string;
-use crate::utils_io::dup_and_close;
 
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_arg::Arg;
@@ -51,7 +50,7 @@ impl ScriptElem for Command {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    self.set_child_io();
+                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
                     self.exec_external_command(&mut args, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
@@ -126,24 +125,6 @@ impl Command {
         args.iter()
             .map(|a| Arg::remove_escape(&a))
             .collect()
-    }
-
-    fn set_child_io(&mut self) {
-        for r in &self.redirects {
-            set_redirect(r);
-        };
-
-        if self.pipein != -1 {
-            close(self.pipein).expect("Cannot close in-pipe");
-        }
-        if self.pipeout != -1 {
-            dup_and_close(self.pipeout, 1);
-        }
-
-        if self.prevpipein != -1 {
-            dup_and_close(self.prevpipein, 0);
-        }
-
     }
 
     pub fn push_vars(&mut self, s: Substitution){

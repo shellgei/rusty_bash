@@ -7,7 +7,6 @@ use nix::unistd::{Pid, fork, ForkResult, close};
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use std::process::exit;
-use crate::utils_io::dup_and_close;
 use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_arg_delimiter::ArgDelimiter;
@@ -51,7 +50,7 @@ impl ScriptElem for CompoundBrace {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    self.set_child_io();
+                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
                     if let Some(s) = &mut self.script {
                         s.exec(conf);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
@@ -155,23 +154,5 @@ impl CompoundBrace {
         }
 
         Some(ans)
-    }
-
-    fn set_child_io(&mut self) {
-        for r in &self.redirects {
-            set_redirect(r);
-        };
-
-        if self.pipein != -1 {
-            close(self.pipein).expect("Cannot close input side of pipe");
-        }
-        if self.pipeout != -1 {
-            dup_and_close(self.pipeout, 1);
-        }
-
-        if self.prevpipein != -1 {
-            dup_and_close(self.prevpipein, 0);
-        }
-
     }
 }

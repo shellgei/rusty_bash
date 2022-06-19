@@ -40,7 +40,8 @@ impl ScriptElem for CompoundParen {
                     if self.expansion {
                         dup_and_close(self.pipeout, 1);
                     }else{
-                        self.set_child_io();
+                        set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
+                       // self.set_child_io();
                     }
                     if let Some(s) = &mut self.script {
                         s.exec(conf);
@@ -147,24 +148,5 @@ impl CompoundParen {
         }
 
         Some(ans)
-    }
-
-    fn set_child_io(&mut self) {
-        for r in &self.redirects {
-            set_redirect(r);
-        };
-
-        //eprintln!("{} {} {}", self.pipein, self.pipeout, self.prevpipein);
-        if self.pipein != -1 {
-            close(self.pipein).expect("a");
-        }
-        if self.pipeout != -1 {
-            dup_and_close(self.pipeout, 1);
-        }
-
-        if self.prevpipein != -1 {
-            dup_and_close(self.prevpipein, 0);
-        }
-
     }
 }
