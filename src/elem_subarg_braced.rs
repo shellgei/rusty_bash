@@ -53,6 +53,7 @@ impl SubArgBraced {
             return None;
         }
         
+        let backup = text.clone();
         let mut ans = SubArgBraced {
             text: text.consume(1),
             pos: DebugInfo::init(text),
@@ -64,7 +65,8 @@ impl SubArgBraced {
             ans.args.push(arg); 
 
             if text.len() == 0 {
-                break;
+                text.rewind(backup);
+                return None;
             }
     
             if scanner_until(text, 0, ",") == 0 {
