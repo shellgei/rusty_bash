@@ -21,12 +21,13 @@ pub struct SubArgBraced {
 
 impl ArgElem for SubArgBraced {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        vec!()
         /*
         if self.complete {
             self.eval_complete(conf)
         }else{
+        */
             self.eval_incomplete(conf)
+            /*
         }
         */
     }
@@ -54,9 +55,9 @@ impl SubArgBraced {
         ans
     }
 
-    fn eval_incomplete(&mut self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval_incomplete(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
         if self.args.len() == 0 {
-            return vec!(self.text.clone());
+            return vec!(vec!(self.text.clone()));
         }else if self.args.len() == 1 {
             let mut ans = vec!();
             let mut v = "{".to_string();
@@ -68,7 +69,7 @@ impl SubArgBraced {
                     ans.push(v);
                 }
             }
-            return ans;
+            return vec!(ans);
         }
 
         let mut ans = vec!();
@@ -86,7 +87,7 @@ impl SubArgBraced {
             };
         }
 
-        ans
+        vec!(ans)
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgBraced> {
