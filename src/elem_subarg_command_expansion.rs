@@ -24,11 +24,11 @@ impl ArgElem for SubArgCommandExp {
             let ans = self.wait(pid, conf)
                 .replace(" ", "\n")
                 .split("\n")
-                .map(|x| vec!(x.to_string()))
-                .collect::<Vec<Vec<String>>>();
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>();
             
-            eprintln!("COMEXPANDRES {:?}", ans);
-            return ans;
+           // eprintln!("COMEXPANDRES {:?}", ans);
+            return vec!(ans);
         }
         vec!()
     }

@@ -116,18 +116,21 @@ impl CommandElem for Arg {
         for sa in &mut self.subargs {
             subevals.push(sa.eval(conf));
         }
+        //eprintln!("SUBEVALS: {:?}", subevals);
 
         let mut strings = vec!();
 
         for ss in subevals {
             strings = combine2(&mut strings, ss);
         }
+        //eprintln!("STRINGS: {:?}", strings);
 
         let mut ans = vec!();
         for v in strings {
-            ans.push(v.join(" "));
+//            ans.push(v.join(" "));
+            ans.append(&mut v.clone());
         }
-//        eprintln!("ARGS: {:?}", ans);
+        //eprintln!("ARGS: {:?}", ans);
         ans
     }
 

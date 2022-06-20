@@ -20,8 +20,6 @@ pub struct SubArgDoubleQuoted {
 
 impl ArgElem for SubArgDoubleQuoted {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        let mut text = "".to_string();
-
         let mut vvv = vec!();
         for sa in &mut self.subargs {
             vvv.push(sa.eval(conf));
@@ -42,10 +40,6 @@ impl ArgElem for SubArgDoubleQuoted {
             ans.push(anselem);
         }
         ans
-            /*
-        let s = text.replace("\\", "\\\\").replace("*", "\\*"); 
-        vec!(vec!(s))
-        */
     }
 
     fn text(&self) -> String {
