@@ -83,7 +83,6 @@ pub fn combine_with(left: &Vec<String>, right: &Vec<String>, ch: &str) -> Vec<St
 
         ans.append(&mut con);
     }
-    eprintln!("COM {:?}", ans);
     ans
 }
 
