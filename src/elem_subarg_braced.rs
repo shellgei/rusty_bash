@@ -41,6 +41,10 @@ impl SubArgBraced {
         if pos != 0 {
             return None;
         }
+
+        if scanner_until(text, 0, "}") == text.len() {
+            return None;
+        }
         
         let backup = text.clone();
         let mut ans = SubArgBraced {
