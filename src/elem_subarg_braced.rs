@@ -56,13 +56,13 @@ impl SubArgBraced {
             return vec!(self.text.clone());
         }else if self.args.len() == 1 {
             let mut ans = vec!();
-            for v in self.args[0].eval(conf){
-                if let Some(c) = self.text.chars().last() {
-                    if c == ',' || c == '}' {
-                        ans.push("{".to_owned() + &v + &c.to_string());
-                    }else{
-                        ans.push("{".to_owned() + &v);
-                    }
+            let mut v = "{".to_string();
+            v += &self.args[0].eval(conf).join(" ");
+            if let Some(c) = self.text.chars().last() {
+                if c == ',' || c == '}' {
+                    ans.push(v + &c.to_string());
+                }else{
+                    ans.push(v);
                 }
             }
             return ans;
@@ -120,7 +120,6 @@ impl SubArgBraced {
         };
 
         if ans.args.len() < 2 {
-            eprintln!("OK {}", ans.text);
             ans.complete = false;
             return Some(ans);
         }

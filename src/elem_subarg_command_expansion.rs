@@ -21,12 +21,11 @@ impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         self.com.exec(conf);
         if let Some(pid) = self.com.get_pid() {
-            let s: Vec<String> = self.wait(pid, conf)
+            return self.wait(pid, conf)
                 .replace(" ", "\n")
                 .split("\n")
                 .map(|x| x.to_string())
                 .collect::<Vec<String>>();
-            return s;
         }
         vec!()
     }

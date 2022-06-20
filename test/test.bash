@@ -159,6 +159,10 @@ res=$($com <<< 'cd /;echo "$(pwd)x"') #internal command
 $com <<< 'ls $(echo / /)'
 [ $? -eq 0 ]
 
+res=$($com <<< 'echo {$(seq 5)}')
+[ "$res" = "{1 2 3 4 5}" ]
+
+
 # expansion of tilde
 
 res=$($com <<< 'echo ~')
