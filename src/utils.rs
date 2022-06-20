@@ -69,6 +69,24 @@ pub fn search_commands(globstr: &String) -> Vec<String> {
     ans
 }
 
+pub fn combine_with(left: &Vec<String>, right: &Vec<String>, ch: &str) -> Vec<String> {
+    if left.len() == 0 {
+        return right.clone();
+    };
+
+    let mut ans = vec!();
+    for lstr in left {
+        let mut con = right
+            .iter()
+            .map(|r| lstr.clone() + ch + &r.clone())
+            .collect();
+
+        ans.append(&mut con);
+    }
+    eprintln!("COM {:?}", ans);
+    ans
+}
+
 pub fn combine(left: &Vec<String>, right: &Vec<String>) -> Vec<String> {
     if left.len() == 0 {
         return right.clone();

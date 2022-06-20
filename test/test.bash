@@ -109,8 +109,17 @@ res=$($com <<< 'echo {a,*}zzzzz')
 res=$($com <<< 'echo {')
 [ "$res" = '{' ]
 
-#res=$($com <<< 'echo a{b{c')
-#[ "$res" = 'a{b{c{' ]
+res=$($com <<< 'echo a{b{c')
+[ "$res" = 'a{b{c' ]
+
+res=$($com <<< 'echo a{b{c}')
+[ "$res" = 'a{b{c}' ]
+
+res=$($com <<< 'echo a{b{}')
+[ "$res" = 'a{b{}' ]
+
+res=$($com <<< 'echo }')
+[ "$res" = '}' ]
 
 # glob test
 

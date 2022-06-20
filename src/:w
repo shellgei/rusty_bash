@@ -10,7 +10,6 @@ use crate::scanner::*;
 
 use crate::elem_arg::arg_in_brace;
 use crate::abst_arg_elem::ArgElem;
-use crate::utils::combine_with;
 
 pub struct SubArgBraced {
     pub text: String,
@@ -57,33 +56,16 @@ impl SubArgBraced {
         }else if self.args.len() == 1 {
             let mut ans = vec!();
             for v in self.args[0].eval(conf){
-                if let Some(c) = self.text.chars().last() {
-                    if c == ',' || c == '}' {
-                        ans.push("{".to_owned() + &v + &c.to_string());
-                    }else{
-                        ans.push("{".to_owned() + &v);
-                    }
-                }
+                ans.push("{".to_owned() + &v + "}");
             }
             return ans;
         }
 
-        let mut ans = vec!();
         for arg in &mut self.args {
-            let vs = arg.eval(conf);
-            ans = combine_with(&ans, &vs, ",");
+            ans.append(&mut arg.eval(conf));
         };
 
-        for v in &mut ans {
-            *v = "{".to_owned() + v;
-            if let Some(c) = self.text.chars().last() {
-                if c == ',' || c == '}' {
-                    *v += &c.to_string();
-                }
-            };
-        }
-
-        ans
+        vec!()
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgBraced> {
