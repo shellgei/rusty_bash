@@ -10,7 +10,7 @@ use crate::abst_arg_elem::ArgElem;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_variable::SubArgVariable;
 use crate::elem_subarg_command_expansion::SubArgCommandExp;
-
+use crate::utils::combine2;
 
 pub struct SubArgDoubleQuoted {
     pub text: String,
@@ -21,20 +21,31 @@ pub struct SubArgDoubleQuoted {
 impl ArgElem for SubArgDoubleQuoted {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
         let mut text = "".to_string();
-        for sa in &mut self.subargs {
-            //text += &a.eval(conf).join(" ");
-             for vv in &sa.eval(conf) {
-                 text += &vv.join(" ");
-             }
-        };
-        /*
-        for a in &mut self.subargs {
-            text += &a.eval(conf).join(" ");
-        };
-        */
 
+        let mut vvv = vec!();
+        for sa in &mut self.subargs {
+            vvv.push(sa.eval(conf));
+        };
+
+        let mut strings = vec!();
+        for ss in vvv {
+            strings = combine2(&mut strings, ss);
+        }
+
+        let mut ans = vec!();
+        for ss in strings {
+            let mut anselem = vec!();
+            for s in ss {
+                let x = s.replace("\\", "\\\\").replace("*", "\\*");
+                anselem.push(x);
+            }
+            ans.push(anselem);
+        }
+        ans
+            /*
         let s = text.replace("\\", "\\\\").replace("*", "\\*"); 
         vec!(vec!(s))
+        */
     }
 
     fn text(&self) -> String {

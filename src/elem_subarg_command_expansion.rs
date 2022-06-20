@@ -19,18 +19,18 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        vec!()
-            /*
         self.com.exec(conf);
         if let Some(pid) = self.com.get_pid() {
-            return self.wait(pid, conf)
+            let ans = self.wait(pid, conf)
                 .replace(" ", "\n")
                 .split("\n")
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>();
+                .map(|x| vec!(x.to_string()))
+                .collect::<Vec<Vec<String>>>();
+            
+            eprintln!("COMEXPANDRES {:?}", ans);
+            return ans;
         }
         vec!()
-        */
     }
 
     fn text(&self) -> String {

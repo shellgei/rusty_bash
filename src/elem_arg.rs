@@ -127,6 +127,7 @@ impl CommandElem for Arg {
         for v in strings {
             ans.push(v.join(" "));
         }
+//        eprintln!("ARGS: {:?}", ans);
         ans
     }
 
