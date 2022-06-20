@@ -19,8 +19,11 @@ impl ArgElem for SubArgTildeUser {
         self.text.clone()
     }
 
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
+        vec!()
+        /*
         vec!(expand_tilde(&self.text).0)
+        */
     }
 }
 

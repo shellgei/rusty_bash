@@ -162,6 +162,9 @@ $com <<< 'ls $(echo / /)'
 res=$($com <<< 'echo {$(seq 5)}')
 [ "$res" = "{1 2 3 4 5}" ]
 
+res=$($com <<< 'echo {$(seq 3),$(seq 3)')
+[ "$res" = "{1 2 3,1 2 3" ]
+
 
 # expansion of tilde
 

@@ -114,7 +114,7 @@ impl CommandElem for Arg {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec!();
         for sa in &mut self.subargs {
-            subevals.push(sa.eval(conf));
+            subevals.append(&mut sa.eval(conf));
         }
 
         if subevals.len() == 0 {

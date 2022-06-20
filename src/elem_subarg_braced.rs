@@ -20,12 +20,15 @@ pub struct SubArgBraced {
 }
 
 impl ArgElem for SubArgBraced {
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
+        vec!()
+        /*
         if self.complete {
             self.eval_complete(conf)
         }else{
             self.eval_incomplete(conf)
         }
+        */
     }
 
     fn text(&self) -> String {

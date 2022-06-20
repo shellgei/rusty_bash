@@ -11,7 +11,7 @@ use crate::elem_subarg_braced::SubArgBraced;
 use crate::elem_subarg_variable::SubArgVariable;
 
 pub trait ArgElem {
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
         vec!()
     }
 
