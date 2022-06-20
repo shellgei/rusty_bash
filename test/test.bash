@@ -109,6 +109,9 @@ res=$($com <<< 'echo {a,*}zzzzz')
 res=$($com <<< 'echo {')
 [ "$res" = '{' ]
 
+#res=$($com <<< 'echo a{b{c')
+#[ "$res" = 'a{b{c{' ]
+
 # glob test
 
 res=$($com << 'EOF'

@@ -31,7 +31,7 @@ impl SubArgNonQuoted {
 
         /* The first character can be { if a brace expansion is incomplete. */
         let pos = if text.nth(0) == '{' {
-            scanner_until_escape(text, 1, " \n\t\"';{}()$<>&")
+            scanner_until_escape(text, 1, " \n\t\"';()$<>&")
         }else{
             scanner_until_escape(text, 0, " \n\t\"';{}()$<>&")
         };

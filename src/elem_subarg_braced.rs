@@ -19,6 +19,7 @@ pub struct SubArgBraced {
 
 impl ArgElem for SubArgBraced {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
+        /*
         if self.args.len() == 0{
             return vec!("{}".to_string());
         }else if self.args.len() == 1{
@@ -28,7 +29,7 @@ impl ArgElem for SubArgBraced {
             };
             ans += "}";
             return vec!(ans);
-        };
+        };*/
 
         let mut ans = vec!();
         for arg in &mut self.args {
@@ -77,6 +78,11 @@ impl SubArgBraced {
                 break;
             };
         };
+
+        if ans.args.len() < 2 {
+            text.rewind(backup);
+            return None;
+        }
     
         Some(ans)
     }
