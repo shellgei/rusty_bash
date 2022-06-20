@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::{eval_glob, combine2};
+use crate::utils::{eval_glob, combine};
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::abst_arg_elem::*;
@@ -121,7 +121,7 @@ impl CommandElem for Arg {
         let mut strings = vec!();
 
         for ss in subevals {
-            strings = combine2(&mut strings, ss);
+            strings = combine(&mut strings, ss);
         }
         //eprintln!("STRINGS: {:?}", strings);
 

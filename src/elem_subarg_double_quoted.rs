@@ -10,7 +10,7 @@ use crate::abst_arg_elem::ArgElem;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_variable::SubArgVariable;
 use crate::elem_subarg_command_expansion::SubArgCommandExp;
-use crate::utils::combine2;
+use crate::utils::combine;
 
 pub struct SubArgDoubleQuoted {
     pub text: String,
@@ -27,7 +27,7 @@ impl ArgElem for SubArgDoubleQuoted {
 
         let mut strings = vec!();
         for ss in vvv {
-            strings = combine2(&mut strings, ss);
+            strings = combine(&mut strings, ss);
         }
 
         let mut ans = vec!();

@@ -86,51 +86,21 @@ pub fn combine_with(left: &Vec<String>, right: &Vec<String>, ch: &str) -> Vec<St
     ans
 }
 
-/*
-pub fn combine(left: &Vec<String>, right: &Vec<String>) -> Vec<String> {
+pub fn combine(left: &mut Vec<Vec<String>>, right: Vec<Vec<String>>) -> Vec<Vec<String>> {
     if left.len() == 0 {
-        return right.clone();
-    };
-
-    let mut ans = vec!();
-    for lstr in left {
-        let mut con = right
-            .iter()
-            .map(|r| lstr.clone() + &r.clone())
-            .collect();
-
-        ans.append(&mut con);
-    }
-    ans
-}
-*/
-
-pub fn combine2(left: &mut Vec<Vec<String>>, right: Vec<Vec<String>>) -> Vec<Vec<String>> {
-    if left.len() == 0 {
-        return right.clone();
+        return right;
     };
 
     let mut ans = vec!();
     for lv in left {
-        /*
-        if lv.len() == 0 {
-            continue;
-        }*/
-
         let lv_len = lv.len();
         for rv in &right {
-            if rv.len() == 0 {
-                continue;
-            }
-
             let mut clv = lv.clone();
             clv.append(&mut rv.clone());
-
             let n = clv[lv_len].clone();
             clv[lv_len-1] += &n;
             clv.remove(lv_len);
-    
-            ans.push(clv.clone());
+            ans.push(clv);
         }
     }
     ans
