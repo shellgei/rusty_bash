@@ -161,7 +161,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
         ans.subargs.push(result);
     };
 
-    if ! text.match_at(0, ",}"){ 
+    if text.len() == 0 ||  !text.match_at(0, ",}"){ 
         text.rewind(backup);
         return None;
     }
