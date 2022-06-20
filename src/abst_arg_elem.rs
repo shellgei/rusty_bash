@@ -43,8 +43,8 @@ pub fn subarg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dy
     if text.len() == 0 {
         return None;
     }
-
     if let Some(a) = SubArgVariable::parse2(text)         {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandExp::parse(text, conf)    {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)     {Some(Box::new(a))}
     else if let Some(a) = SubArgBraced::parse(text, conf)       {Some(Box::new(a))}
     else if let Some(a) = SubArgSingleQuoted::parse(text) {Some(Box::new(a))}
