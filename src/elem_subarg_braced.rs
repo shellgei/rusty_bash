@@ -103,7 +103,9 @@ impl SubArgBraced {
             ans.text += &arg.text.clone();
             ans.args.push(arg); 
 
-            if text.len() == 0 || scanner_end_of_com(text, 0) == 1 {
+            if text.len() == 0 
+                || scanner_end_of_com(text, 0) == 1
+                || text.nth(0) == ' ' {
                 return Some(ans);
             };
     
@@ -118,6 +120,7 @@ impl SubArgBraced {
         };
 
         if ans.args.len() < 2 {
+            eprintln!("OK {}", ans.text);
             ans.complete = false;
             return Some(ans);
         }

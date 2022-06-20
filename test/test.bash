@@ -385,6 +385,9 @@ EOF
 )
 [ "$res" -gt 1 ]
 
+res=$($com <<< '{ echo } ; }')
+[ "$res" = "}" ]
+
 ### MULTILINE INPUT ###
 
 res=$($com << 'EOF'
