@@ -19,18 +19,6 @@ pub struct SubArgBraced {
 
 impl ArgElem for SubArgBraced {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        /*
-        if self.args.len() == 0{
-            return vec!("{}".to_string());
-        }else if self.args.len() == 1{
-            let mut ans = "{".to_string();
-            for s in self.args[0].eval(conf) {
-                ans += &s;
-            };
-            ans += "}";
-            return vec!(ans);
-        };*/
-
         let mut ans = vec!();
         for arg in &mut self.args {
             ans.append(&mut arg.eval(conf));

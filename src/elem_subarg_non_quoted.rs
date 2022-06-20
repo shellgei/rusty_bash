@@ -25,6 +25,7 @@ impl ArgElem for SubArgNonQuoted {
 
 impl SubArgNonQuoted {
     pub fn parse(text: &mut Feeder) -> Option<SubArgNonQuoted> {
+        //eprintln!("TEXT :'{}'",text._text());
         if text.len() == 0 {
             return None;
         }
@@ -54,12 +55,22 @@ impl SubArgNonQuoted {
         if text.len() == 0 {
             return None;
         }
+
+        
         if text.match_at(0, ",}"){
             return None;
         };
         
         let pos = scanner_until_escape(text, 0, ",{}()");
-        Some( SubArgNonQuoted{ text: text.consume(pos), pos: DebugInfo::init(text) })
+        let backup = text.clone();
+        let ans = Some( SubArgNonQuoted{ text: text.consume(pos), pos: DebugInfo::init(text) });
+
+        if text.len() == 0 || scanner_end_of_com(text, 0) == 1 {
+            text.rewind(backup);
+            return None;
+        }
+
+        ans
     }
 
     pub fn parse4(text: &mut Feeder) -> Option<SubArgNonQuoted> {

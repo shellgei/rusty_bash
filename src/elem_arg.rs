@@ -139,6 +139,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
         subargs: vec!(),
     };
 
+    let backup = text.clone();
     if text.match_at(0, ",}"){ // zero length arg
         let tmp = SubArgNonQuoted{
             text: "".to_string(),
@@ -157,6 +158,11 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
         ans.text += &(*result).text();
         ans.subargs.push(result);
     };
+
+    if ! text.match_at(0, ",}"){ 
+        text.rewind(backup);
+        return None;
+    }
 
     Some(ans)
 }
