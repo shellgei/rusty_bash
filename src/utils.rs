@@ -103,6 +103,37 @@ pub fn combine(left: &Vec<String>, right: &Vec<String>) -> Vec<String> {
     ans
 }
 
+pub fn combine2(left: &mut Vec<Vec<String>>, right: Vec<Vec<String>>) -> Vec<Vec<String>> {
+    if left.len() == 0 {
+        return right.clone();
+    };
+
+    let mut ans = vec!();
+    for mut lv in left {
+        /*
+        if lv.len() == 0 {
+            continue;
+        }*/
+
+        let lv_len = lv.len();
+        for rv in &right {
+            if rv.len() == 0 {
+                continue;
+            }
+
+            let mut clv = lv.clone();
+            clv.append(&mut rv.clone());
+
+            let n = clv[lv_len].clone();
+            clv[lv_len-1] += &n;
+            clv.remove(lv_len);
+    
+            ans.push(clv.clone());
+        }
+    }
+    ans
+}
+
 pub fn blue_string(strings: &Vec<String>) -> Vec<String> {
     strings
         .iter()

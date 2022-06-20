@@ -21,15 +21,11 @@ pub struct SubArgBraced {
 
 impl ArgElem for SubArgBraced {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        /*
         if self.complete {
             self.eval_complete(conf)
         }else{
-        */
             self.eval_incomplete(conf)
-            /*
         }
-        */
     }
 
     fn text(&self) -> String {
@@ -47,11 +43,12 @@ impl SubArgBraced {
         }
     }
 
-    fn eval_complete(&mut self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval_complete(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
         let mut ans = vec!();
         for arg in &mut self.args {
-            ans.append(&mut arg.eval(conf));
+            ans.push(arg.eval(conf));
         };
+        //eprintln!("{:?}", ans);
         ans
     }
 

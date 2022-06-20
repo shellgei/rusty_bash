@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::{eval_glob, combine};
+use crate::utils::{eval_glob, combine2};
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::abst_arg_elem::*;
@@ -114,19 +114,20 @@ impl CommandElem for Arg {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec!();
         for sa in &mut self.subargs {
-            subevals.append(&mut sa.eval(conf));
+            subevals.push(sa.eval(conf));
         }
-
-        if subevals.len() == 0 {
-            return vec!();
-        };
 
         let mut strings = vec!();
+
         for ss in subevals {
-            strings = combine(&strings, &ss);
+            strings = combine2(&mut strings, ss);
         }
-        //eprintln!("ARG_EVAL: {:?}", strings);
-        strings
+
+        let mut ans = vec!();
+        for v in strings {
+            ans.push(v.join(" "));
+        }
+        ans
     }
 
     fn text(&self) -> String { self.text.clone() }
