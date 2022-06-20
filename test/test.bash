@@ -343,9 +343,6 @@ res=$($com <<< '(echo hoge)')
 res=$($com <<< '{echo hoge; }')
 [ "$res" = "hoge" ]
 
-res=$($com <<< '{echo hoge }' ; echo $?)
-[ "$res" = "1" ]
-
 res=$($com <<< '(echo hoge;echo hoge)')
 [ "$res" = "hoge
 hoge" ]

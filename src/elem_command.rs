@@ -222,6 +222,12 @@ impl Command {
                 ans.text += &r.text;
                 ans.redirects.push(Box::new(r));
             }else if let Some(a) = Arg::parse(text, true, conf) {
+                if ans.args.len() == 0 {
+                    if Some('}') == a.text.chars().nth(0) {
+                        return false;
+                    }
+                }
+
                 ans.push_elems(Box::new(a));
                 ok = true;
             }else{
