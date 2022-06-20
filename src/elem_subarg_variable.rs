@@ -15,14 +15,12 @@ pub struct SubArgVariable {
 
 impl ArgElem for SubArgVariable {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        vec!()/*
         let name = if self.text.rfind('}') == Some(self.text.len()-1) {
             self.text[2..self.text.len()-1].to_string()
         }else{
             self.text[1..].to_string()
         };
-        vec!(conf.get_var(&name))
-    */
+        vec!(vec!(conf.get_var(&name)))
     }
 
     fn text(&self) -> String {

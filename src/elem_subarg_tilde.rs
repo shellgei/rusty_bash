@@ -20,10 +20,7 @@ impl ArgElem for SubArgTildeUser {
     }
 
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
-        vec!()
-        /*
-        vec!(expand_tilde(&self.text).0)
-        */
+        vec!(vec!(expand_tilde(&self.text).0))
     }
 }
 
