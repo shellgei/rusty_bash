@@ -25,7 +25,17 @@ impl ArgElem for SubArgNonQuoted {
 
 impl SubArgNonQuoted {
     pub fn parse(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-        let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>&");
+        if text.len() == 0 {
+            return None;
+        }
+
+        /* The first character can be { if a brace expansion is incomplete. */
+        let pos = if text.nth(0) == '{' {
+            scanner_until_escape(text, 1, " \n\t\"';{}()$<>&")
+        }else{
+            scanner_until_escape(text, 0, " \n\t\"';{}()$<>&")
+        };
+
         if pos == 0{
             return None;
         };
