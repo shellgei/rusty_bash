@@ -11,6 +11,7 @@ use crate::ScriptElem;
 pub struct Script {
     pub elems: Vec<Box<dyn ScriptElem>>,
     pub text: String,
+    pub procnum: usize,
 }
 
 impl ScriptElem for Script {
@@ -31,6 +32,7 @@ impl Script {
         Script {
             elems: vec!(),
             text: "".to_string(),
+            procnum: 0,
         }
     }
 
@@ -47,6 +49,7 @@ impl Script {
         let mut ans = Script::new();
         let mut is_function = false;
     
+        let mut procnum = 0;
         loop {
             if let Some(f) = Function::parse(text, conf)            {
                 ans.text += &f.text;
@@ -62,6 +65,7 @@ impl Script {
             }else if let Some(result) = Pipeline::parse(text, conf) {
                 ans.text += &result.text;
                 ans.elems.push(Box::new(result));
+                procnum += 1;
             }
             else {break}
 
@@ -71,6 +75,7 @@ impl Script {
         }
     
         if ans.elems.len() > 0 || is_function {
+            ans.procnum = procnum;
             Some(ans)
         }else{
             eprintln!("Unknown phrase");

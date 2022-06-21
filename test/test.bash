@@ -150,6 +150,10 @@ res=$($com <<< 'echo hoge$(echo hoge)')
 res=$($com <<< 'echo "hoge$(echo hoge)"')
 [ "$res" = "hogehoge" ]
 
+res=$($com <<< 'echo "hoge$(echo hoge; echo hoge)"')
+[ "$res" = "hogehoge
+hoge" ]
+
 res=$($com <<< 'echo "$(seq 2)"')
 [ "$res" = "1
 2" ]
@@ -487,9 +491,11 @@ function somefunc () {
 }
 
 somefunc
+somefunc
 EOF
 )
-[ "$res" = "a" ]
+[ "$res" = "a
+a" ]
 
 res=$($com << 'EOF'
 somefunc (    ) {

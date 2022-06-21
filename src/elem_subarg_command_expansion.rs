@@ -65,12 +65,22 @@ impl SubArgCommandExp {
         let mut ans = "".to_string();
 
         let mut ch = [0;1000];
-        while let Ok(n) = read(self.com.pipein, &mut ch) {
-            ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-            if n < 1000 {
-                break;
-            };
+
+        let num = if let Some(s) = &self.com.script {
+            s.procnum
+        }else{
+            panic!("Shell internal error");
         };
+
+        /* TODO: is it OK??? */
+        for _ in 0..num {
+            while let Ok(n) = read(self.com.pipein, &mut ch) {
+                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+                if n < 1000 {
+                    break;
+                };
+            };
+        }
 
         match waitpid(child, None).expect("Faild to wait child process.") {
             WaitStatus::Exited(pid, status) => {
