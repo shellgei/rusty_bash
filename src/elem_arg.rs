@@ -120,10 +120,7 @@ impl CommandElem for Arg {
                 cvs = vs;
             }else{
                 for v in vs {
-                    let mut cv = vec!();
-                    for s in v {
-                        cv.push(s.replace("\n", " "));
-                    }
+                    let cv = v.iter().map(|s| s.replace("\n", " ")).collect();
                     cvs.push(cv);
                 }
             }
