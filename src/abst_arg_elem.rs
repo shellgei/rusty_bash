@@ -16,6 +16,7 @@ pub trait ArgElem {
     }
 
     fn text(&self) -> String;
+    fn permit_lf(&self) -> bool {false}
 }
 
 pub fn subarg(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem>> {

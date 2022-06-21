@@ -48,7 +48,6 @@ impl SubArgBraced {
         for arg in &mut self.args {
             ans.push(arg.eval(conf));
         };
-        //eprintln!("{:?}", ans);
         ans
     }
 

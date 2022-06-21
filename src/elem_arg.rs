@@ -114,7 +114,20 @@ impl CommandElem for Arg {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec!();
         for sa in &mut self.subargs {
-            subevals.push(sa.eval(conf));
+            let vs = sa.eval(conf);
+            let mut cvs = vec!();
+            if sa.permit_lf(){
+                cvs = vs;
+            }else{
+                for v in vs {
+                    let mut cv = vec!();
+                    for s in v {
+                        cv.push(s.replace("\n", " "));
+                    }
+                    cvs.push(cv);
+                }
+            }
+            subevals.push(cvs);
         }
         //eprintln!("SUBEVALS: {:?}", subevals);
 

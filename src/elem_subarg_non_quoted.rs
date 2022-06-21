@@ -19,7 +19,8 @@ impl ArgElem for SubArgNonQuoted {
     }
 
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
-        vec!(vec!(self.text.clone()))
+        //vec!(vec!(self.text.clone()))
+        vec!(vec!(self.text.replace("\n", " ")))
     }
 }
 

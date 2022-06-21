@@ -22,8 +22,8 @@ impl ArgElem for SubArgCommandExp {
         self.com.exec(conf);
         if let Some(pid) = self.com.get_pid() {
             let ans = self.wait(pid, conf)
-                .replace(" ", "\n")
-                .split("\n")
+                //.replace(" ", "\n")
+                .split(" ")
                 .map(|x| x.to_string())
                 .collect::<Vec<String>>();
             
