@@ -73,6 +73,7 @@ impl SubArgCommandExp {
         };
 
         /* TODO: is it OK??? */
+        /* TODO: NO!! Each string should be read by the pipeline.  */
         for _ in 0..num {
             while let Ok(n) = read(self.com.pipein, &mut ch) {
                 ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
