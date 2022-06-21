@@ -47,7 +47,7 @@ impl SubArgCommandExp {
         let backup = text.clone();
         text.consume(1);
 
-        if let Some(mut e) = CompoundParen::parse(text, conf){
+        if let Some(mut e) = CompoundParen::parse(text, conf, true){
             e.expansion = true;
             let ans = SubArgCommandExp {
                 text: "$".to_owned() + &e.text.clone(),

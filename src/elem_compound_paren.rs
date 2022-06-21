@@ -107,7 +107,7 @@ impl CompoundParen {
         self.pipeout = p.1;
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundParen> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CompoundParen> {
         if text.len() == 0 || text.nth(0) != '(' {
             return None;
         }
@@ -133,6 +133,9 @@ impl CompoundParen {
         }
 
         text.consume(1);
+        if substitution {
+            return Some(ans);
+        }
 
         loop {
             if let Some(d) = ArgDelimiter::parse(text){

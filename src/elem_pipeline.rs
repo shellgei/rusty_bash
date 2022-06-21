@@ -58,7 +58,7 @@ impl Pipeline {
                 eocs = c.get_eoc_string();
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
-            }else if let Some(mut c) = CompoundParen::parse(text, conf) {
+            }else if let Some(mut c) = CompoundParen::parse(text, conf, false) {
                 eocs = c.get_eoc_string();
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
