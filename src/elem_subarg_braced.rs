@@ -31,6 +31,8 @@ impl ArgElem for SubArgBraced {
     fn text(&self) -> String {
         self.text.clone()
     }
+
+    fn permit_lf(&self) -> bool {true}
 }
 
 impl SubArgBraced {

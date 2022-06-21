@@ -167,6 +167,11 @@ res=$($com <<< 'echo "$(seq 3)"{a,b}')
 2
 3b" ]
 
+res=$($com <<< 'echo {a,"$(seq 3)"}b')
+[ "$res" = "ab 1
+2
+3b" ]
+
 res=$($com <<< 'echo $(seq 3){a,b}')
 [ "$res" = "1 2 3a 1 2 3b" ]
 
