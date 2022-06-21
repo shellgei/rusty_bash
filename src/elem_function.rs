@@ -33,6 +33,10 @@ impl Function {
          let _ = ArgDelimiter::parse(text);
 
          if name.text == "function" {
+            let var_pos = scanner_varname(text, 0);
+            if var_pos == 0 {
+                return None;
+            }
              name = VarName::new(text, var_pos);
              let _ = ArgDelimiter::parse(text);
          }

@@ -512,5 +512,9 @@ EOF
 )
 [ "$res" = "acba" ]
 
+res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; hoge )')
+[ "$res" = "cba" ]
+
+
 trap "" EXIT
 echo TEST OK

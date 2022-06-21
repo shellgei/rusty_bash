@@ -49,8 +49,8 @@ pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
 
     let mut pos = from;
     for ch in text.chars_after(from) {
-        if !((ch >= '0' && ch <= '9') ||(ch >= 'A' && ch <= 'Z') 
-        || (ch >= 'a' && ch <= 'z') || ch == '_'){
+        if !((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') 
+        || (ch >= 'a' && ch <= 'z') || ch == '_') {
             break;
         }
         pos += ch.len_utf8();

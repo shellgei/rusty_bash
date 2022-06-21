@@ -28,9 +28,6 @@ impl ArgElem for VarName {
 
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
         vec!()
-/*
-        vec!(self.text.clone())
-        */
     }
 }
 
