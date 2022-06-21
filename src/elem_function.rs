@@ -23,22 +23,21 @@ impl Function {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Function> {
-         let var_pos = scanner_varname(text, 0);
-         if var_pos == 0 {
-             return None;
-         }
-
          let backup = text.clone();
-         let mut name = VarName::new(text, var_pos);
-         let _ = ArgDelimiter::parse(text);
+         let mut name;
 
-         if name.text == "function" {
-            let var_pos = scanner_varname(text, 0);
-            if var_pos == 0 {
-                return None;
-            }
+         loop {
+             let var_pos = scanner_varname(text, 0);
+             if var_pos == 0 {
+                 text.rewind(backup);
+                 return None;
+             }
              name = VarName::new(text, var_pos);
              let _ = ArgDelimiter::parse(text);
+
+             if name.text != "function" {
+                 break;
+             }
          }
 
          if text.len() == 0 || text.nth(0) != '(' {
@@ -46,6 +45,7 @@ impl Function {
              return None;
          }
          text.consume(1);
+         let _ = ArgDelimiter::parse(text);
  
          if text.len() == 0 || text.nth(0) != ')' {
              text.rewind(backup);

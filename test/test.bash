@@ -492,7 +492,7 @@ EOF
 [ "$res" = "a" ]
 
 res=$($com << 'EOF'
-somefunc () {
+somefunc (    ) {
 	echo abc
 }
 
