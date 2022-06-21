@@ -167,6 +167,8 @@ res=$($com <<< 'echo "$(seq 3)"{a,b}')
 2
 3b" ]
 
+res=$($com <<< 'echo $(seq 3){a,b}')
+[ "$res" = "1 2 3a 1 2 3b" ]
 
 res=$($com <<< 'cd /;echo "$(pwd)x"') #internal command
 [ "$res" = "/x" ]
