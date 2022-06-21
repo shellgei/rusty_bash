@@ -115,6 +115,7 @@ impl CommandElem for Arg {
         let mut subevals = vec!();
         for sa in &mut self.subargs {
             let vs = sa.eval(conf);
+
             let mut cvs = vec!();
             if sa.permit_lf(){
                 cvs = vs;
@@ -124,6 +125,7 @@ impl CommandElem for Arg {
                     cvs.push(cv);
                 }
             }
+            
             subevals.push(cvs);
         }
         //eprintln!("SUBEVALS: {:?}", subevals);
@@ -137,7 +139,6 @@ impl CommandElem for Arg {
 
         let mut ans = vec!();
         for v in strings {
-//            ans.push(v.join(" "));
             ans.append(&mut v.clone());
         }
         //eprintln!("ARGS: {:?}", ans);

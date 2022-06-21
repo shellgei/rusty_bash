@@ -154,6 +154,20 @@ res=$($com <<< 'echo "$(seq 2)"')
 [ "$res" = "1
 2" ]
 
+res=$($com <<< 'echo a"$(seq 4)"b')
+[ "$res" = "a1
+2
+3
+4b" ]
+
+res=$($com <<< 'echo "$(seq 3)"{a,b}')
+[ "$res" = "1
+2
+3a 1
+2
+3b" ]
+
+
 res=$($com <<< 'cd /;echo "$(pwd)x"') #internal command
 [ "$res" = "/x" ]
 
