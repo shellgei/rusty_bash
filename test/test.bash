@@ -201,6 +201,9 @@ res=$($com <<< 'echo {$(seq 3),$(seq 3)')
 res=$($com <<< 'echo $( echo abc | (rev) )') 
 [ "$res" = "cba" ]
 
+#res=$($com <<< 'echo $( echo a ;  ( echo b ; echo c ) )') #TODO
+#[ "$res" = "a b c" ]
+
 # expansion of tilde
 
 res=$($com <<< 'echo ~')
