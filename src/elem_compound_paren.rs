@@ -41,11 +41,7 @@ impl ScriptElem for CompoundParen {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    if substitution {
-  //                      dup_and_close(self.pipeout, 1);
-                    }else{
-                        set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
-                    }
+                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
                     if let Some(s) = &mut self.script {
                         s.exec(conf, substitution);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
@@ -89,7 +85,6 @@ impl CompoundParen {
             text: "".to_string(),
             pipein: -1,
             pipeout: -1,
-            //substitution: false,
             substitution_text: "".to_string(),
             prevpipein: -1,
             eoc: None,
