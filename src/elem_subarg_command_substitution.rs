@@ -4,12 +4,13 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use nix::unistd::{read, Pid};
+use nix::unistd::{Pid};
 use nix::sys::wait::{waitpid, WaitStatus};
 
 use crate::abst_arg_elem::ArgElem;
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_compound_paren::CompoundParen;
+use crate::utils_io::read_pipe;
 
 pub struct SubArgCommandExp {
     pub text: String,
@@ -48,7 +49,7 @@ impl SubArgCommandExp {
         text.consume(1);
 
         if let Some(mut e) = CompoundParen::parse(text, conf, true){
-            e.expansion = true;
+            e.substitution = true;
             let ans = SubArgCommandExp {
                 text: "$".to_owned() + &e.text.clone(),
                 pos: DebugInfo::init(text),
@@ -64,8 +65,6 @@ impl SubArgCommandExp {
     fn wait(&self, child: Pid, conf: &mut ShellCore) -> String {
         let mut ans = "".to_string();
 
-        let mut ch = [0;1000];
-
         let num = if let Some(s) = &self.com.script {
             s.procnum
         }else{
@@ -75,12 +74,7 @@ impl SubArgCommandExp {
         /* TODO: is it OK??? */
         /* TODO: NO!! Each string should be read by the pipeline.  */
         for _ in 0..num {
-            while let Ok(n) = read(self.com.pipein, &mut ch) {
-                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-                if n < 1000 {
-                    break;
-                };
-            };
+            ans += &read_pipe(self.com.pipein);
         }
 
         match waitpid(child, None).expect("Faild to wait child process.") {

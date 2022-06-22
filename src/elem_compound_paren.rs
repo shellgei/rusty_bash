@@ -21,23 +21,23 @@ pub struct CompoundParen {
     pid: Option<Pid>, 
     pub pipein: RawFd,
     pub pipeout: RawFd,
-    /* The followings are set by a pipeline or a com expansion. */
-    pub expansion: bool,
-    pub expansion_str: String,
+    /* The followings are set by a pipeline or a com substitution. */
+    pub substitution: bool,
+    pub substitution_str: String,
     pub prevpipein: RawFd,
     pub eoc: Option<Eoc>,
 }
 
 impl ScriptElem for CompoundParen {
     fn exec(&mut self, conf: &mut ShellCore) {
-        if self.expansion {
-            self.set_command_expansion_pipe();
+        if self.substitution {
+            self.set_command_substitution_pipe();
         }
 
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    if self.expansion {
+                    if self.substitution {
                         dup_and_close(self.pipeout, 1);
                     }else{
                         set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
@@ -64,15 +64,6 @@ impl ScriptElem for CompoundParen {
         self.prevpipein = pprev;
     }
 
-    /*
-    fn set_parent_io(&mut self) {
-        if self.pipeout >= 0 {
-            close(self.pipeout).expect("Cannot close outfd");
-        }
-//        return self.pipein;
-    }
-    */
-
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
 
@@ -94,14 +85,14 @@ impl CompoundParen {
             text: "".to_string(),
             pipein: -1,
             pipeout: -1,
-            expansion: false,
-            expansion_str: "".to_string(),
+            substitution: false,
+            substitution_str: "".to_string(),
             prevpipein: -1,
             eoc: None,
         }
     }
 
-    fn set_command_expansion_pipe(&mut self){
+    fn set_command_substitution_pipe(&mut self){
         let p = pipe().expect("Pipe cannot open");
         self.pipein = p.0;
         self.pipeout = p.1;

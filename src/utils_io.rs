@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{close, dup2};
+use nix::unistd::{close, dup2, read};
 use std::os::unix::prelude::RawFd;
 use crate::elem_redirect::Redirect;
 use std::fs::OpenOptions;
@@ -75,4 +75,16 @@ pub fn set_parent_io(pout: RawFd) {
     if pout >= 0 {
         close(pout).expect("Cannot close outfd");
     };
+}
+
+pub fn read_pipe(pin: RawFd) -> String {
+    let mut ans = "".to_string();
+    let mut ch = [0;1000];
+    while let Ok(n) = read(pin, &mut ch) {
+        ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+        if n < 1000 {
+            break;
+        };
+    };
+    ans
 }
