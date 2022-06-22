@@ -31,12 +31,7 @@ impl ScriptElem for Pipeline {
                 p = pipe().expect("Pipe cannot open");
             };
             c.set_pipe(p.0, p.1, prevfd);
-
-            if i != len-1 {
-                c.exec(conf, false);
-            }else{
-                c.exec(conf, substitution);
-            }
+            c.exec(conf, substitution && i == len-1);
             set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();
         }
