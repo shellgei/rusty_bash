@@ -9,7 +9,6 @@ use std::os::unix::io::IntoRawFd;
 use nix::unistd::Pid;
 use nix::sys::wait::WaitPidFlag;
 use nix::sys::wait::{waitpid, WaitStatus};
-use std::process::id;
 
 pub fn dup_and_close(from: RawFd, to: RawFd){
     close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));

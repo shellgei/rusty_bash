@@ -14,7 +14,6 @@ use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
 use crate::utils_io::read_pipe;
 use nix::unistd::Pid;
-use std::process::id;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
