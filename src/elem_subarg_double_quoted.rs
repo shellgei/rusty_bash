@@ -9,7 +9,7 @@ use crate::scanner::*;
 use crate::abst_arg_elem::ArgElem;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_variable::SubArgVariable;
-use crate::elem_subarg_command_substitution::SubArgCommandExp;
+use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
 use crate::utils::combine;
 
 pub struct SubArgDoubleQuoted {
@@ -73,7 +73,7 @@ impl SubArgDoubleQuoted {
         loop {
             if let Some(a) = SubArgVariable::parse2(text) {
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = SubArgCommandExp::parse(text, conf) {
+            }else if let Some(a) = SubArgCommandSubstitution::parse(text, conf) {
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = SubArgVariable::parse(text) {
                 ans.subargs.push(Box::new(a));

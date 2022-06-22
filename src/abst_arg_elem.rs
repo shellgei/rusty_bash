@@ -3,7 +3,7 @@
 
 use crate::Feeder;
 use crate::ShellCore;
-use crate::elem_subarg_command_substitution::SubArgCommandExp;
+use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_double_quoted::SubArgDoubleQuoted;
 use crate::elem_subarg_single_quoted::SubArgSingleQuoted;
@@ -21,7 +21,7 @@ pub trait ArgElem {
 
 pub fn subarg(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = SubArgVariable::parse2(text)                {Some(Box::new(a))}
-    else if let Some(a) = SubArgCommandExp::parse(text, conf)    {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf)    {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)            {Some(Box::new(a))}
     else if let Some(a) = SubArgBraced::parse(text, conf)        {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse(text)           {Some(Box::new(a))}
@@ -32,7 +32,7 @@ pub fn subarg(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem
 
 pub fn subvalue(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = SubArgVariable::parse2(text)          {Some(Box::new(a))}
-    else if let Some(a) = SubArgCommandExp::parse(text, conf)    {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf)    {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)      {Some(Box::new(a))}
     else if let Some(a) = SubArgNonQuoted::parse2(text)    {Some(Box::new(a))}
     else if let Some(a) = SubArgSingleQuoted::parse(text) {Some(Box::new(a))}
@@ -45,7 +45,7 @@ pub fn subarg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dy
         return None;
     }
     if let Some(a) = SubArgVariable::parse2(text)         {Some(Box::new(a))}
-    else if let Some(a) = SubArgCommandExp::parse(text, conf)    {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf)    {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)     {Some(Box::new(a))}
     else if let Some(a) = SubArgBraced::parse(text, conf)       {Some(Box::new(a))}
     else if let Some(a) = SubArgSingleQuoted::parse(text) {Some(Box::new(a))}
