@@ -11,6 +11,7 @@ use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::utils_io::*;
+use nix::unistd::{close, pipe};
 
 /* ( script ) */
 pub struct CompoundParen {
@@ -28,25 +29,28 @@ pub struct CompoundParen {
 
 impl ScriptElem for CompoundParen {
     fn exec(&mut self, conf: &mut ShellCore, substitution: bool) {
-        if substitution {
-            if let Some(s) = &mut self.script {
-                s.exec(conf, substitution);
-                self.substitution_text = s.substitution_text
-                               .trim_end_matches('\n').to_string();
-                return;
-            }
-        }
+        let p = pipe().expect("Pipe cannot open");
 
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
                     if let Some(s) = &mut self.script {
-                        s.exec(conf, substitution);
+                        if substitution {
+                            close(p.0);
+                            dup_and_close(p.1, 1);
+                        }
+                        s.exec(conf, false);
+                        close(1);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
                     };
                 },
                 Ok(ForkResult::Parent { child } ) => {
+                    if substitution {
+                        close(p.1);
+                        self.substitution_text  = read_pipe(p.0, child)
+                            .trim_end_matches('\n').to_string();
+                    }
                     self.pid = Some(child);
                     return;
                 },
