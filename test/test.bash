@@ -198,6 +198,12 @@ res=$($com <<< 'echo {$(seq 3),$(seq 3)')
 [ "$res" = "{1 2 3,1 2 3" ]
 
 
+res=$($com <<< 'echo $( echo abc | (rev) | cat )')
+[ "$res" = "cba" ]
+
+#res=$($com <<< 'echo $( echo abc | (rev) )') #TODO
+#[ "$res" = "cba" ]
+
 # expansion of tilde
 
 res=$($com <<< 'echo ~')
@@ -518,7 +524,7 @@ EOF
 )
 [ "$res" = "acba" ]
 
-#res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; hoge )')
+#res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; hoge )') #TODO
 #[ "$res" = "cba" ]
 
 

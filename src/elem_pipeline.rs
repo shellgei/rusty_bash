@@ -32,7 +32,11 @@ impl ScriptElem for Pipeline {
             };
             c.set_pipe(p.0, p.1, prevfd);
 
-            c.exec(conf, substitution);
+            if i != len-1 {
+                c.exec(conf, false);
+            }else{
+                c.exec(conf, substitution);
+            }
             set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();
         }

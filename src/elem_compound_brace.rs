@@ -34,6 +34,7 @@ pub struct CompoundBrace {
     pub pipein: RawFd,
     pub pipeout: RawFd,
     /* The followings are set by a pipeline.  */
+    pub substitution_text: String,
     pub prevpipein: RawFd,
     pub eoc: Option<Eoc>,
 }
@@ -95,6 +96,7 @@ impl CompoundBrace {
             pid: None,
             redirects: vec!(),
             text: "".to_string(),
+            substitution_text: "".to_string(),
             pipein: -1,
             pipeout: -1,
             prevpipein: -1,
