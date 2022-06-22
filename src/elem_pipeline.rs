@@ -35,7 +35,7 @@ impl ScriptElem for Pipeline {
 
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
-                self.wait(p, conf);
+                self.wait(p, conf, -1);
             }
         }
     }

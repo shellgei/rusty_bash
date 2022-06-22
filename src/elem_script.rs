@@ -16,12 +16,15 @@ pub struct Script {
 
 impl ScriptElem for Script {
     fn exec(&mut self, conf: &mut ShellCore, substitution: bool) {
+        if substitution {
+            eprintln!("SUBS");
+        }
         self.elems.iter_mut()
             .for_each(|e| e.exec(conf, substitution));
 
         for c in &self.elems {
             if let Some(p) = c.get_pid() {
-                self.wait(p, conf);
+                self.wait(p, conf, -1);
             }
         }
     }
