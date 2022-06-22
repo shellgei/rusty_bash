@@ -16,7 +16,7 @@ mod elem_command;
 mod elem_redirect;
 mod elem_setvars;
 mod elem_subarg_braced;
-mod elem_subarg_command_expansion;
+mod elem_subarg_command_substitution;
 mod elem_subarg_double_quoted;
 mod elem_subarg_non_quoted;
 mod elem_subarg_single_quoted;

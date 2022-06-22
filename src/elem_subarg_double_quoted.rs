@@ -9,7 +9,7 @@ use crate::scanner::*;
 use crate::abst_arg_elem::ArgElem;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_variable::SubArgVariable;
-use crate::elem_subarg_command_expansion::SubArgCommandExp;
+use crate::elem_subarg_command_substitution::SubArgCommandExp;
 use crate::utils::combine;
 
 pub struct SubArgDoubleQuoted {

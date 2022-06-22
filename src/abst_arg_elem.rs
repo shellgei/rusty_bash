@@ -3,7 +3,7 @@
 
 use crate::Feeder;
 use crate::ShellCore;
-use crate::elem_subarg_command_expansion::SubArgCommandExp;
+use crate::elem_subarg_command_substitution::SubArgCommandExp;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_double_quoted::SubArgDoubleQuoted;
 use crate::elem_subarg_single_quoted::SubArgSingleQuoted;
