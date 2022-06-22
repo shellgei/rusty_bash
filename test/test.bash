@@ -329,11 +329,11 @@ EOF
 ) || true
 [ "$(echo $res | wc -l)" = "1" ]
 
-#res=$($com << 'EOF' 
-#echo $(ls /aaaa 2>&1)x
-#EOF
-#)
-#echo "$res" | grep x | grep ls
+res=$($com << 'EOF' 
+echo $(ls /aaaa 2>&1)x
+EOF
+)
+echo "$res" | grep x | grep ls
 
 res=$($com << 'EOF'
 ls aaaaaaaaaaaaaaaaaaa > /tmp/.rusty_bash 2>&1
@@ -422,7 +422,7 @@ cat /tmp/.rusty_bash | wc -l
 rm /tmp/.rusty_bash
 EOF
 )
-[ "$res" -gt 1 ]
+[ "$res" -ge 1 ]
 
 res=$($com <<< '{ echo } ; }')
 [ "$res" = "}" ]

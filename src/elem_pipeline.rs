@@ -32,8 +32,7 @@ impl ScriptElem for Pipeline {
             };
             c.set_pipe(p.0, p.1, prevfd);
 
-            let _ = c.exec(conf, substitution);
-            //c.set_parent_io();
+            c.exec(conf, substitution);
             set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();
         }
@@ -112,11 +111,12 @@ impl Pipeline {
 pub fn wait(child: Pid, conf: &mut ShellCore) {
     match waitpid(child, None).expect("Faild to wait child process.") {
 
-        WaitStatus::Exited(pid, status) => {
+        WaitStatus::Exited(_pid, status) => {
             conf.vars.insert("?".to_string(), status.to_string());
+            /*
             if status != 0 { 
                 eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
-            }
+            }*/
         }
         WaitStatus::Signaled(pid, signal, _) => {
             conf.vars.insert("?".to_string(), (128+signal as i32).to_string());

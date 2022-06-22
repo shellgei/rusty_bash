@@ -54,9 +54,6 @@ pub fn set_redirect(r: &Box<Redirect>){
 }
 
 pub fn set_child_io(pin: RawFd, pout: RawFd, previn: RawFd, redirects: &Vec<Box<Redirect>>) {
-    for r in redirects {
-        set_redirect(r);
-    };
 
     if pin != -1 {
         close(pin).expect("Cannot close in-pipe");
@@ -68,6 +65,10 @@ pub fn set_child_io(pin: RawFd, pout: RawFd, previn: RawFd, redirects: &Vec<Box<
     if previn != -1 {
         dup_and_close(previn, 0);
     }
+
+    for r in redirects {
+        set_redirect(r);
+    };
 
 }
 
