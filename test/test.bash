@@ -201,8 +201,8 @@ res=$($com <<< 'echo {$(seq 3),$(seq 3)')
 res=$($com <<< 'echo $( echo abc | (rev) )') 
 [ "$res" = "cba" ]
 
-#res=$($com <<< 'echo $( echo a ;  ( echo b ; echo c ) )') #TODO
-#[ "$res" = "a b c" ]
+res=$($com <<< 'echo $( echo a ;  ( echo b ; echo c ) )')
+[ "$res" = "a b c" ]
 
 # expansion of tilde
 
@@ -526,7 +526,6 @@ EOF
 
 res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; hoge )') 
 [ "$res" = "cba" ]
-
 
 trap "" EXIT
 echo TEST OK

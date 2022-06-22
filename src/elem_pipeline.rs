@@ -14,6 +14,7 @@ use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
 use crate::utils_io::read_pipe;
 use nix::unistd::Pid;
+use std::process::id;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
@@ -36,14 +37,26 @@ impl ScriptElem for Pipeline {
             prevfd = c.get_pipe_end();
         }
 
+        let pid = if let Some(c) = self.commands.last() {
+            if let Some(p) = c.get_pid() {
+                p
+            }else{
+                Pid::this()
+            }
+        }else{
+            Pid::this()
+        };
+
         if substitution {
-            self.substitution_text = read_pipe(prevfd);
+            self.substitution_text = read_pipe(prevfd, pid);
             close(prevfd).expect("Can't close a pipe end for command substitution");
         }
 
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
-                wait(p, conf);
+                if !substitution || pid != p {
+                    wait(p, conf);
+                }
             }
         }
     }

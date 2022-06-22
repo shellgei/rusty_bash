@@ -6,6 +6,10 @@ use std::os::unix::prelude::RawFd;
 use crate::elem_redirect::Redirect;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
+use nix::unistd::Pid;
+use nix::sys::wait::WaitPidFlag;
+use nix::sys::wait::{waitpid, WaitStatus};
+use std::process::id;
 
 pub fn dup_and_close(from: RawFd, to: RawFd){
     close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
@@ -78,14 +82,30 @@ pub fn set_parent_io(pout: RawFd) {
     };
 }
 
-pub fn read_pipe(pin: RawFd) -> String {
+pub fn read_pipe(pin: RawFd, pid: Pid) -> String {
     let mut ans = "".to_string();
     let mut ch = [0;1000];
-    while let Ok(n) = read(pin, &mut ch) {
-        ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-        if n < 1000 {
-            break;
-        };
-    };
-    ans
+
+    if pid == Pid::this() {
+        while let Ok(n) = read(pin, &mut ch) {
+            ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+            if n < 1000 {
+                return ans;
+            };
+        }
+    }
+
+    loop {
+        while let Ok(n) = read(pin, &mut ch) {
+            ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+            match waitpid(pid, Some(WaitPidFlag::WNOHANG)).expect("Faild to wait child process.") {
+                WaitStatus::StillAlive => {
+                    continue;
+                },
+                _ => {
+                    return ans;
+                },
+            };
+        }
+    }
 }
