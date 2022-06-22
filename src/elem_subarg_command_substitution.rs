@@ -4,13 +4,10 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use nix::unistd::{Pid};
-use nix::sys::wait::{waitpid, WaitStatus};
 
 use crate::abst_arg_elem::ArgElem;
 use crate::abst_script_elem::ScriptElem;
 use crate::elem_compound_paren::CompoundParen;
-use crate::utils_io::read_pipe;
 
 pub struct SubArgCommandExp {
     pub text: String,

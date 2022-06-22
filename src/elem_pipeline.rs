@@ -10,8 +10,10 @@ use crate::scanner::scanner_end_paren;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::utils_io::set_parent_io;
-use crate::abst_script_elem::wait;
+use nix::sys::wait::waitpid;
+use nix::sys::wait::WaitStatus;
 use crate::utils_io::read_pipe;
+use nix::unistd::Pid;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
@@ -43,7 +45,7 @@ impl ScriptElem for Pipeline {
 
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
-                wait(p, conf, -1);
+                wait(p, conf);
             }
         }
     }
@@ -105,4 +107,23 @@ impl Pipeline {
             None
         }
     }
+}
+
+pub fn wait(child: Pid, conf: &mut ShellCore) {
+    match waitpid(child, None).expect("Faild to wait child process.") {
+
+        WaitStatus::Exited(pid, status) => {
+            conf.vars.insert("?".to_string(), status.to_string());
+            if status != 0 { 
+                eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
+            }
+        }
+        WaitStatus::Signaled(pid, signal, _) => {
+            conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
+            eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
+        }
+        _ => {
+            eprintln!("Unknown error")
+        }
+    };
 }
