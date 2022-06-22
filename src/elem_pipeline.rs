@@ -5,16 +5,18 @@ use crate::{ShellCore, Feeder};
 use crate::abst_script_elem::ScriptElem;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
-use nix::unistd::pipe;
+use nix::unistd::{pipe, close};
 use crate::scanner::scanner_end_paren;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::utils_io::set_parent_io;
 use crate::abst_script_elem::wait;
+use crate::utils_io::read_pipe;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
     pub text: String,
+    pub substitution_text: String,
 }
 
 impl ScriptElem for Pipeline {
@@ -23,7 +25,7 @@ impl ScriptElem for Pipeline {
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
             let mut p = (-1, -1);
-            if i != len-1 {
+            if i != len-1 || substitution {
                 p = pipe().expect("Pipe cannot open");
             };
             c.set_pipe(p.0, p.1, prevfd);
@@ -34,12 +36,19 @@ impl ScriptElem for Pipeline {
             prevfd = c.get_pipe_end();
         }
 
+        if substitution {
+            self.substitution_text = read_pipe(prevfd);
+            close(prevfd).expect("Can't close a pipe end for command substitution");
+        }
+
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
                 wait(p, conf, -1);
             }
         }
     }
+
+    fn get_substitution_text(&mut self) -> String { self.substitution_text.clone() }
 }
 
 impl Pipeline {
@@ -47,6 +56,7 @@ impl Pipeline {
         Pipeline {
             commands: vec!(),
             text: "".to_string(),
+            substitution_text: "".to_string(),
         }
     }
 

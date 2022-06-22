@@ -21,15 +21,13 @@ pub struct SubArgCommandExp {
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
         self.com.exec(conf, true);
-        if let Some(pid) = self.com.get_pid() {
-            let ans = self.wait(pid, conf)
+
+        let ans = self.com.substitution_text
                 .split(" ")
                 .map(|x| x.to_string())
                 .collect::<Vec<String>>();
-            
-            return vec!(ans);
-        }
-        vec!()
+
+        vec!(ans)
     }
 
     fn text(&self) -> String {
@@ -58,44 +56,5 @@ impl SubArgCommandExp {
             text.rewind(backup);
             None
         }
-    }
-
-    fn wait(&self, child: Pid, conf: &mut ShellCore) -> String {
-        let mut ans = "".to_string();
-
-        let num = if let Some(s) = &self.com.script {
-            s.procnum
-        }else{
-            panic!("Shell internal error");
-        };
-
-        /* TODO: is it OK??? */
-        /* TODO: NO!! Each string should be read by the pipeline.  */
-        for _ in 0..num {
-            ans += &read_pipe(self.com.pipein);
-        }
-
-        match waitpid(child, None).expect("Faild to wait child process.") {
-            WaitStatus::Exited(pid, status) => {
-                conf.vars.insert("?".to_string(), status.to_string());
-                if status != 0 { 
-                    eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
-                }
-            }
-            WaitStatus::Signaled(pid, signal, _) => {
-                conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
-            }
-            _ => {
-                eprintln!("Unknown error")
-            }
-        };
-
-        if let Some(c) = ans.chars().last() {
-            if c == '\n' {
-                return ans[0..ans.len()-1].to_string();
-            }
-        }
-        ans
     }
 }

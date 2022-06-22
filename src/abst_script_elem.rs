@@ -17,6 +17,7 @@ pub trait ScriptElem {
     fn get_pipe_out(&mut self) -> RawFd { -1 }
     fn get_eoc_string(&mut self) -> String { "".to_string() }
 
+    fn get_substitution_text(&mut self) -> String { "".to_string() }
 }
 
 pub fn wait(child: Pid, conf: &mut ShellCore, inpipe: RawFd) -> String {
