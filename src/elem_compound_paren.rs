@@ -22,28 +22,28 @@ pub struct CompoundParen {
     pub pipein: RawFd,
     pub pipeout: RawFd,
     /* The followings are set by a pipeline or a com substitution. */
-    pub substitution: bool,
+    //pub substitution: bool,
     pub substitution_str: String,
     pub prevpipein: RawFd,
     pub eoc: Option<Eoc>,
 }
 
 impl ScriptElem for CompoundParen {
-    fn exec(&mut self, conf: &mut ShellCore) {
-        if self.substitution {
+    fn exec(&mut self, conf: &mut ShellCore, substitution: bool) {
+        if substitution {
             self.set_command_substitution_pipe();
         }
 
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    if self.substitution {
+                    if substitution {
                         dup_and_close(self.pipeout, 1);
                     }else{
                         set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
                     }
                     if let Some(s) = &mut self.script {
-                        s.exec(conf);
+                        s.exec(conf, substitution);
                         exit(conf.vars["?"].parse::<i32>().unwrap());
                     };
                 },
@@ -85,7 +85,7 @@ impl CompoundParen {
             text: "".to_string(),
             pipein: -1,
             pipeout: -1,
-            substitution: false,
+            //substitution: false,
             substitution_str: "".to_string(),
             prevpipein: -1,
             eoc: None,

@@ -17,7 +17,7 @@ pub struct Pipeline {
 }
 
 impl ScriptElem for Pipeline {
-    fn exec(&mut self, conf: &mut ShellCore) {
+    fn exec(&mut self, conf: &mut ShellCore, substitution: bool) {
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
@@ -27,7 +27,7 @@ impl ScriptElem for Pipeline {
             };
             c.set_pipe(p.0, p.1, prevfd);
 
-            let _ = c.exec(conf);
+            let _ = c.exec(conf, substitution);
             //c.set_parent_io();
             set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();

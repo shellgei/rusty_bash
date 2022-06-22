@@ -8,7 +8,7 @@ use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
 
 pub trait ScriptElem {
-    fn exec(&mut self, _conf: &mut ShellCore) { }
+    fn exec(&mut self, _conf: &mut ShellCore, _substitution: bool) { }
     fn set_pipe(&mut self, _pin: RawFd, _pout: RawFd, _pprev: RawFd) { }
     fn get_pid(&self) -> Option<Pid> { None }
     fn set_parent_io(&mut self) { }

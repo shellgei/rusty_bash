@@ -20,15 +20,13 @@ pub struct SubArgCommandExp {
 
 impl ArgElem for SubArgCommandExp {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        self.com.exec(conf);
+        self.com.exec(conf, true);
         if let Some(pid) = self.com.get_pid() {
             let ans = self.wait(pid, conf)
-                //.replace(" ", "\n")
                 .split(" ")
                 .map(|x| x.to_string())
                 .collect::<Vec<String>>();
             
-           // eprintln!("COMEXPANDRES {:?}", ans);
             return vec!(ans);
         }
         vec!()
@@ -48,8 +46,8 @@ impl SubArgCommandExp {
         let backup = text.clone();
         text.consume(1);
 
-        if let Some(mut e) = CompoundParen::parse(text, conf, true){
-            e.substitution = true;
+        if let Some(e) = CompoundParen::parse(text, conf, true){
+            //e.substitution = true;
             let ans = SubArgCommandExp {
                 text: "$".to_owned() + &e.text.clone(),
                 pos: DebugInfo::init(text),

@@ -38,7 +38,7 @@ pub struct Command {
 
 impl ScriptElem for Command {
 
-    fn exec(&mut self, conf: &mut ShellCore) {
+    fn exec(&mut self, conf: &mut ShellCore, substitution: bool) {
         let mut args = self.eval(conf);
         //eprintln!("COM_EXEC: {:?}", args[1]);
 
@@ -53,7 +53,7 @@ impl ScriptElem for Command {
             match fork() {
                 Ok(ForkResult::Child) => {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
-                    self.exec_external_command(&mut args, conf)
+                    self.exec_external_command(&mut args, conf, substitution)
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     self.pid = Some(child);
@@ -141,11 +141,11 @@ impl Command {
         blue_string(&ans)
     }
 
-    fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+    fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore, substitution: bool) {
         if let Some(text) = conf.get_function(&args[0]) {
             let mut feeder = Feeder::new_with(text);
             if let Some(mut f) = CompoundBrace::parse(&mut feeder, conf) {
-                f.exec(conf);
+                f.exec(conf, substitution);
             }else{
                 panic!("Shell internal error on function");
             }
@@ -154,9 +154,9 @@ impl Command {
         }
     }
 
-    fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+    fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore, substitution: bool) {
         if conf.functions.contains_key(&args[0]) {
-            self.exec_function(args, conf);
+            self.exec_function(args, conf, substitution);
             exit(0);
         }
 
