@@ -7,6 +7,7 @@ use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::elem_blankpart::BlankPart;
 use crate::ScriptElem;
+use crate::abst_script_elem::wait;
 
 pub struct Script {
     pub elems: Vec<Box<dyn ScriptElem>>,
@@ -16,15 +17,10 @@ pub struct Script {
 
 impl ScriptElem for Script {
     fn exec(&mut self, conf: &mut ShellCore, substitution: bool) {
-        if substitution {
-            eprintln!("SUBS");
-        }
-        self.elems.iter_mut()
-            .for_each(|e| e.exec(conf, substitution));
-
-        for c in &self.elems {
-            if let Some(p) = c.get_pid() {
-                self.wait(p, conf, -1);
+        for c in &mut self.elems {
+            c.exec(conf, substitution);
+            if let Some(pid) = c.get_pid() {
+                wait(pid, conf, -1);
             }
         }
     }

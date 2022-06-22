@@ -10,6 +10,7 @@ use crate::scanner::scanner_end_paren;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::utils_io::set_parent_io;
+use crate::abst_script_elem::wait;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
@@ -35,7 +36,7 @@ impl ScriptElem for Pipeline {
 
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
-                self.wait(p, conf, -1);
+                wait(p, conf, -1);
             }
         }
     }
