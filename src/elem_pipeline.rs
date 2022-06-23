@@ -5,15 +5,13 @@ use crate::{ShellCore, Feeder};
 use crate::abst_script_elem::ScriptElem;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
-use nix::unistd::{pipe, close};
+use nix::unistd::{pipe, Pid};
 use crate::scanner::scanner_end_paren;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::utils_io::set_parent_io;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
-use crate::utils_io::read_pipe;
-use nix::unistd::Pid;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
@@ -23,12 +21,11 @@ pub struct Pipeline {
 
 impl ScriptElem for Pipeline {
     fn exec(&mut self, conf: &mut ShellCore) {
-        let substitution = false;
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
             let mut p = (-1, -1);
-            if i != len-1 || substitution {
+            if i != len-1 {
                 p = pipe().expect("Pipe cannot open");
             };
             c.set_pipe(p.0, p.1, prevfd);
@@ -37,26 +34,9 @@ impl ScriptElem for Pipeline {
             prevfd = c.get_pipe_end();
         }
 
-        let pid = if let Some(c) = self.commands.last() {
-            if let Some(p) = c.get_pid() {
-                p
-            }else{
-                Pid::this()
-            }
-        }else{
-            Pid::this()
-        };
-
-        if substitution {
-            self.substitution_text = read_pipe(prevfd, pid);
-            close(prevfd).expect("Can't close a pipe end for command substitution");
-        }
-
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
-                if !substitution || pid != p {
-                    wait(p, conf);
-                }
+                wait(p, conf);
             }
         }
     }
