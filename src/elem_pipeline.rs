@@ -16,7 +16,6 @@ use nix::sys::wait::WaitStatus;
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
     pub text: String,
-    pub substitution_text: String,
 }
 
 impl ScriptElem for Pipeline {
@@ -40,8 +39,6 @@ impl ScriptElem for Pipeline {
             }
         }
     }
-
-    fn get_substitution_text(&mut self) -> String { self.substitution_text.clone() }
 }
 
 impl Pipeline {
@@ -49,7 +46,6 @@ impl Pipeline {
         Pipeline {
             commands: vec!(),
             text: "".to_string(),
-            substitution_text: "".to_string(),
         }
     }
 
