@@ -38,17 +38,17 @@ impl ScriptElem for CompoundParen {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
                     if let Some(s) = &mut self.script {
                         if self.substitution {
-                            close(p.0);
+                            close(p.0).expect("Can't close a pipe end");
                             dup_and_close(p.1, 1);
                         }
                         s.exec(conf);
-                        close(1);
+                        close(1).expect("Can't close a pipe end");
                         exit(conf.vars["?"].parse::<i32>().unwrap());
                     };
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     if self.substitution {
-                        close(p.1);
+                        close(p.1).expect("Can't close a pipe end");
                         self.substitution_text  = read_pipe(p.0, child)
                             .trim_end_matches('\n').to_string();
                     }
