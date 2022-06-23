@@ -8,6 +8,7 @@ use crate::ShellCore;
 use crate::utils::{eval_glob, search_commands, chars_to_string, expand_tilde};
 use crate::term::Writer;
 use crate::term::prompt_normal;
+use std::fs;
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     if strs.len() < 2 {
@@ -45,10 +46,16 @@ pub fn file_completion(writer: &mut Writer){
 
     let base_len = writer.last_arg().len();
     if ans.len() == 1 {
-        let a = if home.len() != 0 {
-            ans[0].replacen(&home, &org, 1)
+        let add = if let Ok(_d) = fs::read_dir(&ans[0]) {
+            "/"
         }else{
-            ans[0].clone()
+            ""
+        };
+
+        let a = if home.len() != 0 {
+            ans[0].replacen(&home, &org, 1) + add
+        }else{
+            ans[0].clone() + add
         };
         for ch in a[base_len..].chars() {
             writer.insert(ch);
