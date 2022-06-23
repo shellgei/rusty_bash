@@ -17,7 +17,8 @@ pub struct SubArgCommandSubstitution {
 
 impl ArgElem for SubArgCommandSubstitution {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        self.com.exec(conf, true);
+        self.com.substitution = true;
+        self.com.exec(conf);
 
         let ans = self.com.substitution_text
                 .split(" ")

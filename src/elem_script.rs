@@ -17,9 +17,9 @@ pub struct Script {
 }
 
 impl ScriptElem for Script {
-    fn exec(&mut self, conf: &mut ShellCore, substitution: bool) {
+    fn exec(&mut self, conf: &mut ShellCore) {
         self.elems.iter_mut()
-            .for_each(|p| p.exec(conf, substitution));
+            .for_each(|p| p.exec(conf));
 
         self.substitution_text = self.elems
             .iter_mut()

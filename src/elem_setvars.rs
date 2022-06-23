@@ -38,7 +38,7 @@ impl SetVariables {
 }
 
 impl ScriptElem for SetVariables {
-    fn exec(&mut self, conf: &mut ShellCore, _substitution: bool) {
+    fn exec(&mut self, conf: &mut ShellCore) {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));
         };

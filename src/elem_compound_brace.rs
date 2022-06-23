@@ -40,9 +40,9 @@ pub struct CompoundBrace {
 }
 
 impl ScriptElem for CompoundBrace {
-    fn exec(&mut self, conf: &mut ShellCore, substitution: bool) {
+    fn exec(&mut self, conf: &mut ShellCore) {
         if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 && self.redirects.len() == 0 {
-             self.script.exec(conf, substitution);
+             self.script.exec(conf);
              return;
         };
 
@@ -50,7 +50,7 @@ impl ScriptElem for CompoundBrace {
             match fork() {
                 Ok(ForkResult::Child) => {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
-                    self.script.exec(conf, substitution);
+                    self.script.exec(conf);
                     exit(conf.vars["?"].parse::<i32>().unwrap());
                 },
                 Ok(ForkResult::Parent { child } ) => {

@@ -80,7 +80,7 @@ fn read_bashrc(core: &mut ShellCore){
                     if &line[0..5] == "alias" {
                         let mut f = Feeder::new_with(line);
                         if let Some(mut c) = Command::parse(&mut f, core) {
-                            c.exec(core, false);
+                            c.exec(core);
                         }
                     }
                 },
@@ -126,7 +126,7 @@ fn main() {
             break;
         }
         while let Some(mut e) = Script::parse(&mut feeder, &mut core, false){
-            e.exec(&mut core, false);
+            e.exec(&mut core);
         }
     }
 
