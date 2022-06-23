@@ -85,6 +85,7 @@ pub fn read_pipe(pin: RawFd, pid: Pid) -> String {
     let mut ans = "".to_string();
     let mut ch = [0;1000];
 
+    /*
     if pid == Pid::this() {
         while let Ok(n) = read(pin, &mut ch) {
             ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
@@ -92,7 +93,7 @@ pub fn read_pipe(pin: RawFd, pid: Pid) -> String {
                 return ans;
             };
         }
-    }
+    }*/
 
     loop {
         while let Ok(n) = read(pin, &mut ch) {
