@@ -329,7 +329,7 @@ pub fn prompt_normal(core: &mut ShellCore) -> u16 {
     print!("$ ");
     io::stdout().flush().unwrap();
 
-    (user.len() + host.len() + path.len() + 2 + 2) as u16
+    (chars_to_width(&(user + &host + &path).chars().collect()) + 2 + 2) as u16
 }
 
 pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
