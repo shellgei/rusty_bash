@@ -7,25 +7,17 @@ use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::elem_blankpart::BlankPart;
 use crate::ScriptElem;
-//use crate::abst_script_elem::wait;
 
 pub struct Script {
     pub elems: Vec<Box<dyn ScriptElem>>,
     pub text: String,
     pub procnum: usize,
-    pub substitution_text: String,
 }
 
 impl ScriptElem for Script {
     fn exec(&mut self, conf: &mut ShellCore) {
         self.elems.iter_mut()
             .for_each(|p| p.exec(conf));
-
-        self.substitution_text = self.elems
-            .iter_mut()
-            .map(|p| p.get_substitution_text())
-            .collect::<Vec<String>>()
-            .join("");
     }
 }
 
@@ -34,7 +26,6 @@ impl Script {
         Script {
             elems: vec!(),
             text: "".to_string(),
-            substitution_text: "".to_string(),
             procnum: 0,
         }
     }
