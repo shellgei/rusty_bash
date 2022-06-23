@@ -527,5 +527,8 @@ EOF
 res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; hoge )') 
 [ "$res" = "cba" ]
 
+res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; ( hoge ; hoge ) )') 
+[ "$res" = "cba cba" ]
+
 trap "" EXIT
 echo TEST OK
