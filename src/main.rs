@@ -123,7 +123,11 @@ fn main() {
     let mut feeder = Feeder::new();
     loop {
         if !feeder.feed_line(&mut core) {
-            break;
+            if core.flags.i {
+                continue;
+            }else{
+                break;
+            }
         }
         while let Some(mut e) = Script::parse(&mut feeder, &mut core, false){
             e.exec(&mut core);

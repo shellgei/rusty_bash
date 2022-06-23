@@ -332,7 +332,7 @@ pub fn prompt_normal(core: &mut ShellCore) -> u16 {
     (user.len() + host.len() + path.len() + 2 + 2) as u16
 }
 
-pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> String{
+pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
     let mut writer = Writer::new(core.history.len(), left);
     let mut tab_num = 0;
 
@@ -343,7 +343,7 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> String{
             event::Key::Ctrl('c') => {
                 writer.chars.clear();
                 writer.end("^C\r\n");
-                break;
+                return None;
             },
             event::Key::Ctrl('e') => writer.move_cursor_to_tail(),
             event::Key::Ctrl('f') => writer.move_cursor(1),
@@ -372,5 +372,5 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> String{
     if ans.len() != 0 {
         core.history.push(ans.clone());
     };
-    ans + "\n"
+    Some(ans + "\n")
 }

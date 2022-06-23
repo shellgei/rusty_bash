@@ -111,6 +111,7 @@ impl CompoundBrace {
 
         let mut backup = text.clone();
         let mut ans;
+        let mut input_success;
 
         loop {
             text.consume(1);
@@ -124,14 +125,22 @@ impl CompoundBrace {
                 let text = "{".to_owned() + &s.text.clone() + "}";
                 ans = CompoundBrace::new(s);
                 ans.text = text;
-                //ans.script = Some(s);
             }else{
-                backup = text.rewind_feed_backup(&backup, conf);
+                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
+                if ! input_success {
+                    eprintln!("ESC");
+                    text.consume(text.len());
+                    return None;
+                }
                 continue;
             }
     
             if text.len() == 0 || text.nth(0) != '}' {
-                backup = text.rewind_feed_backup(&backup, conf);
+                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
+                if ! input_success {
+                    text.consume(text.len());
+                    return None;
+                }
             }else{
                 break;
             }

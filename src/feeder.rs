@@ -87,24 +87,37 @@ impl Feeder {
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
-        let line = if core.flags.i {
+        let ret = if core.flags.i {
             let len_prompt = term::prompt_additional();
-            term::read_line_terminal(len_prompt, core)
+            if let Some(s) = term::read_line_terminal(len_prompt, core){
+                Some(s)
+            }else {
+                return false;
+            }
         }else{
             if let Some(s) = read_line_stdin() {
-                s
+                Some(s)
             }else{
                 return false;
             }
         };
-        self.add_line(line);
-        true
+
+        if let Some(line) = ret {
+            self.add_line(line);
+            true
+        }else{
+            false
+        }
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
         let line = if core.flags.i {
             let len_prompt = term::prompt_normal(core);
-            term::read_line_terminal(len_prompt, core)
+            if let Some(ln) = term::read_line_terminal(len_prompt, core) {
+                ln
+            }else{
+                return false;
+            }
         }else{
             if let Some(s) = read_line_stdin() {
                 s
@@ -121,7 +134,8 @@ impl Feeder {
         while self.from_to_as_chars(self.len_as_chars()-2, self.len_as_chars()) == "\\\n" {
             self.remaining = self.from_to_as_chars(0, self.len_as_chars()-2);
             if !self.feed_additional_line(core){
-                return false;
+                self.remaining = "".to_string();
+                return true;
             }
         }
         true
@@ -139,10 +153,10 @@ impl Feeder {
         };
     }
 
-    pub fn rewind_feed_backup(&mut self, backup: &Feeder, conf: &mut ShellCore) -> Feeder {
+    pub fn rewind_feed_backup(&mut self, backup: &Feeder, conf: &mut ShellCore) -> (Feeder, bool) {
         self.rewind(backup.clone());
-        self.feed_additional_line(conf);
-        self.clone()
+        let res = self.feed_additional_line(conf);
+        (self.clone(), res)
     }
 
     pub fn match_at(&self, pos: usize, chars: &str) -> bool{

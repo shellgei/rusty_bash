@@ -80,7 +80,9 @@ impl Pipeline {
 
             if eocs == "|" && text.len() == 1 && text.nth(0) == '\n' {
                 text.consume(1);
-                text.feed_additional_line(conf);
+                if ! text.feed_additional_line(conf) {
+                    return None;
+                }
             }
 
             if scanner_end_paren(text, 0) == 1 {
