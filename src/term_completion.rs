@@ -115,18 +115,19 @@ pub fn command_completion(writer: &mut Writer){
 
     let base_len = writer.last_arg().len();
     if keys.len() == 1 {
-        for ch in keys[0][base_len..].chars() {
-            writer.insert(ch);
-        }
+        writer.insert_multi(keys[0][base_len..].chars());
         return;
     }else if keys.len() > 1 {
+        let mut ans = "".to_string();
         for (i, ch) in keys[0][base_len..].chars().enumerate() {
             if compare_nth_char(i+base_len, &keys) {
-                writer.insert(ch);
+                ans += &ch.to_string();
+                //writer.insert(ch);
             }else{
                 break;
             }
         }
+        writer.insert_multi(ans.chars());
         return;
     };
 }
