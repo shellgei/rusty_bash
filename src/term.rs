@@ -295,6 +295,7 @@ impl Writer {
             self.move_char_ptr(1);
             write!(self.stdout, "{}", c);
             self.stdout.flush().unwrap();
+            self.calculate_fold_points();
             return;
         }
 
