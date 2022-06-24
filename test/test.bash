@@ -53,7 +53,7 @@ EOF
 res=$($com <<< 'echo hoge"hoge";')
 [ "$res" = "hogehoge" ]
 
-res=$($com <<< 'echo )')
+res=$($com <<< 'echo )' || true)
 [ "$res" = "" ]
 
 # brace expansion
