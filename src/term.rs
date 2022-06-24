@@ -290,6 +290,14 @@ impl Writer {
     }
 
     pub fn insert(&mut self, c: char) {
+        if self.ch_ptr == self.chars.len() {
+            self.chars.insert(self.ch_ptr, c);
+            self.move_char_ptr(1);
+            write!(self.stdout, "{}", c);
+            self.stdout.flush().unwrap();
+            return;
+        }
+
         let (_, old_org_y) = self.ch_ptr_to_multiline_origin();
 
         self.chars.insert(self.ch_ptr, c);
