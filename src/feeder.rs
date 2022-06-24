@@ -75,7 +75,7 @@ impl Feeder {
     }
 
     pub fn consume(&mut self, cutpos: usize) -> String {
-        let cut = self.remaining[0..cutpos].to_string();
+        let cut = self.remaining[0..cutpos].to_string(); // TODO: this implementation will cause an error.
         self.pos_in_line += cutpos as u32;
         self.remaining = self.remaining[cutpos..].to_string();
 

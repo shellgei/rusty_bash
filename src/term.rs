@@ -67,7 +67,11 @@ impl Writer {
     }
 
     pub fn cursor_pos(&mut self) -> (u16, u16) {
-        self.stdout.cursor_pos().unwrap()
+        if let Ok(x) = self.stdout.cursor_pos(){
+            x
+        }else{
+            (0, 0)
+        }
     }
 
     pub fn ch_ptr_to_multiline_origin(&mut self) -> (usize, u16) { 
