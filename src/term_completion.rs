@@ -46,20 +46,19 @@ pub fn file_completion(writer: &mut Writer){
 
     let base_len = writer.last_arg().len();
     if ans.len() == 1 {
-        let add = if let Ok(_d) = fs::read_dir(&ans[0]) {
+        let add = if let Ok(_) = fs::read_dir(&ans[0]) {
             "/"
         }else{
             ""
         };
 
         let a = if home.len() != 0 {
-            ans[0].replacen(&home, &org, 1) + add
+            ans[0].replacen(&home, &org, 1)
         }else{
-            ans[0].clone() + add
-        };
-        for ch in a[base_len..].chars() {
-            writer.insert(ch);
-        }
+            ans[0].clone()
+        } + add;
+
+        writer.insert_multi(a[base_len..].chars());
     }else{
         let a: Vec<String> = if home.len() != 0 {
             ans.iter().map(|x| x.replacen(&home, &org, 1)).collect()
@@ -67,13 +66,16 @@ pub fn file_completion(writer: &mut Writer){
             ans
         };
 
+        let mut chars = "".to_string();
         for (i, ch) in a[0][base_len..].chars().enumerate() {
             if compare_nth_char(i+base_len, &a) {
-                writer.insert(ch);
+                chars += &ch.to_string();
+                //writer.insert(ch);
             }else{
                 break;
             }
         }
+        writer.insert_multi(chars.chars());
     }
 }
 

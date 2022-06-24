@@ -5,6 +5,7 @@ use std::io;
 use std::env;
 use std::io::{Write, stdout, stdin, Stdout, BufReader};
 use std::fs::File;
+use std::str::Chars;
 
 use termion::{event,terminal_size};
 use termion::cursor::DetectCursorPos;
@@ -294,7 +295,16 @@ impl Writer {
         self.chars.insert(self.ch_ptr, c);
         self.move_char_ptr(1);
         self.calculate_fold_points();
+        self.rewrite_multi_line(old_org_y);
+    }
 
+    pub fn insert_multi(&mut self, s: Chars) {
+        for ch in s {
+            self.chars.push(ch);
+            self.move_char_ptr(1);
+        }
+        self.calculate_fold_points();
+        let (_, old_org_y) = self.ch_ptr_to_multiline_origin();
         self.rewrite_multi_line(old_org_y);
     }
 
