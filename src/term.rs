@@ -291,24 +291,28 @@ impl Writer {
         self.chars.remove(self.ch_ptr);
 
         self.rewrite_multi_line(old_org_y);
+        self.calculate_fold_points();
     }
 
     pub fn insert(&mut self, c: char) {
         if self.ch_ptr == self.chars.len() {
             self.chars.insert(self.ch_ptr, c);
             self.move_char_ptr(1);
-            write!(self.stdout, "{}", c);
+            let _ = write!(self.stdout, "{}", c);
             self.stdout.flush().unwrap();
             self.calculate_fold_points();
             return;
+        }else{
+            let remain = self.chars[self.ch_ptr..].to_vec();
+            self.chars = self.chars[0..self.ch_ptr].to_vec();
+
+            self.insert(c);
+            for ch in &remain {
+                self.insert(*ch);
+            }
+            self.move_cursor(-(remain.len() as i32));
+            return;
         }
-
-        let (_, old_org_y) = self.ch_ptr_to_multiline_origin();
-
-        self.chars.insert(self.ch_ptr, c);
-        self.move_char_ptr(1);
-        self.calculate_fold_points();
-        self.rewrite_multi_line(old_org_y);
     }
 
     pub fn insert_multi(&mut self, s: Chars) {
