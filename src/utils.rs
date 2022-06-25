@@ -22,12 +22,12 @@ fn is_glob(s: &String) -> bool {
 }
 
 pub fn eval_glob(globstr: &String) -> Vec<String> {
-    if ! is_glob(globstr) {
+    if ! is_glob(&globstr) {
         return vec!();
     }
 
     let mut ans = vec!();
-    let g = globstr.to_string();
+    let g = globstr.replace("\\ ", " ").to_string();
 
     //TODO: too ugly
     if let Ok(path) = glob(&g) {
