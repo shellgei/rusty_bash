@@ -306,7 +306,10 @@ impl Writer {
             let remain = self.chars[self.ch_ptr..].to_vec();
             self.chars = self.chars[0..self.ch_ptr].to_vec();
 
-            self.insert(c);
+            self.chars.insert(self.ch_ptr, c);
+            self.move_char_ptr(1);
+            let _ = write!(self.stdout, "{}", c);
+
             self.chars.append(&mut remain.clone());
             self.move_char_ptr(remain.len() as i32);
             let _ = write!(self.stdout, "{}", chars_to_string(&remain));
