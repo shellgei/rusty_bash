@@ -41,14 +41,14 @@ pub fn file_completion(writer: &mut Writer){
     let s: String = writer.last_arg().replace("\\", "") + "*";
     let (s, home, org) = expand_tilde(&s);
 
-    let mut ans = eval_glob(&s.replace("\\", ""));
+    let ans = eval_glob(&s.replace("\\", ""));
     if ans.len() == 0 {
         return;
     };
     //eprintln!("\r\nANS: {:?}", ans);
     //ans = ans.iter().map(|a| a.replace(" ", "\\ ")).collect();
 
-    let mut base_len = writer.last_arg().len();
+    let base_len = writer.last_arg().len();
     let in_cur_dir = s.chars().nth(0) == Some('.') && s.chars().nth(1) == Some('/');
 
     if ans.len() == 1 {
@@ -70,7 +70,7 @@ pub fn file_completion(writer: &mut Writer){
 
         writer.insert_multi(a[base_len..].chars());
     }else{
-        let mut a: Vec<String> = if home.len() != 0 {
+        let a: Vec<String> = if home.len() != 0 {
             ans.iter().map(|x| x.replacen(&home, &org, 1)).collect()
         }else{
             ans
@@ -78,20 +78,15 @@ pub fn file_completion(writer: &mut Writer){
         //a = a.iter().map(|a| a.replace(" ", "\\ ")).collect();
 
         let mut chars = "".to_string();
+
+        let mut base_len = writer.last_arg().replace("\\", "").len();
         if in_cur_dir {
             base_len -= 2;
         }
 
-        let mut base_len = writer.last_arg().replace("\\", "").len();
-//        let mut base_len2 = writer.last_arg().len();
-
-        //eprintln!("\r\nA1: {}", &a[0][base_len..]);
-        //eprintln!("\r\nA2: {}", &a[1][base_len..]);
-
         let ans2: Vec<String> = a.iter().map(|s| s[base_len..].to_string()).collect();
 
         for (i, ch) in ans2[0].chars().enumerate() {
-            //eprintln!("\r\nCH1: {}", ch);
             if compare_nth_char(i, &ans2) {
                 if ch == ' ' {
                     chars += "\\";

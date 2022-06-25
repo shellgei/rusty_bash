@@ -108,7 +108,8 @@ fn show_version() {
     eprintln!("© 2022 Ryuichi Ueda");
     eprintln!("License: BSD 3-Clause\n");
 
-    eprintln!("This is open source software. You can redistirbute and use in source\nand binary forms with or without modification under the license.");
+    eprintln!("This is open source software. You can redistirbute\n
+              and use in source and binary forms with or without modification under the license.");
     eprintln!("There is no warranty, to the extent permitted by law.");
     exit(0);
 }
