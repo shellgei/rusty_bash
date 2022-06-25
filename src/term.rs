@@ -131,7 +131,7 @@ impl Writer {
         self.calculate_fold_points();
     }
 
-    fn move_char_ptr(&mut self, inc: i32){
+    pub fn move_char_ptr(&mut self, inc: i32){
        let pos = self.ch_ptr as i32 + inc; 
 
        self.ch_ptr = if pos < 0 {

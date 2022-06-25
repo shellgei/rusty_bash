@@ -44,7 +44,9 @@ pub fn file_completion(writer: &mut Writer){
         return;
     };
 
-    let base_len = writer.last_arg().len();
+    let mut base_len = writer.last_arg().len();
+    let in_cur_dir = s.len() >= 2 && &s[0..2] == "./";
+
     if ans.len() == 1 {
         let add = if let Ok(_) = fs::read_dir(&ans[0]) {
             "/"
@@ -52,11 +54,15 @@ pub fn file_completion(writer: &mut Writer){
             ""
         };
 
-        let a = if home.len() != 0 {
+        let mut a = if home.len() != 0 {
             ans[0].replacen(&home, &org, 1)
         }else{
             ans[0].clone()
         } + add;
+
+        if in_cur_dir {
+            a = "./".to_owned() + &a;
+        }
 
         writer.insert_multi(a[base_len..].chars());
     }else{
@@ -67,14 +73,19 @@ pub fn file_completion(writer: &mut Writer){
         };
 
         let mut chars = "".to_string();
+        if in_cur_dir {
+            base_len -= 2;
+        }
+
         for (i, ch) in a[0][base_len..].chars().enumerate() {
             if compare_nth_char(i+base_len, &a) {
                 chars += &ch.to_string();
-                //writer.insert(ch);
             }else{
                 break;
             }
         }
+
+
         writer.insert_multi(chars.chars());
     }
 }
