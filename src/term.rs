@@ -191,6 +191,8 @@ impl Writer {
         for ch in self.chars.clone() {
             if escaped{
                 escaped = false;
+                counter += 1;
+                continue;
             }else if ch == '\\' {
                 escaped = true;
             }
@@ -226,7 +228,8 @@ impl Writer {
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
         if chars_to_string(&self.chars) == self.last_arg() && 
-            self.chars.len() >= 2 && self.chars[0] != '.' && self.chars[0] != '/' {
+            self.last_arg().chars().nth(0) != Some('.') &&
+            self.last_arg().chars().nth(0) != Some('/') {
             if tab_num == 1 {
                 command_completion(self, core);
             }else if tab_num == 2 {
