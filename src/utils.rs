@@ -6,7 +6,6 @@ use crate::env;
 use std::io::{BufRead, BufReader};
 use std::fs::OpenOptions;
 use crate::ShellCore;
-use std::cmp::max;
 
 pub fn chars_to_string(chars: &Vec<char>) -> String {
     chars.iter().collect::<String>()
@@ -251,12 +250,11 @@ pub fn align_elems_on_term(list: &Vec<String>, width: u32) -> String {
 
     let mut ans = "".to_string();
     for row in 0..line_num {
-        let mut max_len = 0;
         for col in 0..colnum {
             let pos = col*line_num + row;
             if pos < list.len() {
                 ans += &(list[pos].clone());
-                for c in 0..(colwids[col] - list[pos].len() as u32) {
+                for _ in 0..(colwids[col] - list[pos].len() as u32) {
                     ans += " ";
                 }
             }

@@ -95,7 +95,7 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let s: String = writer.last_arg() + "*";
-    let (s, home, org) = expand_tilde(&s);
+    let (s, _, _) = expand_tilde(&s);
 
     let ans = eval_glob(&s);
     if ans.len() == 0 {
