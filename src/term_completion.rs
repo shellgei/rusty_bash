@@ -10,6 +10,7 @@ use crate::term::Writer;
 use crate::term::prompt_normal;
 use std::fs;
 use crate::utils::search_aliases;
+use crate::utils::align_elems_on_term;
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     if strs.len() < 2 {
@@ -102,10 +103,8 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     };
 
     write!(writer.stdout, "\r\n").unwrap();
-    for f in ans {
-        write!(writer.stdout, "{}\t", f.replacen(&home, &org, 1)).unwrap();
-    }
-    write!(writer.stdout, "\r\n").unwrap();
+    let ans2 = align_elems_on_term(&ans, writer.terminal_size().0);
+    write!(writer.stdout, "{}", ans2).unwrap();
     writer.stdout.flush().unwrap();
     prompt_normal(core);
     let (_, y) = writer.cursor_pos();
@@ -162,10 +161,15 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let keys: Vec<String> = coms.into_iter().collect();
 
     write!(writer.stdout, "\r\n").unwrap();
+    let ans2 = align_elems_on_term(&keys, writer.terminal_size().0);
+    write!(writer.stdout, "{}", ans2).unwrap();
+    /*
+    write!(writer.stdout, "\r\n").unwrap();
     for f in keys {
         write!(writer.stdout, "{}        ", f).unwrap();
     }
     write!(writer.stdout, "\r\n").unwrap();
+    */
     writer.stdout.flush().unwrap();
     prompt_normal(core);
     let (_, y) = writer.cursor_pos();

@@ -6,6 +6,7 @@ use crate::env;
 use std::io::{BufRead, BufReader};
 use std::fs::OpenOptions;
 use crate::ShellCore;
+use std::cmp::max;
 
 pub fn chars_to_string(chars: &Vec<char>) -> String {
     chars.iter().collect::<String>()
@@ -201,4 +202,66 @@ fn passwd_to_home(line: String) -> Option<String> {
         return Some(s.to_string());
     }
     None
+}
+
+fn get_column_num(list: &Vec<String>, width: u32) -> (usize, Vec<u32>) {
+    let lens: Vec<usize> = list.iter().map(|s| s.len()).collect();
+
+    let mut ans = 1;
+    let mut colwids_ans = vec!();
+    for colnum in 1..100 {
+        let mut line_num = list.len() / colnum;
+        if list.len() % colnum != 0 {
+            line_num += 1;
+        };
+
+        let mut n = 0;
+        let mut wid = 0;
+        let mut colwids = vec!();
+        while n < list.len() {
+            let colwid = if n+line_num < lens.len() {
+                *(lens[n..n+line_num].iter().max().unwrap()) as u32
+            }else{
+                *(lens[n..].iter().max().unwrap()) as u32
+            } + 2;
+
+            colwids.push(colwid);
+            wid += colwid;
+            n += line_num;
+        }
+
+        if wid < width {
+            ans = colnum;
+            colwids_ans = colwids;
+        }else{
+            break;
+        }
+    }
+
+    (ans, colwids_ans)
+}
+
+pub fn align_elems_on_term(list: &Vec<String>, width: u32) -> String {
+    let (colnum, colwids) = get_column_num(&list, width);
+
+    let mut line_num = list.len() / colnum;
+    if list.len() % colnum != 0 {
+        line_num += 1;
+    };
+
+    let mut ans = "".to_string();
+    for row in 0..line_num {
+        let mut max_len = 0;
+        for col in 0..colnum {
+            let pos = col*line_num + row;
+            if pos < list.len() {
+                ans += &(list[pos].clone());
+                for c in 0..(colwids[col] - list[pos].len() as u32) {
+                    ans += " ";
+                }
+            }
+        }
+        ans += "\r\n";
+    }
+    ans
 }
