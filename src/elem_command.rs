@@ -145,6 +145,7 @@ impl Command {
         if let Some(text) = conf.get_function(&args[0]) {
             let mut feeder = Feeder::new_with(text);
             if let Some(mut f) = CompoundBrace::parse(&mut feeder, conf) {
+                f.script.args_for_function = args.to_vec();
                 f.exec(conf);
             }else{
                 panic!("Shell internal error on function");

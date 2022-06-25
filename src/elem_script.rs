@@ -12,6 +12,7 @@ pub struct Script {
     pub elems: Vec<Box<dyn ScriptElem>>,
     pub text: String,
     pub procnum: usize,
+    pub args_for_function: Vec<String>,
 }
 
 impl ScriptElem for Script {
@@ -27,6 +28,7 @@ impl Script {
             elems: vec!(),
             text: "".to_string(),
             procnum: 0,
+            args_for_function: vec!(),
         }
     }
 

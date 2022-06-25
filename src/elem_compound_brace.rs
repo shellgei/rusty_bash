@@ -41,7 +41,8 @@ pub struct CompoundBrace {
 
 impl ScriptElem for CompoundBrace {
     fn exec(&mut self, conf: &mut ShellCore) {
-        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 && self.redirects.len() == 0 {
+        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 
+            && self.redirects.len() == 0 /* && self.script.args_for_function.len() == 0 */ {
              self.script.exec(conf);
              return;
         };
