@@ -47,7 +47,7 @@ pub fn file_completion(writer: &mut Writer){
     };
 
     let mut base_len = writer.last_arg().len();
-    let in_cur_dir = s.len() >= 2 && &s[0..2] == "./";
+    let in_cur_dir = s.chars().nth(0) == Some('.') && s.chars().nth(1) == Some('/');
 
     if ans.len() == 1 {
         let add = if let Ok(_) = fs::read_dir(&ans[0]) {
@@ -57,9 +57,9 @@ pub fn file_completion(writer: &mut Writer){
         };
 
         let mut a = if home.len() != 0 {
-            ans[0].replacen(&home, &org, 1)
+            ans[0].replacen(&home, &org, 1).replace(" ", "\\ ")
         }else{
-            ans[0].clone()
+            ans[0].clone().replace(" ", "\\ ")
         } + add;
 
         if in_cur_dir {

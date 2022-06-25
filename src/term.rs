@@ -226,7 +226,7 @@ impl Writer {
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
         if chars_to_string(&self.chars) == self.last_arg() && 
-           self.chars[0] != '.' && self.chars[0] != '/' {
+            self.chars.len() >= 2 && self.chars[0] != '.' && self.chars[0] != '/' {
             if tab_num == 1 {
                 command_completion(self, core);
             }else if tab_num == 2 {
