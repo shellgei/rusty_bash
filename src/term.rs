@@ -307,9 +307,11 @@ impl Writer {
             self.chars = self.chars[0..self.ch_ptr].to_vec();
 
             self.insert(c);
-            for ch in &remain {
-                self.insert(*ch);
-            }
+            self.chars.append(&mut remain.clone());
+            self.move_char_ptr(remain.len() as i32);
+            let _ = write!(self.stdout, "{}", chars_to_string(&remain));
+            self.stdout.flush().unwrap();
+            self.calculate_fold_points();
             self.move_cursor(-(remain.len() as i32));
             return;
         }
