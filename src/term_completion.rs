@@ -5,10 +5,11 @@ use std::io::Write;
 use std::collections::HashSet;
 
 use crate::ShellCore;
-use crate::utils::{eval_glob, search_commands, chars_to_string, expand_tilde};
+use crate::utils::{eval_glob, search_commands, expand_tilde};
 use crate::term::Writer;
 use crate::term::prompt_normal;
 use std::fs;
+use crate::utils::search_aliases;
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     if strs.len() < 2 {
@@ -112,8 +113,11 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     return;
 }
 
-pub fn command_completion(writer: &mut Writer){
-    let paths = search_commands(&(writer.chars.iter().collect::<String>() + "*"));
+pub fn command_completion(writer: &mut Writer, core: &ShellCore){
+    let s = writer.chars.iter().collect::<String>();
+
+    let mut paths = search_commands(&(s.clone() + &"*"));
+    paths.append(&mut search_aliases(&s, core));
 
     let mut coms = HashSet::<String>::new();
     for p in paths {
@@ -133,7 +137,6 @@ pub fn command_completion(writer: &mut Writer){
         for (i, ch) in keys[0][base_len..].chars().enumerate() {
             if compare_nth_char(i+base_len, &keys) {
                 ans += &ch.to_string();
-                //writer.insert(ch);
             }else{
                 break;
             }
@@ -144,7 +147,10 @@ pub fn command_completion(writer: &mut Writer){
 }
 
 pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
-    let paths = search_commands(&(chars_to_string(&writer.chars) + "*"));
+    let s = writer.chars.iter().collect::<String>();
+
+    let mut paths = search_commands(&(s.clone() + &"*"));
+    paths.append(&mut search_aliases(&s, core));
 
     let mut coms = HashSet::<String>::new();
     for p in paths {
