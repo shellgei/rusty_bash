@@ -530,5 +530,14 @@ res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; hoge )')
 res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; ( hoge ; hoge ) )') 
 [ "$res" = "cba cba" ]
 
+### POSITIONAL PARAMETERS ###
+
+cat << 'EOF' > /tmp/.rusty_bash
+echo $1 $2 $3
+EOF
+
+res=$(cat /tmp/.rusty_bash | $com a b c)
+[ "$res" = "a b c" ]
+
 trap "" EXIT
 echo TEST OK

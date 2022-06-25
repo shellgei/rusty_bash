@@ -30,6 +30,7 @@ pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
     pub functions: HashMap<String, String>,
     pub vars: HashMap<String, String>,
+    pub args: Vec<String>,
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: Flags,
@@ -41,6 +42,7 @@ impl ShellCore {
             internal_commands: HashMap::new(),
             functions: HashMap::new(),
             vars: HashMap::new(),
+            args: vec!(),
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: Flags::new(),
@@ -57,6 +59,12 @@ impl ShellCore {
     }
 
     pub fn get_var(&self, key: &String) -> String {
+        if let Ok(n) = key.parse::<usize>() {
+            if self.args.len() > n {
+                return self.args[n].clone();
+            }
+        }
+
         if let Some(s) = self.vars.get(&key as &str){
             return s.to_string();
         };

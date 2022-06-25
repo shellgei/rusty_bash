@@ -124,6 +124,9 @@ fn main() {
     .expect("Unable to set the Ctrl+C handler.");
 
     let mut core = ShellCore::new();
+    for arg in &args {
+        core.args.push(arg.clone());
+    }
 
     core.flags.d = args.iter().any(|a| a.clone() == "-d");
 
