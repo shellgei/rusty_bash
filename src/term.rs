@@ -232,13 +232,13 @@ impl Writer {
             self.last_arg().chars().nth(0) != Some('/') {
             if tab_num == 1 {
                 command_completion(self, core);
-            }else if tab_num == 2 {
+            }else {
                 show_command_candidates(self, core);
             };
         }else{
             if tab_num == 1 {
                 file_completion(self);
-            }else if tab_num == 2 {
+            }else {
                 show_file_candidates(self, core);
                 return;
             };

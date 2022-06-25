@@ -38,7 +38,7 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
 }
 
 pub fn file_completion(writer: &mut Writer){
-    let s: String = writer.last_arg() + "*";
+    let s: String = writer.last_arg().replace("\\", "") + "*";
     let (s, home, org) = expand_tilde(&s);
 
     let mut ans = eval_glob(&s.replace("\\", ""));
@@ -83,9 +83,16 @@ pub fn file_completion(writer: &mut Writer){
         }
 
         let mut base_len = writer.last_arg().replace("\\", "").len();
+//        let mut base_len2 = writer.last_arg().len();
 
-        for (i, ch) in a[0][base_len..].chars().enumerate() {
-            if compare_nth_char(i+base_len, &a) {
+        //eprintln!("\r\nA1: {}", &a[0][base_len..]);
+        //eprintln!("\r\nA2: {}", &a[1][base_len..]);
+
+        let ans2: Vec<String> = a.iter().map(|s| s[base_len..].to_string()).collect();
+
+        for (i, ch) in ans2[0].chars().enumerate() {
+            //eprintln!("\r\nCH1: {}", ch);
+            if compare_nth_char(i, &ans2) {
                 if ch == ' ' {
                     chars += "\\";
                 }
@@ -100,7 +107,7 @@ pub fn file_completion(writer: &mut Writer){
 
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
-    let s: String = writer.last_arg() + "*";
+    let s: String = writer.last_arg().replace("\\", "") + "*";
     let (s, _, _) = expand_tilde(&s);
 
     let ans = eval_glob(&s);
