@@ -39,8 +39,15 @@ pub struct Command {
 impl ScriptElem for Command {
 
     fn exec(&mut self, conf: &mut ShellCore) {
+        if conf.flags.v {
+            eprintln!("{}", self.text.trim_end());
+        }
+
         let mut args = self.eval(conf);
-        //eprintln!("COM_EXEC: {:?}", args[1]);
+
+        if conf.flags.x {
+            eprintln!("+{}", args.join(" "));
+        }
 
         // This sentence avoids an unnecessary fork for an internal command.
         if self.pipeout == -1 && self.pipein == -1 { 

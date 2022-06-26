@@ -129,6 +129,8 @@ fn main() {
     }
 
     core.flags.d = args.iter().any(|a| a.clone() == "-d");
+    core.flags.v = args.iter().any(|a| a.clone() == "-v");
+    core.flags.x = args.iter().any(|a| a.clone() == "-x");
 
     let pid = process::id();
     core.vars.insert("PID".to_string(), pid.to_string());
