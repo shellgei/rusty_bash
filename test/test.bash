@@ -24,6 +24,15 @@ res=$($com <<< '	echo hoge')
 res=$($com <<< 'echo hoge;')
 [ "$res" = "hoge" ]
 
+### POSITIONAL PARAMETERS ###
+
+cat << 'EOF' > /tmp/.rusty_bash
+echo $1 $2 $3
+EOF
+
+res=$(cat /tmp/.rusty_bash | $com a b c)
+[ "$res" = "a b c" ]
+
 #### ARG TEST ###
 
 res=$($com <<< 'echo aaa"bbb"')
@@ -530,13 +539,16 @@ res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; hoge )')
 res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; ( hoge ; hoge ) )') 
 [ "$res" = "cba cba" ]
 
-### POSITIONAL PARAMETERS ###
 
 cat << 'EOF' > /tmp/.rusty_bash
-echo $1 $2 $3
+f () {
+	echo $1 $2 $3
+}
+
+f a b c
 EOF
 
-res=$(cat /tmp/.rusty_bash | $com a b c)
+res=$(cat /tmp/.rusty_bash | $com x y z)
 [ "$res" = "a b c" ]
 
 trap "" EXIT
