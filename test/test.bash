@@ -551,5 +551,17 @@ EOF
 res=$(cat /tmp/.rusty_bash | $com x y z)
 [ "$res" = "a b c" ]
 
+cat << 'EOF' > /tmp/.rusty_bash
+f () {
+	echo $1 $2 $3
+}
+
+# Make f work in another process
+f a b c | rev
+EOF
+
+res=$(cat /tmp/.rusty_bash | $com x y z)
+[ "$res" = "c b a" ]
+
 trap "" EXIT
 echo TEST OK

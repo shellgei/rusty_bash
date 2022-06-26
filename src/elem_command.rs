@@ -142,16 +142,17 @@ impl Command {
     }
 
     fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        if let Some(text) = conf.get_function(&args[0]) {
-            let mut feeder = Feeder::new_with(text);
-            if let Some(mut f) = CompoundBrace::parse(&mut feeder, conf) {
-                let backup = conf.args.clone();
-                conf.args = args.to_vec();
-                f.exec(conf);
-                conf.args = backup;
-            }else{
-                panic!("Shell internal error on function");
-            }
+        let text = conf.get_function(&args[0]).unwrap_or("".to_string());
+        if text.len() == 0 {
+            return;
+        }
+
+        let mut feeder = Feeder::new_with(text);
+        if let Some(mut f) = CompoundBrace::parse(&mut feeder, conf) {
+            let backup = conf.args.clone();
+            conf.args = args.to_vec();
+            f.exec(conf);
+            conf.args = backup;
         }else{
             panic!("Shell internal error on function");
         }
