@@ -305,6 +305,11 @@ EOF
 res=$($com <<< 'ls aaaaaaa; echo $?')
 [ "$res" = "2" ]
 
+# special variables
+
+res=$($com <<< 'echo $$')
+[ "$res" -gt 1 ]
+
 ### REDIRECTION ###
 
 res=$($com << 'EOF'

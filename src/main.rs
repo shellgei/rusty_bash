@@ -150,9 +150,10 @@ fn main() {
     core.flags.x = args.iter().any(|a| has_option(a, "x".to_string()));
 
     let pid = process::id();
-    core.vars.insert("PID".to_string(), pid.to_string());
+    core.vars.insert("$".to_string(), pid.to_string());
     core.vars.insert("HOSTNAME".to_string(), get_hostname());
     core.vars.insert("SHELL".to_string(), "rustybash".to_string());
+    core.vars.insert("BASH".to_string(), core.args[0].clone());
     core.flags.i = is_interactive(pid);
 
     read_bashrc(&mut core);
