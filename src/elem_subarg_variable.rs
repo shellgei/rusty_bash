@@ -20,7 +20,13 @@ impl ArgElem for SubArgVariable {
         }else{
             self.text[1..].to_string()
         };
-        vec!(vec!(conf.get_var(&name)))
+        let val = conf.get_var(&name);
+
+        if val.len() == 0 {
+            vec!(vec!("".to_string()))
+        }else{
+            vec!(vec!(conf.get_var(&name)))
+        }
     }
 
     fn text(&self) -> String {
