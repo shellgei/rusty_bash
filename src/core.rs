@@ -34,6 +34,7 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: Flags,
+    pub in_double_quot: bool,
 }
 
 impl ShellCore {
@@ -46,6 +47,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: Flags::new(),
+            in_double_quot: false,
         };
 
         conf.vars.insert("?".to_string(), 0.to_string());
@@ -80,6 +82,12 @@ impl ShellCore {
         if key == "*" {
             if self.args.len() == 1 {
                 return "".to_string();
+            }
+
+            if self.in_double_quot {
+                if let Some(ch) = self.get_var(&"IFS".to_string()).chars().nth(0){
+                    return self.args[1..].to_vec().join(&ch.to_string());
+                }
             }
 
             return self.args[1..].to_vec().join(" ");

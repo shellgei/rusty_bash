@@ -311,11 +311,14 @@ res=$($com <<< 'echo $$')
 cat << 'EOF' > /tmp/.rusty_bash
 echo $@
 echo $*
+IFS=💩
+echo "$*"
 EOF
 
 res=$(cat /tmp/.rusty_bash | $com あい うえ お) #TODO: enable to use IFS
 [ "$res" = "あい うえ お
-あい うえ お" ]
+あい うえ お
+あい💩うえ💩お" ]
 
 ### REDIRECTION ###
 

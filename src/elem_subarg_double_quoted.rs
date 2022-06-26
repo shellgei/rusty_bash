@@ -20,6 +20,8 @@ pub struct SubArgDoubleQuoted {
 
 impl ArgElem for SubArgDoubleQuoted {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
+        conf.in_double_quot = true;
+
         let mut vvv = vec!();
         for sa in &mut self.subargs {
             vvv.push(sa.eval(conf));
@@ -39,6 +41,8 @@ impl ArgElem for SubArgDoubleQuoted {
             }
             ans.push(anselem);
         }
+
+        conf.in_double_quot = false;
         ans
     }
 

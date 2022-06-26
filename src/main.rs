@@ -151,6 +151,7 @@ fn main() {
 
     let pid = process::id();
     core.vars.insert("$".to_string(), pid.to_string());
+    core.vars.insert("IFS".to_string(), " \t\n".to_string());
     core.vars.insert("HOSTNAME".to_string(), get_hostname());
     core.vars.insert("SHELL".to_string(), "rustybash".to_string());
     core.vars.insert("BASH".to_string(), core.args[0].clone());
