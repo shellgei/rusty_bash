@@ -548,14 +548,18 @@ cat << 'EOF' > /tmp/.rusty_bash
 f () {
 	echo $1 $2 $3
 	hoge=x
+	echo $#
 }
 
 f a b c
+echo $#
 echo $hoge
 EOF
 
-res=$(cat /tmp/.rusty_bash | $com x y z)
+res=$(cat /tmp/.rusty_bash | $com x y z 1 2 3)
 [ "$res" = "a b c
+3
+6
 x" ]
 
 cat << 'EOF' > /tmp/.rusty_bash

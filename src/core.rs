@@ -65,6 +65,10 @@ impl ShellCore {
             }
         }
 
+        if key == "#" {
+            return (self.args.len() - 1).to_string();
+        }
+
         if let Some(s) = self.vars.get(&key as &str){
             return s.to_string();
         };
