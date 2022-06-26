@@ -277,7 +277,9 @@ impl Command {
         };
 
         Command::substitutions_and_redirects(text, conf, &mut ans);
-        Command::replace_alias(text, conf);
+        if conf.flags.i {
+            Command::replace_alias(text, conf);
+        }
 
         if Command::args_and_redirects(text, conf, &mut ans) {
             Some(ans)
