@@ -543,25 +543,32 @@ res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; ( hoge ; hoge ) 
 cat << 'EOF' > /tmp/.rusty_bash
 f () {
 	echo $1 $2 $3
+	hoge=x
 }
 
 f a b c
+echo $hoge
 EOF
 
 res=$(cat /tmp/.rusty_bash | $com x y z)
-[ "$res" = "a b c" ]
+[ "$res" = "a b c
+x" ]
 
 cat << 'EOF' > /tmp/.rusty_bash
 f () {
 	echo $1 $2 $3
+	hoge=x
 }
 
+hoge=y
 # Make f work in another process
 f a b c | rev
+echo $hoge
 EOF
 
 res=$(cat /tmp/.rusty_bash | $com x y z)
-[ "$res" = "c b a" ]
+[ "$res" = "c b a
+y" ]
 
 trap "" EXIT
 echo TEST OK
