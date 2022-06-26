@@ -56,6 +56,7 @@ impl ShellCore {
         conf.internal_commands.insert("pwd".to_string(), Self::pwd);
         conf.internal_commands.insert("cd".to_string(), Self::cd);
         conf.internal_commands.insert("alias".to_string(), Self::alias);
+        conf.internal_commands.insert("set".to_string(), Self::set);
 
         conf
     }
@@ -204,6 +205,16 @@ impl ShellCore {
         }
 
         self.aliases.insert(elems[0].to_string(), elems[1..].join("="));
+        0
+    }
+
+    pub fn set(&mut self, args: &mut Vec<String>) -> i32 {
+        self.args.clear();
+
+        for a in args {
+            self.args.push(a.to_string());
+        }
+
         0
     }
 }
