@@ -69,6 +69,22 @@ impl ShellCore {
             return (self.args.len() - 1).to_string();
         }
 
+        if key == "@" {
+            if self.args.len() == 1 {
+                return "".to_string();
+            }
+
+            return self.args[1..].to_vec().join(" ");
+        }
+
+        if key == "*" {
+            if self.args.len() == 1 {
+                return "".to_string();
+            }
+
+            return self.args[1..].to_vec().join(" ");
+        }
+
         if let Some(s) = self.vars.get(&key as &str){
             return s.to_string();
         };

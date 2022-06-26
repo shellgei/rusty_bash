@@ -305,10 +305,17 @@ EOF
 res=$($com <<< 'ls aaaaaaa; echo $?')
 [ "$res" = "2" ]
 
-# special variables
-
 res=$($com <<< 'echo $$')
 [ "$res" -gt 1 ]
+
+cat << 'EOF' > /tmp/.rusty_bash
+echo $@
+echo $*
+EOF
+
+res=$(cat /tmp/.rusty_bash | $com あい うえ お) #TODO: enable to use IFS
+[ "$res" = "あい うえ お
+あい うえ お" ]
 
 ### REDIRECTION ###
 
