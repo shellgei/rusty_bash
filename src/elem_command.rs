@@ -146,10 +146,7 @@ impl Command {
     }
 
     fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        let text = conf.get_function(&args[0]).unwrap_or("".to_string());
-        if text.len() == 0 {
-            return;
-        }
+        let text = conf.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_with(text);
         if let Some(mut f) = CompoundBrace::parse(&mut feeder, conf) {
