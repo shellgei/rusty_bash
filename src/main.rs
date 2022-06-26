@@ -113,6 +113,23 @@ fn show_version() {
     exit(0);
 }
 
+fn has_option(arg: &String, opt: String) -> bool {
+    if arg.len() < 2 {
+        return false;
+    }
+
+    if arg.chars().nth(0) == Some('-') && arg.chars().nth(1) == Some('-') { // --option
+        return arg[2..] == opt;
+    }
+
+    if arg.chars().nth(0) == Some('-') { // -options
+        return arg.chars().any(|c| c.to_string() == opt);
+    }
+
+
+    false
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
@@ -128,9 +145,9 @@ fn main() {
         core.args.push(arg.clone());
     }
 
-    core.flags.d = args.iter().any(|a| a.clone() == "-d");
-    core.flags.v = args.iter().any(|a| a.clone() == "-v");
-    core.flags.x = args.iter().any(|a| a.clone() == "-x");
+    core.flags.d = args.iter().any(|a| has_option(a, "d".to_string()));
+    core.flags.v = args.iter().any(|a| has_option(a, "v".to_string()));
+    core.flags.x = args.iter().any(|a| has_option(a, "x".to_string()));
 
     let pid = process::id();
     core.vars.insert("PID".to_string(), pid.to_string());
