@@ -592,17 +592,18 @@ res=$(cat /tmp/.rusty_bash | $com x y z)
 [ "$res" = "c b a
 y" ]
 
-#res=$($com << 'EOF'
-#somefunc () {
-#	cat
-#	exit 1
-#}
-#
-#echo a | somefunc 
-#echo $?
-#EOF
-#)
-#[ "$res" = "1" ]
+res=$($com << 'EOF'
+somefunc () {
+	cat
+	exit 1
+}
+
+echo a | somefunc 
+echo $?
+EOF
+)
+[ "$res" = "a
+1" ]
 
 trap "" EXIT
 echo TEST OK

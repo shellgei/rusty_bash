@@ -50,7 +50,7 @@ impl ScriptElem for Command {
         }
 
         // This sentence avoids an unnecessary fork for an internal command.
-        if self.pipeout == -1 && self.pipein == -1 { 
+        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 { 
             if conf.functions.contains_key(&args[0]) {
                 self.exec_function(&mut args, conf);
                 return;
