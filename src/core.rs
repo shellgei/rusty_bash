@@ -129,16 +129,21 @@ impl ShellCore {
     /////////////////////////////////
     pub fn exit(&mut self, args: &mut Vec<String>) -> i32 {
         let home = env::var("HOME").expect("HOME is not defined");
+        /*
         let mut hist_file = OpenOptions::new()
                                     .write(true)
                                     .append(true)
                                     .open(home + "/.bash_history")
                                     .expect("Cannot open the history file");
+                                    */
+        if let Ok(mut hist_file) = OpenOptions::new().write(true)
+                                   .append(true).open(home + "/.bash_history") {
+            for h in &self.history {
+                write!(hist_file, "{}\n", h).expect("Cannot write history");
+            };
+            hist_file.flush().expect("Cannot flush the history file");
+        }
 
-        for h in &self.history {
-            write!(hist_file, "{}\n", h).expect("Cannot write history");
-        };
-        hist_file.flush().expect("Cannot flush the history file");
 
         if args.len() >= 2 {
             if let Ok(status) = args[1].parse::<i32>(){
