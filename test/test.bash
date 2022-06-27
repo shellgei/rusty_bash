@@ -622,5 +622,8 @@ res=$($com <<< 'if [ "a" == "b" ] ; then echo a ; fi ; if [ "b" == "b" ] ; then 
 res=$($com <<< 'echo a | if [ "$(cat)" == "a" ] ; then echo aa; fi')
 [ "$res" = "aa" ]
 
+res=$($com <<< 'echo a | if [ "$(cat)" == "a" ] ; then echo abc; fi | rev')
+[ "$res" = "cba" ]
+
 trap "" EXIT
 echo TEST OK

@@ -10,6 +10,7 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{close, fork, Pid, ForkResult};
 use std::process::exit;
 use crate::utils_io::set_child_io;
+use crate::elem_end_of_command::Eoc;
 
 /* ( script ) */
 pub struct CompoundIf {
@@ -21,7 +22,7 @@ pub struct CompoundIf {
     pub pipein: RawFd,
     pub pipeout: RawFd,
     pub prevpipein: RawFd,
-//    pub eoc: Option<Eoc>,
+    pub eoc: Option<Eoc>,
 }
 
 impl ScriptElem for CompoundIf {
@@ -54,14 +55,13 @@ impl ScriptElem for CompoundIf {
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
 
-    /*
     fn get_eoc_string(&mut self) -> String {
         if let Some(e) = &self.eoc {
             return e.text.clone();
         }
 
         "".to_string()
-    }*/
+    }
 }
 
 impl CompoundIf {
@@ -75,6 +75,7 @@ impl CompoundIf {
             pipeout: -1,
             prevpipein: -1,
             pid: None,
+            eoc: None,
         }
     }
 
@@ -133,6 +134,11 @@ impl CompoundIf {
 
         if let Some(d) = ArgDelimiter::parse(text){
             ans.text += &d.text;
+        }
+
+        if let Some(e) = Eoc::parse(text){
+            ans.text += &e.text;
+            ans.eoc = Some(e);
         }
 
         ans.ifthen.push((cond, doing));
