@@ -7,6 +7,7 @@ use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
 use crate::elem_arg_delimiter::ArgDelimiter;
+use nix::unistd::pipe;
 
 /* ( script ) */
 pub struct CompoundIf {
@@ -22,6 +23,11 @@ pub struct CompoundIf {
 
 impl ScriptElem for CompoundIf {
     fn exec(&mut self, conf: &mut ShellCore) {
+        let p = pipe().expect("Pipe cannot open");
+
+        self.exec_if_compound(conf);
+
+        /*
         for pair in self.ifthen.iter_mut() {
              pair.0.exec(conf);
              if conf.vars["?"] != "0" {
@@ -30,29 +36,7 @@ impl ScriptElem for CompoundIf {
              }
 
              pair.1.exec(conf);
-        }
-        /*
-        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 
-            && self.redirects.len() == 0 /* && self.script.args_for_function.len() == 0 */ {
-             self.script.exec(conf);
-             return;
-        };
-
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
-                    self.script.exec(conf);
-                    exit(conf.vars["?"].parse::<i32>().unwrap());
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    self.pid = Some(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
-        }
-        */
+        }*/
     }
 
     /*
@@ -87,6 +71,18 @@ impl CompoundIf {
             pipein: -1,
             pipeout: -1,
             prevpipein: -1,
+        }
+    }
+
+    fn exec_if_compound(&mut self, conf: &mut ShellCore) {
+        for pair in self.ifthen.iter_mut() {
+             pair.0.exec(conf);
+             if conf.vars["?"] != "0" {
+                conf.vars.insert("?".to_string(), "0".to_string());
+                return;
+             }
+
+             pair.1.exec(conf);
         }
     }
 
