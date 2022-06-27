@@ -227,6 +227,16 @@ impl Command {
         }
     }
 
+    fn ng_check(text: &String) -> bool {
+        if Some('}') == text.chars().nth(0) {
+            return false;
+        }else if text == "then" {
+            return false;
+        }
+
+        true
+    }
+
     fn args_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {
         let mut ok = false;
         loop {
@@ -235,7 +245,7 @@ impl Command {
                 ans.redirects.push(Box::new(r));
             }else if let Some(a) = Arg::parse(text, true, conf) {
                 if ans.args.len() == 0 {
-                    if Some('}') == a.text.chars().nth(0) {
+                    if ! Command::ng_check(&a.text){
                         return false;
                     }
                 }

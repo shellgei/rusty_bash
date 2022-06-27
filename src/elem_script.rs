@@ -36,9 +36,8 @@ impl Script {
         };
     
         if text.nth(0) == ')' {
-            eprintln!("Unexpected symbol: )");
+            eprintln!("Unexpected symbol: {}", text.consume(text.len()).trim_end());
             conf.vars.insert("?".to_string(), "2".to_string());
-            text.consume(text.len());
             return None;
         }
 
