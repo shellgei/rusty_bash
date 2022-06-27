@@ -130,64 +130,7 @@ impl CompoundIf {
             ans.text += &d.text;
         }
 
+        ans.ifthen.push((cond, doing));
         Some(ans)
-        /*
-
-        let mut backup = text.clone();
-        let mut ans;
-        let mut input_success;
-
-        loop {
-            text.consume(1);
-            if let Some(s) = Script::parse(text, conf, true) {
-                //eprintln!("script: {}", s.text);
-                if ! tail_check(&s.text){
-                    text.rewind(backup); return None; }
-    
-                let text = "{".to_owned() + &s.text.clone() + "}";
-                ans = CompoundIf::new(s);
-                ans.text = text;
-            }else{
-                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
-                if ! input_success {
-                    eprintln!("ESC");
-                    text.consume(text.len());
-                    return None;
-                }
-                continue;
-            }
-    
-            if text.len() == 0 || text.nth(0) != '}' {
-                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
-                if ! input_success {
-                    text.consume(text.len());
-                    return None;
-                }
-            }else{
-                break;
-            }
-        }
-
-        text.consume(1);
-
-        loop {
-            if let Some(d) = ArgDelimiter::parse(text){
-                ans.text += &d.text;
-            }
-
-            if let Some(r) = Redirect::parse(text){
-                    ans.text += &r.text;
-                    ans.redirects.push(Box::new(r));
-            }else{
-                break;
-            }
-        }
-        if let Some(e) = Eoc::parse(text){
-            ans.text += &e.text;
-            ans.eoc = Some(e);
-        }
-
-        Some(ans)
-        */
     }
 }
