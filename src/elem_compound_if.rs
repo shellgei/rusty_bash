@@ -17,17 +17,11 @@ pub struct CompoundIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
     pub text: String,
-    /*
-    pub script: Script,
     pub redirects: Vec<Box<Redirect>>,
-    pid: Option<Pid>, 
     pub pipein: RawFd,
     pub pipeout: RawFd,
-    /* The followings are set by a pipeline.  */
-    pub substitution_text: String,
     pub prevpipein: RawFd,
-    pub eoc: Option<Eoc>,
-    */
+//    pub eoc: Option<Eoc>,
 }
 
 impl ScriptElem for CompoundIf {
@@ -79,31 +73,65 @@ impl ScriptElem for CompoundIf {
 }
 
 impl CompoundIf {
-    /*
-    pub fn new(script: Script) -> CompoundIf{
+    pub fn new() -> CompoundIf{
         CompoundIf {
-            script: script,
-            pid: None,
+            ifthen: vec!(),
+            else_do: None,
             redirects: vec!(),
             text: "".to_string(),
-            substitution_text: "".to_string(),
             pipein: -1,
             pipeout: -1,
             prevpipein: -1,
-            eoc: None,
         }
-    }*/
+    }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundIf> {
         if text.len() < 2 || ! text.compare(0, "if".to_string()) {
             return None;
         }
 
-        None
-        /*
-        if text.len() == 0 || text.nth(0) != '{' {
+        let backup = text.clone();
+
+        let mut ans = CompoundIf::new();
+        ans.text += &text.consume(2);
+
+        let cond = if let Some(s) = Script::parse(text, conf, true) {
+            ans.text += &s.text;
+            s
+        }else{
+            text.rewind(backup);
+            return None;
+        };
+
+        if let Some(d) = ArgDelimiter::parse(text){
+            ans.text += &d.text;
+        }
+
+        if text.compare(0, "then".to_string()){
+            ans.text += &text.consume(4);
+        }
+
+        let doing = if let Some(s) = Script::parse(text, conf, true) {
+            ans.text += &s.text;
+            s
+        }else{
+            text.rewind(backup);
+            return None;
+        };
+
+        if text.compare(0, "fi".to_string()){
+            ans.text += &text.consume(2);
+        }else{
+            text.rewind(backup);
             return None;
         }
+
+        if let Some(d) = ArgDelimiter::parse(text){
+            ans.text += &d.text;
+        }
+
+        Some(ans)
+        /*
 
         let mut backup = text.clone();
         let mut ans;
