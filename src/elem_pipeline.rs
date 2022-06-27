@@ -12,6 +12,7 @@ use crate::elem_compound_brace::CompoundBrace;
 use crate::utils_io::set_parent_io;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
+use crate::elem_compound_if::CompoundIf;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ScriptElem>>,
@@ -54,7 +55,11 @@ impl Pipeline {
 
         loop {
             let eocs;
-            if let Some(mut c) = Command::parse(text, conf) {
+            if let Some(mut c) = CompoundIf::parse(text, conf) {
+                eocs = c.get_eoc_string();
+                ans.text += &c.text.clone();
+                ans.commands.push(Box::new(c));
+            }else if let Some(mut c) = Command::parse(text, conf) {
                 eocs = c.get_eoc_string();
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));

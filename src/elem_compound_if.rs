@@ -16,10 +16,10 @@ use std::process::exit;
 pub struct CompoundIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
+    pub text: String,
     /*
     pub script: Script,
     pub redirects: Vec<Box<Redirect>>,
-    pub text: String,
     pid: Option<Pid>, 
     pub pipein: RawFd,
     pub pipeout: RawFd,
