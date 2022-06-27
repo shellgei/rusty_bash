@@ -7,13 +7,16 @@ use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
 use crate::elem_arg_delimiter::ArgDelimiter;
-use nix::unistd::pipe;
+use nix::unistd::{pipe, close, fork, Pid, ForkResult};
+use std::process::exit;
+use crate::utils_io::set_child_io;
 
 /* ( script ) */
 pub struct CompoundIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
     pub text: String,
+    pub pid: Option<Pid>,
     pub redirects: Vec<Box<Redirect>>,
     pub pipein: RawFd,
     pub pipeout: RawFd,
@@ -25,7 +28,22 @@ impl ScriptElem for CompoundIf {
     fn exec(&mut self, conf: &mut ShellCore) {
         let p = pipe().expect("Pipe cannot open");
 
-        self.exec_if_compound(conf);
+        unsafe {
+            match fork() {
+                Ok(ForkResult::Child) => {
+                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
+                    self.exec_if_compound(conf);
+                    close(1).expect("Can't close a pipe end");
+                    exit(0);
+                },
+                Ok(ForkResult::Parent { child } ) => {
+                    self.pid = Some(child);
+                    return;
+                },
+                Err(err) => panic!("Failed to fork. {}", err),
+            }
+        }
+
 
         /*
         for pair in self.ifthen.iter_mut() {
@@ -71,6 +89,7 @@ impl CompoundIf {
             pipein: -1,
             pipeout: -1,
             prevpipein: -1,
+            pid: None,
         }
     }
 
