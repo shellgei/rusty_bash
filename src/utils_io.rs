@@ -9,6 +9,7 @@ use std::os::unix::io::IntoRawFd;
 use nix::unistd::Pid;
 use nix::sys::wait::WaitPidFlag;
 use nix::sys::wait::{waitpid, WaitStatus};
+use crate::ShellCore;
 
 pub fn dup_and_close(from: RawFd, to: RawFd){
     close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
@@ -81,19 +82,9 @@ pub fn set_parent_io(pout: RawFd) {
     };
 }
 
-pub fn read_pipe(pin: RawFd, pid: Pid) -> String {
+pub fn read_pipe(pin: RawFd, pid: Pid, conf: &mut ShellCore) -> String {
     let mut ans = "".to_string();
     let mut ch = [0;1000];
-
-    /*
-    if pid == Pid::this() {
-        while let Ok(n) = read(pin, &mut ch) {
-            ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-            if n < 1000 {
-                return ans;
-            };
-        }
-    }*/
 
     loop {
         while let Ok(n) = read(pin, &mut ch) {
@@ -102,10 +93,20 @@ pub fn read_pipe(pin: RawFd, pid: Pid) -> String {
                 WaitStatus::StillAlive => {
                     continue;
                 },
+                WaitStatus::Exited(_pid, status) => {
+                    conf.vars.insert("?".to_string(), status.to_string());
+                    break;
+                },
+                WaitStatus::Signaled(pid, signal, _) => {
+                    conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
+                    eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
+                    break;
+                },
                 _ => {
-                    return ans;
+                    break;
                 },
             };
         }
+        return ans;
     }
 }

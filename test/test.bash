@@ -213,6 +213,10 @@ res=$($com <<< 'echo $( echo abc | (rev) )')
 res=$($com <<< 'echo $( echo a ;  ( echo b ; echo c ) )')
 [ "$res" = "a b c" ]
 
+res=$($com <<< 'echo a |  { cat ; exit 3 ; }; echo $?')
+[ "$res" = "a
+3" ]
+
 # expansion of tilde
 
 res=$($com <<< 'echo ~')
@@ -587,6 +591,18 @@ EOF
 res=$(cat /tmp/.rusty_bash | $com x y z)
 [ "$res" = "c b a
 y" ]
+
+#res=$($com << 'EOF'
+#somefunc () {
+#	cat
+#	exit 1
+#}
+#
+#echo a | somefunc 
+#echo $?
+#EOF
+#)
+#[ "$res" = "1" ]
 
 trap "" EXIT
 echo TEST OK

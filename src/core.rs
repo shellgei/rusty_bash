@@ -127,7 +127,7 @@ impl ShellCore {
     /////////////////////////////////
     /* INTERNAL COMMANDS HEREAFTER */
     /////////////////////////////////
-    pub fn exit(&mut self, _args: &mut Vec<String>) -> i32 {
+    pub fn exit(&mut self, args: &mut Vec<String>) -> i32 {
         let home = env::var("HOME").expect("HOME is not defined");
         let mut hist_file = OpenOptions::new()
                                     .write(true)
@@ -139,6 +139,15 @@ impl ShellCore {
             write!(hist_file, "{}\n", h).expect("Cannot write history");
         };
         hist_file.flush().expect("Cannot flush the history file");
+
+        if args.len() >= 2 {
+            if let Ok(status) = args[1].parse::<i32>(){
+                exit(status);
+            }else{
+                eprintln!("exit: {}: numeric argument required", args[1]);
+                exit(2);
+            }
+        }
 
         if let Ok(status) = self.get_var(&"?".to_string()).to_string().parse::<i32>(){
             exit(status);

@@ -100,13 +100,8 @@ impl Pipeline {
 
 pub fn wait(child: Pid, conf: &mut ShellCore) {
     match waitpid(child, None).expect("Faild to wait child process.") {
-
         WaitStatus::Exited(_pid, status) => {
             conf.vars.insert("?".to_string(), status.to_string());
-            /*
-            if status != 0 { 
-                eprintln!("Pid: {:?}, Exit with {:?}", pid, status);
-            }*/
         }
         WaitStatus::Signaled(pid, signal, _) => {
             conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
