@@ -153,6 +153,19 @@ impl Feeder {
         };
     }
 
+    pub fn compare(&self, pos: usize, cmp: String) -> bool{
+        if self.remaining.len() < pos + cmp.len() {
+            return false;
+        }
+
+        for (i, ch) in cmp.chars().enumerate() {
+            if self.remaining.chars().nth(i+pos) != Some(ch) {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn rewind_feed_backup(&mut self, backup: &Feeder, conf: &mut ShellCore) -> (Feeder, bool) {
         self.rewind(backup.clone());
         let res = self.feed_additional_line(conf);
