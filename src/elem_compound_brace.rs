@@ -71,13 +71,6 @@ impl ScriptElem for CompoundBrace {
         self.prevpipein = pprev;
     }
 
-    /*
-    fn set_parent_io(&mut self) {
-        if self.pipeout >= 0 {
-            close(self.pipeout).expect("Cannot close outfd");
-        };
-    }*/
-
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
 
