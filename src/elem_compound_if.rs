@@ -7,7 +7,7 @@ use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
 use crate::elem_arg_delimiter::ArgDelimiter;
-use nix::unistd::{pipe, close, fork, Pid, ForkResult};
+use nix::unistd::{close, fork, Pid, ForkResult};
 use std::process::exit;
 use crate::utils_io::set_child_io;
 
@@ -26,8 +26,6 @@ pub struct CompoundIf {
 
 impl ScriptElem for CompoundIf {
     fn exec(&mut self, conf: &mut ShellCore) {
-        let p = pipe().expect("Pipe cannot open");
-
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
@@ -43,21 +41,8 @@ impl ScriptElem for CompoundIf {
                 Err(err) => panic!("Failed to fork. {}", err),
             }
         }
-
-
-        /*
-        for pair in self.ifthen.iter_mut() {
-             pair.0.exec(conf);
-             if conf.vars["?"] != "0" {
-                conf.vars.insert("?".to_string(), "0".to_string());
-                return;
-             }
-
-             pair.1.exec(conf);
-        }*/
     }
 
-    /*
     fn get_pid(&self) -> Option<Pid> { self.pid }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
@@ -69,14 +54,14 @@ impl ScriptElem for CompoundIf {
     fn get_pipe_end(&mut self) -> RawFd { self.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
 
+    /*
     fn get_eoc_string(&mut self) -> String {
         if let Some(e) = &self.eoc {
             return e.text.clone();
         }
 
         "".to_string()
-    }
-    */
+    }*/
 }
 
 impl CompoundIf {
