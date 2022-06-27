@@ -26,6 +26,15 @@ pub struct CompoundIf {
 
 impl ScriptElem for CompoundIf {
     fn exec(&mut self, conf: &mut ShellCore) {
+        for pair in self.ifthen.iter_mut() {
+             pair.0.exec(conf);
+             if conf.vars["?"] != "0" {
+                conf.vars.insert("?".to_string(), "0".to_string());
+                return;
+             }
+
+             pair.1.exec(conf);
+        }
         /*
         if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 
             && self.redirects.len() == 0 /* && self.script.args_for_function.len() == 0 */ {

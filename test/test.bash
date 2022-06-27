@@ -605,5 +605,19 @@ EOF
 [ "$res" = "a
 1" ]
 
+### IF COMPOUND ###
+
+res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; fi')
+[ "$res" = "aa" ]
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi')
+[ "$res" = "" ]
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa' || echo x)
+[ "$res" = "x" ]
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo a ; fi ; if [ "b" == "b" ] ; then echo bb ; fi')
+[ "$res" = "bb" ]
+
 trap "" EXIT
 echo TEST OK
