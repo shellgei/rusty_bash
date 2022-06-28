@@ -85,11 +85,11 @@ impl CompoundIf {
         for pair in self.ifthen.iter_mut() {
              pair.0.exec(conf);
              if conf.vars["?"] != "0" {
-                conf.vars.insert("?".to_string(), "0".to_string());
-                return;
+                //conf.vars.insert("?".to_string(), "0".to_string());
+                continue;
              }
-
              pair.1.exec(conf);
+             return;
         }
     }
 
@@ -145,8 +145,8 @@ impl CompoundIf {
             if text.compare(0, "fi"){
                 ans.text += &text.consume(2);
                 break;
-            }else if text.compare(0, "else"){
-                //ans.text += &text.consume(4);
+            }else if text.compare(0, "elif"){
+                ans.text += &text.consume(4);
             }else{
                 text.rewind(backup);
                 return None;
