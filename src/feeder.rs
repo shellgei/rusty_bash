@@ -153,8 +153,8 @@ impl Feeder {
         };
     }
 
-    pub fn compare(&self, pos: usize, cmp: String) -> bool{
-        if self.remaining.len() < pos + cmp.len() {
+    pub fn compare(&self, pos: usize, cmp: &str) -> bool{
+        if self.remaining.len() < pos + cmp.to_string().len() {
             return false;
         }
 

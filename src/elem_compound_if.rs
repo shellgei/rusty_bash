@@ -94,7 +94,7 @@ impl CompoundIf {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundIf> {
-        if text.len() < 2 || ! text.compare(0, "if".to_string()) {
+        if text.len() < 2 || ! text.compare(0, "if") {
             return None;
         }
 
@@ -103,6 +103,7 @@ impl CompoundIf {
         let mut ans = CompoundIf::new();
         ans.text += &text.consume(2);
 
+        /* if part */
         let cond = if let Some(s) = Script::parse(text, conf, true) {
             ans.text += &s.text;
             s
@@ -115,7 +116,7 @@ impl CompoundIf {
             ans.text += &d.text;
         }
 
-        if text.compare(0, "then".to_string()){
+        if text.compare(0, "then"){
             ans.text += &text.consume(4);
         }
 
@@ -127,8 +128,9 @@ impl CompoundIf {
             return None;
         };
 
-        if text.compare(0, "fi".to_string()){
+        if text.compare(0, "fi"){
             ans.text += &text.consume(2);
+        }else if text.compare(0, "else"){
         }else{
             text.rewind(backup);
             return None;
