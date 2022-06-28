@@ -16,6 +16,7 @@ use crate::abst_script_elem::ScriptElem;
 use crate::elem_arg::Arg;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_compound_brace::CompoundBrace;
+use crate::elem_compound_paren::CompoundParen;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
@@ -162,10 +163,17 @@ impl Command {
             let backup = conf.args.clone();
             conf.args = args.to_vec();
             f.exec(conf);
+            self.pid = f.get_pid();
+            conf.args = backup;
+        }else if let Some(mut f) = CompoundParen::parse(&mut feeder, conf, false) {
+            let backup = conf.args.clone();
+            conf.args = args.to_vec();
+            f.exec(conf);
+            self.pid = f.get_pid();
             conf.args = backup;
         }else{
             panic!("Shell internal error on function");
-        }
+        };
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {

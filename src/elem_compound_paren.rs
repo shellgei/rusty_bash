@@ -21,7 +21,6 @@ pub struct CompoundParen {
     pid: Option<Pid>, 
     pub pipein: RawFd,
     pub pipeout: RawFd,
-    /* The followings are set by a pipeline or a com substitution. */
     pub substitution_text: String,
     pub substitution: bool,
     pub prevpipein: RawFd,

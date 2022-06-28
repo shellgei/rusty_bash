@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_compound_brace::CompoundBrace;
+use crate::elem_compound_paren::CompoundParen;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
 use crate::ScriptElem;
@@ -15,10 +16,10 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn new(name: String, body: CompoundBrace) -> Function{
+    pub fn new(name: String, body: Box<dyn ScriptElem>) -> Function{
         Function {
             name: name,
-            body: Box::new(body),
+            body: body,
             text: "".to_string(),
         }
     }
@@ -57,7 +58,9 @@ impl Function {
          let _ = ArgDelimiter::parse(text);
  
          if let Some(c) = CompoundBrace::parse(text, conf){
-             Some( Function::new(name.text, c) )
+             Some( Function::new(name.text, Box::new(c)) )
+         }else if let Some(c) = CompoundParen::parse(text, conf, true){
+             Some( Function::new(name.text, Box::new(c)) )
          }else{
              text.rewind(backup);
              None
