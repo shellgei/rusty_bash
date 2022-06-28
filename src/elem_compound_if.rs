@@ -93,6 +93,36 @@ impl CompoundIf {
         }
     }
 
+    fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore) -> Option<((Script, Script), String)> {
+        let mut ans_text = String::new();
+
+        let cond = if let Some(s) = Script::parse(text, conf, true) {
+            ans_text += &s.text;
+            s
+        }else{
+            //text.rewind(backup);
+            return None;
+        };
+
+        if let Some(d) = ArgDelimiter::parse(text){
+            ans_text += &d.text;
+        }
+
+        if text.compare(0, "then"){
+            ans_text += &text.consume(4);
+        }
+
+        let doing = if let Some(s) = Script::parse(text, conf, true) {
+            ans_text += &s.text;
+            s
+        }else{
+            //text.rewind(backup);
+            return None;
+        };
+
+        Some( ((cond, doing), ans_text) )
+    }
+
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundIf> {
         if text.len() < 2 || ! text.compare(0, "if") {
             return None;
@@ -103,37 +133,24 @@ impl CompoundIf {
         let mut ans = CompoundIf::new();
         ans.text += &text.consume(2);
 
-        /* if part */
-        let cond = if let Some(s) = Script::parse(text, conf, true) {
-            ans.text += &s.text;
-            s
-        }else{
-            text.rewind(backup);
-            return None;
-        };
-
-        if let Some(d) = ArgDelimiter::parse(text){
-            ans.text += &d.text;
-        }
-
-        if text.compare(0, "then"){
-            ans.text += &text.consume(4);
-        }
-
-        let doing = if let Some(s) = Script::parse(text, conf, true) {
-            ans.text += &s.text;
-            s
-        }else{
-            text.rewind(backup);
-            return None;
-        };
-
-        if text.compare(0, "fi"){
-            ans.text += &text.consume(2);
-        }else if text.compare(0, "else"){
-        }else{
-            text.rewind(backup);
-            return None;
+        loop {
+            if let Some(if_then_str) = CompoundIf::parse_if_then_pair(text, conf) {
+                ans.text += &if_then_str.1;
+                ans.ifthen.push(if_then_str.0);
+            }else{
+                text.rewind(backup);
+                return None;
+            }
+    
+            if text.compare(0, "fi"){
+                ans.text += &text.consume(2);
+                break;
+            }else if text.compare(0, "else"){
+                //ans.text += &text.consume(4);
+            }else{
+                text.rewind(backup);
+                return None;
+            }
         }
 
         if let Some(d) = ArgDelimiter::parse(text){
@@ -145,7 +162,7 @@ impl CompoundIf {
             ans.eoc = Some(e);
         }
 
-        ans.ifthen.push((cond, doing));
+        //ans.ifthen.push((cond, doing));
         Some(ans)
     }
 }
