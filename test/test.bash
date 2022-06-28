@@ -645,5 +645,17 @@ res=$($com <<< 'echo a | if [ "$(cat)" == "a" ] ; then echo aa; fi')
 res=$($com <<< 'echo a | if [ "$(cat)" == "a" ] ; then echo abc; fi | rev')
 [ "$res" = "cba" ]
 
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "c" ] ; then echo bb; else echo cc; fi')
+[ "$res" = "cc" ]
+
+res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; elif [ "b" == "c" ] ; then echo bb; else echo cc; fi')
+[ "$res" = "aa" ]
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then echo bb; else echo cc; fi')
+[ "$res" = "bb" ]
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then echo bb; fi')
+[ "$res" = "bb" ]
+
 trap "" EXIT
 echo TEST OK

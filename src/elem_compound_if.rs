@@ -181,7 +181,6 @@ impl CompoundIf {
             ans.eoc = Some(e);
         }
 
-        //ans.ifthen.push((cond, doing));
         Some(ans)
     }
 }
