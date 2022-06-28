@@ -6,10 +6,11 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
+use crate::ScriptElem;
 
 pub struct Function {
     pub name: String,
-    pub body: CompoundBrace,
+    pub body: Box<dyn ScriptElem>,
     pub text: String,
 }
 
@@ -17,7 +18,7 @@ impl Function {
     pub fn new(name: String, body: CompoundBrace) -> Function{
         Function {
             name: name,
-            body: body,
+            body: Box::new(body),
             text: "".to_string(),
         }
     }

@@ -40,6 +40,8 @@ impl ScriptElem for Pipeline {
             }
         }
     }
+
+    fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl Pipeline {

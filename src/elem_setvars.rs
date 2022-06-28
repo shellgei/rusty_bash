@@ -20,22 +20,6 @@ pub struct SetVariables {
     pub text: String,
 }
 
-impl SetVariables {
-    pub fn new() -> SetVariables{
-        SetVariables {
-            elems: vec!(),
-            text: "".to_string(),
-        }
-    }
-
-    pub fn return_if_valid(ans: SetVariables) -> Option<SetVariables> {
-        if ans.elems.len() > 0 {
-            Some(ans)
-        }else{
-            None
-        }
-    }
-}
 
 impl ScriptElem for SetVariables {
     fn exec(&mut self, conf: &mut ShellCore) {
@@ -57,9 +41,26 @@ impl ScriptElem for SetVariables {
             };
         };
     }
+
+    fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl SetVariables {
+    pub fn new() -> SetVariables{
+        SetVariables {
+            elems: vec!(),
+            text: "".to_string(),
+        }
+    }
+
+    pub fn return_if_valid(ans: SetVariables) -> Option<SetVariables> {
+        if ans.elems.len() > 0 {
+            Some(ans)
+        }else{
+            None
+        }
+    }
+
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("substitutions: '{}'", self.text));
         for elem in &self.elems {

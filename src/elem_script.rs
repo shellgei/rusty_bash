@@ -19,6 +19,8 @@ impl ScriptElem for Script {
         self.elems.iter_mut()
             .for_each(|p| p.exec(conf));
     }
+
+    fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl Script {
@@ -48,8 +50,8 @@ impl Script {
         loop {
             if let Some(f) = Function::parse(text, conf)            {
                 ans.text += &f.text;
-     //           ans.elems.push(Box::new(result));
-                conf.functions.insert(f.name, f.body.text);
+                let body = f.body.get_text();
+                conf.functions.insert(f.name, body);
                 is_function = true;
             }else if let Some(result) = BlankPart::parse(text)           {
                 ans.text += &result.text;

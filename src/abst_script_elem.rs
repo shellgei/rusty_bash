@@ -13,4 +13,5 @@ pub trait ScriptElem {
     fn get_pipe_end(&mut self) -> RawFd { -1 }
     fn get_pipe_out(&mut self) -> RawFd { -1 }
     fn get_eoc_string(&mut self) -> String { "".to_string() }
+    fn get_text(&self) -> String;
 }

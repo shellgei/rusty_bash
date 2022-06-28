@@ -92,6 +92,8 @@ impl ScriptElem for Command {
 
         "".to_string()
     }
+
+    fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl Command {
