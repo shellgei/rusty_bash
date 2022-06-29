@@ -71,12 +71,21 @@ impl SubArgNonQuoted {
         ans
     }
 
-    pub fn parse4(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-        if text.nth(0) == '"' {
-            return None;
-        };
+    pub fn parse4(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgNonQuoted> {
+        if text.len() == 0 {
+            if !text.feed_additional_line(conf){
+                return None;
+            }
+        }
     
-        let pos = scanner_until_escape(text, 0, "\"$");
+        let mut pos = scanner_until_escape(text, 0, "\"$");
+        while pos == text.len() {
+            if !text.feed_additional_line(conf){
+                return None;
+            }
+            pos = scanner_until_escape(text, 0, "\"$");
+        }
+
         Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text)})
     }
 }

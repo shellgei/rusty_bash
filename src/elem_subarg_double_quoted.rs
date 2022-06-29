@@ -4,7 +4,6 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::scanner::*;
 
 use crate::abst_arg_elem::ArgElem;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
@@ -58,12 +57,10 @@ impl ArgElem for SubArgDoubleQuoted {
 impl SubArgDoubleQuoted {
 /* parser for a string such as "aaa${var}" */
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgDoubleQuoted> {
-        if text.len() == 0 {
+        if text.len() == 0 || !text.nth_is(0, "\""){
             return None;
-        }
+        };
 
-        let backup = text.clone();
-    
         let mut ans = SubArgDoubleQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
@@ -71,35 +68,29 @@ impl SubArgDoubleQuoted {
             is_value: is_value,
         };
     
-        if scanner_until(text, 0, "\"") != 0 {
-            return None;
-        }
-        text.consume(1);
+        ans.text += &text.consume(1);
     
         loop {
             if let Some(a) = SubArgVariable::parse2(text) {
+                ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {
+                ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = SubArgVariable::parse(text) {
+                ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = SubArgNonQuoted::parse4(text) {
+            }else if let Some(a) = SubArgNonQuoted::parse4(text, conf) {
+                ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
-            }else{
-                break;
-            };
-        }
-    
-        if scanner_until(text, 0, "\"") != 0 {
-            text.rewind(backup);
-            return None;
-        }
-        text.consume(1);
-    
-        ans.text = "\"".to_owned() 
-             + &ans.subargs.iter().map(|a| a.text()).collect::<Vec<_>>().join("")
-             + "\"";
+            }
 
+            if text.len() > 0 && text.nth_is(0, "\"") {
+                ans.text += &text.consume(1);
+                break;
+            }
+        }
+    
         Some(ans)
     }
 }
