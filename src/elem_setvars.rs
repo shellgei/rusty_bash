@@ -90,8 +90,9 @@ impl SetVariables {
                 break;
             }
     
-            if let Some(result) = ArgDelimiter::parse(text){
-                ans.push(Box::new(result));
+            if let Some(d) = ArgDelimiter::parse(text){
+                ans.text += &d.text;
+                //ans.push(Box::new(result));
             }
         }
 

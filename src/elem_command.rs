@@ -223,7 +223,7 @@ impl Command {
     fn substitutions_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) {
         loop {
             if let Some(d) = ArgDelimiter::parse(text){
-                ans.push_elems(Box::new(d));
+                ans.text += &d.text;
             }
 
             if let Some(r) = Redirect::parse(text){
@@ -267,7 +267,8 @@ impl Command {
             }
 
             if let Some(d) = ArgDelimiter::parse(text){
-                ans.push_elems(Box::new(d));
+                //ans.push_elems(Box::new(d));
+                ans.text += &d.text;
             }
     
             if text.len() == 0 {

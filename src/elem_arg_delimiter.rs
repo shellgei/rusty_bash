@@ -13,15 +13,13 @@ pub struct ArgDelimiter {
     pub debug: DebugInfo,
 }
 
-impl CommandElem for ArgDelimiter {
+impl ArgDelimiter {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.get_text()))
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-}
 
-impl ArgDelimiter{
     pub fn return_if_valid(text: &mut Feeder, pos: usize) -> Option<ArgDelimiter> {
         if pos == 0 {
             return None;
