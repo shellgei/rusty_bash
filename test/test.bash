@@ -217,6 +217,11 @@ res=$($com <<< 'echo a |  { cat ; exit 3 ; }; echo $?')
 [ "$res" = "a
 3" ]
 
+#res=$($com <<< 'A=$(seq 2);echo $A; echo "$A"')
+#[ "$res" = "1 2
+#1
+#2" ]
+
 # expansion of tilde
 
 res=$($com <<< 'echo ~')

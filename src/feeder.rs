@@ -166,6 +166,10 @@ impl Feeder {
         true
     }
 
+    pub fn nth_is_one_of(&self, pos: usize, cmp: &str) -> bool{
+        cmp.to_string().chars().any(|c| c == self.nth(pos) )
+    }
+
     pub fn rewind_feed_backup(&mut self, backup: &Feeder, conf: &mut ShellCore) -> (Feeder, bool) {
         self.rewind(backup.clone());
         let res = self.feed_additional_line(conf);

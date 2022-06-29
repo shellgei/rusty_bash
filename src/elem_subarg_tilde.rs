@@ -38,13 +38,16 @@ impl SubArgTildeUser {
             return None;
         };
 
-        if !in_brace && text.len() > pos && !(text.nth(pos) == ':' || text.nth(pos) == '/' || text.nth(pos) == '\n') {
-            return None;
+        if in_brace {
+            if text.len() > pos && !text.nth_is_one_of(pos, ":/\n,}") {
+                return None;
+            }
+        }else{
+            if text.len() > pos && !text.nth_is_one_of(pos, ":/\n") {
+                return None;
+            }
         }
-        if in_brace && text.len() > pos && !(text.nth(pos) == ':' || text.nth(pos) == '/' || text.nth(pos) == '\n' || text.nth(pos) == ',' || text.nth(pos) == '}' ) {
-            return None;
-        }
-
+        
         Some( SubArgTildeUser{text: text.consume(pos), pos: DebugInfo::init(text) } )
     }
 }
