@@ -3,7 +3,6 @@
 
 mod abst_elems;
 mod elem_arg;
-mod elem_arg_delimiter;
 mod elem_compound_paren;
 mod elem_compound_brace;
 mod elem_compound_if;

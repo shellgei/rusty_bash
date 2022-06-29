@@ -18,7 +18,7 @@ impl Function {
         Function {
             name: name,
             body: body,
-            text: String::new(),
+            text: text,
         }
     }
 
