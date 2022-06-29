@@ -5,7 +5,7 @@ use crate::{ShellCore};
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 
-pub trait List {
+pub trait ListElem {
     fn exec(&mut self, _conf: &mut ShellCore) { }
     fn set_pipe(&mut self, _pin: RawFd, _pout: RawFd, _pprev: RawFd) { }
     fn get_pid(&self) -> Option<Pid> { None }

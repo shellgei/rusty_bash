@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::abst_list_elem::List;
+use crate::abst_list_elem::ListElem;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::abst_command_elem::CommandElem;
 use crate::Feeder;
@@ -12,7 +12,7 @@ pub struct BlankPart {
     pub text: String,
 }
 
-impl List for BlankPart {
+impl ListElem for BlankPart {
     fn get_text(&self) -> String { self.text.clone() }
 }
 

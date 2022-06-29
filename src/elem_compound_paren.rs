@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_list_elem::List;
+use crate::abst_list_elem::ListElem;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use crate::elem_list::Script;
@@ -27,7 +27,7 @@ pub struct CompoundParen {
     pub eoc: Option<Eoc>,
 }
 
-impl List for CompoundParen {
+impl ListElem for CompoundParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         let p = pipe().expect("Pipe cannot open");
 

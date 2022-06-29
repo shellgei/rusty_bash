@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_list_elem::List;
+use crate::abst_list_elem::ListElem;
 use std::os::unix::prelude::RawFd;
 use crate::elem_list::Script;
 use crate::elem_redirect::Redirect;
@@ -25,7 +25,7 @@ pub struct CompoundIf {
     pub eoc: Option<Eoc>,
 }
 
-impl List for CompoundIf {
+impl ListElem for CompoundIf {
     fn exec(&mut self, conf: &mut ShellCore) {
         unsafe {
             match fork() {
