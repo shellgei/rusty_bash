@@ -50,6 +50,7 @@ use std::io::BufReader;
 use std::io::BufRead;
 use crate::elem_command::Command;
 use crate::abst_list_elem::ListElem;
+use crate::abst_list_elem::PipelineElem;
 use crate::elem_list::Script;
 
 

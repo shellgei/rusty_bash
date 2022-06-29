@@ -5,17 +5,17 @@ use crate::{ShellCore, Feeder};
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
-use crate::ListElem;
+use crate::abst_list_elem::PipelineElem;
 use crate::abst_list_elem::compound;
 
 pub struct Function {
     pub name: String,
-    pub body: Box<dyn ListElem>,
+    pub body: Box<dyn PipelineElem>,
     pub text: String,
 }
 
 impl Function {
-    pub fn new(name: String, body: Box<dyn ListElem>) -> Function{
+    pub fn new(name: String, body: Box<dyn PipelineElem>) -> Function{
         Function {
             name: name,
             body: body,

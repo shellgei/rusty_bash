@@ -20,8 +20,6 @@ impl Script {
             .for_each(|p| p.exec(conf));
     }
 
-    //fn get_text(&self) -> String { self.text.clone() }
-
     pub fn new() -> Script{
         Script {
             elems: vec!(),

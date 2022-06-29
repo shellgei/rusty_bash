@@ -12,7 +12,7 @@ use crate::{ShellCore,Feeder};
 use crate::abst_command_elem::CommandElem;
 use crate::utils::blue_string;
 
-use crate::abst_list_elem::ListElem;
+use crate::abst_list_elem::PipelineElem;
 use crate::elem_arg::Arg;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_compound_brace::CompoundBrace;
@@ -37,7 +37,7 @@ pub struct Command {
     pub pid: Option<Pid>,
 }
 
-impl ListElem for Command {
+impl PipelineElem for Command {
 
     fn exec(&mut self, conf: &mut ShellCore) {
         if conf.flags.v {

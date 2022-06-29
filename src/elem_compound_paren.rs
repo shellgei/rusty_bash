@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_list_elem::ListElem;
+use crate::abst_list_elem::PipelineElem;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use crate::elem_list::Script;
@@ -13,7 +13,6 @@ use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::utils_io::*;
 use nix::unistd::{close, pipe};
 
-/* ( script ) */
 pub struct CompoundParen {
     pub script: Option<Script>,
     pub redirects: Vec<Box<Redirect>>,
@@ -27,7 +26,7 @@ pub struct CompoundParen {
     pub eoc: Option<Eoc>,
 }
 
-impl ListElem for CompoundParen {
+impl PipelineElem for CompoundParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         let p = pipe().expect("Pipe cannot open");
 

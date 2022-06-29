@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_list_elem::ListElem;
+use crate::abst_list_elem::PipelineElem;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use crate::elem_list::Script;
@@ -39,7 +39,7 @@ pub struct CompoundBrace {
     pub eoc: Option<Eoc>,
 }
 
-impl ListElem for CompoundBrace {
+impl PipelineElem for CompoundBrace {
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 
             && self.redirects.len() == 0 /* && self.script.args_for_function.len() == 0 */ {

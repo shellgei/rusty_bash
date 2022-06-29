@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_list_elem::ListElem;
+use crate::abst_list_elem::PipelineElem;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{pipe, Pid};
@@ -13,7 +14,7 @@ use nix::sys::wait::WaitStatus;
 use crate::abst_list_elem::compound;
 
 pub struct Pipeline {
-    pub commands: Vec<Box<dyn ListElem>>,
+    pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
 }
 
