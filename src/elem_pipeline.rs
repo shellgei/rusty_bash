@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_list_elem::ListElem;
-use crate::abst_list_elem::PipelineElem;
+use crate::abst_elems::ListElem;
+use crate::abst_elems::PipelineElem;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{pipe, Pid};
@@ -11,7 +11,7 @@ use crate::scanner::scanner_end_paren;
 use crate::utils_io::set_parent_io;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
-use crate::abst_list_elem::compound;
+use crate::abst_elems::compound;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,

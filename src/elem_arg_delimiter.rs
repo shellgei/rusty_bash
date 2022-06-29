@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::scanner::scanner_while;
-use crate::abst_command_elem::CommandElem;
+use crate::abst_elems::CommandElem;
 
 /* delimiter */
 #[derive(Debug)]

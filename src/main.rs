@@ -1,9 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod abst_arg_elem;
-mod abst_command_elem;
-mod abst_list_elem;
+mod abst_elems;
 mod elem_arg;
 mod elem_arg_delimiter;
 mod elem_compound_paren;
@@ -49,8 +47,8 @@ use std::fs::OpenOptions;
 use std::io::BufReader;
 use std::io::BufRead;
 use crate::elem_command::Command;
-use crate::abst_list_elem::ListElem;
-use crate::abst_list_elem::PipelineElem;
+use crate::abst_elems::ListElem;
+use crate::abst_elems::PipelineElem;
 use crate::elem_list::Script;
 
 
