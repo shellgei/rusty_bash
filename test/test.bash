@@ -226,6 +226,29 @@ res=$($com <<< 'A=$(seq 2 | sed "s-^- -"); echo "$A"' )
 [ "$res" = " 1
  2" ]
 
+res=$($com <<< 'A="
+1
+2
+3"; echo "$A"' )
+[ "$res" = "
+1
+2
+3" ]
+
+res=$($com << 'EOF'
+A='
+1
+ 2
+  3'
+
+echo "$A"
+EOF
+)
+[ "$res" = '
+1
+ 2
+  3' ]
+
 # expansion of tilde
 
 res=$($com <<< 'echo ~')

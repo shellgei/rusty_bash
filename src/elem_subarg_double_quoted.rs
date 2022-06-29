@@ -80,7 +80,7 @@ impl SubArgDoubleQuoted {
             }else if let Some(a) = SubArgVariable::parse(text) {
                 ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = SubArgNonQuoted::parse4(text, conf) {
+            }else if let Some(a) = SubArgNonQuoted::parse4(text, conf, is_value) {
                 ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
             }
