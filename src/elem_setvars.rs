@@ -30,10 +30,6 @@ impl ListElem for SetVariables {
 
         for e in &mut self.elems {
             let sub = e.eval(conf);
-            if sub.len() != 2 {
-                continue;
-            }
-
             let (key, value) = (sub[0].clone(), sub[1].clone());
             if let Ok(_) = env::var(&key) {
                 env::set_var(key, value);
@@ -92,7 +88,6 @@ impl SetVariables {
     
             if let Some(d) = ArgDelimiter::parse(text){
                 ans.text += &d.text;
-                //ans.push(Box::new(result));
             }
         }
 
