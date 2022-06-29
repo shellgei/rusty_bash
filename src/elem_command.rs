@@ -14,7 +14,6 @@ use crate::utils::blue_string;
 
 use crate::abst_elems::PipelineElem;
 use crate::elem_arg::Arg;
-use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_end_of_command::Eoc;
@@ -222,9 +221,8 @@ impl Command {
 
     fn substitutions_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) {
         loop {
-            if let Some(d) = ArgDelimiter::parse(text){
-                ans.text += &d.text;
-            }
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
@@ -266,10 +264,8 @@ impl Command {
                 break;
             }
 
-            if let Some(d) = ArgDelimiter::parse(text){
-                //ans.push_elems(Box::new(d));
-                ans.text += &d.text;
-            }
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
     
             if text.len() == 0 {
                 break;

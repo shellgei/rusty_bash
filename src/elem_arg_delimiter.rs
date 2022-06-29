@@ -5,6 +5,7 @@ use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::scanner::scanner_while;
 
+/*
 /* delimiter */
 #[derive(Debug)]
 pub struct ArgDelimiter {
@@ -25,3 +26,4 @@ impl ArgDelimiter {
         Some(ArgDelimiter{text: text.consume(pos), debug: DebugInfo::init(text)})
     }
 }
+*/

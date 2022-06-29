@@ -2,9 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_varname::VarName;
-use crate::scanner::scanner_varname;
+use crate::scanner::*;
 use crate::abst_elems::PipelineElem;
 use crate::abst_elems::compound;
 
@@ -15,7 +14,7 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn new(name: String, body: Box<dyn PipelineElem>) -> Function{
+    pub fn new(name: String, body: Box<dyn PipelineElem>, text: String) -> Function{
         Function {
             name: name,
             body: body,
@@ -26,6 +25,7 @@ impl Function {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Function> {
          let backup = text.clone();
          let mut name;
+         let mut ans_text = String::new();
 
          loop {
              let var_pos = scanner_varname(text, 0);
@@ -34,7 +34,9 @@ impl Function {
                  return None;
              }
              name = VarName::new(text, var_pos);
-             let _ = ArgDelimiter::parse(text);
+
+             let d = scanner_while(text, 0, " \t");
+             ans_text += &text.consume(d);
 
              if name.text != "function" {
                  break;
@@ -45,19 +47,21 @@ impl Function {
              text.rewind(backup);
              return None;
          }
-         text.consume(1);
-         let _ = ArgDelimiter::parse(text);
+         ans_text += &text.consume(1);
+         let d = scanner_while(text, 0, " \t");
+         ans_text += &text.consume(d);
  
          if text.len() == 0 || text.nth(0) != ')' {
              text.rewind(backup);
              return None;
          }
-         text.consume(1);
+         ans_text += &text.consume(1);
  
-         let _ = ArgDelimiter::parse(text);
+         let d = scanner_while(text, 0, " \t");
+         ans_text += &text.consume(d);
  
          if let Some(c) = compound(text, conf){
-             Some( Function::new(name.text, c) )
+             Some( Function::new(name.text, c, ans_text) )
          }else{
              text.rewind(backup);
              None

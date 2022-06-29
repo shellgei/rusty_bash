@@ -9,9 +9,9 @@ use crate::elem_list::Script;
 use std::process::exit;
 use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
-use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::utils_io::*;
 use nix::unistd::{close, pipe};
+use crate::scanner::scanner_while;
 
 pub struct CompoundParen {
     pub script: Option<Script>,
@@ -136,9 +136,8 @@ impl CompoundParen {
         }
 
         loop {
-            if let Some(d) = ArgDelimiter::parse(text){
-                ans.text += &d.text;
-            }
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text){
                     ans.text += &r.text;

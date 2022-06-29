@@ -6,11 +6,11 @@ use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
 use crate::elem_list::Script;
 use crate::elem_redirect::Redirect;
-use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{close, fork, Pid, ForkResult};
 use std::process::exit;
 use crate::utils_io::set_child_io;
 use crate::elem_end_of_command::Eoc;
+use crate::scanner::scanner_while;
 
 /* ( script ) */
 pub struct CompoundIf {
@@ -108,12 +108,6 @@ impl CompoundIf {
 
         CompoundIf::next_line(text, conf, ans);
 
-        /*
-
-        if let Some(d) = ArgDelimiter::parse(text){
-            ans.text += &d.text;
-        }*/
-
         if text.compare(0, "then"){
             ans.text += &text.consume(4);
         }
@@ -134,9 +128,8 @@ impl CompoundIf {
     }
 
     fn next_line(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
-        if let Some(d) = ArgDelimiter::parse(text){
-            ans.text += &d.text;
-        }
+        let d = scanner_while(text, 0, " \t");
+        ans.text += &text.consume(d);
 
         if text.len() == 0 || text.nth(0) == '\n' {
             if ! text.feed_additional_line(conf){
@@ -200,9 +193,8 @@ impl CompoundIf {
             return None;
         }
 
-        if let Some(d) = ArgDelimiter::parse(text){
-            ans.text += &d.text;
-        }
+        let d = scanner_while(text, 0, " \t");
+        ans.text += &text.consume(d);
 
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;

@@ -8,9 +8,9 @@ use std::os::unix::prelude::RawFd;
 use crate::elem_list::Script;
 use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
-use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::utils_io::*;
 use std::process::exit;
+use crate::scanner::scanner_while;
 
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
@@ -145,9 +145,8 @@ impl CompoundBrace {
         text.consume(1);
 
         loop {
-            if let Some(d) = ArgDelimiter::parse(text){
-                ans.text += &d.text;
-            }
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text){
                     ans.text += &r.text;

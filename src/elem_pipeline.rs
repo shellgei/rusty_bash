@@ -5,9 +5,9 @@ use crate::{ShellCore, Feeder};
 use crate::abst_elems::ListElem;
 use crate::abst_elems::PipelineElem;
 use crate::Command;
-use crate::elem_arg_delimiter::ArgDelimiter;
+//use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{pipe, Pid};
-use crate::scanner::scanner_end_paren;
+use crate::scanner::*;
 use crate::utils_io::set_parent_io;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
@@ -72,9 +72,13 @@ impl Pipeline {
                 break;
             }
 
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
+
+                /*
             if let Some(d) = ArgDelimiter::parse(text) {
                 ans.text += &d.text.clone();
-            }
+            }*/
 
             if eocs == "|" && text.len() == 1 && text.nth(0) == '\n' {
                 text.consume(1);

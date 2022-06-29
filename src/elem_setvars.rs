@@ -10,10 +10,9 @@ use crate::abst_elems::ListElem;
 
 use crate::Feeder;
 use crate::elem_substitution::Substitution;
-use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
-use crate::scanner::scanner_end_paren;
+use crate::scanner::*;
 
 pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandElem>>,
@@ -86,9 +85,8 @@ impl SetVariables {
                 break;
             }
     
-            if let Some(d) = ArgDelimiter::parse(text){
-                ans.text += &d.text;
-            }
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
         }
 
         if scanner_end_paren(text, 0) == 1 {

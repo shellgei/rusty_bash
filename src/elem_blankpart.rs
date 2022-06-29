@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elem_arg_delimiter::ArgDelimiter;
 use crate::Feeder;
 use crate::elem_end_of_command::Eoc;
+use crate::scanner::scanner_while;
 
 pub struct BlankPart {
     text: String,
@@ -16,10 +16,10 @@ impl BlankPart {
         let mut ans = BlankPart { text: String::new() };
     
         loop {
-            if let Some(d) = ArgDelimiter::parse(text) {
-                ans.text += &d.text;
-            }
-            else if let Some(e) = Eoc::parse(text) {
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
+
+            if let Some(e) = Eoc::parse(text) {
                 ans.text += &e.text;
             }
             else{break;};
