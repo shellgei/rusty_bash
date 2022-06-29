@@ -71,7 +71,7 @@ impl SetVariables {
     }
 
     pub fn push(&mut self, s: Box<dyn CommandElem>){
-        self.text += &s.text();
+        self.text += &s.get_text();
         self.elems.push(s);
     }
 

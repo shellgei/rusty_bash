@@ -35,7 +35,7 @@ pub trait PipelineElem {
 pub trait CommandElem {
     fn parse_info(&self) -> Vec<String>;
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String> { vec!() }
-    fn text(&self) -> String { String::new() }
+    fn get_text(&self) -> String { String::new() }
 }
 
 pub trait ArgElem {

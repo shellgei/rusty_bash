@@ -11,7 +11,7 @@ pub struct DebugInfo {
 }
 
 impl DebugInfo {
-    pub fn text(&self) -> String {
+    pub fn get_text(&self) -> String {
         format!("lineno: {}, pos: {} {}", 
                 self.lineno.to_string(),
                 self.pos.to_string(),

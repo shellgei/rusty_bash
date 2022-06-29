@@ -20,7 +20,7 @@ pub struct Substitution {
 
 impl CommandElem for Substitution {
     fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    substitution: '{}' ({})\n", self.text.clone(), self.debug.text()))
+        vec!(format!("    substitution: '{}' ({})\n", self.text.clone(), self.debug.get_text()))
     }
 
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> { 
@@ -36,7 +36,7 @@ impl CommandElem for Substitution {
         ans
     }
 
-    fn text(&self) -> String { self.text.clone() }
+    fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl Substitution {

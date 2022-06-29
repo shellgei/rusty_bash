@@ -15,10 +15,10 @@ pub struct Eoc {
 
 impl CommandElem for Eoc {
     fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.text()))
+        vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.get_text()))
     }
 
-    fn text(&self) -> String { self.text.clone() }
+    fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl Eoc {

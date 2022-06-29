@@ -98,7 +98,7 @@ impl Arg {
 impl CommandElem for Arg {
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
-                              self.text.clone(), self.pos.text()));
+                              self.text.clone(), self.pos.get_text()));
         for sub in &self.subargs {
             ans.push("        subarg      : ".to_owned() + &*sub.get_text());
         };
@@ -140,7 +140,7 @@ impl CommandElem for Arg {
         ans
     }
 
-    fn text(&self) -> String { self.text.clone() }
+    fn get_text(&self) -> String { self.text.clone() }
 }
 
 pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<Arg> {

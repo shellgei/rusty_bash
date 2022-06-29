@@ -137,12 +137,12 @@ impl Command {
     }
 
     pub fn push_vars(&mut self, s: Substitution){
-        self.text += &s.text();
+        self.text += &s.get_text();
         self.vars.push(Box::new(s));
     }
 
     pub fn push_elems(&mut self, s: Box<dyn CommandElem>){
-        self.text += &s.text();
+        self.text += &s.get_text();
         self.args.push(s);
     }
 

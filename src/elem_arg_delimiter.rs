@@ -15,10 +15,10 @@ pub struct ArgDelimiter {
 
 impl CommandElem for ArgDelimiter {
     fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.text()))
+        vec!(format!("    delimiter: '{}' ({})", self.text.clone(), self.debug.get_text()))
     }
 
-    fn text(&self) -> String { self.text.clone() }
+    fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl ArgDelimiter{
