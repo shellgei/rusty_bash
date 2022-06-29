@@ -3,7 +3,7 @@
 
 mod abst_arg_elem;
 mod abst_command_elem;
-mod abst_script_elem;
+mod abst_list_elem;
 mod elem_arg;
 mod elem_arg_delimiter;
 mod elem_compound_paren;
@@ -11,7 +11,7 @@ mod elem_compound_brace;
 mod elem_compound_if;
 mod elem_end_of_command;
 mod elem_function;
-mod elem_script;
+mod elem_list;
 mod elem_blankpart;
 mod elem_command;
 mod elem_redirect;
@@ -49,8 +49,8 @@ use std::fs::OpenOptions;
 use std::io::BufReader;
 use std::io::BufRead;
 use crate::elem_command::Command;
-use crate::abst_script_elem::List;
-use crate::elem_script::Script;
+use crate::abst_list_elem::List;
+use crate::elem_list::Script;
 
 
 fn is_interactive(pid: u32) -> bool {
