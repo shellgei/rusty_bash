@@ -18,6 +18,7 @@ use crate::scanner::scanner_end_paren;
 pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandElem>>,
     pub text: String,
+    pub eoc: Option<Eoc>,
 }
 
 
@@ -29,9 +30,9 @@ impl ListElem for SetVariables {
 
         for e in &mut self.elems {
             let sub = e.eval(conf);
-            if sub.len() != 2{
+            if sub.len() != 2 {
                 continue;
-            };
+            }
 
             let (key, value) = (sub[0].clone(), sub[1].clone());
             if let Ok(_) = env::var(&key) {
@@ -50,6 +51,7 @@ impl SetVariables {
         SetVariables {
             elems: vec!(),
             text: "".to_string(),
+            eoc: None,
         }
     }
 
@@ -95,7 +97,8 @@ impl SetVariables {
 
         if scanner_end_paren(text, 0) == 1 {
         }else if let Some(result) = Eoc::parse(text){
-            ans.push(Box::new(result));
+            ans.text += &result.text;
+            ans.eoc = Some(result);
         }else{
             text.rewind(backup);
             return None;

@@ -13,15 +13,13 @@ pub struct Eoc {
     pub debug: DebugInfo,
 }
 
-impl CommandElem for Eoc {
+impl Eoc {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.get_text()))
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-}
 
-impl Eoc {
     pub fn parse(text: &mut Feeder) -> Option<Eoc> {
         if text.len() == 0 {
             return None;
