@@ -105,7 +105,7 @@ pub fn scanner_start_brace(text: &Feeder, from: usize) -> usize {
 }
 
 pub fn scanner_blank_part(text: &Feeder, from: usize) -> usize {
-    let mut ans = 0;
+    let mut ans = from;
     loop {
         let len_del = scanner_while(text, ans, " \t");
         ans = len_del;

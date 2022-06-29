@@ -9,7 +9,6 @@ mod elem_compound_if;
 mod elem_end_of_command;
 mod elem_function;
 mod elem_list;
-mod elem_blankpart;
 mod elem_command;
 mod elem_redirect;
 mod elem_setvars;
