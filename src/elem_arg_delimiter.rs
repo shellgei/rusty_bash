@@ -15,16 +15,13 @@ pub struct ArgDelimiter {
 impl ArgDelimiter {
     //fn get_text(&self) -> String { self.text.clone() }
 
-    pub fn return_if_valid(text: &mut Feeder, pos: usize) -> Option<ArgDelimiter> {
+    pub fn parse(text: &mut Feeder) -> Option<ArgDelimiter> {
+        let pos = scanner_while(text, 0, " \t");
+
         if pos == 0 {
             return None;
         };
 
         Some(ArgDelimiter{text: text.consume(pos), debug: DebugInfo::init(text)})
-    }
-
-    pub fn parse(text: &mut Feeder) -> Option<ArgDelimiter> {
-        let pos = scanner_while(text, 0, " \t");
-        ArgDelimiter::return_if_valid(text, pos)
     }
 }

@@ -17,7 +17,7 @@ use crate::elem_subarg_braced::SubArgBraced;
 use crate::elem_subarg_variable::SubArgVariable;
 
 pub trait ListElem {
-    fn exec(&mut self, _conf: &mut ShellCore) { }
+    fn exec(&mut self, _conf: &mut ShellCore);
     fn get_text(&self) -> String;
 }
 
@@ -33,12 +33,12 @@ pub trait PipelineElem {
 
 pub trait CommandElem {
     fn parse_info(&self) -> Vec<String>;
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String>;// { vec!() }
-    fn get_text(&self) -> String;// { String::new() }
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String>;
+    fn get_text(&self) -> String;
 }
 
 pub trait ArgElem {
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>>;// { vec!() }
+    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>>;
     fn get_text(&self) -> String;
     fn permit_lf(&self) -> bool {false}
 }
