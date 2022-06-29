@@ -6,15 +6,15 @@ use crate::elem_function::Function;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::elem_blankpart::BlankPart;
-use crate::ScriptElem;
+use crate::List;
 
 pub struct Script {
-    pub elems: Vec<Box<dyn ScriptElem>>,
+    pub elems: Vec<Box<dyn List>>,
     pub text: String,
     pub procnum: usize,
 }
 
-impl ScriptElem for Script {
+impl List for Script {
     fn exec(&mut self, conf: &mut ShellCore) {
         self.elems.iter_mut()
             .for_each(|p| p.exec(conf));

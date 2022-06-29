@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_script_elem::ScriptElem;
+use crate::abst_script_elem::List;
 use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{pipe, Pid};
@@ -15,11 +15,11 @@ use nix::sys::wait::WaitStatus;
 use crate::elem_compound_if::CompoundIf;
 
 pub struct Pipeline {
-    pub commands: Vec<Box<dyn ScriptElem>>,
+    pub commands: Vec<Box<dyn List>>,
     pub text: String,
 }
 
-impl ScriptElem for Pipeline {
+impl List for Pipeline {
     fn exec(&mut self, conf: &mut ShellCore) {
         let len = self.commands.len();
         let mut prevfd = -1;

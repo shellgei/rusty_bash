@@ -6,7 +6,7 @@ use std::env;
 use crate::ShellCore;
 use crate::abst_command_elem::CommandElem;
 use crate::utils::blue_string;
-use crate::abst_script_elem::ScriptElem;
+use crate::abst_script_elem::List;
 
 use crate::Feeder;
 use crate::elem_substitution::Substitution;
@@ -21,7 +21,7 @@ pub struct SetVariables {
 }
 
 
-impl ScriptElem for SetVariables {
+impl List for SetVariables {
     fn exec(&mut self, conf: &mut ShellCore) {
         if conf.flags.d {
             eprintln!("{}", self.parse_info().join("\n"));

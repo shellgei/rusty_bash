@@ -7,16 +7,16 @@ use crate::elem_compound_brace::CompoundBrace;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
-use crate::ScriptElem;
+use crate::List;
 
 pub struct Function {
     pub name: String,
-    pub body: Box<dyn ScriptElem>,
+    pub body: Box<dyn List>,
     pub text: String,
 }
 
 impl Function {
-    pub fn new(name: String, body: Box<dyn ScriptElem>) -> Function{
+    pub fn new(name: String, body: Box<dyn List>) -> Function{
         Function {
             name: name,
             body: body,

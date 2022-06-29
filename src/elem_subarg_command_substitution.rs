@@ -6,7 +6,7 @@ use crate::ShellCore;
 use crate::Feeder;
 
 use crate::abst_arg_elem::ArgElem;
-use crate::abst_script_elem::ScriptElem;
+use crate::abst_script_elem::List;
 use crate::elem_compound_paren::CompoundParen;
 
 pub struct SubArgCommandSubstitution {
