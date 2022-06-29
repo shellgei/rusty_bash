@@ -13,12 +13,17 @@ pub struct SubArgCommandSubstitution {
     pub text: String,
     pub pos: DebugInfo,
     pub com: CompoundParen, 
+    pub is_value: bool,
 }
 
 impl ArgElem for SubArgCommandSubstitution {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
         self.com.substitution = true;
         self.com.exec(conf);
+
+        if self.is_value {
+            return vec!(vec!(self.com.substitution_text.clone()));
+        }
 
         let ans = self.com.substitution_text
                 .split(" ")
@@ -34,7 +39,7 @@ impl ArgElem for SubArgCommandSubstitution {
 }
 
 impl SubArgCommandSubstitution {
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgCommandSubstitution> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgCommandSubstitution> {
         if text.len() == 0 || text.nth(0) != '$' {
             return None;
         }
@@ -46,7 +51,8 @@ impl SubArgCommandSubstitution {
             let ans = SubArgCommandSubstitution {
                 text: "$".to_owned() + &e.text.clone(),
                 pos: DebugInfo::init(text),
-                com: e };
+                com: e,
+                is_value: is_value};
     
             return Some(ans);
         }else{

@@ -15,7 +15,8 @@ use crate::utils::combine;
 pub struct SubArgDoubleQuoted {
     pub text: String,
     pub pos: DebugInfo,
-    pub subargs: Vec<Box<dyn ArgElem>>
+    pub subargs: Vec<Box<dyn ArgElem>>,
+    pub is_value: bool,
 }
 
 impl ArgElem for SubArgDoubleQuoted {
@@ -56,7 +57,7 @@ impl ArgElem for SubArgDoubleQuoted {
 
 impl SubArgDoubleQuoted {
 /* parser for a string such as "aaa${var}" */
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgDoubleQuoted> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgDoubleQuoted> {
         if text.len() == 0 {
             return None;
         }
@@ -67,6 +68,7 @@ impl SubArgDoubleQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
             subargs: vec!(),
+            is_value: is_value,
         };
     
         if scanner_until(text, 0, "\"") != 0 {
@@ -77,7 +79,7 @@ impl SubArgDoubleQuoted {
         loop {
             if let Some(a) = SubArgVariable::parse2(text) {
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = SubArgCommandSubstitution::parse(text, conf) {
+            }else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = SubArgVariable::parse(text) {
                 ans.subargs.push(Box::new(a));
