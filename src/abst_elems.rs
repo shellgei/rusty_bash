@@ -44,14 +44,6 @@ pub trait CommandElem {
     fn text(&self) -> String { String::new() }
 }
 
-pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn PipelineElem>> {
-    if let Some(a) =      CompoundIf::parse(text,conf)            {Some(Box::new(a))}
-    else if let Some(a) = CompoundParen::parse(text, conf, false) {Some(Box::new(a))}
-    else if let Some(a) = CompoundBrace::parse(text, conf)        {Some(Box::new(a))}
-    else {None}
-}
-
-
 pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
         vec!()
@@ -59,6 +51,13 @@ pub trait ArgElem {
 
     fn text(&self) -> String;
     fn permit_lf(&self) -> bool {false}
+}
+
+pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn PipelineElem>> {
+    if let Some(a) =      CompoundIf::parse(text,conf)            {Some(Box::new(a))}
+    else if let Some(a) = CompoundParen::parse(text, conf, false) {Some(Box::new(a))}
+    else if let Some(a) = CompoundBrace::parse(text, conf)        {Some(Box::new(a))}
+    else {None}
 }
 
 pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<Box<dyn ArgElem>> {
