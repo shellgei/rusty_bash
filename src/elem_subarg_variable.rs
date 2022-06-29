@@ -49,7 +49,7 @@ impl SubArgVariable {
     }
     
     pub fn parse2(text: &mut Feeder) -> Option<SubArgVariable> {
-        if text.len() < 2 || !(text.nth(0) == '$' && text.nth(1) == '{') {
+        if text.len() < 2 || !(text.compare(0, "${")) {
             return None;
         }
     
