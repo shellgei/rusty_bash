@@ -157,7 +157,9 @@ impl CompoundIf {
             if let Some(if_then_str) = CompoundIf::parse_if_then_pair(text, conf) {
                 ans.text += &if_then_str.1;
                 ans.ifthen.push(if_then_str.0);
-                continue;
+            }else{
+                text.rewind(backup);
+                return None;
             }
     
             if text.compare(0, "fi"){
