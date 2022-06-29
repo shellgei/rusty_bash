@@ -9,20 +9,20 @@ use crate::ListElem;
 use crate::scanner::scanner_blank_part;
 
 pub struct Script {
-    pub elems: Vec<Box<dyn ListElem>>,
+    pub list: Vec<Box<dyn ListElem>>,
     pub text: String,
     pub procnum: usize,
 }
 
 impl Script {
     pub fn exec(&mut self, conf: &mut ShellCore) {
-        self.elems.iter_mut()
+        self.list.iter_mut()
             .for_each(|p| p.exec(conf));
     }
 
     pub fn new() -> Script{
         Script {
-            elems: vec!(),
+            list: vec!(),
             text: "".to_string(),
             procnum: 0,
         }
@@ -54,10 +54,10 @@ impl Script {
                 is_function = true;
             }else if let Some(result) = SetVariables::parse(text, conf) {
                 ans.text += &result.text;
-                ans.elems.push(Box::new(result));
+                ans.list.push(Box::new(result));
             }else if let Some(result) = Pipeline::parse(text, conf) {
                 ans.text += &result.text;
-                ans.elems.push(Box::new(result));
+                ans.list.push(Box::new(result));
                 procnum += 1;
             }
             else {break}
