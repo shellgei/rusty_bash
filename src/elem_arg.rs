@@ -76,8 +76,6 @@ impl Arg {
             ans.subargs.push(Box::new(result));
         }
     
-        //let sub = if is_value{subvalue}else{subarg};
-    
         while let Some(result) = subarg(text, conf, is_value, is_in_brace) {
             ans.text += &(*result).get_text();
             ans.subargs.push(result);

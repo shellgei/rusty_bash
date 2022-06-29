@@ -22,8 +22,8 @@ pub trait ListElem {
 }
 
 pub trait PipelineElem {
-    fn exec(&mut self, _conf: &mut ShellCore) { }
-    fn set_pipe(&mut self, _pin: RawFd, _pout: RawFd, _pprev: RawFd) { }
+    fn exec(&mut self, _conf: &mut ShellCore);
+    fn set_pipe(&mut self, _pin: RawFd, _pout: RawFd, _pprev: RawFd);
     fn get_pid(&self) -> Option<Pid> { None }
     fn set_parent_io(&mut self) { }
     fn get_pipe_end(&mut self) -> RawFd { -1 }
