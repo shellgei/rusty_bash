@@ -104,7 +104,7 @@ impl SubArgBraced {
         ans.text = text.consume(1);
         ans.is_value = is_value;
 
-        while let Some(arg) = arg_in_brace(text, conf) {
+        while let Some(arg) = arg_in_brace(text, conf, is_value) {
             ans.text += &arg.text.clone();
             ans.args.push(arg); 
 

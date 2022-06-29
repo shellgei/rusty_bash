@@ -143,7 +143,7 @@ impl CommandElem for Arg {
     fn text(&self) -> String { self.text.clone() }
 }
 
-pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
+pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
         pos: DebugInfo::init(text),
@@ -167,7 +167,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
         ans.subargs.push(Box::new(result));
     }
 
-    while let Some(result) = subarg_in_brace(text, conf) {
+    while let Some(result) = subarg_in_brace(text, conf, is_value) {
         ans.text += &(*result).text();
         ans.subargs.push(result);
     };
