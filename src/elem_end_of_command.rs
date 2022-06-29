@@ -4,7 +4,6 @@
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::scanner::scanner_end_of_com;
-use crate::abst_elems::CommandElem;
 
 /* ;, \n, and comment */
 #[derive(Debug)]
@@ -14,11 +13,7 @@ pub struct Eoc {
 }
 
 impl Eoc {
-    fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    end mark : '{}' ({})\n", self.text.clone(), self.debug.get_text()))
-    }
-
-    fn get_text(&self) -> String { self.text.clone() }
+    //fn get_text(&self) -> String { self.text.clone() }
 
     pub fn parse(text: &mut Feeder) -> Option<Eoc> {
         if text.len() == 0 {
