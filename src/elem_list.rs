@@ -14,16 +14,14 @@ pub struct Script {
     pub procnum: usize,
 }
 
-impl ListElem for Script {
-    fn exec(&mut self, conf: &mut ShellCore) {
+impl Script {
+    pub fn exec(&mut self, conf: &mut ShellCore) {
         self.elems.iter_mut()
             .for_each(|p| p.exec(conf));
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-}
+    //fn get_text(&self) -> String { self.text.clone() }
 
-impl Script {
     pub fn new() -> Script{
         Script {
             elems: vec!(),
