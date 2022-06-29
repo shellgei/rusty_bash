@@ -3,12 +3,10 @@
 
 use crate::abst_elems::ListElem;
 use crate::elem_arg_delimiter::ArgDelimiter;
-use crate::abst_elems::CommandElem;
 use crate::Feeder;
 use crate::elem_end_of_command::Eoc;
 
 pub struct BlankPart {
-    pub elems: Vec<Box<dyn CommandElem>>,
     pub text: String,
 }
 
@@ -19,21 +17,7 @@ impl ListElem for BlankPart {
 impl BlankPart {
     pub fn new() -> BlankPart{
         BlankPart {
-            elems: vec!(),
             text: "".to_string(),
-        }
-    }
-
-    pub fn push(&mut self, s: Box<dyn CommandElem>){
-        self.text += &s.get_text();
-        self.elems.push(s);
-    }
-
-    pub fn return_if_valid(ans: BlankPart) -> Option<BlankPart> {
-        if ans.elems.len() > 0 {
-            Some(ans)
-        }else{
-            None
         }
     }
 
@@ -41,11 +25,19 @@ impl BlankPart {
         let mut ans = BlankPart::new();
     
         loop {
-            if let Some(d) = ArgDelimiter::parse(text) {ans.push(Box::new(d));}
-            else if let Some(e) = Eoc::parse(text)     {ans.push(Box::new(e));}
+            if let Some(d) = ArgDelimiter::parse(text) {
+                ans.text += &d.text;
+            }
+            else if let Some(e) = Eoc::parse(text) {
+                ans.text += &e.text;
+            }
             else{break;};
         };
     
-        BlankPart::return_if_valid(ans)
+        if ans.text.len() > 0 {
+            Some(ans)
+        }else{
+            None
+        }
     }
 }
