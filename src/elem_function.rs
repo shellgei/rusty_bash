@@ -3,11 +3,10 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elem_arg_delimiter::ArgDelimiter;
-use crate::elem_compound_brace::CompoundBrace;
-use crate::elem_compound_paren::CompoundParen;
 use crate::elem_varname::VarName;
 use crate::scanner::scanner_varname;
 use crate::ListElem;
+use crate::abst_list_elem::compound;
 
 pub struct Function {
     pub name: String,
@@ -57,10 +56,14 @@ impl Function {
  
          let _ = ArgDelimiter::parse(text);
  
+         /*
          if let Some(c) = CompoundBrace::parse(text, conf){
              Some( Function::new(name.text, Box::new(c)) )
          }else if let Some(c) = CompoundParen::parse(text, conf, true){
              Some( Function::new(name.text, Box::new(c)) )
+             */
+         if let Some(c) = compound(text, conf){
+             Some( Function::new(name.text, c) )
          }else{
              text.rewind(backup);
              None
