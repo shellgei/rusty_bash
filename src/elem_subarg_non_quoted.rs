@@ -15,7 +15,7 @@ pub struct SubArgNonQuoted {
 }
 
 impl ArgElem for SubArgNonQuoted {
-    fn text(&self) -> String {
+    fn get_text(&self) -> String {
         self.text.clone()
     }
 

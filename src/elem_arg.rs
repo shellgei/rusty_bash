@@ -72,14 +72,14 @@ impl Arg {
         };
 
         if let Some(result) = SubArgTildeUser::parse(text, false) {
-            ans.text += &result.text();
+            ans.text += &result.get_text();
             ans.subargs.push(Box::new(result));
         }
     
         //let sub = if is_value{subvalue}else{subarg};
     
         while let Some(result) = subarg(text, conf, is_value, is_in_brace) {
-            ans.text += &(*result).text();
+            ans.text += &(*result).get_text();
             ans.subargs.push(result);
     
             if text.len() == 0 {
@@ -100,7 +100,7 @@ impl CommandElem for Arg {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
                               self.text.clone(), self.pos.text()));
         for sub in &self.subargs {
-            ans.push("        subarg      : ".to_owned() + &*sub.text());
+            ans.push("        subarg      : ".to_owned() + &*sub.get_text());
         };
 
         ans
@@ -163,12 +163,12 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
     };
 
     if let Some(result) = SubArgTildeUser::parse(text, true) {
-        ans.text += &result.text();
+        ans.text += &result.get_text();
         ans.subargs.push(Box::new(result));
     }
 
     while let Some(result) = subarg(text, conf, is_value, true) {
-        ans.text += &(*result).text();
+        ans.text += &(*result).get_text();
         ans.subargs.push(result);
     };
 

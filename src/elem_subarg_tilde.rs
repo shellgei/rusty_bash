@@ -15,7 +15,7 @@ pub struct SubArgTildeUser {
 }
 
 impl ArgElem for SubArgTildeUser {
-    fn text(&self) -> String {
+    fn get_text(&self) -> String {
         self.text.clone()
     }
 

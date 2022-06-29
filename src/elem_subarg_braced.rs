@@ -29,7 +29,7 @@ impl ArgElem for SubArgBraced {
         }
     }
 
-    fn text(&self) -> String {
+    fn get_text(&self) -> String {
         self.text.clone()
     }
 
