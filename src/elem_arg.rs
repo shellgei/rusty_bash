@@ -59,7 +59,7 @@ impl Arg {
     }
 
     // single quoted arg or double quoted arg or non quoted arg 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<Arg> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool, is_in_brace: bool) -> Option<Arg> {
         if text.len() == 0 {
             return None;
         }
@@ -78,7 +78,7 @@ impl Arg {
     
         //let sub = if is_value{subvalue}else{subarg};
     
-        while let Some(result) = subarg(text, conf, is_value) {
+        while let Some(result) = subarg(text, conf, is_value, is_in_brace) {
             ans.text += &(*result).text();
             ans.subargs.push(result);
     
@@ -167,7 +167,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
         ans.subargs.push(Box::new(result));
     }
 
-    while let Some(result) = subarg_in_brace(text, conf, is_value) {
+    while let Some(result) = subarg(text, conf, is_value, true) {
         ans.text += &(*result).text();
         ans.subargs.push(result);
     };

@@ -37,9 +37,13 @@ impl SubArgNonQuoted {
         }
     }
 
-    pub fn parse(text: &mut Feeder) -> Option<SubArgNonQuoted> {
+    pub fn parse(text: &mut Feeder, is_in_brace: bool) -> Option<SubArgNonQuoted> {
         if text.len() == 0 {
             return None;
+        }
+
+        if is_in_brace {
+            return SubArgNonQuoted::parse3(text);
         }
 
         let pos = scanner_until_escape(text, 0, " \n\t\"';{()$<>&");
@@ -50,12 +54,7 @@ impl SubArgNonQuoted {
         }
     }
 
-    pub fn parse3(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-        if text.len() == 0 {
-            return None;
-        }
-
-        
+    fn parse3(text: &mut Feeder) -> Option<SubArgNonQuoted> {
         if text.nth_is(0, ",}"){
             return None;
         };
