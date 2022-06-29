@@ -16,7 +16,7 @@ use crate::elem_end_of_command::Eoc;
 pub struct CompoundIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
-    pub text: String,
+    text: String,
     pub pid: Option<Pid>,
     pub redirects: Vec<Box<Redirect>>,
     pub pipein: RawFd,

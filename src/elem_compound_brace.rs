@@ -29,7 +29,7 @@ fn tail_check(s: &String) -> bool{
 pub struct CompoundBrace {
     pub script: Script,
     pub redirects: Vec<Box<Redirect>>,
-    pub text: String,
+    text: String,
     pid: Option<Pid>, 
     pub pipein: RawFd,
     pub pipeout: RawFd,

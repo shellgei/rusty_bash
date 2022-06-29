@@ -16,7 +16,7 @@ use nix::unistd::{close, pipe};
 pub struct CompoundParen {
     pub script: Option<Script>,
     pub redirects: Vec<Box<Redirect>>,
-    pub text: String,
+    text: String,
     pid: Option<Pid>, 
     pub pipein: RawFd,
     pub pipeout: RawFd,

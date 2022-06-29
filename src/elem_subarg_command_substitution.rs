@@ -49,7 +49,7 @@ impl SubArgCommandSubstitution {
 
         if let Some(e) = CompoundParen::parse(text, conf, true){
             let ans = SubArgCommandSubstitution {
-                text: "$".to_owned() + &e.text.clone(),
+                text: "$".to_owned() + &e.get_text(),
                 pos: DebugInfo::init(text),
                 com: e,
                 is_value: is_value};
