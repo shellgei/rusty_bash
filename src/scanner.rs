@@ -81,17 +81,6 @@ pub fn scanner_end_paren(text: &Feeder, from: usize) -> usize {
     return from;
 }
 
-/*
-pub fn scanner_continue_nextline(text: &Feeder, from: usize) -> usize {
-    if text.len() < from + 2 {
-        return from;
-    }
-    if text.nth(from) == '\\' && text.nth(from+1) == '\n' {
-        return from+2;
-    }
-    0
-}*/
-
 /* TODO: these scanners should be summarized. */ 
 pub fn scanner_start_paren(text: &Feeder, from: usize) -> usize {
     if text.len() == 0 {
@@ -103,19 +92,6 @@ pub fn scanner_start_paren(text: &Feeder, from: usize) -> usize {
     }
     return from;
 }
-
-/*
-pub fn scanner_end_brace(text: &Feeder, from: usize) -> usize {
-    if text.len() == 0 {
-        return 0;
-    }
-
-    if text.match_at(from, "}") {
-        return from+1;
-    }
-    return from;
-}
-*/
 
 pub fn scanner_start_brace(text: &Feeder, from: usize) -> usize {
     if text.len() == 0 {

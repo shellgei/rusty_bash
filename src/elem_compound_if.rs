@@ -125,6 +125,24 @@ impl CompoundIf {
         Some( ((cond, doing), ans_text) )
     }
 
+    fn parse_else(text: &mut Feeder, conf: &mut ShellCore) -> Option<(Script, String)> {
+        let mut ans_text = String::new();
+        let else_do = if let Some(s) = Script::parse(text, conf, true) {
+            ans_text += &s.text;
+            s
+        }else{
+            return None;
+        };
+
+        if text.compare(0, "fi"){
+             ans_text += &text.consume(2);
+        }else{
+             return None;
+        }
+
+        Some( (else_do, ans_text) )
+    }
+
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundIf> {
         if text.len() < 2 || ! text.compare(0, "if") {
             return None;
@@ -139,9 +157,7 @@ impl CompoundIf {
             if let Some(if_then_str) = CompoundIf::parse_if_then_pair(text, conf) {
                 ans.text += &if_then_str.1;
                 ans.ifthen.push(if_then_str.0);
-            }else{
-                text.rewind(backup);
-                return None;
+                continue;
             }
     
             if text.compare(0, "fi"){
@@ -149,27 +165,18 @@ impl CompoundIf {
                 break;
             }else if text.compare(0, "elif"){
                 ans.text += &text.consume(4);
+                continue;
             }else if text.compare(0, "else"){
                 ans.text += &text.consume(4);
-                ans.else_do = if let Some(s) = Script::parse(text, conf, true) {
-                    ans.text += &s.text;
-                    Some(s)
-                }else{
-                    text.rewind(backup);
-                    return None;
-                };
-
-                if text.compare(0, "fi"){
-                    ans.text += &text.consume(2);
+                if let Some(do_part) = CompoundIf::parse_else(text, conf){
+                    ans.else_do = Some(do_part.0);
+                    ans.text += &do_part.1;
                     break;
-                }else{
-                    text.rewind(backup);
-                    return None;
                 }
-            }else{
-                text.rewind(backup);
-                return None;
             }
+
+            text.rewind(backup);
+            return None;
         }
 
         if let Some(d) = ArgDelimiter::parse(text){
