@@ -50,8 +50,7 @@ impl Script {
                 conf.functions.insert(f.name, body);
                 is_function = true;
             }else if let Some(result) = BlankPart::parse(text)           {
-                ans.text += &result.text;
-                ans.elems.push(Box::new(result));
+                ans.text += &result.get_text();
             }else if let Some(result) = SetVariables::parse(text, conf) {
                 ans.text += &result.text;
                 ans.elems.push(Box::new(result));
@@ -67,7 +66,7 @@ impl Script {
             }
         }
     
-        if ans.elems.len() > 0 || is_function {
+        if ans.text.len() > 0 || is_function {
             ans.procnum = procnum;
             Some(ans)
         }else{
