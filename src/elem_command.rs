@@ -253,7 +253,7 @@ impl Command {
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
                 ans.redirects.push(Box::new(r));
-            }else if let Some(a) = Arg::parse(text, true, conf) {
+            }else if let Some(a) = Arg::parse(text, conf, false) {
                 if ans.args.len() == 0 {
                     if ! Command::ng_check(&a.text){
                         return false;

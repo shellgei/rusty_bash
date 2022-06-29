@@ -39,10 +39,10 @@ impl Substitution {
         }
     
         let var_part = VarName::new(text, varname_pos);
-        text.consume(1); // = 
-        if let Some(value_part) = Arg::parse(text, false, conf){
+        text.consume(1); // consume of "=" 
+        if let Some(value_part) = Arg::parse(text, conf, true){
             Some(Substitution::new(text, var_part, value_part))
-        }else{ // cases where the value goes the next line
+        }else{ // empty value
             let empty_arg = Arg::new();
             Some(Substitution::new(text, var_part, empty_arg))
         }

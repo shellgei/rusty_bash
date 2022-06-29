@@ -57,7 +57,7 @@ impl Arg {
     }
 
     // single quoted arg or double quoted arg or non quoted arg 
-    pub fn parse(text: &mut Feeder, expand_brace: bool, conf: &mut ShellCore) -> Option<Arg> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<Arg> {
         if text.len() == 0 {
             return None;
         }
@@ -73,7 +73,7 @@ impl Arg {
             ans.subargs.push(Box::new(result));
         }
     
-        let sub = if expand_brace{subarg}else{subvalue};
+        let sub = if is_value{subvalue}else{subarg};
     
         while let Some(result) = sub(text, conf) {
             ans.text += &(*result).text();
