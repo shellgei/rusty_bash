@@ -97,6 +97,8 @@ impl CompoundIf {
     }
 
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
+        CompoundIf::next_line(text, conf, ans);
+
         let cond = if let Some(s) = Script::parse(text, conf, true) {
             ans.text += &s.text;
             s
@@ -104,13 +106,19 @@ impl CompoundIf {
             return false;
         };
 
+        CompoundIf::next_line(text, conf, ans);
+
+        /*
+
         if let Some(d) = ArgDelimiter::parse(text){
             ans.text += &d.text;
-        }
+        }*/
 
         if text.compare(0, "then"){
             ans.text += &text.consume(4);
         }
+
+        CompoundIf::next_line(text, conf, ans);
 
         let doing = if let Some(s) = Script::parse(text, conf, true) {
             ans.text += &s.text;
@@ -119,17 +127,36 @@ impl CompoundIf {
             return false;
         };
 
+        CompoundIf::next_line(text, conf, ans);
+
         ans.ifthen.push( (cond, doing) );
         true
     }
 
+    fn next_line(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
+        if let Some(d) = ArgDelimiter::parse(text){
+            ans.text += &d.text;
+        }
+
+        if text.len() == 0 || text.nth(0) == '\n' {
+            if ! text.feed_additional_line(conf){
+                return false;
+            }
+        }
+        true
+    }
+
     fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
+        CompoundIf::next_line(text, conf, ans);
+
         ans.else_do = if let Some(s) = Script::parse(text, conf, true) {
             ans.text += &s.text;
             Some(s)
         }else{
             return false;
         };
+
+        CompoundIf::next_line(text, conf, ans);
 
         if text.compare(0, "fi"){
              ans.text += &text.consume(2);

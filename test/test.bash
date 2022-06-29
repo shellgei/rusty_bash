@@ -657,5 +657,25 @@ res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then ech
 res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then echo bb; fi')
 [ "$res" = "bb" ]
 
+res=$($com << 'EOF'
+if
+false
+then
+echo hoge
+elif
+false
+then
+echo hoge
+elif
+false
+then
+echo hoge
+else
+echo true
+fi
+EOF
+)
+[ "$res" = "true" ]
+
 trap "" EXIT
 echo TEST OK
