@@ -8,7 +8,7 @@ mod elem_compound_brace;
 mod elem_compound_if;
 mod elem_end_of_command;
 mod elem_function;
-mod elem_list;
+mod elem_script;
 mod elem_command;
 mod elem_redirect;
 mod elem_setvars;
@@ -47,7 +47,7 @@ use std::io::BufRead;
 use crate::elem_command::Command;
 use crate::abst_elems::ListElem;
 use crate::abst_elems::PipelineElem;
-use crate::elem_list::Script;
+use crate::elem_script::Script;
 
 
 fn is_interactive(pid: u32) -> bool {

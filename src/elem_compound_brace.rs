@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::abst_elems::PipelineElem;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
-use crate::elem_list::Script;
+use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::utils_io::*;
