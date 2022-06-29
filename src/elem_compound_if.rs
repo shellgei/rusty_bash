@@ -17,7 +17,7 @@ pub struct CompoundIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
     text: String,
-    pub pid: Option<Pid>,
+    pid: Option<Pid>,
     pub redirects: Vec<Box<Redirect>>,
     pub pipein: RawFd,
     pub pipeout: RawFd,
