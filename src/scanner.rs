@@ -59,11 +59,11 @@ pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
 }
 
 pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
-    if text.match_at(from, ";\n|") {
+    if text.nth_is(from, ";\n|") {
         return from+1;
     }
 
-    if text.match_at(from, "#") {
+    if text.nth_is(from, "#") {
         return scanner_until(text, from, "\n");
     }
 
@@ -75,7 +75,7 @@ pub fn scanner_end_paren(text: &Feeder, from: usize) -> usize {
         return 0;
     }
 
-    if text.match_at(from, ")") {
+    if text.nth_is(from, ")") {
         return from+1;
     }
     return from;
@@ -87,7 +87,7 @@ pub fn scanner_start_paren(text: &Feeder, from: usize) -> usize {
         return 0;
     }
 
-    if text.match_at(from, "(") {
+    if text.nth_is(from, "(") {
         return from+1;
     }
     return from;
@@ -98,7 +98,7 @@ pub fn scanner_start_brace(text: &Feeder, from: usize) -> usize {
         return 0;
     }
 
-    if text.match_at(from, "{") {
+    if text.nth_is(from, "{") {
         return from+1;
     }
     return from;

@@ -55,7 +55,7 @@ impl SubArgNonQuoted {
         }
 
         
-        if text.match_at(0, ",}"){
+        if text.nth_is(0, ",}"){
             return None;
         };
         

@@ -176,7 +176,7 @@ impl Feeder {
         (self.clone(), res)
     }
 
-    pub fn match_at(&self, pos: usize, chars: &str) -> bool{
+    pub fn nth_is(&self, pos: usize, chars: &str) -> bool{
         let ch = self.nth(pos);
         chars.to_string().find(ch) != None
     }

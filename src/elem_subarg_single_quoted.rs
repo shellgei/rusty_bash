@@ -27,12 +27,18 @@ impl ArgElem for SubArgSingleQuoted {
 }
 
 impl SubArgSingleQuoted {
-    pub fn parse(text: &mut Feeder) -> Option<SubArgSingleQuoted> {
-        if text.len() == 0 || !text.match_at(0, "'"){
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<SubArgSingleQuoted> {
+        if text.len() == 0 || !text.nth_is(0, "'"){
             return None;
         };
     
-        let pos = scanner_until(text, 1, "'");
+        let mut pos = scanner_until(text, 1, "'");
+        while pos == text.len() {
+            if !text.feed_additional_line(core){
+                return None;
+            }
+            pos = scanner_until(text, 1, "'");
+        }
         Some(SubArgSingleQuoted{text: text.consume(pos+1), pos: DebugInfo::init(text)})
     }
 }

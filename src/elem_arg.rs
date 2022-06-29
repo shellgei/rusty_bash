@@ -14,7 +14,8 @@ use crate::abst_command_elem::CommandElem;
 pub struct Arg {
     pub text: String,
     pub pos: DebugInfo,
-    pub subargs: Vec<Box<dyn ArgElem>>
+    pub subargs: Vec<Box<dyn ArgElem>>,
+    pub is_value: bool,
 }
 
 impl Arg {
@@ -23,6 +24,7 @@ impl Arg {
             text: "".to_string(),
             pos: DebugInfo{lineno: 0, pos: 0, comment: "".to_string()},
             subargs: vec!(),
+            is_value: false,
         }
     }
 
@@ -66,6 +68,7 @@ impl Arg {
             text: "".to_string(),
             pos: DebugInfo::init(text),
             subargs: vec!(),
+            is_value: is_value,
         };
 
         if let Some(result) = SubArgTildeUser::parse(text, false) {
@@ -109,7 +112,7 @@ impl CommandElem for Arg {
             let vs = sa.eval(conf);
 
             let mut cvs = vec!();
-            if sa.permit_lf(){
+            if sa.permit_lf() || self.is_value {
                 cvs = vs;
             }else{
                 for v in vs {
@@ -145,10 +148,11 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
         text: "".to_string(),
         pos: DebugInfo::init(text),
         subargs: vec!(),
+        is_value: false,
     };
 
     let backup = text.clone();
-    if text.match_at(0, ",}"){ // zero length arg
+    if text.nth_is(0, ",}"){ // zero length arg
         let tmp = SubArgNonQuoted{
             text: "".to_string(),
             pos: DebugInfo::init(text),
@@ -167,7 +171,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
         ans.subargs.push(result);
     };
 
-    if text.len() == 0 ||  !text.match_at(0, ",}"){ 
+    if text.len() == 0 ||  !text.nth_is(0, ",}"){ 
         text.rewind(backup);
         return None;
     }

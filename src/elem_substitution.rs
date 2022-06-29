@@ -18,6 +18,27 @@ pub struct Substitution {
     pub debug: DebugInfo,
 }
 
+impl CommandElem for Substitution {
+    fn parse_info(&self) -> Vec<String> {
+        vec!(format!("    substitution: '{}' ({})\n", self.text.clone(), self.debug.text()))
+    }
+
+    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> { 
+        let mut ans = vec!();
+        ans.push(self.name.text.clone());
+        
+        let mut v = "".to_string();
+        for s in self.value.eval(conf){
+            v += &s;
+        }
+        ans.push(v);
+
+        ans
+    }
+
+    fn text(&self) -> String { self.text.clone() }
+}
+
 impl Substitution {
     pub fn new(text: &Feeder, name: VarName, value: Arg) -> Substitution{
         Substitution {
@@ -47,26 +68,5 @@ impl Substitution {
             Some(Substitution::new(text, var_part, empty_arg))
         }
     }
-}
-
-impl CommandElem for Substitution {
-    fn parse_info(&self) -> Vec<String> {
-        vec!(format!("    substitution: '{}' ({})\n", self.text.clone(), self.debug.text()))
-    }
-
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> { 
-        let mut ans = vec!();
-        ans.push(self.name.text.clone());
-        
-        let mut v = "".to_string();
-        for s in self.value.eval(conf){
-            v += &s;
-        }
-        ans.push(v);
-
-        ans
-    }
-
-    fn text(&self) -> String { self.text.clone() }
 }
 
