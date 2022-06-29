@@ -86,7 +86,7 @@ impl SubArgNonQuoted {
         ans
     }
 
-    pub fn parse4(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgNonQuoted> {
+    pub fn parse_in_dq(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgNonQuoted> {
         if text.len() == 0 {
             if !text.feed_additional_line(conf){
                 return None;
