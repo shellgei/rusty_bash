@@ -19,7 +19,7 @@ impl Function {
         Function {
             name: name,
             body: body,
-            text: "".to_string(),
+            text: String::new(),
         }
     }
 
@@ -56,12 +56,6 @@ impl Function {
  
          let _ = ArgDelimiter::parse(text);
  
-         /*
-         if let Some(c) = CompoundBrace::parse(text, conf){
-             Some( Function::new(name.text, Box::new(c)) )
-         }else if let Some(c) = CompoundParen::parse(text, conf, true){
-             Some( Function::new(name.text, Box::new(c)) )
-             */
          if let Some(c) = compound(text, conf){
              Some( Function::new(name.text, c) )
          }else{
