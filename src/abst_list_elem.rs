@@ -4,6 +4,10 @@
 use crate::{ShellCore};
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
+use crate::Feeder; 
+use crate::elem_compound_if::CompoundIf;
+use crate::elem_compound_paren::CompoundParen;
+use crate::elem_compound_brace::CompoundBrace;
 
 pub trait ListElem {
     fn exec(&mut self, _conf: &mut ShellCore) { }
@@ -14,4 +18,11 @@ pub trait ListElem {
     fn get_pipe_out(&mut self) -> RawFd { -1 }
     fn get_eoc_string(&mut self) -> String { "".to_string() }
     fn get_text(&self) -> String;
+}
+
+pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ListElem>> {
+    if let Some(a) =      CompoundIf::parse(text,conf)            {Some(Box::new(a))}
+    else if let Some(a) = CompoundParen::parse(text, conf, false) {Some(Box::new(a))}
+    else if let Some(a) = CompoundBrace::parse(text, conf)        {Some(Box::new(a))}
+    else {None}
 }

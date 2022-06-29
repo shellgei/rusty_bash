@@ -7,12 +7,10 @@ use crate::Command;
 use crate::elem_arg_delimiter::ArgDelimiter;
 use nix::unistd::{pipe, Pid};
 use crate::scanner::scanner_end_paren;
-use crate::elem_compound_paren::CompoundParen;
-use crate::elem_compound_brace::CompoundBrace;
 use crate::utils_io::set_parent_io;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
-use crate::elem_compound_if::CompoundIf;
+use crate::abst_list_elem::compound;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn ListElem>>,
@@ -57,19 +55,11 @@ impl Pipeline {
 
         loop {
             let eocs;
-            if let Some(mut c) = CompoundIf::parse(text, conf) {
+            if let Some(mut c) = compound(text, conf) {
                 eocs = c.get_eoc_string();
-                ans.text += &c.text.clone();
-                ans.commands.push(Box::new(c));
+                ans.text += &c.get_text();
+                ans.commands.push(c);
             }else if let Some(mut c) = Command::parse(text, conf) {
-                eocs = c.get_eoc_string();
-                ans.text += &c.text.clone();
-                ans.commands.push(Box::new(c));
-            }else if let Some(mut c) = CompoundParen::parse(text, conf, false) {
-                eocs = c.get_eoc_string();
-                ans.text += &c.text.clone();
-                ans.commands.push(Box::new(c));
-            }else if let Some(mut c) = CompoundBrace::parse(text, conf) {
                 eocs = c.get_eoc_string();
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
