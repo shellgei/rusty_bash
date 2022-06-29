@@ -20,14 +20,14 @@ pub trait ArgElem {
 }
 
 pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<Box<dyn ArgElem>> {
-    if let Some(a) = SubArgVariable::parse2(text)                {Some(Box::new(a))}
-    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value)    {Some(Box::new(a))}
-    else if let Some(a) = SubArgVariable::parse(text)            {Some(Box::new(a))}
-    else if let Some(a) = SubArgBraced::parse(text, conf, is_value)        {Some(Box::new(a))}
-    else if let Some(a) = SubArgNonQuoted::parse(text)           {Some(Box::new(a))}
-    else if let Some(a) = SubArgSingleQuoted::parse(text, conf, is_value)  {Some(Box::new(a))}
-    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf, is_value)  {Some(Box::new(a))}
-    else                                                         {None}
+    if let Some(a) = SubArgVariable::parse2(text)                                {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {Some(Box::new(a))}
+    else if let Some(a) = SubArgVariable::parse(text)                            {Some(Box::new(a))}
+    else if let Some(a) = SubArgBraced::parse(text, conf, is_value)              {Some(Box::new(a))}
+    else if let Some(a) = SubArgNonQuoted::parse(text)                           {Some(Box::new(a))}
+    else if let Some(a) = SubArgSingleQuoted::parse(text, conf, is_value)        {Some(Box::new(a))}
+    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf, is_value)        {Some(Box::new(a))}
+    else {None}
 }
 
 /*
@@ -47,13 +47,13 @@ pub fn subarg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) 
     if text.len() == 0 {
         return None;
     }
-    if let Some(a) = SubArgVariable::parse2(text)         {Some(Box::new(a))}
-    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value)    {Some(Box::new(a))}
-    else if let Some(a) = SubArgVariable::parse(text)     {Some(Box::new(a))}
-    else if let Some(a) = SubArgBraced::parse(text, conf, is_value)       {Some(Box::new(a))}
-    else if let Some(a) = SubArgSingleQuoted::parse(text, conf, is_value) {Some(Box::new(a))}
-    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf, is_value) {Some(Box::new(a))}
-    else if let Some(a) = SubArgNonQuoted::parse3(text)   {Some(Box::new(a))}
-    else{None}
+    if let Some(a) = SubArgVariable::parse2(text)                                {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {Some(Box::new(a))}
+    else if let Some(a) = SubArgVariable::parse(text)                            {Some(Box::new(a))}
+    else if let Some(a) = SubArgBraced::parse(text, conf, is_value)              {Some(Box::new(a))}
+    else if let Some(a) = SubArgSingleQuoted::parse(text, conf, is_value)        {Some(Box::new(a))}
+    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf, is_value)        {Some(Box::new(a))}
+    else if let Some(a) = SubArgNonQuoted::parse3(text)                          {Some(Box::new(a))}
+    else {None}
 }
 
