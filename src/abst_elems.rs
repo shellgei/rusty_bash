@@ -63,18 +63,3 @@ pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_value: bool, is_in_bra
     else if let Some(a) = SubArgNonQuoted::parse(text, is_in_brace)         {Some(Box::new(a))}
     else {None}
 }
-
-/*
-pub fn subarg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<Box<dyn ArgElem>> {
-    if text.len() == 0 {
-        return None;
-    }
-    if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {Some(Box::new(a))}
-    else if let Some(a) = SubArgVariable::parse(text)                            {Some(Box::new(a))}
-    else if let Some(a) = SubArgBraced::parse(text, conf, is_value)              {Some(Box::new(a))}
-    else if let Some(a) = SubArgSingleQuoted::parse(text, conf, is_value)        {Some(Box::new(a))}
-    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf, is_value)        {Some(Box::new(a))}
-    else if let Some(a) = SubArgNonQuoted::parse(text, true)                     {Some(Box::new(a))}
-    else {None}
-}
-*/
