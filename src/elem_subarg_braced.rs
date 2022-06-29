@@ -17,11 +17,12 @@ pub struct SubArgBraced {
     pub pos: DebugInfo,
     pub args: Vec<Arg>,
     pub complete: bool,
+    pub is_value: bool,
 }
 
 impl ArgElem for SubArgBraced {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        if self.complete {
+        if self.complete && ! self.is_value {
             self.eval_complete(conf)
         }else{
             self.eval_incomplete(conf)
@@ -42,6 +43,7 @@ impl SubArgBraced {
             pos: DebugInfo::init(text),
             args: vec!(),
             complete: false,
+            is_value: false,
         }
     }
 
@@ -88,7 +90,7 @@ impl SubArgBraced {
         vec!(ans)
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgBraced> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgBraced> {
         if text.len() == 0 {
             return None;
         }
@@ -100,6 +102,7 @@ impl SubArgBraced {
 
         let mut ans = SubArgBraced::new(text);
         ans.text = text.consume(1);
+        ans.is_value = is_value;
 
         while let Some(arg) = arg_in_brace(text, conf) {
             ans.text += &arg.text.clone();

@@ -54,6 +54,7 @@ impl SubArgNonQuoted {
         }
     }
 
+    /*
     pub fn parse2(text: &mut Feeder) -> Option<SubArgNonQuoted> {
         let pos = scanner_until_escape(text, 0, " \n\t\"';)$<>&");
         if pos == 0{
@@ -62,6 +63,7 @@ impl SubArgNonQuoted {
         Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) )
         //Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text) } )
     }
+    */
 
     pub fn parse3(text: &mut Feeder) -> Option<SubArgNonQuoted> {
         if text.len() == 0 {
