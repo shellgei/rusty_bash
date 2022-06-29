@@ -5,8 +5,8 @@ use crate::{ShellCore, Feeder};
 use crate::elem_function::Function;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
-use crate::elem_blankpart::BlankPart;
 use crate::ListElem;
+use crate::elem_blankpart::BlankPart;
 
 pub struct Script {
     pub elems: Vec<Box<dyn ListElem>>,
@@ -50,7 +50,7 @@ impl Script {
                 conf.functions.insert(f.name, body);
                 is_function = true;
             }else if let Some(result) = BlankPart::parse(text)           {
-                ans.text += &result.get_text();
+                ans.text += &result;
             }else if let Some(result) = SetVariables::parse(text, conf) {
                 ans.text += &result.text;
                 ans.elems.push(Box::new(result));
