@@ -36,23 +36,18 @@ impl ArgElem for SubArgVariable {
 
 impl SubArgVariable {
     pub fn parse(text: &mut Feeder) -> Option<SubArgVariable> {
-        if text.len() < 2 || !(text.nth(0) == '$') || text.nth(1) == '{' {
+        if text.len() < 2 || !(text.nth(0) == '$') {
             return None;
         };
-    
-        let pos = scanner_varname(&text, 1);
-        Some(
-            SubArgVariable{
-                text: text.consume(pos),
-                pos: DebugInfo::init(text),
-            })
-    }
-    
-    pub fn parse2(text: &mut Feeder) -> Option<SubArgVariable> {
-        if text.len() < 2 || !(text.compare(0, "${")) {
-            return None;
+        if text.nth(1) == '{' {
+            return SubArgVariable::parse2(text);
         }
     
+        let pos = scanner_varname(&text, 1);
+        Some( SubArgVariable{ text: text.consume(pos), pos: DebugInfo::init(text) })
+    }
+    
+    fn parse2(text: &mut Feeder) -> Option<SubArgVariable> {
         let pos = scanner_varname(&text, 2);
         if text.nth(pos) == '}' {
             Some( SubArgVariable{ text: text.consume(pos+1), pos: DebugInfo::init(text) })

@@ -71,10 +71,7 @@ impl SubArgDoubleQuoted {
         ans.text += &text.consume(1);
     
         loop {
-            if let Some(a) = SubArgVariable::parse2(text) {
-                ans.text += &a.text.clone();
-                ans.subargs.push(Box::new(a));
-            }else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {
+            if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {
                 ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = SubArgVariable::parse(text) {
