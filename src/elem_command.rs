@@ -238,7 +238,7 @@ impl Command {
     fn ng_check(text: &String) -> bool {
         if Some('}') == text.chars().nth(0) {
             return false;
-        }else if text == "then" || text == "else" || text == "elif" || text == "fi" {
+        }else if text == "then" || text == "else" || text == "elif" || text == "fi" || text == "done" || text == "do" {
             return false;
         }
 
