@@ -715,5 +715,15 @@ res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then X=Y
 res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then X=Y ; fi | true; echo $X')
 [ "$res" = "" ]
 
+res=$($com <<< 'if [ "a" == "a" ] ; then echo abcabc; elif [ "b" == "b" ] ; then X=Y ; fi > /tmp/.rusty_bash ')
+[ "$(cat /tmp/.rusty_bash)" = "abcabc" ]
+[ "$res" = "" ]
+
+res=$($com <<< 'if [ "$(cat)" == "abcabc" ] ; then echo xyz; elif [ "b" == "b" ] ; then X=Y ; fi < /tmp/.rusty_bash')
+[ "$res" = "xyz" ]
+res=$($com <<< 'if [ "$(cat)" == "xx" ] ; then echo xyz; elif [ "b" == "b" ] ; then echo pqr ; fi < /tmp/.rusty_bash')
+[ "$res" = "pqr" ]
+rm -f /tmp/.rusty_bash
+
 trap "" EXIT
 echo TEST OK

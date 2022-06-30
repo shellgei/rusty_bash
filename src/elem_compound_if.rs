@@ -199,9 +199,17 @@ impl CompoundIf {
             return None;
         }
 
-        let d = scanner_while(text, 0, " \t");
-        ans.text += &text.consume(d);
+        loop {
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
 
+            if let Some(r) = Redirect::parse(text){
+                    ans.text += &r.text;
+                    ans.redirects.push(Box::new(r));
+            }else{
+                break;
+            }
+        }
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;
             ans.eoc = Some(e);

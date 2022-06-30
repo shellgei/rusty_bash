@@ -6,6 +6,7 @@ mod elem_arg;
 mod elem_compound_paren;
 mod elem_compound_brace;
 mod elem_compound_if;
+//mod elem_compound_while;
 mod elem_end_of_command;
 mod elem_function;
 mod elem_script;
