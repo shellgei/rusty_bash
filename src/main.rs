@@ -31,28 +31,21 @@ mod scanner;
 mod debuginfo;
 mod term_completion;
 
-use std::{env,process};
-use std::process::exit;
-use std::path::Path;
+use std::{env, process, path};
 use std::os::linux::fs::MetadataExt;
-use std::fs::File;
-use std::io::Read;
+use std::fs::{File,OpenOptions};
+use std::io::{Read, BufRead, BufReader};
 
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
 
-use std::fs::OpenOptions;
-use std::io::BufReader;
-use std::io::BufRead;
+use crate::abst_elems::{ListElem, PipelineElem};
 use crate::elem_command::Command;
-use crate::abst_elems::ListElem;
-use crate::abst_elems::PipelineElem;
 use crate::elem_script::Script;
-
 
 fn is_interactive(pid: u32) -> bool {
     let std_path = format!("/proc/{}/fd/0", pid);
-    match Path::new(&std_path).metadata() {
+    match path::Path::new(&std_path).metadata() {
         Ok(metadata) => metadata.st_mode() == 8592, 
         Err(err) => panic!("{}", err),
     }
@@ -108,7 +101,7 @@ fn show_version() {
 
     eprintln!("This is open source software. You can redistirbute and use in source\nand binary forms with or without modification under the license.");
     eprintln!("There is no warranty, to the extent permitted by law.");
-    exit(0);
+    process::exit(0);
 }
 
 fn has_option(arg: &String, opt: String) -> bool {
@@ -173,10 +166,10 @@ fn main() {
 
     if let Ok(status) = core.get_var(&"?".to_string())
                         .to_string().parse::<i32>(){
-        exit(status);
+        process::exit(status);
     }else{
         eprintln!("Shell internal error");
-        exit(1);
+        process::exit(1);
     }
 
 }

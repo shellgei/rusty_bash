@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore};
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
-use crate::Feeder; 
+
+use crate::{Feeder, ShellCore}; 
 use crate::elem_compound_if::CompoundIf;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
