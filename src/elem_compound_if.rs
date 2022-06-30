@@ -27,6 +27,12 @@ pub struct CompoundIf {
 
 impl PipelineElem for CompoundIf {
     fn exec(&mut self, conf: &mut ShellCore) {
+        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 
+            && self.redirects.len() == 0 {
+             self.exec_if_compound(conf);
+             return;
+        };
+
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {

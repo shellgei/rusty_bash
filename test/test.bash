@@ -662,7 +662,7 @@ EOF
 res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; fi')
 [ "$res" = "aa" ]
 
-res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi')
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi' || true)
 [ "$res" = "" ]
 
 res=$($com <<< 'if [ "a" == "b" ] ; then echo aa' || echo x)
@@ -708,6 +708,12 @@ fi
 EOF
 )
 [ "$res" = "true" ]
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then X=Y ; fi; echo $X')
+[ "$res" = "Y" ]
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then X=Y ; fi | true; echo $X')
+[ "$res" = "" ]
 
 trap "" EXIT
 echo TEST OK
