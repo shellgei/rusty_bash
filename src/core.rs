@@ -7,6 +7,7 @@ use std::{fs,env};
 use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::Write;
+use crate::bash_glob::glob_match;
 
 pub struct Flags {
     pub v: bool,
@@ -57,6 +58,7 @@ impl ShellCore {
         conf.internal_commands.insert("cd".to_string(), Self::cd);
         conf.internal_commands.insert("alias".to_string(), Self::alias);
         conf.internal_commands.insert("set".to_string(), Self::set);
+        conf.internal_commands.insert("glob_test".to_string(), Self::glob_test);
 
         conf
     }
@@ -129,13 +131,6 @@ impl ShellCore {
     /////////////////////////////////
     pub fn exit(&mut self, args: &mut Vec<String>) -> i32 {
         let home = env::var("HOME").expect("HOME is not defined");
-        /*
-        let mut hist_file = OpenOptions::new()
-                                    .write(true)
-                                    .append(true)
-                                    .open(home + "/.bash_history")
-                                    .expect("Cannot open the history file");
-                                    */
         if let Ok(mut hist_file) = OpenOptions::new().write(true)
                                    .append(true).open(home + "/.bash_history") {
             for h in &self.history {
@@ -230,5 +225,15 @@ impl ShellCore {
         }
 
         0
+    }
+
+    pub fn glob_test(&mut self, args: &mut Vec<String>) -> i32 {
+        if glob_match(&args[1].to_string(), &args[2].to_string()){
+            eprintln!("MATCH!");
+            0
+        }else{
+            eprintln!("UNMATCH!");
+            1
+        }
     }
 }

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod abst_elems;
+mod bash_glob;
 mod elem_arg;
 mod elem_compound_paren;
 mod elem_compound_brace;
@@ -127,6 +128,11 @@ fn main() {
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
+
+    /*
+    eprintln!("{}", glob_match(&args[1].to_string(), &args[2].to_string()));
+    process::exit(0);
+    */
 
     /* Ignore Ctrl+C (Childlen will receive instead.) */
     ctrlc::set_handler(move || { })
