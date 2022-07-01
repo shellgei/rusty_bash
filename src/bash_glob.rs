@@ -79,12 +79,12 @@ fn set_glob(glob: &String) -> Vec<PatternElem> {
             panic!("Glob parse error");
         };
 
+        pos += 1;
+
         if ! escaped && ch == '\\' {
             escaped = true;
             continue;
         }
-
-        pos += 1;
 
         if escaped {
             ans.push(simple_char(ch));
