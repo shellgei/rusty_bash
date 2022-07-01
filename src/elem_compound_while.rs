@@ -86,13 +86,13 @@ impl CompoundWhile {
     }
 
     fn exec_if_compound(&mut self, conf: &mut ShellCore) {
-        for pair in self.ifthen.iter_mut() {
-             pair.0.exec(conf);
+        loop {
+            let (cond, doing) = &mut self.ifthen[0];
+             cond.exec(conf);
              if conf.vars["?"] != "0" {
-                continue;
+                 break;
              }
-             pair.1.exec(conf);
-             return;
+             doing.exec(conf);
         }
     }
 
@@ -123,7 +123,6 @@ impl CompoundWhile {
 
         CompoundWhile::next_line(text, conf, ans);
 
-        eprintln!("DO: {}", doing.text);
         ans.ifthen.push( (cond, doing) );
         true
     }
@@ -150,7 +149,6 @@ impl CompoundWhile {
         let mut ans = CompoundWhile::new();
         ans.text += &text.consume(5);
 
-        loop {
             if ! CompoundWhile::parse_if_then_pair(text, conf, &mut ans) {
                 text.rewind(backup);
                 return None;
@@ -158,12 +156,10 @@ impl CompoundWhile {
     
             if text.compare(0, "done"){
                 ans.text += &text.consume(4);
-                break;
+            }else{
+                text.rewind(backup);
+                return None;
             }
-
-            text.rewind(backup);
-            return None;
-        }
 
         loop {
             let d = scanner_while(text, 0, " \t");
