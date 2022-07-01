@@ -12,8 +12,16 @@ pub fn chars_to_string(chars: &Vec<char>) -> String {
 }
 
 fn is_glob(s: &String) -> bool {
-    //TODO: too crude
+    let mut escaped = false;
+
     for ch in s.chars() {
+        if escaped {
+            continue;
+        }else if ! escaped && ch == '\\' {
+            escaped = true;
+            continue;
+        }
+
         if ch == '*' || ch == '[' || ch == '?' {
             return true;
         }
@@ -23,7 +31,7 @@ fn is_glob(s: &String) -> bool {
 
 pub fn eval_glob(globstr: &String) -> Vec<String> {
     if ! is_glob(&globstr) {
-        return vec!();
+        return vec!(globstr.clone());
     }
 
     let mut ans = vec!();
@@ -44,6 +52,11 @@ pub fn eval_glob(globstr: &String) -> Vec<String> {
             };
         };
     };
+
+    if ans.len() == 0 {
+        return vec!(globstr.clone());
+    }
+
     ans
 }
 

@@ -36,7 +36,7 @@ impl ArgElem for SubArgDoubleQuoted {
         for ss in strings {
             let mut anselem = vec!();
             for s in ss {
-                let x = s.replace("\\", "\\\\").replace("*", "\\*");
+                let x = s.replace("*", "\\*");
                 anselem.push(x);
             }
             ans.push(anselem);

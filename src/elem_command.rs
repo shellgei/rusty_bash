@@ -10,7 +10,7 @@ use std::os::unix::prelude::RawFd;
 
 use crate::{ShellCore,Feeder};
 use crate::abst_elems::CommandElem;
-use crate::utils::blue_string;
+use crate::utils::*;
 
 use crate::abst_elems::PipelineElem;
 use crate::elem_arg::Arg;
@@ -126,7 +126,7 @@ impl Command {
 
         for arg in &mut self.args {
             for s in &arg.eval(conf) {
-                args.append(&mut Arg::expand_glob(&s.clone()));
+                args.append(&mut eval_glob(&s.clone()));
             }
         };
 

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::{eval_glob, combine};
+use crate::utils::combine;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::abst_elems::*;
@@ -26,16 +26,6 @@ impl Arg {
             subargs: vec!(),
             is_value: false,
         }
-    }
-
-    pub fn expand_glob(text: &String) -> Vec<String> {
-        let mut ans = eval_glob(text);
-
-        if ans.len() == 0 {
-            let s = text.clone().replace("\\*", "*").replace("\\\\", "\\");
-            ans.push(s);
-        };
-        ans
     }
 
     pub fn remove_escape(text: &String) -> String{

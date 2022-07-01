@@ -62,6 +62,9 @@ EOF
 res=$($com <<< 'echo hoge"hoge";')
 [ "$res" = "hogehoge" ]
 
+res=$($com <<< "echo '\*'")
+[ "$res" = "\*" ]
+
 res=$($com <<< 'echo )' || true)
 [ "$res" = "" ]
 

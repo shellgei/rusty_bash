@@ -66,6 +66,8 @@ fn simple_char(c: char) -> PatternElem {
 fn set_glob(glob: &String) -> Vec<PatternElem> {
     let mut ans = vec!();
     let mut pos = 0;
+    let mut escaped = false;
+
     loop {
         if glob.chars().count() == pos {
             return ans;
@@ -76,15 +78,25 @@ fn set_glob(glob: &String) -> Vec<PatternElem> {
         }else{
             panic!("Glob parse error");
         };
+
+        if ! escaped && ch == '\\' {
+            escaped = true;
+            continue;
+        }
+
         pos += 1;
 
-        if ch == '*' {
+        if escaped {
+            ans.push(simple_char(ch));
+        }else if ch == '*' {
             ans.push(wildcard());
         }else if ch == '?' {
             ans.push(anychar());
         }else{
             ans.push(simple_char(ch));
         }
+
+        escaped = false;
     }
 }
 
@@ -92,8 +104,6 @@ pub fn glob_match(glob: &String, s: &String) -> bool {
     let pattern = set_glob(glob);
     let mut poss = HashSet::new();
     poss.insert(0);
-
-    eprintln!("{}\n{}", glob, s);
 
     for pat in pattern {
         let mut poss_new = HashSet::new();
@@ -106,9 +116,7 @@ pub fn glob_match(glob: &String, s: &String) -> bool {
         if poss.len() == 0 {
             break;
         }
-        eprintln!("{:?}", poss);
     }
 
-    eprintln!("RES: {:?}, LEN: {}", poss, s.chars().count());
     ! poss.insert(s.chars().count())
 }
