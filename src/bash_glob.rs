@@ -5,14 +5,15 @@ use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct PatternElem {
-    pub all: bool,
+    pub asterisk: bool,
+    pub question: bool,
     pub chars: Vec<char>, 
     pub ranges: Vec<(char, char)>, 
 }
 
 pub fn judge(s: &String, pos: usize, pe: &PatternElem) -> Vec<usize> {
     let mut ans = vec!();
-    if pe.all {
+    if pe.asterisk {
         for n in pos..s.chars().count()+1 {
             ans.push(n);
         }
@@ -20,11 +21,13 @@ pub fn judge(s: &String, pos: usize, pe: &PatternElem) -> Vec<usize> {
         return ans;
     }
 
-    let mut p = pos;
+    if pe.question {
+        return vec!(pos+1);
+    }
 
-    if let Some(c) = s.chars().nth(p) {
+    if let Some(c) = s.chars().nth(pos) {
         if pe.chars.iter().any(|ch| ch == &c) {
-            ans.push(p+1);
+            ans.push(pos+1);
         }else{
             return vec!();
         }
@@ -35,7 +38,17 @@ pub fn judge(s: &String, pos: usize, pe: &PatternElem) -> Vec<usize> {
 
 fn wildcard() -> PatternElem {
     PatternElem {
-        all: true,
+        asterisk: true,
+        question: false,
+        chars: vec!(),
+        ranges: vec!(),
+    }
+}
+
+fn anychar() -> PatternElem {
+    PatternElem {
+        asterisk: false,
+        question: true,
         chars: vec!(),
         ranges: vec!(),
     }
@@ -43,13 +56,14 @@ fn wildcard() -> PatternElem {
 
 fn simple_char(c: char) -> PatternElem {
     PatternElem {
-        all: false,
+        asterisk: false,
+        question: false,
         chars: vec!(c),
         ranges: vec!(),
     }
 }
 
-pub fn glob_set(glob: &String) -> Vec<PatternElem> {
+fn set_glob(glob: &String) -> Vec<PatternElem> {
     let mut ans = vec!();
     let mut pos = 0;
     loop {
@@ -66,6 +80,8 @@ pub fn glob_set(glob: &String) -> Vec<PatternElem> {
 
         if ch == '*' {
             ans.push(wildcard());
+        }else if ch == '?' {
+            ans.push(anychar());
         }else{
             ans.push(simple_char(ch));
         }
@@ -73,7 +89,7 @@ pub fn glob_set(glob: &String) -> Vec<PatternElem> {
 }
 
 pub fn glob_match(glob: &String, s: &String) -> bool {
-    let pattern = glob_set(glob);
+    let pattern = set_glob(glob);
     let mut poss = HashSet::new();
     poss.insert(0);
 
@@ -90,6 +106,6 @@ pub fn glob_match(glob: &String, s: &String) -> bool {
         eprintln!("{:?}", poss);
     }
 
-    eprintln!("RES: {:?}, LEN: {}", poss, s.len());
-    ! poss.insert(s.len())
+    eprintln!("RES: {:?}, LEN: {}", poss, s.chars().count());
+    ! poss.insert(s.chars().count())
 }
