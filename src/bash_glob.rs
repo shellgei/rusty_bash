@@ -103,6 +103,9 @@ pub fn glob_match(glob: &String, s: &String) -> bool {
             }
         }
         poss = poss_new;
+        if poss.len() == 0 {
+            break;
+        }
         eprintln!("{:?}", poss);
     }
 
