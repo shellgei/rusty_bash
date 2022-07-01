@@ -228,9 +228,12 @@ impl ShellCore {
     }
 
     pub fn glob_test(&mut self, args: &mut Vec<String>) -> i32 {
-        eprintln!("!!");
-        eprintln!("{}", glob_match(&args[1].to_string(), &args[2].to_string()));
-
-        0
+        if glob_match(&args[1].to_string(), &args[2].to_string()){
+            eprintln!("MATCH!");
+            0
+        }else{
+            eprintln!("UNMATCH!");
+            1
+        }
     }
 }
