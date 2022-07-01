@@ -41,7 +41,6 @@ use std::io::Read;
 
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
-use crate::bash_glob::*;
 
 use std::fs::OpenOptions;
 use std::io::BufReader;
@@ -131,19 +130,15 @@ fn has_option(arg: &String, opt: String) -> bool {
 }
 
 fn main() {
-    /*
-    let pat = "ab*c".to_string();
-    let s = "abcd".to_string();
-    */
-
-
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
 
+    /*
     eprintln!("{}", glob_match(&args[1].to_string(), &args[2].to_string()));
     process::exit(0);
+    */
 
     /* Ignore Ctrl+C (Childlen will receive instead.) */
     ctrlc::set_handler(move || { })
