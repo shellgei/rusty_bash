@@ -44,6 +44,7 @@ impl Script {
     
         let mut procnum = 0;
         loop {
+
             let pos = scanner_blank_part(text, 0);
              ans.text += &text.consume(pos);
 
@@ -67,6 +68,7 @@ impl Script {
             }
         }
     
+
         if ans.text.len() > 0 || is_function {
             ans.procnum = procnum;
             Some(ans)

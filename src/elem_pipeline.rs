@@ -75,11 +75,6 @@ impl Pipeline {
             let d = scanner_while(text, 0, " \t");
             ans.text += &text.consume(d);
 
-                /*
-            if let Some(d) = ArgDelimiter::parse(text) {
-                ans.text += &d.text.clone();
-            }*/
-
             if eocs == "|" && text.len() == 1 && text.nth(0) == '\n' {
                 text.consume(1);
                 if ! text.feed_additional_line(conf) {

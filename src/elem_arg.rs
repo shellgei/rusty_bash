@@ -156,8 +156,14 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
     }
 
     while let Some(result) = subarg(text, conf, is_value, true) {
+        let empty_elem = (*result).get_text().len() == 0;
+
         ans.text += &(*result).get_text();
         ans.subargs.push(result);
+
+        if empty_elem {
+            break;
+        }
     };
 
     if text.len() == 0 ||  !text.nth_is(0, ",}"){ 

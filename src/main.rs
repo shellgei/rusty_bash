@@ -167,6 +167,12 @@ fn main() {
             }
         }
         while let Some(mut e) = Script::parse(&mut feeder, &mut core, false){
+            if feeder.len() != 0 && feeder.nth(0) == ')' {
+                feeder.consume(feeder.len());
+                eprintln!("Unknown phrase");
+                core.vars.insert("?".to_string(), "2".to_string());
+                break;
+            }
             e.exec(&mut core);
         }
     }
