@@ -736,5 +736,23 @@ res=$($com <<< 'glob_test "a*" abcde')
 res=$($com <<< 'glob_test "a*" z' || echo 1)
 [ "$res" = "1" ]
 
+res=$($com <<< 'glob_test "[abc]" a')
+[ "$?" = "0" ]
+
+res=$($com <<< 'glob_test "[!abc]" a' || echo 1)
+[ "$res" = "1" ]
+
+res=$($com <<< 'glob_test "[^abc]" a' || echo 1)
+[ "$res" = "1" ]
+
+res=$($com <<< 'glob_test "[abc][bcd][xy]" adx')
+[ "$?" = "0" ]
+
+res=$($com <<< 'glob_test "[abc][bcd][!xy]" adx' || echo 1)
+[ "$res" = "1" ]
+
+res=$($com <<< 'glob_test "[!abc!]" "!"' || echo 1)
+[ "$res" = "1" ]
+
 trap "" EXIT
 echo TEST OK
