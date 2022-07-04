@@ -728,5 +728,13 @@ res=$($com <<< 'if [ "$(cat)" == "xx" ] ; then echo xyz; elif [ "b" == "b" ] ; t
 [ "$res" = "pqr" ]
 rm -f /tmp/.rusty_bash
 
+### GLOB FOR CASE ###
+
+res=$($com <<< 'glob_test "a*" abcde')
+[ "$?" = "0" ]
+
+res=$($com <<< 'glob_test "a*" z' || echo 1)
+[ "$res" = "1" ]
+
 trap "" EXIT
 echo TEST OK

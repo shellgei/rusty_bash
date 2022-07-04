@@ -67,6 +67,7 @@ fn set_glob(glob: &String) -> Vec<PatternElem> {
     let mut ans = vec!();
     let mut pos = 0;
     let mut escaped = false;
+    let mut in_brace = false;
 
     loop {
         if glob.chars().count() == pos {
@@ -92,6 +93,10 @@ fn set_glob(glob: &String) -> Vec<PatternElem> {
             ans.push(wildcard());
         }else if ch == '?' {
             ans.push(anychar());
+        }else if ch == '[' && ! in_brace {
+            in_brace = true;
+        }else if ch == ']' && in_brace {
+            in_brace = false;
         }else{
             ans.push(simple_char(ch));
         }
