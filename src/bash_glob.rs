@@ -27,12 +27,14 @@ pub fn judge(s: &String, pos: usize, pe: &PatternElem) -> Vec<usize> {
     }
 
     if let Some(c) = s.chars().nth(pos) {
-        if !pe.inv && pe.chars.iter().any(|ch| ch == &c) {
-            ans.push(pos+1);
-        }else if pe.inv && ! pe.chars.iter().any(|ch| ch == &c) {
-            ans.push(pos+1);
-        }else{
-            return vec!();
+        if !pe.inv {
+            if pe.chars.iter().any(|ch| ch == &c) {
+                ans.push(pos+1);
+            }
+        }else {
+            if ! pe.chars.iter().any(|ch| ch == &c) {
+                ans.push(pos+1);
+            }
         }
     }
 
@@ -58,12 +60,22 @@ fn bracket(chs: &Vec<char>) -> PatternElem {
         chs.clone()
     };
 
-    PatternElem {
+    let mut chars2 = vec!();
+    let mut ranges = vec!();
+    for (i, c) in chars.iter().enumerate() {
+        if c == &'-' {
+            ranges.push((chars[i-1], chars[i+1]));
+        }else{
+            chars2.push(*c);
+        }
+    }
+
+    return PatternElem {
         asterisk: false,
         question: false,
         inv: inv,
-        chars: chars,
-        ranges: vec!(),
+        chars: chars2,
+        ranges: ranges,
     }
 }
 
