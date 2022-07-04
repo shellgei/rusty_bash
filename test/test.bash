@@ -754,5 +754,11 @@ res=$($com <<< 'glob_test "[abc][bcd][!xy]" adx' || echo 1)
 res=$($com <<< 'glob_test "[!abc!]" "!"' || echo 1)
 [ "$res" = "1" ]
 
+res=$($com <<< 'glob_test "[a-z]" "b"')
+[ "$?" = "0" ]
+
+res=$($com <<< 'glob_test "[!a-c]" "b"' || echo 1)
+[ "$res" = "1" ]
+
 trap "" EXIT
 echo TEST OK

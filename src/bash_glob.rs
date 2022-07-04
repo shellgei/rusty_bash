@@ -27,14 +27,11 @@ pub fn judge(s: &String, pos: usize, pe: &PatternElem) -> Vec<usize> {
     }
 
     if let Some(c) = s.chars().nth(pos) {
-        if !pe.inv {
-            if pe.chars.iter().any(|ch| ch == &c) {
-                ans.push(pos+1);
-            }
-        }else {
-            if ! pe.chars.iter().any(|ch| ch == &c) {
-                ans.push(pos+1);
-            }
+        let matched = pe.chars.iter().any(|ch| ch == &c) 
+                      || pe.ranges.iter().any(|r| r.0 < c && c < r.1);
+
+        if (pe.inv && ! matched) || (!pe.inv && matched) {
+             ans.push(pos+1);
         }
     }
 
@@ -63,7 +60,7 @@ fn bracket(chs: &Vec<char>) -> PatternElem {
     let mut chars2 = vec!();
     let mut ranges = vec!();
     for (i, c) in chars.iter().enumerate() {
-        if c == &'-' {
+        if c == &'-' && i >= 1 && i+1 < chars.len() {
             ranges.push((chars[i-1], chars[i+1]));
         }else{
             chars2.push(*c);
@@ -108,7 +105,7 @@ fn set_glob(glob: &String) -> Vec<PatternElem> {
 
     loop {
         if glob.chars().count() == pos {
-            return ans;
+            break;
         }
 
         let ch = if let Some(c) = glob.chars().nth(pos) {
@@ -144,6 +141,12 @@ fn set_glob(glob: &String) -> Vec<PatternElem> {
 
         escaped = false;
     }
+
+    for ch in bracket_str {
+        ans.push(simple_char(ch));
+    }
+
+    ans
 }
 
 pub fn glob_match(glob: &String, s: &String) -> bool {
