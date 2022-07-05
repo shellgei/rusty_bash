@@ -3,28 +3,28 @@
 
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::scanner::scanner_end_of_list;
+use crate::scanner::scanner_end_of_pipeline;
 
 /* ;, \n, and comment */
 #[derive(Debug)]
-pub struct Eol {
+pub struct Eop {
     pub text: String,
     pub debug: DebugInfo,
 }
 
-impl Eol {
+impl Eop {
     //fn get_text(&self) -> String { self.text.clone() }
 
-    pub fn parse(text: &mut Feeder) -> Option<Eol> {
+    pub fn parse(text: &mut Feeder) -> Option<Eop> {
         if text.len() == 0 {
             return None;
         };
     
-        let pos = scanner_end_of_list(text, 0);
+        let pos = scanner_end_of_pipeline(text, 0);
         if pos == 0 {
             return None;
         };
     
-        Some(Eol{text: text.consume(pos), debug: DebugInfo::init(&text)})
+        Some(Eop{text: text.consume(pos), debug: DebugInfo::init(&text)})
     }
 }

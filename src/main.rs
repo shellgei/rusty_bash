@@ -9,7 +9,7 @@ mod elem_compound_brace;
 mod elem_compound_if;
 mod elem_compound_while;
 mod elem_end_of_command;
-mod elem_end_of_list;
+mod elem_end_of_pipeline;
 mod elem_function;
 mod elem_script;
 mod elem_command;

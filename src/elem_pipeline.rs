@@ -12,12 +12,12 @@ use crate::utils_io::set_parent_io;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
 use crate::abst_elems::compound;
-use crate::elem_end_of_list::Eol;
+use crate::elem_end_of_pipeline::Eop;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
-    pub eol: Option<Eol>,
+    pub eol: Option<Eop>,
 }
 
 impl ListElem for Pipeline {
@@ -92,7 +92,7 @@ impl Pipeline {
         }
 
 
-        if let Some(eol) = Eol::parse(text) {
+        if let Some(eol) = Eop::parse(text) {
             ans.text += &eol.text.clone();
             ans.eol = Some(eol);
         }
