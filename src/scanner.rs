@@ -58,8 +58,27 @@ pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
     pos
 }
 
+pub fn scanner_end_of_list(text: &Feeder, from: usize) -> usize {
+    if text.len() >= 2 {
+        if text.compare(from, "||") || text.compare(from, "&&") {
+            return from+2;
+        }
+    }
+
+    let n = scanner_while(text, from, ";\n");
+    if n > from {
+        return n;
+    }
+
+    if text.nth_is(from, "#") {
+        return scanner_until(text, from, "\n");
+    }
+
+    return from;
+}
+
 pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
-    if text.nth_is(from, ";\n|") {
+    if text.nth_is(from, "|") {
         return from+1;
     }
 

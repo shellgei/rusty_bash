@@ -10,14 +10,14 @@ use crate::abst_elems::ListElem;
 
 use crate::Feeder;
 use crate::elem_substitution::Substitution;
-use crate::elem_end_of_command::Eoc;
+use crate::elem_end_of_list::Eol;
 use crate::elem_redirect::Redirect;
 use crate::scanner::*;
 
 pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandElem>>,
     pub text: String,
-    pub eoc: Option<Eoc>,
+    pub eol: Option<Eol>,
 }
 
 
@@ -46,7 +46,7 @@ impl SetVariables {
         SetVariables {
             elems: vec!(),
             text: "".to_string(),
-            eoc: None,
+            eol: None,
         }
     }
 
@@ -90,9 +90,9 @@ impl SetVariables {
         }
 
         if scanner_end_paren(text, 0) == 1 {
-        }else if let Some(result) = Eoc::parse(text){
+        }else if let Some(result) = Eol::parse(text){
             ans.text += &result.text;
-            ans.eoc = Some(result);
+            ans.eol = Some(result);
         }else{
             text.rewind(backup);
             return None;

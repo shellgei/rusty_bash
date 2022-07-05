@@ -12,10 +12,12 @@ use crate::utils_io::set_parent_io;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
 use crate::abst_elems::compound;
+use crate::elem_end_of_list::Eol;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
+    pub eol: Option<Eol>,
 }
 
 impl ListElem for Pipeline {
@@ -48,6 +50,7 @@ impl Pipeline {
         Pipeline {
             commands: vec!(),
             text: "".to_string(),
+            eol: None,
         }
     }
 
@@ -55,6 +58,9 @@ impl Pipeline {
         let mut ans = Pipeline::new();
 
         loop {
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
+
             let eocs;
             if let Some(mut c) = compound(text, conf) {
                 eocs = c.get_eoc_string();
@@ -72,8 +78,6 @@ impl Pipeline {
                 break;
             }
 
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
 
             if eocs == "|" && text.len() == 1 && text.nth(0) == '\n' {
                 text.consume(1);
@@ -85,6 +89,12 @@ impl Pipeline {
             if scanner_end_paren(text, 0) == 1 {
                 break;
             }
+        }
+
+
+        if let Some(eol) = Eol::parse(text) {
+            ans.text += &eol.text.clone();
+            ans.eol = Some(eol);
         }
 
         if ans.commands.len() > 0 {
