@@ -16,8 +16,9 @@ pub struct Script {
 
 impl Script {
     pub fn exec(&mut self, conf: &mut ShellCore) {
-        self.list.iter_mut()
-            .for_each(|p| p.exec(conf));
+        for p in self.list.iter_mut() {
+            p.exec(conf);
+        }
     }
 
     pub fn new() -> Script{

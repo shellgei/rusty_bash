@@ -36,6 +36,7 @@ pub struct ShellCore {
     pub history: Vec<String>,
     pub flags: Flags,
     pub in_double_quot: bool,
+    pub pipeline_end: String,
 }
 
 impl ShellCore {
@@ -49,6 +50,7 @@ impl ShellCore {
             history: Vec::new(),
             flags: Flags::new(),
             in_double_quot: false,
+            pipeline_end: String::new(),
         };
 
         conf.vars.insert("?".to_string(), 0.to_string());

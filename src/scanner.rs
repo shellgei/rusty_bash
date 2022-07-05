@@ -79,6 +79,11 @@ pub fn scanner_end_of_pipeline(text: &Feeder, from: usize) -> usize {
 
 pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
     if text.nth_is(from, "|") {
+        if text.len() > from+1 { //check of ||
+            if text.nth_is(from+1, "|") {
+                return from;
+            }
+        }
         return from+1;
     }
 

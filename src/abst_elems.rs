@@ -21,6 +21,7 @@ use crate::elem_subarg_variable::SubArgVariable;
 pub trait ListElem {
     fn exec(&mut self, _conf: &mut ShellCore);
     fn get_text(&self) -> String;
+    fn get_end(&self) -> String;
 }
 
 pub trait PipelineElem {

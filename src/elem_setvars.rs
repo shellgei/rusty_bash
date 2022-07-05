@@ -17,7 +17,7 @@ use crate::scanner::*;
 pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandElem>>,
     pub text: String,
-    pub eol: Option<Eop>,
+    pub eop: Option<Eop>,
 }
 
 
@@ -39,6 +39,24 @@ impl ListElem for SetVariables {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn get_end(&self) -> String {
+        let text = if let Some(e) = &self.eop {
+            e.text.clone()
+        }else{
+            return "".to_string();
+        };
+
+        if text.chars().count() > 1 { 
+            if text.chars().nth(0) == Some('|') && text.chars().nth(1) == Some('|') {
+                return "||".to_string();
+            }
+            if text.chars().nth(0) == Some('&') && text.chars().nth(1) == Some('&') {
+                return "&&".to_string();
+            }
+        }
+        "".to_string()
+    } 
 }
 
 impl SetVariables {
@@ -46,7 +64,7 @@ impl SetVariables {
         SetVariables {
             elems: vec!(),
             text: "".to_string(),
-            eol: None,
+            eop: None,
         }
     }
 
@@ -92,7 +110,7 @@ impl SetVariables {
         if scanner_end_paren(text, 0) == 1 {
         }else if let Some(result) = Eop::parse(text){
             ans.text += &result.text;
-            ans.eol = Some(result);
+            ans.eop = Some(result);
         }else{
             text.rewind(backup);
             return None;

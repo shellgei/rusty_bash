@@ -46,7 +46,7 @@ impl SubArgNonQuoted {
             return SubArgNonQuoted::parse3(text);
         }
 
-        let pos = scanner_until_escape(text, 0, " \n\t\"';{()$<>&");
+        let pos = scanner_until_escape(text, 0, "| \n\t\"';{()$<>&");
         if pos == 0{
             None
         }else{

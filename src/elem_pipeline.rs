@@ -17,11 +17,12 @@ use crate::elem_end_of_pipeline::Eop;
 pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
-    pub eol: Option<Eop>,
+    pub eop: Option<Eop>,
 }
 
 impl ListElem for Pipeline {
     fn exec(&mut self, conf: &mut ShellCore) {
+        //conf.pipeline_end = self.get_end();
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
@@ -43,6 +44,24 @@ impl ListElem for Pipeline {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn get_end(&self) -> String {
+        let text = if let Some(e) = &self.eop {
+            e.text.clone()
+        }else{
+            return "".to_string();
+        };
+
+        if text.chars().count() > 1 { 
+            if text.chars().nth(0) == Some('|') && text.chars().nth(1) == Some('|') {
+                return "||".to_string();
+            }
+            if text.chars().nth(0) == Some('&') && text.chars().nth(1) == Some('&') {
+                return "&&".to_string();
+            }
+        }
+        "".to_string()
+    }   
 }
 
 impl Pipeline {
@@ -50,7 +69,7 @@ impl Pipeline {
         Pipeline {
             commands: vec!(),
             text: "".to_string(),
-            eol: None,
+            eop: None,
         }
     }
 
@@ -92,9 +111,9 @@ impl Pipeline {
         }
 
 
-        if let Some(eol) = Eop::parse(text) {
-            ans.text += &eol.text.clone();
-            ans.eol = Some(eol);
+        if let Some(eop) = Eop::parse(text) {
+            ans.text += &eop.text.clone();
+            ans.eop = Some(eop);
         }
 
         if ans.commands.len() > 0 {
