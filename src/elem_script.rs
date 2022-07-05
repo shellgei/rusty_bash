@@ -67,8 +67,6 @@ impl Script {
             }
         }
     
-
-            eprintln!("REM: '{}'", text._text());
         if ans.text.len() > 0 || is_function {
             ans.procnum = procnum;
             Some(ans)
