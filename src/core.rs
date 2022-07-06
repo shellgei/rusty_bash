@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 use std::process::exit;
-use std::{fs,env};
+use std::{io,fs,env};
 use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -60,6 +60,7 @@ impl ShellCore {
         conf.internal_commands.insert("cd".to_string(), Self::cd);
         conf.internal_commands.insert("alias".to_string(), Self::alias);
         conf.internal_commands.insert("set".to_string(), Self::set);
+        conf.internal_commands.insert("read".to_string(), Self::read);
         conf.internal_commands.insert("glob_test".to_string(), Self::glob_test);
 
         conf
@@ -224,6 +225,48 @@ impl ShellCore {
 
         for a in args {
             self.args.push(a.to_string());
+        }
+
+        0
+    }
+
+    pub fn read(&mut self, args: &mut Vec<String>) -> i32 {
+        let mut line = String::new();
+        if io::stdin().read_line(&mut line).expect("Failed to read line") == 0 {
+            return 1;
+        }
+
+        let argnum = args.len() - 1;
+        if argnum < 1 {
+            return 0;
+        }
+
+        let mut token = line.trim_end().split(" ").map(|s| s.to_string()).collect::<Vec<String>>();
+
+        let last = if argnum < token.len() {
+            token[argnum-1..].join(" ")
+        }else if argnum == token.len() {
+            token[argnum-1].clone()
+        }else{
+            "".to_string()
+        };
+
+        if token.len() >= argnum-1 {
+            token.insert(argnum-1, last.clone());
+        }else{
+            while token.len() < argnum {
+                token.push(last.clone());
+            }
+        }
+
+        //let values = token[..argnum].to_vec();
+
+        for (i, a) in args.iter().enumerate() {
+            if i == 0 {
+                continue;
+            }
+
+            self.vars.insert(a.to_string(), token[i-1].to_string());
         }
 
         0
