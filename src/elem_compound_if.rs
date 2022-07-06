@@ -105,7 +105,7 @@ impl CompoundIf {
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
         CompoundIf::next_line(text, conf, ans);
 
-        let cond = if let Some(s) = Script::parse(text, conf, true) {
+        let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             s
         }else{
@@ -120,7 +120,7 @@ impl CompoundIf {
 
         CompoundIf::next_line(text, conf, ans);
 
-        let doing = if let Some(s) = Script::parse(text, conf, true) {
+        let doing = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             s
         }else{
@@ -148,7 +148,7 @@ impl CompoundIf {
     fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
         CompoundIf::next_line(text, conf, ans);
 
-        ans.else_do = if let Some(s) = Script::parse(text, conf, true) {
+        ans.else_do = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             Some(s)
         }else{

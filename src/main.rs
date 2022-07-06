@@ -167,7 +167,7 @@ fn main() {
                 break;
             }
         }
-        while let Some(mut e) = Script::parse(&mut feeder, &mut core, false){
+        while let Some(mut e) = Script::parse(&mut feeder, &mut core){
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());
                 eprintln!("Unknown phrase");

@@ -111,8 +111,7 @@ impl CompoundBrace {
 
         loop {
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf, true) {
-                //eprintln!("script: {}", s.text);
+            if let Some(s) = Script::parse(text, conf) {
                 if ! tail_check(&s.text){
                     text.rewind(backup);
                     return None;

@@ -7,7 +7,6 @@ use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::ListElem;
 use crate::scanner::scanner_blank_part;
-use crate::elem_end_of_pipeline::Eop;
 
 pub struct Script {
     pub list: Vec<Box<dyn ListElem>>,
@@ -40,7 +39,7 @@ impl Script {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, next: bool) -> Option<Script> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Script> {
         if text.len() == 0 {
             return None;
         };
@@ -71,11 +70,10 @@ impl Script {
                 ans.eops.push(result.get_end());
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
-                //procnum += 1;
             }
             else {break}
 
-            if text.len() == 0 || text.nth(0) == ')' /*|| !next*/ {
+            if text.len() == 0 || text.nth(0) == ')' {
                 break;
             }
         }

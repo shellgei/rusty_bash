@@ -99,7 +99,7 @@ impl CompoundWhile {
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
         CompoundWhile::next_line(text, conf, ans);
 
-        let cond = if let Some(s) = Script::parse(text, conf, true) {
+        let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             s
         }else{
@@ -114,7 +114,7 @@ impl CompoundWhile {
 
         CompoundWhile::next_line(text, conf, ans);
 
-        let doing = if let Some(s) = Script::parse(text, conf, true) {
+        let doing = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             s
         }else{

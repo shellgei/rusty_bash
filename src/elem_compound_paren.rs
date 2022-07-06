@@ -107,7 +107,7 @@ impl CompoundParen {
 
         loop{
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf, true) {
+            if let Some(s) = Script::parse(text, conf) {
                 ans.text = "(".to_owned() + &s.text + ")";
                 ans.script = Some(s);
             }else{
