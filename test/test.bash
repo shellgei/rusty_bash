@@ -495,6 +495,17 @@ EOF
 res=$($com <<< '{ echo } ; }')
 [ "$res" = "}" ]
 
+# compound and read
+
+res=$($com <<< 'echo あ い う | ( read b ; echo $b )')
+[ "$res" = "あ い う" ]
+
+res=$($com <<< 'echo あ い う | ( read a b ; echo $b )')
+[ "$res" = "い う" ]
+
+res=$($com <<< 'echo あ い う | ( read a b c ; echo $b )')
+[ "$res" = "い" ]
+
 ### MULTILINE INPUT ###
 
 res=$($com << 'EOF'
@@ -770,6 +781,13 @@ b" ]
 res=$($com <<< 'echo a || echo b && echo c')
 [ "$res" = "a
 c" ]
+
+### WHILE ###
+
+res=$($com <<< 'seq 3 | while read x ; do echo $x🎂 ; done')
+[ "$res" = "1🎂
+2🎂
+3🎂" ]
 
 trap "" EXIT
 echo TEST OK
