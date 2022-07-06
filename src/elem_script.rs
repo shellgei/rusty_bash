@@ -11,7 +11,7 @@ use crate::scanner::scanner_blank_part;
 pub struct Script {
     pub list: Vec<Box<dyn ListElem>>,
     pub text: String,
-    pub procnum: usize,
+//    pub procnum: usize,
 }
 
 impl Script {
@@ -25,7 +25,7 @@ impl Script {
         Script {
             list: vec!(),
             text: "".to_string(),
-            procnum: 0,
+            //procnum: 0,
         }
     }
 
@@ -43,7 +43,7 @@ impl Script {
         let mut ans = Script::new();
         let mut is_function = false;
     
-        let mut procnum = 0;
+        //let mut procnum = 0;
         loop {
             let pos = scanner_blank_part(text, 0);
             ans.text += &text.consume(pos);
@@ -59,7 +59,7 @@ impl Script {
             }else if let Some(result) = Pipeline::parse(text, conf) {
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
-                procnum += 1;
+                //procnum += 1;
             }
             else {break}
 
@@ -69,7 +69,7 @@ impl Script {
         }
     
         if ans.text.len() > 0 || is_function {
-            ans.procnum = procnum;
+//            ans.procnum = procnum;
             Some(ans)
         }else{
             eprintln!("Unknown phrase");
