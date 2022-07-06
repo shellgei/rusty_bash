@@ -760,5 +760,16 @@ res=$($com <<< 'glob_test "[a-z]" "b"')
 res=$($com <<< 'glob_test "[!a-c]" "b"' || echo 1)
 [ "$res" = "1" ]
 
+res=$($com <<< 'echo a || echo b || echo c')
+[ "$res" = "a" ]
+
+res=$($com <<< 'echo a && echo b || echo c')
+[ "$res" = "a
+b" ]
+
+res=$($com <<< 'echo a || echo b && echo c')
+[ "$res" = "a
+c" ]
+
 trap "" EXIT
 echo TEST OK
