@@ -150,17 +150,17 @@ impl CompoundWhile {
         let mut ans = CompoundWhile::new();
         ans.text += &text.consume(5);
 
-            if ! CompoundWhile::parse_cond_do_pair(text, conf, &mut ans) {
-                text.rewind(backup);
-                return None;
-            }
-    
-            if text.compare(0, "done"){
-                ans.text += &text.consume(4);
-            }else{
-                text.rewind(backup);
-                return None;
-            }
+        if ! CompoundWhile::parse_cond_do_pair(text, conf, &mut ans) {
+            text.rewind(backup);
+            return None;
+        }
+
+        if text.compare(0, "done"){
+            ans.text += &text.consume(4);
+        }else{
+            text.rewind(backup);
+            return None;
+        }
 
         loop {
             let d = scanner_while(text, 0, " \t");
