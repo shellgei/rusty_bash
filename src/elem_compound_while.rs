@@ -14,7 +14,7 @@ use crate::scanner::scanner_while;
 
 /* ( script ) */
 pub struct CompoundWhile {
-    pub ifthen: Vec<(Script, Script)>,
+    pub conddo: Option<(Script, Script)>,
     text: String,
     pid: Option<Pid>,
     pub redirects: Vec<Box<Redirect>>,
@@ -74,7 +74,7 @@ impl PipelineElem for CompoundWhile {
 impl CompoundWhile {
     pub fn new() -> CompoundWhile{
         CompoundWhile {
-            ifthen: vec!(),
+            conddo: None,
             redirects: vec!(),
             text: "".to_string(),
             pipein: -1,
@@ -87,12 +87,13 @@ impl CompoundWhile {
 
     fn exec_if_compound(&mut self, conf: &mut ShellCore) {
         loop {
-            let (cond, doing) = &mut self.ifthen[0];
+            if let Some((cond, doing)) = &mut self.conddo {
              cond.exec(conf);
              if conf.vars["?"] != "0" {
                  break;
              }
              doing.exec(conf);
+            }
         }
     }
 
@@ -123,7 +124,7 @@ impl CompoundWhile {
 
         CompoundWhile::next_line(text, conf, ans);
 
-        ans.ifthen.push( (cond, doing) );
+        ans.conddo = Some( (cond, doing) );
         true
     }
 
