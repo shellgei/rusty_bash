@@ -28,7 +28,7 @@ impl PipelineElem for CompoundWhile {
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 
             && self.redirects.len() == 0 {
-             self.exec_if_compound(conf);
+             self.exec_do_compound(conf);
              return;
         };
 
@@ -36,7 +36,7 @@ impl PipelineElem for CompoundWhile {
             match fork() {
                 Ok(ForkResult::Child) => {
                     set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
-                    self.exec_if_compound(conf);
+                    self.exec_do_compound(conf);
                     close(1).expect("Can't close a pipe end");
                     exit(0);
                 },
@@ -85,7 +85,7 @@ impl CompoundWhile {
         }
     }
 
-    fn exec_if_compound(&mut self, conf: &mut ShellCore) {
+    fn exec_do_compound(&mut self, conf: &mut ShellCore) {
         loop {
             if let Some((cond, doing)) = &mut self.conddo {
              cond.exec(conf);
