@@ -97,7 +97,7 @@ impl CompoundWhile {
         }
     }
 
-    fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
+    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
         CompoundWhile::next_line(text, conf, ans);
 
         let cond = if let Some(s) = Script::parse(text, conf) {
@@ -150,7 +150,7 @@ impl CompoundWhile {
         let mut ans = CompoundWhile::new();
         ans.text += &text.consume(5);
 
-            if ! CompoundWhile::parse_if_then_pair(text, conf, &mut ans) {
+            if ! CompoundWhile::parse_cond_do_pair(text, conf, &mut ans) {
                 text.rewind(backup);
                 return None;
             }
