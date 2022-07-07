@@ -88,11 +88,11 @@ impl CompoundWhile {
     fn exec_do_compound(&mut self, conf: &mut ShellCore) {
         loop {
             if let Some((cond, doing)) = &mut self.conddo {
-             cond.exec(conf);
-             if conf.vars["?"] != "0" {
-                 break;
-             }
-             doing.exec(conf);
+                cond.exec(conf);
+                if conf.vars["?"] != "0" {
+                    break;
+                }
+                doing.exec(conf);
             }
         }
     }
