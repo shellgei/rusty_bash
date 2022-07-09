@@ -58,6 +58,13 @@ impl PipelineElem for CompoundBrace {
         }
     }
 
+    fn exec_elems(&mut self, conf: &mut ShellCore) {
+             self.script.exec(conf);
+             if ! self.fds.no_connection() {
+                 exit(conf.vars["?"].parse::<i32>().unwrap());
+             }
+    }
+
     fn get_pid(&self) -> Option<Pid> { self.pid }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {

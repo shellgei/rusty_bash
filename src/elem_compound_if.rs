@@ -6,8 +6,7 @@ use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
-use nix::unistd::{close, fork, Pid, ForkResult};
-use std::process::exit;
+use nix::unistd::Pid;
 use crate::utils_io::*;
 use crate::elem_end_of_command::Eoc;
 use crate::scanner::scanner_while;
@@ -23,27 +22,26 @@ pub struct CompoundIf {
 }
 
 impl PipelineElem for CompoundIf {
-    fn exec(&mut self, conf: &mut ShellCore) {
-        if self.fds.no_connection() {
-             self.exec_if_compound(conf);
+    fn exec_elems(&mut self, conf: &mut ShellCore) {
+        for pair in self.ifthen.iter_mut() {
+             pair.0.exec(conf);
+             if conf.vars["?"] != "0" {
+                continue;
+             }
+             pair.1.exec(conf);
              return;
-        };
-
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    self.fds.set_child_io();
-                    self.exec_if_compound(conf);
-                    close(1).expect("Can't close a pipe end");
-                    exit(0);
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    self.pid = Some(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
         }
+
+        if let Some(s) = &mut self.else_do {
+            s.exec(conf);
+        }
+    }
+
+    fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn no_connection(&self) -> bool { self.fds.no_connection() }
+
+    fn set_child_io(&self){
+        self.fds.set_child_io();
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
@@ -80,20 +78,6 @@ impl CompoundIf {
         }
     }
 
-    fn exec_if_compound(&mut self, conf: &mut ShellCore) {
-        for pair in self.ifthen.iter_mut() {
-             pair.0.exec(conf);
-             if conf.vars["?"] != "0" {
-                continue;
-             }
-             pair.1.exec(conf);
-             return;
-        }
-
-        if let Some(s) = &mut self.else_do {
-            s.exec(conf);
-        }
-    }
 
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
         CompoundIf::next_line(text, conf, ans);

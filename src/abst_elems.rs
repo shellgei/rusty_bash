@@ -17,21 +17,51 @@ use crate::elem_subarg_double_quoted::SubArgDoubleQuoted;
 use crate::elem_subarg_single_quoted::SubArgSingleQuoted;
 use crate::elem_subarg_braced::SubArgBraced;
 use crate::elem_subarg_variable::SubArgVariable;
+use std::process::exit;
+use nix::unistd::{close, fork, ForkResult};
 
 pub trait ListElem {
-    fn exec(&mut self, _conf: &mut ShellCore);
+    fn exec(&mut self, conf: &mut ShellCore);
+
     fn get_text(&self) -> String;
     fn get_end(&self) -> String;
 }
 
 pub trait PipelineElem {
-    fn exec(&mut self, conf: &mut ShellCore);
+    fn exec(&mut self, conf: &mut ShellCore) {
+        if self.no_connection() {
+             self.exec_elems(conf);
+             return;
+        };
+
+        unsafe {
+            match fork() {
+                Ok(ForkResult::Child) => {
+                    self.set_child_io();
+                    self.exec_elems(conf);
+                    close(1).expect("Can't close a pipe end");
+                    //exit(0);
+                    exit(conf.vars["?"].parse::<i32>().unwrap());
+                },
+                Ok(ForkResult::Parent { child } ) => {
+                    //self.pid = Some(child);
+                    self.set_pid(child);
+                    return;
+                },
+                Err(err) => panic!("Failed to fork. {}", err),
+            }
+        }
+    }
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd);
     fn get_pid(&self) -> Option<Pid>;
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;
     fn get_eoc_string(&mut self) -> String;
     fn get_text(&self) -> String;
+    fn set_child_io(&self) {}
+    fn exec_elems(&mut self, _conf: &mut ShellCore) {}
+    fn no_connection(&self) -> bool { true }
+    fn set_pid(&mut self, _pid: Pid) {}
 }
 
 pub trait CommandElem {

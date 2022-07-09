@@ -6,8 +6,7 @@ use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
-use nix::unistd::{close, fork, Pid, ForkResult};
-use std::process::exit;
+use nix::unistd::Pid;
 use crate::utils_io::*;
 use crate::elem_end_of_command::Eoc;
 use crate::scanner::scanner_while;
@@ -22,35 +21,18 @@ pub struct CompoundWhile {
 }
 
 impl PipelineElem for CompoundWhile {
-    fn exec(&mut self, conf: &mut ShellCore) {
-        if self.fds.no_connection() {
-             self.exec_do_compound(conf);
-             return;
-        };
-
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    self.fds.set_child_io();
-                    self.exec_do_compound(conf);
-                    close(1).expect("Can't close a pipe end");
-                    exit(0);
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    self.pid = Some(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
-        }
-    }
-
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn no_connection(&self) -> bool { self.fds.no_connection() }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
         self.fds.pipein = pin;
         self.fds.pipeout = pout;
         self.fds.prevpipein = pprev;
+    }
+
+    fn set_child_io(&self){
+        self.fds.set_child_io();
     }
 
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
@@ -65,6 +47,19 @@ impl PipelineElem for CompoundWhile {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn exec_elems(&mut self, conf: &mut ShellCore) {
+        loop {
+            if let Some((cond, doing)) = &mut self.conddo {
+                cond.exec(conf);
+                if conf.vars["?"] != "0" {
+                    conf.vars.insert("?".to_string(), "0".to_string());
+                    break;
+                }
+                doing.exec(conf);
+            }
+        }
+    }
 }
 
 impl CompoundWhile {
@@ -78,17 +73,6 @@ impl CompoundWhile {
         }
     }
 
-    fn exec_do_compound(&mut self, conf: &mut ShellCore) {
-        loop {
-            if let Some((cond, doing)) = &mut self.conddo {
-                cond.exec(conf);
-                if conf.vars["?"] != "0" {
-                    break;
-                }
-                doing.exec(conf);
-            }
-        }
-    }
 
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
         CompoundWhile::next_line(text, conf, ans);
