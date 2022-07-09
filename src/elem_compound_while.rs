@@ -8,7 +8,7 @@ use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
 use nix::unistd::{close, fork, Pid, ForkResult};
 use std::process::exit;
-use crate::utils_io::set_child_io;
+use crate::utils_io::*;
 use crate::elem_end_of_command::Eoc;
 use crate::scanner::scanner_while;
 
@@ -17,17 +17,13 @@ pub struct CompoundWhile {
     pub conddo: Option<(Script, Script)>,
     text: String,
     pid: Option<Pid>,
-    pub redirects: Vec<Box<Redirect>>,
-    pub pipein: RawFd,
-    pub pipeout: RawFd,
-    pub prevpipein: RawFd,
+    pub fds: FileDescs,
     pub eoc: Option<Eoc>,
 }
 
 impl PipelineElem for CompoundWhile {
     fn exec(&mut self, conf: &mut ShellCore) {
-        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 
-            && self.redirects.len() == 0 {
+        if self.fds.no_connection() {
              self.exec_do_compound(conf);
              return;
         };
@@ -35,7 +31,7 @@ impl PipelineElem for CompoundWhile {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
+                    set_child_io(self.fds.pipein, self.fds.pipeout, self.fds.prevpipein, &self.fds.redirects);
                     self.exec_do_compound(conf);
                     close(1).expect("Can't close a pipe end");
                     exit(0);
@@ -52,13 +48,13 @@ impl PipelineElem for CompoundWhile {
     fn get_pid(&self) -> Option<Pid> { self.pid }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
-        self.pipein = pin;
-        self.pipeout = pout;
-        self.prevpipein = pprev;
+        self.fds.pipein = pin;
+        self.fds.pipeout = pout;
+        self.fds.prevpipein = pprev;
     }
 
-    fn get_pipe_end(&mut self) -> RawFd { self.pipein }
-    fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
+    fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
+    fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
         if let Some(e) = &self.eoc {
@@ -75,11 +71,8 @@ impl CompoundWhile {
     pub fn new() -> CompoundWhile{
         CompoundWhile {
             conddo: None,
-            redirects: vec!(),
             text: "".to_string(),
-            pipein: -1,
-            pipeout: -1,
-            prevpipein: -1,
+            fds: FileDescs::new(),
             pid: None,
             eoc: None,
         }
@@ -168,7 +161,7 @@ impl CompoundWhile {
 
             if let Some(r) = Redirect::parse(text){
                     ans.text += &r.text;
-                    ans.redirects.push(Box::new(r));
+                    ans.fds.redirects.push(Box::new(r));
             }else{
                 break;
             }

@@ -15,14 +15,11 @@ use crate::scanner::scanner_while;
 
 pub struct CompoundParen {
     pub script: Option<Script>,
-    pub redirects: Vec<Box<Redirect>>,
     text: String,
     pid: Option<Pid>, 
-    pub pipein: RawFd,
-    pub pipeout: RawFd,
     pub substitution_text: String,
     pub substitution: bool,
-    pub prevpipein: RawFd,
+    pub fds: FileDescs,
     pub eoc: Option<Eoc>,
 }
 
@@ -33,7 +30,7 @@ impl PipelineElem for CompoundParen {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
+                    set_child_io(self.fds.pipein, self.fds.pipeout, self.fds.prevpipein, &self.fds.redirects);
                     if let Some(s) = &mut self.script {
                         if self.substitution {
                             close(p.0).expect("Can't close a pipe end");
@@ -61,13 +58,13 @@ impl PipelineElem for CompoundParen {
     fn get_pid(&self) -> Option<Pid> { self.pid }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
-        self.pipein = pin;
-        self.pipeout = pout;
-        self.prevpipein = pprev;
+        self.fds.pipein = pin;
+        self.fds.pipeout = pout;
+        self.fds.prevpipein = pprev;
     }
 
-    fn get_pipe_end(&mut self) -> RawFd { self.pipein }
-    fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
+    fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
+    fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
         if let Some(e) = &self.eoc {
@@ -85,14 +82,11 @@ impl CompoundParen {
         CompoundParen {
             script: None,
             pid: None,
-            redirects: vec!(),
             text: "".to_string(),
-            pipein: -1,
-            pipeout: -1,
             substitution_text: "".to_string(),
             substitution: false,
-            prevpipein: -1,
             eoc: None,
+            fds: FileDescs::new(),
         }
     }
 
@@ -141,7 +135,7 @@ impl CompoundParen {
 
             if let Some(r) = Redirect::parse(text){
                     ans.text += &r.text;
-                    ans.redirects.push(Box::new(r));
+                    ans.fds.redirects.push(Box::new(r));
             }else{
                 break;
             }
