@@ -30,7 +30,7 @@ pub struct Command {
     pub text: String,
     /* The followings are set by the pipeline element. */
     pub pid: Option<Pid>,
-    pub fds: FileDescs,
+    fds: FileDescs,
 }
 
 impl PipelineElem for Command {

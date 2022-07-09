@@ -32,7 +32,7 @@ pub struct CompoundBrace {
     pid: Option<Pid>, 
     pub substitution_text: String,
     pub eoc: Option<Eoc>,
-    pub fds: FileDescs,
+    fds: FileDescs,
 }
 
 impl PipelineElem for CompoundBrace {

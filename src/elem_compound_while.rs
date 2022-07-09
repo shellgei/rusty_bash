@@ -16,7 +16,7 @@ pub struct CompoundWhile {
     pub conddo: Option<(Script, Script)>,
     text: String,
     pid: Option<Pid>,
-    pub fds: FileDescs,
+    fds: FileDescs,
     pub eoc: Option<Eoc>,
 }
 

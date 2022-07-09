@@ -19,7 +19,7 @@ pub struct CompoundParen {
     pid: Option<Pid>, 
     pub substitution_text: String,
     pub substitution: bool,
-    pub fds: FileDescs,
+    fds: FileDescs,
     pub eoc: Option<Eoc>,
 }
 

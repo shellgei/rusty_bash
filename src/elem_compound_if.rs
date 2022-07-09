@@ -18,7 +18,7 @@ pub struct CompoundIf {
     text: String,
     pid: Option<Pid>,
     pub eoc: Option<Eoc>,
-    pub fds: FileDescs,
+    fds: FileDescs,
 }
 
 impl PipelineElem for CompoundIf {
