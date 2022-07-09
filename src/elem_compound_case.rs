@@ -11,6 +11,8 @@ use crate::utils_io::*;
 use crate::elem_end_of_command::Eoc;
 use crate::scanner::*;
 use crate::elem_arg::Arg;
+use crate::bash_glob::glob_match;
+use crate::abst_elems::CommandElem;
 
 /* ( script ) */
 pub struct CompoundCase {
@@ -51,8 +53,13 @@ impl PipelineElem for CompoundCase {
     fn get_text(&self) -> String { self.text.clone() }
 
     fn exec_elems(&mut self, conf: &mut ShellCore) {
-        for conddo in &mut self.conddo {
-            eprintln!("COND: {}", conddo.0);
+        let arg_str = self.arg.eval(conf).join(" ");
+
+        for (cond, doing) in &mut self.conddo {
+            if glob_match(cond, &arg_str) {
+                doing.exec(conf);
+                break;
+            }
         }
     }
 }
@@ -160,6 +167,22 @@ impl CompoundCase {
                 text.rewind(backup);
                 return None;
             }
+        }
+
+        loop {
+            let d = scanner_while(text, 0, " \t");
+            ans.text += &text.consume(d);
+
+            if let Some(r) = Redirect::parse(text){
+                    ans.text += &r.text;
+                    ans.fds.redirects.push(Box::new(r));
+            }else{
+                break;
+            }
+        }
+        if let Some(e) = Eoc::parse(text){
+            ans.text += &e.text;
+            ans.eoc = Some(e);
         }
 
         if ans.conddo.len() > 0 {
