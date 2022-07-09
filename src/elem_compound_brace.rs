@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_elems::PipelineElem;
-use nix::unistd::{Pid, fork, ForkResult};
+use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
@@ -36,33 +36,18 @@ pub struct CompoundBrace {
 }
 
 impl PipelineElem for CompoundBrace {
-    fn exec(&mut self, conf: &mut ShellCore) {
-        if self.fds.no_connection() {
-             self.script.exec(conf);
-             return;
-        };
-
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    self.fds.set_child_io();
-                    self.script.exec(conf);
-                    exit(conf.vars["?"].parse::<i32>().unwrap());
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    self.pid = Some(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
-        }
-    }
-
     fn exec_elems(&mut self, conf: &mut ShellCore) {
              self.script.exec(conf);
              if ! self.fds.no_connection() {
                  exit(conf.vars["?"].parse::<i32>().unwrap());
              }
+    }
+
+    fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn no_connection(&self) -> bool { self.fds.no_connection() }
+
+    fn set_child_io(&self){
+        self.fds.set_child_io();
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
