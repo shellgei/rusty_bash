@@ -34,6 +34,24 @@ impl FileDescs {
             self.pipeout == -1 &&
             self.prevpipein == -1
     }
+
+    pub fn set_child_io(&self) {
+        if self.pipein != -1 {
+            close(self.pipein).expect("Cannot close in-pipe");
+        }
+        if self.pipeout != -1 {
+            dup_and_close(self.pipeout, 1);
+        }
+    
+        if self.prevpipein != -1 {
+            dup_and_close(self.prevpipein, 0);
+        }
+    
+        for r in &self.redirects {
+            set_redirect(&r);
+        };
+    
+    }
 }
 
 pub fn dup_and_close(from: RawFd, to: RawFd){

@@ -31,7 +31,7 @@ impl PipelineElem for CompoundWhile {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    set_child_io(self.fds.pipein, self.fds.pipeout, self.fds.prevpipein, &self.fds.redirects);
+                    self.fds.set_child_io();
                     self.exec_do_compound(conf);
                     close(1).expect("Can't close a pipe end");
                     exit(0);
