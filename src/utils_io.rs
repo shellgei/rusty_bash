@@ -100,6 +100,7 @@ pub fn set_redirect(r: &Box<Redirect>){
     }
 }
 
+/*
 pub fn set_child_io(pin: RawFd, pout: RawFd, previn: RawFd, redirects: &Vec<Box<Redirect>>) {
 
     if pin != -1 {
@@ -116,8 +117,8 @@ pub fn set_child_io(pin: RawFd, pout: RawFd, previn: RawFd, redirects: &Vec<Box<
     for r in redirects {
         set_redirect(r);
     };
-
 }
+*/
 
 pub fn set_parent_io(pout: RawFd) {
     if pout >= 0 {

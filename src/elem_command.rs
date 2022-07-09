@@ -27,13 +27,10 @@ pub struct Command {
     vars: Vec<Box<Substitution>>,
     pub args: Vec<Box<dyn CommandElem>>,
     pub eoc: Option<Eoc>,
-    pub redirects: Vec<Box<Redirect>>,
     pub text: String,
     /* The followings are set by the pipeline element. */
-    pub pipeout: RawFd,
-    pub pipein: RawFd,
-    pub prevpipein: RawFd,
     pub pid: Option<Pid>,
+    pub fds: FileDescs,
 }
 
 impl PipelineElem for Command {
@@ -50,7 +47,7 @@ impl PipelineElem for Command {
         }
 
         // This sentence avoids an unnecessary fork for an internal command.
-        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 { 
+        if self.fds.pipeout == -1 && self.fds.pipein == -1 && self.fds.prevpipein == -1 { 
             if conf.functions.contains_key(&args[0]) {
                 self.exec_function(&mut args, conf);
                 return;
@@ -63,7 +60,7 @@ impl PipelineElem for Command {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
+                    self.fds.set_child_io();
                     self.exec_external_command(&mut args, conf)
                 },
                 Ok(ForkResult::Parent { child } ) => {
@@ -76,14 +73,14 @@ impl PipelineElem for Command {
     }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
-        self.pipein = pin;
-        self.pipeout = pout;
-        self.prevpipein = pprev;
+        self.fds.pipein = pin;
+        self.fds.pipeout = pout;
+        self.fds.prevpipein = pprev;
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
-    fn get_pipe_end(&mut self) -> RawFd { self.pipein }
-    fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
+    fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
+    fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
         if let Some(e) = &self.eoc {
@@ -101,13 +98,10 @@ impl Command {
         Command {
             vars: vec!(),
             args: vec!(),
-            redirects: vec!(),
             eoc: None,
             text: "".to_string(),
-            pipeout: -1,
-            pipein: -1,
-            prevpipein: -1,
             pid: None,
+            fds: FileDescs::new(),
         }
     }
 
@@ -226,7 +220,7 @@ impl Command {
 
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
-                ans.redirects.push(Box::new(r));
+                ans.fds.redirects.push(Box::new(r));
             }else if let Some(s) = Substitution::parse(text, conf) {
                 ans.push_vars(s);
             }else{
@@ -250,7 +244,7 @@ impl Command {
         loop {
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
-                ans.redirects.push(Box::new(r));
+                ans.fds.redirects.push(Box::new(r));
             }else if let Some(a) = Arg::parse(text, conf, false, false) {
                 if ans.args.len() == 0 {
                     if ! Command::ng_check(&a.text){
