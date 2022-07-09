@@ -235,7 +235,7 @@ impl Command {
     fn ng_check(text: &String) -> bool {
         if Some('}') == text.chars().nth(0) {
             return false;
-        }else if text == "then" || text == "else" || text == "elif" || text == "fi" || text == "done" || text == "do" {
+        }else if text == "then" || text == "else" || text == "elif" || text == "fi" || text == "done" || text == "do" || text == ";;" {
             return false;
         }
 
@@ -291,7 +291,6 @@ impl Command {
         };
 
         Command::substitutions_and_redirects(text, conf, &mut ans);
-        //if conf.flags.i {
         if conf.has_flag('i') {
             Command::replace_alias(text, conf);
         }

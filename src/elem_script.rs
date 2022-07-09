@@ -20,7 +20,6 @@ impl Script {
         let mut eop = "".to_string();
         for p in self.list.iter_mut() {
             let status = conf.get_var(&"?".to_string()) == "0";
-           // eprintln!("{}, {}", eop.clone(), status);
            
             if (status && eop == "||") || (!status && eop =="&&") {
                 eop = p.get_end();

@@ -110,7 +110,6 @@ impl Pipeline {
             }
         }
 
-
         if let Some(eop) = Eop::parse(text) {
             ans.text += &eop.text.clone();
             ans.eop = Some(eop);

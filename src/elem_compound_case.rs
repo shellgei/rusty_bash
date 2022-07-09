@@ -9,11 +9,13 @@ use crate::elem_redirect::Redirect;
 use nix::unistd::Pid;
 use crate::utils_io::*;
 use crate::elem_end_of_command::Eoc;
-use crate::scanner::scanner_while;
+use crate::scanner::*;
+use crate::elem_arg::Arg;
 
 /* ( script ) */
 pub struct CompoundCase {
-    pub conddo: Option<(Script, Script)>,
+    pub arg: Arg,
+    pub conddo: Vec<(String, Script)>,
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
@@ -49,23 +51,17 @@ impl PipelineElem for CompoundCase {
     fn get_text(&self) -> String { self.text.clone() }
 
     fn exec_elems(&mut self, conf: &mut ShellCore) {
-        loop {
-            if let Some((cond, doing)) = &mut self.conddo {
-                cond.exec(conf);
-                if conf.vars["?"] != "0" {
-                    conf.vars.insert("?".to_string(), "0".to_string());
-                    break;
-                }
-                doing.exec(conf);
-            }
+        for conddo in &mut self.conddo {
+            eprintln!("COND: {}", conddo.0);
         }
     }
 }
 
 impl CompoundCase {
-    pub fn new() -> CompoundCase{
+    pub fn new(arg: Arg) -> CompoundCase{
         CompoundCase {
-            conddo: None,
+            arg: arg, 
+            conddo: vec!(),
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
@@ -77,18 +73,15 @@ impl CompoundCase {
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundCase) -> bool {
         CompoundCase::next_line(text, conf, ans);
 
-        let cond = if let Some(s) = Script::parse(text, conf) {
-            ans.text += &s.text;
-            s
-        }else{
+        let pos = scanner_until_escape(text, 0, ")");
+
+        if pos == 0 || pos == text.len() {
             return false;
-        };
-
-        CompoundCase::next_line(text, conf, ans);
-
-        if text.compare(0, "do"){
-            ans.text += &text.consume(2);
         }
+
+        let cond = text.consume(pos);
+        ans.text += &cond.clone();
+        ans.text += &text.consume(1);
 
         CompoundCase::next_line(text, conf, ans);
 
@@ -101,7 +94,13 @@ impl CompoundCase {
 
         CompoundCase::next_line(text, conf, ans);
 
-        ans.conddo = Some( (cond, doing) );
+        if text.len() >= 2 && text.compare(0, ";;") {
+            ans.text += &text.consume(2);
+        }/*else{
+            return false;
+        }*/
+
+        ans.conddo.push( (cond, doing) );
         true
     }
 
@@ -118,43 +117,55 @@ impl CompoundCase {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundCase> {
-        if text.len() < 5 || ! text.compare(0, "while") {
+        if text.len() < 4 || ! text.compare(0, "case") {
             return None;
         }
 
         let backup = text.clone();
 
-        let mut ans = CompoundCase::new();
-        ans.text += &text.consume(5);
+        let mut ans_text = text.consume(4);
 
-        if ! CompoundCase::parse_cond_do_pair(text, conf, &mut ans) {
+        let d = scanner_while(text, 0, " \t");
+        ans_text += &text.consume(d);
+
+        let arg = if let Some(a) = Arg::parse(text, conf, false, false) {
+            a
+        }else{
             text.rewind(backup);
             return None;
-        }
+        };
 
-        if text.compare(0, "done"){
-            ans.text += &text.consume(4);
+        let mut ans = CompoundCase::new(arg);
+        ans.text = ans_text;
+
+        let d = scanner_while(text, 0, " \t");
+        ans.text += &text.consume(d);
+
+        if text.len() >= 2 && text.compare(0, "in") {
+            ans.text += &text.consume(2);
         }else{
             text.rewind(backup);
             return None;
         }
 
         loop {
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
+            CompoundCase::next_line(text, conf, &mut ans);
 
-            if let Some(r) = Redirect::parse(text){
-                    ans.text += &r.text;
-                    ans.fds.redirects.push(Box::new(r));
-            }else{
+            if text.len() >= 4 && text.compare(0, "esac") {
+                ans.text += &text.consume(4);
                 break;
             }
-        }
-        if let Some(e) = Eoc::parse(text){
-            ans.text += &e.text;
-            ans.eoc = Some(e);
+
+            if ! CompoundCase::parse_cond_do_pair(text, conf, &mut ans) {
+                text.rewind(backup);
+                return None;
+            }
         }
 
-        Some(ans)
+        if ans.conddo.len() > 0 {
+            Some(ans)
+        }else{
+            None
+        }
     }
 }

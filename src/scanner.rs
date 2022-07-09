@@ -62,6 +62,8 @@ pub fn scanner_end_of_pipeline(text: &Feeder, from: usize) -> usize {
     if text.len() >= 2 {
         if text.compare(from, "||") || text.compare(from, "&&") {
             return from+2;
+        }else if text.compare(from, ";;") {
+            return from;
         }
     }
 

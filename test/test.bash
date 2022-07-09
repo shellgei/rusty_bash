@@ -794,5 +794,11 @@ res=$($com <<< 'seq 3 | while read x ; do echo $x🎂 ; done')
 
 ### CASE ###
 
+res=$($com <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
+[ "$res" = "no" ]
+
+res=$($com -x <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
+[ "$res" = "x" ]
+
 trap "" EXIT
 echo TEST OK
