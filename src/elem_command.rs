@@ -47,7 +47,8 @@ impl PipelineElem for Command {
         }
 
         // This sentence avoids an unnecessary fork for an internal command.
-        if self.fds.pipeout == -1 && self.fds.pipein == -1 && self.fds.prevpipein == -1 { 
+        //if self.fds.pipeout == -1 && self.fds.pipein == -1 && self.fds.prevpipein == -1 { 
+        if self.fds.no_connection() {
             if conf.functions.contains_key(&args[0]) {
                 self.exec_function(&mut args, conf);
                 return;
