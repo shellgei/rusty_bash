@@ -23,7 +23,8 @@ pub struct SetVariables {
 
 impl ListElem for SetVariables {
     fn exec(&mut self, conf: &mut ShellCore) {
-        if conf.flags.d {
+        //if conf.flags.d {
+        if conf.has_flag('d') {
             eprintln!("{}", self.parse_info().join("\n"));
         };
 

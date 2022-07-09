@@ -10,6 +10,7 @@ use crate::elem_compound_if::CompoundIf;
 use crate::elem_compound_while::CompoundWhile;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
+use crate::elem_compound_case::CompoundCase;
 
 use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
@@ -40,11 +41,9 @@ pub trait PipelineElem {
                     self.set_child_io();
                     self.exec_elems(conf);
                     close(1).expect("Can't close a pipe end");
-                    //exit(0);
                     exit(conf.vars["?"].parse::<i32>().unwrap());
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    //self.pid = Some(child);
                     self.set_pid(child);
                     return;
                 },
@@ -52,6 +51,7 @@ pub trait PipelineElem {
             }
         }
     }
+
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd);
     fn get_pid(&self) -> Option<Pid>;
     fn get_pipe_end(&mut self) -> RawFd;
@@ -79,6 +79,7 @@ pub trait ArgElem {
 pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn PipelineElem>> {
     if let Some(a) =      CompoundIf::parse(text,conf)            {Some(Box::new(a))}
     else if let Some(a) = CompoundWhile::parse(text, conf)        {Some(Box::new(a))}
+    else if let Some(a) = CompoundCase::parse(text, conf)         {Some(Box::new(a))}
     else if let Some(a) = CompoundParen::parse(text, conf, false) {Some(Box::new(a))}
     else if let Some(a) = CompoundBrace::parse(text, conf)        {Some(Box::new(a))}
     else {None}

@@ -789,5 +789,7 @@ res=$($com <<< 'seq 3 | while read x ; do echo $x🎂 ; done')
 2🎂
 3🎂" ]
 
+### CASE ###
+
 trap "" EXIT
 echo TEST OK

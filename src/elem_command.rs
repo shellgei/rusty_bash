@@ -36,18 +36,19 @@ pub struct Command {
 impl PipelineElem for Command {
 
     fn exec(&mut self, conf: &mut ShellCore) {
-        if conf.flags.v {
+        //if conf.flags.v {
+        if conf.has_flag('v') {
             eprintln!("{}", self.text.trim_end());
         }
 
         let mut args = self.eval(conf);
 
-        if conf.flags.x {
+        //if conf.flags.x {
+        if conf.has_flag('x') {
             eprintln!("+{}", args.join(" "));
         }
 
         // This sentence avoids an unnecessary fork for an internal command.
-        //if self.fds.pipeout == -1 && self.fds.pipein == -1 && self.fds.prevpipein == -1 { 
         if self.fds.no_connection() {
             if conf.functions.contains_key(&args[0]) {
                 self.exec_function(&mut args, conf);
@@ -185,7 +186,8 @@ impl Command {
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect();
 
-        if conf.flags.d {
+        //if conf.flags.d {
+        if conf.has_flag('d') {
             eprintln!("{}", self.parse_info().join("\n"));
         };
 
@@ -289,7 +291,8 @@ impl Command {
         };
 
         Command::substitutions_and_redirects(text, conf, &mut ans);
-        if conf.flags.i {
+        //if conf.flags.i {
+        if conf.has_flag('i') {
             Command::replace_alias(text, conf);
         }
 

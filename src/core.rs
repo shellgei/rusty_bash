@@ -9,6 +9,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use crate::bash_glob::glob_match;
 
+/*
 pub struct Flags {
     pub v: bool,
     pub x: bool,
@@ -25,7 +26,7 @@ impl Flags {
             d: false,
         }
     }
-}
+}*/
 
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -34,7 +35,7 @@ pub struct ShellCore {
     pub args: Vec<String>,
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
-    pub flags: Flags,
+    pub flags: String,
     pub in_double_quot: bool,
     pub pipeline_end: String,
 }
@@ -48,7 +49,7 @@ impl ShellCore {
             args: vec!(),
             aliases: HashMap::new(),
             history: Vec::new(),
-            flags: Flags::new(),
+            flags: String::new(),
             in_double_quot: false,
             pipeline_end: String::new(),
         };
@@ -127,6 +128,13 @@ impl ShellCore {
         }else{
             None
         }
+    }
+
+    pub fn has_flag(&self, flag: char) -> bool {
+        if let Some(_) = self.flags.find(flag) {
+            return true;
+        }
+        false
     }
 
     /////////////////////////////////

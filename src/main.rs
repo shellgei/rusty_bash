@@ -6,6 +6,7 @@ mod bash_glob;
 mod elem_arg;
 mod elem_compound_paren;
 mod elem_compound_brace;
+mod elem_compound_case;
 mod elem_compound_if;
 mod elem_compound_while;
 mod elem_end_of_command;
@@ -144,9 +145,17 @@ fn main() {
         core.args.push(arg.clone());
     }
 
+    /*
     core.flags.d = args.iter().any(|a| has_option(a, "d".to_string()));
     core.flags.v = args.iter().any(|a| has_option(a, "v".to_string()));
     core.flags.x = args.iter().any(|a| has_option(a, "x".to_string()));
+    */
+
+    for f in [ "d", "v", "x" ] {
+        if args.iter().any(|a| has_option(a, f.to_string())) {
+            core.flags += f;
+        }
+    }
 
     let pid = process::id();
     core.vars.insert("$".to_string(), pid.to_string());
@@ -154,14 +163,18 @@ fn main() {
     core.vars.insert("HOSTNAME".to_string(), get_hostname());
     core.vars.insert("SHELL".to_string(), "rustybash".to_string());
     core.vars.insert("BASH".to_string(), core.args[0].clone());
-    core.flags.i = is_interactive(pid);
+    //core.flags.i = is_interactive(pid);
+    if is_interactive(pid) {
+        core.flags += "i";
+    }
 
     read_bashrc(&mut core);
 
     let mut feeder = Feeder::new();
     loop {
         if !feeder.feed_line(&mut core) {
-            if core.flags.i {
+            //if core.flags.i {
+            if core.has_flag('i') {
                 continue;
             }else{
                 break;
