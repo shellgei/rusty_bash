@@ -28,21 +28,16 @@ fn tail_check(s: &String) -> bool{
 /* ( script ) */
 pub struct CompoundBrace {
     pub script: Script,
-    pub redirects: Vec<Box<Redirect>>,
     text: String,
     pid: Option<Pid>, 
-    pub pipein: RawFd,
-    pub pipeout: RawFd,
-    /* The followings are set by a pipeline.  */
     pub substitution_text: String,
-    pub prevpipein: RawFd,
     pub eoc: Option<Eoc>,
+    pub fds: FileDescs,
 }
 
 impl PipelineElem for CompoundBrace {
     fn exec(&mut self, conf: &mut ShellCore) {
-        if self.pipeout == -1 && self.pipein == -1 && self.prevpipein == -1 
-            && self.redirects.len() == 0 /* && self.script.args_for_function.len() == 0 */ {
+        if self.fds.no_connection() {
              self.script.exec(conf);
              return;
         };
@@ -50,7 +45,7 @@ impl PipelineElem for CompoundBrace {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    set_child_io(self.pipein, self.pipeout, self.prevpipein, &self.redirects);
+                    set_child_io(self.fds.pipein, self.fds.pipeout, self.fds.prevpipein, &self.fds.redirects);
                     self.script.exec(conf);
                     exit(conf.vars["?"].parse::<i32>().unwrap());
                 },
@@ -66,13 +61,13 @@ impl PipelineElem for CompoundBrace {
     fn get_pid(&self) -> Option<Pid> { self.pid }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
-        self.pipein = pin;
-        self.pipeout = pout;
-        self.prevpipein = pprev;
+        self.fds.pipein = pin;
+        self.fds.pipeout = pout;
+        self.fds.prevpipein = pprev;
     }
 
-    fn get_pipe_end(&mut self) -> RawFd { self.pipein }
-    fn get_pipe_out(&mut self) -> RawFd { self.pipeout }
+    fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
+    fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
         if let Some(e) = &self.eoc {
@@ -90,12 +85,9 @@ impl CompoundBrace {
         CompoundBrace {
             script: script,
             pid: None,
-            redirects: vec!(),
             text: "".to_string(),
             substitution_text: "".to_string(),
-            pipein: -1,
-            pipeout: -1,
-            prevpipein: -1,
+            fds: FileDescs::new(),
             eoc: None,
         }
     }
@@ -149,7 +141,7 @@ impl CompoundBrace {
 
             if let Some(r) = Redirect::parse(text){
                     ans.text += &r.text;
-                    ans.redirects.push(Box::new(r));
+                    ans.fds.redirects.push(Box::new(r));
             }else{
                 break;
             }

@@ -11,6 +11,31 @@ use nix::sys::wait::WaitPidFlag;
 use nix::sys::wait::{waitpid, WaitStatus};
 use crate::ShellCore;
 
+pub struct FileDescs {
+    pub redirects: Vec<Box<Redirect>>,
+    pub pipein: RawFd,
+    pub pipeout: RawFd,
+    pub prevpipein: RawFd,
+}
+
+impl FileDescs {
+    pub fn new() -> FileDescs {
+        FileDescs {
+            redirects: vec!(),
+            pipein: -1,
+            pipeout: -1,
+            prevpipein: -1,
+        }
+    }
+
+    pub fn no_connection(&self) -> bool {
+        self.redirects.len() == 0  &&
+            self.pipein == -1 &&
+            self.pipeout == -1 &&
+            self.prevpipein == -1
+    }
+}
+
 pub fn dup_and_close(from: RawFd, to: RawFd){
     close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
     dup2(from, to).expect("Can't copy file descriptors");
