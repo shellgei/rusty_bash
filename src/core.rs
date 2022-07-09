@@ -74,6 +74,10 @@ impl ShellCore {
             }
         }
 
+        if key == "-" {
+            return self.flags.clone();
+        }
+
         if key == "#" {
             return (self.args.len() - 1).to_string();
         }

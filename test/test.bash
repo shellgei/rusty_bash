@@ -354,6 +354,9 @@ IFS=💩
 echo "$*"
 EOF
 
+res=$($com -x <<< 'echo $-')
+[ "$res" = "x" ]
+
 res=$(cat /tmp/.rusty_bash | $com あい うえ お) #TODO: enable to use IFS
 [ "$res" = "あい うえ お
 あい うえ お
