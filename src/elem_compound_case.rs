@@ -14,7 +14,6 @@ use crate::elem_arg::Arg;
 use crate::bash_glob::glob_match;
 use crate::abst_elems::CommandElem;
 
-/* ( script ) */
 pub struct CompoundCase {
     pub arg: Arg,
     pub conddo: Vec<(String, Script)>,
@@ -156,7 +155,11 @@ impl CompoundCase {
         }
 
         loop {
+            let d = scanner_while(text, 0, " \t\n");
+            ans.text += &text.consume(d);
             CompoundCase::next_line(text, conf, &mut ans);
+            let d = scanner_while(text, 0, " \t\n");
+            ans.text += &text.consume(d);
 
             if text.len() >= 4 && text.compare(0, "esac") {
                 ans.text += &text.consume(4);

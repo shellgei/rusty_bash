@@ -800,6 +800,15 @@ res=$($com <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
 res=$($com -x <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
 [ "$res" = "x" ]
 
+res=$($com << 'EOF'
+case $- in 
+	*x*) echo x ;;
+	*) echo no ;;
+esac
+EOF
+)
+[ "$res" = "no" ]
+
 cat << EOF > /tmp/.rusty_bash
 echo hoge
 EOF
