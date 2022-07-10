@@ -807,5 +807,14 @@ EOF
 res=$($com /tmp/.rusty_bash)
 [ "$res" = "hoge" ]
 
+cat << EOF > /tmp/.rusty_bash
+#!$PWD/$com
+echo hoge
+EOF
+
+chmod +x /tmp/.rusty_bash
+res=$(/tmp/.rusty_bash)
+[ "$res" = "hoge" ]
+
 trap "" EXIT
 echo TEST OK
