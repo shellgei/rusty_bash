@@ -16,7 +16,7 @@ use crate::abst_elems::CommandElem;
 
 pub struct CompoundCase {
     pub arg: Arg,
-    pub conddo: Vec<(String, Script)>,
+    pub conddo: Vec<(String, Option<Script>)>,
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
@@ -56,7 +56,9 @@ impl PipelineElem for CompoundCase {
 
         for (cond, doing) in &mut self.conddo {
             if glob_match(cond, &arg_str) {
-                doing.exec(conf);
+                if let Some(d) = doing {
+                    d.exec(conf);
+                }
                 break;
             }
         }
@@ -91,9 +93,11 @@ impl CompoundCase {
 
         CompoundCase::next_line(text, conf, ans);
 
-        let doing = if let Some(s) = Script::parse(text, conf) {
+        let doing = if text.len() >= 2 && text.compare(0, ";;") {
+            None
+        }else if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
-            s
+            Some(s)
         }else{
             return false;
         };
@@ -177,8 +181,8 @@ impl CompoundCase {
             ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text){
-                    ans.text += &r.text;
-                    ans.fds.redirects.push(Box::new(r));
+                ans.text += &r.text;
+                ans.fds.redirects.push(Box::new(r));
             }else{
                 break;
             }

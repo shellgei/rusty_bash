@@ -797,6 +797,9 @@ res=$($com <<< 'seq 3 | while read x ; do echo $x🎂 ; done')
 res=$($com <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
 [ "$res" = "no" ]
 
+res=$($com <<< 'case $- in *x*) ;; *) echo no ;; esac')
+[ "$res" = "no" ]
+
 res=$($com -x <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
 [ "$res" = "x" ]
 
@@ -827,11 +830,11 @@ res=$(/tmp/.rusty_bash)
 
 ### INTERNAL COMMAND ###
 
-#cat << EOF > /tmp/.rusty_bash
-#A=B
-#EOF
-#res=$($com <<< 'source /tmp/.rusty_bash ; echo $A')
-#[ "$res" = "B" ]
+cat << EOF > /tmp/.rusty_bash
+A=B
+EOF
+res=$($com <<< 'source /tmp/.rusty_bash ; echo $A')
+[ "$res" = "B" ]
 
 trap "" EXIT
 echo TEST OK
