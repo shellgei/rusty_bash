@@ -23,6 +23,7 @@ pub struct ShellCore {
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
+    pub return_flag: bool,
 }
 
 impl ShellCore {
@@ -38,6 +39,7 @@ impl ShellCore {
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
+            return_flag: false,
         };
 
         conf.vars.insert("?".to_string(), 0.to_string());
@@ -49,6 +51,7 @@ impl ShellCore {
         conf.internal_commands.insert("set".to_string(), Self::set);
         conf.internal_commands.insert("read".to_string(), Self::read);
         conf.internal_commands.insert("source".to_string(), Self::source);
+        conf.internal_commands.insert("return".to_string(), Self::return_);
         conf.internal_commands.insert("glob_test".to_string(), Self::glob_test);
 
         conf
@@ -290,6 +293,11 @@ impl ShellCore {
                 _ => eprintln!("Cannot read the source file: {}", &args[1]),
             }
         }
+        0
+    }
+
+    pub fn return_(&mut self, _args: &mut Vec<String>) -> i32 {
+        self.return_flag = true;
         0
     }
 

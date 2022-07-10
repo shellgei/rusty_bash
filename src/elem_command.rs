@@ -12,10 +12,8 @@ use crate::{ShellCore,Feeder};
 use crate::abst_elems::CommandElem;
 use crate::utils::*;
 
-use crate::abst_elems::PipelineElem;
+use crate::abst_elems::{PipelineElem, compound};
 use crate::elem_arg::Arg;
-use crate::elem_compound_brace::CompoundBrace;
-use crate::elem_compound_paren::CompoundParen;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
@@ -154,18 +152,20 @@ impl Command {
         let text = conf.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_with(text);
-        if let Some(mut f) = CompoundBrace::parse(&mut feeder, conf) {
+        if let Some(mut f) = compound(&mut feeder, conf) {
             let backup = conf.args.clone();
             conf.args = args.to_vec();
             f.exec(conf);
             self.pid = f.get_pid();
             conf.args = backup;
+            /*
         }else if let Some(mut f) = CompoundParen::parse(&mut feeder, conf, false) {
             let backup = conf.args.clone();
             conf.args = args.to_vec();
             f.exec(conf);
             self.pid = f.get_pid();
             conf.args = backup;
+            */
         }else{
             panic!("Shell internal error on function");
         };
