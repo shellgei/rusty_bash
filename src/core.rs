@@ -9,8 +9,8 @@ use std::fs::{OpenOptions, File};
 use std::io::Write;
 use crate::bash_glob::glob_match;
 
-use crate::dup_and_close;
-use std::os::unix::io::IntoRawFd;
+use crate::Script;
+use crate::Feeder;
 
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -276,9 +276,18 @@ impl ShellCore {
             eprintln!("usage: source filename");
             return 1;
         }
+
         if args.len() > 1 {
-            if let Ok(file) = OpenOptions::new().read(true).open(&args[1]){
-                dup_and_close(file.into_raw_fd(), 0);
+            match fs::read_to_string(&args[1]) {
+                Ok(source) => {
+                    let mut feeder = Feeder::new_with(source);
+                    if let Some(mut script) = Script::parse(&mut feeder, self) {
+                        script.exec(self);
+                    }else{
+                        return 1;
+                    };
+                },
+                _ => eprintln!("Cannot read the source file: {}", &args[1]),
             }
         }
         0
