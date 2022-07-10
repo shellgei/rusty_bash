@@ -800,5 +800,12 @@ res=$($com <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
 res=$($com -x <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
 [ "$res" = "x" ]
 
+cat << EOF > /tmp/.rusty_bash
+echo hoge
+EOF
+
+res=$($com /tmp/.rusty_bash)
+[ "$res" = "hoge" ]
+
 trap "" EXIT
 echo TEST OK

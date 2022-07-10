@@ -5,28 +5,9 @@ use std::collections::HashMap;
 use std::process::exit;
 use std::{io,fs,env};
 use std::path::Path;
-use std::fs::OpenOptions;
+use std::fs::{OpenOptions, File};
 use std::io::Write;
 use crate::bash_glob::glob_match;
-
-/*
-pub struct Flags {
-    pub v: bool,
-    pub x: bool,
-    pub i: bool,
-    pub d: bool,
-}
-
-impl Flags {
-    pub fn new() -> Flags {
-        Flags{
-            v: false, 
-            x: false,
-            i: false,
-            d: false,
-        }
-    }
-}*/
 
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -38,6 +19,7 @@ pub struct ShellCore {
     pub flags: String,
     pub in_double_quot: bool,
     pub pipeline_end: String,
+    pub script_file: Option<File>,
 }
 
 impl ShellCore {
@@ -52,6 +34,7 @@ impl ShellCore {
             flags: String::new(),
             in_double_quot: false,
             pipeline_end: String::new(),
+            script_file: None,
         };
 
         conf.vars.insert("?".to_string(), 0.to_string());

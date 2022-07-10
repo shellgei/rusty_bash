@@ -47,6 +47,9 @@ use crate::abst_elems::{ListElem, PipelineElem};
 use crate::elem_command::Command;
 use crate::elem_script::Script;
 
+use crate::utils_io::dup_and_close;
+use std::os::unix::io::IntoRawFd;
+
 fn is_interactive(pid: u32) -> bool {
     let std_path = format!("/proc/{}/fd/0", pid);
     match path::Path::new(&std_path).metadata() {
@@ -131,11 +134,6 @@ fn main() {
         show_version();
     }
 
-    /*
-    eprintln!("{}", glob_match(&args[1].to_string(), &args[2].to_string()));
-    process::exit(0);
-    */
-
     /* Ignore Ctrl+C (Childlen will receive instead.) */
     ctrlc::set_handler(move || { })
     .expect("Unable to set the Ctrl+C handler.");
@@ -145,11 +143,11 @@ fn main() {
         core.args.push(arg.clone());
     }
 
-    /*
-    core.flags.d = args.iter().any(|a| has_option(a, "d".to_string()));
-    core.flags.v = args.iter().any(|a| has_option(a, "v".to_string()));
-    core.flags.x = args.iter().any(|a| has_option(a, "x".to_string()));
-    */
+    if args.len() > 1 {
+        if let Ok(file) = OpenOptions::new().read(true).open(&args[1]){
+            dup_and_close(file.into_raw_fd(), 0);
+        }
+    }
 
     for f in [ "d", "v", "x" ] {
         if args.iter().any(|a| has_option(a, f.to_string())) {
