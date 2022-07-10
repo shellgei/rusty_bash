@@ -168,9 +168,13 @@ fn main() {
 
     read_bashrc(&mut core);
 
+    main_loop(&mut core);
+}
+
+fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
-        if !feeder.feed_line(&mut core) {
+        if !feeder.feed_line(core) {
             //if core.flags.i {
             if core.has_flag('i') {
                 continue;
@@ -178,14 +182,14 @@ fn main() {
                 break;
             }
         }
-        while let Some(mut e) = Script::parse(&mut feeder, &mut core){
+        while let Some(mut e) = Script::parse(&mut feeder, core){
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());
                 eprintln!("Unknown phrase");
                 core.vars.insert("?".to_string(), "2".to_string());
                 break;
             }
-            e.exec(&mut core);
+            e.exec(core);
         }
     }
 
@@ -196,5 +200,4 @@ fn main() {
         eprintln!("Shell internal error");
         process::exit(1);
     }
-
 }

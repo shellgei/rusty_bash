@@ -9,6 +9,9 @@ use std::fs::{OpenOptions, File};
 use std::io::Write;
 use crate::bash_glob::glob_match;
 
+use crate::dup_and_close;
+use std::os::unix::io::IntoRawFd;
+
 pub struct ShellCore {
     pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
     pub functions: HashMap<String, String>,
@@ -45,6 +48,7 @@ impl ShellCore {
         conf.internal_commands.insert("alias".to_string(), Self::alias);
         conf.internal_commands.insert("set".to_string(), Self::set);
         conf.internal_commands.insert("read".to_string(), Self::read);
+        conf.internal_commands.insert("source".to_string(), Self::source);
         conf.internal_commands.insert("glob_test".to_string(), Self::glob_test);
 
         conf
@@ -264,6 +268,19 @@ impl ShellCore {
             self.vars.insert(a.to_string(), token[i-1].to_string());
         }
 
+        0
+    }
+
+    pub fn source(&mut self, args: &mut Vec<String>) -> i32 {
+        if args.len() < 2 {
+            eprintln!("usage: source filename");
+            return 1;
+        }
+        if args.len() > 1 {
+            if let Ok(file) = OpenOptions::new().read(true).open(&args[1]){
+                dup_and_close(file.into_raw_fd(), 0);
+            }
+        }
         0
     }
 

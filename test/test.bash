@@ -816,5 +816,13 @@ chmod +x /tmp/.rusty_bash
 res=$(/tmp/.rusty_bash)
 [ "$res" = "hoge" ]
 
+### INTERNAL COMMAND ###
+
+#cat << EOF > /tmp/.rusty_bash
+#A=B
+#EOF
+#res=$($com <<< 'source /tmp/.rusty_bash ; echo $A')
+#[ "$res" = "B" ]
+
 trap "" EXIT
 echo TEST OK
