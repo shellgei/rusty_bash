@@ -26,6 +26,10 @@ impl Script {
                 continue;
             }
             p.exec(conf);
+            if conf.return_flag {
+                conf.return_flag = false;
+                return;
+            }
             eop = p.get_end();
         }
     }

@@ -155,17 +155,11 @@ impl Command {
         if let Some(mut f) = compound(&mut feeder, conf) {
             let backup = conf.args.clone();
             conf.args = args.to_vec();
+            conf.return_enable = true;
             f.exec(conf);
             self.pid = f.get_pid();
             conf.args = backup;
-            /*
-        }else if let Some(mut f) = CompoundParen::parse(&mut feeder, conf, false) {
-            let backup = conf.args.clone();
-            conf.args = args.to_vec();
-            f.exec(conf);
-            self.pid = f.get_pid();
-            conf.args = backup;
-            */
+            conf.return_enable = false;
         }else{
             panic!("Shell internal error on function");
         };

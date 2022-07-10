@@ -674,6 +674,9 @@ EOF
 [ "$res" = "a
 1" ]
 
+res=$($com <<< 'a(){ echo x; return ; echo b ; } ; a')
+[ "$res" = "x" ]
+
 ### IF COMPOUND ###
 
 res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; fi')

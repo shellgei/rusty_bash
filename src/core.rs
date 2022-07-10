@@ -23,6 +23,7 @@ pub struct ShellCore {
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
+    pub return_enable: bool,
     pub return_flag: bool,
 }
 
@@ -40,6 +41,7 @@ impl ShellCore {
             pipeline_end: String::new(),
             script_file: None,
             return_flag: false,
+            return_enable: false,
         };
 
         conf.vars.insert("?".to_string(), 0.to_string());
@@ -285,7 +287,9 @@ impl ShellCore {
                 Ok(source) => {
                     let mut feeder = Feeder::new_with(source);
                     if let Some(mut script) = Script::parse(&mut feeder, self) {
+                        self.return_enable = true;
                         script.exec(self);
+                        self.return_enable = false;
                     }else{
                         return 1;
                     };
@@ -297,8 +301,13 @@ impl ShellCore {
     }
 
     pub fn return_(&mut self, _args: &mut Vec<String>) -> i32 {
-        self.return_flag = true;
-        0
+        if self.return_enable {
+            self.return_flag = true;
+            0
+        }else{
+            eprintln!("Builtin return is only enabled in a function or source");
+            1
+        }
     }
 
     pub fn glob_test(&mut self, args: &mut Vec<String>) -> i32 {
