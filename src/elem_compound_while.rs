@@ -74,7 +74,7 @@ impl CompoundWhile {
 
 
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
-        CompoundWhile::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -83,13 +83,13 @@ impl CompoundWhile {
             return false;
         };
 
-        CompoundWhile::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         if text.compare(0, "do"){
             ans.text += &text.consume(2);
         }
 
-        CompoundWhile::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         let doing = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -98,20 +98,9 @@ impl CompoundWhile {
             return false;
         };
 
-        CompoundWhile::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         ans.conddo = Some( (cond, doing) );
-        true
-    }
-
-    fn next_line(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
-        ans.text += &text.consume_blank();
-
-        if text.len() == 0 || text.nth(0) == '\n' {
-            if ! text.feed_additional_line(conf){
-                return false;
-            }
-        }
         true
     }
 

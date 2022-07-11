@@ -79,7 +79,7 @@ impl CompoundCase {
 
 
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundCase) -> bool {
-        CompoundCase::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         let pos = scanner_until_escape(text, 0, ")");
 
@@ -91,7 +91,7 @@ impl CompoundCase {
         ans.text += &cond.clone();
         ans.text += &text.consume(1);
 
-        CompoundCase::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         let doing = if text.len() >= 2 && text.compare(0, ";;") {
             None
@@ -102,26 +102,13 @@ impl CompoundCase {
             return false;
         };
 
-        CompoundCase::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         if text.len() >= 2 && text.compare(0, ";;") {
             ans.text += &text.consume(2);
-        }/*else{
-            return false;
-        }*/
+        }
 
         ans.conddo.push( (cond, doing) );
-        true
-    }
-
-    fn next_line(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundCase) -> bool {
-        ans.text += &text.consume_blank();
-
-        if text.len() == 0 || text.nth(0) == '\n' {
-            if ! text.feed_additional_line(conf){
-                return false;
-            }
-        }
         true
     }
 
@@ -154,7 +141,7 @@ impl CompoundCase {
 
         loop {
             ans.text += &text.consume_blank_return();
-            CompoundCase::next_line(text, conf, &mut ans);
+            ans.text += &text.request_next_line(conf).1;
             ans.text += &text.consume_blank_return();
 
             if text.len() >= 4 && text.compare(0, "esac") {

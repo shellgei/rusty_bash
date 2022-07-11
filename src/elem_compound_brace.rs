@@ -10,7 +10,6 @@ use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::utils_io::*;
 use std::process::exit;
-use crate::scanner::scanner_while;
 
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
@@ -128,8 +127,7 @@ impl CompoundBrace {
         text.consume(1);
 
         loop {
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank();
 
             if let Some(r) = Redirect::parse(text){
                     ans.text += &r.text;

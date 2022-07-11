@@ -166,6 +166,17 @@ impl Feeder {
         };
     }
 
+    pub fn request_next_line(&mut self, conf: &mut ShellCore) -> (bool, String) {
+        let t = self.consume_blank();
+    
+        if self.len() == 0 || self.nth(0) == '\n' {
+            if ! self.feed_additional_line(conf){
+                return (false, t);
+            }
+        }
+        (true, t)
+    }
+
     pub fn compare(&self, pos: usize, cmp: &str) -> bool{
         if self.remaining.len() < pos + cmp.to_string().len() {
             return false;

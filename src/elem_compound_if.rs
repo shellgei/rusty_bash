@@ -9,7 +9,6 @@ use crate::elem_redirect::Redirect;
 use nix::unistd::Pid;
 use crate::utils_io::*;
 use crate::elem_end_of_command::Eoc;
-use crate::scanner::scanner_while;
 
 /* ( script ) */
 pub struct CompoundIf {
@@ -80,7 +79,7 @@ impl CompoundIf {
 
 
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
-        CompoundIf::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -89,13 +88,13 @@ impl CompoundIf {
             return false;
         };
 
-        CompoundIf::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         if text.compare(0, "then"){
             ans.text += &text.consume(4);
         }
 
-        CompoundIf::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         let doing = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -104,26 +103,16 @@ impl CompoundIf {
             return false;
         };
 
-        CompoundIf::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         ans.ifthen.push( (cond, doing) );
         true
     }
 
-    fn next_line(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
-        let d = scanner_while(text, 0, " \t");
-        ans.text += &text.consume(d);
-
-        if text.len() == 0 || text.nth(0) == '\n' {
-            if ! text.feed_additional_line(conf){
-                return false;
-            }
-        }
-        true
-    }
-
     fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
-        CompoundIf::next_line(text, conf, ans);
+        //CompoundIf::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
+        
 
         ans.else_do = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -132,7 +121,7 @@ impl CompoundIf {
             return false;
         };
 
-        CompoundIf::next_line(text, conf, ans);
+        ans.text += &text.request_next_line(conf).1;
 
         if text.compare(0, "fi"){
              ans.text += &text.consume(2);
