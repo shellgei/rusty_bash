@@ -74,7 +74,7 @@ impl CompoundWhile {
 
 
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -83,13 +83,13 @@ impl CompoundWhile {
             return false;
         };
 
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         if text.compare(0, "do"){
             ans.text += &text.consume(2);
         }
 
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         let doing = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -98,7 +98,7 @@ impl CompoundWhile {
             return false;
         };
 
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         ans.conddo = Some( (cond, doing) );
         true

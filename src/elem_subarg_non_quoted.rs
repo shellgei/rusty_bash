@@ -87,6 +87,5 @@ impl SubArgNonQuoted {
         }
 
         Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), is_value) )
-        //Some( SubArgNonQuoted{text: text.consume(pos), pos: DebugInfo::init(text)})
     }
 }

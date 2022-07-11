@@ -79,7 +79,7 @@ impl CompoundIf {
 
 
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -88,13 +88,13 @@ impl CompoundIf {
             return false;
         };
 
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         if text.compare(0, "then"){
             ans.text += &text.consume(4);
         }
 
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         let doing = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
@@ -103,7 +103,7 @@ impl CompoundIf {
             return false;
         };
 
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         ans.ifthen.push( (cond, doing) );
         true
@@ -111,7 +111,7 @@ impl CompoundIf {
 
     fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
         //CompoundIf::next_line(text, conf, ans);
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
         
 
         ans.else_do = if let Some(s) = Script::parse(text, conf) {
@@ -121,7 +121,7 @@ impl CompoundIf {
             return false;
         };
 
-        ans.text += &text.request_next_line(conf).1;
+        ans.text += &text.request_next_line(conf);
 
         if text.compare(0, "fi"){
              ans.text += &text.consume(2);

@@ -166,15 +166,14 @@ impl Feeder {
         };
     }
 
-    pub fn request_next_line(&mut self, conf: &mut ShellCore) -> (bool, String) {
-        let t = self.consume_blank();
+    pub fn request_next_line(&mut self, conf: &mut ShellCore) -> String {
+        let t = self.consume_blank_return();
     
-        if self.len() == 0 || self.nth(0) == '\n' {
-            if ! self.feed_additional_line(conf){
-                return (false, t);
-            }
+        if self.len() == 0 {
+            let _ = self.feed_additional_line(conf);
         }
-        (true, t)
+
+        t
     }
 
     pub fn compare(&self, pos: usize, cmp: &str) -> bool{
