@@ -226,16 +226,15 @@ impl Command {
     }
 
     fn ng_check(text: &String, is_first: bool) -> bool {
+        if ! is_first {
+            return true; 
+        }
+
         if Some('}') == text.chars().nth(0) {
             return ! is_first;
-            //return false;
         }
 
-        if text == "then" || text == "else" || text == "elif" || text == "fi" || text == "done" || text == "do" || text == ";;" {
-            return false;
-        }
-
-        true
+        ! is_reserve(text)
     }
 
     fn args_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {

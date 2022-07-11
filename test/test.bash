@@ -730,11 +730,32 @@ EOF
 [ "$res" = "true" ]
 
 res=$($com << 'EOF'
-if false then; echo hoge
-elif false then
+if false ; then echo hoge
+elif false ; then
 echo hoge
-elif false then; echo hoge
+elif false ;then echo hoge
 else
+echo true
+echo hoge
+fi
+EOF
+)
+[ "$res" = "true
+hoge" ]
+
+res=$($com << 'EOF'
+if false ;then echo hoge
+else
+echo true
+echo hoge
+fi
+EOF
+)
+[ "$res" = "true
+hoge" ]
+
+res=$($com << 'EOF'
+if true ;then
 echo true
 echo hoge
 fi

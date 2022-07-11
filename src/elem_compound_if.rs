@@ -99,10 +99,10 @@ impl CompoundIf {
         let doing = if let Some(s) = Script::parse(text, conf, "elif") {
             ans.text += &s.text;
             s
-        } else if let Some(s) = Script::parse(text, conf, "else") {
+        }/*else if let Some(s) = Script::parse(text, conf, "else") {
             ans.text += &s.text;
             s
-        }else{
+        }*/else{
             return false;
         };
 
