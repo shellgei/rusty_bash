@@ -41,7 +41,7 @@ impl Script {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, end: &str) -> Option<Script> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, end: Vec<&str>) -> Option<Script> {
         if text.len() == 0 {
             return None;
         };
@@ -73,11 +73,26 @@ impl Script {
             }
             else {break}
 
-            if text.len() == 0 && end == "" {
+            if text.len() == 0 && end[0] == "" {
                 break;
             }
 
-            if text.compare(0, end) || (text.len() > 0 && text.nth(0) == ')' ) {
+            if end.iter().any(|e| text.compare(0, e)) {
+                break;
+            }
+
+            /*
+            let mut flag = false;
+            for e in end { 
+                if text.compare(0, e) {
+                    flag = true;
+                }
+            }
+            if flag {
+                break;
+            }*/
+
+            if text.len() > 0 && text.nth(0) == ')'  {
                 break;
             }else{
                 text.request_next_line(conf);

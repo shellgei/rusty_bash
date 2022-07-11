@@ -286,7 +286,7 @@ impl ShellCore {
             match fs::read_to_string(&args[1]) {
                 Ok(source) => {
                     let mut feeder = Feeder::new_with(source);
-                    if let Some(mut script) = Script::parse(&mut feeder, self, "") {
+                    if let Some(mut script) = Script::parse(&mut feeder, self, vec!("")) {
                         self.return_enable = true;
                         script.exec(self);
                         self.return_enable = false;

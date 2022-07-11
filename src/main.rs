@@ -182,7 +182,7 @@ fn main_loop(core: &mut ShellCore) {
                 break;
             }
         }
-        while let Some(mut e) = Script::parse(&mut feeder, core, ""){
+        while let Some(mut e) = Script::parse(&mut feeder, core, vec!("")){
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());
                 eprintln!("Unknown phrase");
