@@ -95,7 +95,7 @@ impl CompoundCase {
 
         let doing = if text.len() >= 2 && text.compare(0, ";;") {
             None
-        }else if let Some(s) = Script::parse(text, conf) {
+        }else if let Some(s) = Script::parse(text, conf, ";;") {
             ans.text += &s.text;
             Some(s)
         }else{

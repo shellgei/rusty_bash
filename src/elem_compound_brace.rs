@@ -94,7 +94,7 @@ impl CompoundBrace {
 
         loop {
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf) {
+            if let Some(s) = Script::parse(text, conf, "}") {
                 if ! tail_check(&s.text){
                     text.rewind(backup);
                     return None;

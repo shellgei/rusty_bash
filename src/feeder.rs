@@ -177,6 +177,9 @@ impl Feeder {
     }
 
     pub fn compare(&self, pos: usize, cmp: &str) -> bool{
+        if cmp.to_string().len() == 0 {
+            return false;
+        }
         if self.remaining.len() < pos + cmp.to_string().len() {
             return false;
         }

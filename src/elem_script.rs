@@ -41,7 +41,8 @@ impl Script {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Script> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, end: &str) -> Option<Script> {
+        //eprintln!("IN: '{}'", text._text());
         if text.len() == 0 {
             return None;
         };
@@ -58,7 +59,7 @@ impl Script {
         loop {
             ans.text += &text.consume_blank_return();
 
-            if let Some(f) = Function::parse(text, conf)            {
+            if let Some(f) = Function::parse(text, conf) {
                 ans.text += &f.text;
                 let body = f.body.get_text();
                 conf.functions.insert(f.name, body);
@@ -73,11 +74,28 @@ impl Script {
             }
             else {break}
 
-            if text.len() == 0 || text.nth(0) == ')' {
+            if text.len() == 0 && end == "" {
                 break;
             }
+
+            //eprintln!("ANS: '{}'", &ans.text);
+            //eprintln!("REM: '{}', END: '{}'", text._text(), end);
+            if text.compare(0, end) || (text.len() > 0 && text.nth(0) == ')' ) {
+                break;
+            }else{
+                text.request_next_line(conf);
+            }
+
+            /*
+            if text.len() == 0 || text.compare(0, end) {
+                break;
+            }
+            if text.len() == 0 || text.nth(0) == ')' {
+                break;
+            }*/
         }
     
+        //eprintln!("OUT: '{}'", &ans.text);
         if ans.text.len() > 0 || is_function {
             Some(ans)
         }else{

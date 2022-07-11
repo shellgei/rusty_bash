@@ -81,7 +81,7 @@ impl CompoundIf {
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
         ans.text += &text.request_next_line(conf);
 
-        let cond = if let Some(s) = Script::parse(text, conf) {
+        let cond = if let Some(s) = Script::parse(text, conf, "then") {
             ans.text += &s.text;
             s
         }else{
@@ -96,7 +96,10 @@ impl CompoundIf {
 
         ans.text += &text.request_next_line(conf);
 
-        let doing = if let Some(s) = Script::parse(text, conf) {
+        let doing = if let Some(s) = Script::parse(text, conf, "elif") {
+            ans.text += &s.text;
+            s
+        } else if let Some(s) = Script::parse(text, conf, "else") {
             ans.text += &s.text;
             s
         }else{
@@ -114,7 +117,7 @@ impl CompoundIf {
         ans.text += &text.request_next_line(conf);
         
 
-        ans.else_do = if let Some(s) = Script::parse(text, conf) {
+        ans.else_do = if let Some(s) = Script::parse(text, conf, "fi") {
             ans.text += &s.text;
             Some(s)
         }else{
@@ -142,6 +145,7 @@ impl CompoundIf {
         let mut ans = CompoundIf::new();
         ans.text += &text.consume(2);
 
+        //eprintln!("REM: '{}'", text._text());
         loop {
             if ! CompoundIf::parse_if_then_pair(text, conf, &mut ans) {
                 text.rewind(backup);

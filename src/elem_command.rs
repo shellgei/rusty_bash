@@ -225,10 +225,13 @@ impl Command {
         }
     }
 
-    fn ng_check(text: &String) -> bool {
+    fn ng_check(text: &String, is_first: bool) -> bool {
         if Some('}') == text.chars().nth(0) {
-            return false;
-        }else if text == "then" || text == "else" || text == "elif" || text == "fi" || text == "done" || text == "do" || text == ";;" {
+            return ! is_first;
+            //return false;
+        }
+
+        if text == "then" || text == "else" || text == "elif" || text == "fi" || text == "done" || text == "do" || text == ";;" {
             return false;
         }
 
@@ -238,15 +241,27 @@ impl Command {
     fn args_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {
         let mut ok = false;
         loop {
+            let backup = text.clone();
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
             }else if let Some(a) = Arg::parse(text, conf, false, false) {
-                if ans.args.len() == 0 {
-                    if ! Command::ng_check(&a.text){
-                        return false;
+                /*
+                eprintln!("ARGSLEN: {}", ans.args.len());
+                */
+                //if ans.args.len() == 0 {
+                //eprintln!("ARGTEXT: {}", &a.text);
+                    if ! Command::ng_check(&a.text, ans.args.len() == 0){
+                        text.rewind(backup);
+                            break;
+                        /*
+                        if ans.args.len() == 0 {
+                            return false;
+                        }else{
+                            break;
+                        }*/
                     }
-                }
+                //}
 
                 ans.push_elems(Box::new(a));
                 ok = true;
@@ -260,6 +275,7 @@ impl Command {
                 break;
             }
 
+            //eprintln!("COM: {}", ans.text);
             if let Some(e) = Eoc::parse(text){
                 ans.text += &e.text;
                 ans.eoc = Some(e);

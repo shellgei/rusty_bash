@@ -729,6 +729,20 @@ EOF
 )
 [ "$res" = "true" ]
 
+res=$($com << 'EOF'
+if false then; echo hoge
+elif false then
+echo hoge
+elif false then; echo hoge
+else
+echo true
+echo hoge
+fi
+EOF
+)
+[ "$res" = "true
+hoge" ]
+
 res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then X=Y ; fi; echo $X')
 [ "$res" = "Y" ]
 
