@@ -9,7 +9,6 @@ use crate::elem_redirect::Redirect;
 use nix::unistd::Pid;
 use crate::utils_io::*;
 use crate::elem_end_of_command::Eoc;
-use crate::scanner::scanner_while;
 
 /* ( script ) */
 pub struct CompoundWhile {
@@ -106,8 +105,7 @@ impl CompoundWhile {
     }
 
     fn next_line(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
-        let d = scanner_while(text, 0, " \t");
-        ans.text += &text.consume(d);
+        ans.text += &text.consume_blank();
 
         if text.len() == 0 || text.nth(0) == '\n' {
             if ! text.feed_additional_line(conf){
@@ -140,8 +138,7 @@ impl CompoundWhile {
         }
 
         loop {
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank();
 
             if let Some(r) = Redirect::parse(text){
                     ans.text += &r.text;

@@ -177,8 +177,7 @@ impl CompoundIf {
         }
 
         loop {
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank();
 
             if let Some(r) = Redirect::parse(text){
                     ans.text += &r.text;

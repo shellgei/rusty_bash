@@ -115,8 +115,7 @@ impl CompoundCase {
     }
 
     fn next_line(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundCase) -> bool {
-        let d = scanner_while(text, 0, " \t");
-        ans.text += &text.consume(d);
+        ans.text += &text.consume_blank();
 
         if text.len() == 0 || text.nth(0) == '\n' {
             if ! text.feed_additional_line(conf){
@@ -132,11 +131,7 @@ impl CompoundCase {
         }
 
         let backup = text.clone();
-
-        let mut ans_text = text.consume(4);
-
-        let d = scanner_while(text, 0, " \t");
-        ans_text += &text.consume(d);
+        let ans_text = text.consume(4) + &text.consume_blank();
 
         let arg = if let Some(a) = Arg::parse(text, conf, false, false) {
             a
@@ -148,8 +143,7 @@ impl CompoundCase {
         let mut ans = CompoundCase::new(arg);
         ans.text = ans_text;
 
-        let d = scanner_while(text, 0, " \t");
-        ans.text += &text.consume(d);
+        ans.text += &text.consume_blank();
 
         if text.len() >= 2 && text.compare(0, "in") {
             ans.text += &text.consume(2);
@@ -159,11 +153,9 @@ impl CompoundCase {
         }
 
         loop {
-            let d = scanner_while(text, 0, " \t\n");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank_return();
             CompoundCase::next_line(text, conf, &mut ans);
-            let d = scanner_while(text, 0, " \t\n");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank_return();
 
             if text.len() >= 4 && text.compare(0, "esac") {
                 ans.text += &text.consume(4);
@@ -177,8 +169,7 @@ impl CompoundCase {
         }
 
         loop {
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank();
 
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;

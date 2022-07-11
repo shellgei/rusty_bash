@@ -5,6 +5,7 @@ use std::io;
 use std::str::Chars;
 use crate::ShellCore;
 use crate::term;
+use crate::scanner::scanner_while;
 
 fn read_line_stdin() -> Option<String> {
     let mut line = String::new();
@@ -80,6 +81,16 @@ impl Feeder {
         self.remaining = self.remaining[cutpos..].to_string();
 
         cut
+    }
+
+    pub fn consume_blank(&mut self) -> String {
+        let d = scanner_while(self, 0, " \t");
+        self.consume(d)
+    }
+
+    pub fn consume_blank_return(&mut self) -> String {
+        let d = scanner_while(self, 0, " \t\n");
+        self.consume(d)
     }
 
     pub fn replace(&mut self, from: &str, to: &str) {

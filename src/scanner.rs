@@ -129,24 +129,3 @@ pub fn scanner_start_brace(text: &Feeder, from: usize) -> usize {
     }
     return from;
 }
-
-pub fn scanner_blank_part(text: &Feeder, from: usize) -> usize {
-    let mut ans = from;
-    loop {
-        let len_del = scanner_while(text, ans, " \t\n");
-        ans = len_del;
-
-        if text.len() == len_del {
-            return ans;
-        }
-
-        let pos = scanner_end_of_com(text, len_del);
-        if pos != len_del {
-            ans = pos;
-        }else{
-            break;
-        };
-    };
-
-    ans
-}

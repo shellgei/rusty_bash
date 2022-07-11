@@ -6,7 +6,6 @@ use crate::elem_function::Function;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::ListElem;
-use crate::scanner::scanner_blank_part;
 
 pub struct Script {
     pub list: Vec<Box<dyn ListElem>>,
@@ -57,8 +56,7 @@ impl Script {
         let mut is_function = false;
     
         loop {
-            let pos = scanner_blank_part(text, 0);
-            ans.text += &text.consume(pos);
+            ans.text += &text.consume_blank_return();
 
             if let Some(f) = Function::parse(text, conf)            {
                 ans.text += &f.text;

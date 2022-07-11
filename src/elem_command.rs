@@ -212,8 +212,7 @@ impl Command {
 
     fn substitutions_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) {
         loop {
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank();
 
             if let Some(r) = Redirect::parse(text){
                 ans.text += &r.text;
@@ -255,8 +254,7 @@ impl Command {
                 break;
             }
 
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank();
     
             if text.len() == 0 {
                 break;
