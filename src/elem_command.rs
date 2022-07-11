@@ -246,23 +246,10 @@ impl Command {
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
             }else if let Some(a) = Arg::parse(text, conf, false, false) {
-                /*
-                eprintln!("ARGSLEN: {}", ans.args.len());
-                */
-                //if ans.args.len() == 0 {
-                //eprintln!("ARGTEXT: {}", &a.text);
-                    if ! Command::ng_check(&a.text, ans.args.len() == 0){
-                        text.rewind(backup);
-                            break;
-                        /*
-                        if ans.args.len() == 0 {
-                            return false;
-                        }else{
-                            break;
-                        }*/
-                    }
-                //}
-
+                if ! Command::ng_check(&a.text, ans.args.len() == 0){
+                    text.rewind(backup);
+                    break;
+                }
                 ans.push_elems(Box::new(a));
                 ok = true;
             }else{
@@ -275,7 +262,6 @@ impl Command {
                 break;
             }
 
-            //eprintln!("COM: {}", ans.text);
             if let Some(e) = Eoc::parse(text){
                 ans.text += &e.text;
                 ans.eoc = Some(e);
