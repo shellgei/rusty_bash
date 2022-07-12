@@ -856,6 +856,9 @@ res=$($com <<< 'case $- in *x*) ;; *) echo no ;; esac')
 res=$($com -x <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
 [ "$res" = "x" ]
 
+res=$($com <<< 'A=hoge ; case $A in *x*|*h*) echo aaa ;; *) echo no ;; esac')
+[ "$res" = "aaa" ]
+
 res=$($com << 'EOF'
 case $- in 
 	*x*) echo x ;;
