@@ -860,6 +860,15 @@ res=$($com <<< 'A=hoge ; case $A in *x*|*h*) echo aaa ;; *) echo no ;; esac')
 [ "$res" = "aaa" ]
 
 res=$($com << 'EOF'
+case xterm-color in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+echo $color_prompt
+EOF
+)
+[ "$res" = "yes" ]
+
+res=$($com << 'EOF'
 case $- in 
 	*x*) echo x ;;
 	*) echo no ;;

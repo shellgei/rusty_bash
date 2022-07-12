@@ -21,7 +21,7 @@ impl Eop {
         };
     
         let pos = scanner_end_of_pipeline(text, 0);
-        if pos == 0 {
+        if pos == 0 && ! text.compare(pos, ";;") {
             return None;
         };
     
