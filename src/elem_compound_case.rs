@@ -86,16 +86,20 @@ impl CompoundCase {
 
 
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundCase) -> bool {
+        let mut conds = vec!();
         ans.text += &text.request_next_line(conf);
 
-        let pos = scanner_until_escape(text, 0, ")");
-
-        if pos == 0 || pos == text.len() {
-            return false;
+        loop {
+            let pos = scanner_until_escape(text, 0, "|)");
+            if pos == 0 || pos == text.len() {
+                return false;
+            }
+            conds.push(text.consume(pos));
+            ans.text += &conds.last().unwrap().clone();
+            break;
         }
 
-        let cond = text.consume(pos);
-        ans.text += &cond.clone();
+        //let cond = text.consume(pos);
         ans.text += &text.consume(1);
 
         ans.text += &text.request_next_line(conf);
@@ -115,7 +119,7 @@ impl CompoundCase {
             ans.text += &text.consume(2);
         }
 
-        ans.conddo.push( (vec!(cond), doing) );
+        ans.conddo.push( (conds, doing) );
         true
     }
 
