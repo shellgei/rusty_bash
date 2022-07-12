@@ -9,8 +9,7 @@ use crate::utils::{eval_glob, search_commands, expand_tilde};
 use crate::term::Writer;
 use crate::term::prompt_normal;
 use std::fs;
-use crate::utils::search_aliases;
-use crate::utils::align_elems_on_term;
+use crate::utils::*;
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     if strs.len() < 2 {
@@ -125,6 +124,7 @@ pub fn command_completion(writer: &mut Writer, core: &ShellCore){
 
     let mut paths = search_commands(&(s.clone() + &"*"));
     paths.append(&mut search_aliases(&s, core));
+    paths.append(&mut search_builtin(&s, core));
 
     let mut coms = HashSet::<String>::new();
     for p in paths {
@@ -158,6 +158,7 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
 
     let mut paths = search_commands(&(s.clone() + &"*"));
     paths.append(&mut search_aliases(&s, core));
+    paths.append(&mut search_builtin(&s, core));
 
     let mut coms = HashSet::<String>::new();
     for p in paths {
