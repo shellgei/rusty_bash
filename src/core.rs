@@ -54,6 +54,9 @@ impl ShellCore {
         conf.internal_commands.insert("read".to_string(), Self::read);
         conf.internal_commands.insert("source".to_string(), Self::source);
         conf.internal_commands.insert("return".to_string(), Self::return_);
+        conf.internal_commands.insert("shopt".to_string(), Self::shopt);
+        conf.internal_commands.insert("export".to_string(), Self::export);
+        conf.internal_commands.insert("eval".to_string(), Self::eval);
         conf.internal_commands.insert("glob_test".to_string(), Self::glob_test);
 
         conf
@@ -308,6 +311,21 @@ impl ShellCore {
             eprintln!("Builtin return is only enabled in a function or source");
             1
         }
+    }
+
+    pub fn shopt(&mut self, _args: &mut Vec<String>) -> i32 {
+        eprintln!("shopt: not implemented now");
+        0
+    }
+
+    pub fn export(&mut self, _args: &mut Vec<String>) -> i32 {
+        eprintln!("export: not implemented now");
+        0
+    }
+
+    pub fn eval(&mut self, _args: &mut Vec<String>) -> i32 {
+        eprintln!("export: not implemented now");
+        0
     }
 
     pub fn glob_test(&mut self, args: &mut Vec<String>) -> i32 {
