@@ -26,7 +26,6 @@ pub struct Command {
     pub args: Vec<Box<dyn CommandElem>>,
     pub eoc: Option<Eoc>,
     pub text: String,
-    /* The followings are set by the pipeline element. */
     pub pid: Option<Pid>,
     fds: FileDescs,
 }
@@ -34,14 +33,12 @@ pub struct Command {
 impl PipelineElem for Command {
 
     fn exec(&mut self, conf: &mut ShellCore) {
-        //if conf.flags.v {
         if conf.has_flag('v') {
             eprintln!("{}", self.text.trim_end());
         }
 
         let mut args = self.eval(conf);
 
-        //if conf.flags.x {
         if conf.has_flag('x') {
             eprintln!("+{}", args.join(" "));
         }
@@ -145,7 +142,7 @@ impl Command {
             ans.append(&mut elem.parse_info());
         };
 
-        blue_string(&ans)
+        blue_strings(&ans)
     }
 
     fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {

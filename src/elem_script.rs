@@ -5,19 +5,23 @@ use crate::{ShellCore, Feeder};
 use crate::elem_function::Function;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
+use crate::utils::blue_string;
 use crate::ListElem;
 
 pub struct Script {
     pub list: Vec<Box<dyn ListElem>>,
     pub eops: Vec<String>,
     pub text: String,
-//    pub procnum: usize,
 }
 
 impl Script {
     pub fn exec(&mut self, conf: &mut ShellCore) {
         let mut eop = "".to_string();
         for p in self.list.iter_mut() {
+            if conf.has_flag('d') {
+                eprintln!("{}", blue_string(&p.get_text()));
+            }
+
             let status = conf.get_var(&"?".to_string()) == "0";
            
             if (status && eop == "||") || (!status && eop =="&&") {
@@ -56,7 +60,15 @@ impl Script {
         let mut is_function = false;
     
         loop {
-            ans.text += &text.consume_blank_return();
+            loop {
+                let before = ans.text.len();
+                ans.text += &text.consume_blank_return();
+                ans.text += &text.consume_comment();
+
+                if before == ans.text.len() {
+                    break;
+                }
+            }
 
             if let Some(f) = Function::parse(text, conf) {
                 ans.text += &f.text;
@@ -80,17 +92,6 @@ impl Script {
             if end.iter().any(|e| text.compare(0, e)) {
                 break;
             }
-
-            /*
-            let mut flag = false;
-            for e in end { 
-                if text.compare(0, e) {
-                    flag = true;
-                }
-            }
-            if flag {
-                break;
-            }*/
 
             if text.len() > 0 && text.nth(0) == ')'  {
                 break;

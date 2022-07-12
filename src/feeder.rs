@@ -5,7 +5,7 @@ use std::io;
 use std::str::Chars;
 use crate::ShellCore;
 use crate::term;
-use crate::scanner::scanner_while;
+use crate::scanner::*;
 
 fn read_line_stdin() -> Option<String> {
     let mut line = String::new();
@@ -86,6 +86,20 @@ impl Feeder {
     pub fn consume_blank(&mut self) -> String {
         let d = scanner_while(self, 0, " \t");
         self.consume(d)
+    }
+
+    pub fn consume_comment(&mut self) -> String {
+        let mut ans = String::new();
+
+        if self.len() != 0 && self.nth(0) == '#' {
+            let d = scanner_until(self, 0, "\n");
+            ans += &self.consume(d);
+
+            if self.len() != 0 && self.nth(0) == '\n' {
+                ans += &self.consume(1);
+            }
+        }
+        ans
     }
 
     pub fn consume_blank_return(&mut self) -> String {

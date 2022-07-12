@@ -150,11 +150,15 @@ pub fn combine(left: &mut Vec<Vec<String>>, right: Vec<Vec<String>>) -> Vec<Vec<
     ans
 }
 
-pub fn blue_string(strings: &Vec<String>) -> Vec<String> {
+pub fn blue_strings(strings: &Vec<String>) -> Vec<String> {
     strings
         .iter()
         .map(|s| format!("\x1b[34m{}\x1b[m", s))
         .collect()
+}
+
+pub fn blue_string(s: &String) -> String {
+    format!("\x1b[34m{}\x1b[m", s)
 }
 
 pub fn expand_tilde(path: &String) -> (String, String, String){

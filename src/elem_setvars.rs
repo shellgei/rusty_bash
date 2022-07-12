@@ -5,7 +5,7 @@ use std::env;
 
 use crate::ShellCore;
 use crate::abst_elems::CommandElem;
-use crate::utils::blue_string;
+use crate::utils::blue_strings;
 use crate::abst_elems::ListElem;
 
 use crate::Feeder;
@@ -83,7 +83,7 @@ impl SetVariables {
             ans.append(&mut elem.parse_info());
         };
         
-        blue_string(&ans)
+        blue_strings(&ans)
     }
 
     pub fn push(&mut self, s: Box<dyn CommandElem>){
