@@ -55,6 +55,7 @@ impl PipelineElem for CompoundCase {
         let arg_str = self.arg.eval(conf).join(" ");
 
         for (cond, doing) in &mut self.conddo {
+            //eprintln!("COND '{:?}'", cond);
             let mut flag = false;
             for c in cond {
                 if glob_match(c, &arg_str) {
@@ -96,7 +97,10 @@ impl CompoundCase {
             }
             conds.push(text.consume(pos));
             ans.text += &conds.last().unwrap().clone();
-            break;
+
+            if text.nth(0) == ')' {
+                break;
+            }
         }
 
         //let cond = text.consume(pos);
