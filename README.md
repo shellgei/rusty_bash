@@ -117,13 +117,13 @@ may be a clone of Bash.
 | LINENO| :no_good: |
 | MACHTYPE| :no_good: |
 | MAPFILE| :no_good: |
-| OLDPWD| :no_good: |
+| OLDPWD| :heavy_check_mark: |
 | OPTARG| :no_good: |
 | OPTIND| :no_good: |
 | OSTYPE| :no_good: |
 | PIPESTATUS| :no_good: |
 | PPID| :no_good: |
-| PWD| :no_good: |
+| PWD| :heavy_check_mark: |
 | RANDOM| :no_good: |
 | READLINE_LINE| :no_good: |
 | READLINE_POINT| :no_good: |
