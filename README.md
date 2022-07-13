@@ -5,8 +5,8 @@ may be a clone of Bash.
 
 ## list of features
 
-* :heavy_check_mark: implemented
-* :construction: :partially implemented
+* :heavy_check_mark: :available
+* :construction: :partially available
 * :no_good: : not implemented
 
 
