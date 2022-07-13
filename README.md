@@ -7,5 +7,6 @@ may be a clone of Bash.
 
 ### builtin commands
 
-|:-------------------|:---------------------------|
-|source | :white_check_mark: |
+|features | status |
+|-------------------|---------------------------|
+| source | :white_check_mark: |
