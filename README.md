@@ -50,3 +50,8 @@ may be a clone of Bash.
 | \| | :heavy_check_mark: |
 | \|& | 🙅 |
 
+### others 
+
+|features | status |
+|-------------------|----|
+| coproc | :no_good: |
