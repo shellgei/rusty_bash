@@ -11,6 +11,8 @@ may be a clone of Bash.
 
 ### bash variables
 
+|features | status |
+|-------------------|----|
 | BASH | :no_good: |
 | BASHOPTS| :no_good: |
 | BASHPID| :no_good: |
