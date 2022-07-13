@@ -6,7 +6,7 @@ may be a clone of Bash.
 ## list of features
 
 * :heavy_check_mark: :available
-* :construction: :partially available
+* :construction: :partially available (or having known bugs) 
 * :no_good: : not implemented
 
 
@@ -57,7 +57,7 @@ may be a clone of Bash.
 |-------------------|----|
 | x | 🚧: |
 | v | 🚧: |
-| i | heavy_check_mark: |
+| i | :heavy_check_mark: |
 
 ### others 
 
