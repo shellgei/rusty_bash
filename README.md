@@ -50,6 +50,15 @@ may be a clone of Bash.
 | \| | :heavy_check_mark: |
 | \|& | 🙅 |
 
+
+### options 
+
+|features | status |
+|-------------------|----|
+| x | 🚧: |
+| v | 🚧: |
+| i | heavy_check_mark: |
+
 ### others 
 
 |features | status |
