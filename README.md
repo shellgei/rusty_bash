@@ -18,9 +18,9 @@ may be a clone of Bash.
 | cd | :heavy_check_mark: | 
 | pwd | :heavy_check_mark: | 
 | read | :heavy_check_mark: | 
-| set | :construction: | 
 | exit | :heavy_check_mark: | 
 | source | :heavy_check_mark: |
+| set | :construction: | 
 | shopt | :no_good: |
 
 ### compound commands
@@ -80,6 +80,8 @@ may be a clone of Bash.
 
 |features | status |
 |-------------------|----|
+| OLDPWD| :heavy_check_mark: |
+| PWD| :heavy_check_mark: |
 | BASH | :no_good: |
 | BASHOPTS| :no_good: |
 | BASHPID| :no_good: |
@@ -117,13 +119,11 @@ may be a clone of Bash.
 | LINENO| :no_good: |
 | MACHTYPE| :no_good: |
 | MAPFILE| :no_good: |
-| OLDPWD| :heavy_check_mark: |
 | OPTARG| :no_good: |
 | OPTIND| :no_good: |
 | OSTYPE| :no_good: |
 | PIPESTATUS| :no_good: |
 | PPID| :no_good: |
-| PWD| :heavy_check_mark: |
 | RANDOM| :no_good: |
 | READLINE_LINE| :no_good: |
 | READLINE_POINT| :no_good: |
