@@ -59,6 +59,23 @@ may be a clone of Bash.
 | v | 🚧: |
 | i | :heavy_check_mark: |
 
+### special parameters and position parameters
+
+
+|features | status |
+|-------------------|----|
+| * | :heavy_check_mark: |
+| @ | :heavy_check_mark: |
+| # | :no_good: |
+| ? | :heavy_check_mark: |
+| - | :heavy_check_mark: |
+| $ | :no_good: |
+| ! | :no_good: |
+| _ | :no_good: |
+| 0 | :heavy_check_mark: |
+| 1, 2, 3, ... | :heavy_check_mark: |
+
+
 ### others 
 
 |features | status |
