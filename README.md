@@ -28,7 +28,10 @@ may be a clone of Bash.
 |-------------------|----|
 | if | :heavy_check_mark: |
 | while | :heavy_check_mark: |
+| until | :no_good: |
 | case | :construction: | 
+| select | :no_good: | 
+| for | :no_good: | 
 | () | :heavy_check_mark: | 
 | {} | :heavy_check_mark: | 
 | (()) | :no_good: | 
