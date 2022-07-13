@@ -23,3 +23,15 @@ may be a clone of Bash.
 | shopt | :no_good: |
 
 
+### control operator
+
+|features | status |
+|-------------------|----|
+| \|\| | :heavy_check_mark: |
+| && | :heavy_check_mark: |
+| & | :no_good: |
+| ; | :heavy_check_mark: |
+| ;; | :heavy_check_mark: |
+| \| | :heavy_check_mark: |
+| \|& | 🙅 |
+
