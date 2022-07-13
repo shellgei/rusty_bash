@@ -9,7 +9,74 @@ may be a clone of Bash.
 * :construction: :partially available (or having known bugs) 
 * :no_good: : not implemented
 
-### bash variables
+
+
+### builtin commands
+
+|features | status |
+|-------------------|----|
+| cd | :heavy_check_mark: | 
+| pwd | :heavy_check_mark: | 
+| read | :heavy_check_mark: | 
+| set | :construction: | 
+| exit | :heavy_check_mark: | 
+| source | :heavy_check_mark: |
+| shopt | :no_good: |
+
+### compound commands
+
+|features | status |
+|-------------------|----|
+| if | :heavy_check_mark: |
+| while | :heavy_check_mark: |
+| until | :no_good: |
+| case | :construction: | 
+| select | :no_good: | 
+| for | :no_good: | 
+| () | :heavy_check_mark: | 
+| {} | :heavy_check_mark: | 
+| (()) | :no_good: | 
+| [[]] | :no_good: | 
+
+
+### control operator
+
+|features | status |
+|-------------------|----|
+| \|\| | :heavy_check_mark: |
+| && | :heavy_check_mark: |
+| & | :no_good: |
+| ; | :heavy_check_mark: |
+| ;; | :heavy_check_mark: |
+| \| | :heavy_check_mark: |
+| \|& | 🙅 |
+
+
+### options 
+
+|features | status |
+|-------------------|----|
+| x | 🚧: |
+| v | 🚧: |
+| i | :heavy_check_mark: |
+
+### special parameters and position parameters
+
+
+|features | status |
+|-------------------|----|
+| * | :heavy_check_mark: |
+| @ | :heavy_check_mark: |
+| # | :no_good: |
+| ? | :heavy_check_mark: |
+| - | :heavy_check_mark: |
+| $ | :no_good: |
+| ! | :no_good: |
+| _ | :no_good: |
+| 0 | :heavy_check_mark: |
+| 1, 2, 3, ... | :heavy_check_mark: |
+
+### variables
 
 |features | status |
 |-------------------|----|
@@ -118,72 +185,6 @@ may be a clone of Bash.
 | TMPDIR| :no_good: |
 | auto_resume| :no_good: |
 | histchars| :no_good: |
-
-### builtin commands
-
-|features | status |
-|-------------------|----|
-| cd | :heavy_check_mark: | 
-| pwd | :heavy_check_mark: | 
-| read | :heavy_check_mark: | 
-| set | :construction: | 
-| exit | :heavy_check_mark: | 
-| source | :heavy_check_mark: |
-| shopt | :no_good: |
-
-### compound commands
-
-|features | status |
-|-------------------|----|
-| if | :heavy_check_mark: |
-| while | :heavy_check_mark: |
-| until | :no_good: |
-| case | :construction: | 
-| select | :no_good: | 
-| for | :no_good: | 
-| () | :heavy_check_mark: | 
-| {} | :heavy_check_mark: | 
-| (()) | :no_good: | 
-| [[]] | :no_good: | 
-
-
-### control operator
-
-|features | status |
-|-------------------|----|
-| \|\| | :heavy_check_mark: |
-| && | :heavy_check_mark: |
-| & | :no_good: |
-| ; | :heavy_check_mark: |
-| ;; | :heavy_check_mark: |
-| \| | :heavy_check_mark: |
-| \|& | 🙅 |
-
-
-### options 
-
-|features | status |
-|-------------------|----|
-| x | 🚧: |
-| v | 🚧: |
-| i | :heavy_check_mark: |
-
-### special parameters and position parameters
-
-
-|features | status |
-|-------------------|----|
-| * | :heavy_check_mark: |
-| @ | :heavy_check_mark: |
-| # | :no_good: |
-| ? | :heavy_check_mark: |
-| - | :heavy_check_mark: |
-| $ | :no_good: |
-| ! | :no_good: |
-| _ | :no_good: |
-| 0 | :heavy_check_mark: |
-| 1, 2, 3, ... | :heavy_check_mark: |
-
 
 ### others 
 
