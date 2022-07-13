@@ -29,12 +29,12 @@ may be a clone of Bash.
 |-------------------|----|
 | if | :heavy_check_mark: |
 | while | :heavy_check_mark: |
-| until | :no_good: |
-| case | :construction: | 
-| select | :no_good: | 
-| for | :no_good: | 
 | () | :heavy_check_mark: | 
 | {} | :heavy_check_mark: | 
+| case | :construction: | 
+| until | :no_good: |
+| select | :no_good: | 
+| for | :no_good: | 
 | (()) | :no_good: | 
 | [[]] | :no_good: | 
 
@@ -45,20 +45,20 @@ may be a clone of Bash.
 |-------------------|----|
 | \|\| | :heavy_check_mark: |
 | && | :heavy_check_mark: |
-| & | :no_good: |
 | ; | :heavy_check_mark: |
 | ;; | :heavy_check_mark: |
 | \| | :heavy_check_mark: |
-| \|& | 🙅 |
+| & | :no_good: |
+| \|& | :no_good: |
 
 
 ### options 
 
 |features | status |
 |-------------------|----|
+| i | :heavy_check_mark: |
 | x | 🚧: |
 | v | 🚧: |
-| i | :heavy_check_mark: |
 
 ### special parameters and position parameters
 
@@ -67,14 +67,14 @@ may be a clone of Bash.
 |-------------------|----|
 | * | :heavy_check_mark: |
 | @ | :heavy_check_mark: |
-| # | :no_good: |
 | ? | :heavy_check_mark: |
 | - | :heavy_check_mark: |
+| 0 | :heavy_check_mark: |
+| 1, 2, 3, ... | :heavy_check_mark: |
+| # | :no_good: |
 | $ | :no_good: |
 | ! | :no_good: |
 | _ | :no_good: |
-| 0 | :heavy_check_mark: |
-| 1, 2, 3, ... | :heavy_check_mark: |
 
 ### variables
 
