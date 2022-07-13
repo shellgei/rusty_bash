@@ -22,6 +22,18 @@ may be a clone of Bash.
 | source | :heavy_check_mark: |
 | shopt | :no_good: |
 
+### compound commands
+
+|features | status |
+|-------------------|----|
+| if | :heavy_check_mark: |
+| while | :heavy_check_mark: |
+| case | :construction: | 
+| () | :heavy_check_mark: | 
+| {} | :heavy_check_mark: | 
+| (()) | :no_good: | 
+| [[]] | :no_good: | 
+
 
 ### control operator
 
