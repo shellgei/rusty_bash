@@ -71,8 +71,8 @@ may be a clone of Bash.
 | - | :heavy_check_mark: |
 | 0 | :heavy_check_mark: |
 | 1, 2, 3, ... | :heavy_check_mark: |
-| # | :no_good: |
-| $ | :no_good: |
+| # | :heavy_check_mark: |
+| $ | :heavy_check_mark: |
 | ! | :no_good: |
 | _ | :no_good: |
 
