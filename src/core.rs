@@ -8,6 +8,7 @@ use std::path::Path;
 use std::fs::{OpenOptions, File};
 use std::io::Write;
 use crate::bash_glob::glob_match;
+use crate::core_shopts::Shopts;
 
 use crate::Script;
 use crate::Feeder;
@@ -25,6 +26,7 @@ pub struct ShellCore {
     pub script_file: Option<File>,
     pub return_enable: bool,
     pub return_flag: bool,
+    pub shopts: Shopts, 
 }
 
 impl ShellCore {
@@ -42,6 +44,7 @@ impl ShellCore {
             script_file: None,
             return_flag: false,
             return_enable: false,
+            shopts: Shopts::new(),
         };
 
         conf.vars.insert("?".to_string(), 0.to_string());
