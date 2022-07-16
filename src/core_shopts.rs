@@ -18,6 +18,24 @@ impl Shopts {
         true
     }
 
+    pub fn print(&self) {
+        let mut keys = vec!();
+        for k in self.0.keys() {
+            keys.push(k);
+        }
+
+        keys.sort();
+        for k in keys { 
+            let onoff = if self.0[k] {
+                "on"
+            }else{
+                "off"
+            };
+
+            println!("{}\t{}", k, onoff);
+        }
+    }
+
     pub fn new () -> Shopts {
         let mut ans = HashMap::new();
         ans.insert("autocd", false); 

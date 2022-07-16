@@ -323,7 +323,12 @@ impl ShellCore {
         }
     }
 
-    pub fn shopt(&mut self, _args: &mut Vec<String>) -> i32 {
+    pub fn shopt(&mut self, args: &mut Vec<String>) -> i32 {
+        if args.len() == 1 {
+            self.shopts.print();
+            return 0;
+        }
+
         eprintln!("shopt: not implemented now");
         0
     }
