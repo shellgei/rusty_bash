@@ -231,6 +231,13 @@ impl ShellCore {
     }
 
     pub fn set(&mut self, args: &mut Vec<String>) -> i32 {
+        if args.len() == 1 {
+           for k in self.vars.keys() {
+               println!("{}={}", k, self.vars[k]);
+           }
+           return 0;
+        }
+
         self.args.clear();
 
         for a in args {
