@@ -17,6 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Bash tests
-      run: bash -exv ./test/test.bash
+      run: bash -xv ./test/test.bash
+      run: bash -xve ./test/old_test.bash
       #- name: Internal tests
       #run: cargo test --verbose

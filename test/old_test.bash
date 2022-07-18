@@ -136,10 +136,10 @@ res=$($com <<< 'echo }')
 # glob test
 
 res=$($com << 'EOF'
-ls *.bash
+ls o*.bash
 EOF
 )
-[ "$res" = "test.bash" ]
+[ "$res" = "old_test.bash" ]
 
 res=$($com <<< 'echo "*"')
 [ "$res" = "*" ]
