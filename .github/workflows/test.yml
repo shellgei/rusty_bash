@@ -18,6 +18,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Bash tests
       run: bash -xv ./test/test.bash
+    - name: Old tests
       run: bash -xve ./test/old_test.bash
       #- name: Internal tests
       #run: cargo test --verbose
