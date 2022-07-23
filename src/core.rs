@@ -325,11 +325,33 @@ impl ShellCore {
 
     pub fn shopt(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() == 1 {
-            self.shopts.print();
+            self.shopts.print(true, true);
             return 0;
         }
 
-        eprintln!("shopt: not implemented now");
+        if args.len() == 2 && args[1] == "-s" {
+            self.shopts.print(true, false);
+            return 0;
+        }
+        if args.len() == 2 && args[1] == "-u" {
+            self.shopts.print(false, true);
+            return 0;
+        }
+
+        if args.len() > 2 && args[1] == "-s" {
+            for opt in &mut args[2..] {
+                self.shopts.set(opt, true);
+            }
+            return 0;
+        }
+
+        if args.len() > 2 && args[1] == "-u" {
+            for opt in &mut args[2..] {
+                self.shopts.set(opt, false);
+            }
+            return 0;
+        }
+
         0
     }
 
