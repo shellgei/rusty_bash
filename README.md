@@ -21,7 +21,7 @@ may be a clone of Bash.
 | exit | :heavy_check_mark: | 
 | source | :heavy_check_mark: |
 | set | :construction: | 
-| shopt | :no_good: |
+| shopt | :construction: |
 
 ### compound commands
 
