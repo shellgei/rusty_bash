@@ -6,6 +6,7 @@ use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
 
+use crate::elem_compound_double_paren::CompoundDoubleParen;
 use crate::elem_compound_if::CompoundIf;
 use crate::elem_compound_while::CompoundWhile;
 use crate::elem_compound_paren::CompoundParen;
@@ -77,11 +78,12 @@ pub trait ArgElem {
 }
 
 pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn PipelineElem>> {
-    if let Some(a) =      CompoundIf::parse(text,conf)            {Some(Box::new(a))}
-    else if let Some(a) = CompoundWhile::parse(text, conf)        {Some(Box::new(a))}
-    else if let Some(a) = CompoundCase::parse(text, conf)         {Some(Box::new(a))}
-    else if let Some(a) = CompoundParen::parse(text, conf, false) {Some(Box::new(a))}
-    else if let Some(a) = CompoundBrace::parse(text, conf)        {Some(Box::new(a))}
+    if let Some(a) =      CompoundIf::parse(text,conf)                  {Some(Box::new(a))}
+    else if let Some(a) = CompoundWhile::parse(text, conf)              {Some(Box::new(a))}
+    else if let Some(a) = CompoundCase::parse(text, conf)               {Some(Box::new(a))}
+    else if let Some(a) = CompoundDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
+    else if let Some(a) = CompoundParen::parse(text, conf, false)       {Some(Box::new(a))}
+    else if let Some(a) = CompoundBrace::parse(text, conf)              {Some(Box::new(a))}
     else {None}
 }
 

@@ -4,6 +4,7 @@
 mod abst_elems;
 mod bash_glob;
 mod elem_arg;
+mod elem_compound_double_paren;
 mod elem_compound_paren;
 mod elem_compound_brace;
 mod elem_compound_case;
@@ -176,7 +177,6 @@ fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
         if !feeder.feed_line(core) {
-            //if core.flags.i {
             if core.has_flag('i') {
                 continue;
             }else{
@@ -191,6 +191,12 @@ fn main_loop(core: &mut ShellCore) {
                 break;
             }
             e.exec(core);
+
+            /*
+            if feeder.len() == 0 {
+                eprintln!("BREAK");
+                break;
+            }*/
         }
     }
 

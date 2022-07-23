@@ -61,11 +61,12 @@ impl Script {
     
         loop {
             loop {
+//                eprintln!("LEN: {}", text._text());
                 let before = ans.text.len();
                 ans.text += &text.consume_blank_return();
                 ans.text += &text.consume_comment();
 
-                if before == ans.text.len() {
+                if before == ans.text.len() || text.len() == 0 {
                     break;
                 }
             }

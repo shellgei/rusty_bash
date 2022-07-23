@@ -108,6 +108,7 @@ impl Pipeline {
             if scanner_end_paren(text, 0) == 1 {
                 break;
             }
+
         }
 
         if let Some(eop) = Eop::parse(text) {
