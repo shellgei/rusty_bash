@@ -3,18 +3,14 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_elems::PipelineElem;
-use nix::unistd::{Pid, fork, ForkResult};
+use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
-use crate::elem_script::Script;
-use std::process::exit;
 use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::utils_io::*;
-use nix::unistd::{close, pipe};
 use crate::scanner::*;
 
 pub struct CompoundDoubleParen {
-    pub script: Option<Script>,
     text: String,
     expression: String,
     pid: Option<Pid>, 
@@ -25,38 +21,8 @@ pub struct CompoundDoubleParen {
 }
 
 impl PipelineElem for CompoundDoubleParen {
-    fn exec(&mut self, conf: &mut ShellCore) {
+    fn exec(&mut self, _conf: &mut ShellCore) {
         eprintln!("{}", self.expression);
-        return;
-
-        let p = pipe().expect("Pipe cannot open");
-
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    self.fds.set_child_io();
-                    if let Some(s) = &mut self.script {
-                        if self.substitution {
-                            close(p.0).expect("Can't close a pipe end");
-                            dup_and_close(p.1, 1);
-                        }
-                        s.exec(conf);
-                        close(1).expect("Can't close a pipe end");
-                        exit(conf.vars["?"].parse::<i32>().unwrap());
-                    };
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    if self.substitution {
-                        close(p.1).expect("Can't close a pipe end");
-                        self.substitution_text  = read_pipe(p.0, child, conf)
-                            .trim_end_matches('\n').to_string();
-                    }
-                    self.pid = Some(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
-        }
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
@@ -84,7 +50,7 @@ impl PipelineElem for CompoundDoubleParen {
 impl CompoundDoubleParen {
     pub fn new() -> CompoundDoubleParen{
         CompoundDoubleParen {
-            script: None,
+           // script: None,
             pid: None,
             text: "".to_string(),
             expression: "".to_string(),
