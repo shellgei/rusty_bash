@@ -10,22 +10,20 @@ use crate::abst_elems::ArgElem;
 
 pub struct SubArgVariable {
     pub text: String,
+    pub name: String,
+    pub empty_option: String,
+    pub empty_option_string: String,
     pub pos: DebugInfo,
 }
 
 impl ArgElem for SubArgVariable {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        let name = if self.text.rfind('}') == Some(self.text.len()-1) {
-            self.text[2..self.text.len()-1].to_string()
-        }else{
-            self.text[1..].to_string()
-        };
-        let val = conf.get_var(&name);
+        let val = conf.get_var(&self.name);
 
         if val.len() == 0 {
-            vec!(vec!("".to_string()))
+            vec!(vec!(self.empty_treat(conf)))
         }else{
-            vec!(vec!(conf.get_var(&name)))
+            vec!(vec!(val))
         }
     }
 
@@ -35,6 +33,43 @@ impl ArgElem for SubArgVariable {
 }
 
 impl SubArgVariable {
+    pub fn new(text: &mut Feeder) -> SubArgVariable {
+        SubArgVariable {
+            name: String::new(),
+            text: String::new(),
+            empty_option: String::new(),
+            empty_option_string: String::new(),
+            pos: DebugInfo::init(text),
+        }
+    }
+
+    /*
+    fn unempty_treat(&self, conf: &mut ShellCore) -> String {
+        let opt: &str = &self.empty_option.clone();
+
+        match opt {
+        }
+    }*/
+
+    fn empty_treat(&self, conf: &mut ShellCore) -> String {
+        let opt: &str = &self.empty_option.clone();
+
+        match opt {
+            "" => "".to_string(),
+            ":-" => self.empty_option_string.clone(),
+            ":=" => {
+                conf.vars.insert(self.name.clone(), self.empty_option_string.clone());
+                self.empty_option_string.clone()
+            },
+            ":?" => {
+                eprintln!("bash: {}: {}",self.name.clone(), self.empty_option_string.clone());
+                conf.vars.insert("?".to_string(), "1".to_string());
+                "".to_string()
+            },
+            _ => "".to_string(),
+        }
+    }
+
     pub fn parse(text: &mut Feeder) -> Option<SubArgVariable> {
         if text.len() < 2 || !(text.nth(0) == '$') {
             return None;
@@ -42,16 +77,42 @@ impl SubArgVariable {
         if text.nth(1) == '{' {
             return SubArgVariable::parse2(text);
         }
+
+        let mut ans = SubArgVariable::new(text);
+        ans.text = text.consume(1);
     
-        let pos = scanner_varname(&text, 1);
-        Some( SubArgVariable{ text: text.consume(pos), pos: DebugInfo::init(text) })
+        let pos = scanner_varname(&text, 0);
+        ans.name = text.consume(pos);
+        ans.text += &ans.name.clone();
+        Some(ans)
     }
     
     fn parse2(text: &mut Feeder) -> Option<SubArgVariable> {
-        let pos = scanner_varname(&text, 2);
-        if text.nth(pos) == '}' {
-            Some( SubArgVariable{ text: text.consume(pos+1), pos: DebugInfo::init(text) })
+        let mut ans = SubArgVariable::new(text);
+        let backup = text.clone();
+
+        ans.text = text.consume(2);
+        
+        let pos = scanner_varname(&text, 0);
+        ans.name = text.consume(pos);
+        ans.text += &ans.name.clone();
+
+        if text.compare(0, ":-") || text.compare(0, ":=") 
+            || text.compare(0, ":?") || text.compare(0, ":+") {
+            ans.empty_option = text.consume(2);
+            ans.text += &ans.empty_option.clone();
+
+            let pos = scanner_until_escape(&text, 0, "}");
+            ans.empty_option_string = text.consume(pos);
+            ans.text += &ans.empty_option_string.clone();
+        }
+
+        if text.nth(0) == '}' {
+            ans.text += &text.consume(1);
+
+            Some(ans)
         }else{
+            text.rewind(backup);
             None
         }
     }

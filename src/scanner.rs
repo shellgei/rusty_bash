@@ -43,7 +43,7 @@ pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
 pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
     if text.len() == from {
         return from;
-    }else if "?*@$#!-".chars().any(|c| c == text.nth(from)) {
+    }else if "?*@$#!-:".chars().any(|c| c == text.nth(from)) {
         return from+1;
     };
 
