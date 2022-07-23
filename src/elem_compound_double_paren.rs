@@ -11,11 +11,12 @@ use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::utils_io::*;
 use nix::unistd::{close, pipe};
-use crate::scanner::scanner_while;
+use crate::scanner::*;
 
 pub struct CompoundDoubleParen {
     pub script: Option<Script>,
     text: String,
+    expression: String,
     pid: Option<Pid>, 
     pub substitution_text: String,
     pub substitution: bool,
@@ -25,6 +26,9 @@ pub struct CompoundDoubleParen {
 
 impl PipelineElem for CompoundDoubleParen {
     fn exec(&mut self, conf: &mut ShellCore) {
+        eprintln!("{}", self.expression);
+        return;
+
         let p = pipe().expect("Pipe cannot open");
 
         unsafe {
@@ -83,6 +87,7 @@ impl CompoundDoubleParen {
             script: None,
             pid: None,
             text: "".to_string(),
+            expression: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
             eoc: None,
@@ -100,10 +105,18 @@ impl CompoundDoubleParen {
         let mut input_success;
 
         loop{
-            text.consume(2);
+            ans.text = text.consume(2);
+
+            let pos = scanner_until(text, 0, ")");
+
+            /*
             if let Some(s) = Script::parse(text, conf, vec!(")")) {
                 ans.text = "((".to_owned() + &s.text + "))";
                 ans.script = Some(s);
+                */
+            if pos != text.len() {
+                ans.expression = text.consume(pos);
+                ans.text += &ans.expression.clone();
             }else{
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);
                 if ! input_success {
