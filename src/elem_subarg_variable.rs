@@ -22,6 +22,8 @@ impl ArgElem for SubArgVariable {
 
         if val.len() == 0 {
             vec!(vec!(self.empty_treat(conf)))
+        }else if self.empty_option == ":+" {
+            vec!(vec!(self.empty_option_string.clone()))
         }else{
             vec!(vec!(val))
         }
@@ -42,14 +44,6 @@ impl SubArgVariable {
             pos: DebugInfo::init(text),
         }
     }
-
-    /*
-    fn unempty_treat(&self, conf: &mut ShellCore) -> String {
-        let opt: &str = &self.empty_option.clone();
-
-        match opt {
-        }
-    }*/
 
     fn empty_treat(&self, conf: &mut ShellCore) -> String {
         let opt: &str = &self.empty_option.clone();

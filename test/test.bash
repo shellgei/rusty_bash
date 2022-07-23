@@ -345,6 +345,12 @@ b" ] || err $LINENO
 res=$($com <<< 'echo ${a:-b};echo $a')
 [ "$res" = "b" ] || err $LINENO
 
+res=$($com <<< 'a=c;echo ${a:?b}')
+[ "$res" = "c" ] || err $LINENO
+
+res=$($com <<< '(echo ${a:?b}) 2>&1')
+[ "$res" = "bash: a: b" ] || err $LINENO
+
 res=$($com <<< 'LANG=C TZ= date -d 2000-01-01')
 [ "$res" = "Sat Jan  1 00:00:00 UTC 2000" ] || err $LINENO
 
