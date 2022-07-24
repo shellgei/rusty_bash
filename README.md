@@ -13,27 +13,19 @@ may be a clone of Bash.
 
 ### builtin commands
 
-|features | status |features | status |
-|-------------------|----|-------------------|----|
-| cd | :heavy_check_mark: | pwd | :heavy_check_mark: | 
-| read | :heavy_check_mark: | exit | :heavy_check_mark: | 
-| source | :heavy_check_mark: | set | :construction: | 
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :heavy_check_mark: |
+| exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: | 
 | shopt | :construction: |
 
 ### compound commands
 
-|features | status |
-|-------------------|----|
-| if | :heavy_check_mark: |
-| while | :heavy_check_mark: |
-| () | :heavy_check_mark: | 
-| {} | :heavy_check_mark: | 
-| case | :construction: | 
-| until | :no_good: |
-| select | :no_good: | 
-| for | :no_good: | 
-| (()) | :no_good: | 
-| [[]] | :no_good: | 
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: | 
+| {} | :heavy_check_mark: | case | :construction: | until | :no_good: | select | :no_good: | 
+| for | :no_good: | (()) | :no_good: | [[]] | :no_good: | 
 
 
 ### control operator
