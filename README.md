@@ -25,7 +25,7 @@ may be a clone of Bash.
 |-------------------|----|-------------------|----|-------------------|----|
 | if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: | 
 | {} | :heavy_check_mark: | case | :construction: | until | :no_good: | select | :no_good: | 
-| for | :no_good: | (()) | :no_good: | [[]] | :no_good: | 
+| for | :no_good: | (()) | :construction: | [[]] | :no_good: | 
 
 
 ### control operator

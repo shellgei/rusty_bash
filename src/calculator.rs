@@ -13,6 +13,7 @@ fn op_order(operator: &String) -> u8 {
         "+" | "-"                  => 7, 
         "<<" | ">>"                => 8, 
         "<=" | ">=" | ">" | "<"    => 9, 
+        "(" | ")"                  => 20, 
         _ => 255, 
     }
 }
@@ -40,61 +41,71 @@ fn get_operator(text: &mut Feeder) -> Option<(String,u8)> {
     }
 }
 
-fn reduce(stack: &mut Vec<(String,u8)>, op: String ) {
+fn reduce(stack: &mut Vec<i32>, op: String ) {
     let op: &str = &op.clone();
 
-    let right = stack.pop().unwrap().0.parse::<i64>().unwrap();
-    let left = stack.pop().unwrap().0.parse::<i64>().unwrap();
+    let right = stack.pop().unwrap();
+    let left = stack.pop().unwrap();
 
     match op {
-        "+" => stack.push( ((left+right).to_string(), 0) ),
-        "-" => stack.push( ((left-right).to_string(), 0) ),
-        "*" => stack.push( ((left*right).to_string(), 0) ),
-        "/" => stack.push( ((left/right).to_string(), 0) ),
+        "+" => stack.push(left+right),
+        "-" => stack.push(left-right),
+        "*" => stack.push(left*right),
+        "/" => stack.push(left/right),
         _ => (), 
     }
 }
 
 pub fn calculate(expression: String, core: &mut ShellCore) -> String {
     let tokens = tokenizer(expression, core);
-    let mut stack = vec!();
-//    let mut num_stack = vec!();
+    let mut num_stack: Vec<i32> = vec!();
     let mut wait_stack: Vec<(String,u8)> = vec!();
 
-    eprintln!("TOKENS: {:?}", tokens);
+    //eprintln!("TOKENS: {:?}", tokens);
 
     for t in tokens {
-        eprintln!("STACK: {:?}", stack);
-        eprintln!("WAIT STACK: {:?}", wait_stack);
+     //   eprintln!("STACK: {:?}", num_stack);
+      //  eprintln!("WAIT STACK: {:?}", wait_stack);
         while wait_stack.len() != 0 {
             let wtop = wait_stack.pop().unwrap();
+
+            if t.0 == ")" && wtop.0 == "(" {
+            //    wait_stack.push(wtop);
+                break;
+            }
+
             if wtop.1 <= t.1 {
                 if wtop.1 > 0 {
-                    reduce(&mut stack, wtop.0.clone());
+                    reduce(&mut num_stack, wtop.0.clone());
                 }else{
-                    stack.push(wtop);
+                    num_stack.push(wtop.0.parse::<i32>().unwrap());
                 }
             }else{
                 wait_stack.push(wtop);
                 break;
             }
         }
-        wait_stack.push(t);
+
+        if t.0 != ")" {
+            wait_stack.push(t);
+        }
     }
 
-    eprintln!("-------------------");
+//    eprintln!("-------------------");
     while wait_stack.len() != 0 {
         let wtop = wait_stack.pop().unwrap();
         if wtop.1 > 0 {
-            reduce(&mut stack, wtop.0.clone());
+            reduce(&mut num_stack, wtop.0.clone());
         }else{
-            stack.push(wtop);
+            num_stack.push(wtop.0.parse::<i32>().unwrap());
+        //    stack.push(wtop);
         }
-        eprintln!("STACK: {:?}", stack);
-        eprintln!("WAIT STACK: {:?}", wait_stack);
+ //       eprintln!("STACK: {:?}", num_stack);
+  //      eprintln!("WAIT STACK: {:?}", wait_stack);
     }
 
-    stack.iter().map(|t| t.0.clone()).collect::<Vec<String>>().join(" ")
+    //stack.iter().map(|t| t.0.clone()).collect::<Vec<String>>().join(" ")
+    num_stack.pop().unwrap().to_string()
 }
 
 fn tokenizer(expression: String, _core: &mut ShellCore) -> Vec<(String,u8)> {

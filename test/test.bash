@@ -539,6 +539,24 @@ res=$($com <<< '((0));echo $?')
 res=$($com <<< '((1));echo $?')
 [ "$res" = "0" ] || err $LINENO
 
+res=$($com <<< 'echo $((1+2+3))')
+[ "$res" = "6" ] || err $LINENO
+
+res=$($com <<< 'echo $((1-2+3))')
+[ "$res" = "2" ] || err $LINENO
+
+res=$($com <<< 'echo $((1+2*3))')
+[ "$res" = "7" ] || err $LINENO
+
+res=$($com <<< 'echo $((1+2*-3))')
+[ "$res" = "-5" ] || err $LINENO
+
+res=$($com <<< 'echo $((1+2/3))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'echo $((-1+2/3))')
+[ "$res" = "-1" ] || err $LINENO
+
 ### MULTILINE INPUT ###
 
 res=$($com << 'EOF'
