@@ -13,14 +13,11 @@ may be a clone of Bash.
 
 ### builtin commands
 
-|features | status |
-|-------------------|----|
-| cd | :heavy_check_mark: | 
-| pwd | :heavy_check_mark: | 
-| read | :heavy_check_mark: | 
-| exit | :heavy_check_mark: | 
-| source | :heavy_check_mark: |
-| set | :construction: | 
+|features | status |features | status |
+|-------------------|----|-------------------|----|
+| cd | :heavy_check_mark: | pwd | :heavy_check_mark: | 
+| read | :heavy_check_mark: | exit | :heavy_check_mark: | 
+| source | :heavy_check_mark: | set | :construction: | 
 | shopt | :construction: |
 
 ### compound commands
