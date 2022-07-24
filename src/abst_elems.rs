@@ -14,6 +14,7 @@ use crate::elem_compound_brace::CompoundBrace;
 use crate::elem_compound_case::CompoundCase;
 
 use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
+use crate::elem_subarg_math_substitution::SubArgMathSubstitution;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_double_quoted::SubArgDoubleQuoted;
 use crate::elem_subarg_single_quoted::SubArgSingleQuoted;
@@ -88,7 +89,8 @@ pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Pipel
 }
 
 pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_value: bool, is_in_brace: bool) -> Option<Box<dyn ArgElem>> {
-    if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {Some(Box::new(a))}
+    if let Some(a) = SubArgMathSubstitution::parse(text, conf, is_value)         {Some(Box::new(a))}
+    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)                       {Some(Box::new(a))}
     else if let Some(a) = SubArgBraced::parse(text, conf, is_value)         {Some(Box::new(a))}
     else if let Some(a) = SubArgSingleQuoted::parse(text, conf, is_value)   {Some(Box::new(a))}

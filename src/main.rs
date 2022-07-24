@@ -20,6 +20,7 @@ mod elem_setvars;
 mod elem_subarg_braced;
 mod elem_subarg_command_substitution;
 mod elem_subarg_double_quoted;
+mod elem_subarg_math_substitution;
 mod elem_subarg_non_quoted;
 mod elem_subarg_single_quoted;
 mod elem_subarg_tilde;
