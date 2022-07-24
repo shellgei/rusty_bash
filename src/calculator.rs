@@ -41,6 +41,18 @@ fn get_operator(text: &mut Feeder) -> Option<(String,u8)> {
 }
 
 fn reduce(stack: &mut Vec<(String,u8)>, op: String ) {
+    let op: &str = &op.clone();
+
+    let right = stack.pop().unwrap().0.parse::<i64>().unwrap();
+    let left = stack.pop().unwrap().0.parse::<i64>().unwrap();
+
+    match op {
+        "+" => stack.push( ((left+right).to_string(), 0) ),
+        "-" => stack.push( ((left-right).to_string(), 0) ),
+        "*" => stack.push( ((left*right).to_string(), 0) ),
+        "/" => stack.push( ((left/right).to_string(), 0) ),
+        _ => (), 
+    }
 }
 
 pub fn calculate(expression: String, core: &mut ShellCore) -> String {
@@ -56,12 +68,12 @@ pub fn calculate(expression: String, core: &mut ShellCore) -> String {
         eprintln!("WAIT STACK: {:?}", wait_stack);
         while wait_stack.len() != 0 {
             let wtop = wait_stack.pop().unwrap();
-            if wtop.1 < t.1 {
+            if wtop.1 <= t.1 {
                 if wtop.1 > 0 {
-                    //reduce(&mut stack, wtop.0.clone());
+                    reduce(&mut stack, wtop.0.clone());
+                }else{
                     stack.push(wtop);
                 }
-
             }else{
                 wait_stack.push(wtop);
                 break;
@@ -70,9 +82,16 @@ pub fn calculate(expression: String, core: &mut ShellCore) -> String {
         wait_stack.push(t);
     }
 
+    eprintln!("-------------------");
     while wait_stack.len() != 0 {
         let wtop = wait_stack.pop().unwrap();
-        stack.push(wtop);
+        if wtop.1 > 0 {
+            reduce(&mut stack, wtop.0.clone());
+        }else{
+            stack.push(wtop);
+        }
+        eprintln!("STACK: {:?}", stack);
+        eprintln!("WAIT STACK: {:?}", wait_stack);
     }
 
     stack.iter().map(|t| t.0.clone()).collect::<Vec<String>>().join(" ")
