@@ -7,7 +7,7 @@ err () {
 	exit 1
 }
 
-cargo build --release
+cargo build --release || err $LINENO
 
 cd $(dirname $0)
 

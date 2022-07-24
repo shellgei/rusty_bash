@@ -9,6 +9,7 @@ use crate::elem_redirect::Redirect;
 use crate::elem_end_of_command::Eoc;
 use crate::utils_io::*;
 use crate::scanner::*;
+use crate::calculator::calculate;
 
 pub struct CompoundDoubleParen {
     text: String,
@@ -22,8 +23,7 @@ pub struct CompoundDoubleParen {
 
 impl PipelineElem for CompoundDoubleParen {
     fn exec(&mut self, conf: &mut ShellCore) {
-        eprintln!("{}", self.expression);
-        self.substitution_text = self.expression.clone();
+        self.substitution_text = calculate(self.expression.clone(), conf);
 
         let status = if self.substitution_text == "0" {
             "1"

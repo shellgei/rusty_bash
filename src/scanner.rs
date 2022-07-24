@@ -129,3 +129,28 @@ pub fn scanner_start_brace(text: &Feeder, from: usize) -> usize {
     }
     return from;
 }
+
+pub fn scanner_integer(text: &Feeder, from: usize) -> usize {
+    if text.len() == from {
+        return from;
+    }
+
+    let mut pos = from;
+    if text.nth(from) == '-' {
+        pos += 1;
+    }
+
+    for ch in text.chars_after(pos) {
+        if ch < '0' || ch > '9' {
+            break;
+        }
+
+        pos += 1;
+    }
+
+    if text.nth(from) == '-' && pos == from+1 {
+        from
+    }else{
+        pos
+    }
+}
