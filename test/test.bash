@@ -531,6 +531,14 @@ res=$($com <<< 'echo あ い う | ( read a b ; echo $b )')
 res=$($com <<< 'echo あ い う | ( read a b c ; echo $b )')
 [ "$res" = "い" ] || err $LINENO
 
+# (())
+
+res=$($com <<< '((0));echo $?')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< '((1));echo $?')
+[ "$res" = "0" ] || err $LINENO
+
 ### MULTILINE INPUT ###
 
 res=$($com << 'EOF'

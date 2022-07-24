@@ -21,8 +21,17 @@ pub struct CompoundDoubleParen {
 }
 
 impl PipelineElem for CompoundDoubleParen {
-    fn exec(&mut self, _conf: &mut ShellCore) {
+    fn exec(&mut self, conf: &mut ShellCore) {
         eprintln!("{}", self.expression);
+        self.substitution_text = self.expression.clone();
+
+        let status = if self.substitution_text == "0" {
+            "1"
+        }else{
+            "0"
+        }.to_string();
+
+        conf.vars.insert("?".to_string(), status);
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
