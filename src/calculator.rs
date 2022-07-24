@@ -4,7 +4,7 @@
 use crate::{ShellCore,Feeder};
 use crate::scanner::*;
 
-fn _op_order(operator: &String) -> u8 {
+fn op_order(operator: &String) -> u8 {
     let op: &str = &operator.clone();
 
     match op {
@@ -17,31 +17,68 @@ fn _op_order(operator: &String) -> u8 {
     }
 }
 
-fn get_integer(text: &mut Feeder) -> Option<String> {
+fn get_integer(text: &mut Feeder) -> Option<(String,u8)> {
     let pos = scanner_integer(&text, 0);
 
     if pos != 0 {
-        Some(text.consume(pos))
+        Some( (text.consume(pos),0) )
     }else{
         None
     }
 }
 
-fn get_operator(text: &mut Feeder) -> Option<String> {
-    if text.compare(0, "+") || text.compare(0, "-") || text.compare(0, "/") || text.compare(0, "%") {
-        Some(text.consume(1))
+fn get_operator(text: &mut Feeder) -> Option<(String,u8)> {
+    if text.len() == 0 {
+        return None;
+    }
+
+    if let Some(_) = "+-/%*".find(text.nth(0)) {
+        let op = text.consume(1);
+        Some( (op.clone(), op_order(&op)) )
     }else{
         None
     }
+}
+
+fn reduce(stack: &mut Vec<(String,u8)>, op: String ) {
 }
 
 pub fn calculate(expression: String, core: &mut ShellCore) -> String {
     let tokens = tokenizer(expression, core);
+    let mut stack = vec!();
+//    let mut num_stack = vec!();
+    let mut wait_stack: Vec<(String,u8)> = vec!();
 
-    tokens.join(" ")
+    eprintln!("TOKENS: {:?}", tokens);
+
+    for t in tokens {
+        eprintln!("STACK: {:?}", stack);
+        eprintln!("WAIT STACK: {:?}", wait_stack);
+        while wait_stack.len() != 0 {
+            let wtop = wait_stack.pop().unwrap();
+            if wtop.1 < t.1 {
+                if wtop.1 > 0 {
+                    //reduce(&mut stack, wtop.0.clone());
+                    stack.push(wtop);
+                }
+
+            }else{
+                wait_stack.push(wtop);
+                break;
+            }
+        }
+        wait_stack.push(t);
+    }
+
+    while wait_stack.len() != 0 {
+        let wtop = wait_stack.pop().unwrap();
+        stack.push(wtop);
+    }
+
+    stack.iter().map(|t| t.0.clone()).collect::<Vec<String>>().join(" ")
 }
 
-fn tokenizer(expression: String, _core: &mut ShellCore) -> Vec<String> {
+fn tokenizer(expression: String, _core: &mut ShellCore) -> Vec<(String,u8)> {
     //let mut stack = vec!();
     let mut tokens = vec!();
     
