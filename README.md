@@ -56,7 +56,6 @@ may be a clone of Bash.
 | compopt | :no_good: | continue | :no_good: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :no_good: | exec | :no_good: |
-| exit | :no_good: | export | :no_good: | false | :no_good: |
 | fc | :no_good: | fg | :no_good: | getopts | :no_good: |
 | hash | :no_good: | help | :no_good: | history | :no_good: |
 | jobs | :no_good: | kill | :no_good: | let | :no_good: |
@@ -67,7 +66,7 @@ may be a clone of Bash.
 | times | :no_good: | trap | :no_good: | true | :no_good: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
 | umask | :no_good: | unalias | :no_good: | unset | :no_good: |
-| wait | :no_good: |
+| wait | :no_good: | export | :no_good: | false | :no_good: |
 
 ### variables
 
