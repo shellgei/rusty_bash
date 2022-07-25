@@ -28,11 +28,10 @@ fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
         return None;
     };
 
-//    if text.nth(0) == '&' && text.nth(1) == '>' {
-    if text.compare(0, "&>") {
+    if text.compare(0, "&>") || text.compare(0, ">&") {
         /* extract the file name */
         let start = scanner_while(text, 2, " ");
-        let end = scanner_until_escape(text, start, " \t\n");
+        let end = scanner_until_escape(text, start, " \t\n;");
         let path = text.from_to(start, end);
 
         Some( Redirect {

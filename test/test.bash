@@ -827,6 +827,16 @@ EOF
 [ "$res" = "x
 y" ] || err $LINENO
 
+res=$($com << 'EOF'
+if true ;then
+    if true ;then
+	echo a
+    fi
+fi
+EOF
+)
+[ "$res" = "a" ] || err $LINENO
+
 res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then X=Y ; fi; echo $X')
 [ "$res" = "Y" ] || err $LINENO
 

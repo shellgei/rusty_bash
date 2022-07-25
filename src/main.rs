@@ -42,12 +42,12 @@ mod term_completion;
 use std::{env, process, path};
 use std::os::linux::fs::MetadataExt;
 use std::fs::{File,OpenOptions};
-use std::io::{Read, BufRead, BufReader};
+use std::io::Read;
 
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
 
-use crate::abst_elems::{ListElem, PipelineElem};
+use crate::abst_elems::ListElem;
 use crate::elem_command::Command;
 use crate::elem_script::Script;
 
@@ -62,33 +62,14 @@ fn is_interactive(pid: u32) -> bool {
     }
 }
 
-/* This function will be replaced "source" in future. */
 fn read_bashrc(core: &mut ShellCore){
-    let home = if let Ok(h) = env::var("HOME"){
-        h
-    }else{
-        panic!("Home is not set");
-    };
-
-    if let Ok(file) = OpenOptions::new().read(true).open(home + "/.bashrc"){
-        let br = BufReader::new(file);
-        for ln in br.lines() {
-            match ln {
-                Ok(mut line) => {
-                    line = line.trim_start().to_string();
-                    if line.len() < 7 {
-                        continue; 
-                    };
-                    if &line[0..5] == "alias" {
-                        let mut f = Feeder::new_with(line);
-                        if let Some(mut c) = Command::parse(&mut f, core) {
-                            c.exec(core);
-                        }
-                    }
-                },
-                _ => break,
-            }
-        }
+    let home = env::var("HOME").expect("HOME is not defined");
+    if let Ok(_) = File::open(home.clone() + "/.bashrc") {
+        let f = core.internal_commands["source"];
+        let mut args = vec!("source".to_string(), home.clone() + "/.bashrc");
+        eprintln!("---reading ~/.bashrc (still some errors occur)---");
+        f(core, &mut args);
+        eprintln!("-----------------------end-----------------------");
     }
 }
 
@@ -171,7 +152,6 @@ fn main() {
     }
 
     read_bashrc(&mut core);
-
     main_loop(&mut core);
 }
 
