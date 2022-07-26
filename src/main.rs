@@ -30,6 +30,7 @@ mod elem_substitution;
 mod elem_pipeline;
 mod elem_varname;
 mod core;
+mod core_builtins;
 mod core_shopts;
 mod term;
 mod utils;
