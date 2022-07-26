@@ -57,7 +57,7 @@ may be a clone of Bash.
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :no_good: | exec | :no_good: |
 | fc | :no_good: | fg | :no_good: | getopts | :no_good: |
-| hash | :no_good: | help | :no_good: | history | :no_good: |
+| hash | :no_good: | help | :no_good: | history | :construction: |
 | jobs | :no_good: | kill | :no_good: | let | :no_good: |
 | local | :no_good: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
