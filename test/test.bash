@@ -957,12 +957,22 @@ chmod +x /tmp/.rusty_bash
 res=$(/tmp/.rusty_bash)
 [ "$res" = "hoge" ] || err $LINENO
 
-### INTERNAL COMMAND ###
+### BUILTIN COMMAND ###
 
 cat << EOF > /tmp/.rusty_bash
 A=B
 EOF
 res=$($com <<< 'source /tmp/.rusty_bash ; echo $A')
 [ "$res" = "B" ] || err $LINENO
+
+res=$($com <<< 'set a b c ; shift; echo $1')
+[ "$res" = "b" ] || err $LINENO
+
+res=$($com <<< 'set a b c ; shift 3; echo $? ; echo $1')
+[ "$res" = "0" ] || err $LINENO
+
+res=$($com <<< 'set a b c ; shift 4; echo $? ; echo $1')
+[ "$res" = "1
+a" ] || err $LINENO
 
 echo TEST OK

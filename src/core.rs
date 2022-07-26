@@ -55,6 +55,7 @@ impl ShellCore {
         conf.builtins.insert("history".to_string(), Self::history);
         conf.builtins.insert("pwd".to_string(), Self::pwd);
         conf.builtins.insert("set".to_string(), Self::set);
+        conf.builtins.insert("shift".to_string(), Self::shift);
         conf.builtins.insert("true".to_string(), Self::true_);
         conf.builtins.insert("read".to_string(), Self::read);
         conf.builtins.insert("return".to_string(), Self::return_);

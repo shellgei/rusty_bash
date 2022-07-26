@@ -62,7 +62,7 @@ may be a clone of Bash.
 | local | :no_good: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | read | :no_good: | readonly | :no_good: | return | :construction: |
-| shift | :no_good: | suspend | :no_good: | test | :no_good: |
+| shift | :heavy_check_mark: | suspend | :no_good: | test | :no_good: |
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
 | umask | :no_good: | unalias | :no_good: | unset | :no_good: |

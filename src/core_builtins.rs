@@ -70,6 +70,31 @@ impl ShellCore {
         1
     }
 
+    pub fn shift(&mut self, args: &mut Vec<String>) -> i32 {
+        let num = if args.len() == 2 {
+            if let Ok(n) = args[1].parse::<usize>() {
+                n
+            }else{
+                eprintln!("bash: shift: {}: numeric argument required", args[1]);
+                return 1;
+            }
+        }else if args.len() == 1 {
+            1
+        }else{
+            eprintln!("bash: shift: too many arguments");
+            return 1;
+        };
+
+        if self.args.len() < num+1 {
+            return 1;
+        }
+
+        for _ in 0..num {
+            self.args.remove(1);
+        }
+        0
+    }
+
     pub fn builtin(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() > 0 {
             args.remove(0);
