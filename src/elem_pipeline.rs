@@ -18,11 +18,11 @@ pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
     pub eop: Option<Eop>,
+    not: bool,
 }
 
 impl ListElem for Pipeline {
     fn exec(&mut self, conf: &mut ShellCore) {
-        //conf.pipeline_end = self.get_end();
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
@@ -39,6 +39,14 @@ impl ListElem for Pipeline {
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
                 wait(p, conf);
+            }
+        }
+
+        if self.not {
+            if conf.vars["?"] != "0" {
+                conf.vars.insert("?".to_string(), "0".to_string());
+            }else {
+                conf.vars.insert("?".to_string(), "1".to_string());
             }
         }
     }
@@ -70,15 +78,22 @@ impl Pipeline {
             commands: vec!(),
             text: "".to_string(),
             eop: None,
+            not: false,
         }
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
+        ans.text += &text.consume_blank();
+        if text.len() > 0 {
+            if text.nth(0) == '!' {
+                ans.not = true;
+                ans.text += &text.consume(1);
+            }
+        }
 
         loop {
-            let d = scanner_while(text, 0, " \t");
-            ans.text += &text.consume(d);
+            ans.text += &text.consume_blank();
 
             let eocs;
             if let Some(mut c) = compound(text, conf) {

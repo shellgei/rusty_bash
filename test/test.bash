@@ -467,6 +467,12 @@ res=$($com <<< 'echo abc | rev')
 res=$($com <<< 'echo abc | rev | tr abc def')
 [ "$res" = "fed" ] || err $LINENO
 
+res=$($com <<< '! echo abc | rev | tr abc def')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com <<< '! echo abc | rev | false')
+[ "$?" = "0" ] || err $LINENO
+
 ### COMPOUND COMMAND ###
 
 res=$($com <<< '(echo hoge)')
