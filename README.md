@@ -2,6 +2,16 @@
 
 may be a clone of Bash. 
 
+## how to try it
+
+```bash
+$ git clone https://github.com/shellgei/rusty_bash.git
+$ cd rusty_bash
+$ cargo build --release
+$ ./target/release/rusty_bash 
+```
+
+Rusty Bash reads `.rusty_bashrc` in your home directory if it exists. 
 
 ## list of features
 
