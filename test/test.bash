@@ -980,4 +980,7 @@ a" ] || err $LINENO
 res=$($com <<< 'HOGE=A;export HOGE;printenv HOGE')
 [ "$res" = "A" ] || err $LINENO
 
+res=$($com <<< 'export HOGE=A;printenv HOGE')
+[ "$res" = "A" ] || err $LINENO
+
 echo TEST OK

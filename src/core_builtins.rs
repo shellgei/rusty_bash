@@ -290,14 +290,28 @@ impl ShellCore {
             return 1;
         }
 
-        if ! self.vars.contains_key(&args[1]) {
-            env::set_var(&args[1], "".to_string());
+        let key;
+        let value;
+        let key_value = args[1].split("=").map(|s| s.to_string()).collect::<Vec<String>>();
+        eprintln!("{}", key_value.len());
+        if key_value.len() == 0 {
+            return 1;
+        }else if key_value.len() == 1 {
+            key = &key_value[0];
+            value = "".to_string();
+        }else{
+            key = &key_value[0];
+            value = key_value[1..].join("=");
+        }
+
+        if ! self.vars.contains_key(key) {
+            env::set_var(key, value);
             return 0;
         }
 
-        let value = self.get_var(&args[1]);
-        env::set_var(&args[1], value);
-        self.vars.remove(&args[1]);
+        let value = self.get_var(key);
+        env::set_var(key, value);
+        self.vars.remove(key);
 
         0
     }
