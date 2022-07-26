@@ -65,7 +65,7 @@ fn is_interactive(pid: u32) -> bool {
 fn read_bashrc(core: &mut ShellCore){
     let home = env::var("HOME").expect("HOME is not defined");
     if let Ok(_) = File::open(home.clone() + "/.bashrc") {
-        let f = core.internal_commands["source"];
+        let f = core.builtins["source"];
         let mut args = vec!("source".to_string(), home.clone() + "/.bashrc");
         eprintln!("---reading ~/.bashrc (still some errors occur)---");
         f(core, &mut args);

@@ -91,7 +91,7 @@ pub fn search_builtin(head: &String, core: &ShellCore) -> Vec<String> {
     let len = head.len();
 
     let mut ans = vec!();
-    for a in core.internal_commands.keys() {
+    for a in core.builtins.keys() {
         if a.len() >= len && &a[0..len] == head {
             ans.push(a.clone());
         }

@@ -14,7 +14,7 @@ use crate::Script;
 use crate::Feeder;
 
 pub struct ShellCore {
-    pub internal_commands: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
+    pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
     pub functions: HashMap<String, String>,
     pub vars: HashMap<String, String>,
     pub args: Vec<String>,
@@ -32,7 +32,7 @@ pub struct ShellCore {
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut conf = ShellCore{
-            internal_commands: HashMap::new(),
+            builtins: HashMap::new(),
             functions: HashMap::new(),
             vars: HashMap::new(),
             args: vec!(),
@@ -49,18 +49,18 @@ impl ShellCore {
 
         conf.vars.insert("?".to_string(), 0.to_string());
 
-        conf.internal_commands.insert("exit".to_string(), Self::exit);
-        conf.internal_commands.insert("pwd".to_string(), Self::pwd);
-        conf.internal_commands.insert("cd".to_string(), Self::cd);
-        conf.internal_commands.insert("alias".to_string(), Self::alias);
-        conf.internal_commands.insert("set".to_string(), Self::set);
-        conf.internal_commands.insert("read".to_string(), Self::read);
-        conf.internal_commands.insert("source".to_string(), Self::source);
-        conf.internal_commands.insert("return".to_string(), Self::return_);
-        conf.internal_commands.insert("shopt".to_string(), Self::shopt);
-        conf.internal_commands.insert("export".to_string(), Self::export);
-        conf.internal_commands.insert("eval".to_string(), Self::eval);
-        conf.internal_commands.insert("glob_test".to_string(), Self::glob_test);
+        conf.builtins.insert("exit".to_string(), Self::exit);
+        conf.builtins.insert("pwd".to_string(), Self::pwd);
+        conf.builtins.insert("cd".to_string(), Self::cd);
+        conf.builtins.insert("alias".to_string(), Self::alias);
+        conf.builtins.insert("set".to_string(), Self::set);
+        conf.builtins.insert("read".to_string(), Self::read);
+        conf.builtins.insert("source".to_string(), Self::source);
+        conf.builtins.insert("return".to_string(), Self::return_);
+        conf.builtins.insert("shopt".to_string(), Self::shopt);
+        conf.builtins.insert("export".to_string(), Self::export);
+        conf.builtins.insert("eval".to_string(), Self::eval);
+        conf.builtins.insert("glob_test".to_string(), Self::glob_test);
 
         conf
     }
@@ -125,8 +125,8 @@ impl ShellCore {
 
     pub fn get_internal_command(&self, name: &String) 
         -> Option<fn(&mut ShellCore, args: &mut Vec<String>) -> i32> {
-        if self.internal_commands.contains_key(name) {
-            Some(self.internal_commands[name])
+        if self.builtins.contains_key(name) {
+            Some(self.builtins[name])
         }else{
             None
         }
@@ -275,8 +275,6 @@ impl ShellCore {
                 token.push(last.clone());
             }
         }
-
-        //let values = token[..argnum].to_vec();
 
         for (i, a) in args.iter().enumerate() {
             if i == 0 {
