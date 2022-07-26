@@ -49,7 +49,7 @@ may be a clone of Bash.
 |-------------------|----|-------------------|----|-------------------|----|
 | cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :heavy_check_mark: |
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: | 
-| shopt | :construction: | : | :no_good: | . | :no_good: | [ | :no_good: |
+| shopt | :construction: | : | :no_good: | . | :heavy_check_mark: | [ | :no_good: |
 | alias | :heavy_check_mark: | bg | :no_good: | bind | :no_good: |
 | break | :no_good: | builtin | :no_good: | caller | :no_good: |
 | command | :no_good: | compgen | :no_good: | complete | :no_good: |
