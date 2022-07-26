@@ -5,7 +5,7 @@ use std::process::exit;
 use std::{io,fs,env};
 use std::path::Path;
 use std::fs::OpenOptions;
-use std::io::Write;
+use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
 
 use crate::Script;
@@ -13,6 +13,19 @@ use crate::ShellCore;
 use crate::Feeder;
 
 impl ShellCore {
+    pub fn history(&mut self, _args: &mut Vec<String>) -> i32 {
+        let home = env::var("HOME").expect("HOME is not defined");
+        if let Ok(hist_file) = OpenOptions::new().read(true).open(home + "/.bash_history") {
+            let reader = BufReader::new(hist_file);
+            for (i, line) in reader.lines().enumerate() {
+                if let Ok(s) = line {
+                    println!("  {}  {}", i, s);
+                }
+            }
+        }
+        0
+    }
+
     pub fn exit(&mut self, args: &mut Vec<String>) -> i32 {
         let home = env::var("HOME").expect("HOME is not defined");
         if let Ok(mut hist_file) = OpenOptions::new().write(true)

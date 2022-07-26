@@ -45,19 +45,21 @@ impl ShellCore {
         // Builtins: they are implemented in core_builtins.rs. 
         conf.builtins.insert(".".to_string(), Self::source);
         conf.builtins.insert(":".to_string(), Self::true_);
+        conf.builtins.insert("alias".to_string(), Self::alias);
         conf.builtins.insert("cd".to_string(), Self::cd);
         conf.builtins.insert("eval".to_string(), Self::eval);
         conf.builtins.insert("exit".to_string(), Self::exit);
         conf.builtins.insert("export".to_string(), Self::export);
         conf.builtins.insert("false".to_string(), Self::false_);
+        conf.builtins.insert("history".to_string(), Self::history);
         conf.builtins.insert("pwd".to_string(), Self::pwd);
-        conf.builtins.insert("alias".to_string(), Self::alias);
         conf.builtins.insert("set".to_string(), Self::set);
         conf.builtins.insert("true".to_string(), Self::true_);
         conf.builtins.insert("read".to_string(), Self::read);
-        conf.builtins.insert("source".to_string(), Self::source);
         conf.builtins.insert("return".to_string(), Self::return_);
         conf.builtins.insert("shopt".to_string(), Self::shopt);
+        conf.builtins.insert("source".to_string(), Self::source);
+
         conf.builtins.insert("glob_test".to_string(), Self::glob_test);
 
         conf
