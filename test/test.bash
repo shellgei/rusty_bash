@@ -975,4 +975,9 @@ res=$($com <<< 'set a b c ; shift 4; echo $? ; echo $1')
 [ "$res" = "1
 a" ] || err $LINENO
 
+# export
+
+res=$($com <<< 'HOGE=A;export HOGE;printenv HOGE')
+[ "$res" = "A" ] || err $LINENO
+
 echo TEST OK

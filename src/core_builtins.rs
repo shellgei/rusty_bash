@@ -285,13 +285,25 @@ impl ShellCore {
         0
     }
 
-    pub fn export(&mut self, _args: &mut Vec<String>) -> i32 {
-        eprintln!("export: not implemented now");
+    pub fn export(&mut self, args: &mut Vec<String>) -> i32 {
+        if args.len() <= 1 { // TODO: it should output all env vars. 
+            return 1;
+        }
+
+        if ! self.vars.contains_key(&args[1]) {
+            env::set_var(&args[1], "".to_string());
+            return 0;
+        }
+
+        let value = self.get_var(&args[1]);
+        env::set_var(&args[1], value);
+        self.vars.remove(&args[1]);
+
         0
     }
 
     pub fn eval(&mut self, _args: &mut Vec<String>) -> i32 {
-        eprintln!("export: not implemented now");
+        eprintln!("eval: not implemented now");
         0
     }
 
