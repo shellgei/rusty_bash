@@ -9,6 +9,7 @@ use crate::core_shopts::Shopts;
 pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
     pub functions: HashMap<String, String>,
+    pub arrays: HashMap<String, Vec<String>>,
     pub vars: HashMap<String, String>,
     pub args: Vec<String>,
     pub aliases: HashMap<String, String>,
@@ -27,6 +28,7 @@ impl ShellCore {
         let mut conf = ShellCore{
             builtins: HashMap::new(),
             functions: HashMap::new(),
+            arrays: HashMap::new(),
             vars: HashMap::new(),
             args: vec!(),
             aliases: HashMap::new(),
