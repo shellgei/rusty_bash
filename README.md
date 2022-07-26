@@ -51,7 +51,7 @@ may be a clone of Bash.
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: | 
 | shopt | :construction: | : | :heavy_check_mark: | . | :heavy_check_mark: | [ | :no_good: |
 | alias | :heavy_check_mark: | bg | :no_good: | bind | :no_good: |
-| break | :no_good: | builtin | :no_good: | caller | :no_good: |
+| break | :no_good: | builtin | :heavy_check_mark: | caller | :no_good: |
 | command | :no_good: | compgen | :no_good: | complete | :no_good: |
 | compopt | :no_good: | continue | :no_good: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |

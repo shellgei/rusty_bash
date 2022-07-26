@@ -70,6 +70,22 @@ impl ShellCore {
         1
     }
 
+    pub fn builtin(&mut self, args: &mut Vec<String>) -> i32 {
+        if args.len() > 0 {
+            args.remove(0);
+        }
+        if args.len() < 1 {
+            return 0;
+        }
+
+        if let Some(func) = self.get_internal_command(&args[0]) {
+            func(self, args)
+        }else{
+            eprintln!("bash: builtin: {}: not a shell builtin", args[0]);
+            1
+        }
+    }
+
     pub fn cd(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() == 0 {
             eprintln!("Bug of this shell");

@@ -46,6 +46,7 @@ impl ShellCore {
         conf.builtins.insert(".".to_string(), Self::source);
         conf.builtins.insert(":".to_string(), Self::true_);
         conf.builtins.insert("alias".to_string(), Self::alias);
+        conf.builtins.insert("builtin".to_string(), Self::builtin);
         conf.builtins.insert("cd".to_string(), Self::cd);
         conf.builtins.insert("eval".to_string(), Self::eval);
         conf.builtins.insert("exit".to_string(), Self::exit);
