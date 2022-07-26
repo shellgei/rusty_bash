@@ -49,7 +49,7 @@ may be a clone of Bash.
 |-------------------|----|-------------------|----|-------------------|----|
 | cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :heavy_check_mark: |
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: | 
-| shopt | :construction: | : | :no_good: | . | :heavy_check_mark: | [ | :no_good: |
+| shopt | :construction: | : | :heavy_check_mark: | . | :heavy_check_mark: | [ | :no_good: |
 | alias | :heavy_check_mark: | bg | :no_good: | bind | :no_good: |
 | break | :no_good: | builtin | :no_good: | caller | :no_good: |
 | command | :no_good: | compgen | :no_good: | complete | :no_good: |
@@ -63,10 +63,10 @@ may be a clone of Bash.
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | read | :no_good: | readonly | :no_good: | return | :construction: |
 | shift | :no_good: | suspend | :no_good: | test | :no_good: |
-| times | :no_good: | trap | :no_good: | true | :no_good: |
+| times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
 | umask | :no_good: | unalias | :no_good: | unset | :no_good: |
-| wait | :no_good: | export | :no_good: | false | :no_good: |
+| wait | :no_good: | export | :no_good: | false | :heavy_check_mark: |
 
 ### variables
 

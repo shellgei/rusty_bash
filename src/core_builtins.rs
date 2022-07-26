@@ -49,6 +49,14 @@ impl ShellCore {
         panic!("Cannot get current dir");
     }
 
+    pub fn true_(&mut self, _args: &mut Vec<String>) -> i32 {
+        0
+    }
+
+    pub fn false_(&mut self, _args: &mut Vec<String>) -> i32 {
+        1
+    }
+
     pub fn cd(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() == 0 {
             eprintln!("Bug of this shell");
