@@ -173,12 +173,15 @@ impl Command {
             exit(func(conf, args));
         }
 
+        //let fullpath = get_fullpath(&args[0]);
+        //args[0] = fullpath;
+        args[0] = get_fullpath(&args[0]);
+
         let cargs: Vec<CString> = args
             .iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect();
 
-        //if conf.flags.d {
         if conf.has_flag('d') {
             eprintln!("{}", self.parse_info().join("\n"));
         };

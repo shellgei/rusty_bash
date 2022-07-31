@@ -3,6 +3,7 @@
 
 use glob::glob;
 use crate::env;
+use std::fs;
 use std::io::{BufRead, BufReader};
 use std::fs::OpenOptions;
 use crate::ShellCore;
@@ -296,4 +297,22 @@ pub fn align_elems_on_term(list: &Vec<String>, width: u32) -> String {
         ans += "\r\n";
     }
     ans
+}
+
+
+pub fn get_fullpath(com: &String) -> String {
+    let dirs = if let Ok(p) = env::var("PATH") {
+        p.split(':').map(|s| s.to_string()).collect()
+    }else{
+        vec!()
+    };
+
+    for d in dirs {
+        let path = d + "/" + com;
+        if fs::metadata(&path).is_ok() {
+            return path;
+        }
+    }
+
+    "".to_string()
 }
