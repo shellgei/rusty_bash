@@ -384,6 +384,10 @@ res=$(cat /tmp/.rusty_bash | $com あい うえ お) #TODO: enable to use IFS
 あい うえ お
 あい💩うえ💩お" ] || err $LINENO
 
+res=$($com <<< 'A=x;echo a $A; echo $_')
+[ "$res" = "a x
+x" ] || err $LINENO
+
 ### REDIRECTION ###
 
 res=$($com << 'EOF'
