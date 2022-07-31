@@ -50,8 +50,8 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 |-------------------|----|-------------------|----|-------------------|----|
 | * | :heavy_check_mark: | @ | :heavy_check_mark: | ? | :heavy_check_mark: |
 | - | :heavy_check_mark: | 0 | :heavy_check_mark: | 1, 2, 3, ... | :heavy_check_mark: |
-| # | :heavy_check_mark: | $ | :heavy_check_mark: | ! | :construction: |
-| _ | :no_good: |
+| # | :heavy_check_mark: | $ | :heavy_check_mark: | ! | :no_good: |
+| _ | :construction: |
 
 ### builtin commands
 
