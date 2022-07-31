@@ -38,6 +38,7 @@ impl PipelineElem for Command {
         }
 
         let mut args = self.eval(conf);
+        conf.vars.insert("_".to_string(), args[args.len()-1].clone());
 
         if conf.has_flag('x') {
             eprintln!("+{}", args.join(" "));
@@ -187,6 +188,7 @@ impl Command {
             let value =  (*v).value.eval(conf).join(" ");
             env::set_var(key, value);
         }
+        env::set_var("_".to_string(), args[0].clone());
 
         let envs: Vec<CString> = std::env::vars()
             .map(|v| format!("{}={}", v.0, v.1))

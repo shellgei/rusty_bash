@@ -70,6 +70,7 @@ impl CompoundDoubleParen {
         }
     }
 
+    // TODO: this function must parse ((1+$(echo a | wc -l)) for example. 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CompoundDoubleParen> {
         if text.len() < 2 || ! text.compare(0, "((") {
             return None;
@@ -84,11 +85,6 @@ impl CompoundDoubleParen {
 
             let pos = scanner_until(text, 0, ")");
 
-            /*
-            if let Some(s) = Script::parse(text, conf, vec!(")")) {
-                ans.text = "((".to_owned() + &s.text + "))";
-                ans.script = Some(s);
-                */
             if pos != text.len() {
                 ans.expression = text.consume(pos);
                 ans.text += &ans.expression.clone();
