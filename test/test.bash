@@ -483,6 +483,10 @@ res=$($com <<< '(sleep 1; echo a) & ; echo b')
 [ "$res" = "b
 a" ] || err $LINENO
 
+res=$($com <<< '(sleep 1; echo a) & ; wait ; echo b')
+[ "$res" = "a
+b" ] || err $LINENO
+
 ### COMPOUND COMMAND ###
 
 res=$($com <<< '(echo hoge)')

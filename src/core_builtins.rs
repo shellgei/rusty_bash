@@ -253,6 +253,17 @@ impl ShellCore {
         }
     }
 
+    pub fn jobs(&mut self, _args: &mut Vec<String>) -> i32 {
+        for (i,j) in self.jobs.iter().enumerate() {
+            if i == 0 {
+                continue;
+            }
+            println!("[{}] {}", i, j.clone().status_string());
+        }
+
+        0
+    }
+
     pub fn shopt(&mut self, args: &mut Vec<String>) -> i32 {
         if args.len() == 1 {
             self.shopts.print(true, true);
@@ -325,5 +336,23 @@ impl ShellCore {
             eprintln!("UNMATCH!");
             1
         }
+    }
+
+    pub fn wait(&mut self, _args: &mut Vec<String>) -> i32 {
+        for i in 1..self.jobs.len() {
+            let mut j = self.jobs[i].clone();
+            j.wait();
+            self.jobs[i] = j;
+        }
+
+        /*
+        for j in &self.jobs {
+            if j.clone().is_running() {
+                j.clone().wait();
+            }
+        }
+        */
+
+        0
     }
 }

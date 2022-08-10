@@ -37,13 +37,18 @@ impl ListElem for Pipeline {
             prevfd = c.get_pipe_end();
         }
 
-        conf.jobs[0] = Job::new(&self.text, &self.commands);
 
         if self.is_bg {
+            conf.jobs.push(Job::new(&self.text, &self.commands));
             return;
+        }else{
+            conf.jobs[0] = Job::new(&self.text, &self.commands);
         }
 
-        conf.jobs[0].clone().wait(conf);
+        let pipestatus = conf.jobs[0].clone().wait();
+        if let Some(s) = pipestatus.last() {
+            conf.vars.insert("?".to_string(), s.to_string());
+        }
 
         if self.not_flag {
             if conf.vars["?"] != "0" {
@@ -149,19 +154,3 @@ impl Pipeline {
     }
 }
 
-/*
-pub fn wait(child: Pid, conf: &mut ShellCore) {
-    match waitpid(child, None).expect("Faild to wait child process.") {
-        WaitStatus::Exited(_pid, status) => {
-            conf.vars.insert("?".to_string(), status.to_string());
-        }
-        WaitStatus::Signaled(pid, signal, _) => {
-            conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
-            eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
-        }
-        _ => {
-            eprintln!("Unknown error")
-        }
-    };
-}
-*/

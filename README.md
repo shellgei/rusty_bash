@@ -34,7 +34,7 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
-| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :no_good: |
+| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :construction: |
 | \|& | :no_good: | 
 
 ### options 
@@ -68,7 +68,7 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 | enable | :no_good: | eval | :no_good: | exec | :no_good: |
 | fc | :no_good: | fg | :no_good: | getopts | :no_good: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
-| jobs | :no_good: | kill | :no_good: | let | :no_good: |
+| jobs | :construction: | kill | :no_good: | let | :no_good: |
 | local | :no_good: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | read | :no_good: | readonly | :no_good: | return | :construction: |
@@ -76,7 +76,7 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
 | umask | :no_good: | unalias | :no_good: | unset | :no_good: |
-| wait | :no_good: | export | :construction: | false | :heavy_check_mark: |
+| wait | :construction: | export | :construction: | false | :heavy_check_mark: |
 
 ### variables
 

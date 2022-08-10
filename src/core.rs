@@ -58,6 +58,7 @@ impl ShellCore {
         conf.builtins.insert("export".to_string(), Self::export);
         conf.builtins.insert("false".to_string(), Self::false_);
         conf.builtins.insert("history".to_string(), Self::history);
+        conf.builtins.insert("jobs".to_string(), Self::jobs);
         conf.builtins.insert("pwd".to_string(), Self::pwd);
         conf.builtins.insert("set".to_string(), Self::set);
         conf.builtins.insert("shift".to_string(), Self::shift);
@@ -66,6 +67,7 @@ impl ShellCore {
         conf.builtins.insert("return".to_string(), Self::return_);
         conf.builtins.insert("shopt".to_string(), Self::shopt);
         conf.builtins.insert("source".to_string(), Self::source);
+        conf.builtins.insert("wait".to_string(), Self::wait);
 
         conf.builtins.insert("glob_test".to_string(), Self::glob_test);
 
