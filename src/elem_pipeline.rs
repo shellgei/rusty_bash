@@ -18,7 +18,9 @@ pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
     pub eop: Option<Eop>,
-    not: bool,
+    pub is_bg: bool,
+    pub job_no: u32,
+    not_flag: bool,
 }
 
 impl ListElem for Pipeline {
@@ -42,7 +44,7 @@ impl ListElem for Pipeline {
             }
         }
 
-        if self.not {
+        if self.not_flag {
             if conf.vars["?"] != "0" {
                 conf.vars.insert("?".to_string(), "0".to_string());
             }else {
@@ -78,7 +80,9 @@ impl Pipeline {
             commands: vec!(),
             text: "".to_string(),
             eop: None,
-            not: false,
+            not_flag: false,
+            is_bg: false,
+            job_no: 0,
         }
     }
 
@@ -87,7 +91,7 @@ impl Pipeline {
         ans.text += &text.consume_blank();
         if text.len() > 0 {
             if text.nth(0) == '!' {
-                ans.not = true;
+                ans.not_flag = true;
                 ans.text += &text.consume(1);
             }
         }
