@@ -36,7 +36,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
-            jobs: vec!(Job::new(&"".to_string())),
+            jobs: vec!(Job::new(&"".to_string(), &vec!())),
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,

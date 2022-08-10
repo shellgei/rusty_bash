@@ -5,6 +5,8 @@ use nix::unistd::Pid;
 use nix::sys::wait::waitpid;
 use crate::ShellCore;
 use nix::sys::wait::WaitStatus;
+use crate::abst_elems::PipelineElem;
+
 
 #[derive(Clone)]
 //[1]+  Running                 sleep 5 &
@@ -15,16 +17,27 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn new(text: &String) -> Job {
+    pub fn new(text: &String, commands: &Vec<Box<dyn PipelineElem>>) -> Job {
+        let mut pids = vec!();
+        for c in commands {
+            if let Some(p) = c.get_pid() {
+                pids.push(p);
+            }
+        }
+
         Job {
-            pids: vec!(),
+            pids: pids,
             text: text.clone(),
             status: "Running".to_string(),
         }
     }
 
-    pub fn set_pid(&mut self, pid: Pid){
-        self.pids.push(pid);
+    pub fn set_pid(&mut self, commands: &Vec<Box<dyn PipelineElem>>) {
+        for c in commands {
+            if let Some(p) = c.get_pid() {
+                self.pids.push(p);
+            }
+        }
     }
 
     pub fn wait(self, conf: &mut ShellCore) {

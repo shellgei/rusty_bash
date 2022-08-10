@@ -37,12 +37,7 @@ impl ListElem for Pipeline {
             prevfd = c.get_pipe_end();
         }
 
-        let mut job = Job::new(&self.text);
-        for c in &self.commands {
-            if let Some(p) = c.get_pid() {
-                job.set_pid(p);
-            }
-        }
+        let mut job = Job::new(&self.text, &self.commands);
 
         if self.is_bg {
             return;
