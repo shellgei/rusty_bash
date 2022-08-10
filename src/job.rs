@@ -32,32 +32,25 @@ impl Job {
         }
     }
 
-    pub fn set_pid(&mut self, commands: &Vec<Box<dyn PipelineElem>>) {
-        for c in commands {
-            if let Some(p) = c.get_pid() {
-                self.pids.push(p);
-            }
-        }
-    }
-
     pub fn wait(self, conf: &mut ShellCore) {
         for p in self.pids {
-            wait(p, conf);
+            Job::wait_pid(p, conf);
         }
     }
-}
 
-pub fn wait(child: Pid, conf: &mut ShellCore) {
-    match waitpid(child, None).expect("Faild to wait child process.") {
-        WaitStatus::Exited(_pid, status) => {
-            conf.vars.insert("?".to_string(), status.to_string());
-        }
-        WaitStatus::Signaled(pid, signal, _) => {
-            conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
-            eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
-        }
-        _ => {
-            eprintln!("Unknown error")
-        }
-    };
+    fn wait_pid(child: Pid, conf: &mut ShellCore) {
+        match waitpid(child, None).expect("Faild to wait child process.") {
+            WaitStatus::Exited(_pid, status) => {
+                conf.vars.insert("?".to_string(), status.to_string());
+            }
+            WaitStatus::Signaled(pid, signal, _) => {
+                conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
+                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal)
+            }
+            _ => {
+                eprintln!("Unknown error")
+            }
+        };
+    }
+
 }
