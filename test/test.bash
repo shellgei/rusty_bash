@@ -477,6 +477,12 @@ res=$($com <<< '! echo abc | rev | tr abc def')
 res=$($com <<< '! echo abc | rev | false')
 [ "$?" = "0" ] || err $LINENO
 
+### JOB ###
+
+res=$($com <<< '(sleep 1; echo a) & ; echo b')
+[ "$res" = "b
+a" ] || err $LINENO
+
 ### COMPOUND COMMAND ###
 
 res=$($com <<< '(echo hoge)')
