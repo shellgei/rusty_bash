@@ -59,12 +59,14 @@ pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
 }
 
 pub fn scanner_end_of_pipeline(text: &Feeder, from: usize) -> usize {
-    if text.len() >= 2 {
-        if text.compare(from, "||") || text.compare(from, "&&") {
-            return from+2;
-        }else if text.compare(from, ";;") {
-            return from;
-        }
+    if text.compare(from, "&") && ! text.compare(from, "&&") { //background process
+            return scanner_while(text, from+1, " ;\n");
+    }
+
+    if text.compare(from, "||") || text.compare(from, "&&") {
+        return from+2;
+    }else if text.compare(from, ";;") {
+        return from;
     }
 
     let n = scanner_while(text, from, ";\n");

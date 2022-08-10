@@ -38,6 +38,11 @@ impl ListElem for Pipeline {
             prevfd = c.get_pipe_end();
         }
 
+        if self.is_bg {
+            return;
+        }
+
+
         for c in &self.commands {
             if let Some(p) = c.get_pid() {
                 wait(p, conf);
@@ -131,6 +136,11 @@ impl Pipeline {
         }
 
         if let Some(eop) = Eop::parse(text) {
+            if Some('&') == eop.text.chars().nth(0) 
+               && Some('&') != eop.text.chars().nth(1) {
+                   ans.is_bg = true;
+            }
+
             ans.text += &eop.text.clone();
             ans.eop = Some(eop);
         }

@@ -80,6 +80,7 @@ impl Script {
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
             }else if let Some(result) = Pipeline::parse(text, conf) {
+                //eprintln!("PARSE END TEXT: {}", result.text);
                 ans.eops.push(result.get_end());
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
