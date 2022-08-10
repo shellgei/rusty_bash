@@ -8,8 +8,8 @@ use nix::sys::wait::WaitStatus;
 use crate::abst_elems::PipelineElem;
 
 
-#[derive(Clone)]
 //[1]+  Running                 sleep 5 &
+#[derive(Clone)]
 pub struct Job {
     pids: Vec<Pid>,
     text: String,

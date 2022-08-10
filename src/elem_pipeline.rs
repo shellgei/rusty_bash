@@ -37,13 +37,13 @@ impl ListElem for Pipeline {
             prevfd = c.get_pipe_end();
         }
 
-        let job = Job::new(&self.text, &self.commands);
+        conf.jobs[0] = Job::new(&self.text, &self.commands);
 
         if self.is_bg {
             return;
         }
 
-        job.wait(conf);
+        conf.jobs[0].clone().wait(conf);
 
         if self.not_flag {
             if conf.vars["?"] != "0" {
