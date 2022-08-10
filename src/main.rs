@@ -32,6 +32,7 @@ mod elem_varname;
 mod core;
 mod core_builtins;
 mod core_shopts;
+mod job;
 mod term;
 mod utils;
 mod utils_io;

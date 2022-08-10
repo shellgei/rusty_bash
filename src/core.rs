@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::env;
 use crate::core_shopts::Shopts;
+use crate::job::Job;
 
 pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -15,6 +16,7 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
+    pub jobs: Vec<Job>,
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
@@ -34,6 +36,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
+            jobs: vec!(Job::new(&"".to_string())),
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,

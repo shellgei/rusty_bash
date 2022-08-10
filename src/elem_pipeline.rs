@@ -6,13 +6,12 @@ use crate::abst_elems::ListElem;
 use crate::abst_elems::PipelineElem;
 use crate::Command;
 //use crate::elem_arg_delimiter::ArgDelimiter;
-use nix::unistd::{pipe, Pid};
+use nix::unistd::pipe;
 use crate::scanner::*;
 use crate::utils_io::set_parent_io;
-use nix::sys::wait::waitpid;
-use nix::sys::wait::WaitStatus;
 use crate::abst_elems::compound;
 use crate::elem_end_of_pipeline::Eop;
+use crate::job::Job;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
@@ -38,16 +37,18 @@ impl ListElem for Pipeline {
             prevfd = c.get_pipe_end();
         }
 
+        let mut job = Job::new(&self.text);
+        for c in &self.commands {
+            if let Some(p) = c.get_pid() {
+                job.set_pid(p);
+            }
+        }
+
         if self.is_bg {
             return;
         }
 
-
-        for c in &self.commands {
-            if let Some(p) = c.get_pid() {
-                wait(p, conf);
-            }
-        }
+        job.wait(conf);
 
         if self.not_flag {
             if conf.vars["?"] != "0" {
@@ -153,6 +154,7 @@ impl Pipeline {
     }
 }
 
+/*
 pub fn wait(child: Pid, conf: &mut ShellCore) {
     match waitpid(child, None).expect("Faild to wait child process.") {
         WaitStatus::Exited(_pid, status) => {
@@ -167,3 +169,4 @@ pub fn wait(child: Pid, conf: &mut ShellCore) {
         }
     };
 }
+*/
