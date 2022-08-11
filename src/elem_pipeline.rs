@@ -48,6 +48,7 @@ impl ListElem for Pipeline {
         let pipestatus = conf.jobs[0].clone().wait();
         if let Some(s) = pipestatus.last() {
             conf.vars.insert("?".to_string(), s.to_string());
+            conf.vars.insert("PIPESTATUS".to_string(), pipestatus.join(" "));
         }
 
         if self.not_flag {

@@ -258,7 +258,7 @@ impl ShellCore {
             if i == 0 {
                 continue;
             }
-            println!("[{}] {}", i, j.clone().status_string());
+            println!("[{}] {}", i, j.clone().status_string().trim_end());
         }
 
         0
@@ -344,14 +344,6 @@ impl ShellCore {
             j.wait();
             self.jobs[i] = j;
         }
-
-        /*
-        for j in &self.jobs {
-            if j.clone().is_running() {
-                j.clone().wait();
-            }
-        }
-        */
 
         0
     }

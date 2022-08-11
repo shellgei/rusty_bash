@@ -31,14 +31,14 @@ impl Job {
         }
     }
 
-    pub fn wait(&mut self) -> Vec<i32> {
+    pub fn wait(&mut self) -> Vec<String> {
         if self.status == "Done" {
             return vec!();
         }
 
         let mut pipestatus = vec!();
         for p in &self.pids {
-            pipestatus.push(Job::wait_pid(*p));
+            pipestatus.push(Job::wait_pid(*p).to_string());
         }
         self.status = "Done".to_string();
         pipestatus
