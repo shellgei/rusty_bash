@@ -34,7 +34,7 @@ impl ListElem for SetVariables {
             if let Ok(_) = env::var(&key) {
                 env::set_var(key, value);
             }else{
-                conf.vars.insert(key, value);
+                conf.set_var(&key, &value);
             };
         };
     }

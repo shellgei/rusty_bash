@@ -52,7 +52,7 @@ impl PipelineElem for CompoundWhile {
             if let Some((cond, doing)) = &mut self.conddo {
                 cond.exec(conf);
                 if conf.vars["?"] != "0" {
-                    conf.vars.insert("?".to_string(), "0".to_string());
+                    conf.set_var("?", "0");
                     break;
                 }
                 doing.exec(conf);

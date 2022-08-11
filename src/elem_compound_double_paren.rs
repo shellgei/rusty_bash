@@ -31,7 +31,7 @@ impl PipelineElem for CompoundDoubleParen {
             "0"
         }.to_string();
 
-        conf.vars.insert("?".to_string(), status);
+        conf.set_var("?", &status);
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }

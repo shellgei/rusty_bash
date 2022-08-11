@@ -38,7 +38,7 @@ impl PipelineElem for Command {
         }
 
         let mut args = self.eval(conf);
-        conf.vars.insert("_".to_string(), args[args.len()-1].clone());
+        conf.set_var("_", &args[args.len()-1]);
 
         if conf.has_flag('x') {
             eprintln!("+{}", args.join(" "));
@@ -106,7 +106,7 @@ impl Command {
     fn run_on_this_process(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) -> bool {
         if let Some(func) = conf.get_internal_command(&args[0]) {
             let status = func(conf, args);
-            conf.vars.insert("?".to_string(), status.to_string());
+            conf.set_var("?", &status.to_string());
             true
         }else{
             false

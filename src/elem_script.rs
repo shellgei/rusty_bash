@@ -22,7 +22,8 @@ impl Script {
                 eprintln!("{}", blue_string(&p.get_text()));
             }
 
-            let status = conf.get_var(&"?".to_string()) == "0";
+            //let status = conf.get_var(&"?".to_string()) == "0";
+            let status = conf.get_var("?") == "0";
            
             if (status && eop == "||") || (!status && eop =="&&") {
                 eop = p.get_end();
@@ -52,7 +53,7 @@ impl Script {
     
         if text.nth(0) == ')' {
             eprintln!("Unexpected symbol: {}", text.consume(text.len()).trim_end());
-            conf.vars.insert("?".to_string(), "2".to_string());
+            conf.set_var("?", "2");
             return None;
         }
 
@@ -106,7 +107,7 @@ impl Script {
             Some(ans)
         }else{
             eprintln!("Unknown phrase");
-            conf.vars.insert("?".to_string(), "1".to_string());
+            conf.set_var("?", "1");
             text.consume(text.len());
             None
         }

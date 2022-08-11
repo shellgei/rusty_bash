@@ -118,11 +118,11 @@ pub fn read_pipe(pin: RawFd, pid: Pid, conf: &mut ShellCore) -> String {
                     continue;
                 },
                 WaitStatus::Exited(_pid, status) => {
-                    conf.vars.insert("?".to_string(), status.to_string());
+                    conf.set_var("?", &status.to_string());
                     break;
                 },
                 WaitStatus::Signaled(pid, signal, _) => {
-                    conf.vars.insert("?".to_string(), (128+signal as i32).to_string());
+                    conf.set_var("?", &(128+signal as i32).to_string());
                     eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
                     break;
                 },

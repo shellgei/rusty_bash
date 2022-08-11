@@ -52,12 +52,12 @@ impl SubArgVariable {
             "" => "".to_string(),
             ":-" => self.empty_option_string.clone(),
             ":=" => {
-                conf.vars.insert(self.name.clone(), self.empty_option_string.clone());
+                conf.set_var(&self.name, &self.empty_option_string);
                 self.empty_option_string.clone()
             },
             ":?" => {
                 eprintln!("bash: {}: {}",self.name.clone(), self.empty_option_string.clone());
-                conf.vars.insert("?".to_string(), "1".to_string());
+                conf.set_var("?", "1");
                 "".to_string()
             },
             _ => "".to_string(),

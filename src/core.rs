@@ -45,7 +45,7 @@ impl ShellCore {
             shopts: Shopts::new(),
         };
 
-        conf.vars.insert("?".to_string(), 0.to_string());
+        conf.set_var("?", &0.to_string());
 
         // Builtins: they are implemented in core_builtins.rs. 
         conf.builtins.insert(".".to_string(), Self::source);
@@ -74,7 +74,11 @@ impl ShellCore {
         conf
     }
 
-    pub fn get_var(&self, key: &String) -> String {
+    pub fn set_var(&mut self, key: &str, value: &str) {
+        self.vars.insert(key.to_string(), value.to_string());
+    }
+
+    pub fn get_var(&self, key: &str) -> String {
         if let Ok(n) = key.parse::<usize>() {
             if self.args.len() > n {
                 return self.args[n].clone();
@@ -103,7 +107,8 @@ impl ShellCore {
             }
 
             if self.in_double_quot {
-                if let Some(ch) = self.get_var(&"IFS".to_string()).chars().nth(0){
+                //if let Some(ch) = self.get_var(&"IFS".to_string()).chars().nth(0){
+                if let Some(ch) = self.get_var("IFS").chars().nth(0){
                     return self.args[1..].to_vec().join(&ch.to_string());
                 }
             }

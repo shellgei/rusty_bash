@@ -45,7 +45,7 @@ impl ShellCore {
             }
         }
 
-        if let Ok(status) = self.get_var(&"?".to_string()).to_string().parse::<i32>(){
+        if let Ok(status) = self.get_var("?").to_string().parse::<i32>(){
             exit(status);
         }else{
             eprintln!("Shell internal error");
@@ -124,13 +124,13 @@ impl ShellCore {
         };
 
         if let Ok(old) = env::current_dir() {
-            self.vars.insert("OLDPWD".to_string(), old.display().to_string());
+            self.set_var("OLDPWD", &old.display().to_string());
         };
 
         let path = Path::new(&args[1]);
         if env::set_current_dir(&path).is_ok() {
             if let Ok(full) = fs::canonicalize(path) {
-                self.vars.insert("PWD".to_string(), full.display().to_string());
+                self.set_var("PWD", &full.display().to_string());
             }
             0
         }else{
@@ -213,7 +213,7 @@ impl ShellCore {
                 continue;
             }
 
-            self.vars.insert(a.to_string(), token[i-1].to_string());
+            self.set_var(a, &token[i-1]);
         }
 
         0
@@ -316,7 +316,7 @@ impl ShellCore {
             return 0;
         }
 
-        let value = self.get_var(key);
+        let value = self.get_var(&key);
         env::set_var(key, value);
         self.vars.remove(key);
 

@@ -141,12 +141,11 @@ fn main() {
     }
 
     let pid = process::id();
-    core.vars.insert("$".to_string(), pid.to_string());
-    core.vars.insert("IFS".to_string(), " \t\n".to_string());
-    core.vars.insert("HOSTNAME".to_string(), get_hostname());
-    core.vars.insert("SHELL".to_string(), "rustybash".to_string());
-    core.vars.insert("BASH".to_string(), core.args[0].clone());
-    //core.flags.i = is_interactive(pid);
+    core.set_var("$", &pid.to_string());
+    core.set_var("IFS", " \t\n");
+    core.set_var("HOSTNAME", &get_hostname());
+    core.set_var("SHELL", "rustybash");
+    core.set_var("BASH", &core.args[0].to_string());
     if is_interactive(pid) {
         core.flags += "i";
     }
@@ -169,20 +168,15 @@ fn main_loop(core: &mut ShellCore) {
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());
                 eprintln!("Unknown phrase");
-                core.vars.insert("?".to_string(), "2".to_string());
+                core.set_var("?", "2");
                 break;
             }
             e.exec(core);
-
-            /*
-            if feeder.len() == 0 {
-                eprintln!("BREAK");
-                break;
-            }*/
         }
     }
 
-    if let Ok(status) = core.get_var(&"?".to_string())
+    //if let Ok(status) = core.get_var(&"?".to_string())
+    if let Ok(status) = core.get_var("?")
                         .to_string().parse::<i32>(){
         process::exit(status);
     }else{

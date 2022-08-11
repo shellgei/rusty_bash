@@ -47,15 +47,15 @@ impl ListElem for Pipeline {
 
         let pipestatus = conf.jobs[0].clone().wait();
         if let Some(s) = pipestatus.last() {
-            conf.vars.insert("?".to_string(), s.to_string());
-            conf.vars.insert("PIPESTATUS".to_string(), pipestatus.join(" "));
+            conf.set_var("?", s);
+            conf.set_var("PIPESTATUS", &pipestatus.join(" "));
         }
 
         if self.not_flag {
             if conf.vars["?"] != "0" {
-                conf.vars.insert("?".to_string(), "0".to_string());
+                conf.set_var("?", "0");
             }else {
-                conf.vars.insert("?".to_string(), "1".to_string());
+                conf.set_var("?", "1");
             }
         }
     }
