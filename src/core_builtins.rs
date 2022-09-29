@@ -8,7 +8,6 @@ use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
 
-use crate::Script;
 use crate::ShellCore;
 use crate::Feeder;
 
@@ -220,26 +219,6 @@ impl ShellCore {
     }
 
     pub fn source(&mut self, args: &mut Vec<String>) -> i32 {
-        if args.len() < 2 {
-            eprintln!("usage: source filename");
-            return 1;
-        }
-
-        if args.len() > 1 {
-            match fs::read_to_string(&args[1]) {
-                Ok(source) => {
-                    let mut feeder = Feeder::new_with(source);
-                    if let Some(mut script) = Script::parse(&mut feeder, self, vec!("")) {
-                        self.return_enable = true;
-                        script.exec(self);
-                        self.return_enable = false;
-                    }else{
-                        return 1;
-                    };
-                },
-                _ => eprintln!("Cannot read the source file: {}", &args[1]),
-            }
-        }
         0
     }
 
@@ -251,17 +230,6 @@ impl ShellCore {
             eprintln!("Builtin return is only enabled in a function or source");
             1
         }
-    }
-
-    pub fn jobs(&mut self, _args: &mut Vec<String>) -> i32 {
-        for (i,j) in self.jobs.iter().enumerate() {
-            if i == 0 {
-                continue;
-            }
-            println!("[{}] {}", i, j.clone().status_string().trim_end());
-        }
-
-        0
     }
 
     pub fn shopt(&mut self, args: &mut Vec<String>) -> i32 {
@@ -338,13 +306,4 @@ impl ShellCore {
         }
     }
 
-    pub fn wait(&mut self, _args: &mut Vec<String>) -> i32 {
-        for i in 1..self.jobs.len() {
-            let mut j = self.jobs[i].clone();
-            j.wait();
-            self.jobs[i] = j;
-        }
-
-        0
-    }
 }

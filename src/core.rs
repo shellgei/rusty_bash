@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::env;
 use crate::core_shopts::Shopts;
-use crate::job::Job;
 
 pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -16,7 +15,6 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
-    pub jobs: Vec<Job>,
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
@@ -36,7 +34,6 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
-            jobs: vec!(Job::new(&"".to_string(), &vec!())),
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
@@ -44,32 +41,6 @@ impl ShellCore {
             return_enable: false,
             shopts: Shopts::new(),
         };
-
-        conf.set_var("?", &0.to_string());
-
-        // Builtins: they are implemented in core_builtins.rs. 
-        conf.builtins.insert(".".to_string(), Self::source);
-        conf.builtins.insert(":".to_string(), Self::true_);
-        conf.builtins.insert("alias".to_string(), Self::alias);
-        conf.builtins.insert("builtin".to_string(), Self::builtin);
-        conf.builtins.insert("cd".to_string(), Self::cd);
-        conf.builtins.insert("eval".to_string(), Self::eval);
-        conf.builtins.insert("exit".to_string(), Self::exit);
-        conf.builtins.insert("export".to_string(), Self::export);
-        conf.builtins.insert("false".to_string(), Self::false_);
-        conf.builtins.insert("history".to_string(), Self::history);
-        conf.builtins.insert("jobs".to_string(), Self::jobs);
-        conf.builtins.insert("pwd".to_string(), Self::pwd);
-        conf.builtins.insert("set".to_string(), Self::set);
-        conf.builtins.insert("shift".to_string(), Self::shift);
-        conf.builtins.insert("true".to_string(), Self::true_);
-        conf.builtins.insert("read".to_string(), Self::read);
-        conf.builtins.insert("return".to_string(), Self::return_);
-        conf.builtins.insert("shopt".to_string(), Self::shopt);
-        conf.builtins.insert("source".to_string(), Self::source);
-        conf.builtins.insert("wait".to_string(), Self::wait);
-
-        conf.builtins.insert("glob_test".to_string(), Self::glob_test);
 
         conf
     }

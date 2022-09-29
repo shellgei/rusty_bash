@@ -1,32 +1,10 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod abst_elems;
 mod bash_glob;
-mod elem_arg;
-mod elem_compound_paren;
-mod elem_compound_while;
-mod elem_end_of_command;
-mod elem_end_of_pipeline;
-mod elem_function;
-mod elem_script;
-mod elem_command;
-mod elem_redirect;
-mod elem_setvars;
-mod elem_subarg_braced;
-mod elem_subarg_command_substitution;
-mod elem_subarg_double_quoted;
-mod elem_subarg_non_quoted;
-mod elem_subarg_single_quoted;
-mod elem_subarg_tilde;
-mod elem_subarg_variable;
-mod elem_substitution;
-mod elem_pipeline;
-mod elem_varname;
 mod core;
 mod core_builtins;
 mod core_shopts;
-mod job;
 mod term;
 mod utils;
 mod utils_io;
@@ -39,10 +17,6 @@ use std::{env, process};
 
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
-
-use crate::abst_elems::ListElem;
-use crate::elem_command::Command;
-use crate::elem_script::Script;
 
 /*
 fn get_hostname() -> String{
