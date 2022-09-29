@@ -4,7 +4,6 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::env;
-use crate::core_shopts::Shopts;
 
 pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -20,7 +19,6 @@ pub struct ShellCore {
     pub script_file: Option<File>,
     pub return_enable: bool,
     pub return_flag: bool,
-    pub shopts: Shopts, 
 }
 
 impl ShellCore {
@@ -39,7 +37,6 @@ impl ShellCore {
             script_file: None,
             return_flag: false,
             return_enable: false,
-            shopts: Shopts::new(),
         };
 
         conf

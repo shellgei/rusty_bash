@@ -183,28 +183,6 @@ impl Writer {
         self.stdout.flush().unwrap();
     }
 
-    pub fn last_arg(&self) -> String {
-        let mut escaped = false;
-        let mut pos = 0;
-        let mut counter = 0;
-        for ch in self.chars.clone() {
-            if escaped{
-                escaped = false;
-                counter += 1;
-                continue;
-            }else if ch == '\\' {
-                escaped = true;
-            }
-
-            if !escaped && ch == ' '{
-                pos = counter+1;
-            }
-            counter += 1;
-        }
-
-        chars_to_string(&self.chars[pos..].to_vec())
-    }
-
     fn calculate_fold_points(&mut self){
         let (wx, _) = self.terminal_size();
         self.previous_fold_points_num = self.fold_points.len();

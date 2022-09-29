@@ -3,8 +3,6 @@
 
 mod bash_glob;
 mod core;
-mod core_builtins;
-mod core_shopts;
 mod term;
 mod utils;
 mod feeder;
