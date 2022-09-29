@@ -43,6 +43,9 @@ fn main_loop(core: &mut ShellCore) {
     loop {
         if feeder.feed_line(core) {
             let txt = feeder.consume(feeder.remaining.len());
+            if txt == "exit\n" {
+                process::exit(0);
+            }
             println!("{}", txt);
         }
     }
