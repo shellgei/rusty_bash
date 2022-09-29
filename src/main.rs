@@ -43,7 +43,7 @@ mod term_completion;
 
 use std::{env, process, path};
 use std::os::linux::fs::MetadataExt;
-use std::fs::{File,OpenOptions};
+use std::fs::{File};
 use std::io::Read;
 
 use crate::core::ShellCore;
@@ -52,9 +52,6 @@ use crate::feeder::Feeder;
 use crate::abst_elems::ListElem;
 use crate::elem_command::Command;
 use crate::elem_script::Script;
-
-use crate::utils_io::dup_and_close;
-use std::os::unix::io::IntoRawFd;
 
 fn is_interactive(pid: u32) -> bool {
     let std_path = format!("/proc/{}/fd/0", pid);
@@ -86,31 +83,13 @@ fn get_hostname() -> String{
 }
 
 fn show_version() {
-    const V: &'static str = env!("CARGO_PKG_VERSION");
-    eprintln!("Rusty Bash, Version {}", V);
+    eprintln!("Rusty Bash, TERMINAL SKELETON");
     eprintln!("© 2022 Ryuichi Ueda");
     eprintln!("License: BSD 3-Clause\n");
 
     eprintln!("This is open source software. You can redistirbute and use in source\nand binary forms with or without modification under the license.");
     eprintln!("There is no warranty, to the extent permitted by law.");
     process::exit(0);
-}
-
-fn has_option(arg: &String, opt: String) -> bool {
-    if arg.len() < 2 {
-        return false;
-    }
-
-    if arg.chars().nth(0) == Some('-') && arg.chars().nth(1) == Some('-') { // --option
-        return arg[2..] == opt;
-    }
-
-    if arg.chars().nth(0) == Some('-') { // -options
-        return arg.chars().any(|c| c.to_string() == opt);
-    }
-
-
-    false
 }
 
 fn main() {
@@ -124,21 +103,25 @@ fn main() {
     .expect("Unable to set the Ctrl+C handler.");
 
     let mut core = ShellCore::new();
+    /*
     for arg in &args {
         core.args.push(arg.clone());
-    }
+    }*/
 
+    /*
     if args.len() > 1 {
         if let Ok(file) = OpenOptions::new().read(true).open(&args[1]){
             dup_and_close(file.into_raw_fd(), 0);
         }
     }
+    */
 
+    /*
     for f in [ "d", "v", "x" ] {
         if args.iter().any(|a| has_option(a, f.to_string())) {
             core.flags += f;
         }
-    }
+    }*/
 
     let pid = process::id();
     core.set_var("$", &pid.to_string());
@@ -157,30 +140,7 @@ fn main() {
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
-        if !feeder.feed_line(core) {
-            if core.has_flag('i') {
-                continue;
-            }else{
-                break;
-            }
+        if feeder.feed_line(core) {
         }
-        while let Some(mut e) = Script::parse(&mut feeder, core, vec!("")){
-            if feeder.len() != 0 && feeder.nth(0) == ')' {
-                feeder.consume(feeder.len());
-                eprintln!("Unknown phrase");
-                core.set_var("?", "2");
-                break;
-            }
-            e.exec(core);
-        }
-    }
-
-    //if let Ok(status) = core.get_var(&"?".to_string())
-    if let Ok(status) = core.get_var("?")
-                        .to_string().parse::<i32>(){
-        process::exit(status);
-    }else{
-        eprintln!("Shell internal error");
-        process::exit(1);
     }
 }
