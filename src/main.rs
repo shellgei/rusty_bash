@@ -3,7 +3,6 @@
 
 mod abst_elems;
 mod bash_glob;
-mod calculator;
 mod elem_arg;
 mod elem_compound_double_paren;
 mod elem_compound_paren;

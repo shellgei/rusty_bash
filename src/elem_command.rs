@@ -242,61 +242,10 @@ impl Command {
     }
 
     fn args_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {
-        let mut ok = false;
-        loop {
-            let backup = text.clone();
-            if let Some(r) = Redirect::parse(text){
-                ans.text += &r.text;
-                ans.fds.redirects.push(Box::new(r));
-            }else if let Some(a) = Arg::parse(text, conf, false, false) {
-                if ! Command::ng_check(&a.text, ans.args.len() == 0){
-                    text.rewind(backup);
-                    break;
-                }
-                ans.push_elems(Box::new(a));
-                ok = true;
-            }else{
-                break;
-            }
-
-            ans.text += &text.consume_blank();
-    
-            if text.len() == 0 {
-                break;
-            }
-
-            if let Some(e) = Eoc::parse(text){
-                ans.text += &e.text;
-                ans.eoc = Some(e);
-                break;
-            }
-
-            if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
-                break;
-            }
-        }
-
-        ok
+        false
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
-        let backup = text.clone();
-        let mut ans = Command::new();
-
-        if scanner_start_brace(text, 0) == 1 {
-            return None;
-        };
-
-        Command::substitutions_and_redirects(text, conf, &mut ans);
-        if conf.has_flag('i') {
-            Command::replace_alias(text, conf);
-        }
-
-        if Command::args_and_redirects(text, conf, &mut ans) {
-            Some(ans)
-        }else{
-            text.rewind(backup);
-            None
-        }
+        None
     }
 }
