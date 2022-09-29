@@ -21,7 +21,7 @@ fn read_line_stdin() -> Option<String> {
 
 #[derive(Clone)]
 pub struct Feeder {
-    remaining: String,
+    pub remaining: String,
     from_lineno: u32,
     to_lineno: u32,
     pos_in_line: u32,
@@ -37,7 +37,7 @@ impl Feeder {
         }
     }
 
-    pub fn _consume(&mut self, cutpos: usize) -> String {
+    pub fn consume(&mut self, cutpos: usize) -> String {
         let cut = self.remaining[0..cutpos].to_string(); // TODO: this implementation will cause an error.
         self.pos_in_line += cutpos as u32;
         self.remaining = self.remaining[cutpos..].to_string();

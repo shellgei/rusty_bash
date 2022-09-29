@@ -319,7 +319,7 @@ pub fn prompt_normal(core: &mut ShellCore) -> u16 {
     };
 
     let user = env::var("USER").unwrap_or("unknown".to_string());
-    let host = core.vars["HOSTNAME"].clone();
+    let host = "🍣";
 
     print!("\x1b[33m\x1b[1m{}@{}\x1b[m\x1b[m:", user, host);
     print!("\x1b[35m\x1b[1m{}\x1b[m\x1b[m", path);
