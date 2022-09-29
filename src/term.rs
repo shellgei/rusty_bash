@@ -13,7 +13,6 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 
 use crate::ShellCore;
-use crate::term_completion::*;
 
 use crate::utils::chars_to_string;
 
@@ -226,25 +225,6 @@ impl Writer {
         }
     }
 
-    fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
-        if chars_to_string(&self.chars) == self.last_arg() && 
-            self.last_arg().chars().nth(0) != Some('.') &&
-            self.last_arg().chars().nth(0) != Some('/') {
-            if tab_num == 1 {
-                command_completion(self, core);
-            }else {
-                show_command_candidates(self, core);
-            };
-        }else{
-            if tab_num == 1 {
-                file_completion(self);
-            }else {
-                show_file_candidates(self, core);
-                return;
-            };
-        };
-    }
-
     fn write_multi_line(&mut self, y: u16, org_y: u16) {
         write!(self.stdout, "{}{}", 
                termion::cursor::Goto(self.left_shift , y - org_y),
@@ -389,7 +369,6 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
             event::Key::Left       => writer.move_cursor(-1),
             event::Key::Right      => writer.move_cursor(1),
             event::Key::Backspace  => writer.remove(),
-            event::Key::Char('\t') => writer.tab_completion(tab_num+1, core),
             event::Key::Char(ch)    => writer.insert(*ch),
             _  => {},
         }

@@ -7,9 +7,7 @@ mod core_builtins;
 mod core_shopts;
 mod term;
 mod utils;
-mod utils_io;
 mod feeder;
-mod term_completion;
 
 use std::{env, process};
 

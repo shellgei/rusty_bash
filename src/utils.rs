@@ -151,39 +151,6 @@ pub fn combine(left: &mut Vec<Vec<String>>, right: Vec<Vec<String>>) -> Vec<Vec<
     ans
 }
 
-pub fn blue_strings(strings: &Vec<String>) -> Vec<String> {
-    strings
-        .iter()
-        .map(|s| format!("\x1b[34m{}\x1b[m", s))
-        .collect()
-}
-
-pub fn blue_string(s: &String) -> String {
-    format!("\x1b[34m{}\x1b[m", s)
-}
-
-pub fn expand_tilde(path: &String) -> (String, String, String){
-    let org_length = scanner_user_path(path.clone());
-    let home = if org_length == 1 {
-        env::var("HOME").expect("Home is not set")
-    }else if org_length == 0{
-        "".to_string()
-    }else if let Some(h) = get_home(path[1..org_length].to_string()) {
-        h
-    }else{
-        "".to_string()
-    };
-
-    let org = path[0..org_length].to_string();
-
-    if home.len() != 0 {
-        let h = home.clone();
-        (path.replacen(&path[0..org_length].to_string(), &h, 1), home, org)
-    }else{
-        (path.to_string(), home, org)
-    }
-}
-
 pub fn scanner_user_path(text: String) -> usize {
     if text.len() == 0 {
         return 0;
@@ -299,20 +266,3 @@ pub fn align_elems_on_term(list: &Vec<String>, width: u32) -> String {
     ans
 }
 
-
-pub fn get_fullpath(com: &String) -> String {
-    let dirs = if let Ok(p) = env::var("PATH") {
-        p.split(':').map(|s| s.to_string()).collect()
-    }else{
-        vec!()
-    };
-
-    for d in dirs {
-        let path = d + "/" + com;
-        if fs::metadata(&path).is_ok() {
-            return path;
-        }
-    }
-
-    "".to_string()
-}
