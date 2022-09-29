@@ -4,7 +4,6 @@
 mod abst_elems;
 mod bash_glob;
 mod elem_arg;
-mod elem_compound_double_paren;
 mod elem_compound_paren;
 mod elem_compound_while;
 mod elem_end_of_command;
@@ -17,7 +16,6 @@ mod elem_setvars;
 mod elem_subarg_braced;
 mod elem_subarg_command_substitution;
 mod elem_subarg_double_quoted;
-mod elem_subarg_math_substitution;
 mod elem_subarg_non_quoted;
 mod elem_subarg_single_quoted;
 mod elem_subarg_tilde;

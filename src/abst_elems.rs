@@ -8,7 +8,6 @@ use crate::{Feeder, ShellCore};
 
 
 use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
-use crate::elem_subarg_math_substitution::SubArgMathSubstitution;
 use crate::elem_subarg_non_quoted::SubArgNonQuoted;
 use crate::elem_subarg_double_quoted::SubArgDoubleQuoted;
 use crate::elem_subarg_single_quoted::SubArgSingleQuoted;
@@ -26,26 +25,6 @@ pub trait ListElem {
 
 pub trait PipelineElem {
     fn exec(&mut self, conf: &mut ShellCore) {
-        if self.no_connection() {
-             self.exec_elems(conf);
-             return;
-        };
-
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    self.set_child_io();
-                    self.exec_elems(conf);
-                    close(1).expect("Can't close a pipe end");
-                    exit(conf.vars["?"].parse::<i32>().unwrap());
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    self.set_pid(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
-        }
     }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd);
@@ -73,12 +52,5 @@ pub trait ArgElem {
 }
 
 pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_value: bool, is_in_brace: bool) -> Option<Box<dyn ArgElem>> {
-    if let Some(a) = SubArgMathSubstitution::parse(text, conf, is_value)         {Some(Box::new(a))}
-    else if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {Some(Box::new(a))}
-    else if let Some(a) = SubArgVariable::parse(text)                       {Some(Box::new(a))}
-    else if let Some(a) = SubArgBraced::parse(text, conf, is_value)         {Some(Box::new(a))}
-    else if let Some(a) = SubArgSingleQuoted::parse(text, conf, is_value)   {Some(Box::new(a))}
-    else if let Some(a) = SubArgDoubleQuoted::parse(text, conf, is_value)   {Some(Box::new(a))}
-    else if let Some(a) = SubArgNonQuoted::parse(text, is_in_brace)         {Some(Box::new(a))}
-    else {None}
+    None
 }
