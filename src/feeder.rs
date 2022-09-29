@@ -47,7 +47,7 @@ impl Feeder {
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
         //let line = if core.flags.i {
-        let line = if ! core.has_flag('i') {
+        let line = if true {
             let len_prompt = term::prompt_normal(core);
             if let Some(ln) = term::read_line_terminal(len_prompt, core) {
                 ln
