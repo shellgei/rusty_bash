@@ -9,8 +9,6 @@ mod term;
 mod utils;
 mod utils_io;
 mod feeder;
-mod scanner;
-mod debuginfo;
 mod term_completion;
 
 use std::{env, process};

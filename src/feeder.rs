@@ -5,7 +5,6 @@ use std::io;
 use std::str::Chars;
 use crate::ShellCore;
 use crate::term;
-use crate::scanner::*;
 
 fn read_line_stdin() -> Option<String> {
     let mut line = String::new();
@@ -83,30 +82,6 @@ impl Feeder {
         cut
     }
 
-    pub fn consume_blank(&mut self) -> String {
-        let d = scanner_while(self, 0, " \t");
-        self.consume(d)
-    }
-
-    pub fn consume_comment(&mut self) -> String {
-        let mut ans = String::new();
-
-        if self.len() != 0 && self.nth(0) == '#' {
-            let d = scanner_until(self, 0, "\n");
-            ans += &self.consume(d);
-
-            if self.len() != 0 && self.nth(0) == '\n' {
-                ans += &self.consume(1);
-            }
-        }
-        ans
-    }
-
-    pub fn consume_blank_return(&mut self) -> String {
-        let d = scanner_while(self, 0, " \t\n");
-        self.consume(d)
-    }
-
     pub fn replace(&mut self, from: &str, to: &str) {
         self.remaining = self.remaining.replacen(from, to, 1);
     }
@@ -158,13 +133,6 @@ impl Feeder {
             return true;
         }
 
-        while self.from_to_as_chars(self.len_as_chars()-2, self.len_as_chars()) == "\\\n" {
-            self.remaining = self.from_to_as_chars(0, self.len_as_chars()-2);
-            if !self.feed_additional_line(core){
-                self.remaining = "".to_string();
-                return true;
-            }
-        }
         true
     }
 
@@ -180,66 +148,19 @@ impl Feeder {
         };
     }
 
-    pub fn request_next_line(&mut self, conf: &mut ShellCore) -> String {
-        let t = self.consume_blank_return();
-    
-        if self.len() == 0 {
-            let _ = self.feed_additional_line(conf);
-        }
-
-        t
-    }
-
-    pub fn compare(&self, pos: usize, cmp: &str) -> bool{
-        if cmp.to_string().len() == 0 {
-            return false;
-        }
-        if self.remaining.len() < pos + cmp.to_string().len() {
-            return false;
-        }
-
-        for (i, ch) in cmp.chars().enumerate() {
-            if self.remaining.chars().nth(i+pos) != Some(ch) {
-                return false;
-            }
-        }
-        true
-    }
-
-    pub fn nth_is_one_of(&self, pos: usize, cmp: &str) -> bool{
-        cmp.to_string().chars().any(|c| c == self.nth(pos) )
-    }
-
     pub fn rewind_feed_backup(&mut self, backup: &Feeder, conf: &mut ShellCore) -> (Feeder, bool) {
         self.rewind(backup.clone());
         let res = self.feed_additional_line(conf);
         (self.clone(), res)
     }
 
-    pub fn nth_is(&self, pos: usize, chars: &str) -> bool{
-        let ch = self.nth(pos);
-        chars.to_string().find(ch) != None
-    }
-
     pub fn _text(&self) -> String {
         self.remaining.clone()
-    }
-
-    pub fn from_to(&self, from: usize, to: usize) -> String {
-        self.remaining[from..to].to_string()
     }
 
     pub fn len_as_chars(&self) -> usize {
         self.remaining.chars().count()
     }
 
-    pub fn from_to_as_chars(&self, from: usize, to: usize) -> String {
-        self.remaining
-            .chars()
-            .enumerate()
-            .filter(|e| e.0 >= from && e.0 < to)
-            .map(|e| e.1)
-            .collect()
-    }
 }
 
