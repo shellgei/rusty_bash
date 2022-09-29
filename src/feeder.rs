@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::io;
-use std::str::Chars;
 use crate::ShellCore;
 use crate::term;
 

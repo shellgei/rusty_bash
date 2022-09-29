@@ -5,7 +5,6 @@ use std::io;
 use std::env;
 use std::io::{Write, stdout, stdin, Stdout, BufReader};
 use std::fs::File;
-use std::str::Chars;
 
 use termion::{event,terminal_size};
 use termion::cursor::DetectCursorPos;
@@ -284,19 +283,7 @@ impl Writer {
     }
 }
 
-pub fn prompt_normal(core: &mut ShellCore) -> u16 {
-    let home = env::var("HOME").unwrap_or("unknown".to_string());
-
-    let path = if let Ok(p) = env::current_dir(){
-        p.into_os_string()
-            .into_string()
-            .unwrap()
-            .replace(&home, "~")
-    }else{
-        "no_path".to_string()
-    };
-
-    let user = env::var("USER").unwrap_or("unknown".to_string());
+pub fn prompt_normal(_core: &mut ShellCore) -> u16 {
     let host = "🍣";
 
     print!("{} ", host);
@@ -307,7 +294,6 @@ pub fn prompt_normal(core: &mut ShellCore) -> u16 {
 
 pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
     let mut writer = Writer::new(core.history.len(), left);
-    let mut tab_num = 0;
 
     for c in stdin().keys() {
         match &c.as_ref().unwrap() {
@@ -333,11 +319,6 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
             _  => {},
         }
 
-        if c.unwrap() != event::Key::Char('\t') {
-            tab_num = 0;
-        }else{
-            tab_num += 1;
-        }
     }
 
     let ans = chars_to_string(&writer.chars);
