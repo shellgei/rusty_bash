@@ -301,25 +301,9 @@ impl Writer {
         }
     }
 
-    pub fn insert_multi(&mut self, s: Chars) {
-        for ch in s {
-            self.chars.push(ch);
-            self.move_char_ptr(1);
-        }
-        self.calculate_fold_points();
-        let (_, old_org_y) = self.ch_ptr_to_multiline_origin();
-        self.rewrite_multi_line(old_org_y);
-    }
-
     fn end(&mut self, text: &str) {
         write!(self.stdout, "{}", text).unwrap();
     }
-}
-
-pub fn prompt_additional() -> u16 {
-    print!("> ");
-    io::stdout().flush().unwrap();
-    return 2;
 }
 
 pub fn prompt_normal(core: &mut ShellCore) -> u16 {
@@ -342,7 +326,7 @@ pub fn prompt_normal(core: &mut ShellCore) -> u16 {
     print!("$ ");
     io::stdout().flush().unwrap();
 
-    (chars_to_width(&(user + &host + &path).chars().collect()) + 2 + 2) as u16
+    (chars_to_width(&host.chars().collect()) + 2 + 2) as u16
 }
 
 pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
