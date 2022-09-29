@@ -44,7 +44,7 @@ fn main_loop(core: &mut ShellCore) {
             if txt == "exit\n" {
                 process::exit(0);
             }
-            println!("{}", txt);
+            print!("{}", txt);
         }
     }
 }

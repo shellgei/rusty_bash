@@ -299,12 +299,10 @@ pub fn prompt_normal(core: &mut ShellCore) -> u16 {
     let user = env::var("USER").unwrap_or("unknown".to_string());
     let host = "🍣";
 
-    print!("\x1b[33m\x1b[1m{}@{}\x1b[m\x1b[m:", user, host);
-    print!("\x1b[35m\x1b[1m{}\x1b[m\x1b[m", path);
-    print!("$ ");
+    print!("{} ", host);
     io::stdout().flush().unwrap();
 
-    (chars_to_width(&host.chars().collect()) + 2 + 2) as u16
+    (chars_to_width(&host.chars().collect()) + 1 ) as u16
 }
 
 pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
