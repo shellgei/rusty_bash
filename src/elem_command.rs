@@ -12,7 +12,7 @@ use crate::{ShellCore,Feeder};
 use crate::abst_elems::CommandElem;
 use crate::utils::*;
 
-use crate::abst_elems::{PipelineElem, compound};
+use crate::abst_elems::{PipelineElem};
 use crate::elem_arg::Arg;
 use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
@@ -147,6 +147,7 @@ impl Command {
     }
 
     fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
+        /*
         let text = conf.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_with(text);
@@ -161,6 +162,7 @@ impl Command {
         }else{
             panic!("Shell internal error on function");
         };
+        */
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {

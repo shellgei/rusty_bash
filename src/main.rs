@@ -7,9 +7,6 @@ mod calculator;
 mod elem_arg;
 mod elem_compound_double_paren;
 mod elem_compound_paren;
-mod elem_compound_brace;
-mod elem_compound_case;
-mod elem_compound_if;
 mod elem_compound_while;
 mod elem_end_of_command;
 mod elem_end_of_pipeline;
@@ -41,10 +38,7 @@ mod scanner;
 mod debuginfo;
 mod term_completion;
 
-use std::{env, process, path};
-use std::os::linux::fs::MetadataExt;
-use std::fs::{File};
-use std::io::Read;
+use std::{env, process};
 
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
@@ -53,23 +47,7 @@ use crate::abst_elems::ListElem;
 use crate::elem_command::Command;
 use crate::elem_script::Script;
 
-fn is_interactive(pid: u32) -> bool {
-    let std_path = format!("/proc/{}/fd/0", pid);
-    match path::Path::new(&std_path).metadata() {
-        Ok(metadata) => metadata.st_mode() == 8592, 
-        Err(err) => panic!("{}", err),
-    }
-}
-
-fn read_bashrc(core: &mut ShellCore){
-    let home = env::var("HOME").expect("HOME is not defined");
-    if let Ok(_) = File::open(home.clone() + "/.rusty_bashrc") {
-        let f = core.builtins["source"];
-        let mut args = vec!("source".to_string(), home.clone() + "/.rusty_bashrc");
-        f(core, &mut args);
-    }
-}
-
+/*
 fn get_hostname() -> String{
     if let Ok(mut file) = File::open("/etc/hostname") {
 
@@ -80,7 +58,7 @@ fn get_hostname() -> String{
     }
 
     "unknown".to_string()
-}
+}*/
 
 fn show_version() {
     eprintln!("Rusty Bash, TERMINAL SKELETON");
@@ -123,17 +101,15 @@ fn main() {
         }
     }*/
 
+    /*
     let pid = process::id();
     core.set_var("$", &pid.to_string());
     core.set_var("IFS", " \t\n");
     core.set_var("HOSTNAME", &get_hostname());
     core.set_var("SHELL", "rustybash");
     core.set_var("BASH", &core.args[0].to_string());
-    if is_interactive(pid) {
-        core.flags += "i";
-    }
+    */
 
-    read_bashrc(&mut core);
     main_loop(&mut core);
 }
 

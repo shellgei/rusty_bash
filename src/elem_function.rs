@@ -5,7 +5,6 @@ use crate::{ShellCore, Feeder};
 use crate::elem_varname::VarName;
 use crate::scanner::*;
 use crate::abst_elems::PipelineElem;
-use crate::abst_elems::compound;
 
 pub struct Function {
     pub name: String,
@@ -23,6 +22,7 @@ impl Function {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Function> {
+         /*
          let backup = text.clone();
          let mut name;
          let mut ans_text = String::new();
@@ -65,6 +65,8 @@ impl Function {
          }else{
              text.rewind(backup);
              None
-         }
+         }*/
+
+         None
     }
 }

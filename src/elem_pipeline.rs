@@ -9,7 +9,6 @@ use crate::Command;
 use nix::unistd::pipe;
 use crate::scanner::*;
 use crate::utils_io::set_parent_io;
-use crate::abst_elems::compound;
 use crate::elem_end_of_pipeline::Eop;
 use crate::job::Job;
 
@@ -94,64 +93,7 @@ impl Pipeline {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
-        let mut ans = Pipeline::new();
-        ans.text += &text.consume_blank();
-        if text.len() > 0 {
-            if text.nth(0) == '!' {
-                ans.not_flag = true;
-                ans.text += &text.consume(1);
-            }
-        }
-
-        loop {
-            ans.text += &text.consume_blank();
-
-            let eocs;
-            if let Some(mut c) = compound(text, conf) {
-                eocs = c.get_eoc_string();
-                ans.text += &c.get_text();
-                ans.commands.push(c);
-            }else if let Some(mut c) = Command::parse(text, conf) {
-                eocs = c.get_eoc_string();
-                ans.text += &c.text.clone();
-                ans.commands.push(Box::new(c));
-            }else{
-                break;
-            }
-
-            if eocs != "|" {
-                break;
-            }
-
-
-            if eocs == "|" && text.len() == 1 && text.nth(0) == '\n' {
-                text.consume(1);
-                if ! text.feed_additional_line(conf) {
-                    return None;
-                }
-            }
-
-            if scanner_end_paren(text, 0) == 1 {
-                break;
-            }
-
-        }
-
-        if let Some(eop) = Eop::parse(text) {
-            if Some('&') == eop.text.chars().nth(0) 
-               && Some('&') != eop.text.chars().nth(1) {
-                   ans.is_bg = true;
-            }
-
-            ans.text += &eop.text.clone();
-            ans.eop = Some(eop);
-        }
-
-        if ans.commands.len() > 0 {
-            Some(ans)
-        }else{
-            None
-        }
+        None
     }
 }
 

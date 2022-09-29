@@ -6,12 +6,6 @@ use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
 
-use crate::elem_compound_double_paren::CompoundDoubleParen;
-use crate::elem_compound_if::CompoundIf;
-use crate::elem_compound_while::CompoundWhile;
-use crate::elem_compound_paren::CompoundParen;
-use crate::elem_compound_brace::CompoundBrace;
-use crate::elem_compound_case::CompoundCase;
 
 use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
 use crate::elem_subarg_math_substitution::SubArgMathSubstitution;
@@ -76,16 +70,6 @@ pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>>;
     fn get_text(&self) -> String;
     fn permit_lf(&self) -> bool {false}
-}
-
-pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn PipelineElem>> {
-    if let Some(a) =      CompoundIf::parse(text,conf)                  {Some(Box::new(a))}
-    else if let Some(a) = CompoundWhile::parse(text, conf)              {Some(Box::new(a))}
-    else if let Some(a) = CompoundCase::parse(text, conf)               {Some(Box::new(a))}
-    else if let Some(a) = CompoundDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
-    else if let Some(a) = CompoundParen::parse(text, conf, false)       {Some(Box::new(a))}
-    else if let Some(a) = CompoundBrace::parse(text, conf)              {Some(Box::new(a))}
-    else {None}
 }
 
 pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_value: bool, is_in_brace: bool) -> Option<Box<dyn ArgElem>> {
