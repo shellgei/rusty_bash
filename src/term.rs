@@ -2,10 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::io;
-use std::env;
-use std::io::{Write, stdout, stdin, Stdout, BufReader};
-use std::fs::File;
-use std::str::Chars;
+use std::io::{Write, stdout, stdin, Stdout};
 
 use termion::{event,terminal_size};
 use termion::cursor::DetectCursorPos;
@@ -13,14 +10,11 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 
 use crate::ShellCore;
-use crate::term_completion::*;
 
 use crate::utils::chars_to_string;
 
 extern crate unicode_width;
 use unicode_width::UnicodeWidthStr;
-extern crate rev_lines;
-use rev_lines::RevLines;
 
 pub struct Writer {
     pub stdout: RawTerminal<Stdout>, 
@@ -96,27 +90,11 @@ impl Writer {
         }
     }
 
-    pub fn call_history_from_file(&mut self) -> String {
-        let home = env::var("HOME").expect("HOME is not defined");
-        let pos = - self.hist_ptr - 1;
-
-        if let Ok(hist_file) = File::open(home + "/.bash_history"){
-            let mut rev_lines = RevLines::new(BufReader::new(hist_file)).unwrap();
-            if let Some(s) = rev_lines.nth(pos as usize) {
-                return s;
-            };
-        };
-
-        "".to_string()
-    }
-
     pub fn call_history(&mut self, inc: i32, history: &Vec<String>){
         self.hist_ptr += inc;
         let len = history.len() as i32;
 
-        let h = if self.hist_ptr < 0 {
-            self.call_history_from_file()
-        }else if self.hist_ptr < len {
+        let h = if self.hist_ptr < len {
             history[self.hist_ptr as usize].to_string()
         }else{
             self.hist_ptr = len;
@@ -184,28 +162,6 @@ impl Writer {
         self.stdout.flush().unwrap();
     }
 
-    pub fn last_arg(&self) -> String {
-        let mut escaped = false;
-        let mut pos = 0;
-        let mut counter = 0;
-        for ch in self.chars.clone() {
-            if escaped{
-                escaped = false;
-                counter += 1;
-                continue;
-            }else if ch == '\\' {
-                escaped = true;
-            }
-
-            if !escaped && ch == ' '{
-                pos = counter+1;
-            }
-            counter += 1;
-        }
-
-        chars_to_string(&self.chars[pos..].to_vec())
-    }
-
     fn calculate_fold_points(&mut self){
         let (wx, _) = self.terminal_size();
         self.previous_fold_points_num = self.fold_points.len();
@@ -224,25 +180,6 @@ impl Writer {
             }
             i += 1;
         }
-    }
-
-    fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
-        if chars_to_string(&self.chars) == self.last_arg() && 
-            self.last_arg().chars().nth(0) != Some('.') &&
-            self.last_arg().chars().nth(0) != Some('/') {
-            if tab_num == 1 {
-                command_completion(self, core);
-            }else {
-                show_command_candidates(self, core);
-            };
-        }else{
-            if tab_num == 1 {
-                file_completion(self);
-            }else {
-                show_file_candidates(self, core);
-                return;
-            };
-        };
     }
 
     fn write_multi_line(&mut self, y: u16, org_y: u16) {
@@ -321,53 +258,22 @@ impl Writer {
         }
     }
 
-    pub fn insert_multi(&mut self, s: Chars) {
-        for ch in s {
-            self.chars.push(ch);
-            self.move_char_ptr(1);
-        }
-        self.calculate_fold_points();
-        let (_, old_org_y) = self.ch_ptr_to_multiline_origin();
-        self.rewrite_multi_line(old_org_y);
-    }
-
     fn end(&mut self, text: &str) {
         write!(self.stdout, "{}", text).unwrap();
     }
 }
 
-pub fn prompt_additional() -> u16 {
-    print!("> ");
-    io::stdout().flush().unwrap();
-    return 2;
-}
+pub fn prompt_normal(_core: &mut ShellCore) -> u16 {
+    let host = "🍣";
 
-pub fn prompt_normal(core: &mut ShellCore) -> u16 {
-    let home = env::var("HOME").unwrap_or("unknown".to_string());
-
-    let path = if let Ok(p) = env::current_dir(){
-        p.into_os_string()
-            .into_string()
-            .unwrap()
-            .replace(&home, "~")
-    }else{
-        "no_path".to_string()
-    };
-
-    let user = env::var("USER").unwrap_or("unknown".to_string());
-    let host = core.vars["HOSTNAME"].clone();
-
-    print!("\x1b[33m\x1b[1m{}@{}\x1b[m\x1b[m:", user, host);
-    print!("\x1b[35m\x1b[1m{}\x1b[m\x1b[m", path);
-    print!("$ ");
+    print!("{} ", host);
     io::stdout().flush().unwrap();
 
-    (chars_to_width(&(user + &host + &path).chars().collect()) + 2 + 2) as u16
+    (chars_to_width(&host.chars().collect()) + 1 ) as u16
 }
 
 pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
     let mut writer = Writer::new(core.history.len(), left);
-    let mut tab_num = 0;
 
     for c in stdin().keys() {
         match &c.as_ref().unwrap() {
@@ -389,16 +295,10 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
             event::Key::Left       => writer.move_cursor(-1),
             event::Key::Right      => writer.move_cursor(1),
             event::Key::Backspace  => writer.remove(),
-            event::Key::Char('\t') => writer.tab_completion(tab_num+1, core),
             event::Key::Char(ch)    => writer.insert(*ch),
             _  => {},
         }
 
-        if c.unwrap() != event::Key::Char('\t') {
-            tab_num = 0;
-        }else{
-            tab_num += 1;
-        }
     }
 
     let ans = chars_to_string(&writer.chars);
