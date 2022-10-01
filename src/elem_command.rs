@@ -13,7 +13,12 @@ impl Command {
         if self.text == "exit\n" {
             process::exit(0);
         }else{
-            print!("{}", self.text);
+            let words: Vec<&str> = self.text
+                .trim_end()
+                .split(' ')
+                .collect();
+
+            println!("{:?}", words);
         }
     }
 

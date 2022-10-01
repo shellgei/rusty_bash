@@ -91,10 +91,16 @@ impl Writer {
     }
 
     pub fn call_history(&mut self, inc: i32, history: &Vec<String>){
-        self.hist_ptr += inc;
         let len = history.len() as i32;
+        if len == 0 {
+            return;
+        }
+        self.hist_ptr += inc;
 
-        let h = if self.hist_ptr < len {
+        let h = if self.hist_ptr < 0 {
+            self.hist_ptr = 0;
+            return;
+        }else if self.hist_ptr < len {
             history[self.hist_ptr as usize].to_string()
         }else{
             self.hist_ptr = len;
