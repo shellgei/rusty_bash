@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod core;
+mod elem_command;
 mod term;
 mod utils;
 mod feeder;
@@ -9,6 +10,7 @@ mod feeder;
 use std::{env, process};
 
 use crate::core::ShellCore;
+use crate::elem_command::Command;
 use crate::feeder::Feeder;
 
 fn show_version() {
@@ -39,11 +41,11 @@ fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
         if feeder.feed_line(core) {
-            let txt = feeder.consume(feeder.remaining.len());
-            if txt == "exit\n" {
-                process::exit(0);
+            if let Some(mut c) = Command::parse(&mut feeder, core){
+                c.exec(core);
+            }else{
+                process::exit(1);
             }
-            print!("{}", txt);
         }
     }
 }
