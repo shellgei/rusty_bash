@@ -19,7 +19,7 @@ impl Command {
             .split(' ') //半角スペースで分割
             .collect(); //分割したものを集めてVecに
 
-        println!("{:?}", words);
+        println!("{:?}", words); //wordsをデバッグのために出力
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
