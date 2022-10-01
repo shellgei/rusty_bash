@@ -9,7 +9,7 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn exec(&mut self, _core: &mut ShellCore) {
+    pub fn exec(&mut self, _core: &mut ShellCore) { //引数_coreはまだ使いません
         if self.text == "exit\n" {
             process::exit(0);
         }else{
