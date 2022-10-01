@@ -4,13 +4,11 @@
 use std::process;
 use crate::{ShellCore,Feeder};
 
-
 pub struct Command {
     pub text: String,
 }
 
 impl Command {
-
     pub fn exec(&mut self, _core: &mut ShellCore) {
         if self.text == "exit\n" {
             process::exit(0);
