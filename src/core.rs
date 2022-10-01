@@ -107,7 +107,6 @@ impl ShellCore {
             }
 
             if self.in_double_quot {
-                //if let Some(ch) = self.get_var(&"IFS".to_string()).chars().nth(0){
                 if let Some(ch) = self.get_var("IFS").chars().nth(0){
                     return self.args[1..].to_vec().join(&ch.to_string());
                 }
