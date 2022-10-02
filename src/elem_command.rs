@@ -1,9 +1,10 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::{ShellCore,Feeder};
+use nix::unistd::execvp;
 use std::process;
 use std::ffi::CString;
-use crate::{ShellCore,Feeder};
 
 pub struct Command {
     pub text: String,
@@ -18,10 +19,13 @@ impl Command {
         let words: Vec<CString> = self.text
             .trim_end() //末尾の改行（'\n'）を削除
             .split(' ') //半角スペースで分割
-            .map(|a| CString::new(a.to_string()).unwrap())
+            .map(|a| CString::new(a.to_string()).unwrap()) //文字列を一つずつCString型に変換
             .collect();
 
         println!("{:?}", words);
+        if words.len() > 0 {
+            println!("{:?}", execvp(&words[0], &*words));
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
