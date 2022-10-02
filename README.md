@@ -123,3 +123,14 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 |features | status |
 |-------------------|----|
 | coproc | :no_good: |
+
+
+## thanks to
+
+Partially in Japanese.
+
+* blog articles
+    * Rustでシェル作った | κeenのHappy Hacκing Blog: https://keens.github.io/blog/2016/09/04/rustdeshierutsukutta/
+    * Rustで始める自作シェル その1 | ぶていのログでぶログ: https://tech.buty4649.net/entry/2021/12/19/235124
+    * Rustのターミナル操作crateいろいろ | meganehouser: https://meganehouser.github.io/2019-12-11_rust-terminal-crates.html
+
