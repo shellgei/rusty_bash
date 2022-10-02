@@ -20,6 +20,11 @@ impl Command {
             .collect(); //分割したものを集めてVecに
 
         println!("{:?}", words); //wordsをデバッグのために出力
+        /*
+        println!("{:?}", self.text);
+        println!("{:?}", self.text.trim_end());
+        println!("{:?}", self.text.trim_end().split(' '));
+        */
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
