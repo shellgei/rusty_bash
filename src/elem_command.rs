@@ -22,7 +22,7 @@ impl Command {
         };
 
         println!("{:?}", words);
-        if words.len() > 0 {
+        if words.len() > 0 {  // 要素が1個以上あるか確認
             println!("{:?}", execvp(&words[0], &words));
         }
     }
