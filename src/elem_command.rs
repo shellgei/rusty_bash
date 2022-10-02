@@ -14,17 +14,12 @@ impl Command {
             process::exit(0);
         }
 
-        let words: Vec<&str> = self.text
-            .trim_end() //末尾の改行（'\n'）を削除
-            .split(' ') //半角スペースで分割
-            .collect(); //分割したものを集めてVecに
+        let mut words = vec!(); //ベクタを作る
+        for w in self.text.trim_end().split(' ') { //空白で分割
+            words.push(w);
+        };
 
-        println!("{:?}", words); //wordsをデバッグのために出力
-        /*
-        println!("{:?}", self.text);
-        println!("{:?}", self.text.trim_end());
-        println!("{:?}", self.text.trim_end().split(' '));
-        */
+        println!("{:?}", words);
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
