@@ -3,8 +3,8 @@
 
 use crate::{ShellCore,Feeder};
 use nix::unistd::execvp;
-use std::process;
 use std::ffi::CString;
+use std::process;
 
 pub struct Command {
     pub text: String,
