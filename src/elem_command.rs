@@ -16,11 +16,10 @@ impl Command {
             process::exit(0);
         }
 
-        let words: Vec<CString> = self.text
-            .trim_end() //末尾の改行（'\n'）を削除
-            .split(' ') //半角スペースで分割
-            .map(|a| CString::new(a.to_string()).unwrap()) //文字列を一つずつCString型に変換
-            .collect();
+        let mut words = vec!();
+        for w in self.text.trim_end().split(' ') {
+            words.push(CString::new(w.to_string()).unwrap());
+        };
 
         println!("{:?}", words);
         if words.len() > 0 {
