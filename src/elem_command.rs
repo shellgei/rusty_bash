@@ -23,7 +23,7 @@ impl Command {
 
         println!("{:?}", words);
         if words.len() > 0 {
-            println!("{:?}", execvp(&words[0], &*words));
+            println!("{:?}", execvp(&words[0], &words));
         }
     }
 
