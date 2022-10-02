@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::process;
+use std::ffi::CString;
 use crate::{ShellCore,Feeder};
 
 pub struct Command {
@@ -14,17 +15,13 @@ impl Command {
             process::exit(0);
         }
 
-        let words: Vec<&str> = self.text
+        let words: Vec<CString> = self.text
             .trim_end() //末尾の改行（'\n'）を削除
             .split(' ') //半角スペースで分割
-            .collect(); //分割したものを集めてVecに
+            .map(|a| CString::new(a.to_string()).unwrap())
+            .collect();
 
-        println!("{:?}", words); //wordsをデバッグのために出力
-        /*
-        println!("{:?}", self.text);
-        println!("{:?}", self.text.trim_end());
-        println!("{:?}", self.text.trim_end().split(' '));
-        */
+        println!("{:?}", words);
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
