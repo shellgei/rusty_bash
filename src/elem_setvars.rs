@@ -63,7 +63,7 @@ impl ListElem for SetVariables {
 impl SetVariables {
     pub fn new() -> SetVariables{
         SetVariables {
-            elems: vec!(),
+            elems: vec![],
             text: "".to_string(),
             eop: None,
         }

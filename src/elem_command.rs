@@ -94,8 +94,8 @@ impl PipelineElem for Command {
 impl Command {
     pub fn new() -> Command{
         Command {
-            vars: vec!(),
-            args: vec!(),
+            vars: vec![],
+            args: vec![],
             eoc: None,
             text: "".to_string(),
             pid: None,
@@ -114,7 +114,7 @@ impl Command {
     }
 
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        let mut args = vec!();
+        let mut args = vec![];
 
         for arg in &mut self.args {
             for s in &arg.eval(conf) {

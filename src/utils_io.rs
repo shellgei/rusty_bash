@@ -21,7 +21,7 @@ pub struct FileDescs {
 impl FileDescs {
     pub fn new() -> FileDescs {
         FileDescs {
-            redirects: vec!(),
+            redirects: vec![],
             pipein: -1,
             pipeout: -1,
             prevpipein: -1,

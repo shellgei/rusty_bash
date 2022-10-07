@@ -23,7 +23,7 @@ impl Arg {
         Arg {
             text: "".to_string(),
             pos: DebugInfo{lineno: 0, pos: 0, comment: "".to_string()},
-            subargs: vec!(),
+            subargs: vec![],
             is_value: false,
         }
     }
@@ -57,7 +57,7 @@ impl Arg {
         let mut ans = Arg{
             text: "".to_string(),
             pos: DebugInfo::init(text),
-            subargs: vec!(),
+            subargs: vec![],
             is_value: is_value,
         };
 
@@ -95,11 +95,11 @@ impl CommandElem for Arg {
     }
 
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
-        let mut subevals = vec!();
+        let mut subevals = vec![];
         for sa in &mut self.subargs {
             let vs = sa.eval(conf);
 
-            let mut cvs = vec!();
+            let mut cvs = vec![];
             if sa.permit_lf() || self.is_value {
                 cvs = vs;
             }else{
@@ -113,14 +113,14 @@ impl CommandElem for Arg {
         }
         //eprintln!("SUBEVALS: {:?}", subevals);
 
-        let mut strings = vec!();
+        let mut strings = vec![];
 
         for ss in subevals {
             strings = combine(&mut strings, ss);
         }
         //eprintln!("STRINGS: {:?}", strings);
 
-        let mut ans = vec!();
+        let mut ans = vec![];
         for v in strings {
             ans.append(&mut v.clone());
         }
@@ -135,7 +135,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
     let mut ans = Arg{
         text: "".to_string(),
         pos: DebugInfo::init(text),
-        subargs: vec!(),
+        subargs: vec![],
         is_value: false,
     };
 

@@ -68,7 +68,7 @@ impl PipelineElem for CompoundIf {
 impl CompoundIf {
     pub fn new() -> CompoundIf{
         CompoundIf {
-            ifthen: vec!(),
+            ifthen: vec![],
             else_do: None,
             fds: FileDescs::new(),
             text: "".to_string(),

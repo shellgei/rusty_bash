@@ -17,7 +17,7 @@ pub struct Job {
 
 impl Job {
     pub fn new(text: &String, commands: &Vec<Box<dyn PipelineElem>>) -> Job {
-        let mut pids = vec!();
+        let mut pids = vec![];
         for c in commands {
             if let Some(p) = c.get_pid() {
                 pids.push(p);
@@ -33,10 +33,10 @@ impl Job {
 
     pub fn wait(&mut self) -> Vec<String> {
         if self.status == "Done" {
-            return vec!();
+            return vec![];
         }
 
-        let mut pipestatus = vec!();
+        let mut pipestatus = vec![];
         for p in &self.pids {
             pipestatus.push(Job::wait_pid(*p).to_string());
         }

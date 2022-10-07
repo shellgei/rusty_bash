@@ -84,7 +84,7 @@ impl ListElem for Pipeline {
 impl Pipeline {
     pub fn new() -> Pipeline{
         Pipeline {
-            commands: vec!(),
+            commands: vec![],
             text: "".to_string(),
             eop: None,
             not_flag: false,

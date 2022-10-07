@@ -22,19 +22,19 @@ impl ArgElem for SubArgDoubleQuoted {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
         conf.in_double_quot = true;
 
-        let mut vvv = vec!();
+        let mut vvv = vec![];
         for sa in &mut self.subargs {
             vvv.push(sa.eval(conf));
         };
 
-        let mut strings = vec!();
+        let mut strings = vec![];
         for ss in vvv {
             strings = combine(&mut strings, ss);
         }
 
-        let mut ans = vec!();
+        let mut ans = vec![];
         for ss in strings {
-            let mut anselem = vec!();
+            let mut anselem = vec![];
             for s in ss {
                 let x = s.replace("*", "\\*");
                 anselem.push(x);
@@ -64,7 +64,7 @@ impl SubArgDoubleQuoted {
         let mut ans = SubArgDoubleQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
-            subargs: vec!(),
+            subargs: vec![],
             is_value: is_value,
         };
     

@@ -24,7 +24,7 @@ impl CommandElem for Substitution {
     }
 
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> { 
-        let mut ans = vec!();
+        let mut ans = vec![];
         ans.push(self.name.text.clone());
         
         let mut v = "".to_string();

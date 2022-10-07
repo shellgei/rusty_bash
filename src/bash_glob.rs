@@ -13,7 +13,7 @@ pub struct PatternElem {
 }
 
 pub fn judge(s: &String, pos: usize, pe: &PatternElem) -> Vec<usize> {
-    let mut ans = vec!();
+    let mut ans = vec![];
     if pe.asterisk {
         for n in pos..s.chars().count()+1 {
             ans.push(n);
@@ -43,8 +43,8 @@ fn wildcard() -> PatternElem {
         asterisk: true,
         question: false,
         inv: false,
-        chars: vec!(),
-        ranges: vec!(),
+        chars: vec![],
+        ranges: vec![],
     }
 }
 
@@ -57,8 +57,8 @@ fn bracket(chs: &Vec<char>) -> PatternElem {
         chs.clone()
     };
 
-    let mut chars2 = vec!();
-    let mut ranges = vec!();
+    let mut chars2 = vec![];
+    let mut ranges = vec![];
     for (i, c) in chars.iter().enumerate() {
         if c == &'-' && i >= 1 && i+1 < chars.len() {
             ranges.push((chars[i-1], chars[i+1]));
@@ -81,8 +81,8 @@ fn anychar() -> PatternElem {
         asterisk: false,
         question: true,
         inv: false,
-        chars: vec!(),
-        ranges: vec!(),
+        chars: vec![],
+        ranges: vec![],
     }
 }
 
@@ -92,16 +92,16 @@ fn simple_char(c: char) -> PatternElem {
         question: false,
         inv: false,
         chars: vec!(c),
-        ranges: vec!(),
+        ranges: vec![],
     }
 }
 
 fn set_glob(glob: &String) -> Vec<PatternElem> {
-    let mut ans = vec!();
+    let mut ans = vec![];
     let mut pos = 0;
     let mut escaped = false;
     let mut in_brace = false;
-    let mut bracket_str = vec!();
+    let mut bracket_str = vec![];
 
     loop {
         if glob.chars().count() == pos {
@@ -132,7 +132,7 @@ fn set_glob(glob: &String) -> Vec<PatternElem> {
         }else if ch == ']' && in_brace {
             ans.push(bracket(&bracket_str));
             in_brace = false;
-            bracket_str = vec!();
+            bracket_str = vec![];
         }else if in_brace {
             bracket_str.push(ch);
         }else{

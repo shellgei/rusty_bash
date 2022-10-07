@@ -27,7 +27,7 @@ impl Shopts {
     }
 
     pub fn print(&self, on_print: bool, off_print: bool) {
-        let mut keys = vec!();
+        let mut keys = vec![];
         for k in self.0.keys() {
             keys.push(k);
         }

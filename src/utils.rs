@@ -39,7 +39,7 @@ pub fn eval_glob(globstr: &String) -> Vec<String> {
         return vec!(globstr.clone());
     }
 
-    let mut ans = vec!();
+    let mut ans = vec![];
     let g = globstr.replace("\\ ", " ").to_string();
 
     //TODO: too ugly
@@ -69,10 +69,10 @@ pub fn search_commands(globstr: &String) -> Vec<String> {
     let dirs = if let Ok(p) = env::var("PATH") {
         p.split(':').map(|s| s.to_string()).collect()
     }else{
-        vec!()
+        vec![]
     };
 
-    let mut ans: Vec<String> = vec!();
+    let mut ans: Vec<String> = vec![];
     for d in dirs {
         if let Ok(path) = glob(&(d + "/" + globstr)) {
             for dir in path {
@@ -91,7 +91,7 @@ pub fn search_commands(globstr: &String) -> Vec<String> {
 pub fn search_builtin(head: &String, core: &ShellCore) -> Vec<String> {
     let len = head.len();
 
-    let mut ans = vec!();
+    let mut ans = vec![];
     for a in core.builtins.keys() {
         if a.len() >= len && &a[0..len] == head {
             ans.push(a.clone());
@@ -104,7 +104,7 @@ pub fn search_builtin(head: &String, core: &ShellCore) -> Vec<String> {
 pub fn search_aliases(head: &String, core: &ShellCore) -> Vec<String> {
     let len = head.len();
 
-    let mut ans = vec!();
+    let mut ans = vec![];
     for a in core.aliases.keys() {
         if a.len() >= len && &a[0..len] == head {
             ans.push(a.clone());
@@ -119,7 +119,7 @@ pub fn combine_with(left: &Vec<String>, right: &Vec<String>, ch: &str) -> Vec<St
         return right.clone();
     };
 
-    let mut ans = vec!();
+    let mut ans = vec![];
     for lstr in left {
         let mut con = right
             .iter()
@@ -136,7 +136,7 @@ pub fn combine(left: &mut Vec<Vec<String>>, right: Vec<Vec<String>>) -> Vec<Vec<
         return right;
     };
 
-    let mut ans = vec!();
+    let mut ans = vec![];
     for lv in left {
         let lv_len = lv.len();
         for rv in &right {
@@ -242,7 +242,7 @@ fn get_column_num(list: &Vec<String>, width: u32) -> (usize, Vec<u32>) {
     let lens: Vec<usize> = list.iter().map(|s| s.len()).collect();
 
     let mut ans = 1;
-    let mut colwids_ans = vec!();
+    let mut colwids_ans = vec![];
     for colnum in 1..100 {
         let mut line_num = list.len() / colnum;
         if list.len() % colnum != 0 {
@@ -251,7 +251,7 @@ fn get_column_num(list: &Vec<String>, width: u32) -> (usize, Vec<u32>) {
 
         let mut n = 0;
         let mut wid = 0;
-        let mut colwids = vec!();
+        let mut colwids = vec![];
         while n < list.len() {
             let colwid = if n+line_num < lens.len() {
                 *(lens[n..n+line_num].iter().max().unwrap()) as u32
@@ -304,7 +304,7 @@ pub fn get_fullpath(com: &String) -> String {
     let dirs = if let Ok(p) = env::var("PATH") {
         p.split(':').map(|s| s.to_string()).collect()
     }else{
-        vec!()
+        vec![]
     };
 
     for d in dirs {

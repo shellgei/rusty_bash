@@ -76,7 +76,7 @@ impl CompoundCase {
     pub fn new(arg: Arg) -> CompoundCase{
         CompoundCase {
             arg: arg, 
-            conddo: vec!(),
+            conddo: vec![],
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
@@ -86,7 +86,7 @@ impl CompoundCase {
 
 
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundCase) -> bool {
-        let mut conds = vec!();
+        let mut conds = vec![];
         ans.text += &text.request_next_line(conf);
 
         loop {

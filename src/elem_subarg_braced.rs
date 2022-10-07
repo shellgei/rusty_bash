@@ -41,14 +41,14 @@ impl SubArgBraced {
         SubArgBraced {
             text: "".to_string(),
             pos: DebugInfo::init(text),
-            args: vec!(),
+            args: vec![],
             complete: false,
             is_value: false,
         }
     }
 
     fn eval_complete(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        let mut ans = vec!();
+        let mut ans = vec![];
         for arg in &mut self.args {
             ans.push(arg.eval(conf));
         };
@@ -59,7 +59,7 @@ impl SubArgBraced {
         if self.args.len() == 0 {
             return vec!(vec!(self.text.clone()));
         }else if self.args.len() == 1 {
-            let mut ans = vec!();
+            let mut ans = vec![];
             let mut v = "{".to_string();
             v += &self.args[0].eval(conf).join(" ");
             if let Some(c) = self.text.chars().last() {
@@ -72,7 +72,7 @@ impl SubArgBraced {
             return vec!(ans);
         }
 
-        let mut ans = vec!();
+        let mut ans = vec![];
         for arg in &mut self.args {
             let vs = arg.eval(conf);
             ans = combine_with(&ans, &vs, ",");

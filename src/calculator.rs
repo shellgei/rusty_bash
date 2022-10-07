@@ -58,8 +58,8 @@ fn reduce(stack: &mut Vec<i32>, op: String ) {
 
 pub fn calculate(expression: String, core: &mut ShellCore) -> String {
     let tokens = tokenizer(expression, core);
-    let mut num_stack: Vec<i32> = vec!();
-    let mut wait_stack: Vec<(String,u8)> = vec!();
+    let mut num_stack: Vec<i32> = vec![];
+    let mut wait_stack: Vec<(String,u8)> = vec![];
 
     //eprintln!("TOKENS: {:?}", tokens);
 
@@ -109,8 +109,8 @@ pub fn calculate(expression: String, core: &mut ShellCore) -> String {
 }
 
 fn tokenizer(expression: String, _core: &mut ShellCore) -> Vec<(String,u8)> {
-    //let mut stack = vec!();
-    let mut tokens = vec!();
+    //let mut stack = vec![];
+    let mut tokens = vec![];
     
     let mut text = Feeder::new_with(expression.clone());
     while text.len() != 0 {

@@ -40,7 +40,7 @@ impl Script {
 
     pub fn new() -> Script{
         Script {
-            list: vec!(),
+            list: vec![],
             eops: vec!("".to_string()),
             text: "".to_string(),
         }
