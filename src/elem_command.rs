@@ -14,7 +14,7 @@ impl Command {
             process::exit(0);
         }
 
-        let mut words = vec!(); //ベクタを作る
+        let mut words = vec![]; //ベクタを作る
         for w in self.text.trim_end().split(' ') { //空白で分割
             words.push(w);
         };
