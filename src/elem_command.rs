@@ -198,7 +198,7 @@ impl Command {
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect();
 
-        let _ = execvpe(&cargs[0], &*cargs, &envs);
+        let _ = execvpe(&cargs[0], &cargs, &envs);
 
         eprintln!("Command not found");
         exit(127);
