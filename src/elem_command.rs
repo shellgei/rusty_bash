@@ -16,7 +16,7 @@ impl Command {
             process::exit(0);
         }
 
-        let mut words = vec!();
+        let mut words = vec![];
         for w in self.text.trim_end().split(' ') {
             words.push(CString::new(w.to_string()).unwrap());
         };

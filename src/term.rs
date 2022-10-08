@@ -42,8 +42,8 @@ impl Writer {
     pub fn new(hist_len: usize, left_shift: u16) -> Writer{
         Writer {
             stdout: stdout().into_raw_mode().unwrap(),
-            chars: vec!(),
-            fold_points: vec!(),
+            chars: vec![],
+            fold_points: vec![],
             previous_fold_points_num: 0,
             erased_line_num: 0,
             ch_ptr: 0,
