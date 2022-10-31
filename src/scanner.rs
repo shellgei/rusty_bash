@@ -95,6 +95,14 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
     (from , None)
 }
 
+pub fn scanner_comment(text: &Feeder, from: usize) -> usize {
+    if text.len() > from && text.nth_is(from, "#") {
+        return scanner_until(text, from, "\n");
+    }
+
+    from
+}
+
 // TODO: REMOVE THIS
 pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
     if text.nth_is(from, "|") {
@@ -106,9 +114,10 @@ pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
         return from+1;
     }
 
+    /*
     if text.nth_is(from, "#") {
         return scanner_until(text, from, "\n");
-    }
+    }*/
 
     return from;
 }

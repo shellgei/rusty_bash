@@ -263,6 +263,10 @@ impl Command {
                 break;
             }
 
+            if let n = scanner_comment(text, 0) {
+                text.consume(n);
+            }
+
             if let Some(e) = Eoc::parse(text){
                 ans.text += &e.text;
                 ans.eoc = Some(e);
