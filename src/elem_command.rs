@@ -14,7 +14,6 @@ use crate::utils::*;
 
 use crate::abst_elems::{PipelineElem, compound};
 use crate::elem_arg::Arg;
-use crate::elem_end_of_command::Eoc;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
 use crate::scanner::*;
@@ -24,7 +23,6 @@ use crate::utils_io::*;
 pub struct Command {
     vars: Vec<Box<Substitution>>,
     pub args: Vec<Box<dyn CommandElem>>,
-    //pub eoc: Option<Eoc>, //TODO: This data should not be here. 
     pub text: String,
     pub pid: Option<Pid>,
     fds: FileDescs,

@@ -60,14 +60,21 @@ pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
 }
 
 pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlOperator> ) {
-    if text.len() > from + 2  {
-        if text.compare(from, ";;&") {
-            return (from + 2, Some(ControlOperator::SemiSemiAnd));
-        }
+    let mut op = None;
+    let mut pos = from;
+
+    if text.len() > from+2  {
+        pos = from+3;
+        op = if text.compare(from, ";;&") {
+            Some(ControlOperator::SemiSemiAnd)
+        }else{
+            None
+        };
     }
 
-    if text.len() > from + 1  {
-        let op = if text.compare(from, "||") {
+    if op == None && text.len() > from + 1  {
+        pos = from+2;
+        op = if text.compare(from, "||") {
             Some(ControlOperator::Or)
         }else if text.compare(from, "&&") {
             Some(ControlOperator::And)
@@ -81,16 +88,10 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
             None
         };
 
-        /*
-        if op != None && text.len() > from+2 && text.compare(from+2, "\n") {
-            return (from+3, op);
-        */
-        if op != None{
-            return (from+2, op);
-        }
     }
 
-    if text.len() > from  {
+    if op == None && text.len() > from  {
+        pos = from+1;
         if text.compare(from, "&") {
             if text.len() > from+1 && text.compare(from+1, ">") {
                 return (0, None)
@@ -104,6 +105,15 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
             return (from + 1, Some(ControlOperator::Semicolon));
         }
     }
+
+    if op != None && text.len() > pos && text.compare(pos, "\n") {
+        pos += 1;
+    }
+
+    if op != None{
+        return (pos, op);
+    }
+
 
     (from , None)
 }

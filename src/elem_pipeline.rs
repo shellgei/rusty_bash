@@ -97,7 +97,7 @@ impl Pipeline {
                 eocs = c.get_eoc_string();
                 ans.text += &c.get_text();
                 ans.commands.push(c);
-            }else if let Some(mut c) = Command::parse(text, conf) {
+            }else if let Some(c) = Command::parse(text, conf) {
                 ans.text += &c.text.clone();
 
                 let (n, op) = scanner_control_op(text, 0);
@@ -110,9 +110,6 @@ impl Pipeline {
                 ans.commands.push(Box::new(c));
 
                 if ans.eop == ControlOperator::DoubleSemicolon {
-                    if text.len() > 0 && text.compare(0, "\n") {
-                        ans.text += &text.consume(1);
-                    }
                     break;
                 }
             }else{
