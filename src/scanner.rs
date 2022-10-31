@@ -67,29 +67,25 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
     }
 
     if text.len() > from + 1  {
-        let op;
-        if text.compare(from, "||") {
-            op = Some(ControlOperator::Or);
-            //return (from + 2, Some(ControlOperator::Or));
+        let op = if text.compare(from, "||") {
+            Some(ControlOperator::Or)
         }else if text.compare(from, "&&") {
-            op = Some(ControlOperator::And);
-            //return (from + 2, Some(ControlOperator::And));
+            Some(ControlOperator::And)
         }else if text.compare(from, ";;") {
-            op = Some(ControlOperator::DoubleSemicolon);
-            //return (from + 2, Some(ControlOperator::DoubleSemicolon));
+            Some(ControlOperator::DoubleSemicolon)
         }else if text.compare(from, ";&") {
-            op = Some(ControlOperator::SemiAnd);
-            //return (from + 2, Some(ControlOperator::SemiAnd));
+            Some(ControlOperator::SemiAnd)
         }else if text.compare(from, "|&") {
-            op = Some(ControlOperator::PipeAnd);
-            //return (from + 2, Some(ControlOperator::PipeAnd));
+            Some(ControlOperator::PipeAnd)
         }else{
-            op = None;
-        }
+            None
+        };
 
+        /*
         if op != None && text.len() > from+2 && text.compare(from+2, "\n") {
             return (from+3, op);
-        }else if op != None{
+        */
+        if op != None{
             return (from+2, op);
         }
     }

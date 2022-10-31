@@ -65,12 +65,13 @@ fn is_interactive(pid: u32) -> bool {
 }
 
 fn read_bashrc(core: &mut ShellCore){
+    /*
     let home = env::var("HOME").expect("HOME is not defined");
     if let Ok(_) = File::open(home.clone() + "/.rusty_bashrc") {
         let f = core.builtins["source"];
         let mut args = vec!("source".to_string(), home.clone() + "/.rusty_bashrc");
         f(core, &mut args);
-    }
+    }*/
 }
 
 fn get_hostname() -> String{

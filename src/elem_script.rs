@@ -93,7 +93,7 @@ impl Script {
                 ans.list_ends.push(result.get_end());
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
-
+        
                 if end.len() == 1 && end[0] == ";;"  {
                     if let Some(op) = ans.list_ends.last() {
                         if op == &ControlOperator::DoubleSemicolon {
@@ -101,8 +101,18 @@ impl Script {
                         }
                     }
                 }
+
             }
-            else {break}
+            else {
+                break
+            }
+
+            if let Some(op) = ans.list_ends.last() {
+                if op == &ControlOperator::DoubleSemicolon {
+                    break;
+                }
+            }
+
 
             if text.len() == 0 && end[0] == "" {
                 break;

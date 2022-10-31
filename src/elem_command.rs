@@ -273,12 +273,6 @@ impl Command {
             if n != 0 { 
                 break;
             }
-            /*
-            if let Some(e) = Eoc::parse(text){
-                ans.text += &e.text;
-                ans.eoc = Some(e);
-                break;
-            }*/
 
             if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
                 break;

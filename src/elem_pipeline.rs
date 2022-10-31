@@ -101,16 +101,27 @@ impl Pipeline {
                 ans.text += &c.text.clone();
 
                 let (n, op) = scanner_control_op(text, 0);
-                //eocs = c.get_eoc_string();
                 eocs = text.consume(n);
                 if let Some(p) = op {
                     ans.eop = p;
                 }
                 ans.text += &eocs;
+            
                 ans.commands.push(Box::new(c));
+
+                if ans.eop == ControlOperator::DoubleSemicolon {
+                    if text.len() > 0 && text.compare(0, "\n") {
+                        ans.text += &text.consume(1);
+                    }
+                    break;
+                }
             }else{
+                while text.len() > 0 && text.compare(0, "\n") {
+                    ans.text += &text.consume(1); 
+                }
                 break;
             }
+
 
             if eocs != "|" {
                 break;
@@ -140,16 +151,6 @@ impl Pipeline {
             }
         }
 
-        /*
-        if let Some(eop) = Eop::parse(text) {
-            if Some('&') == eop.text.chars().nth(0) 
-               && Some('&') != eop.text.chars().nth(1) {
-                   ans.is_bg = true;
-            }
-
-            ans.text += &eop.text.clone();
-            ans.eop = Some(eop);
-        }*/
 
         if ans.commands.len() > 0 {
             Some(ans)
