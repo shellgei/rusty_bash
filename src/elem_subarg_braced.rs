@@ -108,9 +108,12 @@ impl SubArgBraced {
             ans.text += &arg.text.clone();
             ans.args.push(arg); 
 
-            if text.len() == 0 
-                || scanner_end_of_com(text, 0) == 1
-                || text.nth(0) == ' ' {
+            let (n, _) = scanner_control_op(text, 0);
+            if n > 0 {
+                return Some(ans);
+            }
+
+            if text.len() == 0 || text.nth(0) == ' ' {
                 return Some(ans);
             };
     

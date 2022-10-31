@@ -95,6 +95,7 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
     (from , None)
 }
 
+// TODO: REMOVE THIS
 pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
     if text.nth_is(from, "|") {
         if text.len() > from+1 { //check of ||

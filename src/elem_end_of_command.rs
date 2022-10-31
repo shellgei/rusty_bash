@@ -13,8 +13,6 @@ pub struct Eoc {
 }
 
 impl Eoc {
-    //fn get_text(&self) -> String { self.text.clone() }
-
     pub fn parse(text: &mut Feeder) -> Option<Eoc> {
         if text.len() == 0 {
             return None;

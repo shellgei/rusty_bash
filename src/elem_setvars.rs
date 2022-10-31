@@ -43,23 +43,6 @@ impl ListElem for SetVariables {
 
     fn get_end(&self) -> ControlOperator {
         self.eop.clone()
-        /*
-        let text = if let Some(e) = &self.eop {
-            e.text.clone()
-        }else{
-            return "".to_string();
-        };
-
-        if text.chars().count() > 1 { 
-            if text.chars().nth(0) == Some('|') && text.chars().nth(1) == Some('|') {
-                return "||".to_string();
-            }
-            if text.chars().nth(0) == Some('&') && text.chars().nth(1) == Some('&') {
-                return "&&".to_string();
-            }
-        }
-        "".to_string()
-        */
     } 
 }
 

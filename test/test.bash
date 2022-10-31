@@ -479,11 +479,11 @@ res=$($com <<< '! echo abc | rev | false')
 
 ### JOB ###
 
-res=$($com <<< '(sleep 1; echo a) & ; echo b')
+res=$($com <<< '(sleep 1; echo a) & echo b')
 [ "$res" = "b
 a" ] || err $LINENO
 
-res=$($com <<< '(sleep 1; echo a) & ; wait ; echo b')
+res=$($com <<< '(sleep 1; echo a) & wait ; echo b')
 [ "$res" = "a
 b" ] || err $LINENO
 

@@ -63,7 +63,14 @@ impl SubArgNonQuoted {
         let backup = text.clone();
 
         let ans = Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) );
-        if text.len() == 0 || scanner_end_of_com(text, 0) == 1 {
+            
+        let (n, _) = scanner_control_op(text, 0);
+        if n > 0 {
+            text.rewind(backup);
+            return None;
+        }
+
+        if text.len() == 0 {
             text.rewind(backup);
             return None;
         }
