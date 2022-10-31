@@ -98,8 +98,15 @@ impl Pipeline {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
             }else if let Some(mut c) = Command::parse(text, conf) {
-                eocs = c.get_eoc_string();
                 ans.text += &c.text.clone();
+
+                let (n, op) = scanner_control_op(text, 0);
+                //eocs = c.get_eoc_string();
+                eocs = text.consume(n);
+                if let Some(p) = op {
+                    ans.eop = p;
+                }
+                ans.text += &eocs;
                 ans.commands.push(Box::new(c));
             }else{
                 break;

@@ -24,7 +24,7 @@ use crate::utils_io::*;
 pub struct Command {
     vars: Vec<Box<Substitution>>,
     pub args: Vec<Box<dyn CommandElem>>,
-    pub eoc: Option<Eoc>, //TODO: This data should not be here. 
+    //pub eoc: Option<Eoc>, //TODO: This data should not be here. 
     pub text: String,
     pub pid: Option<Pid>,
     fds: FileDescs,
@@ -81,9 +81,10 @@ impl PipelineElem for Command {
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
+        /*
         if let Some(e) = &self.eoc {
             return e.text.clone();
-        }
+        }*/
 
         "".to_string()
     }
@@ -96,7 +97,7 @@ impl Command {
         Command {
             vars: vec![],
             args: vec![],
-            eoc: None,
+            //eoc: None,
             text: "".to_string(),
             pid: None,
             fds: FileDescs::new(),
@@ -268,11 +269,16 @@ impl Command {
                 text.consume(n);
             }
 
+            let (n, _) = scanner_control_op(text, 0);
+            if n != 0 { 
+                break;
+            }
+            /*
             if let Some(e) = Eoc::parse(text){
                 ans.text += &e.text;
                 ans.eoc = Some(e);
                 break;
-            }
+            }*/
 
             if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
                 break;
