@@ -95,30 +95,6 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
     (from , None)
 }
 
-//TODO: rewrite to return a value of ControlOperator
-pub fn scanner_end_of_pipeline(text: &Feeder, from: usize) -> usize {
-    if text.compare(from, "&") && ! text.compare(from, "&&") { //background process
-            return scanner_while(text, from+1, " ;\n");
-    }
-
-    if text.compare(from, "||") || text.compare(from, "&&") {
-        return from+2;
-    }else if text.compare(from, ";;") {
-        return from;
-    }
-
-    let n = scanner_while(text, from, ";\n");
-    if n > from {
-        return n;
-    }
-
-    if text.nth_is(from, "#") {
-        return scanner_until(text, from, "\n");
-    }
-
-    return from;
-}
-
 pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
     if text.nth_is(from, "|") {
         if text.len() > from+1 { //check of ||

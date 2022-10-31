@@ -10,7 +10,6 @@ use nix::unistd::pipe;
 use crate::scanner::*;
 use crate::utils_io::set_parent_io;
 use crate::abst_elems::compound;
-use crate::elem_end_of_pipeline::Eop;
 use crate::job::Job;
 
 pub struct Pipeline {

@@ -11,7 +11,6 @@ use crate::abst_elems::ListElem;
 use crate::Feeder;
 use crate::element_list::ControlOperator;
 use crate::elem_substitution::Substitution;
-use crate::elem_end_of_pipeline::Eop;
 use crate::elem_redirect::Redirect;
 use crate::scanner::*;
 

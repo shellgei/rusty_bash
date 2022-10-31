@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
-use crate::element_list::ControlOperator;
+//use crate::element_list::ControlOperator;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
 use nix::unistd::Pid;
