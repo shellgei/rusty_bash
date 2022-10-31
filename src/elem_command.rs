@@ -24,7 +24,7 @@ use crate::utils_io::*;
 pub struct Command {
     vars: Vec<Box<Substitution>>,
     pub args: Vec<Box<dyn CommandElem>>,
-    pub eoc: Option<Eoc>,
+    pub eoc: Option<Eoc>, //TODO: This data should not be here. 
     pub text: String,
     pub pid: Option<Pid>,
     fds: FileDescs,

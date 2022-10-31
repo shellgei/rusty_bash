@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::abst_elems::ListElem;
 use crate::abst_elems::PipelineElem;
 use crate::Command;
-//use crate::elem_arg_delimiter::ArgDelimiter;
+use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
 use crate::scanner::*;
 use crate::utils_io::set_parent_io;
@@ -16,7 +16,8 @@ use crate::job::Job;
 pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
-    pub eop: Option<Eop>,
+//    pub eop: Option<Eop>,
+    pub eop: ControlOperator,
     pub is_bg: bool,
     pub job_no: u32,
     not_flag: bool,
@@ -62,7 +63,9 @@ impl ListElem for Pipeline {
 
     fn get_text(&self) -> String { self.text.clone() }
 
-    fn get_end(&self) -> String {
+    fn get_end(&self) -> ControlOperator {
+        self.eop.clone()
+        /*
         let text = if let Some(e) = &self.eop {
             e.text.clone()
         }else{
@@ -78,6 +81,7 @@ impl ListElem for Pipeline {
             }
         }
         "".to_string()
+        */
     }   
 }
 
@@ -86,7 +90,7 @@ impl Pipeline {
         Pipeline {
             commands: vec![],
             text: "".to_string(),
-            eop: None,
+            eop: ControlOperator::NoChar,
             not_flag: false,
             is_bg: false,
             job_no: 0,
@@ -137,6 +141,17 @@ impl Pipeline {
 
         }
 
+        let (size, op) = scanner_control_op(text, 0);
+        if size != 0 {
+            ans.text += &text.consume(size);
+            ans.eop = op.unwrap();
+
+            if ans.eop == ControlOperator::BgAnd {
+                ans.is_bg = true;
+            }
+        }
+
+        /*
         if let Some(eop) = Eop::parse(text) {
             if Some('&') == eop.text.chars().nth(0) 
                && Some('&') != eop.text.chars().nth(1) {
@@ -145,7 +160,7 @@ impl Pipeline {
 
             ans.text += &eop.text.clone();
             ans.eop = Some(eop);
-        }
+        }*/
 
         if ans.commands.len() > 0 {
             Some(ans)

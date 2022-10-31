@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::element_list::ControlOperator;
 use crate::elem_function::Function;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
@@ -10,13 +11,13 @@ use crate::ListElem;
 
 pub struct Script {
     pub list: Vec<Box<dyn ListElem>>,
-    pub eops: Vec<String>,
+    pub list_ends: Vec<ControlOperator>,
     pub text: String,
 }
 
 impl Script {
     pub fn exec(&mut self, conf: &mut ShellCore) {
-        let mut eop = "".to_string();
+        let mut eop = ControlOperator::NoChar;
         for p in self.list.iter_mut() {
             if conf.has_flag('d') {
                 eprintln!("{}", blue_string(&p.get_text()));
@@ -25,7 +26,7 @@ impl Script {
             //let status = conf.get_var(&"?".to_string()) == "0";
             let status = conf.get_var("?") == "0";
            
-            if (status && eop == "||") || (!status && eop =="&&") {
+            if (status && eop == ControlOperator::Or) || (!status && eop == ControlOperator::And) {
                 eop = p.get_end();
                 continue;
             }
@@ -41,7 +42,7 @@ impl Script {
     pub fn new() -> Script{
         Script {
             list: vec![],
-            eops: vec!("".to_string()),
+            list_ends: vec![],
             text: "".to_string(),
         }
     }
@@ -62,7 +63,6 @@ impl Script {
     
         loop {
             loop {
-//                eprintln!("LEN: {}", text._text());
                 let before = ans.text.len();
                 ans.text += &text.consume_blank_return();
                 ans.text += &text.consume_comment();
@@ -78,13 +78,29 @@ impl Script {
                 conf.functions.insert(f.name, body);
                 is_function = true;
             }else if let Some(result) = SetVariables::parse(text, conf) {
+                ans.list_ends.push(result.get_end());
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
+
+                if end.len() == 1 && end[0] == ";;"  {
+                    if let Some(op) = ans.list_ends.last() {
+                        if op == &ControlOperator::DoubleSemicolon {
+                            break;
+                        }
+                    }
+                }
             }else if let Some(result) = Pipeline::parse(text, conf) {
-                //eprintln!("PARSE END TEXT: {}", result.text);
-                ans.eops.push(result.get_end());
+                ans.list_ends.push(result.get_end());
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
+
+                if end.len() == 1 && end[0] == ";;"  {
+                    if let Some(op) = ans.list_ends.last() {
+                        if op == &ControlOperator::DoubleSemicolon {
+                            break;
+                        }
+                    }
+                }
             }
             else {break}
 

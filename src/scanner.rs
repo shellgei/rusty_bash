@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
+use crate::element_list::ControlOperator;
 
 pub fn scanner_until_escape(text: &Feeder, from: usize, to: &str) -> usize {
     let mut pos = from;
@@ -58,6 +59,43 @@ pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
     pos
 }
 
+pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlOperator> ) {
+    if text.len() > from + 2  {
+        if text.compare(from, ";;&") {
+            return (from + 2, Some(ControlOperator::SemiSemiAnd));
+        }
+    }
+
+    if text.len() > from + 1  {
+        if text.compare(from, "||") {
+            return (from + 2, Some(ControlOperator::Or));
+        }else if text.compare(from, "&&") {
+            return (from + 2, Some(ControlOperator::And));
+        }else if text.compare(from, ";;") {
+            return (from + 2, Some(ControlOperator::DoubleSemicolon));
+        }else if text.compare(from, ";&") {
+            return (from + 2, Some(ControlOperator::SemiAnd));
+        }else if text.compare(from, "|&") {
+            return (from + 2, Some(ControlOperator::PipeAnd));
+        }
+    }
+
+    if text.len() > from  {
+        if text.compare(from, "&") {
+            return (from + 1, Some(ControlOperator::BgAnd));
+        } else if text.compare(from, "\n") {
+            return (from + 1, Some(ControlOperator::NewLine));
+        } else if text.compare(from, "|") {
+            return (from + 1, Some(ControlOperator::Pipe));
+        } else if text.compare(from, ";") {
+            return (from + 1, Some(ControlOperator::Semicolon));
+        }
+    }
+
+    (from , None)
+}
+
+//TODO: rewrite to return a value of ControlOperator
 pub fn scanner_end_of_pipeline(text: &Feeder, from: usize) -> usize {
     if text.compare(from, "&") && ! text.compare(from, "&&") { //background process
             return scanner_while(text, from+1, " ;\n");

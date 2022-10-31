@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
+use crate::element_list::ControlOperator;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
 use nix::unistd::Pid;
@@ -107,11 +108,9 @@ impl CompoundCase {
         ans.text += &text.consume(1);
         ans.text += &text.request_next_line(conf);
 
-        //eprintln!("REM: {}", text._text());
         let doing = if text.len() >= 2 && text.compare(0, ";;") {
             None
         }else if let Some(s) = Script::parse(text, conf, vec!(";;")) {
-         //   eprintln!("DOING: {}", &ans.text);
             ans.text += &s.text;
             Some(s)
         }else{

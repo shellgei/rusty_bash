@@ -9,6 +9,7 @@ use crate::utils::blue_strings;
 use crate::abst_elems::ListElem;
 
 use crate::Feeder;
+use crate::element_list::ControlOperator;
 use crate::elem_substitution::Substitution;
 use crate::elem_end_of_pipeline::Eop;
 use crate::elem_redirect::Redirect;
@@ -17,7 +18,7 @@ use crate::scanner::*;
 pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandElem>>,
     pub text: String,
-    pub eop: Option<Eop>,
+    pub eop: ControlOperator,
 }
 
 
@@ -41,7 +42,9 @@ impl ListElem for SetVariables {
 
     fn get_text(&self) -> String { self.text.clone() }
 
-    fn get_end(&self) -> String {
+    fn get_end(&self) -> ControlOperator {
+        self.eop.clone()
+        /*
         let text = if let Some(e) = &self.eop {
             e.text.clone()
         }else{
@@ -57,6 +60,7 @@ impl ListElem for SetVariables {
             }
         }
         "".to_string()
+        */
     } 
 }
 
@@ -65,7 +69,7 @@ impl SetVariables {
         SetVariables {
             elems: vec![],
             text: "".to_string(),
-            eop: None,
+            eop: ControlOperator::NoChar,
         }
     }
 
@@ -109,14 +113,22 @@ impl SetVariables {
         }
 
         if scanner_end_paren(text, 0) == 1 {
-        }else if let Some(result) = Eop::parse(text){
+            return SetVariables::return_if_valid(ans);
+        }
+
+        let (size, op) = scanner_control_op(text, 0);
+        if size != 0 {
+            ans.text += &text.consume(size);
+            ans.eop = op.unwrap();
+            return SetVariables::return_if_valid(ans);
+        }
+
+/*        else if let Some(result) = Eop::parse(text){
             ans.text += &result.text;
             ans.eop = Some(result);
-        }else{
-            text.rewind(backup);
-            return None;
-        }
-    
-        SetVariables::return_if_valid(ans)
+        }*/
+
+        text.rewind(backup);
+        return None;
     }
 }

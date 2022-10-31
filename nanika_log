@@ -1,0 +1,173 @@
+execve("./target/release/rusty_bash", ["./target/release/rusty_bash"], 0x7fffbb2f83f0 /* 45 vars */) = 0
+brk(NULL)                               = 0x558c33b4e000
+arch_prctl(0x3001 /* ARCH_??? */, 0x7ffc842a3330) = -1 EINVAL (無効な引数です)
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6981e9f000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=142787, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 142787, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f6981e7c000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=125488, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 127720, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f6981e5c000
+mmap(0x7f6981e5f000, 94208, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x3000) = 0x7f6981e5f000
+mmap(0x7f6981e76000, 16384, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1a000) = 0x7f6981e76000
+mmap(0x7f6981e7a000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1d000) = 0x7f6981e7a000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\237\2\0\0\0\0\0"..., 832) = 832
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+pread64(3, "\4\0\0\0 \0\0\0\5\0\0\0GNU\0\2\0\0\300\4\0\0\0\3\0\0\0\0\0\0\0"..., 48, 848) = 48
+pread64(3, "\4\0\0\0\24\0\0\0\3\0\0\0GNU\0i8\235HZ\227\223\333\350s\360\352,\223\340."..., 68, 896) = 68
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=2216304, ...}, AT_EMPTY_PATH) = 0
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+mmap(NULL, 2260560, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f6981c34000
+mmap(0x7f6981c5c000, 1658880, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x28000) = 0x7f6981c5c000
+mmap(0x7f6981df1000, 360448, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1bd000) = 0x7f6981df1000
+mmap(0x7f6981e49000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x214000) = 0x7f6981e49000
+mmap(0x7f6981e4f000, 52816, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f6981e4f000
+close(3)                                = 0
+mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6981c31000
+arch_prctl(ARCH_SET_FS, 0x7f6981c31780) = 0
+set_tid_address(0x7f6981c31a50)         = 24337
+set_robust_list(0x7f6981c31a60, 24)     = 0
+rseq(0x7f6981c32120, 0x20, 0, 0x53053053) = 0
+mprotect(0x7f6981e49000, 16384, PROT_READ) = 0
+mprotect(0x7f6981e7a000, 4096, PROT_READ) = 0
+mprotect(0x558c3244e000, 20480, PROT_READ) = 0
+mprotect(0x7f6981ed9000, 8192, PROT_READ) = 0
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+munmap(0x7f6981e7c000, 142787)          = 0
+poll([{fd=0, events=0}, {fd=1, events=0}, {fd=2, events=0}], 3, 0) = 0 (Timeout)
+rt_sigaction(SIGPIPE, {sa_handler=SIG_IGN, sa_mask=[PIPE], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7f6981c76520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSEGV, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSEGV, {sa_handler=0x558c32409fe0, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK|SA_SIGINFO, sa_restorer=0x7f6981c76520}, NULL, 8) = 0
+rt_sigaction(SIGBUS, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGBUS, {sa_handler=0x558c32409fe0, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK|SA_SIGINFO, sa_restorer=0x7f6981c76520}, NULL, 8) = 0
+sigaltstack(NULL, {ss_sp=NULL, ss_flags=SS_DISABLE, ss_size=0}) = 0
+mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f6981e9c000
+mprotect(0x7f6981e9c000, 4096, PROT_NONE) = 0
+sigaltstack({ss_sp=0x7f6981e9d000, ss_flags=0, ss_size=8192}, NULL) = 0
+getrandom("\x1b\x89\xfd\x9b\x73\xcb\x61\x8e", 8, GRND_NONBLOCK) = 8
+brk(NULL)                               = 0x558c33b4e000
+brk(0x558c33b6f000)                     = 0x558c33b6f000
+openat(AT_FDCWD, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+newfstatat(3, "", {st_mode=S_IFREG|0444, st_size=0, ...}, AT_EMPTY_PATH) = 0
+read(3, "558c323d5000-558c323de000 r--p 0"..., 1024) = 1024
+read(3, "806                  /usr/lib/x8"..., 1024) = 1024
+read(3, "00 103:05 77070412              "..., 1024) = 888
+close(3)                                = 0
+sched_getaffinity(24337, 32, [0, 1, 2, 3, 4, 5, 6, 7]) = 8
+pipe2([3, 4], O_CLOEXEC)                = 0
+fcntl(4, F_SETFL, O_RDONLY|O_NONBLOCK)  = 0
+rt_sigaction(SIGINT, {sa_handler=0x558c323ed680, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7f6981c76520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_1, {sa_handler=0x7f6981cc58f0, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK|SA_RESTART|SA_SIGINFO, sa_restorer=0x7f6981c76520}, NULL, 8) = 0
+rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f6981a30000
+mprotect(0x7f6981a31000, 2097152, PROT_READ|PROT_WRITE) = 0
+rt_sigprocmask(SIG_BLOCK, ~[], [], 8)   = 0
+clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0x7f6981c30910, parent_tid=0x7f6981c30910, exit_signal=0, stack=0x7f6981a30000, stack_size=0x1ffec0, tls=0x7f6981c30640} => {parent_tid=[24338]}, 88) = 24338
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+write(1, "\360\237\215\243 ", 5)        = 5
+ioctl(1, TCGETS, {B38400 opost isig icanon echo ...}) = 0
+ioctl(1, TCGETS, {B38400 opost isig icanon echo ...}) = 0
+ioctl(1, SNDCTL_TMR_START or TCSETS, {B38400 -opost -isig -icanon -echo ...}) = 0
+ioctl(1, TCGETS, {B38400 -opost -isig -icanon -echo ...}) = 0
+read(0, "l", 8192)                      = 1
+write(1, "l", 1)                        = 1
+ioctl(1, TIOCGWINSZ, {ws_row=24, ws_col=137, ws_xpixel=0, ws_ypixel=0}) = 0
+read(0, "s", 8192)                      = 1
+write(1, "s", 1)                        = 1
+ioctl(1, TIOCGWINSZ, {ws_row=24, ws_col=137, ws_xpixel=0, ws_ypixel=0}) = 0
+read(0, "\r", 8192)                     = 1
+write(1, "\r\n", 2)                     = 2
+ioctl(1, TCGETS, {B38400 -opost -isig -icanon -echo ...}) = 0
+ioctl(1, SNDCTL_TMR_START or TCSETS, {B38400 opost isig icanon echo ...}) = 0
+ioctl(1, TCGETS, {B38400 opost isig icanon echo ...}) = 0
+write(1, "[\"ls\"]\n", 7)               = 7
+execve("/home/ueda/.local/bin/ls", ["ls"], 0x7ffc842a3508 /* 45 vars */) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+execve("/usr/local/sbin/ls", ["ls"], 0x7ffc842a3508 /* 45 vars */) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+execve("/usr/local/bin/ls", ["ls"], 0x7ffc842a3508 /* 45 vars */) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+execve("/usr/sbin/ls", ["ls"], 0x7ffc842a3508 /* 45 vars */) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+execve("/usr/bin/ls", ["ls"], 0x7ffc842a3508 /* 45 vars */) = 0
+brk(NULL)                               = 0x55a8e2764000
+arch_prctl(0x3001 /* ARCH_??? */, 0x7ffcb55a2b40) = -1 EINVAL (無効な引数です)
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f3997bef000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=142787, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 142787, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f3997bcc000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libselinux.so.1", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=166280, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 177672, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f3997ba0000
+mprotect(0x7f3997ba6000, 139264, PROT_NONE) = 0
+mmap(0x7f3997ba6000, 106496, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6000) = 0x7f3997ba6000
+mmap(0x7f3997bc0000, 28672, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x20000) = 0x7f3997bc0000
+mmap(0x7f3997bc8000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x27000) = 0x7f3997bc8000
+mmap(0x7f3997bca000, 5640, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f3997bca000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\237\2\0\0\0\0\0"..., 832) = 832
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+pread64(3, "\4\0\0\0 \0\0\0\5\0\0\0GNU\0\2\0\0\300\4\0\0\0\3\0\0\0\0\0\0\0"..., 48, 848) = 48
+pread64(3, "\4\0\0\0\24\0\0\0\3\0\0\0GNU\0i8\235HZ\227\223\333\350s\360\352,\223\340."..., 68, 896) = 68
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=2216304, ...}, AT_EMPTY_PATH) = 0
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+mmap(NULL, 2260560, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f3997978000
+mmap(0x7f39979a0000, 1658880, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x28000) = 0x7f39979a0000
+mmap(0x7f3997b35000, 360448, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1bd000) = 0x7f3997b35000
+mmap(0x7f3997b8d000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x214000) = 0x7f3997b8d000
+mmap(0x7f3997b93000, 52816, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f3997b93000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=613064, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 615184, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f39978e1000
+mmap(0x7f39978e3000, 438272, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0x7f39978e3000
+mmap(0x7f399794e000, 163840, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6d000) = 0x7f399794e000
+mmap(0x7f3997976000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x94000) = 0x7f3997976000
+close(3)                                = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f39978df000
+arch_prctl(ARCH_SET_FS, 0x7f39978dfc40) = 0
+set_tid_address(0x7f39978dff10)         = 24337
+set_robust_list(0x7f39978dff20, 24)     = 0
+rseq(0x7f39978e05e0, 0x20, 0, 0x53053053) = 0
+mprotect(0x7f3997b8d000, 16384, PROT_READ) = 0
+mprotect(0x7f3997976000, 4096, PROT_READ) = 0
+mprotect(0x7f3997bc8000, 4096, PROT_READ) = 0
+mprotect(0x55a8e18da000, 4096, PROT_READ) = 0
+mprotect(0x7f3997c29000, 8192, PROT_READ) = 0
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+munmap(0x7f3997bcc000, 142787)          = 0
+statfs("/sys/fs/selinux", 0x7ffcb55a2b80) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+statfs("/selinux", 0x7ffcb55a2b80)      = -1 ENOENT (そのようなファイルやディレクトリはありません)
+getrandom("\xb1\x72\x87\xbe\xc3\x39\x58\x56", 8, GRND_NONBLOCK) = 8
+brk(NULL)                               = 0x55a8e2764000
+brk(0x55a8e2785000)                     = 0x55a8e2785000
+openat(AT_FDCWD, "/proc/filesystems", O_RDONLY|O_CLOEXEC) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0444, st_size=0, ...}, AT_EMPTY_PATH) = 0
+read(3, "nodev\tsysfs\nnodev\ttmpfs\nnodev\tbd"..., 1024) = 421
+read(3, "", 1024)                       = 0
+close(3)                                = 0
+access("/etc/selinux/config", F_OK)     = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=6784496, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 6784496, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f3997266000
+close(3)                                = 0
+ioctl(1, TCGETS, {B38400 opost isig icanon echo ...}) = 0
+ioctl(1, TIOCGWINSZ, {ws_row=24, ws_col=137, ws_xpixel=0, ws_ypixel=0}) = 0
+openat(AT_FDCWD, ".", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3
+newfstatat(3, "", {st_mode=S_IFDIR|0775, st_size=4096, ...}, AT_EMPTY_PATH) = 0
+getdents64(3, 0x55a8e276aa30 /* 12 entries */, 32768) = 344
+getdents64(3, 0x55a8e276aa30 /* 0 entries */, 32768) = 0
+close(3)                                = 0
+newfstatat(1, "", {st_mode=S_IFCHR|0620, st_rdev=makedev(0x88, 0x2), ...}, AT_EMPTY_PATH) = 0
+write(1, "Cargo.lock  Cargo.toml\tLICENSE  "..., 61) = 61
+close(1)                                = 0
+close(2)                                = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
