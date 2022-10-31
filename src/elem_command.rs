@@ -263,7 +263,8 @@ impl Command {
                 break;
             }
 
-            if let n = scanner_comment(text, 0) {
+            let n = scanner_comment(text, 0);
+            if n != 0 { 
                 text.consume(n);
             }
 
