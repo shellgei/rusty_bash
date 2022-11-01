@@ -35,16 +35,6 @@ impl PipelineElem for CompoundWhile {
 
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
-
-    fn get_eoc_string(&mut self) -> String {
-        /*
-        if let Some(e) = &self.eoc {
-            return e.text.clone();
-        }*/
-
-        "".to_string()
-    }
-
     fn get_text(&self) -> String { self.text.clone() }
 
     fn exec_elems(&mut self, conf: &mut ShellCore) {

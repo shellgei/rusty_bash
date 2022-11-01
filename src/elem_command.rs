@@ -77,16 +77,6 @@ impl PipelineElem for Command {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
-
-    fn get_eoc_string(&mut self) -> String {
-        /*
-        if let Some(e) = &self.eoc {
-            return e.text.clone();
-        }*/
-
-        "".to_string()
-    }
-
     fn get_text(&self) -> String { self.text.clone() }
 }
 

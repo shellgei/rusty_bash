@@ -94,7 +94,6 @@ impl Pipeline {
 
             let eocs;
             if let Some(c) = compound(text, conf) {
-             //   eocs = c.get_eoc_string();
                 ans.text += &c.get_text();
                 ans.commands.push(c);
 
@@ -142,23 +141,11 @@ impl Pipeline {
             if scanner_end_paren(text, 0) == 1 {
                 break;
             }
-
         }
 
-        /*
-        let (size, op) = scanner_control_op(text, 0);
-        if size != 0 {
-            ans.text += &text.consume(size);
-            ans.eop = op.unwrap();
-
-            if ans.eop == ControlOperator::BgAnd {
-                ans.is_bg = true;
-            }
-        }*/
-            if ans.eop == ControlOperator::BgAnd {
-                ans.is_bg = true;
-            }
-
+        if ans.eop == ControlOperator::BgAnd {
+            ans.is_bg = true;
+        }
 
         if ans.commands.len() > 0 {
             Some(ans)

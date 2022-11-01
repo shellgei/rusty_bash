@@ -59,7 +59,6 @@ pub trait PipelineElem {
     fn get_pid(&self) -> Option<Pid>;
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;
-    fn get_eoc_string(&mut self) -> String;
     fn get_text(&self) -> String;
     fn set_child_io(&self) {}
     fn exec_elems(&mut self, _conf: &mut ShellCore) {}

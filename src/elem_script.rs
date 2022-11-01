@@ -23,7 +23,6 @@ impl Script {
                 eprintln!("{}", blue_string(&p.get_text()));
             }
 
-            //let status = conf.get_var(&"?".to_string()) == "0";
             let status = conf.get_var("?") == "0";
            
             if (status && eop == ControlOperator::Or) || (!status && eop == ControlOperator::And) {
