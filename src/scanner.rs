@@ -126,25 +126,6 @@ pub fn scanner_comment(text: &Feeder, from: usize) -> usize {
     from
 }
 
-// TODO: REMOVE THIS
-pub fn scanner_end_of_com(text: &Feeder, from: usize) -> usize {
-    if text.nth_is(from, "|") {
-        if text.len() > from+1 { //check of ||
-            if text.nth_is(from+1, "|") {
-                return from;
-            }
-        }
-        return from+1;
-    }
-
-    /*
-    if text.nth_is(from, "#") {
-        return scanner_until(text, from, "\n");
-    }*/
-
-    return from;
-}
-
 pub fn scanner_end_paren(text: &Feeder, from: usize) -> usize {
     if text.len() == 0 {
         return 0;

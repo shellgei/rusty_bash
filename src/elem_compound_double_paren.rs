@@ -6,7 +6,6 @@ use crate::abst_elems::PipelineElem;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elem_redirect::Redirect;
-use crate::elem_end_of_command::Eoc;
 use crate::utils_io::*;
 use crate::scanner::*;
 use crate::calculator::calculate;

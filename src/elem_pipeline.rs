@@ -93,7 +93,7 @@ impl Pipeline {
             ans.text += &text.consume_blank();
 
             let eocs;
-            if let Some(mut c) = compound(text, conf) {
+            if let Some(c) = compound(text, conf) {
              //   eocs = c.get_eoc_string();
                 ans.text += &c.get_text();
                 ans.commands.push(c);

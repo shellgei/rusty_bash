@@ -8,7 +8,6 @@ use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use std::process::exit;
 use crate::elem_redirect::Redirect;
-use crate::elem_end_of_command::Eoc;
 use crate::utils_io::*;
 use nix::unistd::{close, pipe};
 use crate::scanner::scanner_while;
