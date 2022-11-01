@@ -21,7 +21,7 @@ pub struct CompoundCase {
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-    pub eoc: Option<Eoc>,
+//    pub eoc: Option<Eoc>,
 }
 
 impl PipelineElem for CompoundCase {
@@ -43,9 +43,10 @@ impl PipelineElem for CompoundCase {
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
+        /*
         if let Some(e) = &self.eoc {
             return e.text.clone();
-        }
+        }*/
 
         "".to_string()
     }
@@ -81,7 +82,7 @@ impl CompoundCase {
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            eoc: None,
+            //eoc: None,
         }
     }
 
@@ -180,10 +181,11 @@ impl CompoundCase {
                 break;
             }
         }
+        /*
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;
             ans.eoc = Some(e);
-        }
+        }*/
 
         if ans.conddo.len() > 0 {
             Some(ans)

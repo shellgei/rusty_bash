@@ -16,7 +16,7 @@ pub struct CompoundIf {
     pub else_do: Option<Script>,
     text: String,
     pid: Option<Pid>,
-    pub eoc: Option<Eoc>,
+//    pub eoc: Option<Eoc>,
     fds: FileDescs,
 }
 
@@ -55,9 +55,10 @@ impl PipelineElem for CompoundIf {
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
+        /*
         if let Some(e) = &self.eoc {
             return e.text.clone();
-        }
+        }*/
 
         "".to_string()
     }
@@ -73,7 +74,7 @@ impl CompoundIf {
             fds: FileDescs::new(),
             text: "".to_string(),
             pid: None,
-            eoc: None,
+            //eoc: None,
         }
     }
 
@@ -179,10 +180,11 @@ impl CompoundIf {
                 break;
             }
         }
+        /*
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;
             ans.eoc = Some(e);
-        }
+        }*/
 
         Some(ans)
     }

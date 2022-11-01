@@ -18,7 +18,7 @@ pub struct CompoundDoubleParen {
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-    pub eoc: Option<Eoc>,
+//    pub eoc: Option<Eoc>,
 }
 
 impl PipelineElem for CompoundDoubleParen {
@@ -46,9 +46,11 @@ impl PipelineElem for CompoundDoubleParen {
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
+        /*
         if let Some(e) = &self.eoc {
             return e.text.clone();
         }
+        */
 
         "".to_string()
     }
@@ -65,7 +67,7 @@ impl CompoundDoubleParen {
             expression: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            eoc: None,
+            //eoc: None,
             fds: FileDescs::new(),
         }
     }
@@ -124,10 +126,11 @@ impl CompoundDoubleParen {
                 break;
             }
         }
+        /*
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;
             ans.eoc = Some(e);
-        }
+        }*/
 
         Some(ans)
     }

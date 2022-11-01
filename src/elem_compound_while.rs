@@ -16,7 +16,7 @@ pub struct CompoundWhile {
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-    pub eoc: Option<Eoc>,
+//    pub eoc: Option<Eoc>,
 }
 
 impl PipelineElem for CompoundWhile {
@@ -38,9 +38,10 @@ impl PipelineElem for CompoundWhile {
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
+        /*
         if let Some(e) = &self.eoc {
             return e.text.clone();
-        }
+        }*/
 
         "".to_string()
     }
@@ -68,7 +69,7 @@ impl CompoundWhile {
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            eoc: None,
+            //eoc: None,
         }
     }
 
@@ -136,10 +137,11 @@ impl CompoundWhile {
                 break;
             }
         }
+        /*
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;
             ans.eoc = Some(e);
-        }
+        }*/
 
         Some(ans)
     }

@@ -94,9 +94,17 @@ impl Pipeline {
 
             let eocs;
             if let Some(mut c) = compound(text, conf) {
-                eocs = c.get_eoc_string();
+             //   eocs = c.get_eoc_string();
                 ans.text += &c.get_text();
                 ans.commands.push(c);
+
+                let (n, op) = scanner_control_op(text, 0);
+                eocs = text.consume(n);
+                if let Some(p) = op {
+                    ans.eop = p;
+                }
+                ans.text += &eocs;
+
             }else if let Some(c) = Command::parse(text, conf) {
                 ans.text += &c.text.clone();
 
@@ -119,7 +127,6 @@ impl Pipeline {
                 break;
             }
 
-
             if eocs != "|" {
                 break;
             }
@@ -138,6 +145,7 @@ impl Pipeline {
 
         }
 
+        /*
         let (size, op) = scanner_control_op(text, 0);
         if size != 0 {
             ans.text += &text.consume(size);
@@ -146,7 +154,10 @@ impl Pipeline {
             if ans.eop == ControlOperator::BgAnd {
                 ans.is_bg = true;
             }
-        }
+        }*/
+            if ans.eop == ControlOperator::BgAnd {
+                ans.is_bg = true;
+            }
 
 
         if ans.commands.len() > 0 {

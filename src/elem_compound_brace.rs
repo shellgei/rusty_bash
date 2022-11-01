@@ -30,7 +30,7 @@ pub struct CompoundBrace {
     text: String,
     pid: Option<Pid>, 
     pub substitution_text: String,
-    pub eoc: Option<Eoc>,
+//    pub eoc: Option<Eoc>,
     fds: FileDescs,
 }
 
@@ -61,9 +61,10 @@ impl PipelineElem for CompoundBrace {
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
+        /*
         if let Some(e) = &self.eoc {
             return e.text.clone();
-        }
+        }*/
 
         "".to_string()
     }
@@ -79,7 +80,7 @@ impl CompoundBrace {
             text: "".to_string(),
             substitution_text: "".to_string(),
             fds: FileDescs::new(),
-            eoc: None,
+            //eoc: None,
         }
     }
 
@@ -136,10 +137,11 @@ impl CompoundBrace {
                 break;
             }
         }
+        /*
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;
             ans.eoc = Some(e);
-        }
+        }*/
 
         Some(ans)
     }

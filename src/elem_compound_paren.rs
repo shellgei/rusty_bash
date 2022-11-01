@@ -20,7 +20,7 @@ pub struct CompoundParen {
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-    pub eoc: Option<Eoc>,
+//    pub eoc: Option<Eoc>,
 }
 
 impl PipelineElem for CompoundParen {
@@ -67,9 +67,10 @@ impl PipelineElem for CompoundParen {
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
 
     fn get_eoc_string(&mut self) -> String {
+        /*
         if let Some(e) = &self.eoc {
             return e.text.clone();
-        }
+        }*/
 
         "".to_string()
     }
@@ -85,7 +86,7 @@ impl CompoundParen {
             text: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            eoc: None,
+            //eoc: None,
             fds: FileDescs::new(),
         }
     }
@@ -134,16 +135,22 @@ impl CompoundParen {
             ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text){
-                    ans.text += &r.text;
-                    ans.fds.redirects.push(Box::new(r));
+                ans.text += &r.text;
+                ans.fds.redirects.push(Box::new(r));
             }else{
                 break;
             }
         }
+
+        /*
+        let (n, _) = scanner_control_op(text, 0);
+        if n != 0 { 
+            break;
+        }
         if let Some(e) = Eoc::parse(text){
             ans.text += &e.text;
             ans.eoc = Some(e);
-        }
+        }*/
 
         Some(ans)
     }
