@@ -15,7 +15,6 @@ use crate::job::Job;
 pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
-//    pub eop: Option<Eop>,
     pub eop: ControlOperator,
     pub is_bg: bool,
     pub job_no: u32,
@@ -79,59 +78,45 @@ impl Pipeline {
         }
     }
 
+    pub fn set_control_op(text: &mut Feeder, ans: &mut Pipeline) {
+        let (n, op) = scanner_control_op(text, 0);
+        ans.text += &text.consume(n);
+        if let Some(p) = op {
+            ans.eop = p
+        }
+    }
+
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
         ans.text += &text.consume_blank();
-        if text.len() > 0 {
-            if text.nth(0) == '!' {
-                ans.not_flag = true;
-                ans.text += &text.consume(1);
-            }
+        if text.compare(0, "!") {
+            ans.not_flag = true;
+            ans.text += &text.consume(1);
         }
 
         loop {
             ans.text += &text.consume_blank();
 
-            let eocs;
             if let Some(c) = compound(text, conf) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
-
-                let (n, op) = scanner_control_op(text, 0);
-                eocs = text.consume(n);
-                if let Some(p) = op {
-                    ans.eop = p;
-                }
-                ans.text += &eocs;
-
+                Pipeline::set_control_op(text, &mut ans);
             }else if let Some(c) = Command::parse(text, conf) {
                 ans.text += &c.text.clone();
-
-                let (n, op) = scanner_control_op(text, 0);
-                eocs = text.consume(n);
-                if let Some(p) = op {
-                    ans.eop = p;
-                }
-                ans.text += &eocs;
-            
                 ans.commands.push(Box::new(c));
-
-                if ans.eop == ControlOperator::DoubleSemicolon {
-                    break;
-                }
+                Pipeline::set_control_op(text, &mut ans);
             }else{
-                while text.len() > 0 && text.compare(0, "\n") {
+                while text.compare(0, "\n") {
                     ans.text += &text.consume(1); 
                 }
                 break;
             }
 
-            if eocs != "|" {
+            if ans.eop != ControlOperator::Pipe {
                 break;
             }
 
-
-            if eocs == "|" && text.len() == 1 && text.nth(0) == '\n' {
+            if text.compare(0, "\n") {
                 text.consume(1);
                 if ! text.feed_additional_line(conf) {
                     return None;
