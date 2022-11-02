@@ -25,11 +25,11 @@ impl Command {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    eprintln!("CHILD");
+                    eprintln!("コマンド実行");
                     return;
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    eprintln!("PARENT (CHILD_PID: {})", child);
+                    eprintln!("PID{}の親です", child);
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
             }
