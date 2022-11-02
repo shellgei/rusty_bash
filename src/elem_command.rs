@@ -25,13 +25,11 @@ impl Command {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    let _ = execvp(&self.cargs[0], &self.cargs);
-                    println!("Command not found");
-                    exit(127);
+                    eprintln!("CHILD");
+                    return;
                 },
                 Ok(ForkResult::Parent { child } ) => {
-                    self.pid = Some(child);
-                    return;
+                    eprintln!("PARENT (CHILD_PID: {})", child);
                 },
                 Err(err) => panic!("Failed to fork. {}", err),
             }
