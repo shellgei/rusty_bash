@@ -9,6 +9,7 @@ use std::process;
 pub struct Command {
     pub text: String,
     pub args: Vec<String>,
+    pub cargs: Vec<CString>,
 }
 
 impl Command {
@@ -17,23 +18,26 @@ impl Command {
             process::exit(0);
         }
 
-        if self.args.len() > 0 {
-            let cwords: Vec<CString> = self.args
-                .iter()
-                .map(|w| CString::new(w.clone()).unwrap())
-                .collect();
-            println!("{:?}", execvp(&cwords[0], &cwords));
-        }
+        println!("{:?}", execvp(&self.cargs[0], &self.cargs));
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
         let line = feeder.consume(feeder.remaining.len());
-        let args = line
+        let args: Vec<String> = line
             .trim_end()
             .split(' ')
             .map(|w| w.to_string())
             .collect();
 
-        Some( Command {text: line, args: args} )
+        let cargs: Vec<CString> = args
+            .iter()
+            .map(|w| CString::new(w.clone()).unwrap())
+            .collect();
+
+        if args.len() > 0 {
+            Some( Command {text: line, args: args, cargs: cargs} )
+        }else{
+            None
+        }
     }
 }
