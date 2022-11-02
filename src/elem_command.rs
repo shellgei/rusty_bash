@@ -8,27 +8,32 @@ use std::process;
 
 pub struct Command {
     pub text: String,
+    pub args: Vec<String>,
 }
 
 impl Command {
-    pub fn exec(&mut self, _core: &mut ShellCore) { //引数_coreはまだ使いません
+    pub fn exec(&mut self, _core: &mut ShellCore) {
         if self.text == "exit\n" {
             process::exit(0);
         }
 
-        let mut words = vec![];
-        for w in self.text.trim_end().split(' ') {
-            words.push(CString::new(w.to_string()).unwrap());
-        };
-
-        println!("{:?}", words);
-        if words.len() > 0 {  // 要素が1個以上あるか確認
-            println!("{:?}", execvp(&words[0], &words));
+        if self.args.len() > 0 {
+            let cwords: Vec<CString> = self.args
+                .iter()
+                .map(|w| CString::new(w.clone()).unwrap())
+                .collect();
+            println!("{:?}", execvp(&cwords[0], &cwords));
         }
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
         let line = feeder.consume(feeder.remaining.len());
-        Some( Command {text: line} )
+        let args = line
+            .trim_end()
+            .split(' ')
+            .map(|w| w.to_string())
+            .collect();
+
+        Some( Command {text: line, args: args} )
     }
 }
