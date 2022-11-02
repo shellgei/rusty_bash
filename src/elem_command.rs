@@ -40,7 +40,6 @@ impl Command {
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
         let line = feeder.consume(feeder.remaining.len());
-        eprintln!("LINE: {}", line);
         let args: Vec<String> = line
             .trim_end()
             .split(' ')
