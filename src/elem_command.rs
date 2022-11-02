@@ -6,10 +6,14 @@ use nix::unistd::execvp;
 use std::ffi::CString;
 use std::process;
 
+use nix::unistd::{fork, ForkResult, Pid}; //追加
+use std::process::exit;
+
 pub struct Command {
     pub text: String,
     pub args: Vec<String>,
     pub cargs: Vec<CString>,
+    pub pid: Option<Pid>,
 }
 
 impl Command {
@@ -18,11 +22,25 @@ impl Command {
             process::exit(0);
         }
 
-        println!("{:?}", execvp(&self.cargs[0], &self.cargs));
+        unsafe {
+            match fork() {
+                Ok(ForkResult::Child) => {
+                    let _ = execvp(&self.cargs[0], &self.cargs);
+                    println!("Command not found");
+                    exit(127);
+                },
+                Ok(ForkResult::Parent { child } ) => {
+                    self.pid = Some(child);
+                    return;
+                },
+                Err(err) => panic!("Failed to fork. {}", err),
+            }
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
         let line = feeder.consume(feeder.remaining.len());
+        eprintln!("LINE: {}", line);
         let args: Vec<String> = line
             .trim_end()
             .split(' ')
@@ -35,7 +53,7 @@ impl Command {
             .collect();
 
         if args.len() > 0 {
-            Some( Command {text: line, args: args, cargs: cargs} )
+            Some( Command {text: line, args: args, cargs: cargs, pid: None} )
         }else{
             None
         }
