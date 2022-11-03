@@ -7,9 +7,9 @@ use std::ffi::CString;
 use std::process;
 
 pub struct Command {
-    pub text: String,
-    pub args: Vec<String>,
-    pub cargs: Vec<CString>,
+    text: String,
+    args: Vec<String>,
+    cargs: Vec<CString>,
 }
 
 impl Command {
