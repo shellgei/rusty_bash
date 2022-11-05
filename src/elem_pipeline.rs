@@ -63,7 +63,6 @@ impl ListElem for Pipeline {
 
     fn get_end(&self) -> ControlOperator {
         ControlOperator::NoChar
-       // self.eop.clone()
     }   
 }
 
