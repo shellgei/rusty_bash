@@ -78,13 +78,13 @@ impl Script {
                 conf.functions.insert(f.name, body);
                 is_function = true;
             }else if let Some(result) = SetVariables::parse(text, conf) {
-                ans.list_ends.push(result.get_end());
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
 
                 let (n, op) = scanner_control_op(text, 0);
                 if let Some(p) = op {
                     ans.text += &text.consume(n);
+                    ans.list_ends.push(p);
                 }
 
                 if end.len() == 1 && end[0] == ";;"  {
@@ -121,8 +121,8 @@ impl Script {
             }
 
             //TODO: this removal of control operator should be on one more upper level.
-            let (n, op) = scanner_control_op(text, 0);
-            if let Some(p) = op {
+            let (n, _) = scanner_control_op(text, 0);
+            if n > 0 {
                 ans.text += &text.consume(n);
             }
 

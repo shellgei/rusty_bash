@@ -5,7 +5,6 @@ use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
-use crate::element_list::ControlOperator;
 
 use crate::elem_compound_double_paren::CompoundDoubleParen;
 use crate::elem_compound_if::CompoundIf;
@@ -28,7 +27,6 @@ pub trait ListElem {
     fn exec(&mut self, conf: &mut ShellCore);
 
     fn get_text(&self) -> String;
-    fn get_end(&self) -> ControlOperator;
 }
 
 pub trait PipelineElem {
