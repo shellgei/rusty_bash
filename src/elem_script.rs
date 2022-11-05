@@ -47,7 +47,7 @@ impl Script {
         }
     }
 
-    pub fn set_in_list(text: &mut Feeder, ans: &mut Script, end: &Vec<&str>) -> bool {
+    pub fn set_listend(text: &mut Feeder, ans: &mut Script, end: &Vec<&str>) -> bool {
         let (n, op) = scanner_control_op(text, 0);
         if let Some(p) = op {
             ans.text += &text.consume(n);
@@ -101,14 +101,14 @@ impl Script {
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
 
-                if Script::set_in_list(text, &mut ans, &end){
+                if Script::set_listend(text, &mut ans, &end){
                     break;
                 }
             }else if let Some(result) = Pipeline::parse(text, conf) {
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
 
-                if Script::set_in_list(text, &mut ans, &end){
+                if Script::set_listend(text, &mut ans, &end){
                     break;
                 }
             }
