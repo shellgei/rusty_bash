@@ -15,7 +15,6 @@ use crate::job::Job;
 pub struct Pipeline {
     pub commands: Vec<Box<dyn PipelineElem>>,
     pub text: String,
-    pub eop: ControlOperator,
     pub is_bg: bool,
     pub job_no: u32,
     not_flag: bool,
@@ -71,7 +70,6 @@ impl Pipeline {
         Pipeline {
             commands: vec![],
             text: "".to_string(),
-            eop: ControlOperator::NoChar,
             not_flag: false,
             is_bg: false,
             job_no: 0,
@@ -83,8 +81,6 @@ impl Pipeline {
         if let Some(p) = op {
             if p == ControlOperator::Pipe || p == ControlOperator::PipeAnd {
                 ans.text += &text.consume(n);
-            }else{
-                ans.eop = p;
             }
         }
     }
@@ -119,6 +115,9 @@ impl Pipeline {
             }
 
             if let Some(p) = op {
+                if p == ControlOperator::BgAnd {
+                    ans.is_bg = true;
+                }
                 if p != ControlOperator::Pipe && p != ControlOperator::PipeAnd {
                     break;
                 }
@@ -136,10 +135,6 @@ impl Pipeline {
             }
         }
 
-        if ans.eop == ControlOperator::BgAnd {
-            ans.is_bg = true;
-        }
-
         if ans.commands.len() > 0 {
             Some(ans)
         }else{
@@ -147,4 +142,3 @@ impl Pipeline {
         }
     }
 }
-
