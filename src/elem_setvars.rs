@@ -9,7 +9,6 @@ use crate::utils::blue_strings;
 use crate::abst_elems::ListElem;
 
 use crate::Feeder;
-use crate::element_list::ControlOperator;
 use crate::elem_substitution::Substitution;
 use crate::elem_redirect::Redirect;
 use crate::scanner::*;
@@ -17,7 +16,7 @@ use crate::scanner::*;
 pub struct SetVariables {
     pub elems: Vec<Box<dyn CommandElem>>,
     pub text: String,
-    pub eop: ControlOperator,
+    //pub eop: ControlOperator,
 }
 
 
@@ -47,7 +46,7 @@ impl SetVariables {
         SetVariables {
             elems: vec![],
             text: "".to_string(),
-            eop: ControlOperator::NoChar,
+            //eop: ControlOperator::NoChar,
         }
     }
 
@@ -94,9 +93,8 @@ impl SetVariables {
             return SetVariables::return_if_valid(ans);
         }
 
-        let (size, op) = scanner_control_op(text, 0);
+        let (size, _) = scanner_control_op(text, 0);
         if size != 0 {
-            ans.eop = op.unwrap();
             return SetVariables::return_if_valid(ans);
         }
 
