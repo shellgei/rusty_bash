@@ -83,8 +83,9 @@ impl Pipeline {
         if let Some(p) = op {
             if p == ControlOperator::Pipe || p == ControlOperator::PipeAnd {
                 ans.text += &text.consume(n);
+            }else{
+                ans.eop = p;
             }
-            ans.eop = p;
         }
     }
 
@@ -99,13 +100,16 @@ impl Pipeline {
         loop {
             ans.text += &text.consume_blank();
 
+            let op;
             if let Some(c) = compound(text, conf) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
+                (_, op) = scanner_control_op(text, 0);
                 Pipeline::set_control_op(text, &mut ans);
             }else if let Some(c) = Command::parse(text, conf) {
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
+                (_, op) = scanner_control_op(text, 0);
                 Pipeline::set_control_op(text, &mut ans);
             }else{
                 while text.compare(0, "\n") {
@@ -114,8 +118,10 @@ impl Pipeline {
                 break;
             }
 
-            if ans.eop != ControlOperator::Pipe {
-                break;
+            if let Some(p) = op {
+                if p != ControlOperator::Pipe && p != ControlOperator::PipeAnd {
+                    break;
+                }
             }
 
             if text.compare(0, "\n") {

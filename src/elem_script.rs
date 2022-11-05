@@ -90,7 +90,13 @@ impl Script {
                     }
                 }
             }else if let Some(result) = Pipeline::parse(text, conf) {
-                ans.list_ends.push(result.get_end());
+                let (n, op) = scanner_control_op(text, 0);
+                if let Some(p) = op {
+                    ans.list_ends.push(p);
+                }else{
+                    ans.list_ends.push(ControlOperator::NoChar);
+                }
+
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
 
