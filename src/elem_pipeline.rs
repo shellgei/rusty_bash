@@ -80,9 +80,11 @@ impl Pipeline {
 
     pub fn set_control_op(text: &mut Feeder, ans: &mut Pipeline) {
         let (n, op) = scanner_control_op(text, 0);
-        ans.text += &text.consume(n);
         if let Some(p) = op {
-            ans.eop = p
+            if p == ControlOperator::Pipe || p == ControlOperator::PipeAnd {
+                ans.text += &text.consume(n);
+            }
+            ans.eop = p;
         }
     }
 

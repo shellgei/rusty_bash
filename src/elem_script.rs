@@ -8,6 +8,7 @@ use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
 use crate::utils::blue_string;
 use crate::ListElem;
+use crate::scanner::scanner_control_op;
 
 pub struct Script {
     pub list: Vec<Box<dyn ListElem>>,
@@ -92,6 +93,9 @@ impl Script {
                 ans.list_ends.push(result.get_end());
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
+
+                let (n, op) = scanner_control_op(text, 0);
+                ans.text += &text.consume(n);
         
                 if end.len() == 1 && end[0] == ";;"  {
                     if let Some(op) = ans.list_ends.last() {
