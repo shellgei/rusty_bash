@@ -62,7 +62,8 @@ impl ListElem for Pipeline {
     fn get_text(&self) -> String { self.text.clone() }
 
     fn get_end(&self) -> ControlOperator {
-        self.eop.clone()
+        ControlOperator::NoChar
+       // self.eop.clone()
     }   
 }
 

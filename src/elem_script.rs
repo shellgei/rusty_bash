@@ -19,7 +19,7 @@ pub struct Script {
 impl Script {
     pub fn exec(&mut self, conf: &mut ShellCore) {
         let mut eop = ControlOperator::NoChar;
-        for p in self.list.iter_mut() {
+        for (i, p) in self.list.iter_mut().enumerate() {
             if conf.has_flag('d') {
                 eprintln!("{}", blue_string(&p.get_text()));
             }
@@ -27,7 +27,7 @@ impl Script {
             let status = conf.get_var("?") == "0";
            
             if (status && eop == ControlOperator::Or) || (!status && eop == ControlOperator::And) {
-                eop = p.get_end();
+                eop = self.list_ends[i].clone();
                 continue;
             }
             p.exec(conf);
@@ -35,7 +35,7 @@ impl Script {
                 conf.return_flag = false;
                 return;
             }
-            eop = p.get_end();
+            eop = self.list_ends[i].clone();
         }
     }
 
