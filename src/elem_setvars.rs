@@ -100,15 +100,9 @@ impl SetVariables {
 
         let (size, op) = scanner_control_op(text, 0);
         if size != 0 {
-            ans.text += &text.consume(size);
             ans.eop = op.unwrap();
             return SetVariables::return_if_valid(ans);
         }
-
-/*        else if let Some(result) = Eop::parse(text){
-            ans.text += &result.text;
-            ans.eop = Some(result);
-        }*/
 
         text.rewind(backup);
         return None;

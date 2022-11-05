@@ -82,6 +82,11 @@ impl Script {
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
 
+                let (n, op) = scanner_control_op(text, 0);
+                if let Some(p) = op {
+                    ans.text += &text.consume(n);
+                }
+
                 if end.len() == 1 && end[0] == ";;"  {
                     if let Some(op) = ans.list_ends.last() {
                         if op == &ControlOperator::DoubleSemicolon {
@@ -113,6 +118,12 @@ impl Script {
             }
             else {
                 break
+            }
+
+            //TODO: this removal of control operator should be on one more upper level.
+            let (n, op) = scanner_control_op(text, 0);
+            if let Some(p) = op {
+                ans.text += &text.consume(n);
             }
 
             if let Some(op) = ans.list_ends.last() {
