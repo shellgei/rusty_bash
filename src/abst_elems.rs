@@ -80,8 +80,8 @@ pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Pipel
     if let Some(a) =      CompoundIf::parse(text,conf)                  {Some(Box::new(a))}
     else if let Some(a) = CompoundWhile::parse(text, conf)              {Some(Box::new(a))}
     else if let Some(a) = CompoundCase::parse(text, conf)               {Some(Box::new(a))}
-    else if let Some(a) = CompoundDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
     else if let Some(a) = CompoundParen::parse(text, conf, false)       {Some(Box::new(a))}
+    else if let Some(a) = CompoundDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
     else if let Some(a) = CompoundBrace::parse(text, conf)              {Some(Box::new(a))}
     else {None}
 }

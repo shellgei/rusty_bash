@@ -114,11 +114,6 @@ impl CompoundDoubleParen {
                 break;
             }
         }
-        /*
-        if let Some(e) = Eoc::parse(text){
-            ans.text += &e.text;
-            ans.eoc = Some(e);
-        }*/
 
         Some(ans)
     }

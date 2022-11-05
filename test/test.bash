@@ -540,6 +540,13 @@ EOF
 res=$($com <<< '{ echo } ; }')
 [ "$res" = "}" ] || err $LINENO
 
+res=$($com <<< '((echo hoge) )')
+[ "$res" = "hoge" ] || err $LINENO
+
+res=$($com <<< '((echo hoge))')
+[ "$?" != "0" ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
 # compound and read
 
 res=$($com <<< 'echo あ い う | ( read b ; echo $b )')

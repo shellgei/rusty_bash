@@ -85,6 +85,7 @@ impl CompoundParen {
             return None;
         }
 
+        //let mut all_backup = text.clone();
         let mut backup = text.clone();
         let mut ans = CompoundParen::new();
         let mut input_success;
@@ -115,6 +116,13 @@ impl CompoundParen {
         }
 
         text.consume(1);
+
+        /* distinguish from (( )) */
+        if ans.text.starts_with("((") && ans.text.ends_with("))") {
+            text.rewind(backup);
+            return None;
+        }
+
         if substitution {
             return Some(ans);
         }
@@ -130,16 +138,6 @@ impl CompoundParen {
                 break;
             }
         }
-
-        /*
-        let (n, _) = scanner_control_op(text, 0);
-        if n != 0 { 
-            break;
-        }
-        if let Some(e) = Eoc::parse(text){
-            ans.text += &e.text;
-            ans.eoc = Some(e);
-        }*/
 
         Some(ans)
     }
