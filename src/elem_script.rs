@@ -90,18 +90,17 @@ impl Script {
                     }
                 }
             }else if let Some(result) = Pipeline::parse(text, conf) {
-                let (n, op) = scanner_control_op(text, 0);
-                if let Some(p) = op {
-                    ans.list_ends.push(p);
-                }else{
-                    ans.list_ends.push(ControlOperator::NoChar);
-                }
 
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
 
                 let (n, op) = scanner_control_op(text, 0);
                 ans.text += &text.consume(n);
+                if let Some(p) = op {
+                    ans.list_ends.push(p);
+                }else{
+                    ans.list_ends.push(ControlOperator::NoChar);
+                }
         
                 if end.len() == 1 && end[0] == ";;"  {
                     if let Some(op) = ans.list_ends.last() {
