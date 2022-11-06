@@ -30,7 +30,7 @@ fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
 
     if text.compare(0, "&>") || text.compare(0, ">&") {
         /* extract the file name */
-        let start = scanner_while(text, 2, " ");
+        let start = scanner_blank(text, 2);
         let end = scanner_until_escape(text, start, " \t\n;");
         let path = text.from_to(start, end);
 
@@ -76,7 +76,7 @@ fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
     };
 
     /* extract the file name */
-    let start = scanner_while(text, arrow_pos+1, " ");
+    let start = scanner_blank(text, arrow_pos+1);
     let end = scanner_until_escape(text, start, ") \t\n");
     let path = text.from_to(start, end);
 

@@ -104,7 +104,7 @@ impl CompoundDoubleParen {
         }
 
         loop {
-            let d = scanner_while(text, 0, " \t");
+            let d = scanner_blank(text, 0);
             ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text){

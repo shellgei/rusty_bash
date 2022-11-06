@@ -35,7 +35,7 @@ impl Function {
              }
              name = VarName::new(text, var_pos);
 
-             let d = scanner_while(text, 0, " \t");
+             let d = scanner_blank(text, 0);
              ans_text += &text.consume(d);
 
              if name.text != "function" {
@@ -48,7 +48,7 @@ impl Function {
              return None;
          }
          ans_text += &text.consume(1);
-         let d = scanner_while(text, 0, " \t");
+         let d = scanner_blank(text, 0);
          ans_text += &text.consume(d);
  
          if text.len() == 0 || text.nth(0) != ')' {
@@ -57,7 +57,7 @@ impl Function {
          }
          ans_text += &text.consume(1);
  
-         let d = scanner_while(text, 0, " \t");
+         let d = scanner_blank(text, 0);
          ans_text += &text.consume(d);
  
          if let Some(c) = compound(text, conf){

@@ -84,7 +84,7 @@ impl Feeder {
     }
 
     pub fn consume_blank(&mut self) -> String {
-        let d = scanner_while(self, 0, " \t");
+        let d = scanner_blank(self, 0);
         self.consume(d)
     }
 

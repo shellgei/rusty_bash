@@ -85,7 +85,7 @@ impl SetVariables {
                 break;
             }
     
-            let d = scanner_while(text, 0, " \t");
+            let d = scanner_blank(text, 0);
             ans.text += &text.consume(d);
         }
 
