@@ -23,8 +23,9 @@ impl Command {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    eprintln!("コマンド実行");
-                    return;
+                    let err = execvp(&self.cargs[0], &self.cargs);
+                    println!("Failed to execute. {:?}", err);
+                    process::exit(127);
                 },
                 Ok(ForkResult::Parent { child } ) => {
                     eprintln!("PID{}の親です", child);
