@@ -19,13 +19,9 @@ pub fn scanner_until_escape(text: &Feeder, from: usize, to: &str) -> usize {
 }
 
 pub fn scanner_blank(text: &Feeder, from: usize) -> usize {
-    scanner_while(text, from, " \t")
-}
-
-fn scanner_while(text: &Feeder, from: usize, chars: &str) -> usize {
     let mut pos = from;
     for ch in text.chars_after(from) {
-        if let Some(_) = chars.find(ch) {
+        if let Some(_) = " \t".find(ch) {
             pos += ch.len_utf8();
         }else{
             break;
