@@ -125,35 +125,17 @@ impl Script {
                 break;
             }
 
-            //TODO: this removal of control operator should be on one more upper level.
+            /* If a semicolon exist, another element can be added to the list */
             let (n, op) = scanner_control_op(text, 0);
             if op == Some(ControlOperator::Semicolon) {
                 ans.text += &text.consume(n);
-            }
-            /*
-            if n > 0 {
-                if let Some(p) = op {
-                    if p == ControlOperator::Semicolon {
-                        ans.text += &text.consume(n);
-                    }
-                }
-            }*/
-
-            if let Some(op) = ans.list_ends.last() {
-                if op == &ControlOperator::DoubleSemicolon {
-                    break;
-                }
             }
 
             if text.len() == 0 && parent_type == &Compound::Null {
                 break;
             }
 
-            if text.len() > 0 && text.nth(0) == ')'  {
-                break;
-            }else{
-                text.request_next_line(conf);
-            }
+            text.request_next_line(conf);
         }
 
         if ans.text.len() > 0 || is_function {
