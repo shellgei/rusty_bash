@@ -70,6 +70,18 @@ impl Script {
         false
     }
 
+    fn read_blank(text: &mut Feeder, ans: &mut Script) {
+        loop {
+            let before = ans.text.len();
+            ans.text += &text.consume_blank_return();
+            ans.text += &text.consume_comment();
+
+            if before == ans.text.len() || text.len() == 0 {
+                return;
+            }
+        }
+    }
+
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
                  parent_type: &Compound) -> Option<Script> {
         if text.len() == 0 {
@@ -86,15 +98,7 @@ impl Script {
         let mut is_function = false;
     
         loop {
-            loop {
-                let before = ans.text.len();
-                ans.text += &text.consume_blank_return();
-                ans.text += &text.consume_comment();
-
-                if before == ans.text.len() || text.len() == 0 {
-                    break;
-                }
-            }
+            Script::read_blank(text, &mut ans);
 
             if let Some(f) = Function::parse(text, conf) {
                 ans.text += &f.text;
