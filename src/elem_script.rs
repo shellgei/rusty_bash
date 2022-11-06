@@ -80,6 +80,38 @@ impl Script {
         }
     }
 
+    pub fn parse_elem(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Script, parent_type: &Compound) -> (bool, bool) {
+        let mut is_function = false;
+        let mut go_next = true;
+
+            if let Some(f) = Function::parse(text, conf) {
+                ans.text += &f.text;
+                let body = f.body.get_text();
+                conf.functions.insert(f.name, body);
+                is_function = true;
+
+            }else if let Some(result) = SetVariables::parse(text, conf) {
+                ans.text += &result.text;
+                ans.list.push(Box::new(result));
+
+                if Script::set_listend(text, ans, parent_type){
+                    go_next = false;
+                }
+            }else if let Some(result) = Pipeline::parse(text, conf) {
+                ans.text += &result.text;
+                ans.list.push(Box::new(result));
+
+                if Script::set_listend(text, ans, parent_type){
+                    go_next = false;
+                }
+            }
+            else {
+                go_next = false;
+            }
+
+            (go_next, is_function)
+    }
+
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
                  parent_type: &Compound) -> Option<Script> {
         if text.len() == 0 {
@@ -98,28 +130,10 @@ impl Script {
         loop {
             Script::read_blank(text, &mut ans);
 
-            if let Some(f) = Function::parse(text, conf) {
-                ans.text += &f.text;
-                let body = f.body.get_text();
-                conf.functions.insert(f.name, body);
-                is_function = true;
+            let (go_next, is_func) = Script::parse_elem(text, conf, &mut ans, parent_type);
+            is_function = is_func;
 
-            }else if let Some(result) = SetVariables::parse(text, conf) {
-                ans.text += &result.text;
-                ans.list.push(Box::new(result));
-
-                if Script::set_listend(text, &mut ans, parent_type){
-                    break;
-                }
-            }else if let Some(result) = Pipeline::parse(text, conf) {
-                ans.text += &result.text;
-                ans.list.push(Box::new(result));
-
-                if Script::set_listend(text, &mut ans, parent_type){
-                    break;
-                }
-            }
-            else {
+            if ! go_next {
                 break;
             }
 
