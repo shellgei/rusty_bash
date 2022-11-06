@@ -47,10 +47,10 @@ impl Command {
             .map(|w| CString::new(w.clone()).unwrap())
             .collect();
 
-        if args.len() > 0 {
-            Some( Command {text: line, args: args, cargs: cargs} )
+        if args.len() > 0 { // 1個以上の単語があればCommandのインスタンスを作成して返す
+            return Some( Command {text: line, args: args, cargs: cargs} );
         }else{
-            None
+            return None; // そうでなければ何も返さない
         }
     }
 }
