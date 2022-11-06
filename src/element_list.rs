@@ -13,6 +13,7 @@ pub enum ControlOperator {
     Pipe, /* | */
     PipeAnd, /* |& */
     NewLine, /* \n */
+    LeftParen, /* ( */
     RightParen, /* ) */
     NoChar,
 }

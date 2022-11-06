@@ -103,6 +103,8 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
             return (from + 1, Some(ControlOperator::Pipe));
         } else if text.compare(from, ";") {
             return (from + 1, Some(ControlOperator::Semicolon));
+        } else if text.compare(from, "(") {
+            return (from + 1, Some(ControlOperator::LeftParen));
         } else if text.compare(from, ")") {
             return (from + 1, Some(ControlOperator::RightParen));
         }
