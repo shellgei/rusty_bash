@@ -6,11 +6,12 @@ use crate::abst_elems::PipelineElem;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
+use crate::element_list::ControlOperator;
 use std::process::exit;
 use crate::elem_redirect::Redirect;
 use crate::utils_io::*;
 use nix::unistd::{close, pipe};
-use crate::scanner::scanner_while;
+use crate::scanner::{scanner_while, scanner_control_op};
 use crate::element_list::Compound;
 
 pub struct CompoundParen {
@@ -94,8 +95,20 @@ impl CompoundParen {
         loop{
             text.consume(1);
             if let Some(s) = Script::parse(text, conf, &ans.my_type) {
-                ans.text = "(".to_owned() + &s.text + ")";
+
+                ans.text = "(".to_owned() + &s.text;
+                let (n, op) = scanner_control_op(text, 0);
+                if let Some(p) = op  {
+                    if p != ControlOperator::RightParen {
+                        text.rewind(backup);
+                        return None;
+                    }
+                }
+
+                ans.text += &text.consume(n);
                 ans.script = Some(s);
+
+            //    break;
             }else{
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);
                 if ! input_success {
@@ -105,7 +118,7 @@ impl CompoundParen {
                 continue;
             }
 
-            if text.len() == 0 || text.nth(0) != ')' {
+            if ans.text.len() != 0 && ! ans.text.ends_with(")") {
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);
                 if ! input_success {
                     text.consume(text.len());
@@ -116,7 +129,7 @@ impl CompoundParen {
             }
         }
 
-        text.consume(1);
+        //text.consume(1);
 
         /* distinguish from (( )) */
         if ans.text.starts_with("((") && ans.text.ends_with("))") {

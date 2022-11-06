@@ -50,17 +50,20 @@ impl Script {
     pub fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &Compound) -> bool {
         let (n, op) = scanner_control_op(text, 0);
         if let Some(p) = op {
-            ans.text += &text.consume(n);
+            if parent_type != &Compound::Paren {
+                ans.text += &text.consume(n);
+            }
             ans.list_ends.push(p);
         }else{
             ans.list_ends.push(ControlOperator::NoChar);
         }
 
-        if parent_type == &Compound::Case {
-            if let Some(op) = ans.list_ends.last() {
-                if op == &ControlOperator::DoubleSemicolon {
-                    return true;
-                }
+        if let Some(op) = ans.list_ends.last() {
+            if parent_type == &Compound::Case && op == &ControlOperator::DoubleSemicolon {
+                return true;
+            }
+            if parent_type == &Compound::Paren && op == &ControlOperator::RightParen {
+                return true;
             }
         }
 
@@ -98,6 +101,7 @@ impl Script {
                 let body = f.body.get_text();
                 conf.functions.insert(f.name, body);
                 is_function = true;
+
             }else if let Some(result) = SetVariables::parse(text, conf) {
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
@@ -114,7 +118,7 @@ impl Script {
                 }
             }
             else {
-                break
+                break;
             }
 
             //TODO: this removal of control operator should be on one more upper level.
@@ -139,7 +143,7 @@ impl Script {
                 text.request_next_line(conf);
             }
         }
-    
+
         if ans.text.len() > 0 || is_function {
             Some(ans)
         }else{
