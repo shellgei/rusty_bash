@@ -2,18 +2,15 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder};
-use nix::unistd::execvp;
 use std::ffi::CString;
 use std::process;
 
-use nix::unistd::{fork, ForkResult, Pid}; //追加
-use std::process::exit;
+use nix::unistd::{fork, ForkResult}; 
 
 pub struct Command {
-    pub text: String,
-    pub args: Vec<String>,
-    pub cargs: Vec<CString>,
-    pub pid: Option<Pid>,
+    text: String,
+    args: Vec<String>,
+    cargs: Vec<CString>,
 }
 
 impl Command {
@@ -50,7 +47,7 @@ impl Command {
             .collect();
 
         if args.len() > 0 {
-            Some( Command {text: line, args: args, cargs: cargs, pid: None} )
+            Some( Command {text: line, args: args, cargs: cargs} )
         }else{
             None
         }
