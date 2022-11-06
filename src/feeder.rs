@@ -103,8 +103,19 @@ impl Feeder {
     }
 
     pub fn consume_blank_return(&mut self) -> String {
-        let d = scanner_while(self, 0, " \t\n");
-        self.consume(d)
+        let mut ans = "".to_string();
+        loop {
+            let d = scanner_blank(self, 0);
+            if d != 0 {
+                ans += &self.consume(d);
+            }else if self.remaining.starts_with("\n") {
+                ans += &self.consume(1);
+            }else{
+                break;
+            }
+        }
+
+        ans
     }
 
     pub fn replace(&mut self, from: &str, to: &str) {

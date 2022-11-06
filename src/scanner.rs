@@ -22,7 +22,7 @@ pub fn scanner_blank(text: &Feeder, from: usize) -> usize {
     scanner_while(text, from, " \t")
 }
 
-pub fn scanner_while(text: &Feeder, from: usize, chars: &str) -> usize {
+fn scanner_while(text: &Feeder, from: usize, chars: &str) -> usize {
     let mut pos = from;
     for ch in text.chars_after(from) {
         if let Some(_) = chars.find(ch) {
