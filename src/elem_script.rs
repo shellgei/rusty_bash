@@ -84,32 +84,32 @@ impl Script {
         let mut is_function = false;
         let mut go_next = true;
 
-            if let Some(f) = Function::parse(text, conf) {
-                ans.text += &f.text;
-                let body = f.body.get_text();
-                conf.functions.insert(f.name, body);
-                is_function = true;
+        if let Some(f) = Function::parse(text, conf) {
+            ans.text += &f.text;
+            let body = f.body.get_text();
+            conf.functions.insert(f.name, body);
+            is_function = true;
 
-            }else if let Some(result) = SetVariables::parse(text, conf) {
-                ans.text += &result.text;
-                ans.list.push(Box::new(result));
+        }else if let Some(result) = SetVariables::parse(text, conf) {
+            ans.text += &result.text;
+            ans.list.push(Box::new(result));
 
-                if Script::set_listend(text, ans, parent_type){
-                    go_next = false;
-                }
-            }else if let Some(result) = Pipeline::parse(text, conf) {
-                ans.text += &result.text;
-                ans.list.push(Box::new(result));
-
-                if Script::set_listend(text, ans, parent_type){
-                    go_next = false;
-                }
-            }
-            else {
+            if Script::set_listend(text, ans, parent_type){
                 go_next = false;
             }
+        }else if let Some(result) = Pipeline::parse(text, conf) {
+            ans.text += &result.text;
+            ans.list.push(Box::new(result));
 
-            (go_next, is_function)
+            if Script::set_listend(text, ans, parent_type){
+                go_next = false;
+            }
+        }
+        else {
+            go_next = false;
+        }
+
+        (go_next, is_function)
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
@@ -125,13 +125,14 @@ impl Script {
         }
 
         let mut ans = Script::new();
-        let mut is_function = false;
+        let mut read_function = false;
     
         loop {
             Script::read_blank(text, &mut ans);
 
+            /* read a function, pipeline, or variable setting */
             let (go_next, is_func) = Script::parse_elem(text, conf, &mut ans, parent_type);
-            is_function = is_func;
+            read_function |= is_func;
 
             if ! go_next {
                 break;
@@ -150,7 +151,7 @@ impl Script {
             text.request_next_line(conf);
         }
 
-        if ans.text.len() > 0 || is_function {
+        if ans.text.len() > 0 || read_function {
             Some(ans)
         }else{
             eprintln!("Unknown phrase");
