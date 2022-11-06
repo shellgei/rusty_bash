@@ -50,7 +50,7 @@ impl Script {
     pub fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &Compound) -> bool {
         let (n, op) = scanner_control_op(text, 0);
         if let Some(p) = op {
-            if parent_type != &Compound::Paren {
+            if parent_type != &Compound::Paren || p != ControlOperator::RightParen {
                 ans.text += &text.consume(n);
             }
             ans.list_ends.push(p);
@@ -126,10 +126,18 @@ impl Script {
             }
 
             //TODO: this removal of control operator should be on one more upper level.
-            let (n, _) = scanner_control_op(text, 0);
-            if n > 0 {
+            let (n, op) = scanner_control_op(text, 0);
+            if op == Some(ControlOperator::Semicolon) {
                 ans.text += &text.consume(n);
             }
+            /*
+            if n > 0 {
+                if let Some(p) = op {
+                    if p == ControlOperator::Semicolon {
+                        ans.text += &text.consume(n);
+                    }
+                }
+            }*/
 
             if let Some(op) = ans.list_ends.last() {
                 if op == &ControlOperator::DoubleSemicolon {
