@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder};
+use nix::unistd::execvp;
 use std::ffi::CString;
 use std::process;
 
