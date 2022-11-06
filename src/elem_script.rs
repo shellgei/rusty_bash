@@ -47,24 +47,22 @@ impl Script {
         }
     }
 
-    pub fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &Compound) -> bool {
+    fn is_end_condition(parent: &Compound, op: &ControlOperator) -> bool {
+        ( parent == &Compound::Paren && op == &ControlOperator::RightParen ) ||
+        ( parent == &Compound::Case && op == &ControlOperator::DoubleSemicolon )
+    }
+
+    fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &Compound) -> bool {
         let (n, op) = scanner_control_op(text, 0);
         if let Some(p) = op {
-            if parent_type != &Compound::Paren || p != ControlOperator::RightParen {
-                ans.text += &text.consume(n);
+            ans.list_ends.push(p.clone());
+            if Script::is_end_condition(parent_type, &p) {
+                return true;
             }
-            ans.list_ends.push(p);
+
+            ans.text += &text.consume(n);
         }else{
             ans.list_ends.push(ControlOperator::NoChar);
-        }
-
-        if let Some(op) = ans.list_ends.last() {
-            if parent_type == &Compound::Case && op == &ControlOperator::DoubleSemicolon {
-                return true;
-            }
-            if parent_type == &Compound::Paren && op == &ControlOperator::RightParen {
-                return true;
-            }
         }
 
         false
