@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element_list::ControlOperator;
+use crate::element_list::*;
 use crate::elem_function::Function;
 use crate::elem_pipeline::Pipeline;
 use crate::elem_setvars::SetVariables;
@@ -47,7 +47,7 @@ impl Script {
         }
     }
 
-    pub fn set_listend(text: &mut Feeder, ans: &mut Script, end: &Vec<&str>) -> bool {
+    pub fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &Compound) -> bool {
         let (n, op) = scanner_control_op(text, 0);
         if let Some(p) = op {
             ans.text += &text.consume(n);
@@ -56,7 +56,7 @@ impl Script {
             ans.list_ends.push(ControlOperator::NoChar);
         }
 
-        if end.len() == 1 && end[0] == ";;"  {
+        if parent_type == &Compound::Case {
             if let Some(op) = ans.list_ends.last() {
                 if op == &ControlOperator::DoubleSemicolon {
                     return true;
@@ -67,7 +67,8 @@ impl Script {
         false
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, end: Vec<&str>) -> Option<Script> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
+                 parent_type: &Compound) -> Option<Script> {
         if text.len() == 0 {
             return None;
         };
@@ -101,14 +102,14 @@ impl Script {
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
 
-                if Script::set_listend(text, &mut ans, &end){
+                if Script::set_listend(text, &mut ans, parent_type){
                     break;
                 }
             }else if let Some(result) = Pipeline::parse(text, conf) {
                 ans.text += &result.text;
                 ans.list.push(Box::new(result));
 
-                if Script::set_listend(text, &mut ans, &end){
+                if Script::set_listend(text, &mut ans, parent_type){
                     break;
                 }
             }
@@ -128,12 +129,7 @@ impl Script {
                 }
             }
 
-
-            if text.len() == 0 && end[0] == "" {
-                break;
-            }
-
-            if end.iter().any(|e| text.compare(0, e)) {
+            if text.len() == 0 && parent_type == &Compound::Null {
                 break;
             }
 

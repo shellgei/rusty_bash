@@ -11,6 +11,7 @@ use crate::elem_redirect::Redirect;
 use crate::utils_io::*;
 use nix::unistd::{close, pipe};
 use crate::scanner::scanner_while;
+use crate::element_list::Compound;
 
 pub struct CompoundParen {
     pub script: Option<Script>,
@@ -19,7 +20,7 @@ pub struct CompoundParen {
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-//    pub eoc: Option<Eoc>,
+    my_type: Compound, 
 }
 
 impl PipelineElem for CompoundParen {
@@ -75,7 +76,7 @@ impl CompoundParen {
             text: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            //eoc: None,
+            my_type: Compound::Paren, 
             fds: FileDescs::new(),
         }
     }
@@ -92,7 +93,7 @@ impl CompoundParen {
 
         loop{
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf, vec!(")")) {
+            if let Some(s) = Script::parse(text, conf, &ans.my_type) {
                 ans.text = "(".to_owned() + &s.text + ")";
                 ans.script = Some(s);
             }else{

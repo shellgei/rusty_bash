@@ -6,6 +6,7 @@ use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
+use crate::element_list::Compound;
 use nix::unistd::Pid;
 use crate::utils_io::*;
 
@@ -15,7 +16,7 @@ pub struct CompoundWhile {
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-//    pub eoc: Option<Eoc>,
+    my_type: Compound, 
 }
 
 impl PipelineElem for CompoundWhile {
@@ -58,7 +59,7 @@ impl CompoundWhile {
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            //eoc: None,
+            my_type: Compound::While,
         }
     }
 
@@ -66,7 +67,7 @@ impl CompoundWhile {
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
         ans.text += &text.request_next_line(conf);
 
-        let cond = if let Some(s) = Script::parse(text, conf, vec!("do")) {
+        let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
             ans.text += &s.text;
             s
         }else{
@@ -81,7 +82,7 @@ impl CompoundWhile {
 
         ans.text += &text.request_next_line(conf);
 
-        let doing = if let Some(s) = Script::parse(text, conf, vec!("done")) {
+        let doing = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
             ans.text += &s.text;
             s
         }else{

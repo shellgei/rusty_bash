@@ -15,3 +15,14 @@ pub enum ControlOperator {
     NewLine, /* \n */
     NoChar,
 }
+
+#[derive(PartialEq)]
+pub enum Compound {
+    Case,
+    While,
+    If,
+    Paren,
+    //DoubleParen,
+    Brace,
+    Null,
+}

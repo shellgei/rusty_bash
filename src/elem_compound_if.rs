@@ -6,6 +6,7 @@ use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
+use crate::element_list::Compound;
 use nix::unistd::Pid;
 use crate::utils_io::*;
 
@@ -15,7 +16,7 @@ pub struct CompoundIf {
     pub else_do: Option<Script>,
     text: String,
     pid: Option<Pid>,
-//    pub eoc: Option<Eoc>,
+    my_type: Compound, 
     fds: FileDescs,
 }
 
@@ -63,7 +64,7 @@ impl CompoundIf {
             fds: FileDescs::new(),
             text: "".to_string(),
             pid: None,
-            //eoc: None,
+            my_type: Compound::If,
         }
     }
 
@@ -71,7 +72,7 @@ impl CompoundIf {
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
         ans.text += &text.request_next_line(conf);
 
-        let cond = if let Some(s) = Script::parse(text, conf, vec!("then")) {
+        let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
             ans.text += &s.text;
             s
         }else{
@@ -86,13 +87,10 @@ impl CompoundIf {
 
         ans.text += &text.request_next_line(conf);
 
-        let doing = if let Some(s) = Script::parse(text, conf, ["elif", "else"].to_vec()) {
+        let doing = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
             ans.text += &s.text;
             s
-        }/*else if let Some(s) = Script::parse(text, conf, "else") {
-            ans.text += &s.text;
-            s
-        }*/else{
+        }else{
             return false;
         };
 
@@ -107,7 +105,7 @@ impl CompoundIf {
         ans.text += &text.request_next_line(conf);
         
 
-        ans.else_do = if let Some(s) = Script::parse(text, conf, vec!("fi")) {
+        ans.else_do = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
             ans.text += &s.text;
             Some(s)
         }else{

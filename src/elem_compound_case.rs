@@ -13,6 +13,7 @@ use crate::scanner::*;
 use crate::elem_arg::Arg;
 use crate::bash_glob::glob_match;
 use crate::abst_elems::CommandElem;
+use crate::element_list::Compound;
 
 pub struct CompoundCase {
     pub arg: Arg,
@@ -20,7 +21,7 @@ pub struct CompoundCase {
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-//    pub eoc: Option<Eoc>,
+    my_type: Compound, 
 }
 
 impl PipelineElem for CompoundCase {
@@ -71,7 +72,7 @@ impl CompoundCase {
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            //eoc: None,
+            my_type: Compound::Case,
         }
     }
 
@@ -100,7 +101,7 @@ impl CompoundCase {
 
         let doing = if text.len() >= 2 && text.compare(0, ";;") {
             None
-        }else if let Some(s) = Script::parse(text, conf, vec!(";;")) {
+        }else if let Some(s) = Script::parse(text, conf, &ans.my_type) {
             ans.text += &s.text;
             Some(s)
         }else{
