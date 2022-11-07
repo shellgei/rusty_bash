@@ -6,9 +6,8 @@ use nix::unistd::execvp;
 use std::ffi::CString;
 use std::process;
 
-use nix::sys::wait::waitpid;
-use nix::sys::wait::WaitStatus;
-use nix::unistd::{fork, ForkResult, Pid}; 
+use nix::sys::wait::{waitpid, WaitStatus}; //追加
+use nix::unistd::{fork, ForkResult, Pid};  //Pidを追加
 
 pub struct Command {
     text: String,
@@ -36,7 +35,7 @@ impl Command {
                 process::exit(127);
             },
             Ok(ForkResult::Parent { child } ) => {
-                wait_child(child);
+                wait_child(child); //eprintln!の行をこのように書き換え
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
