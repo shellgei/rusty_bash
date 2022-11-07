@@ -6,8 +6,8 @@ use nix::unistd::execvp;
 use std::ffi::CString;
 use std::process;
 
-use nix::sys::wait::waitpid;         //追加
 use nix::unistd::{fork, ForkResult};
+use nix::sys::wait::waitpid;         //追加
 
 pub struct Command {
     text: String,
