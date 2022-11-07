@@ -56,9 +56,9 @@ impl Command {
             .collect();
 
         if args.len() > 0 { // 1個以上の単語があればCommandのインスタンスを作成して返す
-            return Some( Command {text: line, args: args, cargs: cargs} );
+            Some( Command {text: line, args: args, cargs: cargs} )
         }else{
-            return None; // そうでなければ何も返さない
+            None // そうでなければ何も返さない
         }
     }
 }
