@@ -7,7 +7,9 @@ use std::ffi::CString;
 use std::process;
 
 use nix::unistd::{fork, ForkResult};
-use nix::sys::wait::waitpid;         //追加
+use nix::sys::wait::waitpid;
+use std::env;             //追加
+use std::path::Path;      //追加
 
 pub struct Command {
     text: String,
@@ -17,8 +19,15 @@ pub struct Command {
 
 impl Command {
     pub fn exec(&mut self, _core: &mut ShellCore) {
-        if self.text == "exit\n" {
+        if self.text == "exit\n" { //self.args[0]を使ってもよい
             process::exit(0);
+        }
+        if self.args[0] == "cd" && self.args.len() > 1 {
+            let path = Path::new(&self.args[1]);
+            if env::set_current_dir(&path).is_err() {
+                eprintln!("Cannot change directory");
+            }
+            return;
         }
 
         match unsafe{fork()} {
@@ -28,7 +37,7 @@ impl Command {
                 process::exit(127);
             },
             Ok(ForkResult::Parent { child } ) => {
-                let _ = waitpid(child, None);
+                let _ = waitpid(child, None); //eprintln!の行を書き換え
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
