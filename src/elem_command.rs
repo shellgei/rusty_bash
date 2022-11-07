@@ -6,20 +6,13 @@ use nix::unistd::execvp;
 use std::ffi::CString;
 use std::process;
 
-use nix::sys::wait::{waitpid, WaitStatus}; //追加
-use nix::unistd::{fork, ForkResult, Pid};  //Pidを追加
+use nix::sys::wait::waitpid;         //追加
+use nix::unistd::{fork, ForkResult};
 
 pub struct Command {
     text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
-}
-
-fn wait_child(child: Pid) -> i32 {
-    match waitpid(child, None) {
-        Ok(WaitStatus::Exited(_pid, status)) => status,
-        _ => panic!("Failed to wait."),
-    }
 }
 
 impl Command {
@@ -35,7 +28,7 @@ impl Command {
                 process::exit(127);
             },
             Ok(ForkResult::Parent { child } ) => {
-                wait_child(child); //eprintln!の行をこのように書き換え
+                let _ = waitpid(child, None);
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
