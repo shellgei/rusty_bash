@@ -20,18 +20,16 @@ impl Command {
             process::exit(0);
         }
 
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    let err = execvp(&self.cargs[0], &self.cargs);
-                    println!("Failed to execute. {:?}", err);
-                    process::exit(127);
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    eprintln!("PID{}の親です", child);
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
+        match unsafe{fork()} {
+            Ok(ForkResult::Child) => {
+                let err = execvp(&self.cargs[0], &self.cargs);
+                println!("Failed to execute. {:?}", err);
+                process::exit(127);
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                eprintln!("PID{}の親です", child);
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 
