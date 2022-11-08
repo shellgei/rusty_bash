@@ -88,15 +88,7 @@ impl Script {
             let body = f.body.get_text();
             conf.functions.insert(f.name, body);
             is_function = true;
-
-        }/*else if let Some(result) = SetVariables::parse(text, conf) {
-            ans.text += &result.text;
-            ans.list.push(Box::new(result));
-
-            if Script::set_listend(text, ans, parent_type){
-                go_next = false;
-            }
-        }*/else if let Some(result) = Pipeline::parse(text, conf) {
+        }else if let Some(result) = Pipeline::parse(text, conf) {
             ans.text += &result.text;
             ans.list.push(Box::new(result));
 
