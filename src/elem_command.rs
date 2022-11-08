@@ -29,18 +29,9 @@ pub struct Command {
 }
 
 impl PipelineElem for Command {
-
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.args.len() == 0 {
-            for e in &mut self.vars {
-                let sub = e.eval(conf);
-                let (key, value) = (sub[0].clone(), sub[1].clone());
-                if let Ok(_) = env::var(&key) {
-                    env::set_var(key, value);
-                }else{
-                    conf.set_var(&key, &value);
-                };
-            };
+            self.set_vars(conf);
             return;
         }
 
@@ -66,18 +57,16 @@ impl PipelineElem for Command {
             }
         }
 
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    self.fds.set_child_io();
-                    self.exec_external_command(&mut args, conf)
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    self.pid = Some(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
+        match unsafe{fork()} {
+            Ok(ForkResult::Child) => {
+                self.fds.set_child_io();
+                self.exec_external_command(&mut args, conf)
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                self.pid = Some(child);
+                return;
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 
@@ -302,5 +291,17 @@ impl Command {
             text.rewind(backup);
             None
         }
+    }
+
+    fn set_vars(&mut self, conf: &mut ShellCore){
+        for e in &mut self.vars {
+            let sub = e.eval(conf);
+            let (key, value) = (sub[0].clone(), sub[1].clone());
+            if let Ok(_) = env::var(&key) {
+                env::set_var(key, value);
+            }else{
+                conf.set_var(&key, &value);
+            };
+        };
     }
 }
