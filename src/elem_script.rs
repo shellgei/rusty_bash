@@ -5,7 +5,6 @@ use crate::{ShellCore, Feeder};
 use crate::element_list::*;
 use crate::elem_function::Function;
 use crate::elem_pipeline::Pipeline;
-use crate::elem_setvars::SetVariables;
 use crate::utils::blue_string;
 use crate::ListElem;
 use crate::scanner::scanner_control_op;
@@ -90,14 +89,14 @@ impl Script {
             conf.functions.insert(f.name, body);
             is_function = true;
 
-        }else if let Some(result) = SetVariables::parse(text, conf) {
+        }/*else if let Some(result) = SetVariables::parse(text, conf) {
             ans.text += &result.text;
             ans.list.push(Box::new(result));
 
             if Script::set_listend(text, ans, parent_type){
                 go_next = false;
             }
-        }else if let Some(result) = Pipeline::parse(text, conf) {
+        }*/else if let Some(result) = Pipeline::parse(text, conf) {
             ans.text += &result.text;
             ans.list.push(Box::new(result));
 

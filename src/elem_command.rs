@@ -31,6 +31,19 @@ pub struct Command {
 impl PipelineElem for Command {
 
     fn exec(&mut self, conf: &mut ShellCore) {
+        if self.args.len() == 0 {
+            for e in &mut self.vars {
+                let sub = e.eval(conf);
+                let (key, value) = (sub[0].clone(), sub[1].clone());
+                if let Ok(_) = env::var(&key) {
+                    env::set_var(key, value);
+                }else{
+                    conf.set_var(&key, &value);
+                };
+            };
+            return;
+        }
+
         if conf.has_flag('v') {
             eprintln!("{}", self.text.trim_end());
         }
@@ -283,7 +296,7 @@ impl Command {
             Command::replace_alias(text, conf);
         }
 
-        if Command::args_and_redirects(text, conf, &mut ans) {
+        if Command::args_and_redirects(text, conf, &mut ans) || ans.vars.len() != 0 {
             Some(ans)
         }else{
             text.rewind(backup);
