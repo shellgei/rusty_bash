@@ -18,6 +18,31 @@ pub enum ControlOperator {
     NoChar,
 }
 
+pub enum Reserved {
+    Not, /* ! */
+    Case,
+    Do,
+    Done,
+    Elif,
+    Else,
+    Esac,
+    Fi,
+    For, 
+    Function,
+    If,
+    In,
+    Select,
+    Then,
+    Until,
+    While,
+    LeftBrace, /* { */
+    RightBrace, /* } */
+    Time,
+    LeftDoubleBracket, /* [[ */
+    RightDoubleBracket, /* ]] */
+}
+
+
 #[derive(PartialEq)]
 pub enum Compound {
     Case,
