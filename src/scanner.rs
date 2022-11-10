@@ -41,6 +41,32 @@ pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
     pos
 }
 
+pub fn scanner_name(text: &Feeder, from: usize) -> usize {
+    if text.len() <= from {
+        return from;
+    }
+
+    let h = &text.nth(0);
+    if !((*h >= 'A' && *h <= 'Z') || (*h >= 'a' && *h <= 'z') || *h == '_') {
+        return from;
+    }
+
+    if text.len() == from+1 {
+        return from+1;
+    }
+
+    let mut ans = from+1;
+    for c in text.chars_after(from+1) {
+        if !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') 
+        || (c >= 'a' && c <= 'z') || c == '_') {
+            break;
+        }
+        ans += 1;
+    }
+
+    return ans;
+}
+
 pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
     if text.len() == from {
         return from;

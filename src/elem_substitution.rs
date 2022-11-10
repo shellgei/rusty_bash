@@ -6,7 +6,8 @@ use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::elem_arg::Arg;
 use crate::elem_varname::VarName;
-use crate::scanner::scanner_varname;
+//use crate::scanner::scanner_varname;
+use crate::scanner::scanner_name;
 use crate::scanner::scanner_until;
 use crate::abst_elems::CommandElem;
 
@@ -50,7 +51,8 @@ impl Substitution {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Substitution> {
-        let varname_pos = scanner_varname(text, 0);
+        //let varname_pos = scanner_varname(text, 0);
+        let varname_pos = scanner_name(text, 0);
         let equal_pos = scanner_until(text, varname_pos, "=");
         if equal_pos != varname_pos {
             return None;
