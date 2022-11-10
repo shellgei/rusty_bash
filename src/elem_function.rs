@@ -27,8 +27,7 @@ impl Function {
          let mut name;
          let mut ans_text = String::new();
 
-         loop {
-             //let var_pos = scanner_varname(text, 0);
+         loop { //remove keyword function
              let var_pos = scanner_name(text, 0);
              if var_pos == 0 {
                  text.rewind(backup);

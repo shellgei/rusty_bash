@@ -41,6 +41,16 @@ pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
     pos
 }
 
+pub fn scanner_name_or_parameter(text: &Feeder, from: usize) -> usize {
+    let ans = scanner_parameter(text, from);
+
+    if ans == 0 {
+        scanner_name(text, from)
+    }else{
+        ans
+    }
+}
+
 pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
     if text.len() < from {
         return from;
