@@ -69,13 +69,12 @@ impl SubArgVariable {
             return None;
         };
         if text.nth(1) == '{' {
-            return SubArgVariable::parse2(text);
+            return SubArgVariable::parse_in_brace(text);
         }
 
         let mut ans = SubArgVariable::new(text);
         ans.text = text.consume(1);
     
-        //let pos = scanner_varname(&text, 0);
         let mut pos = scanner_name(&text, 0);
         if pos == 0 {
             pos = scanner_parameter(&text, 0);
@@ -85,13 +84,12 @@ impl SubArgVariable {
         Some(ans)
     }
     
-    fn parse2(text: &mut Feeder) -> Option<SubArgVariable> {
+    fn parse_in_brace(text: &mut Feeder) -> Option<SubArgVariable> {
         let mut ans = SubArgVariable::new(text);
         let backup = text.clone();
 
         ans.text = text.consume(2);
         
-        //let pos = scanner_varname(&text, 0);
         let mut pos = scanner_name(&text, 0);
         if pos == 0 {
             pos = scanner_parameter(&text, 0);
