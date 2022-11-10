@@ -41,6 +41,25 @@ pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
     pos
 }
 
+pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
+    if text.len() < from {
+        return from;
+    }
+
+    if "?*@$#!-:".chars().any(|c| c == text.nth(from)) { //special parameters
+        return from+1;
+    };
+
+    let mut pos = from;
+    for ch in text.chars_after(from) { //position parameter
+        if ch < '0' || '9' < ch {
+            break;
+        }
+        pos += 1;
+    }
+    pos
+}
+
 pub fn scanner_name(text: &Feeder, from: usize) -> usize {
     if text.len() <= from {
         return from;
@@ -65,24 +84,6 @@ pub fn scanner_name(text: &Feeder, from: usize) -> usize {
     }
 
     return ans;
-}
-
-pub fn scanner_varname(text: &Feeder, from: usize) -> usize {
-    if text.len() == from {
-        return from;
-    }else if "?*@$#!-:".chars().any(|c| c == text.nth(from)) {
-        return from+1;
-    };
-
-    let mut pos = from;
-    for ch in text.chars_after(from) {
-        if !((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') 
-        || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == '-') {
-            break;
-        }
-        pos += ch.len_utf8();
-    }
-    pos
 }
 
 pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlOperator> ) {

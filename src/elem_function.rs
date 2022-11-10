@@ -28,7 +28,8 @@ impl Function {
          let mut ans_text = String::new();
 
          loop {
-             let var_pos = scanner_varname(text, 0);
+             //let var_pos = scanner_varname(text, 0);
+             let var_pos = scanner_name(text, 0);
              if var_pos == 0 {
                  text.rewind(backup);
                  return None;
