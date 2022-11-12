@@ -81,7 +81,7 @@ impl CompoundIf {
 
         ans.text += &text.request_next_line(conf);
 
-        if text.compare(0, "then"){
+        if text.starts_with( "then"){
             ans.text += &text.consume(4);
         }
 
@@ -114,7 +114,7 @@ impl CompoundIf {
 
         ans.text += &text.request_next_line(conf);
 
-        if text.compare(0, "fi"){
+        if text.starts_with( "fi"){
              ans.text += &text.consume(2);
         }else{
              return false;
@@ -124,7 +124,7 @@ impl CompoundIf {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundIf> {
-        if text.len() < 2 || ! text.compare(0, "if") {
+        if text.len() < 2 || ! text.starts_with( "if") {
             return None;
         }
 
@@ -140,13 +140,13 @@ impl CompoundIf {
                 return None;
             }
     
-            if text.compare(0, "fi"){
+            if text.starts_with( "fi"){
                 ans.text += &text.consume(2);
                 break;
-            }else if text.compare(0, "elif"){
+            }else if text.starts_with( "elif"){
                 ans.text += &text.consume(4);
                 continue;
-            }else if text.compare(0, "else"){
+            }else if text.starts_with( "else"){
                 ans.text += &text.consume(4);
                 if CompoundIf::parse_else_fi(text, conf, &mut ans) {
                     break;

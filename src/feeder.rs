@@ -201,22 +201,6 @@ impl Feeder {
         t
     }
 
-    pub fn compare(&self, pos: usize, cmp: &str) -> bool{
-        if cmp.to_string().len() == 0 {
-            return false;
-        }
-        if self.remaining.len() < pos + cmp.to_string().len() {
-            return false;
-        }
-
-        for (i, ch) in cmp.chars().enumerate() {
-            if self.remaining.chars().nth(i+pos) != Some(ch) {
-                return false;
-            }
-        }
-        true
-    }
-
     pub fn nth_is_one_of(&self, pos: usize, cmp: &str) -> bool{
         cmp.to_string().chars().any(|c| c == self.nth(pos) )
     }

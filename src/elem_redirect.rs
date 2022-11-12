@@ -28,7 +28,7 @@ fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
         return None;
     };
 
-    if text.compare(0, "&>") || text.compare(0, ">&") {
+    if text.starts_with( "&>") || text.starts_with( ">&") {
         /* extract the file name */
         let start = scanner_blank(text, 2);
         let end = scanner_until_escape(text, start, " \t\n;");

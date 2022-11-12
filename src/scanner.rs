@@ -138,7 +138,7 @@ pub fn scanner_control_op(text: &Feeder) -> (usize, Option<ControlOperator> ) {
     if op == None && text.len() > 0  {
         pos = 1;
         if text.starts_with( "&") {
-            if text.len() > 1 && text.compare(1, ">") {
+            if text.len() > 1 && text.nth(1) == '>' {
                 return (0, None)
             }
             return (1, Some(ControlOperator::BgAnd));
@@ -155,7 +155,7 @@ pub fn scanner_control_op(text: &Feeder) -> (usize, Option<ControlOperator> ) {
         }
     }
 
-    if op != None && text.len() > pos && text.compare(pos, "\n") {
+    if op != None && text.len() > pos && text.nth(pos) == '\n' {
         pos += 1;
     }
 

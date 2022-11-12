@@ -84,7 +84,7 @@ impl Pipeline {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
         ans.text += &text.consume_blank();
-        if text.compare(0, "!") {
+        if text.starts_with( "!") {
             ans.not_flag = true;
             ans.text += &text.consume(1);
         }
@@ -104,7 +104,7 @@ impl Pipeline {
                 (_, op) = scanner_control_op(text);
                 Pipeline::set_control_op(text, &mut ans);
             }else{
-                while text.compare(0, "\n") {
+                while text.starts_with( "\n") {
                     ans.text += &text.consume(1); 
                 }
                 break;
@@ -119,7 +119,7 @@ impl Pipeline {
                 }
             }
 
-            if text.compare(0, "\n") {
+            if text.starts_with( "\n") {
                 text.consume(1);
                 if ! text.feed_additional_line(conf) {
                     return None;

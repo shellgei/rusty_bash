@@ -76,7 +76,7 @@ impl CompoundWhile {
 
         ans.text += &text.request_next_line(conf);
 
-        if text.compare(0, "do"){
+        if text.starts_with( "do"){
             ans.text += &text.consume(2);
         }
 
@@ -96,7 +96,7 @@ impl CompoundWhile {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundWhile> {
-        if text.len() < 5 || ! text.compare(0, "while") {
+        if text.len() < 5 || ! text.starts_with( "while") {
             return None;
         }
 
@@ -110,7 +110,7 @@ impl CompoundWhile {
             return None;
         }
 
-        if text.compare(0, "done"){
+        if text.starts_with( "done"){
             ans.text += &text.consume(4);
         }else{
             text.rewind(backup);

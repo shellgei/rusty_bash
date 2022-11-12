@@ -62,7 +62,7 @@ impl CompoundDoubleParen {
 
     // TODO: this function must parse ((1+$(echo a | wc -l)) for example. 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CompoundDoubleParen> {
-        if text.len() < 2 || ! text.compare(0, "((") {
+        if text.len() < 2 || ! text.starts_with( "((") {
             return None;
         }
 
@@ -87,7 +87,7 @@ impl CompoundDoubleParen {
                 continue;
             }
 
-            if text.len() < 2 || ! text.compare(0, "))") {
+            if text.len() < 2 || ! text.starts_with( "))") {
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);
                 if ! input_success {
                     text.consume(text.len());

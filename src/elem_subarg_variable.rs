@@ -91,8 +91,8 @@ impl SubArgVariable {
         ans.name = text.consume(pos);
         ans.text += &ans.name.clone();
 
-        if text.compare(0, ":-") || text.compare(0, ":=") 
-            || text.compare(0, ":?") || text.compare(0, ":+") {
+        if text.starts_with( ":-") || text.starts_with( ":=") 
+            || text.starts_with( ":?") || text.starts_with( ":+") {
             ans.empty_option = text.consume(2);
             ans.text += &ans.empty_option.clone();
 
