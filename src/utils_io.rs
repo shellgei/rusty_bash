@@ -69,15 +69,10 @@ pub fn set_redirect_fds(r: &Box<Redirect>){
     }
 }
 
-pub fn set_redirect(r: &Box<Redirect>){
-    /*
-    if r.path.len() == 0 {
-        panic!("Invalid redirect");
-    }*/
-
+fn set_redirect(r: &Box<Redirect>){ //TODO: require ShellCore arg
     let mut path = String::new();
     if let Some(a) = &r.right_arg {
-        path = a.text.clone();
+        path = a.text.clone();  // TODO: this part should be a.eval(conf)
     }
 
     if r.redirect_type == RedirectOp::Output /*">"*/ {
@@ -86,7 +81,6 @@ pub fn set_redirect(r: &Box<Redirect>){
             return;
         }
 
-            eprintln!("HERE: {}", path);
         if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&path){
             dup_and_close(file.into_raw_fd(), r.left_fd);
         }else{
