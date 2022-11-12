@@ -93,19 +93,19 @@ pub fn scanner_redirect(text: &Feeder) -> (usize, Option<RedirectOp> ) {
     }else if text.starts_with("&>>") {
         return (3, Some(RedirectOp::AndAppend));
     }else if text.starts_with(">>") {
-        return (3, Some(RedirectOp::Append));
+        return (2, Some(RedirectOp::Append));
     }else if text.starts_with("<<") {
-        return (3, Some(RedirectOp::HereDoc));
+        return (2, Some(RedirectOp::HereDoc));
     }else if text.starts_with(">&") {
-        return (3, Some(RedirectOp::OutputAnd));
+        return (2, Some(RedirectOp::OutputAnd));
     }else if text.starts_with("&>") {
-        return (3, Some(RedirectOp::AndOutput));
+        return (2, Some(RedirectOp::AndOutput));
     }else if text.starts_with("<>") {
-        return (3, Some(RedirectOp::InOut));
+        return (2, Some(RedirectOp::InOut));
     }else if text.starts_with(">") {
-        return (3, Some(RedirectOp::Output));
+        return (1, Some(RedirectOp::Output));
     }else if text.starts_with("<") {
-        return (3, Some(RedirectOp::Input));
+        return (1, Some(RedirectOp::Input));
     }
     (0, None)
 }

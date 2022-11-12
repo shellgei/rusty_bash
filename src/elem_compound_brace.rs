@@ -120,7 +120,7 @@ impl CompoundBrace {
         loop {
             ans.text += &text.consume_blank();
 
-            if let Some(r) = Redirect::parse(text){
+            if let Some(r) = Redirect::parse(text, conf){
                     ans.text += &r.text;
                     ans.fds.redirects.push(Box::new(r));
             }else{

@@ -107,7 +107,7 @@ impl CompoundDoubleParen {
             let d = scanner_blank(text, 0);
             ans.text += &text.consume(d);
 
-            if let Some(r) = Redirect::parse(text){
+            if let Some(r) = Redirect::parse(text, conf){
                     ans.text += &r.text;
                     ans.fds.redirects.push(Box::new(r));
             }else{

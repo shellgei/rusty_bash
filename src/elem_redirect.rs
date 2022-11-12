@@ -3,8 +3,10 @@
 
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
+use crate::ShellCore;
 use crate::scanner::*;
 use crate::element_list::RedirectOp;
+use crate::elem_arg::Arg;
 
 pub struct Redirect {
     pub text: String,
@@ -13,6 +15,7 @@ pub struct Redirect {
     pub right_fd: i32,
     pub redirect_type: RedirectOp,
     pub path: String,
+    pub right_arg: Option<Arg>,
 }
 
 impl Redirect {
@@ -24,11 +27,11 @@ impl Redirect {
             right_fd: -1,
             redirect_type: RedirectOp::NoRedirect,
             path: String::new(),
+            right_arg: None,
         }
     }
 
-    pub fn parse(text: &mut Feeder) -> Option<Redirect> {
-        /*
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Redirect::new(text);
         let backup = text.clone();
         let pos = scanner_number(text, 0);
@@ -51,27 +54,29 @@ impl Redirect {
         ans.text += &text.consume(pos);
         ans.text += &text.consume_blank();
 
-        let mut numpart = String::new();
-        let pos = scanner_number(text, 0);
-        if pos > 0 {
-            numpart = &text.consume(pos);
+        if ans.left_fd == -1 {
+            if ans.redirect_type == RedirectOp::Input {
+                ans.left_fd = 0;
+            }else if ans.redirect_type == RedirectOp::Output {
+                ans.left_fd = 1;
+            }
         }
 
-        let mut namepart = String::new();
-        let pos = scanner_number(text, 0);
-        if pos > 0 {
-            numpart = &text.consume(pos);
-        }*/
+
+        if let Some(a) = Arg::parse(text, conf, false, false) {
+            ans.text += &a.text.clone();
+            ans.right_arg = Some(a);
+        }else{
+            text.rewind(backup);
+            return None;
+        };
 
 
-        if let Some(r) = and_arrow_redirect(text){
-            return Some(r);
-        }
-    
-        number_arrow_redirect(text)
+        Some(ans)
     }
 }
 
+/*
 fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
     if text.len() < 3 {
         return None;
@@ -90,12 +95,15 @@ fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
             right_fd: -1,
             redirect_type: RedirectOp::AndOutput /*"&>".to_string()*/,
             path: path,
+            right_arg: None,
         })
     }else{
         None
     }
 }
+    */
 
+    /*
 /* > < 2> 0< 1> */
 fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
     let arrow_pos = scanner_until(text, 0, "<>");
@@ -137,5 +145,8 @@ fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
         right_fd: -1,
         redirect_type: dir,
         path: path,
+        right_arg: None,
     })
 }
+
+*/

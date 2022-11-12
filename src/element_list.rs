@@ -18,7 +18,7 @@ pub enum ControlOperator {
     NoChar,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum RedirectOp {
     Output, /* > */ 
     Input, /* < */

@@ -207,7 +207,7 @@ impl Command {
         loop {
             ans.text += &text.consume_blank();
 
-            if let Some(r) = Redirect::parse(text){
+            if let Some(r) = Redirect::parse(text, conf){
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
             }else if let Some(s) = Substitution::parse(text, conf) {
@@ -234,7 +234,7 @@ impl Command {
         let mut ok = false;
         loop {
             let backup = text.clone();
-            if let Some(r) = Redirect::parse(text){
+            if let Some(r) = Redirect::parse(text, conf){
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
             }else if let Some(a) = Arg::parse(text, conf, false, false) {
