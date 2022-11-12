@@ -463,6 +463,13 @@ EOF
 )
 [ "$res" = "hoge" ] || err $LINENO
 
+res=$($com << 'EOF' 
+ls -d /hogehgoe 2>&$(echo 1) | wc -l
+EOF
+)
+[ "$res" = "1" ] || err $LINENO
+
+
 ### PIPELINE ###
 
 res=$($com <<< 'echo abc | rev')

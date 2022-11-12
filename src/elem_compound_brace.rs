@@ -45,8 +45,8 @@ impl PipelineElem for CompoundBrace {
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
-    fn set_child_io(&self){
-        self.fds.set_child_io();
+    fn set_child_io(&mut self, conf: &mut ShellCore){
+        self.fds.set_child_io(conf);
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }

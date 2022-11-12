@@ -30,8 +30,8 @@ impl PipelineElem for CompoundWhile {
         self.fds.prevpipein = pprev;
     }
 
-    fn set_child_io(&self){
-        self.fds.set_child_io();
+    fn set_child_io(&mut self, conf: &mut ShellCore){
+        self.fds.set_child_io(conf);
     }
 
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }

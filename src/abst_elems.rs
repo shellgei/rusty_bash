@@ -39,7 +39,7 @@ pub trait PipelineElem {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    self.set_child_io();
+                    self.set_child_io(conf);
                     self.exec_elems(conf);
                     close(1).expect("Can't close a pipe end");
                     exit(conf.vars["?"].parse::<i32>().unwrap());
@@ -58,7 +58,7 @@ pub trait PipelineElem {
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;
     fn get_text(&self) -> String;
-    fn set_child_io(&self) {}
+    fn set_child_io(&mut self, _conf: &mut ShellCore) {}
     fn exec_elems(&mut self, _conf: &mut ShellCore) {}
     fn no_connection(&self) -> bool { true }
     fn set_pid(&mut self, _pid: Pid) {}
