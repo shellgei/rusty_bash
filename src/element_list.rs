@@ -18,6 +18,7 @@ pub enum ControlOperator {
     NoChar,
 }
 
+/*
 pub enum Reserved {
     Not, /* ! */
     Case,
@@ -41,7 +42,7 @@ pub enum Reserved {
     LeftDoubleBracket, /* [[ */
     RightDoubleBracket, /* ]] */
 }
-
+*/
 
 #[derive(PartialEq)]
 pub enum Compound {
