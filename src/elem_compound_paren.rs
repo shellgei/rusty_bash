@@ -97,7 +97,7 @@ impl CompoundParen {
             if let Some(s) = Script::parse(text, conf, &ans.my_type) {
 
                 ans.text = "(".to_owned() + &s.text;
-                let (n, op) = scanner_control_op(text, 0);
+                let (n, op) = scanner_control_op(text);
                 if let Some(p) = op  {
                     if p != ControlOperator::RightParen {
                         text.rewind(backup);

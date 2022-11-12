@@ -73,7 +73,7 @@ impl Pipeline {
     }
 
     pub fn set_control_op(text: &mut Feeder, ans: &mut Pipeline) {
-        let (n, op) = scanner_control_op(text, 0);
+        let (n, op) = scanner_control_op(text);
         if let Some(p) = op {
             if p == ControlOperator::Pipe || p == ControlOperator::PipeAnd {
                 ans.text += &text.consume(n);
@@ -96,12 +96,12 @@ impl Pipeline {
             if let Some(c) = compound(text, conf) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
-                (_, op) = scanner_control_op(text, 0);
+                (_, op) = scanner_control_op(text);
                 Pipeline::set_control_op(text, &mut ans);
             }else if let Some(c) = Command::parse(text, conf) {
                 ans.text += &c.text.clone();
                 ans.commands.push(Box::new(c));
-                (_, op) = scanner_control_op(text, 0);
+                (_, op) = scanner_control_op(text);
                 Pipeline::set_control_op(text, &mut ans);
             }else{
                 while text.compare(0, "\n") {

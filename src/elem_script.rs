@@ -52,7 +52,7 @@ impl Script {
     }
 
     fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &Compound) -> bool {
-        let (n, op) = scanner_control_op(text, 0);
+        let (n, op) = scanner_control_op(text);
         if let Some(p) = op {
             ans.list_ends.push(p.clone());
             if Script::is_end_condition(parent_type, &p) {
@@ -130,7 +130,7 @@ impl Script {
             }
 
             /* If a semicolon exist, another element can be added to the list */
-            let (n, op) = scanner_control_op(text, 0);
+            let (n, op) = scanner_control_op(text);
             if op == Some(ControlOperator::Semicolon) {
                 ans.text += &text.consume(n);
             }

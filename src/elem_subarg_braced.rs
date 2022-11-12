@@ -108,7 +108,7 @@ impl SubArgBraced {
             ans.text += &arg.text.clone();
             ans.args.push(arg); 
 
-            let (n, _) = scanner_control_op(text, 0);
+            let (n, _) = scanner_control_op(text);
             if n > 0 {
                 return Some(ans);
             }

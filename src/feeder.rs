@@ -232,6 +232,10 @@ impl Feeder {
         chars.to_string().find(ch) != None
     }
 
+    pub fn starts_with(&self, s: &str) -> bool {
+        self.remaining.starts_with(s)
+    }
+
     pub fn _text(&self) -> String {
         self.remaining.clone()
     }

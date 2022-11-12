@@ -64,7 +64,7 @@ impl SubArgNonQuoted {
 
         let ans = Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) );
             
-        let (n, _) = scanner_control_op(text, 0);
+        let (n, _) = scanner_control_op(text);
         if n > 0 {
             text.rewind(backup);
             return None;

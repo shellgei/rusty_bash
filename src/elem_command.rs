@@ -259,7 +259,7 @@ impl Command {
                 text.consume(n);
             }
 
-            let (n, _) = scanner_control_op(text, 0);
+            let (n, _) = scanner_control_op(text);
             if n != 0 { 
                 break;
             }

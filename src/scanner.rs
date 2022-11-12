@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::element_list::ControlOperator;
+use crate::element_list::{ControlOperator, Reserved};
 
 pub fn scanner_until_escape(text: &Feeder, from: usize, to: &str) -> usize {
     let mut pos = from;
@@ -96,30 +96,38 @@ pub fn scanner_name(text: &Feeder, from: usize) -> usize {
     return ans;
 }
 
-pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlOperator> ) {
-    let mut op = None;
-    let mut pos = from;
+pub fn scanner_reserved(text: &Feeder) -> (usize, Option<Reserved> ) {
+    if text.starts_with("function"){
+        return (8, Some(Reserved::Function));
+    }
 
-    if text.len() > from+2  {
-        pos = from+3;
-        op = if text.compare(from, ";;&") {
+    (0, None)
+}
+
+pub fn scanner_control_op(text: &Feeder) -> (usize, Option<ControlOperator> ) {
+    let mut op = None;
+    let mut pos = 0;
+
+    if text.len() > 2  {
+        pos = 3;
+        op = if text.compare(0, ";;&") {
             Some(ControlOperator::SemiSemiAnd)
         }else{
             None
         };
     }
 
-    if op == None && text.len() > from + 1  {
-        pos = from+2;
-        op = if text.compare(from, "||") {
+    if op == None && text.len() > 1  {
+        pos = 2;
+        op = if text.compare(0, "||") {
             Some(ControlOperator::Or)
-        }else if text.compare(from, "&&") {
+        }else if text.compare(0, "&&") {
             Some(ControlOperator::And)
-        }else if text.compare(from, ";;") {
+        }else if text.compare(0, ";;") {
             Some(ControlOperator::DoubleSemicolon)
-        }else if text.compare(from, ";&") {
+        }else if text.compare(0, ";&") {
             Some(ControlOperator::SemiAnd)
-        }else if text.compare(from, "|&") {
+        }else if text.compare(0, "|&") {
             Some(ControlOperator::PipeAnd)
         }else{
             None
@@ -127,23 +135,23 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
 
     }
 
-    if op == None && text.len() > from  {
-        pos = from+1;
-        if text.compare(from, "&") {
-            if text.len() > from+1 && text.compare(from+1, ">") {
+    if op == None && text.len() > 0  {
+        pos = 1;
+        if text.compare(0, "&") {
+            if text.len() > 1 && text.compare(1, ">") {
                 return (0, None)
             }
-            return (from + 1, Some(ControlOperator::BgAnd));
-        } else if text.compare(from, "\n") {
-            return (from + 1, Some(ControlOperator::NewLine));
-        } else if text.compare(from, "|") {
-            return (from + 1, Some(ControlOperator::Pipe));
-        } else if text.compare(from, ";") {
-            return (from + 1, Some(ControlOperator::Semicolon));
-        } else if text.compare(from, "(") {
-            return (from + 1, Some(ControlOperator::LeftParen));
-        } else if text.compare(from, ")") {
-            return (from + 1, Some(ControlOperator::RightParen));
+            return (1, Some(ControlOperator::BgAnd));
+        } else if text.compare(0, "\n") {
+            return (1, Some(ControlOperator::NewLine));
+        } else if text.compare(0, "|") {
+            return (1, Some(ControlOperator::Pipe));
+        } else if text.compare(0, ";") {
+            return (1, Some(ControlOperator::Semicolon));
+        } else if text.compare(0, "(") {
+            return (1, Some(ControlOperator::LeftParen));
+        } else if text.compare(0, ")") {
+            return (1, Some(ControlOperator::RightParen));
         }
     }
 
@@ -156,7 +164,7 @@ pub fn scanner_control_op(text: &Feeder, from: usize) -> (usize, Option<ControlO
     }
 
 
-    (from , None)
+    (0 , None)
 }
 
 pub fn scanner_comment(text: &Feeder, from: usize) -> usize {
