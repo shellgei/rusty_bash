@@ -4,6 +4,7 @@
 use nix::unistd::{close, dup2, read};
 use std::os::unix::prelude::RawFd;
 use crate::elem_redirect::Redirect;
+use crate::element_list::RedirectOp;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
 use nix::unistd::Pid;
@@ -73,7 +74,7 @@ pub fn set_redirect(r: &Box<Redirect>){
         panic!("Invalid redirect");
     }
 
-    if r.direction_str == ">" {
+    if r.redirect_type == RedirectOp::Output /*">"*/ {
         if r.path.chars().nth(0) == Some('&') {
             set_redirect_fds(r);
             return;
@@ -84,14 +85,14 @@ pub fn set_redirect(r: &Box<Redirect>){
         }else{
             panic!("Cannot open the file: {}", r.path);
         };
-    }else if r.direction_str == "&>" {
+    }else if r.redirect_type == RedirectOp::AndOutput /*"&>"*/ {
         if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&r.path){
             dup_and_close(file.into_raw_fd(), 1);
             dup2(1, 2).expect("Redirection error on &>");
         }else{
             panic!("Cannot open the file: {}", r.path);
         };
-    }else if r.direction_str == "<" {
+    }else if r.redirect_type == RedirectOp::Input /*"<"*/ {
         if let Ok(file) = OpenOptions::new().read(true).open(&r.path){
             dup_and_close(file.into_raw_fd(), r.left_fd);
         }else{

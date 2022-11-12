@@ -18,6 +18,19 @@ pub enum ControlOperator {
     NoChar,
 }
 
+#[derive(PartialEq)]
+pub enum RedirectOp {
+    Output, /* > */ 
+    Input, /* < */
+    InOut, /* <> */
+    AndOutput, /* &> */ 
+    OutputAnd, /* >& */ 
+    Append, /* >> */ 
+    HereDoc, /* << */ 
+    AndAppend, /* &>> */ 
+    HereStr, /* <<< */ 
+}
+
 /*
 pub enum Reserved {
     Not, /* ! */

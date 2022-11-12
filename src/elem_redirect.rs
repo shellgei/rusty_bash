@@ -4,17 +4,20 @@
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::scanner::*;
+use crate::element_list::RedirectOp;
 
 pub struct Redirect {
     pub text: String,
     pub pos: DebugInfo,
     pub left_fd: i32,
-    pub direction_str: String,
+    pub redirect_type: RedirectOp,
     pub path: String,
 }
 
 impl Redirect {
     pub fn parse(text: &mut Feeder) -> Option<Redirect> {
+
+
         if let Some(r) = and_arrow_redirect(text){
             return Some(r);
         }
@@ -38,7 +41,7 @@ fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
             text: text.consume(end),
             pos: DebugInfo::init(text),
             left_fd: -1,
-            direction_str: "&>".to_string(),
+            redirect_type: RedirectOp::AndOutput /*"&>".to_string()*/,
             path: path,
         })
     }else{
@@ -58,10 +61,10 @@ fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
     let dir;
     if text.nth(arrow_pos) == '<' {
         fd = 0;
-        dir = '<'.to_string();
+        dir = RedirectOp::Input /*'<'.to_string()*/;
     }else if text.nth(arrow_pos) == '>' {
         fd = 1;
-        dir = '>'.to_string();
+        dir = RedirectOp::Output /*'>'.to_string()*/;
     }else{
         return None;
     };
@@ -84,7 +87,7 @@ fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
         text: text.consume(end),
         pos: DebugInfo::init(text),
         left_fd: fd,
-        direction_str: dir,
+        redirect_type: dir,
         path: path,
     })
 }

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::element_list::{ControlOperator/*, Reserved*/};
+use crate::element_list::{ControlOperator, RedirectOp/*, Reserved*/};
 
 pub fn scanner_until_escape(text: &Feeder, from: usize, to: &str) -> usize {
     let mut pos = from;
@@ -51,6 +51,17 @@ pub fn scanner_name_or_parameter(text: &Feeder, from: usize) -> usize {
     }
 }
 
+pub fn scanner_number(text: &Feeder, from: usize) -> usize {
+    let mut pos = from;
+    for ch in text.chars_after(from) {
+        if ch < '0' || '9' < ch {
+            break;
+        }
+        pos += 1;
+    }
+    pos
+}
+
 pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
     if text.len() < from {
         return from;
@@ -60,6 +71,7 @@ pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
         return from+1;
     };
 
+    /*
     let mut pos = from;
     for ch in text.chars_after(from) { //position parameter
         if ch < '0' || '9' < ch {
@@ -68,6 +80,45 @@ pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
         pos += 1;
     }
     pos
+    */
+
+    scanner_number(text, from)
+}
+
+/*
+pub enum Redirect {
+    Output, /* > */ 
+    Input, /* < */
+    InOut, /* <> */
+    AndOutput, /* &> */ 
+    OutputAnd, /* >& */ 
+    Append, /* >> */ 
+    HereDoc, /* << */ 
+    AndAppend, /* &>> */ 
+    HereStr, /* <<< */ 
+}*/
+
+pub fn scanner_redirect(text: &Feeder) -> (usize, Option<RedirectOp> ) {
+    if text.starts_with("<<<") {
+        return (3, Some(RedirectOp::HereStr));
+    }else if text.starts_with("&>>") {
+        return (3, Some(RedirectOp::AndAppend));
+    }else if text.starts_with(">>") {
+        return (3, Some(RedirectOp::Append));
+    }else if text.starts_with("<<") {
+        return (3, Some(RedirectOp::HereDoc));
+    }else if text.starts_with(">&") {
+        return (3, Some(RedirectOp::OutputAnd));
+    }else if text.starts_with("&>") {
+        return (3, Some(RedirectOp::AndOutput));
+    }else if text.starts_with("<>") {
+        return (3, Some(RedirectOp::InOut));
+    }else if text.starts_with(">") {
+        return (3, Some(RedirectOp::Output));
+    }else if text.starts_with("<") {
+        return (3, Some(RedirectOp::Input));
+    }
+    (0, None)
 }
 
 pub fn scanner_name(text: &Feeder, from: usize) -> usize {
