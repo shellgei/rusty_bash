@@ -29,6 +29,7 @@ pub enum RedirectOp {
     HereDoc, /* << */ 
     AndAppend, /* &>> */ 
     HereStr, /* <<< */ 
+    NoRedirect, 
 }
 
 /*

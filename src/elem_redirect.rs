@@ -10,12 +10,58 @@ pub struct Redirect {
     pub text: String,
     pub pos: DebugInfo,
     pub left_fd: i32,
+    pub right_fd: i32,
     pub redirect_type: RedirectOp,
     pub path: String,
 }
 
 impl Redirect {
+    fn new(text :&Feeder) -> Redirect {
+        Redirect {
+            text: String::new(),
+            pos: DebugInfo::init(text),
+            left_fd: -1,
+            right_fd: -1,
+            redirect_type: RedirectOp::NoRedirect,
+            path: String::new(),
+        }
+    }
+
     pub fn parse(text: &mut Feeder) -> Option<Redirect> {
+        /*
+        let mut ans = Redirect::new(text);
+        let backup = text.clone();
+        let pos = scanner_number(text, 0);
+        if pos > 0 {
+            if let Ok(num) = text.from_to(0, pos).parse::<i32>() {
+                ans.left_fd = num;
+                ans.text += &text.consume(pos);
+            }else{
+                return None;
+            }
+        }
+
+        let (pos, red) = scanner_redirect(text);
+        if pos == 0 {
+            text.rewind(backup);
+            return None;
+        }
+
+        ans.redirect_type = red.unwrap();
+        ans.text += &text.consume(pos);
+        ans.text += &text.consume_blank();
+
+        let mut numpart = String::new();
+        let pos = scanner_number(text, 0);
+        if pos > 0 {
+            numpart = &text.consume(pos);
+        }
+
+        let mut namepart = String::new();
+        let pos = scanner_number(text, 0);
+        if pos > 0 {
+            numpart = &text.consume(pos);
+        }*/
 
 
         if let Some(r) = and_arrow_redirect(text){
@@ -41,6 +87,7 @@ fn and_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
             text: text.consume(end),
             pos: DebugInfo::init(text),
             left_fd: -1,
+            right_fd: -1,
             redirect_type: RedirectOp::AndOutput /*"&>".to_string()*/,
             path: path,
         })
@@ -87,6 +134,7 @@ fn number_arrow_redirect(text: &mut Feeder) -> Option<Redirect> {
         text: text.consume(end),
         pos: DebugInfo::init(text),
         left_fd: fd,
+        right_fd: -1,
         redirect_type: dir,
         path: path,
     })

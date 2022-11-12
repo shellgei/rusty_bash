@@ -71,17 +71,6 @@ pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
         return from+1;
     };
 
-    /*
-    let mut pos = from;
-    for ch in text.chars_after(from) { //position parameter
-        if ch < '0' || '9' < ch {
-            break;
-        }
-        pos += 1;
-    }
-    pos
-    */
-
     scanner_number(text, from)
 }
 
