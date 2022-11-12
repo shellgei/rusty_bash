@@ -34,7 +34,13 @@ impl Redirect {
 
     pub fn eval(&mut self, conf: &mut ShellCore) -> String {
         if let Some(a) = &mut self.right_arg {
-            return a.eval(conf)[0].clone();
+            let strings = a.eval(conf);
+
+            if strings.len() == 0 {
+                return a.eval(conf)[0].clone();
+            }else if strings.len() > 1 {
+                eprintln!("bash: {}: ambiguous redirect", a.text);
+            }
         }
 
         String::new()
