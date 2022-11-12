@@ -77,7 +77,6 @@ fn set_redirect(r: &mut Box<Redirect>, conf: &mut ShellCore){ //TODO: require Sh
         //path = a.text.clone();  // TODO: this part should be a.eval(conf)
         path = a.eval(conf)[0].clone();  // TODO: this part should be a.eval(conf)
     }*/
-
     if r.redirect_type == RedirectOp::Output /*">"*/ {
         /*
         if path.chars().nth(0) == Some('&') {
