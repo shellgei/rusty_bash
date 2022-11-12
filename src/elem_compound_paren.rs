@@ -31,7 +31,11 @@ impl PipelineElem for CompoundParen {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
-                    self.fds.set_child_io(conf);
+                   //self.fds.set_child_io(conf);
+                    if let Err(s) = self.fds.set_child_io(conf){
+                        eprintln!("{}", s);
+                        exit(1);
+                    }
                     if let Some(s) = &mut self.script {
                         if self.substitution {
                             close(p.0).expect("Can't close a pipe end");

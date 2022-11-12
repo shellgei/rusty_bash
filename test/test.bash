@@ -469,6 +469,11 @@ EOF
 )
 [ "$res" = "1" ] || err $LINENO
 
+res=$($com << 'EOF' 
+ls -d /hogehgoe 2>&$(echo 1 2)
+EOF
+)
+[ "$?" = "1" ] || err $LINENO
 
 ### PIPELINE ###
 

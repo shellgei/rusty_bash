@@ -37,9 +37,9 @@ impl Redirect {
             let strings = a.eval(conf);
             if strings.len() == 1 {
                 return a.eval(conf)[0].clone();
-            }else if strings.len() > 1 {
-                eprintln!("bash: {}: ambiguous redirect", a.text);
-            }
+            }/*else if strings.len() > 1 {
+                eprintln!("bash: {}: ambiguous redirect", &a.text);
+            }*/
         }
 
         String::new()

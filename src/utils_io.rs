@@ -36,7 +36,7 @@ impl FileDescs {
             self.prevpipein == -1
     }
 
-    pub fn set_child_io(&mut self, conf: &mut ShellCore) {
+    pub fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
         if self.pipein != -1 {
             close(self.pipein).expect("Cannot close in-pipe");
         }
@@ -49,9 +49,12 @@ impl FileDescs {
         }
     
         for r in &mut self.redirects {
-            set_redirect(r, conf);
+            if let Err(s) = set_redirect(r, conf) {
+                return Err(s);
+            }
         };
     
+        Ok(())
     }
 }
 
@@ -61,36 +64,25 @@ pub fn dup_and_close(from: RawFd, to: RawFd){
     close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
 }
 
-/*
-pub fn set_redirect_fds(r: &Box<Redirect>){
-    if let Ok(num) = r.path[1..].parse::<i32>(){
-        dup2(num, r.left_fd).expect("Invalid fd");
-    }else{
-        panic!("Invalid fd number");
-    }
-}*/
-
-fn set_redirect(r: &mut Box<Redirect>, conf: &mut ShellCore){ //TODO: require ShellCore arg
+fn set_redirect(r: &mut Box<Redirect>, conf: &mut ShellCore) -> Result<(), String> {
     let path = r.eval(conf);
-    /*
-    if let Some(a) = &mut r.right_arg {
-        //path = a.text.clone();  // TODO: this part should be a.eval(conf)
-        path = a.eval(conf)[0].clone();  // TODO: this part should be a.eval(conf)
-    }*/
     if r.redirect_type == RedirectOp::Output /*">"*/ {
-        /*
-        if path.chars().nth(0) == Some('&') {
-            set_redirect_fds(r);
-            return;
-        }*/
-
         if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&path){
             dup_and_close(file.into_raw_fd(), r.left_fd);
         }else{
             panic!("Cannot open the file: {}", path);
         };
     }else if r.redirect_type == RedirectOp::OutputAnd  {
-        dup2(path.parse::<i32>().unwrap(), r.left_fd).expect("Invalid fd");
+        if let Ok(n) = path.parse::<i32>() {
+            dup2(n, r.left_fd).expect("Invalid fd");
+        }else{
+            conf.set_var("?", "1");
+            if let Some(a) = &r.right_arg {
+                return Err(format!("bash: {}: ambiguous redirect", a.text.clone()));
+            }else{
+                return Err("Unknown redirect error".to_string());
+            }
+        }
     }else if r.redirect_type == RedirectOp::AndOutput {
         if let Ok(file) = OpenOptions::new().truncate(true).write(true).create(true).open(&path){
             dup_and_close(file.into_raw_fd(), 1);
@@ -105,6 +97,8 @@ fn set_redirect(r: &mut Box<Redirect>, conf: &mut ShellCore){ //TODO: require Sh
             panic!("Cannot open the file: {}", path);
         };
     }
+
+    Ok(())
 }
 
 pub fn set_parent_io(pout: RawFd) {

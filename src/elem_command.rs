@@ -59,7 +59,10 @@ impl PipelineElem for Command {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
-                self.fds.set_child_io(conf);
+                if let Err(s) = self.fds.set_child_io(conf){
+                    eprintln!("{}", s);
+                    exit(1);
+                }
                 self.exec_external_command(&mut args, conf)
             },
             Ok(ForkResult::Parent { child } ) => {
