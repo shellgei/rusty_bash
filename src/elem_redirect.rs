@@ -34,8 +34,7 @@ impl Redirect {
 
     pub fn eval(&mut self, conf: &mut ShellCore) -> String {
         if let Some(a) = &mut self.right_arg {
-            a.eval(conf);
-            return a.text.clone();
+            return a.eval(conf)[0].clone();
         }
 
         String::new()

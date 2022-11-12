@@ -11,7 +11,6 @@ use nix::unistd::Pid;
 use nix::sys::wait::WaitPidFlag;
 use nix::sys::wait::{waitpid, WaitStatus};
 use crate::ShellCore;
-use crate::abst_elems::CommandElem;
 
 pub struct FileDescs {
     pub redirects: Vec<Box<Redirect>>,
@@ -62,20 +61,22 @@ pub fn dup_and_close(from: RawFd, to: RawFd){
     close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
 }
 
+/*
 pub fn set_redirect_fds(r: &Box<Redirect>){
     if let Ok(num) = r.path[1..].parse::<i32>(){
         dup2(num, r.left_fd).expect("Invalid fd");
     }else{
         panic!("Invalid fd number");
     }
-}
+}*/
 
 fn set_redirect(r: &mut Box<Redirect>, conf: &mut ShellCore){ //TODO: require ShellCore arg
-    let mut path = String::new();
+    let path = r.eval(conf);
+    /*
     if let Some(a) = &mut r.right_arg {
         //path = a.text.clone();  // TODO: this part should be a.eval(conf)
         path = a.eval(conf)[0].clone();  // TODO: this part should be a.eval(conf)
-    }
+    }*/
 
     if r.redirect_type == RedirectOp::Output /*">"*/ {
         /*
