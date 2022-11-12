@@ -110,7 +110,7 @@ pub fn scanner_control_op(text: &Feeder) -> (usize, Option<ControlOperator> ) {
 
     if text.len() > 2  {
         pos = 3;
-        op = if text.compare(0, ";;&") {
+        op = if text.starts_with( ";;&") {
             Some(ControlOperator::SemiSemiAnd)
         }else{
             None
@@ -119,15 +119,15 @@ pub fn scanner_control_op(text: &Feeder) -> (usize, Option<ControlOperator> ) {
 
     if op == None && text.len() > 1  {
         pos = 2;
-        op = if text.compare(0, "||") {
+        op = if text.starts_with( "||") {
             Some(ControlOperator::Or)
-        }else if text.compare(0, "&&") {
+        }else if text.starts_with( "&&") {
             Some(ControlOperator::And)
-        }else if text.compare(0, ";;") {
+        }else if text.starts_with( ";;") {
             Some(ControlOperator::DoubleSemicolon)
-        }else if text.compare(0, ";&") {
+        }else if text.starts_with( ";&") {
             Some(ControlOperator::SemiAnd)
-        }else if text.compare(0, "|&") {
+        }else if text.starts_with( "|&") {
             Some(ControlOperator::PipeAnd)
         }else{
             None
@@ -137,20 +137,20 @@ pub fn scanner_control_op(text: &Feeder) -> (usize, Option<ControlOperator> ) {
 
     if op == None && text.len() > 0  {
         pos = 1;
-        if text.compare(0, "&") {
+        if text.starts_with( "&") {
             if text.len() > 1 && text.compare(1, ">") {
                 return (0, None)
             }
             return (1, Some(ControlOperator::BgAnd));
-        } else if text.compare(0, "\n") {
+        } else if text.starts_with( "\n") {
             return (1, Some(ControlOperator::NewLine));
-        } else if text.compare(0, "|") {
+        } else if text.starts_with( "|") {
             return (1, Some(ControlOperator::Pipe));
-        } else if text.compare(0, ";") {
+        } else if text.starts_with( ";") {
             return (1, Some(ControlOperator::Semicolon));
-        } else if text.compare(0, "(") {
+        } else if text.starts_with( "(") {
             return (1, Some(ControlOperator::LeftParen));
-        } else if text.compare(0, ")") {
+        } else if text.starts_with( ")") {
             return (1, Some(ControlOperator::RightParen));
         }
     }
