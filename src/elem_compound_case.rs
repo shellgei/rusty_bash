@@ -99,7 +99,7 @@ impl CompoundCase {
         ans.text += &text.consume(1);
         ans.text += &text.request_next_line(conf);
 
-        let doing = if text.len() >= 2 && text.compare(0, ";;") {
+        let doing = if text.len() >= 2 && text.starts_with( ";;") {
             None
         }else if let Some(s) = Script::parse(text, conf, &ans.my_type) {
             ans.text += &s.text;
@@ -110,7 +110,7 @@ impl CompoundCase {
 
         ans.text += &text.request_next_line(conf);
 
-        if text.len() >= 2 && text.compare(0, ";;") {
+        if text.len() >= 2 && text.starts_with( ";;") {
             ans.text += &text.consume(2);
         }
 
@@ -119,7 +119,7 @@ impl CompoundCase {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundCase> {
-        if text.len() < 4 || ! text.compare(0, "case") {
+        if text.len() < 4 || ! text.starts_with( "case") {
             return None;
         }
 
@@ -138,7 +138,7 @@ impl CompoundCase {
 
         ans.text += &text.consume_blank();
 
-        if text.len() >= 2 && text.compare(0, "in") {
+        if text.len() >= 2 && text.starts_with( "in") {
             ans.text += &text.consume(2);
         }else{
             text.rewind(backup);
@@ -150,7 +150,7 @@ impl CompoundCase {
             ans.text += &text.request_next_line(conf);
             ans.text += &text.consume_blank_return();
 
-            if text.len() >= 4 && text.compare(0, "esac") {
+            if text.len() >= 4 && text.starts_with( "esac") {
                 ans.text += &text.consume(4);
                 break;
             }
