@@ -18,7 +18,7 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn exec(&mut self, _core: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore) {
         if self.text == "exit\n" { //self.args[0]を使ってもよい
             process::exit(0);
         }
