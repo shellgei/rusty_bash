@@ -12,7 +12,7 @@ use crate::elem_redirect::Redirect;
 use crate::utils_io::*;
 use nix::unistd::{close, pipe};
 use crate::scanner::*;
-use crate::element_list::Compound;
+use crate::element_list::CompoundType;
 
 pub struct CompoundParen {
     pub script: Option<Script>,
@@ -21,7 +21,7 @@ pub struct CompoundParen {
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-    my_type: Compound, 
+    my_type: CompoundType, 
 }
 
 impl PipelineElem for CompoundParen {
@@ -81,7 +81,7 @@ impl CompoundParen {
             text: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            my_type: Compound::Paren, 
+            my_type: CompoundType::Paren, 
             fds: FileDescs::new(),
         }
     }

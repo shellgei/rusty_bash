@@ -9,7 +9,7 @@ use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
 use crate::utils_io::*;
 use std::process::exit;
-use crate::element_list::Compound;
+use crate::element_list::CompoundType;
 
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
@@ -30,7 +30,7 @@ pub struct CompoundBrace {
     text: String,
     pid: Option<Pid>, 
     pub substitution_text: String,
-//    my_type: Compound, 
+//    my_type: CompoundType, 
     fds: FileDescs,
 }
 
@@ -70,7 +70,7 @@ impl CompoundBrace {
             text: "".to_string(),
             substitution_text: "".to_string(),
             fds: FileDescs::new(),
-           // my_type: Compound::Brace, 
+           // my_type: CompoundType::Brace, 
         }
     }
 
@@ -85,7 +85,7 @@ impl CompoundBrace {
 
         loop {
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf, &Compound::Brace) {
+            if let Some(s) = Script::parse(text, conf, &CompoundType::Brace) {
                 if ! tail_check(&s.text){
                     text.rewind(backup);
                     return None;

@@ -6,7 +6,7 @@ use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
-use crate::element_list::Compound;
+use crate::element_list::CompoundType;
 use nix::unistd::Pid;
 use crate::utils_io::*;
 
@@ -16,7 +16,7 @@ pub struct CompoundIf {
     pub else_do: Option<Script>,
     text: String,
     pid: Option<Pid>,
-    my_type: Compound, 
+    my_type: CompoundType, 
     fds: FileDescs,
 }
 
@@ -64,7 +64,7 @@ impl CompoundIf {
             fds: FileDescs::new(),
             text: "".to_string(),
             pid: None,
-            my_type: Compound::If,
+            my_type: CompoundType::If,
         }
     }
 

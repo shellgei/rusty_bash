@@ -6,7 +6,7 @@ use crate::abst_elems::PipelineElem;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
-use crate::element_list::Compound;
+use crate::element_list::CompoundType;
 use nix::unistd::Pid;
 use crate::utils_io::*;
 
@@ -16,7 +16,7 @@ pub struct CompoundWhile {
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-    my_type: Compound, 
+    my_type: CompoundType, 
 }
 
 impl PipelineElem for CompoundWhile {
@@ -59,7 +59,7 @@ impl CompoundWhile {
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            my_type: Compound::While,
+            my_type: CompoundType::While,
         }
     }
 

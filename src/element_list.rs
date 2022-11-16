@@ -59,7 +59,7 @@ pub enum Reserved {
 */
 
 #[derive(PartialEq)]
-pub enum Compound {
+pub enum CompoundType {
     Case,
     While,
     If,

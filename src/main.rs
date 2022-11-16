@@ -51,7 +51,7 @@ use crate::abst_elems::ListElem;
 use crate::elem_command::Command;
 use crate::elem_script::Script;
 
-use crate::element_list::Compound;
+use crate::element_list::CompoundType;
 
 use crate::utils_io::dup_and_close;
 use std::os::unix::io::IntoRawFd;
@@ -164,7 +164,7 @@ fn main_loop(core: &mut ShellCore) {
                 break;
             }
         }
-        while let Some(mut e) = Script::parse(&mut feeder, core, &Compound::Null){
+        while let Some(mut e) = Script::parse(&mut feeder, core, &CompoundType::Null){
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());
                 eprintln!("Unknown phrase");
