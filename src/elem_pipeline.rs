@@ -4,7 +4,6 @@
 use crate::{ShellCore, Feeder};
 use crate::abst_elems::ListElem;
 use crate::abst_elems::Compound;
-use crate::Command;
 use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
 use crate::scanner::*;
@@ -96,11 +95,6 @@ impl Pipeline {
             if let Some(c) = compound(text, conf) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
-                (_, op) = scanner_control_op(text);
-                Pipeline::set_control_op(text, &mut ans);
-            }else if let Some(c) = Command::parse(text, conf) {
-                ans.text += &c.text.clone();
-                ans.commands.push(Box::new(c));
                 (_, op) = scanner_control_op(text);
                 Pipeline::set_control_op(text, &mut ans);
             }else{

@@ -48,7 +48,6 @@ use crate::core::ShellCore;
 use crate::feeder::Feeder;
 
 use crate::abst_elems::ListElem;
-use crate::elem_command::Command;
 use crate::elem_script::Script;
 
 use crate::element_list::CompoundType;

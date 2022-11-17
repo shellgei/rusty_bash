@@ -12,6 +12,7 @@ use crate::elem_compound_while::CompoundWhile;
 use crate::elem_compound_paren::CompoundParen;
 use crate::elem_compound_brace::CompoundBrace;
 use crate::elem_compound_case::CompoundCase;
+use crate::elem_command::Command;
 
 use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
 use crate::elem_subarg_math_substitution::SubArgMathSubstitution;
@@ -86,6 +87,7 @@ pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Compo
     else if let Some(a) = CompoundParen::parse(text, conf, false)       {Some(Box::new(a))}
     else if let Some(a) = CompoundDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
     else if let Some(a) = CompoundBrace::parse(text, conf)              {Some(Box::new(a))}
+    else if let Some(a) = Command::parse(text, conf)                    {Some(Box::new(a))}
     else {None}
 }
 
