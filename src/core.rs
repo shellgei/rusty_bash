@@ -22,6 +22,15 @@ impl ShellCore {
         conf
     }
 
+    pub fn get_builtin(&self, name: &String) 
+        -> Option<fn(&mut ShellCore, args: &mut Vec<String>) -> i32> {
+        if self.builtins.contains_key(name) {
+            Some(self.builtins[name])
+        }else{
+            None
+        }
+    } 
+
     pub fn get_var(&self, key: &str) -> String {
         if let Some(s) = self.vars.get(&key as &str){
             return s.to_string();

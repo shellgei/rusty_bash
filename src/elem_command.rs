@@ -8,8 +8,6 @@ use std::process;
 
 use nix::unistd::{fork, ForkResult};
 use nix::sys::wait::waitpid;
-use std::env;             //追加
-use std::path::Path;      //追加
 
 pub struct Command {
     _text: String,
@@ -19,6 +17,16 @@ pub struct Command {
 
 impl Command {
     pub fn exec(&mut self, core: &mut ShellCore) {
+        if self.args.len() == 0 {
+            return;
+        }
+
+        if let Some(func) = core.get_builtin(&self.args[0]) {
+            func(core, &mut self.args);
+            return;
+            //process::exit(func(core, self.args));
+        }
+
         /*
         if self.text == "exit\n" { //self.args[0]を使ってもよい
             process::exit(0);
@@ -58,7 +66,7 @@ impl Command {
             .collect();
 
         if args.len() > 0 { // 1個以上の単語があればCommandのインスタンスを作成して返す
-            Some( Command {text: line, args: args, cargs: cargs} )
+            Some( Command {_text: line, args: args, cargs: cargs} )
         }else{
             None // そうでなければ何も返さない
         }
