@@ -12,13 +12,14 @@ use std::env;             //追加
 use std::path::Path;      //追加
 
 pub struct Command {
-    text: String,
+    _text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
 }
 
 impl Command {
     pub fn exec(&mut self, core: &mut ShellCore) {
+        /*
         if self.text == "exit\n" { //self.args[0]を使ってもよい
             process::exit(0);
         }
@@ -28,7 +29,7 @@ impl Command {
                 eprintln!("Cannot change directory");
             }
             return;
-        }
+        }*/
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {

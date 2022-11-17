@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod core;
+mod core_builtins;
 mod elem_command;
 mod term;
 mod utils;
@@ -14,7 +15,7 @@ use crate::elem_command::Command;
 use crate::feeder::Feeder;
 
 fn show_version() {
-    eprintln!("Rusty Bash, TERMINAL SKELETON");
+    eprintln!("Rusty Bash, (sush version)");
     eprintln!("© 2022 Ryuichi Ueda");
     eprintln!("License: BSD 3-Clause\n");
 
