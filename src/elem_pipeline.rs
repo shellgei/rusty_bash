@@ -98,9 +98,6 @@ impl Pipeline {
                 (_, op) = scanner_control_op(text);
                 Pipeline::set_control_op(text, &mut ans);
             }else{
-                while text.starts_with( "\n") {
-                    ans.text += &text.consume(1); 
-                }
                 break;
             }
 
@@ -125,6 +122,7 @@ impl Pipeline {
             }
         }
 
+        ans.text += &text.consume_blank_return();
         if ans.commands.len() > 0 {
             Some(ans)
         }else{
