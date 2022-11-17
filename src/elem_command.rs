@@ -29,41 +29,41 @@ pub struct Command {
 }
 
 impl PipelineElem for Command {
-    fn exec(&mut self, conf: &mut ShellCore) {
+    fn exec(&mut self, core: &mut ShellCore) {
         if self.args.len() == 0 {
-            self.set_vars(conf);
+            self.set_vars(core);
             return;
         }
 
-        if conf.has_flag('v') {
+        if core.has_flag('v') {
             eprintln!("{}", self.text.trim_end());
         }
 
-        let mut args = self.eval(conf);
-        conf.set_var("_", &args[args.len()-1]);
+        let mut args = self.eval(core);
+        core.set_var("_", &args[args.len()-1]);
 
-        if conf.has_flag('x') {
+        if core.has_flag('x') {
             eprintln!("+{}", args.join(" "));
         }
 
         // This sentence avoids an unnecessary fork for an internal command.
         if self.fds.no_connection() {
-            if conf.functions.contains_key(&args[0]) {
-                self.exec_function(&mut args, conf);
+            if core.functions.contains_key(&args[0]) {
+                self.exec_function(&mut args, core);
                 return;
             }
-            if self.run_on_this_process(&mut args, conf) {
+            if self.run_on_this_process(&mut args, core) {
                 return;
             }
         }
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
-                if let Err(s) = self.fds.set_child_io(conf){
+                if let Err(s) = self.fds.set_child_io(core){
                     eprintln!("{}", s);
                     exit(1);
                 }
-                self.exec_external_command(&mut args, conf)
+                self.exec_external_command(&mut args, core)
             },
             Ok(ForkResult::Parent { child } ) => {
                 self.pid = Some(child);
@@ -97,21 +97,21 @@ impl Command {
         }
     }
 
-    fn run_on_this_process(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) -> bool {
-        if let Some(func) = conf.get_internal_command(&args[0]) {
-            let status = func(conf, args);
-            conf.set_var("?", &status.to_string());
+    fn run_on_this_process(&mut self, args: &mut Vec<String>, core: &mut ShellCore) -> bool {
+        if let Some(func) = core.get_internal_command(&args[0]) {
+            let status = func(core, args);
+            core.set_var("?", &status.to_string());
             true
         }else{
             false
         }
     }
 
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
+    fn eval(&mut self, core: &mut ShellCore) -> Vec<String> {
         let mut args = vec![];
 
         for arg in &mut self.args {
-            for s in &arg.eval(conf) {
+            for s in &arg.eval(core) {
                 args.append(&mut eval_glob(&s.clone()));
             }
         };
@@ -140,31 +140,31 @@ impl Command {
         blue_strings(&ans)
     }
 
-    fn exec_function(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        let text = conf.get_function(&args[0]).unwrap();
+    fn exec_function(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+        let text = core.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_with(text);
-        if let Some(mut f) = compound(&mut feeder, conf) {
-            let backup = conf.args.clone();
-            conf.args = args.to_vec();
-            conf.return_enable = true;
-            f.exec(conf);
+        if let Some(mut f) = compound(&mut feeder, core) {
+            let backup = core.args.clone();
+            core.args = args.to_vec();
+            core.return_enable = true;
+            f.exec(core);
             self.pid = f.get_pid();
-            conf.args = backup;
-            conf.return_enable = false;
+            core.args = backup;
+            core.return_enable = false;
         }else{
             panic!("Shell internal error on function");
         };
     }
 
-    fn exec_external_command(&mut self, args: &mut Vec<String>, conf: &mut ShellCore) {
-        if conf.functions.contains_key(&args[0]) {
-            self.exec_function(args, conf);
+    fn exec_external_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+        if core.functions.contains_key(&args[0]) {
+            self.exec_function(args, core);
             exit(0);
         }
 
-        if let Some(func) = conf.get_internal_command(&args[0]) {
-            exit(func(conf, args));
+        if let Some(func) = core.get_internal_command(&args[0]) {
+            exit(func(core, args));
         }
 
         //let fullpath = get_fullpath(&args[0]);
@@ -176,13 +176,13 @@ impl Command {
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect();
 
-        if conf.has_flag('d') {
+        if core.has_flag('d') {
             eprintln!("{}", self.parse_info().join("\n"));
         };
 
         for v in &mut self.vars {
             let key = (*v).name.text.clone();
-            let value =  (*v).value.eval(conf).join(" ");
+            let value =  (*v).value.eval(core).join(" ");
             env::set_var(key, value);
         }
         env::set_var("_".to_string(), args[0].clone());
@@ -198,22 +198,22 @@ impl Command {
         exit(127);
     }
 
-    fn replace_alias(text: &mut Feeder, conf: &mut ShellCore) {
+    fn replace_alias(text: &mut Feeder, core: &mut ShellCore) {
         let compos = scanner_until_escape(text, 0, " \n");
         let com = text.from_to(0, compos);
-        if let Some(alias) = conf.aliases.get(&com){
+        if let Some(alias) = core.aliases.get(&com){
             text.replace(&com, alias);
         }
     }
 
-    fn substitutions_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) {
+    fn substitutions_and_redirects(text: &mut Feeder, core: &mut ShellCore, ans: &mut Command) {
         loop {
             ans.text += &text.consume_blank();
 
-            if let Some(r) = Redirect::parse(text, conf){
+            if let Some(r) = Redirect::parse(text, core){
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
-            }else if let Some(s) = Substitution::parse(text, conf) {
+            }else if let Some(s) = Substitution::parse(text, core) {
                 ans.push_vars(s);
             }else{
                 break;
@@ -233,14 +233,14 @@ impl Command {
         ! is_reserve(text)
     }
 
-    fn args_and_redirects(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Command) -> bool {
+    fn args_and_redirects(text: &mut Feeder, core: &mut ShellCore, ans: &mut Command) -> bool {
         let mut ok = false;
         loop {
             let backup = text.clone();
-            if let Some(r) = Redirect::parse(text, conf){
+            if let Some(r) = Redirect::parse(text, core){
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
-            }else if let Some(a) = Arg::parse(text, conf, false, false) {
+            }else if let Some(a) = Arg::parse(text, core, false, false) {
                 if ! Command::ng_check(&a.text, ans.args.len() == 0){
                     text.rewind(backup);
                     break;
@@ -275,7 +275,7 @@ impl Command {
         ok
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Command> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Command> {
         let backup = text.clone();
         let mut ans = Command::new();
 
@@ -283,12 +283,12 @@ impl Command {
             return None;
         };
 
-        Command::substitutions_and_redirects(text, conf, &mut ans);
-        if conf.has_flag('i') {
-            Command::replace_alias(text, conf);
+        Command::substitutions_and_redirects(text, core, &mut ans);
+        if core.has_flag('i') {
+            Command::replace_alias(text, core);
         }
 
-        if Command::args_and_redirects(text, conf, &mut ans) || ans.vars.len() != 0 {
+        if Command::args_and_redirects(text, core, &mut ans) || ans.vars.len() != 0 {
             Some(ans)
         }else{
             text.rewind(backup);
@@ -296,14 +296,14 @@ impl Command {
         }
     }
 
-    fn set_vars(&mut self, conf: &mut ShellCore){
+    fn set_vars(&mut self, core: &mut ShellCore){
         for e in &mut self.vars {
-            let sub = e.eval(conf);
+            let sub = e.eval(core);
             let (key, value) = (sub[0].clone(), sub[1].clone());
             if let Ok(_) = env::var(&key) {
                 env::set_var(key, value);
             }else{
-                conf.set_var(&key, &value);
+                core.set_var(&key, &value);
             };
         };
     }
