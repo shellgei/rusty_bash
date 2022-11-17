@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_elems::ListElem;
-use crate::abst_elems::PipelineElem;
+use crate::abst_elems::Compound;
 use crate::Command;
 use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
@@ -13,7 +13,7 @@ use crate::abst_elems::compound;
 use crate::job::Job;
 
 pub struct Pipeline {
-    pub commands: Vec<Box<dyn PipelineElem>>,
+    pub commands: Vec<Box<dyn Compound>>,
     pub text: String,
     pub is_bg: bool,
     pub job_no: u32,

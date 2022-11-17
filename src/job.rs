@@ -4,7 +4,7 @@
 use nix::unistd::Pid;
 use nix::sys::wait::waitpid;
 use nix::sys::wait::WaitStatus;
-use crate::abst_elems::PipelineElem;
+use crate::abst_elems::Compound;
 
 
 //[1]+  Running                 sleep 5 &
@@ -16,7 +16,7 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn new(text: &String, commands: &Vec<Box<dyn PipelineElem>>) -> Job {
+    pub fn new(text: &String, commands: &Vec<Box<dyn Compound>>) -> Job {
         let mut pids = vec![];
         for c in commands {
             if let Some(p) = c.get_pid() {

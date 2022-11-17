@@ -12,7 +12,7 @@ use crate::{ShellCore,Feeder};
 use crate::abst_elems::CommandElem;
 use crate::utils::*;
 
-use crate::abst_elems::{PipelineElem, compound};
+use crate::abst_elems::{Compound, compound};
 use crate::elem_arg::Arg;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
@@ -28,7 +28,7 @@ pub struct Command {
     fds: FileDescs,
 }
 
-impl PipelineElem for Command {
+impl Compound for Command {
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.args.len() == 0 {
             self.set_vars(conf);

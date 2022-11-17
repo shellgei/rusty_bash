@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_elems::PipelineElem;
+use crate::abst_elems::Compound;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
@@ -20,7 +20,7 @@ pub struct CompoundIf {
     fds: FileDescs,
 }
 
-impl PipelineElem for CompoundIf {
+impl Compound for CompoundIf {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
         for pair in self.ifthen.iter_mut() {
              pair.0.exec(conf);

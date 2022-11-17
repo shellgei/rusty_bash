@@ -4,17 +4,17 @@
 use crate::{ShellCore, Feeder};
 use crate::elem_varname::VarName;
 use crate::scanner::*;
-use crate::abst_elems::PipelineElem;
+use crate::abst_elems::Compound;
 use crate::abst_elems::compound;
 
 pub struct Function {
     pub name: String,
-    pub body: Box<dyn PipelineElem>,
+    pub body: Box<dyn Compound>,
     pub text: String,
 }
 
 impl Function {
-    pub fn new(name: String, body: Box<dyn PipelineElem>, text: String) -> Function{
+    pub fn new(name: String, body: Box<dyn Compound>, text: String) -> Function{
         Function {
             name: name,
             body: body,

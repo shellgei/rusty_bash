@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_elems::PipelineElem;
+use crate::abst_elems::Compound;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
@@ -19,7 +19,7 @@ pub struct CompoundWhile {
     my_type: CompoundType, 
 }
 
-impl PipelineElem for CompoundWhile {
+impl Compound for CompoundWhile {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }

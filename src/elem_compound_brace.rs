@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_elems::PipelineElem;
+use crate::abst_elems::Compound;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
@@ -34,7 +34,7 @@ pub struct CompoundBrace {
     fds: FileDescs,
 }
 
-impl PipelineElem for CompoundBrace {
+impl Compound for CompoundBrace {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
              self.script.exec(conf);
              if ! self.fds.no_connection() {

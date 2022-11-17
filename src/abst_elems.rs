@@ -29,7 +29,7 @@ pub trait ListElem {
     fn get_text(&self) -> String;
 }
 
-pub trait PipelineElem {
+pub trait Compound {
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.no_connection() {
              self.exec_elems(conf);
@@ -79,7 +79,7 @@ pub trait ArgElem {
     fn permit_lf(&self) -> bool {false}
 }
 
-pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn PipelineElem>> {
+pub fn compound(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Compound>> {
     if let Some(a) =      CompoundIf::parse(text,conf)                  {Some(Box::new(a))}
     else if let Some(a) = CompoundWhile::parse(text, conf)              {Some(Box::new(a))}
     else if let Some(a) = CompoundCase::parse(text, conf)               {Some(Box::new(a))}

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_elems::PipelineElem;
+use crate::abst_elems::Compound;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elem_redirect::Redirect;
@@ -20,7 +20,7 @@ pub struct CompoundDoubleParen {
 //    pub eoc: Option<Eoc>,
 }
 
-impl PipelineElem for CompoundDoubleParen {
+impl Compound for CompoundDoubleParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         self.substitution_text = calculate(self.expression.clone(), conf);
 
