@@ -104,7 +104,7 @@ impl ShellCore {
             return 0;
         }
 
-        if let Some(func) = self.get_internal_command(&args[0]) {
+        if let Some(func) = self.get_builtin(&args[0]) {
             func(self, args)
         }else{
             eprintln!("bash: builtin: {}: not a shell builtin", args[0]);
