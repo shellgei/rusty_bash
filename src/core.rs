@@ -136,7 +136,7 @@ impl ShellCore {
         None
     }
 
-    pub fn get_internal_command(&self, name: &String) 
+    pub fn get_builtin(&self, name: &String) 
         -> Option<fn(&mut ShellCore, args: &mut Vec<String>) -> i32> {
         if self.builtins.contains_key(name) {
             Some(self.builtins[name])

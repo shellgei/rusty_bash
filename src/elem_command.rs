@@ -98,7 +98,7 @@ impl Command {
     }
 
     fn run_on_this_process(&mut self, args: &mut Vec<String>, core: &mut ShellCore) -> bool {
-        if let Some(func) = core.get_internal_command(&args[0]) {
+        if let Some(func) = core.get_builtin(&args[0]) {
             let status = func(core, args);
             core.set_var("?", &status.to_string());
             true
@@ -163,7 +163,7 @@ impl Command {
             exit(0);
         }
 
-        if let Some(func) = core.get_internal_command(&args[0]) {
+        if let Some(func) = core.get_builtin(&args[0]) {
             exit(func(core, args));
         }
 
