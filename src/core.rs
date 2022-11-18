@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use nix::sys::wait;
-use nix::unistd::Pid;
 use nix::sys::wait::WaitStatus;
+use nix::unistd::Pid;
 
 pub struct ShellCore {
     pub history: Vec<String>,
