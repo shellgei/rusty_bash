@@ -1,15 +1,12 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::unistd::{close, dup2, read};
+use nix::unistd::{close, dup2};
 use std::os::unix::prelude::RawFd;
 use crate::elem_redirect::Redirect;
 use crate::element_list::RedirectOp;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
-use nix::unistd::Pid;
-use nix::sys::wait::WaitPidFlag;
-use nix::sys::wait::{waitpid, WaitStatus};
 use crate::ShellCore;
 
 pub struct FileDescs {
@@ -105,33 +102,4 @@ pub fn set_parent_io(pout: RawFd) {
     if pout >= 0 {
         close(pout).expect("Cannot close outfd");
     };
-}
-
-pub fn read_pipe(pin: RawFd, pid: Pid, conf: &mut ShellCore) -> String {
-    let mut ans = "".to_string();
-    let mut ch = [0;1000];
-
-    loop {
-        while let Ok(n) = read(pin, &mut ch) {
-            ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
-            match waitpid(pid, Some(WaitPidFlag::WNOHANG)).expect("Faild to wait child process.") {
-                WaitStatus::StillAlive => {
-                    continue;
-                },
-                WaitStatus::Exited(_pid, status) => {
-                    conf.set_var("?", &status.to_string());
-                    break;
-                },
-                WaitStatus::Signaled(pid, signal, _) => {
-                    conf.set_var("?", &(128+signal as i32).to_string());
-                    eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
-                    break;
-                },
-                _ => {
-                    break;
-                },
-            };
-        }
-        return ans;
-    }
 }

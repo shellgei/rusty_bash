@@ -2,10 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use nix::unistd::Pid;
-use nix::sys::wait::waitpid;
-use nix::sys::wait::WaitStatus;
 use crate::abst_elems::Compound;
-
+use crate::ShellCore;
 
 //[1]+  Running                 sleep 5 &
 #[derive(Clone)]
@@ -31,19 +29,22 @@ impl Job {
         }
     }
 
-    pub fn wait(&mut self) -> Vec<String> {
+    pub fn wait(&mut self, core: &mut ShellCore) -> Vec<String> {
         if self.status == "Done" {
             return vec![];
         }
 
         let mut pipestatus = vec![];
         for p in &self.pids {
-            pipestatus.push(Job::wait_pid(*p).to_string());
+            //pipestatus.push(Job::wait_pid(*p).to_string());
+            core.wait_process(*p);
+            pipestatus.push(core.get_var("?"));
         }
         self.status = "Done".to_string();
         pipestatus
     }
 
+    /*
     fn wait_pid(child: Pid) -> i32 {
         match waitpid(child, None).expect("Faild to wait child process.") {
             WaitStatus::Exited(_pid, status) => {
@@ -58,6 +59,7 @@ impl Job {
             }
         }
     }
+    */
 
     pub fn status_string(self) -> String {
         format!("{} {}", &self.status, &self.text)

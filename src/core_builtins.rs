@@ -342,7 +342,7 @@ impl ShellCore {
     pub fn wait(&mut self, _args: &mut Vec<String>) -> i32 {
         for i in 1..self.jobs.len() {
             let mut j = self.jobs[i].clone();
-            j.wait();
+            j.wait(self);
             self.jobs[i] = j;
         }
 

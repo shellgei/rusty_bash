@@ -49,7 +49,7 @@ impl Compound for CompoundParen {
                 Ok(ForkResult::Parent { child } ) => {
                     if self.substitution {
                         close(p.1).expect("Can't close a pipe end");
-                        self.substitution_text  = read_pipe(p.0, child, conf)
+                        self.substitution_text  = conf.read_pipe(p.0, child)
                             .trim_end_matches('\n').to_string();
                     }
                     self.pid = Some(child);

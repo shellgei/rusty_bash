@@ -6,6 +6,12 @@ use std::fs::File;
 use std::env;
 use crate::core_shopts::Shopts;
 use crate::job::Job;
+use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
+use nix::unistd::Pid;
+
+use nix::unistd::read;
+use std::os::unix::prelude::RawFd;
+
 
 pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -150,5 +156,55 @@ impl ShellCore {
             return true;
         }
         false
+    }
+
+    pub fn wait_process(&mut self, child: Pid) {
+        let exit_status = match waitpid(child, None) {
+            Ok(WaitStatus::Exited(_pid, status)) => {
+                status
+            },
+            Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
+                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
+                128+signal as i32 
+            },
+            Ok(unsupported) => {
+                eprintln!("Error: {:?}", unsupported);
+                1
+            },
+            Err(err) => {
+                panic!("Error: {:?}", err);
+            },
+        };
+
+        self.set_var("?", &exit_status.to_string());
+    } 
+
+    pub fn read_pipe(&mut self, pin: RawFd, pid: Pid) -> String {
+        let mut ans = "".to_string();
+        let mut ch = [0;1000];
+    
+        loop {
+            while let Ok(n) = read(pin, &mut ch) {
+                ans += &String::from_utf8(ch[..n].to_vec()).unwrap();
+                match waitpid(pid, Some(WaitPidFlag::WNOHANG)).expect("Faild to wait child process.") {
+                    WaitStatus::StillAlive => {
+                        continue;
+                    },
+                    WaitStatus::Exited(_pid, status) => {
+                        self.set_var("?", &status.to_string());
+                        break;
+                    },
+                    WaitStatus::Signaled(pid, signal, _) => {
+                        self.set_var("?", &(128+signal as i32).to_string());
+                        eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
+                        break;
+                    },
+                    _ => {
+                        break;
+                    },
+                };
+            }
+            return ans;
+        }
     }
 }

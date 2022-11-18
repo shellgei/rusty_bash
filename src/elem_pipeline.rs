@@ -42,7 +42,7 @@ impl ListElem for Pipeline {
             conf.jobs[0] = Job::new(&self.text, &self.commands);
         }
 
-        let pipestatus = conf.jobs[0].clone().wait();
+        let pipestatus = conf.jobs[0].clone().wait(conf);
         if let Some(s) = pipestatus.last() {
             conf.set_var("?", s);
             conf.set_var("PIPESTATUS", &pipestatus.join(" "));
