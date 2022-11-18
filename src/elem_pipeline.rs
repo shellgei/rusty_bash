@@ -43,11 +43,14 @@ impl ListElem for Pipeline {
         }
 
         //let pipestatus = core.jobs[0].clone().wait(core);
-        let pipestatus = core.wait_job(0);
+        //let pipestatus = core.wait_job(0);
+        core.wait_job(0);
+        /*
         if let Some(s) = pipestatus.last() {
-            core.set_var("?", s);
-            core.set_var("PIPESTATUS", &pipestatus.join(" "));
+            //core.set_var("?", s);
+           // core.set_var("PIPESTATUS", &pipestatus.join(" "));
         }
+        */
 
         if self.not_flag {
             if core.vars["?"] != "0" {

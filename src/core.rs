@@ -208,9 +208,9 @@ impl ShellCore {
         }
     }
 
-    pub fn wait_job(&mut self, job_no: usize) -> Vec<String> {
+    pub fn wait_job(&mut self, job_no: usize) {
         if self.jobs[job_no].status == "Done" {
-            return vec![];
+            return;
         }
 
         let mut pipestatus = vec![];
@@ -219,6 +219,6 @@ impl ShellCore {
             pipestatus.push(self.get_var("?"));
         }
         self.jobs[job_no].status = "Done".to_string();
-        pipestatus
+        self.set_var("PIPESTATUS", &pipestatus.join(" "));
     }
 }
