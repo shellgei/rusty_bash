@@ -41,16 +41,7 @@ impl ListElem for Pipeline {
         }else{
             core.jobs[0] = Job::new(&self.text, &self.commands);
         }
-
-        //let pipestatus = core.jobs[0].clone().wait(core);
-        //let pipestatus = core.wait_job(0);
         core.wait_job(0);
-        /*
-        if let Some(s) = pipestatus.last() {
-            //core.set_var("?", s);
-           // core.set_var("PIPESTATUS", &pipestatus.join(" "));
-        }
-        */
 
         if self.not_flag {
             if core.vars["?"] != "0" {
