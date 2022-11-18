@@ -20,7 +20,7 @@ pub struct Pipeline {
 }
 
 impl ListElem for Pipeline {
-    fn exec(&mut self, conf: &mut ShellCore) {
+    fn exec(&mut self, core: &mut ShellCore) {
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
@@ -29,30 +29,30 @@ impl ListElem for Pipeline {
                 p = pipe().expect("Pipe cannot open");
             };
             c.set_pipe(p.0, p.1, prevfd);
-            c.exec(conf);
+            c.exec(core);
             set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();
         }
 
 
         if self.is_bg {
-            conf.jobs.push(Job::new(&self.text, &self.commands));
+            core.jobs.push(Job::new(&self.text, &self.commands));
             return;
         }else{
-            conf.jobs[0] = Job::new(&self.text, &self.commands);
+            core.jobs[0] = Job::new(&self.text, &self.commands);
         }
 
-        let pipestatus = conf.jobs[0].clone().wait(conf);
+        let pipestatus = core.jobs[0].clone().wait(core);
         if let Some(s) = pipestatus.last() {
-            conf.set_var("?", s);
-            conf.set_var("PIPESTATUS", &pipestatus.join(" "));
+            core.set_var("?", s);
+            core.set_var("PIPESTATUS", &pipestatus.join(" "));
         }
 
         if self.not_flag {
-            if conf.vars["?"] != "0" {
-                conf.set_var("?", "0");
+            if core.vars["?"] != "0" {
+                core.set_var("?", "0");
             }else {
-                conf.set_var("?", "1");
+                core.set_var("?", "1");
             }
         }
     }
@@ -80,7 +80,7 @@ impl Pipeline {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Pipeline> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
         ans.text += &text.consume_blank();
         if text.starts_with( "!") {
@@ -92,7 +92,7 @@ impl Pipeline {
             ans.text += &text.consume_blank();
 
             let op;
-            if let Some(c) = compound(text, conf) {
+            if let Some(c) = compound(text, core) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
                 (_, op) = scanner_control_op(text);
@@ -112,7 +112,7 @@ impl Pipeline {
 
             if text.starts_with( "\n") {
                 text.consume(1);
-                if ! text.feed_additional_line(conf) {
+                if ! text.feed_additional_line(core) {
                     return None;
                 }
             }
