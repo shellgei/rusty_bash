@@ -7,10 +7,10 @@ pub struct ShellCore {
 
 impl ShellCore {
     pub fn new() -> ShellCore {
-        let conf = ShellCore{
+        let core = ShellCore{
             history: Vec::new(),
         };
 
-        conf
+        core
     }
 }
