@@ -7,9 +7,9 @@ use std::ffi::CString;
 use std::process;
 
 use nix::unistd::{fork, ForkResult};
-use nix::sys::wait::waitpid;
-use std::env;             //追加
-use std::path::Path;      //追加
+//use nix::sys::wait::waitpid;
+use std::env;
+use std::path::Path;
 
 pub struct Command {
     text: String,
@@ -37,7 +37,8 @@ impl Command {
                 process::exit(127);
             },
             Ok(ForkResult::Parent { child } ) => {
-                let _ = waitpid(child, None); //eprintln!の行を書き換え
+                let status = ShellCore::wait(child); //書き換え
+                eprintln!("終了ステータス: {}", status);
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }

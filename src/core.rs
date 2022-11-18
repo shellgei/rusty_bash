@@ -17,17 +17,18 @@ impl ShellCore {
         conf
     }
 
-    fn wait(child: Pid) -> i32 {
+    pub fn wait(child: Pid) -> i32 {
         match waitpid(child, None) {//第2引数はオプション
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
             },
-            Ok(WaitStatus::Signaled(pid, signal, _)) => { //第3引数はコアダンプしたかどうか
+            Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
                 eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
                 128+signal as i32 
             },
             Ok(unsupported) => {
-                panic!("Error: {:?}", unsupported);
+                eprintln!("Error: {:?}", unsupported);
+                1
             },
             Err(err) => {
                 panic!("Error: {:?}", err);
