@@ -207,4 +207,18 @@ impl ShellCore {
             return ans;
         }
     }
+
+    pub fn wait_job(&mut self, job_no: usize) -> Vec<String> {
+        if self.jobs[job_no].status == "Done" {
+            return vec![];
+        }
+
+        let mut pipestatus = vec![];
+        for p in self.jobs[job_no].pids.clone() {
+            self.wait_process(p);
+            pipestatus.push(self.get_var("?"));
+        }
+        self.jobs[job_no].status = "Done".to_string();
+        pipestatus
+    }
 }

@@ -8,9 +8,9 @@ use crate::ShellCore;
 //[1]+  Running                 sleep 5 &
 #[derive(Clone)]
 pub struct Job {
-    pids: Vec<Pid>,
+    pub pids: Vec<Pid>,
     text: String,
-    status: String,
+    pub status: String,
 }
 
 impl Job {
