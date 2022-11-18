@@ -2,7 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use nix::unistd::Pid;
-use nix::sys::wait::{waitpid, WaitStatus};
+use nix::sys::wait;
+use nix::sys::wait::WaitStatus;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -18,7 +19,7 @@ impl ShellCore {
     }
 
     pub fn wait_process(&mut self, child: Pid) {
-        let exit_status = match waitpid(child, None) {//第2引数はオプション
+        let exit_status = match wait::waitpid(child, None) {//第2引数はオプション
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
             },
