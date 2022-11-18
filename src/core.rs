@@ -17,7 +17,7 @@ impl ShellCore {
         conf
     }
 
-    pub fn wait(&mut self, child: Pid) {
+    pub fn wait_process(&mut self, child: Pid) {
         let exit_status = match waitpid(child, None) {//第2引数はオプション
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status

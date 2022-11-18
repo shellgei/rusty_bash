@@ -37,7 +37,7 @@ impl Command {
                 process::exit(127);
             },
             Ok(ForkResult::Parent { child } ) => {
-                core.wait(child); //書き換え
+                core.wait_process(child); //書き換え
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
