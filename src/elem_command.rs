@@ -18,7 +18,7 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn exec(&mut self, _core: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore) {
         if self.text == "exit\n" { //self.args[0]を使ってもよい
             process::exit(0);
         }
@@ -37,8 +37,7 @@ impl Command {
                 process::exit(127);
             },
             Ok(ForkResult::Parent { child } ) => {
-                let status = ShellCore::wait(child); //書き換え
-                eprintln!("終了ステータス: {}", status);
+                core.wait(child); //書き換え
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }

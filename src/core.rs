@@ -17,8 +17,8 @@ impl ShellCore {
         conf
     }
 
-    pub fn wait(child: Pid) -> i32 {
-        match waitpid(child, None) {//第2引数はオプション
+    pub fn wait(&mut self, child: Pid) {
+        let exit_status = match waitpid(child, None) {//第2引数はオプション
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
             },
@@ -33,6 +33,8 @@ impl ShellCore {
             Err(err) => {
                 panic!("Error: {:?}", err);
             },
-        }
+        };
+
+        eprintln!("終了ステータス: {}", exit_status);
     } 
 }
