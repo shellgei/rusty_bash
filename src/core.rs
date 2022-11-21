@@ -27,10 +27,6 @@ impl ShellCore {
                 eprintln!("Unsupported: {:?}", unsupported);
                 1
             },
-            Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
-                128+signal as i32
-            },
             Err(err) => {
                 panic!("Error: {:?}", err);
             },
