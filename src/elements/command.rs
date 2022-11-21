@@ -15,7 +15,7 @@ use crate::utils::*;
 use crate::abst_elems::{Compound, compound};
 use crate::elem_arg::Arg;
 use crate::elem_redirect::Redirect;
-use crate::elem_substitution::Substitution;
+use crate::elements::substitution::Substitution;
 use crate::scanner::*;
 use crate::file_descs::*;
 

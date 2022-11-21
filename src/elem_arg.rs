@@ -7,8 +7,8 @@ use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::abst_elems::*;
 use crate::abst_elems::ArgElem;
-use crate::elem_subarg_tilde::SubArgTildeUser;
-use crate::elem_subarg_non_quoted::SubArgNonQuoted;
+use crate::elements::subarg_tilde::SubArgTildeUser;
+use crate::elements::subarg_non_quoted::SubArgNonQuoted;
 use crate::abst_elems::CommandElem;
 
 pub struct Arg {

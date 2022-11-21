@@ -14,13 +14,13 @@ use crate::elements::compound_brace::CompoundBrace;
 use crate::elements::compound_case::CompoundCase;
 use crate::elements::command::Command;
 
-use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
-use crate::elem_subarg_math_substitution::SubArgMathSubstitution;
-use crate::elem_subarg_non_quoted::SubArgNonQuoted;
-use crate::elem_subarg_double_quoted::SubArgDoubleQuoted;
-use crate::elem_subarg_single_quoted::SubArgSingleQuoted;
-use crate::elem_subarg_braced::SubArgBraced;
-use crate::elem_subarg_variable::SubArgVariable;
+use crate::elements::subarg_command_substitution::SubArgCommandSubstitution;
+use crate::elements::subarg_math_substitution::SubArgMathSubstitution;
+use crate::elements::subarg_non_quoted::SubArgNonQuoted;
+use crate::elements::subarg_double_quoted::SubArgDoubleQuoted;
+use crate::elements::subarg_single_quoted::SubArgSingleQuoted;
+use crate::elements::subarg_braced::SubArgBraced;
+use crate::elements::subarg_variable::SubArgVariable;
 use std::process::exit;
 use nix::unistd::{close, fork, ForkResult};
 

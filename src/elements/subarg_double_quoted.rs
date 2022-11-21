@@ -6,9 +6,9 @@ use crate::ShellCore;
 use crate::Feeder;
 
 use crate::abst_elems::ArgElem;
-use crate::elem_subarg_non_quoted::SubArgNonQuoted;
-use crate::elem_subarg_variable::SubArgVariable;
-use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
+use crate::elements::subarg_non_quoted::SubArgNonQuoted;
+use crate::elements::subarg_variable::SubArgVariable;
+use crate::elements::subarg_command_substitution::SubArgCommandSubstitution;
 use crate::utils::combine;
 
 pub struct SubArgDoubleQuoted {
