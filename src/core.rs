@@ -19,19 +19,5 @@ impl ShellCore {
     }
 
     pub fn wait_process(&mut self, child: Pid) {
-        let exit_status = match wait::waitpid(child, None) {//第2引数はオプション
-            Ok(WaitStatus::Exited(_pid, status)) => {
-                status
-            },
-            Ok(unsupported) => {
-                eprintln!("Error: {:?}", unsupported);
-                1
-            },
-            Err(err) => {
-                panic!("Error: {:?}", err);
-            },
-        };
-
-        eprintln!("終了ステータス: {}", exit_status);
     } 
 }
