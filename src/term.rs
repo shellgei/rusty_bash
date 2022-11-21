@@ -1,6 +1,8 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod completion;
+
 use std::io;
 use std::env;
 use std::io::{Write, stdout, stdin, Stdout, BufReader};
@@ -13,7 +15,7 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 
 use crate::ShellCore;
-use crate::term_completion::*;
+use completion::*;
 
 use crate::utils::chars_to_string;
 

@@ -3,7 +3,6 @@
 
 mod abst_elems;
 mod bash_glob;
-//mod builtins;
 mod calculator;
 mod element_list;
 mod elem_arg;
@@ -29,7 +28,6 @@ mod elem_substitution;
 mod elem_pipeline;
 mod elem_varname;
 mod core;
-//mod core_shopts;
 mod job;
 mod term;
 mod utils;
@@ -37,7 +35,6 @@ mod utils_io;
 mod feeder;
 mod scanner;
 mod debuginfo;
-mod term_completion;
 
 use std::{env, process, path};
 use std::os::linux::fs::MetadataExt;
