@@ -10,9 +10,9 @@ use crate::elem_compound_double_paren::CompoundDoubleParen;
 use crate::elem_compound_if::CompoundIf;
 use crate::elem_compound_while::CompoundWhile;
 use crate::elem_compound_paren::CompoundParen;
-use crate::elem_compound_brace::CompoundBrace;
+use crate::elements::compound_brace::CompoundBrace;
 use crate::elem_compound_case::CompoundCase;
-use crate::elem_command::Command;
+use crate::elements::command::Command;
 
 use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
 use crate::elem_subarg_math_substitution::SubArgMathSubstitution;
