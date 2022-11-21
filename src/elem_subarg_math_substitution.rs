@@ -7,7 +7,7 @@ use crate::Feeder;
 
 use crate::abst_elems::ArgElem;
 use crate::abst_elems::Compound;
-use crate::elem_compound_double_paren::CompoundDoubleParen;
+use crate::elements::compound_double_paren::CompoundDoubleParen;
 
 pub struct SubArgMathSubstitution {
     pub text: String,

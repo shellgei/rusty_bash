@@ -6,12 +6,12 @@ use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
 
-use crate::elem_compound_double_paren::CompoundDoubleParen;
-use crate::elem_compound_if::CompoundIf;
-use crate::elem_compound_while::CompoundWhile;
-use crate::elem_compound_paren::CompoundParen;
+use crate::elements::compound_double_paren::CompoundDoubleParen;
+use crate::elements::compound_if::CompoundIf;
+use crate::elements::compound_while::CompoundWhile;
+use crate::elements::compound_paren::CompoundParen;
 use crate::elements::compound_brace::CompoundBrace;
-use crate::elem_compound_case::CompoundCase;
+use crate::elements::compound_case::CompoundCase;
 use crate::elements::command::Command;
 
 use crate::elem_subarg_command_substitution::SubArgCommandSubstitution;
