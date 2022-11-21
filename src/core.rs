@@ -24,7 +24,7 @@ impl ShellCore {
                 status
             },
             Ok(unsupported) => {
-                eprintln!("Error: {:?}", unsupported);
+                eprintln!("Unsupported: {:?}", unsupported);
                 1
             },
             Err(err) => {
