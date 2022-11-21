@@ -29,7 +29,7 @@ mod elem_substitution;
 mod elem_pipeline;
 mod elem_varname;
 mod core;
-mod core_shopts;
+//mod core_shopts;
 mod job;
 mod term;
 mod utils;
