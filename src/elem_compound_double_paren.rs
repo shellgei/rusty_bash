@@ -6,7 +6,7 @@ use crate::abst_elems::Compound;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elem_redirect::Redirect;
-use crate::utils_io::*;
+use crate::file_descs::*;
 use crate::scanner::*;
 use crate::calculator::calculate;
 

@@ -17,7 +17,7 @@ use crate::elem_arg::Arg;
 use crate::elem_redirect::Redirect;
 use crate::elem_substitution::Substitution;
 use crate::scanner::*;
-use crate::utils_io::*;
+use crate::file_descs::*;
 
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {

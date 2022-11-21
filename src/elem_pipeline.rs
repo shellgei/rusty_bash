@@ -7,7 +7,8 @@ use crate::abst_elems::Compound;
 use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
 use crate::scanner::*;
-use crate::utils_io::set_parent_io;
+//use crate::file_descs::set_parent_io;
+use crate::file_descs::FileDescs;
 use crate::abst_elems::compound;
 use crate::job::Job;
 
@@ -30,7 +31,7 @@ impl ListElem for Pipeline {
             };
             c.set_pipe(p.0, p.1, prevfd);
             c.exec(core);
-            set_parent_io(c.get_pipe_out());
+            FileDescs::set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();
         }
 

@@ -9,7 +9,7 @@ use crate::elem_script::Script;
 use crate::element_list::ControlOperator;
 use std::process::exit;
 use crate::elem_redirect::Redirect;
-use crate::utils_io::*;
+use crate::file_descs::*;
 use nix::unistd::{close, pipe};
 use crate::scanner::*;
 use crate::element_list::CompoundType;
@@ -39,7 +39,7 @@ impl Compound for CompoundParen {
                     if let Some(s) = &mut self.script {
                         if self.substitution {
                             close(p.0).expect("Can't close a pipe end");
-                            dup_and_close(p.1, 1);
+                            FileDescs::dup_and_close(p.1, 1);
                         }
                         s.exec(conf);
                         close(1).expect("Can't close a pipe end");

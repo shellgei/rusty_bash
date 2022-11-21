@@ -7,7 +7,7 @@ use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elem_script::Script;
 use crate::elem_redirect::Redirect;
-use crate::utils_io::*;
+use crate::file_descs::*;
 use std::process::exit;
 use crate::element_list::CompoundType;
 

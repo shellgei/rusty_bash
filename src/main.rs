@@ -30,8 +30,8 @@ mod elem_varname;
 mod core;
 mod job;
 mod term;
+mod file_descs;
 mod utils;
-mod utils_io;
 mod feeder;
 mod scanner;
 mod debuginfo;
@@ -49,7 +49,7 @@ use crate::elem_script::Script;
 
 use crate::element_list::CompoundType;
 
-use crate::utils_io::dup_and_close;
+use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;
 
 fn is_interactive(pid: u32) -> bool {
@@ -126,7 +126,7 @@ fn main() {
 
     if args.len() > 1 {
         if let Ok(file) = OpenOptions::new().read(true).open(&args[1]){
-            dup_and_close(file.into_raw_fd(), 0);
+            FileDescs::dup_and_close(file.into_raw_fd(), 0);
         }
     }
 
