@@ -1,11 +1,13 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod builtins;
+
 use std::collections::HashMap;
 use std::fs::File;
 use std::env;
 use crate::core_shopts::Shopts;
-use crate::builtins;
+//use crate::builtins;
 use crate::job::Job;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use nix::unistd::Pid;

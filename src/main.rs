@@ -3,7 +3,7 @@
 
 mod abst_elems;
 mod bash_glob;
-mod builtins;
+//mod builtins;
 mod calculator;
 mod element_list;
 mod elem_arg;
