@@ -4,14 +4,9 @@
 mod abst_elems;
 mod bash_glob;
 mod calculator;
-mod element_list;
-mod elem_arg;
-mod elem_function;
-mod elem_script;
 mod elements;
-mod elem_redirect;
-mod elem_pipeline;
-mod elem_varname;
+mod element_list;
+
 mod core;
 mod job;
 mod term;
@@ -30,7 +25,7 @@ use crate::core::ShellCore;
 use crate::feeder::Feeder;
 
 use crate::abst_elems::ListElem;
-use crate::elem_script::Script;
+use crate::elements::script::Script;
 
 use crate::element_list::CompoundType;
 

@@ -4,8 +4,8 @@
 use crate::ShellCore;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::elem_arg::Arg;
-use crate::elem_varname::VarName;
+use crate::elements::arg::Arg;
+use crate::elements::varname::VarName;
 use crate::scanner::scanner_name;
 use crate::abst_elems::CommandElem;
 

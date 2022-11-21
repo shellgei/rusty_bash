@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elem_varname::VarName;
+use crate::elements::varname::VarName;
 use crate::scanner::*;
 use crate::abst_elems::Compound;
 use crate::abst_elems::compound;

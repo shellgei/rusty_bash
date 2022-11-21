@@ -4,8 +4,8 @@
 use crate::{ShellCore, Feeder};
 use crate::abst_elems::Compound;
 use std::os::unix::prelude::RawFd;
-use crate::elem_script::Script;
-use crate::elem_redirect::Redirect;
+use crate::elements::script::Script;
+use crate::elements::redirect::Redirect;
 use crate::element_list::CompoundType;
 use nix::unistd::Pid;
 use crate::file_descs::*;

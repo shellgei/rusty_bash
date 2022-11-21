@@ -3,8 +3,8 @@
 
 use crate::{ShellCore, Feeder};
 use crate::element_list::*;
-use crate::elem_function::Function;
-use crate::elem_pipeline::Pipeline;
+use crate::elements::function::Function;
+use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
 use crate::ListElem;
 use crate::scanner::scanner_control_op;
