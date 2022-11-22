@@ -43,9 +43,9 @@ impl Command {
                     },
                     Err(err) => {
                         println!("Failed to execute. {:?}", err);
-                        process::exit(127);
+                        process::exit(127)
                     }
-                    _ => panic!("ここには来ません")
+                    _ => ()
                 }
             },
             Ok(ForkResult::Parent { child } ) => {
