@@ -4,22 +4,26 @@
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
+use std::collections::HashMap; //追加
 
 pub struct ShellCore {
     pub history: Vec<String>,
+    pub vars: HashMap<String, String>, //追加
 }
 
 impl ShellCore {
     pub fn new() -> ShellCore {
-        let core = ShellCore{
+        let mut core = ShellCore{ // mutに変更
             history: Vec::new(),
+            vars: HashMap::new(), //追加
         };
 
+        core.vars.insert("?".to_string(), "0".to_string()); //追加
         core
     }
 
     pub fn wait_process(&mut self, child: Pid) {
-        let exit_status = match wait::waitpid(child, None) {//第2引数はオプション
+        let exit_status = match wait::waitpid(child, None) {
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
             },
@@ -36,6 +40,6 @@ impl ShellCore {
             },
         };
 
-        eprintln!("終了ステータス: {}", exit_status);
+        self.vars.insert("?".to_string(), exit_status.to_string()); //追加
     } 
 }
