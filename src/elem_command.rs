@@ -6,7 +6,7 @@ use nix::unistd; // ::execvpを消しておく
 use std::ffi::CString;
 use std::process;
 
-use nix::unistd::{ForkResult}; 
+use nix::unistd::ForkResult; 
 
 pub struct Command {
     text: String,
