@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder};
-use nix::unistd::execvp;
+use nix::unistd;
 use std::ffi::CString;
 use std::process;
 
-use nix::unistd::{fork, ForkResult};
+use nix::unistd::ForkResult;
 use nix::sys::wait::waitpid;         //追加
 
 pub struct Command {
@@ -21,9 +21,9 @@ impl Command {
             process::exit(0);
         }
 
-        match unsafe{fork()} {
+        match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                let err = execvp(&self.cargs[0], &self.cargs);
+                let err = unistd::execvp(&self.cargs[0], &self.cargs);
                 println!("Failed to execute. {:?}", err);
                 process::exit(127);
             },
