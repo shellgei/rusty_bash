@@ -37,9 +37,16 @@ impl Command {
         }
         if self.args[0] == "cd" && self.args.len() > 1 {
             let path = Path::new(&self.args[1]);
-            if env::set_current_dir(&path).is_err() {
+            let exit_status = match env::set_current_dir(&path) {
+                Ok(_)  => 0,
+                Err(_) => 1,
+            };
+
+            if exit_status != 0 {
                 eprintln!("Cannot change directory");
             }
+
+            core.vars.insert("?".to_string(), exit_status.to_string());
             return;
         }
 
