@@ -2,12 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder};
-use nix::unistd::execvp;
+use nix::unistd;
 use std::ffi::CString;
 use std::process;
 
-use nix::unistd::{fork, ForkResult};
-use nix::sys::wait::waitpid;
+use nix::unistd::ForkResult;
+use nix::sys::wait;
 use std::env;             //追加
 use std::path::Path;      //追加
 
@@ -30,14 +30,14 @@ impl Command {
             return;
         }
 
-        match unsafe{fork()} {
+        match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                let err = execvp(&self.cargs[0], &self.cargs);
+                let err = unistd::execvp(&self.cargs[0], &self.cargs);
                 println!("Failed to execute. {:?}", err);
                 process::exit(127);
             },
             Ok(ForkResult::Parent { child } ) => {
-                let _ = waitpid(child, None); //eprintln!の行を書き換え
+                let _ = wait::waitpid(child, None);
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
