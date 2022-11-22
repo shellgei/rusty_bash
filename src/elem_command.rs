@@ -7,7 +7,7 @@ use std::ffi::CString;
 use std::process;
 
 use nix::unistd::ForkResult;
-use nix::sys::wait::waitpid;         //追加
+use nix::sys::wait;         //追加
 
 pub struct Command {
     text: String,
@@ -28,7 +28,7 @@ impl Command {
                 process::exit(127);
             },
             Ok(ForkResult::Parent { child } ) => {
-                let _ = waitpid(child, None);
+                let _ = wait::waitpid(child, None);
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
