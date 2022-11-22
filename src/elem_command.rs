@@ -12,15 +12,28 @@ use std::env;
 use std::path::Path;
 
 pub struct Command {
-    text: String,
+    _text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
 }
 
 impl Command {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        if self.text == "exit\n" { //self.args[0]を使ってもよい
-            process::exit(0);
+        if self.args[0] == "exit" {
+            eprintln!("exit");
+            if self.args.len() > 1 {
+                core.vars.insert("?".to_string(), self.args[1].clone());
+            }
+
+            let exit_status = match core.vars["?"].parse::<i32>() {
+                Ok(n)  => if 0 <= n && n <= 255 { n }else{ n%256 }, 
+                Err(_) => {
+                    eprintln!("sush: exit: {}: numeric argument required", core.vars["?"]);
+                    2
+                },
+            };
+
+            process::exit(exit_status);
         }
         if self.args[0] == "cd" && self.args.len() > 1 {
             let path = Path::new(&self.args[1]);
@@ -69,7 +82,7 @@ impl Command {
             .collect();
 
         if args.len() > 0 { // 1個以上の単語があればCommandのインスタンスを作成して返す
-            Some( Command {text: line, args: args, cargs: cargs} )
+            Some( Command {_text: line, args: args, cargs: cargs} )
         }else{
             None // そうでなければ何も返さない
         }
