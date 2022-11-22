@@ -7,7 +7,7 @@ use std::ffi::CString;
 use std::process;
 
 use nix::unistd::ForkResult;
-//use nix::sys::wait;
+use nix::errno::Errno;
 use std::env;
 use std::path::Path;
 
@@ -32,9 +32,21 @@ impl Command {
 
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                let err = unistd::execvp(&self.cargs[0], &self.cargs);
-                println!("Failed to execute. {:?}", err);
-                process::exit(127);
+                match unistd::execvp(&self.cargs[0], &self.cargs) {
+                    Err(Errno::EACCES) => {
+                        println!("sush: {}: Permission denied", &self.args[0]);
+                        process::exit(126)
+                    },
+                    Err(Errno::ENOENT) => {
+                        println!("{}: command not found", &self.args[0]);
+                        process::exit(127)
+                    },
+                    Err(err) => {
+                        println!("Failed to execute. {:?}", err);
+                        process::exit(127);
+                    }
+                    _ => panic!("ここには来ません")
+                }
             },
             Ok(ForkResult::Parent { child } ) => {
                 core.wait_process(child); //書き換え
