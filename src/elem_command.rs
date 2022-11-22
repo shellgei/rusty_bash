@@ -7,7 +7,7 @@ use std::ffi::CString;
 use std::process;
 
 use nix::unistd::ForkResult;
-//use nix::sys::wait::waitpid;
+//use nix::sys::wait;
 use std::env;
 use std::path::Path;
 
