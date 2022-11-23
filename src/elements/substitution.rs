@@ -49,13 +49,16 @@ impl Substitution {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Substitution> {
+        let backup = text.clone();
         let varname_pos = scanner_name(text, 0);
-        if varname_pos == text.len() || text.nth(varname_pos) != '=' {
+        let var_part = VarName::new(text, varname_pos);
+
+        if ! text.starts_with("=") {
+            text.rewind(backup);
             return None;
         }
-    
-        let var_part = VarName::new(text, varname_pos);
         text.consume(1); // consume of "=" 
+ 
         if let Some(value_part) = Arg::parse(text, conf, true, false){
             Some(Substitution::new(text, var_part, value_part))
         }else{ // empty value
