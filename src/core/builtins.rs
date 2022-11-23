@@ -229,7 +229,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() > 1 {
         match fs::read_to_string(&args[1]) {
             Ok(source) => {
-                let mut feeder = Feeder::new_with(source);
+                let mut feeder = Feeder::new_from(source);
                 if let Some(mut script) = Script::parse(&mut feeder, core, &CompoundType::Null) {
                     core.return_enable = true;
                     script.exec(core);

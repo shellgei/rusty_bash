@@ -143,7 +143,7 @@ impl Command {
     fn exec_function(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
         let text = core.get_function(&args[0]).unwrap();
 
-        let mut feeder = Feeder::new_with(text);
+        let mut feeder = Feeder::new_from(text);
         if let Some(mut f) = compound(&mut feeder, core) {
             let backup = core.args.clone();
             core.args = args.to_vec();

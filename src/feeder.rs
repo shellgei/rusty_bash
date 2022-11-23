@@ -39,7 +39,7 @@ impl Feeder {
         Some(line)
     }
 
-    pub fn new_with(text: String) -> Feeder {
+    pub fn new_from(text: String) -> Feeder {
         let mut ans = Feeder::new();
         ans.remaining = text;
         ans

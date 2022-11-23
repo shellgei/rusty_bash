@@ -112,7 +112,7 @@ fn tokenizer(expression: String, _core: &mut ShellCore) -> Vec<(String,u8)> {
     //let mut stack = vec![];
     let mut tokens = vec![];
     
-    let mut text = Feeder::new_with(expression.clone());
+    let mut text = Feeder::new_from(expression.clone());
     while text.len() != 0 {
         //get value
         if let Some(n) = get_integer(&mut text) {
