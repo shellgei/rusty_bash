@@ -40,7 +40,7 @@ impl ArgElem for SubArgCommandSubstitution {
 
 impl SubArgCommandSubstitution {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgCommandSubstitution> {
-        if text.len() == 0 || text.nth(0) != '$' {
+        if ! text.starts_with("$") {
             return None;
         }
     

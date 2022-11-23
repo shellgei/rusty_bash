@@ -87,11 +87,10 @@ impl CompoundParen {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CompoundParen> {
-        if text.len() == 0 || text.nth(0) != '(' {
+        if ! text.starts_with("(") {
             return None;
         }
 
-        //let mut all_backup = text.clone();
         let mut backup = text.clone();
         let mut ans = CompoundParen::new();
         let mut input_success;
@@ -111,8 +110,6 @@ impl CompoundParen {
 
                 ans.text += &text.consume(n);
                 ans.script = Some(s);
-
-            //    break;
             }else{
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);
                 if ! input_success {
@@ -122,7 +119,7 @@ impl CompoundParen {
                 continue;
             }
 
-            if ans.text.len() != 0 && ! ans.text.ends_with(")") {
+            if ! ans.text.ends_with(")") {
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);
                 if ! input_success {
                     text.consume(text.len());
