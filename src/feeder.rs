@@ -7,18 +7,6 @@ use crate::ShellCore;
 use crate::term;
 use crate::scanner::*;
 
-fn read_line_stdin() -> Option<String> {
-    let mut line = String::new();
-
-    let len = io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-
-    if len == 0 {
-        return None;
-    }
-    Some(line)
-}
 
 #[derive(Clone)]
 pub struct Feeder {
@@ -36,6 +24,19 @@ impl Feeder {
             to_lineno: 0,
             pos_in_line: 0,
         }
+    }
+
+    fn read_line_stdin() -> Option<String> {
+        let mut line = String::new();
+    
+        let len = io::stdin()
+            .read_line(&mut line)
+            .expect("Failed to read line");
+    
+        if len == 0 {
+            return None;
+        }
+        Some(line)
     }
 
     pub fn new_with(text: String) -> Feeder {
@@ -132,7 +133,7 @@ impl Feeder {
                 return false;
             }
         }else{
-            if let Some(s) = read_line_stdin() {
+            if let Some(s) = Self::read_line_stdin() {
                 Some(s)
             }else{
                 return false;
@@ -157,7 +158,7 @@ impl Feeder {
                 return false;
             }
         }else{
-            if let Some(s) = read_line_stdin() {
+            if let Some(s) = Self::read_line_stdin() {
                 s
             }else{
                 return false;
