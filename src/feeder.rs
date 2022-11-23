@@ -26,6 +26,12 @@ impl Feeder {
         }
     }
 
+    pub fn new_from(text: String) -> Feeder {
+        let mut ans = Feeder::new();
+        ans.remaining = text;
+        ans
+    }
+
     fn read_line_stdin() -> Option<String> {
         let mut line = String::new();
     
@@ -37,12 +43,6 @@ impl Feeder {
             return None;
         }
         Some(line)
-    }
-
-    pub fn new_from(text: String) -> Feeder {
-        let mut ans = Feeder::new();
-        ans.remaining = text;
-        ans
     }
 
     pub fn lineno(&self) -> (u32, u32) {
@@ -77,7 +77,7 @@ impl Feeder {
     }
 
     pub fn consume(&mut self, cutpos: usize) -> String {
-        let cut = self.remaining[0..cutpos].to_string(); // TODO: this implementation will cause an error.
+        let cut = self.remaining[0..cutpos].to_string();
         self.pos_in_line += cutpos as u32;
         self.remaining = self.remaining[cutpos..].to_string();
 

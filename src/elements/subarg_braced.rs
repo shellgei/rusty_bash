@@ -91,12 +91,7 @@ impl SubArgBraced {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgBraced> {
-        if text.len() == 0 {
-            return None;
-        }
-
-        let pos = scanner_until(text, 0, "{");
-        if pos != 0 {
+        if ! text.starts_with("{"){
             return None;
         }
 
@@ -108,8 +103,7 @@ impl SubArgBraced {
             ans.text += &arg.text.clone();
             ans.args.push(arg); 
 
-            let (n, _) = scanner_control_op(text);
-            if n > 0 {
+            if scanner_control_op(text).0 > 0 {
                 return Some(ans);
             }
 
