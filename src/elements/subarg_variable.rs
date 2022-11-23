@@ -65,12 +65,12 @@ impl SubArgVariable {
     }
 
     pub fn parse(text: &mut Feeder) -> Option<SubArgVariable> {
-        if text.len() < 2 || !(text.nth(0) == '$') {
-            return None;
-        };
-        if text.nth(1) == '{' {
+        if text.starts_with("${") {
             return SubArgVariable::parse_in_brace(text);
         }
+        if ! text.starts_with("$") {
+            return None;
+        };
 
         let mut ans = SubArgVariable::new(text);
         ans.text = text.consume(1);
@@ -101,7 +101,7 @@ impl SubArgVariable {
             ans.text += &ans.empty_option_string.clone();
         }
 
-        if text.nth(0) == '}' {
+        if text.starts_with("}") {
             ans.text += &text.consume(1);
 
             Some(ans)

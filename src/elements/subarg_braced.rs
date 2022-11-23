@@ -107,7 +107,7 @@ impl SubArgBraced {
                 return Some(ans);
             }
 
-            if text.len() == 0 || text.nth(0) == ' ' {
+            if text.len() == 0 || text.starts_with(" ") {
                 return Some(ans);
             };
     

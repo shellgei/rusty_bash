@@ -109,8 +109,8 @@ impl Script {
             return None;
         };
     
-        //if text.starts_with(")") {
-        if text.nth(0) == ')' {
+        if text.starts_with(")") {
+        //if text.nth(0) == ')' {
             eprintln!("Unexpected symbol: {}", text.consume(text.len()).trim_end());
             conf.set_var("?", "2");
             return None;

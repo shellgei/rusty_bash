@@ -26,10 +26,7 @@ impl ArgElem for SubArgTildeUser {
 
 impl SubArgTildeUser {
     pub fn parse(text: &mut Feeder, in_brace: bool) -> Option<SubArgTildeUser> {
-        if text.len() == 0 {
-            return None;
-        }
-        if text.nth(0) != '~' {
+        if ! text.starts_with("~") {
             return None;
         }
 
