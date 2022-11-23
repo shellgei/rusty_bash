@@ -43,7 +43,7 @@ impl Function {
              }
          }
 
-         if text.len() == 0 || text.nth(0) != '(' {
+         if ! text.starts_with("(") {
              text.rewind(backup);
              return None;
          }
@@ -51,7 +51,7 @@ impl Function {
          let d = scanner_blank(text, 0);
          ans_text += &text.consume(d);
  
-         if text.len() == 0 || text.nth(0) != ')' {
+         if ! text.starts_with(")") {
              text.rewind(backup);
              return None;
          }

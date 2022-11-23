@@ -30,7 +30,6 @@ pub struct CompoundBrace {
     text: String,
     pid: Option<Pid>, 
     pub substitution_text: String,
-//    my_type: CompoundType, 
     fds: FileDescs,
 }
 
@@ -75,7 +74,8 @@ impl CompoundBrace {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundBrace> {
-        if text.len() == 0 || text.nth(0) != '{' {
+        if ! text.starts_with("{") {
+        //if text.len() == 0 || text.nth(0) != '{' {
             return None;
         }
 
@@ -104,7 +104,8 @@ impl CompoundBrace {
                 continue;
             }
     
-            if text.len() == 0 || text.nth(0) != '}' {
+           // if text.len() == 0 || text.nth(0) != '}' {
+            if ! text.starts_with("}") {
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);
                 if ! input_success {
                     text.consume(text.len());

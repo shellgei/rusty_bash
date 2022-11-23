@@ -89,7 +89,8 @@ impl CompoundCase {
             conds.push(text.consume(pos));
             ans.text += &conds.last().unwrap().clone();
 
-            if text.nth(0) == ')' {
+            if text.starts_with(")") {
+           // if text.nth(0) == ')' {
                 break;
             }else{
                 ans.text += &text.consume(1);
