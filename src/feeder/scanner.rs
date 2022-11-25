@@ -41,41 +41,41 @@ pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
     pos
 }
 
-pub fn scanner_name_or_parameter(text: &mut Feeder, from: usize) -> usize {
-    let ans = scanner_parameter(text, from);
-
-    if ans == 0 {
-        text.scanner_name(from)
-    }else{
-        ans
-    }
-}
-
-pub fn scanner_number(text: &Feeder, from: usize) -> usize {
-    let mut pos = from;
-    for ch in text.chars_after(from) {
-        if ch < '0' || '9' < ch {
-            break;
-        }
-        pos += 1;
-    }
-    pos
-}
-
-pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
-    if text.len() < from {
-        return from;
-    }
-
-    if "?*@$#!-:".chars().any(|c| c == text.nth(from)) { //special parameters
-        return from+1;
-    };
-
-    scanner_number(text, from)
-}
-
-
 impl Feeder {
+    pub fn scanner_name_or_parameter(&mut self, from: usize) -> usize {
+        let ans = self.scanner_parameter(from);
+    
+        if ans == 0 {
+            self.scanner_name(from)
+        }else{
+            ans
+        }
+    }
+    
+    pub fn scanner_number(&mut self, from: usize) -> usize {
+        let mut pos = from;
+        for ch in self.chars_after(from) {
+            if ch < '0' || '9' < ch {
+                break;
+            }
+            pos += 1;
+        }
+        pos
+    }
+
+    pub fn scanner_parameter(&mut self, from: usize) -> usize {
+        if self.len() < from {
+            return from;
+        }
+    
+        if "?*@$#!-:".chars().any(|c| c == self.nth(from)) { //special parameters
+            return from+1;
+        };
+    
+        self.scanner_number(from)
+    }
+
+
     pub fn scanner_redirect(&mut self) -> (usize, Option<RedirectOp> ) {
         if self.starts_with("<<<") {
             return (3, Some(RedirectOp::HereStr));

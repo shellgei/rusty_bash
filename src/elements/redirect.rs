@@ -4,7 +4,6 @@
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::ShellCore;
-use crate::feeder::scanner::*;
 use crate::element_list::RedirectOp;
 use crate::elements::arg::Arg;
 use crate::abst_elems::CommandElem;
@@ -48,7 +47,7 @@ impl Redirect {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Redirect::new(text);
         let backup = text.clone();
-        let pos = scanner_number(text, 0);
+        let pos = text.scanner_number(0);
         if pos > 0 {
             if let Ok(num) = text.from_to(0, pos).parse::<i32>() {
                 ans.left_fd = num;
