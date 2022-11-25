@@ -267,7 +267,8 @@ impl Command {
                 break;
             }
 
-            if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
+            if text.starts_with("(") || text.starts_with(")") {
+            //if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
                 break;
             }
         }
@@ -279,7 +280,8 @@ impl Command {
         let backup = text.clone();
         let mut ans = Command::new();
 
-        if scanner_start_brace(text, 0) == 1 {
+        //if scanner_start_brace(text, 0) == 1 {
+        if text.starts_with("{") {
             return None;
         };
 

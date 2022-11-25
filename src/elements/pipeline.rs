@@ -113,7 +113,8 @@ impl Pipeline {
                 }
             }
 
-            if scanner_end_paren(text, 0) == 1 {
+            if text.starts_with(")") {
+            //if scanner_end_paren(text, 0) == 1 {
                 break;
             }
         }

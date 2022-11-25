@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder};
-use crate::scanner::*;
 
 fn op_order(operator: &String) -> u8 {
     let op: &str = &operator.clone();
@@ -19,7 +18,7 @@ fn op_order(operator: &String) -> u8 {
 }
 
 fn get_integer(text: &mut Feeder) -> Option<(String,u8)> {
-    let pos = scanner_integer(&text, 0);
+    let pos = text.scanner_integer();
 
     if pos != 0 {
         Some( (text.consume(pos),0) )

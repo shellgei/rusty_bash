@@ -241,5 +241,32 @@ impl Feeder {
             .map(|e| e.1)
             .collect()
     }
+
+    pub fn scanner_integer(&mut self) -> usize {
+        if self.len() == 0 {
+            return 0;
+        }
+    
+        let mut pos = 0;
+        let mut minus = false;
+        if self.starts_with("-") {
+            pos += 1;
+            minus = true;
+        }
+    
+        for ch in self.chars_after(pos) {
+            if ch < '0' || ch > '9' {
+                break;
+            }
+    
+            pos += 1;
+        }
+    
+        if minus && pos == 1 {
+            0
+        }else{
+            pos
+        }
+    }
 }
 
