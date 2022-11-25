@@ -19,9 +19,9 @@ impl Feeder {
         pos
     }
     
-    pub fn scanner_blank(&mut self, from: usize) -> usize {
-        let mut pos = from;
-        for ch in self.chars_after(from) {
+    pub fn scanner_blank(&mut self) -> usize {
+        let mut pos = 0;
+        for ch in self.chars_after(0) {
             if let Some(_) = " \t".find(ch) {
                 pos += ch.len_utf8();
             }else{

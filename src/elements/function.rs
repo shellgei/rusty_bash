@@ -35,7 +35,7 @@ impl Function {
              }
              name = VarName::new(text, var_pos);
 
-             let d = text.scanner_blank(0);
+             let d = text.scanner_blank();
              ans_text += &text.consume(d);
 
              if name.text != "function" {
@@ -48,7 +48,7 @@ impl Function {
              return None;
          }
          ans_text += &text.consume(1);
-         let d = text.scanner_blank(0);
+         let d = text.scanner_blank();
          ans_text += &text.consume(d);
  
          if ! text.starts_with(")") {
@@ -57,7 +57,7 @@ impl Function {
          }
          ans_text += &text.consume(1);
  
-         let d = text.scanner_blank(0);
+         let d = text.scanner_blank();
          ans_text += &text.consume(d);
  
          if let Some(c) = compound(text, conf){

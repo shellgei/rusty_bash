@@ -143,7 +143,7 @@ impl CompoundParen {
         }
 
         loop {
-            let d = text.scanner_blank(0);
+            let d = text.scanner_blank();
             ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text, conf){

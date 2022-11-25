@@ -86,7 +86,7 @@ impl Feeder {
     }
 
     pub fn consume_blank(&mut self) -> String {
-        let d = self.scanner_blank(0);
+        let d = self.scanner_blank();
         self.consume(d)
     }
 
@@ -107,7 +107,7 @@ impl Feeder {
     pub fn consume_blank_return(&mut self) -> String {
         let mut ans = "".to_string();
         loop {
-            let d = self.scanner_blank(0);
+            let d = self.scanner_blank();
             if d != 0 {
                 ans += &self.consume(d);
             }else if self.remaining.starts_with("\n") {
