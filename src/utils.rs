@@ -163,15 +163,15 @@ pub fn blue_string(s: &String) -> String {
 }
 
 pub fn expand_tilde(path: &String) -> (String, String, String){
-    let org_length = scanner_user_path(path.clone());
+    let org_length = path.len();
     let home = if org_length == 1 {
         env::var("HOME").expect("Home is not set")
     }else if org_length == 0{
         "".to_string()
-    }else if let Some(h) = get_home(path[1..org_length].to_string()) {
+    }else if let Some(h) = get_home(path[1..].to_string()) {
         h
     }else{
-        "".to_string()
+        path.to_string()//"".to_string()
     };
 
     let org = path[0..org_length].to_string();
@@ -183,27 +183,6 @@ pub fn expand_tilde(path: &String) -> (String, String, String){
         (path.to_string(), home, org)
     }
 }
-
-pub fn scanner_user_path(text: String) -> usize {
-    if text.len() == 0 {
-        return 0;
-    }
-
-    let mut pos = 0;
-    for ch in text.chars() {
-        if pos == 0 && ch != '~' {
-            return 0;
-        }
-
-        if "/:\n *".find(ch) != None {
-            break;
-        }
-        pos += ch.len_utf8();
-    }
-
-    pos
-}
-
 
 fn get_home(user: String) -> Option<String> {
     let file = if let Ok(f) = OpenOptions::new().read(true).open("/etc/passwd"){

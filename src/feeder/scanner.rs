@@ -19,18 +19,6 @@ impl Feeder {
         pos
     }
     
-    pub fn scanner_blank(&mut self) -> usize {
-        let mut pos = 0;
-        for ch in self.chars_after(0) {
-            if let Some(_) = " \t".find(ch) {
-                pos += ch.len_utf8();
-            }else{
-                break;
-            };
-        }
-        pos
-    }
-    
     pub fn scanner_until(&mut self, from: usize, to: &str) -> usize {
         let mut pos = from;
         for ch in self.chars_after(from) {
@@ -111,6 +99,14 @@ impl Feeder {
         }
     
         return ans;
+    }
+
+    pub fn scanner_tilde_prefix(&mut self) -> usize {
+        if ! self.starts_with("~") {
+            return 0;
+        }
+
+        return self.scanner_until(0, " \n\t\"';{}()$<>&:/,");
     }
 
     pub fn scanner_control_op(&mut self) -> (usize, Option<ControlOperator> ) {
@@ -222,4 +218,5 @@ impl Feeder {
     
         self.scanner_number(from)
     }
+    
 }

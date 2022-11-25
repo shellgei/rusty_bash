@@ -55,7 +55,7 @@ impl SubArgNonQuoted {
     }
 
     fn parse3(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-        if text.nth_is(0, ",}"){
+        if text.starts_with(",") || text.starts_with("}") {
             return None;
         };
         

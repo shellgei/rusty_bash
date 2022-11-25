@@ -25,26 +25,12 @@ impl ArgElem for SubArgTildeUser {
 }
 
 impl SubArgTildeUser {
-    pub fn parse(text: &mut Feeder, in_brace: bool) -> Option<SubArgTildeUser> {
-        if ! text.starts_with("~") {
-            return None;
-        }
-
-        let pos = text.scanner_until_escape(" \n\t\"';{}()$<>&*:/,");
-        if pos == 0{
-            return None;
-        };
-
-        if in_brace {
-            if text.len() > pos && !text.nth_is_one_of(pos, ":/\n,}") {
-                return None;
-            }
+    pub fn parse(text: &mut Feeder) -> Option<SubArgTildeUser> {
+        let pos = text.scanner_tilde_prefix();
+        if pos != 0 {
+            Some( SubArgTildeUser{text: text.consume(pos), pos: DebugInfo::init(text) } )
         }else{
-            if text.len() > pos && !text.nth_is_one_of(pos, ":/\n") {
-                return None;
-            }
+            None
         }
-        
-        Some( SubArgTildeUser{text: text.consume(pos), pos: DebugInfo::init(text) } )
     }
 }

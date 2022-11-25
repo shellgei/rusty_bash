@@ -203,20 +203,16 @@ impl Feeder {
         t
     }
 
-    pub fn nth_is_one_of(&self, pos: usize, cmp: &str) -> bool{
-        cmp.to_string().chars().any(|c| c == self.nth(pos) )
-    }
-
     pub fn rewind_feed_backup(&mut self, backup: &Feeder, conf: &mut ShellCore) -> (Feeder, bool) {
         self.rewind(backup.clone());
         let res = self.feed_additional_line(conf);
         (self.clone(), res)
     }
 
-    pub fn nth_is(&self, pos: usize, chars: &str) -> bool{
+    /*pub fn nth_is(&self, pos: usize, chars: &str) -> bool{
         let ch = self.nth(pos);
         chars.to_string().find(ch) != None
-    }
+    }*/
 
     pub fn starts_with(&self, s: &str) -> bool {
         self.remaining.starts_with(s)
@@ -241,6 +237,19 @@ impl Feeder {
             .filter(|e| e.0 >= from && e.0 < to)
             .map(|e| e.1)
             .collect()
+    }
+
+    /* scanner only used in this file */
+    fn scanner_blank(&mut self) -> usize {
+        let mut pos = 0;
+        for ch in self.chars_after(0) {
+            if let Some(_) = " \t".find(ch) {
+                pos += ch.len_utf8();
+            }else{
+                break;
+            };
+        }
+        pos
     }
 }
 

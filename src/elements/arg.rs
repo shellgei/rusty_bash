@@ -61,7 +61,7 @@ impl Arg {
             is_value: is_value,
         };
 
-        if let Some(result) = SubArgTildeUser::parse(text, false) {
+        if let Some(result) = SubArgTildeUser::parse(text) {
             ans.text += &result.get_text();
             ans.subargs.push(Box::new(result));
         }
@@ -140,7 +140,8 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
     };
 
     let backup = text.clone();
-    if text.nth_is(0, ",}"){ // zero length arg
+    if text.starts_with(",") || text.starts_with("}") {
+   // if text.nth_is(0, ",}"){ // zero length arg
         let tmp = SubArgNonQuoted{
             text: "".to_string(),
             pos: DebugInfo::init(text),
@@ -150,7 +151,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
         return Some(ans);
     };
 
-    if let Some(result) = SubArgTildeUser::parse(text, true) {
+    if let Some(result) = SubArgTildeUser::parse(text) {
         ans.text += &result.get_text();
         ans.subargs.push(Box::new(result));
     }
@@ -166,7 +167,8 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
         }
     };
 
-    if text.len() == 0 ||  !text.nth_is(0, ",}"){ 
+    if ! text.starts_with(",") && ! text.starts_with("}") {
+    //if text.len() == 0 ||  !text.nth_is(0, ",}"){ 
         text.rewind(backup);
         return None;
     }

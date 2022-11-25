@@ -35,8 +35,7 @@ impl Function {
              }
              name = VarName::new(text, var_pos);
 
-             let d = text.scanner_blank();
-             ans_text += &text.consume(d);
+             ans_text += &text.consume_blank();
 
              if name.text != "function" {
                  break;
@@ -48,8 +47,9 @@ impl Function {
              return None;
          }
          ans_text += &text.consume(1);
-         let d = text.scanner_blank();
-         ans_text += &text.consume(d);
+         //let d = text.scanner_blank();
+         //ans_text += &text.consume(d);
+         ans_text += &text.consume_blank();
  
          if ! text.starts_with(")") {
              text.rewind(backup);
@@ -57,8 +57,8 @@ impl Function {
          }
          ans_text += &text.consume(1);
  
-         let d = text.scanner_blank();
-         ans_text += &text.consume(d);
+         //let d = text.scanner_blank();
+         ans_text += &text.consume_blank();
  
          if let Some(c) = compound(text, conf){
              Some( Function::new(name.text, c, ans_text) )

@@ -286,10 +286,10 @@ impl Command {
 
         Command::substitutions_and_redirects(text, core, &mut ans);
         if core.has_flag('i') {
-            Command::replace_alias(text, core);
+            Self::replace_alias(text, core);
         }
 
-        if Command::args_and_redirects(text, core, &mut ans) || ans.vars.len() != 0 {
+        if Self::args_and_redirects(text, core, &mut ans) || ans.vars.len() != 0 {
             Some(ans)
         }else{
             text.rewind(backup);

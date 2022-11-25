@@ -57,7 +57,8 @@ impl ArgElem for SubArgDoubleQuoted {
 impl SubArgDoubleQuoted {
 /* parser for a string such as "aaa${var}" */
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgDoubleQuoted> {
-        if text.len() == 0 || !text.nth_is(0, "\""){
+        if ! text.starts_with("\"") {
+        //if text.len() == 0 || !text.nth_is(0, "\""){
             return None;
         };
 
@@ -82,7 +83,8 @@ impl SubArgDoubleQuoted {
                 ans.subargs.push(Box::new(a));
             }
 
-            if text.len() > 0 && text.nth_is(0, "\"") {
+            if text.starts_with("\"") {
+            //if text.len() > 0 && text.nth_is(0, "\"") {
                 ans.text += &text.consume(1);
                 break;
             }
