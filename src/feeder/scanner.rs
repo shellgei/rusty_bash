@@ -4,44 +4,44 @@
 use crate::Feeder;
 use crate::element_list::{ControlOperator, RedirectOp};
 
-pub fn scanner_until_escape(text: &Feeder, from: usize, to: &str) -> usize {
-    let mut pos = from;
-    let mut escaped = false;
-    for ch in text.chars_after(from) {
-        if escaped || ch == '\\' {
-            escaped = !escaped;
-        }else if let Some(_) = to.find(ch) {
-            break;
-        };
-        pos += ch.len_utf8();
-    }
-    pos
-}
-
-pub fn scanner_blank(text: &Feeder, from: usize) -> usize {
-    let mut pos = from;
-    for ch in text.chars_after(from) {
-        if let Some(_) = " \t".find(ch) {
-            pos += ch.len_utf8();
-        }else{
-            break;
-        };
-    }
-    pos
-}
-
-pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
-    let mut pos = from;
-    for ch in text.chars_after(from) {
-        if let Some(_) = to.find(ch) {
-            break;
-        };
-        pos += ch.len_utf8();
-    }
-    pos
-}
-
 impl Feeder {
+    pub fn scanner_until_escape(&mut self, from: usize, to: &str) -> usize {
+        let mut pos = from;
+        let mut escaped = false;
+        for ch in self.chars_after(from) {
+            if escaped || ch == '\\' {
+                escaped = !escaped;
+            }else if let Some(_) = to.find(ch) {
+                break;
+            };
+            pos += ch.len_utf8();
+        }
+        pos
+    }
+    
+    pub fn scanner_blank(&mut self, from: usize) -> usize {
+        let mut pos = from;
+        for ch in self.chars_after(from) {
+            if let Some(_) = " \t".find(ch) {
+                pos += ch.len_utf8();
+            }else{
+                break;
+            };
+        }
+        pos
+    }
+    
+    pub fn scanner_until(&mut self, from: usize, to: &str) -> usize {
+        let mut pos = from;
+        for ch in self.chars_after(from) {
+            if let Some(_) = to.find(ch) {
+                break;
+            };
+            pos += ch.len_utf8();
+        }
+        pos
+    }
+
     pub fn scanner_name_or_parameter(&mut self, from: usize) -> usize {
         let ans = self.scanner_parameter(from);
     
@@ -189,9 +189,8 @@ impl Feeder {
     }
 
     pub fn scanner_comment(&mut self) -> usize {
-        //if text.len() > from && text.nth_is(from, "#") {
         if self.starts_with("#") {
-            return scanner_until(self, 0, "\n");
+            return self.scanner_until(0, "\n");
         }
     
         0

@@ -7,7 +7,7 @@ use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 use crate::calculator::calculate;
 
 pub struct CompoundDoubleParen {
@@ -73,7 +73,7 @@ impl CompoundDoubleParen {
         loop{
             ans.text = text.consume(2);
 
-            let pos = scanner_until(text, 0, ")");
+            let pos = text.scanner_until(0, ")");
 
             if pos != text.len() {
                 ans.expression = text.consume(pos);
@@ -104,7 +104,7 @@ impl CompoundDoubleParen {
         }
 
         loop {
-            let d = scanner_blank(text, 0);
+            let d = text.scanner_blank(0);
             ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text, conf){

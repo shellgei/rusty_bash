@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 
 use crate::abst_elems::ArgElem;
 
@@ -33,12 +33,12 @@ impl SubArgSingleQuoted {
             return None;
         };
     
-        let mut pos = scanner_until(text, 1, "'");
+        let mut pos = text.scanner_until(1, "'");
         while pos == text.len() {
             if !text.feed_additional_line(core){
                 return None;
             }
-            pos = scanner_until(text, 1, "'");
+            pos = text.scanner_until(1, "'");
         }
         Some(SubArgSingleQuoted{text: text.consume(pos+1),
                                 pos: DebugInfo::init(text),

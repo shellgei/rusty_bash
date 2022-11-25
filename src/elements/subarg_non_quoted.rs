@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 
 use crate::abst_elems::ArgElem;
 
@@ -46,7 +46,7 @@ impl SubArgNonQuoted {
             return SubArgNonQuoted::parse3(text);
         }
 
-        let pos = scanner_until_escape(text, 0, "| \n\t\"';{()$<>&");
+        let pos = text.scanner_until_escape(0, "| \n\t\"';{()$<>&");
         if pos == 0{
             None
         }else{
@@ -59,7 +59,7 @@ impl SubArgNonQuoted {
             return None;
         };
         
-        let pos = scanner_until_escape(text, 0, ",{}()");
+        let pos = text.scanner_until_escape(0, ",{}()");
         let backup = text.clone();
 
         let ans = Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) );
@@ -85,12 +85,12 @@ impl SubArgNonQuoted {
             }
         }
     
-        let mut pos = scanner_until_escape(text, 0, "\"$");
+        let mut pos = text.scanner_until_escape(0, "\"$");
         while pos == text.len() {
             if !text.feed_additional_line(conf){
                 return None;
             }
-            pos = scanner_until_escape(text, 0, "\"$");
+            pos = text.scanner_until_escape(0, "\"$");
         }
 
         Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), is_value) )

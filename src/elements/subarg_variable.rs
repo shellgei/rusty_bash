@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 
 use crate::abst_elems::ArgElem;
 
@@ -96,7 +96,7 @@ impl SubArgVariable {
             ans.empty_option = text.consume(2);
             ans.text += &ans.empty_option.clone();
 
-            let pos = scanner_until_escape(&text, 0, "}");
+            let pos = text.scanner_until_escape(0, "}");
             ans.empty_option_string = text.consume(pos);
             ans.text += &ans.empty_option_string.clone();
         }

@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 use crate::utils::expand_tilde;
 
 use crate::abst_elems::ArgElem;
@@ -30,7 +30,7 @@ impl SubArgTildeUser {
             return None;
         }
 
-        let pos = scanner_until_escape(text, 0, " \n\t\"';{}()$<>&*:/,");
+        let pos = text.scanner_until_escape(0, " \n\t\"';{}()$<>&*:/,");
         if pos == 0{
             return None;
         };

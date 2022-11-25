@@ -11,7 +11,7 @@ use std::process::exit;
 use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use nix::unistd::{close, pipe};
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 use crate::element_list::CompoundType;
 
 pub struct CompoundParen {
@@ -143,7 +143,7 @@ impl CompoundParen {
         }
 
         loop {
-            let d = scanner_blank(text, 0);
+            let d = text.scanner_blank(0);
             ans.text += &text.consume(d);
 
             if let Some(r) = Redirect::parse(text, conf){

@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::varname::VarName;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 use crate::abst_elems::compound;
 use crate::abst_elems::Compound;
 
@@ -35,7 +35,7 @@ impl Function {
              }
              name = VarName::new(text, var_pos);
 
-             let d = scanner_blank(text, 0);
+             let d = text.scanner_blank(0);
              ans_text += &text.consume(d);
 
              if name.text != "function" {
@@ -48,7 +48,7 @@ impl Function {
              return None;
          }
          ans_text += &text.consume(1);
-         let d = scanner_blank(text, 0);
+         let d = text.scanner_blank(0);
          ans_text += &text.consume(d);
  
          if ! text.starts_with(")") {
@@ -57,7 +57,7 @@ impl Function {
          }
          ans_text += &text.consume(1);
  
-         let d = scanner_blank(text, 0);
+         let d = text.scanner_blank(0);
          ans_text += &text.consume(d);
  
          if let Some(c) = compound(text, conf){

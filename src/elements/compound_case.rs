@@ -9,7 +9,7 @@ use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
 use nix::unistd::Pid;
 use crate::file_descs::*;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 use crate::elements::arg::Arg;
 use crate::bash_glob::glob_match;
 use crate::abst_elems::CommandElem;
@@ -82,7 +82,7 @@ impl CompoundCase {
         ans.text += &text.request_next_line(conf);
 
         loop {
-            let pos = scanner_until_escape(text, 0, "|)");
+            let pos = text.scanner_until_escape(0, "|)");
             if pos == 0 || pos == text.len() {
                 return false;
             }

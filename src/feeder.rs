@@ -7,7 +7,6 @@ use std::io;
 use std::str::Chars;
 use crate::ShellCore;
 use crate::term;
-use scanner::*;
 
 
 #[derive(Clone)]
@@ -87,7 +86,7 @@ impl Feeder {
     }
 
     pub fn consume_blank(&mut self) -> String {
-        let d = scanner_blank(self, 0);
+        let d = self.scanner_blank(0);
         self.consume(d)
     }
 
@@ -95,7 +94,7 @@ impl Feeder {
         let mut ans = String::new();
 
         if self.len() != 0 && self.nth(0) == '#' {
-            let d = scanner_until(self, 0, "\n");
+            let d = self.scanner_until(0, "\n");
             ans += &self.consume(d);
 
             if self.len() != 0 && self.nth(0) == '\n' {
@@ -108,7 +107,7 @@ impl Feeder {
     pub fn consume_blank_return(&mut self) -> String {
         let mut ans = "".to_string();
         loop {
-            let d = scanner_blank(self, 0);
+            let d = self.scanner_blank(0);
             if d != 0 {
                 ans += &self.consume(d);
             }else if self.remaining.starts_with("\n") {
@@ -243,43 +242,5 @@ impl Feeder {
             .map(|e| e.1)
             .collect()
     }
-
-    /*
-    pub fn scanner_comment(&mut self) -> usize {
-        //if text.len() > from && text.nth_is(from, "#") {
-        if self.starts_with("#") {
-            return scanner_until(self, 0, "\n");
-        }
-    
-        0
-    }
-
-    pub fn scanner_integer(&mut self) -> usize {
-        if self.len() == 0 {
-            return 0;
-        }
-    
-        let mut pos = 0;
-        let mut minus = false;
-        if self.starts_with("-") {
-            pos += 1;
-            minus = true;
-        }
-    
-        for ch in self.chars_after(pos) {
-            if ch < '0' || ch > '9' {
-                break;
-            }
-    
-            pos += 1;
-        }
-    
-        if minus && pos == 1 {
-            0
-        }else{
-            pos
-        }
-    }
-    */
 }
 

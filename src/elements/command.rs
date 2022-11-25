@@ -16,7 +16,7 @@ use crate::abst_elems::{Compound, compound};
 use crate::elements::arg::Arg;
 use crate::elements::redirect::Redirect;
 use crate::elements::substitution::Substitution;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 use crate::file_descs::*;
 
 /* command: delim arg delim arg delim arg ... eoc */
@@ -199,7 +199,7 @@ impl Command {
     }
 
     fn replace_alias(text: &mut Feeder, core: &mut ShellCore) {
-        let compos = scanner_until_escape(text, 0, " \n");
+        let compos = text.scanner_until_escape(0, " \n");
         let com = text.from_to(0, compos);
         if let Some(alias) = core.aliases.get(&com){
             text.replace(&com, alias);

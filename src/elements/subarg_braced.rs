@@ -6,7 +6,7 @@ use crate::abst_elems::CommandElem;
 use crate::ShellCore;
 use crate::Feeder;
 use crate::elements::arg::Arg;
-use crate::feeder::scanner::*;
+//use crate::feeder::scanner::*;
 
 use crate::elements::arg::arg_in_brace;
 use crate::abst_elems::ArgElem;
@@ -111,10 +111,10 @@ impl SubArgBraced {
                 return Some(ans);
             };
     
-            if scanner_until(text, 0, ",") == 0 {
+            if text.scanner_until(0, ",") == 0 {
                 ans.text += &text.consume(1);
                 continue;
-            }else if scanner_until(text, 0, "}") == 0 {
+            }else if text.scanner_until(0, "}") == 0 {
                 ans.complete = true;
                 ans.text += &text.consume(1);
                 break;
