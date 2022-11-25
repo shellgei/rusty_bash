@@ -82,7 +82,7 @@ impl CompoundCase {
         ans.text += &text.request_next_line(conf);
 
         loop {
-            let pos = text.scanner_until_escape(0, "|)");
+            let pos = text.scanner_until_escape("|)");
             if pos == 0 || pos == text.len() {
                 return false;
             }

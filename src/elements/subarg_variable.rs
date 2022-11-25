@@ -96,7 +96,7 @@ impl SubArgVariable {
             ans.empty_option = text.consume(2);
             ans.text += &ans.empty_option.clone();
 
-            let pos = text.scanner_until_escape(0, "}");
+            let pos = text.scanner_until_escape("}");
             ans.empty_option_string = text.consume(pos);
             ans.text += &ans.empty_option_string.clone();
         }

@@ -5,10 +5,10 @@ use crate::Feeder;
 use crate::element_list::{ControlOperator, RedirectOp};
 
 impl Feeder {
-    pub fn scanner_until_escape(&mut self, from: usize, to: &str) -> usize {
-        let mut pos = from;
+    pub fn scanner_until_escape(&mut self, to: &str) -> usize {
+        let mut pos = 0;
         let mut escaped = false;
-        for ch in self.chars_after(from) {
+        for ch in self.chars_after(0) {
             if escaped || ch == '\\' {
                 escaped = !escaped;
             }else if let Some(_) = to.find(ch) {

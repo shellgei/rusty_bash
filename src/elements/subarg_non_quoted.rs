@@ -46,7 +46,7 @@ impl SubArgNonQuoted {
             return SubArgNonQuoted::parse3(text);
         }
 
-        let pos = text.scanner_until_escape(0, "| \n\t\"';{()$<>&");
+        let pos = text.scanner_until_escape("| \n\t\"';{()$<>&");
         if pos == 0{
             None
         }else{
@@ -59,7 +59,7 @@ impl SubArgNonQuoted {
             return None;
         };
         
-        let pos = text.scanner_until_escape(0, ",{}()");
+        let pos = text.scanner_until_escape(",{}()");
         let backup = text.clone();
 
         let ans = Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) );
@@ -85,12 +85,12 @@ impl SubArgNonQuoted {
             }
         }
     
-        let mut pos = text.scanner_until_escape(0, "\"$");
+        let mut pos = text.scanner_until_escape("\"$");
         while pos == text.len() {
             if !text.feed_additional_line(conf){
                 return None;
             }
-            pos = text.scanner_until_escape(0, "\"$");
+            pos = text.scanner_until_escape("\"$");
         }
 
         Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), is_value) )

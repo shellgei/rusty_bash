@@ -30,7 +30,7 @@ impl SubArgTildeUser {
             return None;
         }
 
-        let pos = text.scanner_until_escape(0, " \n\t\"';{}()$<>&*:/,");
+        let pos = text.scanner_until_escape(" \n\t\"';{}()$<>&*:/,");
         if pos == 0{
             return None;
         };

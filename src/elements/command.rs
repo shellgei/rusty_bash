@@ -199,7 +199,7 @@ impl Command {
     }
 
     fn replace_alias(text: &mut Feeder, core: &mut ShellCore) {
-        let compos = text.scanner_until_escape(0, " \n");
+        let compos = text.scanner_until_escape(" \n");
         let com = text.from_to(0, compos);
         if let Some(alias) = core.aliases.get(&com){
             text.replace(&com, alias);
