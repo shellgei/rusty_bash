@@ -9,7 +9,7 @@ use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
 use nix::unistd::Pid;
 use crate::file_descs::*;
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 use crate::elements::arg::Arg;
 use crate::bash_glob::glob_match;
 use crate::abst_elems::CommandElem;

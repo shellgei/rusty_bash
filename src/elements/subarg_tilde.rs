@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 use crate::utils::expand_tilde;
 
 use crate::abst_elems::ArgElem;

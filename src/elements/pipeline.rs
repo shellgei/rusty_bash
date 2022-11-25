@@ -6,8 +6,6 @@ use crate::abst_elems::ListElem;
 use crate::abst_elems::Compound;
 use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
-use crate::scanner::*;
-//use crate::file_descs::set_parent_io;
 use crate::file_descs::FileDescs;
 use crate::abst_elems::compound;
 use crate::job::Job;
@@ -68,7 +66,7 @@ impl Pipeline {
     }
 
     pub fn set_control_op(text: &mut Feeder, ans: &mut Pipeline) {
-        let (n, op) = scanner_control_op(text);
+        let (n, op) = text.scanner_control_op();
         if let Some(p) = op {
             if p == ControlOperator::Pipe || p == ControlOperator::PipeAnd {
                 ans.text += &text.consume(n);
@@ -91,7 +89,7 @@ impl Pipeline {
             if let Some(c) = compound(text, core) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
-                (_, op) = scanner_control_op(text);
+                (_, op) = text.scanner_control_op();
                 Pipeline::set_control_op(text, &mut ans);
             }else{
                 break;

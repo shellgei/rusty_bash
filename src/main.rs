@@ -13,7 +13,6 @@ mod term;
 mod file_descs;
 mod utils;
 mod feeder;
-mod scanner;
 mod debuginfo;
 
 use std::{env, process, path};

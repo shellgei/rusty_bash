@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::ShellCore;
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 use crate::element_list::RedirectOp;
 use crate::elements::arg::Arg;
 use crate::abst_elems::CommandElem;

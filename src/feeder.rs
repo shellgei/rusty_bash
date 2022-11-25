@@ -1,11 +1,13 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod scanner;
+
 use std::io;
 use std::str::Chars;
 use crate::ShellCore;
 use crate::term;
-use crate::scanner::*;
+use scanner::*;
 
 
 #[derive(Clone)]
@@ -242,6 +244,16 @@ impl Feeder {
             .collect()
     }
 
+    /*
+    pub fn scanner_comment(&mut self) -> usize {
+        //if text.len() > from && text.nth_is(from, "#") {
+        if self.starts_with("#") {
+            return scanner_until(self, 0, "\n");
+        }
+    
+        0
+    }
+
     pub fn scanner_integer(&mut self) -> usize {
         if self.len() == 0 {
             return 0;
@@ -268,5 +280,6 @@ impl Feeder {
             pos
         }
     }
+    */
 }
 

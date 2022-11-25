@@ -7,7 +7,6 @@ use crate::elements::function::Function;
 use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
 use crate::ListElem;
-use crate::scanner::scanner_control_op;
 
 pub struct Script {
     pub list: Vec<Box<dyn ListElem>>,
@@ -52,7 +51,7 @@ impl Script {
     }
 
     fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &CompoundType) -> bool {
-        let (n, op) = scanner_control_op(text);
+        let (n, op) = text.scanner_control_op();
         if let Some(p) = op {
             ans.list_ends.push(p.clone());
             if Script::is_end_condition(parent_type, &p) {
@@ -131,7 +130,7 @@ impl Script {
             }
 
             /* If a semicolon exist, another element can be added to the list */
-            let (n, op) = scanner_control_op(text);
+            let (n, op) = text.scanner_control_op();
             if op == Some(ControlOperator::Semicolon) {
                 ans.text += &text.consume(n);
             }

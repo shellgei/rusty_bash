@@ -7,7 +7,7 @@ use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 use crate::calculator::calculate;
 
 pub struct CompoundDoubleParen {

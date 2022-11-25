@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::element_list::{ControlOperator, RedirectOp/*, Reserved*/};
+use crate::element_list::{ControlOperator, RedirectOp};
 
 pub fn scanner_until_escape(text: &Feeder, from: usize, to: &str) -> usize {
     let mut pos = from;
@@ -74,19 +74,6 @@ pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
     scanner_number(text, from)
 }
 
-/*
-pub enum Redirect {
-    Output, /* > */ 
-    Input, /* < */
-    InOut, /* <> */
-    AndOutput, /* &> */ 
-    OutputAnd, /* >& */ 
-    Append, /* >> */ 
-    HereDoc, /* << */ 
-    AndAppend, /* &>> */ 
-    HereStr, /* <<< */ 
-}*/
-
 pub fn scanner_redirect(text: &Feeder) -> (usize, Option<RedirectOp> ) {
     if text.starts_with("<<<") {
         return (3, Some(RedirectOp::HereStr));
@@ -136,84 +123,103 @@ pub fn scanner_name(text: &Feeder, from: usize) -> usize {
     return ans;
 }
 
-/*
-pub fn scanner_reserved(text: &Feeder) -> (usize, Option<Reserved> ) {
-    if text.starts_with("function"){
-        return (8, Some(Reserved::Function));
-    }
-
-    (0, None)
-}
-*/
-
-pub fn scanner_control_op(text: &Feeder) -> (usize, Option<ControlOperator> ) {
-    let mut op = None;
-    let mut pos = 0;
-
-    if text.len() > 2  {
-        pos = 3;
-        op = if text.starts_with(";;&") {
-            Some(ControlOperator::SemiSemiAnd)
-        }else{
-            None
-        };
-    }
-
-    if op == None && text.len() > 1  {
-        pos = 2;
-        op = if text.starts_with("||") {
-            Some(ControlOperator::Or)
-        }else if text.starts_with("&&") {
-            Some(ControlOperator::And)
-        }else if text.starts_with(";;") {
-            Some(ControlOperator::DoubleSemicolon)
-        }else if text.starts_with(";&") {
-            Some(ControlOperator::SemiAnd)
-        }else if text.starts_with("|&") {
-            Some(ControlOperator::PipeAnd)
-        }else{
-            None
-        };
-
-    }
-
-    if op == None && text.len() > 0  {
-        pos = 1;
-        if text.starts_with("&") {
-            if text.len() > 1 && text.nth(1) == '>' {
-                return (0, None)
+impl Feeder {
+    pub fn scanner_control_op(&mut self) -> (usize, Option<ControlOperator> ) {
+        let mut op = None;
+        let mut pos = 0;
+    
+        if self.len() > 2  {
+            pos = 3;
+            op = if self.starts_with(";;&") {
+                Some(ControlOperator::SemiSemiAnd)
+            }else{
+                None
+            };
+        }
+    
+        if op == None && self.len() > 1  {
+            pos = 2;
+            op = if self.starts_with("||") {
+                Some(ControlOperator::Or)
+            }else if self.starts_with("&&") {
+                Some(ControlOperator::And)
+            }else if self.starts_with(";;") {
+                Some(ControlOperator::DoubleSemicolon)
+            }else if self.starts_with(";&") {
+                Some(ControlOperator::SemiAnd)
+            }else if self.starts_with("|&") {
+                Some(ControlOperator::PipeAnd)
+            }else{
+                None
+            };
+    
+        }
+    
+        if op == None && self.len() > 0  {
+            pos = 1;
+            if self.starts_with("&") {
+                if self.len() > 1 && self.nth(1) == '>' {
+                    return (0, None)
+                }
+                return (1, Some(ControlOperator::BgAnd));
+            } else if self.starts_with("\n") {
+                return (1, Some(ControlOperator::NewLine));
+            } else if self.starts_with("|") {
+                return (1, Some(ControlOperator::Pipe));
+            } else if self.starts_with(";") {
+                return (1, Some(ControlOperator::Semicolon));
+            } else if self.starts_with("(") {
+                return (1, Some(ControlOperator::LeftParen));
+            } else if self.starts_with(")") {
+                return (1, Some(ControlOperator::RightParen));
             }
-            return (1, Some(ControlOperator::BgAnd));
-        } else if text.starts_with("\n") {
-            return (1, Some(ControlOperator::NewLine));
-        } else if text.starts_with("|") {
-            return (1, Some(ControlOperator::Pipe));
-        } else if text.starts_with(";") {
-            return (1, Some(ControlOperator::Semicolon));
-        } else if text.starts_with("(") {
-            return (1, Some(ControlOperator::LeftParen));
-        } else if text.starts_with(")") {
-            return (1, Some(ControlOperator::RightParen));
+        }
+    
+        if op != None && self.len() > pos && self.nth(pos) == '\n' {
+            pos += 1;
+        }
+    
+        if op != None{
+            return (pos, op);
+        }
+    
+    
+        (0 , None)
+    }
+
+    pub fn scanner_comment(&mut self) -> usize {
+        //if text.len() > from && text.nth_is(from, "#") {
+        if self.starts_with("#") {
+            return scanner_until(self, 0, "\n");
+        }
+    
+        0
+    }
+
+    pub fn scanner_integer(&mut self) -> usize {
+        if self.len() == 0 {
+            return 0;
+        }
+    
+        let mut pos = 0;
+        let mut minus = false;
+        if self.starts_with("-") {
+            pos += 1;
+            minus = true;
+        }
+    
+        for ch in self.chars_after(pos) {
+            if ch < '0' || ch > '9' {
+                break;
+            }
+    
+            pos += 1;
+        }
+    
+        if minus && pos == 1 {
+            0
+        }else{
+            pos
         }
     }
-
-    if op != None && text.len() > pos && text.nth(pos) == '\n' {
-        pos += 1;
-    }
-
-    if op != None{
-        return (pos, op);
-    }
-
-
-    (0 , None)
 }
-
-pub fn scanner_comment(text: &Feeder, from: usize) -> usize {
-    if text.len() > from && text.nth_is(from, "#") {
-        return scanner_until(text, from, "\n");
-    }
-
-    from
-}
-

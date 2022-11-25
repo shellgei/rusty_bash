@@ -6,7 +6,7 @@ use crate::abst_elems::CommandElem;
 use crate::ShellCore;
 use crate::Feeder;
 use crate::elements::arg::Arg;
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 
 use crate::elements::arg::arg_in_brace;
 use crate::abst_elems::ArgElem;
@@ -103,7 +103,7 @@ impl SubArgBraced {
             ans.text += &arg.text.clone();
             ans.args.push(arg); 
 
-            if scanner_control_op(text).0 > 0 {
+            if text.scanner_control_op().0 > 0 {
                 return Some(ans);
             }
 

@@ -4,7 +4,7 @@
 use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 
 use crate::abst_elems::ArgElem;
 
@@ -64,7 +64,7 @@ impl SubArgNonQuoted {
 
         let ans = Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) );
             
-        let (n, _) = scanner_control_op(text);
+        let (n, _) = text.scanner_control_op();
         if n > 0 {
             text.rewind(backup);
             return None;

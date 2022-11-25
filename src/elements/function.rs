@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::varname::VarName;
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 use crate::abst_elems::Compound;
 use crate::abst_elems::compound;
 

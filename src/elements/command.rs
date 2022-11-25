@@ -16,7 +16,7 @@ use crate::abst_elems::{Compound, compound};
 use crate::elements::arg::Arg;
 use crate::elements::redirect::Redirect;
 use crate::elements::substitution::Substitution;
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 use crate::file_descs::*;
 
 /* command: delim arg delim arg delim arg ... eoc */
@@ -257,18 +257,17 @@ impl Command {
                 break;
             }
 
-            let n = scanner_comment(text, 0);
+            let n = text.scanner_comment();
             if n != 0 { 
                 text.consume(n);
             }
 
-            let (n, _) = scanner_control_op(text);
+            let (n, _) = text.scanner_control_op();
             if n != 0 { 
                 break;
             }
 
             if text.starts_with("(") || text.starts_with(")") {
-            //if scanner_end_paren(text, 0) == 1 || scanner_start_paren(text, 0) == 1 {
                 break;
             }
         }

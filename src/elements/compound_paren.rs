@@ -11,7 +11,7 @@ use std::process::exit;
 use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use nix::unistd::{close, pipe};
-use crate::scanner::*;
+use crate::feeder::scanner::*;
 use crate::element_list::CompoundType;
 
 pub struct CompoundParen {
@@ -100,7 +100,7 @@ impl CompoundParen {
             if let Some(s) = Script::parse(text, conf, &ans.my_type) {
 
                 ans.text = "(".to_owned() + &s.text;
-                let (n, op) = scanner_control_op(text);
+                let (n, op) = text.scanner_control_op();
                 if let Some(p) = op  {
                     if p != ControlOperator::RightParen {
                         text.rewind(backup);
