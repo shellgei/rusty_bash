@@ -75,7 +75,7 @@ impl SubArgVariable {
         let mut ans = SubArgVariable::new(text);
         ans.text = text.consume(1);
     
-        let pos = text.scanner_name_or_parameter(0);
+        let pos = text.scanner_name_or_parameter();
         ans.name = text.consume(pos);
         ans.text += &ans.name.clone();
         Some(ans)
@@ -87,7 +87,7 @@ impl SubArgVariable {
 
         ans.text = text.consume(2);
         
-        let pos = text.scanner_name_or_parameter(0);
+        let pos = text.scanner_name_or_parameter();
         ans.name = text.consume(pos);
         ans.text += &ans.name.clone();
 

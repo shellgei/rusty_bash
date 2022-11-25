@@ -42,11 +42,11 @@ impl Feeder {
         pos
     }
 
-    pub fn scanner_name_or_parameter(&mut self, from: usize) -> usize {
-        let ans = self.scanner_parameter(from);
+    pub fn scanner_name_or_parameter(&mut self) -> usize {
+        let ans = self.scanner_parameter(0);
     
         if ans == 0 {
-            self.scanner_name(from)
+            self.scanner_name(0)
         }else{
             ans
         }
@@ -61,18 +61,6 @@ impl Feeder {
             pos += 1;
         }
         pos
-    }
-
-    pub fn scanner_parameter(&mut self, from: usize) -> usize {
-        if self.len() < from {
-            return from;
-        }
-    
-        if "?*@$#!-:".chars().any(|c| c == self.nth(from)) { //special parameters
-            return from+1;
-        };
-    
-        self.scanner_number(from)
     }
 
 
@@ -221,5 +209,17 @@ impl Feeder {
         }else{
             pos
         }
+    }
+
+    fn scanner_parameter(&mut self, from: usize) -> usize {
+        if self.len() < from {
+            return from;
+        }
+    
+        if "?*@$#!-:".chars().any(|c| c == self.nth(from)) { //special parameters
+            return from+1;
+        };
+    
+        self.scanner_number(from)
     }
 }
