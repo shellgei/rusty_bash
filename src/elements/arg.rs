@@ -7,7 +7,7 @@ use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::abst_elems::*;
 use crate::abst_elems::ArgElem;
-use crate::elements::subarg_tilde::SubArgTildeUser;
+use crate::elements::subarg_tilde::SubArgTildePrefix;
 use crate::elements::subarg_non_quoted::SubArgNonQuoted;
 use crate::abst_elems::CommandElem;
 
@@ -61,7 +61,7 @@ impl Arg {
             is_value: is_value,
         };
 
-        if let Some(result) = SubArgTildeUser::parse(text) {
+        if let Some(result) = SubArgTildePrefix::parse(text) {
             ans.text += &result.get_text();
             ans.subargs.push(Box::new(result));
         }
@@ -151,7 +151,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
         return Some(ans);
     };
 
-    if let Some(result) = SubArgTildeUser::parse(text) {
+    if let Some(result) = SubArgTildePrefix::parse(text) {
         ans.text += &result.get_text();
         ans.subargs.push(Box::new(result));
     }

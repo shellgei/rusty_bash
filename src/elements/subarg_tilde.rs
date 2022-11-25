@@ -9,12 +9,12 @@ use crate::utils::expand_tilde;
 
 use crate::abst_elems::ArgElem;
 
-pub struct SubArgTildeUser {
+pub struct SubArgTildePrefix {
     pub text: String,
     pub pos: DebugInfo,
 }
 
-impl ArgElem for SubArgTildeUser {
+impl ArgElem for SubArgTildePrefix {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -24,11 +24,11 @@ impl ArgElem for SubArgTildeUser {
     }
 }
 
-impl SubArgTildeUser {
-    pub fn parse(text: &mut Feeder) -> Option<SubArgTildeUser> {
+impl SubArgTildePrefix {
+    pub fn parse(text: &mut Feeder) -> Option<SubArgTildePrefix> {
         let pos = text.scanner_tilde_prefix();
         if pos != 0 {
-            Some( SubArgTildeUser{text: text.consume(pos), pos: DebugInfo::init(text) } )
+            Some( SubArgTildePrefix{text: text.consume(pos), pos: DebugInfo::init(text) } )
         }else{
             None
         }
