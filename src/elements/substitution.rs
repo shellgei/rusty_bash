@@ -6,7 +6,6 @@ use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::elements::arg::Arg;
 use crate::elements::varname::VarName;
-use crate::feeder::scanner::scanner_name;
 use crate::abst_elems::CommandElem;
 
 
@@ -50,7 +49,7 @@ impl Substitution {
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Substitution> {
         let backup = text.clone();
-        let varname_pos = scanner_name(text, 0);
+        let varname_pos = text.scanner_name(0);
         let var_part = VarName::new(text, varname_pos);
 
         if ! text.starts_with("=") {

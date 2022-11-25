@@ -4,8 +4,8 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::varname::VarName;
 use crate::feeder::scanner::*;
-use crate::abst_elems::Compound;
 use crate::abst_elems::compound;
+use crate::abst_elems::Compound;
 
 pub struct Function {
     pub name: String,
@@ -28,7 +28,7 @@ impl Function {
          let mut ans_text = String::new();
 
          loop { //remove keyword function
-             let var_pos = scanner_name(text, 0);
+             let var_pos = text.scanner_name(0);
              if var_pos == 0 {
                  text.rewind(backup);
                  return None;

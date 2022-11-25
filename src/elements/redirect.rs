@@ -58,7 +58,7 @@ impl Redirect {
             }
         }
 
-        let (pos, red) = scanner_redirect(text);
+        let (pos, red) = text.scanner_redirect();
         if pos == 0 {
             text.rewind(backup);
             return None;

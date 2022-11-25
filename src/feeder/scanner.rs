@@ -41,11 +41,11 @@ pub fn scanner_until(text: &Feeder, from: usize, to: &str) -> usize {
     pos
 }
 
-pub fn scanner_name_or_parameter(text: &Feeder, from: usize) -> usize {
+pub fn scanner_name_or_parameter(text: &mut Feeder, from: usize) -> usize {
     let ans = scanner_parameter(text, from);
 
     if ans == 0 {
-        scanner_name(text, from)
+        text.scanner_name(from)
     }else{
         ans
     }
@@ -74,56 +74,57 @@ pub fn scanner_parameter(text: &Feeder, from: usize) -> usize {
     scanner_number(text, from)
 }
 
-pub fn scanner_redirect(text: &Feeder) -> (usize, Option<RedirectOp> ) {
-    if text.starts_with("<<<") {
-        return (3, Some(RedirectOp::HereStr));
-    }else if text.starts_with("&>>") {
-        return (3, Some(RedirectOp::AndAppend));
-    }else if text.starts_with(">>") {
-        return (2, Some(RedirectOp::Append));
-    }else if text.starts_with("<<") {
-        return (2, Some(RedirectOp::HereDoc));
-    }else if text.starts_with(">&") {
-        return (2, Some(RedirectOp::OutputAnd));
-    }else if text.starts_with("&>") {
-        return (2, Some(RedirectOp::AndOutput));
-    }else if text.starts_with("<>") {
-        return (2, Some(RedirectOp::InOut));
-    }else if text.starts_with(">") {
-        return (1, Some(RedirectOp::Output));
-    }else if text.starts_with("<") {
-        return (1, Some(RedirectOp::Input));
-    }
-    (0, None)
-}
-
-pub fn scanner_name(text: &Feeder, from: usize) -> usize {
-    if text.len() <= from {
-        return from;
-    }
-
-    let h = &text.nth(0);
-    if !((*h >= 'A' && *h <= 'Z') || (*h >= 'a' && *h <= 'z') || *h == '_') {
-        return from;
-    }
-
-    if text.len() == from+1 {
-        return from+1;
-    }
-
-    let mut ans = from+1;
-    for c in text.chars_after(from+1) {
-        if !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') 
-        || (c >= 'a' && c <= 'z') || c == '_') {
-            break;
-        }
-        ans += 1;
-    }
-
-    return ans;
-}
 
 impl Feeder {
+    pub fn scanner_redirect(&mut self) -> (usize, Option<RedirectOp> ) {
+        if self.starts_with("<<<") {
+            return (3, Some(RedirectOp::HereStr));
+        }else if self.starts_with("&>>") {
+            return (3, Some(RedirectOp::AndAppend));
+        }else if self.starts_with(">>") {
+            return (2, Some(RedirectOp::Append));
+        }else if self.starts_with("<<") {
+            return (2, Some(RedirectOp::HereDoc));
+        }else if self.starts_with(">&") {
+            return (2, Some(RedirectOp::OutputAnd));
+        }else if self.starts_with("&>") {
+            return (2, Some(RedirectOp::AndOutput));
+        }else if self.starts_with("<>") {
+            return (2, Some(RedirectOp::InOut));
+        }else if self.starts_with(">") {
+            return (1, Some(RedirectOp::Output));
+        }else if self.starts_with("<") {
+            return (1, Some(RedirectOp::Input));
+        }
+        (0, None)
+    }
+
+    pub fn scanner_name(&mut self, from: usize) -> usize {
+        if self.len() <= from {
+            return from;
+        }
+    
+        let h = &self.nth(0);
+        if !((*h >= 'A' && *h <= 'Z') || (*h >= 'a' && *h <= 'z') || *h == '_') {
+            return from;
+        }
+    
+        if self.len() == from+1 {
+            return from+1;
+        }
+    
+        let mut ans = from+1;
+        for c in self.chars_after(from+1) {
+            if !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') 
+            || (c >= 'a' && c <= 'z') || c == '_') {
+                break;
+            }
+            ans += 1;
+        }
+    
+        return ans;
+    }
+
     pub fn scanner_control_op(&mut self) -> (usize, Option<ControlOperator> ) {
         let mut op = None;
         let mut pos = 0;
