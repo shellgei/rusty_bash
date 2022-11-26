@@ -17,6 +17,7 @@ pub mod compound_while;
 pub mod substitution;
 
 pub mod arg;
+pub mod value;
 
 pub mod subarg_braced;
 pub mod subarg_command_substitution;

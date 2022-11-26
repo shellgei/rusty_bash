@@ -76,7 +76,7 @@ impl Redirect {
         }
 
 
-        if let Some(a) = Arg::parse(text, conf, false, false) {
+        if let Some(a) = Arg::parse(text, conf, false) {
             ans.text += &a.text.clone();
             ans.right_arg = Some(a);
         }else{

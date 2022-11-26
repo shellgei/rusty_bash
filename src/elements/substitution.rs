@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::elements::arg::Arg;
+use crate::elements::value::Value;
 use crate::elements::varname::VarName;
 use crate::abst_elems::CommandElem;
 
@@ -12,7 +12,7 @@ use crate::abst_elems::CommandElem;
 pub struct Substitution {
     pub text: String,
     pub name: VarName,
-    pub value: Arg,
+    pub value: Value,
     pub debug: DebugInfo,
 }
 
@@ -38,7 +38,7 @@ impl CommandElem for Substitution {
 }
 
 impl Substitution {
-    pub fn new(text: &Feeder, name: VarName, value: Arg) -> Substitution{
+    pub fn new(text: &Feeder, name: VarName, value: Value) -> Substitution{
         Substitution {
             text: name.text.clone() + "=" + &value.text.clone(),
             name: name, 
@@ -58,10 +58,10 @@ impl Substitution {
         }
         text.consume(1); // consume of "=" 
  
-        if let Some(value_part) = Arg::parse(text, conf, true, false){
+        if let Some(value_part) = Value::parse(text, conf, false){
             Some(Substitution::new(text, var_part, value_part))
         }else{ // empty value
-            let empty_arg = Arg::new();
+            let empty_arg = Value::new();
             Some(Substitution::new(text, var_part, empty_arg))
         }
     }

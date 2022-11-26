@@ -240,7 +240,7 @@ impl Command {
             if let Some(r) = Redirect::parse(text, core){
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
-            }else if let Some(a) = Arg::parse(text, core, false, false) {
+            }else if let Some(a) = Arg::parse(text, core, false) {
                 if ! Command::ng_check(&a.text, ans.args.len() == 0){
                     text.rewind(backup);
                     break;

@@ -15,19 +15,9 @@ pub struct Arg {
     pub text: String,
     pub pos: DebugInfo,
     pub subargs: Vec<Box<dyn ArgElem>>,
-    pub is_value: bool,
 }
 
 impl Arg {
-    pub fn new() -> Arg {
-        Arg {
-            text: "".to_string(),
-            pos: DebugInfo{lineno: 0, pos: 0, comment: "".to_string()},
-            subargs: vec![],
-            is_value: false,
-        }
-    }
-
     pub fn remove_escape(text: &String) -> String{
         let mut escaped = false;
         let mut ans = "".to_string();
@@ -49,7 +39,7 @@ impl Arg {
     }
 
     // single quoted arg or double quoted arg or non quoted arg 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool, is_in_brace: bool) -> Option<Arg> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_in_brace: bool) -> Option<Arg> {
         if text.len() == 0 {
             return None;
         }
@@ -58,7 +48,6 @@ impl Arg {
             text: "".to_string(),
             pos: DebugInfo::init(text),
             subargs: vec![],
-            is_value: is_value,
         };
 
         if let Some(result) = SubArgTildePrefix::parse(text) {
@@ -66,7 +55,7 @@ impl Arg {
             ans.subargs.push(Box::new(result));
         }
     
-        while let Some(result) = subarg(text, conf, is_value, is_in_brace) {
+        while let Some(result) = subarg(text, conf, false, is_in_brace) {
             ans.text += &(*result).get_text();
             ans.subargs.push(result);
     
@@ -100,7 +89,7 @@ impl CommandElem for Arg {
             let vs = sa.eval(conf);
 
             let mut cvs = vec![];
-            if sa.permit_lf() || self.is_value {
+            if sa.permit_lf() {
                 cvs = vs;
             }else{
                 for v in vs {
@@ -111,38 +100,33 @@ impl CommandElem for Arg {
             
             subevals.push(cvs);
         }
-        //eprintln!("SUBEVALS: {:?}", subevals);
 
         let mut strings = vec![];
 
         for ss in subevals {
             strings = combine(&mut strings, ss);
         }
-        //eprintln!("STRINGS: {:?}", strings);
 
         let mut ans = vec![];
         for v in strings {
             ans.append(&mut v.clone());
         }
-        //eprintln!("ARGS: {:?}", ans);
         ans
     }
 
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<Arg> {
+pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
     let mut ans = Arg{
         text: "".to_string(),
         pos: DebugInfo::init(text),
         subargs: vec![],
-        is_value: false,
     };
 
     let backup = text.clone();
     if text.starts_with(",") || text.starts_with("}") {
-   // if text.nth_is(0, ",}"){ // zero length arg
-        let tmp = SubArgStringNonQuoted{
+        let tmp = SubArgStringNonQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
             is_value: false,
@@ -156,7 +140,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
         ans.subargs.push(Box::new(result));
     }
 
-    while let Some(result) = subarg(text, conf, is_value, true) {
+    while let Some(result) = subarg(text, conf, false, true) {
         let empty_elem = (*result).get_text().len() == 0;
 
         ans.text += &(*result).get_text();
@@ -168,7 +152,6 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
     };
 
     if ! text.starts_with(",") && ! text.starts_with("}") {
-    //if text.len() == 0 ||  !text.nth_is(0, ",}"){ 
         text.rewind(backup);
         return None;
     }

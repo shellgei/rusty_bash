@@ -127,7 +127,7 @@ impl CompoundCase {
         let backup = text.clone();
         let ans_text = text.consume(4) + &text.consume_blank();
 
-        let arg = if let Some(a) = Arg::parse(text, conf, false, false) {
+        let arg = if let Some(a) = Arg::parse(text, conf, false) {
             a
         }else{
             text.rewind(backup);
