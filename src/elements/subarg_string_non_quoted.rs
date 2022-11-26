@@ -11,7 +11,7 @@ use crate::abst_elems::ArgElem;
 pub struct SubArgStringNonQuoted {
     pub text: String,
     pub pos: DebugInfo,
-    pub is_value: bool,
+    //pub is_value: bool,
 }
 
 impl ArgElem for SubArgStringNonQuoted {
@@ -20,20 +20,22 @@ impl ArgElem for SubArgStringNonQuoted {
     }
 
     fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
+        /*
         if self.is_value {
             vec!(vec!(self.text.clone()))
         }else{
+        */
             vec!(vec!(self.text.replace("\n", " ")))
-        }
+        //}
     }
 }
 
 impl SubArgStringNonQuoted {
-    fn new(text: String, pos: DebugInfo, is_value: bool) -> SubArgStringNonQuoted {
+    fn new(text: String, pos: DebugInfo/*, is_value: bool*/) -> SubArgStringNonQuoted {
         SubArgStringNonQuoted {
             text: text.clone(),
             pos: pos,
-            is_value: is_value, 
+            //is_value: is_value, 
         }
     }
 
@@ -42,7 +44,7 @@ impl SubArgStringNonQuoted {
         if pos == 0{
             None
         }else{
-            Some( SubArgStringNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) )
+            Some( SubArgStringNonQuoted::new(text.consume(pos), DebugInfo::init(text)/*, false*/) )
         }
     }
 }

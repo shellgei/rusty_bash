@@ -129,7 +129,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
         let tmp = SubArgStringNonQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
-            is_value: false,
+            //is_value: false,
         };
         ans.subargs.push(Box::new(tmp));
         return Some(ans);
