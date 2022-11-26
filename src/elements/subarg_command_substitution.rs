@@ -13,7 +13,7 @@ pub struct SubArgCommandSubstitution {
     pub text: String,
     pub pos: DebugInfo,
     pub com: CompoundParen, 
-    pub is_value: bool,
+//    pub is_value: bool,
 }
 
 impl ArgElem for SubArgCommandSubstitution {
@@ -38,7 +38,7 @@ impl ArgElem for SubArgCommandSubstitution {
 }
 
 impl SubArgCommandSubstitution {
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgCommandSubstitution> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore/*, is_value: bool*/) -> Option<SubArgCommandSubstitution> {
         if ! text.starts_with("$") {
             return None;
         }
@@ -51,7 +51,7 @@ impl SubArgCommandSubstitution {
                 text: "$".to_owned() + &e.get_text(),
                 pos: DebugInfo::init(text),
                 com: e,
-                is_value: is_value};
+                /*is_value: is_value*/};
     
             return Some(ans);
         }else{

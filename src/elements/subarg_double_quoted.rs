@@ -55,7 +55,7 @@ impl ArgElem for SubArgDoubleQuoted {
 
 impl SubArgDoubleQuoted {
 /* parser for a string such as "aaa${var}" */
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgDoubleQuoted> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgDoubleQuoted> {
         if ! text.starts_with("\"") {
             return None;
         };
@@ -69,13 +69,13 @@ impl SubArgDoubleQuoted {
         ans.text += &text.consume(1);
     
         loop {
-            if let Some(a) = SubArgCommandSubstitution::parse(text, conf, is_value) {
+            if let Some(a) = SubArgCommandSubstitution::parse(text, conf) {
                 ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
             }else if let Some(a) = SubArgVariable::parse(text) {
                 ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = SubArgStringDoubleQuoted::parse(text, conf, is_value) {
+            }else if let Some(a) = SubArgStringDoubleQuoted::parse(text, conf) {
                 ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
             }

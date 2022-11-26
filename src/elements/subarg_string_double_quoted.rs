@@ -11,7 +11,7 @@ use crate::abst_elems::ArgElem;
 pub struct SubArgStringDoubleQuoted {
     pub text: String,
     pub pos: DebugInfo,
-    pub is_value: bool,
+    //pub is_value: bool,
 }
 
 impl ArgElem for SubArgStringDoubleQuoted {
@@ -29,15 +29,15 @@ impl ArgElem for SubArgStringDoubleQuoted {
 }
 
 impl SubArgStringDoubleQuoted {
-    fn new(text: String, pos: DebugInfo, is_value: bool) -> SubArgStringDoubleQuoted {
+    fn new(text: String, pos: DebugInfo/*, is_value: bool*/) -> SubArgStringDoubleQuoted {
         SubArgStringDoubleQuoted {
             text: text.clone(),
             pos: pos,
-            is_value: is_value, 
+            //is_value: is_value, 
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgStringDoubleQuoted> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgStringDoubleQuoted> {
         let mut pos = text.scanner_double_quoted_word();
         while pos == text.len() {
             if !text.feed_additional_line(conf){
@@ -48,7 +48,7 @@ impl SubArgStringDoubleQuoted {
         if pos == 0 {
             None
         }else{
-            Some( SubArgStringDoubleQuoted::new(text.consume(pos), DebugInfo::init(text), is_value) )
+            Some( SubArgStringDoubleQuoted::new(text.consume(pos), DebugInfo::init(text)) )
         }
     }
 }
