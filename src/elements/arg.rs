@@ -8,7 +8,7 @@ use crate::Feeder;
 use crate::abst_elems::*;
 use crate::abst_elems::ArgElem;
 use crate::elements::subarg_tilde::SubArgTildePrefix;
-use crate::elements::subarg_non_quoted::SubArgNonQuoted;
+use crate::elements::subarg_string_non_quoted::SubArgStringNonQuoted;
 use crate::abst_elems::CommandElem;
 
 pub struct Arg {
@@ -142,7 +142,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> 
     let backup = text.clone();
     if text.starts_with(",") || text.starts_with("}") {
    // if text.nth_is(0, ",}"){ // zero length arg
-        let tmp = SubArgNonQuoted{
+        let tmp = SubArgStringNonQuoted{
             text: "".to_string(),
             pos: DebugInfo::init(text),
             is_value: false,

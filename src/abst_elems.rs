@@ -16,7 +16,7 @@ use crate::elements::command::Command;
 
 use crate::elements::subarg_command_substitution::SubArgCommandSubstitution;
 use crate::elements::subarg_math_substitution::SubArgMathSubstitution;
-use crate::elements::subarg_non_quoted::SubArgNonQuoted;
+use crate::elements::subarg_string_non_quoted::SubArgStringNonQuoted;
 use crate::elements::subarg_double_quoted::SubArgDoubleQuoted;
 use crate::elements::subarg_single_quoted::SubArgSingleQuoted;
 use crate::elements::subarg_braced::SubArgBraced;
@@ -98,6 +98,6 @@ pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_value: bool, is_in_bra
     else if let Some(a) = SubArgBraced::parse(text, conf, is_value)         {Some(Box::new(a))}
     else if let Some(a) = SubArgSingleQuoted::parse(text, conf, is_value)   {Some(Box::new(a))}
     else if let Some(a) = SubArgDoubleQuoted::parse(text, conf, is_value)   {Some(Box::new(a))}
-    else if let Some(a) = SubArgNonQuoted::parse(text, is_in_brace)         {Some(Box::new(a))}
+    else if let Some(a) = SubArgStringNonQuoted::parse(text, is_in_brace)         {Some(Box::new(a))}
     else {None}
 }

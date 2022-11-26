@@ -81,6 +81,32 @@ impl Feeder {
         pos
     }
 
+    pub fn scanner_double_quoted_word(&mut self) -> usize {
+        let mut escaped = false;
+        let mut pos = 0;
+        for ch in self.remaining.chars() {
+            if escaped {
+                escaped = false;
+                pos += ch.len_utf8();
+                continue;
+            }
+
+            if ch == '\\' {
+                escaped = true;
+                pos += ch.len_utf8();
+                continue;
+            }
+
+            /* stop at double quote or $*/
+            if let Some(_) = "\"$".find(ch) {
+                break;
+            }
+
+            pos += ch.len_utf8();
+        }
+
+        pos
+    }
 
     pub fn scanner_redirect(&mut self) -> (usize, Option<RedirectOp> ) {
         if self.starts_with("<<<") {

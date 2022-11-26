@@ -6,7 +6,7 @@ use crate::ShellCore;
 use crate::Feeder;
 
 use crate::abst_elems::ArgElem;
-use crate::elements::subarg_non_quoted::SubArgNonQuoted;
+use crate::elements::subarg_string_double_quoted::SubArgStringDoubleQuoted;
 use crate::elements::subarg_variable::SubArgVariable;
 use crate::elements::subarg_command_substitution::SubArgCommandSubstitution;
 use crate::utils::combine;
@@ -58,7 +58,6 @@ impl SubArgDoubleQuoted {
 /* parser for a string such as "aaa${var}" */
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgDoubleQuoted> {
         if ! text.starts_with("\"") {
-        //if text.len() == 0 || !text.nth_is(0, "\""){
             return None;
         };
 
@@ -78,7 +77,7 @@ impl SubArgDoubleQuoted {
             }else if let Some(a) = SubArgVariable::parse(text) {
                 ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
-            }else if let Some(a) = Self::parse_in_dq(text, conf, is_value) {
+            }else if let Some(a) = SubArgStringDoubleQuoted::parse(text, conf, is_value) {
                 ans.text += &a.text.clone();
                 ans.subargs.push(Box::new(a));
             }
@@ -91,24 +90,6 @@ impl SubArgDoubleQuoted {
         }
     
         Some(ans)
-    }
-
-    pub fn parse_in_dq(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgNonQuoted> {
-        if text.len() == 0 {
-            if !text.feed_additional_line(conf){
-                return None;
-            }
-        }
-    
-        let mut pos = text.scanner_until_escape("\"$");
-        while pos == text.len() {
-            if !text.feed_additional_line(conf){
-                return None;
-            }
-            pos = text.scanner_until_escape("\"$");
-        }
-
-        Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), is_value) )
     }
 }
 
