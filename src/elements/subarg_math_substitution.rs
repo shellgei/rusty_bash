@@ -13,7 +13,7 @@ pub struct SubArgMathSubstitution {
     pub text: String,
     pub pos: DebugInfo,
     pub com: CompoundDoubleParen, 
-    pub is_value: bool,
+    //pub is_value: bool,
 }
 
 impl ArgElem for SubArgMathSubstitution {
@@ -21,16 +21,18 @@ impl ArgElem for SubArgMathSubstitution {
         self.com.substitution = true;
         self.com.exec(conf);
 
-        if self.is_value {
+//        if self.is_value {
             return vec!(vec!(self.com.substitution_text.clone()));
-        }
+ //       }
 
+            /*
         let ans = self.com.substitution_text
                 .split(" ")
                 .map(|x| x.to_string())
                 .collect::<Vec<String>>();
 
         vec!(ans)
+        */
     }
 
     fn get_text(&self) -> String {
@@ -39,7 +41,7 @@ impl ArgElem for SubArgMathSubstitution {
 }
 
 impl SubArgMathSubstitution {
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgMathSubstitution> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore/*, is_value: bool*/) -> Option<SubArgMathSubstitution> {
         if ! text.starts_with("$") {
             return None;
         }
@@ -52,7 +54,7 @@ impl SubArgMathSubstitution {
                 text: "$".to_owned() + &e.get_text(),
                 pos: DebugInfo::init(text),
                 com: e,
-                is_value: is_value};
+                /*is_value: is_value*/};
     
             return Some(ans);
         }else{

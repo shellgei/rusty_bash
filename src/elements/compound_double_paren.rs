@@ -87,7 +87,7 @@ impl CompoundDoubleParen {
                 continue;
             }
 
-            if text.len() < 2 || ! text.starts_with( "))") {
+            if /*text.len() < 2 ||*/ ! text.starts_with( "))") {
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);
                 if ! input_success {
                     text.consume(text.len());
