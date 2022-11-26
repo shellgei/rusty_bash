@@ -12,7 +12,7 @@ use crate::abst_elems::ArgElem;
 pub struct SubArgSingleQuoted {
     pub text: String,
     pub pos: DebugInfo,
-    pub is_value: bool,
+    //pub is_value: bool,
 }
 
 impl ArgElem for SubArgSingleQuoted {
@@ -28,7 +28,7 @@ impl ArgElem for SubArgSingleQuoted {
 }
 
 impl SubArgSingleQuoted {
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore, is_value: bool) -> Option<SubArgSingleQuoted> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore/*, is_value: bool*/) -> Option<SubArgSingleQuoted> {
         //if text.len() == 0 || !text.nth_is(0, "'"){
         if ! text.starts_with("'") {
             return None;
@@ -43,6 +43,6 @@ impl SubArgSingleQuoted {
         }
         Some(SubArgSingleQuoted{text: text.consume(pos+1),
                                 pos: DebugInfo::init(text),
-                                is_value: is_value})
+                                /*is_value: is_value*/})
     }
 }
