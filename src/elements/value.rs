@@ -13,7 +13,7 @@ use crate::abst_elems::CommandElem;
 pub struct Value {
     pub text: String,
     pub pos: DebugInfo,
-    pub subargs: Vec<Box<dyn ArgElem>>,
+    pub subvalues: Vec<Box<dyn ArgElem>>,
 }
 
 impl Value {
@@ -21,12 +21,12 @@ impl Value {
         Value {
             text: "".to_string(),
             pos: DebugInfo{lineno: 0, pos: 0, comment: "".to_string()},
-            subargs: vec![],
+            subvalues: vec![],
         }
     }
 
     // single quoted arg or double quoted arg or non quoted arg 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, is_in_brace: bool) -> Option<Value> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Value> {
         if text.len() == 0 {
             return None;
         }
@@ -34,17 +34,17 @@ impl Value {
         let mut ans = Value{
             text: "".to_string(),
             pos: DebugInfo::init(text),
-            subargs: vec![],
+            subvalues: vec![],
         };
 
         if let Some(result) = SubArgTildePrefix::parse(text) {
             ans.text += &result.get_text();
-            ans.subargs.push(Box::new(result));
+            ans.subvalues.push(Box::new(result));
         }
     
-        while let Some(result) = subarg(text, conf, true, is_in_brace) {
+        while let Some(result) = subvalue(text, conf) {
             ans.text += &(*result).get_text();
-            ans.subargs.push(result);
+            ans.subvalues.push(result);
     
             if text.len() == 0 {
                 break;
@@ -63,8 +63,8 @@ impl CommandElem for Value {
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
                               self.text.clone(), self.pos.get_text()));
-        for sub in &self.subargs {
-            ans.push("        subarg      : ".to_owned() + &*sub.get_text());
+        for sub in &self.subvalues {
+            ans.push("        subvalue      : ".to_owned() + &*sub.get_text());
         };
 
         ans
@@ -72,7 +72,7 @@ impl CommandElem for Value {
 
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec![];
-        for sa in &mut self.subargs {
+        for sa in &mut self.subvalues {
             let vs = sa.eval(conf);
             subevals.push(vs);
         }

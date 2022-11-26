@@ -58,7 +58,7 @@ impl Substitution {
         }
         text.consume(1); // consume of "=" 
  
-        if let Some(value_part) = Value::parse(text, conf, false){
+        if let Some(value_part) = Value::parse(text, conf){
             Some(Substitution::new(text, var_part, value_part))
         }else{ // empty value
             let empty_arg = Value::new();
