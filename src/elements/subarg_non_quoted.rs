@@ -38,10 +38,6 @@ impl SubArgNonQuoted {
     }
 
     pub fn parse(text: &mut Feeder, is_in_brace: bool) -> Option<SubArgNonQuoted> {
-        if text.len() == 0 {
-            return None;
-        }
-
         let pos = text.scanner_non_quoted_word(is_in_brace);
         if pos == 0{
             None
