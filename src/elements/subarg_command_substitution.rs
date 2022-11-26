@@ -24,7 +24,6 @@ impl ArgElem for SubArgCommandSubstitution {
         if self.is_value {
             return vec!(vec!(self.com.substitution_text.clone()));
         }
-
         let ans = self.com.substitution_text
                 .split(" ")
                 .map(|x| x.to_string())

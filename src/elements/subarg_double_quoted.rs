@@ -15,7 +15,6 @@ pub struct SubArgDoubleQuoted {
     pub text: String,
     pub pos: DebugInfo,
     pub subargs: Vec<Box<dyn ArgElem>>,
-    pub is_value: bool,
 }
 
 impl ArgElem for SubArgDoubleQuoted {
@@ -65,7 +64,6 @@ impl SubArgDoubleQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
             subargs: vec![],
-            is_value: is_value,
         };
     
         ans.text += &text.consume(1);
