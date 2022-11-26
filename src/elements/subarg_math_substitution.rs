@@ -17,7 +17,7 @@ pub struct SubArgMathSubstitution {
 }
 
 impl ArgElem for SubArgMathSubstitution {
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
         self.com.substitution = true;
         self.com.exec(conf);
 

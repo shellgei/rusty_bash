@@ -17,7 +17,7 @@ pub struct SubArgVariable {
 }
 
 impl ArgElem for SubArgVariable {
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
         let val = conf.get_var(&self.name);
 
         if val.len() == 0 {

@@ -17,11 +17,11 @@ pub struct SubArgCommandSubstitution {
 }
 
 impl ArgElem for SubArgCommandSubstitution {
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>> {
         self.com.substitution = true;
         self.com.exec(conf);
 
-        if self.is_value {
+        if as_value {
             return vec!(vec!(self.com.substitution_text.clone()));
         }
         let ans = self.com.substitution_text

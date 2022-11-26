@@ -16,7 +16,7 @@ pub struct SubArgSingleQuoted {
 }
 
 impl ArgElem for SubArgSingleQuoted {
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
+    fn eval(&mut self, _conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
         let strip = self.text[1..self.text.len()-1].to_string();
         let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
         vec!(vec!(s))

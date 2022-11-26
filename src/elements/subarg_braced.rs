@@ -19,7 +19,7 @@ pub struct SubArgBraced {
 }
 
 impl ArgElem for SubArgBraced {
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
         if self.complete {
             self.eval_complete(conf)
         }else{

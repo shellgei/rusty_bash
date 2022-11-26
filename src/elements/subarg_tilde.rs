@@ -19,13 +19,13 @@ impl ArgElem for SubArgTildePrefix {
         self.text.clone()
     }
 
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
+    fn eval(&mut self, _conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
         vec!(vec!(expand_tilde(&self.text).0))
     }
 }
 
 impl SubArgTildePrefix {
-    pub fn parse(text: &mut Feeder) -> Option<SubArgTildePrefix> {
+    pub fn parse(text: &mut Feeder, _as_value: bool) -> Option<SubArgTildePrefix> {
         let pos = text.scanner_tilde_prefix();
         if pos != 0 {
             Some( SubArgTildePrefix{text: text.consume(pos), pos: DebugInfo::init(text) } )

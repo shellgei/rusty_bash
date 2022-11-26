@@ -50,7 +50,7 @@ impl Arg {
             subargs: vec![],
         };
 
-        if let Some(result) = SubArgTildePrefix::parse(text) {
+        if let Some(result) = SubArgTildePrefix::parse(text, false) {
             ans.text += &result.get_text();
             ans.subargs.push(Box::new(result));
         }
@@ -86,7 +86,7 @@ impl CommandElem for Arg {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec![];
         for sa in &mut self.subargs {
-            let vs = sa.eval(conf);
+            let vs = sa.eval(conf, false);
 
             let mut cvs = vec![];
             if sa.permit_lf() {
@@ -135,7 +135,7 @@ pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {
         return Some(ans);
     };
 
-    if let Some(result) = SubArgTildePrefix::parse(text) {
+    if let Some(result) = SubArgTildePrefix::parse(text, false) {
         ans.text += &result.get_text();
         ans.subargs.push(Box::new(result));
     }

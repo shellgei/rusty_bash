@@ -37,7 +37,7 @@ impl Value {
             subvalues: vec![],
         };
 
-        if let Some(result) = SubArgTildePrefix::parse(text) {
+        if let Some(result) = SubArgTildePrefix::parse(text, true) {
             ans.text += &result.get_text();
             ans.subvalues.push(Box::new(result));
         }
@@ -73,7 +73,7 @@ impl CommandElem for Value {
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec![];
         for sa in &mut self.subvalues {
-            let vs = sa.eval(conf);
+            let vs = sa.eval(conf, true);
             subevals.push(vs);
         }
 

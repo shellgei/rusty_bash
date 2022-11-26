@@ -19,7 +19,7 @@ impl ArgElem for SubArgStringNonQuoted {
         self.text.clone()
     }
 
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
+    fn eval(&mut self, _conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
         /*
         if self.is_value {
             vec!(vec!(self.text.clone()))

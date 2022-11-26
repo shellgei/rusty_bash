@@ -75,7 +75,7 @@ pub trait CommandElem {
 }
 
 pub trait ArgElem {
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>>;
+    fn eval(&mut self, _conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>>;
     fn get_text(&self) -> String;
     fn permit_lf(&self) -> bool {false}
 }

@@ -19,8 +19,8 @@ impl ArgElem for SubArgStringDoubleQuoted {
         self.text.clone()
     }
 
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<Vec<String>> {
-        if self.is_value {
+    fn eval(&mut self, _conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>> {
+        if as_value {
             vec!(vec!(self.text.clone()))
         }else{
             vec!(vec!(self.text.replace("\n", " ")))
