@@ -29,7 +29,7 @@ impl ArgElem for SubArgNonQuoted {
 }
 
 impl SubArgNonQuoted {
-    fn new(text: String, pos: DebugInfo, is_value: bool) -> SubArgNonQuoted {
+    pub fn new(text: String, pos: DebugInfo, is_value: bool) -> SubArgNonQuoted {
         SubArgNonQuoted {
             text: text.clone(),
             pos: pos,
@@ -44,23 +44,5 @@ impl SubArgNonQuoted {
         }else{
             Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) )
         }
-    }
-
-    pub fn parse_in_dq(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgNonQuoted> {
-        if text.len() == 0 {
-            if !text.feed_additional_line(conf){
-                return None;
-            }
-        }
-    
-        let mut pos = text.scanner_until_escape("\"$");
-        while pos == text.len() {
-            if !text.feed_additional_line(conf){
-                return None;
-            }
-            pos = text.scanner_until_escape("\"$");
-        }
-
-        Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), is_value) )
     }
 }
