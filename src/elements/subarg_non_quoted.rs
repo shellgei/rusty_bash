@@ -42,40 +42,12 @@ impl SubArgNonQuoted {
             return None;
         }
 
-        if is_in_brace {
-            return SubArgNonQuoted::parse3(text);
-        }
-
-        let pos = text.scanner_until_escape("| \n\t\"';{()$<>&");
+        let pos = text.scanner_non_quoted_word(is_in_brace);
         if pos == 0{
             None
         }else{
             Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) )
         }
-    }
-
-    fn parse3(text: &mut Feeder) -> Option<SubArgNonQuoted> {
-        if text.starts_with(",") || text.starts_with("}") {
-            return None;
-        };
-        
-        let pos = text.scanner_until_escape(",{}()");
-        let backup = text.clone();
-
-        let ans = Some( SubArgNonQuoted::new(text.consume(pos), DebugInfo::init(text), false) );
-            
-        let (n, _) = text.scanner_control_op();
-        if n > 0 {
-            text.rewind(backup);
-            return None;
-        }
-
-        if text.len() == 0 {
-            text.rewind(backup);
-            return None;
-        }
-
-        ans
     }
 
     pub fn parse_in_dq(text: &mut Feeder, conf: &mut ShellCore, is_value: bool) -> Option<SubArgNonQuoted> {

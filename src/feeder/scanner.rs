@@ -51,6 +51,36 @@ impl Feeder {
         pos
     }
 
+    pub fn scanner_non_quoted_word(&mut self, in_brace: bool) -> usize {
+        let mut escaped = false;
+        let mut pos = 0;
+        for ch in self.remaining.chars() {
+            if escaped {
+                escaped = false;
+                pos += ch.len_utf8();
+                continue;
+            }
+
+            if ch == '\\' {
+                escaped = true;
+                pos += ch.len_utf8();
+                continue;
+            }
+
+            /* stop at meta characters, \n, quotes, start of brace, start of expansion*/
+            if let Some(_) = "|&;()<> \t\n\"'{$".find(ch) {
+                break;
+            }
+            if in_brace && ( ch == ',' || ch == '}') {
+                break;
+            }
+
+            pos += ch.len_utf8();
+        }
+
+        pos
+    }
+
 
     pub fn scanner_redirect(&mut self) -> (usize, Option<RedirectOp> ) {
         if self.starts_with("<<<") {
