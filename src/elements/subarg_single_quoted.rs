@@ -28,8 +28,7 @@ impl ArgElem for SubArgSingleQuoted {
 }
 
 impl SubArgSingleQuoted {
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore/*, is_value: bool*/) -> Option<SubArgSingleQuoted> {
-        //if text.len() == 0 || !text.nth_is(0, "'"){
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<SubArgSingleQuoted> {
         if ! text.starts_with("'") {
             return None;
         };
@@ -42,7 +41,6 @@ impl SubArgSingleQuoted {
             pos = text.scanner_until(1, "'");
         }
         Some(SubArgSingleQuoted{text: text.consume(pos+1),
-                                pos: DebugInfo::init(text),
-                                /*is_value: is_value*/})
+                                pos: DebugInfo::init(text)})
     }
 }
