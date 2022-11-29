@@ -107,10 +107,10 @@ impl SubArgBraced {
                 return Some(ans);
             };
     
-            if text.scanner_until(0, ",") == 0 {
+            if text.starts_with(",") {
                 ans.text += &text.consume(1);
                 continue;
-            }else if text.scanner_until(0, "}") == 0 {
+            }else if text.starts_with("}") {
                 ans.complete = true;
                 ans.text += &text.consume(1);
                 break;
