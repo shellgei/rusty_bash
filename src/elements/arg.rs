@@ -70,9 +70,7 @@ impl Arg {
             None
         }
     }
-}
 
-impl /*CommandElem for*/ Arg {
     pub fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
                               self.text.clone(), self.pos.get_text()));

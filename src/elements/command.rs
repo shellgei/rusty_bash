@@ -23,7 +23,7 @@ use crate::file_descs::*;
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {
     vars: Vec<Box<Substitution>>,
-    pub args: Vec<Box<Arg>>,
+    pub args: Vec<Arg>,
     pub text: String,
     pub pid: Option<Pid>,
     fds: FileDescs,
@@ -125,11 +125,6 @@ impl Command {
     pub fn push_vars(&mut self, s: Substitution){
         self.text += &s.get_text();
         self.vars.push(Box::new(s));
-    }
-
-    pub fn push_elems(&mut self, s: Box<Arg>){
-        self.text += &s.get_text();
-        self.args.push(s);
     }
 
     fn parse_info(&self) -> Vec<String> {
@@ -246,7 +241,9 @@ impl Command {
                     text.rewind(backup);
                     break;
                 }
-                ans.push_elems(Box::new(a));
+               // ans.push_elems(a);
+                ans.text += &a.get_text();
+                ans.args.push(a);
                 ok = true;
             }else{
                 break;
