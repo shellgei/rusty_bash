@@ -4,8 +4,8 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::varname::VarName;
 //use crate::feeder::scanner::*;
-use crate::abst_elems::abst_compound::compound;
-use crate::abst_elems::abst_compound::Compound;
+use crate::abst_elems::compound;
+use crate::abst_elems::compound::Compound;
 
 pub struct Function {
     pub name: String,
@@ -60,7 +60,7 @@ impl Function {
          //let d = text.scanner_blank();
          ans_text += &text.consume_blank();
  
-         if let Some(c) = compound(text, conf){
+         if let Some(c) = compound::parse(text, conf){
              Some( Function::new(name.text, c, ans_text) )
          }else{
              text.rewind(backup);
