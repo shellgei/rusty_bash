@@ -19,11 +19,11 @@ use std::os::unix::prelude::RawFd;
 
 
 pub struct ShellCore {
-    pub builtins: HashMap<String, fn(&mut ShellCore, words: &mut Vec<String>) -> i32>,
+    pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
     pub functions: HashMap<String, String>,
     pub arrays: HashMap<String, Vec<String>>,
     pub vars: HashMap<String, String>,
-    pub words: Vec<String>,
+    pub args: Vec<String>,
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
@@ -43,7 +43,7 @@ impl ShellCore {
             functions: HashMap::new(),
             arrays: HashMap::new(),
             vars: HashMap::new(),
-            words: vec![],
+            args: vec![],
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
@@ -91,8 +91,8 @@ impl ShellCore {
 
     pub fn get_var(&self, key: &str) -> String {
         if let Ok(n) = key.parse::<usize>() {
-            if self.words.len() > n {
-                return self.words[n].clone();
+            if self.args.len() > n {
+                return self.args[n].clone();
             }
         }
 
@@ -101,29 +101,29 @@ impl ShellCore {
         }
 
         if key == "#" {
-            return (self.words.len() - 1).to_string();
+            return (self.args.len() - 1).to_string();
         }
 
         if key == "@" {
-            if self.words.len() == 1 {
+            if self.args.len() == 1 {
                 return "".to_string();
             }
 
-            return self.words[1..].to_vec().join(" ");
+            return self.args[1..].to_vec().join(" ");
         }
 
         if key == "*" {
-            if self.words.len() == 1 {
+            if self.args.len() == 1 {
                 return "".to_string();
             }
 
             if self.in_double_quot {
                 if let Some(ch) = self.get_var("IFS").chars().nth(0){
-                    return self.words[1..].to_vec().join(&ch.to_string());
+                    return self.args[1..].to_vec().join(&ch.to_string());
                 }
             }
 
-            return self.words[1..].to_vec().join(" ");
+            return self.args[1..].to_vec().join(" ");
         }
 
         if let Some(s) = self.vars.get(&key as &str){
@@ -148,7 +148,7 @@ impl ShellCore {
     }
 
     pub fn get_builtin(&self, name: &String) 
-        -> Option<fn(&mut ShellCore, words: &mut Vec<String>) -> i32> {
+        -> Option<fn(&mut ShellCore, args: &mut Vec<String>) -> i32> {
         if self.builtins.contains_key(name) {
             Some(self.builtins[name])
         }else{

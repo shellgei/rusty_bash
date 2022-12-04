@@ -99,7 +99,7 @@ fn main() {
 
     let mut core = ShellCore::new();
     for word in &words {
-        core.words.push(word.clone());
+        core.args.push(word.clone());
     }
 
     if words.len() > 1 {
@@ -119,7 +119,7 @@ fn main() {
     core.set_var("IFS", " \t\n");
     core.set_var("HOSTNAME", &get_hostname());
     core.set_var("SHELL", "rustybash");
-    core.set_var("BASH", &core.words[0].to_string());
+    core.set_var("BASH", &core.args[0].to_string());
     if is_interactive(pid) {
         core.flags += "i";
     }

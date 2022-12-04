@@ -5,7 +5,6 @@ use crate::ShellCore;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::elements::value::Value;
-// use crate::abst_elems::CommandElem;
 
 
 pub struct Substitution {

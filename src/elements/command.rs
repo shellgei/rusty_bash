@@ -23,7 +23,7 @@ use crate::file_descs::*;
 /* command: delim word delim word delim word ... eoc */
 pub struct Command {
     vars: Vec<Box<Substitution>>,
-    pub words: Vec<Word>,
+    pub args: Vec<Word>,
     pub text: String,
     pub pid: Option<Pid>,
     fds: FileDescs,
@@ -31,7 +31,7 @@ pub struct Command {
 
 impl Compound for Command {
     fn exec(&mut self, core: &mut ShellCore) {
-        if self.words.len() == 0 {
+        if self.args.len() == 0 {
             self.set_vars(core);
             return;
         }
@@ -40,20 +40,20 @@ impl Compound for Command {
             eprintln!("{}", self.text.trim_end());
         }
 
-        let mut words = self.eval(core);
-        core.set_var("_", &words[words.len()-1]);
+        let mut args = self.eval(core);
+        core.set_var("_", &args[args.len()-1]);
 
         if core.has_flag('x') {
-            eprintln!("+{}", words.join(" "));
+            eprintln!("+{}", args.join(" "));
         }
 
         // This sentence avoids an unnecessary fork for an internal command.
         if self.fds.no_connection() {
-            if core.functions.contains_key(&words[0]) {
-                self.exec_function(&mut words, core);
+            if core.functions.contains_key(&args[0]) {
+                self.exec_function(&mut args, core);
                 return;
             }
-            if self.run_on_this_process(&mut words, core) {
+            if self.run_on_this_process(&mut args, core) {
                 return;
             }
         }
@@ -64,7 +64,7 @@ impl Compound for Command {
                     eprintln!("{}", s);
                     exit(1);
                 }
-                self.exec_external_command(&mut words, core)
+                self.exec_external_command(&mut args, core)
             },
             Ok(ForkResult::Parent { child } ) => {
                 self.pid = Some(child);
@@ -90,7 +90,7 @@ impl Command {
     pub fn new() -> Command{
         Command {
             vars: vec![],
-            words: vec![],
+            args: vec![],
             //eoc: None,
             text: "".to_string(),
             pid: None,
@@ -98,9 +98,9 @@ impl Command {
         }
     }
 
-    fn run_on_this_process(&mut self, words: &mut Vec<String>, core: &mut ShellCore) -> bool {
-        if let Some(func) = core.get_builtin(&words[0]) {
-            let status = func(core, words);
+    fn run_on_this_process(&mut self, args: &mut Vec<String>, core: &mut ShellCore) -> bool {
+        if let Some(func) = core.get_builtin(&args[0]) {
+            let status = func(core, args);
             core.set_var("?", &status.to_string());
             true
         }else{
@@ -109,15 +109,15 @@ impl Command {
     }
 
     fn eval(&mut self, core: &mut ShellCore) -> Vec<String> {
-        let mut words = vec![];
+        let mut args = vec![];
 
-        for word in &mut self.words {
+        for word in &mut self.args {
             for s in &word.eval(core) {
-                words.append(&mut eval_glob(&s.clone()));
+                args.append(&mut eval_glob(&s.clone()));
             }
         };
 
-        words.iter()
+        args.iter()
             .map(|a| Word::remove_escape(&a))
             .collect()
     }
@@ -129,45 +129,45 @@ impl Command {
 
     fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("command: '{}'", self.text));
-        for elem in &self.words {
+        for elem in &self.args {
             ans.append(&mut elem.parse_info());
         };
 
         blue_strings(&ans)
     }
 
-    fn exec_function(&mut self, words: &mut Vec<String>, core: &mut ShellCore) {
-        let text = core.get_function(&words[0]).unwrap();
+    fn exec_function(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+        let text = core.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_from(text);
         if let Some(mut f) = compound::parse(&mut feeder, core) {
-            let backup = core.words.clone();
-            core.words = words.to_vec();
+            let backup = core.args.clone();
+            core.args = args.to_vec();
             core.return_enable = true;
             f.exec(core);
             self.pid = f.get_pid();
-            core.words = backup;
+            core.args = backup;
             core.return_enable = false;
         }else{
             panic!("Shell internal error on function");
         };
     }
 
-    fn exec_external_command(&mut self, words: &mut Vec<String>, core: &mut ShellCore) {
-        if core.functions.contains_key(&words[0]) {
-            self.exec_function(words, core);
+    fn exec_external_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+        if core.functions.contains_key(&args[0]) {
+            self.exec_function(args, core);
             exit(0);
         }
 
-        if let Some(func) = core.get_builtin(&words[0]) {
-            exit(func(core, words));
+        if let Some(func) = core.get_builtin(&args[0]) {
+            exit(func(core, args));
         }
 
-        //let fullpath = get_fullpath(&words[0]);
-        //words[0] = fullpath;
-        words[0] = get_fullpath(&words[0]);
+        //let fullpath = get_fullpath(&args[0]);
+        //args[0] = fullpath;
+        args[0] = get_fullpath(&args[0]);
 
-        let cwords: Vec<CString> = words
+        let cargs: Vec<CString> = args
             .iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect();
@@ -181,14 +181,14 @@ impl Command {
             let value =  (*v).value.eval(core).join(" ");
             env::set_var(key, value);
         }
-        env::set_var("_".to_string(), words[0].clone());
+        env::set_var("_".to_string(), args[0].clone());
 
         let envs: Vec<CString> = std::env::vars()
             .map(|v| format!("{}={}", v.0, v.1))
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect();
 
-        let _ = execvpe(&cwords[0], &cwords, &envs);
+        let _ = execvpe(&cargs[0], &cargs, &envs);
 
         eprintln!("Command not found");
         exit(127);
@@ -229,7 +229,7 @@ impl Command {
         ! is_reserve(text)
     }
 
-    fn words_and_redirects(text: &mut Feeder, core: &mut ShellCore, ans: &mut Command) -> bool {
+    fn args_and_redirects(text: &mut Feeder, core: &mut ShellCore, ans: &mut Command) -> bool {
         let mut ok = false;
         loop {
             let backup = text.clone();
@@ -237,13 +237,13 @@ impl Command {
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
             }else if let Some(a) = Word::parse(text, core, false) {
-                if ! Command::ng_check(&a.text, ans.words.len() == 0){
+                if ! Command::ng_check(&a.text, ans.args.len() == 0){
                     text.rewind(backup);
                     break;
                 }
                // ans.push_elems(a);
                 ans.text += &a.get_text();
-                ans.words.push(a);
+                ans.args.push(a);
                 ok = true;
             }else{
                 break;
@@ -287,7 +287,7 @@ impl Command {
             Self::replace_alias(text, core);
         }
 
-        if Self::words_and_redirects(text, core, &mut ans) || ans.vars.len() != 0 {
+        if Self::args_and_redirects(text, core, &mut ans) || ans.vars.len() != 0 {
             Some(ans)
         }else{
             text.rewind(backup);
