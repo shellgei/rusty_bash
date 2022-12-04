@@ -54,8 +54,8 @@ impl Substitution {
         if let Some(value_part) = Value::parse(text, conf){
             Some(Substitution::new(text, var_part, value_part))
         }else{ // empty value
-            let empty_arg = Value::new();
-            Some(Substitution::new(text, var_part, empty_arg))
+            let empty_word = Value::new();
+            Some(Substitution::new(text, var_part, empty_word))
         }
     }
 }

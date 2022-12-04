@@ -5,14 +5,14 @@ use crate::ShellCore;
 use crate::utils::combine;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::abst_elems::arg_elem;
-use crate::abst_elems::arg_elem::ArgElem;
-use crate::elements::subarg_tilde::SubArgTildePrefix;
+use crate::abst_elems::word_elem;
+use crate::abst_elems::word_elem::WordElem;
+use crate::elements::subword_tilde::SubWordTildePrefix;
 
 pub struct Value {
     pub text: String,
     pub pos: DebugInfo,
-    pub subvalues: Vec<Box<dyn ArgElem>>,
+    pub subvalues: Vec<Box<dyn WordElem>>,
 }
 
 impl Value {
@@ -24,7 +24,7 @@ impl Value {
         }
     }
 
-    // single quoted arg or double quoted arg or non quoted arg 
+    // single quoted word or double quoted word or non quoted word 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Value> {
         if text.len() == 0 {
             return None;
@@ -36,12 +36,12 @@ impl Value {
             subvalues: vec![],
         };
 
-        if let Some(result) = SubArgTildePrefix::parse(text, true) {
+        if let Some(result) = SubWordTildePrefix::parse(text, true) {
             ans.text += &result.get_text();
             ans.subvalues.push(Box::new(result));
         }
     
-        while let Some(result) = arg_elem::parse_in_value(text, conf) {
+        while let Some(result) = word_elem::parse_in_value(text, conf) {
             ans.text += &(*result).get_text();
             ans.subvalues.push(result);
     

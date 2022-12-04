@@ -5,7 +5,7 @@ use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::ShellCore;
 use crate::element_list::RedirectOp;
-use crate::elements::arg::Arg;
+use crate::elements::word::Word;
 // use crate::abst_elems::CommandElem;
 
 pub struct Redirect {
@@ -15,7 +15,7 @@ pub struct Redirect {
     pub right_fd: i32,
     pub redirect_type: RedirectOp,
     pub path: String,
-    pub right_arg: Option<Arg>,
+    pub right_word: Option<Word>,
 }
 
 impl Redirect {
@@ -27,12 +27,12 @@ impl Redirect {
             right_fd: -1,
             redirect_type: RedirectOp::NoRedirect,
             path: String::new(),
-            right_arg: None,
+            right_word: None,
         }
     }
 
     pub fn eval(&mut self, conf: &mut ShellCore) -> String {
-        if let Some(a) = &mut self.right_arg {
+        if let Some(a) = &mut self.right_word {
             let strings = a.eval(conf);
             if strings.len() == 1 {
                 return a.eval(conf)[0].clone();
@@ -76,9 +76,9 @@ impl Redirect {
         }
 
 
-        if let Some(a) = Arg::parse(text, conf, false) {
+        if let Some(a) = Word::parse(text, conf, false) {
             ans.text += &a.text.clone();
-            ans.right_arg = Some(a);
+            ans.right_word = Some(a);
         }else{
             text.rewind(backup);
             return None;

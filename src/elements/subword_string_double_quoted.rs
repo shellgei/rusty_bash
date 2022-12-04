@@ -6,15 +6,15 @@ use crate::ShellCore;
 use crate::Feeder;
 //use crate::feeder::scanner::*;
 
-use crate::abst_elems::arg_elem::ArgElem;
+use crate::abst_elems::word_elem::WordElem;
 
-pub struct SubArgStringDoubleQuoted {
+pub struct SubWordStringDoubleQuoted {
     pub text: String,
     pub pos: DebugInfo,
     //pub is_value: bool,
 }
 
-impl ArgElem for SubArgStringDoubleQuoted {
+impl WordElem for SubWordStringDoubleQuoted {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -28,16 +28,16 @@ impl ArgElem for SubArgStringDoubleQuoted {
     }
 }
 
-impl SubArgStringDoubleQuoted {
-    fn new(text: String, pos: DebugInfo/*, is_value: bool*/) -> SubArgStringDoubleQuoted {
-        SubArgStringDoubleQuoted {
+impl SubWordStringDoubleQuoted {
+    fn new(text: String, pos: DebugInfo/*, is_value: bool*/) -> SubWordStringDoubleQuoted {
+        SubWordStringDoubleQuoted {
             text: text.clone(),
             pos: pos,
             //is_value: is_value, 
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgStringDoubleQuoted> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubWordStringDoubleQuoted> {
         let mut pos = text.scanner_double_quoted_word();
         while pos == text.len() {
             if !text.feed_additional_line(conf){
@@ -48,7 +48,7 @@ impl SubArgStringDoubleQuoted {
         if pos == 0 {
             None
         }else{
-            Some( SubArgStringDoubleQuoted::new(text.consume(pos), DebugInfo::init(text)) )
+            Some( SubWordStringDoubleQuoted::new(text.consume(pos), DebugInfo::init(text)) )
         }
     }
 }

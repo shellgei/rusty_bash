@@ -67,7 +67,7 @@ impl FileDescs {
                 dup2(n, r.left_fd).expect("Invalid fd");
             }else{
                 conf.set_var("?", "1");
-                if let Some(a) = &r.right_arg {
+                if let Some(a) = &r.right_word {
                     return Err(format!("bash: {}: ambiguous redirect", a.text.clone()));
                 }else{
                     return Err("Unknown redirect error".to_string());

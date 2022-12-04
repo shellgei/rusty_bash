@@ -186,7 +186,7 @@ impl Writer {
         self.stdout.flush().unwrap();
     }
 
-    pub fn last_arg(&self) -> String {
+    pub fn last_word(&self) -> String {
         let mut escaped = false;
         let mut pos = 0;
         let mut counter = 0;
@@ -229,9 +229,9 @@ impl Writer {
     }
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
-        if chars_to_string(&self.chars) == self.last_arg() && 
-            self.last_arg().chars().nth(0) != Some('.') &&
-            self.last_arg().chars().nth(0) != Some('/') {
+        if chars_to_string(&self.chars) == self.last_word() && 
+            self.last_word().chars().nth(0) != Some('.') &&
+            self.last_word().chars().nth(0) != Some('/') {
             if tab_num == 1 {
                 command_completion(self, core);
             }else {

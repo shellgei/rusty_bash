@@ -5,24 +5,24 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 
-use crate::abst_elems::arg_elem::ArgElem;
-use crate::elements::subarg_string_double_quoted::SubArgStringDoubleQuoted;
-use crate::elements::subarg_variable::SubArgVariable;
-use crate::elements::subarg_command_substitution::SubArgCommandSubstitution;
+use crate::abst_elems::word_elem::WordElem;
+use crate::elements::subword_string_double_quoted::SubWordStringDoubleQuoted;
+use crate::elements::subword_variable::SubWordVariable;
+use crate::elements::subword_command_substitution::SubWordCommandSubstitution;
 use crate::utils::combine;
 
-pub struct SubArgDoubleQuoted {
+pub struct SubWordDoubleQuoted {
     pub text: String,
     pub pos: DebugInfo,
-    pub subargs: Vec<Box<dyn ArgElem>>,
+    pub subwords: Vec<Box<dyn WordElem>>,
 }
 
-impl ArgElem for SubArgDoubleQuoted {
+impl WordElem for SubWordDoubleQuoted {
     fn eval(&mut self, conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>> {
         conf.in_double_quot = true;
 
         let mut vvv = vec![];
-        for sa in &mut self.subargs {
+        for sa in &mut self.subwords {
             vvv.push(sa.eval(conf, as_value));
         };
 
@@ -53,31 +53,31 @@ impl ArgElem for SubArgDoubleQuoted {
 }
 
 
-impl SubArgDoubleQuoted {
+impl SubWordDoubleQuoted {
 /* parser for a string such as "aaa${var}" */
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgDoubleQuoted> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubWordDoubleQuoted> {
         if ! text.starts_with("\"") {
             return None;
         };
 
-        let mut ans = SubArgDoubleQuoted {
+        let mut ans = SubWordDoubleQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
-            subargs: vec![],
+            subwords: vec![],
         };
     
         ans.text += &text.consume(1);
     
         loop {
-            if let Some(a) = SubArgCommandSubstitution::parse(text, conf) {
+            if let Some(a) = SubWordCommandSubstitution::parse(text, conf) {
                 ans.text += &a.text.clone();
-                ans.subargs.push(Box::new(a));
-            }else if let Some(a) = SubArgVariable::parse(text) {
+                ans.subwords.push(Box::new(a));
+            }else if let Some(a) = SubWordVariable::parse(text) {
                 ans.text += &a.text.clone();
-                ans.subargs.push(Box::new(a));
-            }else if let Some(a) = SubArgStringDoubleQuoted::parse(text, conf) {
+                ans.subwords.push(Box::new(a));
+            }else if let Some(a) = SubWordStringDoubleQuoted::parse(text, conf) {
                 ans.text += &a.text.clone();
-                ans.subargs.push(Box::new(a));
+                ans.subwords.push(Box::new(a));
             }
 
             if text.starts_with("\"") {

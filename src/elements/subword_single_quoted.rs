@@ -6,16 +6,16 @@ use crate::ShellCore;
 use crate::Feeder;
 //use crate::feeder::scanner::*;
 
-use crate::abst_elems::arg_elem::ArgElem;
+use crate::abst_elems::word_elem::WordElem;
 
 
-pub struct SubArgSingleQuoted {
+pub struct SubWordSingleQuoted {
     pub text: String,
     pub pos: DebugInfo,
     //pub is_value: bool,
 }
 
-impl ArgElem for SubArgSingleQuoted {
+impl WordElem for SubWordSingleQuoted {
     fn eval(&mut self, _conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
         let strip = self.text[1..self.text.len()-1].to_string();
         let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
@@ -27,8 +27,8 @@ impl ArgElem for SubArgSingleQuoted {
     }
 }
 
-impl SubArgSingleQuoted {
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<SubArgSingleQuoted> {
+impl SubWordSingleQuoted {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<SubWordSingleQuoted> {
         if ! text.starts_with("'") {
             return None;
         };
@@ -40,7 +40,7 @@ impl SubArgSingleQuoted {
             }
             pos = text.scanner_until(1, "'");
         }
-        Some(SubArgSingleQuoted{text: text.consume(pos+1),
+        Some(SubWordSingleQuoted{text: text.consume(pos+1),
                                 pos: DebugInfo::init(text)})
     }
 }

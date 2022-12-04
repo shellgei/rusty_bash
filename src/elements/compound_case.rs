@@ -10,13 +10,13 @@ use crate::elements::redirect::Redirect;
 use nix::unistd::Pid;
 use crate::file_descs::*;
 //use crate::feeder::scanner::*;
-use crate::elements::arg::Arg;
+use crate::elements::word::Word;
 use crate::bash_glob::glob_match;
 // use crate::abst_elems::CommandElem;
 use crate::element_list::CompoundType;
 
 pub struct CompoundCase {
-    pub arg: Arg,
+    pub word: Word,
     pub conddo: Vec<(Vec<String>, Option<Script>)>,
     text: String,
     pid: Option<Pid>,
@@ -44,12 +44,12 @@ impl Compound for CompoundCase {
     fn get_text(&self) -> String { self.text.clone() }
 
     fn exec_elems(&mut self, conf: &mut ShellCore) {
-        let arg_str = self.arg.eval(conf).join(" ");
+        let word_str = self.word.eval(conf).join(" ");
 
         for (cond, doing) in &mut self.conddo {
             let mut flag = false;
             for c in cond {
-                if glob_match(c, &arg_str) {
+                if glob_match(c, &word_str) {
                     if let Some(d) = doing {
                         d.exec(conf);
                     }
@@ -65,9 +65,9 @@ impl Compound for CompoundCase {
 }
 
 impl CompoundCase {
-    pub fn new(arg: Arg) -> CompoundCase{
+    pub fn new(word: Word) -> CompoundCase{
         CompoundCase {
-            arg: arg, 
+            word: word, 
             conddo: vec![],
             text: "".to_string(),
             fds: FileDescs::new(),
@@ -127,14 +127,14 @@ impl CompoundCase {
         let backup = text.clone();
         let ans_text = text.consume(4) + &text.consume_blank();
 
-        let arg = if let Some(a) = Arg::parse(text, conf, false) {
+        let word = if let Some(a) = Word::parse(text, conf, false) {
             a
         }else{
             text.rewind(backup);
             return None;
         };
 
-        let mut ans = CompoundCase::new(arg);
+        let mut ans = CompoundCase::new(word);
         ans.text = ans_text;
 
         ans.text += &text.consume_blank();

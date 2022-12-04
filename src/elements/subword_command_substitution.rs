@@ -5,18 +5,18 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 
-use crate::abst_elems::arg_elem::ArgElem;
+use crate::abst_elems::word_elem::WordElem;
 use crate::abst_elems::compound::Compound;
 use crate::elements::compound_paren::CompoundParen;
 
-pub struct SubArgCommandSubstitution {
+pub struct SubWordCommandSubstitution {
     pub text: String,
     pub pos: DebugInfo,
     pub com: CompoundParen, 
 //    pub is_value: bool,
 }
 
-impl ArgElem for SubArgCommandSubstitution {
+impl WordElem for SubWordCommandSubstitution {
     fn eval(&mut self, conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>> {
         self.com.substitution = true;
         self.com.exec(conf);
@@ -37,8 +37,8 @@ impl ArgElem for SubArgCommandSubstitution {
     }
 }
 
-impl SubArgCommandSubstitution {
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore/*, is_value: bool*/) -> Option<SubArgCommandSubstitution> {
+impl SubWordCommandSubstitution {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore/*, is_value: bool*/) -> Option<SubWordCommandSubstitution> {
         if ! text.starts_with("$") {
             return None;
         }
@@ -47,7 +47,7 @@ impl SubArgCommandSubstitution {
         text.consume(1);
 
         if let Some(e) = CompoundParen::parse(text, conf, true){
-            let ans = SubArgCommandSubstitution {
+            let ans = SubWordCommandSubstitution {
                 text: "$".to_owned() + &e.get_text(),
                 pos: DebugInfo::init(text),
                 com: e,

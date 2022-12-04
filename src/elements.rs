@@ -16,17 +16,17 @@ pub mod compound_while;
 
 pub mod substitution;
 
-pub mod arg;
+pub mod word;
 pub mod value;
 
-pub mod subarg_braced;
-pub mod subarg_command_substitution;
-pub mod subarg_double_quoted;
-pub mod subarg_math_substitution;
-pub mod subarg_string_double_quoted;
-pub mod subarg_string_non_quoted;
-pub mod subarg_single_quoted;
-pub mod subarg_tilde;
-pub mod subarg_variable;
+pub mod subword_braced;
+pub mod subword_command_substitution;
+pub mod subword_double_quoted;
+pub mod subword_math_substitution;
+pub mod subword_string_double_quoted;
+pub mod subword_string_non_quoted;
+pub mod subword_single_quoted;
+pub mod subword_tilde;
+pub mod subword_variable;
 
 pub mod redirect;

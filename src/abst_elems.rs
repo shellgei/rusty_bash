@@ -2,4 +2,4 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod compound;
-pub mod arg_elem;
+pub mod word_elem;

@@ -5,20 +5,20 @@ use crate::debuginfo::DebugInfo;
 // use crate::abst_elems::CommandElem;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::elements::arg::Arg;
+use crate::elements::word::Word;
 
-use crate::elements::arg::arg_in_brace;
-use crate::abst_elems::arg_elem::ArgElem;
+use crate::elements::word::word_in_brace;
+use crate::abst_elems::word_elem::WordElem;
 use crate::utils::combine_with;
 
-pub struct SubArgBraced {
+pub struct SubWordBraced {
     pub text: String,
     pub pos: DebugInfo,
-    pub args: Vec<Arg>,
+    pub words: Vec<Word>,
     pub complete: bool,
 }
 
-impl ArgElem for SubArgBraced {
+impl WordElem for SubWordBraced {
     fn eval(&mut self, conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
         if self.complete {
             self.eval_complete(conf)
@@ -34,31 +34,31 @@ impl ArgElem for SubArgBraced {
     fn permit_lf(&self) -> bool {true}
 }
 
-impl SubArgBraced {
-    fn new(text: &mut Feeder) -> SubArgBraced{
-        SubArgBraced {
+impl SubWordBraced {
+    fn new(text: &mut Feeder) -> SubWordBraced{
+        SubWordBraced {
             text: "".to_string(),
             pos: DebugInfo::init(text),
-            args: vec![],
+            words: vec![],
             complete: false,
         }
     }
 
     fn eval_complete(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
         let mut ans = vec![];
-        for arg in &mut self.args {
-            ans.push(arg.eval(conf));
+        for word in &mut self.words {
+            ans.push(word.eval(conf));
         };
         ans
     }
 
     fn eval_incomplete(&mut self, conf: &mut ShellCore) -> Vec<Vec<String>> {
-        if self.args.len() == 0 {
+        if self.words.len() == 0 {
             return vec!(vec!(self.text.clone()));
-        }else if self.args.len() == 1 {
+        }else if self.words.len() == 1 {
             let mut ans = vec![];
             let mut v = "{".to_string();
-            v += &self.args[0].eval(conf).join(" ");
+            v += &self.words[0].eval(conf).join(" ");
             if let Some(c) = self.text.chars().last() {
                 if c == ',' || c == '}' {
                     ans.push(v + &c.to_string());
@@ -70,8 +70,8 @@ impl SubArgBraced {
         }
 
         let mut ans = vec![];
-        for arg in &mut self.args {
-            let vs = arg.eval(conf);
+        for word in &mut self.words {
+            let vs = word.eval(conf);
             ans = combine_with(&ans, &vs, ",");
         };
 
@@ -87,17 +87,17 @@ impl SubArgBraced {
         vec!(ans)
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubArgBraced> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubWordBraced> {
         if ! text.starts_with("{"){
             return None;
         }
 
-        let mut ans = SubArgBraced::new(text);
+        let mut ans = SubWordBraced::new(text);
         ans.text = text.consume(1);
 
-        while let Some(arg) = arg_in_brace(text, conf) {
-            ans.text += &arg.text.clone();
-            ans.args.push(arg); 
+        while let Some(word) = word_in_brace(text, conf) {
+            ans.text += &word.text.clone();
+            ans.words.push(word); 
 
             if text.scanner_control_op().0 > 0 {
                 return Some(ans);
@@ -117,7 +117,7 @@ impl SubArgBraced {
             };
         };
 
-        if ans.args.len() < 2 {
+        if ans.words.len() < 2 {
             ans.complete = false;
             return Some(ans);
         }
