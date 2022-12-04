@@ -12,7 +12,7 @@ use crate::{ShellCore,Feeder};
 use crate::abst_elems::CommandElem;
 use crate::utils::*;
 
-use crate::abst_elems::{Compound, compound};
+use crate::abst_elems::abst_compound::{Compound, compound};
 use crate::elements::arg::Arg;
 use crate::elements::redirect::Redirect;
 use crate::elements::substitution::Substitution;

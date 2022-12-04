@@ -3,11 +3,11 @@
 
 use crate::{ShellCore, Feeder};
 use crate::abst_elems::ListElem;
-use crate::abst_elems::Compound;
+use crate::abst_elems::abst_compound::Compound;
 use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
-use crate::abst_elems::compound;
+use crate::abst_elems::abst_compound::compound;
 use crate::job::Job;
 
 pub struct Pipeline {

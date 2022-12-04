@@ -4,8 +4,8 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::varname::VarName;
 //use crate::feeder::scanner::*;
-use crate::abst_elems::compound;
-use crate::abst_elems::Compound;
+use crate::abst_elems::abst_compound::compound;
+use crate::abst_elems::abst_compound::Compound;
 
 pub struct Function {
     pub name: String,
