@@ -6,10 +6,9 @@ use crate::element_list::*;
 use crate::elements::function::Function;
 use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
-use crate::ListElem;
 
 pub struct Script {
-    pub list: Vec<Box<dyn ListElem>>,
+    pub list: Vec<Box<Pipeline>>,
     pub list_ends: Vec<ControlOperator>,
     pub text: String,
 }

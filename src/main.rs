@@ -23,7 +23,6 @@ use std::io::Read;
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
 
-use crate::abst_elems::ListElem;
 use crate::elements::script::Script;
 
 use crate::element_list::CompoundType;

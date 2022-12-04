@@ -13,17 +13,12 @@ use crate::elements::subarg_single_quoted::SubArgSingleQuoted;
 use crate::elements::subarg_braced::SubArgBraced;
 use crate::elements::subarg_variable::SubArgVariable;
 
+/*
 pub trait ListElem {
     fn exec(&mut self, conf: &mut ShellCore);
     fn get_text(&self) -> String;
 }
-
-/*
-pub trait CommandElem {
-    fn parse_info(&self) -> Vec<String>;
-    fn eval(&mut self, _conf: &mut ShellCore) -> Vec<String>;
-    fn get_text(&self) -> String;
-}*/
+*/
 
 pub trait ArgElem {
     fn eval(&mut self, _conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>>;

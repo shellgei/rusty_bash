@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_elems::ListElem;
 use crate::abst_elems::compound::Compound;
 use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
@@ -18,8 +17,8 @@ pub struct Pipeline {
     not_flag: bool,
 }
 
-impl ListElem for Pipeline {
-    fn exec(&mut self, core: &mut ShellCore) {
+impl /*ListElem for*/ Pipeline {
+    pub fn exec(&mut self, core: &mut ShellCore) {
         let len = self.commands.len();
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
@@ -51,7 +50,7 @@ impl ListElem for Pipeline {
         }
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
+    pub fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl Pipeline {
