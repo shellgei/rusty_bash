@@ -23,31 +23,27 @@ impl Function {
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Function> {
          let backup = text.clone();
-         let mut name;
          let mut ans_text = String::new();
 
-         loop { //remove keyword function
-             let var_pos = text.scanner_name(0);
-             if var_pos == 0 {
-                 text.rewind(backup);
-                 return None;
-             }
-             name = text.consume(var_pos);
-
-             ans_text += &text.consume_blank();
-
-             if name != "function" {
-                 break;
-             }
+         if text.starts_with("function") {
+            ans_text += &text.consume(8);
+            ans_text += &text.consume_blank();
          }
+
+         let var_pos = text.scanner_name(0);
+         if var_pos == 0 {
+             text.rewind(backup);
+             return None;
+         }
+         let name = text.consume(var_pos);
+         ans_text += &text.consume_blank();
+
 
          if ! text.starts_with("(") {
              text.rewind(backup);
              return None;
          }
          ans_text += &text.consume(1);
-         //let d = text.scanner_blank();
-         //ans_text += &text.consume(d);
          ans_text += &text.consume_blank();
  
          if ! text.starts_with(")") {
@@ -55,8 +51,6 @@ impl Function {
              return None;
          }
          ans_text += &text.consume(1);
- 
-         //let d = text.scanner_blank();
          ans_text += &text.consume_blank();
  
          if let Some(c) = compound::parse(text, conf){
