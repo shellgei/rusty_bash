@@ -19,7 +19,7 @@ pub trait WordElem {
     fn permit_lf(&self) -> bool {false}
 }
 
-pub fn parse_in_word(text: &mut Feeder, conf: &mut ShellCore, is_in_brace: bool) -> Option<Box<dyn WordElem>> {
+pub fn parse_in_arg(text: &mut Feeder, conf: &mut ShellCore, is_in_brace: bool) -> Option<Box<dyn WordElem>> {
     if let Some(a) = SubWordMathSubstitution::parse(text, conf)                   {Some(Box::new(a))}
     else if let Some(a) = SubWordCommandSubstitution::parse(text, conf)           {Some(Box::new(a))}
     else if let Some(a) = SubWordVariable::parse(text)                            {Some(Box::new(a))}

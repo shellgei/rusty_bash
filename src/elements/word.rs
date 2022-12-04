@@ -54,7 +54,7 @@ impl Word {
             ans.subwords.push(Box::new(result));
         }
     
-        while let Some(result) = word_elem::parse_in_word(text, conf, is_in_brace) {
+        while let Some(result) = word_elem::parse_in_arg(text, conf, is_in_brace) {
             ans.text += &(*result).get_text();
             ans.subwords.push(result);
     
@@ -137,7 +137,7 @@ pub fn word_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Word> {
         ans.subwords.push(Box::new(result));
     }
 
-    while let Some(result) = word_elem::parse_in_word(text, conf, true) {
+    while let Some(result) = word_elem::parse_in_arg(text, conf, true) {
         let empty_elem = (*result).get_text().len() == 0;
 
         ans.text += &(*result).get_text();
