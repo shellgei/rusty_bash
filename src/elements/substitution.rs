@@ -5,7 +5,7 @@ use crate::ShellCore;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::elements::value::Value;
-use crate::abst_elems::CommandElem;
+// use crate::abst_elems::CommandElem;
 
 
 pub struct Substitution {
@@ -15,12 +15,12 @@ pub struct Substitution {
     pub debug: DebugInfo,
 }
 
-impl CommandElem for Substitution {
+impl /*CommandElem for*/ Substitution {
     fn parse_info(&self) -> Vec<String> {
         vec!(format!("    substitution: '{}' ({})\n", self.text.clone(), self.debug.get_text()))
     }
 
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> { 
+    pub fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> { 
         let mut ans = vec![];
         ans.push(self.name.clone());
         
@@ -33,7 +33,7 @@ impl CommandElem for Substitution {
         ans
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
+    pub fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl Substitution {

@@ -9,7 +9,7 @@ use std::process::exit;
 use std::os::unix::prelude::RawFd;
 
 use crate::{ShellCore,Feeder};
-use crate::abst_elems::CommandElem;
+// use crate::abst_elems::CommandElem;
 use crate::utils::*;
 
 use crate::abst_elems::compound::Compound;
@@ -23,7 +23,7 @@ use crate::file_descs::*;
 /* command: delim arg delim arg delim arg ... eoc */
 pub struct Command {
     vars: Vec<Box<Substitution>>,
-    pub args: Vec<Box<dyn CommandElem>>,
+    pub args: Vec<Box<Arg>>,
     pub text: String,
     pub pid: Option<Pid>,
     fds: FileDescs,
@@ -127,7 +127,7 @@ impl Command {
         self.vars.push(Box::new(s));
     }
 
-    pub fn push_elems(&mut self, s: Box<dyn CommandElem>){
+    pub fn push_elems(&mut self, s: Box<Arg>){
         self.text += &s.get_text();
         self.args.push(s);
     }

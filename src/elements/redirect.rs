@@ -6,7 +6,7 @@ use crate::Feeder;
 use crate::ShellCore;
 use crate::element_list::RedirectOp;
 use crate::elements::arg::Arg;
-use crate::abst_elems::CommandElem;
+// use crate::abst_elems::CommandElem;
 
 pub struct Redirect {
     pub text: String,

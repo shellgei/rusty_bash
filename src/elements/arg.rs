@@ -9,7 +9,7 @@ use crate::abst_elems::*;
 use crate::abst_elems::ArgElem;
 use crate::elements::subarg_tilde::SubArgTildePrefix;
 use crate::elements::subarg_string_non_quoted::SubArgStringNonQuoted;
-use crate::abst_elems::CommandElem;
+// use crate::abst_elems::CommandElem;
 
 pub struct Arg {
     pub text: String,
@@ -72,8 +72,8 @@ impl Arg {
     }
 }
 
-impl CommandElem for Arg {
-    fn parse_info(&self) -> Vec<String> {
+impl /*CommandElem for*/ Arg {
+    pub fn parse_info(&self) -> Vec<String> {
         let mut ans = vec!(format!("    arg      : '{}' ({})",
                               self.text.clone(), self.pos.get_text()));
         for sub in &self.subargs {
@@ -83,7 +83,7 @@ impl CommandElem for Arg {
         ans
     }
 
-    fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
+    pub fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec![];
         for sa in &mut self.subargs {
             let vs = sa.eval(conf, false);
@@ -114,7 +114,7 @@ impl CommandElem for Arg {
         ans
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
+    pub fn get_text(&self) -> String { self.text.clone() }
 }
 
 pub fn arg_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Arg> {

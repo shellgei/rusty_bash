@@ -12,7 +12,7 @@ use crate::file_descs::*;
 //use crate::feeder::scanner::*;
 use crate::elements::arg::Arg;
 use crate::bash_glob::glob_match;
-use crate::abst_elems::CommandElem;
+// use crate::abst_elems::CommandElem;
 use crate::element_list::CompoundType;
 
 pub struct CompoundCase {
