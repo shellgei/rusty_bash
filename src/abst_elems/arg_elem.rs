@@ -19,7 +19,7 @@ pub trait ArgElem {
     fn permit_lf(&self) -> bool {false}
 }
 
-pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_in_brace: bool) -> Option<Box<dyn ArgElem>> {
+pub fn parse_in_arg(text: &mut Feeder, conf: &mut ShellCore, is_in_brace: bool) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = SubArgMathSubstitution::parse(text, conf)                   {Some(Box::new(a))}
     else if let Some(a) = SubArgCommandSubstitution::parse(text, conf)           {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)                            {Some(Box::new(a))}
@@ -30,7 +30,7 @@ pub fn subarg(text: &mut Feeder, conf: &mut ShellCore, is_in_brace: bool) -> Opt
     else {None}
 }
 
-pub fn subvalue(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem>> {
+pub fn parse_in_value(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgElem>> {
     if let Some(a) = SubArgMathSubstitution::parse(text, conf)               {Some(Box::new(a))}
     else if let Some(a) = SubArgCommandSubstitution::parse(text, conf)       {Some(Box::new(a))}
     else if let Some(a) = SubArgVariable::parse(text)                        {Some(Box::new(a))}

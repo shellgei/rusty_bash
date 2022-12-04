@@ -41,7 +41,7 @@ impl Value {
             ans.subvalues.push(Box::new(result));
         }
     
-        while let Some(result) = arg_elem::subvalue(text, conf) {
+        while let Some(result) = arg_elem::parse_in_value(text, conf) {
             ans.text += &(*result).get_text();
             ans.subvalues.push(result);
     
