@@ -17,7 +17,7 @@ pub struct Pipeline {
     not_flag: bool,
 }
 
-impl /*ListElem for*/ Pipeline {
+impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
         let len = self.commands.len();
         let mut prevfd = -1;
@@ -51,9 +51,7 @@ impl /*ListElem for*/ Pipeline {
     }
 
     pub fn get_text(&self) -> String { self.text.clone() }
-}
 
-impl Pipeline {
     pub fn new() -> Pipeline{
         Pipeline {
             commands: vec![],

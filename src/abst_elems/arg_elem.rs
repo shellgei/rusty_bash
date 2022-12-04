@@ -1,12 +1,10 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub mod compound;
-pub mod arg_elem;
+//pub mod compound;
 
-//use crate::{Feeder, ShellCore}; 
+use crate::{Feeder, ShellCore}; 
 
-/*
 use crate::elements::subarg_command_substitution::SubArgCommandSubstitution;
 use crate::elements::subarg_math_substitution::SubArgMathSubstitution;
 use crate::elements::subarg_string_non_quoted::SubArgStringNonQuoted;
@@ -41,4 +39,3 @@ pub fn subvalue(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn ArgEl
     else if let Some(a) = SubArgStringNonQuoted::parse(text, false, true)    {Some(Box::new(a))}
     else {None}
 }
-*/
