@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::varname::VarName;
 //use crate::feeder::scanner::*;
 use crate::abst_elems::compound;
 use crate::abst_elems::compound::Compound;
@@ -33,11 +32,11 @@ impl Function {
                  text.rewind(backup);
                  return None;
              }
-             name = VarName::new(text, var_pos);
+             name = text.consume(var_pos);
 
              ans_text += &text.consume_blank();
 
-             if name.text != "function" {
+             if name != "function" {
                  break;
              }
          }
@@ -61,7 +60,7 @@ impl Function {
          ans_text += &text.consume_blank();
  
          if let Some(c) = compound::parse(text, conf){
-             Some( Function::new(name.text, c, ans_text) )
+             Some( Function::new(name, c, ans_text) )
          }else{
              text.rewind(backup);
              None

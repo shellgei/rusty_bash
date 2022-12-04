@@ -5,13 +5,12 @@ use crate::ShellCore;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::elements::value::Value;
-use crate::elements::varname::VarName;
 use crate::abst_elems::CommandElem;
 
 
 pub struct Substitution {
     pub text: String,
-    pub name: VarName,
+    pub name: String,
     pub value: Value,
     pub debug: DebugInfo,
 }
@@ -23,7 +22,7 @@ impl CommandElem for Substitution {
 
     fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> { 
         let mut ans = vec![];
-        ans.push(self.name.text.clone());
+        ans.push(self.name.clone());
         
         let mut v = "".to_string();
         for s in self.value.eval(conf){
@@ -38,9 +37,9 @@ impl CommandElem for Substitution {
 }
 
 impl Substitution {
-    pub fn new(text: &Feeder, name: VarName, value: Value) -> Substitution{
+    pub fn new(text: &Feeder, name: String, value: Value) -> Substitution{
         Substitution {
-            text: name.text.clone() + "=" + &value.text.clone(),
+            text: name.clone() + "=" + &value.text.clone(),
             name: name, 
             value: value,
             debug: DebugInfo::init(text)
@@ -50,7 +49,7 @@ impl Substitution {
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Substitution> {
         let backup = text.clone();
         let varname_pos = text.scanner_name(0);
-        let var_part = VarName::new(text, varname_pos);
+        let var_part = text.consume(varname_pos);//VarName::new(text, varname_pos);
 
         if ! text.starts_with("=") {
             text.rewind(backup);

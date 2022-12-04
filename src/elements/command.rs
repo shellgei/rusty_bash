@@ -182,7 +182,7 @@ impl Command {
         };
 
         for v in &mut self.vars {
-            let key = (*v).name.text.clone();
+            let key = (*v).name.clone();
             let value =  (*v).value.eval(core).join(" ");
             env::set_var(key, value);
         }

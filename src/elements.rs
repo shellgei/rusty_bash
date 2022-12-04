@@ -30,5 +30,3 @@ pub mod subarg_tilde;
 pub mod subarg_variable;
 
 pub mod redirect;
-
-pub mod varname;

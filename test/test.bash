@@ -379,7 +379,7 @@ EOF
 res=$($com -x <<< 'echo $-')
 [ "$res" = "x" ] || err $LINENO
 
-res=$(cat /tmp/.rusty_bash | $com あい うえ お) #TODO: enable to use IFS
+res=$(cat /tmp/.rusty_bash | $com あい うえ お)
 [ "$res" = "あい うえ お
 あい うえ お
 あい💩うえ💩お" ] || err $LINENO
