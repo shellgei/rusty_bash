@@ -22,7 +22,7 @@ use crate::file_descs::*;
 
 /* command: delim word delim word delim word ... eoc */
 pub struct Command {
-    vars: Vec<Box<Substitution>>,
+    vars: Vec<Substitution>,
     pub args: Vec<Word>,
     pub text: String,
     pub pid: Option<Pid>,
@@ -124,7 +124,7 @@ impl Command {
 
     pub fn push_vars(&mut self, s: Substitution){
         self.text += &s.get_text();
-        self.vars.push(Box::new(s));
+        self.vars.push(s);
     }
 
     fn parse_info(&self) -> Vec<String> {
