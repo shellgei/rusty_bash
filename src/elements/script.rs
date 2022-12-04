@@ -8,7 +8,7 @@ use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
 
 pub struct Script {
-    pub list: Vec<Box<Pipeline>>,
+    pub list: Vec<Pipeline>,
     pub list_ends: Vec<ControlOperator>,
     pub text: String,
 }
@@ -88,7 +88,7 @@ impl Script {
             is_function = true;
         }else if let Some(result) = Pipeline::parse(text, conf) {
             ans.text += &result.text;
-            ans.list.push(Box::new(result));
+            ans.list.push(result);
 
             if Script::set_listend(text, ans, parent_type){
                 go_next = false;
