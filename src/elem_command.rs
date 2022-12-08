@@ -26,7 +26,7 @@ impl Command {
             }
 
             let exit_status = match core.vars["?"].parse::<i32>() {
-                Ok(n)  => if 0 <= n && n <= 255 { n }else{ n%256 }, 
+                Ok(n)  => n%256, 
                 Err(_) => {
                     eprintln!("sush: exit: {}: numeric argument required", core.vars["?"]);
                     2
