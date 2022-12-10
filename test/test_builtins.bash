@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -xv
 # SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -36,5 +36,27 @@ res=$($com <<< 'HOGE=A;export HOGE;printenv HOGE')
 
 res=$($com <<< 'export HOGE=A;printenv HOGE')
 [ "$res" = "A" ] || err $LINENO
+
+# eval
+
+res=$($com <<< 'eval echo hello')
+[ "$res" = "hello" ] || err $LINENO
+
+res=$($com <<< "eval 'echo $(echo a b c)'")
+[ "$res" = "a b c" ] || err $LINENO
+
+res=$($com <<< "eval 'echo $(seq 3)'")
+[ "$res" = "1 2 3" ] || err $LINENO
+
+res=$($com <<< 'eval "echo $(seq 3)"')
+[ "$?" = "127" ] || err $LINENO
+
+res=$($com <<< 'eval "echo $(echo a b c)" "echo $(echo a b c)"' )
+[ "$res" = "a b c echo a b c" ] || err $LINENO
+
+res=$($com <<< 'eval "echo $(echo a b c);" "echo $(echo a b c)"' )
+[ "$res" = "a b c
+a b c" ] || err $LINENO
+
 
 echo OK $0

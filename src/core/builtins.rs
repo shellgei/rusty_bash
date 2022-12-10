@@ -329,12 +329,20 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
+    let text = args[1..].join(" ");
+    let mut feeder = Feeder::new_from(text);
+    if let Some(mut script) = Script::parse(&mut feeder, core, &CompoundType::Null) {
+        script.exec(core);
+    }
+    /*
+    let mut text;
     for i in 1..args.len() {
         let mut feeder = Feeder::new_from(args[i].clone());
         if let Some(mut script) = Script::parse(&mut feeder, core, &CompoundType::Null) {
             script.exec(core);
         }
     }
+    */
 
     core.get_var("?").parse::<i32>().unwrap()
 }
