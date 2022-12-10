@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 err () {
-	echo "ERROR!" LINENO: $1
+	echo "ERROR!" FILE: $0, LINENO: $1
 	exit 1
 }
 
@@ -1000,4 +1000,4 @@ res=$($com <<< 'HOGE=A;export HOGE;printenv HOGE')
 res=$($com <<< 'export HOGE=A;printenv HOGE')
 [ "$res" = "A" ] || err $LINENO
 
-echo TEST $0 OK
+OK $0

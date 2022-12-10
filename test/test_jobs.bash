@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 err () {
-	echo "ERROR!" LINENO: $1
+	echo "ERROR!" FILE: $0, LINENO: $1
 	exit 1
 }
 
@@ -23,4 +23,4 @@ res=$($com <<< '(sleep 1; echo a) & wait ; echo b')
 [ "$res" = "a
 b" ] || err $LINENO
 
-echo TEST $0 OK
+echo OK $0
