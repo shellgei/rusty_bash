@@ -41,6 +41,7 @@ impl Compound for Command {
         }
 
         let mut args = self.eval(core);
+        //eprintln!("NUM:{} {:?}", args.len(), &args); TODO: issue62
         core.set_var("_", &args[args.len()-1]);
 
         if core.has_flag('x') {

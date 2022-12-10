@@ -1,4 +1,4 @@
-#!/bin/bash -vx
+#!/bin/bash
 # SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -11,6 +11,9 @@ cd $(dirname $0)
 com=../target/release/rusty_bash
 
 ### JOB ###
+
+res=$($com <<< '(sleep 1; echo a) &')
+[ "$res" = "a" ] || err $LINENO
 
 res=$($com <<< '(sleep 1; echo a) & echo b')
 [ "$res" = "b

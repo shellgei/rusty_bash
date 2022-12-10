@@ -13,8 +13,10 @@ cd $(dirname $0)
 
 com=../target/release/rusty_bash
 
-./test_simple_command.bash || err test_simple_command.bash
-./test_others.bash         || err test_others.bash
-./test_jobs.bash           || err test_jobs.bash
+(./test_simple_command.bash  || err test_simple_command.bash ) &
+( ./test_others.bash         || err test_others.bash ) & 
+( ./test_jobs.bash           || err test_jobs.bash ) &
+
+wait
 
 echo TEST OK
