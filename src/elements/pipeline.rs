@@ -7,7 +7,7 @@ use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
 use crate::abst_elems::compound;
-use crate::job::Job;
+use crate::core::job::Job;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Compound>>,

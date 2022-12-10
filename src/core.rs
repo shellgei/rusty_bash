@@ -3,14 +3,13 @@
 
 pub mod builtins;
 pub mod shopts;
+pub mod job;
 
 use std::collections::HashMap;
 use std::fs::File;
 use std::env;
 use crate::core::shopts::Shopts;
-//use crate::core_shopts::Shopts;
-//use crate::builtins;
-use crate::job::Job;
+use crate::core::job::Job;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use nix::unistd::Pid;
 

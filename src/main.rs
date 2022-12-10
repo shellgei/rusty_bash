@@ -8,7 +8,6 @@ mod elements;
 mod element_list;
 
 mod core;
-mod job;
 mod term;
 mod file_descs;
 mod utils;
