@@ -1,11 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
 # SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 # SPDX-License-Identifier: BSD-3-Clause
-
-err () {
-	echo "ERROR!" FILE: $1
-	exit 1
-}
 
 cargo build --release || err $LINENO
 

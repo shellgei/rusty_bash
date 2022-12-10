@@ -1000,4 +1000,4 @@ res=$($com <<< 'HOGE=A;export HOGE;printenv HOGE')
 res=$($com <<< 'export HOGE=A;printenv HOGE')
 [ "$res" = "A" ] || err $LINENO
 
-OK $0
+echo OK $0
