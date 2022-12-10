@@ -8,7 +8,7 @@ use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
 use crate::element_list::CompoundType;
-//use crate::elements::command::Command;
+use crate::elements::command::Command;
 
 use crate::Script;
 use crate::ShellCore;
@@ -325,20 +325,19 @@ pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn eval(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 {
         return 0;
     }
 
-    /*
-    eprintln!("{},'{:?}'", args.len(), &args);
+    //eprintln!("{},'{:?}'", args.len(), &args);
     for i in 1..args.len() {
         let mut feeder = Feeder::new_from(args[i].clone());
-        eprintln!("'{}'", &args[i]);
-        if let Some(com) = Command::parse(&mut feeder, core) {
-            eprintln!("OK");
+        //eprintln!("'{}'", &args[i]);
+        if let Some(_com) = Command::parse(&mut feeder, core) {
+     //       eprintln!("OK");
         }
-    }*/
+    }
 
     eprintln!("eval: not implemented now");
     0
