@@ -10,14 +10,15 @@ err () {
 cd $(dirname $0)
 
 com=../target/release/rusty_bash
+tmp=/tmp/$$
 
 ### POSITIONAL PARAMETERS ###
 
-cat << 'EOF' > /tmp/.rusty_bash
+cat << 'EOF' > $tmp 
 echo $1 $2 $3
 EOF
 
-res=$(cat /tmp/.rusty_bash | $com a b c)
+res=$(cat $tmp  | $com a b c)
 [ "$res" = "a b c" ] || err $LINENO
 
 #### ARG TEST ###
@@ -353,7 +354,7 @@ res=$($com <<< 'ls aaaaaaa; echo $?')
 res=$($com <<< 'echo $$')
 [ "$res" -gt 1 ] || err $LINENO
 
-cat << 'EOF' > /tmp/.rusty_bash
+cat << 'EOF' > $tmp 
 echo $@
 echo $*
 IFS=💩
@@ -363,7 +364,7 @@ EOF
 res=$($com -x <<< 'echo $-')
 [ "$res" = "x" ] || err $LINENO
 
-res=$(cat /tmp/.rusty_bash | $com あい うえ お)
+res=$(cat $tmp  | $com あい うえ お)
 [ "$res" = "あい うえ お
 あい うえ お
 あい💩うえ💩お" ] || err $LINENO
@@ -375,31 +376,31 @@ x" ] || err $LINENO
 ### REDIRECTION ###
 
 res=$($com << 'EOF'
-echo text > /tmp/.rusty_bash
-wc < /tmp/.rusty_bash
-rm /tmp/.rusty_bash
+echo text > /tmp/tmp_x
+wc < /tmp/tmp_x
+rm /tmp/tmp_x
 EOF
 )
 [ "$res" = "1 1 5" ] || err $LINENO
 
 res=$($com << 'EOF'
-echo text 1> /tmp/.rusty_bash
-wc 0< /tmp/.rusty_bash
-rm /tmp/.rusty_bash
+echo text 1> /tmp/tmp_x
+wc 0< /tmp/tmp_x
+rm /tmp/tmp_x
 EOF
 )
 [ "$res" = "1 1 5" ] || err $LINENO
 
 $com << 'EOF' | grep 'aaaa'
-ls aaaaaaaaaaaaaaaaaaaaaa 2> /tmp/.rusty_bash
-cat /tmp/.rusty_bash 
-rm /tmp/.rusty_bash
+ls aaaaaaaaaaaaaaaaaaaaaa 2> /tmp/tmp_x 
+cat /tmp/tmp_x 
+rm /tmp/tmp_x
 EOF
 
 res=$($com << 'EOF' 
-ls -d / aaaaaaaaaaaaaaaaaaaa &> /tmp/.rusty_bash
-wc -l < /tmp/.rusty_bash
-rm /tmp/.rusty_bash
+ls -d / aaaaaaaaaaaaaaaaaaaa &> /tmp/tmp_x 
+wc -l < /tmp/tmp_x 
+rm /tmp/tmp_x 
 EOF
 )
 [ "$res" = "2" ] || err $LINENO
@@ -417,32 +418,32 @@ EOF
 echo "$res" | grep x | grep ls || err $LINENO
 
 res=$($com << 'EOF'
-ls aaaaaaaaaaaaaaaaaaa > /tmp/.rusty_bash 2>&1
-wc -l < /tmp/.rusty_bash
-rm /tmp/.rusty_bash
+ls aaaaaaaaaaaaaaaaaaa > /tmp/tmp_x  2>&1
+wc -l < /tmp/tmp_x
+rm /tmp/tmp_x 
 EOF
 )
 
 [ "$res" = "1" ] || err $LINENO
 
 res=$($com << 'EOF'
-2>/tmp/.rusty_bash echo hoge
-rm /tmp/.rusty_bash
+2>/tmp/tmp_x  echo hoge
+rm /tmp/tmp_x
 EOF
 )
 [ "$res" = "hoge" ] || err $LINENO
 
 res=$($com << 'EOF'
-echo 2>/tmp/.rusty_bash hoge
-rm /tmp/.rusty_bash
+echo 2>/tmp/tmp_x  hoge
+rm /tmp/tmp_x 
 EOF
 )
 [ "$res" = "hoge" ] || err $LINENO
 
 res=$($com << 'EOF'
-A=B >/tmp/.rusty_bash C=D echo hoge
-cat /tmp/.rusty_bash
-rm /tmp/.rusty_bash
+A=B >/tmp/tmp_x  C=D echo hoge
+cat /tmp/tmp_x 
+rm /tmp/tmp_x
 EOF
 )
 [ "$res" = "hoge" ] || err $LINENO
@@ -526,9 +527,9 @@ res=$($com <<< '(echo abc) | rev')
 [ "$res" = "cba" ] || err $LINENO
 
 res=$($com << 'EOF'
-(ls aaaaa) 2> /tmp/.rusty_bash
-cat /tmp/.rusty_bash | wc -l
-rm /tmp/.rusty_bash
+(ls aaaaa) 2> /tmp/tmp_x
+cat /tmp/tmp_x  | wc -l
+rm /tmp/tmp_x 
 EOF
 )
 [ "$res" -ge 1 ] || err $LINENO
@@ -678,7 +679,7 @@ res=$($com <<< 'echo $( function hoge () { echo abc | rev ; } ; ( hoge ; hoge ) 
 [ "$res" = "cba cba" ] || err $LINENO
 
 
-cat << 'EOF' > /tmp/.rusty_bash
+cat << 'EOF' > $tmp 
 f () {
 	echo $1 $2 $3
 	hoge=x
@@ -690,14 +691,14 @@ echo $#
 echo $hoge
 EOF
 
-res=$(cat /tmp/.rusty_bash | $com x y z 1 2 3)
+res=$(cat $tmp  | $com x y z 1 2 3)
 [ "$res" = "a b c
 3
 6
 x" ] || err $LINENO
 
 
-cat << 'EOF' > /tmp/.rusty_bash
+cat << 'EOF' > $tmp 
 f () (
 	echo $1 $2 $3
 	hoge=x
@@ -710,13 +711,13 @@ echo $#
 echo $hoge
 EOF
 
-res=$(cat /tmp/.rusty_bash | $com x y z 1 2 3)
+res=$(cat $tmp  | $com x y z 1 2 3)
 [ "$res" = "a b c
 3
 6
 y" ] || err $LINENO
 
-cat << 'EOF' > /tmp/.rusty_bash
+cat << 'EOF' > $tmp 
 f () {
 	echo $1 $2 $3
 	hoge=x
@@ -728,7 +729,7 @@ f a b c | rev
 echo $hoge
 EOF
 
-res=$(cat /tmp/.rusty_bash | $com x y z)
+res=$(cat $tmp  | $com x y z)
 [ "$res" = "c b a
 y" ] || err $LINENO
 
@@ -866,15 +867,15 @@ res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then X=Y
 res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then X=Y ; fi | true; echo $X')
 [ "$res" = "" ] || err $LINENO
 
-res=$($com <<< 'if [ "a" == "a" ] ; then echo abcabc; elif [ "b" == "b" ] ; then X=Y ; fi > /tmp/.rusty_bash ')
-[ "$(cat /tmp/.rusty_bash)" = "abcabc" ]
+res=$($com <<< 'if [ "a" == "a" ] ; then echo abcabc; elif [ "b" == "b" ] ; then X=Y ; fi > /tmp/tmp_x  ')
+[ "$(cat $tmp )" = "abcabc" ]
 [ "$res" = "" ] || err $LINENO
 
-res=$($com <<< 'if [ "$(cat)" == "abcabc" ] ; then echo xyz; elif [ "b" == "b" ] ; then X=Y ; fi < /tmp/.rusty_bash')
+res=$($com <<< 'if [ "$(cat)" == "abcabc" ] ; then echo xyz; elif [ "b" == "b" ] ; then X=Y ; fi < /tmp/tmp_x ')
 [ "$res" = "xyz" ] || err $LINENO
-res=$($com <<< 'if [ "$(cat)" == "xx" ] ; then echo xyz; elif [ "b" == "b" ] ; then echo pqr ; fi < /tmp/.rusty_bash')
+res=$($com <<< 'if [ "$(cat)" == "xx" ] ; then echo xyz; elif [ "b" == "b" ] ; then echo pqr ; fi < /tmp/tmp_x ')
 [ "$res" = "pqr" ] || err $LINENO
-rm -f /tmp/.rusty_bash
+rm -f $tmp 
 
 ### GLOB FOR CASE ###
 
@@ -958,46 +959,20 @@ EOF
 )
 [ "$res" = "no" ] || err $LINENO
 
-cat << EOF > /tmp/.rusty_bash
+cat << EOF > $tmp 
 echo hoge
 EOF
 
-res=$($com /tmp/.rusty_bash)
+res=$($com $tmp )
 [ "$res" = "hoge" ] || err $LINENO
 
-cat << EOF > /tmp/.rusty_bash
+cat << EOF > $tmp 
 #!$PWD/$com
 echo hoge
 EOF
 
-chmod +x /tmp/.rusty_bash
-res=$(/tmp/.rusty_bash)
+chmod +x $tmp 
+res=$($tmp )
 [ "$res" = "hoge" ] || err $LINENO
-
-### BUILTIN COMMAND ###
-
-cat << EOF > /tmp/.rusty_bash
-A=B
-EOF
-res=$($com <<< 'source /tmp/.rusty_bash ; echo $A')
-[ "$res" = "B" ] || err $LINENO
-
-res=$($com <<< 'set a b c ; shift; echo $1')
-[ "$res" = "b" ] || err $LINENO
-
-res=$($com <<< 'set a b c ; shift 3; echo $? ; echo $1')
-[ "$res" = "0" ] || err $LINENO
-
-res=$($com <<< 'set a b c ; shift 4; echo $? ; echo $1')
-[ "$res" = "1
-a" ] || err $LINENO
-
-# export
-
-res=$($com <<< 'HOGE=A;export HOGE;printenv HOGE')
-[ "$res" = "A" ] || err $LINENO
-
-res=$($com <<< 'export HOGE=A;printenv HOGE')
-[ "$res" = "A" ] || err $LINENO
 
 echo OK $0
