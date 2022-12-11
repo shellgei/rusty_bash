@@ -23,7 +23,7 @@ impl WordElem for SubWordDoubleQuoted {
 
         let mut vvv = vec![];
         for sa in &mut self.subwords {
-            vvv.push(sa.eval(conf, true)); //not expand in this double quote
+            vvv.push(sa.eval(conf, false)); //not expand in this double quote
         };
 
         let mut strings = vec![];

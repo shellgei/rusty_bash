@@ -14,7 +14,7 @@ use crate::elements::subword_braced::SubWordBraced;
 use crate::elements::subword_variable::SubWordVariable;
 
 pub trait WordElem {
-    fn eval(&mut self, _conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>>;
+    fn eval(&mut self, _conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>>;
     fn get_text(&self) -> String;
     fn permit_lf(&self) -> bool {false}
 }

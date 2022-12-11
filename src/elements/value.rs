@@ -60,7 +60,7 @@ impl Value {
     pub fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec![];
         for sa in &mut self.subvalues {
-            let vs = sa.eval(conf, true);
+            let vs = sa.eval(conf, false);
             subevals.push(vs);
         }
 

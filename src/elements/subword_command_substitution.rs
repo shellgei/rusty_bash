@@ -17,11 +17,11 @@ pub struct SubWordCommandSubstitution {
 }
 
 impl WordElem for SubWordCommandSubstitution {
-    fn eval(&mut self, conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>> {
         self.com.substitution = true;
         self.com.exec(conf);
 
-        if as_value {
+        if ! remove_lf {
             return vec!(vec!(self.com.substitution_text.clone()));
         }
         let ans = self.com.substitution_text

@@ -83,7 +83,7 @@ impl Word {
     pub fn eval(&mut self, conf: &mut ShellCore) -> Vec<String> {
         let mut subevals = vec![];
         for sa in &mut self.subwords {
-            let vs = sa.eval(conf, false);
+            let vs = sa.eval(conf, true);
 
             let mut cvs = vec![];
             if sa.permit_lf() {

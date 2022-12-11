@@ -19,11 +19,11 @@ impl WordElem for SubWordStringDoubleQuoted {
         self.text.clone()
     }
 
-    fn eval(&mut self, _conf: &mut ShellCore, as_value: bool) -> Vec<Vec<String>> {
-        if as_value {
-            vec!(vec!(self.text.clone()))
-        }else{
+    fn eval(&mut self, _conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>> {
+        if remove_lf {
             vec!(vec!(self.text.replace("\n", " ")))
+        }else{
+            vec!(vec!(self.text.clone()))
         }
     }
 }
