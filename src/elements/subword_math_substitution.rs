@@ -17,7 +17,7 @@ pub struct SubWordMathSubstitution {
 }
 
 impl WordElem for SubWordMathSubstitution {
-    fn eval(&mut self, conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         self.com.substitution = true;
         self.com.exec(conf);
 

@@ -19,13 +19,13 @@ impl WordElem for SubWordTildePrefix {
         self.text.clone()
     }
 
-    fn eval(&mut self, _conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
+    fn eval(&mut self, _conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         vec!(vec!(expand_tilde(&self.text).0))
     }
 }
 
 impl SubWordTildePrefix {
-    pub fn parse(text: &mut Feeder, _as_value: bool) -> Option<SubWordTildePrefix> {
+    pub fn parse(text: &mut Feeder, _: bool) -> Option<SubWordTildePrefix> {
         let pos = text.scanner_tilde_prefix();
         if pos != 0 {
             Some( SubWordTildePrefix{text: text.consume(pos), pos: DebugInfo::init(text) } )

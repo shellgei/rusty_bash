@@ -17,7 +17,7 @@ pub struct SubWordVariable {
 }
 
 impl WordElem for SubWordVariable {
-    fn eval(&mut self, conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         let val = conf.get_var(&self.name);
 
         if val.len() == 0 {

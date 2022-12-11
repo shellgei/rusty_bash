@@ -18,12 +18,11 @@ pub struct SubWordDoubleQuoted {
 }
 
 impl WordElem for SubWordDoubleQuoted {
-    fn eval(&mut self, conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         conf.in_double_quot = true;
 
         let mut vvv = vec![];
         for sa in &mut self.subwords {
-            //vvv.push(sa.eval(conf, as_value));
             vvv.push(sa.eval(conf, true)); //not expand in this double quote
         };
 

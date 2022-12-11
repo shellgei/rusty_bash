@@ -16,7 +16,7 @@ pub struct SubWordSingleQuoted {
 }
 
 impl WordElem for SubWordSingleQuoted {
-    fn eval(&mut self, _conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
+    fn eval(&mut self, _conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         let strip = self.text[1..self.text.len()-1].to_string();
         let s = strip.replace("\\", "\\\\").replace("*", "\\*"); 
         vec!(vec!(s))

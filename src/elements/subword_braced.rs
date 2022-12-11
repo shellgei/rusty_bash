@@ -19,7 +19,7 @@ pub struct SubWordBraced {
 }
 
 impl WordElem for SubWordBraced {
-    fn eval(&mut self, conf: &mut ShellCore, _as_value: bool) -> Vec<Vec<String>> {
+    fn eval(&mut self, conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         if self.complete {
             self.eval_complete(conf)
         }else{
