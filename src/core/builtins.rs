@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::process;
 use crate::ShellCore;
+use std::{env, process};
+use std::path::Path;
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
@@ -18,5 +19,17 @@ pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         },
     };
 
-    process::exit(exit_status);
+    process::exit(exit_status)
+}
+
+pub fn cd(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() > 1 {
+        let path = Path::new(&args[1]);
+        if env::set_current_dir(&path).is_err() {
+            eprintln!("Cannot change directory");
+            return 1;
+        }
+
+    }
+    0
 }

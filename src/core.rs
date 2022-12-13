@@ -24,7 +24,7 @@ impl ShellCore {
 
         core.vars.insert("?".to_string(), "0".to_string());
 
-        //core.builtins.insert("cd".to_string(), builtins::cd);
+        core.builtins.insert("cd".to_string(), builtins::cd);
         core.builtins.insert("exit".to_string(), builtins::exit);
 
         core
