@@ -115,7 +115,15 @@ pub fn builtin(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 0 {
         eprintln!("Bug of this shell");
-    }else if args.len() == 1 { //only "cd"
+        return 1;
+    }
+    if args.len() > 2 {
+        eprintln!("{}", "bash: cd: too many arguments");
+        return 1;
+    }
+
+
+    if args.len() == 1 { //only "cd"
         let var = env::var("HOME").expect("HOME is not defined");
         args.push(var);
     }else if args.len() == 2 && args[1] == "-" { // cd -
