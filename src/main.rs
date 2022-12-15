@@ -7,7 +7,6 @@ mod term;
 mod feeder;
 
 use std::{env, process};
-
 use crate::core::ShellCore;
 use crate::elem_command::Command;
 use crate::feeder::Feeder;
