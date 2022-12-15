@@ -11,8 +11,6 @@ use termion::input::TermRead;
 
 use crate::ShellCore;
 
-use crate::utils::chars_to_string;
-
 extern crate unicode_width;
 use unicode_width::UnicodeWidthStr;
 
@@ -25,6 +23,10 @@ pub struct Writer {
     ch_ptr: usize,
     hist_ptr: i32,
     left_shift: u16,
+}
+
+pub fn chars_to_string(chars: &Vec<char>) -> String {
+    chars.iter().collect::<String>()
 }
 
 fn char_to_width(c: char) -> u8{
