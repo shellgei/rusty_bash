@@ -25,7 +25,7 @@ fn tail_check(s: &String) -> bool{
 }
 
 /* ( script ) */
-pub struct AbstCommandBrace {
+pub struct CommandBrace {
     pub script: Script,
     text: String,
     pid: Option<Pid>, 
@@ -33,7 +33,7 @@ pub struct AbstCommandBrace {
     fds: FileDescs,
 }
 
-impl AbstCommand for AbstCommandBrace {
+impl AbstCommand for CommandBrace {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
              self.script.exec(conf);
              if ! self.fds.no_connection() {
@@ -61,9 +61,9 @@ impl AbstCommand for AbstCommandBrace {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl AbstCommandBrace {
-    pub fn new(script: Script) -> AbstCommandBrace{
-        AbstCommandBrace {
+impl CommandBrace {
+    pub fn new(script: Script) -> CommandBrace{
+        CommandBrace {
             script: script,
             pid: None,
             text: "".to_string(),
@@ -73,7 +73,7 @@ impl AbstCommandBrace {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<AbstCommandBrace> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandBrace> {
         if ! text.starts_with("{") {
         //if text.len() == 0 || text.nth(0) != '{' {
             return None;
@@ -92,7 +92,7 @@ impl AbstCommandBrace {
                 }
     
                 let text = "{".to_owned() + &s.text.clone() + "}";
-                ans = AbstCommandBrace::new(s);
+                ans = CommandBrace::new(s);
                 ans.text = text;
             }else{
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);

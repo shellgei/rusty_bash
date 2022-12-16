@@ -14,7 +14,7 @@ use nix::unistd::{close, pipe};
 //use crate::feeder::scanner::*;
 use crate::element_list::CommandType;
 
-pub struct AbstCommandParen {
+pub struct CommandParen {
     pub script: Option<Script>,
     text: String,
     pid: Option<Pid>, 
@@ -24,7 +24,7 @@ pub struct AbstCommandParen {
     my_type: CommandType, 
 }
 
-impl AbstCommand for AbstCommandParen {
+impl AbstCommand for CommandParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         let p = pipe().expect("Pipe cannot open");
 
@@ -73,9 +73,9 @@ impl AbstCommand for AbstCommandParen {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl AbstCommandParen {
-    pub fn new() -> AbstCommandParen{
-        AbstCommandParen {
+impl CommandParen {
+    pub fn new() -> CommandParen{
+        CommandParen {
             script: None,
             pid: None,
             text: "".to_string(),
@@ -86,13 +86,13 @@ impl AbstCommandParen {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<AbstCommandParen> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CommandParen> {
         if ! text.starts_with("(") {
             return None;
         }
 
         let mut backup = text.clone();
-        let mut ans = AbstCommandParen::new();
+        let mut ans = CommandParen::new();
         let mut input_success;
 
         loop{

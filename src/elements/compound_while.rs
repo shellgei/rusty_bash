@@ -11,7 +11,7 @@ use nix::unistd::Pid;
 use crate::file_descs::*;
 
 /* ( script ) */
-pub struct AbstCommandWhile {
+pub struct CommandWhile {
     pub conddo: Option<(Script, Script)>,
     text: String,
     pid: Option<Pid>,
@@ -19,7 +19,7 @@ pub struct AbstCommandWhile {
     my_type: CommandType, 
 }
 
-impl AbstCommand for AbstCommandWhile {
+impl AbstCommand for CommandWhile {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
@@ -52,9 +52,9 @@ impl AbstCommand for AbstCommandWhile {
     }
 }
 
-impl AbstCommandWhile {
-    pub fn new() -> AbstCommandWhile{
-        AbstCommandWhile {
+impl CommandWhile {
+    pub fn new() -> CommandWhile{
+        CommandWhile {
             conddo: None,
             text: "".to_string(),
             fds: FileDescs::new(),
@@ -64,7 +64,7 @@ impl AbstCommandWhile {
     }
 
 
-    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut AbstCommandWhile) -> bool {
+    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandWhile) -> bool {
         ans.text += &text.request_next_line(conf);
 
         let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
@@ -95,17 +95,17 @@ impl AbstCommandWhile {
         true
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<AbstCommandWhile> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandWhile> {
         if text.len() < 5 || ! text.starts_with( "while") {
             return None;
         }
 
         let backup = text.clone();
 
-        let mut ans = AbstCommandWhile::new();
+        let mut ans = CommandWhile::new();
         ans.text += &text.consume(5);
 
-        if ! AbstCommandWhile::parse_cond_do_pair(text, conf, &mut ans) {
+        if ! CommandWhile::parse_cond_do_pair(text, conf, &mut ans) {
             text.rewind(backup);
             return None;
         }

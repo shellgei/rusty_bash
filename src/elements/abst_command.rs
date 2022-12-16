@@ -6,12 +6,12 @@ use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
 
-use crate::elements::compound_double_paren::AbstCommandDoubleParen;
-use crate::elements::compound_if::AbstCommandIf;
-use crate::elements::compound_while::AbstCommandWhile;
-use crate::elements::compound_paren::AbstCommandParen;
-use crate::elements::compound_brace::AbstCommandBrace;
-use crate::elements::compound_case::AbstCommandCase;
+use crate::elements::compound_double_paren::CommandDoubleParen;
+use crate::elements::compound_if::CommandIf;
+use crate::elements::compound_while::CommandWhile;
+use crate::elements::compound_paren::CommandParen;
+use crate::elements::compound_brace::CommandBrace;
+use crate::elements::compound_case::CommandCase;
 use crate::elements::simple_command::SimpleCommand;
 
 use std::process::exit;
@@ -56,12 +56,12 @@ pub trait AbstCommand {
 }
 
 pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn AbstCommand>> {
-    if let Some(a) =      AbstCommandIf::parse(text,conf)                  {Some(Box::new(a))}
-    else if let Some(a) = AbstCommandWhile::parse(text, conf)              {Some(Box::new(a))}
-    else if let Some(a) = AbstCommandCase::parse(text, conf)               {Some(Box::new(a))}
-    else if let Some(a) = AbstCommandParen::parse(text, conf, false)       {Some(Box::new(a))}
-    else if let Some(a) = AbstCommandDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
-    else if let Some(a) = AbstCommandBrace::parse(text, conf)              {Some(Box::new(a))}
+    if let Some(a) =      CommandIf::parse(text,conf)                  {Some(Box::new(a))}
+    else if let Some(a) = CommandWhile::parse(text, conf)              {Some(Box::new(a))}
+    else if let Some(a) = CommandCase::parse(text, conf)               {Some(Box::new(a))}
+    else if let Some(a) = CommandParen::parse(text, conf, false)       {Some(Box::new(a))}
+    else if let Some(a) = CommandDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
+    else if let Some(a) = CommandBrace::parse(text, conf)              {Some(Box::new(a))}
     else if let Some(a) = SimpleCommand::parse(text, conf)                    {Some(Box::new(a))}
     else {None}
 }

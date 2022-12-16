@@ -15,7 +15,7 @@ use crate::bash_glob::glob_match;
 // use crate::elements::CommandElem;
 use crate::element_list::CommandType;
 
-pub struct AbstCommandCase {
+pub struct CommandCase {
     pub word: Word,
     pub conddo: Vec<(Vec<String>, Option<Script>)>,
     text: String,
@@ -24,7 +24,7 @@ pub struct AbstCommandCase {
     my_type: CommandType, 
 }
 
-impl AbstCommand for AbstCommandCase {
+impl AbstCommand for CommandCase {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
@@ -64,9 +64,9 @@ impl AbstCommand for AbstCommandCase {
     }
 }
 
-impl AbstCommandCase {
-    pub fn new(word: Word) -> AbstCommandCase{
-        AbstCommandCase {
+impl CommandCase {
+    pub fn new(word: Word) -> CommandCase{
+        CommandCase {
             word: word, 
             conddo: vec![],
             text: "".to_string(),
@@ -77,7 +77,7 @@ impl AbstCommandCase {
     }
 
 
-    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut AbstCommandCase) -> bool {
+    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandCase) -> bool {
         let mut conds = vec![];
         ans.text += &text.request_next_line(conf);
 
@@ -119,7 +119,7 @@ impl AbstCommandCase {
         true
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<AbstCommandCase> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandCase> {
         if text.len() < 4 || ! text.starts_with( "case") {
             return None;
         }
@@ -134,7 +134,7 @@ impl AbstCommandCase {
             return None;
         };
 
-        let mut ans = AbstCommandCase::new(word);
+        let mut ans = CommandCase::new(word);
         ans.text = ans_text;
 
         ans.text += &text.consume_blank();
@@ -156,7 +156,7 @@ impl AbstCommandCase {
                 break;
             }
 
-            if ! AbstCommandCase::parse_cond_do_pair(text, conf, &mut ans) {
+            if ! CommandCase::parse_cond_do_pair(text, conf, &mut ans) {
                 text.rewind(backup);
                 return None;
             }

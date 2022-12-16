@@ -7,12 +7,12 @@ use crate::Feeder;
 
 use crate::elements::abst_subword::WordElem;
 use crate::elements::abst_command::AbstCommand;
-use crate::elements::compound_double_paren::AbstCommandDoubleParen;
+use crate::elements::compound_double_paren::CommandDoubleParen;
 
 pub struct SubWordMathSubstitution {
     pub text: String,
     pub pos: DebugInfo,
-    pub com: AbstCommandDoubleParen, 
+    pub com: CommandDoubleParen, 
     //pub is_value: bool,
 }
 
@@ -49,7 +49,7 @@ impl SubWordMathSubstitution {
         let backup = text.clone();
         text.consume(1);
 
-        if let Some(e) = AbstCommandDoubleParen::parse(text, conf, true){
+        if let Some(e) = CommandDoubleParen::parse(text, conf, true){
             let ans = SubWordMathSubstitution {
                 text: "$".to_owned() + &e.get_text(),
                 pos: DebugInfo::init(text),

@@ -10,7 +10,7 @@ use crate::file_descs::*;
 //use crate::feeder::scanner::*;
 use crate::calculator::calculate;
 
-pub struct AbstCommandDoubleParen {
+pub struct CommandDoubleParen {
     text: String,
     expression: String,
     pid: Option<Pid>, 
@@ -20,7 +20,7 @@ pub struct AbstCommandDoubleParen {
 //    pub eoc: Option<Eoc>,
 }
 
-impl AbstCommand for AbstCommandDoubleParen {
+impl AbstCommand for CommandDoubleParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         self.substitution_text = calculate(self.expression.clone(), conf);
 
@@ -46,9 +46,9 @@ impl AbstCommand for AbstCommandDoubleParen {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl AbstCommandDoubleParen {
-    pub fn new() -> AbstCommandDoubleParen{
-        AbstCommandDoubleParen {
+impl CommandDoubleParen {
+    pub fn new() -> CommandDoubleParen{
+        CommandDoubleParen {
            // script: None,
             pid: None,
             text: "".to_string(),
@@ -61,13 +61,13 @@ impl AbstCommandDoubleParen {
     }
 
     // TODO: this function must parse ((1+$(echo a | wc -l)) for example. 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<AbstCommandDoubleParen> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CommandDoubleParen> {
         if text.len() < 2 || ! text.starts_with( "((") {
             return None;
         }
 
         let mut backup = text.clone();
-        let mut ans = AbstCommandDoubleParen::new();
+        let mut ans = CommandDoubleParen::new();
         let mut input_success;
 
         loop{

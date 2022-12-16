@@ -11,7 +11,7 @@ use nix::unistd::Pid;
 use crate::file_descs::*;
 
 /* ( script ) */
-pub struct AbstCommandIf {
+pub struct CommandIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
     text: String,
@@ -20,7 +20,7 @@ pub struct AbstCommandIf {
     fds: FileDescs,
 }
 
-impl AbstCommand for AbstCommandIf {
+impl AbstCommand for CommandIf {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
         for pair in self.ifthen.iter_mut() {
              pair.0.exec(conf);
@@ -56,9 +56,9 @@ impl AbstCommand for AbstCommandIf {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl AbstCommandIf {
-    pub fn new() -> AbstCommandIf{
-        AbstCommandIf {
+impl CommandIf {
+    pub fn new() -> CommandIf{
+        CommandIf {
             ifthen: vec![],
             else_do: None,
             fds: FileDescs::new(),
@@ -69,7 +69,7 @@ impl AbstCommandIf {
     }
 
 
-    fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut AbstCommandIf) -> bool {
+    fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) -> bool {
         ans.text += &text.request_next_line(conf);
 
         let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
@@ -100,8 +100,8 @@ impl AbstCommandIf {
         true
     }
 
-    fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut AbstCommandIf) -> bool {
-        //AbstCommandIf::next_line(text, conf, ans);
+    fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) -> bool {
+        //CommandIf::next_line(text, conf, ans);
         ans.text += &text.request_next_line(conf);
         
 
@@ -123,19 +123,19 @@ impl AbstCommandIf {
         true
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<AbstCommandIf> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandIf> {
         if text.len() < 2 || ! text.starts_with( "if") {
             return None;
         }
 
         let backup = text.clone();
 
-        let mut ans = AbstCommandIf::new();
+        let mut ans = CommandIf::new();
         ans.text += &text.consume(2);
 
         //eprintln!("REM: '{}'", text._text());
         loop {
-            if ! AbstCommandIf::parse_if_then_pair(text, conf, &mut ans) {
+            if ! CommandIf::parse_if_then_pair(text, conf, &mut ans) {
                 text.rewind(backup);
                 return None;
             }
@@ -148,7 +148,7 @@ impl AbstCommandIf {
                 continue;
             }else if text.starts_with( "else"){
                 ans.text += &text.consume(4);
-                if AbstCommandIf::parse_else_fi(text, conf, &mut ans) {
+                if CommandIf::parse_else_fi(text, conf, &mut ans) {
                     break;
                 }
             }
