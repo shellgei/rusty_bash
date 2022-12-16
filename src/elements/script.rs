@@ -101,24 +101,14 @@ impl Script {
         };
     
         if text.starts_with(")") {
-        //if text.nth(0) == ')' {
             eprintln!("Unexpected symbol: {}", text.consume(text.len()).trim_end());
             conf.set_var("?", "2");
             return None;
         }
 
         let mut ans = Script::new();
-    
-        loop {
-            Script::read_blank(text, &mut ans);
-
-            /* read a function, pipeline, or variable setting */
-            let go_next = Script::parse_elem(text, conf, &mut ans, parent_type);
-
-            if ! go_next {
-                break;
-            }
-
+        Script::read_blank(text, &mut ans);
+        while  Script::parse_elem(text, conf, &mut ans, parent_type) {
             /* If a semicolon exist, another element can be added to the list */
             let (n, op) = text.scanner_control_op();
             if op == Some(ControlOperator::Semicolon) {
@@ -130,6 +120,7 @@ impl Script {
             }
 
             text.request_next_line(conf);
+            Script::read_blank(text, &mut ans);
         }
 
         if ans.text.len() > 0 {
