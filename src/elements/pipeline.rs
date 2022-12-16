@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::abst_elems::command::Compound;
+use crate::elements::abst_command::Compound;
 use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
-use crate::abst_elems::command;
+use crate::elements::abst_command;
 use crate::core::job::Job;
 
 pub struct Pipeline {
@@ -83,7 +83,7 @@ impl Pipeline {
             ans.text += &text.consume_blank();
 
             let op;
-            if let Some(c) = command::parse(text, core) {
+            if let Some(c) = abst_command::parse(text, core) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
                 (_, op) = text.scanner_control_op();

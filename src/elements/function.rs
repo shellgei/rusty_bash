@@ -3,8 +3,8 @@
 
 use crate::{ShellCore, Feeder};
 //use crate::feeder::scanner::*;
-use crate::abst_elems::command;
-use crate::abst_elems::command::Compound;
+use crate::elements::abst_command;
+use crate::elements::abst_command::Compound;
 
 pub struct Function {
     pub name: String,
@@ -53,7 +53,7 @@ impl Function {
          ans_text += &text.consume(1);
          ans_text += &text.consume_blank();
  
-         if let Some(c) = command::parse(text, conf){
+         if let Some(c) = abst_command::parse(text, conf){
              Some( Function::new(name, c, ans_text) )
          }else{
              text.rewind(backup);

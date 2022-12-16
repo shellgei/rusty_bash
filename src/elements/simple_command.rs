@@ -9,11 +9,11 @@ use std::process::exit;
 use std::os::unix::prelude::RawFd;
 
 use crate::{ShellCore,Feeder};
-// use crate::abst_elems::SimpleCommandElem;
+// use crate::elements::SimpleCommandElem;
 use crate::utils::*;
 
-use crate::abst_elems::command::Compound;
-use crate::abst_elems::command;
+use crate::elements::abst_command::Compound;
+use crate::elements::abst_command;
 use crate::elements::word::Word;
 use crate::elements::redirect::Redirect;
 use crate::elements::substitution::Substitution;
@@ -141,7 +141,7 @@ impl SimpleCommand {
         let text = core.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_from(text);
-        if let Some(mut f) = command::parse(&mut feeder, core) {
+        if let Some(mut f) = abst_command::parse(&mut feeder, core) {
             let backup = core.args.clone();
             core.args = args.to_vec();
             core.return_enable = true;

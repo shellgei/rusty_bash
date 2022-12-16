@@ -5,7 +5,7 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 
-use crate::abst_elems::word_elem::WordElem;
+use crate::elements::abst_subword::WordElem;
 use crate::elements::subword_string_double_quoted::SubWordStringDoubleQuoted;
 use crate::elements::subword_variable::SubWordVariable;
 use crate::elements::subword_command_substitution::SubWordCommandSubstitution;
