@@ -10,7 +10,7 @@ use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::FileDescs;
 
-pub struct Function {
+pub struct FunctionDefinition {
     pub name: String,
     pub body: Box<dyn AbstCommand>,
     pid: Option<Pid>, 
@@ -18,7 +18,7 @@ pub struct Function {
     fds: FileDescs,
 }
 
-impl AbstCommand for Function {
+impl AbstCommand for FunctionDefinition {
     fn exec_elems(&mut self, _: &mut ShellCore) {}
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
@@ -40,9 +40,9 @@ impl AbstCommand for Function {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl Function {
-    pub fn new(name: String, body: Box<dyn AbstCommand>, text: String) -> Function{
-        Function {
+impl FunctionDefinition {
+    pub fn new(name: String, body: Box<dyn AbstCommand>, text: String) -> FunctionDefinition{
+        FunctionDefinition {
             name: name,
             body: body,
             text: text,
@@ -51,7 +51,7 @@ impl Function {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Function> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<FunctionDefinition> {
          let backup = text.clone();
          let mut ans_text = String::new();
 
@@ -84,7 +84,8 @@ impl Function {
          ans_text += &text.consume_blank();
  
          if let Some(c) = abst_command::parse(text, conf){
-             Some( Function::new(name, c, ans_text) )
+             conf.functions.insert(name.clone(), c.get_text());
+             Some( FunctionDefinition::new(name, c, ans_text) )
          }else{
              text.rewind(backup);
              None

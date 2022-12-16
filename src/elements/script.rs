@@ -3,7 +3,6 @@
 
 use crate::{ShellCore, Feeder};
 use crate::element_list::*;
-use crate::elements::function::Function;
 use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
 
@@ -77,16 +76,10 @@ impl Script {
         }
     }
 
-    pub fn parse_elem(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Script, parent_type: &CommandType) -> (bool, bool) {
-        let mut is_function = false;
+    pub fn parse_elem(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Script, parent_type: &CommandType) -> bool {
         let mut go_next = true;
 
-        if let Some(f) = Function::parse(text, conf) {
-            ans.text += &f.text;
-            let body = f.body.get_text();
-            conf.functions.insert(f.name, body);
-            is_function = true;
-        }else if let Some(result) = Pipeline::parse(text, conf) {
+        if let Some(result) = Pipeline::parse(text, conf) {
             ans.text += &result.text;
             ans.list.push(result);
 
@@ -98,7 +91,7 @@ impl Script {
             go_next = false;
         }
 
-        (go_next, is_function)
+        go_next
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
@@ -115,14 +108,12 @@ impl Script {
         }
 
         let mut ans = Script::new();
-        let mut read_function = false;
     
         loop {
             Script::read_blank(text, &mut ans);
 
             /* read a function, pipeline, or variable setting */
-            let (go_next, is_func) = Script::parse_elem(text, conf, &mut ans, parent_type);
-            read_function |= is_func;
+            let go_next = Script::parse_elem(text, conf, &mut ans, parent_type);
 
             if ! go_next {
                 break;
@@ -141,7 +132,7 @@ impl Script {
             text.request_next_line(conf);
         }
 
-        if ans.text.len() > 0 || read_function {
+        if ans.text.len() > 0 {
             Some(ans)
         }else{
             eprintln!("Unknown phrase");
