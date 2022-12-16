@@ -2,14 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::abst_command::Compound;
+use crate::elements::abst_command::AbstCommand;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use std::process::exit;
-use crate::element_list::CompoundType;
+use crate::element_list::CommandType;
 
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
@@ -25,7 +25,7 @@ fn tail_check(s: &String) -> bool{
 }
 
 /* ( script ) */
-pub struct CompoundBrace {
+pub struct AbstCommandBrace {
     pub script: Script,
     text: String,
     pid: Option<Pid>, 
@@ -33,7 +33,7 @@ pub struct CompoundBrace {
     fds: FileDescs,
 }
 
-impl Compound for CompoundBrace {
+impl AbstCommand for AbstCommandBrace {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
              self.script.exec(conf);
              if ! self.fds.no_connection() {
@@ -61,19 +61,19 @@ impl Compound for CompoundBrace {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl CompoundBrace {
-    pub fn new(script: Script) -> CompoundBrace{
-        CompoundBrace {
+impl AbstCommandBrace {
+    pub fn new(script: Script) -> AbstCommandBrace{
+        AbstCommandBrace {
             script: script,
             pid: None,
             text: "".to_string(),
             substitution_text: "".to_string(),
             fds: FileDescs::new(),
-           // my_type: CompoundType::Brace, 
+           // my_type: CommandType::Brace, 
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundBrace> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<AbstCommandBrace> {
         if ! text.starts_with("{") {
         //if text.len() == 0 || text.nth(0) != '{' {
             return None;
@@ -85,14 +85,14 @@ impl CompoundBrace {
 
         loop {
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf, &CompoundType::Brace) {
+            if let Some(s) = Script::parse(text, conf, &CommandType::Brace) {
                 if ! tail_check(&s.text){
                     text.rewind(backup);
                     return None;
                 }
     
                 let text = "{".to_owned() + &s.text.clone() + "}";
-                ans = CompoundBrace::new(s);
+                ans = AbstCommandBrace::new(s);
                 ans.text = text;
             }else{
                 (backup, input_success) = text.rewind_feed_backup(&backup, conf);

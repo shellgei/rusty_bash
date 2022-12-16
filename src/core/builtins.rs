@@ -7,7 +7,7 @@ use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
-use crate::element_list::CompoundType;
+use crate::element_list::CommandType;
 
 use crate::Script;
 use crate::ShellCore;
@@ -238,7 +238,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         match fs::read_to_string(&args[1]) {
             Ok(source) => {
                 let mut feeder = Feeder::new_from(source);
-                if let Some(mut script) = Script::parse(&mut feeder, core, &CompoundType::Null) {
+                if let Some(mut script) = Script::parse(&mut feeder, core, &CommandType::Null) {
                     core.return_enable = true;
                     script.exec(core);
                     core.return_enable = false;
@@ -339,7 +339,7 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let text = args[1..].join(" ");
     let mut feeder = Feeder::new_from(text);
-    if let Some(mut script) = Script::parse(&mut feeder, core, &CompoundType::Null) {
+    if let Some(mut script) = Script::parse(&mut feeder, core, &CommandType::Null) {
         script.exec(core);
     }
 

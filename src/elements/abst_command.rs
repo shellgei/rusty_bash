@@ -6,18 +6,18 @@ use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
 
-use crate::elements::compound_double_paren::CompoundDoubleParen;
-use crate::elements::compound_if::CompoundIf;
-use crate::elements::compound_while::CompoundWhile;
-use crate::elements::compound_paren::CompoundParen;
-use crate::elements::compound_brace::CompoundBrace;
-use crate::elements::compound_case::CompoundCase;
+use crate::elements::compound_double_paren::AbstCommandDoubleParen;
+use crate::elements::compound_if::AbstCommandIf;
+use crate::elements::compound_while::AbstCommandWhile;
+use crate::elements::compound_paren::AbstCommandParen;
+use crate::elements::compound_brace::AbstCommandBrace;
+use crate::elements::compound_case::AbstCommandCase;
 use crate::elements::simple_command::SimpleCommand;
 
 use std::process::exit;
 use nix::unistd::{close, fork, ForkResult};
 
-pub trait Compound {
+pub trait AbstCommand {
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.no_connection() {
              self.exec_elems(conf);
@@ -55,13 +55,13 @@ pub trait Compound {
     fn set_pid(&mut self, _pid: Pid) {}
 }
 
-pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Compound>> {
-    if let Some(a) =      CompoundIf::parse(text,conf)                  {Some(Box::new(a))}
-    else if let Some(a) = CompoundWhile::parse(text, conf)              {Some(Box::new(a))}
-    else if let Some(a) = CompoundCase::parse(text, conf)               {Some(Box::new(a))}
-    else if let Some(a) = CompoundParen::parse(text, conf, false)       {Some(Box::new(a))}
-    else if let Some(a) = CompoundDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
-    else if let Some(a) = CompoundBrace::parse(text, conf)              {Some(Box::new(a))}
+pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn AbstCommand>> {
+    if let Some(a) =      AbstCommandIf::parse(text,conf)                  {Some(Box::new(a))}
+    else if let Some(a) = AbstCommandWhile::parse(text, conf)              {Some(Box::new(a))}
+    else if let Some(a) = AbstCommandCase::parse(text, conf)               {Some(Box::new(a))}
+    else if let Some(a) = AbstCommandParen::parse(text, conf, false)       {Some(Box::new(a))}
+    else if let Some(a) = AbstCommandDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
+    else if let Some(a) = AbstCommandBrace::parse(text, conf)              {Some(Box::new(a))}
     else if let Some(a) = SimpleCommand::parse(text, conf)                    {Some(Box::new(a))}
     else {None}
 }

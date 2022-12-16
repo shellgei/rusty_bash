@@ -2,24 +2,24 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::abst_command::Compound;
+use crate::elements::abst_command::AbstCommand;
 use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
-use crate::element_list::CompoundType;
+use crate::element_list::CommandType;
 use nix::unistd::Pid;
 use crate::file_descs::*;
 
 /* ( script ) */
-pub struct CompoundWhile {
+pub struct AbstCommandWhile {
     pub conddo: Option<(Script, Script)>,
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-    my_type: CompoundType, 
+    my_type: CommandType, 
 }
 
-impl Compound for CompoundWhile {
+impl AbstCommand for AbstCommandWhile {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
@@ -52,19 +52,19 @@ impl Compound for CompoundWhile {
     }
 }
 
-impl CompoundWhile {
-    pub fn new() -> CompoundWhile{
-        CompoundWhile {
+impl AbstCommandWhile {
+    pub fn new() -> AbstCommandWhile{
+        AbstCommandWhile {
             conddo: None,
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            my_type: CompoundType::While,
+            my_type: CommandType::While,
         }
     }
 
 
-    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundWhile) -> bool {
+    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut AbstCommandWhile) -> bool {
         ans.text += &text.request_next_line(conf);
 
         let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
@@ -95,17 +95,17 @@ impl CompoundWhile {
         true
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundWhile> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<AbstCommandWhile> {
         if text.len() < 5 || ! text.starts_with( "while") {
             return None;
         }
 
         let backup = text.clone();
 
-        let mut ans = CompoundWhile::new();
+        let mut ans = AbstCommandWhile::new();
         ans.text += &text.consume(5);
 
-        if ! CompoundWhile::parse_cond_do_pair(text, conf, &mut ans) {
+        if ! AbstCommandWhile::parse_cond_do_pair(text, conf, &mut ans) {
             text.rewind(backup);
             return None;
         }

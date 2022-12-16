@@ -23,7 +23,7 @@ use crate::feeder::Feeder;
 
 use crate::elements::script::Script;
 
-use crate::element_list::CompoundType;
+use crate::element_list::CommandType;
 
 use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;
@@ -136,7 +136,7 @@ fn main_loop(core: &mut ShellCore) {
                 break;
             }
         }
-        while let Some(mut e) = Script::parse(&mut feeder, core, &CompoundType::Null){
+        while let Some(mut e) = Script::parse(&mut feeder, core, &CommandType::Null){
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());
                 eprintln!("Unknown phrase");

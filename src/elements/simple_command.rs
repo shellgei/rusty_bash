@@ -9,10 +9,9 @@ use std::process::exit;
 use std::os::unix::prelude::RawFd;
 
 use crate::{ShellCore,Feeder};
-// use crate::elements::SimpleCommandElem;
 use crate::utils::*;
 
-use crate::elements::abst_command::Compound;
+use crate::elements::abst_command::AbstCommand;
 use crate::elements::abst_command;
 use crate::elements::word::Word;
 use crate::elements::redirect::Redirect;
@@ -29,7 +28,7 @@ pub struct SimpleCommand {
     fds: FileDescs,
 }
 
-impl Compound for SimpleCommand {
+impl AbstCommand for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore) {
         if self.args.len() == 0 {
             self.set_vars(core);

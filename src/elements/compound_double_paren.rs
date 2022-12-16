@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::abst_command::Compound;
+use crate::elements::abst_command::AbstCommand;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::elements::redirect::Redirect;
@@ -10,7 +10,7 @@ use crate::file_descs::*;
 //use crate::feeder::scanner::*;
 use crate::calculator::calculate;
 
-pub struct CompoundDoubleParen {
+pub struct AbstCommandDoubleParen {
     text: String,
     expression: String,
     pid: Option<Pid>, 
@@ -20,7 +20,7 @@ pub struct CompoundDoubleParen {
 //    pub eoc: Option<Eoc>,
 }
 
-impl Compound for CompoundDoubleParen {
+impl AbstCommand for AbstCommandDoubleParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         self.substitution_text = calculate(self.expression.clone(), conf);
 
@@ -46,9 +46,9 @@ impl Compound for CompoundDoubleParen {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl CompoundDoubleParen {
-    pub fn new() -> CompoundDoubleParen{
-        CompoundDoubleParen {
+impl AbstCommandDoubleParen {
+    pub fn new() -> AbstCommandDoubleParen{
+        AbstCommandDoubleParen {
            // script: None,
             pid: None,
             text: "".to_string(),
@@ -61,13 +61,13 @@ impl CompoundDoubleParen {
     }
 
     // TODO: this function must parse ((1+$(echo a | wc -l)) for example. 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CompoundDoubleParen> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<AbstCommandDoubleParen> {
         if text.len() < 2 || ! text.starts_with( "((") {
             return None;
         }
 
         let mut backup = text.clone();
-        let mut ans = CompoundDoubleParen::new();
+        let mut ans = AbstCommandDoubleParen::new();
         let mut input_success;
 
         loop{

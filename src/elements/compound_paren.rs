@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::abst_command::Compound;
+use crate::elements::abst_command::AbstCommand;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
@@ -12,19 +12,19 @@ use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use nix::unistd::{close, pipe};
 //use crate::feeder::scanner::*;
-use crate::element_list::CompoundType;
+use crate::element_list::CommandType;
 
-pub struct CompoundParen {
+pub struct AbstCommandParen {
     pub script: Option<Script>,
     text: String,
     pid: Option<Pid>, 
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-    my_type: CompoundType, 
+    my_type: CommandType, 
 }
 
-impl Compound for CompoundParen {
+impl AbstCommand for AbstCommandParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         let p = pipe().expect("Pipe cannot open");
 
@@ -73,26 +73,26 @@ impl Compound for CompoundParen {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl CompoundParen {
-    pub fn new() -> CompoundParen{
-        CompoundParen {
+impl AbstCommandParen {
+    pub fn new() -> AbstCommandParen{
+        AbstCommandParen {
             script: None,
             pid: None,
             text: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            my_type: CompoundType::Paren, 
+            my_type: CommandType::Paren, 
             fds: FileDescs::new(),
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CompoundParen> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<AbstCommandParen> {
         if ! text.starts_with("(") {
             return None;
         }
 
         let mut backup = text.clone();
-        let mut ans = CompoundParen::new();
+        let mut ans = AbstCommandParen::new();
         let mut input_success;
 
         loop{

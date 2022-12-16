@@ -44,12 +44,12 @@ impl Script {
         }
     }
 
-    fn is_end_condition(parent: &CompoundType, op: &ControlOperator) -> bool {
-        ( parent == &CompoundType::Paren && op == &ControlOperator::RightParen ) ||
-        ( parent == &CompoundType::Case && op == &ControlOperator::DoubleSemicolon )
+    fn is_end_condition(parent: &CommandType, op: &ControlOperator) -> bool {
+        ( parent == &CommandType::Paren && op == &ControlOperator::RightParen ) ||
+        ( parent == &CommandType::Case && op == &ControlOperator::DoubleSemicolon )
     }
 
-    fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &CompoundType) -> bool {
+    fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &CommandType) -> bool {
         let (n, op) = text.scanner_control_op();
         if let Some(p) = op {
             ans.list_ends.push(p.clone());
@@ -77,7 +77,7 @@ impl Script {
         }
     }
 
-    pub fn parse_elem(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Script, parent_type: &CompoundType) -> (bool, bool) {
+    pub fn parse_elem(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Script, parent_type: &CommandType) -> (bool, bool) {
         let mut is_function = false;
         let mut go_next = true;
 
@@ -102,7 +102,7 @@ impl Script {
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
-                 parent_type: &CompoundType) -> Option<Script> {
+                 parent_type: &CommandType) -> Option<Script> {
         if text.len() == 0 {
             return None;
         };
@@ -134,7 +134,7 @@ impl Script {
                 ans.text += &text.consume(n);
             }
 
-            if text.len() == 0 && parent_type == &CompoundType::Null {
+            if text.len() == 0 && parent_type == &CommandType::Null {
                 break;
             }
 

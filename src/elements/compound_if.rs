@@ -2,25 +2,25 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::abst_command::Compound;
+use crate::elements::abst_command::AbstCommand;
 use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
-use crate::element_list::CompoundType;
+use crate::element_list::CommandType;
 use nix::unistd::Pid;
 use crate::file_descs::*;
 
 /* ( script ) */
-pub struct CompoundIf {
+pub struct AbstCommandIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
     text: String,
     pid: Option<Pid>,
-    my_type: CompoundType, 
+    my_type: CommandType, 
     fds: FileDescs,
 }
 
-impl Compound for CompoundIf {
+impl AbstCommand for AbstCommandIf {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
         for pair in self.ifthen.iter_mut() {
              pair.0.exec(conf);
@@ -56,20 +56,20 @@ impl Compound for CompoundIf {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl CompoundIf {
-    pub fn new() -> CompoundIf{
-        CompoundIf {
+impl AbstCommandIf {
+    pub fn new() -> AbstCommandIf{
+        AbstCommandIf {
             ifthen: vec![],
             else_do: None,
             fds: FileDescs::new(),
             text: "".to_string(),
             pid: None,
-            my_type: CompoundType::If,
+            my_type: CommandType::If,
         }
     }
 
 
-    fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
+    fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut AbstCommandIf) -> bool {
         ans.text += &text.request_next_line(conf);
 
         let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
@@ -100,8 +100,8 @@ impl CompoundIf {
         true
     }
 
-    fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundIf) -> bool {
-        //CompoundIf::next_line(text, conf, ans);
+    fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut AbstCommandIf) -> bool {
+        //AbstCommandIf::next_line(text, conf, ans);
         ans.text += &text.request_next_line(conf);
         
 
@@ -123,19 +123,19 @@ impl CompoundIf {
         true
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundIf> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<AbstCommandIf> {
         if text.len() < 2 || ! text.starts_with( "if") {
             return None;
         }
 
         let backup = text.clone();
 
-        let mut ans = CompoundIf::new();
+        let mut ans = AbstCommandIf::new();
         ans.text += &text.consume(2);
 
         //eprintln!("REM: '{}'", text._text());
         loop {
-            if ! CompoundIf::parse_if_then_pair(text, conf, &mut ans) {
+            if ! AbstCommandIf::parse_if_then_pair(text, conf, &mut ans) {
                 text.rewind(backup);
                 return None;
             }
@@ -148,7 +148,7 @@ impl CompoundIf {
                 continue;
             }else if text.starts_with( "else"){
                 ans.text += &text.consume(4);
-                if CompoundIf::parse_else_fi(text, conf, &mut ans) {
+                if AbstCommandIf::parse_else_fi(text, conf, &mut ans) {
                     break;
                 }
             }

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::abst_command::Compound;
+use crate::elements::abst_command::AbstCommand;
 use std::os::unix::prelude::RawFd;
 //use crate::element_list::ControlOperator;
 use crate::elements::script::Script;
@@ -13,18 +13,18 @@ use crate::file_descs::*;
 use crate::elements::word::Word;
 use crate::bash_glob::glob_match;
 // use crate::elements::CommandElem;
-use crate::element_list::CompoundType;
+use crate::element_list::CommandType;
 
-pub struct CompoundCase {
+pub struct AbstCommandCase {
     pub word: Word,
     pub conddo: Vec<(Vec<String>, Option<Script>)>,
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-    my_type: CompoundType, 
+    my_type: CommandType, 
 }
 
-impl Compound for CompoundCase {
+impl AbstCommand for AbstCommandCase {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
@@ -64,20 +64,20 @@ impl Compound for CompoundCase {
     }
 }
 
-impl CompoundCase {
-    pub fn new(word: Word) -> CompoundCase{
-        CompoundCase {
+impl AbstCommandCase {
+    pub fn new(word: Word) -> AbstCommandCase{
+        AbstCommandCase {
             word: word, 
             conddo: vec![],
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            my_type: CompoundType::Case,
+            my_type: CommandType::Case,
         }
     }
 
 
-    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CompoundCase) -> bool {
+    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut AbstCommandCase) -> bool {
         let mut conds = vec![];
         ans.text += &text.request_next_line(conf);
 
@@ -119,7 +119,7 @@ impl CompoundCase {
         true
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CompoundCase> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<AbstCommandCase> {
         if text.len() < 4 || ! text.starts_with( "case") {
             return None;
         }
@@ -134,7 +134,7 @@ impl CompoundCase {
             return None;
         };
 
-        let mut ans = CompoundCase::new(word);
+        let mut ans = AbstCommandCase::new(word);
         ans.text = ans_text;
 
         ans.text += &text.consume_blank();
@@ -156,7 +156,7 @@ impl CompoundCase {
                 break;
             }
 
-            if ! CompoundCase::parse_cond_do_pair(text, conf, &mut ans) {
+            if ! AbstCommandCase::parse_cond_do_pair(text, conf, &mut ans) {
                 text.rewind(backup);
                 return None;
             }

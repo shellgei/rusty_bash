@@ -4,16 +4,16 @@
 use crate::{ShellCore, Feeder};
 //use crate::feeder::scanner::*;
 use crate::elements::abst_command;
-use crate::elements::abst_command::Compound;
+use crate::elements::abst_command::AbstCommand;
 
 pub struct Function {
     pub name: String,
-    pub body: Box<dyn Compound>,
+    pub body: Box<dyn AbstCommand>,
     pub text: String,
 }
 
 impl Function {
-    pub fn new(name: String, body: Box<dyn Compound>, text: String) -> Function{
+    pub fn new(name: String, body: Box<dyn AbstCommand>, text: String) -> Function{
         Function {
             name: name,
             body: body,
