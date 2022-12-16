@@ -9,7 +9,7 @@ use std::process::exit;
 use std::os::unix::prelude::RawFd;
 
 use crate::{ShellCore,Feeder};
-// use crate::abst_elems::CommandElem;
+// use crate::abst_elems::SimpleCommandElem;
 use crate::utils::*;
 
 use crate::abst_elems::compound::Compound;
@@ -21,7 +21,7 @@ use crate::elements::substitution::Substitution;
 use crate::file_descs::*;
 
 /* command: delim word delim word delim word ... eoc */
-pub struct Command {
+pub struct SimpleCommand {
     vars: Vec<Substitution>,
     pub args: Vec<Word>,
     pub text: String,
@@ -29,7 +29,7 @@ pub struct Command {
     fds: FileDescs,
 }
 
-impl Compound for Command {
+impl Compound for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore) {
         if self.args.len() == 0 {
             self.set_vars(core);
@@ -87,9 +87,9 @@ impl Compound for Command {
     fn get_text(&self) -> String { self.text.clone() }
 }
 
-impl Command {
-    pub fn new() -> Command{
-        Command {
+impl SimpleCommand {
+    pub fn new() -> SimpleCommand{
+        SimpleCommand {
             vars: vec![],
             args: vec![],
             //eoc: None,
@@ -191,7 +191,7 @@ impl Command {
 
         let _ = execvpe(&cargs[0], &cargs, &envs);
 
-        eprintln!("Command not found");
+        eprintln!("SimpleCommand not found");
         exit(127);
     }
 
@@ -203,7 +203,7 @@ impl Command {
         }
     }
 
-    fn substitutions_and_redirects(text: &mut Feeder, core: &mut ShellCore, ans: &mut Command) {
+    fn substitutions_and_redirects(text: &mut Feeder, core: &mut ShellCore, ans: &mut SimpleCommand) {
         loop {
             ans.text += &text.consume_blank();
 
@@ -230,7 +230,7 @@ impl Command {
         ! is_reserve(text)
     }
 
-    fn args_and_redirects(text: &mut Feeder, core: &mut ShellCore, ans: &mut Command) -> bool {
+    fn args_and_redirects(text: &mut Feeder, core: &mut ShellCore, ans: &mut SimpleCommand) -> bool {
         let mut ok = false;
         loop {
             let backup = text.clone();
@@ -238,7 +238,7 @@ impl Command {
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
             }else if let Some(a) = Word::parse(text, core, false) {
-                if ! Command::ng_check(&a.text, ans.args.len() == 0){
+                if ! SimpleCommand::ng_check(&a.text, ans.args.len() == 0){
                     text.rewind(backup);
                     break;
                 }
@@ -274,16 +274,16 @@ impl Command {
         ok
     }
 
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Command> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
         let backup = text.clone();
-        let mut ans = Command::new();
+        let mut ans = SimpleCommand::new();
 
         //if scanner_start_brace(text, 0) == 1 {
         if text.starts_with("{") {
             return None;
         };
 
-        Command::substitutions_and_redirects(text, core, &mut ans);
+        SimpleCommand::substitutions_and_redirects(text, core, &mut ans);
         if core.has_flag('i') {
             Self::replace_alias(text, core);
         }

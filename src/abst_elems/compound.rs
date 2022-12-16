@@ -12,7 +12,7 @@ use crate::elements::compound_while::CompoundWhile;
 use crate::elements::compound_paren::CompoundParen;
 use crate::elements::compound_brace::CompoundBrace;
 use crate::elements::compound_case::CompoundCase;
-use crate::elements::command::Command;
+use crate::elements::simple_command::SimpleCommand;
 
 use std::process::exit;
 use nix::unistd::{close, fork, ForkResult};
@@ -62,6 +62,6 @@ pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Compound
     else if let Some(a) = CompoundParen::parse(text, conf, false)       {Some(Box::new(a))}
     else if let Some(a) = CompoundDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
     else if let Some(a) = CompoundBrace::parse(text, conf)              {Some(Box::new(a))}
-    else if let Some(a) = Command::parse(text, conf)                    {Some(Box::new(a))}
+    else if let Some(a) = SimpleCommand::parse(text, conf)                    {Some(Box::new(a))}
     else {None}
 }
