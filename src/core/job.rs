@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use nix::unistd::Pid;
-use crate::abst_elems::compound::Compound;
+use crate::abst_elems::command::Compound;
 
 //[1]+  Running                 sleep 5 &
 #[derive(Clone)]

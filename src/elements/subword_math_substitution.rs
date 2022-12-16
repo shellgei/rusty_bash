@@ -6,7 +6,7 @@ use crate::ShellCore;
 use crate::Feeder;
 
 use crate::abst_elems::word_elem::WordElem;
-use crate::abst_elems::compound::Compound;
+use crate::abst_elems::command::Compound;
 use crate::elements::compound_double_paren::CompoundDoubleParen;
 
 pub struct SubWordMathSubstitution {
