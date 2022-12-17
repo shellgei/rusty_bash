@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::element::command::Command;
-use crate::element_list::ControlOperator;
+use crate::operators::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
 use crate::element::command;

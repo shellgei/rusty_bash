@@ -4,7 +4,7 @@
 use nix::unistd::{close, dup2};
 use std::os::unix::prelude::RawFd;
 use crate::element::redirect::Redirect;
-use crate::element_list::RedirectOp;
+use crate::operators::RedirectOp;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
 use crate::ShellCore;

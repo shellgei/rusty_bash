@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::element_list::{ControlOperator, RedirectOp};
+use crate::operators::{ControlOperator, RedirectOp};
 
 impl Feeder {
     pub fn scanner_until_escape(&mut self, to: &str) -> usize {

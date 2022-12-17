@@ -4,7 +4,7 @@
 mod bash_glob;
 mod calculator;
 mod element;
-mod element_list;
+mod operators;
 
 mod core;
 mod term;

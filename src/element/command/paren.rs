@@ -6,7 +6,7 @@ use crate::element::command::Command;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
 use crate::element::script::Script;
-use crate::element_list::ControlOperator;
+use crate::operators::ControlOperator;
 use std::process::exit;
 use crate::element::redirect::Redirect;
 use crate::file_descs::*;
