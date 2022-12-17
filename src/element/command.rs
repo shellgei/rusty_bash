@@ -27,6 +27,18 @@ use self::simple::SimpleCommand;
 use std::process::exit;
 use nix::unistd::{close, fork, ForkResult};
 
+#[derive(PartialEq)]
+pub enum CommandType {
+    Case,
+    While,
+    If,
+    Paren,
+    //DoubleParen,
+    Brace,
+    //Simple,
+    Null,
+}
+
 pub trait Command {
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.no_connection() {

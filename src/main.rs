@@ -23,7 +23,7 @@ use crate::feeder::Feeder;
 
 use crate::element::script::Script;
 
-use crate::element_list::CommandType;
+use crate::element::command::CommandType;
 
 use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;

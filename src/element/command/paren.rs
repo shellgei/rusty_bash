@@ -12,7 +12,7 @@ use crate::element::redirect::Redirect;
 use crate::file_descs::*;
 use nix::unistd::{close, pipe};
 //use crate::feeder::scanner::*;
-use crate::element_list::CommandType;
+use crate::element::command::CommandType;
 
 pub struct CommandParen {
     pub script: Option<Script>,

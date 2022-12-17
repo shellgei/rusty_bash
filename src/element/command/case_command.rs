@@ -13,7 +13,7 @@ use crate::file_descs::*;
 use crate::element::word::Word;
 use crate::bash_glob::glob_match;
 // use crate::element::CommandElem;
-use crate::element_list::CommandType;
+use crate::element::command::CommandType;
 
 pub struct CommandCase {
     pub word: Word,

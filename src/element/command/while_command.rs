@@ -6,7 +6,7 @@ use crate::element::command::Command;
 use std::os::unix::prelude::RawFd;
 use crate::element::script::Script;
 use crate::element::redirect::Redirect;
-use crate::element_list::CommandType;
+use crate::element::command::CommandType;
 use nix::unistd::Pid;
 use crate::file_descs::*;
 

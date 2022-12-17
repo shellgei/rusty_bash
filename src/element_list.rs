@@ -58,14 +58,3 @@ pub enum Reserved {
 }
 */
 
-#[derive(PartialEq)]
-pub enum CommandType {
-    Case,
-    While,
-    If,
-    Paren,
-    //DoubleParen,
-    Brace,
-    //Simple,
-    Null,
-}

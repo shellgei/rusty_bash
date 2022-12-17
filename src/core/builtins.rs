@@ -7,7 +7,7 @@ use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
-use crate::element_list::CommandType;
+use crate::element::command::CommandType;
 
 use crate::Script;
 use crate::ShellCore;
