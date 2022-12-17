@@ -11,8 +11,8 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::utils::*;
 
-use crate::elements::abst_command::AbstCommand;
-use crate::elements::abst_command;
+use crate::command::AbstCommand;
+use crate::command;
 use crate::elements::word::Word;
 use crate::elements::redirect::Redirect;
 use crate::elements::substitution::Substitution;
@@ -140,7 +140,7 @@ impl SimpleCommand {
         let text = core.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_from(text);
-        if let Some(mut f) = abst_command::parse(&mut feeder, core) {
+        if let Some(mut f) = command::parse(&mut feeder, core) {
             let backup = core.args.clone();
             core.args = args.to_vec();
             core.return_enable = true;
@@ -190,7 +190,7 @@ impl SimpleCommand {
 
         let _ = execvpe(&cargs[0], &cargs, &envs);
 
-        eprintln!("SimpleCommand not found");
+        eprintln!("Command not found");
         exit(127);
     }
 

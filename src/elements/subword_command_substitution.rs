@@ -6,7 +6,7 @@ use crate::ShellCore;
 use crate::Feeder;
 
 use crate::elements::abst_subword::WordElem;
-use crate::elements::abst_command::AbstCommand;
+use crate::command::AbstCommand;
 use crate::elements::compound_paren::CommandParen;
 
 pub struct SubWordCommandSubstitution {

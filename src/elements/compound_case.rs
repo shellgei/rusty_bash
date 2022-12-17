@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::abst_command::AbstCommand;
+use crate::command::AbstCommand;
 use std::os::unix::prelude::RawFd;
 //use crate::element_list::ControlOperator;
 use crate::elements::script::Script;

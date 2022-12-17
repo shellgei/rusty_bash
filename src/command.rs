@@ -1,6 +1,8 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod simple;
+
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 
@@ -13,7 +15,7 @@ use crate::elements::compound_paren::CommandParen;
 use crate::elements::compound_brace::CommandBrace;
 use crate::elements::compound_case::CommandCase;
 use crate::elements::function::FunctionDefinition;
-use crate::elements::simple_command::SimpleCommand;
+use crate::command::simple::SimpleCommand;
 
 use std::process::exit;
 use nix::unistd::{close, fork, ForkResult};

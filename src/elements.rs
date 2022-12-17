@@ -6,8 +6,6 @@ pub mod script;
 pub mod function;
 pub mod pipeline;
 
-pub mod abst_command;
-pub mod simple_command;
 pub mod compound_brace;
 pub mod compound_case;
 pub mod compound_double_paren;

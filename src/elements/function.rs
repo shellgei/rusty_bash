@@ -3,8 +3,8 @@
 
 use crate::{ShellCore, Feeder};
 //use crate::feeder::scanner::*;
-use crate::elements::abst_command;
-use crate::elements::abst_command::AbstCommand;
+use crate::command;
+use crate::command::AbstCommand;
 
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
@@ -19,7 +19,9 @@ pub struct FunctionDefinition {
 }
 
 impl AbstCommand for FunctionDefinition {
-    fn exec_elems(&mut self, _: &mut ShellCore) {}
+    fn exec_elems(&mut self, conf: &mut ShellCore) {
+        conf.functions.insert(self.name.clone(), self.body.get_text());
+    }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
@@ -83,8 +85,8 @@ impl FunctionDefinition {
          ans_text += &text.consume(1);
          ans_text += &text.consume_blank();
  
-         if let Some(c) = abst_command::parse(text, conf){
-             conf.functions.insert(name.clone(), c.get_text());
+         if let Some(c) = command::parse(text, conf){
+//             conf.functions.insert(name.clone(), c.get_text());
              Some( FunctionDefinition::new(name, c, ans_text) )
          }else{
              text.rewind(backup);
