@@ -13,13 +13,13 @@ pub mod variable;
 
 use crate::{Feeder, ShellCore}; 
 
-use crate::element::subword::command_substitution::SubwordCommandSubstitution;
-use crate::element::subword::math_substitution::SubwordMathSubstitution;
-use crate::element::subword::string_non_quoted::SubwordStringNonQuoted;
-use crate::element::subword::double_quoted::SubwordDoubleQuoted;
-use crate::element::subword::single_quoted::SubwordSingleQuoted;
-use crate::element::subword::braced::SubwordBraced;
-use crate::element::subword::variable::SubwordVariable;
+use self::command_substitution::SubwordCommandSubstitution;
+use self::math_substitution::SubwordMathSubstitution;
+use self::string_non_quoted::SubwordStringNonQuoted;
+use self::double_quoted::SubwordDoubleQuoted;
+use self::single_quoted::SubwordSingleQuoted;
+use self::braced::SubwordBraced;
+use self::variable::SubwordVariable;
 
 pub trait Subword {
     fn eval(&mut self, _conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>>;

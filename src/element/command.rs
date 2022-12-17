@@ -15,14 +15,14 @@ use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
 
-use crate::element::command::double_paren::CommandDoubleParen;
-use crate::element::command::if_command::CommandIf;
-use crate::element::command::while_command::CommandWhile;
-use crate::element::command::paren::CommandParen;
-use crate::element::command::brace::CommandBrace;
-use crate::element::command::case_command::CommandCase;
-use crate::element::command::function_definition::FunctionDefinition;
-use crate::element::command::simple::SimpleCommand;
+use self::double_paren::CommandDoubleParen;
+use self::if_command::CommandIf;
+use self::while_command::CommandWhile;
+use self::paren::CommandParen;
+use self::brace::CommandBrace;
+use self::case_command::CommandCase;
+use self::function_definition::FunctionDefinition;
+use self::simple::SimpleCommand;
 
 use std::process::exit;
 use nix::unistd::{close, fork, ForkResult};
