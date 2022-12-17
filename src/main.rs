@@ -3,7 +3,7 @@
 
 mod bash_glob;
 mod calculator;
-mod elements;
+mod element;
 mod element_list;
 
 mod core;
@@ -21,7 +21,7 @@ use std::io::Read;
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
 
-use crate::elements::script::Script;
+use crate::element::script::Script;
 
 use crate::element_list::CommandType;
 

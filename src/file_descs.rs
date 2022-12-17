@@ -3,7 +3,7 @@
 
 use nix::unistd::{close, dup2};
 use std::os::unix::prelude::RawFd;
-use crate::elements::redirect::Redirect;
+use crate::element::redirect::Redirect;
 use crate::element_list::RedirectOp;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;

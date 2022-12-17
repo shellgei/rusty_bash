@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::element_list::*;
-use crate::elements::pipeline::Pipeline;
+use crate::element::pipeline::Pipeline;
 use crate::utils::blue_string;
 
 pub struct Script {

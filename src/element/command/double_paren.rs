@@ -2,10 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::command::AbstCommand;
+use crate::element::command::AbstCommand;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
-use crate::elements::redirect::Redirect;
+use crate::element::redirect::Redirect;
 use crate::file_descs::*;
 //use crate::feeder::scanner::*;
 use crate::calculator::calculate;

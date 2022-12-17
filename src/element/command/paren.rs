@@ -2,13 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::command::AbstCommand;
+use crate::element::command::AbstCommand;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
-use crate::elements::script::Script;
+use crate::element::script::Script;
 use crate::element_list::ControlOperator;
 use std::process::exit;
-use crate::elements::redirect::Redirect;
+use crate::element::redirect::Redirect;
 use crate::file_descs::*;
 use nix::unistd::{close, pipe};
 //use crate::feeder::scanner::*;

@@ -3,13 +3,13 @@
 
 use crate::{Feeder, ShellCore}; 
 
-use crate::elements::subword_command_substitution::SubWordCommandSubstitution;
-use crate::elements::subword_math_substitution::SubWordMathSubstitution;
-use crate::elements::subword_string_non_quoted::SubWordStringNonQuoted;
-use crate::elements::subword_double_quoted::SubWordDoubleQuoted;
-use crate::elements::subword_single_quoted::SubWordSingleQuoted;
-use crate::elements::subword_braced::SubWordBraced;
-use crate::elements::subword_variable::SubWordVariable;
+use crate::element::subword_command_substitution::SubWordCommandSubstitution;
+use crate::element::subword_math_substitution::SubWordMathSubstitution;
+use crate::element::subword_string_non_quoted::SubWordStringNonQuoted;
+use crate::element::subword_double_quoted::SubWordDoubleQuoted;
+use crate::element::subword_single_quoted::SubWordSingleQuoted;
+use crate::element::subword_braced::SubWordBraced;
+use crate::element::subword_variable::SubWordVariable;
 
 pub trait WordElem {
     fn eval(&mut self, _conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>>;

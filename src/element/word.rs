@@ -5,10 +5,10 @@ use crate::ShellCore;
 use crate::utils::combine;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::elements::abst_subword;
-use crate::elements::abst_subword::WordElem;
-use crate::elements::subword_tilde::SubWordTildePrefix;
-use crate::elements::subword_string_non_quoted::SubWordStringNonQuoted;
+use crate::element::abst_subword;
+use crate::element::abst_subword::WordElem;
+use crate::element::subword_tilde::SubWordTildePrefix;
+use crate::element::subword_string_non_quoted::SubWordStringNonQuoted;
 
 pub struct Word {
     pub text: String,
