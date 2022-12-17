@@ -28,6 +28,11 @@ pub struct SimpleCommand {
     fds: FileDescs,
 }
 
+fn is_reserve(s: &String) -> bool {
+    s == "then" || s == "else" || s == "elif" || s == "fi" || s == "done" || s == "do" || s == ";;"
+}
+
+
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore) {
         if self.args.len() == 0 {

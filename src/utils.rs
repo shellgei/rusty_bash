@@ -30,10 +30,6 @@ fn is_glob(s: &String) -> bool {
     return false;
 }
 
-pub fn is_reserve(s: &String) -> bool {
-    s == "then" || s == "else" || s == "elif" || s == "fi" || s == "done" || s == "do" || s == ";;"
-}
-
 pub fn eval_glob(globstr: &String) -> Vec<String> {
     if ! is_glob(&globstr) {
         return vec!(globstr.clone());
