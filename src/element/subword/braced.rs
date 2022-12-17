@@ -8,7 +8,7 @@ use crate::Feeder;
 use crate::element::word::Word;
 
 use crate::element::word::word_in_brace;
-use crate::element::abst_subword::WordElem;
+use crate::element::subword::WordElem;
 use crate::utils::combine_with;
 
 pub struct SubWordBraced {

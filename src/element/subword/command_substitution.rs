@@ -5,7 +5,7 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 
-use crate::element::abst_subword::WordElem;
+use crate::element::subword::WordElem;
 use crate::element::command::AbstCommand;
 use crate::element::command::paren::CommandParen;
 

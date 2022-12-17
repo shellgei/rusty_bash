@@ -5,10 +5,10 @@ use crate::ShellCore;
 use crate::utils::combine;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::element::abst_subword;
-use crate::element::abst_subword::WordElem;
-use crate::element::subword_tilde::SubWordTildePrefix;
-use crate::element::subword_string_non_quoted::SubWordStringNonQuoted;
+use crate::element::subword;
+use crate::element::subword::WordElem;
+use crate::element::subword::tilde::SubWordTildePrefix;
+use crate::element::subword::string_non_quoted::SubWordStringNonQuoted;
 
 pub struct Word {
     pub text: String,
@@ -54,7 +54,7 @@ impl Word {
             ans.subwords.push(Box::new(result));
         }
     
-        while let Some(result) = abst_subword::parse_in_arg(text, conf, is_in_brace) {
+        while let Some(result) = subword::parse_in_arg(text, conf, is_in_brace) {
             ans.text += &(*result).get_text();
             ans.subwords.push(result);
     
@@ -137,7 +137,7 @@ pub fn word_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Word> {
         ans.subwords.push(Box::new(result));
     }
 
-    while let Some(result) = abst_subword::parse_in_arg(text, conf, true) {
+    while let Some(result) = subword::parse_in_arg(text, conf, true) {
         let empty_elem = (*result).get_text().len() == 0;
 
         ans.text += &(*result).get_text();

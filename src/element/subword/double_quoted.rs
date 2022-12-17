@@ -5,10 +5,10 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 
-use crate::element::abst_subword::WordElem;
-use crate::element::subword_string_double_quoted::SubWordStringDoubleQuoted;
-use crate::element::subword_variable::SubWordVariable;
-use crate::element::subword_command_substitution::SubWordCommandSubstitution;
+use crate::element::subword::WordElem;
+use crate::element::subword::string_double_quoted::SubWordStringDoubleQuoted;
+use crate::element::subword::variable::SubWordVariable;
+use crate::element::subword::command_substitution::SubWordCommandSubstitution;
 use crate::utils::combine;
 
 pub struct SubWordDoubleQuoted {

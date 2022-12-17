@@ -1,15 +1,25 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod braced;
+pub mod command_substitution;
+pub mod double_quoted;
+pub mod math_substitution;
+pub mod string_double_quoted;
+pub mod string_non_quoted;
+pub mod single_quoted;
+pub mod tilde;
+pub mod variable;
+
 use crate::{Feeder, ShellCore}; 
 
-use crate::element::subword_command_substitution::SubWordCommandSubstitution;
-use crate::element::subword_math_substitution::SubWordMathSubstitution;
-use crate::element::subword_string_non_quoted::SubWordStringNonQuoted;
-use crate::element::subword_double_quoted::SubWordDoubleQuoted;
-use crate::element::subword_single_quoted::SubWordSingleQuoted;
-use crate::element::subword_braced::SubWordBraced;
-use crate::element::subword_variable::SubWordVariable;
+use crate::element::subword::command_substitution::SubWordCommandSubstitution;
+use crate::element::subword::math_substitution::SubWordMathSubstitution;
+use crate::element::subword::string_non_quoted::SubWordStringNonQuoted;
+use crate::element::subword::double_quoted::SubWordDoubleQuoted;
+use crate::element::subword::single_quoted::SubWordSingleQuoted;
+use crate::element::subword::braced::SubWordBraced;
+use crate::element::subword::variable::SubWordVariable;
 
 pub trait WordElem {
     fn eval(&mut self, _conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>>;

@@ -5,9 +5,9 @@ use crate::ShellCore;
 use crate::utils::combine;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::element::abst_subword;
-use crate::element::abst_subword::WordElem;
-use crate::element::subword_tilde::SubWordTildePrefix;
+use crate::element::subword;
+use crate::element::subword::WordElem;
+use crate::element::subword::tilde::SubWordTildePrefix;
 
 pub struct Value {
     pub text: String,
@@ -41,7 +41,7 @@ impl Value {
             ans.subvalues.push(Box::new(result));
         }
     
-        while let Some(result) = abst_subword::parse_in_value(text, conf) {
+        while let Some(result) = subword::parse_in_value(text, conf) {
             ans.text += &(*result).get_text();
             ans.subvalues.push(result);
     
