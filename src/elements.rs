@@ -4,6 +4,7 @@
 pub mod script;
 
 pub mod pipeline;
+pub mod command;
 
 pub mod substitution;
 

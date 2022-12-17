@@ -11,8 +11,8 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::utils::*;
 
-use crate::command::AbstCommand;
-use crate::command;
+use crate::elements::command::AbstCommand;
+use crate::elements::command;
 use crate::elements::word::Word;
 use crate::elements::redirect::Redirect;
 use crate::elements::substitution::Substitution;

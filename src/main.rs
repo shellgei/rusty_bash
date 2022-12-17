@@ -6,8 +6,6 @@ mod calculator;
 mod elements;
 mod element_list;
 
-mod command;
-
 mod core;
 mod term;
 mod file_descs;
