@@ -7,7 +7,7 @@ use crate::Feeder;
 
 use crate::elements::abst_subword::WordElem;
 use crate::command::AbstCommand;
-use crate::elements::compound_double_paren::CommandDoubleParen;
+use crate::command::double_paren::CommandDoubleParen;
 
 pub struct SubWordMathSubstitution {
     pub text: String,

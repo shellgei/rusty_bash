@@ -7,7 +7,7 @@ use crate::Feeder;
 
 use crate::elements::abst_subword::WordElem;
 use crate::command::AbstCommand;
-use crate::elements::compound_paren::CommandParen;
+use crate::command::paren::CommandParen;
 
 pub struct SubWordCommandSubstitution {
     pub text: String,

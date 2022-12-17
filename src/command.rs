@@ -2,19 +2,26 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod simple;
+pub mod paren;
+pub mod brace;
+pub mod double_paren;
+pub mod if_command;
+pub mod case_command;
+pub mod while_command;
+pub mod function_definition;
 
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
 
-use crate::elements::compound_double_paren::CommandDoubleParen;
-use crate::elements::compound_if::CommandIf;
-use crate::elements::compound_while::CommandWhile;
-use crate::elements::compound_paren::CommandParen;
-use crate::elements::compound_brace::CommandBrace;
-use crate::elements::compound_case::CommandCase;
-use crate::elements::function::FunctionDefinition;
+use crate::command::double_paren::CommandDoubleParen;
+use crate::command::if_command::CommandIf;
+use crate::command::while_command::CommandWhile;
+use crate::command::paren::CommandParen;
+use crate::command::brace::CommandBrace;
+use crate::command::case_command::CommandCase;
+use crate::command::function_definition::FunctionDefinition;
 use crate::command::simple::SimpleCommand;
 
 use std::process::exit;
