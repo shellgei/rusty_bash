@@ -6,9 +6,9 @@ use crate::ShellCore;
 use crate::Feeder;
 //use crate::feeder::scanner::*;
 
-use crate::element::subword::WordElem;
+use crate::element::subword::Subword;
 
-pub struct SubWordVariable {
+pub struct SubwordVariable {
     pub text: String,
     pub name: String,
     pub empty_option: String,
@@ -16,7 +16,7 @@ pub struct SubWordVariable {
     pub pos: DebugInfo,
 }
 
-impl WordElem for SubWordVariable {
+impl Subword for SubwordVariable {
     fn eval(&mut self, conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         let val = conf.get_var(&self.name);
 
@@ -34,9 +34,9 @@ impl WordElem for SubWordVariable {
     }
 }
 
-impl SubWordVariable {
-    pub fn new(text: &mut Feeder) -> SubWordVariable {
-        SubWordVariable {
+impl SubwordVariable {
+    pub fn new(text: &mut Feeder) -> SubwordVariable {
+        SubwordVariable {
             name: String::new(),
             text: String::new(),
             empty_option: String::new(),
@@ -64,15 +64,15 @@ impl SubWordVariable {
         }
     }
 
-    pub fn parse(text: &mut Feeder) -> Option<SubWordVariable> {
+    pub fn parse(text: &mut Feeder) -> Option<SubwordVariable> {
         if text.starts_with("${") {
-            return SubWordVariable::parse_in_brace(text);
+            return SubwordVariable::parse_in_brace(text);
         }
         if ! text.starts_with("$") {
             return None;
         };
 
-        let mut ans = SubWordVariable::new(text);
+        let mut ans = SubwordVariable::new(text);
         ans.text = text.consume(1);
     
         let pos = text.scanner_name_or_parameter();
@@ -81,8 +81,8 @@ impl SubWordVariable {
         Some(ans)
     }
     
-    fn parse_in_brace(text: &mut Feeder) -> Option<SubWordVariable> {
-        let mut ans = SubWordVariable::new(text);
+    fn parse_in_brace(text: &mut Feeder) -> Option<SubwordVariable> {
+        let mut ans = SubwordVariable::new(text);
         let backup = text.clone();
 
         ans.text = text.consume(2);

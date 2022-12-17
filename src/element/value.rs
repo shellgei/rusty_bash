@@ -6,13 +6,13 @@ use crate::utils::combine;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::element::subword;
-use crate::element::subword::WordElem;
-use crate::element::subword::tilde::SubWordTildePrefix;
+use crate::element::subword::Subword;
+use crate::element::subword::tilde::SubwordTildePrefix;
 
 pub struct Value {
     pub text: String,
     pub pos: DebugInfo,
-    pub subvalues: Vec<Box<dyn WordElem>>,
+    pub subvalues: Vec<Box<dyn Subword>>,
 }
 
 impl Value {
@@ -36,7 +36,7 @@ impl Value {
             subvalues: vec![],
         };
 
-        if let Some(result) = SubWordTildePrefix::parse(text, true) {
+        if let Some(result) = SubwordTildePrefix::parse(text, true) {
             ans.text += &result.get_text();
             ans.subvalues.push(Box::new(result));
         }

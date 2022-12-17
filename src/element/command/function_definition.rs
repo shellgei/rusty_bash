@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 //use crate::feeder::scanner::*;
 use crate::element::command;
-use crate::element::command::AbstCommand;
+use crate::element::command::Command;
 
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
@@ -12,13 +12,13 @@ use crate::FileDescs;
 
 pub struct FunctionDefinition {
     pub name: String,
-    pub body: Box<dyn AbstCommand>,
+    pub body: Box<dyn Command>,
     pid: Option<Pid>, 
     pub text: String,
     fds: FileDescs,
 }
 
-impl AbstCommand for FunctionDefinition {
+impl Command for FunctionDefinition {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
         conf.functions.insert(self.name.clone(), self.body.get_text());
     }
@@ -43,7 +43,7 @@ impl AbstCommand for FunctionDefinition {
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, body: Box<dyn AbstCommand>, text: String) -> FunctionDefinition{
+    pub fn new(name: String, body: Box<dyn Command>, text: String) -> FunctionDefinition{
         FunctionDefinition {
             name: name,
             body: body,

@@ -6,15 +6,15 @@ use crate::ShellCore;
 use crate::Feeder;
 //use crate::feeder::scanner::*;
 
-use crate::element::subword::WordElem;
+use crate::element::subword::Subword;
 
-pub struct SubWordStringNonQuoted {
+pub struct SubwordStringNonQuoted {
     pub text: String,
     pub pos: DebugInfo,
     //pub is_value: bool,
 }
 
-impl WordElem for SubWordStringNonQuoted {
+impl Subword for SubwordStringNonQuoted {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -30,21 +30,21 @@ impl WordElem for SubWordStringNonQuoted {
     }
 }
 
-impl SubWordStringNonQuoted {
-    fn new(text: String, pos: DebugInfo/*, is_value: bool*/) -> SubWordStringNonQuoted {
-        SubWordStringNonQuoted {
+impl SubwordStringNonQuoted {
+    fn new(text: String, pos: DebugInfo/*, is_value: bool*/) -> SubwordStringNonQuoted {
+        SubwordStringNonQuoted {
             text: text.clone(),
             pos: pos,
             //is_value: is_value, 
         }
     }
 
-    pub fn parse(text: &mut Feeder, is_in_brace: bool, ignore_brace: bool) -> Option<SubWordStringNonQuoted> {
+    pub fn parse(text: &mut Feeder, is_in_brace: bool, ignore_brace: bool) -> Option<SubwordStringNonQuoted> {
         let pos = text.scanner_non_quoted_word(is_in_brace, ignore_brace);
         if pos == 0{
             None
         }else{
-            Some( SubWordStringNonQuoted::new(text.consume(pos), DebugInfo::init(text)/*, false*/) )
+            Some( SubwordStringNonQuoted::new(text.consume(pos), DebugInfo::init(text)/*, false*/) )
         }
     }
 }

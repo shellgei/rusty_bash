@@ -6,14 +6,14 @@ use crate::utils::combine;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::element::subword;
-use crate::element::subword::WordElem;
-use crate::element::subword::tilde::SubWordTildePrefix;
-use crate::element::subword::string_non_quoted::SubWordStringNonQuoted;
+use crate::element::subword::Subword;
+use crate::element::subword::tilde::SubwordTildePrefix;
+use crate::element::subword::string_non_quoted::SubwordStringNonQuoted;
 
 pub struct Word {
     pub text: String,
     pub pos: DebugInfo,
-    pub subwords: Vec<Box<dyn WordElem>>,
+    pub subwords: Vec<Box<dyn Subword>>,
 }
 
 impl Word {
@@ -49,7 +49,7 @@ impl Word {
             subwords: vec![],
         };
 
-        if let Some(result) = SubWordTildePrefix::parse(text, false) {
+        if let Some(result) = SubwordTildePrefix::parse(text, false) {
             ans.text += &result.get_text();
             ans.subwords.push(Box::new(result));
         }
@@ -123,7 +123,7 @@ pub fn word_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Word> {
 
     let backup = text.clone();
     if text.starts_with(",") || text.starts_with("}") {
-        let tmp = SubWordStringNonQuoted {
+        let tmp = SubwordStringNonQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
             //is_value: false,
@@ -132,7 +132,7 @@ pub fn word_in_brace(text: &mut Feeder, conf: &mut ShellCore) -> Option<Word> {
         return Some(ans);
     };
 
-    if let Some(result) = SubWordTildePrefix::parse(text, false) {
+    if let Some(result) = SubwordTildePrefix::parse(text, false) {
         ans.text += &result.get_text();
         ans.subwords.push(Box::new(result));
     }

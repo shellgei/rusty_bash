@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::AbstCommand;
+use crate::element::command::Command;
 use crate::element_list::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
@@ -10,7 +10,7 @@ use crate::element::command;
 use crate::core::job::Job;
 
 pub struct Pipeline {
-    pub commands: Vec<Box<dyn AbstCommand>>,
+    pub commands: Vec<Box<dyn Command>>,
     pub text: String,
     pub is_bg: bool,
     pub job_no: u32,

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::AbstCommand;
+use crate::element::command::Command;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::element::redirect::Redirect;
@@ -20,7 +20,7 @@ pub struct CommandDoubleParen {
 //    pub eoc: Option<Eoc>,
 }
 
-impl AbstCommand for CommandDoubleParen {
+impl Command for CommandDoubleParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         self.substitution_text = calculate(self.expression.clone(), conf);
 

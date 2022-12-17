@@ -11,7 +11,7 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::utils::*;
 
-use crate::element::command::AbstCommand;
+use crate::element::command::Command;
 use crate::element::command;
 use crate::element::word::Word;
 use crate::element::redirect::Redirect;
@@ -28,7 +28,7 @@ pub struct SimpleCommand {
     fds: FileDescs,
 }
 
-impl AbstCommand for SimpleCommand {
+impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore) {
         if self.args.len() == 0 {
             self.set_vars(core);

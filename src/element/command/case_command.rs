@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::AbstCommand;
+use crate::element::command::Command;
 use std::os::unix::prelude::RawFd;
 //use crate::element_list::ControlOperator;
 use crate::element::script::Script;
@@ -24,7 +24,7 @@ pub struct CommandCase {
     my_type: CommandType, 
 }
 
-impl AbstCommand for CommandCase {
+impl Command for CommandCase {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
     fn no_connection(&self) -> bool { self.fds.no_connection() }

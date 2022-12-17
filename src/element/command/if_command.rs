@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::AbstCommand;
+use crate::element::command::Command;
 use std::os::unix::prelude::RawFd;
 use crate::element::script::Script;
 use crate::element::redirect::Redirect;
@@ -20,7 +20,7 @@ pub struct CommandIf {
     fds: FileDescs,
 }
 
-impl AbstCommand for CommandIf {
+impl Command for CommandIf {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
         for pair in self.ifthen.iter_mut() {
              pair.0.exec(conf);

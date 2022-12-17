@@ -27,7 +27,7 @@ use crate::element::command::simple::SimpleCommand;
 use std::process::exit;
 use nix::unistd::{close, fork, ForkResult};
 
-pub trait AbstCommand {
+pub trait Command {
     fn exec(&mut self, conf: &mut ShellCore) {
         if self.no_connection() {
              self.exec_elems(conf);
@@ -65,7 +65,7 @@ pub trait AbstCommand {
     fn set_pid(&mut self, _pid: Pid) {}
 }
 
-pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn AbstCommand>> {
+pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) =      CommandIf::parse(text,conf)                  {Some(Box::new(a))}
     else if let Some(a) = CommandWhile::parse(text, conf)              {Some(Box::new(a))}
     else if let Some(a) = CommandCase::parse(text, conf)               {Some(Box::new(a))}

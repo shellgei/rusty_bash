@@ -5,18 +5,18 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 
-use crate::element::subword::WordElem;
-use crate::element::command::AbstCommand;
+use crate::element::subword::Subword;
+use crate::element::command::Command;
 use crate::element::command::paren::CommandParen;
 
-pub struct SubWordCommandSubstitution {
+pub struct SubwordCommandSubstitution {
     pub text: String,
     pub pos: DebugInfo,
     pub com: CommandParen, 
 //    pub is_value: bool,
 }
 
-impl WordElem for SubWordCommandSubstitution {
+impl Subword for SubwordCommandSubstitution {
     fn eval(&mut self, conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>> {
         self.com.substitution = true;
         self.com.exec(conf);
@@ -37,8 +37,8 @@ impl WordElem for SubWordCommandSubstitution {
     }
 }
 
-impl SubWordCommandSubstitution {
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore/*, is_value: bool*/) -> Option<SubWordCommandSubstitution> {
+impl SubwordCommandSubstitution {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore/*, is_value: bool*/) -> Option<SubwordCommandSubstitution> {
         if ! text.starts_with("$") {
             return None;
         }
@@ -47,7 +47,7 @@ impl SubWordCommandSubstitution {
         text.consume(1);
 
         if let Some(e) = CommandParen::parse(text, conf, true){
-            let ans = SubWordCommandSubstitution {
+            let ans = SubwordCommandSubstitution {
                 text: "$".to_owned() + &e.get_text(),
                 pos: DebugInfo::init(text),
                 com: e,

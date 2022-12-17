@@ -7,14 +7,14 @@ use crate::Feeder;
 //use crate::feeder::scanner::*;
 use crate::utils::expand_tilde;
 
-use crate::element::subword::WordElem;
+use crate::element::subword::Subword;
 
-pub struct SubWordTildePrefix {
+pub struct SubwordTildePrefix {
     pub text: String,
     pub pos: DebugInfo,
 }
 
-impl WordElem for SubWordTildePrefix {
+impl Subword for SubwordTildePrefix {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -24,11 +24,11 @@ impl WordElem for SubWordTildePrefix {
     }
 }
 
-impl SubWordTildePrefix {
-    pub fn parse(text: &mut Feeder, _: bool) -> Option<SubWordTildePrefix> {
+impl SubwordTildePrefix {
+    pub fn parse(text: &mut Feeder, _: bool) -> Option<SubwordTildePrefix> {
         let pos = text.scanner_tilde_prefix();
         if pos != 0 {
-            Some( SubWordTildePrefix{text: text.consume(pos), pos: DebugInfo::init(text) } )
+            Some( SubwordTildePrefix{text: text.consume(pos), pos: DebugInfo::init(text) } )
         }else{
             None
         }

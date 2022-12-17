@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use nix::unistd::Pid;
-use crate::element::command::AbstCommand;
+use crate::element::command::Command;
 
 //[1]+  Running                 sleep 5 &
 #[derive(Clone)]
@@ -13,7 +13,7 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn new(text: &String, commands: &Vec<Box<dyn AbstCommand>>) -> Job {
+    pub fn new(text: &String, commands: &Vec<Box<dyn Command>>) -> Job {
         let mut pids = vec![];
         for c in commands {
             if let Some(p) = c.get_pid() {

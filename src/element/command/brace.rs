@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::AbstCommand;
+use crate::element::command::Command;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 use crate::element::script::Script;
@@ -33,7 +33,7 @@ pub struct CommandBrace {
     fds: FileDescs,
 }
 
-impl AbstCommand for CommandBrace {
+impl Command for CommandBrace {
     fn exec_elems(&mut self, conf: &mut ShellCore) {
              self.script.exec(conf);
              if ! self.fds.no_connection() {

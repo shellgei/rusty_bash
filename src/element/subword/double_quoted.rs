@@ -5,19 +5,19 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 
-use crate::element::subword::WordElem;
-use crate::element::subword::string_double_quoted::SubWordStringDoubleQuoted;
-use crate::element::subword::variable::SubWordVariable;
-use crate::element::subword::command_substitution::SubWordCommandSubstitution;
+use crate::element::subword::Subword;
+use crate::element::subword::string_double_quoted::SubwordStringDoubleQuoted;
+use crate::element::subword::variable::SubwordVariable;
+use crate::element::subword::command_substitution::SubwordCommandSubstitution;
 use crate::utils::combine;
 
-pub struct SubWordDoubleQuoted {
+pub struct SubwordDoubleQuoted {
     pub text: String,
     pub pos: DebugInfo,
-    pub subwords: Vec<Box<dyn WordElem>>,
+    pub subwords: Vec<Box<dyn Subword>>,
 }
 
-impl WordElem for SubWordDoubleQuoted {
+impl Subword for SubwordDoubleQuoted {
     fn eval(&mut self, conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         conf.in_double_quot = true;
 
@@ -53,14 +53,14 @@ impl WordElem for SubWordDoubleQuoted {
 }
 
 
-impl SubWordDoubleQuoted {
+impl SubwordDoubleQuoted {
 /* parser for a string such as "aaa${var}" */
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubWordDoubleQuoted> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubwordDoubleQuoted> {
         if ! text.starts_with("\"") {
             return None;
         };
 
-        let mut ans = SubWordDoubleQuoted {
+        let mut ans = SubwordDoubleQuoted {
             text: "".to_string(),
             pos: DebugInfo::init(text),
             subwords: vec![],
@@ -69,13 +69,13 @@ impl SubWordDoubleQuoted {
         ans.text += &text.consume(1);
     
         loop {
-            if let Some(a) = SubWordCommandSubstitution::parse(text, conf) {
+            if let Some(a) = SubwordCommandSubstitution::parse(text, conf) {
                 ans.text += &a.text.clone();
                 ans.subwords.push(Box::new(a));
-            }else if let Some(a) = SubWordVariable::parse(text) {
+            }else if let Some(a) = SubwordVariable::parse(text) {
                 ans.text += &a.text.clone();
                 ans.subwords.push(Box::new(a));
-            }else if let Some(a) = SubWordStringDoubleQuoted::parse(text, conf) {
+            }else if let Some(a) = SubwordStringDoubleQuoted::parse(text, conf) {
                 ans.text += &a.text.clone();
                 ans.subwords.push(Box::new(a));
             }

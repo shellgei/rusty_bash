@@ -8,17 +8,17 @@ use crate::Feeder;
 use crate::element::word::Word;
 
 use crate::element::word::word_in_brace;
-use crate::element::subword::WordElem;
+use crate::element::subword::Subword;
 use crate::utils::combine_with;
 
-pub struct SubWordBraced {
+pub struct SubwordBraced {
     pub text: String,
     pub pos: DebugInfo,
     pub words: Vec<Word>,
     pub complete: bool,
 }
 
-impl WordElem for SubWordBraced {
+impl Subword for SubwordBraced {
     fn eval(&mut self, conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
         if self.complete {
             self.eval_complete(conf)
@@ -34,9 +34,9 @@ impl WordElem for SubWordBraced {
     fn permit_lf(&self) -> bool {true}
 }
 
-impl SubWordBraced {
-    fn new(text: &mut Feeder) -> SubWordBraced{
-        SubWordBraced {
+impl SubwordBraced {
+    fn new(text: &mut Feeder) -> SubwordBraced{
+        SubwordBraced {
             text: "".to_string(),
             pos: DebugInfo::init(text),
             words: vec![],
@@ -87,12 +87,12 @@ impl SubWordBraced {
         vec!(ans)
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubWordBraced> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<SubwordBraced> {
         if ! text.starts_with("{"){
             return None;
         }
 
-        let mut ans = SubWordBraced::new(text);
+        let mut ans = SubwordBraced::new(text);
         ans.text = text.consume(1);
 
         while let Some(word) = word_in_brace(text, conf) {
