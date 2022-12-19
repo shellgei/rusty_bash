@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub mod builtins;
+mod builtins;
 
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
