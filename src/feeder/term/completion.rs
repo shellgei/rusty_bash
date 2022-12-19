@@ -6,8 +6,8 @@ use std::collections::HashSet;
 
 use crate::ShellCore;
 use crate::utils::{eval_glob, search_commands, expand_tilde};
-use crate::term::Writer;
-use crate::term::prompt_normal;
+use crate::feeder::term::Writer;
+use crate::feeder::term::prompt_normal;
 use std::fs;
 use crate::utils::*;
 

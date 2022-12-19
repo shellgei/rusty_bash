@@ -7,7 +7,6 @@ mod element;
 mod operators;
 
 mod core;
-mod term;
 mod file_descs;
 mod utils;
 mod feeder;

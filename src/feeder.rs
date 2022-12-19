@@ -2,11 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod scanner;
+mod term;
 
 use std::io;
 use std::str::Chars;
 use crate::ShellCore;
-use crate::term;
+//use crate::term;
 
 
 #[derive(Clone)]
