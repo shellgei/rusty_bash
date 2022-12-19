@@ -1,8 +1,10 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod term;
+
 use crate::ShellCore;
-use crate::term;
+//use self::term;
 
 
 #[derive(Clone)]
