@@ -11,7 +11,7 @@ use std::collections::HashMap;
 pub struct ShellCore {
     pub history: Vec<String>,
     pub vars: HashMap<String, String>, 
-    pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
+    pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
 }
 
 impl ShellCore {
@@ -52,13 +52,13 @@ impl ShellCore {
     } 
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
-        if self.builtins.contains_key(&args[0]) {
-            let func = self.builtins[&args[0]];
-            let status = func(self, args);
-            self.vars.insert("?".to_string(), status.to_string());
-            true
-        }else{
-            false
+        if ! self.builtins.contains_key(&args[0]) {
+            return false;
         }
+
+        let func = self.builtins[&args[0]];
+        let status = func(self, args);
+        self.vars.insert("?".to_string(), status.to_string());
+        true
     }
 }
