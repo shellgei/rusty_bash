@@ -4,6 +4,7 @@
 mod core;
 mod elem_command;
 mod feeder;
+mod elements;
 
 use std::{env, process};
 use crate::core::ShellCore;
