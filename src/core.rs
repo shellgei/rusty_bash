@@ -163,7 +163,7 @@ impl ShellCore {
     }
 
     pub fn wait_process(&mut self, child: Pid) {
-        let exit_status = match waitpid(child, None) {
+        let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
             },
