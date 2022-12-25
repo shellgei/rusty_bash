@@ -25,7 +25,7 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
-    pub jobs: Vec<Job>,
+    pub jobs: Vec<Job>, // jobs[0]: foreground job, jobs[1:]: background jobs
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
