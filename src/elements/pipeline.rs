@@ -33,13 +33,12 @@ impl Pipeline {
         }
 
         if self.is_bg {
-            core.jobs.push_back(Job::new(&self.text, &self.commands, true));
+            core.jobs.push(Job::new(&self.text, &self.commands, true));
             return;
         }
 
-        core.jobs.push_back(Job::new(&self.text, &self.commands, false));
-        core.fg_job = core.jobs.len() - 1;
-        core.wait_job(core.fg_job);
+        core.jobs[0] = Job::new(&self.text, &self.commands, false);
+        core.wait_job(0);
 
         if self.not_flag {
             if core.vars["?"] != "0" {

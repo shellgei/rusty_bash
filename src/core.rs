@@ -15,7 +15,6 @@ use nix::unistd::Pid;
 
 use nix::unistd::read;
 use std::os::unix::prelude::RawFd;
-use std::collections::VecDeque;
 
 pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -26,8 +25,7 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
-    pub jobs: VecDeque<Job>,
-    pub fg_job: usize,
+    pub jobs: Vec<Job>,
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
@@ -47,8 +45,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
-            jobs: VecDeque::new(),
-            fg_job: 0, 
+            jobs: vec!(Job::new(&"".to_string(), &vec![], false)),
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
@@ -57,7 +54,6 @@ impl ShellCore {
             shopts: Shopts::new(),
         };
 
-        conf.jobs.push_back(Job::new(&"".to_string(), &vec![], false));
         conf.set_var("?", &0.to_string());
 
         // Builtins: they are implemented in builtins.rs. 
@@ -168,25 +164,22 @@ impl ShellCore {
     pub fn wait_process(&mut self, child: Pid) {
         let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
-                self.jobs[self.fg_job].status = "Done".to_string();
                 status
             },
             Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
-                self.jobs[self.fg_job].status = "Done".to_string();
                 eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
                 128+signal as i32 
             },
             Ok(WaitStatus::Stopped(_pid, signal)) => {
-                self.jobs[self.fg_job].status = "Stopped".to_string();
+                self.jobs[0].status = "Stopped".to_string();
+                self.jobs.push(self.jobs[0].clone());
                 128+signal as i32 
             },
             Ok(unsupported) => {
-                self.jobs[self.fg_job].status = "Done".to_string();
                 eprintln!("Error: {:?}", unsupported);
                 1
             },
             Err(err) => {
-                self.jobs[self.fg_job].status = "Done".to_string();
                 panic!("Error: {:?}", err);
             },
         };
@@ -237,10 +230,12 @@ impl ShellCore {
     }
 
     pub fn check_jobs(&mut self) {
-        /*
         for j in self.jobs.iter_mut() {
-            if j.status == "Done" {
+            if j.status != "Done" {
+                return;
             }
-        }*/
+        }
+
+        self.jobs.clear();
     }
 }
