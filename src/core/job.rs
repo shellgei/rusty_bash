@@ -10,10 +10,11 @@ pub struct Job {
     pub pids: Vec<Pid>,
     text: String,
     pub status: String,
+    pub is_bg: bool,
 }
 
 impl Job {
-    pub fn new(text: &String, commands: &Vec<Box<dyn Command>>) -> Job {
+    pub fn new(text: &String, commands: &Vec<Box<dyn Command>>, is_bg: bool) -> Job {
         let mut pids = vec![];
         for c in commands {
             if let Some(p) = c.get_pid() {
@@ -25,6 +26,7 @@ impl Job {
             pids: pids,
             text: text.clone(),
             status: "Running".to_string(),
+            is_bg: is_bg,
         }
     }
 

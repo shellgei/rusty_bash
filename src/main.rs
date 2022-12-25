@@ -153,11 +153,10 @@ fn main_loop(core: &mut ShellCore) {
             }
             e.exec(core);
         }
+        core.check_jobs();
     }
 
-    //if let Ok(status) = core.get_var(&"?".to_string())
-    if let Ok(status) = core.get_var("?")
-                        .to_string().parse::<i32>(){
+    if let Ok(status) = core.get_var("?").to_string().parse::<i32>(){
         process::exit(status);
     }else{
         eprintln!("Shell internal error");

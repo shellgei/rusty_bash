@@ -15,7 +15,7 @@ use nix::unistd::Pid;
 
 use nix::unistd::read;
 use std::os::unix::prelude::RawFd;
-
+use std::collections::VecDeque;
 
 pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -26,7 +26,7 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
-    pub jobs: Vec<Job>,
+    pub jobs: VecDeque<Job>,
     pub fg_job: usize,
     pub in_double_quot: bool,
     pub pipeline_end: String,
@@ -47,7 +47,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
-            jobs: vec!(Job::new(&"".to_string(), &vec![])),
+            jobs: VecDeque::new(),
             fg_job: 0, 
             in_double_quot: false,
             pipeline_end: String::new(),
@@ -57,6 +57,7 @@ impl ShellCore {
             shopts: Shopts::new(),
         };
 
+        conf.jobs.push_back(Job::new(&"".to_string(), &vec![], false));
         conf.set_var("?", &0.to_string());
 
         // Builtins: they are implemented in builtins.rs. 
@@ -233,5 +234,13 @@ impl ShellCore {
             pipestatus.push(self.get_var("?"));
         }
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
+    }
+
+    pub fn check_jobs(&mut self) {
+        /*
+        for j in self.jobs.iter_mut() {
+            if j.status == "Done" {
+            }
+        }*/
     }
 }
