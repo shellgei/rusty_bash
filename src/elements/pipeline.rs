@@ -32,14 +32,14 @@ impl Pipeline {
             prevfd = c.get_pipe_end();
         }
 
-
+        core.jobs.push(Job::new(&self.text, &self.commands));
         if self.is_bg {
-            core.jobs.push(Job::new(&self.text, &self.commands));
             return;
         }else{
-            core.jobs[0] = Job::new(&self.text, &self.commands);
+            core.fg_job = core.jobs.len() - 1;
+        //    core.jobs[0] = Job::new(&self.text, &self.commands);
         }
-        core.wait_job(0);
+        core.wait_job(core.fg_job);
 
         if self.not_flag {
             if core.vars["?"] != "0" {

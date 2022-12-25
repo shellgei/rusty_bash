@@ -107,6 +107,7 @@ impl SimpleCommand {
         if let Some(func) = core.get_builtin(&args[0]) {
             let status = func(core, args);
             core.set_var("?", &status.to_string());
+            core.jobs[core.fg_job].status = "Done".to_string();
             true
         }else{
             false

@@ -27,6 +27,7 @@ pub struct ShellCore {
     pub history: Vec<String>,
     pub flags: String,
     pub jobs: Vec<Job>,
+    pub fg_job: usize,
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
@@ -47,6 +48,7 @@ impl ShellCore {
             history: Vec::new(),
             flags: String::new(),
             jobs: vec!(Job::new(&"".to_string(), &vec![])),
+            fg_job: 0, 
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
@@ -165,17 +167,25 @@ impl ShellCore {
     pub fn wait_process(&mut self, child: Pid) {
         let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
+                self.jobs[self.fg_job].status = "Done".to_string();
                 status
             },
             Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
+                self.jobs[self.fg_job].status = "Done".to_string();
                 eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
                 128+signal as i32 
             },
+            Ok(WaitStatus::Stopped(_pid, signal)) => {
+                self.jobs[self.fg_job].status = "Stopped".to_string();
+                128+signal as i32 
+            },
             Ok(unsupported) => {
+                self.jobs[self.fg_job].status = "Done".to_string();
                 eprintln!("Error: {:?}", unsupported);
                 1
             },
             Err(err) => {
+                self.jobs[self.fg_job].status = "Done".to_string();
                 panic!("Error: {:?}", err);
             },
         };
@@ -222,7 +232,6 @@ impl ShellCore {
             self.wait_process(p);
             pipestatus.push(self.get_var("?"));
         }
-        self.jobs[job_no].status = "Done".to_string();
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
     }
 }

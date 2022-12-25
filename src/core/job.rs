@@ -5,7 +5,7 @@ use nix::unistd::Pid;
 use crate::elements::command::Command;
 
 //[1]+  Running                 sleep 5 &
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct Job {
     pub pids: Vec<Pid>,
     text: String,
