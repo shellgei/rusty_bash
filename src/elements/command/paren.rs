@@ -2,17 +2,17 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use nix::unistd::{Pid, fork, ForkResult};
 use std::os::unix::prelude::RawFd;
-use crate::element::script::Script;
+use crate::elements::script::Script;
 use crate::operators::ControlOperator;
 use std::process::exit;
-use crate::element::redirect::Redirect;
+use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use nix::unistd::{close, pipe};
 //use crate::feeder::scanner::*;
-use crate::element::command::CommandType;
+use crate::elements::command::CommandType;
 
 pub struct CommandParen {
     pub script: Option<Script>,

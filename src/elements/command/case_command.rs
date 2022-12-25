@@ -2,18 +2,18 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use std::os::unix::prelude::RawFd;
 //use crate::operators::ControlOperator;
-use crate::element::script::Script;
-use crate::element::redirect::Redirect;
+use crate::elements::script::Script;
+use crate::elements::redirect::Redirect;
 use nix::unistd::Pid;
 use crate::file_descs::*;
 //use crate::feeder::scanner::*;
-use crate::element::word::Word;
+use crate::elements::word::Word;
 use crate::bash_glob::glob_match;
-// use crate::element::CommandElem;
-use crate::element::command::CommandType;
+// use crate::elements::CommandElem;
+use crate::elements::command::CommandType;
 
 pub struct CommandCase {
     pub word: Word,

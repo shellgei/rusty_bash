@@ -6,7 +6,7 @@ use crate::ShellCore;
 use crate::Feeder;
 //use crate::feeder::scanner::*;
 
-use crate::element::subword::Subword;
+use crate::elements::subword::Subword;
 
 
 pub struct SubwordSingleQuoted {

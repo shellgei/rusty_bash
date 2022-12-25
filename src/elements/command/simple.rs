@@ -11,11 +11,11 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::utils::*;
 
-use crate::element::command::Command;
-use crate::element::command;
-use crate::element::word::Word;
-use crate::element::redirect::Redirect;
-use crate::element::substitution::Substitution;
+use crate::elements::command::Command;
+use crate::elements::command;
+use crate::elements::word::Word;
+use crate::elements::redirect::Redirect;
+use crate::elements::substitution::Substitution;
 //use crate::feeder::scanner::*;
 use crate::file_descs::*;
 

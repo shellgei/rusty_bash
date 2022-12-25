@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use crate::operators::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
-use crate::element::command;
+use crate::elements::command;
 use crate::core::job::Job;
 
 pub struct Pipeline {

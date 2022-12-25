@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use std::os::unix::prelude::RawFd;
-use crate::element::script::Script;
-use crate::element::redirect::Redirect;
-use crate::element::command::CommandType;
+use crate::elements::script::Script;
+use crate::elements::redirect::Redirect;
+use crate::elements::command::CommandType;
 use nix::unistd::Pid;
 use crate::file_descs::*;
 

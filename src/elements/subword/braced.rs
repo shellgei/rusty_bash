@@ -2,13 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::debuginfo::DebugInfo;
-// use crate::element::CommandElem;
+// use crate::elements::CommandElem;
 use crate::ShellCore;
 use crate::Feeder;
-use crate::element::word::Word;
+use crate::elements::word::Word;
 
-use crate::element::word::word_in_brace;
-use crate::element::subword::Subword;
+use crate::elements::word::word_in_brace;
+use crate::elements::subword::Subword;
 use crate::utils::combine_with;
 
 pub struct SubwordBraced {

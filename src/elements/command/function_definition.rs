@@ -3,8 +3,8 @@
 
 use crate::{ShellCore, Feeder};
 //use crate::feeder::scanner::*;
-use crate::element::command;
-use crate::element::command::Command;
+use crate::elements::command;
+use crate::elements::command::Command;
 
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;

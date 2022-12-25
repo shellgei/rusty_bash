@@ -5,9 +5,9 @@ use crate::ShellCore;
 use crate::utils::combine;
 use crate::debuginfo::DebugInfo;
 use crate::Feeder;
-use crate::element::subword;
-use crate::element::subword::Subword;
-use crate::element::subword::tilde::SubwordTildePrefix;
+use crate::elements::subword;
+use crate::elements::subword::Subword;
+use crate::elements::subword::tilde::SubwordTildePrefix;
 
 pub struct Value {
     pub text: String,

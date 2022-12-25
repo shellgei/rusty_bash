@@ -3,7 +3,7 @@
 
 mod bash_glob;
 mod calculator;
-mod element;
+mod elements;
 mod operators;
 
 mod core;
@@ -20,9 +20,9 @@ use std::io::Read;
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
 
-use crate::element::script::Script;
+use crate::elements::script::Script;
 
-use crate::element::command::CommandType;
+use crate::elements::command::CommandType;
 
 use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;

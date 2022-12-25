@@ -3,8 +3,8 @@
 
 use crate::{ShellCore, Feeder};
 use crate::operators::*;
-use crate::element::command::CommandType;
-use crate::element::pipeline::Pipeline;
+use crate::elements::command::CommandType;
+use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
 
 pub struct Script {
