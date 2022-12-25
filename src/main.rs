@@ -21,8 +21,12 @@ use crate::core::ShellCore;
 use crate::feeder::Feeder;
 
 use crate::elements::script::Script;
-
 use crate::elements::command::CommandType;
+
+use nix::sys::signal;
+use nix::sys::signal::{Signal, SigHandler};
+
+use nix::libc;
 
 use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;
@@ -84,6 +88,9 @@ fn has_option(word: &String, opt: String) -> bool {
     false
 }
 
+extern fn signal_handler(_signal: libc::c_int) {
+}
+
 fn main() {
     let words: Vec<String> = env::args().collect();
     if words.len() > 1 && words[1] == "--version" {
@@ -91,8 +98,10 @@ fn main() {
     }
 
     /* Ignore Ctrl+C (Childlen will receive instead.) */
-    ctrlc::set_handler(move || { })
-    .expect("Unable to set the Ctrl+C handler.");
+    let handler = SigHandler::Handler(signal_handler);
+    unsafe { signal::signal(Signal::SIGINT, handler) }.unwrap();
+    /* enable to send Ctrl+Z to commands */
+    unsafe { signal::signal(Signal::SIGTSTP, handler) }.unwrap();
 
     let mut core = ShellCore::new();
     for word in &words {
