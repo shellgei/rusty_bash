@@ -267,7 +267,7 @@ pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
         if i == 0 {
             continue;
         }
-        println!("[{}] {}", i, j.clone().status_string().trim_end());
+        println!("{}", j.clone().status_string().trim_end());
     }
 
     0

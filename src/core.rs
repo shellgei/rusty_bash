@@ -172,6 +172,8 @@ impl ShellCore {
             },
             Ok(WaitStatus::Stopped(_pid, signal)) => {
                 self.jobs[0].status = "Stopped".to_string();
+                self.jobs[0].id = self.jobs.len();
+                print!("\n{}", self.jobs[0].status_string().clone());
                 self.jobs.push(self.jobs[0].clone());
                 128+signal as i32 
             },

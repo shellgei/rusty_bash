@@ -11,6 +11,7 @@ pub struct Job {
     text: String,
     pub status: String,
     pub is_bg: bool,
+    pub id: usize,
 }
 
 impl Job {
@@ -27,11 +28,12 @@ impl Job {
             text: text.clone(),
             status: "Running".to_string(),
             is_bg: is_bg,
+            id: 0,
         }
     }
 
-    pub fn status_string(self) -> String {
-        format!("{} {}", &self.status, &self.text)
+    pub fn status_string(&self) -> String {
+        format!("[{}] {} {}", &self.id, &self.status, &self.text)
     }
 
 }
