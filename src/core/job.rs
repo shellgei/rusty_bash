@@ -12,6 +12,7 @@ pub struct Job {
     pub status: String,
     pub is_bg: bool,
     pub id: usize,
+    pub mark: char, // '+': current, '-': previous, ' ': others
 }
 
 impl Job {
@@ -29,11 +30,12 @@ impl Job {
             status: "Running".to_string(),
             is_bg: is_bg,
             id: 0,
+            mark: '+',
         }
     }
 
     pub fn status_string(&self) -> String {
-        format!("[{}] {} {}", &self.id, &self.status, &self.text)
+        format!("[{}]{} {} {}", &self.id, &self.mark, &self.status, &self.text)
     }
 
 }

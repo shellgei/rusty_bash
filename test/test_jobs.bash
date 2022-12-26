@@ -10,7 +10,7 @@ err () {
 cd $(dirname $0)
 com=../target/release/rusty_bash
 
-### JOB ###
+### BASIC BEHAVIOR ###
 
 res=$($com <<< '(sleep 1; echo a) &')
 [ "$res" = "a" ] || err $LINENO
@@ -22,5 +22,10 @@ a" ] || err $LINENO
 res=$($com <<< '(sleep 1; echo a) & wait ; echo b')
 [ "$res" = "a
 b" ] || err $LINENO
+
+### DISPLAYING ###
+
+res=$($com <<< '( sleep 3 & ) 2>&1 ; wait')
+echo $res | grep -E '^\[1\] [0-9]+$' || err $LINENO
 
 echo OK $0
