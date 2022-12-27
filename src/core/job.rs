@@ -3,6 +3,7 @@
 
 use nix::unistd::Pid;
 use crate::elements::command::Command;
+use crate::ShellCore;
 
 //[1]+  Running                 sleep 5 &
 #[derive(Clone,Debug)]
@@ -34,6 +35,25 @@ impl Job {
             id: 0,
             mark: '+',
         }
+    }
+
+    pub fn check_of_finish(&mut self) {
+        let mut remain = vec![];
+
+        while self.async_pids.len() > 0 {
+            let p = self.async_pids.pop().unwrap();
+
+            if ! ShellCore::check_process(p){
+                remain.push(p);
+            }
+        }
+
+        if remain.len() == 0 {
+            self.status = "Done".to_string();
+            print!("{}", self.status_string().clone());
+        }
+
+        self.async_pids = remain;
     }
 
     pub fn status_string(&self) -> String {

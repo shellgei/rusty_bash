@@ -232,35 +232,17 @@ impl ShellCore {
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
     }
 
-    pub fn check_process(&mut self, pid: Pid) -> bool {
+    pub fn check_process(pid: Pid) -> bool {
         match waitpid(pid, Some(WaitPidFlag::WNOHANG)).expect("Faild to wait child process.") {
             WaitStatus::StillAlive =>  false,
             _                      => true
         }
     }
 
-    pub fn check_job(&mut self, job_id: usize) {
-        let mut remain = vec![];
-
-        while self.jobs[job_id].async_pids.len() > 0 {
-            let p = self.jobs[job_id].async_pids.pop().unwrap();
-
-            if ! self.check_process(p){
-                remain.push(p);
-            }
-        }
-
-        if remain.len() == 0 {
-            self.jobs[job_id].status = "Done".to_string();
-        }
-
-        self.jobs[job_id].async_pids = remain;
-    }
-
     pub fn check_jobs(&mut self) {
         for j in 1..self.jobs.len() {
             if self.jobs[j].async_pids.len() != 0 {
-                self.check_job(j);
+                self.jobs[j].check_of_finish();
             }
         }
     }
