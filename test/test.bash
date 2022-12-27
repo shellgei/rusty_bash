@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 # SPDX-License-Identifier: BSD-3-Clause
 
-cargo build --release || err $LINENO
+cargo build --release || exit 1
 
 cd $(dirname $0)
 

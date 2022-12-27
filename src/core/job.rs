@@ -8,6 +8,7 @@ use crate::elements::command::Command;
 #[derive(Clone,Debug)]
 pub struct Job {
     pub pids: Vec<Pid>,
+    pub async_pids: Vec<Pid>,
     text: String,
     pub status: String,
     pub is_bg: bool,
@@ -26,6 +27,7 @@ impl Job {
 
         Job {
             pids: pids,
+            async_pids: vec![],
             text: text.clone(),
             status: "Running".to_string(),
             is_bg: is_bg,

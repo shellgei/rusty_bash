@@ -38,6 +38,7 @@ impl Pipeline {
 
             if let Some(pid) = self.commands.last().unwrap().get_pid() {
                 eprintln!("[{}] {}", bgjob.id, pid);
+                bgjob.async_pids.push(pid);
             }else{
                 panic!("Bash internal error (before running background process)");
             }

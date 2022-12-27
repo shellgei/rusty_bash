@@ -170,9 +170,10 @@ impl ShellCore {
                 eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
                 128+signal as i32 
             },
-            Ok(WaitStatus::Stopped(_pid, signal)) => {
+            Ok(WaitStatus::Stopped(pid, signal)) => {
                 self.jobs[0].status = "Stopped".to_string();
                 self.jobs[0].id = self.jobs.len();
+                self.jobs[0].async_pids.push(pid);
                 print!("\n{}", self.jobs[0].status_string().clone());
                 self.jobs.push(self.jobs[0].clone());
                 128+signal as i32 
@@ -231,43 +232,32 @@ impl ShellCore {
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
     }
 
-    pub fn _check_process(&mut self, pid: Pid) -> bool {
+    pub fn check_process(&mut self, pid: Pid) -> bool {
         match waitpid(pid, Some(WaitPidFlag::WNOHANG)).expect("Faild to wait child process.") {
-            WaitStatus::StillAlive => {
-                return false;
-            },
-            _ => {
-                return true;
-            },
-            /*
-            WaitStatus::Exited(_pid, status) => {
-                self.set_var("?", &status.to_string());
-                return true;
-            },
-            WaitStatus::Signaled(pid, signal, _) => {
-                self.set_var("?", &(128+signal as i32).to_string());
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
-                return true;
-            },
-            _ => {
-                break;
-            },
-            */
-        };
+            WaitStatus::StillAlive =>  false,
+            _                      => true
+        }
+    }
+
+    pub fn check_job(&mut self, job_id: usize) {
+        let mut remain = vec![];
+
+        while self.jobs[job_id].async_pids.len() > 0 {
+            let p = self.jobs[job_id].async_pids.pop().unwrap();
+
+            if ! self.check_process(p){
+                remain.push(p);
+            }
+        }
+
+        self.jobs[job_id].async_pids = remain;
     }
 
     pub fn check_jobs(&mut self) {
-        /*
-        if self.jobs[job_no].status == "Done" {
-            return;
+        for j in 1..self.jobs.len() {
+            if self.jobs[j].async_pids.len() != 0 {
+                self.check_job(j);
+            }
         }
-
-        let mut pipestatus = vec![];
-        for p in self.jobs[job_no].pids.clone() {
-            self.check_process(p);
-     //       pipestatus.push(self.get_var("?"));
-        }
-    //    self.set_var("PIPESTATUS", &pipestatus.join(" "));
-        */
     }
 }
