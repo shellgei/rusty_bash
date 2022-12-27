@@ -250,6 +250,10 @@ impl ShellCore {
             }
         }
 
+        if remain.len() == 0 {
+            self.jobs[job_id].status = "Done".to_string();
+        }
+
         self.jobs[job_id].async_pids = remain;
     }
 
