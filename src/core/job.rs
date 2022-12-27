@@ -13,6 +13,7 @@ pub struct Job {
     text: String,
     pub status: String,
     pub is_bg: bool,
+    pub is_waited: bool,
     pub id: usize,
     pub mark: char, // '+': current, '-': previous, ' ': others
 }
@@ -32,12 +33,17 @@ impl Job {
             text: text.clone(),
             status: "Running".to_string(),
             is_bg: is_bg,
+            is_waited: false,
             id: 0,
             mark: '+',
         }
     }
 
     pub fn check_of_finish(&mut self) {
+        if self.is_waited {
+            return;
+        }
+
         let mut remain = vec![];
 
         while self.async_pids.len() > 0 {

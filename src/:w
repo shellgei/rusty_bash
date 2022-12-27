@@ -358,12 +358,12 @@ pub fn glob_test(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
     for i in 1..core.jobs.len() {
+        eprintln!("{}", core.jobs[i].status);
         if core.jobs[i].status == "Done" || core.jobs[i].is_waited {
             continue;
         }
         core.jobs[i].is_waited = true;
         core.wait_job(i);
-        eprint!("{}", core.jobs[i].status_string().clone());
     }
 
     0
