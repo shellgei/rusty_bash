@@ -363,7 +363,8 @@ pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
         }
         core.jobs[i].is_waited = true;
         core.wait_job(i);
-        eprint!("{}", core.jobs[i].status_string().clone());
+        core.jobs[i].status = "Done".to_string();
+        eprintln!("{}", core.jobs[i].status_string().clone());
     }
 
     0

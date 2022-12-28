@@ -25,7 +25,10 @@ b" ] || err $LINENO
 
 ### DISPLAYING ###
 
-#res=$($com <<< '( sleep 1 & sleep 2 ) 2>&1')
-#echo $res | grep -E '^\[1\] [0-9]+$' || err $LINENO
+res=$($com <<< '( sleep 1 & ; sleep 2 ) 2>&1')
+echo $res | grep -E '^\[1\] [0-9]+$' || err $LINENO
+
+res=$($com <<< '( sleep 1 & wait ) 2>&1')
+echo $res | grep Done || err $LINENO
 
 echo OK $0

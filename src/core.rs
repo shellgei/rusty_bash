@@ -230,6 +230,7 @@ impl ShellCore {
             pipestatus.push(self.get_var("?"));
         }
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
+        self.jobs[job_no].status = "Done".to_string();
     }
 
     pub fn check_process(pid: Pid) -> bool {
