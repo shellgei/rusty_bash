@@ -43,7 +43,8 @@ impl Pipeline {
                 panic!("Bash internal error (before running background process)");
             }
 
-            core.jobs.push(bgjob);
+            core.add_bg_job(bgjob);
+            //core.jobs.push(bgjob);
             return;
         }
 

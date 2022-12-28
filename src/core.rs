@@ -171,11 +171,13 @@ impl ShellCore {
                 128+signal as i32 
             },
             Ok(WaitStatus::Stopped(pid, signal)) => {
+                /*TODO: The shell must restart other jobs if they are not sleeping.*/
                 self.jobs[0].status = "Stopped".to_string();
                 self.jobs[0].id = self.jobs.len();
+                self.jobs[0].mark = '+';
                 self.jobs[0].async_pids.push(pid);
                 print!("\n{}", self.jobs[0].status_string().clone());
-                self.jobs.push(self.jobs[0].clone());
+                self.add_bg_job(self.jobs[0].clone());
                 128+signal as i32 
             },
             Ok(unsupported) => {
@@ -247,6 +249,12 @@ impl ShellCore {
             }
         }
 
+        for j in 1..self.jobs.len() {
+            if self.jobs[j].status == "Done" {
+                self.jobs[j].print_status();
+            }
+        }
+
         while self.jobs.len() > 1 {
             let job = self.jobs.pop().unwrap();
 
@@ -255,5 +263,15 @@ impl ShellCore {
                 break;
             }
         }
+    }
+
+    pub fn add_bg_job(&mut self, added: Job) {
+        if added.mark == '+' {
+            for job in self.jobs.iter_mut() {
+                job.mark = if job.mark == '+' {'-'}else{' '};
+            }
+        }
+
+        self.jobs.push(added);
     }
 }

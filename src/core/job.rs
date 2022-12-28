@@ -35,7 +35,7 @@ impl Job {
             is_bg: is_bg,
             is_waited: false,
             id: 0,
-            mark: '+',
+            mark: ' ',
         }
     }
 
@@ -55,9 +55,9 @@ impl Job {
         }
 
         if remain.len() == 0 {
+                eprintln!("FINISHED");
             self.status = "Done".to_string();
-            print!("{}", self.status_string().clone());
-            self.status = "Printed".to_string();
+           // self.print_status();
         }
 
         self.async_pids = remain;
@@ -67,4 +67,10 @@ impl Job {
         format!("[{}]{} {} {}", &self.id, &self.mark, &self.status, &self.text)
     }
 
+    pub fn print_status(&mut self) {
+            print!("{}", self.status_string().clone());
+            if self.status == "Done" {
+                self.status = "Printed".to_string();
+            }
+    }
 }

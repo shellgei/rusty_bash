@@ -263,19 +263,18 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for (i,j) in core.jobs.iter().enumerate() {
+    for j in 1..core.jobs.len() {
+        if core.jobs[j].async_pids.len() != 0 {
+            core.jobs[j].check_of_finish();
+        }
+    }
+
+    for (i,j) in core.jobs.iter_mut().enumerate() {
         if i == 0 {
             continue;
         }
-        println!("{}", j.clone().status_string().trim_end());
+        j.print_status();
     }
-
-    for job in core.jobs.iter_mut() {
-        if job.status == "Done" {
-            job.status = "Printed".to_string();
-        }
-    }
-
     0
 }
 
