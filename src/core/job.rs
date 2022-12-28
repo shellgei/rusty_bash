@@ -57,6 +57,7 @@ impl Job {
         if remain.len() == 0 {
             self.status = "Done".to_string();
             print!("{}", self.status_string().clone());
+            self.status = "Printed".to_string();
         }
 
         self.async_pids = remain;

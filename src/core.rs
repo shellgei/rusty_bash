@@ -250,7 +250,7 @@ impl ShellCore {
         while self.jobs.len() > 1 {
             let job = self.jobs.pop().unwrap();
 
-            if job.status != "Done" {
+            if job.status != "Printed" {
                 self.jobs.push(job);
                 break;
             }

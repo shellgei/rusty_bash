@@ -270,6 +270,12 @@ pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
         println!("{}", j.clone().status_string().trim_end());
     }
 
+    for job in core.jobs.iter_mut() {
+        if job.status == "Done" {
+            job.status = "Printed".to_string();
+        }
+    }
+
     0
 }
 
@@ -365,6 +371,7 @@ pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
         core.wait_job(i);
         core.jobs[i].status = "Done".to_string();
         eprintln!("{}", core.jobs[i].status_string().clone());
+        core.jobs[i].status = "Printed".to_string();
     }
 
     0
