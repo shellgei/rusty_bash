@@ -49,7 +49,7 @@ impl Job {
         while self.async_pids.len() > 0 {
             let p = self.async_pids.pop().unwrap();
 
-            if ! ShellCore::check_process(p){
+            if ! ShellCore::check_async_process(p){
                 remain.push(p);
             }
         }

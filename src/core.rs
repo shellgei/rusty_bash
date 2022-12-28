@@ -233,7 +233,7 @@ impl ShellCore {
         self.jobs[job_no].status = "Done".to_string();
     }
 
-    pub fn check_process(pid: Pid) -> bool {
+    pub fn check_async_process(pid: Pid) -> bool {
         match waitpid(pid, Some(WaitPidFlag::WNOHANG)).expect("Faild to wait child process.") {
             WaitStatus::StillAlive =>  false,
             _                      => true
@@ -244,6 +244,15 @@ impl ShellCore {
         for j in 1..self.jobs.len() {
             if self.jobs[j].async_pids.len() != 0 {
                 self.jobs[j].check_of_finish();
+            }
+        }
+
+        while self.jobs.len() > 1 {
+            let job = self.jobs.pop().unwrap();
+
+            if job.status != "Done" {
+                self.jobs.push(job);
+                break;
             }
         }
     }
