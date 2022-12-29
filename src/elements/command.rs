@@ -11,6 +11,7 @@ pub mod while_command;
 pub mod function_definition;
 
 use nix::unistd::Pid;
+//use nix::unistd;
 use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
@@ -49,6 +50,10 @@ pub trait Command {
         unsafe {
             match fork() {
                 Ok(ForkResult::Child) => {
+                    /*
+                    if self.is_session_leader() { //TODO: implement this function
+                        let _ = unistd::setsid();
+                    }*/
                     if let Err(s) = self.set_child_io(conf){
                         eprintln!("{}", s);
                         exit(1);
