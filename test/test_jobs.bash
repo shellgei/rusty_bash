@@ -28,7 +28,10 @@ b" ] || err $LINENO
 res=$($com <<< '( sleep 1 & ; sleep 2 ) 2>&1')
 echo $res | grep -E '^\[1\] [0-9]+$' || err $LINENO
 
-res=$($com <<< '( sleep 1 & wait ) 2>&1')
+res="$($com <<< '( sleep 1 & wait ) 2>&1')"
 echo $res | grep Done || err $LINENO
+
+res="$($com <<< 'sleep 1 & sleep 1 & jobs')"
+echo $res | grep '\[1\].*Running sleep 1 &.*\[2\].*Running sleep 1 &' || err $LINENO
 
 echo OK $0
