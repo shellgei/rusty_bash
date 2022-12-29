@@ -18,6 +18,7 @@ pub struct CommandIf {
     pid: Option<Pid>,
     my_type: CommandType, 
     fds: FileDescs,
+    session_leader: bool,
 }
 
 impl Command for CommandIf {
@@ -37,6 +38,7 @@ impl Command for CommandIf {
     }
 
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_session_leader(&mut self) { self.session_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
     fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
@@ -65,6 +67,7 @@ impl CommandIf {
             text: "".to_string(),
             pid: None,
             my_type: CommandType::If,
+            session_leader: false,
         }
     }
 

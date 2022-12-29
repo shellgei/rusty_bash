@@ -16,6 +16,7 @@ pub struct FunctionDefinition {
     pid: Option<Pid>, 
     pub text: String,
     fds: FileDescs,
+    session_leader: bool,
 }
 
 impl Command for FunctionDefinition {
@@ -23,6 +24,7 @@ impl Command for FunctionDefinition {
         conf.functions.insert(self.name.clone(), self.body.get_text());
     }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_session_leader(&mut self) { self.session_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
     fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
@@ -50,6 +52,7 @@ impl FunctionDefinition {
             text: text,
             pid: None,
             fds: FileDescs::new(),
+            session_leader: false,
         }
     }
 

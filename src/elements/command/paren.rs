@@ -22,6 +22,7 @@ pub struct CommandParen {
     pub substitution: bool,
     fds: FileDescs,
     my_type: CommandType, 
+    session_leader: bool,
 }
 
 impl Command for CommandParen {
@@ -61,6 +62,7 @@ impl Command for CommandParen {
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_session_leader(&mut self) { self.session_leader = true; }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
         self.fds.pipein = pin;
@@ -83,6 +85,7 @@ impl CommandParen {
             substitution: false,
             my_type: CommandType::Paren, 
             fds: FileDescs::new(),
+            session_leader: false,
         }
     }
 

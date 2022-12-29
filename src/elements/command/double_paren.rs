@@ -17,7 +17,7 @@ pub struct CommandDoubleParen {
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-//    pub eoc: Option<Eoc>,
+    session_leader: bool,
 }
 
 impl Command for CommandDoubleParen {
@@ -34,6 +34,7 @@ impl Command for CommandDoubleParen {
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_session_leader(&mut self) { self.session_leader = true; }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
         self.fds.pipein = pin;
@@ -55,8 +56,8 @@ impl CommandDoubleParen {
             expression: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            //eoc: None,
             fds: FileDescs::new(),
+            session_leader: false,
         }
     }
 

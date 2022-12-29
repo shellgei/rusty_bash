@@ -55,9 +55,7 @@ impl Job {
         }
 
         if remain.len() == 0 {
-                eprintln!("FINISHED");
             self.status = "Done".to_string();
-           // self.print_status();
         }
 
         self.async_pids = remain;
@@ -68,9 +66,13 @@ impl Job {
     }
 
     pub fn print_status(&mut self) {
-            print!("{}", self.status_string().clone());
-            if self.status == "Done" {
-                self.status = "Printed".to_string();
-            }
+        if self.status == "Printed" {
+            return;
+        }
+
+        print!("{}", self.status_string().clone());
+        if self.status == "Done" {
+            self.status = "Printed".to_string();
+        }
     }
 }

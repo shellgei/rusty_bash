@@ -67,6 +67,7 @@ pub trait Command {
     }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd);
+    fn set_session_leader(&mut self);
     fn get_pid(&self) -> Option<Pid>;
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;

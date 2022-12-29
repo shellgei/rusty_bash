@@ -27,6 +27,9 @@ impl Pipeline {
                 p = pipe().expect("Pipe cannot open");
             };
             c.set_pipe(p.0, p.1, prevfd);
+            if self.is_bg && i == 0 {
+                c.set_session_leader();
+            }
             c.exec(core);
             FileDescs::set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();

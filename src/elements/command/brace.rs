@@ -31,6 +31,7 @@ pub struct CommandBrace {
     pid: Option<Pid>, 
     pub substitution_text: String,
     fds: FileDescs,
+    session_leader: bool,
 }
 
 impl Command for CommandBrace {
@@ -42,6 +43,7 @@ impl Command for CommandBrace {
     }
 
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_session_leader(&mut self) { self.session_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
     fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
@@ -69,7 +71,7 @@ impl CommandBrace {
             text: "".to_string(),
             substitution_text: "".to_string(),
             fds: FileDescs::new(),
-           // my_type: CommandType::Brace, 
+            session_leader: false,
         }
     }
 
