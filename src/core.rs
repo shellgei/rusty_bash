@@ -55,30 +55,7 @@ impl ShellCore {
         };
 
         conf.set_var("?", &0.to_string());
-
-        // Builtins: they are implemented in builtins.rs. 
-        conf.builtins.insert(".".to_string(), builtins::source);
-        conf.builtins.insert(":".to_string(), builtins::true_);
-        conf.builtins.insert("alias".to_string(), builtins::alias);
-        conf.builtins.insert("builtin".to_string(), builtins::builtin);
-        conf.builtins.insert("cd".to_string(), builtins::cd);
-        conf.builtins.insert("eval".to_string(), builtins::eval);
-        conf.builtins.insert("exit".to_string(), builtins::exit);
-        conf.builtins.insert("export".to_string(), builtins::export);
-        conf.builtins.insert("false".to_string(), builtins::false_);
-        conf.builtins.insert("history".to_string(), builtins::history);
-        conf.builtins.insert("jobs".to_string(), builtins::jobs);
-        conf.builtins.insert("pwd".to_string(), builtins::pwd);
-        conf.builtins.insert("set".to_string(), builtins::set);
-        conf.builtins.insert("shift".to_string(), builtins::shift);
-        conf.builtins.insert("true".to_string(), builtins::true_);
-        conf.builtins.insert("read".to_string(), builtins::read);
-        conf.builtins.insert("return".to_string(), builtins::return_);
-        conf.builtins.insert("shopt".to_string(), builtins::shopt);
-        conf.builtins.insert("source".to_string(), builtins::source);
-        conf.builtins.insert("wait".to_string(), builtins::wait);
-
-        conf.builtins.insert("glob_test".to_string(), builtins::glob_test);
+        builtins::set_builtins(&mut conf);
 
         conf
     }

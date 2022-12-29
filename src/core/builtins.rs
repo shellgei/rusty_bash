@@ -13,6 +13,53 @@ use crate::Script;
 use crate::ShellCore;
 use crate::Feeder;
 
+pub fn set_builtins(core: &mut ShellCore){
+    core.builtins.insert(".".to_string(), source);
+    core.builtins.insert(":".to_string(), true_);
+    core.builtins.insert("alias".to_string(), alias);
+    core.builtins.insert("builtin".to_string(), builtin);
+    core.builtins.insert("cd".to_string(), cd);
+    core.builtins.insert("eval".to_string(), eval);
+    core.builtins.insert("exit".to_string(), exit);
+    core.builtins.insert("export".to_string(), export);
+    core.builtins.insert("false".to_string(), false_);
+    core.builtins.insert("history".to_string(), history);
+    core.builtins.insert("jobs".to_string(), jobs);
+    core.builtins.insert("pwd".to_string(), pwd);
+    core.builtins.insert("set".to_string(), set);
+    core.builtins.insert("shift".to_string(), shift);
+    core.builtins.insert("true".to_string(), true_);
+    core.builtins.insert("read".to_string(), read);
+    core.builtins.insert("return".to_string(), return_);
+    core.builtins.insert("shopt".to_string(), shopt);
+    core.builtins.insert("source".to_string(), source);
+    core.builtins.insert("wait".to_string(), wait);
+
+    core.builtins.insert("glob_test".to_string(), glob_test);
+    core.builtins.insert(".".to_string(), source);
+    core.builtins.insert(":".to_string(), true_);
+    core.builtins.insert("alias".to_string(), alias);
+    core.builtins.insert("builtin".to_string(), builtin);
+    core.builtins.insert("cd".to_string(), cd);
+    core.builtins.insert("eval".to_string(), eval);
+    core.builtins.insert("exit".to_string(), exit);
+    core.builtins.insert("export".to_string(), export);
+    core.builtins.insert("false".to_string(), false_);
+    core.builtins.insert("history".to_string(), history);
+    core.builtins.insert("jobs".to_string(), jobs);
+    core.builtins.insert("pwd".to_string(), pwd);
+    core.builtins.insert("set".to_string(), set);
+    core.builtins.insert("shift".to_string(), shift);
+    core.builtins.insert("true".to_string(), true_);
+    core.builtins.insert("read".to_string(), read);
+    core.builtins.insert("return".to_string(), return_);
+    core.builtins.insert("shopt".to_string(), shopt);
+    core.builtins.insert("source".to_string(), source);
+    core.builtins.insert("wait".to_string(), wait);
+
+    core.builtins.insert("glob_test".to_string(), glob_test);
+}
+
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let home = env::var("HOME").expect("HOME is not defined");
     if let Ok(mut hist_file) = OpenOptions::new().write(true)
