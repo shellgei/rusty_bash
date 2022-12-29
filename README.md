@@ -34,7 +34,7 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
-| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :construction: |
+| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :heavy_check_mark: |
 | \|& | :no_good: | 
 
 ### options 
