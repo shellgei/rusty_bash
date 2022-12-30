@@ -67,9 +67,7 @@ impl Command for SimpleCommand {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
-                if self.session_leader {
-                    let _ = unistd::setsid();
-                }
+                self.set_sid();
                 if let Err(s) = self.fds.set_child_io(core){
                     eprintln!("{}", s);
                     exit(1);
@@ -93,6 +91,11 @@ impl Command for SimpleCommand {
     fn set_session_leader(&mut self) { self.session_leader = true; }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_sid(&mut self){
+        if self.session_leader {
+            let _ = unistd::setsid();
+        }
+    }
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
     fn get_text(&self) -> String { self.text.clone() }

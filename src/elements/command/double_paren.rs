@@ -9,6 +9,7 @@ use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 //use crate::feeder::scanner::*;
 use crate::calculator::calculate;
+use nix::unistd;
 
 pub struct CommandDoubleParen {
     text: String,
@@ -34,6 +35,11 @@ impl Command for CommandDoubleParen {
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_sid(&mut self){
+        if self.session_leader {
+            let _ = unistd::setsid();
+        }
+    }
     fn set_session_leader(&mut self) { self.session_leader = true; }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {

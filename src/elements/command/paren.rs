@@ -32,9 +32,7 @@ impl Command for CommandParen {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
-                if self.session_leader {
-                    let _ = unistd::setsid();
-                }
+                self.set_sid();
                 if let Err(s) = self.fds.set_child_io(conf){
                     eprintln!("{}", s);
                     exit(1);
@@ -63,6 +61,11 @@ impl Command for CommandParen {
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_sid(&mut self){
+        if self.session_leader {
+            let _ = unistd::setsid();
+        }
+    }
     fn set_session_leader(&mut self) { self.session_leader = true; }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {

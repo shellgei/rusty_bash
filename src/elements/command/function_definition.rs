@@ -7,6 +7,7 @@ use crate::elements::command;
 use crate::elements::command::Command;
 
 use nix::unistd::Pid;
+use nix::unistd;
 use std::os::unix::prelude::RawFd;
 use crate::FileDescs;
 
@@ -24,6 +25,11 @@ impl Command for FunctionDefinition {
         conf.functions.insert(self.name.clone(), self.body.get_text());
     }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_sid(&mut self){
+        if self.session_leader {
+            let _ = unistd::setsid();
+        }
+    }
     fn set_session_leader(&mut self) { self.session_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 

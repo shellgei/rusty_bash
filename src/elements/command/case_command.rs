@@ -8,6 +8,7 @@ use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
 use nix::unistd::Pid;
+use nix::unistd;
 use crate::file_descs::*;
 //use crate::feeder::scanner::*;
 use crate::elements::word::Word;
@@ -28,6 +29,11 @@ pub struct CommandCase {
 impl Command for CommandCase {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_sid(&mut self){
+        if self.session_leader {
+            let _ = unistd::setsid();
+        }
+    }
     fn set_session_leader(&mut self) { self.session_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 

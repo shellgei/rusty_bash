@@ -9,6 +9,7 @@ use crate::elements::redirect::Redirect;
 use crate::elements::command::CommandType;
 use nix::unistd::Pid;
 use crate::file_descs::*;
+use nix::unistd;
 
 /* ( script ) */
 pub struct CommandIf {
@@ -38,6 +39,11 @@ impl Command for CommandIf {
     }
 
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_sid(&mut self){
+        if self.session_leader {
+            let _ = unistd::setsid();
+        }
+    }
     fn set_session_leader(&mut self) { self.session_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
