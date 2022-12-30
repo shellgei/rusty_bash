@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::command::Command;
 use nix::unistd::{Pid, fork, ForkResult};
+use nix::unistd;
 use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
 use crate::operators::ControlOperator;
@@ -29,35 +30,35 @@ impl Command for CommandParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         let p = pipe().expect("Pipe cannot open");
 
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                   //self.fds.set_child_io(conf);
-                    if let Err(s) = self.fds.set_child_io(conf){
-                        eprintln!("{}", s);
-                        exit(1);
-                    }
-                    if let Some(s) = &mut self.script {
-                        if self.substitution {
-                            close(p.0).expect("Can't close a pipe end");
-                            FileDescs::dup_and_close(p.1, 1);
-                        }
-                        s.exec(conf);
-                        close(1).expect("Can't close a pipe end");
-                        exit(conf.vars["?"].parse::<i32>().unwrap());
-                    };
-                },
-                Ok(ForkResult::Parent { child } ) => {
+        match unsafe{fork()} {
+            Ok(ForkResult::Child) => {
+                if self.session_leader {
+                    let _ = unistd::setsid();
+                }
+                if let Err(s) = self.fds.set_child_io(conf){
+                    eprintln!("{}", s);
+                    exit(1);
+                }
+                if let Some(s) = &mut self.script {
                     if self.substitution {
-                        close(p.1).expect("Can't close a pipe end");
-                        self.substitution_text  = conf.read_pipe(p.0, child)
-                            .trim_end_matches('\n').to_string();
+                        close(p.0).expect("Can't close a pipe end");
+                        FileDescs::dup_and_close(p.1, 1);
                     }
-                    self.pid = Some(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
+                    s.exec(conf);
+                    close(1).expect("Can't close a pipe end");
+                    exit(conf.vars["?"].parse::<i32>().unwrap());
+                };
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                if self.substitution {
+                    close(p.1).expect("Can't close a pipe end");
+                    self.substitution_text  = conf.read_pipe(p.0, child)
+                        .trim_end_matches('\n').to_string();
+                }
+                self.pid = Some(child);
+                return;
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 

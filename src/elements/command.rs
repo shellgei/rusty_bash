@@ -47,27 +47,25 @@ pub trait Command {
              return;
         };
 
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    /*
-                    if self.is_session_leader() { //TODO: implement this function
-                        let _ = unistd::setsid();
-                    }*/
-                    if let Err(s) = self.set_child_io(conf){
-                        eprintln!("{}", s);
-                        exit(1);
-                    }
-                    self.exec_elems(conf);
-                    close(1).expect("Can't close a pipe end");
-                    exit(conf.vars["?"].parse::<i32>().unwrap());
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    self.set_pid(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
+        match unsafe{fork()} {
+            Ok(ForkResult::Child) => {
+                /*
+                if self.is_session_leader() { //TODO: implement this function
+                    let _ = unistd::setsid();
+                }*/
+                if let Err(s) = self.set_child_io(conf){
+                    eprintln!("{}", s);
+                    exit(1);
+                }
+                self.exec_elems(conf);
+                close(1).expect("Can't close a pipe end");
+                exit(conf.vars["?"].parse::<i32>().unwrap());
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                self.set_pid(child);
+                return;
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 
