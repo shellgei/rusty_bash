@@ -20,6 +20,7 @@ pub fn set_builtins(core: &mut ShellCore){
     core.builtins.insert(":".to_string(), true_);
     core.builtins.insert("alias".to_string(), alias);
     core.builtins.insert("builtin".to_string(), builtin);
+    core.builtins.insert("bg".to_string(), bg);
     core.builtins.insert("cd".to_string(), cd);
     core.builtins.insert("eval".to_string(), eval);
     core.builtins.insert("exit".to_string(), exit);
@@ -97,6 +98,23 @@ pub fn true_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 
 pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
     1
+}
+
+pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
+        for j in 1..core.jobs.len() {
+            if core.jobs[j].mark == '+' {
+                core.jobs[j].status = "Running".to_string();
+
+                print!("{}", core.jobs[j].status_string().clone());
+                for p in &core.jobs[j].async_pids {
+                    signal::kill(*p, Signal::SIGCONT).unwrap();
+                }
+            }
+        }
+        return 0;
+    }
+    0
 }
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
