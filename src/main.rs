@@ -153,7 +153,7 @@ fn main_loop(core: &mut ShellCore) {
             }
             e.exec(core);
         }
-        core.check_jobs();
+        core.check_bg_jobs();
     }
 
     if let Ok(status) = core.get_var("?").to_string().parse::<i32>(){

@@ -25,28 +25,6 @@ pub fn set_builtins(core: &mut ShellCore){
     core.builtins.insert("exit".to_string(), exit);
     core.builtins.insert("export".to_string(), export);
     core.builtins.insert("false".to_string(), false_);
-    core.builtins.insert("history".to_string(), history);
-    core.builtins.insert("jobs".to_string(), jobs);
-    core.builtins.insert("pwd".to_string(), pwd);
-    core.builtins.insert("set".to_string(), set);
-    core.builtins.insert("shift".to_string(), shift);
-    core.builtins.insert("true".to_string(), true_);
-    core.builtins.insert("read".to_string(), read);
-    core.builtins.insert("return".to_string(), return_);
-    core.builtins.insert("shopt".to_string(), shopt);
-    core.builtins.insert("source".to_string(), source);
-    core.builtins.insert("wait".to_string(), wait);
-
-    core.builtins.insert("glob_test".to_string(), glob_test);
-    core.builtins.insert(".".to_string(), source);
-    core.builtins.insert(":".to_string(), true_);
-    core.builtins.insert("alias".to_string(), alias);
-    core.builtins.insert("builtin".to_string(), builtin);
-    core.builtins.insert("cd".to_string(), cd);
-    core.builtins.insert("eval".to_string(), eval);
-    core.builtins.insert("exit".to_string(), exit);
-    core.builtins.insert("export".to_string(), export);
-    core.builtins.insert("false".to_string(), false_);
     core.builtins.insert("fg".to_string(), fg);
     core.builtins.insert("history".to_string(), history);
     core.builtins.insert("jobs".to_string(), jobs);
@@ -123,7 +101,7 @@ pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
-        for j in &core.jobs {
+        for j in &core.bg_jobs {
             if j.mark == '+' {
                 for p in &j.async_pids {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
@@ -327,13 +305,13 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for j in 1..core.jobs.len() {
-        if core.jobs[j].async_pids.len() != 0 {
-            core.jobs[j].check_of_finish();
+    for j in 1..core.bg_jobs.len() {
+        if core.bg_jobs[j].async_pids.len() != 0 {
+            core.bg_jobs[j].check_of_finish();
         }
     }
 
-    for (i,j) in core.jobs.iter_mut().enumerate() {
+    for (i,j) in core.bg_jobs.iter_mut().enumerate() {
         if i == 0 {
             continue;
         }
@@ -426,15 +404,15 @@ pub fn glob_test(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for i in 1..core.jobs.len() {
-        if core.jobs[i].status == "Done" || core.jobs[i].is_waited {
+    for i in 1..core.bg_jobs.len() {
+        if core.bg_jobs[i].status == "Done" || core.bg_jobs[i].is_waited {
             continue;
         }
-        core.jobs[i].is_waited = true;
+        core.bg_jobs[i].is_waited = true;
         core.wait_job(i);
-        core.jobs[i].status = "Done".to_string();
-        eprintln!("{}", core.jobs[i].status_string().clone());
-        core.jobs[i].status = "Printed".to_string();
+        core.bg_jobs[i].status = "Done".to_string();
+        eprintln!("{}", core.bg_jobs[i].status_string().clone());
+        core.bg_jobs[i].status = "Printed".to_string();
     }
 
     0
