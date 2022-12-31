@@ -10,6 +10,7 @@ use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use std::process::exit;
 use crate::elements::command::CommandType;
+use nix::unistd;
 
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
@@ -43,6 +44,11 @@ impl Command for CommandBrace {
     }
 
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_sid(&mut self){
+        if self.session_leader {
+            let _ = unistd::setsid();
+        }
+    }
     fn set_session_leader(&mut self) { self.session_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
