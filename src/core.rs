@@ -148,7 +148,6 @@ impl ShellCore {
                 128+signal as i32 
             },
             Ok(WaitStatus::Stopped(pid, signal)) => {
-                /*TODO: The shell must restart other jobs if they are not sleeping.*/
                 self.jobs[0].status = "Stopped".to_string();
                 self.jobs[0].id = self.jobs.len();
                 self.jobs[0].mark = '+';

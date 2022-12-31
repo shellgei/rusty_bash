@@ -75,4 +75,20 @@ impl Job {
             self.status = "Printed".to_string();
         }
     }
+
+    /*
+    pub fn wait(&mut self, job_no: usize) {
+        if self.status == "Done" {
+            return;
+        }
+
+        let mut pipestatus = vec![];
+        for p in self.pids.clone() {
+            self.wait_process(p);
+            pipestatus.push(self.get_var("?"));
+        }
+        self.set_var("PIPESTATUS", &pipestatus.join(" "));
+        self.status = "Done".to_string();
+    }
+    */
 }

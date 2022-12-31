@@ -8,6 +8,8 @@ use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
 use crate::elements::command::CommandType;
+use nix::sys::signal;
+use nix::sys::signal::Signal;
 
 use crate::Script;
 use crate::ShellCore;
@@ -45,6 +47,7 @@ pub fn set_builtins(core: &mut ShellCore){
     core.builtins.insert("exit".to_string(), exit);
     core.builtins.insert("export".to_string(), export);
     core.builtins.insert("false".to_string(), false_);
+    core.builtins.insert("fg".to_string(), fg);
     core.builtins.insert("history".to_string(), history);
     core.builtins.insert("jobs".to_string(), jobs);
     core.builtins.insert("pwd".to_string(), pwd);
@@ -116,6 +119,20 @@ pub fn true_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 
 pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
     1
+}
+
+pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
+        for j in &core.jobs {
+            if j.mark == '+' {
+                for p in &j.async_pids {
+                    signal::kill(*p, Signal::SIGCONT).unwrap();
+                }
+            }
+        }
+        return 0;
+    }
+    0
 }
 
 pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
