@@ -66,7 +66,7 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 | compopt | :no_good: | continue | :no_good: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
-| fc | :no_good: | fg | :no_good: | getopts | :no_good: |
+| fc | :no_good: | fg | :construction: | getopts | :no_good: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
 | jobs | :construction: | kill | :no_good: | let | :no_good: |
 | local | :no_good: | logout | :no_good: | mapfile | :no_good: |
