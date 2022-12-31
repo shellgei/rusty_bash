@@ -101,7 +101,7 @@ pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
-        for j in &core.bg_jobs {
+        for j in &core.jobs {
             if j.mark == '+' {
                 for p in &j.async_pids {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
@@ -305,13 +305,13 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for j in 1..core.bg_jobs.len() {
-        if core.bg_jobs[j].async_pids.len() != 0 {
-            core.bg_jobs[j].check_of_finish();
+    for j in 1..core.jobs.len() {
+        if core.jobs[j].async_pids.len() != 0 {
+            core.jobs[j].check_of_finish();
         }
     }
 
-    for (i,j) in core.bg_jobs.iter_mut().enumerate() {
+    for (i,j) in core.jobs.iter_mut().enumerate() {
         if i == 0 {
             continue;
         }
@@ -404,15 +404,15 @@ pub fn glob_test(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for i in 1..core.bg_jobs.len() {
-        if core.bg_jobs[i].status == "Done" || core.bg_jobs[i].is_waited {
+    for i in 1..core.jobs.len() {
+        if core.jobs[i].status == "Done" || core.jobs[i].is_waited {
             continue;
         }
-        core.bg_jobs[i].is_waited = true;
+        core.jobs[i].is_waited = true;
         core.wait_job(i);
-        core.bg_jobs[i].status = "Done".to_string();
-        eprintln!("{}", core.bg_jobs[i].status_string().clone());
-        core.bg_jobs[i].status = "Printed".to_string();
+        core.jobs[i].status = "Done".to_string();
+        eprintln!("{}", core.jobs[i].status_string().clone());
+        core.jobs[i].status = "Printed".to_string();
     }
 
     0

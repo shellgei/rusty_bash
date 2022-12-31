@@ -25,7 +25,7 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
-    pub bg_jobs: Vec<Job>,
+    pub jobs: Vec<Job>, //0: current job, 1~: background jobs
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
@@ -45,7 +45,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
-            bg_jobs: vec!(Job::new(&"".to_string(), &vec![], false)),
+            jobs: vec!(Job::new(&"".to_string(), &vec![], false)),
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
@@ -138,6 +138,16 @@ impl ShellCore {
         false
     }
 
+    fn to_background(&mut self, pid: Pid){
+        let mut job = self.jobs[0].clone();
+        job.status = "Stopped".to_string();
+        job.id = self.jobs.len();
+        job.mark = '+';
+        job.async_pids.push(pid);
+        print!("\n{}", job.status_string().clone());
+        self.add_job(job.clone());
+    }
+
     pub fn wait_process(&mut self, child: Pid) {
         let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
@@ -148,12 +158,7 @@ impl ShellCore {
                 128+signal as i32 
             },
             Ok(WaitStatus::Stopped(pid, signal)) => {
-                self.bg_jobs[0].status = "Stopped".to_string();
-                self.bg_jobs[0].id = self.bg_jobs.len();
-                self.bg_jobs[0].mark = '+';
-                self.bg_jobs[0].async_pids.push(pid);
-                print!("\n{}", self.bg_jobs[0].status_string().clone());
-                self.add_bg_job(self.bg_jobs[0].clone());
+                self.to_background(pid);
                 128+signal as i32 
             },
             Ok(unsupported) => {
@@ -198,17 +203,17 @@ impl ShellCore {
     }
 
     pub fn wait_job(&mut self, job_no: usize) {
-        if self.bg_jobs[job_no].status == "Done" {
+        if self.jobs[job_no].status == "Done" {
             return;
         }
 
         let mut pipestatus = vec![];
-        for p in self.bg_jobs[job_no].pids.clone() {
+        for p in self.jobs[job_no].pids.clone() {
             self.wait_process(p);
             pipestatus.push(self.get_var("?"));
         }
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
-        self.bg_jobs[job_no].status = "Done".to_string();
+        self.jobs[job_no].status = "Done".to_string();
     }
 
     pub fn check_async_process(pid: Pid) -> bool {
@@ -218,36 +223,36 @@ impl ShellCore {
         }
     }
 
-    pub fn check_bg_jobs(&mut self) {
-        for j in 1..self.bg_jobs.len() {
-            if self.bg_jobs[j].async_pids.len() != 0 {
-                self.bg_jobs[j].check_of_finish();
+    pub fn check_jobs(&mut self) {
+        for j in 1..self.jobs.len() {
+            if self.jobs[j].async_pids.len() != 0 {
+                self.jobs[j].check_of_finish();
             }
         }
 
-        for j in 1..self.bg_jobs.len() {
-            if self.bg_jobs[j].status == "Done" {
-                self.bg_jobs[j].print_status();
+        for j in 1..self.jobs.len() {
+            if self.jobs[j].status == "Done" {
+                self.jobs[j].print_status();
             }
         }
 
-        while self.bg_jobs.len() > 1 {
-            let job = self.bg_jobs.pop().unwrap();
+        while self.jobs.len() > 1 {
+            let job = self.jobs.pop().unwrap();
 
             if job.status != "Printed" {
-                self.bg_jobs.push(job);
+                self.jobs.push(job);
                 break;
             }
         }
     }
 
-    pub fn add_bg_job(&mut self, added: Job) {
+    pub fn add_job(&mut self, added: Job) {
         if added.mark == '+' {
-            for job in self.bg_jobs.iter_mut() {
+            for job in self.jobs.iter_mut() {
                 job.mark = if job.mark == '+' {'-'}else{' '};
             }
         }
 
-        self.bg_jobs.push(added);
+        self.jobs.push(added);
     }
 }
