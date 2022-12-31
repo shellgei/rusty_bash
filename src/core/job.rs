@@ -10,7 +10,7 @@ use crate::ShellCore;
 pub struct Job {
     pub pids: Vec<Pid>,
     pub async_pids: Vec<Pid>,
-    text: String,
+    pub text: String,
     pub status: String,
     pub is_bg: bool,
     pub is_waited: bool,
@@ -40,8 +40,8 @@ impl Job {
     }
 
     pub fn check_of_finish(&mut self) {
-        if self.is_waited {
-            return;
+        if self.is_waited || self.status == "Fg" {
+            return; 
         }
 
         let mut remain = vec![];
@@ -66,7 +66,7 @@ impl Job {
     }
 
     pub fn print_status(&mut self) {
-        if self.status == "Printed" {
+        if self.status == "Printed" || self.status == "Fg" {
             return;
         }
 
@@ -75,20 +75,4 @@ impl Job {
             self.status = "Printed".to_string();
         }
     }
-
-    /*
-    pub fn wait(&mut self, job_no: usize) {
-        if self.status == "Done" {
-            return;
-        }
-
-        let mut pipestatus = vec![];
-        for p in self.pids.clone() {
-            self.wait_process(p);
-            pipestatus.push(self.get_var("?"));
-        }
-        self.set_var("PIPESTATUS", &pipestatus.join(" "));
-        self.status = "Done".to_string();
-    }
-    */
 }

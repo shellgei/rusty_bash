@@ -101,11 +101,17 @@ pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
-        for j in &core.jobs {
-            if j.mark == '+' {
-                for p in &j.async_pids {
+        for j in 1..core.jobs.len() {
+            if core.jobs[j].mark == '+' {
+                core.jobs[j].status = "Fg".to_string();
+                core.jobs[0] = core.jobs[j].clone();
+                core.jobs[0].status = "Running".to_string();
+
+                eprint!("{}", core.jobs[j].text);
+                for p in &core.jobs[j].async_pids {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
                 }
+                core.wait_job(0);
             }
         }
         return 0;
