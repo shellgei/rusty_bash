@@ -356,13 +356,13 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for j in 0..core.jobs.backgrounds.len() {
-        if core.jobs.backgrounds[j].async_pids.len() != 0 {
-            core.jobs.backgrounds[j].check_of_finish();
+    for j in core.jobs.backgrounds.iter_mut() {
+        if j.async_pids.len() != 0 {
+            j.check_of_finish();
         }
     }
 
-    for (i,j) in core.jobs.backgrounds.iter_mut().enumerate() {
+    for j in core.jobs.backgrounds.iter_mut() {
         j.print_status();
     }
     0
