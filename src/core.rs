@@ -203,7 +203,7 @@ impl ShellCore {
     }
 
     pub fn wait_job(&mut self, job_no: usize) {
-        if self.jobs[job_no].status == 'D' {
+        if self.jobs[job_no].status != 'F' {
             return;
         }
 
@@ -216,20 +216,20 @@ impl ShellCore {
         self.jobs[job_no].status = 'D';
     }
 
-    /*
     pub fn check_async_process(pid: Pid) -> bool {
         match waitpid(pid, Some(WaitPidFlag::WNOHANG)) {
             Ok(WaitStatus::StillAlive) =>  false,
             Ok(_)                      => true, 
-            _                          => panic!("!!"),
+            _                          => {eprintln!("ERROR");true},
         }
-    }*/
+    }
+    /*
     pub fn check_async_process(pid: Pid) -> bool {
         match waitpid(pid, Some(WaitPidFlag::WNOHANG)).expect("Faild to wait child process.") {
             WaitStatus::StillAlive =>  false,
             _                      => true
         }
-    }
+    }*/
 
     pub fn check_jobs(&mut self) {
         for j in 1..self.jobs.len() {

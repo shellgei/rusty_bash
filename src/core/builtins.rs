@@ -145,15 +145,15 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
         for j in 1..core.jobs.len() {
             if core.jobs[j].mark == '+' {
-                core.jobs[j].status = 'I';
-                core.jobs[0] = core.jobs[j].clone();
-                core.jobs[0].status = 'R';
+                core.jobs[j].status = 'F';
+       //         core.jobs[0] = core.jobs[j].clone();
+       //         core.jobs[0].status = 'R';
 
                 eprint!("{}", core.jobs[j].text);
                 for p in &core.jobs[j].async_pids {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
                 }
-                core.wait_job(0);
+                core.wait_job(j);
             }
         }
         return 0;
@@ -457,10 +457,11 @@ pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
             continue;
         }
         core.jobs[i].is_waited = true;
+        core.jobs[i].status = 'F';
         core.wait_job(i);
         core.jobs[i].status = 'D';
         eprintln!("{}", &core.jobs[i].status_string());
-        core.jobs[i].status = 'P';
+        core.jobs[i].status = 'I';
     }
 
     0
