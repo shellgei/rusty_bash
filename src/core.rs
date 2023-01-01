@@ -147,10 +147,10 @@ impl ShellCore {
         job.mark = '+';
         job.async_pids.push(pid);
         println!("{}", &job.status_string());
-        self.add_job(job.clone());
+        self.jobs.add_job(job.clone());
     }
 
-    pub fn wait_process(&mut self, child: Pid) {
+    pub fn wait_process(&mut self, child: Pid) -> i32 {
         let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
@@ -172,7 +172,8 @@ impl ShellCore {
             },
         };
 
-        self.set_var("?", &exit_status.to_string());
+        //self.set_var("?", &exit_status.to_string());
+        exit_status
     } 
 
     pub fn read_pipe(&mut self, pin: RawFd, pid: Pid) -> String {
@@ -211,13 +212,13 @@ impl ShellCore {
 
         let mut pipestatus = vec![];
         for p in self.jobs.backgrounds[job_no].pids.clone() {
-            self.wait_process(p);
-            pipestatus.push(self.get_var("?"));
+            let exit_status = self.wait_process(p);
+            let es_string = exit_status.to_string();
+            self.set_var("?", &es_string);
+            pipestatus.push(es_string);
         }
 
-        //let plus = self.jobs[job_no].mark == '+';
         if self.jobs.backgrounds[job_no].mark == '+' {
-        //if plus {
             for j in self.jobs.backgrounds.iter_mut() {
                 if j.mark == '-' {
                     j.mark = '+';
@@ -273,6 +274,7 @@ impl ShellCore {
         }
     }
 
+    /*
     pub fn add_job(&mut self, added: Job) {
         if added.mark == '+' {
             for job in self.jobs.backgrounds.iter_mut() {
@@ -282,4 +284,5 @@ impl ShellCore {
 
         self.jobs.backgrounds.push(added);
     }
+    */
 }
