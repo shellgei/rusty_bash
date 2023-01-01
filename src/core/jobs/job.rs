@@ -13,7 +13,8 @@ pub struct Job {
     pub text: String,
     pub status: char, // S: stopped, R: running, D: done, I: invalid, F: fg
     pub id: usize,
-    pub mark: char, // '+': current, '-': previous, ' ': others
+    pub priority: u32,
+//    pub mark: char, // '+': current, '-': previous, ' ': others
 }
 
 impl Job {
@@ -33,7 +34,8 @@ impl Job {
             //is_bg: is_bg,
             //is_waited: false,
             id: 0,
-            mark: ' ',
+            //mark: ' ',
+            priority: 0, 
         }
     }
 
@@ -61,22 +63,30 @@ impl Job {
         self.async_pids.len() == 0 // true if finished
     }
 
-    pub fn status_string(&self) -> String {
+    pub fn status_string(&self, first: usize, second: usize) -> String {
+        let mark = if self.id == first {
+            '+'
+        }else if self.id == second {
+            '-'
+        }else{
+            ' '
+        };
+
         let status = match self.status {
             'D' => "Done",
             'S' => "Stopped",
             'R' => "Running",
             _   => "ERROR",
         };
-        format!("[{}]{} {}\t\t{}", &self.id, &self.mark, status, &self.text.trim_end())
+        format!("[{}]{} {}\t\t{}", &self.id, mark, status, &self.text.trim_end())
     }
 
-    pub fn print_status(&mut self) {
+    pub fn print_status(&mut self, first: usize, second: usize) {
         if self.status == 'I' {
             return;
         }
 
-        println!("{}", &self.status_string());
+        println!("{}", &self.status_string(first, second));
         if self.status == 'D' {
             self.status = 'I';
         }

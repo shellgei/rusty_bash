@@ -169,7 +169,7 @@ impl ShellCore {
     }
 
     pub fn wait_job(&mut self) { //only for fg job
-        let pipestatus = self.jobs.wait_job(0);
+        let pipestatus = self.jobs.wait_fg_job();
         if pipestatus.len() == 0 {
             return;
         }
@@ -197,24 +197,27 @@ impl ShellCore {
             }
         }
 
+        let (first, second) = self.jobs.get_top_priority_id();
 
         let mut minus_to_plus = false;
-        for j in 1..self.jobs.backgrounds.len() {
-            if self.jobs.backgrounds[j].status == 'D' {
-                self.jobs.backgrounds[j].print_status();
+        for j in self.jobs.backgrounds.iter_mut() {
+            if j.status == 'D' { //done
+                j.print_status(first, second);
+                /*
                 if self.jobs.backgrounds[j].mark == '+' {
                     minus_to_plus = true;
-                }
+                }*/
             }
         }
 
+        /*
         if minus_to_plus {
             for j in 1..self.jobs.backgrounds.len() {
                 if self.jobs.backgrounds[j].mark == '-' {
                     self.jobs.backgrounds[j].mark = '+';
                 }
             }
-        }
+        }*/
 
         self.jobs.remove_finished_jobs();
     }

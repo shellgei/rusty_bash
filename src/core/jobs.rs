@@ -22,13 +22,32 @@ impl Jobs {
             backgrounds: vec![],
         }
     }
+
+    pub fn get_top_priority_id(& self) -> (usize, usize) {
+        let mut min = std::u32::MAX; 
+        let mut id = 0;
+        let mut min_second = std::u32::MAX; 
+        let mut id_second = 0;
+
+        for j in &self.backgrounds {
+            if min > j.priority {
+                min_second = min;
+                id_second = id;
+                min = j.priority;
+                id = j.id;
+            }
+        }
+
+        (id, id_second)
+    }
+
     fn to_background(&mut self, pid: Pid){
         let mut job = self.foreground.clone();
         job.status = 'S';
         job.id = self.backgrounds.len()+1;
-        job.mark = '+';
+        //job.mark = '+';
         job.async_pids.push(pid);
-        println!("{}", &job.status_string());
+        println!("{}", &job.status_string(job.id, 0));
         self.add_job(job.clone());
     }
 
@@ -37,6 +56,10 @@ impl Jobs {
     }
 
     pub fn add_bg_job(&mut self, text: &String, commands: &Vec<Box<dyn Command>>) {
+        for j in self.backgrounds.iter_mut() {
+            j.priority += 1;
+        }
+
         let mut bgjob = Job::new(text, commands, true);
         bgjob.id = self.backgrounds.len() + 1;
 
@@ -88,13 +111,14 @@ impl Jobs {
             pipestatus.push(exit_status);
         }
 
+        /*
         if self.backgrounds[pos].mark == '+' {
             for j in self.backgrounds.iter_mut() {
                 if j.mark == '-' {
                     j.mark = '+';
                 }
             }
-        }
+        }*/
 
         self.backgrounds[pos].status = 'D';
         pipestatus
@@ -126,11 +150,12 @@ impl Jobs {
     } 
 
     pub fn add_job(&mut self, added: Job) {
+        /*
         if added.mark == '+' {
             for job in self.backgrounds.iter_mut() {
                 job.mark = if job.mark == '+' {'-'}else{' '};
             }
-        }
+        }*/
 
         self.backgrounds.push(added);
     }
