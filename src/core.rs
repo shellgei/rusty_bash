@@ -11,7 +11,6 @@ use std::env;
 use crate::core::shopts::Shopts;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use nix::unistd::Pid;
-use crate::core::jobs::job::Job;
 use crate::core::jobs::Jobs;
 
 
@@ -47,7 +46,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
-            jobs: Jobs {backgrounds: vec!(Job::new(&"".to_string(), &vec![], false))},
+            jobs: Jobs::new(),// {backgrounds: vec!(Job::new(&"".to_string(), &vec![], false))},
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
@@ -183,7 +182,7 @@ impl ShellCore {
             .join(" ");
 
         self.set_var("PIPESTATUS", &s);
-        self.jobs.backgrounds[0].status = 'D';
+        self.jobs.foreground.status = 'D';
     }
 
     pub fn reverse_exit_status(&mut self) {

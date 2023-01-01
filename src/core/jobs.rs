@@ -11,14 +11,21 @@ use crate::elements::command::Command;
 //[1]+  Running                 sleep 5 &
 #[derive(Clone,Debug)]
 pub struct Jobs {
+    pub foreground: Job,
     pub backgrounds: Vec<Job>, //0: current job, 1~: background jobs
 }
 
 impl Jobs {
+    pub fn new() -> Jobs {
+        Jobs {
+            foreground: Job::new(&"".to_string(), &vec![], false),
+            backgrounds: vec![],
+        }
+    }
     fn to_background(&mut self, pid: Pid){
-        let mut job = self.backgrounds[0].clone();
+        let mut job = self.foreground.clone();
         job.status = 'S';
-        job.id = self.backgrounds.len();
+        job.id = self.backgrounds.len()+1;
         job.mark = '+';
         job.async_pids.push(pid);
         println!("{}", &job.status_string());
@@ -26,12 +33,12 @@ impl Jobs {
     }
 
     pub fn set_fg_job(&mut self, text: &String, commands: &Vec<Box<dyn Command>>) {
-        self.backgrounds[0] = Job::new(text, commands, false);
+        self.foreground = Job::new(text, commands, false);
     }
 
     pub fn add_bg_job(&mut self, text: &String, commands: &Vec<Box<dyn Command>>) {
         let mut bgjob = Job::new(text, commands, true);
-        bgjob.id = self.backgrounds.len();
+        bgjob.id = self.backgrounds.len() + 1;
 
         if let Some(pid) = commands.last().unwrap().get_pid() {
             eprintln!("[{}] {}", bgjob.id, pid);
@@ -44,20 +51,44 @@ impl Jobs {
         return;
     }
 
-    pub fn wait_job(&mut self, job_no: usize) -> Vec<i32> {
-        if self.backgrounds[job_no].status != 'F' {
-            return vec![];
-        }
-
+    pub fn wait_fg_job(&mut self) -> Vec<i32> {
         let mut pipestatus = vec![];
-        for p in self.backgrounds[job_no].pids.clone() {
+        for p in self.foreground.pids.clone() {
             let exit_status = self.wait_process(p);
             pipestatus.push(exit_status);
         }
 
-        //let plus = self.jobs[job_no].mark == '+';
-        if self.backgrounds[job_no].mark == '+' {
-        //if plus {
+        /*
+        if self.foreground.mark == '+' {
+            for j in self.backgrounds.iter_mut() {
+                if j.mark == '-' {
+                    j.mark = '+';
+                }
+            }
+        }*/
+
+        self.foreground.status = 'D';
+        pipestatus
+    }
+
+    pub fn wait_job(&mut self, job_no: usize) -> Vec<i32> {
+        if job_no == 0 {
+            return self.wait_fg_job();
+        }
+
+        let pos = job_no - 1;
+
+        if self.backgrounds[pos].status != 'F' {
+            return vec![];
+        }
+
+        let mut pipestatus = vec![];
+        for p in self.backgrounds[pos].pids.clone() {
+            let exit_status = self.wait_process(p);
+            pipestatus.push(exit_status);
+        }
+
+        if self.backgrounds[pos].mark == '+' {
             for j in self.backgrounds.iter_mut() {
                 if j.mark == '-' {
                     j.mark = '+';
@@ -65,8 +96,7 @@ impl Jobs {
             }
         }
 
-        //self.set_var("PIPESTATUS", &pipestatus.join(" "));
-        self.backgrounds[job_no].status = 'D';
+        self.backgrounds[pos].status = 'D';
         pipestatus
     }
 
@@ -106,7 +136,7 @@ impl Jobs {
     }
 
     pub fn remove_finished_jobs(&mut self) {
-        while self.backgrounds.len() > 1 {
+        while self.backgrounds.len() > 0 {
             let job = self.backgrounds.pop().unwrap();
 
             if job.status != 'I' && job.status != 'F' {

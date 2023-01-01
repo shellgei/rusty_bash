@@ -112,7 +112,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() < 2 {
-        for j in 1..core.jobs.backgrounds.len() {
+        for j in 0..core.jobs.backgrounds.len() {
             if core.jobs.backgrounds[j].mark == '+' {
                 bg_core(&mut core.jobs.backgrounds[j]);
             }
@@ -144,7 +144,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
-        for j in 1..core.jobs.backgrounds.len() {
+        for j in 0..core.jobs.backgrounds.len() {
             if core.jobs.backgrounds[j].status != 'S' {
                 continue;
             }
@@ -155,7 +155,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 for p in &core.jobs.backgrounds[j].async_pids {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
                 }
-                core.jobs.backgrounds[0] = core.jobs.backgrounds[j].clone();
+                core.jobs.foreground = core.jobs.backgrounds[j].clone();
                 core.jobs.wait_job(j);
             }
         }
@@ -356,16 +356,13 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for j in 1..core.jobs.backgrounds.len() {
+    for j in 0..core.jobs.backgrounds.len() {
         if core.jobs.backgrounds[j].async_pids.len() != 0 {
             core.jobs.backgrounds[j].check_of_finish();
         }
     }
 
     for (i,j) in core.jobs.backgrounds.iter_mut().enumerate() {
-        if i == 0 {
-            continue;
-        }
         j.print_status();
     }
     0
@@ -455,12 +452,13 @@ pub fn glob_test(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for i in 1..core.jobs.backgrounds.len() {
+    for i in 0..core.jobs.backgrounds.len() {
         if core.jobs.backgrounds[i].status != 'R' && core.jobs.backgrounds[i].status != 'F' { 
             continue;
         }
         core.jobs.backgrounds[i].status = 'F';
-        core.jobs.wait_job(i);
+        let id = core.jobs.backgrounds[i].id;
+        core.jobs.wait_job(id);
         core.jobs.backgrounds[i].status = 'D';
         eprintln!("{}", &core.jobs.backgrounds[i].status_string());
         core.jobs.backgrounds[i].status = 'I';
