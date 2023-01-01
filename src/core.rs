@@ -247,7 +247,7 @@ impl ShellCore {
         while self.jobs.len() > 1 {
             let job = self.jobs.pop().unwrap();
 
-            if job.status != 'P' && job.status != 'F' {
+            if job.status != 'I' && job.status != 'F' {
                 self.jobs.push(job);
                 break;
             }

@@ -108,12 +108,15 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         for p in &job.async_pids {
             signal::kill(*p, Signal::SIGCONT).unwrap();
         }
+
     }
 
     if args.len() < 2 {
         for j in 1..core.jobs.len() {
             if core.jobs[j].mark == '+' {
                 bg_core(&mut core.jobs[j]);
+            }else if core.jobs[j].mark == '-' {
+                core.jobs[j].mark = '+';
             }
         }
         return 0;
@@ -144,16 +147,20 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
         for j in 1..core.jobs.len() {
+            if core.jobs[j].status != 'S' {
+                continue;
+            }
+
             if core.jobs[j].mark == '+' {
                 core.jobs[j].status = 'F';
-       //         core.jobs[0] = core.jobs[j].clone();
-       //         core.jobs[0].status = 'R';
-
                 eprint!("{}", core.jobs[j].text);
                 for p in &core.jobs[j].async_pids {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
                 }
+                core.jobs[0] = core.jobs[j].clone();
                 core.wait_job(j);
+            }else if core.jobs[j].mark == '-' {
+                core.jobs[j].mark = '+';
             }
         }
         return 0;
