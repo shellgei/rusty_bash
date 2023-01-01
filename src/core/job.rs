@@ -11,7 +11,7 @@ pub struct Job {
     pub pids: Vec<Pid>,
     pub async_pids: Vec<Pid>,
     pub text: String,
-    pub status: char, // S: stopped, R: running, D: done, F: fg
+    pub status: char, // S: stopped, R: running, D: done, I: invalid
     pub is_bg: bool,
     pub is_waited: bool,
     pub id: usize,
@@ -40,7 +40,7 @@ impl Job {
     }
 
     pub fn check_of_finish(&mut self) {
-        if self.is_waited || self.status == 'F' {
+        if self.is_waited || self.status == 'I' {
             return; 
         }
 
@@ -72,7 +72,7 @@ impl Job {
     }
 
     pub fn print_status(&mut self) {
-        if self.status == 'P' || self.status == 'F' {
+        if self.status == 'P' || self.status == 'I' {
             return;
         }
 

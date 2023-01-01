@@ -129,7 +129,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let status = core.jobs[job_no].status;
 
-    if job_no >= core.jobs.len() || status == 'P' || status == 'D' || status == 'F' {
+    if job_no >= core.jobs.len() || status == 'P' || status == 'D' || status == 'I' {
         eprintln!("bash: bg: {}: no such job", job_no);
         return 1;
     }else if status == 'R' {
@@ -145,7 +145,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
         for j in 1..core.jobs.len() {
             if core.jobs[j].mark == '+' {
-                core.jobs[j].status = 'F';
+                core.jobs[j].status = 'I';
                 core.jobs[0] = core.jobs[j].clone();
                 core.jobs[0].status = 'R';
 
