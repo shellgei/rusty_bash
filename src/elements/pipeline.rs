@@ -7,7 +7,6 @@ use crate::operators::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
 use crate::elements::command;
-use crate::core::jobs::job::Job;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
@@ -40,8 +39,8 @@ impl Pipeline {
             return;
         }
 
-        core.jobs.backgrounds[0] = Job::new(&self.text, &self.commands, false);
-        core.wait_job(0);
+        core.jobs.set_fg_job(&self.text, &self.commands);
+        core.wait_job();
 
         if self.not_flag {
             if core.vars["?"] != "0" {

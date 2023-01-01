@@ -169,6 +169,7 @@ impl ShellCore {
         }
     }
 
+    /*
     pub fn wait_job(&mut self, job_no: usize) {
         let pipestatus = self.jobs.wait_job(job_no);
         if pipestatus.len() == 0 {
@@ -176,20 +177,32 @@ impl ShellCore {
         }
 
         self.set_var("?", &pipestatus[pipestatus.len()-1].to_string());
-        let s = pipestatus.iter().map(|es| es.to_string()).collect::<Vec<String>>().join(" ");
+        let s = pipestatus
+            .iter()
+            .map(|es| es.to_string())
+            .collect::<Vec<String>>()
+            .join(" ");
 
         self.set_var("PIPESTATUS", &s);
         self.jobs.backgrounds[job_no].status = 'D';
-    }
-
-    /*
-    pub fn check_async_process(pid: Pid) -> bool {
-        match waitpid(pid, Some(WaitPidFlag::WNOHANG)) {
-            Ok(WaitStatus::StillAlive) =>  false,
-            Ok(_)                      => true, 
-            _                          => {eprintln!("ERROR");true},
-        }
     }*/
+
+    pub fn wait_job(&mut self) {
+        let pipestatus = self.jobs.wait_job(0);
+        if pipestatus.len() == 0 {
+            return;
+        }
+
+        self.set_var("?", &pipestatus[pipestatus.len()-1].to_string());
+        let s = pipestatus
+            .iter()
+            .map(|es| es.to_string())
+            .collect::<Vec<String>>()
+            .join(" ");
+
+        self.set_var("PIPESTATUS", &s);
+        self.jobs.backgrounds[0].status = 'D';
+    }
 
     pub fn check_jobs(&mut self) {
         for j in 1..self.jobs.backgrounds.len() {

@@ -25,6 +25,10 @@ impl Jobs {
         self.add_job(job.clone());
     }
 
+    pub fn set_fg_job(&mut self, text: &String, commands: &Vec<Box<dyn Command>>) {
+        self.backgrounds[0] = Job::new(text, commands, false);
+    }
+
     pub fn add_bg_job(&mut self, text: &String, commands: &Vec<Box<dyn Command>>) {
         let mut bgjob = Job::new(text, commands, true);
         bgjob.id = self.backgrounds.len();
