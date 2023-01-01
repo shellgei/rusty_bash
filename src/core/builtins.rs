@@ -156,7 +156,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
                 }
                 core.jobs.backgrounds[0] = core.jobs.backgrounds[j].clone();
-                core.wait_job(j);
+                core.jobs.wait_job(j);
             }
         }
         return 0;
@@ -460,7 +460,7 @@ pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
             continue;
         }
         core.jobs.backgrounds[i].status = 'F';
-        core.wait_job(i);
+        core.jobs.wait_job(i);
         core.jobs.backgrounds[i].status = 'D';
         eprintln!("{}", &core.jobs.backgrounds[i].status_string());
         core.jobs.backgrounds[i].status = 'I';

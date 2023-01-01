@@ -140,6 +140,7 @@ impl ShellCore {
         false
     }
 
+    /*
     fn to_background(&mut self, pid: Pid){
         let mut job = self.jobs.backgrounds[0].clone();
         job.status = 'S';
@@ -148,8 +149,9 @@ impl ShellCore {
         job.async_pids.push(pid);
         println!("{}", &job.status_string());
         self.jobs.add_job(job.clone());
-    }
+    }*/
 
+    /*
     pub fn wait_process(&mut self, child: Pid) -> i32 {
         let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
@@ -174,7 +176,7 @@ impl ShellCore {
 
         //self.set_var("?", &exit_status.to_string());
         exit_status
-    } 
+    } */
 
     pub fn read_pipe(&mut self, pin: RawFd, pid: Pid) -> String {
         let mut ans = "".to_string();
@@ -206,6 +208,11 @@ impl ShellCore {
     }
 
     pub fn wait_job(&mut self, job_no: usize) {
+        let pipestatus = self.jobs.wait_job(job_no);
+        if pipestatus.len() == 0 {
+            return;
+        }
+        /*
         if self.jobs.backgrounds[job_no].status != 'F' {
             return;
         }
@@ -227,6 +234,11 @@ impl ShellCore {
         }
 
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
+        */
+        self.set_var("?", &pipestatus[pipestatus.len()-1].to_string());
+        let s = pipestatus.iter().map(|es| es.to_string()).collect::<Vec<String>>().join(" ");
+
+        self.set_var("PIPESTATUS", &s);
         self.jobs.backgrounds[job_no].status = 'D';
     }
 

@@ -4,8 +4,6 @@
 pub mod job;
 
 use nix::unistd::Pid;
-use crate::elements::command::Command;
-use crate::ShellCore;
 use job::Job;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 
