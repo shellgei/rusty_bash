@@ -36,18 +36,7 @@ impl Pipeline {
         }
 
         if self.is_bg {
-            let mut bgjob = Job::new(&self.text, &self.commands, true);
-            bgjob.id = core.jobs.backgrounds.len();
-
-            if let Some(pid) = self.commands.last().unwrap().get_pid() {
-                eprintln!("[{}] {}", bgjob.id, pid);
-                bgjob.async_pids.push(pid);
-            }else{
-                panic!("Bash internal error (before running background process)");
-            }
-
-            core.jobs.add_job(bgjob);
-            //core.jobs.push(bgjob);
+            core.jobs.add_bg_job(&self.text, &self.commands);
             return;
         }
 

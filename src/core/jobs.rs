@@ -6,6 +6,7 @@ pub mod job;
 use nix::unistd::Pid;
 use job::Job;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
+use crate::elements::command::Command;
 
 //[1]+  Running                 sleep 5 &
 #[derive(Clone,Debug)]
@@ -22,6 +23,21 @@ impl Jobs {
         job.async_pids.push(pid);
         println!("{}", &job.status_string());
         self.add_job(job.clone());
+    }
+
+    pub fn add_bg_job(&mut self, text: &String, commands: &Vec<Box<dyn Command>>) {
+        let mut bgjob = Job::new(text, commands, true);
+        bgjob.id = self.backgrounds.len();
+
+        if let Some(pid) = commands.last().unwrap().get_pid() {
+            eprintln!("[{}] {}", bgjob.id, pid);
+            bgjob.async_pids.push(pid);
+        }else{
+            panic!("Bash internal error (before running background process)");
+        }
+
+        self.add_job(bgjob);
+        return;
     }
 
     pub fn wait_job(&mut self, job_no: usize) -> Vec<i32> {
