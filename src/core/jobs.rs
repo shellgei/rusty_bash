@@ -26,15 +26,21 @@ impl Jobs {
     pub fn get_top_priority_id(& self) -> (usize, usize) {
         let mut min = std::u32::MAX; 
         let mut id = 0;
-        let mut min_second = std::u32::MAX; 
-        let mut id_second = 0;
 
         for j in &self.backgrounds {
             if min > j.priority {
-                min_second = min;
-                id_second = id;
                 min = j.priority;
                 id = j.id;
+            }
+        }
+
+        min = std::u32::MAX; 
+        let mut id_second = 0;
+
+        for j in &self.backgrounds {
+            if min > j.priority && id != j.id {
+                min = j.priority;
+                id_second = j.id;
             }
         }
 
@@ -42,6 +48,10 @@ impl Jobs {
     }
 
     fn to_background(&mut self, pid: Pid){
+        for j in self.backgrounds.iter_mut() {
+            j.priority += 1;
+        }
+
         let mut job = self.foreground.clone();
         job.status = 'S';
         job.id = self.backgrounds.len()+1;

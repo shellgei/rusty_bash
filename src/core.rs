@@ -199,7 +199,7 @@ impl ShellCore {
 
         let (first, second) = self.jobs.get_top_priority_id();
 
-        let mut minus_to_plus = false;
+        //let mut minus_to_plus = false;
         for j in self.jobs.backgrounds.iter_mut() {
             if j.status == 'D' { //done
                 j.print_status(first, second);
