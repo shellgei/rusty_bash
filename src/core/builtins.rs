@@ -115,8 +115,6 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         for j in 1..core.jobs.len() {
             if core.jobs[j].mark == '+' {
                 bg_core(&mut core.jobs[j]);
-            }else if core.jobs[j].mark == '-' {
-                core.jobs[j].mark = '+';
             }
         }
         return 0;
@@ -159,8 +157,6 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 }
                 core.jobs[0] = core.jobs[j].clone();
                 core.wait_job(j);
-            }else if core.jobs[j].mark == '-' {
-                core.jobs[j].mark = '+';
             }
         }
         return 0;
@@ -463,7 +459,6 @@ pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
         if core.jobs[i].status != 'R' && core.jobs[i].status != 'F' { 
             continue;
         }
-        //core.jobs[i].is_waited = true;
         core.jobs[i].status = 'F';
         core.wait_job(i);
         core.jobs[i].status = 'D';

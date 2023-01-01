@@ -212,6 +212,17 @@ impl ShellCore {
             self.wait_process(p);
             pipestatus.push(self.get_var("?"));
         }
+
+        //let plus = self.jobs[job_no].mark == '+';
+        if self.jobs[job_no].mark == '+' {
+        //if plus {
+            for j in self.jobs.iter_mut() {
+                if j.mark == '-' {
+                    j.mark = '+';
+                }
+            }
+        }
+
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
         self.jobs[job_no].status = 'D';
     }
@@ -223,13 +234,6 @@ impl ShellCore {
             _                          => {eprintln!("ERROR");true},
         }
     }
-    /*
-    pub fn check_async_process(pid: Pid) -> bool {
-        match waitpid(pid, Some(WaitPidFlag::WNOHANG)).expect("Faild to wait child process.") {
-            WaitStatus::StillAlive =>  false,
-            _                      => true
-        }
-    }*/
 
     pub fn check_jobs(&mut self) {
         for j in 1..self.jobs.len() {
@@ -238,9 +242,22 @@ impl ShellCore {
             }
         }
 
+
+        let mut minus_to_plus = false;
         for j in 1..self.jobs.len() {
             if self.jobs[j].status == 'D' {
                 self.jobs[j].print_status();
+                if self.jobs[j].mark == '+' {
+                    minus_to_plus = true;
+                }
+            }
+        }
+
+        if minus_to_plus {
+            for j in 1..self.jobs.len() {
+                if self.jobs[j].mark == '-' {
+                    self.jobs[j].mark = '+';
+                }
             }
         }
 

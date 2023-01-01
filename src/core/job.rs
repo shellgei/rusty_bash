@@ -37,9 +37,9 @@ impl Job {
         }
     }
 
-    pub fn check_of_finish(&mut self) {
-        if /*self.is_waited ||*/ self.status != 'R' {
-            return; 
+    pub fn check_of_finish(&mut self) -> bool {
+        if self.status != 'R' {
+            return true; 
         }
 
         let mut remain = vec![];
@@ -57,6 +57,8 @@ impl Job {
         }
 
         self.async_pids = remain;
+
+        self.async_pids.len() == 0 // true if finished
     }
 
     pub fn status_string(&self) -> String {
@@ -66,7 +68,7 @@ impl Job {
             'R' => "Running",
             _   => "ERROR",
         };
-        format!("[{}]{} {} {}", &self.id, &self.mark, status, &self.text.trim_end())
+        format!("[{}]{} {}\t\t{}", &self.id, &self.mark, status, &self.text.trim_end())
     }
 
     pub fn print_status(&mut self) {
