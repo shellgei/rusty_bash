@@ -11,7 +11,7 @@ pub struct Job {
     pub pids: Vec<Pid>,
     pub async_pids: Vec<Pid>,
     pub text: String,
-    pub status: String,
+    pub status: char, // S: stopped, R: running, D: done, F: fg
     pub is_bg: bool,
     pub is_waited: bool,
     pub id: usize,
@@ -31,7 +31,7 @@ impl Job {
             pids: pids,
             async_pids: vec![],
             text: text.clone(),
-            status: "Running".to_string(),
+            status: 'R',
             is_bg: is_bg,
             is_waited: false,
             id: 0,
@@ -40,7 +40,7 @@ impl Job {
     }
 
     pub fn check_of_finish(&mut self) {
-        if self.is_waited || self.status == "Fg" {
+        if self.is_waited || self.status == 'F' {
             return; 
         }
 
@@ -55,24 +55,30 @@ impl Job {
         }
 
         if remain.len() == 0 {
-            self.status = "Done".to_string();
+            self.status = 'D';
         }
 
         self.async_pids = remain;
     }
 
     pub fn status_string(&self) -> String {
-        format!("[{}]{} {} {}", &self.id, &self.mark, &self.status, &self.text.trim_end())
+        let status = match self.status {
+            'D' => "Done",
+            'S' => "Stopped",
+            'R' => "Running",
+            _   => "ERROR",
+        };
+        format!("[{}]{} {} {}", &self.id, &self.mark, status, &self.text.trim_end())
     }
 
     pub fn print_status(&mut self) {
-        if self.status == "Printed" || self.status == "Fg" {
+        if self.status == 'P' || self.status == 'F' {
             return;
         }
 
         println!("{}", &self.status_string());
-        if self.status == "Done" {
-            self.status = "Printed".to_string();
+        if self.status == 'D' {
+            self.status = 'P';
         }
     }
 }

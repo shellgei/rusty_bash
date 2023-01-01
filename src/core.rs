@@ -140,7 +140,7 @@ impl ShellCore {
 
     fn to_background(&mut self, pid: Pid){
         let mut job = self.jobs[0].clone();
-        job.status = "Stopped".to_string();
+        job.status = 'S';
         job.id = self.jobs.len();
         job.mark = '+';
         job.async_pids.push(pid);
@@ -203,7 +203,7 @@ impl ShellCore {
     }
 
     pub fn wait_job(&mut self, job_no: usize) {
-        if self.jobs[job_no].status == "Done" {
+        if self.jobs[job_no].status == 'D' {
             return;
         }
 
@@ -213,7 +213,7 @@ impl ShellCore {
             pipestatus.push(self.get_var("?"));
         }
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
-        self.jobs[job_no].status = "Done".to_string();
+        self.jobs[job_no].status = 'D';
     }
 
     /*
@@ -239,7 +239,7 @@ impl ShellCore {
         }
 
         for j in 1..self.jobs.len() {
-            if self.jobs[j].status == "Done" {
+            if self.jobs[j].status == 'D' {
                 self.jobs[j].print_status();
             }
         }
@@ -247,7 +247,7 @@ impl ShellCore {
         while self.jobs.len() > 1 {
             let job = self.jobs.pop().unwrap();
 
-            if job.status != "Printed" && job.status != "Fg" {
+            if job.status != 'P' && job.status != 'F' {
                 self.jobs.push(job);
                 break;
             }

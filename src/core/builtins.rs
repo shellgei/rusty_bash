@@ -103,7 +103,7 @@ pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 
 pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     fn bg_core (job: &mut Job) {
-        job.status = "Running".to_string();
+        job.status = 'R';
         println!("{}", &job.status_string());
         for p in &job.async_pids {
             signal::kill(*p, Signal::SIGCONT).unwrap();
@@ -127,12 +127,12 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    let status = &core.jobs[job_no].status;
+    let status = core.jobs[job_no].status;
 
-    if job_no >= core.jobs.len() || status == "Printed" || status == "Done" || status == "Fg" {
+    if job_no >= core.jobs.len() || status == 'P' || status == 'D' || status == 'F' {
         eprintln!("bash: bg: {}: no such job", job_no);
         return 1;
-    }else if status == "Running" {
+    }else if status == 'R' {
         eprintln!("bash: bg: job {} already in background", job_no);
         return 0;
     }
@@ -145,9 +145,9 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
         for j in 1..core.jobs.len() {
             if core.jobs[j].mark == '+' {
-                core.jobs[j].status = "Fg".to_string();
+                core.jobs[j].status = 'F';
                 core.jobs[0] = core.jobs[j].clone();
-                core.jobs[0].status = "Running".to_string();
+                core.jobs[0].status = 'R';
 
                 eprint!("{}", core.jobs[j].text);
                 for p in &core.jobs[j].async_pids {
@@ -453,14 +453,14 @@ pub fn glob_test(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
     for i in 1..core.jobs.len() {
-        if core.jobs[i].status == "Done" || core.jobs[i].is_waited {
+        if core.jobs[i].status == 'D' || core.jobs[i].is_waited {
             continue;
         }
         core.jobs[i].is_waited = true;
         core.wait_job(i);
-        core.jobs[i].status = "Done".to_string();
+        core.jobs[i].status = 'D';
         eprintln!("{}", &core.jobs[i].status_string());
-        core.jobs[i].status = "Printed".to_string();
+        core.jobs[i].status = 'P';
     }
 
     0
