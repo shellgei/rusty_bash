@@ -9,11 +9,9 @@ use crate::ShellCore;
 #[derive(Clone,Debug)]
 pub struct Job {
     pub pids: Vec<Pid>,
-    pub async_pids: Vec<Pid>,
+    pub async_pids: Vec<Pid>, //maybe not required.
     pub text: String,
     pub status: char, // S: stopped, R: running, D: done, I: invalid, F: fg
-//    pub is_bg: bool,
-//    pub is_waited: bool,
     pub id: usize,
     pub mark: char, // '+': current, '-': previous, ' ': others
 }
@@ -72,13 +70,13 @@ impl Job {
     }
 
     pub fn print_status(&mut self) {
-        if self.status == 'P' || self.status == 'I' {
+        if self.status == 'I' {
             return;
         }
 
         println!("{}", &self.status_string());
         if self.status == 'D' {
-            self.status = 'P';
+            self.status = 'I';
         }
     }
 }

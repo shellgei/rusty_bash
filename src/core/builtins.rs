@@ -129,7 +129,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let status = core.jobs[job_no].status;
 
-    if job_no >= core.jobs.len() || status == 'P' || status == 'D' || status == 'I' {
+    if job_no >= core.jobs.len() || status == 'D' || status == 'I' {
         eprintln!("bash: bg: {}: no such job", job_no);
         return 1;
     }else if status == 'R' {
