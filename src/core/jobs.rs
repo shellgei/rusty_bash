@@ -84,4 +84,5 @@ impl Jobs {
 
         self.backgrounds.push(added);
     }
+
 }
