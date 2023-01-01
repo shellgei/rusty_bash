@@ -37,19 +37,24 @@ impl Pipeline {
         if self.is_bg {
             core.jobs.add_bg_job(&self.text, &self.commands);
             return;
+        }else{
+            core.jobs.set_fg_job(&self.text, &self.commands);
+            core.wait_job();
+            if self.not_flag {
+                core.reverse_exit_status();
+            }
         }
 
-        core.jobs.set_fg_job(&self.text, &self.commands);
-        core.wait_job();
-
+        /*
         if self.not_flag {
             if core.vars["?"] != "0" {
                 core.set_var("?", "0");
             }else {
                 core.set_var("?", "1");
             }
-        }
+        }*/
     }
+
 
     pub fn get_text(&self) -> String { self.text.clone() }
 

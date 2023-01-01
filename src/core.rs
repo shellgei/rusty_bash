@@ -204,6 +204,11 @@ impl ShellCore {
         self.jobs.backgrounds[0].status = 'D';
     }
 
+    pub fn reverse_exit_status(&mut self) {
+        let rev = if self.vars["?"] == "0" {"1"}else{"0"};
+        self.set_var("?", rev);
+    }
+
     pub fn check_jobs(&mut self) {
         for j in 1..self.jobs.backgrounds.len() {
             if self.jobs.backgrounds[j].async_pids.len() != 0 {
