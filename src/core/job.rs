@@ -62,7 +62,7 @@ impl Job {
     }
 
     pub fn status_string(&self) -> String {
-        format!("[{}]{} {} {}", &self.id, &self.mark, &self.status, &self.text)
+        format!("[{}]{} {} {}", &self.id, &self.mark, &self.status, &self.text.trim_end())
     }
 
     pub fn print_status(&mut self) {
@@ -70,7 +70,7 @@ impl Job {
             return;
         }
 
-        print!("{}", self.status_string().clone());
+        println!("{}", &self.status_string());
         if self.status == "Done" {
             self.status = "Printed".to_string();
         }

@@ -104,7 +104,7 @@ pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     fn bg_core (job: &mut Job) {
         job.status = "Running".to_string();
-        print!("{}", job.status_string().clone());
+        println!("{}", &job.status_string());
         for p in &job.async_pids {
             signal::kill(*p, Signal::SIGCONT).unwrap();
         }
@@ -127,11 +127,14 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    if job_no >= core.jobs.len() {
+    let status = &core.jobs[job_no].status;
+
+    if job_no >= core.jobs.len() || status == "Printed" || status == "Done" || status == "Fg" {
         eprintln!("bash: bg: {}: no such job", job_no);
         return 1;
-    }else if core.jobs[job_no].status == "Running" {
+    }else if status == "Running" {
         eprintln!("bash: bg: job {} already in background", job_no);
+        return 0;
     }
 
     bg_core(&mut core.jobs[job_no]);
@@ -456,7 +459,7 @@ pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
         core.jobs[i].is_waited = true;
         core.wait_job(i);
         core.jobs[i].status = "Done".to_string();
-        eprintln!("{}", core.jobs[i].status_string().clone());
+        eprintln!("{}", &core.jobs[i].status_string());
         core.jobs[i].status = "Printed".to_string();
     }
 

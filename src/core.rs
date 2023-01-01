@@ -144,7 +144,7 @@ impl ShellCore {
         job.id = self.jobs.len();
         job.mark = '+';
         job.async_pids.push(pid);
-        print!("\n{}", job.status_string().clone());
+        println!("{}", &job.status_string());
         self.add_job(job.clone());
     }
 
