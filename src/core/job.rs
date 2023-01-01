@@ -12,8 +12,8 @@ pub struct Job {
     pub async_pids: Vec<Pid>,
     pub text: String,
     pub status: char, // S: stopped, R: running, D: done, I: invalid, F: fg
-    pub is_bg: bool,
-    pub is_waited: bool,
+//    pub is_bg: bool,
+//    pub is_waited: bool,
     pub id: usize,
     pub mark: char, // '+': current, '-': previous, ' ': others
 }
@@ -32,15 +32,15 @@ impl Job {
             async_pids: vec![],
             text: text.clone(),
             status: if is_bg {'R'}else{'F'},
-            is_bg: is_bg,
-            is_waited: false,
+            //is_bg: is_bg,
+            //is_waited: false,
             id: 0,
             mark: ' ',
         }
     }
 
     pub fn check_of_finish(&mut self) {
-        if self.is_waited || self.status != 'R' {
+        if /*self.is_waited ||*/ self.status != 'R' {
             return; 
         }
 

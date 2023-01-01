@@ -453,10 +453,10 @@ pub fn glob_test(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
     for i in 1..core.jobs.len() {
-        if core.jobs[i].status == 'D' || core.jobs[i].is_waited {
+        if core.jobs[i].status != 'R' && core.jobs[i].status != 'F' { 
             continue;
         }
-        core.jobs[i].is_waited = true;
+        //core.jobs[i].is_waited = true;
         core.jobs[i].status = 'F';
         core.wait_job(i);
         core.jobs[i].status = 'D';
