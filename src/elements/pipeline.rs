@@ -7,7 +7,7 @@ use crate::operators::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
 use crate::elements::command;
-use crate::core::job::Job;
+use crate::core::jobs::job::Job;
 
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
@@ -37,7 +37,7 @@ impl Pipeline {
 
         if self.is_bg {
             let mut bgjob = Job::new(&self.text, &self.commands, true);
-            bgjob.id = core.jobs.len();
+            bgjob.id = core.jobs.backgrounds.len();
 
             if let Some(pid) = self.commands.last().unwrap().get_pid() {
                 eprintln!("[{}] {}", bgjob.id, pid);
@@ -51,7 +51,7 @@ impl Pipeline {
             return;
         }
 
-        core.jobs[0] = Job::new(&self.text, &self.commands, false);
+        core.jobs.backgrounds[0] = Job::new(&self.text, &self.commands, false);
         core.wait_job(0);
 
         if self.not_flag {

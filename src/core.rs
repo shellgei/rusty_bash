@@ -3,15 +3,17 @@
 
 pub mod builtins;
 pub mod shopts;
-pub mod job;
+pub mod jobs;
 
 use std::collections::HashMap;
 use std::fs::File;
 use std::env;
 use crate::core::shopts::Shopts;
-use crate::core::job::Job;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use nix::unistd::Pid;
+use crate::core::jobs::job::Job;
+use crate::core::jobs::Jobs;
+
 
 use nix::unistd::read;
 use std::os::unix::prelude::RawFd;
@@ -25,7 +27,7 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
-    pub jobs: Vec<Job>, //0: current job, 1~: background jobs
+    pub jobs: Jobs, 
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
@@ -45,7 +47,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
-            jobs: vec!(Job::new(&"".to_string(), &vec![], false)),
+            jobs: Jobs {backgrounds: vec!(Job::new(&"".to_string(), &vec![], false))},
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
@@ -139,9 +141,9 @@ impl ShellCore {
     }
 
     fn to_background(&mut self, pid: Pid){
-        let mut job = self.jobs[0].clone();
+        let mut job = self.jobs.backgrounds[0].clone();
         job.status = 'S';
-        job.id = self.jobs.len();
+        job.id = self.jobs.backgrounds.len();
         job.mark = '+';
         job.async_pids.push(pid);
         println!("{}", &job.status_string());
@@ -203,20 +205,20 @@ impl ShellCore {
     }
 
     pub fn wait_job(&mut self, job_no: usize) {
-        if self.jobs[job_no].status != 'F' {
+        if self.jobs.backgrounds[job_no].status != 'F' {
             return;
         }
 
         let mut pipestatus = vec![];
-        for p in self.jobs[job_no].pids.clone() {
+        for p in self.jobs.backgrounds[job_no].pids.clone() {
             self.wait_process(p);
             pipestatus.push(self.get_var("?"));
         }
 
         //let plus = self.jobs[job_no].mark == '+';
-        if self.jobs[job_no].mark == '+' {
+        if self.jobs.backgrounds[job_no].mark == '+' {
         //if plus {
-            for j in self.jobs.iter_mut() {
+            for j in self.jobs.backgrounds.iter_mut() {
                 if j.mark == '-' {
                     j.mark = '+';
                 }
@@ -224,7 +226,7 @@ impl ShellCore {
         }
 
         self.set_var("PIPESTATUS", &pipestatus.join(" "));
-        self.jobs[job_no].status = 'D';
+        self.jobs.backgrounds[job_no].status = 'D';
     }
 
     pub fn check_async_process(pid: Pid) -> bool {
@@ -236,36 +238,36 @@ impl ShellCore {
     }
 
     pub fn check_jobs(&mut self) {
-        for j in 1..self.jobs.len() {
-            if self.jobs[j].async_pids.len() != 0 {
-                self.jobs[j].check_of_finish();
+        for j in 1..self.jobs.backgrounds.len() {
+            if self.jobs.backgrounds[j].async_pids.len() != 0 {
+                self.jobs.backgrounds[j].check_of_finish();
             }
         }
 
 
         let mut minus_to_plus = false;
-        for j in 1..self.jobs.len() {
-            if self.jobs[j].status == 'D' {
-                self.jobs[j].print_status();
-                if self.jobs[j].mark == '+' {
+        for j in 1..self.jobs.backgrounds.len() {
+            if self.jobs.backgrounds[j].status == 'D' {
+                self.jobs.backgrounds[j].print_status();
+                if self.jobs.backgrounds[j].mark == '+' {
                     minus_to_plus = true;
                 }
             }
         }
 
         if minus_to_plus {
-            for j in 1..self.jobs.len() {
-                if self.jobs[j].mark == '-' {
-                    self.jobs[j].mark = '+';
+            for j in 1..self.jobs.backgrounds.len() {
+                if self.jobs.backgrounds[j].mark == '-' {
+                    self.jobs.backgrounds[j].mark = '+';
                 }
             }
         }
 
-        while self.jobs.len() > 1 {
-            let job = self.jobs.pop().unwrap();
+        while self.jobs.backgrounds.len() > 1 {
+            let job = self.jobs.backgrounds.pop().unwrap();
 
             if job.status != 'I' && job.status != 'F' {
-                self.jobs.push(job);
+                self.jobs.backgrounds.push(job);
                 break;
             }
         }
@@ -273,11 +275,11 @@ impl ShellCore {
 
     pub fn add_job(&mut self, added: Job) {
         if added.mark == '+' {
-            for job in self.jobs.iter_mut() {
+            for job in self.jobs.backgrounds.iter_mut() {
                 job.mark = if job.mark == '+' {'-'}else{' '};
             }
         }
 
-        self.jobs.push(added);
+        self.jobs.backgrounds.push(added);
     }
 }

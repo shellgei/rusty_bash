@@ -7,7 +7,7 @@ use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
-use super::job::Job;
+use super::jobs::job::Job;
 use crate::elements::command::CommandType;
 use nix::sys::signal;
 use nix::sys::signal::Signal;
@@ -112,9 +112,9 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() < 2 {
-        for j in 1..core.jobs.len() {
-            if core.jobs[j].mark == '+' {
-                bg_core(&mut core.jobs[j]);
+        for j in 1..core.jobs.backgrounds.len() {
+            if core.jobs.backgrounds[j].mark == '+' {
+                bg_core(&mut core.jobs.backgrounds[j]);
             }
         }
         return 0;
@@ -128,9 +128,9 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    let status = core.jobs[job_no].status;
+    let status = core.jobs.backgrounds[job_no].status;
 
-    if job_no >= core.jobs.len() || status == 'D' || status == 'I' {
+    if job_no >= core.jobs.backgrounds.len() || status == 'D' || status == 'I' {
         eprintln!("bash: bg: {}: no such job", job_no);
         return 1;
     }else if status == 'R' {
@@ -138,24 +138,24 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    bg_core(&mut core.jobs[job_no]);
+    bg_core(&mut core.jobs.backgrounds[job_no]);
     0
 }
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
-        for j in 1..core.jobs.len() {
-            if core.jobs[j].status != 'S' {
+        for j in 1..core.jobs.backgrounds.len() {
+            if core.jobs.backgrounds[j].status != 'S' {
                 continue;
             }
 
-            if core.jobs[j].mark == '+' {
-                core.jobs[j].status = 'F';
-                eprint!("{}", core.jobs[j].text);
-                for p in &core.jobs[j].async_pids {
+            if core.jobs.backgrounds[j].mark == '+' {
+                core.jobs.backgrounds[j].status = 'F';
+                eprint!("{}", core.jobs.backgrounds[j].text);
+                for p in &core.jobs.backgrounds[j].async_pids {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
                 }
-                core.jobs[0] = core.jobs[j].clone();
+                core.jobs.backgrounds[0] = core.jobs.backgrounds[j].clone();
                 core.wait_job(j);
             }
         }
@@ -356,13 +356,13 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for j in 1..core.jobs.len() {
-        if core.jobs[j].async_pids.len() != 0 {
-            core.jobs[j].check_of_finish();
+    for j in 1..core.jobs.backgrounds.len() {
+        if core.jobs.backgrounds[j].async_pids.len() != 0 {
+            core.jobs.backgrounds[j].check_of_finish();
         }
     }
 
-    for (i,j) in core.jobs.iter_mut().enumerate() {
+    for (i,j) in core.jobs.backgrounds.iter_mut().enumerate() {
         if i == 0 {
             continue;
         }
@@ -455,15 +455,15 @@ pub fn glob_test(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for i in 1..core.jobs.len() {
-        if core.jobs[i].status != 'R' && core.jobs[i].status != 'F' { 
+    for i in 1..core.jobs.backgrounds.len() {
+        if core.jobs.backgrounds[i].status != 'R' && core.jobs.backgrounds[i].status != 'F' { 
             continue;
         }
-        core.jobs[i].status = 'F';
+        core.jobs.backgrounds[i].status = 'F';
         core.wait_job(i);
-        core.jobs[i].status = 'D';
-        eprintln!("{}", &core.jobs[i].status_string());
-        core.jobs[i].status = 'I';
+        core.jobs.backgrounds[i].status = 'D';
+        eprintln!("{}", &core.jobs.backgrounds[i].status_string());
+        core.jobs.backgrounds[i].status = 'I';
     }
 
     0
