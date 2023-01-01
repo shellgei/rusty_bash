@@ -7,6 +7,7 @@ use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
+use super::job::Job;
 use crate::elements::command::CommandType;
 use nix::sys::signal;
 use nix::sys::signal::Signal;
@@ -101,19 +102,39 @@ pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    fn bg_core (job: &mut Job) {
+        job.status = "Running".to_string();
+        print!("{}", job.status_string().clone());
+        for p in &job.async_pids {
+            signal::kill(*p, Signal::SIGCONT).unwrap();
+        }
+    }
+
     if args.len() < 2 {
         for j in 1..core.jobs.len() {
             if core.jobs[j].mark == '+' {
-                core.jobs[j].status = "Running".to_string();
-
-                print!("{}", core.jobs[j].status_string().clone());
-                for p in &core.jobs[j].async_pids {
-                    signal::kill(*p, Signal::SIGCONT).unwrap();
-                }
+                bg_core(&mut core.jobs[j]);
             }
         }
         return 0;
     }
+
+    args[1] = args[1].trim_start_matches("%").to_string();
+    let job_no = if let Ok(n) = args[1].parse::<usize>() {
+        n
+    }else{
+        eprintln!("bash: bg: {}: no such job", args[1]);
+        return 1;
+    };
+
+    if job_no >= core.jobs.len() {
+        eprintln!("bash: bg: {}: no such job", job_no);
+        return 1;
+    }else if core.jobs[job_no].status == "Running" {
+        eprintln!("bash: bg: job {} already in background", job_no);
+    }
+
+    bg_core(&mut core.jobs[job_no]);
     0
 }
 
