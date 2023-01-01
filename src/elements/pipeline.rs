@@ -34,9 +34,12 @@ impl Pipeline {
             prevfd = c.get_pipe_end();
         }
 
+        self.set_job_and_wait(core);
+    }
+
+    fn set_job_and_wait(&mut self, core: &mut ShellCore) {
         if self.is_bg {
             core.jobs.add_bg_job(&self.text, &self.commands);
-            return;
         }else{
             core.jobs.set_fg_job(&self.text, &self.commands);
             core.wait_job();
@@ -44,17 +47,7 @@ impl Pipeline {
                 core.reverse_exit_status();
             }
         }
-
-        /*
-        if self.not_flag {
-            if core.vars["?"] != "0" {
-                core.set_var("?", "0");
-            }else {
-                core.set_var("?", "1");
-            }
-        }*/
     }
-
 
     pub fn get_text(&self) -> String { self.text.clone() }
 
