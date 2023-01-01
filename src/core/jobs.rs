@@ -105,4 +105,14 @@ impl Jobs {
         self.backgrounds.push(added);
     }
 
+    pub fn remove_finished_jobs(&mut self) {
+        while self.backgrounds.len() > 1 {
+            let job = self.backgrounds.pop().unwrap();
+
+            if job.status != 'I' && job.status != 'F' {
+                self.backgrounds.push(job);
+                break;
+            }
+        }
+    }
 }

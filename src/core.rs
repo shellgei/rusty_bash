@@ -169,25 +169,7 @@ impl ShellCore {
         }
     }
 
-    /*
-    pub fn wait_job(&mut self, job_no: usize) {
-        let pipestatus = self.jobs.wait_job(job_no);
-        if pipestatus.len() == 0 {
-            return;
-        }
-
-        self.set_var("?", &pipestatus[pipestatus.len()-1].to_string());
-        let s = pipestatus
-            .iter()
-            .map(|es| es.to_string())
-            .collect::<Vec<String>>()
-            .join(" ");
-
-        self.set_var("PIPESTATUS", &s);
-        self.jobs.backgrounds[job_no].status = 'D';
-    }*/
-
-    pub fn wait_job(&mut self) {
+    pub fn wait_job(&mut self) { //only for fg job
         let pipestatus = self.jobs.wait_job(0);
         if pipestatus.len() == 0 {
             return;
@@ -235,25 +217,6 @@ impl ShellCore {
             }
         }
 
-        while self.jobs.backgrounds.len() > 1 {
-            let job = self.jobs.backgrounds.pop().unwrap();
-
-            if job.status != 'I' && job.status != 'F' {
-                self.jobs.backgrounds.push(job);
-                break;
-            }
-        }
+        self.jobs.remove_finished_jobs();
     }
-
-    /*
-    pub fn add_job(&mut self, added: Job) {
-        if added.mark == '+' {
-            for job in self.jobs.backgrounds.iter_mut() {
-                job.mark = if job.mark == '+' {'-'}else{' '};
-            }
-        }
-
-        self.jobs.backgrounds.push(added);
-    }
-    */
 }
