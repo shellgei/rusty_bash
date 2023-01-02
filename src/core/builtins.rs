@@ -149,10 +149,12 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() < 2 {
         for j in 0..core.jobs.backgrounds.len() {
-            if core.jobs.backgrounds[j].status != 'S' {
+            if core.jobs.backgrounds[j].status != 'S' && core.jobs.backgrounds[j].status != 'R' {
                 continue;
             }
 
+                //eprintln!("{:?}", &core.jobs.backgrounds[j]);
+                //eprintln!("{:?}", &first);
             if core.jobs.backgrounds[j].id == first {
                 core.jobs.backgrounds[j].status = 'F';
                 eprint!("{}", core.jobs.backgrounds[j].text);
@@ -160,7 +162,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                     signal::kill(*p, Signal::SIGCONT).unwrap();
                 }
                 core.jobs.foreground = core.jobs.backgrounds[j].clone();
-                core.jobs.wait_job(core.jobs.backgrounds[j].id);
+                core.jobs.wait_bg_job_at_foreground(core.jobs.backgrounds[j].id);
             }
         }
         return 0;
@@ -361,7 +363,6 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
     let (first, second) = core.jobs.get_top_priority_id();
-    //eprintln!("{}, {}", first, second);
 
     for j in core.jobs.backgrounds.iter_mut() {
         if j.async_pids.len() != 0 {
@@ -467,7 +468,7 @@ pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
         }
         core.jobs.backgrounds[i].status = 'F';
         let id = core.jobs.backgrounds[i].id;
-        core.jobs.wait_job(id);
+        core.jobs.wait_bg_job_at_foreground(id);
         core.jobs.backgrounds[i].status = 'D';
         eprintln!("{}", &core.jobs.backgrounds[i].status_string(first, second));
         core.jobs.backgrounds[i].status = 'I';

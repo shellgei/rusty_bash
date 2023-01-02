@@ -77,11 +77,6 @@ impl Jobs {
     }
 
     pub fn add_bg_job(&mut self, text: &String, commands: &Vec<Box<dyn Command>>) {
-        /*
-        for j in self.backgrounds.iter_mut() {
-            j.priority += 1;
-        }*/
-
         let mut bgjob = Job::new(text, commands, true);
         bgjob.id = self.backgrounds.len() + 1;
         bgjob.priority = self.get_worst_priority() + 1;
@@ -94,6 +89,7 @@ impl Jobs {
         }
 
         self.add_job(bgjob);
+        //eprintln!("{:?}", &self.backgrounds[0]);
         return;
     }
 
@@ -104,22 +100,13 @@ impl Jobs {
             pipestatus.push(exit_status);
         }
 
-        /*
-        if self.foreground.mark == '+' {
-            for j in self.backgrounds.iter_mut() {
-                if j.mark == '-' {
-                    j.mark = '+';
-                }
-            }
-        }*/
-
         self.foreground.status = 'D';
         pipestatus
     }
 
-    pub fn wait_job(&mut self, job_no: usize) -> Vec<i32> {
+    pub fn wait_bg_job_at_foreground(&mut self, job_no: usize) -> Vec<i32> {
         if job_no == 0 {
-            return self.wait_fg_job();
+            panic!("bash internal error (call the foreground job as a background)");
         }
 
         let pos = job_no - 1;
@@ -133,15 +120,6 @@ impl Jobs {
             let exit_status = self.wait_process(p);
             pipestatus.push(exit_status);
         }
-
-        /*
-        if self.backgrounds[pos].mark == '+' {
-            for j in self.backgrounds.iter_mut() {
-                if j.mark == '-' {
-                    j.mark = '+';
-                }
-            }
-        }*/
 
         self.backgrounds[pos].status = 'D';
         pipestatus
