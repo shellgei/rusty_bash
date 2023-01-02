@@ -7,6 +7,7 @@ use nix::unistd::Pid;
 use job::Job;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use crate::elements::command::Command;
+//use nix::unistd;
 
 //[1]+  Running                 sleep 5 &
 #[derive(Clone,Debug)]
@@ -65,6 +66,7 @@ impl Jobs {
 
         let mut job = self.foreground.clone();
         job.status = 'S';
+        job.signaled_bg = true;
         job.id = self.backgrounds.len()+1;
         //job.mark = '+';
         job.async_pids.push(pid);
@@ -109,6 +111,7 @@ impl Jobs {
             panic!("bash internal error (call the foreground job as a background)");
         }
 
+        //eprintln!("{:?}", unistd::tcgetpgrp(0));
         let pos = job_no - 1;
 
         if self.backgrounds[pos].status != 'F' {

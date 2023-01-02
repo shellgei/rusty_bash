@@ -13,7 +13,6 @@ use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use nix::unistd::Pid;
 use crate::core::jobs::Jobs;
 
-
 use nix::unistd::read;
 use std::os::unix::prelude::RawFd;
 

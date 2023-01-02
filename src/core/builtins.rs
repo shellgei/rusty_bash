@@ -11,6 +11,7 @@ use super::jobs::job::Job;
 use crate::elements::command::CommandType;
 use nix::sys::signal;
 use nix::sys::signal::Signal;
+use nix::unistd;
 
 use crate::Script;
 use crate::ShellCore;
@@ -153,16 +154,22 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 continue;
             }
 
-                //eprintln!("{:?}", &core.jobs.backgrounds[j]);
-                //eprintln!("{:?}", &first);
             if core.jobs.backgrounds[j].id == first {
                 core.jobs.backgrounds[j].status = 'F';
-                eprint!("{}", core.jobs.backgrounds[j].text);
                 for p in &core.jobs.backgrounds[j].async_pids {
+                    if ! core.jobs.backgrounds[j].signaled_bg {
+                        unistd::tcsetpgrp(0, p.clone()).expect("Bash internal error (tcsetpgrp)");
+                        unistd::tcsetpgrp(1, p.clone()).expect("Bash internal error (tcsetpgrp)");
+                    }
                     signal::kill(*p, Signal::SIGCONT).unwrap();
                 }
                 core.jobs.foreground = core.jobs.backgrounds[j].clone();
                 core.jobs.wait_bg_job_at_foreground(core.jobs.backgrounds[j].id);
+
+                if ! core.jobs.backgrounds[j].signaled_bg {
+                    unistd::tcsetpgrp(0, unistd::getpid()).expect("Bash internal error (tcsetpgrp)");
+                    unistd::tcsetpgrp(1, unistd::getpid()).expect("Bash internal error (tcsetpgrp)");
+                }
             }
         }
         return 0;

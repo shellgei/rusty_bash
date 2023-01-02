@@ -8,6 +8,7 @@ use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 //[1]+  Running                 sleep 5 &
 #[derive(Clone,Debug)]
 pub struct Job {
+    pub signaled_bg: bool,
     pub pids: Vec<Pid>,
     pub async_pids: Vec<Pid>, //maybe not required.
     pub text: String,
@@ -27,6 +28,7 @@ impl Job {
         }
 
         Job {
+            signaled_bg: false,
             pids: pids,
             async_pids: vec![],
             text: text.clone(),
