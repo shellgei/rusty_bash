@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -xv
 # SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -33,5 +33,11 @@ echo $res | grep Done || err $LINENO
 
 res="$($com <<< 'sleep 1 & sleep 1 & jobs')"
 echo $res | grep '\[1\].*Running sleep 1 &.*\[2\].*Running sleep 1 &' || err $LINENO
+
+### PRIORITY ###
+
+res="$($com <<< 'sleep 1 & sleep 2 & killall -SIGSTOP sleep ; jobs ; killall -SIGCONT sleep')"
+echo $res | grep -F '[1]+ Running sleep 1 & [2]- Running sleep 2 &' || err $LINENO
+
 
 echo OK $0
