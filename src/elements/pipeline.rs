@@ -27,7 +27,7 @@ impl Pipeline {
             };
             c.set_pipe(p.0, p.1, prevfd);
             if self.is_bg && i == 0 {
-                c.set_session_leader();
+                c.set_group_leader();
             }
             c.exec(core);
             FileDescs::set_parent_io(c.get_pipe_out());

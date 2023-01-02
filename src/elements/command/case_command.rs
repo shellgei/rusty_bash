@@ -23,18 +23,19 @@ pub struct CommandCase {
     pid: Option<Pid>,
     fds: FileDescs,
     my_type: CommandType, 
-    session_leader: bool,
+    group_leader: bool,
 }
 
 impl Command for CommandCase {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
-    fn set_sid(&mut self){
-        if self.session_leader {
-            let _ = unistd::setsid();
+    fn set_group(&mut self){
+        if self.group_leader {
+            let pid = nix::unistd::getpid();
+            let _ = unistd::setpgid(pid, pid);
         }
     }
-    fn set_session_leader(&mut self) { self.session_leader = true; }
+    fn set_group_leader(&mut self) { self.group_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
@@ -81,7 +82,7 @@ impl CommandCase {
             fds: FileDescs::new(),
             pid: None,
             my_type: CommandType::Case,
-            session_leader: false,
+            group_leader: false,
         }
     }
 

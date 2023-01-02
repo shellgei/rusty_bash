@@ -49,10 +49,10 @@ pub trait Command {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
-                self.set_sid();
+                self.set_group();
                 /*
-                if self.is_session_leader() { //TODO: implement this function
-                    let _ = unistd::setsid();
+                if self.is_group_leader() { //TODO: implement this function
+                    let _ = unistd::setpgid(pid, pid)();
                 }*/
                 if let Err(s) = self.set_child_io(conf){
                     eprintln!("{}", s);
@@ -71,8 +71,8 @@ pub trait Command {
     }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd);
-    fn set_session_leader(&mut self);
-    fn set_sid(&mut self);
+    fn set_group_leader(&mut self);
+    fn set_group(&mut self);
     fn get_pid(&self) -> Option<Pid>;
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;

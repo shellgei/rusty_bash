@@ -27,7 +27,7 @@ pub struct SimpleCommand {
     pub text: String,
     pub pid: Option<Pid>,
     fds: FileDescs,
-    pub session_leader: bool,
+    pub group_leader: bool,
 }
 
 fn is_reserve(s: &String) -> bool {
@@ -67,7 +67,7 @@ impl Command for SimpleCommand {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
-                self.set_sid();
+                self.set_group();
                 if let Err(s) = self.fds.set_child_io(core){
                     eprintln!("{}", s);
                     exit(1);
@@ -88,12 +88,13 @@ impl Command for SimpleCommand {
         self.fds.prevpipein = pprev;
     }
 
-    fn set_session_leader(&mut self) { self.session_leader = true; }
+    fn set_group_leader(&mut self) { self.group_leader = true; }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
-    fn set_sid(&mut self){
-        if self.session_leader {
-            let _ = unistd::setsid();
+    fn set_group(&mut self){
+        if self.group_leader {
+            let pid = nix::unistd::getpid();
+            let _ = unistd::setpgid(pid, pid);
         }
     }
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
@@ -110,7 +111,7 @@ impl SimpleCommand {
             text: "".to_string(),
             pid: None,
             fds: FileDescs::new(),
-            session_leader: false,
+            group_leader: false,
         }
     }
 
