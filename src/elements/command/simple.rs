@@ -12,6 +12,7 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::utils::*;
 
+use crate::core::proc;
 use crate::elements::command::Command;
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -19,8 +20,6 @@ use crate::elements::redirect::Redirect;
 use crate::elements::substitution::Substitution;
 //use crate::feeder::scanner::*;
 use crate::file_descs::*;
-use nix::sys::signal;
-use nix::sys::signal::{Signal, SigHandler};
 
 /* command: delim word delim word delim word ... eoc */
 pub struct SimpleCommand {
@@ -69,10 +68,7 @@ impl Command for SimpleCommand {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
-                unsafe { signal::signal(Signal::SIGINT, SigHandler::SigDfl) }.unwrap();
-                unsafe { signal::signal(Signal::SIGTTIN, SigHandler::SigDfl) }.unwrap();
-                unsafe { signal::signal(Signal::SIGTTOU, SigHandler::SigDfl) }.unwrap();
-                unsafe { signal::signal(Signal::SIGTSTP, SigHandler::SigDfl) }.unwrap();
+                proc::set_signals();
                 self.set_group();
                 if let Err(s) = self.fds.set_child_io(core){
                     eprintln!("{}", s);

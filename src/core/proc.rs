@@ -5,6 +5,9 @@ use nix::unistd::Pid;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use std::fs;
 
+use nix::sys::signal;
+use nix::sys::signal::{Signal, SigHandler};
+
 pub fn wait_process(child: Pid) -> (i32, char) {
     let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
         Ok(WaitStatus::Exited(_pid, status)) => {
@@ -49,5 +52,14 @@ pub fn check_status_from_file(pid: Pid) -> Option<char> {
             }
         },
         _ => None,
+    }
+}
+
+pub fn set_signals() {
+    unsafe {
+        signal::signal(Signal::SIGINT, SigHandler::SigDfl).unwrap();
+        signal::signal(Signal::SIGTTIN, SigHandler::SigDfl).unwrap();
+        signal::signal(Signal::SIGTTOU, SigHandler::SigDfl).unwrap();
+        signal::signal(Signal::SIGTSTP, SigHandler::SigDfl).unwrap();
     }
 }
