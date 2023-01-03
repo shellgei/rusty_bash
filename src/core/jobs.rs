@@ -119,12 +119,10 @@ impl Jobs {
     }
 
     pub fn wait_process(&mut self, child: Pid) -> i32 {
-        let (exit_status, status) = proc::wait_process(child);
-
-        if status == 'S' {
+        let exit_status = proc::wait_process(child);
+        if exit_status == 147 || exit_status == 148 { //SIGTSTP or SIGSTOP
             self.to_background(child);
         }
-
         exit_status
     } 
 

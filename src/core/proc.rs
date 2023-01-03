@@ -8,22 +8,21 @@ use std::fs;
 use nix::sys::signal;
 use nix::sys::signal::{Signal, SigHandler};
 
-pub fn wait_process(child: Pid) -> (i32, char) {
+pub fn wait_process(child: Pid) -> i32 {
     let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
         Ok(WaitStatus::Exited(_pid, status)) => {
-            (status, 'D')
+            status
         },
         Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
             eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
-            (128+signal as i32, 'D')
+            128+signal as i32
         },
         Ok(WaitStatus::Stopped(_pid, signal)) => {
-            //self.to_background(pid);
-            (128+signal as i32, 'S') 
+            128+signal as i32
         },
         Ok(unsupported) => {
             eprintln!("Error: {:?}", unsupported);
-            (1, 'D')
+            1
         },
         Err(err) => {
             panic!("Error: {:?}", err);
