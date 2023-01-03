@@ -87,6 +87,7 @@ impl Job {
             return;
         }
 
+        self.change_status_with_file();
         println!("{}", &self.status_string(first, second));
         if self.status == 'D' {
             self.status = 'I';
