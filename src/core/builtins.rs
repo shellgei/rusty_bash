@@ -7,7 +7,7 @@ use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
-use super::jobs::job::Job;
+use super::job::Job;
 use crate::elements::command::CommandType;
 use nix::sys::signal;
 use nix::sys::signal::Signal;

@@ -3,7 +3,7 @@
 
 use nix::unistd::Pid;
 use crate::elements::command::Command;
-use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
+use super::process;
 
 //[1]+  Running                 sleep 5 &
 #[derive(Clone,Debug)]
@@ -48,10 +48,11 @@ impl Job {
 
         let mut remain = vec![];
 
+        eprintln!("{:?}", &self);
         while self.async_pids.len() > 0 {
             let p = self.async_pids.pop().unwrap();
 
-            if ! Self::check_async_process(p){
+            if ! process::check_async_process(p){
                 remain.push(p);
             }
         }
@@ -91,14 +92,6 @@ impl Job {
         println!("{}", &self.status_string(first, second));
         if self.status == 'D' {
             self.status = 'I';
-        }
-    }
-
-    pub fn check_async_process(pid: Pid) -> bool {
-        match waitpid(pid, Some(WaitPidFlag::WNOHANG)) {
-            Ok(WaitStatus::StillAlive) =>  false,
-            Ok(_)                      => true, 
-            _                          => {eprintln!("ERROR");true},
         }
     }
 }

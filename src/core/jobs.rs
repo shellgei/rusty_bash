@@ -1,12 +1,10 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub mod job;
-
 use nix::unistd::Pid;
-use job::Job;
-use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
+use super::job::Job;
 use crate::elements::command::Command;
+use super::process;
 //use nix::unistd;
 
 //[1]+  Running                 sleep 5 &
@@ -129,6 +127,14 @@ impl Jobs {
     }
 
     pub fn wait_process(&mut self, child: Pid) -> i32 {
+        let (exit_status, status) = process::wait_process(child);
+
+        if status == 'S' {
+            self.to_background(child);
+        }
+
+        exit_status
+        /*
         let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
@@ -151,6 +157,7 @@ impl Jobs {
         };
 
         exit_status
+        */
     } 
 
     pub fn add_job(&mut self, added: Job) {
