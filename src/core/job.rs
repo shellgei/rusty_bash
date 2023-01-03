@@ -15,7 +15,6 @@ pub struct Job {
     pub status: char, // S: stopped, R: running, D: done, I: invalid, F: fg
     pub id: usize,
     pub priority: u32,
-//    pub mark: char, // '+': current, '-': previous, ' ': others
 }
 
 impl Job {
@@ -33,10 +32,7 @@ impl Job {
             async_pids: vec![],
             text: text.clone(),
             status: if is_bg {'R'}else{'F'},
-            //is_bg: is_bg,
-            //is_waited: false,
             id: 0,
-            //mark: ' ',
             priority: 0, 
         }
     }

@@ -18,13 +18,11 @@ use std::fs::{File,OpenOptions};
 use std::io::Read;
 
 use crate::core::ShellCore;
+use crate::core::proc;
 use crate::feeder::Feeder;
 
 use crate::elements::script::Script;
 use crate::elements::command::CommandType;
-
-use nix::sys::signal;
-use nix::sys::signal::{Signal, SigHandler};
 
 use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;
@@ -93,10 +91,13 @@ fn main() {
     }
 
     /* Ignore signals */
+    proc::ignore_signals();
+    /*
     unsafe { signal::signal(Signal::SIGINT, SigHandler::SigIgn) }.unwrap();
     unsafe { signal::signal(Signal::SIGTTIN, SigHandler::SigIgn) }.unwrap();
     unsafe { signal::signal(Signal::SIGTTOU, SigHandler::SigIgn) }.unwrap();
     unsafe { signal::signal(Signal::SIGTSTP, SigHandler::SigIgn) }.unwrap();
+    */
 
     let mut core = ShellCore::new();
     for word in &words {

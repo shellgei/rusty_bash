@@ -62,3 +62,12 @@ pub fn set_signals() {
         signal::signal(Signal::SIGTSTP, SigHandler::SigDfl).unwrap();
     }
 }
+
+pub fn ignore_signals() {
+    unsafe {
+        signal::signal(Signal::SIGINT, SigHandler::SigIgn).unwrap();
+        signal::signal(Signal::SIGTTIN, SigHandler::SigIgn).unwrap();
+        signal::signal(Signal::SIGTTOU, SigHandler::SigIgn).unwrap();
+        signal::signal(Signal::SIGTSTP, SigHandler::SigIgn).unwrap();
+    }
+}
