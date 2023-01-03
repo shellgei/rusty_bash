@@ -111,7 +111,6 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         for p in &job.async_pids {
             signal::kill(*p, Signal::SIGCONT).unwrap();
         }
-
     }
 
     if args.len() < 2 {
@@ -124,24 +123,24 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     args[1] = args[1].trim_start_matches("%").to_string();
-    let job_no = if let Ok(n) = args[1].parse::<usize>() {
-        n
+    let job_pos = if let Ok(n) = args[1].parse::<usize>() {
+        n - 1
     }else{
         eprintln!("bash: bg: {}: no such job", args[1]);
         return 1;
     };
 
-    let status = core.jobs.backgrounds[job_no].status;
-
-    if job_no >= core.jobs.backgrounds.len() || status == 'D' || status == 'I' {
-        eprintln!("bash: bg: {}: no such job", job_no);
+    let status = core.jobs.backgrounds[job_pos].status;
+    let id = core.jobs.backgrounds[job_pos].id;
+    if job_pos >= core.jobs.backgrounds.len() || status == 'D' || status == 'I' {
+        eprintln!("bash: bg: {}: no such job", id);
         return 1;
     }else if status == 'R' {
-        eprintln!("bash: bg: job {} already in background", job_no);
+        eprintln!("bash: bg: job {} already in background", id);
         return 0;
     }
 
-    bg_core(&mut core.jobs.backgrounds[job_no], first, second);
+    bg_core(&mut core.jobs.backgrounds[job_pos], first, second);
     0
 }
 
