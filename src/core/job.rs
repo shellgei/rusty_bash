@@ -3,7 +3,7 @@
 
 use nix::unistd::Pid;
 use crate::elements::command::Command;
-use super::process;
+use super::proc;
 
 //[1]+  Running                 sleep 5 &
 #[derive(Clone,Debug)]
@@ -48,11 +48,9 @@ impl Job {
 
         let mut remain = vec![];
 
-        eprintln!("{:?}", &self);
         while self.async_pids.len() > 0 {
             let p = self.async_pids.pop().unwrap();
-
-            if ! process::check_async_process(p){
+            if ! proc::check_async_process(p){
                 remain.push(p);
             }
         }
@@ -92,6 +90,16 @@ impl Job {
         println!("{}", &self.status_string(first, second));
         if self.status == 'D' {
             self.status = 'I';
+        }
+    }
+
+    pub fn change_status_with_file(&mut self) {
+        for p in &self.async_pids {
+            match proc::check_status_from_file(p.clone()) {
+                Some('T') => self.status = 'S',
+                Some('S') => self.status = 'R',
+                _         => (),
+            }
         }
     }
 }

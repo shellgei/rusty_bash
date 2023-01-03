@@ -4,7 +4,7 @@
 use nix::unistd::Pid;
 use super::job::Job;
 use crate::elements::command::Command;
-use super::process;
+use super::proc;
 //use nix::unistd;
 
 //[1]+  Running                 sleep 5 &
@@ -127,7 +127,7 @@ impl Jobs {
     }
 
     pub fn wait_process(&mut self, child: Pid) -> i32 {
-        let (exit_status, status) = process::wait_process(child);
+        let (exit_status, status) = proc::wait_process(child);
 
         if status == 'S' {
             self.to_background(child);

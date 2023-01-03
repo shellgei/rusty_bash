@@ -3,6 +3,7 @@
 
 use nix::unistd::Pid;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
+use std::fs;
 
 pub fn wait_process(child: Pid) -> (i32, char) {
     let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
@@ -34,5 +35,19 @@ pub fn check_async_process(pid: Pid) -> bool {
         Ok(WaitStatus::StillAlive) => false,
         Ok(_)                      => true, 
         _                          => {eprintln!("ERROR");true},
+    }
+}
+
+pub fn check_status_from_file(pid: Pid) -> Option<char> {
+    let path = format!("/proc/{}/stat", pid);
+    match fs::read_to_string(path) {
+        Ok(source) => {
+            if let Some(s) = source.split(" ").nth(2) {
+                Some(s.chars().nth(0).unwrap())
+            }else{
+                None
+            }
+        },
+        _ => None,
     }
 }

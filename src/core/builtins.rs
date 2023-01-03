@@ -377,8 +377,10 @@ pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
     }
 
     for j in core.jobs.backgrounds.iter_mut() {
+        j.change_status_with_file();
         j.print_status(first, second);
     }
+
     0
 }
 

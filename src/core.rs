@@ -5,7 +5,7 @@ pub mod builtins;
 pub mod shopts;
 pub mod jobs;
 pub mod job;
-pub mod process;
+pub mod proc;
 
 use std::collections::HashMap;
 use std::fs::File;
