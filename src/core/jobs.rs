@@ -66,7 +66,6 @@ impl Jobs {
         job.status = 'S';
         job.signaled_bg = true;
         job.id = self.backgrounds.len()+1;
-        //job.mark = '+';
         job.async_pids.push(pid);
         println!("{}", &job.status_string(job.id, 0));
         self.add_job(job.clone());
@@ -89,7 +88,6 @@ impl Jobs {
         }
 
         self.add_job(bgjob);
-        //eprintln!("{:?}", &self.backgrounds[0]);
         return;
     }
 
@@ -109,9 +107,7 @@ impl Jobs {
             panic!("bash internal error (call the foreground job as a background)");
         }
 
-        //eprintln!("{:?}", unistd::tcgetpgrp(0));
         let pos = job_no - 1;
-
         if self.backgrounds[pos].status != 'F' {
             return vec![];
         }
@@ -134,40 +130,9 @@ impl Jobs {
         }
 
         exit_status
-        /*
-        let exit_status = match waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
-            Ok(WaitStatus::Exited(_pid, status)) => {
-                status
-            },
-            Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
-                128+signal as i32 
-            },
-            Ok(WaitStatus::Stopped(pid, signal)) => {
-                self.to_background(pid);
-                128+signal as i32 
-            },
-            Ok(unsupported) => {
-                eprintln!("Error: {:?}", unsupported);
-                1
-            },
-            Err(err) => {
-                panic!("Error: {:?}", err);
-            },
-        };
-
-        exit_status
-        */
     } 
 
     pub fn add_job(&mut self, added: Job) {
-        /*
-        if added.mark == '+' {
-            for job in self.backgrounds.iter_mut() {
-                job.mark = if job.mark == '+' {'-'}else{' '};
-            }
-        }*/
-
         self.backgrounds.push(added);
     }
 
