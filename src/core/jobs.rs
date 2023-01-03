@@ -22,15 +22,10 @@ impl Jobs {
         }
     }
 
-    pub fn get_worst_priority(& self) -> u32 {
-        let mut max = 0;
-
-        for j in &self.backgrounds {
-            if max <= j.priority {
-                max = j.priority;
-            }
+    pub fn reduce_priority(&mut self) {
+        for j in self.backgrounds.iter_mut(){
+            j.priority += 1;
         }
-        max
     }
 
     pub fn get_top_priority_id(& self) -> (usize, usize) {
@@ -58,11 +53,10 @@ impl Jobs {
     }
 
     fn to_background(&mut self, pid: Pid){
-        for j in self.backgrounds.iter_mut() {
-            j.priority += 1;
-        }
+        self.reduce_priority();
 
         let mut job = self.foreground.clone();
+        job.priority = 0;
         job.status = 'S';
         job.signaled_bg = true;
         job.id = self.backgrounds.len()+1;
@@ -76,9 +70,11 @@ impl Jobs {
     }
 
     pub fn add_bg_job(&mut self, text: &String, commands: &Vec<Box<dyn Command>>) {
+        self.reduce_priority();
+
         let mut bgjob = Job::new(text, commands, true);
         bgjob.id = self.backgrounds.len() + 1;
-        bgjob.priority = self.get_worst_priority() + 1;
+        bgjob.priority = 10000;
 
         if let Some(pid) = commands.last().unwrap().get_pid() {
             eprintln!("[{}] {}", bgjob.id, pid);
