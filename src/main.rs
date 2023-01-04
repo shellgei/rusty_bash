@@ -40,7 +40,7 @@ fn main_loop(core: &mut ShellCore) {
     loop {
         if feeder.feed_line(core) {
             match Script::parse(&mut feeder, core){
-                Some(mut s) => s.list[0].pipelines[0].commands[0].exec(core),
+                Some(mut s) => s.exec(core),
                 None => process::exit(1)
             }
         }
