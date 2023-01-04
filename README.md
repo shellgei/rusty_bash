@@ -2,6 +2,7 @@
 
 may be a clone of Bash. 
 
+![](https://img.shields.io/github/actions/workflow/status/shellgei/rusty_bash/test.yml)
 ![](https://img.shields.io/github/license/shellgei/rusty_bash)
 
 ## how to try it
