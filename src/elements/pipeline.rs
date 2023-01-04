@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elem_command::Command;
+use crate::Feeder;
 use crate::ShellCore;
 
 pub struct Pipeline {
@@ -10,9 +11,10 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore) {
-        for command in self.commands.iter_mut() {
-            command.exec(core);
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
+        if let Some(command) = Command::parse(text, core){
+            return Some( Pipeline{text: command.text.clone(), commands: vec!(command)} );
         }
+        None
     }
 }
