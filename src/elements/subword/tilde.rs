@@ -9,6 +9,7 @@ use crate::utils::expand_tilde;
 
 use crate::elements::subword::Subword;
 
+#[derive(Debug)]
 pub struct SubwordTildePrefix {
     pub text: String,
     pub pos: DebugInfo,

@@ -20,11 +20,23 @@ use self::double_quoted::SubwordDoubleQuoted;
 use self::single_quoted::SubwordSingleQuoted;
 use self::braced::SubwordBraced;
 use self::variable::SubwordVariable;
+use std::fmt::Debug;
+use std::fmt;
 
 pub trait Subword {
     fn eval(&mut self, _conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>>;
     fn get_text(&self) -> String;
     fn permit_lf(&self) -> bool {false}
+}
+
+impl Debug for dyn Subword {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("Foo")
+            //.field("bar", &self.bar)
+            //.field("baz", &self.baz)
+            //.field("addr", &format_args!("{}", self.addr))
+            .finish()
+    }
 }
 
 pub fn parse_in_arg(text: &mut Feeder, conf: &mut ShellCore, is_in_brace: bool) -> Option<Box<dyn Subword>> {

@@ -11,6 +11,7 @@ use crate::file_descs::*;
 use crate::calculator::calculate;
 use nix::unistd;
 
+#[derive(Debug)]
 pub struct CommandDoubleParen {
     text: String,
     expression: String,

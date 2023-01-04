@@ -21,7 +21,7 @@ use crate::elements::substitution::Substitution;
 //use crate::feeder::scanner::*;
 use crate::file_descs::*;
 
-/* command: delim word delim word delim word ... eoc */
+#[derive(Debug)]
 pub struct SimpleCommand {
     vars: Vec<Substitution>,
     pub args: Vec<Word>,

@@ -9,11 +9,11 @@ use crate::elements::subword::Subword;
 use crate::elements::command::Command;
 use crate::elements::command::paren::CommandParen;
 
+#[derive(Debug)]
 pub struct SubwordCommandSubstitution {
     pub text: String,
     pub pos: DebugInfo,
     pub com: CommandParen, 
-//    pub is_value: bool,
 }
 
 impl Subword for SubwordCommandSubstitution {

@@ -6,8 +6,8 @@ use crate::Feeder;
 use crate::ShellCore;
 use crate::operators::RedirectOp;
 use crate::elements::word::Word;
-// use crate::elements::CommandElem;
 
+#[derive(Debug)]
 pub struct Redirect {
     pub text: String,
     pub pos: DebugInfo,

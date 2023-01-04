@@ -6,7 +6,7 @@ use crate::debuginfo::DebugInfo;
 use crate::Feeder;
 use crate::elements::value::Value;
 
-
+#[derive(Debug)]
 pub struct Substitution {
     pub text: String,
     pub name: String,

@@ -9,6 +9,7 @@ use crate::elements::subword::Subword;
 use crate::elements::command::Command;
 use crate::elements::command::double_paren::CommandDoubleParen;
 
+#[derive(Debug)]
 pub struct SubwordMathSubstitution {
     pub text: String,
     pub pos: DebugInfo,

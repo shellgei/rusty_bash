@@ -10,6 +10,7 @@ use crate::elements::subword::Subword;
 use crate::elements::subword::tilde::SubwordTildePrefix;
 use crate::elements::subword::string_non_quoted::SubwordStringNonQuoted;
 
+#[derive(Debug)]
 pub struct Word {
     pub text: String,
     pub pos: DebugInfo,

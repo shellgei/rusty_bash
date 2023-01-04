@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::elements::command::CommandType;
 use crate::elements::job::Job;
 
+#[derive(Debug)]
 pub struct Script {
     pub list: Vec<Job>,
     pub text: String,

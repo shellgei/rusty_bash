@@ -16,6 +16,7 @@ use crate::bash_glob::glob_match;
 // use crate::elements::CommandElem;
 use crate::elements::command::CommandType;
 
+#[derive(Debug)]
 pub struct CommandCase {
     pub word: Word,
     pub conddo: Vec<(Vec<String>, Option<Script>)>,

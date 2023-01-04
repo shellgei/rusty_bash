@@ -8,7 +8,7 @@ use crate::Feeder;
 
 use crate::elements::subword::Subword;
 
-
+#[derive(Debug)]
 pub struct SubwordSingleQuoted {
     pub text: String,
     pub pos: DebugInfo,

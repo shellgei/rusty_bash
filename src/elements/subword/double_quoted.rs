@@ -11,6 +11,7 @@ use crate::elements::subword::variable::SubwordVariable;
 use crate::elements::subword::command_substitution::SubwordCommandSubstitution;
 use crate::utils::combine;
 
+#[derive(Debug)]
 pub struct SubwordDoubleQuoted {
     pub text: String,
     pub pos: DebugInfo,

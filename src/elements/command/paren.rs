@@ -16,6 +16,7 @@ use nix::unistd::{close, pipe};
 use crate::elements::command::CommandType;
 use crate::core::proc;
 
+#[derive(Debug)]
 pub struct CommandParen {
     pub script: Option<Script>,
     text: String,

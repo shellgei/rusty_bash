@@ -8,6 +8,7 @@ use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
 use crate::elements::command;
 
+#[derive(Debug)]
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub text: String,

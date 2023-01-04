@@ -7,6 +7,7 @@ use crate::elements::command::CommandType;
 use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
 
+#[derive(Debug)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
     pub pipeline_ends: Vec<ControlOperator>,

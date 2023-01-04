@@ -11,6 +11,7 @@ use nix::unistd;
 use std::os::unix::prelude::RawFd;
 use crate::FileDescs;
 
+#[derive(Debug)]
 pub struct FunctionDefinition {
     pub name: String,
     pub body: Box<dyn Command>,

@@ -11,6 +11,7 @@ use crate::elements::word::word_in_brace;
 use crate::elements::subword::Subword;
 use crate::utils::combine_with;
 
+#[derive(Debug)]
 pub struct SubwordBraced {
     pub text: String,
     pub pos: DebugInfo,

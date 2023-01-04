@@ -8,6 +8,7 @@ use crate::Feeder;
 
 use crate::elements::subword::Subword;
 
+#[derive(Debug)]
 pub struct SubwordVariable {
     pub text: String,
     pub name: String,

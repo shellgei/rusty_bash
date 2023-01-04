@@ -25,7 +25,7 @@ fn tail_check(s: &String) -> bool{
     false
 }
 
-/* ( script ) */
+#[derive(Debug)]
 pub struct CommandBrace {
     pub script: Script,
     text: String,

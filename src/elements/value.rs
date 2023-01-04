@@ -9,6 +9,7 @@ use crate::elements::subword;
 use crate::elements::subword::Subword;
 use crate::elements::subword::tilde::SubwordTildePrefix;
 
+#[derive(Debug)]
 pub struct Value {
     pub text: String,
     pub pos: DebugInfo,

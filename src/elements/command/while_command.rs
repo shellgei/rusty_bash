@@ -11,7 +11,7 @@ use nix::unistd::Pid;
 use nix::unistd;
 use crate::file_descs::*;
 
-/* ( script ) */
+#[derive(Debug)]
 pub struct CommandWhile {
     pub conddo: Option<(Script, Script)>,
     text: String,

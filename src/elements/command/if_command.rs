@@ -11,7 +11,7 @@ use nix::unistd::Pid;
 use crate::file_descs::*;
 use nix::unistd;
 
-/* ( script ) */
+#[derive(Debug)]
 pub struct CommandIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
