@@ -75,7 +75,11 @@ impl Job {
             'R' => "Running",
             _   => "ERROR",
         };
-        format!("[{}]{} {}\t\t{}", &self.id, mark, status, &self.text.trim_end())
+        if self.signaled_bg { //temporary implementation
+            format!("[{}]{} {}\t\t{}", &self.id, mark, status, &self.text.trim_end())
+        }else{
+            format!("[{}]{} {}\t\t{} &", &self.id, mark, status, &self.text.trim_end())
+        }
     }
 
     pub fn print_status(&mut self, first: usize, second: usize) {
