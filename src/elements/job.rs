@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::job::Job;
+use super::pipeline::Pipeline;
 
-pub struct Script {
-    pub list: Vec<Job>,
+pub struct Job {
+    pub pipelines: Vec<Pipeline>,
     pub text: String,
 }
