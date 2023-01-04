@@ -296,7 +296,6 @@ impl SimpleCommand {
         let backup = text.clone();
         let mut ans = SimpleCommand::new();
 
-        //if scanner_start_brace(text, 0) == 1 {
         if text.starts_with("{") {
             return None;
         };

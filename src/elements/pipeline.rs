@@ -94,8 +94,9 @@ impl Pipeline {
 
             if let Some(p) = op {
                 if p == ControlOperator::BgAnd {
-                    ans.text += &text.consume(1);
+                    //ans.text += &text.consume(1);
                     ans.is_bg = true;
+                    break;
                 }
                 if p != ControlOperator::Pipe && p != ControlOperator::PipeAnd {
                     break;
