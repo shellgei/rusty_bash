@@ -46,7 +46,7 @@ pub enum CommandType {
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct("Foo")
+        fmt.debug_struct("COMMAND")
             //.field("bar", &self.bar)
             //.field("baz", &self.baz)
             //.field("addr", &format_args!("{}", self.addr))

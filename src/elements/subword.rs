@@ -31,7 +31,7 @@ pub trait Subword {
 
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct("Foo")
+        fmt.debug_struct("SUBWORD")
             //.field("bar", &self.bar)
             //.field("baz", &self.baz)
             //.field("addr", &format_args!("{}", self.addr))
