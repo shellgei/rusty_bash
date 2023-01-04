@@ -5,20 +5,16 @@ use crate::{ShellCore, Feeder};
 use crate::operators::*;
 use crate::elements::command::CommandType;
 use crate::elements::pipeline::Pipeline;
-use crate::elements::job::Job;
 use crate::utils::blue_string;
 
-pub struct Script {
-    pub jobs: Vec<Job>,
+pub struct Job {
+    pub list: Vec<Pipeline>,
+    pub list_ends: Vec<ControlOperator>,
     pub text: String,
 }
 
-impl Script {
+impl Job {
     pub fn exec(&mut self, conf: &mut ShellCore) {
-        for j in self.jobs.iter_mut() {
-            j.exec(conf);
-        }
-        /*
         let mut eop = ControlOperator::NoChar;
         for (i, p) in self.list.iter_mut().enumerate() {
             if conf.has_flag('d') {
@@ -38,28 +34,26 @@ impl Script {
             }
             eop = self.list_ends[i].clone();
         }
-        */
     }
 
-    pub fn new() -> Script{
-        Script {
-            jobs: vec![],
-            //list_ends: vec![],
+    pub fn new() -> Job{
+        Job {
+            list: vec![],
+            list_ends: vec![],
             text: "".to_string(),
         }
     }
 
-    /*
     fn is_end_condition(parent: &CommandType, op: &ControlOperator) -> bool {
         ( parent == &CommandType::Paren && op == &ControlOperator::RightParen ) ||
         ( parent == &CommandType::Case && op == &ControlOperator::DoubleSemicolon )
     }
 
-    fn set_listend(text: &mut Feeder, ans: &mut Script, parent_type: &CommandType) -> bool {
+    fn set_listend(text: &mut Feeder, ans: &mut Job, parent_type: &CommandType) -> bool {
         let (n, op) = text.scanner_control_op();
         if let Some(p) = op {
             ans.list_ends.push(p.clone());
-            if Script::is_end_condition(parent_type, &p) {
+            if Job::is_end_condition(parent_type, &p) {
                 return true;
             }
 
@@ -70,9 +64,8 @@ impl Script {
 
         false
     }
-    */
 
-    fn read_blank(text: &mut Feeder, ans: &mut Script) {
+    fn read_blank(text: &mut Feeder, ans: &mut Job) {
         loop {
             let before = ans.text.len();
             ans.text += &text.consume_blank_return();
@@ -84,15 +77,14 @@ impl Script {
         }
     }
 
-    /*
-    pub fn parse_elem(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Script, parent_type: &CommandType) -> bool {
+    pub fn parse_elem(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Job, parent_type: &CommandType) -> bool {
         let mut go_next = true;
 
         if let Some(result) = Pipeline::parse(text, conf) {
             ans.text += &result.text;
             ans.list.push(result);
 
-            if Script::set_listend(text, ans, parent_type){
+            if Job::set_listend(text, ans, parent_type){
                 go_next = false;
             }
         }
@@ -102,10 +94,9 @@ impl Script {
 
         go_next
     }
-    */
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
-                 parent_type: &CommandType) -> Option<Script> {
+                 parent_type: &CommandType) -> Option<Job> {
         if text.len() == 0 {
             return None;
         };
@@ -116,16 +107,9 @@ impl Script {
             return None;
         }
 
-        if let Some(j) =  Job::parse(text, conf, parent_type) {
-            let txt = j.text.clone();
-            Some( Script { jobs: vec!(j), text: txt } )
-        }else{
-            None
-        }
-/*
-        let mut ans = Script::new();
-        Script::read_blank(text, &mut ans);
-        while  Script::parse_elem(text, conf, &mut ans, parent_type) {
+        let mut ans = Job::new();
+        Job::read_blank(text, &mut ans);
+        while  Job::parse_elem(text, conf, &mut ans, parent_type) {
             /* If a semicolon exist, another element can be added to the list */
             let (n, op) = text.scanner_control_op();
             if op == Some(ControlOperator::Semicolon) {
@@ -137,7 +121,7 @@ impl Script {
             }
 
             text.request_next_line(conf);
-            Script::read_blank(text, &mut ans);
+            Job::read_blank(text, &mut ans);
         }
 
         if ans.text.len() > 0 {
@@ -148,6 +132,5 @@ impl Script {
             text.consume(text.len());
             None
         }
-        */
     }
 }
