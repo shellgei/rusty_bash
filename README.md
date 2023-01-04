@@ -2,6 +2,8 @@
 
 may be a clone of Bash. 
 
+https://img.shields.io/github/license/shellgei/rusty_bash
+
 ## how to try it
 
 ```bash

@@ -14,6 +14,7 @@ use crate::file_descs::*;
 use nix::unistd::{close, pipe};
 //use crate::feeder::scanner::*;
 use crate::elements::command::CommandType;
+use crate::core::proc;
 
 pub struct CommandParen {
     pub script: Option<Script>,
@@ -32,6 +33,7 @@ impl Command for CommandParen {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
+                proc::set_signals();
                 self.set_group();
                 if let Err(s) = self.fds.set_child_io(conf){
                     eprintln!("{}", s);

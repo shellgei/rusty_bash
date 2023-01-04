@@ -15,6 +15,7 @@ use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
+use crate::core::proc;
 
 use self::double_paren::CommandDoubleParen;
 use self::if_command::CommandIf;
@@ -49,6 +50,7 @@ pub trait Command {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
+                proc::set_signals();
                 self.set_group();
                 /*
                 if self.is_group_leader() { //TODO: implement this function
