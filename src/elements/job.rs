@@ -100,8 +100,7 @@ impl Job {
         go_next
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
-                 parent_type: &CommandType) -> Option<Job> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, parent_type: &CommandType) -> Option<Job> {
         if text.len() == 0 {
             return None;
         };
@@ -112,6 +111,7 @@ impl Job {
             conf.set_var("?", "2");
             return None;
         }*/
+        let backup = text.clone();
 
         let mut ans = Job::new();
         Job::read_blank(text, &mut ans);
@@ -135,9 +135,12 @@ impl Job {
         if ans.text.len() > 0 {
             Some(ans)
         }else{
+            /*
             eprintln!("Unknown phrase");
             conf.set_var("?", "1");
             text.consume(text.len());
+            */
+            text.rewind(backup);
             None
         }
     }

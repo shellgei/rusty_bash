@@ -37,16 +37,19 @@ impl Script {
             return None;
         }
 
+        //eprintln!("SCRIPT IN: '{}'", text._text());
         let mut ans = Script::new();
         loop {
             ans.text += &text.consume_blank();
             if let Some(j) =  Job::parse(text, conf, parent_type) {
+                //eprintln!("JOB: '{:?}'", &j );
                 ans.text += &j.text.clone();
                 ans.list.push(j);
             }else{
                 break;
             }
         }
+        //eprintln!("SCRIPT OUT: '{}'", text._text());
 
         if ans.list.len() > 0 {
             Some( ans )

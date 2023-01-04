@@ -109,7 +109,6 @@ impl CommandParen {
         loop{
             text.consume(1);
             if let Some(s) = Script::parse(text, conf, &ans.my_type) {
-
                 ans.text = "(".to_owned() + &s.text;
                 let (n, op) = text.scanner_control_op();
                 if let Some(p) = op  {
