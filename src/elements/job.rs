@@ -101,11 +101,12 @@ impl Job {
             return None;
         };
     
+        /*
         if text.starts_with(")") {
             eprintln!("Unexpected symbol: {}", text.consume(text.len()).trim_end());
             conf.set_var("?", "2");
             return None;
-        }
+        }*/
 
         let mut ans = Job::new();
         Job::read_blank(text, &mut ans);
