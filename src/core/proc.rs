@@ -57,6 +57,7 @@ pub fn check_status_from_file(pid: Pid) -> Option<char> {
 pub fn set_signals() {
     unsafe {
         signal::signal(Signal::SIGINT, SigHandler::SigDfl).unwrap();
+        signal::signal(Signal::SIGQUIT, SigHandler::SigDfl).unwrap();
         signal::signal(Signal::SIGTTIN, SigHandler::SigDfl).unwrap();
         signal::signal(Signal::SIGTTOU, SigHandler::SigDfl).unwrap();
         signal::signal(Signal::SIGTSTP, SigHandler::SigDfl).unwrap();
@@ -66,6 +67,7 @@ pub fn set_signals() {
 pub fn ignore_signals() {
     unsafe {
         signal::signal(Signal::SIGINT, SigHandler::SigIgn).unwrap();
+        signal::signal(Signal::SIGQUIT, SigHandler::SigIgn).unwrap();
         signal::signal(Signal::SIGTTIN, SigHandler::SigIgn).unwrap();
         signal::signal(Signal::SIGTTOU, SigHandler::SigIgn).unwrap();
         signal::signal(Signal::SIGTSTP, SigHandler::SigIgn).unwrap();

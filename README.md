@@ -5,7 +5,7 @@ may be a clone of Bash.
 ![](https://img.shields.io/github/actions/workflow/status/shellgei/rusty_bash/test.yml)
 ![](https://img.shields.io/github/license/shellgei/rusty_bash)
 
-## author
+## author / maintainer
 
 <img width="20%" src="https://b.ueda.tech/pages/top/ku_the_cat.jpg" />
 
