@@ -7,8 +7,9 @@ may be a clone of Bash.
 
 ## author
 
-<img height="20%" src="https://b.ueda.tech/pages/top/ku_the_cat.jpg" />
-[message from the author](https://www.youtube.com/shorts/YXJHb-hIbxU)
+<img width="20%" src="https://b.ueda.tech/pages/top/ku_the_cat.jpg" />
+
+* [message from the author](https://www.youtube.com/shorts/YXJHb-hIbxU)
 
 ## how to try it
 
