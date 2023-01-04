@@ -7,7 +7,7 @@ may be a clone of Bash.
 
 ## author
 
-![](https://b.ueda.tech/pages/top/ku_the_cat.jpg)
+<img width="20%" src="https://b.ueda.tech/pages/top/ku_the_cat.jpg" />
 
 ## how to try it
 
