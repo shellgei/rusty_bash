@@ -8,15 +8,15 @@ use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
 
 pub struct Job {
-    pub list: Vec<Pipeline>,
-    pub list_ends: Vec<ControlOperator>,
+    pub pipelines: Vec<Pipeline>,
+    pub pipeline_ends: Vec<ControlOperator>,
     pub text: String,
 }
 
 impl Job {
     pub fn exec(&mut self, conf: &mut ShellCore) {
         let mut eop = ControlOperator::NoChar;
-        for (i, p) in self.list.iter_mut().enumerate() {
+        for (i, p) in self.pipelines.iter_mut().enumerate() {
             if conf.has_flag('d') {
                 eprintln!("{}", blue_string(&p.get_text()));
             }
@@ -24,7 +24,7 @@ impl Job {
             let status = conf.get_var("?") == "0";
            
             if (status && eop == ControlOperator::Or) || (!status && eop == ControlOperator::And) {
-                eop = self.list_ends[i].clone();
+                eop = self.pipeline_ends[i].clone();
                 continue;
             }
             p.exec(conf);
@@ -32,14 +32,14 @@ impl Job {
                 conf.return_flag = false;
                 return;
             }
-            eop = self.list_ends[i].clone();
+            eop = self.pipeline_ends[i].clone();
         }
     }
 
     pub fn new() -> Job{
         Job {
-            list: vec![],
-            list_ends: vec![],
+            pipelines: vec![],
+            pipeline_ends: vec![],
             text: "".to_string(),
         }
     }
@@ -49,17 +49,17 @@ impl Job {
         ( parent == &CommandType::Case && op == &ControlOperator::DoubleSemicolon )
     }
 
-    fn set_listend(text: &mut Feeder, ans: &mut Job, parent_type: &CommandType) -> bool {
+    fn set_pipelineend(text: &mut Feeder, ans: &mut Job, parent_type: &CommandType) -> bool {
         let (n, op) = text.scanner_control_op();
         if let Some(p) = op {
-            ans.list_ends.push(p.clone());
+            ans.pipeline_ends.push(p.clone());
             if Job::is_end_condition(parent_type, &p) {
                 return true;
             }
 
             ans.text += &text.consume(n);
         }else{
-            ans.list_ends.push(ControlOperator::NoChar);
+            ans.pipeline_ends.push(ControlOperator::NoChar);
         }
 
         false
@@ -82,9 +82,9 @@ impl Job {
 
         if let Some(result) = Pipeline::parse(text, conf) {
             ans.text += &result.text;
-            ans.list.push(result);
+            ans.pipelines.push(result);
 
-            if Job::set_listend(text, ans, parent_type){
+            if Job::set_pipelineend(text, ans, parent_type){
                 go_next = false;
             }
         }
@@ -110,7 +110,7 @@ impl Job {
         let mut ans = Job::new();
         Job::read_blank(text, &mut ans);
         while  Job::parse_elem(text, conf, &mut ans, parent_type) {
-            /* If a semicolon exist, another element can be added to the list */
+            /* If a semicolon exist, another element can be added to the pipeline */
             let (n, op) = text.scanner_control_op();
             if op == Some(ControlOperator::Semicolon) {
                 ans.text += &text.consume(n);
