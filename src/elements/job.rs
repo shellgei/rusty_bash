@@ -2,8 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
-use crate::Feeder;
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 
 pub struct Job {
     pub pipelines: Vec<Pipeline>,

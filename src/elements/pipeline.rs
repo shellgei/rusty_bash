@@ -2,8 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elem_command::Command;
-use crate::Feeder;
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 
 pub struct Pipeline {
     pub commands: Vec<Command>,

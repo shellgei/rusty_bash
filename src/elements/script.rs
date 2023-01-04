@@ -2,8 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::Feeder;
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 
 pub struct Script {
     pub list: Vec<Job>,
