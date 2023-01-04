@@ -5,6 +5,10 @@ may be a clone of Bash.
 ![](https://img.shields.io/github/actions/workflow/status/shellgei/rusty_bash/test.yml)
 ![](https://img.shields.io/github/license/shellgei/rusty_bash)
 
+## author
+
+![](https://b.ueda.tech/pages/top/ku_the_cat.jpg)
+
 ## how to try it
 
 ```bash
