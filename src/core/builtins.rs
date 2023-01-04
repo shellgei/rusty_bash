@@ -451,6 +451,7 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let text = args[1..].join(" ");
     let mut feeder = Feeder::new_from(text);
+        eprintln!("{:?}", feeder._text());
     if let Some(mut script) = Script::parse(&mut feeder, core, &CommandType::Null) {
         script.exec(core);
     }

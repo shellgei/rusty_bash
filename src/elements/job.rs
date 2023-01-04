@@ -46,6 +46,7 @@ impl Job {
     }
 
     fn is_end_condition(parent: &CommandType, op: &ControlOperator) -> bool {
+        ( op == &ControlOperator::Semicolon || op == &ControlOperator::BgAnd ) ||
         ( parent == &CommandType::Paren && op == &ControlOperator::RightParen ) ||
         ( parent == &CommandType::Case && op == &ControlOperator::DoubleSemicolon )
     }
@@ -53,6 +54,9 @@ impl Job {
     fn set_pipelineend(text: &mut Feeder, ans: &mut Job, parent_type: &CommandType) -> bool {
         let (n, op) = text.scanner_control_op();
         if let Some(p) = op {
+            if &p == &ControlOperator::Semicolon || &p == &ControlOperator::BgAnd {
+                ans.text += &text.consume(n);
+            }
             ans.pipeline_ends.push(p.clone());
             if Job::is_end_condition(parent_type, &p) {
                 return true;
@@ -113,10 +117,12 @@ impl Job {
         Job::read_blank(text, &mut ans);
         while  Job::parse_elem(text, conf, &mut ans, parent_type) {
             /* If a semicolon exist, another element can be added to the pipeline */
+            /*
             let (n, op) = text.scanner_control_op();
-            if op == Some(ControlOperator::Semicolon) {
+            if op == Some(ControlOperator::Semicolon) || op == Some(ControlOperator::BgAnd) {
                 ans.text += &text.consume(n);
-            }
+                break;
+            }*/
 
             if text.len() == 0 && parent_type == &CommandType::Null {
                 break;

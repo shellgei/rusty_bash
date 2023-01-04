@@ -18,14 +18,12 @@ impl Script {
         }
     }
 
-    /*
     pub fn new() -> Script{
         Script {
             list: vec![],
             text: "".to_string(),
         }
     }
-    */
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
                  parent_type: &CommandType) -> Option<Script> {
@@ -39,11 +37,29 @@ impl Script {
             return None;
         }
 
+        let mut ans = Script::new();
+        loop {
+            ans.text += &text.consume_blank();
+            if let Some(j) =  Job::parse(text, conf, parent_type) {
+                ans.text += &j.text.clone();
+                ans.list.push(j);
+            }else{
+                break;
+            }
+        }
+
+        if ans.list.len() > 0 {
+            Some( ans )
+        }else{
+            None
+        }
+
+        /*
         if let Some(j) =  Job::parse(text, conf, parent_type) {
             let txt = j.text.clone();
             Some( Script { list: vec!(j), text: txt } )
         }else{
             None
-        }
+        }*/
     }
 }

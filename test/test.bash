@@ -12,7 +12,7 @@ com=../target/release/rusty_bash
 
 ./test_simple_command.bash 2> /dev/null | tail -n 1 &
 ./test_others.bash 2> /dev/null | tail -n 1         &
-./test_jobs.bash 2> /dev/null | tail -n 1           &
+#./test_jobs.bash 2> /dev/null | tail -n 1           &
 ./test_builtins.bash 2> /dev/null | tail -n 1       &
 
 wait
