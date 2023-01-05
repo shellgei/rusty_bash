@@ -360,6 +360,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
+    eprintln!("HERE");
     if core.return_enable {
         core.return_flag = true;
         0
