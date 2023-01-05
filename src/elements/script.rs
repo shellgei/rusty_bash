@@ -16,7 +16,6 @@ impl Script {
         for j in self.list.iter_mut() {
             j.exec(conf);
 
-            eprintln!("{}", conf.return_flag);
             if conf.return_flag {
                 conf.return_flag = false;
                 return;

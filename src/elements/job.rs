@@ -29,10 +29,11 @@ impl Job {
                 continue;
             }
             p.exec(conf);
+            /*
             if conf.return_flag {
                 conf.return_flag = false;
                 return;
-            }
+            }*/
             eop = self.pipeline_ends[i].clone();
         }
     }
