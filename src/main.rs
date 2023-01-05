@@ -141,7 +141,7 @@ fn main_loop(core: &mut ShellCore) {
             }
         }
         while let Some(mut e) = Script::parse(&mut feeder, core, &CommandType::Null){
-//            eprintln!("{:?}", &e);
+            eprintln!("{:?}", &e);
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());
                 eprintln!("Unknown phrase");

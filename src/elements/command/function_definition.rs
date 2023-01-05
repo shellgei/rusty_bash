@@ -79,6 +79,7 @@ impl FunctionDefinition {
              return None;
          }
          let name = text.consume(var_pos);
+         ans_text  += &name;
          ans_text += &text.consume_blank();
 
 
