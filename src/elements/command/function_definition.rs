@@ -97,10 +97,12 @@ impl FunctionDefinition {
          ans_text += &text.consume_blank();
  
          if let Some(c) = command::parse(text, conf){
-//             conf.functions.insert(name.clone(), c.get_text());
-             Some( FunctionDefinition::new(name, c, ans_text) )
+             ans_text += &c.get_text();
+             let ans = FunctionDefinition::new(name, c, ans_text);
+             Some( ans )
          }else{
              text.rewind(backup);
+             eprintln!("NG '{}'", text._text());
              None
          }
     }

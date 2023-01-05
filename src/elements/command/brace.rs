@@ -84,7 +84,6 @@ impl CommandBrace {
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandBrace> {
         if ! text.starts_with("{") {
-        //if text.len() == 0 || text.nth(0) != '{' {
             return None;
         }
 

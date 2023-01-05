@@ -159,7 +159,9 @@ impl SimpleCommand {
         let text = core.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_from(text);
+        //eprintln!("IN '{}'", feeder._text());
         if let Some(mut f) = command::parse(&mut feeder, core) {
+         //   eprintln!("FUNCTION '{:?}'", f);
             let backup = core.args.clone();
             core.args = args.to_vec();
             core.return_enable = true;
@@ -170,6 +172,7 @@ impl SimpleCommand {
         }else{
             panic!("Shell internal error on function");
         };
+        //eprintln!("OUT '{}'", feeder._text());
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
