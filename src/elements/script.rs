@@ -4,6 +4,6 @@
 use super::job::Job;
 
 pub struct Script {
-    pub list: Vec<Job>,
+    pub jobs: Vec<Job>,
     pub text: String,
 }
