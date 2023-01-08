@@ -9,13 +9,13 @@ use std::process;
 use nix::unistd::ForkResult;
 use nix::errno::Errno;
 
-pub struct Command {
+pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
 }
 
-impl Command {
+impl SimpleCommand {
     pub fn exec(&mut self, core: &mut ShellCore) {
         if core.run_builtin(&mut self.args) {
             return;
@@ -46,7 +46,7 @@ impl Command {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<Command> {
+    pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<SimpleCommand> {
         let line = feeder.consume(feeder.remaining.len());
         let args: Vec<String> = line
             .trim_end()
@@ -59,8 +59,8 @@ impl Command {
             .map(|w| CString::new(w.clone()).unwrap())
             .collect();
 
-        if args.len() > 0 { // 1個以上の単語があればCommandのインスタンスを作成して返す
-            Some( Command {text: line, args: args, cargs: cargs} )
+        if args.len() > 0 { // 1個以上の単語があればSimpleCommandのインスタンスを作成して返す
+            Some( SimpleCommand {text: line, args: args, cargs: cargs} )
         }else{
             None // そうでなければ何も返さない
         }

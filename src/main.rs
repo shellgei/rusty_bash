@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod core;
-mod elem_command;
 mod feeder;
 mod elements;
 
