@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod term;
+mod scanner;
 
 use crate::ShellCore;
 //use self::term;
@@ -67,4 +68,3 @@ impl Feeder {
     }
 
 }
-
