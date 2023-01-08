@@ -28,7 +28,7 @@ impl Feeder {
     }
 
     pub fn rewind(&mut self, backup: Feeder) {
-        self.remaining = backup.remaining.clone();
+        self.remaining = backup.remaining;
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
