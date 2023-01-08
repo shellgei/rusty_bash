@@ -9,6 +9,7 @@ use std::process;
 use nix::unistd::ForkResult;
 use nix::errno::Errno;
 
+#[derive(Debug)]
 pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
@@ -47,22 +48,32 @@ impl SimpleCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<SimpleCommand> {
-        let line = feeder.consume(feeder.remaining.len());
-        let args: Vec<String> = line
-            .trim_end()
-            .split(' ')
-            .map(|w| w.to_string())
-            .collect();
+        let mut ans = SimpleCommand { text: String::new(), args: vec![], cargs: vec![] };
+        let backup = feeder.clone();
 
-        let cargs: Vec<CString> = args
-            .iter()
-            .map(|w| CString::new(w.clone()).unwrap())
-            .collect();
+        let blank_len = feeder.scanner_blank();
+        ans.text += &feeder.consume(blank_len);
 
-        if args.len() > 0 { // 1個以上の単語があればSimpleCommandのインスタンスを作成して返す
-            Some( SimpleCommand {text: line, args: args, cargs: cargs} )
+        loop {
+            let arg_len = feeder.scanner_word();
+            if arg_len == 0 {
+                break;
+            }
+            ans.args.push(feeder.consume(arg_len));
+
+            let blank_len = feeder.scanner_blank();
+            if blank_len == 0 {
+                break;
+            }
+            ans.text += &feeder.consume(blank_len);
+        }
+
+        if ans.args.len() > 0 {
+            eprintln!("{:?}", ans);
+            Some(ans)
         }else{
-            None // そうでなければ何も返さない
+            feeder.rewind(backup);
+            None
         }
     }
 }

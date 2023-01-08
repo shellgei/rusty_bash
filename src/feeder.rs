@@ -27,6 +27,10 @@ impl Feeder {
         cut
     }
 
+    pub fn rewind(&mut self, backup: Feeder) {
+        self.remaining = backup.remaining.clone();
+    }   
+
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
         let line;
         let len_prompt = term::prompt_normal(core);
