@@ -59,7 +59,9 @@ impl SimpleCommand {
             if arg_len == 0 {
                 break;
             }
-            ans.args.push(feeder.consume(arg_len));
+            let word = feeder.consume(arg_len);
+            ans.text += &word.clone();
+            ans.args.push(word);
 
             let blank_len = feeder.scanner_blank();
             if blank_len == 0 {
@@ -69,6 +71,10 @@ impl SimpleCommand {
         }
 
         if ans.args.len() > 0 {
+            ans.cargs = ans.args.iter()
+            .map(|a| CString::new(a.to_string()).unwrap())
+            .collect();
+
             eprintln!("{:?}", ans);
             Some(ans)
         }else{
