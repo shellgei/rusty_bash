@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::command::CommandType;
 use crate::elements::job::Job;
+//use crate::operators::ControlOperator;
 
 #[derive(Debug)]
 pub struct Script {
@@ -30,6 +31,12 @@ impl Script {
         }
     }
 
+    /*
+    fn is_end_condition(parent: &CommandType, op: &ControlOperator) -> bool {
+        ( parent == &CommandType::Paren && op == &ControlOperator::RightParen ) ||
+        ( parent == &CommandType::Case && op == &ControlOperator::DoubleSemicolon )
+    }*/
+
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
                  parent_type: &CommandType) -> Option<Script> {
         if text.len() == 0 {
@@ -46,7 +53,6 @@ impl Script {
         loop {
             ans.text += &text.consume_blank();
             if let Some(j) =  Job::parse(text, conf, parent_type) {
-                //eprintln!("JOB: '{:?}'", &j );
                 ans.text += &j.text.clone();
                 ans.list.push(j);
             }else{
