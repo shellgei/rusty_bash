@@ -75,7 +75,8 @@ impl Job {
                 let pid = nix::unistd::getpid();
                 let _ = unistd::setpgid(pid, pid);
 
-                eprintln!("HERE");
+               // eprintln!("HERE");
+                self.exec_job(conf);
 
                 exit(conf.vars["?"].parse::<i32>().unwrap());
             },
