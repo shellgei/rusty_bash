@@ -370,11 +370,6 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for e in core.job_entries.iter() {
-        println!("{}", &e.text);
-    }
-
-    println!("---OLD---");
     let (first, second) = core.jobs.get_top_priority_id();
 
     for j in core.jobs.backgrounds.iter_mut() {

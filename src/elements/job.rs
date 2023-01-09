@@ -10,6 +10,7 @@ use crate::core::proc;
 use nix::unistd::{ForkResult};
 use nix::unistd;
 use std::process::exit;
+use super::command::simple::SimpleCommand;
 
 #[derive(Debug)]
 pub struct Job {
@@ -21,8 +22,6 @@ pub struct Job {
 
 impl Job {
     pub fn exec(&mut self, conf: &mut ShellCore) {
-        conf.add_job_entry(self);
-
         if self.is_bg && 
             (self.pipeline_ends[0] == ControlOperator::And || 
              self.pipeline_ends[0] == ControlOperator::Or) {
@@ -78,10 +77,14 @@ impl Job {
                // eprintln!("HERE");
                 self.exec_job(conf);
 
+
                 exit(conf.vars["?"].parse::<i32>().unwrap());
             },
             Ok(ForkResult::Parent { child } ) => {
-                //self.pid = Some(child);
+                let mut com = SimpleCommand::new();
+                com.group_leader = true;
+                com.pid = Some(child);
+                conf.jobs.add_bg_job(&self.text, &vec!(Box::new(com)));
                 return;
             },
             Err(err) => panic!("Failed to fork. {}", err),
