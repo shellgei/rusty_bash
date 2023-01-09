@@ -45,10 +45,10 @@ echo $res | grep -F 'sleep 1 || sleep 1 &'  || err $LINENO
 
 ### PRIORITY ###
 
-#res="$($com <<< 'sleep 1 & sleep 2 & killall -SIGSTOP sleep ; jobs ; killall -SIGCONT sleep')"
-#echo $res | grep -F '[1]+ Running sleep 1 & [2]- Running sleep 2 &' || err $LINENO
+res="$($com <<< 'sleep 1 & sleep 2 & killall -SIGSTOP sleep ; jobs ; killall -SIGCONT sleep')"
+echo $res | grep -F '[1]- Stopped sleep 1 & [2]+ Stopped sleep 2 &' || err $LINENO
 
-#res="$($com <<< 'sleep 1 & sleep 2 & killall -SIGSTOP sleep ; sleep 3 & jobs ; killall -SIGCONT sleep')"
-#echo $res | grep -F '[1]+ Running sleep 1 & [2]- Running sleep 2 & [3] Running sleep' || err $LINENO
+res="$($com <<< 'sleep 1 & sleep 2 & killall -SIGSTOP sleep ; sleep 3 & jobs ; killall -SIGCONT sleep')"
+echo $res | grep -F '[1] Stopped sleep 1 & [2]- Stopped sleep 2 & [3]+ Running sleep' || err $LINENO
 
 echo OK $0
