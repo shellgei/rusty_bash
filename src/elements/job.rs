@@ -6,6 +6,10 @@ use crate::operators::*;
 use crate::elements::command::CommandType;
 use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
+use crate::core::proc;
+use nix::unistd::{ForkResult};
+use nix::unistd;
+use std::process::exit;
 
 #[derive(Debug)]
 pub struct Job {
@@ -19,6 +23,16 @@ impl Job {
     pub fn exec(&mut self, conf: &mut ShellCore) {
         conf.add_job_entry(self);
 
+        if self.is_bg && 
+            (self.pipeline_ends[0] == ControlOperator::And || 
+             self.pipeline_ends[0] == ControlOperator::Or) {
+               self.exec_and_or_bg_job(conf);
+               return;
+           }
+
+        self.exec_job(conf);
+
+        /*
         let mut eop = ControlOperator::NoChar;
         for (i, p) in self.pipelines.iter_mut().enumerate() {
             if conf.has_flag('d') {
@@ -33,6 +47,43 @@ impl Job {
             }
             p.exec(conf);
             eop = self.pipeline_ends[i].clone();
+        }*/
+    }
+
+    fn exec_job(&mut self, conf: &mut ShellCore) {
+        let mut eop = ControlOperator::NoChar;
+        for (i, p) in self.pipelines.iter_mut().enumerate() {
+            if conf.has_flag('d') {
+                eprintln!("{}", blue_string(&p.get_text()));
+            }
+
+            let status = conf.get_var("?") == "0";
+           
+            if (status && eop == ControlOperator::Or) || (!status && eop == ControlOperator::And) {
+                eop = self.pipeline_ends[i].clone();
+                continue;
+            }
+            p.exec(conf);
+            eop = self.pipeline_ends[i].clone();
+        }
+    }
+
+    fn exec_and_or_bg_job(&mut self, conf: &mut ShellCore) {
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
+                proc::set_signals();
+                let pid = nix::unistd::getpid();
+                let _ = unistd::setpgid(pid, pid);
+
+                eprintln!("HERE");
+
+                exit(conf.vars["?"].parse::<i32>().unwrap());
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                //self.pid = Some(child);
+                return;
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 
@@ -122,7 +173,7 @@ impl Job {
             if ans.pipeline_ends.last().unwrap() == &ControlOperator::BgAnd {
                 ans.is_bg = true;
             }
-            eprintln!("{:?}", &ans);
+//            eprintln!("{:?}", &ans);
             Some(ans)
         }else{
             text.rewind(backup);
