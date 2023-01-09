@@ -5,6 +5,7 @@ pub mod builtins;
 pub mod shopts;
 pub mod jobs;
 pub mod job;
+pub mod job_entry;
 pub mod proc;
 
 use std::collections::HashMap;
@@ -14,6 +15,8 @@ use crate::core::shopts::Shopts;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use nix::unistd::Pid;
 use crate::core::jobs::Jobs;
+use job_entry::JobEntry;
+use crate::elements::job::Job;
 
 use nix::unistd::read;
 use std::os::unix::prelude::RawFd;
@@ -27,7 +30,8 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
-    pub jobs: Jobs, 
+    pub jobs: Jobs, //old
+    pub job_entries: Vec<JobEntry>, //new
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
@@ -48,6 +52,7 @@ impl ShellCore {
             history: Vec::new(),
             flags: String::new(),
             jobs: Jobs::new(),// {backgrounds: vec!(Job::new(&"".to_string(), &vec![], false))},
+            job_entries: vec![],// {backgrounds: vec!(Job::new(&"".to_string(), &vec![], false))},
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
@@ -211,15 +216,13 @@ impl ShellCore {
             }
         }
 
-        /*
-        if minus_to_plus {
-            for j in 1..self.jobs.backgrounds.len() {
-                if self.jobs.backgrounds[j].mark == '-' {
-                    self.jobs.backgrounds[j].mark = '+';
-                }
-            }
-        }*/
-
         self.jobs.remove_finished_jobs();
+    }
+
+    pub fn add_job_entry(&mut self, job: &mut Job) {
+        let mut ent = JobEntry::new();
+
+        ent.text = job.text.clone();
+        self.job_entries.push(ent);
     }
 }

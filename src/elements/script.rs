@@ -42,7 +42,6 @@ impl Script {
             return None;
         }
 
-        //eprintln!("SCRIPT IN: '{}'", text._text());
         let mut ans = Script::new();
         loop {
             ans.text += &text.consume_blank();
@@ -54,20 +53,11 @@ impl Script {
                 break;
             }
         }
-        //eprintln!("SCRIPT OUT: '{}'", text._text());
 
         if ans.list.len() > 0 {
             Some( ans )
         }else{
             None
         }
-
-        /*
-        if let Some(j) =  Job::parse(text, conf, parent_type) {
-            let txt = j.text.clone();
-            Some( Script { list: vec!(j), text: txt } )
-        }else{
-            None
-        }*/
     }
 }

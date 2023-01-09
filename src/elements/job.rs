@@ -12,10 +12,13 @@ pub struct Job {
     pub pipelines: Vec<Pipeline>,
     pub pipeline_ends: Vec<ControlOperator>,
     pub text: String,
+    pub is_bg: bool,
 }
 
 impl Job {
     pub fn exec(&mut self, conf: &mut ShellCore) {
+        conf.add_job_entry(self);
+
         let mut eop = ControlOperator::NoChar;
         for (i, p) in self.pipelines.iter_mut().enumerate() {
             if conf.has_flag('d') {
@@ -29,11 +32,6 @@ impl Job {
                 continue;
             }
             p.exec(conf);
-            /*
-            if conf.return_flag {
-                conf.return_flag = false;
-                return;
-            }*/
             eop = self.pipeline_ends[i].clone();
         }
     }
@@ -43,6 +41,7 @@ impl Job {
             pipelines: vec![],
             pipeline_ends: vec![],
             text: "".to_string(),
+            is_bg: false,
         }
     }
 
@@ -106,25 +105,11 @@ impl Job {
             return None;
         };
     
-        /*
-        if text.starts_with(")") {
-            eprintln!("Unexpected symbol: {}", text.consume(text.len()).trim_end());
-            conf.set_var("?", "2");
-            return None;
-        }*/
         let backup = text.clone();
 
         let mut ans = Job::new();
         Job::read_blank(text, &mut ans);
         while  Job::parse_elem(text, conf, &mut ans, parent_type) {
-            /* If a semicolon exist, another element can be added to the pipeline */
-            /*
-            let (n, op) = text.scanner_control_op();
-            if op == Some(ControlOperator::Semicolon) || op == Some(ControlOperator::BgAnd) {
-                ans.text += &text.consume(n);
-                break;
-            }*/
-
             if text.len() == 0 && parent_type == &CommandType::Null {
                 break;
             }
@@ -133,14 +118,13 @@ impl Job {
             Job::read_blank(text, &mut ans);
         }
 
-        if ans.text.len() > 0 {
+        if ans.pipelines.len() > 0 {
+            if ans.pipeline_ends.last().unwrap() == &ControlOperator::BgAnd {
+                ans.is_bg = true;
+            }
+            eprintln!("{:?}", &ans);
             Some(ans)
         }else{
-            /*
-            eprintln!("Unknown phrase");
-            conf.set_var("?", "1");
-            text.consume(text.len());
-            */
             text.rewind(backup);
             None
         }
