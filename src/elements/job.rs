@@ -29,24 +29,12 @@ impl Job {
                return;
            }
 
+        //single pipeline with &
+        if self.is_bg {
+            self.pipelines[0].text = self.text.clone();
+        }
+
         self.exec_job(conf);
-
-        /*
-        let mut eop = ControlOperator::NoChar;
-        for (i, p) in self.pipelines.iter_mut().enumerate() {
-            if conf.has_flag('d') {
-                eprintln!("{}", blue_string(&p.get_text()));
-            }
-
-            let status = conf.get_var("?") == "0";
-           
-            if (status && eop == ControlOperator::Or) || (!status && eop == ControlOperator::And) {
-                eop = self.pipeline_ends[i].clone();
-                continue;
-            }
-            p.exec(conf);
-            eop = self.pipeline_ends[i].clone();
-        }*/
     }
 
     fn exec_job(&mut self, conf: &mut ShellCore) {
@@ -74,7 +62,6 @@ impl Job {
                 let pid = nix::unistd::getpid();
                 let _ = unistd::setpgid(pid, pid);
 
-               // eprintln!("HERE");
                 self.exec_job(conf);
 
 
@@ -169,6 +156,7 @@ impl Job {
                 break;
             }
 
+            ans.text += &text.consume_blank();
             text.request_next_line(conf);
             Job::read_blank(text, &mut ans);
         }
@@ -177,7 +165,6 @@ impl Job {
             if ans.pipeline_ends.last().unwrap() == &ControlOperator::BgAnd {
                 ans.is_bg = true;
             }
-//            eprintln!("{:?}", &ans);
             Some(ans)
         }else{
             text.rewind(backup);

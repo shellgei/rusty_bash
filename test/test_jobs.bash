@@ -39,6 +39,9 @@ echo $res | grep '\[1\].*Running sleep 1 &.*\[2\].*Running sleep 1 &' || err $LI
 res="$($com <<< '(sleep 1 ; killall -SIGSTOP sleep ) & sleep 2 ; fg ')"
 echo $res | grep -F '[2]+ Stopped sleep 2 [2]+ Done sleep 2'  || err $LINENO
 
+res="$($com <<< 'sleep 1 || sleep 1 & jobs')"
+echo $res | grep -F 'sleep 1 || sleep 1 &'  || err $LINENO
+
 
 ### PRIORITY ###
 
