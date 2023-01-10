@@ -6,7 +6,6 @@ use crate::elements::command::Command;
 use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
-use crate::elements::command::CommandType;
 use nix::unistd::Pid;
 use crate::file_descs::*;
 use nix::unistd;
@@ -17,7 +16,6 @@ pub struct CommandIf {
     pub else_do: Option<Script>,
     text: String,
     pid: Option<Pid>,
-    my_type: CommandType, 
     fds: FileDescs,
     group_leader: bool,
 }
@@ -73,7 +71,6 @@ impl CommandIf {
             fds: FileDescs::new(),
             text: "".to_string(),
             pid: None,
-            my_type: CommandType::If,
             group_leader: false,
         }
     }

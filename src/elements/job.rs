@@ -2,8 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-//use crate::operators::*;
-use crate::elements::command::CommandType;
 use crate::elements::pipeline::Pipeline;
 use crate::utils::blue_string;
 use crate::core::proc;

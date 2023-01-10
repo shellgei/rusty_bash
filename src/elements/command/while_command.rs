@@ -6,7 +6,6 @@ use crate::elements::command::Command;
 use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
-use crate::elements::command::CommandType;
 use nix::unistd::Pid;
 use nix::unistd;
 use crate::file_descs::*;
@@ -17,7 +16,6 @@ pub struct CommandWhile {
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-    my_type: CommandType, 
     group_leader: bool,
 }
 
@@ -68,7 +66,6 @@ impl CommandWhile {
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            my_type: CommandType::While,
             group_leader: false,
         }
     }

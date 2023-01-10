@@ -22,7 +22,6 @@ use crate::core::proc;
 use crate::feeder::Feeder;
 
 use crate::elements::script::Script;
-use crate::elements::command::CommandType;
 
 use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;

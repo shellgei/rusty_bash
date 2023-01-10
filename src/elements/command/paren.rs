@@ -13,7 +13,6 @@ use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use nix::unistd::{close, pipe};
 //use crate::feeder::scanner::*;
-use crate::elements::command::CommandType;
 use crate::core::proc;
 
 #[derive(Debug)]
@@ -24,7 +23,6 @@ pub struct CommandParen {
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-    my_type: CommandType, 
     group_leader: bool,
 }
 
@@ -91,7 +89,6 @@ impl CommandParen {
             text: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            my_type: CommandType::Paren, 
             fds: FileDescs::new(),
             group_leader: false,
         }

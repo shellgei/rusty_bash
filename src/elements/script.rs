@@ -2,9 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::command::CommandType;
 use crate::elements::job::Job;
-//use crate::operators::ControlOperator;
 
 #[derive(Debug)]
 pub struct Script {

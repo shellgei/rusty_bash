@@ -9,7 +9,6 @@ use crate::elements::script::Script;
 use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use std::process::exit;
-use crate::elements::command::CommandType;
 use nix::unistd;
 
 fn tail_check(s: &String) -> bool{

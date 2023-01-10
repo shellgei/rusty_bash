@@ -14,7 +14,6 @@ use crate::file_descs::*;
 use crate::elements::word::Word;
 use crate::bash_glob::glob_match;
 // use crate::elements::CommandElem;
-use crate::elements::command::CommandType;
 
 #[derive(Debug)]
 pub struct CommandCase {
@@ -23,7 +22,6 @@ pub struct CommandCase {
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-    my_type: CommandType, 
     group_leader: bool,
 }
 
@@ -82,7 +80,6 @@ impl CommandCase {
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            my_type: CommandType::Case,
             group_leader: false,
         }
     }

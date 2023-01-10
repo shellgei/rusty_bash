@@ -31,6 +31,7 @@ use nix::unistd::{close, fork, ForkResult};
 use std::fmt;
 use std::fmt::Debug;
 
+/*
 #[derive(PartialEq)]
 #[derive(Debug)]
 pub enum CommandType {
@@ -43,7 +44,7 @@ pub enum CommandType {
     Brace,
     //Simple,
     Null,
-}
+}*/
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
