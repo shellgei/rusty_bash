@@ -345,7 +345,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         match fs::read_to_string(&args[1]) {
             Ok(source) => {
                 let mut feeder = Feeder::new_from(source);
-                if let Some(mut script) = Script::parse(&mut feeder, core, &CommandType::Null) {
+                if let Some(mut script) = Script::parse(&mut feeder, core) {
                     core.return_enable = true;
                     script.exec(core);
                     core.return_enable = false;
@@ -452,7 +452,7 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let text = args[1..].join(" ");
     let mut feeder = Feeder::new_from(text);
         eprintln!("{:?}", feeder._text());
-    if let Some(mut script) = Script::parse(&mut feeder, core, &CommandType::Null) {
+    if let Some(mut script) = Script::parse(&mut feeder, core) {
         script.exec(core);
     }
 

@@ -93,7 +93,7 @@ impl CommandBrace {
 
         loop {
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf, &CommandType::Brace) {
+            if let Some(s) = Script::parse(text, conf) {
                 if ! tail_check(&s.text){
                     text.rewind(backup);
                     return None;

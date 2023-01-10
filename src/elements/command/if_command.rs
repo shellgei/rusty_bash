@@ -82,7 +82,7 @@ impl CommandIf {
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) -> bool {
         text.feed_additional_line(conf);
 
-        let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+        let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             s
         }else{
@@ -99,7 +99,7 @@ impl CommandIf {
             text.feed_additional_line(conf);
 
             let backup = text.clone();
-            let doing = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+            let doing = if let Some(s) = Script::parse(text, conf) {
                 ans.text += &s.text;
                 s
             }else{
@@ -126,7 +126,7 @@ impl CommandIf {
             text.feed_additional_line(conf);
         
             let backup = text.clone();
-            ans.else_do = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+            ans.else_do = if let Some(s) = Script::parse(text, conf) {
                 ans.text += &s.text;
                 Some(s)
             }else{

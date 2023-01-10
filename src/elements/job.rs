@@ -147,7 +147,7 @@ impl Job {
         go_next
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, parent_type: &CommandType) -> Option<Job> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Job> {
         if text.len() == 0 {
             return None;
         };
@@ -157,13 +157,15 @@ impl Job {
         let mut ans = Job::new();
         Job::read_blank(text, &mut ans);
         while  Job::parse_elem(text, conf, &mut ans) {
-            if text.len() == 0 /*&& parent_type == &CommandType::Null*/ {
+            if text.len() == 0 {
                 break;
             }
 
+            /*
             ans.text += &text.consume_blank();
             text.request_next_line(conf);
             Job::read_blank(text, &mut ans);
+            */
         }
 
         if ans.pipelines.len() > 0 {

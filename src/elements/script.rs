@@ -37,8 +37,7 @@ impl Script {
         ( parent == &CommandType::Case && op == &ControlOperator::DoubleSemicolon )
     }*/
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore,
-                 parent_type: &CommandType) -> Option<Script> {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Script> {
         if text.len() == 0 {
             return None;
         };
@@ -53,25 +52,13 @@ impl Script {
         let mut ans = Script::new();
         loop {
             ans.text += &text.consume_blank();
-            if let Some(j) =  Job::parse(text, conf, parent_type) {
+            if let Some(j) =  Job::parse(text, conf) {
                 ans.text += &j.text.clone();
                 ans.list.push(j);
             }else{
                 break;
             }
         }
-
-        /*
-        if parent_type == &CommandType::If {
-            if (! text.starts_with("fi")) &&
-               (! text.starts_with("elif")) &&
-               (! text.starts_with("else")) {
-                text.rewind(backup);
-            text.request_next_line(conf);
-                return None
-            }
-        }*/
-        
 
         if ans.list.len() > 0 {
             Some( ans )

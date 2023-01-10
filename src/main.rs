@@ -140,7 +140,7 @@ fn main_loop(core: &mut ShellCore) {
                 break;
             }
         }
-        while let Some(mut e) = Script::parse(&mut feeder, core, &CommandType::Null){
+        while let Some(mut e) = Script::parse(&mut feeder, core){
 //            eprintln!("{:?}", &e);
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());

@@ -77,7 +77,7 @@ impl CommandWhile {
     fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandWhile) -> bool {
         ans.text += &text.request_next_line(conf);
 
-        let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+        let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             s
         }else{
@@ -92,7 +92,7 @@ impl CommandWhile {
 
         ans.text += &text.request_next_line(conf);
 
-        let doing = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+        let doing = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             s
         }else{

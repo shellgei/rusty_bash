@@ -113,7 +113,7 @@ impl CommandCase {
 
         let doing = if text.len() >= 2 && text.starts_with( ";;") {
             None
-        }else if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+        }else if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             Some(s)
         }else{
