@@ -212,7 +212,7 @@ impl SimpleCommand {
 
         let _ = execvpe(&cargs[0], &cargs, &envs);
 
-        eprintln!("Command not found");
+        eprintln!("Command not found: {:?}", &cargs[0]);
         exit(127);
     }
 

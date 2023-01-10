@@ -157,7 +157,7 @@ impl Job {
         let mut ans = Job::new();
         Job::read_blank(text, &mut ans);
         while  Job::parse_elem(text, conf, &mut ans) {
-            if text.len() == 0 && parent_type == &CommandType::Null {
+            if text.len() == 0 /*&& parent_type == &CommandType::Null*/ {
                 break;
             }
 

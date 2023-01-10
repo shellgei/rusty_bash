@@ -80,7 +80,7 @@ impl CommandIf {
 
 
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) -> bool {
-        ans.text += &text.request_next_line(conf);
+        text.feed_additional_line(conf);
 
         let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
             ans.text += &s.text;
@@ -89,45 +89,64 @@ impl CommandIf {
             return false;
         };
 
-        ans.text += &text.request_next_line(conf);
+        text.feed_additional_line(conf);
 
         if text.starts_with( "then"){
             ans.text += &text.consume(4);
         }
 
-        ans.text += &text.request_next_line(conf);
+        loop {
+            text.feed_additional_line(conf);
 
-        let doing = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
-            ans.text += &s.text;
-            s
-        }else{
-            return false;
-        };
+            let backup = text.clone();
+            let doing = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+                ans.text += &s.text;
+                s
+            }else{
+                text.rewind(backup);
+                eprintln!("A");
+                continue;
+            };
 
-        ans.text += &text.request_next_line(conf);
-
-        ans.ifthen.push( (cond, doing) );
+            eprintln!("'{}'", text._text());
+            if text.starts_with( "fi") || text.starts_with("else") || text.starts_with("elif") {
+                ans.ifthen.push( (cond, doing) );
+                break;
+            }else{
+                text.rewind(backup);
+                eprintln!("B");
+                continue;
+            }
+        }
         true
     }
 
     fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) -> bool {
-        //CommandIf::next_line(text, conf, ans);
-        ans.text += &text.request_next_line(conf);
+        loop {
+            text.feed_additional_line(conf);
         
-
-        ans.else_do = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
-            ans.text += &s.text;
-            Some(s)
-        }else{
-            return false;
-        };
-
-        ans.text += &text.request_next_line(conf);
-
-        if text.starts_with( "fi"){
-             ans.text += &text.consume(2);
-        }else{
-             return false;
+            let backup = text.clone();
+            ans.else_do = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+                ans.text += &s.text;
+                Some(s)
+            }else{
+             //   eprintln!("FALSE");
+            //    return false;
+                continue;
+            };
+    
+            //    eprintln!("OUT");
+            //ans.text += &text.request_next_line(conf);
+    
+            if text.starts_with( "fi"){
+             //   eprintln!("FI");
+                 ans.text += &text.consume(2);
+                 break;
+            }else{
+                text.rewind(backup);
+            //    return false;
+                continue;
+            }
         }
 
         true

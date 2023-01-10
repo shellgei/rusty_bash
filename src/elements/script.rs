@@ -49,6 +49,7 @@ impl Script {
             return None;
         }
 
+        let backup = text.clone();
         let mut ans = Script::new();
         loop {
             ans.text += &text.consume_blank();
@@ -60,9 +61,22 @@ impl Script {
             }
         }
 
+        /*
+        if parent_type == &CommandType::If {
+            if (! text.starts_with("fi")) &&
+               (! text.starts_with("elif")) &&
+               (! text.starts_with("else")) {
+                text.rewind(backup);
+            text.request_next_line(conf);
+                return None
+            }
+        }*/
+        
+
         if ans.list.len() > 0 {
             Some( ans )
         }else{
+            text.rewind(backup);
             None
         }
     }

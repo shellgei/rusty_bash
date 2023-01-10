@@ -37,6 +37,7 @@ pub enum CommandType {
     Case,
     While,
     If,
+    Else,
     Paren,
     //DoubleParen,
     Brace,
