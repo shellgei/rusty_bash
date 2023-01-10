@@ -118,7 +118,7 @@ impl CommandIf {
         true
     }
 
-    fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) -> bool {
+    fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) {
         loop {
             text.feed_additional_line(conf);
         
@@ -127,26 +127,17 @@ impl CommandIf {
                 ans.text += &s.text;
                 Some(s)
             }else{
-             //   eprintln!("FALSE");
-            //    return false;
                 continue;
             };
     
-            //    eprintln!("OUT");
-            //ans.text += &text.request_next_line(conf);
-    
             if text.starts_with( "fi"){
-             //   eprintln!("FI");
                  ans.text += &text.consume(2);
                  break;
             }else{
                 text.rewind(backup);
-            //    return false;
                 continue;
             }
         }
-
-        true
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandIf> {
@@ -154,12 +145,10 @@ impl CommandIf {
             return None;
         }
 
-        let backup = text.clone();
-
         let mut ans = CommandIf::new();
+        let backup = text.clone();
         ans.text += &text.consume(2);
 
-        //eprintln!("REM: '{}'", text._text());
         loop {
             if ! CommandIf::parse_if_then_pair(text, conf, &mut ans) {
                 text.rewind(backup);
@@ -174,9 +163,8 @@ impl CommandIf {
                 continue;
             }else if text.starts_with( "else"){
                 ans.text += &text.consume(4);
-                if CommandIf::parse_else_fi(text, conf, &mut ans) {
-                    break;
-                }
+                CommandIf::parse_else_fi(text, conf, &mut ans);
+                break;
             }
 
             text.rewind(backup);
