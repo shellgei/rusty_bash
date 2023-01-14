@@ -49,17 +49,28 @@ impl SimpleCommand {
 
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = SimpleCommand { text: String::new(), args: vec![], cargs: vec![] };
+        let backup = feeder.clone();
 
-        let arg_len = feeder.scanner_word();
-        if arg_len > 0 {
+        let blank_len = feeder.scanner_blank();
+        ans.text += &feeder.consume(blank_len);
+
+        loop {
+            let arg_len = feeder.scanner_word();
+            if arg_len == 0 {
+                break;
+            }
             let word = feeder.consume(arg_len);
             ans.text += &word.clone();
             ans.args.push(word);
 
-            eprintln!("{:?}", ans);
-            Some(ans)
-        }else{
-            None
+            let blank_len = feeder.scanner_blank();
+            if blank_len == 0 {
+                break;
+            }
+            ans.text += &feeder.consume(blank_len);
         }
+
+        eprintln!("{:?}", ans);
+        None
     }
 }
