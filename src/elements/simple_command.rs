@@ -77,7 +77,7 @@ impl SimpleCommand {
    }
 
     pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<SimpleCommand> {
-        let mut ans = SimpleCommand::new();
+        let mut ans = Self::new();
 
         Self::eat_blank(feeder, &mut ans);
         while Self::eat_word(feeder, &mut ans) &&
