@@ -76,7 +76,7 @@ impl SimpleCommand {
        true
    }
 
-    pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<SimpleCommand> {
+    pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = SimpleCommand::new();
 
         Self::eat_blank(feeder, &mut ans);
