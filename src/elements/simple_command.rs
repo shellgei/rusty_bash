@@ -47,28 +47,41 @@ impl SimpleCommand {
         }
     }
 
+   fn new() -> SimpleCommand {
+       SimpleCommand {
+           text: String::new(),
+           args: vec![],
+           cargs: vec![]
+       }
+   }
+
+   fn eat_blank(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
+       let blank_len = feeder.scanner_blank();
+       if blank_len == 0 {
+           return false;
+       }
+       ans.text += &feeder.consume(blank_len);
+       true
+   }
+
+   fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
+       let arg_len = feeder.scanner_word();
+       if arg_len == 0 {
+           return false;
+       }
+
+       let word = feeder.consume(arg_len);
+       ans.text += &word.clone();
+       ans.args.push(word);
+       true
+   }
+
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<SimpleCommand> {
-        let mut ans = SimpleCommand { text: String::new(), args: vec![], cargs: vec![] };
-        let backup = feeder.clone();
+        let mut ans = SimpleCommand::new();
 
-        let blank_len = feeder.scanner_blank();
-        ans.text += &feeder.consume(blank_len);
-
-        loop {
-            let arg_len = feeder.scanner_word();
-            if arg_len == 0 {
-                break;
-            }
-            let word = feeder.consume(arg_len);
-            ans.text += &word.clone();
-            ans.args.push(word);
-
-            let blank_len = feeder.scanner_blank();
-            if blank_len == 0 {
-                break;
-            }
-            ans.text += &feeder.consume(blank_len);
-        }
+        Self::eat_blank(feeder, &mut ans);
+        while Self::eat_word(feeder, &mut ans) &&
+              Self::eat_blank(feeder, &mut ans) {}
 
         eprintln!("{:?}", ans);
         None
