@@ -9,7 +9,6 @@ use std::process;
 use nix::unistd::ForkResult;
 use nix::errno::Errno;
 
-#[derive(Debug)]
 pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
@@ -50,7 +49,7 @@ impl SimpleCommand {
     pub fn parse(feeder: &mut Feeder, _core: &mut ShellCore) -> Option<SimpleCommand> {
         let arg_len = feeder.scanner_word();
         let word = feeder.consume(arg_len);
-        eprintln!("READ: {}", word);
+        eprintln!("READ: {}, LEN: {}", word, arg_len);
 
         None
     }
