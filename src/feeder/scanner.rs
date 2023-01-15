@@ -26,4 +26,13 @@ impl Feeder {
         }
         ans
     }
+
+    pub fn scanner_job_end(&mut self) -> usize {
+        if let Some(ch) = self.remaining.chars().nth(0) {
+            if let Some(_) = ";&\n".find(ch) {
+                return 1;
+            }
+        }
+        0
+    }
 }
