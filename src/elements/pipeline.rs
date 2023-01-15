@@ -4,7 +4,6 @@
 use crate::{Feeder, ShellCore};
 use super::simple_command::SimpleCommand;
 
-#[derive(Debug)]
 pub struct Pipeline {
     pub commands: Vec<SimpleCommand>,
     pub text: String,
