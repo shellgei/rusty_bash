@@ -76,12 +76,6 @@ impl SimpleCommand {
        true
    }
 
-   fn set_cargs(&mut self) {
-       self.cargs = self.args.iter()
-           .map(|a| CString::new(a.to_string()).unwrap())
-           .collect();
-   }
-
     pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = Self::new();
         let backup = feeder.clone();
@@ -91,7 +85,7 @@ impl SimpleCommand {
               Self::eat_blank(feeder, &mut ans) {}
 
         if ans.args.len() > 0 {
-            ans.set_cargs();
+            eprintln!("{:?}", &ans);
             Some(ans)
         }else{
             feeder.rewind(backup);
