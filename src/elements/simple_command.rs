@@ -85,7 +85,6 @@ impl SimpleCommand {
               Self::eat_blank(feeder, &mut ans) {}
 
         if ans.args.len() > 0 {
-            eprintln!("{:?}", &ans);
             Some(ans)
         }else{
             feeder.rewind(backup);
