@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use super::simple_command::SimpleCommand;
+use super::command::simple::SimpleCommand;
 
 #[derive(Debug)]
 pub struct Pipeline {
