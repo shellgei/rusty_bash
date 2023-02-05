@@ -16,12 +16,14 @@ impl Debug for dyn Command {
 }
 
 pub trait Command {
-    fn exec(&mut self, conf: &mut ShellCore);
+    fn exec(&mut self, core: &mut ShellCore);
     fn get_text(&self) -> String;
 }
 
-pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Command>> {
-    //else if let Some(a) = CommandParen::parse(text, conf, false)       {Some(Box::new(a))}
-    if let Some(a) = SimpleCommand::parse(text, conf)             {Some(Box::new(a))}
-    else {None}
+pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
+    if let Some(a) = SimpleCommand::parse(text, core){
+        Some(Box::new(a))
+    }else{
+        None
+    }
 }
