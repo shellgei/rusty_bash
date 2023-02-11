@@ -3,9 +3,7 @@
 
 pub mod simple;
 
-use crate::Feeder;
 use crate::ShellCore;
-use self::simple::SimpleCommand;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -18,12 +16,4 @@ impl Debug for dyn Command {
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore);
     fn get_text(&self) -> String;
-}
-
-pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) = SimpleCommand::parse(text, core){
-        Some(Box::new(a))
-    }else{
-        None
-    }
 }
