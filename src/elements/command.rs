@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod simple;
+
 use crate::ShellCore;
 
 pub trait Command {
