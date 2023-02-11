@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder};
-use super::Command;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -17,8 +16,8 @@ pub struct SimpleCommand {
     cargs: Vec<CString>,
 }
 
-impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore) {
+impl SimpleCommand {
+    pub fn exec(&mut self, core: &mut ShellCore) {
         if core.run_builtin(&mut self.args) {
             return;
         }
@@ -49,10 +48,6 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-}
-
-impl SimpleCommand {
     fn set_cargs(&mut self) {
         self.cargs = self.args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())

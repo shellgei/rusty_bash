@@ -2,12 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use super::command;
-use super::command::Command;
+use super::command::simple::SimpleCommand;
 
 #[derive(Debug)]
 pub struct Pipeline {
-    pub commands: Vec<Box<dyn Command>>,
+    pub commands: Vec<SimpleCommand>,
     pub text: String,
 }
 
@@ -19,8 +18,8 @@ impl Pipeline {
     }
 
     pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
-        if let Some(command) = command::parse(text, core){
-            return Some( Pipeline{text: command.get_text(), commands: vec!(command)} );
+        if let Some(command) = SimpleCommand::parse(text, core){
+            return Some( Pipeline{text: command.text.clone(), commands: vec!(command)} );
         }
         None
     }
