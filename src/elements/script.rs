@@ -54,6 +54,7 @@ impl Script {
 
         if feeder.remaining.len() == 0 || feeder.starts_with(")") {
             //eprintln!("{:?}", &ans);
+            //eprintln!("{:?}", &feeder);
             Some(ans)
         }else{
             eprintln!("ERROR");

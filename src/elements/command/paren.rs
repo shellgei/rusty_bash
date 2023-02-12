@@ -38,29 +38,40 @@ impl ParenCommand {
        }
    }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
-        if ! feeder.starts_with("("){
-            return None;
-        }
+   fn eat_head(feeder: &mut Feeder, ans: &mut ParenCommand) -> bool {
+        let blank_len = feeder.scanner_blank(); //先頭の余白の確認
+        ans.text += &feeder.consume(blank_len);
 
+        if feeder.starts_with("("){             //閉じカッコの確認
+            ans.text += &feeder.consume(1);
+            true
+        }else{
+            false
+        }
+   }
+
+   fn eat_tail(feeder: &mut Feeder, ans: &mut ParenCommand) -> bool {
+        if feeder.starts_with(")"){                 //閉じカッコの確認
+            ans.text += &feeder.consume(1);
+            let blank_len = feeder.scanner_blank(); //後ろの余白の確認
+            ans.text += &feeder.consume(blank_len);
+            true
+        }else{
+            false
+        }
+   }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
         let mut ans = Self::new();
         let backup = feeder.clone();
 
-        ans.text += &feeder.consume(1);
-
-        if ! Self::eat_script(feeder, core, &mut ans){
-            feeder.rewind(backup);
-            return None;
-        }
-
-        if ! feeder.starts_with(")"){
+        if Self::eat_head(feeder, &mut ans) &&
+           Self::eat_script(feeder, core, &mut ans) &&
+           Self::eat_tail(feeder, &mut ans) {
+            Some(ans)
+        }else{
             feeder.rewind(backup);
             None
-        }else{
-            ans.text += &feeder.consume(1);
-            let blank_len = feeder.scanner_blank();
-            ans.text += &feeder.consume(blank_len);
-            Some(ans)
         }
     }
 }
