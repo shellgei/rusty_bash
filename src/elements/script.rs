@@ -52,9 +52,8 @@ impl Script {
             while Self::eat_job_end(feeder, &mut ans) {} //TODO: prohibit echo a;; 
         }
 
-        if feeder.remaining.len() == 0 || feeder.starts_with(")") {
+        if feeder.remaining.len() == 0 {
             //eprintln!("{:?}", &ans);
-            //eprintln!("{:?}", &feeder);
             Some(ans)
         }else{
             eprintln!("ERROR");
