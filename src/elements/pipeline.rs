@@ -16,8 +16,8 @@ impl Pipeline {
         }
     }
 
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
-        if let Some(command) = SimpleCommand::parse(text, core){
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
+        if let Some(command) = SimpleCommand::parse(feeder, core){
             return Some( Pipeline{text: command.text.clone(), commands: vec!(command)} );
         }
         None

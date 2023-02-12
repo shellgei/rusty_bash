@@ -16,8 +16,8 @@ impl Job {
         }
     }
 
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
-        if let Some(pipeline) = Pipeline::parse(text, core){
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
+        if let Some(pipeline) = Pipeline::parse(feeder, core){
             return Some( Job{text: pipeline.text.clone(), pipelines: vec!(pipeline)} );
         }
         None
