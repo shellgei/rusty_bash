@@ -8,7 +8,7 @@ use crate::ShellCore;
 //use self::term;
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Feeder {
     pub remaining: String,
 }
@@ -61,10 +61,6 @@ impl Feeder {
         }else{
             self.remaining += &line;
         };
-    }
-
-    pub fn _text(&self) -> String {
-        self.remaining.clone()
     }
 
     pub fn len_as_chars(&self) -> usize {
