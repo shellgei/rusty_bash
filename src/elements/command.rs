@@ -22,8 +22,8 @@ pub trait Command {
     fn get_text(&self) -> String;
 }
 
-pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) =      ParenCommand::parse(text, core) { Some(Box::new(a)) }
-    else if let Some(a) = SimpleCommand::parse(text, core){ Some(Box::new(a)) }
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
+    if let Some(a) =      ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }
