@@ -7,7 +7,7 @@ impl Feeder {
     pub fn scanner_word(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = " \t\n;&|".find(ch) {
+            if let Some(_) = " \t\n;&|)".find(ch) {
                 break;
             }
             ans += ch.len_utf8();
