@@ -11,12 +11,13 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, core: &mut ShellCore) {}
+    fn exec(&mut self, _: &mut ShellCore) {}
     fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl ParenCommand {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
+    pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<ParenCommand> {
+        eprintln!("HERE: {:?}", &feeder);
         None
     }
 }
