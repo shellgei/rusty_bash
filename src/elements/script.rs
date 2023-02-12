@@ -16,8 +16,8 @@ impl Script {
         }
     }
 
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
-        if let Some(job) = Job::parse(text, core){
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
+        if let Some(job) = Job::parse(feeder, core){
             return Some( Script{text: job.text.clone(), list: vec!(job)} );
         }
         None
