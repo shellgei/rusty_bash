@@ -18,8 +18,8 @@ impl Pipeline {
         }
     }
 
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
-        if let Some(command) = command::parse(text, core){
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
+        if let Some(command) = command::parse(feeder, core){
             return Some( Pipeline{text: command.get_text(), commands: vec!(command)} );
         }
         None
