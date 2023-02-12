@@ -2,10 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod simple;
+pub mod paren;
 
-use crate::Feeder;
 use crate::ShellCore;
+use crate::Feeder;
 use self::simple::SimpleCommand;
+use self::paren::ParenCommand;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -21,9 +23,7 @@ pub trait Command {
 }
 
 pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) = SimpleCommand::parse(text, core){
-        Some(Box::new(a))
-    }else{
-        None
-    }
+    if let Some(a) =      ParenCommand::parse(text, core) { Some(Box::new(a)) }
+    else if let Some(a) = SimpleCommand::parse(text, core){ Some(Box::new(a)) }
+    else{ None }
 }
