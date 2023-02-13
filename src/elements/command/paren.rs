@@ -11,6 +11,11 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, _: &mut ShellCore) {}
+    fn exec(&mut self, core: &mut ShellCore) {
+        if let Some(s) = self.script.as_mut() {
+            s.exec(core);
+        }
+    }
+
     fn get_text(&self) -> String { self.text.clone() }
 }
