@@ -7,7 +7,6 @@ pub mod paren;
 use crate::Feeder;
 use crate::ShellCore;
 use self::simple::SimpleCommand;
-use self::paren::ParenCommand;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -23,7 +22,9 @@ pub trait Command {
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) =      ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
-    else{ None }
+    if let Some(a) = SimpleCommand::parse(feeder, core){
+        Some(Box::new(a))
+    }else{
+        None
+    }
 }
