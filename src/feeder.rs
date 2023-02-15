@@ -66,8 +66,4 @@ impl Feeder {
     pub fn len_as_chars(&self) -> usize {
         self.remaining.chars().count()
     }
-
-    pub fn starts_with(&self, s: &str) -> bool {
-        self.remaining.starts_with(s)
-    }
 }
