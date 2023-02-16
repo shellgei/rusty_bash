@@ -105,7 +105,7 @@ impl CommandIf {
                 continue;
             };
 
-            eprintln!("'{}'", text._text());
+            //eprintln!("'{}'", text._text());
             if text.starts_with( "fi") || text.starts_with("else") || text.starts_with("elif") {
                 ans.ifthen.push( (cond, doing) );
                 break;

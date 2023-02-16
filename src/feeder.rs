@@ -10,7 +10,7 @@ use crate::ShellCore;
 //use crate::term;
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Feeder {
     remaining: String,
     from_lineno: u32,
@@ -217,10 +217,6 @@ impl Feeder {
 
     pub fn starts_with(&self, s: &str) -> bool {
         self.remaining.starts_with(s)
-    }
-
-    pub fn _text(&self) -> String {
-        self.remaining.clone()
     }
 
     pub fn from_to(&self, from: usize, to: usize) -> String {

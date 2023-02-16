@@ -103,7 +103,7 @@ impl FunctionDefinition {
              Some( ans )
          }else{
              text.rewind(backup);
-             eprintln!("NG '{}'", text._text());
+             //eprintln!("NG '{}'", text._text());
              None
          }
     }
