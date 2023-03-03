@@ -7,6 +7,7 @@ mod elements;
 
 use std::{env, process};
 use crate::core::ShellCore;
+use crate::core::builtins;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
@@ -50,5 +51,5 @@ fn main_loop(core: &mut ShellCore) {
             None => process::exit(1)
         }
     }
-    core.run_builtin(&mut vec!["exit".to_string()]);
+    builtins::exit_no_msg(core, &mut vec![]);
 }
