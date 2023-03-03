@@ -126,7 +126,6 @@ impl Feeder {
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
-        //let ret = if core.flags.i {
         let ret = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
             if let Some(s) = term::read_line_terminal(len_prompt, core){
@@ -168,10 +167,6 @@ impl Feeder {
         };
         self.add_line(line);
 
-        if self.len_as_chars() < 2 {
-            return true;
-        }
-
         while self.remaining.ends_with("\\\n") {
             self.remaining.pop();
             self.remaining.pop();
@@ -211,21 +206,12 @@ impl Feeder {
         (self.clone(), res)
     }
 
-    /*pub fn nth_is(&self, pos: usize, chars: &str) -> bool{
-        let ch = self.nth(pos);
-        chars.to_string().find(ch) != None
-    }*/
-
     pub fn starts_with(&self, s: &str) -> bool {
         self.remaining.starts_with(s)
     }
 
     pub fn from_to(&self, from: usize, to: usize) -> String {
         self.remaining[from..to].to_string()
-    }
-
-    pub fn len_as_chars(&self) -> usize {
-        self.remaining.chars().count()
     }
 
     /* scanner only used in this file */
