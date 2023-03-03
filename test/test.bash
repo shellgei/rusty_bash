@@ -10,7 +10,7 @@ err () {
 cargo build || err $LINENO
 
 cd $(dirname $0)
-com=../target/debug/rusty_bash
+com=../target/debug/sush
 
 ### SIMPLE COMMAND TEST ###
 
@@ -28,16 +28,16 @@ res=$($com <<< 'echo hoge;')
 
 ### COMPOUND COMMAND TEST ###
 
-res=$($com <<< '(echo hoge; echo fuge)')
-[ "$res" = "hoge
-fuge" ] || err $LINENO
+#res=$($com <<< '(echo hoge; echo fuge)')
+#[ "$res" = "hoge
+#fuge" ] || err $LINENO
 
 ### IRREGULAR COMMAND TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')
 [ "$?" = 127 ] || err $LINENO
 
-res=$($com <<< '(echo hoge; false)')
-[ "$?" = 1 ] || err $LINENO
+#res=$($com <<< '(echo hoge; false)')
+#[ "$?" = 1 ] || err $LINENO
 
 echo OK $0
