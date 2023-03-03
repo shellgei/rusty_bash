@@ -172,8 +172,9 @@ impl Feeder {
             return true;
         }
 
-        while self.from_to_as_chars(self.len_as_chars()-2, self.len_as_chars()) == "\\\n" {
-            self.remaining = self.from_to_as_chars(0, self.len_as_chars()-2);
+        while self.remaining.ends_with("\\\n") {
+            self.remaining.pop();
+            self.remaining.pop();
             if !self.feed_additional_line(core){
                 self.remaining = "".to_string();
                 return true;
@@ -229,15 +230,6 @@ impl Feeder {
 
     pub fn len_as_chars(&self) -> usize {
         self.remaining.chars().count()
-    }
-
-    pub fn from_to_as_chars(&self, from: usize, to: usize) -> String {
-        self.remaining
-            .chars()
-            .enumerate()
-            .filter(|e| e.0 >= from && e.0 < to)
-            .map(|e| e.1)
-            .collect()
     }
 
     /* scanner only used in this file */
