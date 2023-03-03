@@ -41,11 +41,9 @@ pub fn file_completion(writer: &mut Writer){
     let (s, home, org) = expand_tilde(&s);
 
     let ans = eval_glob(&s.replace("\\", ""));
-    if ans.len() == 0 {
+    if ans.len() == 0 || ans[0].ends_with("*") {
         return;
     };
-    //eprintln!("\r\nANS: {:?}", ans);
-    //ans = ans.iter().map(|a| a.replace(" ", "\\ ")).collect();
 
     let base_len = writer.last_word().len();
     let in_cur_dir = s.chars().nth(0) == Some('.') && s.chars().nth(1) == Some('/');
@@ -74,10 +72,8 @@ pub fn file_completion(writer: &mut Writer){
         }else{
             ans
         };
-        //a = a.iter().map(|a| a.replace(" ", "\\ ")).collect();
 
         let mut chars = "".to_string();
-
         let mut base_len = writer.last_word().replace("\\", "").len();
         if in_cur_dir {
             base_len -= 2;
@@ -105,9 +101,9 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let (s, _, _) = expand_tilde(&s);
 
     let ans = eval_glob(&s);
-    if ans.len() == 0 {
+    if ans.len() == 0 || ans[0].ends_with("*") {
         return;
-    };
+    }
 
     write!(writer.stdout, "\r\n").unwrap();
     let ans2 = align_elems_on_term(&ans, writer.terminal_size().0);
