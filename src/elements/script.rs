@@ -53,7 +53,7 @@ impl Script {
         }
 
         if feeder.remaining.len() == 0 {
-            //eprintln!("{:?}", &ans);
+            //eprintln!("{:?}", &ans); <-eprintln!をdbg!に書き換えましょう
             Some(ans)
         }else{
             eprintln!("ERROR");
