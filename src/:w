@@ -64,30 +64,6 @@ impl Feeder {
         Some(line)
     }
 
-    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
-        let ret = if core.has_flag('i') {
-            let len_prompt = term::prompt_additional();
-            if let Some(s) = term::read_line_terminal(len_prompt, core){
-                Some(s)
-            }else {
-                return false;
-            }
-        }else{
-            if let Some(s) = Self::read_line_stdin() {
-                Some(s)
-            }else{
-                return false;
-            }
-        };
-
-        if let Some(line) = ret {
-            self.add_line(line);
-            true
-        }else{
-            false
-        }
-    }
-
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
         //let line = if core.flags.i {
         let line = if core.has_flag('i') {
@@ -105,6 +81,10 @@ impl Feeder {
             }
         };
         self.add_line(line);
+
+        if self.len_as_chars() < 2 {
+            return true;
+        }
 
         while self.remaining.ends_with("\\\n") {
             self.remaining.pop();
@@ -130,4 +110,9 @@ impl Feeder {
             self.remaining += &line;
         };
     }
+
+    pub fn len_as_chars(&self) -> usize {
+        self.remaining.chars().count()
+    }
+
 }

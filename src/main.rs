@@ -11,8 +11,8 @@ use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
 fn show_version() {
-    eprintln!("Rusty Bash, TERMINAL SKELETON");
-    eprintln!("© 2022 Ryuichi Ueda");
+    eprintln!("Sushi Shell 202305_0");
+    eprintln!("© 2023 Ryuichi Ueda");
     eprintln!("License: BSD 3-Clause\n");
 
     eprintln!("This is open source software. You can redistirbute and use in source\nand binary forms with or without modification under the license.");
@@ -37,11 +37,18 @@ fn main() {
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
-        if feeder.feed_line(core) {
-            match Script::parse(&mut feeder, core){
-                Some(mut s) => s.exec(core),
-                None => process::exit(1)
-            }
+        if !feeder.feed_line(core) {
+            if core.has_flag('i') {
+                continue;
+            }else{
+                break;
+            }   
+        }
+
+        match Script::parse(&mut feeder, core){
+            Some(mut s) => s.exec(core),
+            None => process::exit(1)
         }
     }
+    core.run_builtin(&mut vec!["exit".to_string()]);
 }

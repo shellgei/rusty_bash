@@ -7,20 +7,39 @@ use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use std::collections::HashMap;
+use std::process;
+use std::os::linux::fs::MetadataExt;
+use std::path::Path;
 
 pub struct ShellCore {
     pub history: Vec<String>,
+    pub flags: String,
     pub vars: HashMap<String, String>, 
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
+}
+
+fn is_interactive(pid: u32) -> bool {
+    let std_path = format!("/proc/{}/fd/0", pid);
+    match Path::new(&std_path).metadata() {
+        Ok(metadata) => metadata.st_mode() == 8592,
+        Err(err) => panic!("{}", err),
+    }
 }
 
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
             history: Vec::new(),
+            flags: String::new(),
             vars: HashMap::new(),
             builtins: HashMap::new(),
         };
+
+        let pid = process::id();
+        if is_interactive(pid) {
+            core.flags += "i";
+        }
+        core.vars.insert("$".to_string(), pid.to_string());
 
         core.vars.insert("?".to_string(), "0".to_string());
 
@@ -28,6 +47,13 @@ impl ShellCore {
         core.builtins.insert("exit".to_string(), builtins::exit);
 
         core
+    }
+
+    pub fn has_flag(&self, flag: char) -> bool {
+        if let Some(_) = self.flags.find(flag) {
+            return true;
+        }
+        false
     }
 
     pub fn wait_process(&mut self, child: Pid) {
