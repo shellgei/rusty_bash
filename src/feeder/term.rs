@@ -271,6 +271,12 @@ impl Writer {
     }
 }
 
+pub fn prompt_additional() -> u16 {
+    print!("> ");
+    io::stdout().flush().unwrap();
+    return 2;
+}
+
 pub fn prompt_normal(_core: &mut ShellCore) -> u16 {
     let host = "🍣";
 
