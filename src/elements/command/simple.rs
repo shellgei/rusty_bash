@@ -4,6 +4,7 @@
 use std::env;
 
 use nix::unistd::{execvpe, fork, ForkResult, Pid}; 
+use nix::unistd;
 use std::ffi::CString;
 use std::process::exit;
 use std::os::unix::prelude::RawFd;
@@ -11,21 +12,23 @@ use std::os::unix::prelude::RawFd;
 use crate::{ShellCore,Feeder};
 use crate::utils::*;
 
-use crate::element::command::Command;
-use crate::element::command;
-use crate::element::word::Word;
-use crate::element::redirect::Redirect;
-use crate::element::substitution::Substitution;
+use crate::core::proc;
+use crate::elements::command::Command;
+use crate::elements::command;
+use crate::elements::word::Word;
+use crate::elements::redirect::Redirect;
+use crate::elements::substitution::Substitution;
 //use crate::feeder::scanner::*;
 use crate::file_descs::*;
 
-/* command: delim word delim word delim word ... eoc */
+#[derive(Debug)]
 pub struct SimpleCommand {
     vars: Vec<Substitution>,
     pub args: Vec<Word>,
     pub text: String,
     pub pid: Option<Pid>,
     fds: FileDescs,
+    pub group_leader: bool,
 }
 
 fn is_reserve(s: &String) -> bool {
@@ -65,6 +68,8 @@ impl Command for SimpleCommand {
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
+                proc::set_signals();
+                self.set_group();
                 if let Err(s) = self.fds.set_child_io(core){
                     eprintln!("{}", s);
                     exit(1);
@@ -85,7 +90,15 @@ impl Command for SimpleCommand {
         self.fds.prevpipein = pprev;
     }
 
+    fn set_group_leader(&mut self) { self.group_leader = true; }
+
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_group(&mut self){
+        if self.group_leader {
+            let pid = nix::unistd::getpid();
+            let _ = unistd::setpgid(pid, pid);
+        }
+    }
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
     fn get_text(&self) -> String { self.text.clone() }
@@ -100,6 +113,7 @@ impl SimpleCommand {
             text: "".to_string(),
             pid: None,
             fds: FileDescs::new(),
+            group_leader: false,
         }
     }
 
@@ -145,7 +159,9 @@ impl SimpleCommand {
         let text = core.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_from(text);
+        //eprintln!("IN '{}'", feeder._text());
         if let Some(mut f) = command::parse(&mut feeder, core) {
+         //   eprintln!("FUNCTION '{:?}'", f);
             let backup = core.args.clone();
             core.args = args.to_vec();
             core.return_enable = true;
@@ -156,6 +172,7 @@ impl SimpleCommand {
         }else{
             panic!("Shell internal error on function");
         };
+        //eprintln!("OUT '{}'", feeder._text());
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
@@ -195,7 +212,7 @@ impl SimpleCommand {
 
         let _ = execvpe(&cargs[0], &cargs, &envs);
 
-        eprintln!("Command not found");
+        eprintln!("Command not found: {:?}", &cargs[0]);
         exit(127);
     }
 
@@ -282,7 +299,6 @@ impl SimpleCommand {
         let backup = text.clone();
         let mut ans = SimpleCommand::new();
 
-        //if scanner_start_brace(text, 0) == 1 {
         if text.starts_with("{") {
             return None;
         };

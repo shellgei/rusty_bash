@@ -5,34 +5,31 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 
-use crate::element::subword::Subword;
-use crate::element::command::Command;
-use crate::element::command::double_paren::CommandDoubleParen;
+use crate::elements::subword::Subword;
+use crate::elements::command::Command;
+use crate::elements::command::paren::CommandParen;
 
-pub struct SubwordMathSubstitution {
+#[derive(Debug)]
+pub struct SubwordCommandSubstitution {
     pub text: String,
     pub pos: DebugInfo,
-    pub com: CommandDoubleParen, 
-    //pub is_value: bool,
+    pub com: CommandParen, 
 }
 
-impl Subword for SubwordMathSubstitution {
-    fn eval(&mut self, conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
+impl Subword for SubwordCommandSubstitution {
+    fn eval(&mut self, conf: &mut ShellCore, remove_lf: bool) -> Vec<Vec<String>> {
         self.com.substitution = true;
         self.com.exec(conf);
 
-//        if self.is_value {
+        if ! remove_lf {
             return vec!(vec!(self.com.substitution_text.clone()));
- //       }
-
-            /*
+        }
         let ans = self.com.substitution_text
                 .split(" ")
                 .map(|x| x.to_string())
                 .collect::<Vec<String>>();
 
         vec!(ans)
-        */
     }
 
     fn get_text(&self) -> String {
@@ -40,8 +37,8 @@ impl Subword for SubwordMathSubstitution {
     }
 }
 
-impl SubwordMathSubstitution {
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore/*, is_value: bool*/) -> Option<SubwordMathSubstitution> {
+impl SubwordCommandSubstitution {
+    pub fn parse(text: &mut Feeder, conf: &mut ShellCore/*, is_value: bool*/) -> Option<SubwordCommandSubstitution> {
         if ! text.starts_with("$") {
             return None;
         }
@@ -49,8 +46,8 @@ impl SubwordMathSubstitution {
         let backup = text.clone();
         text.consume(1);
 
-        if let Some(e) = CommandDoubleParen::parse(text, conf, true){
-            let ans = SubwordMathSubstitution {
+        if let Some(e) = CommandParen::parse(text, conf, true){
+            let ans = SubwordCommandSubstitution {
                 text: "$".to_owned() + &e.get_text(),
                 pos: DebugInfo::init(text),
                 com: e,

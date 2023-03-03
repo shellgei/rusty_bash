@@ -3,7 +3,7 @@
 
 mod bash_glob;
 mod calculator;
-mod element;
+mod elements;
 mod operators;
 
 mod core;
@@ -18,11 +18,10 @@ use std::fs::{File,OpenOptions};
 use std::io::Read;
 
 use crate::core::ShellCore;
+use crate::core::proc;
 use crate::feeder::Feeder;
 
-use crate::element::script::Script;
-
-use crate::element::command::CommandType;
+use crate::elements::script::Script;
 
 use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;
@@ -90,9 +89,14 @@ fn main() {
         show_version();
     }
 
-    /* Ignore Ctrl+C (Childlen will receive instead.) */
-    ctrlc::set_handler(move || { })
-    .expect("Unable to set the Ctrl+C handler.");
+    /* Ignore signals */
+    proc::ignore_signals();
+    /*
+    unsafe { signal::signal(Signal::SIGINT, SigHandler::SigIgn) }.unwrap();
+    unsafe { signal::signal(Signal::SIGTTIN, SigHandler::SigIgn) }.unwrap();
+    unsafe { signal::signal(Signal::SIGTTOU, SigHandler::SigIgn) }.unwrap();
+    unsafe { signal::signal(Signal::SIGTSTP, SigHandler::SigIgn) }.unwrap();
+    */
 
     let mut core = ShellCore::new();
     for word in &words {
@@ -135,7 +139,8 @@ fn main_loop(core: &mut ShellCore) {
                 break;
             }
         }
-        while let Some(mut e) = Script::parse(&mut feeder, core, &CommandType::Null){
+        while let Some(mut e) = Script::parse(&mut feeder, core){
+//            eprintln!("{:?}", &e);
             if feeder.len() != 0 && feeder.nth(0) == ')' {
                 feeder.consume(feeder.len());
                 eprintln!("Unknown phrase");
@@ -144,11 +149,10 @@ fn main_loop(core: &mut ShellCore) {
             }
             e.exec(core);
         }
+        core.check_jobs();
     }
 
-    //if let Ok(status) = core.get_var(&"?".to_string())
-    if let Ok(status) = core.get_var("?")
-                        .to_string().parse::<i32>(){
+    if let Ok(status) = core.get_var("?").to_string().parse::<i32>(){
         process::exit(status);
     }else{
         eprintln!("Shell internal error");

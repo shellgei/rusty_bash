@@ -3,12 +3,13 @@
 
 use nix::unistd::{close, dup2};
 use std::os::unix::prelude::RawFd;
-use crate::element::redirect::Redirect;
+use crate::elements::redirect::Redirect;
 use crate::operators::RedirectOp;
 use std::fs::OpenOptions;
 use std::os::unix::io::IntoRawFd;
 use crate::ShellCore;
 
+#[derive(Debug)]
 pub struct FileDescs {
     pub redirects: Vec<Box<Redirect>>,
     pub pipein: RawFd,

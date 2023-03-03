@@ -11,9 +11,11 @@ pub mod while_command;
 pub mod function_definition;
 
 use nix::unistd::Pid;
+//use nix::unistd;
 use std::os::unix::prelude::RawFd;
 
 use crate::{Feeder, ShellCore}; 
+use crate::core::proc;
 
 use self::double_paren::CommandDoubleParen;
 use self::if_command::CommandIf;
@@ -26,17 +28,32 @@ use self::simple::SimpleCommand;
 
 use std::process::exit;
 use nix::unistd::{close, fork, ForkResult};
+use std::fmt;
+use std::fmt::Debug;
 
+/*
 #[derive(PartialEq)]
+#[derive(Debug)]
 pub enum CommandType {
     Case,
     While,
     If,
+    Else,
     Paren,
     //DoubleParen,
     Brace,
     //Simple,
     Null,
+}*/
+
+impl Debug for dyn Command {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("COMMAND")
+            //.field("bar", &self.bar)
+            //.field("baz", &self.baz)
+            //.field("addr", &format_args!("{}", self.addr))
+            .finish()
+    }
 }
 
 pub trait Command {
@@ -46,27 +63,33 @@ pub trait Command {
              return;
         };
 
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                    if let Err(s) = self.set_child_io(conf){
-                        eprintln!("{}", s);
-                        exit(1);
-                    }
-                    self.exec_elems(conf);
-                    close(1).expect("Can't close a pipe end");
-                    exit(conf.vars["?"].parse::<i32>().unwrap());
-                },
-                Ok(ForkResult::Parent { child } ) => {
-                    self.set_pid(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
+        match unsafe{fork()} {
+            Ok(ForkResult::Child) => {
+                proc::set_signals();
+                self.set_group();
+                /*
+                if self.is_group_leader() { //TODO: implement this function
+                    let _ = unistd::setpgid(pid, pid)();
+                }*/
+                if let Err(s) = self.set_child_io(conf){
+                    eprintln!("{}", s);
+                    exit(1);
+                }
+                self.exec_elems(conf);
+                close(1).expect("Can't close a pipe end");
+                exit(conf.vars["?"].parse::<i32>().unwrap());
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                self.set_pid(child);
+                return;
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd);
+    fn set_group_leader(&mut self);
+    fn set_group(&mut self);
     fn get_pid(&self) -> Option<Pid>;
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;

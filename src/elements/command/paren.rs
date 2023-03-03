@@ -2,18 +2,20 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use nix::unistd::{Pid, fork, ForkResult};
+use nix::unistd;
 use std::os::unix::prelude::RawFd;
-use crate::element::script::Script;
+use crate::elements::script::Script;
 use crate::operators::ControlOperator;
 use std::process::exit;
-use crate::element::redirect::Redirect;
+use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use nix::unistd::{close, pipe};
 //use crate::feeder::scanner::*;
-use crate::element::command::CommandType;
+use crate::core::proc;
 
+#[derive(Debug)]
 pub struct CommandParen {
     pub script: Option<Script>,
     text: String,
@@ -21,46 +23,52 @@ pub struct CommandParen {
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-    my_type: CommandType, 
+    group_leader: bool,
 }
 
 impl Command for CommandParen {
     fn exec(&mut self, conf: &mut ShellCore) {
         let p = pipe().expect("Pipe cannot open");
 
-        unsafe {
-            match fork() {
-                Ok(ForkResult::Child) => {
-                   //self.fds.set_child_io(conf);
-                    if let Err(s) = self.fds.set_child_io(conf){
-                        eprintln!("{}", s);
-                        exit(1);
-                    }
-                    if let Some(s) = &mut self.script {
-                        if self.substitution {
-                            close(p.0).expect("Can't close a pipe end");
-                            FileDescs::dup_and_close(p.1, 1);
-                        }
-                        s.exec(conf);
-                        close(1).expect("Can't close a pipe end");
-                        exit(conf.vars["?"].parse::<i32>().unwrap());
-                    };
-                },
-                Ok(ForkResult::Parent { child } ) => {
+        match unsafe{fork()} {
+            Ok(ForkResult::Child) => {
+                proc::set_signals();
+                self.set_group();
+                if let Err(s) = self.fds.set_child_io(conf){
+                    eprintln!("{}", s);
+                    exit(1);
+                }
+                if let Some(s) = &mut self.script {
                     if self.substitution {
-                        close(p.1).expect("Can't close a pipe end");
-                        self.substitution_text  = conf.read_pipe(p.0, child)
-                            .trim_end_matches('\n').to_string();
+                        close(p.0).expect("Can't close a pipe end");
+                        FileDescs::dup_and_close(p.1, 1);
                     }
-                    self.pid = Some(child);
-                    return;
-                },
-                Err(err) => panic!("Failed to fork. {}", err),
-            }
+                    s.exec(conf);
+                    close(1).expect("Can't close a pipe end");
+                    exit(conf.vars["?"].parse::<i32>().unwrap());
+                };
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                if self.substitution {
+                    close(p.1).expect("Can't close a pipe end");
+                    self.substitution_text  = conf.read_pipe(p.0, child)
+                        .trim_end_matches('\n').to_string();
+                }
+                self.pid = Some(child);
+                return;
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_group(&mut self){
+        if self.group_leader {
+            let pid = nix::unistd::getpid();
+            let _ = unistd::setpgid(pid, pid);
+        }
+    }
+    fn set_group_leader(&mut self) { self.group_leader = true; }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
         self.fds.pipein = pin;
@@ -81,8 +89,8 @@ impl CommandParen {
             text: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            my_type: CommandType::Paren, 
             fds: FileDescs::new(),
+            group_leader: false,
         }
     }
 
@@ -97,8 +105,7 @@ impl CommandParen {
 
         loop{
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf, &ans.my_type) {
-
+            if let Some(s) = Script::parse(text, conf) {
                 ans.text = "(".to_owned() + &s.text;
                 let (n, op) = text.scanner_control_op();
                 if let Some(p) = op  {

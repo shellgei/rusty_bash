@@ -2,22 +2,22 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use std::os::unix::prelude::RawFd;
-use crate::element::script::Script;
-use crate::element::redirect::Redirect;
-use crate::element::command::CommandType;
+use crate::elements::script::Script;
+use crate::elements::redirect::Redirect;
 use nix::unistd::Pid;
 use crate::file_descs::*;
+use nix::unistd;
 
-/* ( script ) */
+#[derive(Debug)]
 pub struct CommandIf {
     pub ifthen: Vec<(Script, Script)>,
     pub else_do: Option<Script>,
     text: String,
     pid: Option<Pid>,
-    my_type: CommandType, 
     fds: FileDescs,
+    group_leader: bool,
 }
 
 impl Command for CommandIf {
@@ -37,6 +37,13 @@ impl Command for CommandIf {
     }
 
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_group(&mut self){
+        if self.group_leader {
+            let pid = nix::unistd::getpid();
+            let _ = unistd::setpgid(pid, pid);
+        }
+    }
+    fn set_group_leader(&mut self) { self.group_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
     fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
@@ -64,63 +71,73 @@ impl CommandIf {
             fds: FileDescs::new(),
             text: "".to_string(),
             pid: None,
-            my_type: CommandType::If,
+            group_leader: false,
         }
     }
 
 
     fn parse_if_then_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) -> bool {
-        ans.text += &text.request_next_line(conf);
+        text.feed_additional_line(conf);
 
-        let cond = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+        let cond = if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             s
         }else{
             return false;
         };
 
-        ans.text += &text.request_next_line(conf);
+        text.feed_additional_line(conf);
 
         if text.starts_with( "then"){
             ans.text += &text.consume(4);
         }
 
-        ans.text += &text.request_next_line(conf);
+        loop {
+            text.feed_additional_line(conf);
 
-        let doing = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
-            ans.text += &s.text;
-            s
-        }else{
-            return false;
-        };
+            let backup = text.clone();
+            let doing = if let Some(s) = Script::parse(text, conf) {
+                ans.text += &s.text;
+                s
+            }else{
+                text.rewind(backup);
+                eprintln!("A");
+                continue;
+            };
 
-        ans.text += &text.request_next_line(conf);
-
-        ans.ifthen.push( (cond, doing) );
+            //eprintln!("'{}'", text._text());
+            if text.starts_with( "fi") || text.starts_with("else") || text.starts_with("elif") {
+                ans.ifthen.push( (cond, doing) );
+                break;
+            }else{
+                text.rewind(backup);
+                eprintln!("B");
+                continue;
+            }
+        }
         true
     }
 
-    fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) -> bool {
-        //CommandIf::next_line(text, conf, ans);
-        ans.text += &text.request_next_line(conf);
+    fn parse_else_fi(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandIf) {
+        loop {
+            text.feed_additional_line(conf);
         
-
-        ans.else_do = if let Some(s) = Script::parse(text, conf, &ans.my_type) {
-            ans.text += &s.text;
-            Some(s)
-        }else{
-            return false;
-        };
-
-        ans.text += &text.request_next_line(conf);
-
-        if text.starts_with( "fi"){
-             ans.text += &text.consume(2);
-        }else{
-             return false;
+            let backup = text.clone();
+            ans.else_do = if let Some(s) = Script::parse(text, conf) {
+                ans.text += &s.text;
+                Some(s)
+            }else{
+                continue;
+            };
+    
+            if text.starts_with( "fi"){
+                 ans.text += &text.consume(2);
+                 break;
+            }else{
+                text.rewind(backup);
+                continue;
+            }
         }
-
-        true
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandIf> {
@@ -128,12 +145,10 @@ impl CommandIf {
             return None;
         }
 
-        let backup = text.clone();
-
         let mut ans = CommandIf::new();
+        let backup = text.clone();
         ans.text += &text.consume(2);
 
-        //eprintln!("REM: '{}'", text._text());
         loop {
             if ! CommandIf::parse_if_then_pair(text, conf, &mut ans) {
                 text.rewind(backup);
@@ -148,9 +163,8 @@ impl CommandIf {
                 continue;
             }else if text.starts_with( "else"){
                 ans.text += &text.consume(4);
-                if CommandIf::parse_else_fi(text, conf, &mut ans) {
-                    break;
-                }
+                CommandIf::parse_else_fi(text, conf, &mut ans);
+                break;
             }
 
             text.rewind(backup);

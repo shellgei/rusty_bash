@@ -7,8 +7,9 @@ use crate::Feeder;
 //use crate::feeder::scanner::*;
 use crate::utils::expand_tilde;
 
-use crate::element::subword::Subword;
+use crate::elements::subword::Subword;
 
+#[derive(Debug)]
 pub struct SubwordTildePrefix {
     pub text: String,
     pub pos: DebugInfo,

@@ -2,14 +2,16 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
-use crate::element::redirect::Redirect;
+use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 //use crate::feeder::scanner::*;
 use crate::calculator::calculate;
+use nix::unistd;
 
+#[derive(Debug)]
 pub struct CommandDoubleParen {
     text: String,
     expression: String,
@@ -17,7 +19,7 @@ pub struct CommandDoubleParen {
     pub substitution_text: String,
     pub substitution: bool,
     fds: FileDescs,
-//    pub eoc: Option<Eoc>,
+    group_leader: bool,
 }
 
 impl Command for CommandDoubleParen {
@@ -34,6 +36,13 @@ impl Command for CommandDoubleParen {
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
+    fn set_group(&mut self){
+        if self.group_leader {
+            let pid = nix::unistd::getpid();
+            let _ = unistd::setpgid(pid, pid);
+        }
+    }
+    fn set_group_leader(&mut self) { self.group_leader = true; }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
         self.fds.pipein = pin;
@@ -55,8 +64,8 @@ impl CommandDoubleParen {
             expression: "".to_string(),
             substitution_text: "".to_string(),
             substitution: false,
-            //eoc: None,
             fds: FileDescs::new(),
+            group_leader: false,
         }
     }
 

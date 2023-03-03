@@ -3,19 +3,20 @@
 
 pub mod builtins;
 pub mod shopts;
+pub mod jobs;
 pub mod job;
+pub mod proc;
 
 use std::collections::HashMap;
 use std::fs::File;
 use std::env;
 use crate::core::shopts::Shopts;
-use crate::core::job::Job;
 use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
 use nix::unistd::Pid;
+use crate::core::jobs::Jobs;
 
 use nix::unistd::read;
 use std::os::unix::prelude::RawFd;
-
 
 pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, args: &mut Vec<String>) -> i32>,
@@ -26,7 +27,7 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub history: Vec<String>,
     pub flags: String,
-    pub jobs: Vec<Job>,
+    pub jobs: Jobs, //old
     pub in_double_quot: bool,
     pub pipeline_end: String,
     pub script_file: Option<File>,
@@ -46,7 +47,7 @@ impl ShellCore {
             aliases: HashMap::new(),
             history: Vec::new(),
             flags: String::new(),
-            jobs: vec!(Job::new(&"".to_string(), &vec![])),
+            jobs: Jobs::new(),// {backgrounds: vec!(Job::new(&"".to_string(), &vec![], false))},
             in_double_quot: false,
             pipeline_end: String::new(),
             script_file: None,
@@ -56,30 +57,7 @@ impl ShellCore {
         };
 
         conf.set_var("?", &0.to_string());
-
-        // Builtins: they are implemented in builtins.rs. 
-        conf.builtins.insert(".".to_string(), builtins::source);
-        conf.builtins.insert(":".to_string(), builtins::true_);
-        conf.builtins.insert("alias".to_string(), builtins::alias);
-        conf.builtins.insert("builtin".to_string(), builtins::builtin);
-        conf.builtins.insert("cd".to_string(), builtins::cd);
-        conf.builtins.insert("eval".to_string(), builtins::eval);
-        conf.builtins.insert("exit".to_string(), builtins::exit);
-        conf.builtins.insert("export".to_string(), builtins::export);
-        conf.builtins.insert("false".to_string(), builtins::false_);
-        conf.builtins.insert("history".to_string(), builtins::history);
-        conf.builtins.insert("jobs".to_string(), builtins::jobs);
-        conf.builtins.insert("pwd".to_string(), builtins::pwd);
-        conf.builtins.insert("set".to_string(), builtins::set);
-        conf.builtins.insert("shift".to_string(), builtins::shift);
-        conf.builtins.insert("true".to_string(), builtins::true_);
-        conf.builtins.insert("read".to_string(), builtins::read);
-        conf.builtins.insert("return".to_string(), builtins::return_);
-        conf.builtins.insert("shopt".to_string(), builtins::shopt);
-        conf.builtins.insert("source".to_string(), builtins::source);
-        conf.builtins.insert("wait".to_string(), builtins::wait);
-
-        conf.builtins.insert("glob_test".to_string(), builtins::glob_test);
+        builtins::set_builtins(&mut conf);
 
         conf
     }
@@ -162,27 +140,6 @@ impl ShellCore {
         false
     }
 
-    pub fn wait_process(&mut self, child: Pid) {
-        let exit_status = match waitpid(child, None) {
-            Ok(WaitStatus::Exited(_pid, status)) => {
-                status
-            },
-            Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
-                128+signal as i32 
-            },
-            Ok(unsupported) => {
-                eprintln!("Error: {:?}", unsupported);
-                1
-            },
-            Err(err) => {
-                panic!("Error: {:?}", err);
-            },
-        };
-
-        self.set_var("?", &exit_status.to_string());
-    } 
-
     pub fn read_pipe(&mut self, pin: RawFd, pid: Pid) -> String {
         let mut ans = "".to_string();
         let mut ch = [0;1000];
@@ -212,17 +169,48 @@ impl ShellCore {
         }
     }
 
-    pub fn wait_job(&mut self, job_no: usize) {
-        if self.jobs[job_no].status == "Done" {
+    pub fn wait_job(&mut self) { //only for fg job
+        let pipestatus = self.jobs.wait_fg_job();
+        if pipestatus.len() == 0 {
             return;
         }
 
-        let mut pipestatus = vec![];
-        for p in self.jobs[job_no].pids.clone() {
-            self.wait_process(p);
-            pipestatus.push(self.get_var("?"));
+        self.set_var("?", &pipestatus[pipestatus.len()-1].to_string());
+        let s = pipestatus
+            .iter()
+            .map(|es| es.to_string())
+            .collect::<Vec<String>>()
+            .join(" ");
+
+        self.set_var("PIPESTATUS", &s);
+        self.jobs.foreground.status = 'D';
+    }
+
+    pub fn reverse_exit_status(&mut self) {
+        let rev = if self.vars["?"] == "0" {"1"}else{"0"};
+        self.set_var("?", rev);
+    }
+
+    pub fn check_jobs(&mut self) {
+        for j in 1..self.jobs.backgrounds.len() {
+            if self.jobs.backgrounds[j].async_pids.len() != 0 {
+                self.jobs.backgrounds[j].check_of_finish();
+            }
         }
-        self.jobs[job_no].status = "Done".to_string();
-        self.set_var("PIPESTATUS", &pipestatus.join(" "));
+
+        let (first, second) = self.jobs.get_top_priority_id();
+
+        //let mut minus_to_plus = false;
+        for j in self.jobs.backgrounds.iter_mut() {
+            if j.status == 'D' { //done
+                j.print_status(first, second);
+                /*
+                if self.jobs.backgrounds[j].mark == '+' {
+                    minus_to_plus = true;
+                }*/
+            }
+        }
+
+        self.jobs.remove_finished_jobs();
     }
 }

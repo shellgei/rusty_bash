@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 //
 pub mod script;
+pub mod job;
 pub mod pipeline;
 pub mod command;
 

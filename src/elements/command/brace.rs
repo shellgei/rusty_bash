@@ -2,14 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use nix::unistd::Pid;
 use std::os::unix::prelude::RawFd;
-use crate::element::script::Script;
-use crate::element::redirect::Redirect;
+use crate::elements::script::Script;
+use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
 use std::process::exit;
-use crate::element::command::CommandType;
+use nix::unistd;
 
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
@@ -24,13 +24,14 @@ fn tail_check(s: &String) -> bool{
     false
 }
 
-/* ( script ) */
+#[derive(Debug)]
 pub struct CommandBrace {
     pub script: Script,
     text: String,
     pid: Option<Pid>, 
     pub substitution_text: String,
     fds: FileDescs,
+    group_leader: bool,
 }
 
 impl Command for CommandBrace {
@@ -42,6 +43,13 @@ impl Command for CommandBrace {
     }
 
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_group(&mut self){
+        if self.group_leader {
+            let pid = nix::unistd::getpid();
+            let _ = unistd::setpgid(pid, pid);
+        }
+    }
+    fn set_group_leader(&mut self) { self.group_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
     fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
@@ -69,13 +77,12 @@ impl CommandBrace {
             text: "".to_string(),
             substitution_text: "".to_string(),
             fds: FileDescs::new(),
-           // my_type: CommandType::Brace, 
+            group_leader: false,
         }
     }
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandBrace> {
         if ! text.starts_with("{") {
-        //if text.len() == 0 || text.nth(0) != '{' {
             return None;
         }
 
@@ -85,7 +92,7 @@ impl CommandBrace {
 
         loop {
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf, &CommandType::Brace) {
+            if let Some(s) = Script::parse(text, conf) {
                 if ! tail_check(&s.text){
                     text.rewind(backup);
                     return None;

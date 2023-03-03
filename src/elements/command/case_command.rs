@@ -2,31 +2,39 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use std::os::unix::prelude::RawFd;
 //use crate::operators::ControlOperator;
-use crate::element::script::Script;
-use crate::element::redirect::Redirect;
+use crate::elements::script::Script;
+use crate::elements::redirect::Redirect;
 use nix::unistd::Pid;
+use nix::unistd;
 use crate::file_descs::*;
 //use crate::feeder::scanner::*;
-use crate::element::word::Word;
+use crate::elements::word::Word;
 use crate::bash_glob::glob_match;
-// use crate::element::CommandElem;
-use crate::element::command::CommandType;
+// use crate::elements::CommandElem;
 
+#[derive(Debug)]
 pub struct CommandCase {
     pub word: Word,
     pub conddo: Vec<(Vec<String>, Option<Script>)>,
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
-    my_type: CommandType, 
+    group_leader: bool,
 }
 
 impl Command for CommandCase {
     fn get_pid(&self) -> Option<Pid> { self.pid }
     fn set_pid(&mut self, pid: Pid) { self.pid = Some(pid); }
+    fn set_group(&mut self){
+        if self.group_leader {
+            let pid = nix::unistd::getpid();
+            let _ = unistd::setpgid(pid, pid);
+        }
+    }
+    fn set_group_leader(&mut self) { self.group_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
     fn set_pipe(&mut self, pin: RawFd, pout: RawFd, pprev: RawFd) {
@@ -72,7 +80,7 @@ impl CommandCase {
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
-            my_type: CommandType::Case,
+            group_leader: false,
         }
     }
 
@@ -102,7 +110,7 @@ impl CommandCase {
 
         let doing = if text.len() >= 2 && text.starts_with( ";;") {
             None
-        }else if let Some(s) = Script::parse(text, conf, &ans.my_type) {
+        }else if let Some(s) = Script::parse(text, conf) {
             ans.text += &s.text;
             Some(s)
         }else{

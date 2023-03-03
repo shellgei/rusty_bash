@@ -7,11 +7,41 @@ use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::{Write, BufReader, BufRead};
 use crate::bash_glob::glob_match;
-use crate::element::command::CommandType;
+use super::job::Job;
+use nix::sys::signal;
+use nix::sys::signal::Signal;
+use nix::unistd;
 
 use crate::Script;
 use crate::ShellCore;
 use crate::Feeder;
+
+pub fn set_builtins(core: &mut ShellCore){
+    core.builtins.insert(".".to_string(), source);
+    core.builtins.insert(":".to_string(), true_);
+    core.builtins.insert("alias".to_string(), alias);
+    core.builtins.insert("builtin".to_string(), builtin);
+    core.builtins.insert("bg".to_string(), bg);
+    core.builtins.insert("cd".to_string(), cd);
+    core.builtins.insert("eval".to_string(), eval);
+    core.builtins.insert("exit".to_string(), exit);
+    core.builtins.insert("export".to_string(), export);
+    core.builtins.insert("false".to_string(), false_);
+    core.builtins.insert("fg".to_string(), fg);
+    core.builtins.insert("history".to_string(), history);
+    core.builtins.insert("jobs".to_string(), jobs);
+    core.builtins.insert("pwd".to_string(), pwd);
+    core.builtins.insert("set".to_string(), set);
+    core.builtins.insert("shift".to_string(), shift);
+    core.builtins.insert("true".to_string(), true_);
+    core.builtins.insert("read".to_string(), read);
+    core.builtins.insert("return".to_string(), return_);
+    core.builtins.insert("shopt".to_string(), shopt);
+    core.builtins.insert("source".to_string(), source);
+    core.builtins.insert("wait".to_string(), wait);
+
+    core.builtins.insert("glob_test".to_string(), glob_test);
+}
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let home = env::var("HOME").expect("HOME is not defined");
@@ -69,6 +99,82 @@ pub fn true_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 
 pub fn false_(_core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
     1
+}
+
+pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let (first, second) = core.jobs.get_top_priority_id();
+
+    fn bg_core (job: &mut Job, first: usize, second: usize) {
+        job.status = 'R';
+        println!("{}", &job.status_string(first, second));
+        for p in &job.async_pids {
+            signal::kill(*p, Signal::SIGCONT).unwrap();
+        }
+    }
+
+    if args.len() < 2 {
+        for j in 0..core.jobs.backgrounds.len() {
+            if core.jobs.backgrounds[j].id == first {
+                bg_core(&mut core.jobs.backgrounds[j], first, second);
+            }
+        }
+        return 0;
+    }
+
+    args[1] = args[1].trim_start_matches("%").to_string();
+    let job_pos = if let Ok(n) = args[1].parse::<usize>() {
+        n - 1
+    }else{
+        eprintln!("bash: bg: {}: no such job", args[1]);
+        return 1;
+    };
+
+    let status = core.jobs.backgrounds[job_pos].status;
+    let id = core.jobs.backgrounds[job_pos].id;
+    if job_pos >= core.jobs.backgrounds.len() || status == 'D' || status == 'I' {
+        eprintln!("bash: bg: {}: no such job", id);
+        return 1;
+    }else if status == 'R' {
+        eprintln!("bash: bg: job {} already in background", id);
+        return 0;
+    }
+
+    bg_core(&mut core.jobs.backgrounds[job_pos], first, second);
+    0
+}
+
+pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let (first, _second) = core.jobs.get_top_priority_id();
+
+    if args.len() < 2 {
+        for j in 0..core.jobs.backgrounds.len() {
+            if core.jobs.backgrounds[j].status != 'S' && core.jobs.backgrounds[j].status != 'R' {
+                continue;
+            }
+
+            if core.jobs.backgrounds[j].id != first {
+                continue;
+            }
+
+            core.jobs.backgrounds[j].status = 'F';
+            for p in &core.jobs.backgrounds[j].async_pids {
+                if ! core.jobs.backgrounds[j].signaled_bg {
+                    unistd::tcsetpgrp(0, p.clone()).expect("Bash internal error (tcsetpgrp)");
+                    unistd::tcsetpgrp(1, p.clone()).expect("Bash internal error (tcsetpgrp)");
+                }
+                signal::kill(*p, Signal::SIGCONT).unwrap();
+            }
+            core.jobs.foreground = core.jobs.backgrounds[j].clone();
+            core.jobs.wait_bg_job_at_foreground(core.jobs.backgrounds[j].id);
+
+            if ! core.jobs.backgrounds[j].signaled_bg {
+                unistd::tcsetpgrp(0, unistd::getpid()).expect("Bash internal error (tcsetpgrp)");
+                unistd::tcsetpgrp(1, unistd::getpid()).expect("Bash internal error (tcsetpgrp)");
+            }
+        }
+        return 0;
+    }
+    0
 }
 
 pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -238,7 +344,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         match fs::read_to_string(&args[1]) {
             Ok(source) => {
                 let mut feeder = Feeder::new_from(source);
-                if let Some(mut script) = Script::parse(&mut feeder, core, &CommandType::Null) {
+                if let Some(mut script) = Script::parse(&mut feeder, core) {
                     core.return_enable = true;
                     script.exec(core);
                     core.return_enable = false;
@@ -263,11 +369,16 @@ pub fn return_(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
 }
 
 pub fn jobs(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for (i,j) in core.jobs.iter().enumerate() {
-        if i == 0 {
-            continue;
+    let (first, second) = core.jobs.get_top_priority_id();
+
+    for j in core.jobs.backgrounds.iter_mut() {
+        if j.async_pids.len() != 0 {
+            j.check_of_finish();
         }
-        println!("[{}] {}", i, j.clone().status_string().trim_end());
+    }
+
+    for j in core.jobs.backgrounds.iter_mut() {
+        j.print_status(first, second);
     }
 
     0
@@ -339,7 +450,8 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let text = args[1..].join(" ");
     let mut feeder = Feeder::new_from(text);
-    if let Some(mut script) = Script::parse(&mut feeder, core, &CommandType::Null) {
+        //eprintln!("{:?}", feeder._text());
+    if let Some(mut script) = Script::parse(&mut feeder, core) {
         script.exec(core);
     }
 
@@ -357,8 +469,18 @@ pub fn glob_test(_core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn wait(core: &mut ShellCore, _args: &mut Vec<String>) -> i32 {
-    for i in 1..core.jobs.len() {
-        core.wait_job(i);
+    let (first, second) = core.jobs.get_top_priority_id();
+
+    for i in 0..core.jobs.backgrounds.len() {
+        if core.jobs.backgrounds[i].status != 'R' && core.jobs.backgrounds[i].status != 'F' { 
+            continue;
+        }
+        core.jobs.backgrounds[i].status = 'F';
+        let id = core.jobs.backgrounds[i].id;
+        core.jobs.wait_bg_job_at_foreground(id);
+        core.jobs.backgrounds[i].status = 'D';
+        eprintln!("{}", &core.jobs.backgrounds[i].status_string(first, second));
+        core.jobs.backgrounds[i].status = 'I';
     }
 
     0

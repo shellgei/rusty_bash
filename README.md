@@ -2,6 +2,15 @@
 
 may be a clone of Bash. 
 
+![](https://img.shields.io/github/actions/workflow/status/shellgei/rusty_bash/test.yml)
+![](https://img.shields.io/github/license/shellgei/rusty_bash)
+
+## author / maintainer
+
+<img width="20%" src="https://b.ueda.tech/pages/top/ku_the_cat.jpg" />
+
+* [message from the author](https://www.youtube.com/shorts/YXJHb-hIbxU)
+
 ## how to try it
 
 ```bash
@@ -34,7 +43,7 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
-| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :construction: |
+| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :heavy_check_mark: |
 | \|& | :no_good: | 
 
 ### options 
@@ -60,13 +69,13 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 | cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :heavy_check_mark: |
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: | 
 | shopt | :construction: | : | :heavy_check_mark: | . | :heavy_check_mark: | [ | :no_good: |
-| alias | :heavy_check_mark: | bg | :no_good: | bind | :no_good: |
+| alias | :heavy_check_mark: | bg | :construction: | bind | :no_good: |
 | break | :no_good: | builtin | :heavy_check_mark: | caller | :no_good: |
 | command | :no_good: | compgen | :no_good: | complete | :no_good: |
 | compopt | :no_good: | continue | :no_good: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
-| fc | :no_good: | fg | :no_good: | getopts | :no_good: |
+| fc | :no_good: | fg | :construction: | getopts | :no_good: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
 | jobs | :construction: | kill | :no_good: | let | :no_good: |
 | local | :no_good: | logout | :no_good: | mapfile | :no_good: |
@@ -130,7 +139,8 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 Partially in Japanese.
 
 * blog articles
-    * Rustでシェル作った | κeenのHappy Hacκing Blog: https://keens.github.io/blog/2016/09/04/rustdeshierutsukutta/
-    * Rustで始める自作シェル その1 | ぶていのログでぶログ: https://tech.buty4649.net/entry/2021/12/19/235124
-    * Rustのターミナル操作crateいろいろ | meganehouser: https://meganehouser.github.io/2019-12-11_rust-terminal-crates.html
+    * [Rustでシェル作った | κeenのHappy Hacκing Blog](https://keens.github.io/blog/2016/09/04/rustdeshierutsukutta/)
+    * [Rustで始める自作シェル その1 | ぶていのログでぶログ](https://tech.buty4649.net/entry/2021/12/19/235124)
+    * [Rustのターミナル操作crateいろいろ | meganehouser](https://meganehouser.github.io/2019-12-11_rust-terminal-crates.html)
+    * [原理原則で理解するフォアグラウンドプロセスとバックグラウンドプロセスの違い | @tajima_taso](https://qiita.com/tajima_taso/items/c5553762af5e1a599fed)
 

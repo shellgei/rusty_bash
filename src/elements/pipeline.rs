@@ -2,13 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::element::command::Command;
+use crate::elements::command::Command;
 use crate::operators::ControlOperator;
 use nix::unistd::pipe;
 use crate::file_descs::FileDescs;
-use crate::element::command;
-use crate::core::job::Job;
+use crate::elements::command;
 
+#[derive(Debug)]
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub text: String,
@@ -27,25 +27,25 @@ impl Pipeline {
                 p = pipe().expect("Pipe cannot open");
             };
             c.set_pipe(p.0, p.1, prevfd);
+            if self.is_bg && i == 0 {
+                c.set_group_leader();
+            }
             c.exec(core);
             FileDescs::set_parent_io(c.get_pipe_out());
             prevfd = c.get_pipe_end();
         }
 
+        self.set_job_and_wait(core);
+    }
 
+    fn set_job_and_wait(&mut self, core: &mut ShellCore) {
         if self.is_bg {
-            core.jobs.push(Job::new(&self.text, &self.commands));
-            return;
+            core.jobs.add_bg_job(&self.text, &self.commands);
         }else{
-            core.jobs[0] = Job::new(&self.text, &self.commands);
-        }
-        core.wait_job(0);
-
-        if self.not_flag {
-            if core.vars["?"] != "0" {
-                core.set_var("?", "0");
-            }else {
-                core.set_var("?", "1");
+            core.jobs.set_fg_job(&self.text, &self.commands);
+            core.wait_job();
+            if self.not_flag {
+                core.reverse_exit_status();
             }
         }
     }
@@ -94,7 +94,9 @@ impl Pipeline {
 
             if let Some(p) = op {
                 if p == ControlOperator::BgAnd {
+                    //ans.text += &text.consume(1);
                     ans.is_bg = true;
+                    break;
                 }
                 if p != ControlOperator::Pipe && p != ControlOperator::PipeAnd {
                     break;

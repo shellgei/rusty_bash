@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -xv
 # SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -757,7 +757,7 @@ res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; fi')
 res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi' )
 [ "$res" = "" ] || err $LINENO
 
-res=$($com <<< 'if [ "a" == "b" ] ; then echo aa' || echo x)
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi' || echo x)
 [ "$res" = "x" ] || err $LINENO
 
 res=$($com <<< 'if [ "a" == "b" ] ; then echo a ; fi ; if [ "b" == "b" ] ; then echo bb ; fi')
