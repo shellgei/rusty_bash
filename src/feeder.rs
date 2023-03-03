@@ -4,6 +4,7 @@
 mod term;
 mod scanner;
 
+use std::io;
 use crate::ShellCore;
 //use self::term;
 
@@ -31,6 +32,7 @@ impl Feeder {
         self.remaining = backup.remaining;
     }   
 
+    /*
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
         let line;
         let len_prompt = term::prompt_normal(core);
@@ -48,6 +50,72 @@ impl Feeder {
 
         true
     }
+    */
+    fn read_line_stdin() -> Option<String> {
+        let mut line = String::new();
+
+        let len = io::stdin()
+            .read_line(&mut line)
+            .expect("Failed to read line");
+
+        if len == 0 {
+            return None;
+        }
+        Some(line)
+    }
+
+    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+        let ret = if core.has_flag('i') {
+            let len_prompt = term::prompt_additional();
+            if let Some(s) = term::read_line_terminal(len_prompt, core){
+                Some(s)
+            }else {
+                return false;
+            }
+        }else{
+            if let Some(s) = Self::read_line_stdin() {
+                Some(s)
+            }else{
+                return false;
+            }
+        };
+
+        if let Some(line) = ret {
+            self.add_line(line);
+            true
+        }else{
+            false
+        }
+    }
+
+    pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
+        //let line = if core.flags.i {
+        let line = if core.has_flag('i') {
+            let len_prompt = term::prompt_normal(core);
+            if let Some(ln) = term::read_line_terminal(len_prompt, core) {
+                ln
+            }else{
+                return false;
+            }
+        }else{ 
+            if let Some(s) = Self::read_line_stdin() {
+                s
+            }else{
+                return false;
+            }
+        };
+        self.add_line(line);
+
+        while self.remaining.ends_with("\\\n") {
+            self.remaining.pop();
+            self.remaining.pop();
+            if !self.feed_additional_line(core){
+                self.remaining = "".to_string();
+                return true;
+            }
+        }
+        true
+    }
 
     fn add_line(&mut self, line: String) {
         //self.to_lineno += 1;
@@ -62,9 +130,4 @@ impl Feeder {
             self.remaining += &line;
         };
     }
-
-    pub fn len_as_chars(&self) -> usize {
-        self.remaining.chars().count()
-    }
-
 }
