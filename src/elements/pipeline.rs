@@ -3,6 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use super::command::simple::SimpleCommand;
+use super::command::Command;
 
 #[derive(Debug)]
 pub struct Pipeline {
