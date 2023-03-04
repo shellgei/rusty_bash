@@ -2,8 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod simple;
+pub mod paren;
 
 use crate::ShellCore;
+use crate::Feeder;
+use self::simple::SimpleCommand;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -16,4 +19,12 @@ impl Debug for dyn Command {
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore);
     fn get_text(&self) -> String;
+}
+
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
+    if let Some(a) = SimpleCommand::parse(feeder, core){
+        Some(Box::new(a))
+    }else{
+        None
+    }
 }
