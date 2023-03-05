@@ -5,7 +5,8 @@ use std::io::Write;
 use std::collections::HashSet;
 
 use crate::ShellCore;
-use crate::utils::{eval_glob, search_commands, expand_tilde};
+use crate::utils::{eval_glob, search_commands};
+use crate::utils;
 use crate::feeder::term::Writer;
 use crate::feeder::term::prompt_normal;
 use std::fs;
@@ -38,7 +39,8 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
 
 pub fn file_completion(writer: &mut Writer){
     let s: String = writer.last_word().replace("\\", "") + "*";
-    let (s, home, org) = expand_tilde(&s);
+    let org = s.clone();
+    let (s, home) = utils::expand_tilde(&s);
 
     let ans = eval_glob(&s.replace("\\", ""));
     if ans.len() == 0 || ans[0].ends_with("*") {
@@ -98,7 +100,7 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let s: String = writer.last_word().replace("\\", "") + "*";
-    let (s, _, _) = expand_tilde(&s);
+    let (s, _) = utils::expand_tilde(&s);
 
     let ans = eval_glob(&s);
     if ans.len() == 0 || ans[0].ends_with("*") {
@@ -168,13 +170,6 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
     write!(writer.stdout, "\r\n").unwrap();
     let ans2 = align_elems_on_term(&keys, writer.terminal_size().0);
     write!(writer.stdout, "{}", ans2).unwrap();
-    /*
-    write!(writer.stdout, "\r\n").unwrap();
-    for f in keys {
-        write!(writer.stdout, "{}        ", f).unwrap();
-    }
-    write!(writer.stdout, "\r\n").unwrap();
-    */
     writer.stdout.flush().unwrap();
     prompt_normal(core);
     let (_, y) = writer.cursor_pos();

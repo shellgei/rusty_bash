@@ -158,26 +158,21 @@ pub fn blue_string(s: &String) -> String {
     format!("\x1b[34m{}\x1b[m", s)
 }
 
-pub fn expand_tilde(path: &String) -> (String, String, String){
-    let org_length = path.len();
-    let home = if org_length == 1 {
+pub fn expand_tilde(given_path: &String) -> (String, String){
+    if ! given_path.starts_with("~"){
+        return (given_path.clone(), given_path.clone());
+    }
+
+    let home_path = if given_path.len() == 1 {
         env::var("HOME").expect("Home is not set")
-    }else if org_length == 0{
-        "".to_string()
-    }else if let Some(h) = get_home(path[1..].to_string()) {
+    }else if let Some(h) = get_home(given_path[1..].to_string()) {
         h
     }else{
-        path.to_string()//"".to_string()
+        given_path.clone()
     };
 
-    let org = path[0..org_length].to_string();
-
-    if home.len() != 0 {
-        let h = home.clone();
-        (path.replacen(&path[0..org_length].to_string(), &h, 1), home, org)
-    }else{
-        (path.to_string(), home, org)
-    }
+    let replaced_path = given_path.replacen(&given_path.clone(), &home_path, 1);
+    (replaced_path, home_path)
 }
 
 fn get_home(user: String) -> Option<String> {
@@ -291,3 +286,11 @@ pub fn get_fullpath(com: &String) -> String {
 
     "".to_string()
 }
+/*
+
+#[test]
+fn tilde_expansion() {
+    let home = env::var("HOME").expect("Home is not set");
+    let (a,b,c) = expand_tilde(&"~".to_string());
+}
+*/

@@ -5,7 +5,7 @@ use crate::debuginfo::DebugInfo;
 use crate::ShellCore;
 use crate::Feeder;
 //use crate::feeder::scanner::*;
-use crate::utils::expand_tilde;
+use crate::utils;
 
 use crate::elements::subword::Subword;
 
@@ -21,7 +21,7 @@ impl Subword for SubwordTildePrefix {
     }
 
     fn eval(&mut self, _conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
-        vec!(vec!(expand_tilde(&self.text).0))
+        vec!(vec!(utils::expand_tilde(&self.text).0))
     }
 }
 
