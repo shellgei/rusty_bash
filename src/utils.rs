@@ -286,11 +286,3 @@ pub fn get_fullpath(com: &String) -> String {
 
     "".to_string()
 }
-/*
-
-#[test]
-fn tilde_expansion() {
-    let home = env::var("HOME").expect("Home is not set");
-    let (a,b,c) = expand_tilde(&"~".to_string());
-}
-*/

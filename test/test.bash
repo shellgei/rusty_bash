@@ -2,11 +2,12 @@
 # SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 # SPDX-License-Identifier: BSD-3-Clause
 
-cargo build --release || exit 1
+cargo build || exit 1
+cargo test || exit 1
 
 cd $(dirname $0)
 
-com=../target/release/rusty_bash
+com=../target/debug/rusty_bash
 
 {
 

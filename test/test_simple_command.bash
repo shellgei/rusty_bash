@@ -8,7 +8,7 @@ err () {
 }
 
 cd $(dirname $0)
-com=../target/release/rusty_bash
+com=../target/debug/rusty_bash
 
 ### SIMPLE COMMAND TEST ###
 

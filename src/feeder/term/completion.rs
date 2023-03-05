@@ -37,17 +37,17 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     true
 }
 
-pub fn file_completion(writer: &mut Writer){
-    let s: String = writer.last_word().replace("\\", "") + "*";
+fn get_completion_str(arg: String) -> String {
+    let s: String = arg.replace("\\", "") + "*";
     let org = s.clone();
     let (s, home) = utils::expand_tilde(&s);
 
     let ans = eval_glob(&s.replace("\\", ""));
     if ans.len() == 0 || ans[0].ends_with("*") {
-        return;
+        return "".to_string();
     };
 
-    let base_len = writer.last_word().len();
+    let base_len = arg.len();
     let in_cur_dir = s.chars().nth(0) == Some('.') && s.chars().nth(1) == Some('/');
 
     if ans.len() == 1 {
@@ -67,7 +67,7 @@ pub fn file_completion(writer: &mut Writer){
             a = "./".to_owned() + &a;
         }
 
-        writer.insert_multi(a[base_len..].chars());
+        return a[base_len..].to_string();
     }else{
         let a: Vec<String> = if home.len() != 0 {
             ans.iter().map(|x| x.replacen(&home, &org, 1)).collect()
@@ -76,7 +76,7 @@ pub fn file_completion(writer: &mut Writer){
         };
 
         let mut chars = "".to_string();
-        let mut base_len = writer.last_word().replace("\\", "").len();
+        let mut base_len = arg.replace("\\", "").len();
         if in_cur_dir {
             base_len -= 2;
         }
@@ -93,8 +93,14 @@ pub fn file_completion(writer: &mut Writer){
                 break;
             }
         }
-        writer.insert_multi(chars.chars());
+        return chars.to_string();
     }
+}
+
+pub fn file_completion(writer: &mut Writer){
+    let arg = writer.last_word();
+    let chars = get_completion_str(arg);
+    writer.insert_multi(chars.chars());
 }
 
 
@@ -176,3 +182,8 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
     writer.rewrite_line(y, writer.chars.iter().collect());
 }
 
+#[test]
+fn file_candidates() {
+    let comp_str = get_completion_str("/etc/passw".to_string());
+    assert_eq!(comp_str, "d");
+}
