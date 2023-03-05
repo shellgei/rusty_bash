@@ -34,7 +34,7 @@ impl Feeder {
         let ans = self.scanner_parameter(0);
     
         if ans == 0 {
-            self.scanner_name(0)
+            self.scanner_name()
         }else{
             ans
         }
@@ -134,22 +134,22 @@ impl Feeder {
         (0, None)
     }
 
-    pub fn scanner_name(&mut self, from: usize) -> usize {
-        if self.len() <= from {
-            return from;
+    pub fn scanner_name(&mut self) -> usize {
+        if self.len() <= 0 {
+            return 0;
         }
     
         let h = &self.nth(0);
         if !((*h >= 'A' && *h <= 'Z') || (*h >= 'a' && *h <= 'z') || *h == '_') {
-            return from;
+            return 0;
         }
     
-        if self.len() == from+1 {
-            return from+1;
+        if self.len() == 1 {
+            return 1;
         }
     
-        let mut ans = from+1;
-        for c in self.chars_after(from+1) {
+        let mut ans = 1;
+        for c in self.chars_after(1) {
             if !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') 
             || (c >= 'a' && c <= 'z') || c == '_') {
                 break;

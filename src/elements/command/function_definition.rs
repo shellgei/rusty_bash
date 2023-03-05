@@ -73,7 +73,7 @@ impl FunctionDefinition {
             ans_text += &text.consume_blank();
          }
 
-         let var_pos = text.scanner_name(0);
+         let var_pos = text.scanner_name();
          if var_pos == 0 {
              text.rewind(backup);
              return None;

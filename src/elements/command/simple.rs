@@ -176,6 +176,7 @@ impl SimpleCommand {
     }
 
     fn exec_external_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+        //dbg!("{:?}", &args);
         if core.functions.contains_key(&args[0]) {
             self.exec_function(args, core);
             exit(0);

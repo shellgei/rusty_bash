@@ -41,7 +41,7 @@ impl Substitution {
 
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Substitution> {
         let backup = text.clone();
-        let varname_pos = text.scanner_name(0);
+        let varname_pos = text.scanner_name();
         let var_part = text.consume(varname_pos);//VarName::new(text, varname_pos);
 
         if ! text.starts_with("=") {
