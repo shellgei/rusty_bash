@@ -127,7 +127,7 @@ impl Job {
         }
     }
 
-    pub fn parse_elem(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Job) -> bool {
+    pub fn eat_pipeline(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Job) -> bool {
         let mut go_next = true;
 
         if let Some(result) = Pipeline::parse(text, conf) {
@@ -154,16 +154,11 @@ impl Job {
 
         let mut ans = Job::new();
         Job::read_blank(text, &mut ans);
-        while  Job::parse_elem(text, conf, &mut ans) {
+        while Job::eat_pipeline(text, conf, &mut ans) {
+            ans.text += &text.consume_comment_multiline();
             if text.len() == 0 {
                 break;
             }
-
-            /*
-            ans.text += &text.consume_blank();
-            text.request_next_line(conf);
-            Job::read_blank(text, &mut ans);
-            */
         }
 
         if ans.pipelines.len() > 0 {

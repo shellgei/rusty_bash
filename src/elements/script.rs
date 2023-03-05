@@ -29,12 +29,6 @@ impl Script {
         }
     }
 
-    /*
-    fn is_end_condition(parent: &CommandType, op: &ControlOperator) -> bool {
-        ( parent == &CommandType::Paren && op == &ControlOperator::RightParen ) ||
-        ( parent == &CommandType::Case && op == &ControlOperator::DoubleSemicolon )
-    }*/
-
     pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Script> {
         if text.len() == 0 {
             return None;

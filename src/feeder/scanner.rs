@@ -135,7 +135,8 @@ impl Feeder {
     }
 
     pub fn scanner_name(&mut self) -> usize {
-        if self.len() <= 0 {
+        //dbg!("{:?}", &self);
+        if self.len() <= 0 || self.starts_with("#") {
             return 0;
         }
     

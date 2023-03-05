@@ -105,6 +105,21 @@ impl Feeder {
         ans
     }
 
+    pub fn consume_comment_multiline(&mut self) -> String {
+        let mut ans = String::new();
+        loop {
+            let org_len = ans.len();
+            ans += &self.consume_comment();
+            ans += &self.consume_blank_return();
+
+            if ans.len() == org_len {
+                break;
+            }
+        }
+
+        ans
+    }
+
     pub fn consume_blank_return(&mut self) -> String {
         let mut ans = "".to_string();
         loop {
