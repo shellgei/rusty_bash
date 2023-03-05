@@ -38,6 +38,7 @@ pub fn set_builtins(core: &mut ShellCore){
     core.builtins.insert("return".to_string(), return_);
     core.builtins.insert("shopt".to_string(), shopt);
     core.builtins.insert("source".to_string(), source);
+    core.builtins.insert("unset".to_string(), unset);
     core.builtins.insert("wait".to_string(), wait);
 
     core.builtins.insert("glob_test".to_string(), glob_test);
@@ -291,6 +292,19 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         core.args.push(a.to_string());
     }
 
+    0
+}
+
+pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() <= 1 {
+        return 0;
+    }
+
+    for key in args[1..].iter() {
+        if ! core.vars.contains_key(key) {
+            core.vars.remove(key);
+        }
+    }
     0
 }
 
