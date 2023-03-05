@@ -185,9 +185,12 @@ impl SimpleCommand {
             exit(func(core, args));
         }
 
-        //let fullpath = get_fullpath(&args[0]);
-        //args[0] = fullpath;
-        args[0] = get_fullpath(&args[0]);
+        let org = args[0].clone();
+        args[0] = get_fullpath(&org);
+        if args[0].len() == 0 {
+            eprintln!("Command not found: {:?}", &org);
+            exit(127);
+        }
 
         let cargs: Vec<CString> = args
             .iter()

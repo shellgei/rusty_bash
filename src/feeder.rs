@@ -91,7 +91,7 @@ impl Feeder {
         self.consume(d)
     }
 
-    pub fn consume_comment(&mut self) -> String {
+    fn consume_comment(&mut self) -> String {
         let mut ans = String::new();
 
         if self.len() != 0 && self.nth(0) == '#' {

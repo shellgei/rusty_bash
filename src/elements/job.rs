@@ -118,8 +118,8 @@ impl Job {
     fn read_blank(text: &mut Feeder, ans: &mut Job) {
         loop {
             let before = ans.text.len();
-            ans.text += &text.consume_blank_return();
-            ans.text += &text.consume_comment();
+            //ans.text += &text.consume_blank_return();
+            ans.text += &text.consume_comment_multiline();
 
             if before == ans.text.len() || text.len() == 0 {
                 return;
