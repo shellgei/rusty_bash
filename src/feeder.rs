@@ -16,6 +16,7 @@ pub struct Feeder {
     from_lineno: u32,
     to_lineno: u32,
     pos_in_line: u32,
+    pub feed_stop: bool,
 }
 
 impl Feeder {
@@ -25,16 +26,21 @@ impl Feeder {
             from_lineno: 0,
             to_lineno: 0,
             pos_in_line: 0,
+            feed_stop: false,
         }
     }
 
     pub fn new_from(text: String) -> Feeder {
         let mut ans = Feeder::new();
+        ans.feed_stop = true;
         ans.remaining = text;
         ans
     }
 
-    fn read_line_stdin() -> Option<String> {
+    fn read_line_stdin(&self) -> Option<String> {
+        if self.feed_stop {
+            return None;
+        }
         let mut line = String::new();
     
         let len = io::stdin()
@@ -141,6 +147,10 @@ impl Feeder {
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+        if self.feed_stop {
+            return false;
+        }
+
         let ret = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
             if let Some(s) = term::read_line_terminal(len_prompt, core){
@@ -149,7 +159,7 @@ impl Feeder {
                 return false;
             }
         }else{
-            if let Some(s) = Self::read_line_stdin() {
+            if let Some(s) = self.read_line_stdin() {
                 Some(s)
             }else{
                 return false;
@@ -165,7 +175,10 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
-        //let line = if core.flags.i {
+        if self.feed_stop {
+            return false;
+        }
+
         let line = if core.has_flag('i') {
             let len_prompt = term::prompt_normal(core);
             if let Some(ln) = term::read_line_terminal(len_prompt, core) {
@@ -174,7 +187,7 @@ impl Feeder {
                 return false;
             }
         }else{
-            if let Some(s) = Self::read_line_stdin() {
+            if let Some(s) = self.read_line_stdin() {
                 s
             }else{
                 return false;
