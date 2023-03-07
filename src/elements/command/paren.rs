@@ -23,16 +23,6 @@ impl ParenCommand {
         }
     }
 
-    fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut ParenCommand) -> bool {
-        if let Some(script) = Script::parse(feeder, core){
-            ans.text += &script.text.clone();
-            ans.script = Some(script);
-            true
-        }else{
-            false
-        }
-    }
-
     fn eat_head(feeder: &mut Feeder, ans: &mut ParenCommand) -> bool {
          let blank_len = feeder.scanner_blank(); //先頭の余白の確認
          ans.text += &feeder.consume(blank_len);
@@ -43,6 +33,16 @@ impl ParenCommand {
          }else{
              false
          }
+    }
+
+    fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut ParenCommand) -> bool {
+        if let Some(script) = Script::parse(feeder, core){
+            ans.text += &script.text.clone();
+            ans.script = Some(script);
+            true
+        }else{
+            false
+        }
     }
 
     fn eat_tail(feeder: &mut Feeder, ans: &mut ParenCommand) -> bool {
