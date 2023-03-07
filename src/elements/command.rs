@@ -4,8 +4,8 @@
 pub mod simple;
 pub mod paren;
 
-use crate::Feeder;
 use crate::ShellCore;
+use crate::Feeder;
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use std::fmt;
