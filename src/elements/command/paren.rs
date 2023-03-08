@@ -63,6 +63,7 @@ impl ParenCommand {
         if Self::eat_head(feeder, &mut ans) &&
            Self::eat_script(feeder, core, &mut ans) &&
            Self::eat_tail(feeder, &mut ans) {
+            dbg!("{:?}", &ans);
             Some(ans)
         }else{
             feeder.rewind(backup);
