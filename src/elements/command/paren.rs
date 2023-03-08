@@ -11,7 +11,13 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, _: &mut ShellCore) {}
+    fn exec(&mut self, core: &mut ShellCore) {
+        match &mut self.script {
+            Some(s) => s.exec(core),
+            _       => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
+        }
+    }
+
     fn get_text(&self) -> String { self.text.clone() }
 }
 
@@ -63,7 +69,7 @@ impl ParenCommand {
         if Self::eat_head(feeder, &mut ans) &&
            Self::eat_script(feeder, core, &mut ans) &&
            Self::eat_tail(feeder, &mut ans) {
-            dbg!("{:?}", &ans);
+//            dbg!("{:?}", &ans);
             Some(ans)
         }else{
             feeder.rewind(backup);
