@@ -57,27 +57,28 @@ impl Debug for dyn Command {
 }
 
 pub trait Command {
-    fn exec(&mut self, conf: &mut ShellCore) {
+    fn exec(&mut self, core: &mut ShellCore) {
         if self.no_connection() {
-             self.exec_elems(conf);
+             self.exec_elems(core);
              return;
         };
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
+                core.set_var("BASHPID", &nix::unistd::getpid().to_string());
                 proc::set_signals();
                 self.set_group();
                 /*
                 if self.is_group_leader() { //TODO: implement this function
                     let _ = unistd::setpgid(pid, pid)();
                 }*/
-                if let Err(s) = self.set_child_io(conf){
+                if let Err(s) = self.set_child_io(core){
                     eprintln!("{}", s);
                     exit(1);
                 }
-                self.exec_elems(conf);
+                self.exec_elems(core);
                 close(1).expect("Can't close a pipe end");
-                exit(conf.vars["?"].parse::<i32>().unwrap());
+                exit(core.vars["?"].parse::<i32>().unwrap());
             },
             Ok(ForkResult::Parent { child } ) => {
                 self.set_pid(child);
@@ -94,20 +95,20 @@ pub trait Command {
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;
     fn get_text(&self) -> String;
-    fn set_child_io(&mut self, _conf: &mut ShellCore) -> Result<(), String> {Ok(())}
-    fn exec_elems(&mut self, _conf: &mut ShellCore) {}
+    fn set_child_io(&mut self, _core: &mut ShellCore) -> Result<(), String> {Ok(())}
+    fn exec_elems(&mut self, _core: &mut ShellCore) {}
     fn no_connection(&self) -> bool { true }
     fn set_pid(&mut self, _pid: Pid) {}
 }
 
-pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) =      CommandIf::parse(text,conf)                  {Some(Box::new(a))}
-    else if let Some(a) = CommandWhile::parse(text, conf)              {Some(Box::new(a))}
-    else if let Some(a) = CommandCase::parse(text, conf)               {Some(Box::new(a))}
-    else if let Some(a) = CommandParen::parse(text, conf, false)       {Some(Box::new(a))}
-    else if let Some(a) = CommandDoubleParen::parse(text, conf, false) {Some(Box::new(a))}
-    else if let Some(a) = CommandBrace::parse(text, conf)              {Some(Box::new(a))}
-    else if let Some(a) = FunctionDefinition::parse(text, conf)        {Some(Box::new(a))}
-    else if let Some(a) = SimpleCommand::parse(text, conf)             {Some(Box::new(a))}
+pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
+    if let Some(a) =      CommandIf::parse(text,core)                  {Some(Box::new(a))}
+    else if let Some(a) = CommandWhile::parse(text, core)              {Some(Box::new(a))}
+    else if let Some(a) = CommandCase::parse(text, core)               {Some(Box::new(a))}
+    else if let Some(a) = CommandParen::parse(text, core, false)       {Some(Box::new(a))}
+    else if let Some(a) = CommandDoubleParen::parse(text, core, false) {Some(Box::new(a))}
+    else if let Some(a) = CommandBrace::parse(text, core)              {Some(Box::new(a))}
+    else if let Some(a) = FunctionDefinition::parse(text, core)        {Some(Box::new(a))}
+    else if let Some(a) = SimpleCommand::parse(text, core)             {Some(Box::new(a))}
     else {None}
 }

@@ -92,7 +92,7 @@ Rusty Bash reads `.rusty_bashrc` in your home directory if it exists.
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | OLDPWD| :heavy_check_mark: | PWD| :heavy_check_mark: | BASH | :no_good: |
-| BASHOPTS| :no_good: | BASHPID| :no_good: | BASH_ALIASES| :no_good: |
+| BASHOPTS| :no_good: | BASHPID| :heavy_check_mark: | BASH_ALIASES| :no_good: |
 | BASH_ARGC| :no_good: | BASH_ARGV| :no_good: | BASH_ARGV0| :no_good: |
 | BASH_CMDS| :no_good: | BASH_COMMAND| :no_good: | BASH_EXECUTION_STRING| :no_good: |
 | BASH_LINENO| :no_good: | BASH_LOADABLES_PATH| :no_good: | BASH_REMATCH| :no_good: |

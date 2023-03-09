@@ -27,14 +27,15 @@ pub struct CommandParen {
 }
 
 impl Command for CommandParen {
-    fn exec(&mut self, conf: &mut ShellCore) {
+    fn exec(&mut self, core: &mut ShellCore) {
         let p = pipe().expect("Pipe cannot open");
 
         match unsafe{fork()} {
             Ok(ForkResult::Child) => {
+                core.set_var("BASHPID", &nix::unistd::getpid().to_string());
                 proc::set_signals();
                 self.set_group();
-                if let Err(s) = self.fds.set_child_io(conf){
+                if let Err(s) = self.fds.set_child_io(core){
                     eprintln!("{}", s);
                     exit(1);
                 }
@@ -43,15 +44,15 @@ impl Command for CommandParen {
                         close(p.0).expect("Can't close a pipe end");
                         FileDescs::dup_and_close(p.1, 1);
                     }
-                    s.exec(conf);
+                    s.exec(core);
                     close(1).expect("Can't close a pipe end");
-                    exit(conf.vars["?"].parse::<i32>().unwrap());
+                    exit(core.vars["?"].parse::<i32>().unwrap());
                 };
             },
             Ok(ForkResult::Parent { child } ) => {
                 if self.substitution {
                     close(p.1).expect("Can't close a pipe end");
-                    self.substitution_text  = conf.read_pipe(p.0, child)
+                    self.substitution_text  = core.read_pipe(p.0, child)
                         .trim_end_matches('\n').to_string();
                 }
                 self.pid = Some(child);
@@ -94,7 +95,7 @@ impl CommandParen {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CommandParen> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<CommandParen> {
         if ! text.starts_with("(") {
             return None;
         }
@@ -105,7 +106,7 @@ impl CommandParen {
 
         loop{
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf) {
+            if let Some(s) = Script::parse(text, core) {
                 ans.text = "(".to_owned() + &s.text;
                 let (n, op) = text.scanner_control_op();
                 if let Some(p) = op  {
@@ -118,7 +119,7 @@ impl CommandParen {
                 ans.text += &text.consume(n);
                 ans.script = Some(s);
             }else{
-                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
+                (backup, input_success) = text.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     text.consume(text.len());
                     return None;
@@ -127,7 +128,7 @@ impl CommandParen {
             }
 
             if ! ans.text.ends_with(")") {
-                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
+                (backup, input_success) = text.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     text.consume(text.len());
                     return None;
@@ -153,7 +154,7 @@ impl CommandParen {
             //let d = text.scanner_blank();
             ans.text += &text.consume_blank();
 
-            if let Some(r) = Redirect::parse(text, conf){
+            if let Some(r) = Redirect::parse(text, core){
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
             }else{

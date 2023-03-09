@@ -20,11 +20,11 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn exec(&mut self, conf: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore) {
         if self.is_bg && 
             (self.pipeline_ends[0] == ControlOperator::And || 
              self.pipeline_ends[0] == ControlOperator::Or) {
-               self.exec_and_or_bg_job(conf);
+               self.exec_and_or_bg_job(core);
                return;
            }
 
@@ -33,44 +33,45 @@ impl Job {
             self.pipelines[0].text = self.text.clone();
         }
 
-        self.exec_job(conf);
+        self.exec_job(core);
     }
 
-    fn exec_job(&mut self, conf: &mut ShellCore) {
+    fn exec_job(&mut self, core: &mut ShellCore) {
         let mut eop = ControlOperator::NoChar;
         for (i, p) in self.pipelines.iter_mut().enumerate() {
-            if conf.has_flag('d') {
+            if core.has_flag('d') {
                 eprintln!("{}", blue_string(&p.get_text()));
             }
 
-            let status = conf.get_var("?") == "0";
+            let status = core.get_var("?") == "0";
            
             if (status && eop == ControlOperator::Or) || (!status && eop == ControlOperator::And) {
                 eop = self.pipeline_ends[i].clone();
                 continue;
             }
-            p.exec(conf);
+            p.exec(core);
             eop = self.pipeline_ends[i].clone();
         }
     }
 
-    fn exec_and_or_bg_job(&mut self, conf: &mut ShellCore) {
+    fn exec_and_or_bg_job(&mut self, core: &mut ShellCore) {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
+                core.set_var("BASHPID", &nix::unistd::getpid().to_string());
                 proc::set_signals();
                 let pid = nix::unistd::getpid();
                 let _ = unistd::setpgid(pid, pid);
 
-                self.exec_job(conf);
+                self.exec_job(core);
 
 
-                exit(conf.vars["?"].parse::<i32>().unwrap());
+                exit(core.vars["?"].parse::<i32>().unwrap());
             },
             Ok(ForkResult::Parent { child } ) => {
                 let mut com = SimpleCommand::new();
                 com.group_leader = true;
                 com.pid = Some(child);
-                conf.jobs.add_bg_job(&self.text, &vec!(Box::new(com)));
+                core.jobs.add_bg_job(&self.text, &vec!(Box::new(com)));
                 return;
             },
             Err(err) => panic!("Failed to fork. {}", err),
@@ -127,10 +128,10 @@ impl Job {
         }
     }
 
-    pub fn eat_pipeline(text: &mut Feeder, conf: &mut ShellCore, ans: &mut Job) -> bool {
+    pub fn eat_pipeline(text: &mut Feeder, core: &mut ShellCore, ans: &mut Job) -> bool {
         let mut go_next = true;
 
-        if let Some(result) = Pipeline::parse(text, conf) {
+        if let Some(result) = Pipeline::parse(text, core) {
             ans.text += &result.text;
             ans.pipelines.push(result);
 
@@ -145,7 +146,7 @@ impl Job {
         go_next
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Job> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
         if text.len() == 0 {
             return None;
         };
@@ -154,7 +155,7 @@ impl Job {
 
         let mut ans = Job::new();
         Job::read_blank(text, &mut ans);
-        while Job::eat_pipeline(text, conf, &mut ans) {
+        while Job::eat_pipeline(text, core, &mut ans) {
             ans.text += &text.consume_comment_multiline();
             if text.len() == 0 {
                 break;
