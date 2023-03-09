@@ -34,6 +34,12 @@ impl FileDescs {
             self.prevpipein == -1
     }
 
+    pub fn no_pipe(&self) -> bool {
+        self.pipein == -1 &&
+        self.pipeout == -1 &&
+        self.prevpipein == -1
+    }
+
     pub fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
         if self.pipein != -1 {
             close(self.pipein).expect("Cannot close in-pipe");
