@@ -38,7 +38,7 @@ fn is_reserve(s: &String) -> bool {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore) {
-        if self.args.len() == 0 {
+        if self.args.len() == 0 && self.fds.no_connection() {
             self.set_vars(core);
             /*
             if let Err(s) = self.fds.set_child_io(core){
