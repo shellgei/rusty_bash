@@ -40,7 +40,13 @@ impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore) {
         if self.args.len() == 0 {
             self.set_vars(core);
+            /*
+            if let Err(s) = self.fds.set_child_io(core){
+                eprintln!("{}", s);
+                exit(1);
+            }
             return;
+            */
         }
 
         if core.has_flag('v') {
@@ -49,14 +55,18 @@ impl Command for SimpleCommand {
 
         let mut args = self.eval(core);
         //eprintln!("NUM:{} {:?}", args.len(), &args); 
-        core.set_var("_", &args[args.len()-1]);
+        if args.len() == 0 {
+            core.set_var("_", "");
+        }else{
+            core.set_var("_", &args[args.len()-1]);
+        }
 
         if core.has_flag('x') {
             eprintln!("+{}", args.join(" "));
         }
 
         // This sentence avoids an unnecessary fork for an internal command.
-        if self.fds.no_connection() {
+        if self.fds.no_connection() && args.len() != 0 {
             if core.functions.contains_key(&args[0]) {
                 self.exec_function(&mut args, core);
                 return;
@@ -74,7 +84,11 @@ impl Command for SimpleCommand {
                     eprintln!("{}", s);
                     exit(1);
                 }
-                self.exec_external_command(&mut args, core)
+                if args.len() != 0 {
+                    self.exec_external_command(&mut args, core)
+                }else{
+                    exit(0);
+                }
             },
             Ok(ForkResult::Parent { child } ) => {
                 self.pid = Some(child);
