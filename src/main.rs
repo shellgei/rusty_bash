@@ -12,7 +12,7 @@ use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
 fn show_version() {
-    eprintln!("Sushi Shell 202305_6");
+    eprintln!("Sushi Shell 202306_4");
     eprintln!("© 2023 Ryuichi Ueda");
     eprintln!("License: BSD 3-Clause\n");
 
