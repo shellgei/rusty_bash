@@ -7,7 +7,6 @@ mod elements;
 
 use std::{env, process};
 use crate::core::ShellCore;
-use crate::core::builtins;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
