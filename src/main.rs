@@ -7,12 +7,11 @@ mod elements;
 
 use std::{env, process};
 use crate::core::ShellCore;
-use crate::core::builtins;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
 fn show_version() {
-    eprintln!("Sushi Shell 202305_6");
+    eprintln!("Sushi Shell 202306_1");
     eprintln!("© 2023 Ryuichi Ueda");
     eprintln!("License: BSD 3-Clause\n");
 
@@ -51,5 +50,5 @@ fn main_loop(core: &mut ShellCore) {
             None => process::exit(1)
         }
     }
-    builtins::exit_no_msg(core, &mut vec![]);
+    core.exit();
 }

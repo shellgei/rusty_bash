@@ -3,7 +3,6 @@
 
 use crate::{ShellCore,Feeder,Script};
 use super::Command;
-use crate::core::builtins;
 use nix::unistd;
 use nix::unistd::ForkResult;
 
@@ -36,7 +35,7 @@ impl ParenCommand {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 script.exec(core);
-                builtins::exit_no_msg(core, &mut vec![]);
+                core.exit();
             },
             Ok(ForkResult::Parent { child } ) => {
                 core.wait_process(child);
