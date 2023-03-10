@@ -51,5 +51,4 @@ fn main_loop(core: &mut ShellCore) {
         }
     }
     core.exit();
-//    builtins::exit_no_msg(core, &mut vec![]);
 }
