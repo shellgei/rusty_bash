@@ -2,43 +2,15 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use std::{env, fs, process};
+use std::{env, fs};
 use std::path::Path;
-
-pub fn exit_no_msg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() > 1 {
-        core.vars.insert("?".to_string(), args[1].clone());
-    }
-
-    let exit_status = match core.vars["?"].parse::<i32>() {
-        Ok(n)  => n%256, 
-        Err(_) => {
-            eprintln!("sush: exit: {}: numeric argument required", core.vars["?"]);
-            2
-        },
-    };
-
-    process::exit(exit_status)
-}
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
-    exit_no_msg(core, args)
-    /*
     if args.len() > 1 {
         core.vars.insert("?".to_string(), args[1].clone());
     }
-
-    let exit_status = match core.vars["?"].parse::<i32>() {
-        Ok(n)  => n%256, 
-        Err(_) => {
-            eprintln!("sush: exit: {}: numeric argument required", core.vars["?"]);
-            2
-        },
-    };
-
-    process::exit(exit_status)
-    */
+    core.exit()
 }
 
 pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
