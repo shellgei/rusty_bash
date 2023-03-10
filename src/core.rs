@@ -87,4 +87,16 @@ impl ShellCore {
         self.vars.insert("?".to_string(), status.to_string());
         true
     }
+
+    pub fn exit(&self) -> i32 {
+        let exit_status = match self.vars["?"].parse::<i32>() {
+            Ok(n)  => n%256, 
+            Err(_) => {
+                eprintln!("sush: exit: {}: numeric argument required", self.vars["?"]);
+                2
+            },
+        };
+    
+        process::exit(exit_status)
+    }
 }
