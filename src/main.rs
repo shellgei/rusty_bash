@@ -51,5 +51,5 @@ fn main_loop(core: &mut ShellCore) {
             None => process::exit(1)
         }
     }
-    builtins::exit_no_msg(core, &mut vec![]);
+    core.exit();
 }
