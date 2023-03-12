@@ -28,9 +28,26 @@ res=$($com <<< 'echo hoge;')
 
 ### COMPOUND COMMAND TEST ###
 
-#res=$($com <<< '(echo hoge; echo fuge)')
-#[ "$res" = "hoge
-#fuge" ] || err $LINENO
+res=$($com <<< '(echo hoge; echo fuge)')
+[ "$res" = "hoge
+fuge" ] || err $LINENO
+
+res=$($com <<< '(echo hoge
+echo fuge)')
+[ "$res" = "hoge
+fuge" ] || err $LINENO
+
+res=$($com <<< '(echo hoge
+echo fuge)
+(
+echo b)
+(
+echo c
+)')
+[ "$res" = "hoge
+fuge
+b
+c" ] || err $LINENO
 
 ### IRREGULAR COMMAND TEST ###
 

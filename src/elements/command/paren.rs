@@ -32,8 +32,12 @@ impl ParenCommand {
     }
 
     fn fork_exec(script: &mut Script, core: &mut ShellCore) {
+        //eprintln!("fork前: {}", &core.vars["BASHPID"]);
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
+                let pid = nix::unistd::getpid();
+                core.vars.insert("BASHPID".to_string(), pid.to_string());
+                //eprintln!("fork後: {}", &core.vars["BASHPID"]);
                 script.exec(core);
                 core.exit();
             },
