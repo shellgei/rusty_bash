@@ -39,9 +39,9 @@ fuge" ] || err $LINENO
 
 res=$($com <<< '(echo hoge
 echo fuge)
-(
+(    
 echo b)
-(
+  (
 echo c
 )')
 [ "$res" = "hoge
