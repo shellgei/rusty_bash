@@ -84,13 +84,16 @@ impl ParenCommand {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
         let mut ans = Self::new();
         let backup = feeder.clone();
+        core.nest.push("(".to_string());
 
         if Self::eat_head(feeder, &mut ans) &&
            Self::eat_script(feeder, core, &mut ans) &&
            Self::eat_tail(feeder, &mut ans) {
 //            dbg!("{:?}", &ans);
+            core.nest.pop();
             Some(ans)
         }else{
+            core.nest.pop();
             feeder.rewind(backup);
             None
         }

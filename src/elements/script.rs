@@ -44,6 +44,19 @@ impl Script {
         }
     }
 
+    fn check_end(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+        if let Some(start) = core.nest.last() {
+            if start == "(" && feeder.starts_with(")") {
+                return true;
+            }
+        }else{
+            if feeder.remaining.len() == 0 {
+                return true;
+            }
+        }
+        return false;
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
         let mut ans = Self::new();
 
@@ -52,8 +65,7 @@ impl Script {
             while Self::eat_job_end(feeder, &mut ans) {} //TODO: prohibit echo a;; 
         }
 
-        if feeder.remaining.len() == 0 || feeder.starts_with(")") {
-            //eprintln!("{:?}", &ans);
+        if Self::check_end(feeder, core) {
             Some(ans)
         }else{
             eprintln!("ERROR");
