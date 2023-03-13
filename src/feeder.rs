@@ -130,8 +130,4 @@ impl Feeder {
             self.remaining += &line;
         };
     }
-
-    pub fn starts_with(&self, s: &str) -> bool {
-        self.remaining.starts_with(s)
-    }
 }
