@@ -52,7 +52,7 @@ impl ParenCommand {
          let blank_len = feeder.scanner_blank(); //先頭の余白の確認
          ans.text += &feeder.consume(blank_len);
 
-         if feeder.starts_with("("){             //開きカッコの確認
+         if feeder.remaining.starts_with("("){   //開きカッコの確認
              ans.text += &feeder.consume(1);
              true
          }else{
@@ -71,7 +71,7 @@ impl ParenCommand {
     }
 
     fn eat_tail(feeder: &mut Feeder, ans: &mut ParenCommand) -> bool {
-         if feeder.starts_with(")"){                 //閉じカッコの確認
+         if feeder.remaining.starts_with(")"){       //閉じカッコの確認
              ans.text += &feeder.consume(1);
              let blank_len = feeder.scanner_blank(); //後ろの余白の確認
              ans.text += &feeder.consume(blank_len);

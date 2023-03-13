@@ -46,7 +46,7 @@ impl Script {
 
     fn check_end(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
         if let Some(start) = core.nest.last() {
-            if start == "(" && feeder.starts_with(")") {
+            if start == "(" && feeder.remaining.starts_with(")") {
                 return true;
             }
         }else{
