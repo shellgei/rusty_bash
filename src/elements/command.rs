@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod simple;
-pub mod paren;
 
 use crate::ShellCore;
 use crate::Feeder;
