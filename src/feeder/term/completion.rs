@@ -8,9 +8,9 @@ use crate::ShellCore;
 use crate::utils::{eval_glob, search_commands};
 use crate::utils;
 use crate::feeder::term::Writer;
-use crate::feeder::term::prompt_normal;
+use crate::feeder::term;
 use std::fs;
-use crate::utils::*;
+//use crate::utils::*;
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     if strs.len() < 2 {
@@ -114,10 +114,10 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     }
 
     write!(writer.stdout, "\r\n").unwrap();
-    let ans2 = align_elems_on_term(&ans, writer.terminal_size().0);
+    let ans2 = utils::align_elems_on_term(&ans, writer.terminal_size().0);
     write!(writer.stdout, "{}", ans2).unwrap();
     writer.stdout.flush().unwrap();
-    prompt_normal(core);
+    term::prompt_normal(core);
     let (_, y) = writer.cursor_pos();
     writer.rewrite_line(y, writer.chars.iter().collect());
     return;
@@ -127,8 +127,8 @@ pub fn command_completion(writer: &mut Writer, core: &ShellCore){
     let s = writer.chars.iter().collect::<String>();
 
     let mut paths = search_commands(&(s.clone() + &"*"));
-    paths.append(&mut search_aliases(&s, core));
-    paths.append(&mut search_builtin(&s, core));
+    paths.append(&mut utils::search_aliases(&s, core));
+    paths.append(&mut utils::search_builtin(&s, core));
 
     let mut coms = HashSet::<String>::new();
     for p in paths {
@@ -161,8 +161,8 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let s = writer.chars.iter().collect::<String>();
 
     let mut paths = search_commands(&(s.clone() + &"*"));
-    paths.append(&mut search_aliases(&s, core));
-    paths.append(&mut search_builtin(&s, core));
+    paths.append(&mut utils::search_aliases(&s, core));
+    paths.append(&mut utils::search_builtin(&s, core));
 
     let mut coms = HashSet::<String>::new();
     for p in paths {
@@ -174,10 +174,10 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let keys: Vec<String> = coms.into_iter().collect();
 
     write!(writer.stdout, "\r\n").unwrap();
-    let ans2 = align_elems_on_term(&keys, writer.terminal_size().0);
+    let ans2 = utils::align_elems_on_term(&keys, writer.terminal_size().0);
     write!(writer.stdout, "{}", ans2).unwrap();
     writer.stdout.flush().unwrap();
-    prompt_normal(core);
+    term::prompt_normal(core);
     let (_, y) = writer.cursor_pos();
     writer.rewrite_line(y, writer.chars.iter().collect());
 }
