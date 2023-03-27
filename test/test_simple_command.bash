@@ -24,4 +24,7 @@ res=$($com <<< '	echo hoge')
 res=$($com <<< 'echo hoge;')
 [ "$res" = "hoge" ] || err $LINENO
 
+res=$($com <<< '/bin/echo hoge;')
+[ "$res" = "hoge" ] || err $LINENO
+
 echo OK $0

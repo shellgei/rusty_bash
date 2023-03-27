@@ -4,6 +4,7 @@
 use glob::glob;
 use crate::env;
 use std::fs;
+use std::path::Path;
 use std::io::{BufRead, BufReader};
 use std::fs::OpenOptions;
 use crate::ShellCore;
@@ -272,6 +273,10 @@ pub fn align_elems_on_term(list: &Vec<String>, width: u32) -> String {
 
 pub fn get_fullpath(com: &String) -> String {
     //TODO: ここにパスのファイルが存在するかチェックを書く
+    if Path::is_file(Path::new(&com)) {
+        return com.to_string();
+    }
+   
     let dirs = if let Ok(p) = env::var("PATH") {
         p.split(':').map(|s| s.to_string()).collect()
     }else{
