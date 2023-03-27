@@ -92,11 +92,11 @@ impl Job {
         ( /*parent == &CommandType::Case &&*/ op == &ControlOperator::DoubleSemicolon )
     }
 
-    fn set_pipelineend(text: &mut Feeder, ans: &mut Job) -> bool {
-        let (n, op) = text.scanner_control_op();
+    fn set_pipelineend(feeder: &mut Feeder, ans: &mut Job) -> bool {
+        let (n, op) = feeder.scanner_control_op();
         if let Some(p) = op {
             if &p == &ControlOperator::Semicolon || &p == &ControlOperator::BgAnd {
-                ans.text += &text.consume(n);
+                ans.text += &feeder.consume(n);
                 ans.pipeline_ends.push(p.clone());
                 return true;
             }else if &p != &ControlOperator::And && &p != &ControlOperator::Or {
@@ -108,7 +108,7 @@ impl Job {
                 return true;
             }
 
-            ans.text += &text.consume(n);
+            ans.text += &feeder.consume(n);
         }else{
             ans.pipeline_ends.push(ControlOperator::NoChar);
         }
@@ -116,26 +116,26 @@ impl Job {
         false
     }
 
-    fn read_blank(text: &mut Feeder, ans: &mut Job) {
+    fn read_blank(feeder: &mut Feeder, ans: &mut Job) {
         loop {
             let before = ans.text.len();
-            //ans.text += &text.consume_blank_return();
-            ans.text += &text.consume_comment_multiline();
+            //ans.text += &feeder.consume_blank_return();
+            ans.text += &feeder.consume_comment_multiline();
 
-            if before == ans.text.len() || text.len() == 0 {
+            if before == ans.text.len() || feeder.len() == 0 {
                 return;
             }
         }
     }
 
-    pub fn eat_pipeline(text: &mut Feeder, core: &mut ShellCore, ans: &mut Job) -> bool {
+    pub fn eat_pipeline(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Job) -> bool {
         let mut go_next = true;
 
-        if let Some(result) = Pipeline::parse(text, core) {
+        if let Some(result) = Pipeline::parse(feeder, core) {
             ans.text += &result.text;
             ans.pipelines.push(result);
 
-            if Job::set_pipelineend(text, ans){
+            if Job::set_pipelineend(feeder, ans){
                 go_next = false;
             }
         }
@@ -146,18 +146,18 @@ impl Job {
         go_next
     }
 
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
-        if text.len() == 0 {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
+        if feeder.len() == 0 {
             return None;
         };
     
-        let backup = text.clone();
+        let backup = feeder.clone();
 
         let mut ans = Job::new();
-        Job::read_blank(text, &mut ans);
-        while Job::eat_pipeline(text, core, &mut ans) {
-            ans.text += &text.consume_comment_multiline();
-            if text.len() == 0 {
+        Job::read_blank(feeder, &mut ans);
+        while Job::eat_pipeline(feeder, core, &mut ans) {
+            ans.text += &feeder.consume_comment_multiline();
+            if feeder.len() == 0 {
                 break;
             }
         }
@@ -168,7 +168,7 @@ impl Job {
             }
             Some(ans)
         }else{
-            text.rewind(backup);
+            feeder.rewind(backup);
             None
         }
     }

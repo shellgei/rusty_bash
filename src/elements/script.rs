@@ -29,22 +29,22 @@ impl Script {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<Script> {
-        if text.len() == 0 {
+    pub fn parse(feeder: &mut Feeder, conf: &mut ShellCore) -> Option<Script> {
+        if feeder.len() == 0 {
             return None;
         };
     
-        if text.starts_with(")") {
-            eprintln!("Unexpected symbol: {}", text.consume(text.len()).trim_end());
+        if feeder.starts_with(")") {
+            eprintln!("Unexpected symbol: {}", feeder.consume(feeder.len()).trim_end());
             conf.set_var("?", "2");
             return None;
         }
 
-        let backup = text.clone();
+        let backup = feeder.clone();
         let mut ans = Script::new();
         loop {
-            ans.text += &text.consume_blank();
-            if let Some(j) =  Job::parse(text, conf) {
+            ans.text += &feeder.consume_blank();
+            if let Some(j) =  Job::parse(feeder, conf) {
                 ans.text += &j.text.clone();
                 ans.list.push(j);
             }else{
@@ -55,7 +55,7 @@ impl Script {
         if ans.list.len() > 0 {
             Some( ans )
         }else{
-            text.rewind(backup);
+            feeder.rewind(backup);
             None
         }
     }
