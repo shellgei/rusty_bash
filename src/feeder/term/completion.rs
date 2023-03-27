@@ -52,16 +52,16 @@ fn get_common_string(cands: &Vec<String>) -> String {
     return chars.to_string();
 }
 
-fn get_completion_str(arg: String) -> String {
-    let s: String = arg.replace("\\", "") + "*";
+fn get_completion_str(input: String) -> String {
+    let s: String = input.replace("\\", "") + "*";
     let org = s.clone();
-    let (s, home) = utils::tilde_to_dir(&s); //s: replaced path, home: home path
 
     let candidates = eval_glob(&s.replace("\\", ""));
     if candidates.len() == 0 || candidates[0].ends_with("*") {
         return "".to_string();
     };
 
+    let (s, home) = utils::tilde_to_dir(&s); //s: replaced path, home: home path
     if candidates.len() == 1 { //one candidate -> completion
         let add = if let Ok(_) = fs::read_dir(&candidates[0]) {
             "/"
@@ -79,7 +79,7 @@ fn get_completion_str(arg: String) -> String {
             a = "./".to_owned() + &a;
         }
 
-        return a[arg.len()..].to_string();
+        return a[input.len()..].to_string();
     }else{ //more than one candidates -> complete identical part
         let a: Vec<String> = if home.len() != 0 {
             candidates.iter().map(|x| x.replacen(&home, &org, 1)).collect()
@@ -87,7 +87,7 @@ fn get_completion_str(arg: String) -> String {
             candidates
         };
 
-        let mut base_len = arg.replace("\\", "").len();
+        let mut base_len = input.replace("\\", "").len();
         if s.starts_with("./") {
             base_len -= 2;
         }
