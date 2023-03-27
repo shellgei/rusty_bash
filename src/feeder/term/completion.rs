@@ -40,15 +40,12 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
 fn get_completion_str(arg: String) -> String {
     let s: String = arg.replace("\\", "") + "*";
     let org = s.clone();
-    let (s, home) = utils::tilde_to_dir(&s);
+    let (s, home) = utils::tilde_to_dir(&s); //s: replaced path, home: home path
 
     let ans = eval_glob(&s.replace("\\", ""));
     if ans.len() == 0 || ans[0].ends_with("*") {
         return "".to_string();
     };
-
-    let base_len = arg.len();
-    let in_cur_dir = s.chars().nth(0) == Some('.') && s.chars().nth(1) == Some('/');
 
     if ans.len() == 1 {
         let add = if let Ok(_) = fs::read_dir(&ans[0]) {
@@ -63,11 +60,12 @@ fn get_completion_str(arg: String) -> String {
             ans[0].clone().replace(" ", "\\ ")
         } + add;
 
-        if in_cur_dir {
+        if s.starts_with("./") {
             a = "./".to_owned() + &a;
         }
 
-        return a[base_len..].to_string();
+        //return a[base_len..].to_string();
+        return a[arg.len()..].to_string();
     }else{
         let a: Vec<String> = if home.len() != 0 {
             ans.iter().map(|x| x.replacen(&home, &org, 1)).collect()
@@ -77,7 +75,7 @@ fn get_completion_str(arg: String) -> String {
 
         let mut chars = "".to_string();
         let mut base_len = arg.replace("\\", "").len();
-        if in_cur_dir {
+        if s.starts_with("./") {
             base_len -= 2;
         }
 
@@ -106,7 +104,7 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let s: String = writer.last_word().replace("\\", "") + "*";
-    let (s, _) = utils::tilde_to_dir(&s);
+    let (s, _) = utils::tilde_to_dir(&s); //s: replaced_path
 
     let ans = eval_glob(&s);
     if ans.len() == 0 || ans[0].ends_with("*") {
