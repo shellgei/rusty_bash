@@ -37,6 +37,21 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
     true
 }
 
+fn get_common_string(cands: &Vec<String>) -> String {
+    let mut chars = "".to_string();
+    for (i, ch) in cands[0].chars().enumerate() {
+        if compare_nth_char(i, &cands) {
+            if ch == ' ' {
+                chars += "\\";
+            }
+            chars += &ch.to_string();
+        }else{
+            break;
+        }
+    }
+    return chars.to_string();
+}
+
 fn get_completion_str(arg: String) -> String {
     let s: String = arg.replace("\\", "") + "*";
     let org = s.clone();
@@ -46,8 +61,6 @@ fn get_completion_str(arg: String) -> String {
     if candidates.len() == 0 || candidates[0].ends_with("*") {
         return "".to_string();
     };
-
-    //dbg!("{:?}", &candidates);
 
     if candidates.len() == 1 { //one candidate -> completion
         let add = if let Ok(_) = fs::read_dir(&candidates[0]) {
@@ -67,32 +80,20 @@ fn get_completion_str(arg: String) -> String {
         }
 
         return a[arg.len()..].to_string();
-    }else{ //more than one candidates -> enuerate
+    }else{ //more than one candidates -> complete identical part
         let a: Vec<String> = if home.len() != 0 {
             candidates.iter().map(|x| x.replacen(&home, &org, 1)).collect()
         }else{
             candidates
         };
 
-        let mut chars = "".to_string();
         let mut base_len = arg.replace("\\", "").len();
         if s.starts_with("./") {
             base_len -= 2;
         }
 
         let candidates2: Vec<String> = a.iter().map(|s| s[base_len..].to_string()).collect();
-
-        for (i, ch) in candidates2[0].chars().enumerate() {
-            if compare_nth_char(i, &candidates2) {
-                if ch == ' ' {
-                    chars += "\\";
-                }
-                chars += &ch.to_string();
-            }else{
-                break;
-            }
-        }
-        return chars.to_string();
+        return get_common_string(&candidates2);
     }
 }
 
@@ -185,4 +186,7 @@ pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
 fn file_candidates() {
     let comp_str = get_completion_str("/etc/passw".to_string());
     assert_eq!(comp_str, "d");
+
+    let comp_str = get_completion_str("/li".to_string());
+    assert_eq!(comp_str, "b");
 }
