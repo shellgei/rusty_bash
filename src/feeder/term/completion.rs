@@ -40,7 +40,7 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
 fn get_completion_str(arg: String) -> String {
     let s: String = arg.replace("\\", "") + "*";
     let org = s.clone();
-    let (s, home) = utils::expand_tilde(&s);
+    let (s, home) = utils::tilde_to_dir(&s);
 
     let ans = eval_glob(&s.replace("\\", ""));
     if ans.len() == 0 || ans[0].ends_with("*") {
@@ -106,7 +106,7 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let s: String = writer.last_word().replace("\\", "") + "*";
-    let (s, _) = utils::expand_tilde(&s);
+    let (s, _) = utils::tilde_to_dir(&s);
 
     let ans = eval_glob(&s);
     if ans.len() == 0 || ans[0].ends_with("*") {

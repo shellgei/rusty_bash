@@ -159,7 +159,7 @@ pub fn blue_string(s: &String) -> String {
     format!("\x1b[34m{}\x1b[m", s)
 }
 
-pub fn expand_tilde(given_path: &String) -> (String, String){
+pub fn tilde_to_dir(given_path: &String) -> (String, String){
     if ! given_path.starts_with("~"){
         return (given_path.clone(), given_path.clone());
     }

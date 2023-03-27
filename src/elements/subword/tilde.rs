@@ -21,7 +21,7 @@ impl Subword for SubwordTildePrefix {
     }
 
     fn eval(&mut self, _conf: &mut ShellCore, _: bool) -> Vec<Vec<String>> {
-        vec!(vec!(utils::expand_tilde(&self.text).0))
+        vec!(vec!(utils::tilde_to_dir(&self.text).0))
     }
 }
 
