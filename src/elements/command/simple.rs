@@ -40,13 +40,6 @@ impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore) {
         if self.args.len() == 0 && self.fds.no_pipe() {
             self.set_vars(core);
-            /*
-            if let Err(s) = self.fds.set_child_io(core){
-                eprintln!("{}", s);
-                exit(1);
-            }
-            return;
-            */
         }
 
         if core.has_flag('v') {
