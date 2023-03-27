@@ -42,35 +42,36 @@ fn get_completion_str(arg: String) -> String {
     let org = s.clone();
     let (s, home) = utils::tilde_to_dir(&s); //s: replaced path, home: home path
 
-    let ans = eval_glob(&s.replace("\\", ""));
-    if ans.len() == 0 || ans[0].ends_with("*") {
+    let candidates = eval_glob(&s.replace("\\", ""));
+    if candidates.len() == 0 || candidates[0].ends_with("*") {
         return "".to_string();
     };
 
-    if ans.len() == 1 {
-        let add = if let Ok(_) = fs::read_dir(&ans[0]) {
+    //dbg!("{:?}", &candidates);
+
+    if candidates.len() == 1 { //one candidate -> completion
+        let add = if let Ok(_) = fs::read_dir(&candidates[0]) {
             "/"
         }else{
             ""
         };
 
         let mut a = if home.len() != 0 {
-            ans[0].replacen(&home, &org, 1).replace(" ", "\\ ")
+            candidates[0].replacen(&home, &org, 1).replace(" ", "\\ ")
         }else{
-            ans[0].clone().replace(" ", "\\ ")
+            candidates[0].clone().replace(" ", "\\ ")
         } + add;
 
         if s.starts_with("./") {
             a = "./".to_owned() + &a;
         }
 
-        //return a[base_len..].to_string();
         return a[arg.len()..].to_string();
-    }else{
+    }else{ //more than one candidates -> enuerate
         let a: Vec<String> = if home.len() != 0 {
-            ans.iter().map(|x| x.replacen(&home, &org, 1)).collect()
+            candidates.iter().map(|x| x.replacen(&home, &org, 1)).collect()
         }else{
-            ans
+            candidates
         };
 
         let mut chars = "".to_string();
@@ -79,10 +80,10 @@ fn get_completion_str(arg: String) -> String {
             base_len -= 2;
         }
 
-        let ans2: Vec<String> = a.iter().map(|s| s[base_len..].to_string()).collect();
+        let candidates2: Vec<String> = a.iter().map(|s| s[base_len..].to_string()).collect();
 
-        for (i, ch) in ans2[0].chars().enumerate() {
-            if compare_nth_char(i, &ans2) {
+        for (i, ch) in candidates2[0].chars().enumerate() {
+            if compare_nth_char(i, &candidates2) {
                 if ch == ' ' {
                     chars += "\\";
                 }
