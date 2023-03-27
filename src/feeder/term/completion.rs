@@ -38,7 +38,7 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
 }
 
 fn get_common_string(cands: &Vec<String>) -> String {
-    let mut chars = "".to_string();
+    let mut chars = String::new();
     for (i, ch) in cands[0].chars().enumerate() {
         if compare_nth_char(i, &cands) {
             if ch == ' ' {
@@ -92,8 +92,8 @@ fn get_completion_str(arg: String) -> String {
             base_len -= 2;
         }
 
-        let candidates2: Vec<String> = a.iter().map(|s| s[base_len..].to_string()).collect();
-        return get_common_string(&candidates2);
+        let cands2 = a.iter().map(|s| s[base_len..].to_string()).collect();
+        return get_common_string(&cands2);
     }
 }
 
@@ -189,4 +189,13 @@ fn file_candidates() {
 
     let comp_str = get_completion_str("/li".to_string());
     assert_eq!(comp_str, "b");
+}
+
+#[test]
+fn get_common_string_test() {
+    let strs = vec![ "/aaa".to_string(), "/abb".to_string() ];
+    assert_eq!(get_common_string(&strs), "/a");
+
+    let strs = vec![ "./あいう".to_string(), "./あい".to_string(), "./あa".to_string() ];
+    assert_eq!(get_common_string(&strs), "./あ");
 }
