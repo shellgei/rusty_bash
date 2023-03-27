@@ -272,7 +272,6 @@ pub fn align_elems_on_term(list: &Vec<String>, width: u32) -> String {
 
 
 pub fn get_fullpath(com: &String) -> String {
-    //TODO: ここにパスのファイルが存在するかチェックを書く
     if Path::is_file(Path::new(&com)) {
         return com.to_string();
     }
