@@ -9,12 +9,14 @@ use crate::utils::{eval_glob, search_commands};
 use crate::utils;
 use crate::feeder::term::Writer;
 use crate::feeder::term::prompt_normal;
-use std::fs;
 use crate::utils::*;
 
 fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
-    if strs.len() < 2 {
+    if strs.len() == 0 {
         return false;
+    };
+    if strs.len() == 1 {
+        return true;
     };
 
     let ch0: char;
@@ -62,39 +64,19 @@ fn get_completion_str(input: String) -> String {
     };
 
     let (s, home) = utils::tilde_to_dir(&s); //s: replaced path, home: home path
-    if candidates.len() == 1 { //one candidate -> completion
-        let add = if let Ok(_) = fs::read_dir(&candidates[0]) {
-            "/"
-        }else{
-            ""
-        };
+    let a: Vec<String> = if home.len() != 0 {
+        candidates.iter().map(|x| x.replacen(&home, &org, 1)).collect()
+    }else{
+        candidates
+    };
 
-        let mut a = if home.len() != 0 {
-            candidates[0].replacen(&home, &org, 1).replace(" ", "\\ ")
-        }else{
-            candidates[0].clone().replace(" ", "\\ ")
-        } + add;
-
-        if s.starts_with("./") {
-            a = "./".to_owned() + &a;
-        }
-
-        return a[input.len()..].to_string();
-    }else{ //more than one candidates -> complete identical part
-        let a: Vec<String> = if home.len() != 0 {
-            candidates.iter().map(|x| x.replacen(&home, &org, 1)).collect()
-        }else{
-            candidates
-        };
-
-        let mut base_len = input.replace("\\", "").len();
-        if s.starts_with("./") {
-            base_len -= 2;
-        }
-
-        let cands2 = a.iter().map(|s| s[base_len..].to_string()).collect();
-        return get_common_string(&cands2);
+    let mut base_len = input.replace("\\", "").len();
+    if s.starts_with("./") {
+        base_len -= 2;
     }
+
+    let cands2 = a.iter().map(|s| s[base_len..].to_string()).collect();
+    return get_common_string(&cands2);
 }
 
 pub fn file_completion(writer: &mut Writer){
