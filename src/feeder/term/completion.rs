@@ -102,7 +102,7 @@ fn user_completion_str(input: &String) -> String {
 fn get_completion_str(input: String) -> String {
     let user_comp = user_completion_str(&input);
     if user_comp.len() != 0 {
-        return user_comp;
+        return user_comp + "/";
     }
 
     let s = input.replace("\\", "") + "*";
@@ -137,10 +137,18 @@ pub fn file_completion(writer: &mut Writer){
 
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
-    let s: String = writer.last_word().replace("\\", "") + "*";
-    let (s, _) = utils::tilde_to_dir(&s); //s: replaced_path
+    let arg = writer.last_word();
+    let ans = if arg.starts_with("~") && ! arg.contains("/") {
+        search_users(&arg[1..].to_string())
+            .iter()
+            .map(|s| "~".to_owned() + s + "/")
+            .collect()
+    }else{
+        let s: String = writer.last_word().replace("\\", "") + "*";
+        let (s, _) = utils::tilde_to_dir(&s); //s: replaced_path
+        eval_glob(&s)
+    };
 
-    let ans = eval_glob(&s);
     if ans.len() == 0 || ans[0].ends_with("*") {
         return;
     }
