@@ -35,14 +35,14 @@ pub struct Writer {
     left_shift: u16,
 }
 
-fn char_to_width(c: char) -> u8{
+fn char_width_on_monitor(c: char) -> u8{
     let s: &str = &c.to_string();
     UnicodeWidthStr::width(s) as u8
 }
 
-fn chars_to_width(chars: &Vec<char>) -> u32 {
+fn chars_width_on_monior(chars: &Vec<char>) -> u32 {
     chars.iter()
-        .map(|c| char_to_width(*c))
+        .map(|c| char_width_on_monitor(*c))
         .fold(0, |line_len, w| line_len + (w as u32))
 }
 
@@ -166,7 +166,7 @@ impl Writer {
         let (_, old_line_no) = self.ch_ptr_to_multiline_origin();
         self.move_char_ptr(inc);
         let (org_x, line_no) = self.ch_ptr_to_multiline_origin();
-        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
+        let line_len: u16 = chars_width_on_monior(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
 
         let x = if line_no == 0{
             self.left_shift+line_len+1
@@ -217,11 +217,11 @@ impl Writer {
         let mut sum_length: u32 = 0;
         let mut shift = self.left_shift;
         for ch in &self.chars {
-            sum_length += char_to_width(*ch) as u32;
+            sum_length += char_width_on_monitor(*ch) as u32;
 
             if wx < sum_length + shift as u32 {
                 shift = 0;
-                sum_length = char_to_width(*ch) as u32;
+                sum_length = char_width_on_monitor(*ch) as u32;
                 self.fold_points.push(i);
             }
             i += 1;
@@ -268,7 +268,7 @@ impl Writer {
 
     fn rewrite_multi_line(&mut self, old_org_y: u16) {
         let (org_x, org_y) = self.ch_ptr_to_multiline_origin();
-        let line_len: u16 = chars_to_width(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
+        let line_len: u16 = chars_width_on_monior(&self.chars[org_x..self.ch_ptr].to_vec()) as u16;
 
         let x = if org_y == 0{
             self.left_shift+line_len+1
@@ -364,7 +364,7 @@ pub fn prompt_normal(core: &mut ShellCore) -> u16 {
     print!("$ ");
     io::stdout().flush().unwrap();
 
-    (chars_to_width(&(user + &host + &path).chars().collect()) + 2 + 2) as u16
+    (chars_width_on_monior(&(user + &host + &path).chars().collect()) + 2 + 2) as u16
 }
 
 pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
