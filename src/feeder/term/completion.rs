@@ -138,12 +138,15 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let arg = writer.last_word();
-    let ans = if arg.starts_with("~") && ! arg.contains("/") {
+    let ans = if arg.starts_with("~") && ! arg.contains("/") {//usr name completion
         search_users(&arg[1..].to_string())
             .iter()
             .map(|s| "~".to_owned() + s + "/")
             .collect()
-    }else{
+    }else if arg.starts_with("~") {//usr dir completion
+        //TODO: implement completion (ls ~/, ls ~root/ ..., ls ~/a*, ...)
+        vec![]
+    }else{//other completion
         let s: String = writer.last_word().replace("\\", "") + "*";
         let (s, _) = utils::tilde_to_dir(&s); //s: replaced_path
         eval_glob(&s)
