@@ -148,42 +148,7 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     return;
 }
 
-pub fn command_completion_str(writer: &mut Writer, core: &ShellCore) -> String{
-    let s = writer.chars.iter().collect::<String>();
-
-    let mut paths = search_commands(&(s.clone() + &"*"));
-    paths.append(&mut utils::search_aliases(&s, core));
-    paths.append(&mut utils::search_builtin(&s, core));
-
-    let mut coms = HashSet::<String>::new();
-    for p in paths {
-        if let Some(com) = p.split("/").last() {
-            coms.insert(com.to_string());
-        };
-    }
-
-    let keys: Vec<String> = coms.into_iter().collect();
-
-    let base_len = writer.last_word().len();
-    if keys.len() == 1 {
-        return keys[0][base_len..].to_string();
-    }else if keys.len() > 1 {
-        let mut ans = "".to_string();
-        for (i, ch) in keys[0][base_len..].chars().enumerate() {
-            if compare_nth_char(i+base_len, &keys) {
-                ans += &ch.to_string();
-            }else{
-                break;
-            }
-        }
-        return ans;
-    }
-
-    return String::new();
-}
-
 pub fn command_completion(writer: &mut Writer, core: &ShellCore){
-    /*
     let s = writer.chars.iter().collect::<String>();
 
     let mut paths = search_commands(&(s.clone() + &"*"));
@@ -200,24 +165,12 @@ pub fn command_completion(writer: &mut Writer, core: &ShellCore){
     let keys: Vec<String> = coms.into_iter().collect();
 
     let base_len = writer.last_word().len();
-    if keys.len() == 1 {
-        writer.insert_multi(keys[0][base_len..].chars());
-        return;
-    }else if keys.len() > 1 {
-        let mut ans = "".to_string();
-        for (i, ch) in keys[0][base_len..].chars().enumerate() {
-            if compare_nth_char(i+base_len, &keys) {
-                ans += &ch.to_string();
-            }else{
-                break;
-            }
-        }
-        writer.insert_multi(ans.chars());
-        return;
-    };
-    */
-    let s = command_completion_str(writer, core);
-    writer.insert_multi(s.chars());
+    let strings = keys.iter()
+                      .map(|s| s[base_len..].to_string() + " ")
+                      .collect();
+
+    let common = get_common_string(&strings).replace("\\", "");
+    writer.insert_multi(common.chars());
 }
 
 pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
