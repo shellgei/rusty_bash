@@ -222,7 +222,7 @@ fn file_candidates() {
     assert_eq!(comp_str, "b");
 
     let comp_str = get_completion_str("~roo".to_string());
-    assert_eq!(comp_str, "t");
+    assert_eq!(comp_str, "t/");
 }
 
 /*
