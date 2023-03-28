@@ -3,6 +3,8 @@
 
 use std::io::Write;
 use std::collections::HashSet;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 use crate::ShellCore;
 use crate::utils::{eval_glob, search_commands};
@@ -53,8 +55,50 @@ fn get_common_string(cands: &Vec<String>) -> String {
     return chars.to_string();
 }
 
+
+pub fn search_users(head: &String) -> Vec<String> {
+    let mut ans = vec![];
+    if let Ok(f) = File::open("/etc/passwd"){
+        let reader = BufReader::new(f);
+        for line in reader.lines(){
+            let line = line.unwrap();
+            if line.starts_with(head) {
+                ans.push(line.split(":").nth(0).unwrap().to_string());
+            }
+        }
+    }
+
+    ans
+}
+
+fn user_completion(input: &String) -> String {
+    if input.len() < 2 {
+        return String::new();
+    }
+    if input.chars().nth(0).unwrap() != '~' {
+        return String::new();
+    }
+    if let Some(_) = input.find("/") {
+        return String::new();
+    }
+
+    let users = search_users(&input[1..].to_string());
+    let completed_user = get_common_string(&users);
+
+    if input.len() == completed_user.len()+1 {
+        return String::new();
+    }
+
+    completed_user[input.len()-1..].to_string()
+}
+
 fn get_completion_str(input: String) -> String {
-    let s: String = input.replace("\\", "") + "*";
+    let user_comp = user_completion(&input);
+    if user_comp.len() != 0 {
+        return user_comp;
+    }
+
+    let s = input.replace("\\", "") + "*";
     let org = s.clone();
 
     let candidates = eval_glob(&s.replace("\\", ""));
@@ -63,7 +107,7 @@ fn get_completion_str(input: String) -> String {
     };
 
     let (s, home) = utils::tilde_to_dir(&s); //s: replaced path, home: home path
-    let a: Vec<String> = if home.len() != 0 {
+    let a = if home.len() != 0 {
         candidates.iter().map(|x| x.replacen(&home, &org, 1)).collect()
     }else{
         candidates
@@ -170,6 +214,9 @@ fn file_candidates() {
 
     let comp_str = get_completion_str("/li".to_string());
     assert_eq!(comp_str, "b");
+
+    let comp_str = get_completion_str("~roo".to_string());
+    assert_eq!(comp_str, "t");
 }
 
 #[test]
