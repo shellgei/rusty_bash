@@ -230,8 +230,8 @@ impl Writer {
 
     fn tab_completion(&mut self, tab_num: u32, core: &mut ShellCore) {
         if chars_to_string(&self.chars) == self.last_word() && 
-            self.last_word().chars().nth(0) != Some('.') &&
-            self.last_word().chars().nth(0) != Some('/') {
+            ! self.last_word().starts_with(".") &&
+            ! self.last_word().starts_with("/") {
             if tab_num == 1 {
                 command_completion(self, core);
             }else {

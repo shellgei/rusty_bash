@@ -41,6 +41,13 @@ fn compare_nth_char(nth: usize, strs: &Vec<String>) -> bool {
 }
 
 fn get_common_string(cands: &Vec<String>) -> String {
+    if cands.len() == 0 {
+        return String::new();
+    }
+    if cands.len() == 1 {
+        return cands[0].clone();
+    }
+
     let mut chars = String::new();
     for (i, ch) in cands[0].chars().enumerate() {
         if compare_nth_char(i, &cands) {
@@ -85,7 +92,7 @@ fn user_completion_str(input: &String) -> String {
     let users = search_users(&input[1..].to_string());
     let completed_user = get_common_string(&users);
 
-    if input.len() == completed_user.len()+1 {
+    if input.len() >= completed_user.len()+1 {
         return String::new();
     }
 
