@@ -71,7 +71,7 @@ pub fn search_users(head: &String) -> Vec<String> {
     ans
 }
 
-fn user_completion(input: &String) -> String {
+fn user_completion_str(input: &String) -> String {
     if input.len() < 2 {
         return String::new();
     }
@@ -93,7 +93,7 @@ fn user_completion(input: &String) -> String {
 }
 
 fn get_completion_str(input: String) -> String {
-    let user_comp = user_completion(&input);
+    let user_comp = user_completion_str(&input);
     if user_comp.len() != 0 {
         return user_comp;
     }
@@ -148,7 +148,42 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     return;
 }
 
+pub fn command_completion_str(writer: &mut Writer, core: &ShellCore) -> String{
+    let s = writer.chars.iter().collect::<String>();
+
+    let mut paths = search_commands(&(s.clone() + &"*"));
+    paths.append(&mut utils::search_aliases(&s, core));
+    paths.append(&mut utils::search_builtin(&s, core));
+
+    let mut coms = HashSet::<String>::new();
+    for p in paths {
+        if let Some(com) = p.split("/").last() {
+            coms.insert(com.to_string());
+        };
+    }
+
+    let keys: Vec<String> = coms.into_iter().collect();
+
+    let base_len = writer.last_word().len();
+    if keys.len() == 1 {
+        return keys[0][base_len..].to_string();
+    }else if keys.len() > 1 {
+        let mut ans = "".to_string();
+        for (i, ch) in keys[0][base_len..].chars().enumerate() {
+            if compare_nth_char(i+base_len, &keys) {
+                ans += &ch.to_string();
+            }else{
+                break;
+            }
+        }
+        return ans;
+    }
+
+    return String::new();
+}
+
 pub fn command_completion(writer: &mut Writer, core: &ShellCore){
+    /*
     let s = writer.chars.iter().collect::<String>();
 
     let mut paths = search_commands(&(s.clone() + &"*"));
@@ -180,6 +215,9 @@ pub fn command_completion(writer: &mut Writer, core: &ShellCore){
         writer.insert_multi(ans.chars());
         return;
     };
+    */
+    let s = command_completion_str(writer, core);
+    writer.insert_multi(s.chars());
 }
 
 pub fn show_command_candidates(writer: &mut Writer, core: &mut ShellCore) {
@@ -218,6 +256,13 @@ fn file_candidates() {
     let comp_str = get_completion_str("~roo".to_string());
     assert_eq!(comp_str, "t");
 }
+
+/*
+#[test]
+fn command_candidates() {
+    let comp_str = command_completion_str("ech".to_string());
+    assert_eq!(comp_str, "o");
+}*/
 
 #[test]
 fn get_common_string_test() {
