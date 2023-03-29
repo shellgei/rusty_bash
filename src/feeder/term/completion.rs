@@ -160,10 +160,20 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
         let s = writer.last_word().replace("\\", "") + "*";
         let (rs, home) = utils::tilde_to_dir(&s);
         let globed_paths = eval_glob(&rs);
+
+        let mut globed_paths2 = vec![];
+        for p in globed_paths {
+            if Path::is_dir(Path::new(&p)) {
+                globed_paths2.push(p + "/");
+            }else{
+                globed_paths2.push(p);
+            }
+        }
+
         let tilde_paths = if let Some(home_path) = home {
-            globed_paths.iter().map(|x| x.replacen(&home_path, &user, 1)).collect()
+            globed_paths2.iter().map(|x| x.replacen(&home_path, &user, 1)).collect()
         }else{
-            globed_paths
+            globed_paths2
         };
         tilde_paths.iter().map(|x| x.replacen(&dirname, "", 1)).collect()
     };
