@@ -135,12 +135,13 @@ pub fn file_completion(writer: &mut Writer){
     writer.insert_multi(chars.chars());
 }
 
-
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let arg = writer.last_word();
+    let filename = arg.split("/").last().unwrap().to_string();
+    let dirname = arg[0..arg.len()-filename.len()].to_string();
     let user = arg.split("/").nth(0).unwrap().to_string();
 
-    let ans = if arg.starts_with("~") && ! arg.contains("/") {//usr name completion
+    let ans: Vec<String> = if arg.starts_with("~") && ! arg.contains("/") {//usr name completion
         search_users(&arg[1..].to_string())
             .iter()
             .map(|s| "~".to_owned() + s + "/")
@@ -154,7 +155,7 @@ pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
         }else{
             globed_paths
         };
-        tilde_paths
+        tilde_paths.iter().map(|x| x.replacen(&dirname, "", 1)).collect()
     };
 
     if ans.len() == 0 || ans[0].ends_with("*") {
