@@ -100,23 +100,22 @@ fn user_completion_str(input: &String) -> String {
 }
 
 fn get_completion_str(input: String) -> String {
-    let user_comp = user_completion_str(&input);
-    if user_comp.len() != 0 {
-        return user_comp + "/";
+    let user_completion = user_completion_str(&input);
+    if user_completion.len() != 0 {
+        return user_completion + "/";
     }
 
-    let s = input.replace("\\", "") + "*";
-    let org = s.clone();
+    let user = input.split("/").nth(0).unwrap().to_string();
+    let s_org = input.replace("\\", "") + "*";
+    let (s, home) = utils::tilde_to_dir(&s_org);
 
     let candidates = eval_glob(&s.replace("\\", ""));
     if candidates.len() == 0 || candidates[0].ends_with("*") {
         return "".to_string();
     };
 
-    let (s, home) = utils::tilde_to_dir(&s); //s: replaced path, home: home path
-                                                   //
     let a = if let Some(home_path) = home {
-        candidates.iter().map(|x| x.replacen(&home_path, &org, 1)).collect()
+        candidates.iter().map(|x| x.replacen(&home_path, &user, 1)).collect()
     }else{
         candidates
     };
