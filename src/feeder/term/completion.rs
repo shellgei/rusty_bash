@@ -5,6 +5,7 @@ use std::io::Write;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::Path;
 
 use crate::ShellCore;
 use crate::utils::{eval_glob, search_commands};
@@ -114,10 +115,19 @@ fn get_completion_str(input: String) -> String {
         return "".to_string();
     };
 
+    let mut globed_paths2 = vec![];
+    for p in globed_paths {
+        if Path::is_dir(Path::new(&p)) {
+            globed_paths2.push(p + "/");
+        }else{
+            globed_paths2.push(p);
+        }
+    }
+
     let tilde_paths = if let Some(home_path) = home {
-        globed_paths.iter().map(|x| x.replacen(&home_path, &user, 1)).collect()
+        globed_paths2.iter().map(|x| x.replacen(&home_path, &user, 1)).collect()
     }else{
-        globed_paths
+        globed_paths2
     };
 
     let mut base_len = input.replace("\\", "").len();
