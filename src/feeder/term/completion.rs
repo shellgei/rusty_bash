@@ -138,25 +138,23 @@ pub fn file_completion(writer: &mut Writer){
 
 pub fn show_file_candidates(writer: &mut Writer, core: &mut ShellCore) {
     let arg = writer.last_word();
+    let user = arg.split("/").nth(0).unwrap().to_string();
+
     let ans = if arg.starts_with("~") && ! arg.contains("/") {//usr name completion
         search_users(&arg[1..].to_string())
             .iter()
             .map(|s| "~".to_owned() + s + "/")
             .collect()
-    }/*else if arg.starts_with("~") {//usr dir completion
-        //TODO: implement completion (ls ~/, ls ~root/ ..., ls ~/a*, ...)
-        let s: String = writer.last_word().replace("\\", "") + "*";
-        let user = s.split("/").nth(0).unwrap().to_string();
-        let (user_path, home_path) = utils::tilde_to_dir(&s); //s: replaced_path
-        dbg!("{:?}, {:?}", &user_path, &home_path);
-        //let ps = eval_glob(&s);
-                                             
-        vec![]
-    }*/else{//other completion
+    }else{//other completion
         let s = writer.last_word().replace("\\", "") + "*";
-        let (rs, _) = utils::tilde_to_dir(&s); //s: replaced_path
-        //dbg!("{:?}", &rs);
-        eval_glob(&rs)
+        let (rs, home) = utils::tilde_to_dir(&s);
+        let globed_paths = eval_glob(&rs);
+        let tilde_paths = if let Some(home_path) = home {
+            globed_paths.iter().map(|x| x.replacen(&home_path, &user, 1)).collect()
+        }else{
+            globed_paths
+        };
+        tilde_paths
     };
 
     if ans.len() == 0 || ans[0].ends_with("*") {
