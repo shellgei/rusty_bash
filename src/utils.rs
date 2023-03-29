@@ -159,21 +159,23 @@ pub fn blue_string(s: &String) -> String {
     format!("\x1b[34m{}\x1b[m", s)
 }
 
-pub fn tilde_to_dir(given_path: &String) -> (String, String){
+pub fn tilde_to_dir(given_path: &String) -> (String, Option<String>){
     if ! given_path.starts_with("~"){
-        return (given_path.clone(), given_path.clone());
+        return (given_path.clone(), None);
     }
 
-    let home_path = if given_path.len() == 1 {
+    let user = given_path[1..].split("/").nth(0).unwrap().to_string();
+
+    let home_path = if user.len() == 0 {
         env::var("HOME").expect("Home is not set")
-    }else if let Some(h) = get_home(given_path[1..].to_string()) {
+    }else if let Some(h) = get_home(user.clone()) {
         h
     }else{
-        given_path.clone()
+        return (given_path.clone(), None)
     };
 
-    let replaced_path = given_path.replacen(&given_path.clone(), &home_path, 1);
-    (replaced_path, home_path)
+    let replaced_path = given_path.replacen(&("~".to_owned() + &user), &home_path, 1);
+    (replaced_path, Some(home_path))
 }
 
 fn get_home(user: String) -> Option<String> {
