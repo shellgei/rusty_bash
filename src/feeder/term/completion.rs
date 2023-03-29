@@ -109,15 +109,15 @@ fn get_completion_str(input: String) -> String {
     let s_org = input.replace("\\", "") + "*";
     let (s, home) = utils::tilde_to_dir(&s_org);
 
-    let candidates = eval_glob(&s.replace("\\", ""));
-    if candidates.len() == 0 || candidates[0].ends_with("*") {
+    let globed_paths = eval_glob(&s.replace("\\", ""));
+    if globed_paths.len() == 0 || globed_paths[0].ends_with("*") {
         return "".to_string();
     };
 
-    let a = if let Some(home_path) = home {
-        candidates.iter().map(|x| x.replacen(&home_path, &user, 1)).collect()
+    let tilde_paths = if let Some(home_path) = home {
+        globed_paths.iter().map(|x| x.replacen(&home_path, &user, 1)).collect()
     }else{
-        candidates
+        globed_paths
     };
 
     let mut base_len = input.replace("\\", "").len();
@@ -125,7 +125,7 @@ fn get_completion_str(input: String) -> String {
         base_len -= 2;
     }
 
-    let cands2 = a.iter().map(|s| s[base_len..].to_string()).collect();
+    let cands2 = tilde_paths.iter().map(|s| s[base_len..].to_string()).collect();
     return get_common_string(&cands2);
 }
 
