@@ -133,15 +133,12 @@ impl CommandParen {
 
         let backup = feeder.clone();
         let mut ans = CommandParen::new();
-        //let mut input_success;
 
-        loop{
-            ans.text = feeder.consume(1);
-            if Self::eat_script_and_end_paren(feeder, core, &mut ans){
-                break;
-            }else{
-                continue;
-            }
+        ans.text = feeder.consume(1);
+        if ! Self::eat_script_and_end_paren(feeder, core, &mut ans){
+            feeder.rewind(backup);
+            core.nest.pop();
+            return None;
         }
 
         /* distinguish from (( )) */
