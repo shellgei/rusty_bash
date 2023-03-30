@@ -129,6 +129,7 @@ impl CommandParen {
         if ! feeder.starts_with("(") {
             return None;
         }
+        core.nest.push("(".to_string());
 
         let mut backup = feeder.clone();
         let mut ans = CommandParen::new();
@@ -140,6 +141,7 @@ impl CommandParen {
                 (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     feeder.consume(feeder.len());
+                    core.nest.pop();
                     return None;
                 }
                 continue;
@@ -152,6 +154,7 @@ impl CommandParen {
             (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
             if ! input_success {
                 feeder.consume(feeder.len());
+                core.nest.pop();
                 return None;
             }
         }
@@ -159,6 +162,7 @@ impl CommandParen {
         /* distinguish from (( )) */
         if ans.text.starts_with("((") && ans.text.ends_with("))") {
             feeder.rewind(backup);
+            core.nest.pop();
             return None;
         }
 
@@ -166,6 +170,7 @@ impl CommandParen {
             while Self::eat_redirect(feeder, core, &mut ans) {}
         }
 
+        core.nest.pop();
         Some(ans)
     }
 }
