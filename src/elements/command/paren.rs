@@ -95,7 +95,7 @@ impl CommandParen {
         }
     }
 
-    fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandParen) -> bool {
+    fn eat_script_and_end_paren(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandParen) -> bool {
         if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text;
 
@@ -124,7 +124,7 @@ impl CommandParen {
 
         loop{
             ans.text = feeder.consume(1);
-            if ! Self::eat_script(feeder, core, &mut ans){
+            if ! Self::eat_script_and_end_paren(feeder, core, &mut ans){
                 (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     feeder.consume(feeder.len());
