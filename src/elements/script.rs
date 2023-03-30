@@ -90,6 +90,14 @@ impl Script {
 
         if ans.list.len() > 0 && Self::check_end(feeder, core) {
             Some( ans )
+        }else if ! Self::check_end(feeder, core) {
+            let (_, input_success) = feeder.rewind_feed_backup(&backup, core);
+            if ! input_success {
+                feeder.consume(feeder.len());
+                core.nest.pop();
+                return None;
+            }
+            return Self::parse(feeder, core);
         }else{
             feeder.rewind(backup);
             None
