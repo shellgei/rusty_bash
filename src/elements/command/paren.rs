@@ -113,6 +113,18 @@ impl CommandParen {
         false
     }
 
+    fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandParen) -> bool {
+        ans.text += &feeder.consume_blank();
+
+        if let Some(r) = Redirect::parse(feeder, core){
+            ans.text += &r.text;
+            ans.fds.redirects.push(Box::new(r));
+            true
+        }else{
+            false
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<CommandParen> {
         if ! feeder.starts_with("(") {
             return None;
@@ -133,18 +145,16 @@ impl CommandParen {
                 continue;
             }
 
-            if ! ans.text.ends_with(")") {
-                (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
-                if ! input_success {
-                    feeder.consume(feeder.len());
-                    return None;
-                }
-            }else{
+            if ans.text.ends_with(")") {
                 break;
             }
-        }
 
-        //text.consume(1);
+            (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
+            if ! input_success {
+                feeder.consume(feeder.len());
+                return None;
+            }
+        }
 
         /* distinguish from (( )) */
         if ans.text.starts_with("((") && ans.text.ends_with("))") {
@@ -152,19 +162,8 @@ impl CommandParen {
             return None;
         }
 
-        if substitution {
-            return Some(ans);
-        }
-
-        loop {
-            ans.text += &feeder.consume_blank();
-
-            if let Some(r) = Redirect::parse(feeder, core){
-                ans.text += &r.text;
-                ans.fds.redirects.push(Box::new(r));
-            }else{
-                break;
-            }
+        if ! substitution {
+            while Self::eat_redirect(feeder, core, &mut ans) {}
         }
 
         Some(ans)
