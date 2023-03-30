@@ -11,12 +11,12 @@ pub struct Script {
 }
 
 impl Script {
-    pub fn exec(&mut self, conf: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore) {
         for j in self.list.iter_mut() {
-            j.exec(conf);
+            j.exec(core);
 
-            if conf.return_flag {
-                conf.return_flag = false;
+            if core.return_flag {
+                core.return_flag = false;
                 return;
             }
         }
@@ -41,7 +41,18 @@ impl Script {
         false
     }
 
-    pub fn parse(feeder: &mut Feeder, conf: &mut ShellCore) -> Option<Script> {
+    fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool { 
+        ans.text += &feeder.consume_blank();
+        if let Some(j) =  Job::parse(feeder, core) {
+            ans.text += &j.text.clone();
+            ans.list.push(j);
+            true
+        }else{
+            false
+        }
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
         if feeder.len() == 0 {
             return None;
         };
@@ -49,21 +60,13 @@ impl Script {
         //if feeder.starts_with(")") {
         if Self::unexpected_symbol(feeder) {
             eprintln!("Unexpected symbol: {}", feeder.consume(feeder.len()).trim_end());
-            conf.set_var("?", "2");
+            core.set_var("?", "2");
             return None;
         }
 
         let backup = feeder.clone();
         let mut ans = Script::new();
-        loop {
-            ans.text += &feeder.consume_blank();
-            if let Some(j) =  Job::parse(feeder, conf) {
-                ans.text += &j.text.clone();
-                ans.list.push(j);
-            }else{
-                break;
-            }
-        }
+        while Self::eat_job(feeder, core, &mut ans) {}
 
         if ans.list.len() > 0 {
             Some( ans )
