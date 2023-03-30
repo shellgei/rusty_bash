@@ -137,7 +137,9 @@ impl CommandParen {
 
         loop{
             ans.text = feeder.consume(1);
-            if ! Self::eat_script_and_end_paren(feeder, core, &mut ans){
+            if Self::eat_script_and_end_paren(feeder, core, &mut ans){
+                break;
+            }else{
                 (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     feeder.consume(feeder.len());
@@ -145,17 +147,6 @@ impl CommandParen {
                     return None;
                 }
                 continue;
-            }
-
-            if ans.text.ends_with(")") {
-                break;
-            }
-
-            (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
-            if ! input_success {
-                feeder.consume(feeder.len());
-                core.nest.pop();
-                return None;
             }
         }
 
