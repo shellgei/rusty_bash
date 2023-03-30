@@ -29,12 +29,25 @@ impl Script {
         }
     }
 
+    fn unexpected_symbol(feeder: &mut Feeder) -> bool {
+        if feeder.len() == 0 {
+            return false;
+        }
+
+        if let Some(_) =  ")}".find(feeder.nth(0)){
+            return true;
+        }
+
+        false
+    }
+
     pub fn parse(feeder: &mut Feeder, conf: &mut ShellCore) -> Option<Script> {
         if feeder.len() == 0 {
             return None;
         };
     
-        if feeder.starts_with(")") {
+        //if feeder.starts_with(")") {
+        if Self::unexpected_symbol(feeder) {
             eprintln!("Unexpected symbol: {}", feeder.consume(feeder.len()).trim_end());
             conf.set_var("?", "2");
             return None;
