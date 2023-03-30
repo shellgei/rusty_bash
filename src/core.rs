@@ -34,6 +34,7 @@ pub struct ShellCore {
     pub return_enable: bool,
     pub return_flag: bool,
     pub shopts: Shopts, 
+    pub nest: Vec<String>, 
 }
 
 impl ShellCore {
@@ -54,6 +55,7 @@ impl ShellCore {
             return_flag: false,
             return_enable: false,
             shopts: Shopts::new(),
+            nest: vec![],
         };
 
         conf.set_var("?", &0.to_string());

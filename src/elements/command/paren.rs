@@ -95,42 +95,48 @@ impl CommandParen {
         }
     }
 
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<CommandParen> {
-        if ! text.starts_with("(") {
+    fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandParen) -> bool {
+        if let Some(s) = Script::parse(feeder, core) {
+            ans.text += &s.text;
+
+            let (n, op) = feeder.scanner_control_op();
+            if let Some(p) = op  {
+                if p != ControlOperator::RightParen {
+                    return false;
+                }
+            }
+            ans.text += &feeder.consume(n);
+            ans.script = Some(s);
+            return true;
+        }
+
+        false
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<CommandParen> {
+        if ! feeder.starts_with("(") {
             return None;
         }
 
-        let mut backup = text.clone();
+        let mut backup = feeder.clone();
         let mut ans = CommandParen::new();
         let mut input_success;
 
         loop{
-            text.consume(1);
-            if let Some(s) = Script::parse(text, core) {
-                ans.text = "(".to_owned() + &s.text;
-                let (n, op) = text.scanner_control_op();
-                if let Some(p) = op  {
-                    if p != ControlOperator::RightParen {
-                        text.rewind(backup);
-                        return None;
-                    }
-                }
-
-                ans.text += &text.consume(n);
-                ans.script = Some(s);
-            }else{
-                (backup, input_success) = text.rewind_feed_backup(&backup, core);
+            ans.text = feeder.consume(1);
+            if ! Self::eat_script(feeder, core, &mut ans){
+                (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
                 if ! input_success {
-                    text.consume(text.len());
+                    feeder.consume(feeder.len());
                     return None;
                 }
                 continue;
             }
 
             if ! ans.text.ends_with(")") {
-                (backup, input_success) = text.rewind_feed_backup(&backup, core);
+                (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
                 if ! input_success {
-                    text.consume(text.len());
+                    feeder.consume(feeder.len());
                     return None;
                 }
             }else{
@@ -142,7 +148,7 @@ impl CommandParen {
 
         /* distinguish from (( )) */
         if ans.text.starts_with("((") && ans.text.ends_with("))") {
-            text.rewind(backup);
+            feeder.rewind(backup);
             return None;
         }
 
@@ -151,10 +157,9 @@ impl CommandParen {
         }
 
         loop {
-            //let d = text.scanner_blank();
-            ans.text += &text.consume_blank();
+            ans.text += &feeder.consume_blank();
 
-            if let Some(r) = Redirect::parse(text, core){
+            if let Some(r) = Redirect::parse(feeder, core){
                 ans.text += &r.text;
                 ans.fds.redirects.push(Box::new(r));
             }else{
