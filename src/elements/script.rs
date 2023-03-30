@@ -52,12 +52,30 @@ impl Script {
         }
     }
 
+    fn check_end(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+        /*
+        if core.nest.len() == 0 {
+            return feeder.len() == 0;
+        }*/
+
+        if let Some(begin) = core.nest.pop() {
+            core.nest.push(begin.clone());
+            if begin == "(" {
+                return feeder.starts_with(")");
+            }else if begin == "{" {
+                return feeder.starts_with("}");
+            }else{
+                return true;
+            }
+        }
+        true
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
         if feeder.len() == 0 {
             return None;
         };
     
-        //if feeder.starts_with(")") {
         if Self::unexpected_symbol(feeder) {
             eprintln!("Unexpected symbol: {}", feeder.consume(feeder.len()).trim_end());
             core.set_var("?", "2");
@@ -68,7 +86,9 @@ impl Script {
         let mut ans = Script::new();
         while Self::eat_job(feeder, core, &mut ans) {}
 
-        if ans.list.len() > 0 {
+        ans.text += &feeder.consume_blank_return();
+
+        if ans.list.len() > 0 && Self::check_end(feeder, core) {
             Some( ans )
         }else{
             feeder.rewind(backup);

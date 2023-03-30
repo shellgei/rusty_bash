@@ -35,10 +35,10 @@ pub struct CommandBrace {
 }
 
 impl Command for CommandBrace {
-    fn exec_elems(&mut self, conf: &mut ShellCore) {
-             self.script.exec(conf);
+    fn exec_elems(&mut self, core: &mut ShellCore) {
+             self.script.exec(core);
              if ! self.fds.no_connection() {
-                 exit(conf.vars["?"].parse::<i32>().unwrap());
+                 exit(core.vars["?"].parse::<i32>().unwrap());
              }
     }
 
@@ -52,8 +52,8 @@ impl Command for CommandBrace {
     fn set_group_leader(&mut self) { self.group_leader = true; }
     fn no_connection(&self) -> bool { self.fds.no_connection() }
 
-    fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
-        self.fds.set_child_io(conf)
+    fn set_child_io(&mut self, core: &mut ShellCore) -> Result<(), String> {
+        self.fds.set_child_io(core)
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
@@ -81,10 +81,12 @@ impl CommandBrace {
         }
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandBrace> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<CommandBrace> {
         if ! text.starts_with("{") {
             return None;
         }
+
+        core.nest.push("{".to_string());
 
         let mut backup = text.clone();
         let mut ans;
@@ -92,9 +94,10 @@ impl CommandBrace {
 
         loop {
             text.consume(1);
-            if let Some(s) = Script::parse(text, conf) {
+            if let Some(s) = Script::parse(text, core) {
                 if ! tail_check(&s.text){
                     text.rewind(backup);
+                    core.nest.pop();
                     return None;
                 }
     
@@ -102,10 +105,11 @@ impl CommandBrace {
                 ans = CommandBrace::new(s);
                 ans.text = text;
             }else{
-                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
+                (backup, input_success) = text.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     eprintln!("ESC");
                     text.consume(text.len());
+                    core.nest.pop();
                     return None;
                 }
                 continue;
@@ -113,9 +117,10 @@ impl CommandBrace {
     
            // if text.len() == 0 || text.nth(0) != '}' {
             if ! text.starts_with("}") {
-                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
+                (backup, input_success) = text.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     text.consume(text.len());
+                    core.nest.pop();
                     return None;
                 }
             }else{
@@ -128,19 +133,15 @@ impl CommandBrace {
         loop {
             ans.text += &text.consume_blank();
 
-            if let Some(r) = Redirect::parse(text, conf){
+            if let Some(r) = Redirect::parse(text, core){
                     ans.text += &r.text;
                     ans.fds.redirects.push(Box::new(r));
             }else{
                 break;
             }
         }
-        /*
-        if let Some(e) = Eoc::parse(text){
-            ans.text += &e.text;
-            ans.eoc = Some(e);
-        }*/
 
+        core.nest.pop();
         Some(ans)
     }
 }
