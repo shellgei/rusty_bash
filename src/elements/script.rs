@@ -66,7 +66,7 @@ impl Script {
     }
 
     fn check_end(feeder: &mut Feeder, core: &mut ShellCore, empty: bool) -> EndStatus {
-        let ends = vec![")", "}"];
+        let ends = vec![")", "}", "then"];
 
         if let Some(begin) = core.nest.pop() {
             core.nest.push(begin.clone());
@@ -74,6 +74,8 @@ impl Script {
                 return Self::check_nest(feeder, &vec![")"], &ends, empty);
             }else if begin == "{" {
                 return Self::check_nest(feeder, &vec!["}"], &ends, empty);
+            }else if begin == "if" || begin == "elif" {
+                return Self::check_nest(feeder, &vec!["then"], &ends, empty);
             }else{
                 return EndStatus::NormalEnd;
             }
