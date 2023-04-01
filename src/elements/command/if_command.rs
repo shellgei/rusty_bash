@@ -100,15 +100,14 @@ impl CommandIf {
     }
 
     fn eat_else_fi(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
-        ans.else_do = if let Some(s) = Script::parse(text, core) {
+        if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
-            Some(s)
+            ans.else_do = Some(s);
+            ans.text += &text.consume(2); //always "fi"
+            true 
         }else{
-            return false;
-        };
-
-        ans.text += &text.consume(2); //always "fi"
-        true 
+            false
+        }
     }
 
     fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
