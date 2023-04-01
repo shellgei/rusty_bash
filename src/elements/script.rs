@@ -4,6 +4,12 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::job::Job;
 
+enum EndStatus{
+    UnexpectedSymbol(String),
+    NeedMoreLine,
+    NormalEnd,
+}
+
 #[derive(Debug)]
 pub struct Script {
     pub list: Vec<Job>,
@@ -29,6 +35,7 @@ impl Script {
         }
     }
 
+    /*
     fn unexpected_symbol(feeder: &mut Feeder) -> bool {
         if feeder.len() == 0 {
             return false;
@@ -39,7 +46,7 @@ impl Script {
         }
 
         false
-    }
+    }*/
 
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool { 
         ans.text += &feeder.consume_blank();
@@ -52,18 +59,44 @@ impl Script {
         }
     }
 
-    fn check_end(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+    fn check_end(feeder: &mut Feeder, core: &mut ShellCore, empty: bool) -> EndStatus {
         if let Some(begin) = core.nest.pop() {
             core.nest.push(begin.clone());
             if begin == "(" {
-                return feeder.starts_with(")");
+                if feeder.starts_with(")"){
+                    if empty {
+                        return EndStatus::UnexpectedSymbol(")".to_string());
+                    }
+                    return EndStatus::NormalEnd;
+                }else if feeder.starts_with("}"){
+                    return EndStatus::UnexpectedSymbol("}".to_string());
+                }else{
+                    return EndStatus::NeedMoreLine;
+                }
             }else if begin == "{" {
-                return feeder.starts_with("}");
+                if feeder.starts_with("}"){
+                    if empty {
+                        return EndStatus::UnexpectedSymbol("}".to_string());
+                    }
+                    return EndStatus::NormalEnd;
+                }else if feeder.starts_with(")"){
+                    return EndStatus::UnexpectedSymbol(")".to_string());
+                }else{
+                    return EndStatus::NeedMoreLine;
+                }
             }else{
-                return true;
+                return EndStatus::NormalEnd;
             }
         }
-        true
+
+        if feeder.starts_with(")"){
+            return EndStatus::UnexpectedSymbol(")".to_string());
+        }
+        if feeder.starts_with("}"){
+            return EndStatus::UnexpectedSymbol("}".to_string());
+        }
+
+        return EndStatus::NormalEnd;
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
@@ -71,12 +104,6 @@ impl Script {
             return None;
         };
     
-        if Self::unexpected_symbol(feeder) {
-            eprintln!("Unexpected symbol: {}", feeder.consume(feeder.len()).trim_end());
-            core.set_var("?", "2");
-            return None;
-        }
-
         let mut ans = Script::new();
         loop{ 
             if Self::eat_job(feeder, core, &mut ans){
@@ -84,18 +111,26 @@ impl Script {
             }
             ans.text += &feeder.consume_blank_return();
 
-            if Self::check_end(feeder, core) {
-                if ans.list.len() > 0 {
+            match Self::check_end(feeder, core, ans.list.len() == 0) {
+                EndStatus::UnexpectedSymbol(s) => {
+                    eprintln!("Unexpected symbol: {}", s);
+                    core.set_var("?", "2");
+                    feeder.consume(feeder.len());
+                    return None;
+                },
+                EndStatus::NeedMoreLine => {
+                    if ! feeder.feed_additional_line(core) {
+                        feeder.consume(feeder.len());
+                        return None;
+                    }
+                },
+                EndStatus::NormalEnd => {
+                    if ans.list.len() == 0 {
+                        core.set_var("?", "2");
+                        feeder.consume(feeder.len());
+                        return None;
+                    }
                     return Some( ans )
-                }else{
-                    //eprintln!("EMPTY");
-                    feeder.consume(feeder.len());
-                    return None;
-                }
-            }else{
-                if ! feeder.feed_additional_line(core) {
-                    feeder.consume(feeder.len());
-                    return None;
                 }
             }
         }
