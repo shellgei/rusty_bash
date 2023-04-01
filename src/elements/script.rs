@@ -85,16 +85,19 @@ impl Script {
             }
             ans.text += &feeder.consume_blank_return();
 
-            if ans.list.len() > 0 && Self::check_end(feeder, core) {
-                return Some( ans )
-            }else if ! Self::check_end(feeder, core) {
-                if ! feeder.feed_additional_line(core) {
+            if Self::check_end(feeder, core) {
+                if ans.list.len() > 0 {
+                    return Some( ans )
+                }else{
+                    //eprintln!("EMPTY");
                     feeder.consume(feeder.len());
                     return None;
                 }
             }else{
-                feeder.rewind(backup);
-                return None;
+                if ! feeder.feed_additional_line(core) {
+                    feeder.consume(feeder.len());
+                    return None;
+                }
             }
         }
     }
