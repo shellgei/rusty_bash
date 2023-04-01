@@ -100,11 +100,11 @@ impl CommandBrace {
 
         core.nest.push("{".to_string());
 
-        let mut backup = feeder.clone();
-        let mut ans;
-        let mut input_success;
+        let backup = feeder.clone();
+        let mut ans = CommandBrace::new();
+        //let mut input_success;
 
-        loop {
+        //loop {
             feeder.consume(1);
             if let Some(s) = Script::parse(feeder, core) {
                 if ! tail_check(&s.text){
@@ -114,31 +114,22 @@ impl CommandBrace {
                 }
     
                 let text = "{".to_owned() + &s.text.clone() + "}";
-                ans = CommandBrace::new();
                 ans.script = Some(s);
                 ans.text = text;
             }else{
-                (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
-                if ! input_success {
-                    eprintln!("ESC");
-                    feeder.consume(feeder.len());
-                    core.nest.pop();
-                    return None;
-                }
-                continue;
+                feeder.consume(feeder.len());
+                core.nest.pop();
+                return None;
             }
     
             if ! feeder.starts_with("}") {
-                (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
-                if ! input_success {
-                    feeder.consume(feeder.len());
-                    core.nest.pop();
-                    return None;
-                }
-            }else{
+                feeder.consume(feeder.len());
+                core.nest.pop();
+                return None;
+            }/*else{
                 break;
-            }
-        }
+            }*/
+        //}
 
         feeder.consume(1);
 
