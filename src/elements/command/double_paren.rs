@@ -23,8 +23,8 @@ pub struct CommandDoubleParen {
 }
 
 impl Command for CommandDoubleParen {
-    fn exec(&mut self, conf: &mut ShellCore) {
-        self.substitution_text = calculate(self.expression.clone(), conf);
+    fn exec(&mut self, core: &mut ShellCore) {
+        self.substitution_text = calculate(self.expression.clone(), core);
 
         let status = if self.substitution_text == "0" {
             "1"
@@ -32,7 +32,7 @@ impl Command for CommandDoubleParen {
             "0"
         }.to_string();
 
-        conf.set_var("?", &status);
+        core.set_var("?", &status);
     }
 
     fn get_pid(&self) -> Option<Pid> { self.pid }
@@ -69,8 +69,8 @@ impl CommandDoubleParen {
         }
     }
 
-    // TODO: this function must parse ((1+$(echo a | wc -l)) for example. 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore, substitution: bool) -> Option<CommandDoubleParen> {
+    // TODO: this function must parse ((1+$(echo a | wc -l))) for example. 
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<CommandDoubleParen> {
         if text.len() < 2 || ! text.starts_with( "((") {
             return None;
         }
@@ -88,7 +88,7 @@ impl CommandDoubleParen {
                 ans.expression = text.consume(pos);
                 ans.text += &ans.expression.clone();
             }else{
-                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
+                (backup, input_success) = text.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     text.consume(text.len());
                     return None;
@@ -97,7 +97,7 @@ impl CommandDoubleParen {
             }
 
             if /*text.len() < 2 ||*/ ! text.starts_with( "))") {
-                (backup, input_success) = text.rewind_feed_backup(&backup, conf);
+                (backup, input_success) = text.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     text.consume(text.len());
                     return None;
@@ -112,18 +112,7 @@ impl CommandDoubleParen {
             return Some(ans);
         }
 
-        loop {
-            //let d = text.scanner_blank();
-            ans.text += &text.consume_blank();
-
-            if let Some(r) = Redirect::parse(text, conf){
-                    ans.text += &r.text;
-                    ans.fds.redirects.push(Box::new(r));
-            }else{
-                break;
-            }
-        }
-
+        while Redirect::eat_me(text, core, &mut ans.text, &mut ans.fds) {}
         Some(ans)
     }
 }

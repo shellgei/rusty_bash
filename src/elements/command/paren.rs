@@ -104,6 +104,7 @@ impl CommandParen {
         false
     }
 
+    /*
     fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandParen) -> bool {
         ans.text += &feeder.consume_blank();
 
@@ -114,7 +115,7 @@ impl CommandParen {
         }else{
             false
         }
-    }
+    }*/
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<CommandParen> {
         if ! feeder.starts_with("(") {
@@ -142,7 +143,8 @@ impl CommandParen {
         }
 
         if ! substitution {
-            while Self::eat_redirect(feeder, core, &mut ans) {}
+            while  Redirect::eat_me(feeder, core, &mut ans.text, &mut ans.fds) {}
+       //     while Self::eat_redirect(feeder, core, &mut ans) {}
         }
 
         core.nest.pop();

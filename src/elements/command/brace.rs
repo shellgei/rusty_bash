@@ -81,18 +81,6 @@ impl CommandBrace {
         }
     }
 
-    fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandBrace) -> bool {
-        ans.text += &feeder.consume_blank();
-
-        if let Some(r) = Redirect::parse(feeder, core){
-            ans.text += &r.text;
-            ans.fds.redirects.push(Box::new(r));
-            true
-        }else{
-            false
-        }
-    }
-
     fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandBrace) -> bool {
         if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text.clone();
@@ -122,7 +110,7 @@ impl CommandBrace {
 
         ans.text += &feeder.consume(1);
 
-        while Self::eat_redirect(feeder, core, &mut ans) {}
+        while  Redirect::eat_me(feeder, core, &mut ans.text, &mut ans.fds) {}
 
         core.nest.pop();
         Some(ans)

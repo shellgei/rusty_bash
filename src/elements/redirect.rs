@@ -6,6 +6,7 @@ use crate::Feeder;
 use crate::ShellCore;
 use crate::operators::RedirectOp;
 use crate::elements::word::Word;
+use crate::FileDescs;
 
 #[derive(Debug)]
 pub struct Redirect {
@@ -85,5 +86,17 @@ impl Redirect {
         };
 
         Some(ans)
+    }
+
+    pub fn eat_me(feeder: &mut Feeder, core: &mut ShellCore, text: &mut String, fds: &mut FileDescs) -> bool {
+        text.push_str(&feeder.consume_blank());
+
+        if let Some(r) = Redirect::parse(feeder, core){
+            text.push_str(&r.text.clone());
+            fds.redirects.push(Box::new(r));
+            true
+        }else{
+            false
+        }
     }
 }

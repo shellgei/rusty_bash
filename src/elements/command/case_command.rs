@@ -43,23 +43,23 @@ impl Command for CommandCase {
         self.fds.prevpipein = pprev;
     }
 
-    fn set_child_io(&mut self, conf: &mut ShellCore)  -> Result<(), String> {
-        self.fds.set_child_io(conf)
+    fn set_child_io(&mut self, core: &mut ShellCore)  -> Result<(), String> {
+        self.fds.set_child_io(core)
     }
 
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
     fn get_text(&self) -> String { self.text.clone() }
 
-    fn exec_elems(&mut self, conf: &mut ShellCore) {
-        let word_str = self.word.eval(conf).join(" ");
+    fn exec_elems(&mut self, core: &mut ShellCore) {
+        let word_str = self.word.eval(core).join(" ");
 
         for (cond, doing) in &mut self.conddo {
             let mut flag = false;
             for c in cond {
                 if glob_match(c, &word_str) {
                     if let Some(d) = doing {
-                        d.exec(conf);
+                        d.exec(core);
                     }
                     flag = true;
                     break;
@@ -85,9 +85,9 @@ impl CommandCase {
     }
 
 
-    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandCase) -> bool {
+    fn parse_cond_do_pair(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandCase) -> bool {
         let mut conds = vec![];
-        ans.text += &text.request_next_line(conf);
+        ans.text += &text.request_next_line(core);
 
         loop {
             let pos = text.scanner_until_escape("|)");
@@ -106,18 +106,18 @@ impl CommandCase {
         }
 
         ans.text += &text.consume(1);
-        ans.text += &text.request_next_line(conf);
+        ans.text += &text.request_next_line(core);
 
         let doing = if text.len() >= 2 && text.starts_with( ";;") {
             None
-        }else if let Some(s) = Script::parse(text, conf) {
+        }else if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
             Some(s)
         }else{
             return false;
         };
 
-        ans.text += &text.request_next_line(conf);
+        ans.text += &text.request_next_line(core);
 
         if text.len() >= 2 && text.starts_with( ";;") {
             ans.text += &text.consume(2);
@@ -127,7 +127,7 @@ impl CommandCase {
         true
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandCase> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<CommandCase> {
         if text.len() < 4 || ! text.starts_with( "case") {
             return None;
         }
@@ -135,7 +135,7 @@ impl CommandCase {
         let backup = text.clone();
         let ans_text = text.consume(4) + &text.consume_blank();
 
-        let word = if let Some(a) = Word::parse(text, conf, false) {
+        let word = if let Some(a) = Word::parse(text, core, false) {
             a
         }else{
             text.rewind(backup);
@@ -156,7 +156,7 @@ impl CommandCase {
 
         loop {
             ans.text += &text.consume_blank_return();
-            ans.text += &text.request_next_line(conf);
+            ans.text += &text.request_next_line(core);
             ans.text += &text.consume_blank_return();
 
             if text.len() >= 4 && text.starts_with( "esac") {
@@ -164,27 +164,13 @@ impl CommandCase {
                 break;
             }
 
-            if ! CommandCase::parse_cond_do_pair(text, conf, &mut ans) {
+            if ! CommandCase::parse_cond_do_pair(text, core, &mut ans) {
                 text.rewind(backup);
                 return None;
             }
         }
 
-        loop {
-            ans.text += &text.consume_blank();
-
-            if let Some(r) = Redirect::parse(text, conf){
-                ans.text += &r.text;
-                ans.fds.redirects.push(Box::new(r));
-            }else{
-                break;
-            }
-        }
-        /*
-        if let Some(e) = Eoc::parse(text){
-            ans.text += &e.text;
-            ans.eoc = Some(e);
-        }*/
+        while Redirect::eat_me(text, core, &mut ans.text, &mut ans.fds) {}
 
         if ans.conddo.len() > 0 {
             Some(ans)

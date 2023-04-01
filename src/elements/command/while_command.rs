@@ -37,23 +37,23 @@ impl Command for CommandWhile {
         self.fds.prevpipein = pprev;
     }
 
-    fn set_child_io(&mut self, conf: &mut ShellCore) -> Result<(), String> {
-        self.fds.set_child_io(conf)
+    fn set_child_io(&mut self, core: &mut ShellCore) -> Result<(), String> {
+        self.fds.set_child_io(core)
     }
 
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
     fn get_text(&self) -> String { self.text.clone() }
 
-    fn exec_elems(&mut self, conf: &mut ShellCore) {
+    fn exec_elems(&mut self, core: &mut ShellCore) {
         loop {
             if let Some((cond, doing)) = &mut self.conddo {
-                cond.exec(conf);
-                if conf.vars["?"] != "0" {
-                    conf.set_var("?", "0");
+                cond.exec(core);
+                if core.vars["?"] != "0" {
+                    core.set_var("?", "0");
                     break;
                 }
-                doing.exec(conf);
+                doing.exec(core);
             }
         }
     }
@@ -71,38 +71,38 @@ impl CommandWhile {
     }
 
 
-    fn parse_cond_do_pair(text: &mut Feeder, conf: &mut ShellCore, ans: &mut CommandWhile) -> bool {
-        ans.text += &text.request_next_line(conf);
+    fn parse_cond_do_pair(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandWhile) -> bool {
+        ans.text += &text.request_next_line(core);
 
-        let cond = if let Some(s) = Script::parse(text, conf) {
+        let cond = if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
             s
         }else{
             return false;
         };
 
-        ans.text += &text.request_next_line(conf);
+        ans.text += &text.request_next_line(core);
 
         if text.starts_with( "do"){
             ans.text += &text.consume(2);
         }
 
-        ans.text += &text.request_next_line(conf);
+        ans.text += &text.request_next_line(core);
 
-        let doing = if let Some(s) = Script::parse(text, conf) {
+        let doing = if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
             s
         }else{
             return false;
         };
 
-        ans.text += &text.request_next_line(conf);
+        ans.text += &text.request_next_line(core);
 
         ans.conddo = Some( (cond, doing) );
         true
     }
 
-    pub fn parse(text: &mut Feeder, conf: &mut ShellCore) -> Option<CommandWhile> {
+    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<CommandWhile> {
         if text.len() < 5 || ! text.starts_with( "while") {
             return None;
         }
@@ -112,7 +112,7 @@ impl CommandWhile {
         let mut ans = CommandWhile::new();
         ans.text += &text.consume(5);
 
-        if ! CommandWhile::parse_cond_do_pair(text, conf, &mut ans) {
+        if ! CommandWhile::parse_cond_do_pair(text, core, &mut ans) {
             text.rewind(backup);
             return None;
         }
@@ -124,22 +124,7 @@ impl CommandWhile {
             return None;
         }
 
-        loop {
-            ans.text += &text.consume_blank();
-
-            if let Some(r) = Redirect::parse(text, conf){
-                    ans.text += &r.text;
-                    ans.fds.redirects.push(Box::new(r));
-            }else{
-                break;
-            }
-        }
-        /*
-        if let Some(e) = Eoc::parse(text){
-            ans.text += &e.text;
-            ans.eoc = Some(e);
-        }*/
-
+        while Redirect::eat_me(text, core, &mut ans.text, &mut ans.fds) {}
         Some(ans)
     }
 }
