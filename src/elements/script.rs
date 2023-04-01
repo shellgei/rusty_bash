@@ -79,23 +79,23 @@ impl Script {
 
         let backup = feeder.clone();
         let mut ans = Script::new();
-        while Self::eat_job(feeder, core, &mut ans) {}
+        loop{ 
+            if Self::eat_job(feeder, core, &mut ans){
+                continue;
+            }
+            ans.text += &feeder.consume_blank_return();
 
-        ans.text += &feeder.consume_blank_return();
-
-        if ans.list.len() > 0 && Self::check_end(feeder, core) {
-            Some( ans )
-        }else if ! Self::check_end(feeder, core) {
-            feeder.rewind(backup.clone());
-            if ! feeder.feed_additional_line(core) {
-                feeder.consume(feeder.len());
-                //core.nest.pop();
+            if ans.list.len() > 0 && Self::check_end(feeder, core) {
+                return Some( ans )
+            }else if ! Self::check_end(feeder, core) {
+                if ! feeder.feed_additional_line(core) {
+                    feeder.consume(feeder.len());
+                    return None;
+                }
+            }else{
+                feeder.rewind(backup);
                 return None;
             }
-            return Self::parse(feeder, core);
-        }else{
-            feeder.rewind(backup);
-            None
         }
     }
 }
