@@ -93,6 +93,16 @@ impl CommandBrace {
         }
     }
 
+    fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandBrace) -> bool {
+        if let Some(s) = Script::parse(feeder, core) {
+            ans.text += &s.text.clone();
+            ans.script = Some(s);
+            return tail_check(&ans.text);
+        }else{
+            return false;
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<CommandBrace> {
         if ! feeder.starts_with("{") {
             return None;
@@ -102,49 +112,17 @@ impl CommandBrace {
 
         let backup = feeder.clone();
         let mut ans = CommandBrace::new();
-        //let mut input_success;
+        ans.text += &feeder.consume(1);
 
-        //loop {
-            feeder.consume(1);
-            if let Some(s) = Script::parse(feeder, core) {
-                if ! tail_check(&s.text){
-                    feeder.rewind(backup);
-                    core.nest.pop();
-                    return None;
-                }
-    
-                let text = "{".to_owned() + &s.text.clone() + "}";
-                ans.script = Some(s);
-                ans.text = text;
-            }else{
-                feeder.consume(feeder.len());
-                core.nest.pop();
-                return None;
-            }
-    
-            if ! feeder.starts_with("}") {
-                feeder.consume(feeder.len());
-                core.nest.pop();
-                return None;
-            }/*else{
-                break;
-            }*/
-        //}
+        if ! Self::eat_script(feeder, core, &mut ans){
+            feeder.rewind(backup);
+            core.nest.pop();
+            return None;
+        }
 
-        feeder.consume(1);
+        ans.text += &feeder.consume(1);
 
         while Self::eat_redirect(feeder, core, &mut ans) {}
-        /*
-        loop {
-            ans.feeder += &feeder.consume_blank();
-
-            if let Some(r) = Redirect::parse(feeder, core){
-                    ans.feeder += &r.feeder;
-                    ans.fds.redirects.push(Box::new(r));
-            }else{
-                break;
-            }
-        }*/
 
         core.nest.pop();
         Some(ans)

@@ -7,7 +7,7 @@ use nix::unistd::{Pid, fork, ForkResult};
 use nix::unistd;
 use std::os::unix::prelude::RawFd;
 use crate::elements::script::Script;
-use crate::operators::ControlOperator;
+//use crate::operators::ControlOperator;
 use std::process::exit;
 use crate::elements::redirect::Redirect;
 use crate::file_descs::*;
@@ -95,21 +95,12 @@ impl CommandParen {
         }
     }
 
-    fn eat_script_and_end_paren(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandParen) -> bool {
+    fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandParen) -> bool {
         if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text;
-
-            let (n, op) = feeder.scanner_control_op();
-            if let Some(p) = op  {
-                if p != ControlOperator::RightParen {
-                    return false;
-                }
-            }
-            ans.text += &feeder.consume(n);
             ans.script = Some(s);
             return true;
         }
-
         false
     }
 
@@ -135,11 +126,13 @@ impl CommandParen {
         let mut ans = CommandParen::new();
 
         ans.text = feeder.consume(1);
-        if ! Self::eat_script_and_end_paren(feeder, core, &mut ans){
+        if ! Self::eat_script(feeder, core, &mut ans){
             feeder.rewind(backup);
             core.nest.pop();
             return None;
         }
+
+        ans.text += &feeder.consume(1);
 
         /* distinguish from (( )) */
         if ans.text.starts_with("((") && ans.text.ends_with("))") {
