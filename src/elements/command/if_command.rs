@@ -77,12 +77,10 @@ impl CommandIf {
 
 
     fn parse_if_then_pair(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
-        core.nest.push("if".to_string());
         let cond = if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text;
             s
         }else{
-            core.nest.pop();
             return false;
         };
 
@@ -94,12 +92,10 @@ impl CommandIf {
             ans.text += &s.text;
             s
         }else{
-            core.nest.pop();
             return false;
         };
 
         ans.ifthen.push( (cond, doing) );
-        core.nest.pop();
         true
     }
 
@@ -148,10 +144,13 @@ impl CommandIf {
         ans.text += &feeder.consume(2);
 
         loop {
+            core.nest.push("if".to_string());
             if ! CommandIf::parse_if_then_pair(feeder, core, &mut ans) {
                 feeder.rewind(backup);
+                core.nest.pop();
                 return None;
             }
+            core.nest.pop();
 
             if feeder.starts_with( "fi"){
                 ans.text += &feeder.consume(2);
