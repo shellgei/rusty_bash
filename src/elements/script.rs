@@ -77,7 +77,6 @@ impl Script {
             return None;
         }
 
-        let backup = feeder.clone();
         let mut ans = Script::new();
         loop{ 
             if Self::eat_job(feeder, core, &mut ans){
