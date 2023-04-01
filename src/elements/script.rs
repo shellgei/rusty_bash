@@ -80,6 +80,10 @@ impl Script {
                 return Self::check_nest(feeder, &vec!["else", "fi", "elif"], &ends, empty);
             }else if begin == "else" {
                 return Self::check_nest(feeder, &vec!["fi"], &ends, empty);
+            }else if begin == "while" {
+                return Self::check_nest(feeder, &vec!["do"], &ends, empty);
+            }else if begin == "do" {
+                return Self::check_nest(feeder, &vec!["done"], &ends, empty);
             }else{
                 return EndStatus::NormalEnd;
             }

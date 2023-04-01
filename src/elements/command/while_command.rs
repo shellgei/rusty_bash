@@ -71,39 +71,35 @@ impl CommandWhile {
     }
 
 
-    fn parse_cond_do_pair(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandWhile) -> bool {
-        ans.text += &text.request_next_line(core);
-
+    fn eat_cond_do_pair(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandWhile) -> bool {
+        core.nest.push("while".to_string());
         let cond = if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
             s
         }else{
+            core.nest.pop();
             return false;
         };
 
-        ans.text += &text.request_next_line(core);
-
-        if text.starts_with( "do"){
-            ans.text += &text.consume(2);
-        }
-
-        ans.text += &text.request_next_line(core);
+        core.nest.pop();
+        ans.text += &text.consume(2); //always "do"
+        core.nest.push("do".to_string());
 
         let doing = if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
             s
         }else{
+            core.nest.pop();
             return false;
         };
 
-        ans.text += &text.request_next_line(core);
-
         ans.conddo = Some( (cond, doing) );
+        core.nest.pop();
         true
     }
 
     pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<CommandWhile> {
-        if text.len() < 5 || ! text.starts_with( "while") {
+        if text.len() < 5 || ! text.starts_with("while") {
             return None;
         }
 
@@ -112,17 +108,12 @@ impl CommandWhile {
         let mut ans = CommandWhile::new();
         ans.text += &text.consume(5);
 
-        if ! CommandWhile::parse_cond_do_pair(text, core, &mut ans) {
+        if ! CommandWhile::eat_cond_do_pair(text, core, &mut ans) {
             text.rewind(backup);
             return None;
         }
 
-        if text.starts_with( "done"){
-            ans.text += &text.consume(4);
-        }else{
-            text.rewind(backup);
-            return None;
-        }
+        ans.text += &text.consume(4); //always "done"
 
         while Redirect::eat_me(text, core, &mut ans.text, &mut ans.fds) {}
         Some(ans)
