@@ -81,22 +81,34 @@ impl CommandBrace {
         }
     }
 
-    pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<CommandBrace> {
-        if ! text.starts_with("{") {
+    fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandBrace) -> bool {
+        ans.text += &feeder.consume_blank();
+
+        if let Some(r) = Redirect::parse(feeder, core){
+            ans.text += &r.text;
+            ans.fds.redirects.push(Box::new(r));
+            true
+        }else{
+            false
+        }
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<CommandBrace> {
+        if ! feeder.starts_with("{") {
             return None;
         }
 
         core.nest.push("{".to_string());
 
-        let mut backup = text.clone();
+        let mut backup = feeder.clone();
         let mut ans;
         let mut input_success;
 
         loop {
-            text.consume(1);
-            if let Some(s) = Script::parse(text, core) {
+            feeder.consume(1);
+            if let Some(s) = Script::parse(feeder, core) {
                 if ! tail_check(&s.text){
-                    text.rewind(backup);
+                    feeder.rewind(backup);
                     core.nest.pop();
                     return None;
                 }
@@ -105,21 +117,20 @@ impl CommandBrace {
                 ans = CommandBrace::new(s);
                 ans.text = text;
             }else{
-                (backup, input_success) = text.rewind_feed_backup(&backup, core);
+                (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
                 if ! input_success {
                     eprintln!("ESC");
-                    text.consume(text.len());
+                    feeder.consume(feeder.len());
                     core.nest.pop();
                     return None;
                 }
                 continue;
             }
     
-           // if text.len() == 0 || text.nth(0) != '}' {
-            if ! text.starts_with("}") {
-                (backup, input_success) = text.rewind_feed_backup(&backup, core);
+            if ! feeder.starts_with("}") {
+                (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
                 if ! input_success {
-                    text.consume(text.len());
+                    feeder.consume(feeder.len());
                     core.nest.pop();
                     return None;
                 }
@@ -128,18 +139,20 @@ impl CommandBrace {
             }
         }
 
-        text.consume(1);
+        feeder.consume(1);
 
+        while Self::eat_redirect(feeder, core, &mut ans) {}
+        /*
         loop {
-            ans.text += &text.consume_blank();
+            ans.feeder += &feeder.consume_blank();
 
-            if let Some(r) = Redirect::parse(text, core){
-                    ans.text += &r.text;
+            if let Some(r) = Redirect::parse(feeder, core){
+                    ans.feeder += &r.feeder;
                     ans.fds.redirects.push(Box::new(r));
             }else{
                 break;
             }
-        }
+        }*/
 
         core.nest.pop();
         Some(ans)

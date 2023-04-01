@@ -53,11 +53,6 @@ impl Script {
     }
 
     fn check_end(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        /*
-        if core.nest.len() == 0 {
-            return feeder.len() == 0;
-        }*/
-
         if let Some(begin) = core.nest.pop() {
             core.nest.push(begin.clone());
             if begin == "(" {
@@ -91,10 +86,10 @@ impl Script {
         if ans.list.len() > 0 && Self::check_end(feeder, core) {
             Some( ans )
         }else if ! Self::check_end(feeder, core) {
-            let (_, input_success) = feeder.rewind_feed_backup(&backup, core);
-            if ! input_success {
+            feeder.rewind(backup.clone());
+            if ! feeder.feed_additional_line(core) {
                 feeder.consume(feeder.len());
-                core.nest.pop();
+                //core.nest.pop();
                 return None;
             }
             return Self::parse(feeder, core);
