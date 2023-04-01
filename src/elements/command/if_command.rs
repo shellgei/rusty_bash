@@ -140,29 +140,26 @@ impl CommandIf {
         let backup = feeder.clone();
         ans.text += &feeder.consume(2);
 
-        loop {
+        loop { // read if ... then ... elif ... then ...
             if ! CommandIf::eat_if_then(feeder, core, &mut ans) {
                 feeder.rewind(backup);
                 return None;
             }
-
-            if feeder.starts_with( "fi"){
-                ans.text += &feeder.consume(2);
-                break;
-            }else if feeder.starts_with( "elif"){
+            if feeder.starts_with("elif"){
                 ans.text += &feeder.consume(4);
                 continue;
-            }else if feeder.starts_with("else"){
-                ans.text += &feeder.consume(4);
-                if ! CommandIf::eat_else_fi(feeder, core, &mut ans){
-                    feeder.rewind(backup);
-                    return None;
-                }
-                break;
             }
+            break;
+        }
 
-            feeder.rewind(backup);
-            return None;
+        if feeder.starts_with("fi"){
+            ans.text += &feeder.consume(2);
+        }else if feeder.starts_with("else"){
+            ans.text += &feeder.consume(4);
+            if ! CommandIf::eat_else_fi(feeder, core, &mut ans){
+                feeder.rewind(backup);
+                return None;
+            }
         }
 
         while Self::eat_redirect(feeder, core, &mut ans) {}
