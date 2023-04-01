@@ -26,7 +26,7 @@ fn tail_check(s: &String) -> bool{
 
 #[derive(Debug)]
 pub struct CommandBrace {
-    pub script: Script,
+    pub script: Option<Script>,
     text: String,
     pid: Option<Pid>, 
     pub substitution_text: String,
@@ -36,7 +36,7 @@ pub struct CommandBrace {
 
 impl Command for CommandBrace {
     fn exec_elems(&mut self, core: &mut ShellCore) {
-             self.script.exec(core);
+             self.script.as_mut().unwrap().exec(core);
              if ! self.fds.no_connection() {
                  exit(core.vars["?"].parse::<i32>().unwrap());
              }
@@ -70,9 +70,9 @@ impl Command for CommandBrace {
 }
 
 impl CommandBrace {
-    pub fn new(script: Script) -> CommandBrace{
+    pub fn new() -> CommandBrace{
         CommandBrace {
-            script: script,
+            script: None,
             pid: None,
             text: "".to_string(),
             substitution_text: "".to_string(),
@@ -114,7 +114,8 @@ impl CommandBrace {
                 }
     
                 let text = "{".to_owned() + &s.text.clone() + "}";
-                ans = CommandBrace::new(s);
+                ans = CommandBrace::new();
+                ans.script = Some(s);
                 ans.text = text;
             }else{
                 (backup, input_success) = feeder.rewind_feed_backup(&backup, core);
