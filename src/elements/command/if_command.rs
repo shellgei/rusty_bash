@@ -77,10 +77,12 @@ impl CommandIf {
 
 
     fn eat_if_then(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
+        core.nest.push("if".to_string());
         let cond = if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text;
             s
         }else{
+            core.nest.pop();
             return false;
         };
 
@@ -92,22 +94,28 @@ impl CommandIf {
             ans.text += &s.text;
             s
         }else{
+            core.nest.pop();
             return false;
         };
 
         ans.ifthen.push( (cond, doing) );
+        core.nest.pop();
         true
     }
 
     fn eat_else_fi(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
-        if let Some(s) = Script::parse(text, core) {
+        core.nest.push("else".to_string());
+        let result = if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
             ans.else_do = Some(s);
             ans.text += &text.consume(2); //always "fi"
             true 
         }else{
             false
-        }
+        };
+
+        core.nest.pop();
+        result
     }
 
     fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
@@ -133,13 +141,10 @@ impl CommandIf {
         ans.text += &feeder.consume(2);
 
         loop {
-            core.nest.push("if".to_string());
             if ! CommandIf::eat_if_then(feeder, core, &mut ans) {
                 feeder.rewind(backup);
-                core.nest.pop();
                 return None;
             }
-            core.nest.pop();
 
             if feeder.starts_with( "fi"){
                 ans.text += &feeder.consume(2);
@@ -149,13 +154,10 @@ impl CommandIf {
                 continue;
             }else if feeder.starts_with("else"){
                 ans.text += &feeder.consume(4);
-                core.nest.push("else".to_string());
                 if ! CommandIf::eat_else_fi(feeder, core, &mut ans){
                     feeder.rewind(backup);
-                    core.nest.pop();
                     return None;
                 }
-                core.nest.pop();
                 break;
             }
 
