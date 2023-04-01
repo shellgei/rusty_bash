@@ -46,7 +46,7 @@ impl Script {
         }
     }
 
-    fn check_nest(feeder: &mut Feeder, ends: &Vec<&str>, ngs: &Vec<&str>, empty: bool) -> EndStatus {
+    fn check_nest(feeder: &mut Feeder, ends: &Vec<&str>, other_ends: &Vec<&str>, empty: bool) -> EndStatus {
         for end in ends {
             if feeder.starts_with(end){
                 if empty {
@@ -56,9 +56,9 @@ impl Script {
             }
         }
 
-        for ng in ngs {
-            if feeder.starts_with(ng){
-                return EndStatus::UnexpectedSymbol(ng.to_string());
+        for end in other_ends {
+            if feeder.starts_with(end){
+                return EndStatus::UnexpectedSymbol(end.to_string());
             }
         }
 
@@ -66,18 +66,20 @@ impl Script {
     }
 
     fn check_end(feeder: &mut Feeder, core: &mut ShellCore, empty: bool) -> EndStatus {
+        let ends = vec![")", "}"];
+
         if let Some(begin) = core.nest.pop() {
             core.nest.push(begin.clone());
             if begin == "(" {
-                return Self::check_nest(feeder, &vec![")"], &vec!["}"], empty);
+                return Self::check_nest(feeder, &vec![")"], &ends, empty);
             }else if begin == "{" {
-                return Self::check_nest(feeder, &vec!["}"], &vec![")"], empty);
+                return Self::check_nest(feeder, &vec!["}"], &ends, empty);
             }else{
                 return EndStatus::NormalEnd;
             }
         }
 
-        for token in vec![")", "}", "then", "elif", "fi", "else", "do", "esac", "done"] {
+        for token in ends {
             if feeder.starts_with(token){
                 return EndStatus::UnexpectedSymbol(token.to_string());
             }
