@@ -86,13 +86,9 @@ impl CommandIf {
             return false;
         };
 
+        ans.text += &feeder.consume(4); //always "then"
         core.nest.pop();
-        if ! feeder.starts_with("then"){
-            return false;
-        }
-
         core.nest.push("then".to_string());
-        ans.text += &feeder.consume(4);
 
         let doing = if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text;
@@ -102,14 +98,9 @@ impl CommandIf {
             return false;
         };
 
-        if feeder.starts_with("fi") || feeder.starts_with("else") || feeder.starts_with("elif") {
-            ans.ifthen.push( (cond, doing) );
-            core.nest.pop();
-            return true;
-        }else{
-            core.nest.pop();
-            return false;
-        }
+        ans.ifthen.push( (cond, doing) );
+        core.nest.pop();
+        true
     }
 
     fn parse_else_fi(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) {
