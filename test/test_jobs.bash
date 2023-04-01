@@ -42,7 +42,6 @@ echo $res | grep -F '[2]+ Stopped sleep 2 [2]+ Done sleep 2'  || err $LINENO
 res="$($com <<< 'sleep 1 || sleep 1 & jobs')"
 echo $res | grep -F 'sleep 1 || sleep 1 &'  || err $LINENO
 
-
 ### PRIORITY ###
 
 res="$($com <<< 'sleep 1 & sleep 2 & killall -SIGSTOP sleep ; jobs ; killall -SIGCONT sleep')"

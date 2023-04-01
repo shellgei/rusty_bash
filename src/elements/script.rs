@@ -35,19 +35,6 @@ impl Script {
         }
     }
 
-    /*
-    fn unexpected_symbol(feeder: &mut Feeder) -> bool {
-        if feeder.len() == 0 {
-            return false;
-        }
-
-        if let Some(_) =  ")}".find(feeder.nth(0)){
-            return true;
-        }
-
-        false
-    }*/
-
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool { 
         ans.text += &feeder.consume_blank();
         if let Some(j) =  Job::parse(feeder, core) {
@@ -59,41 +46,41 @@ impl Script {
         }
     }
 
+    fn check_nest(feeder: &mut Feeder, ends: &Vec<&str>, ngs: &Vec<&str>, empty: bool) -> EndStatus {
+        for end in ends {
+            if feeder.starts_with(end){
+                if empty {
+                    return EndStatus::UnexpectedSymbol(end.to_string());
+                }
+                return EndStatus::NormalEnd;
+            }
+        }
+
+        for ng in ngs {
+            if feeder.starts_with(ng){
+                return EndStatus::UnexpectedSymbol(ng.to_string());
+            }
+        }
+
+        return EndStatus::NeedMoreLine;
+    }
+
     fn check_end(feeder: &mut Feeder, core: &mut ShellCore, empty: bool) -> EndStatus {
         if let Some(begin) = core.nest.pop() {
             core.nest.push(begin.clone());
             if begin == "(" {
-                if feeder.starts_with(")"){
-                    if empty {
-                        return EndStatus::UnexpectedSymbol(")".to_string());
-                    }
-                    return EndStatus::NormalEnd;
-                }else if feeder.starts_with("}"){
-                    return EndStatus::UnexpectedSymbol("}".to_string());
-                }else{
-                    return EndStatus::NeedMoreLine;
-                }
+                return Self::check_nest(feeder, &vec![")"], &vec!["}"], empty);
             }else if begin == "{" {
-                if feeder.starts_with("}"){
-                    if empty {
-                        return EndStatus::UnexpectedSymbol("}".to_string());
-                    }
-                    return EndStatus::NormalEnd;
-                }else if feeder.starts_with(")"){
-                    return EndStatus::UnexpectedSymbol(")".to_string());
-                }else{
-                    return EndStatus::NeedMoreLine;
-                }
+                return Self::check_nest(feeder, &vec!["}"], &vec![")"], empty);
             }else{
                 return EndStatus::NormalEnd;
             }
         }
 
-        if feeder.starts_with(")"){
-            return EndStatus::UnexpectedSymbol(")".to_string());
-        }
-        if feeder.starts_with("}"){
-            return EndStatus::UnexpectedSymbol("}".to_string());
+        for token in vec![")", "}", "then", "elif", "fi", "else", "do", "esac", "done"] {
+            if feeder.starts_with(token){
+                return EndStatus::UnexpectedSymbol(token.to_string());
+            }
         }
 
         return EndStatus::NormalEnd;
@@ -113,7 +100,7 @@ impl Script {
 
             match Self::check_end(feeder, core, ans.list.len() == 0) {
                 EndStatus::UnexpectedSymbol(s) => {
-                    eprintln!("Unexpected symbol: {}", s);
+                    eprintln!("Unexpected token: {}", s);
                     core.set_var("?", "2");
                     feeder.consume(feeder.len());
                     return None;
