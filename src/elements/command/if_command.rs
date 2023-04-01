@@ -78,8 +78,6 @@ impl CommandIf {
 
     fn parse_if_then_pair(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
         core.nest.push("if".to_string());
-        feeder.feed_additional_line(core);
-
         let cond = if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text;
             s
@@ -88,39 +86,30 @@ impl CommandIf {
             return false;
         };
 
-
-       // ans.text += &feeder.consume_blank_return();
-        feeder.feed_additional_line(core);
-
         core.nest.pop();
         if ! feeder.starts_with("then"){
             return false;
         }
-            core.nest.push("then".to_string());
-            ans.text += &feeder.consume(4);
 
-        loop {
-            feeder.feed_additional_line(core);
+        core.nest.push("then".to_string());
+        ans.text += &feeder.consume(4);
 
-            let backup = feeder.clone();
-            let doing = if let Some(s) = Script::parse(feeder, core) {
-                ans.text += &s.text;
-                s
-            }else{
-                feeder.rewind(backup);
-                continue;
-            };
+        let doing = if let Some(s) = Script::parse(feeder, core) {
+            ans.text += &s.text;
+            s
+        }else{
+            core.nest.pop();
+            return false;
+        };
 
-            if feeder.starts_with("fi") || feeder.starts_with("else") || feeder.starts_with("elif") {
-                ans.ifthen.push( (cond, doing) );
-                break;
-            }else{
-                feeder.rewind(backup);
-                continue;
-            }
+        if feeder.starts_with("fi") || feeder.starts_with("else") || feeder.starts_with("elif") {
+            ans.ifthen.push( (cond, doing) );
+            core.nest.pop();
+            return true;
+        }else{
+            core.nest.pop();
+            return false;
         }
-        core.nest.pop();
-        true
     }
 
     fn parse_else_fi(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) {
@@ -158,7 +147,8 @@ impl CommandIf {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<CommandIf> {
-        if feeder.len() < 2 || ! feeder.starts_with( "if") {
+        //dbg!("if parse {:?}", &feeder);
+        if feeder.len() < 2 || ! feeder.starts_with("if") {
             return None;
         }
 
@@ -171,7 +161,7 @@ impl CommandIf {
                 feeder.rewind(backup);
                 return None;
             }
-    
+
             if feeder.starts_with( "fi"){
                 ans.text += &feeder.consume(2);
                 break;

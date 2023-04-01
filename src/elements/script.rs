@@ -76,6 +76,8 @@ impl Script {
                 return Self::check_nest(feeder, &vec!["}"], &ends, empty);
             }else if begin == "if" || begin == "elif" {
                 return Self::check_nest(feeder, &vec!["then"], &ends, empty);
+            }else if begin == "then" {
+                return Self::check_nest(feeder, &vec!["else", "fi", "elif"], &ends, empty);
             }else{
                 return EndStatus::NormalEnd;
             }
@@ -91,6 +93,7 @@ impl Script {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
+        //dbg!("{:?}", &feeder);
         if feeder.len() == 0 {
             return None;
         };
@@ -121,6 +124,7 @@ impl Script {
                         feeder.consume(feeder.len());
                         return None;
                     }
+         //           dbg!("get script: {:?}", &ans);
                     return Some( ans )
                 }
             }
