@@ -78,6 +78,8 @@ impl Script {
                 return Self::check_nest(feeder, &vec!["then"], &ends, empty);
             }else if begin == "then" {
                 return Self::check_nest(feeder, &vec!["else", "fi", "elif"], &ends, empty);
+            }else if begin == "else" {
+                return Self::check_nest(feeder, &vec!["fi"], &ends, empty);
             }else{
                 return EndStatus::NormalEnd;
             }

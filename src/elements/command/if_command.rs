@@ -76,7 +76,7 @@ impl CommandIf {
     }
 
 
-    fn parse_if_then_pair(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
+    fn eat_if_then(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
         let cond = if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text;
             s
@@ -99,26 +99,16 @@ impl CommandIf {
         true
     }
 
-    fn parse_else_fi(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) {
-        loop {
-            text.feed_additional_line(core);
-        
-            let backup = text.clone();
-            ans.else_do = if let Some(s) = Script::parse(text, core) {
-                ans.text += &s.text;
-                Some(s)
-            }else{
-                continue;
-            };
-    
-            if text.starts_with( "fi"){
-                 ans.text += &text.consume(2);
-                 break;
-            }else{
-                text.rewind(backup);
-                continue;
-            }
-        }
+    fn eat_else_fi(text: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
+        ans.else_do = if let Some(s) = Script::parse(text, core) {
+            ans.text += &s.text;
+            Some(s)
+        }else{
+            return false;
+        };
+
+        ans.text += &text.consume(2); //always "fi"
+        true 
     }
 
     fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut CommandIf) -> bool {
@@ -145,7 +135,7 @@ impl CommandIf {
 
         loop {
             core.nest.push("if".to_string());
-            if ! CommandIf::parse_if_then_pair(feeder, core, &mut ans) {
+            if ! CommandIf::eat_if_then(feeder, core, &mut ans) {
                 feeder.rewind(backup);
                 core.nest.pop();
                 return None;
@@ -158,9 +148,15 @@ impl CommandIf {
             }else if feeder.starts_with( "elif"){
                 ans.text += &feeder.consume(4);
                 continue;
-            }else if feeder.starts_with( "else"){
+            }else if feeder.starts_with("else"){
                 ans.text += &feeder.consume(4);
-                CommandIf::parse_else_fi(feeder, core, &mut ans);
+                core.nest.push("else".to_string());
+                if ! CommandIf::eat_else_fi(feeder, core, &mut ans){
+                    feeder.rewind(backup);
+                    core.nest.pop();
+                    return None;
+                }
+                core.nest.pop();
                 break;
             }
 
