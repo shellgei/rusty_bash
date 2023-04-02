@@ -47,21 +47,16 @@ impl Script {
     }
 
     fn check_nest(feeder: &mut Feeder, ends: &Vec<&str>, other_ends: &Vec<&str>, empty: bool) -> EndStatus {
-        for end in ends {
-            if feeder.starts_with(end){
-                if empty {
-                    return EndStatus::UnexpectedSymbol(end.to_string());
-                }
-                return EndStatus::NormalEnd;
-            }
-        }
-
-        for end in other_ends {
-            if feeder.starts_with(end){
+        if let Some(end) = ends.iter().find(|e| feeder.starts_with(e)) {
+            if empty {
                 return EndStatus::UnexpectedSymbol(end.to_string());
             }
+            return EndStatus::NormalEnd;
         }
 
+        if let Some(end) = other_ends.iter().find(|e| feeder.starts_with(e)) {
+            return EndStatus::UnexpectedSymbol(end.to_string());
+        }
         return EndStatus::NeedMoreLine;
     }
 
@@ -70,23 +65,16 @@ impl Script {
 
         if let Some(begin) = core.nest.pop() {
             core.nest.push(begin.clone());
-            if begin == "(" {
-                return Self::check_nest(feeder, &vec![")"], &ends, empty);
-            }else if begin == "{" {
-                return Self::check_nest(feeder, &vec!["}"], &ends, empty);
-            }else if begin == "if" || begin == "elif" {
-                return Self::check_nest(feeder, &vec!["then"], &ends, empty);
-            }else if begin == "then" {
-                return Self::check_nest(feeder, &vec!["else", "fi", "elif"], &ends, empty);
-            }else if begin == "else" {
-                return Self::check_nest(feeder, &vec!["fi"], &ends, empty);
-            }else if begin == "while" {
-                return Self::check_nest(feeder, &vec!["do"], &ends, empty);
-            }else if begin == "do" {
-                return Self::check_nest(feeder, &vec!["done"], &ends, empty);
-            }else{
-                return EndStatus::NormalEnd;
-            }
+            return match begin.as_ref() {
+                "(" => Self::check_nest(feeder, &vec![")"], &ends, empty),
+                "{" => Self::check_nest(feeder, &vec!["}"], &ends, empty),
+                "if" | "elif" => Self::check_nest(feeder, &vec!["then"], &ends, empty),
+                "then" => Self::check_nest(feeder, &vec!["else", "fi", "elif"], &ends, empty),
+                "else" => Self::check_nest(feeder, &vec!["fi"], &ends, empty),
+                "while" => Self::check_nest(feeder, &vec!["do"], &ends, empty),
+                "do" => Self::check_nest(feeder, &vec!["done"], &ends, empty),
+                _ => EndStatus::NormalEnd,
+            };
         }
 
         for token in ends {
