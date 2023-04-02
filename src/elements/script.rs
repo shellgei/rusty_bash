@@ -61,7 +61,7 @@ impl Script {
     }
 
     fn check_end(feeder: &mut Feeder, core: &mut ShellCore, empty: bool) -> EndStatus {
-        let ends = vec![")", "}", "then"];
+        let ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done"];
 
         if let Some(begin) = core.nest.pop() {
             core.nest.push(begin.clone());
@@ -77,10 +77,8 @@ impl Script {
             };
         }
 
-        for token in ends {
-            if feeder.starts_with(token){
-                return EndStatus::UnexpectedSymbol(token.to_string());
-            }
+        if let Some(token) = ends.iter().find(|e| feeder.starts_with(e)) {
+            return EndStatus::UnexpectedSymbol(token.to_string());
         }
 
         return EndStatus::NormalEnd;
