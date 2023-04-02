@@ -92,43 +92,43 @@ impl CommandCase {
         loop {
             let pos = text.scanner_until_escape("|)");
             if pos == 0 || pos == text.len() {
+                core.nest.pop();
                 return false;
             }
             conds.push(text.consume(pos));
             ans.text += &conds.last().unwrap().clone();
 
             if text.starts_with(")") {
-           // if text.nth(0) == ')' {
                 break;
             }else{
                 ans.text += &text.consume(1);
             }
         }
-
+        core.nest.push("_)".to_string());
         ans.text += &text.consume(1);
-        ans.text += &text.request_next_line(core);
+        //ans.text += &text.request_next_line(core);
 
-        let doing = if text.len() >= 2 && text.starts_with( ";;") {
-            None
-        }else if let Some(s) = Script::parse(text, core) {
+        let doing = if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
             Some(s)
         }else{
+            core.nest.pop();
             return false;
         };
 
-        ans.text += &text.request_next_line(core);
 
-        if text.len() >= 2 && text.starts_with( ";;") {
+        //ans.text += &text.request_next_line(core);
+
+        if text.starts_with(";;") {
             ans.text += &text.consume(2);
         }
-
         ans.conddo.push( (conds, doing) );
+        core.nest.pop();
         true
     }
 
     pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<CommandCase> {
-        if text.len() < 4 || ! text.starts_with( "case") {
+        if text.len() < 4 || ! text.starts_with("case") {
             return None;
         }
 
@@ -147,7 +147,7 @@ impl CommandCase {
 
         ans.text += &text.consume_blank();
 
-        if text.len() >= 2 && text.starts_with( "in") {
+        if text.len() >= 2 && text.starts_with("in") {
             ans.text += &text.consume(2);
         }else{
             text.rewind(backup);
@@ -159,7 +159,7 @@ impl CommandCase {
             ans.text += &text.request_next_line(core);
             ans.text += &text.consume_blank_return();
 
-            if text.len() >= 4 && text.starts_with( "esac") {
+            if text.len() >= 4 && text.starts_with("esac") {
                 ans.text += &text.consume(4);
                 break;
             }

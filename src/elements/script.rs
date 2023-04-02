@@ -48,6 +48,9 @@ impl Script {
 
     fn check_nest(feeder: &mut Feeder, ends: &Vec<&str>, other_ends: &Vec<&str>, empty: bool) -> EndStatus {
         if let Some(end) = ends.iter().find(|e| feeder.starts_with(e)) {
+            if end == &";;" || end == &";&" || end == &";;&" {
+                return EndStatus::NormalEnd;
+            }
             if empty {
                 return EndStatus::UnexpectedSymbol(end.to_string());
             }
@@ -73,6 +76,7 @@ impl Script {
                 "else" => Self::check_nest(feeder, &vec!["fi"], &ends, empty),
                 "while" => Self::check_nest(feeder, &vec!["do"], &ends, empty),
                 "do" => Self::check_nest(feeder, &vec!["done"], &ends, empty),
+                "_)" => Self::check_nest(feeder, &vec![";;", ";&", ";;&"], &ends, empty), // pattern in case
                 _ => EndStatus::NormalEnd,
             };
         }
@@ -85,7 +89,6 @@ impl Script {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
-        //dbg!("{:?}", &feeder);
         if feeder.len() == 0 {
             return None;
         };
@@ -111,12 +114,16 @@ impl Script {
                     }
                 },
                 EndStatus::NormalEnd => {
+                    if let Some(s) = core.nest.last() {
+                        if s == "_)" {
+                            return Some( ans )
+                        }
+                    }
                     if ans.list.len() == 0 {
                         core.set_var("?", "2");
                         feeder.consume(feeder.len());
                         return None;
                     }
-         //           dbg!("get script: {:?}", &ans);
                     return Some( ans )
                 }
             }
