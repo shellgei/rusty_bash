@@ -18,7 +18,7 @@ use crate::bash_glob::glob_match;
 #[derive(Debug)]
 pub struct CommandCase {
     pub word: Word,
-    pub conddo: Vec<(Vec<String>, Option<Script>)>,
+    pub pattern_and_script: Vec<(Vec<String>, Script, String)>,
     text: String,
     pid: Option<Pid>,
     fds: FileDescs,
@@ -54,13 +54,15 @@ impl Command for CommandCase {
     fn exec_elems(&mut self, core: &mut ShellCore) {
         let word_str = self.word.eval(core).join(" ");
 
-        for (cond, doing) in &mut self.conddo {
+        for (cond, doing, _) in &mut self.pattern_and_script {
             let mut flag = false;
             for c in cond {
                 if glob_match(c, &word_str) {
+                    doing.exec(core);
+                    /*
                     if let Some(d) = doing {
                         d.exec(core);
-                    }
+                    }*/
                     flag = true;
                     break;
                 }
@@ -76,7 +78,7 @@ impl CommandCase {
     pub fn new(word: Word) -> CommandCase{
         CommandCase {
             word: word, 
-            conddo: vec![],
+            pattern_and_script: vec![],
             text: "".to_string(),
             fds: FileDescs::new(),
             pid: None,
@@ -106,23 +108,27 @@ impl CommandCase {
         }
         core.nest.push("_)".to_string());
         ans.text += &text.consume(1);
-        //ans.text += &text.request_next_line(core);
 
         let doing = if let Some(s) = Script::parse(text, core) {
             ans.text += &s.text;
-            Some(s)
+            s
         }else{
             core.nest.pop();
             return false;
         };
 
-
-        //ans.text += &text.request_next_line(core);
-
-        if text.starts_with(";;") {
+        let end = if text.starts_with(";;") {
             ans.text += &text.consume(2);
-        }
-        ans.conddo.push( (conds, doing) );
+            ";;".to_string()
+        }else if text.starts_with(";&") {
+            ans.text += &text.consume(2);
+            ";&".to_string()
+        }else{ // ;;&
+            ans.text += &text.consume(3);
+            ";;&".to_string()
+        };
+
+        ans.pattern_and_script.push( (conds, doing, end) );
         core.nest.pop();
         true
     }
@@ -172,7 +178,7 @@ impl CommandCase {
 
         while Redirect::eat_me(text, core, &mut ans.text, &mut ans.fds) {}
 
-        if ans.conddo.len() > 0 {
+        if ans.pattern_and_script.len() > 0 {
             Some(ans)
         }else{
             None
