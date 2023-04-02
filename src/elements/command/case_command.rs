@@ -54,20 +54,24 @@ impl Command for CommandCase {
     fn exec_elems(&mut self, core: &mut ShellCore) {
         let word_str = self.word.eval(core).join(" ");
 
-        for (cond, doing, _) in &mut self.pattern_and_script {
-            let mut flag = false;
+        let mut do_next = false;
+        for (cond, doing, end) in &mut self.pattern_and_script {
+            let mut matched = false;
             for c in cond {
-                if glob_match(c, &word_str) {
+                if do_next || glob_match(c, &word_str) {
+                    do_next = false;
+
                     doing.exec(core);
-                    /*
-                    if let Some(d) = doing {
-                        d.exec(core);
-                    }*/
-                    flag = true;
+                    matched = true;
+
+                    if end == &";&" {
+                        do_next = true;
+                    }
+
                     break;
                 }
             }
-            if flag {
+            if end == &";;" && matched {
                 break;
             }
         }
@@ -117,15 +121,15 @@ impl CommandCase {
             return false;
         };
 
-        let end = if text.starts_with(";;") {
-            ans.text += &text.consume(2);
-            ";;".to_string()
+        let end = if text.starts_with(";;&") { 
+            ans.text += &text.consume(3);
+            ";;&".to_string()
         }else if text.starts_with(";&") {
             ans.text += &text.consume(2);
             ";&".to_string()
-        }else{ // ;;&
-            ans.text += &text.consume(3);
-            ";;&".to_string()
+        }else {
+            ans.text += &text.consume(2);
+            ";;".to_string()
         };
 
         ans.pattern_and_script.push( (conds, doing, end) );

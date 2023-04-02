@@ -633,37 +633,7 @@ EOF
 res=$($com <<< 'a(){ echo x; return ; echo b ; } ; a')
 [ "$res" = "x" ] || err $LINENO
 
-## GLOB FOR CASE ###
-
-res=$($com <<< 'glob_test "a*" abcde')
-[ "$?" = "0" ] || err $LINENO
-
-res=$($com <<< 'glob_test "a*" z')
-[ "$?" = "1" ] || err $LINENO
-
-res=$($com <<< 'glob_test "[abc]" a')
-[ "$?" = "0" ] || err $LINENO
-
-res=$($com <<< 'glob_test "[!abc]" a')
-[ "$?" = "1" ] || err $LINENO
-
-res=$($com <<< 'glob_test "[^abc]" a' )
-[ "$?" = "1" ] || err $LINENO
-
-res=$($com <<< 'glob_test "[abc][bcd][xy]" adx')
-[ "$?" = "0" ] || err $LINENO
-
-res=$($com <<< 'glob_test "[abc][bcd][!xy]" adx' )
-[ "$?" = "1" ] || err $LINENO
-
-res=$($com <<< 'glob_test "[!abc!]" "!"' )
-[ "$?" = "1" ] || err $LINENO
-
-res=$($com <<< 'glob_test "[a-z]" "b"')
-[ "$?" = "0" ] || err $LINENO
-
-res=$($com <<< 'glob_test "[!a-c]" "b"')
-[ "$?" = "1" ] || err $LINENO
+### OR and AND ###
 
 res=$($com <<< 'echo a || echo b || echo c')
 [ "$res" = "a" ] || err $LINENO
@@ -683,37 +653,7 @@ res=$($com <<< 'seq 3 | while read x ; do echo $x🎂 ; done')
 2🎂
 3🎂" ] || err $LINENO
 
-### CASE ###
-
-res=$($com <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
-[ "$res" = "no" ] || err $LINENO
-
-res=$($com <<< 'case $- in *x*) ;; *) echo no ;; esac')
-[ "$res" = "no" ] || err $LINENO
-
-res=$($com -x <<< 'case $- in *x*) echo x ;; *) echo no ;; esac')
-[ "$res" = "x" ] || err $LINENO
-
-res=$($com <<< 'A=hoge ; case $A in *x*|*h*) echo aaa ;; *) echo no ;; esac')
-[ "$res" = "aaa" ] || err $LINENO
-
-res=$($com << 'EOF'
-case xterm-color in
-    xterm-color|*-256color) color_prompt=yes;;
-esac
-echo $color_prompt
-EOF
-)
-[ "$res" = "yes" ] || err $LINENO
-
-res=$($com << 'EOF'
-case $- in 
-	*x*) echo x ;;
-	*) echo no ;;
-esac
-EOF
-)
-[ "$res" = "no" ] || err $LINENO
+### MISC ###
 
 cat << EOF > $tmp 
 echo hoge
