@@ -36,7 +36,7 @@ impl ParenCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
-        if ! feeder.remaining.starts_with("(") {
+        if ! feeder.starts_with("(") {
             return None;
         }
         core.nest.push("(".to_string());
