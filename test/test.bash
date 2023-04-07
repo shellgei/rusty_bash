@@ -37,6 +37,18 @@ res=$($com <<< '(echo a; (echo b ; echo c) )')
 b
 c" ] || err $LINENO
 
+res=$($com <<< '(
+echo a; (echo b ; 
+echo c) )')
+[ "$res" = "a
+b
+c" ] || err $LINENO
+
+res=$($com <<< '(
+echo a; (echo b ; 
+')
+[ "$?" = "2" ] || err $LINENO
+
 res=$($com <<< '(echo hoge; false)')
 [ "$?" = 1 ] || err $LINENO
 

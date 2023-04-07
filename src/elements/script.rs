@@ -84,25 +84,30 @@ impl Script {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
         let mut ans = Self::new();
 
-        while Self::eat_job(feeder, core, &mut ans) {
-            while Self::eat_job_end(feeder, &mut ans) {} //TODO: prohibit echo a;; 
+        loop {
+            while Self::eat_job(feeder, core, &mut ans) 
+               && Self::eat_job_end(feeder, &mut ans) {}
+    
+            match Self::check_end(feeder, core, ans.jobs.len()){
+                Status::NormalEnd => {
+                    return Some(ans)
+                },
+                Status::UnexpectedSymbol(s) => {
+                    eprintln!("Unexpected token: {}", s);
+                    break;
+                },
+                Status::NeedMoreLine => {
+                    if feeder.feed_additional_line(core) {
+                        continue;
+                    }
+                    eprintln!("bash: syntax error: unexpected end of file");
+                    break;
+                },
+            }
         }
 
-        match Self::check_end(feeder, core, ans.jobs.len()){
-            Status::NormalEnd => {
-                return Some(ans)
-            },
-            Status::UnexpectedSymbol(s) => {
-                eprintln!("Unexpected token: {}", s);
-                core.vars.insert("?".to_string(), "2".to_string());
-                feeder.remaining = String::new();
-                return None;
-            },
-            Status::NeedMoreLine => {
-                eprintln!("need more line");
-                feeder.remaining = String::new();
-                return None;
-            },
-        }
+        core.vars.insert("?".to_string(), "2".to_string());
+        feeder.remaining = String::new();
+        return None;
     }
 }
