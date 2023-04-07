@@ -47,7 +47,7 @@ fn main_loop(core: &mut ShellCore) {
 
         match Script::parse(&mut feeder, core){
             Some(mut s) => s.exec(core),
-            None => process::exit(1)
+            None => continue,
         }
     }
     core.exit();

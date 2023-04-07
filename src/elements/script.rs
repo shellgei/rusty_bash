@@ -70,7 +70,7 @@ impl Script {
         }
     }
 
-    fn check_end(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
+    fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
         if let Some(begin) = core.nest.last() {
             match begin.as_ref() {
                 "(" => Self::check_nest_end(feeder, &vec![")"], jobnum),
@@ -88,7 +88,7 @@ impl Script {
             while Self::eat_job(feeder, core, &mut ans) 
                && Self::eat_job_end(feeder, &mut ans) {}
     
-            match Self::check_end(feeder, core, ans.jobs.len()){
+            match Self::check_nest(feeder, core, ans.jobs.len()){
                 Status::NormalEnd => {
                     return Some(ans)
                 },
