@@ -17,9 +17,31 @@ impl Job {
         }
     }
 
+    fn new() -> Job {
+        Job {
+            text: String::new(),
+            pipelines: vec![]
+        }
+    }
+
+    fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job) -> bool {
+        let num = feeder.scanner_blank();
+        ans.text += &feeder.consume(num);
+        if feeder.remaining.starts_with("\n") {
+            ans.text += &feeder.consume(1);
+            true
+        }else{
+            false
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
+        let mut ans = Self::new();
+        while Self::eat_blank_line(feeder, &mut ans) {}
         if let Some(pipeline) = Pipeline::parse(feeder, core){
-            return Some( Job{text: pipeline.text.clone(), pipelines: vec!(pipeline)} );
+            ans.text += &pipeline.text.clone();
+            ans.pipelines.push(pipeline);
+            return Some(ans);
         }
         None
     }
