@@ -45,7 +45,9 @@ b
 c" ] || err $LINENO
 
 res=$($com <<< '   (
+
 echo a; (echo b ; 
+
 echo c) )   ')
 [ "$res" = "a
 b
