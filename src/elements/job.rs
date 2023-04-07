@@ -27,7 +27,7 @@ impl Job {
     fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job) -> bool {
         let num = feeder.scanner_blank();
         ans.text += &feeder.consume(num);
-        if feeder.remaining.starts_with("\n") {
+        if feeder.starts_with("\n") {
             ans.text += &feeder.consume(1);
             true
         }else{
@@ -41,6 +41,7 @@ impl Job {
         if let Some(pipeline) = Pipeline::parse(feeder, core){
             ans.text += &pipeline.text.clone();
             ans.pipelines.push(pipeline);
+            while Self::eat_blank_line(feeder, &mut ans) {}
             return Some(ans);
         }
         None
