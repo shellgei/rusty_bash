@@ -11,13 +11,48 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, _: &mut ShellCore) {}
+    fn exec(&mut self, core: &mut ShellCore) {
+        self.script.as_mut().unwrap().exec(core);//まだ仮実装
+    }
+
     fn get_text(&self) -> String { self.text.clone() }
 }
 
 impl ParenCommand {
-    pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<ParenCommand> {
-        eprintln!("ParenCommand::parse");
-        None
+    fn new() -> ParenCommand {
+        ParenCommand {
+            text: String::new(),
+            script: None,
+        }
+    }
+
+    fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut ParenCommand) -> bool {
+        if let Some(s) = Script::parse(feeder, core) {
+            ans.text += &s.text;
+            ans.script = Some(s);
+            return true;
+        }
+        false
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
+        if ! feeder.remaining.starts_with("(") {
+            return None;
+        }
+        core.nest.push("(".to_string());
+
+        let mut ans = Self::new();
+        let backup = feeder.clone();
+
+        ans.text = feeder.consume(1);
+        if ! Self::eat_script(feeder, core, &mut ans){
+            feeder.rewind(backup);
+            core.nest.pop();
+            return None;
+        }
+        // ans.text += &feeder.consume(1); あとからコメントアウトを外す
+
+        core.nest.pop();
+        Some(ans)
     }
 }
