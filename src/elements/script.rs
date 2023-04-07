@@ -72,13 +72,13 @@ impl Script {
 
     fn check_end(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> EndStatus {
         if let Some(begin) = core.nest.last() {
-            return match begin.as_ref() {
+            match begin.as_ref() {
                 "(" => Self::check_nest(feeder, &vec![")"], jobnum),
                 _ => EndStatus::NormalEnd,
-            };
+            }
+        }else{
+            Self::check_nest(feeder, &vec![], jobnum)
         }
-
-        Self::check_nest(feeder, &vec![], jobnum)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {

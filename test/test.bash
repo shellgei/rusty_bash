@@ -32,12 +32,23 @@ res=$($com <<< '(echo hoge; echo fuge)')
 [ "$res" = "hoge
 fuge" ] || err $LINENO
 
+res=$($com <<< '(echo a; (echo b ; echo c) )')
+[ "$res" = "a
+b
+c" ] || err $LINENO
+
+res=$($com <<< '(echo hoge; false)')
+[ "$?" = 1 ] || err $LINENO
+
+res=$($com <<< '( )')
+[ "$?" = 2 ] || err $LINENO
+
+# res=$($com <<< '( echo a ; }')
+# [ "$?" = 2 ] || err $LINENO
+
 ### IRREGULAR COMMAND TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')
 [ "$?" = 127 ] || err $LINENO
-
-res=$($com <<< '(echo hoge; false)')
-[ "$?" = 1 ] || err $LINENO
 
 echo OK $0
