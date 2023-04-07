@@ -50,46 +50,35 @@ impl Script {
         }
     }
 
-    fn check_nest(feeder: &mut Feeder, ends: &Vec<&str>, other_ends: &Vec<&str>, empty: bool) -> EndStatus {
+    fn check_nest(feeder: &mut Feeder, ends: &Vec<&str>, jobnum: usize) -> EndStatus {
         if let Some(end) = ends.iter().find(|e| feeder.starts_with(e)) {
-            if end == &";;" || end == &";&" || end == &";;&" {
-                return EndStatus::NormalEnd;
-            }
-            if empty {
+            if jobnum == 0 {
                 return EndStatus::UnexpectedSymbol(end.to_string());
             }
             return EndStatus::NormalEnd;
         }
 
+        let other_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done"];
         if let Some(end) = other_ends.iter().find(|e| feeder.starts_with(e)) {
             return EndStatus::UnexpectedSymbol(end.to_string());
         }
-        return EndStatus::NeedMoreLine;
+
+        if ends.len() == 0 {
+            EndStatus::NormalEnd
+        }else{
+            EndStatus::NeedMoreLine
+        }
     }
 
-    fn check_end(feeder: &mut Feeder, core: &mut ShellCore, empty: bool) -> EndStatus {
-        let ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done"];
-
-        if let Some(begin) = core.nest.pop() {
-            core.nest.push(begin.clone());
+    fn check_end(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> EndStatus {
+        if let Some(begin) = core.nest.last() {
             return match begin.as_ref() {
-                "(" => Self::check_nest(feeder, &vec![")"], &ends, empty),
-                "{" => Self::check_nest(feeder, &vec!["}"], &ends, empty),
-                "if" | "elif" => Self::check_nest(feeder, &vec!["then"], &ends, empty),
-                "then" => Self::check_nest(feeder, &vec!["else", "fi", "elif"], &ends, empty),
-                "else" => Self::check_nest(feeder, &vec!["fi"], &ends, empty),
-                "while" => Self::check_nest(feeder, &vec!["do"], &ends, empty),
-                "do" => Self::check_nest(feeder, &vec!["done"], &ends, empty),
-                "_)" => Self::check_nest(feeder, &vec![";;", ";&", ";;&"], &ends, empty), // pattern in case
+                "(" => Self::check_nest(feeder, &vec![")"], jobnum),
                 _ => EndStatus::NormalEnd,
             };
         }
 
-        if let Some(token) = ends.iter().find(|e| feeder.starts_with(e)) {
-            return EndStatus::UnexpectedSymbol(token.to_string());
-        }
-
-        return EndStatus::NormalEnd;
+        Self::check_nest(feeder, &vec![], jobnum)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
@@ -101,12 +90,21 @@ impl Script {
             }
         }
 
-        if feeder.remaining.len() == 0 {
-            //eprintln!("{:?}", &ans);
-            Some(ans)
-        }else{
-            eprintln!("ERROR");
-            None
+        match Self::check_end(feeder, core, ans.jobs.len()){
+            EndStatus::UnexpectedSymbol(s) => {
+                eprintln!("Unexpected token: {}", s);
+                core.vars.insert("?".to_string(), "2".to_string());
+                feeder.remaining = String::new();
+                return None;
+            },
+            EndStatus::NeedMoreLine => {
+                eprintln!("need more line");
+                feeder.remaining = String::new();
+                return None;
+            },
+            EndStatus::NormalEnd => {
+                return Some( ans )
+            }
         }
     }
 }

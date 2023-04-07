@@ -42,15 +42,13 @@ impl ParenCommand {
         core.nest.push("(".to_string());
 
         let mut ans = Self::new();
-        let backup = feeder.clone();
-
         ans.text = feeder.consume(1);
+
         if ! Self::eat_script(feeder, core, &mut ans){
-            feeder.rewind(backup);
             core.nest.pop();
             return None;
         }
-        // ans.text += &feeder.consume(1); あとからコメントアウトを外す
+        ans.text += &feeder.consume(1);
 
         core.nest.pop();
         Some(ans)
