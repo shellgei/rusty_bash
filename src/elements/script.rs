@@ -25,9 +25,6 @@ impl Script {
     }
 
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool {
-        let num = feeder.scanner_blank();
-        ans.text += &feeder.consume(num);
-
         if let Some(job) = Job::parse(feeder, core){
             ans.text += &job.text.clone();
             ans.jobs.push(job);
