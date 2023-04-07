@@ -47,7 +47,6 @@ impl Script {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
         let mut ans = Self::new();
 
-        while Self::eat_job_end(feeder, &mut ans) {}
         while Self::eat_job(feeder, core, &mut ans) {
             while Self::eat_job_end(feeder, &mut ans) {} //TODO: prohibit echo a;; 
         }
