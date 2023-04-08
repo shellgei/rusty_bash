@@ -17,7 +17,7 @@ impl Command for ParenCommand {
 
 impl ParenCommand {
     pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<ParenCommand> {
-        eprintln!("ParenCommand::parse");
+//        eprintln!("ParenCommand::parse");
         None
     }
 }
