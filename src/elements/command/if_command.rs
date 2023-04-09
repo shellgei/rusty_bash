@@ -137,12 +137,12 @@ impl CommandIf {
         }
 
         let mut ans = CommandIf::new();
-        let backup = feeder.clone();
+        //let backup = feeder.clone();
         ans.text += &feeder.consume(2);
 
         loop { // read if ... then ... elif ... then ...
             if ! CommandIf::eat_if_then(feeder, core, &mut ans) {
-                feeder.rewind(backup);
+         //feeder.rewind(backup);
                 return None;
             }
             if feeder.starts_with("elif"){
@@ -157,7 +157,7 @@ impl CommandIf {
         }else if feeder.starts_with("else"){
             ans.text += &feeder.consume(4);
             if ! CommandIf::eat_else_fi(feeder, core, &mut ans){
-                feeder.rewind(backup);
+                //feeder.rewind(backup);
                 return None;
             }
         }

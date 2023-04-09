@@ -11,6 +11,7 @@ use crate::file_descs::*;
 use std::process::exit;
 use nix::unistd;
 
+/*
 fn tail_check(s: &String) -> bool{
     for ch in s.chars().rev() {
         match ch {
@@ -22,7 +23,7 @@ fn tail_check(s: &String) -> bool{
         }
     }
     false
-}
+}*/
 
 #[derive(Debug)]
 pub struct CommandBrace {
@@ -85,7 +86,7 @@ impl CommandBrace {
         if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text.clone();
             ans.script = Some(s);
-            return tail_check(&ans.text);
+            return true;//tail_check(&ans.text);
         }else{
             return false;
         }
@@ -98,12 +99,12 @@ impl CommandBrace {
 
         core.nest.push("{".to_string());
 
-        let backup = feeder.clone();
+//        let backup = feeder.clone();
         let mut ans = CommandBrace::new();
         ans.text += &feeder.consume(1);
 
         if ! Self::eat_script(feeder, core, &mut ans){
-            feeder.rewind(backup);
+ //           feeder.rewind(backup);
             core.nest.pop();
             return None;
         }
