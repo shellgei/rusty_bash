@@ -123,28 +123,18 @@ impl CommandParen {
         }
         core.nest.push("(".to_string());
 
-        let backup = feeder.clone();
         let mut ans = CommandParen::new();
-
         ans.text = feeder.consume(1);
+
         if ! Self::eat_script(feeder, core, &mut ans){
-            feeder.rewind(backup);
             core.nest.pop();
             return None;
         }
 
         ans.text += &feeder.consume(1);
 
-        /* distinguish from (( )) */
-        if ans.text.starts_with("((") && ans.text.ends_with("))") {
-            feeder.rewind(backup);
-            core.nest.pop();
-            return None;
-        }
-
         if ! substitution {
             while  Redirect::eat_me(feeder, core, &mut ans.text, &mut ans.fds) {}
-       //     while Self::eat_redirect(feeder, core, &mut ans) {}
         }
 
         core.nest.pop();

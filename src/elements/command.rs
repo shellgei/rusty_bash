@@ -105,8 +105,8 @@ pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>
     if let Some(a) =      CommandIf::parse(text,core)                  {Some(Box::new(a))}
     else if let Some(a) = CommandWhile::parse(text, core)              {Some(Box::new(a))}
     else if let Some(a) = CommandCase::parse(text, core)               {Some(Box::new(a))}
-    else if let Some(a) = CommandParen::parse(text, core, false)       {Some(Box::new(a))}
     else if let Some(a) = CommandDoubleParen::parse(text, core, false) {Some(Box::new(a))}
+    else if let Some(a) = CommandParen::parse(text, core, false)       {Some(Box::new(a))}
     else if let Some(a) = CommandBrace::parse(text, core)              {Some(Box::new(a))}
     else if let Some(a) = FunctionDefinition::parse(text, core)        {Some(Box::new(a))}
     else if let Some(a) = SimpleCommand::parse(text, core)             {Some(Box::new(a))}

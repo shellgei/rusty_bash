@@ -83,6 +83,10 @@ impl CommandDoubleParen {
             ans.text = text.consume(2);
 
             let pos = text.scanner_until(0, ")");
+            if text.len() > pos+1 && text.nth(pos) == ')' && text.nth(pos+1) != ')' {
+                text.rewind(backup);
+                return None;
+            }
 
             if pos != text.len() {
                 ans.expression = text.consume(pos);
