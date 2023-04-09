@@ -103,13 +103,13 @@ impl CommandWhile {
             return None;
         }
 
-        let backup = text.clone();
+//        let backup = text.clone();
 
         let mut ans = CommandWhile::new();
         ans.text += &text.consume(5);
 
         if ! CommandWhile::eat_cond_do_pair(text, core, &mut ans) {
-            text.rewind(backup);
+ //           text.rewind(backup);
             return None;
         }
 
