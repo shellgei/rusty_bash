@@ -96,6 +96,11 @@ impl SimpleCommand {
         while Self::eat_word(feeder, &mut ans) &&
               Self::eat_blank(feeder, &mut ans) {}
 
+        if ans.args[0] == "}" {
+            feeder.rewind(backup);
+            return None;
+        }
+
         if ans.args.len() > 0 {
             Some(ans)
         }else{

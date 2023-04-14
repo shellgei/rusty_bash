@@ -74,6 +74,7 @@ impl Script {
         if let Some(begin) = core.nest.last() {
             match begin.as_ref() {
                 "(" => Self::check_nest_end(feeder, &vec![")"], jobnum),
+                "{" => Self::check_nest_end(feeder, &vec!["}"], jobnum),
                 _ => Status::NormalEnd,
             }
         }else{

@@ -3,10 +3,12 @@
 
 pub mod simple;
 pub mod paren;
+pub mod brace;
 
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
+use self::brace::BraceCommand;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -23,6 +25,7 @@ pub trait Command {
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) =      ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }
