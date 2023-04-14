@@ -3,6 +3,7 @@
 
 use crate::{ShellCore,Feeder,Script};
 use super::Command;
+use super::super::command;
 
 #[derive(Debug)]
 pub struct ParenCommand {
@@ -26,6 +27,7 @@ impl ParenCommand {
         }
     }
 
+    /*
     fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut ParenCommand) -> bool {
         if let Some(s) = Script::parse(feeder, core) {
             ans.text += &s.text;
@@ -33,7 +35,7 @@ impl ParenCommand {
             return true;
         }
         false
-    }
+    }*/
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
         if ! feeder.starts_with("(") {
@@ -44,7 +46,8 @@ impl ParenCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(1);
 
-        if ! Self::eat_script(feeder, core, &mut ans){
+//eat_script(feeder: &mut Feeder, core: &mut ShellCore, script: &mut Option<Script>, text: &mut String) -> bool {
+        if ! command::eat_script(feeder, core, &mut ans.script, &mut ans.text){
             core.nest.pop();
             return None;
         }
