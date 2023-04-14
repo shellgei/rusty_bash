@@ -28,17 +28,14 @@ impl ParenCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
-        if ! feeder.starts_with("(") {
-            return None;
+        match command::parse_nested_script(feeder, core, "(") {
+            Some(s) => {
+                let mut ans = Self::new();
+                ans.text = s.text.clone() + &feeder.consume(1);
+                ans.script = Some(s);
+                Some(ans)
+            },
+            None => None, 
         }
-
-        let mut ans = Self::new();
-        if ! command::parse_nested_script(feeder, core, "(", &mut ans.script, &mut ans.text){
-            return None;
-        }
-
-        core.nest.pop();
-        ans.text += &feeder.consume(1);
-        Some(ans)
     }
 }

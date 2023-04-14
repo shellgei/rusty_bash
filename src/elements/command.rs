@@ -21,16 +21,20 @@ pub trait Command {
     fn get_text(&self) -> String;
 }
 
-fn parse_nested_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str,
-              script: &mut Option<Script>, text: &mut String) -> bool {
-    core.nest.push(left.to_string());
-    *text += &feeder.consume(left.len());
-    if let Some(s) = Script::parse(feeder, core) {
-        *text += &s.text;
-        *script = Some(s);
-        return true;
+fn parse_nested_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str) -> Option<Script> {
+   if ! feeder.starts_with(left) {
+       return None;
     }
-    false
+    core.nest.push(left.to_string());
+    feeder.consume(left.len());
+    if let Some(mut s) = Script::parse(feeder, core) {
+        core.nest.pop();
+        s.text += left;
+        Some(s)
+    }else{
+        core.nest.pop();
+        None
+    }
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
