@@ -83,7 +83,7 @@ impl SimpleCommand {
        }
 
        let word = feeder.consume(arg_len);
-       if ans.args.len() == 0 && word == "}" {
+       if ans.args.len() == 0 && ( word == "{" || word == "}") {
            return false;
        }
 

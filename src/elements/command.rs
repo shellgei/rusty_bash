@@ -24,8 +24,8 @@ pub trait Command {
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) =      ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
+    if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }

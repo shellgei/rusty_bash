@@ -27,12 +27,6 @@ impl BraceCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceCommand> {
-        if ! feeder.starts_with("{ ") && 
-           ! feeder.starts_with("{\t") &&
-           ! feeder.starts_with("{\n") {
-            return None;
-        }
-
         match Script::parse_with_left(feeder, core, "{") {
             Some(s) => {
                 let mut ans = Self::new();
