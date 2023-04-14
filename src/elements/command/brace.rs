@@ -27,7 +27,9 @@ impl BraceCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceCommand> {
-        if ! feeder.starts_with("{ ") && ! feeder.starts_with("{\t") && ! feeder.starts_with("{\n") {
+        if ! feeder.starts_with("{ ") && 
+           ! feeder.starts_with("{\t") &&
+           ! feeder.starts_with("{\n") {
             return None;
         }
 
