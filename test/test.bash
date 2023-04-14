@@ -79,6 +79,9 @@ res=$($com <<< '{ echo a ; (echo b ; echo c) ;}')
 b
 c" ] || err $LINENO
 
+res=$($com <<< '{ echo } ; }')
+[ "$res" = "}" ] || err $LINENO
+
 res=$($com <<< '{ echo a }')
 [ "$?" = 2 ] || err $LINENO
 
