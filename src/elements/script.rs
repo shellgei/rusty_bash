@@ -23,7 +23,7 @@ impl Script {
         }
     }
 
-    fn new() -> Script {
+    pub fn new() -> Script {
         Script {
             text: String::new(),
             jobs: vec![]

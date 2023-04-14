@@ -21,7 +21,10 @@ pub trait Command {
     fn get_text(&self) -> String;
 }
 
-fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, script: &mut Option<Script>, text: &mut String) -> bool {
+fn parse_nested_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str,
+              script: &mut Option<Script>, text: &mut String) -> bool {
+    core.nest.push(left.to_string());
+    *text += &feeder.consume(left.len());
     if let Some(s) = Script::parse(feeder, core) {
         *text += &s.text;
         *script = Some(s);
@@ -29,21 +32,6 @@ fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, script: &mut Option<Scr
     }
     false
 }
-
-/*
-pub fn parse_nested_script(feeder: &mut Feeder, core: &mut ShellCore, text: &mut String) -> Option<Box<dyn Command>> {
-    text = feeder.consume(1);
-
-    if ! eat_script(feeder, core, &mut ans){
-        core.nest.pop();
-        return None;
-    }
-    ans.text += &feeder.consume(1);
-
-    core.nest.pop();
-    Some(ans)
-}
-*/
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) =      ParenCommand::parse(feeder, core) { Some(Box::new(a)) }

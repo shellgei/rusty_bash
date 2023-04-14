@@ -27,33 +27,18 @@ impl ParenCommand {
         }
     }
 
-    /*
-    fn eat_script(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut ParenCommand) -> bool {
-        if let Some(s) = Script::parse(feeder, core) {
-            ans.text += &s.text;
-            ans.script = Some(s);
-            return true;
-        }
-        false
-    }*/
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
         if ! feeder.starts_with("(") {
             return None;
         }
-        core.nest.push("(".to_string());
 
         let mut ans = Self::new();
-        ans.text = feeder.consume(1);
-
-//eat_script(feeder: &mut Feeder, core: &mut ShellCore, script: &mut Option<Script>, text: &mut String) -> bool {
-        if ! command::eat_script(feeder, core, &mut ans.script, &mut ans.text){
-            core.nest.pop();
+        if ! command::parse_nested_script(feeder, core, "(", &mut ans.script, &mut ans.text){
             return None;
         }
-        ans.text += &feeder.consume(1);
 
         core.nest.pop();
+        ans.text += &feeder.consume(1);
         Some(ans)
     }
 }
