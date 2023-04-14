@@ -3,7 +3,6 @@
 
 use crate::{ShellCore,Feeder,Script};
 use super::Command;
-use super::super::command;
 
 #[derive(Debug)]
 pub struct ParenCommand {
@@ -28,7 +27,7 @@ impl ParenCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
-        match command::parse_nested_script(feeder, core, "(") {
+        match Script::parse_with_left(feeder, core, "(") {
             Some(s) => {
                 let mut ans = Self::new();
                 ans.text = s.text.clone() + &feeder.consume(1);
