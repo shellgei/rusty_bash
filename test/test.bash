@@ -64,8 +64,23 @@ res=$($com <<< '(echo hoge; false)')
 res=$($com <<< '( )')
 [ "$?" = 2 ] || err $LINENO
 
-# res=$($com <<< '( echo a ; }')
-# [ "$?" = 2 ] || err $LINENO
+res=$($com <<< '( echo a ; }')
+[ "$?" = 2 ] || err $LINENO
+
+res=$($com <<< '{ echo a ; }')
+[ $res = "a" ] || err $LINENO
+
+res=$($com <<< '{ echo a ; echo b ;}')
+[ "$res" = "a
+b" ] || err $LINENO
+
+res=$($com <<< '{ echo a ; (echo b ; echo c) ;}')
+[ "$res" = "a
+b
+c" ] || err $LINENO
+
+res=$($com <<< '{ echo a }')
+[ "$?" = 2 ] || err $LINENO
 
 ### IRREGULAR COMMAND TEST ###
 
