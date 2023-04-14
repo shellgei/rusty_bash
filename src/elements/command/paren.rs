@@ -3,6 +3,8 @@
 
 use crate::{ShellCore,Feeder,Script};
 use super::Command;
+use nix::unistd;
+use nix::unistd::ForkResult;
 
 #[derive(Debug)]
 pub struct ParenCommand {
@@ -12,7 +14,10 @@ pub struct ParenCommand {
 
 impl Command for ParenCommand {
     fn exec(&mut self, core: &mut ShellCore) {
-        self.script.as_mut().unwrap().exec(core);//まだ仮実装
+        match self.script {
+            Some(ref mut s) => Self::fork_exec(s, core),
+            _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
+        }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -23,6 +28,23 @@ impl ParenCommand {
         ParenCommand {
             text: String::new(),
             script: None,
+        }
+    }
+
+    fn fork_exec(script: &mut Script, core: &mut ShellCore) {
+        //eprintln!("fork前: {}", &core.vars["BASHPID"]);
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
+                let pid = nix::unistd::getpid();
+                core.vars.insert("BASHPID".to_string(), pid.to_string());
+                //eprintln!("fork後: {}", &core.vars["BASHPID"]);
+                script.exec(core);
+                core.exit();
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                core.wait_process(child);
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 
