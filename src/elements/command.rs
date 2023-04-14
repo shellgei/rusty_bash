@@ -29,7 +29,7 @@ fn parse_nested_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str) ->
     feeder.consume(left.len());
     if let Some(mut s) = Script::parse(feeder, core) {
         core.nest.pop();
-        s.text += left;
+        s.text = left.to_owned() + &s.text;
         Some(s)
     }else{
         core.nest.pop();
