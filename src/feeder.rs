@@ -11,7 +11,7 @@ use crate::ShellCore;
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
-    pub remaining: String,
+    remaining: String,
 }
 
 impl Feeder {
@@ -22,8 +22,15 @@ impl Feeder {
     }
 
     pub fn consume(&mut self, cutpos: usize) -> String {
-        let cut = self.remaining[0..cutpos].to_string(); // TODO: this implementation will cause an error.
+        let cut = self.remaining[0..cutpos].to_string();
         self.remaining = self.remaining[cutpos..].to_string();
+
+        cut
+    }
+
+    pub fn consume_all(&mut self) -> String {
+        let cut = self.remaining.clone();
+        self.remaining = String::new();
 
         cut
     }
