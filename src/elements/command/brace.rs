@@ -30,7 +30,7 @@ impl BraceCommand {
         match Script::parse_with_left(feeder, core, "{") {
             Some(s) => {
                 let mut ans = Self::new();
-                ans.text = s.text.clone() + &feeder.consume(1);
+                ans.text = "{".to_string() + &s.text.clone() + &feeder.consume(1);
                 ans.script = Some(s);
                 Some(ans)
             },

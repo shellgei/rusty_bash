@@ -118,9 +118,8 @@ impl Script {
         }
         core.nest.push(left.to_string());
         feeder.consume(left.len());
-        if let Some(mut s) = Self::parse(feeder, core) {
+        if let Some(s) = Self::parse(feeder, core) {
             core.nest.pop();
-            s.text = left.to_owned() + &s.text;
             Some(s)
         }else{
             core.nest.pop();
