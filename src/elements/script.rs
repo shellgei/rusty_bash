@@ -3,6 +3,8 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
+use nix::unistd;
+use nix::unistd::ForkResult;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -20,6 +22,21 @@ impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) {
         for job in self.jobs.iter_mut() {
             job.exec(core);
+        }
+    }
+
+    pub fn fork_exec(&mut self, core: &mut ShellCore) {
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
+                let pid = nix::unistd::getpid();
+                core.vars.insert("BASHPID".to_string(), pid.to_string());
+                self.exec(core);
+                core.exit();
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                core.wait_process(child);
+            },
+            Err(err) => panic!("Failed to fork. {}", err),
         }
     }
 
@@ -118,9 +135,8 @@ impl Script {
         }
         core.nest.push(left.to_string());
         feeder.consume(left.len());
-        if let Some(mut s) = Self::parse(feeder, core) {
+        if let Some(s) = Self::parse(feeder, core) {
             core.nest.pop();
-            s.text = left.to_owned() + &s.text;
             Some(s)
         }else{
             core.nest.pop();
