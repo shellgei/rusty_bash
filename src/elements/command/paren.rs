@@ -29,25 +29,6 @@ impl ParenCommand {
         }
     }
 
-    /*
-    fn fork_exec(script: &mut Script, core: &mut ShellCore) {
-        //eprintln!("fork前: {}", &core.vars["BASHPID"]);
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
-                let pid = nix::unistd::getpid();
-                core.vars.insert("BASHPID".to_string(), pid.to_string());
-                //eprintln!("fork後: {}", &core.vars["BASHPID"]);
-                script.exec(core);
-                core.exit();
-            },
-            Ok(ForkResult::Parent { child } ) => {
-                core.wait_process(child);
-            },
-            Err(err) => panic!("Failed to fork. {}", err),
-        }
-    }
-    */
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
         match Script::parse_with_left(feeder, core, "(") {
             Some(s) => {
