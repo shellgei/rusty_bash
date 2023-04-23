@@ -41,7 +41,7 @@ impl Job {
         if let Some(pipeline) = Pipeline::parse(feeder, core){
             ans.text += &pipeline.text.clone();
             ans.pipelines.push(pipeline);
-            while Self::eat_blank_line(feeder, &mut ans) {}
+            Self::eat_blank_line(feeder, &mut ans);
             return Some(ans);
         }
         None
