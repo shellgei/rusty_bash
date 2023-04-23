@@ -72,4 +72,12 @@ res=$($com <<< '( )')
 res=$($com <<< 'eeeeeecho hoge')
 [ "$?" = 127 ] || err $LINENO
 
+res=$($com <<< ';')
+[ "$?" = 2 ] || err $LINENO
+
+res=$($com <<< 'echo a
+
+;')
+[ "$?" = 2 ] || err $LINENO
+
 echo OK $0
