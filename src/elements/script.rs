@@ -58,7 +58,7 @@ impl Script {
             return Status::NormalEnd;
         }
 
-        let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done"];
+        let ng_ends = vec![")","}","then","else","fi","elif","do","done",";","||","|","&&","&"];
         if let Some(end) = ng_ends.iter().find(|e| feeder.starts_with(e)) {
             return Status::UnexpectedSymbol(end.to_string());
         }
@@ -87,7 +87,7 @@ impl Script {
         loop {
             while Self::eat_job(feeder, core, &mut ans) 
                && Self::eat_job_end(feeder, &mut ans) {}
-    
+
             match Self::check_nest(feeder, core, ans.jobs.len()){
                 Status::NormalEnd => {
                     return Some(ans)
