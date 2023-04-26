@@ -11,7 +11,7 @@ use crate::ShellCore;
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
-    pub remaining: String,
+    remaining: String,
 }
 
 impl Feeder {
@@ -133,5 +133,9 @@ impl Feeder {
 
     pub fn starts_with(&self, s: &str) -> bool {
         self.remaining.starts_with(s)
+    }
+
+    pub fn len(&self) -> usize {
+        self.remaining.len()
     }
 }
