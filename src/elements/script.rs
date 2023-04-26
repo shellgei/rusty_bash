@@ -107,7 +107,7 @@ impl Script {
         }
 
         core.vars.insert("?".to_string(), "2".to_string());
-        feeder.remaining = String::new();
+        feeder.consume(feeder.len());
         return None;
     }
 }
