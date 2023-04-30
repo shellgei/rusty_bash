@@ -28,13 +28,6 @@ impl Feeder {
         cut
     }
 
-    pub fn consume_all(&mut self) -> String {
-        let cut = self.remaining.clone();
-        self.remaining = String::new();
-
-        cut
-    }
-
     pub fn rewind(&mut self, backup: Feeder) {
         self.remaining = backup.remaining;
     }   
@@ -140,5 +133,9 @@ impl Feeder {
 
     pub fn starts_with(&self, s: &str) -> bool {
         self.remaining.starts_with(s)
+    }
+
+    pub fn len(&self) -> usize {
+        self.remaining.len()
     }
 }
