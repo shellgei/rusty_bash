@@ -108,11 +108,11 @@ impl Script {
         }
 
         core.vars.insert("?".to_string(), "2".to_string());
-        feeder.consume_all();
+        feeder.consume(feeder.len());
         return None;
     }
 
-    pub fn parse_with_left(feeder: &mut Feeder, core: &mut ShellCore, left: &str) -> Option<Script> {
+    pub fn parse_nested(feeder: &mut Feeder, core: &mut ShellCore, left: &str) -> Option<Script> {
        if ! feeder.starts_with(left) {
            return None;
         }
