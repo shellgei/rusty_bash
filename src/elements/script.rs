@@ -111,7 +111,7 @@ impl Script {
         return None;
     }
 
-    pub fn parse_with_left(feeder: &mut Feeder, core: &mut ShellCore, left: &str) -> Option<Script> {
+    pub fn parse_nested(feeder: &mut Feeder, core: &mut ShellCore, left: &str) -> Option<Script> {
        if ! feeder.starts_with(left) {
            return None;
         }
