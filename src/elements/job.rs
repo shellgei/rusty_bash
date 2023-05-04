@@ -116,18 +116,6 @@ impl Job {
         false
     }
 
-    fn read_blank(feeder: &mut Feeder, ans: &mut Job) {
-        loop {
-            let before = ans.text.len();
-            //ans.text += &feeder.consume_blank_return();
-            ans.text += &feeder.consume_comment_multiline();
-
-            if before == ans.text.len() || feeder.len() == 0 {
-                return;
-            }
-        }
-    }
-
     pub fn eat_pipeline(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Job) -> bool {
         let mut go_next = true;
 
@@ -154,7 +142,7 @@ impl Job {
         let backup = feeder.clone();
 
         let mut ans = Job::new();
-        Job::read_blank(feeder, &mut ans);
+        ans.text += &feeder.consume_comment_multiline();
         while Job::eat_pipeline(feeder, core, &mut ans) {
             ans.text += &feeder.consume_comment_multiline();
             if feeder.len() == 0 {

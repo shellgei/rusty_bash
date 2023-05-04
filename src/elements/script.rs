@@ -12,13 +12,13 @@ enum EndStatus{
 
 #[derive(Debug)]
 pub struct Script {
-    pub list: Vec<Job>,
+    pub jobs: Vec<Job>,
     pub text: String,
 }
 
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        for j in self.list.iter_mut() {
+        for j in self.jobs.iter_mut() {
             j.exec(core);
 
             if core.return_flag {
@@ -30,16 +30,15 @@ impl Script {
 
     pub fn new() -> Script{
         Script {
-            list: vec![],
+            jobs: vec![],
             text: "".to_string(),
         }
     }
 
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool { 
-        ans.text += &feeder.consume_blank();
         if let Some(j) =  Job::parse(feeder, core) {
             ans.text += &j.text.clone();
-            ans.list.push(j);
+            ans.jobs.push(j);
             true
         }else{
             false
@@ -100,7 +99,7 @@ impl Script {
             }
             ans.text += &feeder.consume_blank_return();
 
-            match Self::check_end(feeder, core, ans.list.len() == 0) {
+            match Self::check_end(feeder, core, ans.jobs.len() == 0) {
                 EndStatus::UnexpectedSymbol(s) => {
                     eprintln!("Unexpected token: {}", s);
                     core.set_var("?", "2");
@@ -119,7 +118,7 @@ impl Script {
                             return Some( ans )
                         }
                     }
-                    if ans.list.len() == 0 {
+                    if ans.jobs.len() == 0 {
                         core.set_var("?", "2");
                         feeder.consume(feeder.len());
                         return None;
