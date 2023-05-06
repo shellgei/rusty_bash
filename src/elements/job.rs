@@ -85,28 +85,24 @@ impl Job {
         }
     }
 
-    fn is_end_condition(op: &ControlOperator) -> bool {
-        ( /*parent == &CommandType::Paren &&*/ op == &ControlOperator::RightParen ) ||
-        ( /*parent == &CommandType::Case &&*/ op == &ControlOperator::DoubleSemicolon )
-    }
-
-    fn set_pipelineend(feeder: &mut Feeder, ans: &mut Job) -> bool {
+    fn check_job_end(feeder: &mut Feeder, ans: &mut Job) {
         let (n, op) = feeder.scanner_control_op();
         if let Some(p) = op {
             if &p == &ControlOperator::Semicolon || &p == &ControlOperator::BgAnd {
                 ans.is_bg = &p == &ControlOperator::BgAnd;
                 ans.text += &feeder.consume(n);
-                ans.pipeline_ends.push(p.clone());
-                return true;
-            }else if &p != &ControlOperator::And && &p != &ControlOperator::Or {
+            }
+        }
+    }
+
+    fn set_pipelineend(feeder: &mut Feeder, ans: &mut Job) -> bool {
+        let (n, op) = feeder.scanner_control_op();
+        if let Some(p) = op {
+            if &p != &ControlOperator::And && &p != &ControlOperator::Or {
                 ans.pipeline_ends.push(ControlOperator::NoChar);
                 return true;
             }
             ans.pipeline_ends.push(p.clone());
-            if Job::is_end_condition(&p) {
-                return true;
-            }
-
             ans.text += &feeder.consume(n);
         }else{
             ans.pipeline_ends.push(ControlOperator::NoChar);
@@ -148,6 +144,8 @@ impl Job {
                 break;
             }
         }
+
+        Self::check_job_end(feeder, &mut ans);
 
         if ans.pipelines.len() > 0 {
             Some(ans)
