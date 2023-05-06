@@ -62,7 +62,6 @@ impl Job {
 
                 self.exec_job(core);
 
-
                 exit(core.vars["?"].parse::<i32>().unwrap());
             },
             Ok(ForkResult::Parent { child } ) => {
@@ -95,19 +94,16 @@ impl Job {
         }
     }
 
-    fn set_pipelineend(feeder: &mut Feeder, ans: &mut Job) -> bool {
+    fn eat_pipeline_end(feeder: &mut Feeder, ans: &mut Job) -> bool {
         let (n, op) = feeder.scanner_control_op();
         if let Some(p) = op {
-            if &p != &ControlOperator::And && &p != &ControlOperator::Or {
-                ans.pipeline_ends.push(ControlOperator::NoChar);
+            if &p == &ControlOperator::And || &p == &ControlOperator::Or {
+                ans.pipeline_ends.push(p.clone());
+                ans.text += &feeder.consume(n);
                 return true;
             }
-            ans.pipeline_ends.push(p.clone());
-            ans.text += &feeder.consume(n);
-        }else{
-            ans.pipeline_ends.push(ControlOperator::NoChar);
         }
-
+        ans.pipeline_ends.push(ControlOperator::NoChar);
         false
     }
 
@@ -118,7 +114,7 @@ impl Job {
             ans.text += &result.text;
             ans.pipelines.push(result);
 
-            if Job::set_pipelineend(feeder, ans){
+            if ! Job::eat_pipeline_end(feeder, ans){
                 go_next = false;
             }
         }
