@@ -74,7 +74,7 @@ impl Pipeline {
     pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
         ans.text += &text.consume_blank();
-        if text.starts_with( "!") {
+        if text.starts_with("!") {
             ans.not_flag = true;
             ans.text += &text.consume(1);
         }
@@ -93,11 +93,12 @@ impl Pipeline {
             }
 
             if let Some(p) = op {
+                /*
                 if p == ControlOperator::BgAnd {
                     //ans.text += &text.consume(1);
                     ans.is_bg = true;
                     break;
-                }
+                }*/
                 if p != ControlOperator::Pipe && p != ControlOperator::PipeAnd {
                     break;
                 }
@@ -116,7 +117,7 @@ impl Pipeline {
             }
         }
 
-        ans.text += &text.consume_blank_return();
+        //ans.text += &text.consume_blank_return();
         if ans.commands.len() > 0 {
             Some(ans)
         }else{
