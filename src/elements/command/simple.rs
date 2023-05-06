@@ -166,7 +166,7 @@ impl SimpleCommand {
         let text = core.get_function(&args[0]).unwrap();
 
         let mut feeder = Feeder::new_from(text);
-        //eprintln!("IN '{}'", feeder._text());
+        //dbg!("IN '{:?}'", &feeder);
         if let Some(mut f) = command::parse(&mut feeder, core) {
          //   eprintln!("FUNCTION '{:?}'", f);
             let backup = core.args.clone();

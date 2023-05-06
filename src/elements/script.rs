@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::job::Job;
+use crate::operators::ControlOperator;
 
 enum EndStatus{
     UnexpectedSymbol(String),
@@ -13,13 +14,21 @@ enum EndStatus{
 #[derive(Debug)]
 pub struct Script {
     pub jobs: Vec<Job>,
+    pub job_ends: Vec<ControlOperator>,
     pub text: String,
 }
 
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) {
+        let mut n = 0;
         for j in self.jobs.iter_mut() {
+            j.is_bg = self.job_ends[n] == ControlOperator::BgAnd;
+
+            if j.is_bg {
+                j.text += " &";
+            }
             j.exec(core);
+            n += 1;
 
             if core.return_flag {
                 core.return_flag = false;
@@ -31,6 +40,7 @@ impl Script {
     pub fn new() -> Script{
         Script {
             jobs: vec![],
+            job_ends: vec![],
             text: "".to_string(),
         }
     }
@@ -87,6 +97,18 @@ impl Script {
         return EndStatus::NormalEnd;
     }
 
+    fn eat_job_end(feeder: &mut Feeder, ans: &mut Script) {
+        let (n, op) = feeder.scanner_control_op();
+        if let Some(p) = op {
+            ans.job_ends.push(p.clone());
+            if &p == &ControlOperator::Semicolon || &p == &ControlOperator::BgAnd {
+                ans.text += &feeder.consume(n);
+            }
+        }else{
+            ans.job_ends.push(ControlOperator::NoChar);
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
         if feeder.len() == 0 {
             return None;
@@ -94,8 +116,8 @@ impl Script {
     
         let mut ans = Script::new();
         loop{ 
-            if Self::eat_job(feeder, core, &mut ans){
-                continue;
+            while Self::eat_job(feeder, core, &mut ans){
+                Self::eat_job_end(feeder, &mut ans);
             }
             ans.text += &feeder.consume_blank_return();
 

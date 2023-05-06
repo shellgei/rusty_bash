@@ -84,16 +84,6 @@ impl Job {
         }
     }
 
-    fn check_job_end(feeder: &mut Feeder, ans: &mut Job) {
-        let (n, op) = feeder.scanner_control_op();
-        if let Some(p) = op {
-            if &p == &ControlOperator::Semicolon || &p == &ControlOperator::BgAnd {
-                ans.is_bg = &p == &ControlOperator::BgAnd;
-                ans.text += &feeder.consume(n);
-            }
-        }
-    }
-
     fn eat_pipeline_end(feeder: &mut Feeder, ans: &mut Job) -> bool {
         let (n, op) = feeder.scanner_control_op();
         if let Some(p) = op {
@@ -130,7 +120,6 @@ impl Job {
             ans.text += &feeder.consume_comment_multiline();
         }
 
-        Self::check_job_end(feeder, &mut ans);
         if ans.pipelines.len() > 0 {
             Some(ans)
         }else{
