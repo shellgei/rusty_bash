@@ -70,7 +70,6 @@ impl Pipeline {
                 return true;
             }
         }
-
         false
     }
 
@@ -84,7 +83,6 @@ impl Pipeline {
 
         loop {
             ans.text += &text.consume_blank();
-
             if let Some(c) = command::parse(text, core) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);

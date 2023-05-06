@@ -30,6 +30,7 @@ impl Job {
 
         //single pipeline with &
         if self.is_bg {
+            self.pipelines[0].is_bg = true;
             self.pipelines[0].text = self.text.clone();
         }
 
@@ -153,8 +154,8 @@ impl Job {
         if ans.pipelines.len() > 0 {
             if ans.pipeline_ends.last().unwrap() == &ControlOperator::BgAnd {
                 ans.is_bg = true;
-                let n = ans.pipelines.len();
-                ans.pipelines[n-1].is_bg = true;
+   //             let n = ans.pipelines.len();
+    //            ans.pipelines[n-1].is_bg = true;
             }
             Some(ans)
         }else{
