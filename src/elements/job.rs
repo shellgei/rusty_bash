@@ -108,21 +108,12 @@ impl Job {
     }
 
     pub fn eat_pipeline(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Job) -> bool {
-        let mut go_next = true;
-
         if let Some(result) = Pipeline::parse(feeder, core) {
             ans.text += &result.text;
             ans.pipelines.push(result);
-
-            if ! Job::eat_pipeline_end(feeder, ans){
-                go_next = false;
-            }
+            return true;
         }
-        else {
-            go_next = false;
-        }
-
-        go_next
+        false
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
@@ -134,15 +125,12 @@ impl Job {
 
         let mut ans = Job::new();
         ans.text += &feeder.consume_comment_multiline();
-        while Job::eat_pipeline(feeder, core, &mut ans) {
+        while Job::eat_pipeline(feeder, core, &mut ans) &&
+              Job::eat_pipeline_end(feeder, &mut ans) {
             ans.text += &feeder.consume_comment_multiline();
-            if feeder.len() == 0 {
-                break;
-            }
         }
 
         Self::check_job_end(feeder, &mut ans);
-
         if ans.pipelines.len() > 0 {
             Some(ans)
         }else{
