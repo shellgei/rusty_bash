@@ -94,6 +94,7 @@ impl Job {
         let (n, op) = feeder.scanner_control_op();
         if let Some(p) = op {
             if &p == &ControlOperator::Semicolon || &p == &ControlOperator::BgAnd {
+                ans.is_bg = &p == &ControlOperator::BgAnd;
                 ans.text += &feeder.consume(n);
                 ans.pipeline_ends.push(p.clone());
                 return true;
@@ -149,11 +150,6 @@ impl Job {
         }
 
         if ans.pipelines.len() > 0 {
-            if ans.pipeline_ends.last().unwrap() == &ControlOperator::BgAnd {
-                ans.is_bg = true;
-   //             let n = ans.pipelines.len();
-    //            ans.pipelines[n-1].is_bg = true;
-            }
             Some(ans)
         }else{
             feeder.rewind(backup);
