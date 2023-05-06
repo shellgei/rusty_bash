@@ -20,15 +20,16 @@ pub struct Script {
 
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        let mut n = 0;
+        let mut counter = 0;
         for j in self.jobs.iter_mut() {
-            j.is_bg = self.job_ends[n] == ControlOperator::BgAnd;
-
-            if j.is_bg {
+            if self.job_ends[counter] == ControlOperator::BgAnd {
+            //    j.is_bg = true;
                 j.text += " &";
+                j.exec_bg(core);
+            }else{
+                j.exec(core);
             }
-            j.exec(core);
-            n += 1;
+            counter += 1;
 
             if core.return_flag {
                 core.return_flag = false;

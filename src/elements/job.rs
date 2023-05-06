@@ -16,19 +16,21 @@ pub struct Job {
     pub pipelines: Vec<Pipeline>,
     pub pipeline_ends: Vec<ControlOperator>,
     pub text: String,
-    pub is_bg: bool,
+    //pub is_bg: bool,
 }
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        if self.is_bg {
-            if self.pipeline_ends[0] == ControlOperator::And || self.pipeline_ends[0] == ControlOperator::Or {
-               self.exec_and_or_bg_job(core);
-               return;
-            }else{ //single pipeline with &
-                self.pipelines[0].is_bg = true;
-                self.pipelines[0].text = self.text.clone(); //to show "&" at the end of the pipeline
-            }
+        self.exec_job(core);
+    }
+
+    pub fn exec_bg(&mut self, core: &mut ShellCore) {
+        if self.pipeline_ends[0] == ControlOperator::And || self.pipeline_ends[0] == ControlOperator::Or {
+           self.exec_and_or_bg_job(core);
+           return;
+        }else{ //single pipeline with &
+            self.pipelines[0].is_bg = true;
+            self.pipelines[0].text = self.text.clone(); //to show "&" at the end of the pipeline
         }
 
         self.exec_job(core);
@@ -80,7 +82,7 @@ impl Job {
             pipelines: vec![],
             pipeline_ends: vec![],
             text: "".to_string(),
-            is_bg: false,
+            //is_bg: false,
         }
     }
 
