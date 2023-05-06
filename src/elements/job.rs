@@ -21,22 +21,7 @@ pub struct Job {
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        self.exec_job(core);
-    }
-
-    pub fn exec_bg(&mut self, core: &mut ShellCore) {
-        if self.pipeline_ends[0] == ControlOperator::And || self.pipeline_ends[0] == ControlOperator::Or {
-           self.exec_and_or_bg_job(core);
-           return;
-        }else{ //single pipeline with &
-            self.pipelines[0].is_bg = true;
-            self.pipelines[0].text = self.text.clone(); //to show "&" at the end of the pipeline
-        }
-
-        self.exec_job(core);
-    }
-
-    fn exec_job(&mut self, core: &mut ShellCore) {
+        //self.exec_job(core);
         let mut eop = ControlOperator::NoChar;
         for (i, p) in self.pipelines.iter_mut().enumerate() {
             if core.has_flag('d') {
@@ -54,6 +39,18 @@ impl Job {
         }
     }
 
+    pub fn exec_bg(&mut self, core: &mut ShellCore) {
+        if self.pipeline_ends[0] == ControlOperator::And || self.pipeline_ends[0] == ControlOperator::Or {
+           self.exec_and_or_bg_job(core);
+           return;
+        }else{ //single pipeline with &
+            self.pipelines[0].is_bg = true;
+            self.pipelines[0].text = self.text.clone(); //to show "&" at the end of the pipeline
+        }
+
+        self.exec(core);
+    }
+
     fn exec_and_or_bg_job(&mut self, core: &mut ShellCore) {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
@@ -62,7 +59,7 @@ impl Job {
                 let pid = nix::unistd::getpid();
                 let _ = unistd::setpgid(pid, pid);
 
-                self.exec_job(core);
+                self.exec(core);
 
                 exit(core.vars["?"].parse::<i32>().unwrap());
             },
