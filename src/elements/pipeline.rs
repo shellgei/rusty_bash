@@ -62,13 +62,16 @@ impl Pipeline {
         }
     }
 
-    pub fn set_control_op(text: &mut Feeder, ans: &mut Pipeline) {
+    pub fn set_control_op(text: &mut Feeder, ans: &mut Pipeline) -> bool {
         let (n, op) = text.scanner_control_op();
         if let Some(p) = op {
             if p == ControlOperator::Pipe || p == ControlOperator::PipeAnd {
                 ans.text += &text.consume(n);
+                return true;
             }
         }
+
+        false
     }
 
     pub fn parse(text: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
@@ -82,42 +85,24 @@ impl Pipeline {
         loop {
             ans.text += &text.consume_blank();
 
-            let op;
             if let Some(c) = command::parse(text, core) {
                 ans.text += &c.get_text();
                 ans.commands.push(c);
-                (_, op) = text.scanner_control_op();
-                Pipeline::set_control_op(text, &mut ans);
+                if ! Pipeline::set_control_op(text, &mut ans){
+                    break;
+                }
             }else{
                 break;
             }
 
-            if let Some(p) = op {
-                /*
-                if p == ControlOperator::BgAnd {
-                    //ans.text += &text.consume(1);
-                    ans.is_bg = true;
-                    break;
-                }*/
-                if p != ControlOperator::Pipe && p != ControlOperator::PipeAnd {
-                    break;
-                }
-            }
-
-            if text.starts_with( "\n") {
+            if text.starts_with("\n") {
                 text.consume(1);
                 if ! text.feed_additional_line(core) {
                     return None;
                 }
             }
-
-            if text.starts_with(")") {
-            //if scanner_end_paren(text, 0) == 1 {
-                break;
-            }
         }
 
-        //ans.text += &text.consume_blank_return();
         if ans.commands.len() > 0 {
             Some(ans)
         }else{
