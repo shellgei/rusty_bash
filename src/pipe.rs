@@ -9,9 +9,3 @@ pub struct Pipe {
     pub my_out: RawFd,
     pub prev_out: RawFd,
 }
-
-impl Pipe {
-    pub fn new() -> Pipe {
-        Pipe{ my_in: -1, my_out: -1, prev_out: -1}
-    }
-}
