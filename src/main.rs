@@ -10,6 +10,7 @@ use std::{env, process};
 use crate::core::ShellCore;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
+use crate::pipe::Pipe;
 
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");
