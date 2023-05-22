@@ -46,6 +46,9 @@ impl Pipeline {
             let p = feeder.consume(len);
             ans.pipes.push(p.clone());
             ans.text += &p;
+
+            let blank_len = feeder.scanner_blank();
+            ans.text += &feeder.consume(blank_len);
             true
         }else{
             false
