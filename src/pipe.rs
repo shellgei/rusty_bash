@@ -28,6 +28,10 @@ impl Pipe {
             dup_and_close(self.prev_out, 0);
         }
     }
+
+    pub fn is_connected(&self) -> bool {
+        self.my_in != -1 || self.my_out != -1 || self.prev_out != -1
+    }   
 }
 
 pub fn dup_and_close(from: RawFd, to: RawFd){

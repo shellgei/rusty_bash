@@ -14,7 +14,16 @@ pub struct BraceCommand {
 
 impl Command for BraceCommand {
     fn exec(&mut self, core: &mut ShellCore) {
-        self.script.as_mut().unwrap().exec(core);//まだ仮実装
+        let script = match self.script {
+            Some(ref mut s) => s,
+            _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
+        };
+         
+        if self.pipe.is_connected() {
+            script.fork_exec(core, &mut self.pipe);
+        }else{
+            script.exec(core);
+        }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
