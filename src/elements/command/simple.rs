@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder};
+use crate::pipe::Pipe;
 use super::Command;
 use nix::unistd;
 use std::ffi::CString;
@@ -15,6 +16,7 @@ pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
+    pipe: Pipe,
 }
 
 impl Command for SimpleCommand {
@@ -50,6 +52,7 @@ impl Command for SimpleCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+    fn set_pipe(&mut self, pipe: Pipe){ self.pipe = pipe; }
 }
 
 impl SimpleCommand {
@@ -59,38 +62,39 @@ impl SimpleCommand {
             .collect();
     }
 
-   fn new() -> SimpleCommand {
-       SimpleCommand {
-           text: String::new(),
-           args: vec![],
-           cargs: vec![]
-       }
-   }
-
-   fn eat_blank(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
-       let blank_len = feeder.scanner_blank();
-       if blank_len == 0 {
-           return false;
-       }
-       ans.text += &feeder.consume(blank_len);
-       true
-   }
-
-   fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
-       let arg_len = feeder.scanner_word();
-       if arg_len == 0 {
-           return false;
-       }
-
-       let word = feeder.consume(arg_len);
-       if ans.args.len() == 0 && ( word == "{" || word == "}") {
-           return false;
-       }
-
-       ans.text += &word.clone();
-       ans.args.push(word);
-       true
-   }
+    fn new() -> SimpleCommand {
+        SimpleCommand {
+            text: String::new(),
+            args: vec![],
+            cargs: vec![],
+            pipe: Pipe::new(),
+        }
+    }
+ 
+    fn eat_blank(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
+        let blank_len = feeder.scanner_blank();
+        if blank_len == 0 {
+            return false;
+        }
+        ans.text += &feeder.consume(blank_len);
+        true
+    }
+ 
+    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
+        let arg_len = feeder.scanner_word();
+        if arg_len == 0 {
+            return false;
+        }
+ 
+        let word = feeder.consume(arg_len);
+        if ans.args.len() == 0 && ( word == "{" || word == "}") {
+            return false;
+        }
+ 
+        ans.text += &word.clone();
+        ans.args.push(word);
+        true
+    }
 
     pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = Self::new();

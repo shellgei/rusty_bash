@@ -56,7 +56,6 @@ impl Pipeline {
               && Self::eat_pipe(feeder, &mut ans){
         }
 
-            dbg!("{:?}", &feeder);
         if ans.commands.len() > 0 {
             Some(ans)
         }else{

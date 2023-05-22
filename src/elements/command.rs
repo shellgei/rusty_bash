@@ -6,6 +6,7 @@ pub mod paren;
 pub mod brace;
 
 use crate::{ShellCore, Feeder};
+use crate::pipe::Pipe;
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
@@ -21,6 +22,7 @@ impl Debug for dyn Command {
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore);
     fn get_text(&self) -> String;
+    fn set_pipe(&mut self, pipe: Pipe);
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {

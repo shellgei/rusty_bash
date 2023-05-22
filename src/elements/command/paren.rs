@@ -2,12 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder,Script};
+use crate::pipe::Pipe;
 use super::Command;
 
 #[derive(Debug)]
 pub struct ParenCommand {
     pub text: String,
     pub script: Option<Script>,
+    pipe: Pipe, 
 }
 
 impl Command for ParenCommand {
@@ -19,6 +21,7 @@ impl Command for ParenCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+    fn set_pipe(&mut self, pipe: Pipe){ self.pipe = pipe; }
 }
 
 impl ParenCommand {
@@ -26,6 +29,7 @@ impl ParenCommand {
         ParenCommand {
             text: String::new(),
             script: None,
+            pipe: Pipe::new(),
         }
     }
 

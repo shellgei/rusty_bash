@@ -2,12 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder,Script};
+use crate::pipe::Pipe;
 use super::Command;
 
 #[derive(Debug)]
 pub struct BraceCommand {
     pub text: String,
     pub script: Option<Script>,
+    pipe: Pipe,
 }
 
 impl Command for BraceCommand {
@@ -16,6 +18,7 @@ impl Command for BraceCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+    fn set_pipe(&mut self, pipe: Pipe){ self.pipe = pipe; }
 }
 
 impl BraceCommand {
@@ -23,6 +26,7 @@ impl BraceCommand {
         BraceCommand {
             text: String::new(),
             script: None,
+            pipe: Pipe::new(),
         }
     }
 
