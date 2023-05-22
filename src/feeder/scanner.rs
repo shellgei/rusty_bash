@@ -37,7 +37,9 @@ impl Feeder {
     }
 
     pub fn scanner_pipe(&mut self) -> usize {
-        if self.remaining.starts_with("|&") {
+        if self.remaining.starts_with("||") {
+            0
+        }else if self.remaining.starts_with("|&") {
             2
         }else if self.remaining.starts_with("|") {
             1
