@@ -15,11 +15,10 @@ pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
-    pipe: Pipe,
 }
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         if core.run_builtin(&mut self.args) {
             return;
         }
@@ -27,7 +26,7 @@ impl Command for SimpleCommand {
         self.set_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                self.pipe.connect();
+                pipe.connect();
                 match unistd::execvp(&self.cargs[0], &self.cargs) {
                     Err(Errno::EACCES) => {
                         println!("sush: {}: Permission denied", &self.args[0]);
@@ -52,7 +51,6 @@ impl Command for SimpleCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-    fn set_pipe(&mut self, pipe: Pipe){ self.pipe = pipe; }
 }
 
 impl SimpleCommand {
@@ -67,7 +65,6 @@ impl SimpleCommand {
             text: String::new(),
             args: vec![],
             cargs: vec![],
-            pipe: Pipe::new(),
         }
     }
  

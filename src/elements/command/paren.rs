@@ -8,19 +8,17 @@ use super::Command;
 pub struct ParenCommand {
     pub text: String,
     pub script: Option<Script>,
-    pipe: Pipe, 
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, core: &mut ShellCore) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         match self.script {
-            Some(ref mut s) => s.fork_exec(core, &mut self.pipe),
+            Some(ref mut s) => s.fork_exec(core, pipe),
             _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
         }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-    fn set_pipe(&mut self, pipe: Pipe){ self.pipe = pipe; }
 }
 
 impl ParenCommand {
@@ -28,7 +26,6 @@ impl ParenCommand {
         ParenCommand {
             text: String::new(),
             script: None,
-            pipe: Pipe::new(),
         }
     }
 

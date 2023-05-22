@@ -12,10 +12,6 @@ pub struct Pipe {
 }
 
 impl Pipe {
-    pub fn new() -> Pipe {
-        Pipe{ my_in: -1, my_out: -1, prev_out: -1}
-    }
-
     pub fn connect(&mut self) {
         if self.my_in != -1 {
             close(self.my_in).expect("Cannot close in-pipe");

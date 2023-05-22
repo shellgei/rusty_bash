@@ -16,16 +16,18 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        let len = self.commands.len();
+        self.pipes.resize(self.commands.len(), "".to_string());
+
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
-            let p = if i == len-1 {
-                (-1, -1)
-            }else{
-                pipe().expect("Pipe cannot open")
+            let p = match self.pipes[i].as_ref() {
+                "" => (-1, -1),
+                _  => pipe().expect("Pipe cannot open"),
             };
-            c.set_pipe(Pipe{my_in: p.0, my_out: p.1, prev_out: prevfd});
-            c.exec(core);
+
+            let mut pinfo = Pipe{my_in: p.0, my_out: p.1, prev_out: prevfd};
+            c.exec(core, &mut pinfo);
+
             if p.1 >= 0 { 
                 close(p.1).expect("Cannot close parent pipe out");
             }
@@ -60,6 +62,9 @@ impl Pipeline {
             let p = feeder.consume(len);
             ans.pipes.push(p.clone());
             ans.text += &p;
+
+            let blank_len = feeder.scanner_blank();
+            ans.text += &feeder.consume(blank_len);
             true
         }else{
             false

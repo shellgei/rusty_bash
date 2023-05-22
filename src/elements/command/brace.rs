@@ -8,25 +8,23 @@ use super::Command;
 pub struct BraceCommand {
     pub text: String,
     pub script: Option<Script>,
-    pipe: Pipe,
 }
 
 impl Command for BraceCommand {
-    fn exec(&mut self, core: &mut ShellCore) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         let script = match self.script {
             Some(ref mut s) => s,
             _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
         };
          
-        if self.pipe.is_connected() {
-            script.fork_exec(core, &mut self.pipe);
+        if pipe.is_connected() {
+            script.fork_exec(core, pipe);
         }else{
             script.exec(core);
         }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-    fn set_pipe(&mut self, pipe: Pipe){ self.pipe = pipe; }
 }
 
 impl BraceCommand {
@@ -34,7 +32,6 @@ impl BraceCommand {
         BraceCommand {
             text: String::new(),
             script: None,
-            pipe: Pipe::new(),
         }
     }
 
