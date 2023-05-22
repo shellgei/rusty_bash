@@ -31,6 +31,9 @@ impl Pipeline {
         if let Some(command) = command::parse(feeder, core){
             ans.text += &command.get_text();
             ans.commands.push(command);
+
+            let blank_len = feeder.scanner_blank();
+            ans.text += &feeder.consume(blank_len);
             true
         }else{
             false
@@ -56,7 +59,8 @@ impl Pipeline {
               && Self::eat_pipe(feeder, &mut ans){
         }
 
-            dbg!("{:?}", &feeder);
+        dbg!("{:?}", &ans);
+        dbg!("{:?}", &feeder);
         if ans.commands.len() > 0 {
             Some(ans)
         }else{
