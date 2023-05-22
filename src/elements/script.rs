@@ -3,6 +3,7 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
+use crate::pipe::Pipe;
 use nix::unistd;
 use nix::unistd::ForkResult;
 
@@ -25,11 +26,12 @@ impl Script {
         }
     }
 
-    pub fn fork_exec(&mut self, core: &mut ShellCore) {
+    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
+                pipe.connect();
                 self.exec(core);
                 core.exit();
             },

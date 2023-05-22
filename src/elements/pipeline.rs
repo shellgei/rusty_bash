@@ -27,7 +27,7 @@ impl Pipeline {
             c.set_pipe(Pipe{my_in: p.0, my_out: p.1, prev_out: prevfd});
             c.exec(core);
             if p.1 >= 0 { 
-                close(p.1).expect("Cannot close parent outfd");
+                close(p.1).expect("Cannot close parent pipe out");
             }
             prevfd = p.0;
         }
@@ -45,6 +45,9 @@ impl Pipeline {
         if let Some(command) = command::parse(feeder, core){
             ans.text += &command.get_text();
             ans.commands.push(command);
+
+            let blank_len = feeder.scanner_blank();
+            ans.text += &feeder.consume(blank_len);
             true
         }else{
             false
@@ -67,8 +70,7 @@ impl Pipeline {
         let mut ans = Pipeline::new();
 
         while Self::eat_command(feeder, core, &mut ans)
-              && Self::eat_pipe(feeder, &mut ans){
-        }
+              && Self::eat_pipe(feeder, &mut ans){ }
 
         if ans.commands.len() > 0 {
             Some(ans)
