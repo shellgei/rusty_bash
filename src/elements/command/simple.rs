@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore,Feeder};
+use crate::{ShellCore,Feeder,Pipe};
 use super::Command;
 use nix::unistd;
 use std::ffi::CString;
@@ -15,6 +15,7 @@ pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
+    pipe: Pipe,
 }
 
 impl Command for SimpleCommand {
@@ -63,7 +64,8 @@ impl SimpleCommand {
         SimpleCommand {
             text: String::new(),
             args: vec![],
-            cargs: vec![]
+            cargs: vec![],
+            pipe: Pipe::new(),
         }
     }
  
