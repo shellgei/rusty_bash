@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore,Feeder,Script};
-use crate::pipe::Pipe;
+use crate::Pipe;
 use super::Command;
 
 #[derive(Debug)]
