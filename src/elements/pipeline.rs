@@ -30,11 +30,15 @@ impl Pipeline {
                 c.set_group_leader();
             }
             c.exec(core);
+            if p.1 >= 0 {
+                close(p.1).expect("Cannot close outfd");
+            }
+            /*
             let out_fd = c.get_pipe_out();
             if out_fd >= 0 {
                 close(out_fd).expect("Cannot close outfd");
-            }
-            prevfd = c.get_pipe_end();
+            }*/
+            prevfd = p.0;//c.get_pipe_end();
         }
 
         self.set_job_and_wait(core);

@@ -89,8 +89,10 @@ pub trait Command {
     fn set_group_leader(&mut self);
     fn set_group(&mut self);
     fn get_pid(&self) -> Option<Pid>;
+    /*
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;
+    */
     fn get_text(&self) -> String;
     fn set_child_io(&mut self, _core: &mut ShellCore) -> Result<(), String> {Ok(())}
     fn exec_elems(&mut self, _core: &mut ShellCore) {}
