@@ -59,38 +59,38 @@ impl SimpleCommand {
             .collect();
     }
 
-   fn new() -> SimpleCommand {
-       SimpleCommand {
-           text: String::new(),
-           args: vec![],
-           cargs: vec![]
-       }
-   }
-
-   fn eat_blank(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
-       let blank_len = feeder.scanner_blank();
-       if blank_len == 0 {
-           return false;
-       }
-       ans.text += &feeder.consume(blank_len);
-       true
-   }
-
-   fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
-       let arg_len = feeder.scanner_word();
-       if arg_len == 0 {
-           return false;
-       }
-
-       let word = feeder.consume(arg_len);
-       if ans.args.len() == 0 && ( word == "{" || word == "}") {
-           return false;
-       }
-
-       ans.text += &word.clone();
-       ans.args.push(word);
-       true
-   }
+    fn new() -> SimpleCommand {
+        SimpleCommand {
+            text: String::new(),
+            args: vec![],
+            cargs: vec![]
+        }
+    }
+ 
+    fn eat_blank(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
+        let blank_len = feeder.scanner_blank();
+        if blank_len == 0 {
+            return false;
+        }
+        ans.text += &feeder.consume(blank_len);
+        true
+    }
+ 
+    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
+        let arg_len = feeder.scanner_word();
+        if arg_len == 0 {
+            return false;
+        }
+ 
+        let word = feeder.consume(arg_len);
+        if ans.args.len() == 0 && ( word == "{" || word == "}") {
+            return false;
+        }
+ 
+        ans.text += &word.clone();
+        ans.args.push(word);
+        true
+    }
 
     pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = Self::new();
