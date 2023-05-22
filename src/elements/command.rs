@@ -5,8 +5,7 @@ pub mod simple;
 pub mod paren;
 pub mod brace;
 
-use crate::{ShellCore, Feeder};
-use crate::pipe::Pipe;
+use crate::{ShellCore, Feeder, Pipe};
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
