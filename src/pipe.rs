@@ -9,5 +9,3 @@ pub struct Pipe {
     pub my_out: RawFd,
     pub prev_out: RawFd,
 }
-
-impl Pipe { pub fn parent_close(&mut self){ } }
