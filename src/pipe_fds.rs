@@ -4,8 +4,8 @@
 use std::os::unix::prelude::RawFd;
 
 #[derive(Debug)]
-pub struct Pipe {
-    pub my_in: RawFd,
-    pub my_out: RawFd,
-    pub prev_out: RawFd,
+pub struct PipeFds {
+    pub recv: RawFd,
+    pub send: RawFd,
+    pub prev: RawFd,
 }
