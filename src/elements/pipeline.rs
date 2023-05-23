@@ -16,7 +16,7 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        self.pipes.resize(self.commands.len(), "".to_string());
+        self.pipes.push("".to_string());
 
         let mut prevfd = -1;
         for (i, c) in self.commands.iter_mut().enumerate() {
