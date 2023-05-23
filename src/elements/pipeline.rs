@@ -15,20 +15,22 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        let mut prev_out = -1;
+        let mut pinfo = Pipe{my_in: -1, my_out: -1, prev_out: -1};
         for (i, _) in self.pipes.iter().enumerate() {
-            let p = unistd::pipe().expect("Pipe cannot open");
-            let mut pinfo = Pipe{my_in: p.0, my_out: p.1, prev_out: prev_out};
+            (pinfo.my_in, pinfo.my_out) = unistd::pipe().expect("Pipe cannot open");
             self.commands[i].exec(core, &mut pinfo);
 
-            if p.1 != -1 { 
-                unistd::close(p.1).expect("Cannot close parent pipe out");
+            if pinfo.my_out != -1 { 
+                unistd::close(pinfo.my_out).expect("Cannot close parent pipe out");
             }
-            prev_out = p.0;
+            pinfo.prev_out = pinfo.my_in;
         }
-        self.commands[self.pipes.len()].exec(core, &mut Pipe{my_in: -1, my_out: -1, prev_out: prev_out});
-        if prev_out != -1 {
-            unistd::close(prev_out).expect("Cannot close parent pipe out");
+
+        pinfo.my_out = -1;
+        pinfo.my_in = -1;
+        self.commands[self.pipes.len()].exec(core, &mut pinfo);
+        if pinfo.prev_out != -1 {
+            unistd::close(pinfo.prev_out).expect("Cannot close parent pipe out");
         }
     }
 
