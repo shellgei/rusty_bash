@@ -5,7 +5,7 @@ pub mod simple;
 pub mod paren;
 pub mod brace;
 
-use crate::{ShellCore, Feeder, Pipe};
+use crate::{ShellCore, Feeder, PipeFds};
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
@@ -19,7 +19,7 @@ impl Debug for dyn Command {
 }
 
 pub trait Command {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe);
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeFds);
     fn get_text(&self) -> String;
 }
 
