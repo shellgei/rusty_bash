@@ -19,10 +19,7 @@ impl Pipeline {
         for (i, _) in self.pipes.iter().enumerate() {
             (p.my_in, p.my_out) = unistd::pipe().expect("Cannot open pipe");
             self.commands[i].exec(core, &mut p);
-
-            if p.my_out != -1 { 
-                unistd::close(p.my_out).expect("Cannot close parent pipe out");
-            }
+            unistd::close(p.my_out).expect("Cannot close parent pipe out");
             p.prev_out = p.my_in;
         }
 
