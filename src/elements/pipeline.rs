@@ -25,6 +25,9 @@ impl Pipeline {
             };
             let mut pinfo = Pipe{my_in: p.0, my_out: p.1, prev_out: prev_out};
             command.exec(core, &mut pinfo);
+            if p.1 >= 0 { 
+                unistd::close(p.1).expect("Cannot close parent pipe out");
+            }
             prev_out = p.0;
         }
     }
