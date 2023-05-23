@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
+use crate::{Feeder, ShellCore, Pipe};
 use super::command;
 use super::command::Command;
 
@@ -15,7 +15,8 @@ pub struct Pipeline {
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
         for command in self.commands.iter_mut() {
-            command.exec(core);
+            let mut pinfo = Pipe{my_in: -1, my_out: -1, prev_out: -1};
+            command.exec(core, &mut pinfo);
         }
     }
 

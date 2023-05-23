@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore,Feeder,Script};
+use crate::{ShellCore, Feeder, Script, Pipe};
 use super::Command;
 
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub struct BraceCommand {
 }
 
 impl Command for BraceCommand {
-    fn exec(&mut self, core: &mut ShellCore) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         self.script.as_mut().unwrap().exec(core);//まだ仮実装
     }
 
