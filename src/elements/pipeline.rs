@@ -1,9 +1,8 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
-use crate::pipe::Pipe;
-use nix::unistd::{pipe,close};
+use crate::{Feeder, ShellCore, Pipe};
+use nix::unistd;
 use super::command;
 use super::command::Command;
 
@@ -18,20 +17,20 @@ impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
         self.pipes.push("".to_string());
 
-        let mut prevfd = -1;
-        for (i, c) in self.commands.iter_mut().enumerate() {
+        let mut prev_out = -1;
+        for (i, command) in self.commands.iter_mut().enumerate() {
             let p = match self.pipes[i].as_ref() {
                 "" => (-1, -1),
-                _  => pipe().expect("Pipe cannot open"),
+                _  => unistd::pipe().expect("Pipe cannot open"),
             };
 
-            let mut pinfo = Pipe{my_in: p.0, my_out: p.1, prev_out: prevfd};
-            c.exec(core, &mut pinfo);
+            let mut pinfo = Pipe{my_in: p.0, my_out: p.1, prev_out: prev_out};
+            command.exec(core, &mut pinfo);
 
             if p.1 >= 0 { 
-                close(p.1).expect("Cannot close parent pipe out");
+                unistd::close(p.1).expect("Cannot close parent pipe out");
             }
-            prevfd = p.0;
+            prev_out = p.0;
         }
     }
 

@@ -2,8 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::{Feeder, ShellCore};
-use crate::pipe::Pipe;
+use crate::{Feeder, ShellCore, Pipe};
 use nix::unistd;
 use nix::unistd::ForkResult;
 
