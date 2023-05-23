@@ -13,16 +13,14 @@ pub struct Pipe {
 
 impl Pipe {
     pub fn connect(&mut self) {
-        if self.my_in != -1 {
-            unistd::close(self.my_in).expect("Cannot close in-pipe");
-        }
-        if self.my_out != -1 {
-            dup_and_close(self.my_out, 1);
-        }
+        close(self.my_in, "Cannot close in-pipe");
+        dup_and_close(self.my_out, 1);
+        dup_and_close(self.prev_out, 0);
+    }
 
-        if self.prev_out != -1 {
-            dup_and_close(self.prev_out, 0);
-        }
+    pub fn parent_close(&mut self) {
+        close(self.my_out, "Cannot close parent pipe out");
+        close(self.prev_out,"Cannot close parent prev pipe out");
     }
 
     pub fn is_connected(&self) -> bool {
@@ -30,8 +28,17 @@ impl Pipe {
     }
 }
 
-pub fn dup_and_close(from: RawFd, to: RawFd){
-    unistd::close(to).expect(&("Can't close fd: ".to_owned() + &to.to_string()));
+fn close(fd: RawFd, err_str: &str){
+    if fd >= 0 {
+        unistd::close(fd).expect(err_str);
+    }
+}
+
+fn dup_and_close(from: RawFd, to: RawFd) {
+    if from < 0 || to < 0 {
+        return;
+    }
+    close(to,&("Can't close fd: ".to_owned() + &to.to_string()));
     unistd::dup2(from, to).expect("Can't copy file descriptors");
-    unistd::close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
+    close(from, &("Can't close fd: ".to_owned() + &from.to_string()));
 }
