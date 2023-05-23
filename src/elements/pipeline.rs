@@ -19,14 +19,14 @@ impl Pipeline {
         self.pipes.resize(self.commands.len(), "".to_string());
 
         let mut prev_out = -1;
-        for (i, c) in self.commands.iter_mut().enumerate() {
+        for (i, command) in self.commands.iter_mut().enumerate() {
             let p = match self.pipes[i].as_ref() {
                 "" => (-1, -1),
                 _  => pipe().expect("Pipe cannot open"),
             };
 
             let mut pinfo = Pipe{my_in: p.0, my_out: p.1, prev_out: prev_out};
-            c.exec(core, &mut pinfo);
+            command.exec(core, &mut pinfo);
 
             if p.1 >= 0 { 
                 close(p.1).expect("Cannot close parent pipe out");
