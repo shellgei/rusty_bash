@@ -63,7 +63,7 @@ impl SimpleCommand {
         SimpleCommand {
             text: String::new(),
             args: vec![],
-            cargs: vec![]
+            cargs: vec![],
         }
     }
  
