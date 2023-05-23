@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script, Pipe};
+use crate::{ShellCore, Feeder, Script, PipeFds};
 use super::Command;
 
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeFds) {
         match self.script {
             Some(ref mut s) => s.fork_exec(core, pipe),
             _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::{Feeder, ShellCore, Pipe};
+use crate::{Feeder, ShellCore, PipeFds};
 use nix::unistd;
 use nix::unistd::ForkResult;
 
@@ -25,7 +25,7 @@ impl Script {
         }
     }
 
-    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
+    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut PipeFds) {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 let pid = nix::unistd::getpid();
