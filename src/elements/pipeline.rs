@@ -14,7 +14,7 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        for command in self.commands.iter_mut() {
+        for (i, command) in self.commands.iter_mut().enumerate() {
             let mut pinfo = Pipe{my_in: -1, my_out: -1, prev_out: -1};
             command.exec(core, &mut pinfo);
         }
