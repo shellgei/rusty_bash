@@ -14,8 +14,8 @@ pub struct PipeRecipe {
 impl PipeRecipe {
     pub fn connect(&mut self) {
         close(self.recv, "Cannot close in-pipe");
-        dup_and_close(self.send, 1);
-        dup_and_close(self.prev, 0);
+        replace(self.send, 1);
+        replace(self.prev, 0);
     }
 
     pub fn parent_close(&mut self) {
@@ -30,12 +30,11 @@ fn close(fd: RawFd, err_str: &str){
     }
 }
 
-fn dup_and_close(from: RawFd, to: RawFd) {
+fn replace(from: RawFd, to: RawFd) {
     if from < 0 || to < 0 {
         return;
     }
     close(to,&("Can't close fd: ".to_owned() + &to.to_string()));
     unistd::dup2(from, to).expect("Can't copy file descriptors");
-    close(from, &("Can't close fd: ".to_owned() + &from.to_string()));
+    close(from, &("Can't close fd: ".to_owned() + &from.to_string()))
 }
-
