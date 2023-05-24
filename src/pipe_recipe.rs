@@ -34,7 +34,6 @@ fn replace(from: RawFd, to: RawFd) {
     if from < 0 || to < 0 {
         return;
     }
-    close(to,&("Can't close fd: ".to_owned() + &to.to_string()));
     unistd::dup2(from, to).expect("Can't copy file descriptors");
     close(from, &("Can't close fd: ".to_owned() + &from.to_string()))
 }
