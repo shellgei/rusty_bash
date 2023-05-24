@@ -26,6 +26,7 @@ impl Command for SimpleCommand {
         self.set_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
+                pipe.connect();
                 match unistd::execvp(&self.cargs[0], &self.cargs) {
                     Err(Errno::EACCES) => {
                         println!("sush: {}: Permission denied", &self.args[0]);
@@ -43,6 +44,7 @@ impl Command for SimpleCommand {
                 }
             },
             Ok(ForkResult::Parent { child } ) => {
+                pipe.parent_close();
                 core.wait_process(child);
             },
             Err(err) => panic!("Failed to fork. {}", err),
