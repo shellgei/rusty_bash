@@ -49,9 +49,6 @@ pub enum CommandType {
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct("COMMAND")
-            //.field("bar", &self.bar)
-            //.field("baz", &self.baz)
-            //.field("addr", &format_args!("{}", self.addr))
             .finish()
     }
 }
@@ -92,8 +89,10 @@ pub trait Command {
     fn set_group_leader(&mut self);
     fn set_group(&mut self);
     fn get_pid(&self) -> Option<Pid>;
+    /*
     fn get_pipe_end(&mut self) -> RawFd;
     fn get_pipe_out(&mut self) -> RawFd;
+    */
     fn get_text(&self) -> String;
     fn set_child_io(&mut self, _core: &mut ShellCore) -> Result<(), String> {Ok(())}
     fn exec_elems(&mut self, _core: &mut ShellCore) {}

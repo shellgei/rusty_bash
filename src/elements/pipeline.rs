@@ -4,8 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::command::Command;
 use crate::operators::ControlOperator;
-use nix::unistd::pipe;
-use crate::file_descs::FileDescs;
+use nix::unistd::{pipe,close};
 use crate::elements::command;
 
 #[derive(Debug)]
@@ -31,8 +30,15 @@ impl Pipeline {
                 c.set_group_leader();
             }
             c.exec(core);
-            FileDescs::set_parent_io(c.get_pipe_out());
-            prevfd = c.get_pipe_end();
+            if p.1 >= 0 {
+                close(p.1).expect("Cannot close outfd");
+            }
+            /*
+            let out_fd = c.get_pipe_out();
+            if out_fd >= 0 {
+                close(out_fd).expect("Cannot close outfd");
+            }*/
+            prevfd = p.0;//c.get_pipe_end();
         }
 
         self.set_job_and_wait(core);

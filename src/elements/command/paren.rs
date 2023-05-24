@@ -77,8 +77,10 @@ impl Command for CommandParen {
         self.fds.prevpipein = pprev;
     }
 
+    /*
     fn get_pipe_end(&mut self) -> RawFd { self.fds.pipein }
     fn get_pipe_out(&mut self) -> RawFd { self.fds.pipeout }
+    */
     fn get_text(&self) -> String { self.text.clone() }
 }
 

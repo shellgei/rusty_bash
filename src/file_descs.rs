@@ -103,10 +103,12 @@ impl FileDescs {
         close(from).expect(&("Can't close fd: ".to_owned() + &from.to_string()));
     }
     
+    /*
     
     pub fn set_parent_io(pout: RawFd) {
         if pout >= 0 {
             close(pout).expect("Cannot close outfd");
         };
     }
+    */
 }
