@@ -4,13 +4,13 @@
 mod core;
 mod feeder;
 mod elements;
-mod pipe_fds;
+mod pipe_recipe;
 
 use std::{env, process};
 use crate::core::ShellCore;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
-use crate::pipe_fds::PipeFds;
+use crate::pipe_recipe::PipeRecipe;
 
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");

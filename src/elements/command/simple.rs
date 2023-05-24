@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, PipeFds};
+use crate::{ShellCore, Feeder, PipeRecipe};
 use super::Command;
 use nix::unistd;
 use std::ffi::CString;
@@ -18,7 +18,7 @@ pub struct SimpleCommand {
 }
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeFds) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe) {
         if core.run_builtin(&mut self.args) {
             return;
         }

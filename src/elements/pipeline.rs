@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore, PipeFds};
+use crate::{Feeder, ShellCore, PipeRecipe};
 use nix::unistd;
 use super::command;
 use super::command::Command;
@@ -15,7 +15,7 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        let mut p = PipeFds{recv: -1, send: -1, prev: -1};
+        let mut p = PipeRecipe{recv: -1, send: -1, prev: -1};
         for (i, _) in self.pipes.iter().enumerate() {
             (p.recv, p.send) = unistd::pipe().expect("Cannot open pipe");
             self.commands[i].exec(core, &mut p);
