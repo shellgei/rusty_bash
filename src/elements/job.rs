@@ -21,11 +21,10 @@ pub struct Job {
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        //self.exec_job(core);
         let mut eop = ControlOperator::NoChar;
-        for (i, p) in self.pipelines.iter_mut().enumerate() {
+        for i in 0..self.pipelines.len() {
             if core.has_flag('d') {
-                eprintln!("{}", blue_string(&p.get_text()));
+                eprintln!("{}", blue_string(&self.pipelines[i].get_text()));
             }
 
             let status = core.get_var("?") == "0";
@@ -34,8 +33,21 @@ impl Job {
                 eop = self.pipeline_ends[i].clone();
                 continue;
             }
-            p.exec(core);
+            self.pipelines[i].exec(core);
+            self.set_job_and_wait(i, core);
             eop = self.pipeline_ends[i].clone();
+        }
+    }
+
+    fn set_job_and_wait(&mut self, pos: usize, core: &mut ShellCore) {
+        if self.pipelines[pos].is_bg {
+            core.jobs.add_bg_job(&self.pipelines[pos].text, &self.pipelines[pos].commands);
+        }else{
+            core.jobs.set_fg_job(&self.pipelines[pos].text, &self.pipelines[pos].commands);
+            core.wait_job();
+            if self.pipelines[pos].not_flag {
+                core.reverse_exit_status();
+            }
         }
     }
 

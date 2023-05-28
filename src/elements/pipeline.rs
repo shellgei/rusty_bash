@@ -13,7 +13,7 @@ pub struct Pipeline {
     pub text: String,
     pub is_bg: bool,
     pub job_no: u32,
-    not_flag: bool,
+    pub not_flag: bool,
 }
 
 impl Pipeline {
@@ -33,17 +33,12 @@ impl Pipeline {
             if p.1 >= 0 {
                 close(p.1).expect("Cannot close outfd");
             }
-            /*
-            let out_fd = c.get_pipe_out();
-            if out_fd >= 0 {
-                close(out_fd).expect("Cannot close outfd");
-            }*/
             prevfd = p.0;//c.get_pipe_end();
         }
-
-        self.set_job_and_wait(core);
+//        self.set_job_and_wait(core);
     }
 
+    /*
     fn set_job_and_wait(&mut self, core: &mut ShellCore) {
         if self.is_bg {
             core.jobs.add_bg_job(&self.text, &self.commands);
@@ -54,7 +49,7 @@ impl Pipeline {
                 core.reverse_exit_status();
             }
         }
-    }
+    }*/
 
     pub fn get_text(&self) -> String { self.text.clone() }
 
