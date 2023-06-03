@@ -68,8 +68,7 @@ impl Pipeline {
         while Self::eat_command(feeder, core, &mut ans)
               && Self::eat_pipe(feeder, &mut ans){ }
 
-        //eprintln!("{:?}", &ans);
-        //eprintln!("{:?}", &feeder);
+        eprintln!("{:?}\n{:?}", &ans, &feeder);
         if ans.commands.len() > 0 {
             Some(ans)
         }else{
