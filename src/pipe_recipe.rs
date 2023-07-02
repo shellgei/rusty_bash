@@ -22,6 +22,10 @@ impl PipeRecipe {
         close(self.send, "Cannot close parent pipe out");
         close(self.prev,"Cannot close parent prev pipe out");
     }
+
+    pub fn is_connected(&self) -> bool {
+        self.recv != -1 || self.send != -1 || self.prev != -1
+    }
 }
 
 fn close(fd: RawFd, err_str: &str){
