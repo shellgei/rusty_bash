@@ -19,7 +19,7 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe) {
-        if core.run_builtin(&mut self.args) {
+        if ! pipe.is_connected() && core.run_builtin(&mut self.args) {
             return;
         }
 
@@ -27,6 +27,10 @@ impl Command for SimpleCommand {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 pipe.connect();
+                if core.run_builtin(&mut self.args) {
+                    core.exit();
+                }
+
                 match unistd::execvp(&self.cargs[0], &self.cargs) {
                     Err(Errno::EACCES) => {
                         println!("sush: {}: Permission denied", &self.args[0]);
