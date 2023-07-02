@@ -105,5 +105,10 @@ res=$($com <<< 'seq 3 |
 	tac | head -n 1')
 [ "$res" = "3" ] || err $LINENO
 
+res=$($com <<< 'seq 3 |    
+
+	  tac | head -n 1')
+[ "$res" = "3" ] || err $LINENO
+
 
 echo OK $0

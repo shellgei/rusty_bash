@@ -54,7 +54,7 @@ impl Pipeline {
             ans.pipes.push(p.clone());
             ans.text += &p;
 
-            let blank_len = feeder.scanner_multiline_blank();
+            let blank_len = feeder.scanner_blank();
             ans.text += &feeder.consume(blank_len);
             true
         }else{
@@ -71,7 +71,8 @@ impl Pipeline {
 
         while Self::eat_pipe(feeder, &mut ans){
             loop {
-        eprintln!("{:?}\n{:?}", &ans, &feeder);
+                let blank_len = feeder.scanner_multiline_blank();
+                ans.text += &feeder.consume(blank_len);
                 if Self::eat_command(feeder, core, &mut ans){
                     break;
                 }
