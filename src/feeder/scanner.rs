@@ -18,11 +18,17 @@ impl Feeder {
     pub fn scanner_blank(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = " \t".find(ch) {
-                ans += 1;
-            }else{
-                break;
-            }
+            if let Some(_) = " \t".find(ch) { ans += 1; }
+            else{ break; }
+        }
+        ans
+    }
+
+    pub fn scanner_multiline_blank(&mut self) -> usize {
+        let mut ans = 0;
+        for ch in self.remaining.chars() {
+            if let Some(_) = " \t\n".find(ch) { ans += 1; }
+            else{ break; }
         }
         ans
     }

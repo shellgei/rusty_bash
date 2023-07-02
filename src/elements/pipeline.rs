@@ -54,7 +54,7 @@ impl Pipeline {
             ans.pipes.push(p.clone());
             ans.text += &p;
 
-            let blank_len = feeder.scanner_blank();
+            let blank_len = feeder.scanner_multiline_blank();
             ans.text += &feeder.consume(blank_len);
             true
         }else{
@@ -65,11 +65,22 @@ impl Pipeline {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
 
-        while Self::eat_command(feeder, core, &mut ans)
-              && Self::eat_pipe(feeder, &mut ans){
-              }
+        if ! Self::eat_command(feeder, core, &mut ans){
+            return None;
+        }
 
+        while Self::eat_pipe(feeder, &mut ans){
+            loop {
         eprintln!("{:?}\n{:?}", &ans, &feeder);
+                if Self::eat_command(feeder, core, &mut ans){
+                    break;
+                }
+                if ! feeder.feed_additional_line(core) {
+                    return None;
+                }
+            }
+        }
+
         if ans.commands.len() > 0 {
             Some(ans)
         }else{
