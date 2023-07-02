@@ -13,7 +13,7 @@ pub struct ParenCommand {
 impl Command for ParenCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe) {
         match self.script {
-            Some(ref mut s) => s.fork_exec(core),
+            Some(ref mut s) => s.fork_exec(core, pipe),
             _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
         }
     }

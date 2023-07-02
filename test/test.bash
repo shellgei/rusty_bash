@@ -111,4 +111,7 @@ res=$($com <<< 'seq 3 |
 [ "$res" = "3" ] || err $LINENO
 
 
+res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l')
+[ "$res" = "2" ] || err $LINENO
+
 echo OK $0

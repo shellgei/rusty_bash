@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::{Feeder, ShellCore};
+use crate::{Feeder, ShellCore, PipeRecipe};
 use nix::unistd;
 use nix::unistd::ForkResult;
 
@@ -25,15 +25,17 @@ impl Script {
         }
     }
 
-    pub fn fork_exec(&mut self, core: &mut ShellCore) {
+    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe) {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
+                pipe.connect();
                 self.exec(core);
                 core.exit();
             },
             Ok(ForkResult::Parent { child } ) => {
+                pipe.parent_close();
                 core.wait_process(child);
             },
             Err(err) => panic!("Failed to fork. {}", err),
