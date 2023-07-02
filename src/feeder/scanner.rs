@@ -15,22 +15,21 @@ impl Feeder {
         ans
     }
 
-    pub fn scanner_blank(&mut self) -> usize {
+    fn scanner_consecutive(&mut self, charlist: &str) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = " \t".find(ch) { ans += 1; }
+            if let Some(_) = charlist.find(ch) { ans += 1; }
             else{ break; }
         }
         ans
     }
 
+    pub fn scanner_blank(&mut self) -> usize {
+        self.scanner_consecutive(" \t")
+    }
+
     pub fn scanner_multiline_blank(&mut self) -> usize {
-        let mut ans = 0;
-        for ch in self.remaining.chars() {
-            if let Some(_) = " \t\n".find(ch) { ans += 1; }
-            else{ break; }
-        }
-        ans
+        self.scanner_consecutive(" \t\n")
     }
 
     pub fn scanner_job_end(&mut self) -> usize {
