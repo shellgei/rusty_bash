@@ -39,7 +39,7 @@ impl Pipeline {
             ans.text += &command.get_text();
             ans.commands.push(command);
 
-            let blank_len = feeder.scanner_blank();
+            let blank_len = feeder.scanner_blank(core);
             ans.text += &feeder.consume(blank_len);
             true
         }else{
@@ -47,14 +47,14 @@ impl Pipeline {
         }
     }
 
-    fn eat_pipe(feeder: &mut Feeder, ans: &mut Pipeline) -> bool {
+    fn eat_pipe(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_pipe();
         if len > 0 {
             let p = feeder.consume(len);
             ans.pipes.push(p.clone());
             ans.text += &p;
 
-            let blank_len = feeder.scanner_blank();
+            let blank_len = feeder.scanner_blank(core);
             ans.text += &feeder.consume(blank_len);
             true
         }else{
@@ -66,7 +66,7 @@ impl Pipeline {
         let mut ans = Pipeline::new();
 
         while Self::eat_command(feeder, core, &mut ans)
-              && Self::eat_pipe(feeder, &mut ans){ }
+              && Self::eat_pipe(feeder, &mut ans, core){ }
 
         eprintln!("{:?}\n{:?}", &ans, &feeder);
         if ans.commands.len() > 0 {

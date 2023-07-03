@@ -130,4 +130,17 @@ res=$($com <<< '{ echo a; }#aaaaa')
 res=$($com <<< '{ echo a; } #aaaaa')
 [ "$res" = "a" ] || err $LINENO
 
+### NEW LINE ###
+
+res=$($com <<< 'e\
+c\
+ho hoge')
+[ "$res" = "hoge" ] || err $LINENO
+
+res=$($com <<< 'e\
+c\
+ho \
+hoge')
+[ "$res" = "hoge" ] || err $LINENO
+
 echo OK $0

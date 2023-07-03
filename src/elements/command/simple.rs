@@ -69,8 +69,8 @@ impl SimpleCommand {
         }
     }
  
-    fn eat_blank(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
-        let blank_len = feeder.scanner_blank();
+    fn eat_blank(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
+        let blank_len = feeder.scanner_blank(core);
         if blank_len == 0 {
             return false;
         }
@@ -81,8 +81,8 @@ impl SimpleCommand {
         true
     }
  
-    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand) -> bool {
-        let arg_len = feeder.scanner_word();
+    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
+        let arg_len = feeder.scanner_word(core);
         if arg_len == 0 {
             return false;
         }
@@ -97,13 +97,13 @@ impl SimpleCommand {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<SimpleCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = Self::new();
         let backup = feeder.clone();
 
-        Self::eat_blank(feeder, &mut ans);
-        while Self::eat_word(feeder, &mut ans) &&
-              Self::eat_blank(feeder, &mut ans) {}
+        Self::eat_blank(feeder, &mut ans, core);
+        while Self::eat_word(feeder, &mut ans, core) &&
+              Self::eat_blank(feeder, &mut ans, core) {}
 
         if ans.args.len() > 0 {
             Some(ans)

@@ -2,13 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::Feeder;
+use crate::ShellCore;
 
 impl Feeder {
-    pub fn scanner_word(&mut self) -> usize {
+    pub fn scanner_word(&mut self, core: &mut ShellCore) -> usize {
         if self.remaining.starts_with("#") {
             return 0;
         }
-
         let mut ans = 0;
         for ch in self.remaining.chars() {
             if let Some(_) = " \t\n;&|()".find(ch) {
@@ -16,16 +16,40 @@ impl Feeder {
             }
             ans += ch.len_utf8();
         }
+
+        if self.remaining.ends_with("\\\n")
+            && self.remaining.len() == ans + 1 {
+            self.remaining.pop();
+            self.remaining.pop();
+            if self.feed_additional_line(core){
+                return self.scanner_word(core);
+            }else{
+                return ans - 1;
+            }
+        }
+
         ans
     }
 
-    pub fn scanner_blank(&mut self) -> usize {
+    pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
             if let Some(_) = " \t".find(ch) {
                 ans += 1;
             }else{
                 break;
+            }
+        }
+
+        if self.remaining.ends_with("\\\n")
+            && self.remaining.len() == ans + 2 {
+            self.remaining.pop();
+            self.remaining.pop();
+            if self.feed_additional_line(core){
+                let n = self.scanner_blank(core);
+                return n;
+            }else{
+                return ans;
             }
         }
         ans
