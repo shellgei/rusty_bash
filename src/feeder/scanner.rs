@@ -12,7 +12,7 @@ impl Feeder {
     }
 
     fn scanner_chars(&mut self, charlist: &str, core: &mut ShellCore) -> usize {
-        let mut next_line = false; 
+        let mut next_line = false;
         let mut ans = 0;
         for ch in self.remaining.chars() {
             if &self.remaining[ans..] == "\\\n" {
