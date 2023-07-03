@@ -53,6 +53,15 @@ echo c) )   ')
 b
 c" ] || err $LINENO
 
+res=$($com <<< '   (#aaaa
+
+echo a; (echo b ;  #bbb
+
+echo c) )   ')
+[ "$res" = "a
+b
+c" ] || err $LINENO
+
 res=$($com <<< '(
 echo a; (echo b ; 
 ')

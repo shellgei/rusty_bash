@@ -61,4 +61,9 @@ impl Feeder {
         }
         ans
     }
+
+    pub fn scanner_next_line_request(&self) -> usize {
+        if self.remaining.starts_with("\\\n"){ 2 }
+        else{ 0 }
+    }
 }
