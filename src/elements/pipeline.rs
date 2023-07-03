@@ -62,6 +62,18 @@ impl Pipeline {
         }
     }
 
+    fn eat_blank_and_comment(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) {
+        loop {
+            let blank_len = feeder.scanner_multiline_blank(core);
+            ans.text += &feeder.consume(blank_len);             //空白、空行を削除
+            let comment_len = feeder.scanner_comment();
+            ans.text += &feeder.consume(comment_len);             //コメントを削除
+            if blank_len + comment_len == 0 { //空白、空行、コメントがなければ出る
+                break;
+            }
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
 
@@ -71,8 +83,7 @@ impl Pipeline {
 
         while Self::eat_pipe(feeder, &mut ans, core){
             loop {                                     //パイプの後ろでの処理
-                let blank_len = feeder.scanner_multiline_blank(core);
-                ans.text += &feeder.consume(blank_len);          //空行を削除
+                Self::eat_blank_and_comment(feeder, &mut ans, core);
                 if Self::eat_command(feeder, &mut ans, core){
                     break; //コマンドがあれば73行目のloopを抜けてパイプを探す
                 }
@@ -82,11 +93,7 @@ impl Pipeline {
             }
         }
 
-        if ans.commands.len() > 0 {
-            Some(ans)
-        }else{
-            None
-        }
+        Some(ans)
     }
 
 }
