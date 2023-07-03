@@ -5,6 +5,12 @@ use super::Feeder;
 use crate::ShellCore;
 
 impl Feeder {
+    fn feed_and_connect(&mut self, core: &mut ShellCore) -> bool {
+        self.remaining.pop();
+        self.remaining.pop();
+        return self.feed_additional_line(core);
+    }
+
     pub fn scanner_word(&mut self, core: &mut ShellCore) -> usize {
         if self.remaining.starts_with("#") {
             return 0;
@@ -19,9 +25,7 @@ impl Feeder {
 
         if self.remaining.ends_with("\\\n")
             && self.remaining.len() == ans + 1 {
-            self.remaining.pop();
-            self.remaining.pop();
-            if self.feed_additional_line(core){
+            if self.feed_and_connect(core){
                 return self.scanner_word(core);
             }else{
                 return ans - 1;
@@ -43,9 +47,7 @@ impl Feeder {
 
         if self.remaining.ends_with("\\\n")
             && self.remaining.len() == ans + 2 {
-            self.remaining.pop();
-            self.remaining.pop();
-            if self.feed_additional_line(core){
+            if self.feed_and_connect(core){
                 return self.scanner_blank(core);
             }else{
                 return ans;
