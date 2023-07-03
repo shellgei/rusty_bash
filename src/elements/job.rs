@@ -24,9 +24,11 @@ impl Job {
         }
     }
 
-    fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job) -> bool {
-        let num = feeder.scanner_blank();
+    fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
+        let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
+        let com_num = feeder.scanner_comment();
+        ans.text += &feeder.consume(com_num);
         if feeder.starts_with("\n") {
             ans.text += &feeder.consume(1);
             true
@@ -37,11 +39,11 @@ impl Job {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
         let mut ans = Self::new();
-        while Self::eat_blank_line(feeder, &mut ans) {}
+        while Self::eat_blank_line(feeder, &mut ans, core) {}
         if let Some(pipeline) = Pipeline::parse(feeder, core){
             ans.text += &pipeline.text.clone();
             ans.pipelines.push(pipeline);
-            while Self::eat_blank_line(feeder, &mut ans) {}
+            while Self::eat_blank_line(feeder, &mut ans, core) {}
             return Some(ans);
         }
         None

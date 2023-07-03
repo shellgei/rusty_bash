@@ -34,12 +34,12 @@ impl Pipeline {
         }
     }
 
-    fn eat_command(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Pipeline) -> bool {
+    fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
         if let Some(command) = command::parse(feeder, core){
             ans.text += &command.get_text();
             ans.commands.push(command);
 
-            let blank_len = feeder.scanner_blank();
+            let blank_len = feeder.scanner_blank(core);
             ans.text += &feeder.consume(blank_len);
             true
         }else{
@@ -47,14 +47,14 @@ impl Pipeline {
         }
     }
 
-    fn eat_pipe(feeder: &mut Feeder, ans: &mut Pipeline) -> bool {
-        let len = feeder.scanner_pipe();
+    fn eat_pipe(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_pipe(core);
         if len > 0 {
             let p = feeder.consume(len);
             ans.pipes.push(p.clone());
             ans.text += &p;
 
-            let blank_len = feeder.scanner_blank();
+            let blank_len = feeder.scanner_blank(core);
             ans.text += &feeder.consume(blank_len);
             true
         }else{
@@ -65,18 +65,18 @@ impl Pipeline {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
 
-        if ! Self::eat_command(feeder, core, &mut ans){
+        if ! Self::eat_command(feeder, &mut ans, core){      //最初のコマンド
             return None;
         }
 
-        while Self::eat_pipe(feeder, &mut ans){
-            loop {
-                let blank_len = feeder.scanner_multiline_blank();
-                ans.text += &feeder.consume(blank_len);
-                if Self::eat_command(feeder, core, &mut ans){
-                    break;
+        while Self::eat_pipe(feeder, &mut ans, core){
+            loop {                                     //パイプの後ろでの処理
+                let blank_len = feeder.scanner_multiline_blank(core);
+                ans.text += &feeder.consume(blank_len);          //空行を削除
+                if Self::eat_command(feeder, &mut ans, core){
+                    break; //コマンドがあれば73行目のloopを抜けてパイプを探す
                 }
-                if ! feeder.feed_additional_line(core) {
+                if ! feeder.feed_additional_line(core) { //追加の行の読み込み
                     return None;
                 }
             }
@@ -88,4 +88,5 @@ impl Pipeline {
             None
         }
     }
+
 }
