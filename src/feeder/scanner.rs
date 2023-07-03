@@ -28,12 +28,8 @@ impl Feeder {
             }
         }
 
-        if next_line {
-            if self.feed_and_connect(core){
-                return self.scanner_chars(charlist, core);
-            }else{
-                return ans;
-            }
+        if next_line && self.feed_and_connect(core){
+            return self.scanner_chars(charlist, core);
         }
         ans
     }
@@ -57,12 +53,8 @@ impl Feeder {
             ans += ch.len_utf8();
         }
 
-        if next_line {
-            if self.feed_and_connect(core){
-                return self.scanner_word(core);
-            }else{
-                return ans;
-            }
+        if next_line && self.feed_and_connect(core){
+            return self.scanner_word(core);
         }
         ans
     }
