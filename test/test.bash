@@ -143,4 +143,12 @@ ho \
 hoge')
 [ "$res" = "hoge" ] || err $LINENO
 
+res=$($com <<< 'echo hoge |\
+rev')
+[ "$res" = "egoh" ] || err $LINENO
+
+res=$($com <<< 'echo hoge |\
+& rev')
+[ "$res" = "egoh" ] || err $LINENO
+
 echo OK $0

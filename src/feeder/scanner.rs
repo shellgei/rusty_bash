@@ -65,7 +65,15 @@ impl Feeder {
         0
     }
 
-    pub fn scanner_pipe(&self) -> usize {
+    pub fn scanner_pipe(&mut self, core: &mut ShellCore) -> usize {
+        if self.remaining.starts_with("|\\\n"){
+            if self.feed_and_connect(core){
+                return self.scanner_pipe(core);
+            }else{
+                return 1;
+            }
+        }
+
         if self.remaining.starts_with("||")     { 0 }
         else if self.remaining.starts_with("|&"){ 2 }
         else if self.remaining.starts_with("|") { 1 }

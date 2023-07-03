@@ -48,7 +48,7 @@ impl Pipeline {
     }
 
     fn eat_pipe(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_pipe();
+        let len = feeder.scanner_pipe(core);
         if len > 0 {
             let p = feeder.consume(len);
             ans.pipes.push(p.clone());
