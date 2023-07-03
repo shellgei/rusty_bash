@@ -96,4 +96,17 @@ res=$($com <<< '{ echo a }')
 res=$($com <<< 'eeeeeecho hoge')
 [ "$?" = 127 ] || err $LINENO
 
+### COMMENT ###
+
+res=$($com <<< 'echo a #aaaaa')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< '
+#comment comment
+   #comment comment
+echo a #aaaaa
+#comment comment
+')
+[ "$res" = "a" ] || err $LINENO
+
 echo OK $0

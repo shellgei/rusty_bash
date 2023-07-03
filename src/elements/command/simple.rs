@@ -75,6 +75,9 @@ impl SimpleCommand {
             return false;
         }
         ans.text += &feeder.consume(blank_len);
+
+        let comment_len = feeder.scanner_comment();
+        ans.text += &feeder.consume(comment_len);
         true
     }
  

@@ -27,6 +27,8 @@ impl Job {
     fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job) -> bool {
         let num = feeder.scanner_blank();
         ans.text += &feeder.consume(num);
+        let com_num = feeder.scanner_comment();
+        ans.text += &feeder.consume(com_num);
         if feeder.starts_with("\n") {
             ans.text += &feeder.consume(1);
             true
