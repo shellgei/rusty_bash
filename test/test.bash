@@ -53,6 +53,15 @@ echo c) )   ')
 b
 c" ] || err $LINENO
 
+res=$($com <<< '   (#aaaa
+
+echo a; (echo b ;  #bbb
+
+echo c) )   ')
+[ "$res" = "a
+b
+c" ] || err $LINENO
+
 res=$($com <<< '(
 echo a; (echo b ; 
 ')
@@ -110,6 +119,59 @@ res=$($com <<< 'seq 3 |
 	  tac | head -n 1')
 [ "$res" = "3" ] || err $LINENO
 
+res=$($com <<< 'seq 3 |  #コメントだよ
+
+#コメントだよ
+    #こめんとだよ
+
+	  tac | head -n 1')
+[ "$res" = "3" ] || err $LINENO
+
+### COMMENT ###
+
+res=$($com <<< 'echo a #aaaaa')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< '
+#comment comment
+   #comment comment
+echo a #aaaaa
+#comment comment
+')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< '(echo a) #aaaaa')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< '(echo a)#aaaaa')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< '{ echo a; }#aaaaa')
+[ "$res" != "a" ] || err $LINENO
+
+res=$($com <<< '{ echo a; } #aaaaa')
+[ "$res" = "a" ] || err $LINENO
+
+### NEW LINE ###
+
+res=$($com <<< 'e\
+c\
+ho hoge')
+[ "$res" = "hoge" ] || err $LINENO
+
+res=$($com <<< 'e\
+c\
+ho \
+hoge')
+[ "$res" = "hoge" ] || err $LINENO
+
+res=$($com <<< 'echo hoge |\
+rev')
+[ "$res" = "egoh" ] || err $LINENO
+
+res=$($com <<< 'echo hoge |\
+& rev')
+[ "$res" = "egoh" ] || err $LINENO
 
 res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l')
 [ "$res" = "2" ] || err $LINENO

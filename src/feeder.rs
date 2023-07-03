@@ -106,6 +106,7 @@ impl Feeder {
         };
         self.add_line(line);
 
+        /*
         while self.remaining.ends_with("\\\n") {
             self.remaining.pop();
             self.remaining.pop();
@@ -113,7 +114,7 @@ impl Feeder {
                 self.remaining = "".to_string();
                 return true;
             }
-        }
+        }*/
         true
     }
 
