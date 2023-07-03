@@ -11,15 +11,24 @@ impl Feeder {
         return self.feed_additional_line(core);
     }
 
-    fn scanner_chars(&mut self, charlist: &str, core: &mut ShellCore) -> usize { //新規に実装
+    fn scanner_chars(&mut self, charlist: &str, core: &mut ShellCore) -> usize {
+        let mut next_line = false; 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = charlist.find(ch) { ans += 1; }
-            else{ break; }
+            if &self.remaining[ans..] == "\\\n" {
+                next_line = true;
+                break;
+            }
+
+            if let Some(_) = charlist.find(ch) {
+                ans += 1;
+            }
+            else{
+                break;
+            }
         }
 
-        if self.remaining.ends_with("\\\n")
-            && self.remaining.len() == ans + 2 {
+        if next_line {
             if self.feed_and_connect(core){
                 return self.scanner_chars(charlist, core);
             }else{
@@ -33,23 +42,28 @@ impl Feeder {
         if self.remaining.starts_with("#") {
             return 0;
         }
+
+        let mut next_line = false; 
         let mut ans = 0;
         for ch in self.remaining.chars() {
+            if &self.remaining[ans..] == "\\\n" {
+                next_line = true;
+                break;
+            }
+
             if let Some(_) = " \t\n;&|()".find(ch) {
                 break;
             }
             ans += ch.len_utf8();
         }
 
-        if self.remaining.ends_with("\\\n")
-            && self.remaining.len() == ans + 1 {
+        if next_line {
             if self.feed_and_connect(core){
                 return self.scanner_word(core);
             }else{
-                return ans - 1;
+                return ans;
             }
         }
-
         ans
     }
 
