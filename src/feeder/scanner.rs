@@ -18,12 +18,9 @@ impl Feeder {
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }
-
-            if let Some(_) = charlist.find(ch) {
+            }else if let Some(_) = charlist.find(ch) {
                 ans += 1;
-            }
-            else{
+            }else{
                 break;
             }
         }
@@ -45,9 +42,7 @@ impl Feeder {
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }
-
-            if let Some(_) = " \t\n;&|()".find(ch) {
+            }else if let Some(_) = " \t\n;&|()".find(ch) {
                 break;
             }
             ans += ch.len_utf8();
