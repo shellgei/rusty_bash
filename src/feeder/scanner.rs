@@ -35,22 +35,21 @@ impl Feeder {
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
+        let mut next_line = false; 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = " \t".find(ch) {
+            if &self.remaining[ans..] == "\\\n" {
+                next_line = true;
+                break;
+            }else if let Some(_) = " \t".find(ch) {
                 ans += 1;
             }else{
                 break;
             }
         }
 
-        if self.remaining.ends_with("\\\n")
-            && self.remaining.len() == ans + 2 {
-            if self.feed_and_connect(core){
-                return self.scanner_blank(core);
-            }else{
-                return ans;
-            }
+        if next_line && self.feed_and_connect(core){
+            return self.scanner_blank(core);
         }
         ans
     }
