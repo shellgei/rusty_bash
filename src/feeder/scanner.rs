@@ -46,8 +46,7 @@ impl Feeder {
             self.remaining.pop();
             self.remaining.pop();
             if self.feed_additional_line(core){
-                let n = self.scanner_blank(core);
-                return n;
+                return self.scanner_blank(core);
             }else{
                 return ans;
             }
