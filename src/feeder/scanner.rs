@@ -15,23 +15,22 @@ impl Feeder {
         if self.remaining.starts_with("#") {
             return 0;
         }
+
+        let mut next_line = false; 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = " \t\n;&|()".find(ch) {
+            if &self.remaining[ans..] == "\\\n" {
+                next_line = true;
+                break;
+            }else if let Some(_) = " \t\n;&|()".find(ch) {
                 break;
             }
             ans += ch.len_utf8();
         }
 
-        if self.remaining.ends_with("\\\n")
-            && self.remaining.len() == ans + 1 {
-            if self.feed_and_connect(core){
-                return self.scanner_word(core);
-            }else{
-                return ans - 1;
-            }
+        if next_line && self.feed_and_connect(core){
+            return self.scanner_word(core);
         }
-
         ans
     }
 
