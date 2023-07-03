@@ -11,7 +11,7 @@ impl Feeder {
         return self.feed_additional_line(core);
     }
 
-    fn scanner_consecutive(&mut self, charlist: &str, core: &mut ShellCore) -> usize { //新規に実装
+    fn scanner_chars(&mut self, charlist: &str, core: &mut ShellCore) -> usize { //新規に実装
         let mut ans = 0;
         for ch in self.remaining.chars() {
             if let Some(_) = charlist.find(ch) { ans += 1; }
@@ -21,7 +21,7 @@ impl Feeder {
         if self.remaining.ends_with("\\\n")
             && self.remaining.len() == ans + 2 {
             if self.feed_and_connect(core){
-                return self.scanner_blank(core);
+                return self.scanner_chars(charlist, core);
             }else{
                 return ans;
             }
@@ -54,11 +54,11 @@ impl Feeder {
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_consecutive(" \t", core)
+        self.scanner_chars(" \t", core)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_consecutive(" \t\n", core)
+        self.scanner_chars(" \t\n", core)
     }
 
     pub fn scanner_job_end(&mut self) -> usize {
