@@ -34,7 +34,7 @@ impl Pipeline {
         }
     }
 
-    fn eat_command(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Pipeline) -> bool {
+    fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
         if let Some(command) = command::parse(feeder, core){
             ans.text += &command.get_text();
             ans.commands.push(command);
@@ -65,7 +65,7 @@ impl Pipeline {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
 
-        while Self::eat_command(feeder, core, &mut ans)
+        while Self::eat_command(feeder, &mut ans, core)
               && Self::eat_pipe(feeder, &mut ans, core){ }
 
         eprintln!("{:?}\n{:?}", &ans, &feeder);
