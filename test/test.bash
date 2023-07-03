@@ -115,4 +115,10 @@ res=$($com <<< '(echo a) #aaaaa')
 res=$($com <<< '(echo a)#aaaaa')
 [ "$res" = "a" ] || err $LINENO
 
+res=$($com <<< '{ echo a; }#aaaaa')
+[ "$res" != "a" ] || err $LINENO
+
+res=$($com <<< '{ echo a; } #aaaaa')
+[ "$res" = "a" ] || err $LINENO
+
 echo OK $0
