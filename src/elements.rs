@@ -7,4 +7,4 @@ pub mod pipeline;
 pub mod command;
 pub mod io;
 
-use self::io::pipe_recipe::Pipe;
+use self::io::pipe::Pipe;

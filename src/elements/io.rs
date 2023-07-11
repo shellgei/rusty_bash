@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub mod pipe_recipe;
+pub mod pipe;
 
 use std::os::unix::prelude::RawFd;
 use nix::unistd;

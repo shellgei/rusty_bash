@@ -16,10 +16,10 @@ pub struct Pipeline {
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
         let mut prev = -1;
-        for (i, ep) in self.pipes.iter_mut().enumerate() {
-            ep.set(prev);
-            self.commands[i].exec(core, ep);
-            prev = ep.recv;
+        for (i, p) in self.pipes.iter_mut().enumerate() {
+            p.set(prev);
+            self.commands[i].exec(core, p);
+            prev = p.recv;
         }
 
         self.commands[self.pipes.len()]
