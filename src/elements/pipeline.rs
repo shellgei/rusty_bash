@@ -2,29 +2,30 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use nix::unistd;
 use super::command;
 use super::command::Command;
-use super::PipeRecipe;
+use super::Pipe;
 
 #[derive(Debug)]
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
-    pub pipes: Vec<String>,
+    pub pipes: Vec<Pipe>,
     pub text: String,
 }
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        let mut p = PipeRecipe{recv: -1, send: -1, prev: -1};
-        for (i, _) in self.pipes.iter().enumerate() {
-            (p.recv, p.send) = unistd::pipe().expect("Cannot open pipe");
-            self.commands[i].exec(core, &mut p);
-            p.prev = p.recv;
+        let mut prev = -1;
+        for (i, ep) in self.pipes.iter_mut().enumerate() {
+            ep.set();
+            ep.prev = prev;
+            self.commands[i].exec(core, ep);
+            prev = ep.recv;
         }
 
-        (p.recv, p.send) = (-1, -1);
-        self.commands[self.pipes.len()].exec(core, &mut p);
+        let mut dummy = Pipe::new(String::new());
+        dummy.prev = prev;
+        self.commands[self.pipes.len()].exec(core, &mut dummy);
     }
 
     pub fn new() -> Pipeline {
@@ -49,14 +50,9 @@ impl Pipeline {
     }
 
     fn eat_pipe(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_pipe(core);
-        if len > 0 {
-            let p = feeder.consume(len);
-            ans.pipes.push(p.clone());
-            ans.text += &p;
-
-            let blank_len = feeder.scanner_blank(core);
-            ans.text += &feeder.consume(blank_len);
+        if let Some(p) = Pipe::parse(feeder, core) {
+            ans.text += &p.text.clone();
+            ans.pipes.push(p);
             true
         }else{
             false

@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder, Script};
 use super::Command;
-use super::PipeRecipe;
+use super::Pipe;
 
 #[derive(Debug)]
 pub struct ParenCommand {
@@ -12,7 +12,7 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         match self.script {
             Some(ref mut s) => s.fork_exec(core, pipe),
             _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),

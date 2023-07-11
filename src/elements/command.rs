@@ -11,7 +11,7 @@ use self::paren::ParenCommand;
 use self::brace::BraceCommand;
 use std::fmt;
 use std::fmt::Debug;
-use super::PipeRecipe;
+use super::Pipe;
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -20,7 +20,7 @@ impl Debug for dyn Command {
 }
 
 pub trait Command {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe);
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe);
     fn get_text(&self) -> String;
 }
 

@@ -5,7 +5,7 @@ use super::job::Job;
 use crate::{Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::ForkResult;
-use super::PipeRecipe;
+use super::Pipe;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -26,7 +26,7 @@ impl Script {
         }
     }
 
-    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe) {
+    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 let pid = nix::unistd::getpid();

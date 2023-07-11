@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder, Script};
 use super::Command;
-use super::PipeRecipe;
+use super::Pipe;
 
 #[derive(Debug)]
 pub struct BraceCommand {
@@ -12,7 +12,7 @@ pub struct BraceCommand {
 }
 
 impl Command for BraceCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         let script = match self.script {
             Some(ref mut s) => s,
             _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),

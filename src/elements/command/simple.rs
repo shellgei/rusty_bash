@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use super::{Command, PipeRecipe};
+use super::{Command, Pipe};
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -18,7 +18,7 @@ pub struct SimpleCommand {
 }
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut PipeRecipe) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         if ! pipe.is_connected() && core.run_builtin(&mut self.args) {
             return;
         }

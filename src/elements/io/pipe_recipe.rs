@@ -1,17 +1,38 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::{Feeder, ShellCore};
 use crate::elements::io;
 use std::os::unix::prelude::RawFd;
+use nix::unistd;
 
 #[derive(Debug)]
-pub struct PipeRecipe {
+pub struct Pipe {
+    pub text: String,
     pub recv: RawFd,
     pub send: RawFd,
     pub prev: RawFd,
 }
 
-impl PipeRecipe {
+impl Pipe {
+    pub fn new(text: String) -> Pipe {
+        Pipe { text: text, recv: -1, send: -1, prev: -1 }
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipe> {
+        let len = feeder.scanner_pipe(core);
+
+        if len > 0 {
+            Some(Self::new(feeder.consume(len)))
+        }else{
+            None
+        }
+    }
+
+    pub fn set(&mut self) {
+        (self.recv, self.send) = unistd::pipe().expect("Cannot open pipe");
+    }
+
     pub fn connect(&mut self) {
         io::close(self.recv, "Cannot close in-pipe");
         io::replace(self.send, 1);
