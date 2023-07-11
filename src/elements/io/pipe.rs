@@ -19,6 +19,12 @@ impl Pipe {
         Pipe { text: text, recv: -1, send: -1, prev: -1 }
     }
 
+    pub fn end(prev: RawFd) -> Pipe {
+        let mut dummy = Pipe::new(String::new());
+        dummy.prev = prev;
+        dummy
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipe> {
         let len = feeder.scanner_pipe(core);
 
@@ -32,12 +38,6 @@ impl Pipe {
     pub fn set(&mut self, prev: RawFd) {
         (self.recv, self.send) = unistd::pipe().expect("Cannot open pipe");
         self.prev = prev;
-    }
-
-    pub fn terminator(prev: RawFd) -> Pipe {
-        let mut dummy = Pipe::new(String::new());
-        dummy.prev = prev;
-        dummy
     }
 
     pub fn connect(&mut self) {

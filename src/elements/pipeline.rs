@@ -22,8 +22,7 @@ impl Pipeline {
             prev = p.recv;
         }
 
-        self.commands[self.pipes.len()]
-            .exec(core, &mut Pipe::terminator(prev));
+        self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev));
     }
 
     pub fn new() -> Pipeline {
