@@ -34,6 +34,12 @@ impl Pipe {
         self.prev = prev;
     }
 
+    pub fn terminator(prev: RawFd) -> Pipe {
+        let mut dummy = Pipe::new(String::new());
+        dummy.prev = prev;
+        dummy
+    }
+
     pub fn connect(&mut self) {
         io::close(self.recv, "Cannot close in-pipe");
         io::replace(self.send, 1);

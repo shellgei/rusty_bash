@@ -22,9 +22,8 @@ impl Pipeline {
             prev = ep.recv;
         }
 
-        let mut dummy = Pipe::new(String::new());
-        dummy.prev = prev;
-        self.commands[self.pipes.len()].exec(core, &mut dummy);
+        self.commands[self.pipes.len()]
+            .exec(core, &mut Pipe::terminator(prev));
     }
 
     pub fn new() -> Pipeline {
