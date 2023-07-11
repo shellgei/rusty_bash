@@ -5,3 +5,6 @@ pub mod script;
 pub mod job;
 pub mod pipeline;
 pub mod command;
+pub mod io;
+
+use self::io::pipe_recipe::PipeRecipe;

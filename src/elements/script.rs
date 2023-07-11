@@ -2,9 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::{Feeder, ShellCore, PipeRecipe};
+use crate::{Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::ForkResult;
+use super::PipeRecipe;
 
 enum Status{
     UnexpectedSymbol(String),

@@ -1,10 +1,11 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore, PipeRecipe};
+use crate::{Feeder, ShellCore};
 use nix::unistd;
 use super::command;
 use super::command::Command;
+use super::PipeRecipe;
 
 #[derive(Debug)]
 pub struct Pipeline {

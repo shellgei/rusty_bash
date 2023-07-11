@@ -5,12 +5,13 @@ pub mod simple;
 pub mod paren;
 pub mod brace;
 
-use crate::{ShellCore, Feeder, PipeRecipe};
+use crate::{ShellCore, Feeder};
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
 use std::fmt;
 use std::fmt::Debug;
+use super::PipeRecipe;
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {

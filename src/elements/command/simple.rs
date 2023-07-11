@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, PipeRecipe};
-use super::Command;
+use crate::{ShellCore, Feeder};
+use super::{Command, PipeRecipe};
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
