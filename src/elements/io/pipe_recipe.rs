@@ -29,8 +29,9 @@ impl Pipe {
         }
     }
 
-    pub fn set(&mut self) {
+    pub fn set(&mut self, prev: RawFd) {
         (self.recv, self.send) = unistd::pipe().expect("Cannot open pipe");
+        self.prev = prev;
     }
 
     pub fn connect(&mut self) {

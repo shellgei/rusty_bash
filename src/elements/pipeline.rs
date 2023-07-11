@@ -17,8 +17,7 @@ impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
         let mut prev = -1;
         for (i, ep) in self.pipes.iter_mut().enumerate() {
-            ep.set();
-            ep.prev = prev;
+            ep.set(prev);
             self.commands[i].exec(core, ep);
             prev = ep.recv;
         }
