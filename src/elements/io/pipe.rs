@@ -44,6 +44,10 @@ impl Pipe {
         io::close(self.recv, "Cannot close in-pipe");
         io::replace(self.send, 1);
         io::replace(self.prev, 0);
+
+        if &self.text == &"|&" {
+            io::share(1, 2);
+        }
     }
 
     pub fn parent_close(&mut self) {

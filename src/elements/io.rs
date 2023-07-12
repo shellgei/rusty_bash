@@ -19,3 +19,10 @@ fn replace(from: RawFd, to: RawFd) {
     unistd::dup2(from, to).expect("Can't copy file descriptors");
     close(from, &("Can't close fd: ".to_owned() + &from.to_string()))
 }
+
+fn share(from: RawFd, to: RawFd) {
+    if from < 0 || to < 0 {
+        return;
+    }
+    unistd::dup2(from, to).expect("Can't copy file descriptors");
+}
