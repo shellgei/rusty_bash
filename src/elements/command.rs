@@ -33,10 +33,10 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, a
     if let Some(s) = Script::parse(feeder, core) {
         core.nest.pop();
         *ans = Some(s);
-        return true;
+        true
     }else{
         core.nest.pop();
-        return false;
+        false
     }
 }
 
