@@ -32,14 +32,12 @@ impl ParenCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
-        match command::eat_inner_script(feeder, core, "(") {
-            Some(s) => {
-                let mut ans = Self::new();
-                ans.text = "(".to_string() + &s.text.clone() + &feeder.consume(1);
-                ans.script = Some(s);
-                Some(ans)
-            },
-            None => None, 
+        let mut ans = Self::new();
+        if command::eat_inner_script(feeder, core, "(", &mut ans.script) {
+            ans.text = "(".to_string() + &ans.script.as_mut().unwrap().text.clone() + &feeder.consume(1);
+            Some(ans)
+        }else{
+            None
         }
     }
 }

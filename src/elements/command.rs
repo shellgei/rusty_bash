@@ -24,18 +24,19 @@ pub trait Command {
     fn get_text(&self) -> String;
 }
 
-pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str) -> Option<Script> {
+pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, ans: &mut Option<Script>) -> bool {
    if ! feeder.starts_with(left) {
-       return None;
+       return false;
     }
     core.nest.push(left.to_string());
     feeder.consume(left.len());
     if let Some(s) = Script::parse(feeder, core) {
         core.nest.pop();
-        Some(s)
+        *ans = Some(s);
+        return true;
     }else{
         core.nest.pop();
-        None
+        return false;
     }
 }
 
