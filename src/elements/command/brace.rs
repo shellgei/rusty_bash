@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder, Script};
 use super::Command;
+use crate::elements::command;
 use super::Pipe;
 
 #[derive(Debug)]
@@ -37,7 +38,7 @@ impl BraceCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceCommand> {
-        match Script::parse_nested(feeder, core, "{") {
+        match command::eat_inner_script(feeder, core, "{") {
             Some(s) => {
                 let mut ans = Self::new();
                 ans.text = "{".to_string() + &s.text.clone() + &feeder.consume(1);
