@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe};
+use crate::elements::command;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -73,18 +74,6 @@ impl SimpleCommand {
         }
     }
  
-    fn eat_blank(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
-        let blank_len = feeder.scanner_blank(core);
-        if blank_len == 0 {
-            return false;
-        }
-        ans.text += &feeder.consume(blank_len);
-
-        let comment_len = feeder.scanner_comment();
-        ans.text += &feeder.consume(comment_len);
-        true
-    }
- 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let arg_len = feeder.scanner_word(core);
         if arg_len == 0 {
@@ -105,9 +94,9 @@ impl SimpleCommand {
         let mut ans = Self::new();
         let backup = feeder.clone();
 
-        Self::eat_blank(feeder, &mut ans, core);
+        command::eat_blank_with_comment(feeder, &mut ans.text, core);
         while Self::eat_word(feeder, &mut ans, core) &&
-              Self::eat_blank(feeder, &mut ans, core) {}
+              command::eat_blank_with_comment(feeder, &mut ans.text, core) {}
 
         if ans.args.len() > 0 {
             Some(ans)
