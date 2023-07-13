@@ -42,7 +42,7 @@ impl Feeder {
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }else if let Some(_) = " \t\n;&|()".find(ch) {
+            }else if let Some(_) = " \t\n;&|()<>".find(ch) {
                 break;
             }
             ans += ch.len_utf8();

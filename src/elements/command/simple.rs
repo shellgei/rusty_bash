@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use super::{Command, Pipe};
+use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use nix::unistd;
 use std::ffi::CString;
@@ -16,10 +16,14 @@ pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
     cargs: Vec<CString>,
+    redirects: Vec<Redirect>,
 }
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
+        if self.args.len() == 0 {
+            return;
+        }
         if ! pipe.is_connected() && core.run_builtin(&mut self.args) {
             return;
         }
@@ -71,6 +75,7 @@ impl SimpleCommand {
             text: String::new(),
             args: vec![],
             cargs: vec![],
+            redirects: vec![],
         }
     }
  
@@ -94,11 +99,16 @@ impl SimpleCommand {
         let mut ans = Self::new();
         let backup = feeder.clone();
 
-        command::eat_blank_with_comment(feeder, core, &mut ans.text);
-        while Self::eat_word(feeder, &mut ans, core) &&
-              command::eat_blank_with_comment(feeder, core, &mut ans.text) {}
+        loop {
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            if ! command::eat_redirect(feeder, core, &mut ans.redirects, &mut ans.text)
+                && ! Self::eat_word(feeder, &mut ans, core) {
+                break;
+            }
+        }
 
-        if ans.args.len() > 0 {
+        if ans.args.len() + ans.redirects.len() > 0 {
+            eprintln!("{:?}", ans);
             Some(ans)
         }else{
             feeder.rewind(backup);
