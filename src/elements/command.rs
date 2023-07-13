@@ -25,6 +25,19 @@ pub trait Command {
     fn get_text(&self) -> String;
 }
 
+pub fn eat_blank_with_comment(feeder: &mut Feeder, ans_text: &mut String, core: &mut ShellCore) -> bool {
+    let blank_len = feeder.scanner_blank(core);
+    if blank_len == 0 {
+        return false;
+    }
+    *ans_text += &feeder.consume(blank_len);
+
+    let comment_len = feeder.scanner_comment();
+    *ans_text += &feeder.consume(comment_len);
+    true
+}
+ 
+
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
                         left: &str, ans: &mut Option<Script>) -> bool {
    if ! feeder.starts_with(left) {
