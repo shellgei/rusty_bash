@@ -2,14 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
-use super::Command;
+use super::{Command, Pipe, Redirect};
 use crate::elements::command;
-use super::Pipe;
 
 #[derive(Debug)]
 pub struct BraceCommand {
     pub text: String,
     pub script: Option<Script>,
+    pub redirects: Vec<Redirect>,
 }
 
 impl Command for BraceCommand {
@@ -34,6 +34,7 @@ impl BraceCommand {
         BraceCommand {
             text: String::new(),
             script: None,
+            redirects: vec![],
         }
     }
 
@@ -41,6 +42,15 @@ impl BraceCommand {
         let mut ans = Self::new();
         if command::eat_inner_script(feeder, core, "{", &mut ans.script) {
             ans.text = "{".to_string() + &ans.script.as_mut().unwrap().text.clone() + &feeder.consume(1);
+
+            loop {
+                command::eat_blank_with_comment(feeder, core, &mut ans.text);
+                if ! command::eat_redirect(feeder, core, &mut ans.redirects, &mut ans.text){
+                    break;
+                }
+            }
+
+            eprintln!("{:?}", ans);
             Some(ans)
         }else{
             None

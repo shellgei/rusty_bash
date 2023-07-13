@@ -25,7 +25,7 @@ pub trait Command {
     fn get_text(&self) -> String;
 }
 
-pub fn eat_blank_with_comment(feeder: &mut Feeder, ans_text: &mut String, core: &mut ShellCore) -> bool {
+pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {
     let blank_len = feeder.scanner_blank(core);
     if blank_len == 0 {
         return false;
@@ -49,7 +49,7 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
     ! ans.is_none()
 }
 
-pub fn eat_readirect(feeder: &mut Feeder, core: &mut ShellCore,
+pub fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
                      ans: &mut Vec<Redirect>, ans_text: &mut String) -> bool {
     if let Some(r) = Redirect::parse(feeder, core) {
         *ans_text += &r.text.clone();
