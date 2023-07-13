@@ -94,9 +94,9 @@ impl SimpleCommand {
         let mut ans = Self::new();
         let backup = feeder.clone();
 
-        command::eat_blank_with_comment(feeder, &mut ans.text, core);
+        command::eat_blank_with_comment(feeder, core, &mut ans.text);
         while Self::eat_word(feeder, &mut ans, core) &&
-              command::eat_blank_with_comment(feeder, &mut ans.text, core) {}
+              command::eat_blank_with_comment(feeder, core, &mut ans.text) {}
 
         if ans.args.len() > 0 {
             Some(ans)
