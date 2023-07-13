@@ -131,19 +131,4 @@ impl Script {
         feeder.consume(feeder.len());
         return None;
     }
-
-    pub fn parse_nested(feeder: &mut Feeder, core: &mut ShellCore, left: &str) -> Option<Script> {
-       if ! feeder.starts_with(left) {
-           return None;
-        }
-        core.nest.push(left.to_string());
-        feeder.consume(left.len());
-        if let Some(s) = Self::parse(feeder, core) {
-            core.nest.pop();
-            Some(s)
-        }else{
-            core.nest.pop();
-            None
-        }
-    }
 }

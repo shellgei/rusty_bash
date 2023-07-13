@@ -5,7 +5,7 @@ pub mod simple;
 pub mod paren;
 pub mod brace;
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, Script};
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
@@ -22,6 +22,18 @@ impl Debug for dyn Command {
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe);
     fn get_text(&self) -> String;
+}
+
+pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
+                        left: &str, ans: &mut Option<Script>) -> bool {
+   if ! feeder.starts_with(left) {
+       return false;
+    }
+    core.nest.push(left.to_string());
+    feeder.consume(left.len());
+    *ans = Script::parse(feeder, core);
+    core.nest.pop();
+    ! ans.is_none()
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
