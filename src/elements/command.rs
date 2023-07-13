@@ -12,6 +12,7 @@ use self::brace::BraceCommand;
 use std::fmt;
 use std::fmt::Debug;
 use super::Pipe;
+use super::io::redirect::Redirect;
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {

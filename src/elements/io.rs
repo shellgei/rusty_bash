@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod pipe;
+pub mod redirect;
 
 use std::os::unix::prelude::RawFd;
 use nix::unistd;
