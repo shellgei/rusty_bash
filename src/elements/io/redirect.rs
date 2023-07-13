@@ -2,9 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::io;
-use std::os::unix::prelude::RawFd;
-use nix::unistd;
 
 #[derive(Debug)]
 pub struct Redirect {
@@ -25,10 +22,11 @@ impl Redirect {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
-        if feeder.starts_with("<") || feeder.starts_with(">") { //仮実装です。
-            let mut ans = Redirect::new();
+        if feeder.starts_with("<file") || feeder.starts_with(">file") { //仮実装です。
+            let mut ans = Self::new();
             ans.arrow = feeder.consume(1);
-            ans.text = ans.arrow.clone();
+            ans.right_text = feeder.consume(4);
+            ans.text = ans.arrow.clone() + &ans.right_text.clone();
             return Some(ans);
         }
         None

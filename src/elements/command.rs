@@ -37,6 +37,19 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
     ! ans.is_none()
 }
 
+pub fn eat_readirect(feeder: &mut Feeder, core: &mut ShellCore,
+                     ans: &mut Vec<Redirect>, ans_text: &mut String) -> bool {
+    let blank_len = feeder.scanner_blank(core);
+    *ans_text += &feeder.consume(blank_len);
+    if let Some(r) = Redirect::parse(feeder, core) {
+        *ans_text += &r.text.clone();
+        ans.push(r);
+        true
+    }else{
+        false
+    }
+}
+
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
