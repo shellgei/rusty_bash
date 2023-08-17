@@ -100,4 +100,10 @@ impl Feeder {
         }
         ans
     }
+
+    pub fn scanner_redirect_symbol(&mut self) -> usize {
+        if self.remaining.starts_with("<")     { 1 }
+        else if self.remaining.starts_with(">"){ 1 }
+        else{ 0 }
+    }
 }
