@@ -24,7 +24,7 @@ impl Redirect {
         ans.symbol = feeder.consume(len);
         ans.text += &ans.symbol.clone();
         len != 0
-    }  
+    }
 
     fn eat_right(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let blank_len = feeder.scanner_blank(core);
