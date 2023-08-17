@@ -34,7 +34,7 @@ impl Redirect {
         ans.right = feeder.consume(len);
         ans.text += &ans.right.clone();
         len != 0
-    } 
+    }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
