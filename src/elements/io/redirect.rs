@@ -1,6 +1,9 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use std::fs::File;
+use std::os::fd::IntoRawFd;
+use crate::elements::io;
 use crate::{Feeder, ShellCore};
 
 #[derive(Debug)]
@@ -11,6 +14,20 @@ pub struct Redirect {
 }
 
 impl Redirect {
+    pub fn connect(&mut self) {
+        match self.symbol.as_ref() {
+            "<" => {
+                let fd = File::open(&self.right).unwrap().into_raw_fd();
+                io::replace(fd, 0);
+            },
+            ">" => {
+                let fd = File::create(&self.right).unwrap().into_raw_fd();
+                io::replace(fd, 1);
+            },
+            _ => return,
+        }
+    }
+
     pub fn new() -> Redirect {
         Redirect {
             text: String::new(),

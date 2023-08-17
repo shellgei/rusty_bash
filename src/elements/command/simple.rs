@@ -31,6 +31,7 @@ impl Command for SimpleCommand {
         self.set_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
+                self.redirects.iter_mut().for_each(|r| r.connect());
                 pipe.connect();
                 if core.run_builtin(&mut self.args) {
                     core.exit();
@@ -108,7 +109,7 @@ impl SimpleCommand {
         }
 
         if ans.args.len() + ans.redirects.len() > 0 {
-            eprintln!("{:?}", ans);
+//            eprintln!("{:?}", ans);
             Some(ans)
         }else{
             feeder.rewind(backup);
