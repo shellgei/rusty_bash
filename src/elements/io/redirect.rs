@@ -36,8 +36,8 @@ impl Redirect {
         }
     }
 
-    fn eat_symbol(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        let len = feeder.scanner_redirect_symbol();
+    fn eat_symbol(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_redirect_symbol(core);
         ans.symbol = feeder.consume(len);
         ans.text += &ans.symbol.clone();
         len != 0
@@ -56,7 +56,7 @@ impl Redirect {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
 
-        if Self::eat_symbol(feeder, &mut ans) &&
+        if Self::eat_symbol(feeder, &mut ans, core) &&
            Self::eat_right(feeder, &mut ans, core) {
             Some(ans)
         }else{
