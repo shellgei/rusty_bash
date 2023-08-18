@@ -15,7 +15,7 @@ pub struct Redirect {
 
 impl Redirect {
     pub fn connect(&mut self) {
-        match self.symbol.as_ref() {
+        match self.symbol.as_str() {
             "<" => {
                 let fd = File::open(&self.right).unwrap().into_raw_fd();
                 io::replace(fd, 0);
@@ -24,7 +24,7 @@ impl Redirect {
                 let fd = File::create(&self.right).unwrap().into_raw_fd();
                 io::replace(fd, 1);
             },
-            _ => return,
+            _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
         }
     }
 
