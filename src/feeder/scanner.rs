@@ -101,8 +101,17 @@ impl Feeder {
         ans
     }
 
-    pub fn scanner_redirect_symbol(&mut self) -> usize {
-        if self.remaining.starts_with("<")     { 1 }
+    pub fn scanner_redirect_symbol(&mut self, core: &mut ShellCore) -> usize {
+        if self.remaining.starts_with(">\\\n"){ // >\ で行が終わっていたら
+            if self.feed_and_connect(core){     // 次の行を読み込み
+                return self.scanner_redirect_symbol(core); // 自身を再度呼び出し
+            }else{
+                return 1;
+            }
+        }
+
+        if self.remaining.starts_with(">>")    { 2 } //追加
+        else if self.remaining.starts_with("<"){ 1 } //else追加
         else if self.remaining.starts_with(">"){ 1 }
         else{ 0 }
     }
