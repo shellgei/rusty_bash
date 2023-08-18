@@ -20,7 +20,7 @@ impl Command for BraceCommand {
         };
 
         if pipe.is_connected() {
-            script.fork_exec(core, pipe);
+            script.fork_exec(core, pipe, &mut self.redirects);
         }else{
             script.exec(core);
         }
@@ -50,7 +50,7 @@ impl BraceCommand {
                 }
             }
 
-            eprintln!("{:?}", ans);
+//            eprintln!("{:?}", ans);
             Some(ans)
         }else{
             None
