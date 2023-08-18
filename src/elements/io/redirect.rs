@@ -14,25 +14,17 @@ pub struct Redirect {
 }
 
 impl Redirect {
-    fn input_file(&mut self, core: &mut ShellCore) -> bool {
-        match File::open(&self.right) {
-            Ok(f)  => io::replace(f.into_raw_fd(), 0),
-            Err(e) => {
-                eprintln!("bash: {}: {}", &self.right, &e);
-                false
-            },
-        }
-    }
-
-    pub fn connect(&mut self, core: &mut ShellCore) -> bool {
+    pub fn connect(&mut self) {
         match self.symbol.as_ref() {
-            "<" => self.input_file(core),
+            "<" => {
+                let fd = File::open(&self.right).unwrap().into_raw_fd();
+                io::replace(fd, 0);
+            },
             ">" => {
                 let fd = File::create(&self.right).unwrap().into_raw_fd();
                 io::replace(fd, 1);
-                true
             },
-            _ => false,
+            _ => return,
         }
     }
 
