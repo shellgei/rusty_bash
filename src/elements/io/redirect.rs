@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::os::fd::IntoRawFd;
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
@@ -22,6 +22,11 @@ impl Redirect {
             },
             ">" => {
                 let fd = File::create(&self.right).unwrap().into_raw_fd();
+                io::replace(fd, 1);
+            },
+            ">>" => {
+                let fd = OpenOptions::new().create(true).write(true).append(true)
+                         .open(&self.right).unwrap().into_raw_fd();
                 io::replace(fd, 1);
             },
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
