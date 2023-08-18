@@ -176,4 +176,16 @@ res=$($com <<< 'echo hoge |\
 res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l')
 [ "$res" = "2" ] || err $LINENO
 
+### REDIRECTS ###
+
+res=$($com <<< 'cat < /etc/passwd | wc -l')
+[ "$res" != "0" ] || err $LINENO
+
+res=$($com <<< 'cat < /etc/passwd > /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 | wc -l')
+[ "$res" != "0" ] || err $LINENO
+
+#res=$($com <<< 'cat <' 2>&1)
+#[ "$?" == "2" ] || err $LINENO
+#[ "$res" == 'bash: syntax error near unexpected token: `newline'\''' ] || err $LINENO
+
 echo OK $0
