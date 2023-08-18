@@ -15,7 +15,7 @@ pub struct ParenCommand {
 impl Command for ParenCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
         match self.script {
-            Some(ref mut s) => s.fork_exec(core, pipe),
+            Some(ref mut s) => s.fork_exec(core, pipe, &mut self.redirects),
             _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
         }
     }
@@ -44,7 +44,7 @@ impl ParenCommand {
                 }
             }
 
-            eprintln!("{:?}", ans);
+//            eprintln!("{:?}", ans);
             Some(ans)
         }else{
             None

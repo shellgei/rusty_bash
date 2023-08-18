@@ -6,6 +6,7 @@ use crate::{Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use super::Pipe;
+use super::io::redirect::Redirect;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -26,11 +27,13 @@ impl Script {
         }
     }
 
-    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
+    pub fn fork_exec(&mut self, core: &mut ShellCore,pipe: &mut Pipe,
+                                redirects: &mut Vec<Redirect>) {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
+                redirects.iter_mut().for_each(|r| r.connect());
                 pipe.connect();
                 self.exec(core);
                 core.exit();
