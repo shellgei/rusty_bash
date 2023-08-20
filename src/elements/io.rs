@@ -6,6 +6,7 @@ pub mod redirect;
 
 use std::os::unix::prelude::RawFd;
 use nix::unistd;
+use nix::fcntl;
 use super::io::redirect::Redirect;
 
 fn close(fd: RawFd, err_str: &str){
@@ -23,7 +24,8 @@ fn replace(from: RawFd, to: RawFd) {
 }
 
 fn backup(from: RawFd) -> RawFd {
-    unistd::dup(from).expect("Can't allocate fd for backup")
+    fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(10))
+           .expect("Can't allocate fd for backup")
 }
 
 fn share(from: RawFd, to: RawFd) {
