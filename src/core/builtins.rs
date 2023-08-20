@@ -29,6 +29,7 @@ pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         args.push(var);
     }else if args.len() == 2 && args[1] == "-" { // cd -
         if let Some(old) = core.vars.get("OLDPWD") {
+            println!("{}", &old);
             args[1] = old.to_string();
         }
     };
