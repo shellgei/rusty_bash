@@ -25,32 +25,30 @@ impl Redirect {
         }
     }
 
-    pub fn redirect_simple_output(&mut self, restore: bool) {
-        if restore {
-            self.to_be_restored = 0;
-            self.backup = io::backup(0);
-        }
+    fn redirect_simple_output(&mut self, restore: bool) {
+        self.set_restore(restore, 0);
         let fd = File::open(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 0);
     }
 
-    pub fn redirect_append(&mut self, restore: bool) {
-        if restore {
-            self.to_be_restored = 1;
-            self.backup = io::backup(1);
-        }
+    fn redirect_append(&mut self, restore: bool) {
+        self.set_restore(restore, 1);
         let fd = OpenOptions::new().create(true).write(true).append(true)
                  .open(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
     }
 
-    pub fn redirect_simple_input(&mut self, restore: bool) {
-        if restore {
-            self.to_be_restored = 1;
-            self.backup = io::backup(1);
-        }
+    fn redirect_simple_input(&mut self, restore: bool) {
+        self.set_restore(restore, 1);
         let fd = File::create(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
+    }
+
+    fn set_restore(&mut self, restore: bool, fd: RawFd) {
+        if restore {
+            self.to_be_restored = fd;
+            self.backup = io::backup(fd);
+        }
     }
 
     pub fn restore(&mut self) {
