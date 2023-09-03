@@ -18,33 +18,39 @@ pub struct Redirect {
 impl Redirect {
     pub fn connect(&mut self, restore: bool) {
         match self.symbol.as_str() {
-            "<" => {
-                if restore {
-                    self.to_be_restored = 0;
-                    self.backup = io::backup(0);
-                }
-                let fd = File::open(&self.right).unwrap().into_raw_fd();
-                io::replace(fd, 0);
-            },
-            ">" => {
-                if restore {
-                    self.to_be_restored = 1;
-                    self.backup = io::backup(1);
-                }
-                let fd = File::create(&self.right).unwrap().into_raw_fd();
-                io::replace(fd, 1);
-            },
-            ">>" => {
-                if restore {
-                    self.to_be_restored = 1;
-                    self.backup = io::backup(1);
-                }
-                let fd = OpenOptions::new().create(true).write(true).append(true)
-                         .open(&self.right).unwrap().into_raw_fd();
-                io::replace(fd, 1);
-            },
+            "<" => self.redirect_simple_output(restore),
+            ">" => self.redirect_simple_input(restore),
+            ">>" => self.redirect_append(restore),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
         }
+    }
+
+    pub fn redirect_simple_output(&mut self, restore: bool) {
+        if restore {
+            self.to_be_restored = 0;
+            self.backup = io::backup(0);
+        }
+        let fd = File::open(&self.right).unwrap().into_raw_fd();
+        io::replace(fd, 0);
+    }
+
+    pub fn redirect_append(&mut self, restore: bool) {
+        if restore {
+            self.to_be_restored = 1;
+            self.backup = io::backup(1);
+        }
+        let fd = OpenOptions::new().create(true).write(true).append(true)
+                 .open(&self.right).unwrap().into_raw_fd();
+        io::replace(fd, 1);
+    }
+
+    pub fn redirect_simple_input(&mut self, restore: bool) {
+        if restore {
+            self.to_be_restored = 1;
+            self.backup = io::backup(1);
+        }
+        let fd = File::create(&self.right).unwrap().into_raw_fd();
+        io::replace(fd, 1);
     }
 
     pub fn restore(&mut self) {
