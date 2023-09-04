@@ -4,7 +4,6 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
-use crate::elements::io;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -25,17 +24,14 @@ impl Command for SimpleCommand {
         if self.args.len() == 0 {
             return;
         }
-        if ! pipe.is_connected() && core.builtins.contains_key(&self.args[0]) {
-            io::connect_redirects_with_backup(&mut self.redirects);
-            core.run_builtin(&mut self.args);
-            io::restore_redirects(&mut self.redirects);
+        if ! pipe.is_connected() && core.run_builtin(&mut self.args) {
             return;
         }
 
         self.set_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                self.redirects.iter_mut().for_each(|r| r.connect(false));
+                self.redirects.iter_mut().for_each(|r| r.connect());
                 pipe.connect();
                 if core.run_builtin(&mut self.args) {
                     core.exit();

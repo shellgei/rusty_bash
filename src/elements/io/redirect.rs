@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::fs::{File, OpenOptions};
-use std::os::fd::{RawFd, IntoRawFd};
+use std::os::fd::IntoRawFd;
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
 
@@ -11,48 +11,32 @@ pub struct Redirect {
     pub text: String,
     pub symbol: String,
     pub right: String,
-    pub backup: RawFd,
-    pub to_be_restored: RawFd,
 }
 
 impl Redirect {
-    pub fn connect(&mut self, restore: bool) {
+    pub fn connect(&mut self) {
         match self.symbol.as_str() {
-            "<" => self.redirect_simple_output(restore),
-            ">" => self.redirect_simple_input(restore),
-            ">>" => self.redirect_append(restore),
+            "<" => self.redirect_simple_output(),
+            ">" => self.redirect_simple_input(),
+            ">>" => self.redirect_append(),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
         }
     }
 
-    fn redirect_simple_output(&mut self, restore: bool) {
-        self.set_restore(restore, 0);
+    fn redirect_simple_output(&mut self) {
         let fd = File::open(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 0);
     }
 
-    fn redirect_append(&mut self, restore: bool) {
-        self.set_restore(restore, 1);
+    fn redirect_append(&mut self) {
         let fd = OpenOptions::new().create(true).write(true).append(true)
                  .open(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
     }
 
-    fn redirect_simple_input(&mut self, restore: bool) {
-        self.set_restore(restore, 1);
+    fn redirect_simple_input(&mut self) {
         let fd = File::create(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
-    }
-
-    fn set_restore(&mut self, restore: bool, fd: RawFd) {
-        if restore {
-            self.to_be_restored = fd;
-            self.backup = io::backup(fd);
-        }
-    }
-
-    pub fn restore(&mut self) {
-        io::replace(self.backup, self.to_be_restored);
     }
 
     pub fn new() -> Redirect {
@@ -60,8 +44,6 @@ impl Redirect {
             text: String::new(),
             symbol: String::new(),
             right: String::new(),
-            backup: -1,
-            to_be_restored: -1,
         }
     }
 
