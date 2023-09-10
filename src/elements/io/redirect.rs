@@ -2,7 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::fs::{File, OpenOptions};
-use std::os::fd::IntoRawFd;
+use std::os::fd::{IntoRawFd, RawFd};
+use std::io::{Error, ErrorKind};
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
 
@@ -23,9 +24,27 @@ impl Redirect {
         }
     }
 
+    fn show_error_message(e: ErrorKind) {
+        match e {
+            _ => eprintln!("Unknown error"),
+        }
+    }
+
+    fn get_raw_fd(file: Result<File, Error>) -> Option<RawFd> {
+        match file {
+            Err(e) => {
+                Self::show_error_message(e.kind());
+                None
+            },
+            Ok(fd) => Some(fd.into_raw_fd()),
+        }
+    }
+
     fn redirect_simple_output(&mut self) {
-        let fd = File::open(&self.right).unwrap().into_raw_fd();
-        io::replace(fd, 0);
+        if let Some(fd) = Self::get_raw_fd(File::open(&self.right)) {
+            io::replace(fd, 0);
+        }
+    //    let fd = File::open(&self.right).unwrap().into_raw_fd();
     }
 
     fn redirect_append(&mut self) {
