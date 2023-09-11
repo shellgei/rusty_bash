@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::fs::{File, OpenOptions};
-use std::os::fd::{IntoRawFd, RawFd};
-use std::io::{Error, ErrorKind};
+use std::os::fd::IntoRawFd;
+use std::io::ErrorKind;
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
 
@@ -17,8 +17,8 @@ pub struct Redirect {
 impl Redirect {
     pub fn connect(&mut self) -> bool {
         match self.symbol.as_str() {
-            "<" => self.redirect_simple_output(),
-            ">" => self.redirect_simple_input(),
+            "<" => self.redirect_simple_input(),
+            ">" => self.redirect_simple_output(),
             ">>" => self.redirect_append(),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
         }
@@ -31,22 +31,22 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_output(&mut self) -> bool {
+    fn redirect_simple_input(&mut self) -> bool {
         match File::open(&self.right) {
             Ok(fd) => {io::replace(fd.into_raw_fd(), 0); true},
             Err(e) => {Self::show_error_message(e.kind(), &self.right); false},
         }
     }
 
-    fn redirect_append(&mut self) -> bool {
-        let fd = OpenOptions::new().create(true).write(true).append(true)
-                 .open(&self.right).unwrap().into_raw_fd();
+    fn redirect_simple_output(&mut self) -> bool {
+        let fd = File::create(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
         true
     }
 
-    fn redirect_simple_input(&mut self) -> bool {
-        let fd = File::create(&self.right).unwrap().into_raw_fd();
+    fn redirect_append(&mut self) -> bool {
+        let fd = OpenOptions::new().create(true).write(true).append(true)
+                 .open(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
         true
     }
