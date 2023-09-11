@@ -3,7 +3,7 @@
 
 use std::fs::{File, OpenOptions};
 use std::os::fd::IntoRawFd;
-use std::io::ErrorKind;
+use std::io::{Error, ErrorKind};
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
 
@@ -24,13 +24,13 @@ impl Redirect {
         }
     }
 
-    fn show_file_error_message(e: ErrorKind, filename: &str) {
-        match e {
+    fn show_file_error_message(error: ErrorKind, os_error: ErrorKind, filename: &str) {
+        match error {
             ErrorKind::NotFound => eprintln!("bash: {}: No such file or directory", filename),
             ErrorKind::PermissionDenied => eprintln!("bash: {}: Permission denied", filename),
             ErrorKind::AlreadyExists => eprintln!("bash: {}: cannot overwrite existing file", filename),
-            ErrorKind::InvalidInput => eprintln!("SUSH INTERNAL ERROR (file: {} invalid input)", filename),
-            _ => eprintln!("SUSH INTERNAL ERROR (file: {}, unknown error)", filename),
+            //ErrorKind::InvalidInput => eprintln!("SUSH INTERNAL ERROR (file: {} invalid input)", filename),
+            _ => eprintln!("bash: {}: {}", filename, os_error),
         }
     }
 
@@ -41,16 +41,23 @@ impl Redirect {
                 true
             },
             Err(e) => {
-                Self::show_file_error_message(e.kind(), &self.right);
+                Self::show_file_error_message(e.kind(), Error::last_os_error().kind(), &self.right);
                 false
             },
         }
     }
 
     fn redirect_simple_output(&mut self) -> bool {
-        let fd = File::create(&self.right).unwrap().into_raw_fd();
-        io::replace(fd, 1);
-        true
+        match File::create(&self.right) { 
+            Ok(fd) => {
+                io::replace(fd.into_raw_fd(), 1);
+                true
+            },
+            Err(e) => {
+                Self::show_file_error_message(e.kind(), Error::last_os_error().kind(), &self.right);
+                false
+            },
+        }
     }
 
     fn redirect_append(&mut self) -> bool {
