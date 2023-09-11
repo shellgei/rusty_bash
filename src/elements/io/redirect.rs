@@ -15,7 +15,7 @@ pub struct Redirect {
 }
 
 impl Redirect {
-    pub fn connect(&mut self) {
+    pub fn connect(&mut self) -> bool {
         match self.symbol.as_str() {
             "<" => self.redirect_simple_output(),
             ">" => self.redirect_simple_input(),
@@ -24,38 +24,31 @@ impl Redirect {
         }
     }
 
-    fn show_error_message(e: ErrorKind) {
+    fn show_error_message(e: ErrorKind, filename: &str) {
         match e {
+            ErrorKind::NotFound => eprintln!("bash: {}: No such file or directory", filename),
             _ => eprintln!("Unknown error"),
         }
     }
 
-    fn get_raw_fd(file: Result<File, Error>) -> Option<RawFd> {
-        match file {
-            Err(e) => {
-                Self::show_error_message(e.kind());
-                None
-            },
-            Ok(fd) => Some(fd.into_raw_fd()),
+    fn redirect_simple_output(&mut self) -> bool {
+        match File::open(&self.right) {
+            Ok(fd) => {io::replace(fd.into_raw_fd(), 0); true},
+            Err(e) => {Self::show_error_message(e.kind(), &self.right); false},
         }
     }
 
-    fn redirect_simple_output(&mut self) {
-        if let Some(fd) = Self::get_raw_fd(File::open(&self.right)) {
-            io::replace(fd, 0);
-        }
-    //    let fd = File::open(&self.right).unwrap().into_raw_fd();
-    }
-
-    fn redirect_append(&mut self) {
+    fn redirect_append(&mut self) -> bool {
         let fd = OpenOptions::new().create(true).write(true).append(true)
                  .open(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
+        true
     }
 
-    fn redirect_simple_input(&mut self) {
+    fn redirect_simple_input(&mut self) -> bool {
         let fd = File::create(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
+        true
     }
 
     pub fn new() -> Redirect {
