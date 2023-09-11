@@ -14,7 +14,7 @@ pub struct Redirect {
 }
 
 impl Redirect {
-    pub fn connect(&mut self) {
+    pub fn connect(&mut self) -> bool {
         match self.symbol.as_str() {
             "<" => self.redirect_simple_output(),
             ">" => self.redirect_simple_input(),
@@ -23,20 +23,23 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_output(&mut self) {
+    fn redirect_simple_output(&mut self) -> bool {
         let fd = File::open(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 0);
+        true
     }
 
-    fn redirect_append(&mut self) {
+    fn redirect_append(&mut self) -> bool {
         let fd = OpenOptions::new().create(true).write(true).append(true)
                  .open(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
+        true
     }
 
-    fn redirect_simple_input(&mut self) {
+    fn redirect_simple_input(&mut self) -> bool {
         let fd = File::create(&self.right).unwrap().into_raw_fd();
         io::replace(fd, 1);
+        true
     }
 
     pub fn new() -> Redirect {
