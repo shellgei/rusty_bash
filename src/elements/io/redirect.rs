@@ -24,17 +24,26 @@ impl Redirect {
         }
     }
 
-    fn show_error_message(e: ErrorKind, filename: &str) {
+    fn show_file_error_message(e: ErrorKind, filename: &str) {
         match e {
             ErrorKind::NotFound => eprintln!("bash: {}: No such file or directory", filename),
-            _ => eprintln!("Unknown error"),
+            ErrorKind::PermissionDenied => eprintln!("bash: {}: Permission denied", filename),
+            ErrorKind::AlreadyExists => eprintln!("bash: {}: cannot overwrite existing file", filename),
+            ErrorKind::InvalidInput => eprintln!("SUSH INTERNAL ERROR (file: {} invalid input)", filename),
+            _ => eprintln!("SUSH INTERNAL ERROR (file: {}, unknown error)", filename),
         }
     }
 
     fn redirect_simple_input(&mut self) -> bool {
         match File::open(&self.right) {
-            Ok(fd) => {io::replace(fd.into_raw_fd(), 0); true},
-            Err(e) => {Self::show_error_message(e.kind(), &self.right); false},
+            Ok(fd) => {
+                io::replace(fd.into_raw_fd(), 0);
+                true
+            },
+            Err(e) => {
+                Self::show_file_error_message(e.kind(), &self.right);
+                false
+            },
         }
     }
 
