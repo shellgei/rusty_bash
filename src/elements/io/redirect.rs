@@ -40,7 +40,7 @@ impl Redirect {
     }
 
     fn redirect_simple_output(&mut self) -> bool {
-        if let Ok(fd) = File::create(&self.right) { 
+        if let Ok(fd) = File::create(&self.right) {
             io::replace(fd.into_raw_fd(), 1);
             true
         }else{
