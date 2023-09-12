@@ -3,7 +3,7 @@
 
 use std::fs::{File, OpenOptions};
 use std::os::fd::IntoRawFd;
-use std::io::{Error, ErrorKind};
+use std::io::Error;
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
 
@@ -16,55 +16,46 @@ pub struct Redirect {
 
 impl Redirect {
     pub fn connect(&mut self) -> bool {
-        match self.symbol.as_str() {
+        let result = match self.symbol.as_str() {
             "<" => self.redirect_simple_input(),
             ">" => self.redirect_simple_output(),
             ">>" => self.redirect_append(),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
-        }
-    }
+        };
 
-    fn show_file_error_message(error: ErrorKind, os_error: ErrorKind, filename: &str) {
-        match error {
-            ErrorKind::NotFound => eprintln!("bash: {}: No such file or directory", filename),
-            ErrorKind::PermissionDenied => eprintln!("bash: {}: Permission denied", filename),
-            ErrorKind::AlreadyExists => eprintln!("bash: {}: cannot overwrite existing file", filename),
-            //ErrorKind::InvalidInput => eprintln!("SUSH INTERNAL ERROR (file: {} invalid input)", filename),
-            _ => eprintln!("bash: {}: {}", filename, os_error),
+        if ! result {
+            eprintln!("bash: {}: {}", &self.right, Error::last_os_error().kind());
         }
+
+        result
     }
 
     fn redirect_simple_input(&mut self) -> bool {
-        match File::open(&self.right) {
-            Ok(fd) => {
-                io::replace(fd.into_raw_fd(), 0);
-                true
-            },
-            Err(e) => {
-                Self::show_file_error_message(e.kind(), Error::last_os_error().kind(), &self.right);
-                false
-            },
+        if let Ok(fd) = File::open(&self.right) {
+            io::replace(fd.into_raw_fd(), 0);
+            true
+        }else{
+            false
         }
     }
 
     fn redirect_simple_output(&mut self) -> bool {
-        match File::create(&self.right) { 
-            Ok(fd) => {
-                io::replace(fd.into_raw_fd(), 1);
-                true
-            },
-            Err(e) => {
-                Self::show_file_error_message(e.kind(), Error::last_os_error().kind(), &self.right);
-                false
-            },
+        if let Ok(fd) = File::create(&self.right) { 
+            io::replace(fd.into_raw_fd(), 1);
+            true
+        }else{
+            false
         }
     }
 
     fn redirect_append(&mut self) -> bool {
-        let fd = OpenOptions::new().create(true).write(true).append(true)
-                 .open(&self.right).unwrap().into_raw_fd();
-        io::replace(fd, 1);
-        true
+        if let Ok(fd) = OpenOptions::new().create(true).write(true)
+                        .append(true).open(&self.right) {
+            io::replace(fd.into_raw_fd(), 1);
+            true
+        }else{
+            false
+        }
     }
 
     pub fn new() -> Redirect {
