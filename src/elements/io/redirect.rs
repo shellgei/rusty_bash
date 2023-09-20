@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::fs::{File, OpenOptions};
-use std::os::fd::IntoRawFd;
+use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
@@ -12,14 +12,16 @@ pub struct Redirect {
     pub text: String,
     pub symbol: String,
     pub right: String,
+    right_backup: RawFd,
+    right_fd: RawFd,
 }
 
 impl Redirect {
-    pub fn connect(&mut self) -> bool {
+    pub fn connect(&mut self, restore: bool) -> bool {
         let result = match self.symbol.as_str() {
-            "<" => self.redirect_simple_input(),
-            ">" => self.redirect_simple_output(),
-            ">>" => self.redirect_append(),
+            "<" => self.redirect_simple_input(restore),
+            ">" => self.redirect_simple_output(restore),
+            ">>" => self.redirect_append(restore),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
         };
 
@@ -30,28 +32,40 @@ impl Redirect {
         result
     }
 
-    fn redirect_simple_input(&mut self) -> bool {
+    fn redirect_simple_input(&mut self, restore: bool) -> bool {
         if let Ok(fd) = File::open(&self.right) {
-            io::replace(fd.into_raw_fd(), 0);
+            if restore {
+                self.right_fd = fd.into_raw_fd();
+                self.right_backup = io::backup(self.right_fd);
+            }
+            io::replace(self.right_fd, 0);
             true
         }else{
             false
         }
     }
 
-    fn redirect_simple_output(&mut self) -> bool {
+    fn redirect_simple_output(&mut self, restore: bool) -> bool {
         if let Ok(fd) = File::create(&self.right) {
-            io::replace(fd.into_raw_fd(), 1);
+            if restore {
+                self.right_fd = fd.into_raw_fd();
+                self.right_backup = io::backup(self.right_fd);
+            }
+            io::replace(self.right_fd, 1);
             true
         }else{
             false
         }
     }
 
-    fn redirect_append(&mut self) -> bool {
+    fn redirect_append(&mut self, restore: bool) -> bool {
         if let Ok(fd) = OpenOptions::new().create(true).write(true)
                         .append(true).open(&self.right) {
-            io::replace(fd.into_raw_fd(), 1);
+            if restore {
+                self.right_fd = fd.into_raw_fd();
+                self.right_backup = io::backup(self.right_fd);
+            }
+            io::replace(self.right_fd, 1);
             true
         }else{
             false
@@ -63,6 +77,8 @@ impl Redirect {
             text: String::new(),
             symbol: String::new(),
             right: String::new(),
+            right_fd: -1,
+            right_backup: -1,
         }
     }
 

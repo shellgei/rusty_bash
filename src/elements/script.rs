@@ -33,7 +33,7 @@ impl Script {
             Ok(ForkResult::Child) => {
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
-                if ! redirects.iter_mut().all(|r| r.connect()){
+                if ! redirects.iter_mut().all(|r| r.connect(false)){
                     core.exit();
                 }
                 pipe.connect();
