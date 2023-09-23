@@ -27,6 +27,8 @@ impl Command for SimpleCommand {
         if ! pipe.is_connected() && core.builtins.contains_key(&self.args[0]){
             if self.redirects.iter_mut().all(|r| r.connect(true)){
                 core.run_builtin(&mut self.args);
+            }else{
+                core.vars.insert("?".to_string(), "1".to_string());
             }
             self.redirects.iter_mut().rev().for_each(|r| r.restore());
             return;
@@ -36,7 +38,7 @@ impl Command for SimpleCommand {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 if ! self.redirects.iter_mut().all(|r| r.connect(false)){
-                    core.exit();
+                    process::exit(1);
                 }
                 pipe.connect();
                 if core.run_builtin(&mut self.args) {
