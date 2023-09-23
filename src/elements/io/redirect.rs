@@ -12,8 +12,8 @@ pub struct Redirect {
     pub text: String,
     pub symbol: String,
     pub right: String,
-    right_fd: RawFd,
-    right_backup: RawFd,
+    left_fd: RawFd,
+    left_backup: RawFd,
 }
 
 impl Redirect {
@@ -33,12 +33,12 @@ impl Redirect {
     }
 
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
+        if restore {
+            self.left_fd = 0;
+            self.left_backup = io::backup(0);
+        }
         if let Ok(fd) = File::open(&self.right) {
-            self.right_fd = fd.into_raw_fd();
-            if restore {
-                self.right_backup = io::backup(self.right_fd);
-            }
-            io::replace(self.right_fd, 0);
+            io::replace(fd.into_raw_fd(), 0);
             true
         }else{
             false
@@ -46,12 +46,12 @@ impl Redirect {
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
+        if restore {
+            self.left_fd = 1;
+            self.left_backup = io::backup(1);
+        }
         if let Ok(fd) = File::create(&self.right) {
-            self.right_fd = fd.into_raw_fd();
-            if restore {
-                self.right_backup = io::backup(self.right_fd);
-            }
-            io::replace(self.right_fd, 1);
+            io::replace(fd.into_raw_fd(), 1);
             true
         }else{
             false
@@ -59,13 +59,13 @@ impl Redirect {
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {
+        if restore {
+            self.left_fd = 1;
+            self.left_backup = io::backup(1);
+        }
         if let Ok(fd) = OpenOptions::new().create(true).write(true)
                         .append(true).open(&self.right) {
-            self.right_fd = fd.into_raw_fd();
-            if restore {
-                self.right_backup = io::backup(self.right_fd);
-            }
-            io::replace(self.right_fd, 1);
+            io::replace(fd.into_raw_fd(), 1);
             true
         }else{
             false
@@ -73,7 +73,9 @@ impl Redirect {
     }
 
     pub fn restore(&mut self) {
-        io::replace(self.right_backup, self.right_fd);
+        if self.left_backup >= 0 && self.left_fd >= 0 {
+            io::replace(self.left_backup, self.left_fd);
+        }
     }
 
     pub fn new() -> Redirect {
@@ -81,8 +83,8 @@ impl Redirect {
             text: String::new(),
             symbol: String::new(),
             right: String::new(),
-            right_fd: -1,
-            right_backup: -1,
+            left_fd: -1,
+            left_backup: -1,
         }
     }
 

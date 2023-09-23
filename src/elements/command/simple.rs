@@ -25,10 +25,10 @@ impl Command for SimpleCommand {
             return;
         }
         if ! pipe.is_connected() && core.builtins.contains_key(&self.args[0]){
-            if ! self.redirects.iter_mut().all(|r| r.connect(true)){
-                core.exit();
+            if self.redirects.iter_mut().all(|r| r.connect(true)){
+                core.run_builtin(&mut self.args);
             }
-            core.run_builtin(&mut self.args);
+            self.redirects.iter_mut().for_each(|r| r.restore());
             return;
         }
 
