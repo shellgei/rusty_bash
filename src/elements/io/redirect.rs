@@ -12,8 +12,8 @@ pub struct Redirect {
     pub text: String,
     pub symbol: String,
     pub right: String,
-    right_backup: RawFd,
     right_fd: RawFd,
+    right_backup: RawFd,
 }
 
 impl Redirect {
@@ -65,8 +65,8 @@ impl Redirect {
             text: String::new(),
             symbol: String::new(),
             right: String::new(),
-            right_backup: -1,
             right_fd: -1,
+            right_backup: -1,
         }
     }
 
