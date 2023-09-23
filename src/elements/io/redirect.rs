@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::fs::{File, OpenOptions};
-use std::os::fd::IntoRawFd;
+use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
@@ -12,6 +12,8 @@ pub struct Redirect {
     pub text: String,
     pub symbol: String,
     pub right: String,
+    right_backup: RawFd,
+    right_fd: RawFd,
 }
 
 impl Redirect {
@@ -40,7 +42,7 @@ impl Redirect {
     }
 
     fn redirect_simple_output(&mut self) -> bool {
-        if let Ok(fd) = File::create(&self.right) { 
+        if let Ok(fd) = File::create(&self.right) {
             io::replace(fd.into_raw_fd(), 1);
             true
         }else{
@@ -63,6 +65,8 @@ impl Redirect {
             text: String::new(),
             symbol: String::new(),
             right: String::new(),
+            right_backup: -1,
+            right_fd: -1,
         }
     }
 

@@ -5,7 +5,7 @@ pub mod pipe;
 pub mod redirect;
 
 use std::os::unix::prelude::RawFd;
-use nix::unistd;
+use nix::{fcntl, unistd};
 
 fn close(fd: RawFd, err_str: &str){
     if fd >= 0 {
@@ -26,4 +26,9 @@ fn share(from: RawFd, to: RawFd) {
         return;
     }
     unistd::dup2(from, to).expect("Can't copy file descriptors");
+}
+
+fn backup(from: RawFd) -> RawFd {
+    fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(10))
+           .expect("Can't allocate fd for backup")
 }
