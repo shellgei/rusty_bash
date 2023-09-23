@@ -73,7 +73,9 @@ impl Redirect {
     }
 
     pub fn restore(&mut self) {
-        io::replace(self.right_backup, self.right_fd);
+        if self.right_backup >= 0 && self.right_fd >= 0 {
+            io::replace(self.right_backup, self.right_fd);
+        }
     }
 
     pub fn new() -> Redirect {
