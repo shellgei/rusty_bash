@@ -32,7 +32,7 @@ impl Command for SimpleCommand {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 if ! self.redirects.iter_mut().all(|r| r.connect(false)){
-                    core.exit();
+                    process::exit(1);
                 }
                 pipe.connect();
                 if core.run_builtin(&mut self.args) {

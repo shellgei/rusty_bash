@@ -7,6 +7,7 @@ use nix::unistd;
 use nix::unistd::ForkResult;
 use super::Pipe;
 use super::io::redirect::Redirect;
+use std::process;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -34,7 +35,7 @@ impl Script {
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
                 if ! redirects.iter_mut().all(|r| r.connect(false)){
-                    core.exit();
+                    process::exit(1);
                 }
                 pipe.connect();
                 self.exec(core);
