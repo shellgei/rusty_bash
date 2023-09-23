@@ -28,7 +28,7 @@ impl Command for SimpleCommand {
             if self.redirects.iter_mut().all(|r| r.connect(true)){
                 core.run_builtin(&mut self.args);
             }
-            self.redirects.iter_mut().for_each(|r| r.restore());
+            self.redirects.iter_mut().rev().for_each(|r| r.restore());
             return;
         }
 
