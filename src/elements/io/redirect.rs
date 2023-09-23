@@ -34,8 +34,8 @@ impl Redirect {
 
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
         if let Ok(fd) = File::open(&self.right) {
+            self.right_fd = fd.into_raw_fd();
             if restore {
-                self.right_fd = fd.into_raw_fd();
                 self.right_backup = io::backup(self.right_fd);
             }
             io::replace(self.right_fd, 0);
@@ -47,8 +47,8 @@ impl Redirect {
 
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
         if let Ok(fd) = File::create(&self.right) {
+            self.right_fd = fd.into_raw_fd();
             if restore {
-                self.right_fd = fd.into_raw_fd();
                 self.right_backup = io::backup(self.right_fd);
             }
             io::replace(self.right_fd, 1);
@@ -61,8 +61,8 @@ impl Redirect {
     fn redirect_append(&mut self, restore: bool) -> bool {
         if let Ok(fd) = OpenOptions::new().create(true).write(true)
                         .append(true).open(&self.right) {
+            self.right_fd = fd.into_raw_fd();
             if restore {
-                self.right_fd = fd.into_raw_fd();
                 self.right_backup = io::backup(self.right_fd);
             }
             io::replace(self.right_fd, 1);
