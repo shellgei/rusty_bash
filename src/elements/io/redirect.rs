@@ -72,6 +72,10 @@ impl Redirect {
         }
     }
 
+    pub fn restore(&mut self) {
+        io::replace(self.right_backup, self.right_fd);
+    }
+
     pub fn new() -> Redirect {
         Redirect {
             text: String::new(),
