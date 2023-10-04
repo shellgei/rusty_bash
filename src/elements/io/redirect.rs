@@ -26,7 +26,11 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_input(&mut self) -> bool {
+    fn redirect_simple_input(&mut self, restore: bool) -> bool {
+        if restore {
+            self.left_fd = 0;
+            self.left_backup = io::backup(0);
+        }
         if let Ok(fd) = File::open(&self.right) {
             io::replace(fd.into_raw_fd(), 0);
             true
@@ -36,7 +40,11 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_output(&mut self) -> bool {
+    fn redirect_simple_output(&mut self, restore: bool) -> bool {
+        if restore {
+            self.left_fd = 1;
+            self.left_backup = io::backup(1);
+        }
         if let Ok(fd) = File::create(&self.right) {
             io::replace(fd.into_raw_fd(), 1);
             true
@@ -46,7 +54,11 @@ impl Redirect {
         }
     }
 
-    fn redirect_append(&mut self) -> bool {
+    fn redirect_append(&mut self, restore: bool) -> bool {
+        if restore {
+            self.left_fd = 1;
+            self.left_backup = io::backup(1);
+        }
         if let Ok(fd) = OpenOptions::new().create(true).write(true)
                         .append(true).open(&self.right) {
             io::replace(fd.into_raw_fd(), 1);
@@ -54,6 +66,12 @@ impl Redirect {
         }else{
             eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
+        }
+    }
+
+    pub fn restore(&mut self) {
+        if self.left_backup >= 0 && self.left_fd >= 0 {
+            io::replace(self.left_backup, self.left_fd);
         }
     }
 
