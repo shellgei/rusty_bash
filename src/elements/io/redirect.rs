@@ -17,22 +17,16 @@ pub struct Redirect {
 }
 
 impl Redirect {
-    pub fn connect(&mut self, restore: bool) -> bool {
-        let result = match self.symbol.as_str() {
-            "<" => self.redirect_simple_input(restore),
-            ">" => self.redirect_simple_output(restore),
-            ">>" => self.redirect_append(restore),
+    pub fn connect(&mut self) -> bool {
+        match self.symbol.as_str() {
+            "<" => self.redirect_simple_input(),
+            ">" => self.redirect_simple_output(),
+            ">>" => self.redirect_append(),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
-        };
-
-        if ! result {
-            eprintln!("bash: {}: {}", &self.right, Error::last_os_error().kind());
         }
-
-        result
     }
 
-    fn redirect_simple_input(&mut self, restore: bool) -> bool {
+    fn redirect_simple_input(&mut self) -> bool {
         if let Ok(fd) = File::open(&self.right) {
             if restore {
                 self.right_fd = fd.into_raw_fd();
@@ -41,6 +35,7 @@ impl Redirect {
             io::replace(self.right_fd, 0);
             true
         }else{
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
         }
     }
@@ -50,11 +45,12 @@ impl Redirect {
             io::replace(fd.into_raw_fd(), 1);
             true
         }else{
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
         }
     }
 
-    fn redirect_append(&mut self, restore: bool) -> bool {
+    fn redirect_append(&mut self) -> bool {
         if let Ok(fd) = OpenOptions::new().create(true).write(true)
                         .append(true).open(&self.right) {
             if restore {
@@ -64,6 +60,7 @@ impl Redirect {
             io::replace(self.right_fd, 1);
             true
         }else{
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
         }
     }
