@@ -29,7 +29,7 @@ impl Redirect {
             io::replace(fd.into_raw_fd(), 0);
             true
         }else{
-            eprintln!("bash: {}: {}", &self.right, Error::last_os_error().kind());
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
         }
     }
@@ -39,7 +39,7 @@ impl Redirect {
             io::replace(fd.into_raw_fd(), 1);
             true
         }else{
-            eprintln!("bash: {}: {}", &self.right, Error::last_os_error().kind());
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
         }
     }
@@ -50,7 +50,7 @@ impl Redirect {
             io::replace(fd.into_raw_fd(), 1);
             true
         }else{
-            eprintln!("bash: {}: {}", &self.right, Error::last_os_error().kind());
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
         }
     }
