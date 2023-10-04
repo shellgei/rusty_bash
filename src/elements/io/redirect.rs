@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::fs::{File, OpenOptions};
-use std::os::fd::IntoRawFd;
+use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
@@ -12,6 +12,8 @@ pub struct Redirect {
     pub text: String,
     pub symbol: String,
     pub right: String,
+    left_fd: RawFd,
+    left_backup: RawFd,
 }
 
 impl Redirect {
@@ -60,6 +62,8 @@ impl Redirect {
             text: String::new(),
             symbol: String::new(),
             right: String::new(),
+            left_fd: -1,
+            left_backup: -1,
         }
     }
 
