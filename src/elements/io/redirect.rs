@@ -12,8 +12,8 @@ pub struct Redirect {
     pub text: String,
     pub symbol: String,
     pub right: String,
-    right_backup: RawFd,
-    right_fd: RawFd,
+    left_fd: RawFd,
+    left_backup: RawFd,
 }
 
 impl Redirect {
@@ -45,13 +45,9 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_output(&mut self, restore: bool) -> bool {
+    fn redirect_simple_output(&mut self) -> bool {
         if let Ok(fd) = File::create(&self.right) {
-            if restore {
-                self.right_fd = fd.into_raw_fd();
-                self.right_backup = io::backup(self.right_fd);
-            }
-            io::replace(self.right_fd, 1);
+            io::replace(fd.into_raw_fd(), 1);
             true
         }else{
             false
@@ -77,8 +73,8 @@ impl Redirect {
             text: String::new(),
             symbol: String::new(),
             right: String::new(),
-            right_fd: -1,
-            right_backup: -1,
+            left_fd: -1,
+            left_backup: -1,
         }
     }
 

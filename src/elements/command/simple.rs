@@ -31,8 +31,13 @@ impl Command for SimpleCommand {
         self.set_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
+<<<<<<< HEAD
                 if ! self.redirects.iter_mut().all(|r| r.connect(false)){
                     core.exit();
+=======
+                if ! self.redirects.iter_mut().all(|r| r.connect()){
+                    process::exit(1);
+>>>>>>> cec02b5f2a1464c42bbd5ac2c1077c0dcdee185b
                 }
                 pipe.connect();
                 if core.run_builtin(&mut self.args) {
