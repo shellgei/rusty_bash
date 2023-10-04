@@ -18,63 +18,42 @@ pub struct Redirect {
 
 impl Redirect {
     pub fn connect(&mut self, restore: bool) -> bool {
-        let result = match self.symbol.as_str() {
+        match self.symbol.as_str() {
             "<" => self.redirect_simple_input(restore),
             ">" => self.redirect_simple_output(restore),
             ">>" => self.redirect_append(restore),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
-        };
-
-        if ! result {
-            eprintln!("bash: {}: {}", &self.right, Error::last_os_error().kind());
         }
-
-        result
     }
 
-    fn redirect_simple_input(&mut self, restore: bool) -> bool {
-        if restore {
-            self.left_fd = 0;
-            self.left_backup = io::backup(0);
-        }
+    fn redirect_simple_input(&mut self) -> bool {
         if let Ok(fd) = File::open(&self.right) {
             io::replace(fd.into_raw_fd(), 0);
             true
         }else{
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
         }
     }
 
-    fn redirect_simple_output(&mut self, restore: bool) -> bool {
-        if restore {
-            self.left_fd = 1;
-            self.left_backup = io::backup(1);
-        }
+    fn redirect_simple_output(&mut self) -> bool {
         if let Ok(fd) = File::create(&self.right) {
             io::replace(fd.into_raw_fd(), 1);
             true
         }else{
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
         }
     }
 
-    fn redirect_append(&mut self, restore: bool) -> bool {
-        if restore {
-            self.left_fd = 1;
-            self.left_backup = io::backup(1);
-        }
+    fn redirect_append(&mut self) -> bool {
         if let Ok(fd) = OpenOptions::new().create(true).write(true)
                         .append(true).open(&self.right) {
             io::replace(fd.into_raw_fd(), 1);
             true
         }else{
+            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
-        }
-    }
-
-    pub fn restore(&mut self) {
-        if self.left_backup >= 0 && self.left_fd >= 0 {
-            io::replace(self.left_backup, self.left_fd);
         }
     }
 
@@ -89,20 +68,28 @@ impl Redirect {
     }
 
     fn eat_symbol(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_redirect_symbol(core);
-        ans.symbol = feeder.consume(len);
-        ans.text += &ans.symbol.clone();
-        len != 0
+        match feeder.scanner_redirect_symbol(core) {
+            0 => false,
+            n => {
+                ans.symbol = feeder.consume(n);
+                ans.text += &ans.symbol.clone();
+                true
+            },
+        }
     }
 
     fn eat_right(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let blank_len = feeder.scanner_blank(core);
         ans.text += &feeder.consume(blank_len);
 
-        let len = feeder.scanner_word(core);
-        ans.right = feeder.consume(len);
-        ans.text += &ans.right.clone();
-        len != 0
+        match feeder.scanner_word(core) {
+            0 => false,
+            n => {
+                ans.right = feeder.consume(n);
+                ans.text += &ans.right.clone();
+                true
+            },
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
