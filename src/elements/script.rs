@@ -43,7 +43,7 @@ impl Script {
                     process::exit(1);
                 }
                 pipe.connect();
-                self.exec(core, &mut Vec::<Redirect>::new());
+                self.exec(core, &mut vec![]);
                 core.exit();
             },
             Ok(ForkResult::Parent { child } ) => {
