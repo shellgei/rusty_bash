@@ -22,10 +22,15 @@ pub struct Script {
 }
 
 impl Script {
-    pub fn exec(&mut self, core: &mut ShellCore) {
-        for job in self.jobs.iter_mut() {
-            job.exec(core);
+    pub fn exec(&mut self, core: &mut ShellCore, redirects: &mut Vec<Redirect>) {
+        if redirects.iter_mut().all(|r| r.connect(true)){
+            for job in self.jobs.iter_mut() {
+                job.exec(core);
+            }
+        }else{
+            core.vars.insert("?".to_string(), "1".to_string());
         }
+        redirects.iter_mut().rev().for_each(|r| r.restore());
     }
 
     pub fn fork_exec(&mut self, core: &mut ShellCore,pipe: &mut Pipe,
@@ -38,7 +43,7 @@ impl Script {
                     process::exit(1);
                 }
                 pipe.connect();
-                self.exec(core);
+                self.exec(core, &mut Vec::<Redirect>::new());
                 core.exit();
             },
             Ok(ForkResult::Parent { child } ) => {

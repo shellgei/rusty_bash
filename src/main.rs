@@ -8,6 +8,7 @@ mod elements;
 use std::{env, process};
 use crate::core::ShellCore;
 use crate::elements::script::Script;
+use crate::elements::io::redirect::Redirect;
 use crate::feeder::Feeder;
 
 fn show_version() {
@@ -46,7 +47,7 @@ fn main_loop(core: &mut ShellCore) {
         }
 
         match Script::parse(&mut feeder, core){
-            Some(mut s) => s.exec(core),
+            Some(mut s) => s.exec(core, &mut Vec::<Redirect>::new()),
             None => continue,
         }
     }

@@ -22,7 +22,7 @@ impl Command for BraceCommand {
         if pipe.is_connected() {
             script.fork_exec(core, pipe, &mut self.redirects);
         }else{
-            script.exec(core);
+            script.exec(core, &mut self.redirects);
         }
     }
 
