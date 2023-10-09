@@ -62,6 +62,10 @@ impl Feeder {
         self.scanner_chars(" \t\n", core)
     }
 
+    pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
+        self.scanner_chars("0123456789", core)
+    }
+
     pub fn scanner_job_end(&mut self) -> usize {
         if let Some(ch) = self.remaining.chars().nth(0) {
             if let Some(_) = ";&\n".find(ch) {
