@@ -112,13 +112,23 @@ impl Redirect {
         }
     }
 
+    fn eat_left(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+        let len = feeder.scanner_nonnegative_integer(core);
+        ans.left = feeder.consume(len);
+        ans.text += &ans.left.clone();
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
+        let backup = feeder.clone(); //追加
+
+        Self::eat_left(feeder, &mut ans, core); //追加
 
         if Self::eat_symbol(feeder, &mut ans, core) &&
            Self::eat_right(feeder, &mut ans, core) {
             Some(ans)
         }else{
+            feeder.rewind(backup); //追加
             None
         }
     }
