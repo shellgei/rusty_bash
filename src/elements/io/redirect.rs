@@ -27,6 +27,19 @@ impl Redirect {
         }
     }
 
+    fn set_left_fd(&mut self, default_fd: RawFd) -> bool {
+        self.left_fd = if self.left.len() == 0 {
+            default_fd
+        }else if let Ok(n) = self.left.parse() {
+            n
+        }else{
+            -1
+        };
+
+        self.left_fd >= 0
+    }
+
+
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
         if restore {
             self.left_fd = 0;
