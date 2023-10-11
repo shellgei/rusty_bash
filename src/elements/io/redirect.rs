@@ -123,7 +123,7 @@ impl Redirect {
 
         match ans.left.parse::<i32>() {
             Ok(_) => true,
-            Err(_) => false,
+            _     => false,
         }
     }
 
