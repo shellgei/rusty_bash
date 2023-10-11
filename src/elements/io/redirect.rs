@@ -41,6 +41,11 @@ impl Redirect {
 
 
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
+        if self.set_left_fd(0) && restore {
+            self.left_backup = io::backup(self.left_fd);
+        }else{
+        }
+
         if restore {
             self.left_fd = 0;
             self.left_backup = io::backup(0);
