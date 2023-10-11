@@ -43,7 +43,7 @@ impl Redirect {
         }
 
         if let Ok(fd) = File::open(&self.right) {
-            io::replace(fd.into_raw_fd(), 0);
+            io::replace(fd.into_raw_fd(), self.left_fd);
             true
         }else{
             eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
@@ -58,7 +58,7 @@ impl Redirect {
         }
 
         if let Ok(fd) = File::create(&self.right) {
-            io::replace(fd.into_raw_fd(), 1);
+            io::replace(fd.into_raw_fd(), self.left_fd);
             true
         }else{
             eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
@@ -74,7 +74,7 @@ impl Redirect {
 
         if let Ok(fd) = OpenOptions::new().create(true).write(true)
                         .append(true).open(&self.right) {
-            io::replace(fd.into_raw_fd(), 1);
+            io::replace(fd.into_raw_fd(), self.left_fd);
             true
         }else{
             eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
