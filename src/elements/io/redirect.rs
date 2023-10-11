@@ -27,29 +27,21 @@ impl Redirect {
         }
     }
 
-    fn set_left_fd(&mut self, default_fd: RawFd) -> bool {
+    fn set_left_fd(&mut self, default_fd: RawFd) {
         self.left_fd = if self.left.len() == 0 {
             default_fd
-        }else if let Ok(n) = self.left.parse() {
-            n
         }else{
-            -1
+            self.left.parse().expect("SUSHI INTERNAL ERROR")
         };
-
-        self.left_fd >= 0
     }
 
 
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
-        if self.set_left_fd(0) && restore {
+        self.set_left_fd(0);
+        if restore {
             self.left_backup = io::backup(self.left_fd);
-        }else{
         }
 
-        if restore {
-            self.left_fd = 0;
-            self.left_backup = io::backup(0);
-        }
         if let Ok(fd) = File::open(&self.right) {
             io::replace(fd.into_raw_fd(), 0);
             true
@@ -60,10 +52,11 @@ impl Redirect {
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
+        self.set_left_fd(1);
         if restore {
-            self.left_fd = 1;
-            self.left_backup = io::backup(1);
+            self.left_backup = io::backup(self.left_fd);
         }
+
         if let Ok(fd) = File::create(&self.right) {
             io::replace(fd.into_raw_fd(), 1);
             true
@@ -74,10 +67,11 @@ impl Redirect {
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {
+        self.set_left_fd(1);
         if restore {
-            self.left_fd = 1;
-            self.left_backup = io::backup(1);
+            self.left_backup = io::backup(self.left_fd);
         }
+
         if let Ok(fd) = OpenOptions::new().create(true).write(true)
                         .append(true).open(&self.right) {
             io::replace(fd.into_raw_fd(), 1);
