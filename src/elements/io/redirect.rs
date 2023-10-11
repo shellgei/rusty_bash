@@ -130,19 +130,27 @@ impl Redirect {
         }
     }
 
-    fn eat_left(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+    fn eat_left(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_nonnegative_integer(core);
+        if len == 0 {
+            return true; //左側なし（文法上OK）
+        }
+
         ans.left = feeder.consume(len);
         ans.text += &ans.left.clone();
+
+        match ans.left.parse::<i32>() {
+            Ok(_) => true,
+            _     => false,
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
         let backup = feeder.clone(); //追加
 
-        Self::eat_left(feeder, &mut ans, core); //追加
-
-        if Self::eat_symbol(feeder, &mut ans, core) &&
+        if Self::eat_left(feeder, &mut ans, core) &&   //追加
+           Self::eat_symbol(feeder, &mut ans, core) && //ifを除去
            Self::eat_right(feeder, &mut ans, core) {
             Some(ans)
         }else{
