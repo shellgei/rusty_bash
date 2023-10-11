@@ -121,10 +121,9 @@ impl Redirect {
         ans.left = feeder.consume(len);
         ans.text += &ans.left.clone();
 
-        if let Ok(_) = ans.left.parse::<i32>() {
-            true
-        }else{
-            false
+        match ans.left.parse::<i32>() {
+            Ok(_) => true,
+            Err(_) => false,
         }
     }
 
