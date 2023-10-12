@@ -27,47 +27,42 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_input(&mut self, restore: bool) -> bool {
-        if restore {
-            self.left_fd = 0;
-            self.left_backup = io::backup(0);
-        }
-        if let Ok(fd) = File::open(&self.right) {
-            io::replace(fd.into_raw_fd(), 0);
-            true
-        }else{
+    fn connect_to_file(&mut self, file_open_result: Result<File,Error>) -> bool {
+        match file_open_result {
+            Ok(file) => {
+                io::replace(file.into_raw_fd(), self.left_fd);
+                true
+            },
+            _ => {
             eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
             false
+            },
         }
+    }
+
+    fn redirect_simple_input(&mut self, restore: bool) -> bool {
+        self.left_fd = 0;
+        if restore {
+            self.left_backup = io::backup(0);
+        }
+        self.connect_to_file( File::open(&self.right) )
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
+        self.left_fd = 1;
         if restore {
-            self.left_fd = 1;
             self.left_backup = io::backup(1);
         }
-        if let Ok(fd) = File::create(&self.right) {
-            io::replace(fd.into_raw_fd(), 1);
-            true
-        }else{
-            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
-            false
-        }
+        self.connect_to_file( File::create(&self.right) )
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {
+        self.left_fd = 1;
         if restore {
-            self.left_fd = 1;
             self.left_backup = io::backup(1);
         }
-        if let Ok(fd) = OpenOptions::new().create(true).write(true)
-                        .append(true).open(&self.right) {
-            io::replace(fd.into_raw_fd(), 1);
-            true
-        }else{
-            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
-            false
-        }
+        self.connect_to_file( OpenOptions::new().create(true)
+                .write(true).append(true).open(&self.right) )
     }
 
     pub fn restore(&mut self) {
