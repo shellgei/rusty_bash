@@ -35,6 +35,18 @@ impl Redirect {
         };
     }
 
+    fn replace(&mut self, file_open_result: Result<File, Error>) -> bool {
+        match file_open_result {
+            Ok(file) => {
+                io::replace(file.into_raw_fd(), self.left_fd);
+                true
+            },
+            _ => {
+                eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
+                false
+            },
+        }
+    }
 
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
         self.set_left_fd(0);
@@ -42,13 +54,7 @@ impl Redirect {
             self.left_backup = io::backup(self.left_fd);
         }
 
-        if let Ok(fd) = File::open(&self.right) {
-            io::replace(fd.into_raw_fd(), self.left_fd);
-            true
-        }else{
-            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
-            false
-        }
+        self.replace(File::open(&self.right))
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
@@ -57,13 +63,7 @@ impl Redirect {
             self.left_backup = io::backup(self.left_fd);
         }
 
-        if let Ok(fd) = File::create(&self.right) {
-            io::replace(fd.into_raw_fd(), self.left_fd);
-            true
-        }else{
-            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
-            false
-        }
+        self.replace(File::create(&self.right))
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {
@@ -72,14 +72,8 @@ impl Redirect {
             self.left_backup = io::backup(self.left_fd);
         }
 
-        if let Ok(fd) = OpenOptions::new().create(true).write(true)
-                        .append(true).open(&self.right) {
-            io::replace(fd.into_raw_fd(), self.left_fd);
-            true
-        }else{
-            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
-            false
-        }
+        self.replace(OpenOptions::new().create(true).write(true)
+                        .append(true).open(&self.right) )
     }
 
     pub fn restore(&mut self) {
