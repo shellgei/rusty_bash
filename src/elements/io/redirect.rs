@@ -26,7 +26,11 @@ impl Redirect {
         }
     }
 
-    fn connect_to_file(&mut self, file_open_result: Result<File,Error>) -> bool {
+    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> bool {
+        if restore {
+            self.left_backup = io::backup(self.left_fd);
+        }
+
         match file_open_result {
             Ok(file) => {
                 io::replace(file.into_raw_fd(), self.left_fd);
@@ -41,27 +45,18 @@ impl Redirect {
 
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
         self.left_fd = 0;
-        if restore {
-            self.left_backup = io::backup(0);
-        }
-        self.connect_to_file( File::open(&self.right) )
+        self.connect_to_file(File::open(&self.right), restore)
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
         self.left_fd = 1;
-        if restore {
-            self.left_backup = io::backup(1);
-        }
-        self.connect_to_file( File::create(&self.right) )
+        self.connect_to_file(File::create(&self.right), restore)
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {
         self.left_fd = 1;
-        if restore {
-            self.left_backup = io::backup(1);
-        }
-        self.connect_to_file( OpenOptions::new().create(true)
-                .write(true).append(true).open(&self.right) )
+        self.connect_to_file(OpenOptions::new().create(true)
+                .write(true).append(true).open(&self.right), restore)
     }
 
     pub fn restore(&mut self) {
