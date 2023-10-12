@@ -34,8 +34,8 @@ impl Redirect {
                 true
             },
             _ => {
-            eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
-            false
+                eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
+                false
             },
         }
     }
