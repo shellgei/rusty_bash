@@ -64,8 +64,8 @@ impl Redirect {
 
     fn redirect_append(&mut self, restore: bool) -> bool {
         self.set_left_fd(1);
-        self.connect_to_file(OpenOptions::new().create(true).write(true)
-                        .append(true).open(&self.right), restore)
+        self.connect_to_file(OpenOptions::new().create(true)
+                .write(true).append(true).open(&self.right), restore)
     }
 
     pub fn restore(&mut self) {
