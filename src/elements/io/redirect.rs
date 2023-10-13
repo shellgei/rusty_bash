@@ -111,7 +111,7 @@ impl Redirect {
         ans.left = feeder.consume(len);
         ans.text += &ans.left.clone();
 
-        match ans.left.parse::<i32>() {
+        match ans.left.parse::<RawFd>() {
             Ok(_) => true,
             _     => false,
         }
