@@ -41,8 +41,16 @@ impl Redirect {
         }
 
         match file_open_result {
-            Ok(file) => io::replace(file.into_raw_fd(), self.left_fd),
-            _        => {
+            Ok(file) => {
+                let fd = file.into_raw_fd();
+                let result = io::replace(fd, self.left_fd);
+                if ! result {
+                    io::close(fd, &format!("sush(fatal): file cannot be closed"));
+                    self.left_fd = -1;
+                }
+                result
+            },
+            _  => {
                 eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
                 false
             },
