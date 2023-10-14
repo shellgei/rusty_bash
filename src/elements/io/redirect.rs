@@ -41,11 +41,8 @@ impl Redirect {
         }
 
         match file_open_result {
-            Ok(file) => {
-                io::replace(file.into_raw_fd(), self.left_fd);
-                true
-            },
-            _ => {
+            Ok(file) => io::replace(file.into_raw_fd(), self.left_fd),
+            _        => {
                 eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
                 false
             },
