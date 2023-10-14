@@ -239,4 +239,8 @@ a
 #[ "$?" == "2" ] || err $LINENO
 #[ "$res" == 'bash: syntax error near unexpected token: `newline'\''' ] || err $LINENO
 
+res=$($com <<< 'ls /etc/passwd aaaa &> /tmp/rusty_bash; cat /tmp/rusty_bash | wc -l')
+[ "$res" == "2" ] || err $LINENO
+
+
 echo OK $0
