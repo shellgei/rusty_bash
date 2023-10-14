@@ -12,6 +12,7 @@ pub struct Redirect {
     pub text: String,
     pub symbol: String,
     pub right: String,
+    pub left: String,
     left_fd: RawFd,
     left_backup: RawFd,
 }
@@ -27,6 +28,14 @@ impl Redirect {
         }
     }
 
+    fn set_left_fd(&mut self, default_fd: RawFd) {
+        self.left_fd = if self.left.len() == 0 {
+            default_fd
+        }else{
+            self.left.parse().expect("SUSHI INTERNAL ERROR")
+        };
+    }
+
     fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> bool {
         if restore {
             self.left_backup = io::backup(self.left_fd);
@@ -34,10 +43,15 @@ impl Redirect {
 
         match file_open_result {
             Ok(file) => {
-                io::replace(file.into_raw_fd(), self.left_fd);
-                true
+                let fd = file.into_raw_fd();
+                let result = io::replace(fd, self.left_fd);
+                if ! result {
+                    io::close(fd, &format!("sush(fatal): file cannot be closed"));
+                    self.left_fd = -1;
+                }
+                result
             },
-            _ => {
+            _  => {
                 eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
                 false
             },
@@ -45,17 +59,17 @@ impl Redirect {
     }
 
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
-        self.left_fd = 0;
+        self.set_left_fd(0);
         self.connect_to_file(File::open(&self.right), restore)
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
-        self.left_fd = 1;
+        self.set_left_fd(1);
         self.connect_to_file(File::create(&self.right), restore)
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {
-        self.left_fd = 1;
+        self.set_left_fd(1);
         self.connect_to_file(OpenOptions::new().create(true)
                 .write(true).append(true).open(&self.right), restore)
     }
@@ -76,6 +90,7 @@ impl Redirect {
             text: String::new(),
             symbol: String::new(),
             right: String::new(),
+            left: String::new(),
             left_fd: -1,
             left_backup: -1,
         }
@@ -106,13 +121,31 @@ impl Redirect {
         }
     }
 
+    fn eat_left(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_nonnegative_integer(core);
+        if len == 0 {
+            return true; //左側なし（文法上OK）
+        }
+
+        ans.left = feeder.consume(len);
+        ans.text += &ans.left.clone();
+
+        match ans.left.parse::<RawFd>() {
+            Ok(_) => true,
+            _     => false,
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
+        let backup = feeder.clone(); //追加
 
-        if Self::eat_symbol(feeder, &mut ans, core) &&
+        if Self::eat_left(feeder, &mut ans, core) &&   //追加
+           Self::eat_symbol(feeder, &mut ans, core) && //ifを除去
            Self::eat_right(feeder, &mut ans, core) {
             Some(ans)
         }else{
+            feeder.rewind(backup); //追加
             None
         }
     }

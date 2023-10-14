@@ -214,6 +214,13 @@ a
 /etc
 /etc" ] || err $LINENO
 
+res=$($com <<< '
+	ls /aaaa 2> /tmp/rusty_bash
+	ls /bbbb 2>> /tmp/rusty_bash
+	cat /tmp/rusty_bash | grep ls | wc -l
+	')
+[ "$res" = "2" ] || err $LINENO
+
 #res=$($com <<< 'cat <' 2>&1)
 #[ "$?" == "2" ] || err $LINENO
 #[ "$res" == 'bash: syntax error near unexpected token: `newline'\''' ] || err $LINENO
