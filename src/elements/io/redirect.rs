@@ -15,8 +15,7 @@ pub struct Redirect {
     pub left: String,
     left_fd: RawFd,
     left_backup: RawFd,
-    extra_left_fd: RawFd, // &>, &>>用
-    extra_left_backup: RawFd,
+    extra_left_backup: RawFd, // &>, &>>用
 }
 
 impl Redirect {
@@ -41,9 +40,6 @@ impl Redirect {
     fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> bool {
         if restore {
             self.left_backup = io::backup(self.left_fd);
-            if self.extra_left_fd >= 0 {
-                self.extra_left_backup = io::backup(self.extra_left_fd);
-            }
         }
 
         match file_open_result {
@@ -53,10 +49,6 @@ impl Redirect {
                 if ! result {
                     io::close(fd, &format!("sush(fatal): file cannot be closed"));
                     self.left_fd = -1;
-                }
-
-                if self.extra_left_fd >= 0 {
-                    io::share(self.left_fd, self.extra_left_fd);
                 }
                 result
             },
@@ -85,16 +77,20 @@ impl Redirect {
 
     fn redirect_both_output(&mut self, restore: bool) -> bool {
         self.left_fd = 1;
-        self.extra_left_fd = 2;
-        self.connect_to_file(File::create(&self.right), restore)
+        if ! self.connect_to_file(File::create(&self.right), restore){
+            return false;
+        }
+        self.extra_left_backup = io::backup(2);
+        io::share(1, 2);
+        true
     }
 
     pub fn restore(&mut self) {
         if self.left_backup >= 0 && self.left_fd >= 0 {
             io::replace(self.left_backup, self.left_fd);
         }
-        if self.extra_left_backup >= 0 && self.extra_left_fd >= 0 {
-            io::replace(self.extra_left_backup, self.extra_left_fd);
+        if self.extra_left_backup >= 0 {
+            io::replace(self.extra_left_backup, 2);
         }
     }
 
@@ -106,7 +102,6 @@ impl Redirect {
             left: String::new(),
             left_fd: -1,
             left_backup: -1,
-            extra_left_fd: -1,
             extra_left_backup: -1,
         }
     }
