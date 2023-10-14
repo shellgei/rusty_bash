@@ -22,6 +22,7 @@ impl Redirect {
             "<" => self.redirect_simple_input(restore),
             ">" => self.redirect_simple_output(restore),
             ">>" => self.redirect_append(restore),
+            "&>" => self.redirect_both_output(restore),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
         }
     }
@@ -57,6 +58,11 @@ impl Redirect {
         self.left_fd = 1;
         self.connect_to_file(OpenOptions::new().create(true)
                 .write(true).append(true).open(&self.right), restore)
+    }
+
+    fn redirect_both_output(&mut self, restore: bool) -> bool {
+        self.left_fd = 1;
+        self.connect_to_file(File::create(&self.right), restore)
     }
 
     pub fn restore(&mut self) {
