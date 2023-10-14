@@ -80,7 +80,10 @@ impl Redirect {
         if ! self.connect_to_file(File::create(&self.right), restore){
             return false;
         }
-        self.extra_left_backup = io::backup(2);
+
+        if restore {
+            self.extra_left_backup = io::backup(2);
+        }
         io::share(1, 2);
         true
     }
