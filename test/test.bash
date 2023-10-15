@@ -178,6 +178,8 @@ res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l')
 
 ### REDIRECTS ###
 
+# <, >, >>
+
 res=$($com <<< 'cat < /etc/passwd | wc -l')
 [ "$res" != "0" ] || err $LINENO
 
@@ -187,6 +189,8 @@ res=$($com <<< 'cat < /etc/passwd > /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 | wc
 res=$($com <<< 'echo a > /tmp/rusty_bash1 ; echo b >> /tmp/rusty_bash1; cat /tmp/rusty_bash1')
 [ "$res" = "a
 b" ] || err $LINENO
+
+# non-fork redirects
 
 res=$($com <<< '
 	cd /etc/
@@ -214,12 +218,38 @@ a
 /etc
 /etc" ] || err $LINENO
 
+# 2>, 2>>
+
 res=$($com <<< '
 	ls /aaaa 2> /tmp/rusty_bash
 	ls /bbbb 2>> /tmp/rusty_bash
 	cat /tmp/rusty_bash | grep ls | wc -l
 	')
 [ "$res" = "2" ] || err $LINENO
+
+# &>
+
+res=$($com <<< 'ls /etc/passwd aaaa &> /tmp/rusty_bash; cat /tmp/rusty_bash | wc -l')
+[ "$res" == "2" ] || err $LINENO
+
+# &> for non-fork redirects
+
+res=$($com <<< '
+	{ ls /etc/passwd aaaa ; } &> /tmp/rusty_bash 
+	cat /tmp/rusty_bash | wc -l')
+[ "$res" == "2" ] || err $LINENO
+
+res=$(LANG=C $com <<< '
+	{ ls /etc/passwd aaaa ; } &> /tmp/rusty_bash 
+	cat /tmp/rusty_bash | wc -l
+	#ちゃんと標準出力が原状復帰されているか調査
+	{ ls /etc/passwd ; }
+	{ ls aaaa ; } 2> /tmp/rusty_bash2
+	cat /tmp/rusty_bash2 | wc -l
+	')
+[ "$res" == "2
+/etc/passwd
+1" ] || err $LINENO
 
 res=$($com <<< '
 	cd /etc/
@@ -234,13 +264,5 @@ res=$($com <<< '
 a
 /etc
 /etc" ] || err $LINENO
-
-#res=$($com <<< 'cat <' 2>&1)
-#[ "$?" == "2" ] || err $LINENO
-#[ "$res" == 'bash: syntax error near unexpected token: `newline'\''' ] || err $LINENO
-
-res=$($com <<< 'ls /etc/passwd aaaa &> /tmp/rusty_bash; cat /tmp/rusty_bash | wc -l')
-[ "$res" == "2" ] || err $LINENO
-
 
 echo OK $0
