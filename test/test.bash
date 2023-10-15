@@ -273,6 +273,9 @@ res=$($com <<< 'echo -n A && echo -n B')
 res=$($com <<< 'echo -n A || echo -n B')
 [ "$res" == "A" ] || err $LINENO
 
+res=$($com <<< 'echo -n A || echo -n B; echo -n A')
+[ "$res" == "AA" ] || err $LINENO
+
 res=$($com <<< 'true || echo -n A || echo -n B')
 [ "$res" == "" ] || err $LINENO
 
