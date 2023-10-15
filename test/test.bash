@@ -265,4 +265,9 @@ a
 /etc
 /etc" ] || err $LINENO
 
+### AND OR ###
+
+res=$($com <<< 'echo -n A && echo -n B')
+[ "$res" == "AB" ] || err $LINENO
+
 echo OK $0
