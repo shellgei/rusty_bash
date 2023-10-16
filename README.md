@@ -1,3 +1,3 @@
-# Skeleton of Rusty Bash
+# 寿司シェル
 
-This branch contains the skeleton of Rusty Bash. Only the codes for terminal remaine. 
+これはrusty_bashを連載用に再実装しているブランチです。名前も「寿司シェルに変えています。」
