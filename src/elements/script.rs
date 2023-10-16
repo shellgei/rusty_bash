@@ -4,7 +4,7 @@
 use super::job::Job;
 use crate::{Feeder, ShellCore};
 use nix::unistd;
-use nix::unistd::ForkResult;
+use nix::unistd::{ForkResult, Pid};
 use super::Pipe;
 use super::io::redirect::Redirect;
 use std::process;
@@ -29,7 +29,7 @@ impl Script {
     }
 
     pub fn fork_exec(&mut self, core: &mut ShellCore,pipe: &mut Pipe,
-                                redirects: &mut Vec<Redirect>) {
+                     redirects: &mut Vec<Redirect>) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 let pid = nix::unistd::getpid();
@@ -40,10 +40,12 @@ impl Script {
                 pipe.connect();
                 self.exec(core);
                 core.exit();
+                None
             },
             Ok(ForkResult::Parent { child } ) => {
                 pipe.parent_close();
-                core.wait_process(child);
+                //core.wait_process(child);
+                Some(child)
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
