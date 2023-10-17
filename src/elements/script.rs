@@ -89,7 +89,7 @@ impl Script {
             return Status::NormalEnd;
         }
 
-        let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done"];
+        let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done", "|"];
         if let Some(end) = ng_ends.iter().find(|e| feeder.starts_with(e)) {
             return Status::UnexpectedSymbol(end.to_string());
         }
