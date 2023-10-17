@@ -15,14 +15,22 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) {
+        let mut pids = vec![];
         let mut prev = -1;
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev);
-            self.commands[i].exec(core, p);
+            pids.push(self.commands[i].exec(core, p));
             prev = p.recv;
         }
 
-        self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev));
+        let last_pid = self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev));
+
+        for pid in pids {
+            core.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
+        }
+        if let Some(pid) = last_pid { //パイプにつながっていないコマンドはforkしなくてよい
+            core.wait_process(pid);
+        }
     }
 
     pub fn new() -> Pipeline {
