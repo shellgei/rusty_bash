@@ -8,7 +8,7 @@ use nix::unistd;
 use std::ffi::CString;
 use std::process;
 
-use nix::unistd::ForkResult;
+use nix::unistd::{ForkResult, Pid};
 use nix::errno::Errno;
 
 #[derive(Debug)]
@@ -20,9 +20,9 @@ pub struct SimpleCommand {
 }
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if self.args.len() == 0 {
-            return;
+            return None;
         }
         if ! pipe.is_connected() && core.builtins.contains_key(&self.args[0]){
             if self.redirects.iter_mut().all(|r| r.connect(true)){
@@ -31,7 +31,7 @@ impl Command for SimpleCommand {
                 core.vars.insert("?".to_string(), "1".to_string());
             }
             self.redirects.iter_mut().rev().for_each(|r| r.restore());
-            return;
+            return None;
         }
 
         self.set_cargs();
@@ -58,12 +58,12 @@ impl Command for SimpleCommand {
                         println!("Failed to execute. {:?}", err);
                         process::exit(127)
                     }
-                    _ => ()
+                    _ => None,
                 }
             },
             Ok(ForkResult::Parent { child } ) => {
                 pipe.parent_close();
-                core.wait_process(child);
+                Some(child)
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }

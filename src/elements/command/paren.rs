@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder, Script};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct ParenCommand {
@@ -13,7 +14,7 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match self.script {
             Some(ref mut s) => s.fork_exec(core, pipe, &mut self.redirects),
             _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
