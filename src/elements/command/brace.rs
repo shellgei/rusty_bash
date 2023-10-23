@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder, Script};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct BraceCommand {
@@ -13,16 +14,17 @@ pub struct BraceCommand {
 }
 
 impl Command for BraceCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         let script = match self.script {
             Some(ref mut s) => s,
             _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
         };
 
         if pipe.is_connected() {
-            script.fork_exec(core, pipe, &mut self.redirects);
+            script.fork_exec(core, pipe, &mut self.redirects)
         }else{
             script.exec(core, &mut self.redirects);
+            None
         }
     }
 
