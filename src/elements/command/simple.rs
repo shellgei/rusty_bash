@@ -37,6 +37,10 @@ impl Command for SimpleCommand {
         self.set_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
+                if let Err(_) = unistd::setpgid(Pid::from_raw(0), pipe.pgid) {
+                    panic!("sush(fatal): cannot set pgid");
+                }
+
                 if ! self.redirects.iter_mut().all(|r| r.connect(false)){
                     process::exit(1);
                 }
@@ -62,6 +66,10 @@ impl Command for SimpleCommand {
                 }
             },
             Ok(ForkResult::Parent { child } ) => {
+                if let Err(_) = unistd::setpgid(child, pipe.pgid) {
+                    panic!("sush(fatal): cannot set pgid");
+                }
+
                 pipe.parent_close();
                 Some(child) //core.wait_process(child);
             },
