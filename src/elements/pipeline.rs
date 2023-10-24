@@ -18,14 +18,18 @@ impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) -> Vec<Option<Pid>> {
         let mut prev = -1;
         let mut pids = vec![];
+        let mut pgid = Pid::from_raw(0);
         for (i, p) in self.pipes.iter_mut().enumerate() {
-            p.set(prev);
+            p.set(prev, pgid);
             pids.push(self.commands[i].exec(core, p));
+            if i == 0 {
+                pgid = pids[0].expect("SUSHI INTERNAL ERROR (unforked in pipeline)");
+            }
             prev = p.recv;
         }
 
         pids.push(
-            self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev))
+            self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid))
         );
 
         pids
