@@ -18,7 +18,13 @@ pub struct Pipe {
 
 impl Pipe {
     pub fn new(text: String) -> Pipe {
-        Pipe { text: text, recv: -1, send: -1, prev: -1, pgid: Pid::from_raw(0) }
+        Pipe {
+            text: text,
+            recv: -1,
+            send: -1,
+            prev: -1,
+            pgid: Pid::from_raw(0),
+        }
     }
 
     pub fn end(prev: RawFd, pgid: Pid) -> Pipe {
