@@ -37,6 +37,10 @@ impl Script {
                      redirects: &mut Vec<Redirect>) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
+                if let Err(_) = unistd::setpgid(Pid::from_raw(0), pipe.pgid) {
+                    panic!("sush(fatal): cannot set pgid");
+                }
+
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
                 if ! redirects.iter_mut().all(|r| r.connect(false)){
@@ -48,6 +52,10 @@ impl Script {
                 panic!("SUSH INTERNAL ERROR (never come here)")
             },
             Ok(ForkResult::Parent { child } ) => {
+                if let Err(_) = unistd::setpgid(child, pipe.pgid) {
+                    panic!("sush(fatal): cannot set pgid");
+                }
+
                 pipe.parent_close();
                 Some(child) //   core.wait_process(child);
             },
