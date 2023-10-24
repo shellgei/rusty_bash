@@ -5,6 +5,7 @@ use crate::{Feeder, ShellCore};
 use super::command;
 use super::command::Command;
 use super::Pipe;
+use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct Pipeline {
@@ -14,15 +15,20 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore) -> Vec<Option<Pid>> {
         let mut prev = -1;
+        let mut pids = vec![];
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev);
-            self.commands[i].exec(core, p);
+            pids.push(self.commands[i].exec(core, p));
             prev = p.recv;
         }
 
-        self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev));
+        pids.push(
+            self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev))
+        );
+
+        pids
     }
 
     pub fn new() -> Pipeline {
