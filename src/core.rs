@@ -79,6 +79,16 @@ impl ShellCore {
         self.vars.insert("?".to_string(), exit_status.to_string()); //追加
     } 
 
+    pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
+        if pids.len() == 1 && pids[0] == None {
+            return;
+        }
+
+        for pid in pids {
+            self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
+        }
+    }
+
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
         if ! self.builtins.contains_key(&args[0]) {
             return false;
