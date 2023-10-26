@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::{Feeder, ShellCore};
+use crate::{core, Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
 use super::Pipe;
@@ -37,7 +37,7 @@ impl Script {
                      redirects: &mut Vec<Redirect>) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                Self::set_pgid(Pid::from_raw(0), pipe.pgid);
+                core::set_pgid(Pid::from_raw(0), pipe.pgid);
 
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
@@ -46,18 +46,12 @@ impl Script {
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
-                Self::set_pgid(child, pipe.pgid);
+                core::set_pgid(child, pipe.pgid);
 
                 pipe.parent_close();
                 Some(child) //   core.wait_process(child);
             },
             Err(err) => panic!("Failed to fork. {}", err),
-        }
-    }
-
-    fn set_pgid(pid: Pid, ppid: Pid) {
-        if let Err(_) = unistd::setpgid(pid, ppid) {
-            panic!("sush(fatal): cannot set pgid");
         }
     }
 

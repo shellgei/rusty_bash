@@ -5,6 +5,7 @@ pub mod builtins;
 
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
+use nix::unistd;
 use nix::unistd::Pid;
 use std::collections::HashMap;
 use std::process;
@@ -110,5 +111,12 @@ impl ShellCore {
         };
     
         process::exit(exit_status)
+    }
+
+}
+
+pub fn set_pgid(pid: Pid, ppid: Pid) {
+    if let Err(_) = unistd::setpgid(pid, ppid) {
+        panic!("sush(fatal): cannot set pgid");
     }
 }

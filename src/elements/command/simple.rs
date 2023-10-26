@@ -7,6 +7,7 @@ use crate::elements::{command, io};
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
+use crate::core;
 
 use nix::unistd::{ForkResult, Pid};
 use nix::errno::Errno;
@@ -47,7 +48,7 @@ impl SimpleCommand {
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                Self::set_pgid(Pid::from_raw(0), pipe.pgid);
+                core::set_pgid(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, &mut self.redirects);
                 if core.run_builtin(&mut self.args) {
                     core.exit()
@@ -56,17 +57,11 @@ impl SimpleCommand {
                 }
             },
             Ok(ForkResult::Parent { child } ) => {
-                Self::set_pgid(child, pipe.pgid);
+                core::set_pgid(child, pipe.pgid);
                 pipe.parent_close();
                 Some(child)
             },
             Err(err) => panic!("Failed to fork. {}", err),
-        }
-    }
-
-    fn set_pgid(pid: Pid, ppid: Pid) {
-        if let Err(_) = unistd::setpgid(pid, ppid) {
-            panic!("sush(fatal): cannot set pgid");
         }
     }
 
