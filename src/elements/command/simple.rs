@@ -15,7 +15,6 @@ use nix::errno::Errno;
 pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
-    //cargs: Vec<CString>,
     redirects: Vec<Redirect>,
 }
 
@@ -46,7 +45,7 @@ impl SimpleCommand {
     }
 
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        self.set_cargs();
+        self.to_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 if let Err(_) = unistd::setpgid(Pid::from_raw(0), pipe.pgid) {
@@ -76,7 +75,7 @@ impl SimpleCommand {
     }
 
     fn exec_external_command(&mut self) -> ! {
-        let cargs = self.set_cargs();
+        let cargs = self.to_cargs();
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::EACCES) => {
                 println!("sush: {}: Permission denied", &self.args[0]);
@@ -94,7 +93,7 @@ impl SimpleCommand {
         }
     }
 
-    fn set_cargs(&mut self) -> Vec<CString> {
+    fn to_cargs(&mut self) -> Vec<CString> {
         self.args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
