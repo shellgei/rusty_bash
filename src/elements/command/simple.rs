@@ -25,15 +25,27 @@ impl Command for SimpleCommand {
             return None;
         }
         if ! pipe.is_connected() && core.builtins.contains_key(&self.args[0]){
-            if self.redirects.iter_mut().all(|r| r.connect(true)){
-                core.run_builtin(&mut self.args);
-            }else{
-                core.vars.insert("?".to_string(), "1".to_string());
-            }
-            self.redirects.iter_mut().rev().for_each(|r| r.restore());
+            self.nofork_exec(core);
             return None;
         }
 
+        self.fork_exec(core, pipe)
+    }
+
+    fn get_text(&self) -> String { self.text.clone() }
+}
+
+impl SimpleCommand {
+    fn nofork_exec(&mut self, core: &mut ShellCore) {
+        if self.redirects.iter_mut().all(|r| r.connect(true)){
+            core.run_builtin(&mut self.args);
+        }else{
+            core.vars.insert("?".to_string(), "1".to_string());
+        }
+        self.redirects.iter_mut().rev().for_each(|r| r.restore());
+    }
+
+    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         self.set_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
@@ -77,10 +89,6 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-}
-
-impl SimpleCommand {
     fn set_cargs(&mut self) {
         self.cargs = self.args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
