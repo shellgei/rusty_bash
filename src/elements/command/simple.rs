@@ -45,32 +45,34 @@ impl SimpleCommand {
     }
 
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        self.to_cargs();
+//        self.to_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                if let Err(_) = unistd::setpgid(Pid::from_raw(0), pipe.pgid) {
-                    panic!("sush(fatal): cannot set pgid");
-                }
+                Self::set_pgid(Pid::from_raw(0), pipe.pgid);
 
                 if ! self.redirects.iter_mut().all(|r| r.connect(false)){
                     process::exit(1);
                 }
                 pipe.connect();
-                if core.run_builtin(&mut self.args) {
-                    core.exit();
-                }
 
-                self.exec_external_command()
+                if core.run_builtin(&mut self.args) {
+                    core.exit()
+                }else{
+                    self.exec_external_command()
+                }
             },
             Ok(ForkResult::Parent { child } ) => {
-                if let Err(_) = unistd::setpgid(child, pipe.pgid) {
-                    panic!("sush(fatal): cannot set pgid");
-                }
-
+                Self::set_pgid(child, pipe.pgid);
                 pipe.parent_close();
                 Some(child) //core.wait_process(child);
             },
             Err(err) => panic!("Failed to fork. {}", err),
+        }
+    }
+
+    fn set_pgid(pid: Pid, ppid: Pid) {
+        if let Err(_) = unistd::setpgid(pid, ppid) {
+            panic!("sush(fatal): cannot set pgid");
         }
     }
 
