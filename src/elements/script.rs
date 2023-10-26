@@ -41,10 +41,7 @@ impl Script {
 
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
-                if ! redirects.iter_mut().all(|r| r.connect(false)){
-                    process::exit(1);
-                }
-                pipe.connect();
+                Self::set_io(pipe, redirects);
                 self.exec(core, &mut vec![]);
                 core.exit()
             },
@@ -56,6 +53,13 @@ impl Script {
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
+    }
+
+    fn set_io(pipe: &mut Pipe, rs: &mut Vec<Redirect>) {
+        if ! rs.iter_mut().all(|r| r.connect(false)){
+            process::exit(1);
+        }
+        pipe.connect();
     }
 
     fn set_pgid(pid: Pid, ppid: Pid) {
