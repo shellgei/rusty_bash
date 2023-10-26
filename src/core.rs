@@ -90,7 +90,7 @@ impl ShellCore {
         true
     }
 
-    pub fn exit(&self) -> i32 {
+    pub fn exit(&self) -> ! {
         let exit_status = match self.vars["?"].parse::<i32>() {
             Ok(n)  => n%256, 
             Err(_) => {
