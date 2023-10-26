@@ -45,29 +45,31 @@ impl SimpleCommand {
     }
 
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-//        self.to_cargs();
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 Self::set_pgid(Pid::from_raw(0), pipe.pgid);
-
-                if ! self.redirects.iter_mut().all(|r| r.connect(false)){
-                    process::exit(1);
-                }
-                pipe.connect();
+                Self::set_io(pipe, &mut self.redirects);
 
                 if core.run_builtin(&mut self.args) {
                     core.exit()
                 }else{
-                    self.exec_external_command()
+                    Self::exec_external_command(&mut self.args)
                 }
             },
             Ok(ForkResult::Parent { child } ) => {
                 Self::set_pgid(child, pipe.pgid);
                 pipe.parent_close();
-                Some(child) //core.wait_process(child);
+                Some(child)
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
+    }
+
+    fn set_io(pipe: &mut Pipe, rs: &mut Vec<Redirect>) {
+        if ! rs.iter_mut().all(|r| r.connect(false)){
+            process::exit(1);
+        }
+        pipe.connect();
     }
 
     fn set_pgid(pid: Pid, ppid: Pid) {
@@ -76,15 +78,15 @@ impl SimpleCommand {
         }
     }
 
-    fn exec_external_command(&mut self) -> ! {
-        let cargs = self.to_cargs();
+    fn exec_external_command(args: &mut Vec<String>) -> ! {
+        let cargs = Self::to_cargs(args);
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::EACCES) => {
-                println!("sush: {}: Permission denied", &self.args[0]);
+                println!("sush: {}: Permission denied", &args[0]);
                 process::exit(126)
             },
             Err(Errno::ENOENT) => {
-                println!("{}: command not found", &self.args[0]);
+                println!("{}: command not found", &args[0]);
                 process::exit(127)
             },
             Err(err) => {
@@ -95,8 +97,8 @@ impl SimpleCommand {
         }
     }
 
-    fn to_cargs(&mut self) -> Vec<CString> {
-        self.args.iter()
+    fn to_cargs(args: &mut Vec<String>) -> Vec<CString> {
+        args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
     }
