@@ -38,7 +38,6 @@ impl Script {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core::set_pgid(Pid::from_raw(0), pipe.pgid);
-
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
                 io::connect(pipe, redirects);
@@ -47,7 +46,6 @@ impl Script {
             },
             Ok(ForkResult::Parent { child } ) => {
                 core::set_pgid(child, pipe.pgid);
-
                 pipe.parent_close();
                 Some(child) //   core.wait_process(child);
             },
