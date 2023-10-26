@@ -44,8 +44,7 @@ impl Script {
                 }
                 pipe.connect();
                 self.exec(core, &mut vec![]);
-                core.exit();
-                panic!("SUSH INTERNAL ERROR (never come here)")
+                core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
                 pipe.parent_close();
