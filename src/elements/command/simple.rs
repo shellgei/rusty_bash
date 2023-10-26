@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
-use crate::elements::command;
+use crate::elements::{command, io};
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -48,8 +48,7 @@ impl SimpleCommand {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 Self::set_pgid(Pid::from_raw(0), pipe.pgid);
-                Self::set_io(pipe, &mut self.redirects);
-
+                io::connect(pipe, &mut self.redirects);
                 if core.run_builtin(&mut self.args) {
                     core.exit()
                 }else{
@@ -63,13 +62,6 @@ impl SimpleCommand {
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
-    }
-
-    fn set_io(pipe: &mut Pipe, rs: &mut Vec<Redirect>) {
-        if ! rs.iter_mut().all(|r| r.connect(false)){
-            process::exit(1);
-        }
-        pipe.connect();
     }
 
     fn set_pgid(pid: Pid, ppid: Pid) {

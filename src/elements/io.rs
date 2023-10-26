@@ -6,7 +6,10 @@ pub mod redirect;
 
 use std::os::unix::prelude::RawFd;
 use nix::{fcntl, unistd};
+use crate::process;
 use nix::errno::Errno;
+use crate::elements::Pipe;
+use crate::elements::io::redirect::Redirect;
 
 fn close(fd: RawFd, err_str: &str){
     if fd >= 0 {
@@ -45,4 +48,11 @@ fn share(from: RawFd, to: RawFd) {
 fn backup(from: RawFd) -> RawFd {
     fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(10))
            .expect("Can't allocate fd for backup")
+}
+
+pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>) {
+    if ! rs.iter_mut().all(|r| r.connect(false)){
+        process::exit(1);
+    }
+    pipe.connect();
 }

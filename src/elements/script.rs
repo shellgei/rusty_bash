@@ -7,7 +7,7 @@ use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
 use super::Pipe;
 use super::io::redirect::Redirect;
-use std::process;
+use super::io;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -41,7 +41,7 @@ impl Script {
 
                 let pid = nix::unistd::getpid();
                 core.vars.insert("BASHPID".to_string(), pid.to_string());
-                Self::set_io(pipe, redirects);
+                io::connect(pipe, redirects);
                 self.exec(core, &mut vec![]);
                 core.exit()
             },
@@ -53,13 +53,6 @@ impl Script {
             },
             Err(err) => panic!("Failed to fork. {}", err),
         }
-    }
-
-    fn set_io(pipe: &mut Pipe, rs: &mut Vec<Redirect>) {
-        if ! rs.iter_mut().all(|r| r.connect(false)){
-            process::exit(1);
-        }
-        pipe.connect();
     }
 
     fn set_pgid(pid: Pid, ppid: Pid) {
