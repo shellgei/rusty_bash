@@ -15,7 +15,7 @@ use nix::errno::Errno;
 pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
-    cargs: Vec<CString>,
+    //cargs: Vec<CString>,
     redirects: Vec<Redirect>,
 }
 
@@ -76,7 +76,8 @@ impl SimpleCommand {
     }
 
     fn exec_external_command(&mut self) -> ! {
-        match unistd::execvp(&self.cargs[0], &self.cargs) {
+        let cargs = self.set_cargs();
+        match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::EACCES) => {
                 println!("sush: {}: Permission denied", &self.args[0]);
                 process::exit(126)
@@ -93,17 +94,16 @@ impl SimpleCommand {
         }
     }
 
-    fn set_cargs(&mut self) {
-        self.cargs = self.args.iter()
+    fn set_cargs(&mut self) -> Vec<CString> {
+        self.args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
-            .collect();
+            .collect()
     }
 
     fn new() -> SimpleCommand {
         SimpleCommand {
             text: String::new(),
             args: vec![],
-            cargs: vec![],
             redirects: vec![],
         }
     }
