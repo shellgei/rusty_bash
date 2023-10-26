@@ -7,6 +7,7 @@ use crate::{Feeder, ShellCore};
 #[derive(Debug)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
+    pub pipeline_ends: Vec<String>,
     pub text: String,
 }
 
@@ -21,7 +22,8 @@ impl Job {
     fn new() -> Job {
         Job {
             text: String::new(),
-            pipelines: vec![]
+            pipelines: vec![],
+            pipeline_ends: vec![],
         }
     }
 
@@ -36,6 +38,29 @@ impl Job {
         }else{
             false
         }
+    }
+
+    fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
+        match Pipeline::parse(feeder, core){
+            Some(pipeline) => {
+                ans.text += &pipeline.text.clone();
+                ans.pipelines.push(pipeline);
+                true
+            },
+            None => false,
+        }
+    }
+
+    fn eat_and_or(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
+        let num = feeder.scanner_and_or(core);
+        if num == 0 {
+            ans.pipeline_ends.push("".to_string());
+            return false;
+        }
+        let and_or = feeder.consume(num);
+        ans.pipeline_ends.push(and_or.clone());
+        ans.text += &and_or;
+        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {

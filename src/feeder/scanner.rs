@@ -75,6 +75,21 @@ impl Feeder {
         0
     }
 
+    pub fn scanner_and_or(&mut self, core: &mut ShellCore) -> usize {
+        if self.remaining.starts_with("|\\\n") ||
+           self.remaining.starts_with("&\\\n") {
+            if self.feed_and_connect(core){
+                return self.scanner_and_or(core);
+            }else{
+                return 0;
+            }
+        }
+
+        if self.remaining.starts_with("||")     { 2 }
+        else if self.remaining.starts_with("&&"){ 2 }
+        else{ 0 }
+    }
+
     pub fn scanner_pipe(&mut self, core: &mut ShellCore) -> usize {
         if self.remaining.starts_with("|\\\n"){
             if self.feed_and_connect(core){
