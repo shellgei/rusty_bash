@@ -34,11 +34,23 @@ fn main() {
     main_loop(&mut core);
 }
 
+fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+    if ! core.input_interrupt {
+        return false;
+    }
+
+    core.input_interrupt = false;
+    core.vars.insert("?".to_string(), "130".to_string());
+    feeder.consume(feeder.len());
+    true
+}
+
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
-        if !feeder.feed_line(core) {
+        if ! feeder.feed_line(core) {
             if core.has_flag('i') {
+                input_interrupt_check(&mut feeder, core);
                 continue;
             }else{
                 break;
@@ -46,7 +58,11 @@ fn main_loop(core: &mut ShellCore) {
         }
 
         match Script::parse(&mut feeder, core){
-            Some(mut s) => s.exec(core, &mut vec![]),
+            Some(mut s) => {
+                if ! input_interrupt_check(&mut feeder, core) {
+                    s.exec(core, &mut vec![])
+                }
+            },
             None => continue,
         }
     }
