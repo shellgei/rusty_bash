@@ -21,7 +21,7 @@ impl Job {
     fn new() -> Job {
         Job {
             text: String::new(),
-            pipelines: vec![]
+            pipelines: vec![],
         }
     }
 
