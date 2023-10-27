@@ -76,12 +76,11 @@ impl Pipeline {
         }
 
         while Self::eat_pipe(feeder, &mut ans, core){
-            loop {                                     //パイプの後ろでの処理
+            loop {
                 Self::eat_blank_and_comment(feeder, &mut ans, core);
                 if Self::eat_command(feeder, &mut ans, core) {
-                    break; //コマンドがあれば73行目のloopを抜けてパイプを探す
-                }
-                if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
+                    break;
+                }else if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
                     return None;
                 }
             }
