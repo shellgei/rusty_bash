@@ -62,7 +62,7 @@ impl Script {
     fn set_subshell_vars(core: &mut ShellCore) {
         let pid = nix::unistd::getpid();
         core.vars.insert("BASHPID".to_string(), pid.to_string());
-        match core.vars["BASH_SUBSHELL]"].parse::<usize>() {
+        match core.vars["BASH_SUBSHELL"].parse::<usize>() {
             Ok(num) => core.vars.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
             Err(_) =>  core.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
