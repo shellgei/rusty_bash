@@ -18,6 +18,7 @@ pub struct ShellCore {
     pub vars: HashMap<String, String>, 
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<String>,
+    pub input_interrupt: bool,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -36,6 +37,7 @@ impl ShellCore {
             vars: HashMap::new(),
             builtins: HashMap::new(),
             nest: vec![],
+            input_interrupt: false,
         };
 
         let pid = process::id();
