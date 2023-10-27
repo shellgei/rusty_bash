@@ -8,7 +8,9 @@ impl Feeder {
     fn feed_and_connect(&mut self, core: &mut ShellCore) {
         self.remaining.pop();
         self.remaining.pop();
-        self.feed_additional_line(core);
+        if ! self.feed_additional_line(core){
+            self.remaining = String::new();
+        }
     }
 
     fn backslash_check_and_feed(&mut self, starts: Vec<&str>, core: &mut ShellCore) {

@@ -129,7 +129,9 @@ impl Script {
                     break;
                 },
                 Status::NeedMoreLine => {
-                    feeder.feed_additional_line(core);
+                    if ! feeder.feed_additional_line(core) {
+                        break;
+                    }
                 },
             }
         }

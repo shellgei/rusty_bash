@@ -64,22 +64,20 @@ impl Feeder {
         Some(line)
     }
 
-    pub fn feed_additional_line(&mut self, core: &mut ShellCore) {
+    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+        if core.input_interrupt {
+            return false;
+        }
+
         let ret = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
             if let Some(s) = term::read_line_terminal(len_prompt, core){
                 Some(s)
             }else {
-                eprintln!("sush: syntax error: unexpected end of file");
-                process::exit(2);
+                return false;
             }
         }else{
-            if let Some(s) = Self::read_line_stdin() {
-                Some(s)
-            }else{
-                eprintln!("sush: syntax error: unexpected end of file");
-                process::exit(2);
-            }
+            Self::read_line_stdin()
         };
 
         if let Some(line) = ret {
@@ -88,6 +86,7 @@ impl Feeder {
             eprintln!("sush: syntax error: unexpected end of file");
             process::exit(2);
         }
+        true
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
