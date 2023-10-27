@@ -129,11 +129,7 @@ impl Script {
                     break;
                 },
                 Status::NeedMoreLine => {
-                    if feeder.feed_additional_line(core) {
-                        continue;
-                    }
-                    eprintln!("bash: syntax error: unexpected end of file");
-                    break;
+                    feeder.feed_additional_line(core);
                 },
             }
         }

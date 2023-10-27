@@ -176,6 +176,9 @@ res=$($com <<< 'echo hoge |\
 res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l')
 [ "$res" = "2" ] || err $LINENO
 
+res=$($com <<< 'ls |  | rev')
+[ "$?" == "2" ] || err $LINENO
+
 ### REDIRECTS ###
 
 # <, >, >>

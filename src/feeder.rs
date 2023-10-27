@@ -6,8 +6,8 @@ mod scanner;
 
 use std::io;
 use crate::ShellCore;
+use std::process;
 //use self::term;
-
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
@@ -64,27 +64,29 @@ impl Feeder {
         Some(line)
     }
 
-    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+    pub fn feed_additional_line(&mut self, core: &mut ShellCore) {
         let ret = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
             if let Some(s) = term::read_line_terminal(len_prompt, core){
                 Some(s)
             }else {
-                return false;
+                eprintln!("sush: syntax error: unexpected end of file");
+                process::exit(2);
             }
         }else{
             if let Some(s) = Self::read_line_stdin() {
                 Some(s)
             }else{
-                return false;
+                eprintln!("sush: syntax error: unexpected end of file");
+                process::exit(2);
             }
         };
 
         if let Some(line) = ret {
             self.add_line(line);
-            true
         }else{
-            false
+            eprintln!("sush: syntax error: unexpected end of file");
+            process::exit(2);
         }
     }
 
