@@ -39,7 +39,7 @@ impl Pipeline {
         Pipeline {
             text: String::new(),
             commands: vec![],
-            pipes: vec![]
+            pipes: vec![],
         }
     }
 
