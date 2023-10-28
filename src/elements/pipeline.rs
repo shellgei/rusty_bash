@@ -81,7 +81,7 @@ impl Pipeline {
                 if Self::eat_command(feeder, &mut ans, core) {
                     break; //コマンドがあれば73行目のloopを抜けてパイプを探す
                 }
-                if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
+                if feeder.len() != 0 || ! feeder.feed_additional_line(core) { //追加の行の読み込み
                     return None;
                 }
             }
