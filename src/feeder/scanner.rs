@@ -87,14 +87,7 @@ impl Feeder {
     }
 
     pub fn scanner_and_or(&mut self, core: &mut ShellCore) -> usize {
-        if self.remaining.starts_with("|\\\n") ||
-           self.remaining.starts_with("&\\\n") {
-            if self.feed_and_connect(core){
-                return self.scanner_and_or(core);
-            }else{
-                return 0;
-            }
-        }
+        self.backslash_check_and_feed(vec!["|", "&"], core);
 
         if self.remaining.starts_with("||")     { 2 }
         else if self.remaining.starts_with("&&"){ 2 }
