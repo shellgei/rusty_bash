@@ -127,6 +127,9 @@ res=$($com <<< 'seq 3 |  #コメントだよ
 	  tac | head -n 1')
 [ "$res" = "3" ] || err $LINENO
 
+res=$($com <<< 'seq 3 |   | head -n 1')
+[ "$?" = "2" ] || err $LINENO
+
 ### COMMENT ###
 
 res=$($com <<< 'echo a #aaaaa')
