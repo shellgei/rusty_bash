@@ -58,7 +58,7 @@ impl Script {
                 pipe.parent_close();
                 Some(child) //   core.wait_process(child);
             },
-            Err(err) => panic!("Failed to fork. {}", err),
+            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
 
