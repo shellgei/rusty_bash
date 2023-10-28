@@ -31,7 +31,7 @@ impl Redirect {
         self.left_fd = if self.left.len() == 0 {
             default_fd
         }else{
-            self.left.parse().expect("SUSHI INTERNAL ERROR")
+            self.left.parse().expect("SUSHI INTERNAL ERROR (invalid FD)")
         };
     }
 
