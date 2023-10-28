@@ -1,3 +1,3 @@
-# Skeleton of Rusty Bash
+# Sushi Shell (sush)
 
-This branch contains the skeleton of Rusty Bash. Only the codes for terminal remaine. 
+This branch is for articles in Software Design. 

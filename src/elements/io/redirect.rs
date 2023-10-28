@@ -33,7 +33,7 @@ impl Redirect {
         self.left_fd = if self.left.len() == 0 {
             default_fd
         }else{
-            self.left.parse().expect("SUSHI INTERNAL ERROR")
+            self.left.parse().expect("SUSHI INTERNAL ERROR (invalid FD)")
         };
     }
 
@@ -47,7 +47,7 @@ impl Redirect {
                 let fd = file.into_raw_fd();
                 let result = io::replace(fd, self.left_fd);
                 if ! result {
-                    io::close(fd, &format!("sush(fatal): file cannot be closed"));
+                    io::close(fd, &format!("sush(fatal): file does not close"));
                     self.left_fd = -1;
                 }
                 result
