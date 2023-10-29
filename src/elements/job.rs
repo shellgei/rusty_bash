@@ -16,17 +16,23 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn exec(&mut self, core: &mut ShellCore, end: &str) {
-        if end == "&" && self.pipelines.len() > 1 {
+    pub fn exec(&mut self, core: &mut ShellCore, job_end: &str) {
+        let pipeline_num = self.pipelines.len(); 
+
+        if job_end == "&" && pipeline_num > 1 {
             self.fork_exec(core);
             return;
         }
+
 
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
                 let pids = pipeline.exec(core);
+                if job_end == "&" && pipeline_num == 1 {
+                    return;
+                }
                 core.wait_pipeline(pids);
             }
             do_next = (&core.vars["?"] == "0") == (end == "&&");
@@ -42,7 +48,7 @@ impl Job {
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
-                core::set_pgid(child, Pid::from_raw(0));
+                core::set_pgid(child, child);
                 Some(child) 
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
