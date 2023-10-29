@@ -5,9 +5,8 @@ use super::job::Job;
 use crate::{core, Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
-use super::Pipe;
+use super::{io, Pipe};
 use super::io::redirect::Redirect;
-use super::io;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -38,7 +37,7 @@ impl Script {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core::set_pgid(Pid::from_raw(0), pipe.pgid);
-                Self::set_subshell_vars(core);
+                core.set_subshell_vars();
                 io::connect(pipe, redirects);
                 self.exec(core, &mut vec![]);
                 core.exit()
@@ -57,15 +56,6 @@ impl Script {
             text: String::new(),
             jobs: vec![]
         }
-    }
-
-    fn set_subshell_vars(core: &mut ShellCore) {
-        let pid = nix::unistd::getpid();
-        core.vars.insert("BASHPID".to_string(), pid.to_string());
-        match core.vars["BASH_SUBSHELL"].parse::<usize>() {
-            Ok(num) => core.vars.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
-            Err(_) =>  core.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
-        };
     }
 
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool {
