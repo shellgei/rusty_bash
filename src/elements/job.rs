@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
@@ -16,35 +16,39 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn exec(&mut self, core: &mut ShellCore, job_end: &str) {
-        let pipeline_num = self.pipelines.len(); 
-
-        if job_end == "&" && pipeline_num > 1 {
-            self.fork_exec(core);
+    pub fn exec(&mut self, core: &mut ShellCore, bg: bool) {
+        if bg {
+            self.bg_exec(core, self.pipelines.len());
             return;
         }
-
 
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
                 let pids = pipeline.exec(core);
-                if job_end == "&" && pipeline_num == 1 {
-                    return;
-                }
                 core.wait_pipeline(pids);
             }
             do_next = (&core.vars["?"] == "0") == (end == "&&");
         }
     }
 
-    pub fn fork_exec(&mut self, core: &mut ShellCore) -> Option<Pid> {
+    fn bg_exec(&mut self, core: &mut ShellCore, pipeline_num: usize) {
+        if pipeline_num == 0 {
+            panic!("SUSH INTERNAL ERROR (no pipeline)");
+        }else if pipeline_num == 1 {
+            self.pipelines[0].exec(core);
+        }else{
+            self.fork_exec(core);
+        }
+    }
+
+    fn fork_exec(&mut self, core: &mut ShellCore) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core::set_pgid(Pid::from_raw(0), Pid::from_raw(0));
                 Script::set_subshell_vars(core);
-                self.exec(core, "");
+                self.exec(core, false);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
