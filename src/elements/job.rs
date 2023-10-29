@@ -5,8 +5,6 @@ use super::pipeline::Pipeline;
 use crate::{core, Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
-use crate::Script;
-
 
 #[derive(Debug)]
 pub struct Job {
@@ -47,7 +45,7 @@ impl Job {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core::set_pgid(Pid::from_raw(0), Pid::from_raw(0));
-                Script::set_subshell_vars(core);
+                core.set_subshell_vars();
                 self.exec(core, false);
                 core.exit()
             },
