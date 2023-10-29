@@ -2,7 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
-use crate::{Feeder, ShellCore};
+use crate::{core, Feeder, ShellCore};
+use nix::unistd;
+use nix::unistd::{ForkResult, Pid};
+use crate::Script;
+
 
 #[derive(Debug)]
 pub struct Job {
@@ -12,7 +16,12 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn exec(&mut self, core: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore, end: &str) {
+        if end == "&" && self.pipelines.len() > 1 {
+            self.fork_exec(core);
+            return;
+        }
+
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
@@ -24,15 +33,19 @@ impl Job {
         }
     }
 
-    pub fn fork_exec(&mut self, core: &mut ShellCore) {
-        let mut do_next = true;
-        for (pipeline, end) in self.pipelines.iter_mut()
-                          .zip(self.pipeline_ends.iter()) {
-            if do_next {
-                let pids = pipeline.exec(core);
-                core.wait_pipeline(pids);
-            }
-            do_next = (&core.vars["?"] == "0") == (end == "&&");
+    pub fn fork_exec(&mut self, core: &mut ShellCore) -> Option<Pid> {
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
+                core::set_pgid(Pid::from_raw(0), Pid::from_raw(0));
+                Script::set_subshell_vars(core);
+                self.exec(core, "");
+                core.exit()
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                core::set_pgid(child, Pid::from_raw(0));
+                Some(child) 
+            },
+            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
 

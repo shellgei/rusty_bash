@@ -24,14 +24,9 @@ pub struct Script {
 
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore, redirects: &mut Vec<Redirect>) {
-        let job_num = self.jobs.len();
         if redirects.iter_mut().all(|r| r.connect(true)){
             for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
-                if end == "&" && job_num > 1 {
-                    job.fork_exec(core);
-                }else{
-                    job.exec(core);
-                }
+                job.exec(core, end);
             }
         }else{
             core.vars.insert("?".to_string(), "1".to_string());
@@ -66,7 +61,7 @@ impl Script {
         }
     }
 
-    fn set_subshell_vars(core: &mut ShellCore) {
+    pub fn set_subshell_vars(core: &mut ShellCore) {
         let pid = nix::unistd::getpid();
         core.vars.insert("BASHPID".to_string(), pid.to_string());
         match core.vars["BASH_SUBSHELL"].parse::<usize>() {
