@@ -53,14 +53,10 @@ impl Job {
 
     fn eat_and_or(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
         let num = feeder.scanner_and_or(core);
-        if num == 0 {
-            ans.pipeline_ends.push("".to_string());
-            return false;
-        }
-        let and_or = feeder.consume(num);
-        ans.pipeline_ends.push(and_or.clone());
-        ans.text += &and_or;
-        true
+        let end = feeder.consume(num);
+        ans.pipeline_ends.push(end.clone());
+        ans.text += &end;
+        num != 0
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
