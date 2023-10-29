@@ -16,10 +16,13 @@ pub struct Job {
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore, bg: bool) {
         if bg {
-            self.bg_exec(core, self.pipelines.len());
-            return;
+            self.exec_bg(core, self.pipelines.len());
+        }else {
+            self.exec_fg(core);
         }
+    }
 
+    pub fn exec_fg(&mut self, core: &mut ShellCore) {
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
@@ -31,7 +34,7 @@ impl Job {
         }
     }
 
-    fn bg_exec(&mut self, core: &mut ShellCore, pipeline_num: usize) {
+    fn exec_bg(&mut self, core: &mut ShellCore, pipeline_num: usize) {
         if pipeline_num == 0 {
             panic!("SUSH INTERNAL ERROR (no pipeline)");
         }else if pipeline_num == 1 {
@@ -46,7 +49,7 @@ impl Job {
             Ok(ForkResult::Child) => {
                 core::set_pgid(Pid::from_raw(0), Pid::from_raw(0));
                 core.set_subshell_vars();
-                self.exec(core, false);
+                self.exec_fg(core);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
