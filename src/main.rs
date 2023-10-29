@@ -48,7 +48,7 @@ fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
-        core.check_job_table();
+        core.jobtable_check();
         if ! feeder.feed_line(core) {
             if core.has_flag('i') {
                 input_interrupt_check(&mut feeder, core);

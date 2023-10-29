@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use std::process;
 use std::os::linux::fs::MetadataExt;
 use std::path::Path;
-use crate::core::jobtable::JobTable;
+use crate::core::jobtable::JobEntry;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -21,7 +21,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<String>,
     pub input_interrupt: bool,
-    pub job_table: JobTable,
+    pub job_table: Vec<JobEntry>,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -45,7 +45,7 @@ impl ShellCore {
             builtins: HashMap::new(),
             nest: vec![],
             input_interrupt: false,
-            job_table: JobTable::new(),
+            job_table: vec![],
         };
 
         let pid = process::id();
@@ -131,11 +131,5 @@ impl ShellCore {
             Ok(num) => self.vars.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
             Err(_) =>  self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
-    }
-
-    pub fn check_job_table(&mut self) {
-        for e in self.job_table.jobs.iter_mut() {
-            eprintln!("HERE");
-        }
     }
 }
