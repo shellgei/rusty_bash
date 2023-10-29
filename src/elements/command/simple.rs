@@ -1,13 +1,12 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{core, ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::{command, io};
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
-use crate::core;
 
 use nix::unistd::{ForkResult, Pid};
 use nix::errno::Errno;
