@@ -63,11 +63,8 @@ impl Job {
         let mut ans = Self::new();
         loop {
             while Self::eat_blank_line(feeder, &mut ans, core) {}
-            if Self::eat_pipeline(feeder, &mut ans, core) {
-                if ! Self::eat_and_or(feeder, &mut ans, core) {
-                    break;
-                }
-            }else{
+            if ! Self::eat_pipeline(feeder, &mut ans, core) ||
+               ! Self::eat_and_or(feeder, &mut ans, core) {
                 break;
             }
         }
