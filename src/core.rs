@@ -132,4 +132,10 @@ impl ShellCore {
             Err(_) =>  self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
     }
+
+    pub fn check_job_table(&mut self) {
+        for e in self.job_table.jobs.iter_mut() {
+            eprintln!("HERE");
+        }
+    }
 }
