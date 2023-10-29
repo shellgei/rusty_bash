@@ -14,8 +14,8 @@ pub struct Job {
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
         let mut do_next = true;
-        for (pipeline, end)
-        in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
+        for (pipeline, end) in self.pipelines.iter_mut()
+                          .zip(self.pipeline_ends.iter()) {
             if do_next {
                 let pids = pipeline.exec(core);
                 core.wait_pipeline(pids);
