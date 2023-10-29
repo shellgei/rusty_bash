@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod builtins;
+pub mod jobtable;
 
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
@@ -11,6 +12,7 @@ use std::collections::HashMap;
 use std::process;
 use std::os::linux::fs::MetadataExt;
 use std::path::Path;
+use crate::core::jobtable::JobTable;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -19,6 +21,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<String>,
     pub input_interrupt: bool,
+    pub job_table: JobTable,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -42,6 +45,7 @@ impl ShellCore {
             builtins: HashMap::new(),
             nest: vec![],
             input_interrupt: false,
+            job_table: JobTable::new(),
         };
 
         let pid = process::id();
