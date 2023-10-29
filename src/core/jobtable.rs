@@ -26,7 +26,8 @@ impl JobTable {
         }
     }
 
-    pub fn entry(&mut self, pids :Vec<Pid>) {
-        self.jobs.push(JobEntry::new(&pids));
+    pub fn entry(&mut self, pids :&Vec<Option<Pid>>) {
+        let ps = pids.iter().map(|e| e.expect("")).collect();
+        self.jobs.push(JobEntry::new(&ps));
     }
 }

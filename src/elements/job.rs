@@ -38,9 +38,12 @@ impl Job {
         if pipeline_num == 0 {
             panic!("SUSH INTERNAL ERROR (no pipeline)");
         }else if pipeline_num == 1 {
-            self.pipelines[0].exec(core);
+            let pids = self.pipelines[0].exec(core);
+            core.job_table.entry(&pids);
         }else{
-            self.fork_exec(core);
+            let pid = self.fork_exec(core);
+            core.job_table.entry(&vec![pid]);
+
         }
     }
 
