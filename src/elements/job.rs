@@ -13,9 +13,14 @@ pub struct Job {
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        for pipeline in self.pipelines.iter_mut() {
-            let pids = pipeline.exec(core);
-            core.wait_pipeline(pids);
+        let mut do_next = true;
+        for (pipeline, end)
+        in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
+            if do_next {
+                let pids = pipeline.exec(core);
+                core.wait_pipeline(pids);
+            }
+            do_next = (&core.vars["?"] == "0") == (end == "&&");
         }
     }
 
@@ -70,7 +75,7 @@ impl Job {
         }
 
         if ans.pipelines.len() > 0 {
-            dbg!("{:?}", &ans);
+//            dbg!("{:?}", &ans);
             Some(ans)
         }else{
             None
