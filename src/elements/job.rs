@@ -70,7 +70,7 @@ impl Job {
         }
 
         if ans.pipelines.len() > 0 {
-            dbg!("{:?}", &ans);
+//            dbg!("{:?}", &ans);
             Some(ans)
         }else{
             None

@@ -11,6 +11,8 @@ use std::collections::HashMap;
 use std::process;
 use std::os::linux::fs::MetadataExt;
 use std::path::Path;
+use nix::sys::signal;
+use nix::sys::signal::{Signal, SigHandler};
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -29,8 +31,12 @@ fn is_interactive(pid: u32) -> bool {
     }
 }
 
-pub fn set_pgid(pid: Pid, ppid: Pid) {
-    unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
+pub fn set_pgid(pid: Pid, pgid: Pid) {
+    unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
+    if pid == Pid::from_raw(0) && pgid == Pid::from_raw(0) {
+        let p = process::id() as i32;
+        unistd::tcsetpgrp(0, Pid::from_raw(p));
+    }
 }
 
 impl ShellCore {
@@ -95,6 +101,8 @@ impl ShellCore {
         for pid in pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         }
+        let pid = process::id() as i32;
+        unistd::tcsetpgrp(0, Pid::from_raw(pid));
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {

@@ -9,6 +9,8 @@ use std::{env, process};
 use crate::core::ShellCore;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
+use nix::sys::signal;
+use nix::sys::signal::{Signal, SigHandler};
 
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");
@@ -29,6 +31,11 @@ fn main() {
     /* Ignore Ctrl+C (Childlen will receive instead.) */
     ctrlc::set_handler(move || { })
     .expect("Unable to set the Ctrl+C handler.");
+
+//    unsafe { signal::signal(Signal::SIGINT, SigHandler::SigIgn) }.unwrap();
+    unsafe { signal::signal(Signal::SIGTTIN, SigHandler::SigIgn) }.unwrap();
+    unsafe { signal::signal(Signal::SIGTTOU, SigHandler::SigIgn) }.unwrap();
+ //   unsafe { signal::signal(Signal::SIGTSTP, SigHandler::SigIgn) }.unwrap();
 
     let mut core = ShellCore::new();
     main_loop(&mut core);
