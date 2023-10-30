@@ -3,6 +3,11 @@
 
 use crate::ShellCore;
 use nix::unistd::Pid;
+use nix::sys::wait::{waitpid, WaitStatus, WaitPidFlag};
+
+enum ProcessStatus {
+    Running,
+}
 
 #[derive(Debug)]
 pub struct JobEntry {
@@ -17,6 +22,14 @@ impl JobEntry {
     }
 }
 
+fn process_still_alive(pid: Pid) -> bool {
+    match waitpid(pid, Some(WaitPidFlag::WNOHANG)) {
+        Ok(WaitStatus::StillAlive) => false,
+        Ok(_)                      => true,
+        _  => panic!("sush(fatal): waitpid error"),
+    }
+}
+
 impl ShellCore {
     pub fn jobtable_entry(&mut self, pids :&Vec<Option<Pid>>) {
         let ps = pids.iter().map(|e| e.expect("")).collect();
@@ -25,7 +38,10 @@ impl ShellCore {
 
     pub fn jobtable_check(&mut self) {
         for e in self.job_table.iter_mut() {
-            dbg!("{:?}", &e);
+            /*
+            if e.pids.iter().all(|pid| process_still_alive(*pid)) {
+                eprintln!("stop!");
+            }*/
         }
     }
 }
