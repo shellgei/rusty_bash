@@ -29,10 +29,6 @@ fn is_interactive(pid: u32) -> bool {
     }
 }
 
-pub fn set_pgid(pid: Pid, ppid: Pid) {
-    unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
-}
-
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
@@ -127,5 +123,9 @@ impl ShellCore {
             Ok(num) => self.vars.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
             Err(_) =>  self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
+    }
+
+    pub fn set_pgid(&self, pid: Pid, ppid: Pid) {
+        unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
     }
 }
