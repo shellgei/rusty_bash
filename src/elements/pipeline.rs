@@ -5,6 +5,7 @@ use crate::{Feeder, ShellCore};
 use super::command;
 use super::command::Command;
 use super::Pipe;
+use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct Pipeline {
@@ -14,15 +15,24 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore) -> Vec<Option<Pid>> {
         let mut prev = -1;
+        let mut pids = vec![];            //返すPIDのリスト
+        let mut pgid = Pid::from_raw(0);  //pgidに「PID0」を設定
         for (i, p) in self.pipes.iter_mut().enumerate() {
-            p.set(prev);
-            self.commands[i].exec(core, p);
+            p.set(prev, pgid);           //Pipe::setに引数を追加
+            pids.push(self.commands[i].exec(core, p)); //返ってきたPIDをpidsにpush
+            if i == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
+                pgid = pids[0].expect("SUSHI INTERNAL ERROR (unforked in pipeline)");
+            }
             prev = p.recv;
         }
-
-        self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev));
+   
+        pids.push( //パイプライン最後のコマンドもPIDを記録
+            self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid))
+        );                                               //ここでもpgidを渡す↑
+   
+        pids
     }
 
     pub fn new() -> Pipeline {

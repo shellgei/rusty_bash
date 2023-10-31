@@ -5,6 +5,7 @@ use crate::{Feeder, ShellCore};
 use crate::elements::io;
 use std::os::unix::prelude::RawFd;
 use nix::unistd;
+use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct Pipe {
@@ -12,16 +13,24 @@ pub struct Pipe {
     pub recv: RawFd,
     pub send: RawFd,
     pub prev: RawFd,
+    pub pgid: Pid,
 }
 
 impl Pipe {
     pub fn new(text: String) -> Pipe {
-        Pipe { text: text, recv: -1, send: -1, prev: -1 }
+        Pipe {
+            text: text,
+            recv: -1,
+            send: -1,
+            prev: -1,
+            pgid: Pid::from_raw(0),
+        }
     }
 
-    pub fn end(prev: RawFd) -> Pipe {
+    pub fn end(prev: RawFd, pgid: Pid) -> Pipe {
         let mut dummy = Pipe::new(String::new());
         dummy.prev = prev;
+        dummy.pgid = pgid;
         dummy
     }
 
@@ -35,9 +44,10 @@ impl Pipe {
         }
     }
 
-    pub fn set(&mut self, prev: RawFd) {
+    pub fn set(&mut self, prev: RawFd, pgid: Pid) {
         (self.recv, self.send) = unistd::pipe().expect("Cannot open pipe");
         self.prev = prev;
+        self.pgid = pgid;
     }
 
     pub fn connect(&mut self) {

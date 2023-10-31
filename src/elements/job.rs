@@ -13,7 +13,8 @@ pub struct Job {
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
         for pipeline in self.pipelines.iter_mut() {
-            pipeline.exec(core);
+            let pids = pipeline.exec(core); //Pipeline::execの値を変数に受ける
+            core.wait_pipeline(pids); //wait_pipeline実行
         }
     }
 
