@@ -21,8 +21,8 @@ impl Job {
         };
 
         for pipeline in self.pipelines.iter_mut() {
-            let pids = pipeline.exec(core, pgid);
-            core.wait_pipeline(pids);
+            let pids = pipeline.exec(core, pgid); //Pipeline::execの値を変数に受ける
+            core.wait_pipeline(pids); //wait_pipeline実行
         }
     }
 

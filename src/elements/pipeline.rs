@@ -28,9 +28,9 @@ impl Pipeline {
             prev = p.recv;
         }
 
-        pids.push(
+        pids.push( //パイプライン最後のコマンドもPIDを記録
             self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid))
-        );
+        );                                               //ここでもpgidを渡す↑
 
         pids
     }
