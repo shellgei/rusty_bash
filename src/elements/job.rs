@@ -15,48 +15,54 @@ pub struct Job {
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore, bg: bool) {
+        let pgid = if core.vars["$"] != core.vars["BASHPID"] {
+            unistd::getpgrp()
+        }else{
+            Pid::from_raw(0)
+        };
+
         if bg {
-            self.exec_bg(core, self.pipelines.len());
+            self.exec_bg(core, self.pipelines.len(), pgid);
         }else {
-            self.exec_fg(core);
+            self.exec_fg(core, pgid);
         }
     }
 
-    pub fn exec_fg(&mut self, core: &mut ShellCore) {
+    pub fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) {
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
-                let pids = pipeline.exec(core);
+                let pids = pipeline.exec(core, pgid);
                 core.wait_pipeline(pids);
             }
             do_next = (&core.vars["?"] == "0") == (end == "&&");
         }
     }
 
-    fn exec_bg(&mut self, core: &mut ShellCore, pipeline_num: usize) {
+    fn exec_bg(&mut self, core: &mut ShellCore, pipeline_num: usize, pgid: Pid) {
         if pipeline_num == 0 {
             panic!("SUSH INTERNAL ERROR (no pipeline)");
         }else if pipeline_num == 1 {
-            let pids = self.pipelines[0].exec(core);
+            let pids = self.pipelines[0].exec(core, pgid);
             core.jobtable_entry(&pids);
         }else{
-            let pid = self.fork_exec(core);
+            let pid = self.fork_exec(core, pgid);
             core.jobtable_entry(&vec![pid]);
 
         }
     }
 
-    fn fork_exec(&mut self, core: &mut ShellCore) -> Option<Pid> {
+    fn fork_exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                core::set_pgid(Pid::from_raw(0), Pid::from_raw(0));
+                core.set_pgid(Pid::from_raw(0), pgid, pgid.as_raw() == 0);
                 core.set_subshell_vars();
-                self.exec_fg(core);
+                self.exec_fg(core, pgid);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
-                core::set_pgid(child, child);
+                core.set_pgid(child, child, false);
                 Some(child) 
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),

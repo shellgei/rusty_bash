@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{core, ShellCore, Feeder};
+use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::{command, io};
 use nix::unistd;
@@ -47,7 +47,7 @@ impl SimpleCommand {
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                core::set_pgid(Pid::from_raw(0), pipe.pgid);
+                core.set_pgid(Pid::from_raw(0), pipe.pgid, pipe.pgid == Pid::from_raw(0));
                 io::connect(pipe, &mut self.redirects);
                 if core.run_builtin(&mut self.args) {
                     core.exit()
@@ -56,7 +56,7 @@ impl SimpleCommand {
                 }
             },
             Ok(ForkResult::Parent { child } ) => {
-                core::set_pgid(child, pipe.pgid);
+                core.set_pgid(child, pipe.pgid, false);
                 pipe.parent_close();
                 Some(child)
             },

@@ -32,10 +32,6 @@ fn is_interactive(pid: u32) -> bool {
     }
 }
 
-pub fn set_pgid(pid: Pid, ppid: Pid) {
-    unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
-}
-
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
@@ -53,6 +49,7 @@ impl ShellCore {
             core.flags += "i";
         }
         core.vars.insert("$".to_string(), pid.to_string());
+        core.vars.insert("BASHPID".to_string(), core.vars["$"].clone());
         core.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
 
         core.vars.insert("?".to_string(), "0".to_string());
@@ -99,6 +96,11 @@ impl ShellCore {
         for pid in pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         }
+                                                                    
+        match unistd::tcsetpgrp(2, unistd::getpid()) {
+            Ok(_)  => {},
+            Err(_) => panic!("sush(fatal): cannot get the terminal"),
+        }
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
@@ -131,5 +133,17 @@ impl ShellCore {
             Ok(num) => self.vars.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
             Err(_) =>  self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
+    }
+
+    pub fn set_pgid(&self, pid: Pid, pgid: Pid, set_fg: bool) {
+        unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
+        if ! set_fg {
+            return;
+        }
+        /* make this process group foreground */
+        match unistd::tcsetpgrp(2, unistd::getpid()) {
+            Ok(_)  => {},
+            Err(_) => panic!("sush(fatal): cannot get the terminal"),
+        }
     }
 }
