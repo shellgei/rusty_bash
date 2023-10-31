@@ -6,6 +6,7 @@ use super::command;
 use super::command::Command;
 use super::Pipe;
 use nix::unistd::Pid;
+use nix::unistd;
 
 #[derive(Debug)]
 pub struct Pipeline {
@@ -15,14 +16,14 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore) -> Vec<Option<Pid>> {
+    pub fn exec(&mut self, core: &mut ShellCore, is_subshell: bool) -> Vec<Option<Pid>> {
         let mut prev = -1;
         let mut pids = vec![];
-        let mut pgid = Pid::from_raw(0);
+        let mut pgid = if is_subshell{unistd::getpgrp()}else{Pid::from_raw(0)};
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
             pids.push(self.commands[i].exec(core, p));
-            if i == 0 {
+            if i == 0 && pgid.as_raw() == 0  {
                 pgid = pids[0].expect("SUSHI INTERNAL ERROR (unforked in pipeline)");
             }
             prev = p.recv;
