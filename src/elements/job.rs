@@ -3,6 +3,8 @@
 
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
+use nix::unistd;
+use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct Job {
@@ -13,11 +15,17 @@ pub struct Job {
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
+        let pgid = if core.vars["$"] != core.vars["BASHPID"] {
+            unistd::getpgrp()
+        }else{
+            Pid::from_raw(0)
+        };
+
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
-                let pids = pipeline.exec(core);
+                let pids = pipeline.exec(core, pgid);
                 core.wait_pipeline(pids);
             }
             do_next = (&core.vars["?"] == "0") == (end == "&&");

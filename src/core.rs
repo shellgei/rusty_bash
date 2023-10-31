@@ -45,6 +45,7 @@ impl ShellCore {
             core.flags += "i";
         }
         core.vars.insert("$".to_string(), pid.to_string());
+        core.vars.insert("BASHPID".to_string(), core.vars["$"].clone());
         core.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
 
         core.vars.insert("?".to_string(), "0".to_string());
