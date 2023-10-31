@@ -15,10 +15,10 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
+    pub fn exec(&mut self, core: &mut ShellCore) -> Vec<Option<Pid>> {
         let mut prev = -1;
         let mut pids = vec![];
-        let mut pgid = pgid;
+        let mut pgid = Pid::from_raw(0);
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
             pids.push(self.commands[i].exec(core, p));
