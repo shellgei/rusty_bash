@@ -29,10 +29,6 @@ fn is_interactive(pid: u32) -> bool {
     }
 }
 
-pub fn set_pgid(pid: Pid, ppid: Pid) {
-    unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
-}
-
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
@@ -127,5 +123,17 @@ impl ShellCore {
             Ok(num) => self.vars.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
             Err(_) =>  self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
+    }
+
+    pub fn set_pgid(&self, pid: Pid, pgid: Pid, set_fg: bool) {
+        unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
+        if ! set_fg || ! self.flags.contains("i") {
+            return;
+        }
+    
+        match unistd::tcsetpgrp(0, unistd::getpid()) { //TODO FD0がよいのかは要検討
+            Ok(_)  => {},
+            Err(_) => panic!("sush(fatal): cannot get the terminal"),
+        }
     }
 }
