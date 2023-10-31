@@ -36,6 +36,7 @@ impl Script {
                      redirects: &mut Vec<Redirect>) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
+                core.is_subshell = true;
                 core.set_pgid(Pid::from_raw(0), pipe.pgid);
                 core.set_subshell_vars();
                 io::connect(pipe, redirects);
