@@ -44,8 +44,6 @@ impl ShellCore {
             core.flags += "i";
         }
         core.vars.insert("$".to_string(), pid.to_string());
-        core.vars.insert("BASHPID".to_string(), core.vars["$"].clone());
-
         core.vars.insert("?".to_string(), "0".to_string());
 
         core.builtins.insert("cd".to_string(), builtins::cd);
