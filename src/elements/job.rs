@@ -13,7 +13,7 @@ pub struct Job {
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
         for pipeline in self.pipelines.iter_mut() {
-            let is_subshell = core.vars["$"] == core.vars["BASHPID"];
+            let is_subshell = core.vars["$"] != core.vars["BASHPID"];
             let pids = pipeline.exec(core, is_subshell);
             core.wait_pipeline(pids);
         }
