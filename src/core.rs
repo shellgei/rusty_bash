@@ -94,6 +94,11 @@ impl ShellCore {
         for pid in pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         }
+                                                                    
+        match unistd::tcsetpgrp(2, unistd::getpid()) {
+            Ok(_)  => {},
+            Err(_) => panic!("sush(fatal): cannot get the terminal"),
+        }
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
@@ -128,7 +133,15 @@ impl ShellCore {
         };
     }
 
-    pub fn set_pgid(&self, pid: Pid, ppid: Pid) {
-        unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
+    pub fn set_pgid(&self, pid: Pid, pgid: Pid, set_fg: bool) {
+        unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
+        if ! set_fg {
+            return;
+        }
+        /* make this process group foreground */
+        match unistd::tcsetpgrp(2, unistd::getpid()) {
+            Ok(_)  => {},
+            Err(_) => panic!("sush(fatal): cannot get the terminal"),
+        }
     }
 }

@@ -45,7 +45,7 @@ impl Script {
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, pipe.pgid);
+                core.set_pgid(child, pipe.pgid, false);
                 pipe.parent_close();
                 Some(child) 
             },
