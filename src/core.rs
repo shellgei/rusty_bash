@@ -128,7 +128,7 @@ impl ShellCore {
         };
     }
 
-    pub fn set_pgid(&self, pid: Pid, ppid: Pid) {
-        unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
+    pub fn set_pgid(&self, pid: Pid, pgid: Pid) {
+        unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
     }
 }
