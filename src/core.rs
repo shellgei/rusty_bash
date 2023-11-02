@@ -19,6 +19,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<String>,
     pub input_interrupt: bool,
+    pub is_subshell: bool,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -27,10 +28,6 @@ fn is_interactive(pid: u32) -> bool {
         Ok(metadata) => metadata.st_mode() == 8592,
         Err(err) => panic!("{}", err),
     }
-}
-
-pub fn set_pgid(pid: Pid, ppid: Pid) {
-    unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
 }
 
 impl ShellCore {
@@ -42,6 +39,7 @@ impl ShellCore {
             builtins: HashMap::new(),
             nest: vec![],
             input_interrupt: false,
+            is_subshell: false,
         };
 
         let pid = process::id();
@@ -49,6 +47,7 @@ impl ShellCore {
             core.flags += "i";
         }
         core.vars.insert("$".to_string(), pid.to_string());
+        core.vars.insert("BASHPID".to_string(), core.vars["$"].clone());
         core.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
 
         core.vars.insert("?".to_string(), "0".to_string());
@@ -127,5 +126,9 @@ impl ShellCore {
             Ok(num) => self.vars.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
             Err(_) =>  self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
+    }
+
+    pub fn set_pgid(&self, pid: Pid, ppid: Pid) {
+        unistd::setpgid(pid, ppid).expect("sush(fatal): cannot set pgid");
     }
 }

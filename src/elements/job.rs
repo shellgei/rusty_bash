@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
-use crate::{core, Feeder, ShellCore};
+use crate::{Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
 
@@ -47,13 +47,13 @@ impl Job {
     fn fork_exec(&mut self, core: &mut ShellCore) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                core::set_pgid(Pid::from_raw(0), Pid::from_raw(0));
+                core.set_pgid(Pid::from_raw(0), Pid::from_raw(0));
                 core.set_subshell_vars();
                 self.exec_fg(core);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
-                core::set_pgid(child, child);
+                core.set_pgid(child, child);
                 Some(child) 
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
@@ -111,7 +111,7 @@ impl Job {
         }
 
         if ans.pipelines.len() > 0 {
-//            dbg!("{:?}", &ans);
+            dbg!("{:?}", &ans);
             Some(ans)
         }else{
             None
