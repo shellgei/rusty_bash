@@ -15,7 +15,7 @@ pub struct Job {
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        let pgid = if core.vars["$"] != core.vars["BASHPID"] {
+        let pgid = if core.is_subshell {
             unistd::getpgrp()
         }else{
             Pid::from_raw(0)
