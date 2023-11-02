@@ -94,7 +94,7 @@ impl ShellCore {
         for pid in pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         }
-                                                                    
+
         match unistd::tcsetpgrp(2, unistd::getpid()) {
             Ok(_)  => {},
             Err(_) => panic!("sush(fatal): cannot get the terminal"),
