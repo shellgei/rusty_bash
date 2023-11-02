@@ -3,26 +3,17 @@
 
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
-use nix::unistd;
-use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
-    pub pipeline_ends: Vec<String>,
     pub text: String,
 }
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore) {
-        let pgid = if core.is_subshell {
-            unistd::getpgrp()
-        }else{
-            Pid::from_raw(0)
-        };
-
         for pipeline in self.pipelines.iter_mut() {
-            let pids = pipeline.exec(core, pgid);
+            let pids = pipeline.exec(core);
             core.wait_pipeline(pids);
         }
     }
@@ -31,7 +22,6 @@ impl Job {
         Job {
             text: String::new(),
             pipelines: vec![],
-            pipeline_ends: vec![],
         }
     }
 
@@ -46,25 +36,6 @@ impl Job {
         }else{
             false
         }
-    }
-
-    fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
-        match Pipeline::parse(feeder, core){
-            Some(pipeline) => {
-                ans.text += &pipeline.text.clone();
-                ans.pipelines.push(pipeline);
-                true
-            },
-            None => false,
-        }
-    }
-
-    fn eat_and_or(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
-        let num = feeder.scanner_and_or(core);
-        let end = feeder.consume(num);
-        ans.pipeline_ends.push(end.clone());
-        ans.text += &end;
-        num != 0
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {

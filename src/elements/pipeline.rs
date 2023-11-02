@@ -15,10 +15,10 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
+    pub fn exec(&mut self, core: &mut ShellCore) -> Vec<Option<Pid>> {
         let mut prev = -1;
         let mut pids = vec![];
-        let mut pgid = pgid;
+        let mut pgid = Pid::from_raw(0);
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
             pids.push(self.commands[i].exec(core, p));
@@ -79,24 +79,9 @@ impl Pipeline {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
-        let mut ans = Pipeline::new();
-
-        if ! Self::eat_command(feeder, &mut ans, core){      //最初のコマンド
-            return None;
-        }
-
-        while Self::eat_pipe(feeder, &mut ans, core){
-            loop {
-                Self::eat_blank_and_comment(feeder, &mut ans, core);
-                if Self::eat_command(feeder, &mut ans, core) {
-                    break; //コマンドがあれば73行目のloopを抜けてパイプを探す
-                }
-                if feeder.len() != 0 || ! feeder.feed_additional_line(core) { //追加の行の読み込み
-                    return None;
-                }
-            }
-        }
-
-        Some(ans)
+        while Self::eat_blank_line(feeder, &mut ans, core) {}
+        if let Some(pipeline) = Pipeline::parse(feeder, core){
+            ans.text += &pipeline.text.clone();
+            ans.pipelines.push(pipeline);
     }
 }
