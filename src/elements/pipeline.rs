@@ -79,9 +79,4 @@ impl Pipeline {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
-        while Self::eat_blank_line(feeder, &mut ans, core) {}
-        if let Some(pipeline) = Pipeline::parse(feeder, core){
-            ans.text += &pipeline.text.clone();
-            ans.pipelines.push(pipeline);
-    }
 }

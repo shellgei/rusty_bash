@@ -39,20 +39,5 @@ impl Job {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
-        let mut ans = Self::new();
-        loop {
-            while Self::eat_blank_line(feeder, &mut ans, core) {}
-            if ! Self::eat_pipeline(feeder, &mut ans, core) ||
-               ! Self::eat_and_or(feeder, &mut ans, core) {
-                break;
-            }
-        }
-
-        if ans.pipelines.len() > 0 {
-            dbg!("{:?}", &ans);
-            Some(ans)
-        }else{
-            None
-        }
     }
 }
