@@ -39,5 +39,14 @@ impl Job {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
+        let mut ans = Self::new();
+        while Self::eat_blank_line(feeder, &mut ans, core) {}
+        if let Some(pipeline) = Pipeline::parse(feeder, core){
+            ans.text += &pipeline.text.clone();
+            ans.pipelines.push(pipeline);
+            while Self::eat_blank_line(feeder, &mut ans, core) {}
+            return Some(ans);
+        }
+        None
     }
 }

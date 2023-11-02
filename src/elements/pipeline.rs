@@ -79,4 +79,24 @@ impl Pipeline {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
+        let mut ans = Pipeline::new();
+
+        if ! Self::eat_command(feeder, &mut ans, core){      //最初のコマンド
+            return None;
+        }
+
+        while Self::eat_pipe(feeder, &mut ans, core){
+            loop {
+                Self::eat_blank_and_comment(feeder, &mut ans, core);
+                if Self::eat_command(feeder, &mut ans, core) {
+                    break; //コマンドがあれば73行目のloopを抜けてパイプを探す
+                }
+                if feeder.len() != 0 || ! feeder.feed_additional_line(core) { //追加の行の読み込み
+                    return None;
+                }
+            }
+        }
+
+        Some(ans)
+    }
 }
