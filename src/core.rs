@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::process;
 use std::os::linux::fs::MetadataExt;
 use std::path::Path;
+use std::os::fd::RawFd;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -27,6 +28,29 @@ fn is_interactive(pid: u32) -> bool {
     match Path::new(&std_path).metadata() {
         Ok(metadata) => metadata.st_mode() == 8592,
         Err(err) => panic!("{}", err),
+    }
+}
+
+fn get_tty_fd() -> RawFd {
+    for fd in 0..3 {
+        match unistd::isatty(fd) {
+            Ok(true) => return fd,
+            _ => {}, 
+        }
+    }
+
+    -1
+}
+
+fn set_foreground() {
+    let fd = get_tty_fd();
+    if fd < 0 {
+        return;
+    }
+
+    match unistd::tcsetpgrp(fd, unistd::getpid()) {
+        Ok(_)  => {},
+        Err(_) => panic!("sush(fatal): cannot get the terminal"),
     }
 }
 
@@ -95,10 +119,7 @@ impl ShellCore {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         }
 
-        match unistd::tcsetpgrp(2, unistd::getpid()) {
-            Ok(_)  => {},
-            Err(_) => panic!("sush(fatal): cannot get the terminal"),
-        }
+        set_foreground();
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
@@ -138,10 +159,7 @@ impl ShellCore {
         if ! set_fg {
             return;
         }
-        /* make this process group foreground */
-        match unistd::tcsetpgrp(2, unistd::getpid()) {
-            Ok(_)  => {},
-            Err(_) => panic!("sush(fatal): cannot get the terminal"),
-        }
+
+        set_foreground();
     }
 }
