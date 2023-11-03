@@ -23,7 +23,7 @@ pub struct ShellCore {
     pub nest: Vec<String>,
     pub input_interrupt: bool,
     pub is_subshell: bool,
-    pub tty_fd: RawFd, 
+    pub tty_fd: RawFd,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -103,6 +103,19 @@ impl ShellCore {
         self.vars.insert("?".to_string(), exit_status.to_string()); //追加
     } 
 
+    fn set_foreground(&self) {
+        if self.tty_fd < 0 {
+            return;
+        }
+ 
+        ignore_signal(Signal::SIGTTOU);
+        match unistd::tcsetpgrp(self.tty_fd, unistd::getpid()) {
+            Ok(_)  => {},
+            Err(_) => panic!("sush(fatal): cannot get the terminal"),
+        }
+        restore_signal(Signal::SIGTTOU);
+    }
+
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
         if pids.len() == 1 && pids[0] == None {
             return;
@@ -146,19 +159,6 @@ impl ShellCore {
             Err(_) =>  self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
     }
-
-   fn set_foreground(&self) {
-       if self.tty_fd < 0 {
-           return;
-       }
-
-       ignore_signal(Signal::SIGTTOU);
-       match unistd::tcsetpgrp(self.tty_fd, unistd::getpid()) {
-           Ok(_)  => {},
-           Err(_) => panic!("sush(fatal): cannot get the terminal"),
-       }
-       restore_signal(Signal::SIGTTOU);
-   }
 
     pub fn set_pgid(&self, pid: Pid, pgid: Pid) {
         unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
