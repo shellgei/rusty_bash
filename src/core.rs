@@ -109,10 +109,8 @@ impl ShellCore {
         }
  
         ignore_signal(Signal::SIGTTOU);
-        match unistd::tcsetpgrp(self.tty_fd, unistd::getpid()) {
-            Ok(_)  => {},
-            Err(_) => panic!("sush(fatal): cannot get the terminal"),
-        }
+        unistd::tcsetpgrp(self.tty_fd, unistd::getpid())
+            .expect("sush(fatal): cannot get the terminal");
         restore_signal(Signal::SIGTTOU);
     }
 
