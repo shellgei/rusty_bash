@@ -47,7 +47,7 @@ impl SimpleCommand {
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                core.set_pgid(Pid::from_raw(0), pipe.pgid, pipe.pgid == Pid::from_raw(0));
+                core.set_pgid(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, &mut self.redirects);
                 if core.run_builtin(&mut self.args) {
                     core.exit()
@@ -56,7 +56,7 @@ impl SimpleCommand {
                 }
             },
             Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, pipe.pgid, false);
+                core.set_pgid(child, pipe.pgid);
                 pipe.parent_close();
                 Some(child)
             },

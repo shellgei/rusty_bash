@@ -37,14 +37,14 @@ impl Script {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.is_subshell = true;
-                core.set_pgid(Pid::from_raw(0), pipe.pgid, pipe.pgid.as_raw() == 0);
+                core.set_pgid(Pid::from_raw(0), pipe.pgid);
                 core.set_subshell_vars();
                 io::connect(pipe, redirects);
                 self.exec(core, &mut vec![]);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, pipe.pgid, false);
+                core.set_pgid(child, pipe.pgid);
                 pipe.parent_close();
                 Some(child) //   core.wait_process(child);
             },

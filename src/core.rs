@@ -35,7 +35,7 @@ fn get_tty_fd() -> Option<RawFd> {
     for fd in 0..3 {
         match unistd::isatty(fd) {
             Ok(true) => return Some(fd),
-            _ => {}, 
+            _ => {},
         }
     }
     None
@@ -150,12 +150,10 @@ impl ShellCore {
         };
     }
 
-    pub fn set_pgid(&self, pid: Pid, pgid: Pid, set_fg: bool) {
+    pub fn set_pgid(&self, pid: Pid, pgid: Pid) {
         unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
-        if ! set_fg {
-            return;
+        if pid.as_raw() == 0 && pgid.as_raw() == 0 {
+            set_foreground();
         }
-
-        set_foreground();
     }
 }
