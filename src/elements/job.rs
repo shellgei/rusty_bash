@@ -1,10 +1,10 @@
-//SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
 use nix::unistd;
-use nix::unistd::{ForkResult, Pid};
+use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct Job {
@@ -14,49 +14,21 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn exec(&mut self, core: &mut ShellCore, bg: bool) {
-        if bg {
-            self.exec_bg(core, self.pipelines.len());
-        }else {
-            self.exec_fg(core);
-        }
-    }
+    pub fn exec(&mut self, core: &mut ShellCore) {
+        let pgid = if core.is_subshell { //17〜21行目を追加
+            unistd::getpgrp() //自身のPGID
+        }else{
+            Pid::from_raw(0)
+        };
 
-    pub fn exec_fg(&mut self, core: &mut ShellCore) {
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
-                let pids = pipeline.exec(core);
+                let pids = pipeline.exec(core, pgid);
                 core.wait_pipeline(pids);
             }
             do_next = (&core.vars["?"] == "0") == (end == "&&");
-        }
-    }
-
-    fn exec_bg(&mut self, core: &mut ShellCore, pipeline_num: usize) {
-        if pipeline_num == 0 {
-            panic!("SUSH INTERNAL ERROR (no pipeline)");
-        }else if pipeline_num == 1 {
-            self.pipelines[0].exec(core);
-        }else{
-            self.fork_exec(core);
-        }
-    }
-
-    fn fork_exec(&mut self, core: &mut ShellCore) -> Option<Pid> {
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
-                core.set_pgid(Pid::from_raw(0), Pid::from_raw(0));
-                core.set_subshell_vars();
-                self.exec_fg(core);
-                core.exit()
-            },
-            Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, child);
-                Some(child) 
-            },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
 
