@@ -17,15 +17,14 @@ enum Status{
 #[derive(Debug)]
 pub struct Script {
     pub jobs: Vec<Job>,
-    pub job_ends: Vec<String>,
     pub text: String,
 }
 
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore, redirects: &mut Vec<Redirect>) {
         if redirects.iter_mut().all(|r| r.connect(true)){
-            for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
-                job.exec(core, end == "&");
+            for job in self.jobs.iter_mut() {
+                job.exec(core);
             }
         }else{
             core.vars.insert("?".to_string(), "1".to_string());
@@ -38,7 +37,7 @@ impl Script {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.is_subshell = true;
-                core.set_pgid(Pid::from_raw(0), pipe.pgid);
+                core.set_pgid(Pid::from_raw(0), pipe.pgid, pipe.pgid.as_raw() == 0);
                 core.set_subshell_vars();
                 io::connect(pipe, redirects);
                 self.exec(core, &mut vec![]);
@@ -47,7 +46,7 @@ impl Script {
             Ok(ForkResult::Parent { child } ) => {
                 core.set_pgid(child, pipe.pgid, false);
                 pipe.parent_close();
-                Some(child) 
+                Some(child) //   core.wait_process(child);
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
@@ -56,8 +55,7 @@ impl Script {
     pub fn new() -> Script {
         Script {
             text: String::new(),
-            jobs: vec![],
-            job_ends: vec![],
+            jobs: vec![]
         }
     }
 
@@ -73,10 +71,12 @@ impl Script {
 
     fn eat_job_end(feeder: &mut Feeder, ans: &mut Script) -> bool {
         let len = feeder.scanner_job_end();
-        let end = &feeder.consume(len);
-        ans.job_ends.push(end.clone());
-        ans.text += &end;
-        len != 0
+        if len > 0 {
+            ans.text += &feeder.consume(len);
+            true
+        }else{
+            false
+        }
     }
 
     fn check_nest_end(feeder: &mut Feeder, ok_ends: &Vec<&str>, jobnum: usize) -> Status {
