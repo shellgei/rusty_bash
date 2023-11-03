@@ -12,6 +12,8 @@ use std::process;
 use std::os::linux::fs::MetadataExt;
 use std::path::Path;
 use std::os::fd::RawFd;
+use nix::sys::signal;
+use nix::sys::signal::{Signal, SigHandler};
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -41,12 +43,24 @@ fn get_tty_fd() -> Option<RawFd> {
     None
 }
 
+fn ignore_signal(sig: Signal) {
+    unsafe { signal::signal(sig, SigHandler::SigIgn) }
+        .expect("sush(fatal): cannot ignore signal");
+}
+
+fn restore_signal(sig: Signal) {
+    unsafe { signal::signal(sig, SigHandler::SigDfl) }
+        .expect("sush(fatal): cannot restore signal");
+}
+
 fn set_foreground() {
     if let Some(fd) = get_tty_fd(){
+        ignore_signal(Signal::SIGTTOU);
         match unistd::tcsetpgrp(fd, unistd::getpid()) {
             Ok(_)  => {},
             Err(_) => panic!("sush(fatal): cannot get the terminal"),
         }
+        restore_signal(Signal::SIGTTOU);
     }
 }
 
