@@ -9,7 +9,6 @@ use nix::unistd::Pid;
 #[derive(Debug)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
-    pub pipeline_ends: Vec<String>,
     pub text: String,
 }
 
@@ -31,7 +30,6 @@ impl Job {
         Job {
             text: String::new(),
             pipelines: vec![],
-            pipeline_ends: vec![],
         }
     }
 
@@ -48,40 +46,15 @@ impl Job {
         }
     }
 
-    fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
-        match Pipeline::parse(feeder, core){
-            Some(pipeline) => {
-                ans.text += &pipeline.text.clone();
-                ans.pipelines.push(pipeline);
-                true
-            },
-            None => false,
-        }
-    }
-
-    fn eat_and_or(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
-        let num = feeder.scanner_and_or(core);
-        let end = feeder.consume(num);
-        ans.pipeline_ends.push(end.clone());
-        ans.text += &end;
-        num != 0
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
         let mut ans = Self::new();
-        loop {
+        while Self::eat_blank_line(feeder, &mut ans, core) {}
+        if let Some(pipeline) = Pipeline::parse(feeder, core){
+            ans.text += &pipeline.text.clone();
+            ans.pipelines.push(pipeline);
             while Self::eat_blank_line(feeder, &mut ans, core) {}
-            if ! Self::eat_pipeline(feeder, &mut ans, core) ||
-               ! Self::eat_and_or(feeder, &mut ans, core) {
-                break;
-            }
+            return Some(ans);
         }
-
-        if ans.pipelines.len() > 0 {
-            dbg!("{:?}", &ans);
-            Some(ans)
-        }else{
-            None
-        }
+        None
     }
 }
