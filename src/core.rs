@@ -31,26 +31,22 @@ fn is_interactive(pid: u32) -> bool {
     }
 }
 
-fn get_tty_fd() -> RawFd {
+fn get_tty_fd() -> Option<RawFd> {
     for fd in 0..3 {
         match unistd::isatty(fd) {
-            Ok(true) => return fd,
+            Ok(true) => return Some(fd),
             _ => {}, 
         }
     }
-
-    -1
+    None
 }
 
 fn set_foreground() {
-    let fd = get_tty_fd();
-    if fd < 0 {
-        return;
-    }
-
-    match unistd::tcsetpgrp(fd, unistd::getpid()) {
-        Ok(_)  => {},
-        Err(_) => panic!("sush(fatal): cannot get the terminal"),
+    if let Some(fd) = get_tty_fd(){
+        match unistd::tcsetpgrp(fd, unistd::getpid()) {
+            Ok(_)  => {},
+            Err(_) => panic!("sush(fatal): cannot get the terminal"),
+        }
     }
 }
 
