@@ -34,16 +34,6 @@ fn is_interactive(pid: u32) -> bool {
     }
 }
 
-fn get_tty_fd() -> Option<RawFd> {
-    for fd in 0..3 {
-        match unistd::isatty(fd) {
-            Ok(true) => return Some(fd),
-            _ => {},
-        }
-    }
-    None
-}
-
 fn ignore_signal(sig: Signal) {
     unsafe { signal::signal(sig, SigHandler::SigIgn) }
         .expect("sush(fatal): cannot ignore signal");
@@ -52,17 +42,6 @@ fn ignore_signal(sig: Signal) {
 fn restore_signal(sig: Signal) {
     unsafe { signal::signal(sig, SigHandler::SigDfl) }
         .expect("sush(fatal): cannot restore signal");
-}
-
-fn set_foreground() {
-    if let Some(fd) = get_tty_fd(){
-        ignore_signal(Signal::SIGTTOU);
-        match unistd::tcsetpgrp(fd, unistd::getpid()) {
-            Ok(_)  => {},
-            Err(_) => panic!("sush(fatal): cannot get the terminal"),
-        }
-        restore_signal(Signal::SIGTTOU);
-    }
 }
 
 impl ShellCore {
@@ -81,6 +60,8 @@ impl ShellCore {
         let pid = process::id();
         if is_interactive(pid) {
             core.flags += "i";
+            core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
+                .expect("Can't allocate fd for tty FD");
         }
         core.vars.insert("$".to_string(), pid.to_string());
         core.vars.insert("BASHPID".to_string(), core.vars["$"].clone());
@@ -90,9 +71,6 @@ impl ShellCore {
 
         core.builtins.insert("cd".to_string(), builtins::cd);
         core.builtins.insert("exit".to_string(), builtins::exit);
-
-        core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
-            .expect("Can't allocate fd for tty FD");
 
         core
     }
@@ -134,7 +112,7 @@ impl ShellCore {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         }
 
-        set_foreground();
+        self.set_foreground();
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
@@ -169,10 +147,23 @@ impl ShellCore {
         };
     }
 
+   fn set_foreground(&self) {
+       if self.tty_fd < 0 {
+           return;
+       }
+
+       ignore_signal(Signal::SIGTTOU);
+       match unistd::tcsetpgrp(self.tty_fd, unistd::getpid()) {
+           Ok(_)  => {},
+           Err(_) => panic!("sush(fatal): cannot get the terminal"),
+       }
+       restore_signal(Signal::SIGTTOU);
+   }
+
     pub fn set_pgid(&self, pid: Pid, pgid: Pid) {
         unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
         if pid.as_raw() == 0 && pgid.as_raw() == 0 {
-            set_foreground();
+            self.set_foreground();
         }
     }
 }
