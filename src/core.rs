@@ -12,6 +12,8 @@ use std::process;
 use std::os::linux::fs::MetadataExt;
 use std::path::Path;
 use std::os::fd::RawFd;
+use nix::sys::signal;
+use nix::sys::signal::{Signal, SigHandler};
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -30,6 +32,16 @@ fn is_interactive(pid: u32) -> bool {
         Ok(metadata) => metadata.st_mode() == 8592,
         Err(err) => panic!("{}", err),
     }
+}
+
+fn ignore_signal(sig: Signal) {
+    unsafe { signal::signal(sig, SigHandler::SigIgn) }
+        .expect("sush(fatal): cannot ignore signal");
+}
+
+fn restore_signal(sig: Signal) {
+    unsafe { signal::signal(sig, SigHandler::SigDfl) }
+        .expect("sush(fatal): cannot restore signal");
 }
 
 impl ShellCore {
@@ -92,6 +104,17 @@ impl ShellCore {
         self.vars.insert("?".to_string(), exit_status.to_string()); //追加
     } 
 
+    fn set_foreground(&self) {
+        if self.tty_fd < 0 { // tty_fdが無効なら何もしない
+            return;
+        }
+
+        ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
+        unistd::tcsetpgrp(self.tty_fd, unistd::getpid())
+            .expect("sush(fatal): cannot get the terminal");
+        restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
+    }
+
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
         if pids.len() == 1 && pids[0] == None {
             return;
@@ -100,6 +123,7 @@ impl ShellCore {
         for pid in pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         }
+        self.set_foreground();
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
@@ -136,5 +160,8 @@ impl ShellCore {
 
     pub fn set_pgid(&self, pid: Pid, pgid: Pid) {
         unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
+        if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
+            self.set_foreground();
+        }
     }
 }
