@@ -5,12 +5,13 @@ pub mod builtins;
 
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
-use nix::unistd;
+use nix::{fcntl, unistd};
 use nix::unistd::Pid;
 use std::collections::HashMap;
 use std::process;
 use std::os::linux::fs::MetadataExt;
 use std::path::Path;
+use std::os::fd::RawFd;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -20,6 +21,7 @@ pub struct ShellCore {
     pub nest: Vec<String>,
     pub input_interrupt: bool,
     pub is_subshell: bool,
+    pub tty_fd: RawFd,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -40,12 +42,16 @@ impl ShellCore {
             nest: vec![],
             input_interrupt: false,
             is_subshell: false,
+            tty_fd: -1,
         };
 
         let pid = process::id();
         if is_interactive(pid) {
             core.flags += "i";
+            core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
+                .expect("Can't allocate fd for tty FD");
         }
+
         core.vars.insert("$".to_string(), pid.to_string());
         core.vars.insert("BASHPID".to_string(), core.vars["$"].clone());
         core.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
