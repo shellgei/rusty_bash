@@ -9,6 +9,7 @@ use nix::unistd::Pid;
 #[derive(Debug)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
+    pub pipeline_ends: Vec<String>,
     pub text: String,
 }
 
@@ -29,6 +30,7 @@ impl Job {
     fn new() -> Job {
         Job {
             text: String::new(),
+            pipeline_ends: vec![],
             pipelines: vec![],
         }
     }
@@ -46,15 +48,40 @@ impl Job {
         }
     }
 
+    fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
+        match Pipeline::parse(feeder, core){
+            Some(pipeline) => {
+                ans.text += &pipeline.text.clone();
+                ans.pipelines.push(pipeline);
+                true
+            },
+            None => false,
+        }
+    }
+
+    fn eat_and_or(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
+        let num = feeder.scanner_and_or(core);
+        let end = feeder.consume(num);
+        ans.pipeline_ends.push(end.clone());
+        ans.text += &end;
+        num != 0 //記号なしの場合にfalseが返る
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
         let mut ans = Self::new();
-        while Self::eat_blank_line(feeder, &mut ans, core) {}
-        if let Some(pipeline) = Pipeline::parse(feeder, core){
-            ans.text += &pipeline.text.clone();
-            ans.pipelines.push(pipeline);
-            while Self::eat_blank_line(feeder, &mut ans, core) {}
-            return Some(ans);
+        loop {
+            while Self::eat_blank_line(feeder, &mut ans, core) {} //余計な空白を飛ばす
+            if ! Self::eat_pipeline(feeder, &mut ans, core) || //パイプラインを読む
+               ! Self::eat_and_or(feeder, &mut ans, core) {    // &&か||を読む
+                break;
+            }
         }
-        None
+    
+        if ans.pipelines.len() > 0 {
+            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
+            Some(ans)
+        }else{
+            None
+        }
     }
 }

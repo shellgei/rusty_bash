@@ -86,6 +86,14 @@ impl Feeder {
         0
     }
 
+    pub fn scanner_and_or(&mut self, core: &mut ShellCore) -> usize {
+        self.backslash_check_and_feed(vec!["|", "&"], core);
+
+        if self.remaining.starts_with("||")     { 2 }
+        else if self.remaining.starts_with("&&"){ 2 }
+        else{ 0 }
+    }
+
     pub fn scanner_pipe(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["|"], core);
 
