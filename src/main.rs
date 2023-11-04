@@ -57,7 +57,6 @@ fn main_loop(core: &mut ShellCore) {
             }   
         }
 
-        feeder.init_backup();
         match Script::parse(&mut feeder, core){
             Some(mut s) => {
                 if ! input_interrupt_check(&mut feeder, core) {

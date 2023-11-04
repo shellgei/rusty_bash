@@ -41,10 +41,6 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    pub fn init_backup(&mut self) {
-        self.backup = vec![];
-    }   
-
     /*
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
         let line;
@@ -81,13 +77,6 @@ impl Feeder {
         if core.input_interrupt {
             return false;
         }
-
-        /*
-        if self.additional_lines.len() > self.additional_line_counter { //TODO BE MORE INTELIGENT
-            self.add_line(self.additional_lines[self.additional_line_counter].1.clone());
-            self.additional_line_counter += 1;
-            return true;
-        }*/
 
         let ret = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
