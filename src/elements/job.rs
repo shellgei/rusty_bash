@@ -21,9 +21,14 @@ impl Job {
             Pid::from_raw(0)
         };
 
-        for pipeline in self.pipelines.iter_mut() {
-            let pids = pipeline.exec(core, pgid);
-            core.wait_pipeline(pids);
+        let mut do_next = true;
+        for (pipeline, end) in self.pipelines.iter_mut()
+                          .zip(self.pipeline_ends.iter()) {
+            if do_next {
+                let pids = pipeline.exec(core, pgid);
+                core.wait_pipeline(pids);
+            }
+            do_next = (&core.vars["?"] == "0") == (end == "&&");
         }
     }
 
@@ -78,7 +83,7 @@ impl Job {
         }
     
         if ans.pipelines.len() > 0 {
-            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
+//            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
             Some(ans)
         }else{
             None

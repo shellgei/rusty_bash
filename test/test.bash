@@ -271,4 +271,27 @@ a
 /etc
 /etc" ] || err $LINENO
 
+### AND OR ###
+
+res=$($com <<< 'echo -n A && echo -n B')
+[ "$res" == "AB" ] || err $LINENO
+
+res=$($com <<< 'echo -n A || echo -n B')
+[ "$res" == "A" ] || err $LINENO
+
+res=$($com <<< 'echo -n A || echo -n B; echo -n A')
+[ "$res" == "AA" ] || err $LINENO
+
+res=$($com <<< 'true || echo -n A || echo -n B')
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'false || echo -n A && echo -n B')
+[ "$res" == "AB" ] || err $LINENO
+
+res=$($com <<< 'false || echo -n A || echo -n B')
+[ "$res" == "A" ] || err $LINENO
+
+res=$($com <<< 'false || echo -n A || echo -n B && echo -n C')
+[ "$res" == "AC" ] || err $LINENO
+
 echo OK $0
