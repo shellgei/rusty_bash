@@ -17,6 +17,7 @@ enum Status{
 #[derive(Debug)]
 pub struct Script {
     pub jobs: Vec<Job>,
+    pub job_ends: Vec<String>,
     pub text: String,
 }
 
@@ -55,7 +56,8 @@ impl Script {
     pub fn new() -> Script {
         Script {
             text: String::new(),
-            jobs: vec![]
+            jobs: vec![],
+            job_ends: vec![],
         }
     }
 
