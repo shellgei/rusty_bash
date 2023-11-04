@@ -3,17 +3,16 @@
 
 pub mod builtins;
 
-use nix::sys::wait;
-use nix::sys::wait::WaitStatus;
-use nix::{fcntl, unistd};
-use nix::unistd::Pid;
 use std::collections::HashMap;
-use std::process;
+use std::os::fd::RawFd;
 use std::os::linux::fs::MetadataExt;
 use std::path::Path;
-use std::os::fd::RawFd;
-use nix::sys::signal;
+use std::process;
+use nix::{fcntl, unistd};
+use nix::sys::{signal, wait};
 use nix::sys::signal::{Signal, SigHandler};
+use nix::sys::wait::WaitStatus;
+use nix::unistd::Pid;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -57,23 +56,25 @@ impl ShellCore {
             tty_fd: -1,
         };
 
-        let pid = process::id();
-        if is_interactive(pid) {
+        core.set_initial_vars();
+
+        if is_interactive(process::id()) {
             core.flags += "i";
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("Can't allocate fd for tty FD");
         }
 
-        core.vars.insert("$".to_string(), pid.to_string());
-        core.vars.insert("BASHPID".to_string(), core.vars["$"].clone());
-        core.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
-
-        core.vars.insert("?".to_string(), "0".to_string());
-
         core.builtins.insert("cd".to_string(), builtins::cd);
         core.builtins.insert("exit".to_string(), builtins::exit);
 
         core
+    }
+
+    fn set_initial_vars(&mut self) {
+        self.vars.insert("$".to_string(), process::id().to_string());
+        self.vars.insert("BASHPID".to_string(), self.vars["$"].clone());
+        self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
+        self.vars.insert("?".to_string(), "0".to_string());
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
