@@ -7,12 +7,13 @@ mod scanner;
 use std::io;
 use crate::ShellCore;
 use std::process;
-//use self::term;
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
     remaining: String,
     backup: Vec<String>,
+    additional_lines: Vec<(usize, String)>, 
+    additional_line_pos: usize,
 }
 
 impl Feeder {
@@ -20,6 +21,8 @@ impl Feeder {
         Feeder {
             remaining: "".to_string(),
             backup: vec![],
+            additional_lines: vec![],
+            additional_line_pos: -1,
         }
     }
 
