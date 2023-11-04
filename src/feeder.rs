@@ -12,12 +12,14 @@ use std::process;
 #[derive(Clone, Debug)]
 pub struct Feeder {
     remaining: String,
+    backup: Vec<String>,
 }
 
 impl Feeder {
     pub fn new() -> Feeder {
         Feeder {
             remaining: "".to_string(),
+            backup: vec![],
         }
     }
 
@@ -28,8 +30,16 @@ impl Feeder {
         cut
     }
 
-    pub fn rewind(&mut self, backup: Feeder) {
-        self.remaining = backup.remaining;
+    pub fn set_backup(&mut self) {
+        self.backup.push(self.remaining.clone());
+    }   
+
+    pub fn remove_backup(&mut self) {
+        self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
+    }   
+
+    pub fn rewind(&mut self) {
+        self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
     /*

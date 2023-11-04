@@ -115,7 +115,7 @@ impl SimpleCommand {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = Self::new();
-        let backup = feeder.clone();
+        feeder.set_backup();
 
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
@@ -127,9 +127,10 @@ impl SimpleCommand {
 
         if ans.args.len() + ans.redirects.len() > 0 {
 //            eprintln!("{:?}", ans);
+            feeder.remove_backup();
             Some(ans)
         }else{
-            feeder.rewind(backup);
+            feeder.rewind();
             None
         }
     }

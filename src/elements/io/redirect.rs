@@ -151,14 +151,15 @@ impl Redirect {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
-        let backup = feeder.clone(); //追加
+        feeder.set_backup(); //追加
 
         if Self::eat_left(feeder, &mut ans, core) &&   //追加
            Self::eat_symbol(feeder, &mut ans, core) && //ifを除去
            Self::eat_right(feeder, &mut ans, core) {
+            feeder.remove_backup();
             Some(ans)
         }else{
-            feeder.rewind(backup); //追加
+            feeder.rewind(); //追加
             None
         }
     }
