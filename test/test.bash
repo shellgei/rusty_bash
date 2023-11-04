@@ -298,7 +298,8 @@ b" ] || err $LINENO
 
 res=$($com <<< 'echo a ||
 echo b')
-[ "$res" == "a" ] || err $LINENO
+[ "$res" == "a
+b" ] || err $LINENO
 
 res=$($com <<< 'echo a \
 && echo b')
