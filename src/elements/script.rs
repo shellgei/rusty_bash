@@ -55,7 +55,7 @@ impl Script {
     pub fn new() -> Script {
         Script {
             text: String::new(),
-            jobs: vec![]
+            jobs: vec![],
         }
     }
 
