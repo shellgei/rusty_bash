@@ -271,4 +271,11 @@ a
 /etc
 /etc" ] || err $LINENO
 
+### JOB PARSE TEST ###
+
+res=$($com <<< '&& echo a')
+[ "$?" == "2" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+
 echo OK $0
