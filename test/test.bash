@@ -271,27 +271,38 @@ a
 /etc
 /etc" ] || err $LINENO
 
-### AND OR ###
+### JOB PARSE TEST ###
 
-res=$($com <<< 'echo -n A && echo -n B')
-[ "$res" == "AB" ] || err $LINENO
-
-res=$($com <<< 'echo -n A || echo -n B')
-[ "$res" == "A" ] || err $LINENO
-
-res=$($com <<< 'echo -n A || echo -n B; echo -n A')
-[ "$res" == "AA" ] || err $LINENO
-
-res=$($com <<< 'true || echo -n A || echo -n B')
+res=$($com <<< '&& echo a')
+[ "$?" == "2" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
-res=$($com <<< 'false || echo -n A && echo -n B')
-[ "$res" == "AB" ] || err $LINENO
+res=$($com <<< 'echo a
+&& echo b')
+[ "$?" == "2" ] || err $LINENO
 
-res=$($com <<< 'false || echo -n A || echo -n B')
-[ "$res" == "A" ] || err $LINENO
+res=$($com <<< 'echo a &\
+& echo b')
+[ "$res" == "a
+b" ] || err $LINENO
 
-res=$($com <<< 'false || echo -n A || echo -n B && echo -n C')
-[ "$res" == "AC" ] || err $LINENO
+res=$($com <<< 'echo a &&\
+echo b')
+[ "$res" == "a
+b" ] || err $LINENO
+
+res=$($com <<< 'echo a &&
+echo b')
+[ "$res" == "a
+b" ] || err $LINENO
+
+res=$($com <<< 'echo a ||
+echo b')
+[ "$res" == "a" ] || err $LINENO
+
+res=$($com <<< 'echo a \
+&& echo b')
+[ "$res" == "a
+b" ] || err $LINENO
 
 echo OK $0

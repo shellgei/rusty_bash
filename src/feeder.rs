@@ -7,17 +7,18 @@ mod scanner;
 use std::io;
 use crate::ShellCore;
 use std::process;
-//use self::term;
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
     remaining: String,
+    backup: Vec<String>,
 }
 
 impl Feeder {
     pub fn new() -> Feeder {
         Feeder {
             remaining: "".to_string(),
+            backup: vec![],
         }
     }
 
@@ -28,8 +29,16 @@ impl Feeder {
         cut
     }
 
-    pub fn rewind(&mut self, backup: Feeder) {
-        self.remaining = backup.remaining;
+    pub fn set_backup(&mut self) {
+        self.backup.push(self.remaining.clone());
+    }   
+
+    pub fn pop_backup(&mut self) {
+        self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
+    }   
+
+    pub fn rewind(&mut self) {
+        self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
     /*
@@ -81,7 +90,15 @@ impl Feeder {
         };
 
         if let Some(line) = ret {
-            self.add_line(line);
+            self.add_line(line.clone());
+
+            for b in self.backup.iter_mut() {
+                if b.ends_with("\\\n") {
+                    b.pop();
+                    b.pop();
+                }
+                *b += &line.clone();
+            }
         }else{
             eprintln!("sush: syntax error: unexpected end of file");
             process::exit(2);
