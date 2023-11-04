@@ -21,6 +21,14 @@ impl Job {
             Pid::from_raw(0)
         };
 
+        if bg && self.pipelines.len() == 1 {
+            let backup = core.tty_fd;
+            core.tty_fd = -1;
+            let pids = self.pipelines[0].exec(core, pgid);
+            core.tty_fd = backup;
+            return;
+        }
+
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
