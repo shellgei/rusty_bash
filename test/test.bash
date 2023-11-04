@@ -277,5 +277,19 @@ res=$($com <<< '&& echo a')
 [ "$?" == "2" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'echo a
+&& echo b')
+[ "$?" == "2" ] || err $LINENO
+
+res=$($com <<< 'echo a &\
+& echo b')
+[ "$res" == "a
+b" ] || err $LINENO
+
+res=$($com <<< 'echo a \
+&& echo b')
+[ "$res" == "a
+b" ] || err $LINENO
+
 
 echo OK $0
