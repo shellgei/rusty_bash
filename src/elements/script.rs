@@ -73,12 +73,10 @@ impl Script {
 
     fn eat_job_end(feeder: &mut Feeder, ans: &mut Script) -> bool {
         let len = feeder.scanner_job_end();
-        if len > 0 {
-            ans.text += &feeder.consume(len);
-            true
-        }else{
-            false
-        }
+        let end = &feeder.consume(len);
+        ans.job_ends.push(end.clone());
+        ans.text += &end;
+        len != 0
     }
 
     fn check_nest_end(feeder: &mut Feeder, ok_ends: &Vec<&str>, jobnum: usize) -> Status {
