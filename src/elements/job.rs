@@ -74,11 +74,20 @@ impl Job {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
         let mut ans = Self::new();
-        loop {
-            while Self::eat_blank_line(feeder, &mut ans, core) {} //余計な空白を飛ばす
-            if ! Self::eat_pipeline(feeder, &mut ans, core) || //パイプラインを読む
-               ! Self::eat_and_or(feeder, &mut ans, core) {    // &&か||を読む
-                break;
+        while Self::eat_blank_line(feeder, &mut ans, core) {} 
+        if ! Self::eat_pipeline(feeder, &mut ans, core) {
+            return None;
+        }
+
+        while Self::eat_and_or(feeder, &mut ans, core) { 
+            loop {
+                while Self::eat_blank_line(feeder, &mut ans, core) {} 
+                if Self::eat_pipeline(feeder, &mut ans, core) {
+                    break;  
+                }
+                if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
+                    return None;
+                }
             }
         }
     
