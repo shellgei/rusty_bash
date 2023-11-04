@@ -156,7 +156,7 @@ impl Redirect {
         if Self::eat_left(feeder, &mut ans, core) &&   //追加
            Self::eat_symbol(feeder, &mut ans, core) && //ifを除去
            Self::eat_right(feeder, &mut ans, core) {
-            feeder.remove_backup();
+            feeder.pop_backup();
             Some(ans)
         }else{
             feeder.rewind(); //追加

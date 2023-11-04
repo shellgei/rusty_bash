@@ -12,8 +12,6 @@ use std::process;
 pub struct Feeder {
     remaining: String,
     backup: Vec<String>,
-    additional_lines: Vec<(usize, String)>, 
-    additional_line_pos: usize,
 }
 
 impl Feeder {
@@ -21,8 +19,6 @@ impl Feeder {
         Feeder {
             remaining: "".to_string(),
             backup: vec![],
-            additional_lines: vec![],
-            additional_line_pos: -1,
         }
     }
 
@@ -37,7 +33,7 @@ impl Feeder {
         self.backup.push(self.remaining.clone());
     }   
 
-    pub fn remove_backup(&mut self) {
+    pub fn pop_backup(&mut self) {
         self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
@@ -94,7 +90,15 @@ impl Feeder {
         };
 
         if let Some(line) = ret {
-            self.add_line(line);
+            self.add_line(line.clone());
+
+            for b in self.backup.iter_mut() {
+                if b.ends_with("\\\n") {
+                    b.pop();
+                    b.pop();
+                }
+                *b += &line.clone();
+            }
         }else{
             eprintln!("sush: syntax error: unexpected end of file");
             process::exit(2);
