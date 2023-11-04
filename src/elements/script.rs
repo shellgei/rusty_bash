@@ -24,8 +24,8 @@ pub struct Script {
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore, redirects: &mut Vec<Redirect>) {
         if redirects.iter_mut().all(|r| r.connect(true)){
-            for job in self.jobs.iter_mut() {
-                job.exec(core);
+            for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
+                job.exec(core, end == "&");
             }
         }else{
             core.vars.insert("?".to_string(), "1".to_string());
