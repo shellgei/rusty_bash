@@ -7,17 +7,22 @@ mod scanner;
 use std::io;
 use crate::ShellCore;
 use std::process;
-//use self::term;
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
     remaining: String,
+    backup: Vec<String>,
+    additional_lines: Vec<(usize, String)>, 
+    additional_line_pos: usize,
 }
 
 impl Feeder {
     pub fn new() -> Feeder {
         Feeder {
             remaining: "".to_string(),
+            backup: vec![],
+            additional_lines: vec![],
+            additional_line_pos: -1,
         }
     }
 
@@ -28,8 +33,16 @@ impl Feeder {
         cut
     }
 
-    pub fn rewind(&mut self, backup: Feeder) {
-        self.remaining = backup.remaining;
+    pub fn set_backup(&mut self) {
+        self.backup.push(self.remaining.clone());
+    }   
+
+    pub fn remove_backup(&mut self) {
+        self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
+    }   
+
+    pub fn rewind(&mut self) {
+        self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
     /*
