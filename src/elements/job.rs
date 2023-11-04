@@ -80,8 +80,11 @@ impl Job {
         }
 
         while Self::eat_and_or(feeder, &mut ans, core) { 
-            while Self::eat_blank_line(feeder, &mut ans, core) {} 
-            while ! Self::eat_pipeline(feeder, &mut ans, core) {
+            loop {
+                while Self::eat_blank_line(feeder, &mut ans, core) {} 
+                if Self::eat_pipeline(feeder, &mut ans, core) {
+                    break;  
+                }
                 if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
                     return None;
                 }
