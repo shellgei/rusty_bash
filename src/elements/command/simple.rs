@@ -126,7 +126,6 @@ impl SimpleCommand {
         }
 
         if ans.args.len() + ans.redirects.len() > 0 {
-//            eprintln!("{:?}", ans);
             feeder.pop_backup();
             Some(ans)
         }else{
