@@ -21,18 +21,14 @@ impl Job {
             Pid::from_raw(0)
         };
 
-        if bg && self.pipelines.len() == 1 {
+        if bg {
             let backup = core.tty_fd;
             core.tty_fd = -1;
-            self.pipelines[0].exec(core, pgid);
-            core.tty_fd = backup;
-            return;
-        }
-
-        if bg && self.pipelines.len() > 1 {
-            let backup = core.tty_fd;
-            core.tty_fd = -1;
-            self.exec_fork_bg(core, pgid);
+            if self.pipelines.len() == 1 {
+                self.pipelines[0].exec(core, pgid);
+            }else{
+                self.exec_fork_bg(core, pgid);
+            }
             core.tty_fd = backup;
             return;
         }
@@ -58,7 +54,7 @@ impl Job {
                 core.is_subshell = true;
                 core.set_pgid(Pid::from_raw(0), pgid);
                 core.set_subshell_vars();
-                self.exec_fg(core, pgid);
+                self.exec(core, false);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
