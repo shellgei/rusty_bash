@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod builtins;
+pub mod jobtable;
 
 use std::collections::HashMap;
 use std::os::fd::RawFd;
@@ -13,6 +14,7 @@ use nix::sys::{signal, wait};
 use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
+use crate::core::jobtable::JobEntry;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -23,6 +25,7 @@ pub struct ShellCore {
     pub input_interrupt: bool,
     pub is_subshell: bool,
     pub tty_fd: RawFd,
+    pub job_table: Vec<JobEntry>,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -54,6 +57,7 @@ impl ShellCore {
             input_interrupt: false,
             is_subshell: false,
             tty_fd: -1,
+            job_table: vec![],
         };
 
         core.set_initial_vars();
