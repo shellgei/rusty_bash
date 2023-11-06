@@ -24,7 +24,7 @@ impl Job {
         if bg && self.pipelines.len() == 1 {
             let backup = core.tty_fd;
             core.tty_fd = -1;
-            let pids = self.pipelines[0].exec(core, pgid);
+            self.pipelines[0].exec(core, pgid);
             core.tty_fd = backup;
             return;
         }
