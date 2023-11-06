@@ -3,6 +3,7 @@
 
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
+use crate::core::jobtable::JobEntry;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
 
@@ -45,9 +46,11 @@ impl Job {
         core.tty_fd = -1;
 
         if self.pipelines.len() == 1 {
-            self.pipelines[0].exec(core, pgid);
+            let pids = self.pipelines[0].exec(core, pgid);
+            core.job_table.push(JobEntry::new(pids));
         }else{
-            self.exec_fork_bg(core, pgid);
+            let pid = self.exec_fork_bg(core, pgid);
+            core.job_table.push(JobEntry::new(vec![pid]));
         }
 
         core.tty_fd = backup;

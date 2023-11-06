@@ -6,7 +6,7 @@ use nix::unistd::Pid;
 #[derive(Debug)]
 enum JobStatus {
     Running,
-    Finished, 
+    Finished,
 }
 
 #[derive(Debug)]
@@ -16,9 +16,9 @@ pub struct JobEntry {
 }
 
 impl JobEntry {
-    pub fn new(pids: &Vec<Pid>) -> JobEntry {
+    pub fn new(pids: Vec<Option<Pid>>) -> JobEntry {
         JobEntry {
-            pids: pids.clone(),
+            pids: pids.into_iter().flatten().collect(),
             status: JobStatus::Running,
         }
     }
