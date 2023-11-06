@@ -4,14 +4,22 @@
 use nix::unistd::Pid;
 
 #[derive(Debug)]
+enum JobStatus {
+    Running,
+    Finished, 
+}
+
+#[derive(Debug)]
 pub struct JobEntry {
-    pub pids: Vec<Pid>,
+    pids: Vec<Pid>,
+    status: JobStatus,
 }
 
 impl JobEntry {
     pub fn new(pids: &Vec<Pid>) -> JobEntry {
         JobEntry {
             pids: pids.clone(),
+            status: JobStatus::Running,
         }
     }
 }
