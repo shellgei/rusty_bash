@@ -166,9 +166,9 @@ impl ShellCore {
         }
     }
 
-     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
-         self.is_subshell = true;
-         self.set_pgid(pid, pgid);
-         self.set_subshell_vars();
-     }
+    pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
+        self.is_subshell = true;
+        self.set_pgid(pid, pgid);
+        self.set_subshell_vars();
+    }
 }
