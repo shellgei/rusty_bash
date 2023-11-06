@@ -4,7 +4,7 @@
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
 use nix::unistd;
-use nix::unistd::Pid;
+use nix::unistd::{Pid, ForkResult};
 
 #[derive(Debug)]
 pub struct Job {
@@ -29,6 +29,11 @@ impl Job {
             return;
         }
 
+        if bg && self.pipelines.len() > 1 {
+            let pid = self.fork_exec(core);
+            return;
+        }
+
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
@@ -37,6 +42,22 @@ impl Job {
                 core.wait_pipeline(pids);
             }
             do_next = (&core.vars["?"] == "0") == (end == "&&");
+        }
+    }
+
+    fn fork_exec(&mut self, core: &mut ShellCore) -> Option<Pid> {
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
+                core.set_pgid(Pid::from_raw(0), Pid::from_raw(0));
+                core.set_subshell_vars();
+                self.exec(core, false);
+                core.exit()
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                core.set_pgid(child, child);
+                Some(child) 
+            },
+            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
 
