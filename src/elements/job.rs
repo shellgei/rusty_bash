@@ -22,18 +22,10 @@ impl Job {
         };
 
         if bg {
-            let backup = core.tty_fd;
-            core.tty_fd = -1;
-            if self.pipelines.len() == 1 {
-                self.pipelines[0].exec(core, pgid);
-            }else{
-                self.exec_fork_bg(core, pgid);
-            }
-            core.tty_fd = backup;
-            return;
+            self.exec_bg(core, pgid);
+        }else{
+            self.exec_fg(core, pgid);
         }
-
-        self.exec_fg(core, pgid);
     }
 
     fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) {
@@ -46,6 +38,19 @@ impl Job {
             }
             do_next = (&core.vars["?"] == "0") == (end == "&&");
         }
+    }
+
+    fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
+        let backup = core.tty_fd;
+        core.tty_fd = -1;
+
+        if self.pipelines.len() == 1 {
+            self.pipelines[0].exec(core, pgid);
+        }else{
+            self.exec_fork_bg(core, pgid);
+        }
+
+        core.tty_fd = backup;
     }
 
     fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Option<Pid> {
