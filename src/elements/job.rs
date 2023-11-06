@@ -37,6 +37,10 @@ impl Job {
             return;
         }
 
+        self.exec_fg(core, pgid);
+    }
+
+    fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) {
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
@@ -54,7 +58,7 @@ impl Job {
                 core.is_subshell = true;
                 core.set_pgid(Pid::from_raw(0), pgid);
                 core.set_subshell_vars();
-                self.exec(core, false);
+                self.exec_fg(core, pgid);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
