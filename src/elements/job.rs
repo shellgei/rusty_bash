@@ -24,13 +24,16 @@ impl Job {
         if bg && self.pipelines.len() == 1 {
             let backup = core.tty_fd;
             core.tty_fd = -1;
-            let pids = self.pipelines[0].exec(core, pgid);
+            self.pipelines[0].exec(core, pgid);
             core.tty_fd = backup;
             return;
         }
 
         if bg && self.pipelines.len() > 1 {
-            let pid = self.fork_exec(core);
+            let backup = core.tty_fd;
+            core.tty_fd = -1;
+            self.exec_fork_bg(core, pgid);
+            core.tty_fd = backup;
             return;
         }
 
@@ -45,16 +48,17 @@ impl Job {
         }
     }
 
-    fn fork_exec(&mut self, core: &mut ShellCore) -> Option<Pid> {
+    fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                core.set_pgid(Pid::from_raw(0), Pid::from_raw(0));
+                core.is_subshell = true;
+                core.set_pgid(Pid::from_raw(0), pgid);
                 core.set_subshell_vars();
                 self.exec(core, false);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, child);
+                core.set_pgid(child, pgid);
                 Some(child) 
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
