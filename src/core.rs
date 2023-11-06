@@ -154,7 +154,7 @@ impl ShellCore {
         process::exit(exit_status)
     }
 
-    pub fn set_subshell_vars(&mut self) {
+    fn set_subshell_vars(&mut self) {
         let pid = nix::unistd::getpid();
         self.vars.insert("BASHPID".to_string(), pid.to_string());
         match self.vars["BASH_SUBSHELL"].parse::<usize>() {
@@ -168,5 +168,11 @@ impl ShellCore {
         if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
             self.set_foreground();
         }
+    }
+
+    pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
+        self.is_subshell = true;
+        self.set_pgid(pid, pgid);
+        self.set_subshell_vars();
     }
 }
