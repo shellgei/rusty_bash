@@ -3,7 +3,7 @@
 
 use nix::unistd::Pid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum JobStatus {
     Running,
     Finished,
@@ -11,15 +11,18 @@ enum JobStatus {
 
 #[derive(Debug)]
 pub struct JobEntry {
-    pids: Vec<(Pid, JobStatus)>,
+    pids: Vec<Pid>,
+    pid_statuses: Vec<JobStatus>,
     status: JobStatus,
     text: String,
 }
 
 impl JobEntry {
     pub fn new(pids: Vec<Option<Pid>>, text: &str) -> JobEntry {
+        let len = pids.len();
         JobEntry {
-            pids: pids.into_iter().flatten().map(|e| (e, JobStatus::Running)).collect(),
+            pids: pids.into_iter().flatten().collect(),
+            pid_statuses: vec![ JobStatus::Running; len ],
             status: JobStatus::Running,
             text: text.to_string(),
         }
