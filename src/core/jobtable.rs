@@ -11,7 +11,7 @@ enum JobStatus {
 
 #[derive(Debug)]
 pub struct JobEntry {
-    pids: Vec<Pid>,
+    pids: Vec<(Pid, JobStatus)>,
     status: JobStatus,
     text: String,
 }
@@ -19,7 +19,7 @@ pub struct JobEntry {
 impl JobEntry {
     pub fn new(pids: Vec<Option<Pid>>, text: &str) -> JobEntry {
         JobEntry {
-            pids: pids.into_iter().flatten().collect(),
+            pids: pids.into_iter().flatten().map(|e| (e, JobStatus::Running)).collect(),
             status: JobStatus::Running,
             text: text.to_string(),
         }
