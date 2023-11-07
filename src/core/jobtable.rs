@@ -5,7 +5,7 @@ use crate::ShellCore;
 use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
 use nix::unistd::Pid;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum JobStatus {
     Running,
     Finished,
@@ -52,9 +52,11 @@ impl ShellCore {
     pub fn jobtable_print_finish(&mut self) {
         for e in self.job_table.iter_mut() {
             if e.status == JobStatus::Finished {
-                eprintln!("");
+                eprintln!("Done {}", e.text);
             }
         }
+
+        self.job_table.retain(|e| e.status != JobStatus::Finished);
     }
 }
 
