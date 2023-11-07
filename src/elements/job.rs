@@ -22,6 +22,7 @@ impl Job {
             Pid::from_raw(0)
         };
 
+        core.jobtable_status_check();
         if bg {
             self.exec_bg(core, pgid);
         }else{
