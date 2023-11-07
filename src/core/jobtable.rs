@@ -5,7 +5,7 @@ use crate::ShellCore;
 use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
 use nix::unistd::Pid;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 enum JobStatus {
     Running,
     Finished,
@@ -13,7 +13,8 @@ enum JobStatus {
 
 #[derive(Debug)]
 pub struct JobEntry {
-    pids: Vec<(Pid, JobStatus)>,
+    pids: Vec<Pid>,
+    pid_statuses: Vec<JobStatus>,
     status: JobStatus,
     text: String,
 }
@@ -28,16 +29,20 @@ fn process_still_alive(pid: &Pid) -> bool {
 
 impl JobEntry {
     pub fn new(pids: Vec<Option<Pid>>, text: &str) -> JobEntry {
+        let len = pids.len();
         JobEntry {
-            pids: pids.into_iter().flatten().map(|e| (e, JobStatus::Running)).collect(),
+            pids: pids.into_iter().flatten().collect(),
+            pid_statuses: vec![ JobStatus::Running; len ],
             status: JobStatus::Running,
             text: text.to_string(),
         }
     }
 
     pub fn check_status(&mut self) {
-        if ! self.pids.iter().any(|p| process_still_alive(p)) {
-            self.status = JobStatus::Finished;
+        for (status, pid) in self.pid_statuses.iter_mut().zip(&self.pids) {
+            if status != &mut JobStatus::Finished && ! process_still_alive(pid) {
+                *status = JobStatus::Finished;
+            }
         }
     }
 }
@@ -51,7 +56,8 @@ impl ShellCore {
 
     pub fn jobtable_print_finish(&mut self) {
         for e in self.job_table.iter_mut() {
-            if e.status == JobStatus::Finished {
+            if e.pid_statuses.iter().all(|s| s == &mut JobStatus::Finished) {
+                e.status = JobStatus::Finished;
                 eprintln!("Done {}", e.text);
             }
         }
