@@ -46,13 +46,12 @@ impl Job {
         let backup = core.tty_fd;
         core.tty_fd = -1;
 
-        if self.pipelines.len() == 1 {
-            let pids = self.pipelines[0].exec(core, pgid);
-            core.job_table.push(JobEntry::new(pids));
+        let pids = if self.pipelines.len() == 1 {
+            self.pipelines[0].exec(core, pgid)
         }else{
-            let pid = self.exec_fork_bg(core, pgid);
-            core.job_table.push(JobEntry::new(vec![pid]));
-        }
+            vec![self.exec_fork_bg(core, pgid)]
+        };
+        core.job_table.push(JobEntry::new(pids, &self.text));
 
         core.tty_fd = backup;
     }

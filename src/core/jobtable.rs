@@ -15,6 +15,7 @@ enum JobStatus {
 pub struct JobEntry {
     pids: Vec<Pid>,
     status: JobStatus,
+    text: String,
 }
 
 fn process_still_alive(pid: &Pid) -> bool {
@@ -26,10 +27,11 @@ fn process_still_alive(pid: &Pid) -> bool {
 }
 
 impl JobEntry {
-    pub fn new(pids: Vec<Option<Pid>>) -> JobEntry {
+    pub fn new(pids: Vec<Option<Pid>>, text: &str) -> JobEntry {
         JobEntry {
             pids: pids.into_iter().flatten().collect(),
             status: JobStatus::Running,
+            text: text.to_string(),
         }
     }
 
