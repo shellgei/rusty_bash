@@ -22,7 +22,6 @@ impl Job {
             Pid::from_raw(0)
         };
 
-        core.jobtable_check_status();
         if bg {
             self.exec_bg(core, pgid);
         }else{
@@ -35,6 +34,7 @@ impl Job {
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
+                core.jobtable_check_status();
                 let pids = pipeline.exec(core, pgid);
                 core.wait_pipeline(pids);
             }
