@@ -13,13 +13,15 @@ enum JobStatus {
 pub struct JobEntry {
     pids: Vec<Pid>,
     status: JobStatus,
+    text: String,
 }
 
 impl JobEntry {
-    pub fn new(pids: Vec<Option<Pid>>) -> JobEntry {
+    pub fn new(pids: Vec<Option<Pid>>, text: &str) -> JobEntry {
         JobEntry {
             pids: pids.into_iter().flatten().collect(),
             status: JobStatus::Running,
+            text: text.to_string(),
         }
     }
 }
