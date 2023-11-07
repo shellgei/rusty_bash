@@ -174,5 +174,6 @@ impl ShellCore {
         self.is_subshell = true;
         self.set_pgid(pid, pgid);
         self.set_subshell_vars();
+        self.job_table.clear();
     }
 }
