@@ -7,8 +7,7 @@ use nix::sys::wait::WaitStatus;
 #[derive(Debug)]
 pub struct JobEntry {
     pids: Vec<Pid>,
-    pid_statuses: Vec<WaitStatus>,
-    status: WaitStatus,
+    statuses: Vec<WaitStatus>,
     text: String,
 }
 
@@ -17,8 +16,7 @@ impl JobEntry {
         let len = pids.len();
         JobEntry {
             pids: pids.into_iter().flatten().collect(),
-            pid_statuses: vec![ WaitStatus::StillAlive; len ],
-            status: WaitStatus::StillAlive,
+            statuses: vec![ WaitStatus::StillAlive; len ],
             text: text.to_string(),
         }
     }
