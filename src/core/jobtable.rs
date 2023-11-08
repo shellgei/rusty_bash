@@ -30,15 +30,15 @@ impl JobEntry {
     }
 
     pub fn update_status(&mut self) {
-        for (status, pid) in self.pid_statuses.iter_mut().zip(&self.pids) {
+        for (status, pid) in self.statuses.iter_mut().zip(&self.pids) {
             if status == &mut WaitStatus::StillAlive {
                 wait_nonblock(pid, status);
             }
         }
+    }
 
-        if self.pid_statuses.iter().all(|s| *s != WaitStatus::StillAlive) {
-            self.status = self.pid_statuses[0];
-        }
+    pub fn leader_status(&self) -> WaitStatus {
+        self.statuses[0]
     }
 }
 
@@ -51,11 +51,11 @@ impl ShellCore {
 
     pub fn jobtable_print_finish(&mut self) {
         for e in self.job_table.iter() {
-            if e.status != WaitStatus::StillAlive {
+            if e.leader_status() != WaitStatus::StillAlive {
                 eprintln!("Done {}", e.text);
             }
         }
 
-        self.job_table.retain(|e| e.status == WaitStatus::StillAlive);
+        self.job_table.retain(|e| e.leader_status() == WaitStatus::StillAlive);
     }
 }
