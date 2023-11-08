@@ -9,6 +9,7 @@ pub struct JobEntry {
     pids: Vec<Pid>,
     statuses: Vec<WaitStatus>,
     text: String,
+    change: bool,
 }
 
 impl JobEntry {
@@ -18,6 +19,7 @@ impl JobEntry {
             pids: pids.into_iter().flatten().collect(),
             statuses: vec![ WaitStatus::StillAlive; len ],
             text: text.to_string(),
+            change: false,
         }
     }
 }
