@@ -15,28 +15,27 @@ pub struct JobEntry {
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
     let waitflags = WaitPidFlag::WNOHANG 
-                  | WaitPidFlag::WUNTRACED;
-                  //| WaitPidFlag::WCONTINUED;
+                  | WaitPidFlag::WUNTRACED
+                  | WaitPidFlag::WCONTINUED;
 
     match waitpid(*pid, Some(waitflags)) {
-        Ok(s) => {
-                    if *status != s {
-                        *status = s;
-                        eprintln!("aaa {:?}", status);
-                        return;
-                    }
-                },
-        _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
-    }
-
-    /*
-    match waitpid(*pid, Some(WaitPidFlag::WNOHANG | WaitPidFlag::WCONTINUED)) {
+        Ok(WaitStatus::StillAlive) => {
+            if ! still(status) { //Stopped, ContinuedのときにStillAliveが来たら無視
+                *status = WaitStatus::StillAlive;
+            }
+        },
         Ok(s) => *status = s,
         _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
     }
+}
 
-    eprintln!("aaa {:?}", status);
-    */
+fn still(status: &WaitStatus) -> bool {
+    match &status {
+        WaitStatus::StillAlive 
+        | WaitStatus::Stopped(_,_)
+        | WaitStatus::Continued(_) => true,
+        _ => false,
+    }
 }
 
 impl JobEntry {
@@ -53,7 +52,7 @@ impl JobEntry {
     pub fn update_status(&mut self) {
         let before = self.statuses[0];
         for (status, pid) in self.statuses.iter_mut().zip(&self.pids) {
-            if status == &mut WaitStatus::StillAlive {
+            if still(status) {
                 wait_nonblock(pid, status);
             }
         }
@@ -62,7 +61,6 @@ impl JobEntry {
 
     pub fn print(&self) {
         eprintln!("{:?}     {}", &self.statuses[0], &self.text);
-
     }
 }
 
@@ -77,12 +75,8 @@ impl ShellCore {
         for e in self.job_table.iter_mut().filter(|e| e.change) {
             e.print();
             e.change = false;
-
-            if let WaitStatus::Exited(_,_) = e.statuses[0] {
-                e.pids.clear();
-            }
         }
 
-        self.job_table.retain(|e| e.pids.len() != 0);
+        self.job_table.retain(|e| still(&e.statuses[0]));
     }
 }
