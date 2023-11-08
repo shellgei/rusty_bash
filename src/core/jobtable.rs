@@ -37,8 +37,8 @@ impl JobEntry {
         }
     }
 
-    pub fn leader_status(&self) -> WaitStatus {
-        self.statuses[0]
+    pub fn is_still_alive(&self) -> bool {
+        self.statuses.iter().any(|s| *s == WaitStatus::StillAlive )
     }
 }
 
@@ -51,11 +51,11 @@ impl ShellCore {
 
     pub fn jobtable_print_finish(&mut self) {
         for e in self.job_table.iter() {
-            if e.leader_status() != WaitStatus::StillAlive {
+            if ! e.is_still_alive() {
                 eprintln!("Done {}", e.text);
             }
         }
 
-        self.job_table.retain(|e| e.leader_status() == WaitStatus::StillAlive);
+        self.job_table.retain(|e| e.is_still_alive());
     }
 }
