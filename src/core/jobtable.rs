@@ -14,16 +14,9 @@ pub struct JobEntry {
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
-    let waitflags = WaitPidFlag::WNOHANG 
-                  | WaitPidFlag::WUNTRACED
-                  | WaitPidFlag::WCONTINUED;
+    let waitflags = WaitPidFlag::WNOHANG;
 
     match waitpid(*pid, Some(waitflags)) {
-        Ok(WaitStatus::StillAlive) => {
-            if ! still(status) { //Stopped, ContinuedのときにStillAliveが来たら無視
-                *status = WaitStatus::StillAlive;
-            }
-        },
         Ok(s) => *status = s,
         _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
     }
@@ -31,9 +24,7 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
 
 fn still(status: &WaitStatus) -> bool {
     match &status {
-        WaitStatus::StillAlive 
-        | WaitStatus::Stopped(_,_)
-        | WaitStatus::Continued(_) => true,
+        WaitStatus::StillAlive => true,
         _ => false,
     }
 }
