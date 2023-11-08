@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
 use nix::unistd::Pid;
+use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
 
 #[derive(Debug)]
 pub struct JobEntry {
