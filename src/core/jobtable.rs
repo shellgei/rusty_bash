@@ -2,18 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use nix::unistd::Pid;
-
-#[derive(Debug, Clone)]
-enum JobStatus {
-    Running,
-    Finished,
-}
+use nix::sys::wait::WaitStatus;
 
 #[derive(Debug)]
 pub struct JobEntry {
     pids: Vec<Pid>,
-    pid_statuses: Vec<JobStatus>,
-    status: JobStatus,
+    pid_statuses: Vec<WaitStatus>,
+    status: WaitStatus,
     text: String,
 }
 
@@ -22,8 +17,8 @@ impl JobEntry {
         let len = pids.len();
         JobEntry {
             pids: pids.into_iter().flatten().collect(),
-            pid_statuses: vec![ JobStatus::Running; len ],
-            status: JobStatus::Running,
+            pid_statuses: vec![ WaitStatus::StillAlive; len ],
+            status: WaitStatus::StillAlive,
             text: text.to_string(),
         }
     }
