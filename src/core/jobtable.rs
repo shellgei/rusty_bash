@@ -14,10 +14,29 @@ pub struct JobEntry {
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
-    match waitpid(*pid, Some(WaitPidFlag::WNOHANG)) {
+    let waitflags = WaitPidFlag::WNOHANG 
+                  | WaitPidFlag::WUNTRACED;
+                  //| WaitPidFlag::WCONTINUED;
+
+    match waitpid(*pid, Some(waitflags)) {
+        Ok(s) => {
+                    if *status != s {
+                        *status = s;
+                        eprintln!("aaa {:?}", status);
+                        return;
+                    }
+                },
+        _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
+    }
+
+    /*
+    match waitpid(*pid, Some(WaitPidFlag::WNOHANG | WaitPidFlag::WCONTINUED)) {
         Ok(s) => *status = s,
         _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
     }
+
+    eprintln!("aaa {:?}", status);
+    */
 }
 
 impl JobEntry {
@@ -32,15 +51,18 @@ impl JobEntry {
     }
 
     pub fn update_status(&mut self) {
+        let before = self.statuses[0];
         for (status, pid) in self.statuses.iter_mut().zip(&self.pids) {
             if status == &mut WaitStatus::StillAlive {
                 wait_nonblock(pid, status);
             }
         }
+        self.change = before != self.statuses[0];
     }
 
-    pub fn is_still_alive(&self) -> bool {
-        self.statuses.iter().any(|s| *s == WaitStatus::StillAlive )
+    pub fn print(&self) {
+        eprintln!("{:?}     {}", &self.statuses[0], &self.text);
+
     }
 }
 
@@ -52,12 +74,15 @@ impl ShellCore {
     }
 
     pub fn jobtable_print_finish(&mut self) {
-        for e in self.job_table.iter() {
-            if ! e.is_still_alive() {
-                eprintln!("Done {}", e.text);
+        for e in self.job_table.iter_mut().filter(|e| e.change) {
+            e.print();
+            e.change = false;
+
+            if let WaitStatus::Exited(_,_) = e.statuses[0] {
+                e.pids.clear();
             }
         }
 
-        self.job_table.retain(|e| e.is_still_alive());
+        self.job_table.retain(|e| e.pids.len() != 0);
     }
 }
