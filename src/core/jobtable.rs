@@ -10,6 +10,7 @@ pub struct JobEntry {
     pids: Vec<Pid>,
     statuses: Vec<WaitStatus>,
     text: String,
+    change: bool,
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
@@ -26,6 +27,7 @@ impl JobEntry {
             pids: pids.into_iter().flatten().collect(),
             statuses: vec![ WaitStatus::StillAlive; len ],
             text: text.to_string(),
+            change: false,
         }
     }
 
