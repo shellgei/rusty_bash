@@ -14,9 +14,7 @@ pub struct JobEntry {
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
-    let waitflags = WaitPidFlag::WNOHANG;
-
-    match waitpid(*pid, Some(waitflags)) {
+    match waitpid(*pid, Some(WaitPidFlag::WNOHANG)) {
         Ok(s) => *status = s,
         _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
     }
