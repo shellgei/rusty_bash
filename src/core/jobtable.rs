@@ -14,15 +14,27 @@ pub struct JobEntry {
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
-    match waitpid(*pid, Some(WaitPidFlag::WNOHANG)) {
-        Ok(s) => *status = s,
+    let waitflags = WaitPidFlag::WNOHANG 
+                  | WaitPidFlag::WUNTRACED
+                  | WaitPidFlag::WCONTINUED;
+
+    match waitpid(*pid, Some(waitflags)) {
+        Ok(s) => {
+            if s == WaitStatus::StillAlive && still(status) {
+                return;
+            }
+
+            *status = s;
+        },
         _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
     }
 }
 
 fn still(status: &WaitStatus) -> bool {
     match &status {
-        WaitStatus::StillAlive => true,
+        WaitStatus::StillAlive    => true,
+        WaitStatus::Stopped(_, _) => true,
+        WaitStatus::Continued(__) => true,
         _ => false,
     }
 }
