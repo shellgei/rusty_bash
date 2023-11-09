@@ -45,7 +45,7 @@ impl JobEntry {
                 wait_nonblock(pid, status);
             }
         }
-        self.change = before != self.statuses[0];
+        self.change |= before != self.statuses[0];
     }
 
     pub fn print(&self) {
@@ -58,9 +58,10 @@ impl ShellCore {
         for e in self.job_table.iter_mut() {
             e.update_status();
         }
+        //dbg!("{:?}", &self.job_table);
     }
 
-    pub fn jobtable_print_finish(&mut self) {
+    pub fn jobtable_print_status_change(&mut self) {
         for e in self.job_table.iter_mut().filter(|e| e.change) {
             e.print();
             e.change = false;

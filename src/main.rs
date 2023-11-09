@@ -49,7 +49,7 @@ fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
         core.jobtable_check_status();
-        core.jobtable_print_finish();
+        core.jobtable_print_status_change();
         if ! feeder.feed_line(core) {
             if core.has_flag('i') {
                 input_interrupt_check(&mut feeder, core);
