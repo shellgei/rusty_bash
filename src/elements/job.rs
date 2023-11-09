@@ -50,6 +50,7 @@ impl Job {
         }else{
             vec![self.exec_fork_bg(core, pgid)]
         };
+        eprintln!("{}", &pids[0].unwrap().as_raw());
         core.job_table.push(JobEntry::new(pids, &self.text));
 
         core.tty_fd = backup;
