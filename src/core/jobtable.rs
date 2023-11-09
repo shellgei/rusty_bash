@@ -58,7 +58,6 @@ impl ShellCore {
         for e in self.job_table.iter_mut() {
             e.update_status();
         }
-        //dbg!("{:?}", &self.job_table);
     }
 
     pub fn jobtable_print_status_change(&mut self) {
