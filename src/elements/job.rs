@@ -46,10 +46,9 @@ impl Job {
 
         if self.pipelines.len() == 1 {
             if self.pipelines[0].commands.len() == 1 {
-                core.force_fork_flg = true;
+                self.pipelines[0].commands[0].set_force_fork();
             }
             self.pipelines[0].exec(core, pgid);
-            core.force_fork_flg = false;
         }else{
             self.exec_fork_bg(core, pgid);
         }

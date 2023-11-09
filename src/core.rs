@@ -23,7 +23,6 @@ pub struct ShellCore {
     pub input_interrupt: bool,
     pub is_subshell: bool,
     pub tty_fd: RawFd,
-    pub force_fork_flg: bool,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -55,7 +54,6 @@ impl ShellCore {
             input_interrupt: false,
             is_subshell: false,
             tty_fd: -1,
-            force_fork_flg: false,
         };
 
         core.set_initial_vars();

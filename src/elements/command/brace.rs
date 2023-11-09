@@ -11,6 +11,7 @@ pub struct BraceCommand {
     pub text: String,
     pub script: Option<Script>,
     pub redirects: Vec<Redirect>,
+    force_fork: bool,
 }
 
 impl Command for BraceCommand {
@@ -20,7 +21,7 @@ impl Command for BraceCommand {
             _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
         };
 
-        if pipe.is_connected() || core.force_fork_flg {
+        if self.force_fork || pipe.is_connected() {
             script.fork_exec(core, pipe, &mut self.redirects)
         }else{
             script.exec(core, &mut self.redirects);
@@ -29,6 +30,10 @@ impl Command for BraceCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn set_force_fork(&mut self) {
+        self.force_fork = true;
+    }
 }
 
 impl BraceCommand {
@@ -37,6 +42,7 @@ impl BraceCommand {
             text: String::new(),
             script: None,
             redirects: vec![],
+            force_fork: false,
         }
     }
 

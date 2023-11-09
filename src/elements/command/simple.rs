@@ -16,6 +16,7 @@ pub struct SimpleCommand {
     pub text: String,
     args: Vec<String>,
     redirects: Vec<Redirect>,
+    force_fork: bool,
 }
 
 impl Command for SimpleCommand {
@@ -23,7 +24,7 @@ impl Command for SimpleCommand {
         if self.args.len() == 0 {
             return None;
         }
-        if ! core.force_fork_flg && ! pipe.is_connected() 
+        if ! self.force_fork && ! pipe.is_connected() 
                 && core.builtins.contains_key(&self.args[0]) {
             self.nofork_exec(core);
             return None;
@@ -33,6 +34,10 @@ impl Command for SimpleCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn set_force_fork(&mut self) {
+        self.force_fork = true;
+    }
 }
 
 impl SimpleCommand {
@@ -95,6 +100,7 @@ impl SimpleCommand {
             text: String::new(),
             args: vec![],
             redirects: vec![],
+            force_fork: false,
         }
     }
  
