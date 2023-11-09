@@ -46,6 +46,9 @@ impl Job {
         core.tty_fd = -1;
 
         let pids = if self.pipelines.len() == 1 {
+            if self.pipelines[0].commands.len() == 1 {
+                self.pipelines[0].commands[0].set_force_fork();
+            }
             self.pipelines[0].exec(core, pgid)
         }else{
             vec![self.exec_fork_bg(core, pgid)]

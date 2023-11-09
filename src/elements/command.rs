@@ -24,6 +24,7 @@ impl Debug for dyn Command {
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid>;
     fn get_text(&self) -> String;
+    fn set_force_fork(&mut self);
 }
 
 pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {
