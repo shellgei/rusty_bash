@@ -20,8 +20,7 @@ impl Command for BraceCommand {
             _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
         };
 
-        if pipe.is_connected() || core.force_fork_flg {
-            core.force_fork_flg = false;
+        if pipe.is_connected() {
             script.fork_exec(core, pipe, &mut self.redirects)
         }else{
             script.exec(core, &mut self.redirects);

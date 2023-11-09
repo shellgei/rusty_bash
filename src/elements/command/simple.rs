@@ -23,13 +23,11 @@ impl Command for SimpleCommand {
         if self.args.len() == 0 {
             return None;
         }
-        if ! core.force_fork_flg && ! pipe.is_connected() 
-                && core.builtins.contains_key(&self.args[0]) {
+        if ! pipe.is_connected() && core.builtins.contains_key(&self.args[0]) {
             self.nofork_exec(core);
             return None;
         }
 
-        core.force_fork_flg = false;
         self.fork_exec(core, pipe)
     }
 
