@@ -10,7 +10,7 @@ use crate::core::ShellCore;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
-//use std::sync::Arc;
+use std::sync::Arc;
 //use std::sync::atomic::AtomicBool;
 use std::time;
 use std::thread;
@@ -36,26 +36,25 @@ fn main() {
     let mut core = ShellCore::new();
 
     /* https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6 */
-    //let term_now = Arc::new(AtomicBool::new(false));
-    let _t = thread::spawn(|| {
-        /*
-        while !term_now.load(Ordering::Relaxed)
-        {*/
-            let mut signals = Signals::new(vec![SIGCHLD]).expect("!");
-            loop {
-                thread::sleep(time::Duration::from_secs(1));
-                for signal in signals.pending() {
-                    match signal {
-                        SIGCHLD => {
-                            //core.jobtable_check_status();
-                            println!("\nGot SIGCHILD");
-                            //break 'outer;
-                        },
-                        _ => {}, 
-                    }
+    let jt = Arc::clone(&core.job_table);
+    thread::spawn(move || {
+        let mut signals = Signals::new(vec![SIGCHLD]).expect("!");
+        loop {
+            thread::sleep(time::Duration::from_secs(1));
+            for signal in signals.pending() {
+                match signal {
+                    SIGCHLD => {
+                        let mut mtx = jt.lock().unwrap();
+    for e in mtx.iter_mut() {
+        e.update_status();
+    }
+                        //println!("\nGot SIGCHILD");
+                        //break 'outer;
+                    },
+                    _ => {}, 
                 }
             }
-       // }
+        }
     });
 
     main_loop(&mut core);
