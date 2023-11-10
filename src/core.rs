@@ -15,6 +15,8 @@ use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
+use std::sync::Mutex;
+use std::sync::Arc;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -25,7 +27,7 @@ pub struct ShellCore {
     pub input_interrupt: bool,
     pub is_subshell: bool,
     pub tty_fd: RawFd,
-    pub job_table: Vec<JobEntry>,
+    pub job_table: Arc<Mutex<Vec<JobEntry>>>,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -57,7 +59,7 @@ impl ShellCore {
             input_interrupt: false,
             is_subshell: false,
             tty_fd: -1,
-            job_table: vec![],
+            job_table: Arc::new(Mutex::new(vec![])),
         };
 
         core.set_initial_vars();
@@ -174,6 +176,9 @@ impl ShellCore {
         self.is_subshell = true;
         self.set_pgid(pid, pgid);
         self.set_subshell_vars();
-        self.job_table.clear();
+
+        let jt = Arc::clone(&self.job_table);
+        let mut mtx = jt.lock().unwrap();
+        mtx.clear();
     }
 }

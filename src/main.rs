@@ -10,11 +10,11 @@ use crate::core::ShellCore;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
-use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
+//use std::sync::Arc;
+//use std::sync::atomic::AtomicBool;
 use std::time;
 use std::thread;
-use std::sync::atomic::Ordering;
+//use std::sync::atomic::Ordering;
 use signal_hook::consts::SIGCHLD;
 use signal_hook::iterator::Signals;
 

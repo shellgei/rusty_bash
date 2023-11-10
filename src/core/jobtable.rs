@@ -4,6 +4,7 @@
 use crate::ShellCore;
 use nix::unistd::Pid;
 use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct JobEntry {
@@ -67,17 +68,22 @@ impl JobEntry {
 
 impl ShellCore {
     pub fn jobtable_check_status(&mut self) {
-        for e in self.job_table.iter_mut() {
+        let jt = Arc::clone(&self.job_table);
+        let mut mtx = jt.lock().unwrap();
+        for e in mtx.iter_mut() {
             e.update_status();
         }
     }
 
     pub fn jobtable_print_status_change(&mut self) {
-        for e in self.job_table.iter_mut().filter(|e| e.change) {
+        let jt = Arc::clone(&self.job_table);
+        let mut mtx = jt.lock().unwrap();
+
+        for e in mtx.iter_mut().filter(|e| e.change) {
             e.print();
             e.change = false;
         }
 
-        self.job_table.retain(|e| still(&e.statuses[0]));
+        mtx.retain(|e| still(&e.statuses[0]));
     }
 }

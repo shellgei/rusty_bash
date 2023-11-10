@@ -6,6 +6,7 @@ use crate::{Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct Job {
@@ -55,7 +56,10 @@ impl Job {
             vec![self.exec_fork_bg(core, pgid)]
         };
         eprintln!("{}", &pids[0].unwrap().as_raw());
-        core.job_table.push(JobEntry::new(pids, &self.text));
+
+        let jt = Arc::clone(&core.job_table);
+        let mut mtx = jt.lock().unwrap();
+        mtx.push(JobEntry::new(pids, &self.text));
 
         core.tty_fd = backup;
     }
