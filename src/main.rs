@@ -49,18 +49,6 @@ fn run_childcare(core: &mut ShellCore) {
             thread::sleep(time::Duration::from_secs(1));
             for signal in signals.pending() {
                 check_signal(signal, &jt);
-                
-                /*
-                match signal {
-                    SIGCHLD => {
-                        let mut mtx = jt.lock().unwrap();
-                        for e in mtx.iter_mut() {
-                            e.update_status();
-                        }
-                    },
-                    _ => {}, 
-                }
-                */
             }
         }
     });

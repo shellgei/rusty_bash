@@ -178,7 +178,6 @@ impl ShellCore {
         self.set_subshell_vars();
 
         let jt = Arc::clone(&self.job_table);
-        let mut mtx = jt.lock().unwrap();
-        mtx.clear();
+        jt.lock().unwrap().clear();
     }
 }
