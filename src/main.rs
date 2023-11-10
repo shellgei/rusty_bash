@@ -10,6 +10,14 @@ use crate::core::ShellCore;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::time;
+use std::thread;
+use std::sync::atomic::Ordering;
+use signal_hook::consts::SIGCHLD;
+use signal_hook::iterator::Signals;
+
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");
     eprintln!("© 2023 Ryuichi Ueda");
@@ -25,12 +33,29 @@ fn main() {
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
-
-    /* Ignore Ctrl+C (Childlen will receive instead.) */
-//    ctrlc::set_handler(move || { })
-//    .expect("Unable to set the Ctrl+C handler.");
-
     let mut core = ShellCore::new();
+
+    /* https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6 */
+    let term_now = Arc::new(AtomicBool::new(false));
+    let _t = thread::spawn(move || {
+        while !term_now.load(Ordering::Relaxed)
+        {
+            let mut signals = Signals::new(vec![SIGCHLD]).expect("!");
+            loop {
+                thread::sleep(time::Duration::from_secs(1));
+                for signal in signals.pending() {
+                    match signal {
+                        SIGCHLD => {
+                            println!("\nGot SIGCHILD");
+                            //break 'outer;
+                        },
+                        _ => {}, 
+                    }
+                }
+            }
+        }
+    });
+
     main_loop(&mut core);
 }
 
