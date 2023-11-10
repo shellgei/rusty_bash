@@ -11,12 +11,11 @@ use crate::elements::script::Script;
 use crate::feeder::Feeder;
 
 use std::sync::Arc;
-//use std::sync::atomic::AtomicBool;
-use std::time;
-use std::thread;
-//use std::sync::atomic::Ordering;
+use std::{thread, time};
 use signal_hook::consts::SIGCHLD;
 use signal_hook::iterator::Signals;
+use crate::core::jobtable::JobEntry;
+use std::sync::Mutex;
 
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");
@@ -28,35 +27,52 @@ fn show_version() {
     process::exit(0);
 }
 
+fn check_signal(signal: i32, jt: &Arc<Mutex<Vec<JobEntry>>>) {
+    match signal {
+        SIGCHLD => {
+            let mut mtx = jt.lock().unwrap();
+            for e in mtx.iter_mut() {
+                e.update_status();
+            }
+        },
+        _ => {}, 
+    }
+}
+
+//thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6 
+fn run_childcare(core: &mut ShellCore) {
+    let jt = Arc::clone(&core.job_table); 
+    thread::spawn(move || { 
+        let mut signals = Signals::new(vec![SIGCHLD])
+                          .expect("sush(fatal): cannot prepare signal data");
+        loop {
+            thread::sleep(time::Duration::from_secs(1));
+            for signal in signals.pending() {
+                check_signal(signal, &jt);
+                
+                /*
+                match signal {
+                    SIGCHLD => {
+                        let mut mtx = jt.lock().unwrap();
+                        for e in mtx.iter_mut() {
+                            e.update_status();
+                        }
+                    },
+                    _ => {}, 
+                }
+                */
+            }
+        }
+    });
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
     let mut core = ShellCore::new();
-
-    /* https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6 */
-    let jt = Arc::clone(&core.job_table);
-    thread::spawn(move || {
-        let mut signals = Signals::new(vec![SIGCHLD]).expect("!");
-        loop {
-            thread::sleep(time::Duration::from_secs(1));
-            for signal in signals.pending() {
-                match signal {
-                    SIGCHLD => {
-                        let mut mtx = jt.lock().unwrap();
-    for e in mtx.iter_mut() {
-        e.update_status();
-    }
-                        //println!("\nGot SIGCHILD");
-                        //break 'outer;
-                    },
-                    _ => {}, 
-                }
-            }
-        }
-    });
-
+    run_childcare(&mut core);
     main_loop(&mut core);
 }
 

@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use nix::unistd::Pid;
 use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct JobEntry {
@@ -87,4 +87,3 @@ impl ShellCore {
         mtx.retain(|e| still(&e.statuses[0]));
     }
 }
-
