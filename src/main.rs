@@ -16,6 +16,7 @@ use signal_hook::consts::SIGCHLD;
 use signal_hook::iterator::Signals;
 use crate::core::jobtable::JobEntry;
 use std::sync::Mutex;
+use nix::unistd;
 
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");
@@ -41,10 +42,19 @@ fn check_signal(signal: i32, jt: &Arc<Mutex<Vec<JobEntry>>>) {
 
 //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6 
 fn run_childcare(core: &mut ShellCore) {
+    for fd in 3..10 { //use FD 3~9 to prevent signal-hool from using these FDs
+        unistd::dup2(2, fd).expect("sush(fatal): init error");
+    }
+
     let jt = Arc::clone(&core.job_table); 
     thread::spawn(move || { 
         let mut signals = Signals::new(vec![SIGCHLD])
                           .expect("sush(fatal): cannot prepare signal data");
+
+        for fd in 3..10 { // release FD 3~9
+            unistd::close(fd).expect("sush(fatal): init error");
+        }
+
         loop {
             thread::sleep(time::Duration::from_secs(1));
             for signal in signals.pending() {
@@ -60,7 +70,9 @@ fn main() {
         show_version();
     }
     let mut core = ShellCore::new();
+
     run_childcare(&mut core);
+
     main_loop(&mut core);
 }
 
