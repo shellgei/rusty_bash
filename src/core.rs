@@ -5,6 +5,7 @@ pub mod builtins;
 
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
+use nix::unistd;
 use nix::unistd::Pid;
 use std::collections::HashMap;
 use std::process;
