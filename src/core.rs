@@ -26,9 +26,8 @@ pub struct ShellCore {
 }
 
 fn is_interactive(pid: u32) -> bool {
-    let std_path = format!("/proc/{}/fd/0", pid);
-    match Path::new(&std_path).metadata() {
-        Ok(metadata) => metadata.st_mode() == 8592,
+    match unistd::isatty(0) {
+        Ok(result) => result, 
         Err(err) => panic!("{}", err),
     }
 }
