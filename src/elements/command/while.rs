@@ -17,7 +17,7 @@ pub struct WhileCommand {
 
 impl Command for WhileCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        None
+        self.nofork_exec(core, pipe)
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -28,6 +28,13 @@ impl Command for WhileCommand {
 }
 
 impl WhileCommand {
+    fn nofork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        self.condition.as_mut()
+            .expect("SUSH INTERNAL ERROR (no script)")
+            .exec(core, &mut vec![]);
+        None
+    }
+
     fn new() -> WhileCommand {
         WhileCommand {
             text: String::new(),
@@ -47,6 +54,7 @@ impl WhileCommand {
                 ans.text.push_str("do");
                 ans.text.push_str(&ans.inner.as_mut().unwrap().text.clone());
                 ans.text.push_str(&feeder.consume(4)); //done
+                //TODO: eat redirect
                 Some(ans)
             }else{
                 None
