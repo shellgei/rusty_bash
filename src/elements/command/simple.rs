@@ -103,6 +103,10 @@ impl SimpleCommand {
             force_fork: false,
         }
     }
+
+    fn ng_word_as_first(w: &str) -> bool {
+        w == "{" || w == "}" || w == "while" || w == "do" || w == "done"
+    }
  
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let arg_len = feeder.scanner_word(core);
@@ -111,7 +115,7 @@ impl SimpleCommand {
         }
  
         let word = feeder.consume(arg_len);
-        if ans.args.len() == 0 && ( word == "{" || word == "}") {
+        if ans.args.len() == 0 && Self::ng_word_as_first(&word) {
             return false;
         }
  

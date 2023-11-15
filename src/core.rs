@@ -12,7 +12,7 @@ use std::process;
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
 use nix::sys::signal::{Signal, SigHandler};
-use nix::sys::wait::WaitStatus;
+use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
 
@@ -89,7 +89,7 @@ impl ShellCore {
     }
 
     pub fn wait_process(&mut self, child: Pid) {
-        let exit_status = match wait::waitpid(child, None) {
+        let exit_status = match wait::waitpid(child, Some(WaitPidFlag::WUNTRACED)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
             },
