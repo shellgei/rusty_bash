@@ -102,6 +102,8 @@ impl Script {
             match begin.as_ref() {
                 "(" => Self::check_nest_end(feeder, &vec![")"], jobnum),
                 "{" => Self::check_nest_end(feeder, &vec!["}"], jobnum),
+                "while" => Self::check_nest_end(feeder, &vec!["do"], jobnum),
+                "do" => Self::check_nest_end(feeder, &vec!["done"], jobnum),
                 _ => Status::NormalEnd,
             }
         }else{
