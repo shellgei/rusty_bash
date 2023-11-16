@@ -77,8 +77,10 @@ impl Script {
         len != 0
     }
 
-    fn check_nest_end(feeder: &mut Feeder, ok_ends: &Vec<String>, jobnum: usize) -> Status {
-        if let Some(end) = ok_ends.iter().find(|e| feeder.starts_with(e)) {
+    fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
+        let nest = core.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
+
+        if let Some(end) = nest.1.iter().find(|e| feeder.starts_with(e)) {
             if jobnum == 0 {
                 return Status::UnexpectedSymbol(end.to_string());
             }
@@ -90,16 +92,11 @@ impl Script {
             return Status::UnexpectedSymbol(end.to_string());
         }
 
-        if ok_ends.len() == 0 {
+        if nest.1.len() == 0 {
             Status::NormalEnd
         }else{
             Status::NeedMoreLine
         }
-    }
-
-    fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
-        let nest = core.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
-        Self::check_nest_end(feeder, &nest.1, jobnum)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
