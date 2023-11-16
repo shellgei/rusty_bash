@@ -78,41 +78,26 @@ impl Script {
     }
 
     fn check_nest_end(feeder: &mut Feeder, nest_end: &Vec<String>, jobnum: usize) -> Option<Status> {
-        if let Some(end) = nest_end.iter().find(|e| feeder.starts_with(e)) {
-            if jobnum == 0 {
-                return Some(Status::UnexpectedSymbol(end.to_string()));
-            }else{
-                return Some(Status::NormalEnd);
-            }
+        match ( nest_end.iter().find(|e| feeder.starts_with(e)), jobnum ) {
+            ( Some(end), 0 ) => return Some(Status::UnexpectedSymbol(end.to_string())),
+            ( Some(_), _)    => return Some(Status::NormalEnd),
+            ( None, _)       => {}, 
         }
-        None
+
+        let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&"];
+        match ( ng_ends.iter().find(|e| feeder.starts_with(e)), nest_end.len() ) {
+            (Some(end), _) => return Some(Status::UnexpectedSymbol(end.to_string())),
+            (None, 0)      => return Some(Status::NormalEnd),
+            (None, _)      => return Some(Status::NeedMoreLine),
+        }
     }
 
     fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
         let nest = core.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
 
         match Self::check_nest_end(feeder, &nest.1, jobnum) {
-            Some(result) => return result,
-            None         => {}, 
-        }
-
-        /*
-        if let Some(end) = nest.1.iter().find(|e| feeder.starts_with(e)) {
-            if jobnum == 0 {
-                return Status::UnexpectedSymbol(end.to_string());
-            }
-            return Status::NormalEnd;
-        }*/
-
-        let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&"];
-        if let Some(end) = ng_ends.iter().find(|e| feeder.starts_with(e)) {
-            return Status::UnexpectedSymbol(end.to_string());
-        }
-
-        if nest.1.len() == 0 {
-            Status::NormalEnd
-        }else{
-            Status::NeedMoreLine
+            Some(res) => res,
+            None      => panic!("!"),
         }
     }
 
