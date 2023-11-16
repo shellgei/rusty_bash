@@ -313,4 +313,15 @@ res=$($com <<< 'echo a \
 [ "$res" == "a
 b" ] || err $LINENO
 
+### WHILE TEST ###
+
+rm -f /tmp/rusty_bash
+res=$($com <<< 'while [ -f /tmp/rusty_bash ] ; do echo exist ; done')
+[ "$res" == "" ] || err $LINENO
+
+touch /tmp/rusty_bash
+res=$($com <<< 'while [ -f /tmp/rusty_bash ] ; do echo exist ; rm /tmp/rusty_bash ; done')
+[ "$res" == "exist" ] || err $LINENO
+
+
 echo OK $0

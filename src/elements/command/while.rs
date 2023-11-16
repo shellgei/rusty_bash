@@ -29,9 +29,19 @@ impl Command for WhileCommand {
 
 impl WhileCommand {
     fn nofork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        self.condition.as_mut()
-            .expect("SUSH INTERNAL ERROR (no script)")
-            .exec(core, &mut vec![]);
+        loop {
+            self.condition.as_mut()
+                .expect("SUSH INTERNAL ERROR (no script)")
+                .exec(core, &mut vec![]);
+
+            if core.vars["?"] != "0" {
+                break;
+            }
+
+            self.inner.as_mut()
+                .expect("SUSH INTERNAL ERROR (no script)")
+                .exec(core, &mut vec![]);
+        }
         None
     }
 
