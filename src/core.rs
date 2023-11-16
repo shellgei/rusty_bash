@@ -53,7 +53,7 @@ impl ShellCore {
             flags: String::new(),
             vars: HashMap::new(),
             builtins: HashMap::new(),
-            nest: vec![],
+            nest: vec![("".to_string(), vec![])],
             input_interrupt: false,
             is_subshell: false,
             tty_fd: -1,

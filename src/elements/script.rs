@@ -101,7 +101,7 @@ impl Script {
         if let Some(begin) = core.nest.last() {
             Self::check_nest_end(feeder, &begin.1, jobnum)
         }else{
-            Self::check_nest_end(feeder, &vec![], jobnum)
+            panic!("SUSHI INTERNAL ERROR (empty nest)");
         }
     }
 
