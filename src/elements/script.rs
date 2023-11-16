@@ -98,11 +98,8 @@ impl Script {
     }
 
     fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
-        if let Some(begin) = core.nest.last() {
-            Self::check_nest_end(feeder, &begin.1, jobnum)
-        }else{
-            panic!("SUSHI INTERNAL ERROR (empty nest)");
-        }
+        let nest = core.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
+        Self::check_nest_end(feeder, &nest.1, jobnum)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
