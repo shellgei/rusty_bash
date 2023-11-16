@@ -77,30 +77,21 @@ impl Script {
         len != 0
     }
 
-    fn check_nest_end(feeder: &mut Feeder, nest_end: &Vec<String>, jobnum: usize) -> Status {
-        match ( nest_end.iter().find(|e| feeder.starts_with(e)), jobnum ) {
+    fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
+        let nest = core.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
+
+        match ( nest.1.iter().find(|e| feeder.starts_with(e)), jobnum ) {
             ( Some(end), 0 ) => return Status::UnexpectedSymbol(end.to_string()),
             ( Some(_), _)    => return Status::NormalEnd,
             ( None, _)       => {}, 
         }
 
         let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&"];
-        match ( ng_ends.iter().find(|e| feeder.starts_with(e)), nest_end.len() ) {
+        match ( ng_ends.iter().find(|e| feeder.starts_with(e)), nest.1.len() ) {
             (Some(end), _) => return Status::UnexpectedSymbol(end.to_string()),
             (None, 0)      => return Status::NormalEnd,
             (None, _)      => return Status::NeedMoreLine,
         }
-    }
-
-    fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
-        let nest = core.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
-        Self::check_nest_end(feeder, &nest.1, jobnum)
-
-            /*
-        match Self::check_nest_end(feeder, &nest.1, jobnum) {
-            Some(res) => res,
-            None      => panic!("!"),
-        }*/
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
