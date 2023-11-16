@@ -57,8 +57,8 @@ impl WhileCommand {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<WhileCommand> {
         let mut ans = Self::new();
-        if command::eat_inner_script(feeder, core, "while", &mut ans.condition)
-        && command::eat_inner_script(feeder, core, "do", &mut ans.inner) {
+        if command::eat_inner_script(feeder, core, "while", vec!["do"], &mut ans.condition)
+        && command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.inner) {
             ans.text.push_str("while");
             ans.text.push_str(&ans.condition.as_mut().unwrap().text.clone());
             ans.text.push_str("do");

@@ -36,7 +36,7 @@ impl ParenCommand {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
         let mut ans = Self::new();
-        if command::eat_inner_script(feeder, core, "(", &mut ans.script) {
+        if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script) {
             ans.text = "(".to_string() + &ans.script.as_mut().unwrap().text.clone() + &feeder.consume(1);
 
             loop {

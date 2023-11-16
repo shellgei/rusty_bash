@@ -77,7 +77,7 @@ impl Script {
         len != 0
     }
 
-    fn check_nest_end(feeder: &mut Feeder, ok_ends: &Vec<&str>, jobnum: usize) -> Status {
+    fn check_nest_end(feeder: &mut Feeder, ok_ends: &Vec<String>, jobnum: usize) -> Status {
         if let Some(end) = ok_ends.iter().find(|e| feeder.starts_with(e)) {
             if jobnum == 0 {
                 return Status::UnexpectedSymbol(end.to_string());
@@ -99,13 +99,7 @@ impl Script {
 
     fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
         if let Some(begin) = core.nest.last() {
-            match begin.as_ref() {
-                "(" => Self::check_nest_end(feeder, &vec![")"], jobnum),
-                "{" => Self::check_nest_end(feeder, &vec!["}"], jobnum),
-                "while" => Self::check_nest_end(feeder, &vec!["do"], jobnum),
-                "do" => Self::check_nest_end(feeder, &vec!["done"], jobnum),
-                _ => Status::NormalEnd,
-            }
+            Self::check_nest_end(feeder, &begin.1, jobnum)
         }else{
             Self::check_nest_end(feeder, &vec![], jobnum)
         }

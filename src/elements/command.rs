@@ -42,11 +42,11 @@ pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_tex
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
-                        left: &str, ans: &mut Option<Script>) -> bool {
+                        left: &str, right: Vec<&str>, ans: &mut Option<Script>) -> bool {
    if ! feeder.starts_with(left) {
        return false;
     }
-    core.nest.push(left.to_string());
+    core.nest.push( (left.to_string(), right.iter().map(|e| e.to_string()).collect()) );
     feeder.consume(left.len());
     *ans = Script::parse(feeder, core);
     core.nest.pop();

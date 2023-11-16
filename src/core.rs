@@ -21,7 +21,7 @@ pub struct ShellCore {
     pub flags: String,
     pub vars: HashMap<String, String>, 
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
-    pub nest: Vec<String>,
+    pub nest: Vec<(String, Vec<String>)>,
     pub input_interrupt: bool,
     pub is_subshell: bool,
     pub tty_fd: RawFd,
