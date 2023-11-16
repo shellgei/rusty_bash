@@ -30,10 +30,7 @@ impl Command for BraceCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-
-    fn set_force_fork(&mut self) {
-        self.force_fork = true;
-    }
+    fn set_force_fork(&mut self) { self.force_fork = true; }
 }
 
 impl BraceCommand {

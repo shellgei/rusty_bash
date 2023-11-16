@@ -323,5 +323,12 @@ touch /tmp/rusty_bash
 res=$($com <<< 'while [ -f /tmp/rusty_bash ] ; do echo exist ; rm /tmp/rusty_bash ; done')
 [ "$res" == "exist" ] || err $LINENO
 
+touch /tmp/rusty_bash
+res=$($com <<< 'while [ -f /tmp/rusty_bash ]
+do echo exist
+rm /tmp/rusty_bash
+done')
+[ "$res" == "exist" ] || err $LINENO
+
 
 echo OK $0
