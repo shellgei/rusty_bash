@@ -53,8 +53,7 @@ impl WhileCommand {
             if core.tty_fd >= 0 || ! core.is_subshell {
                 if let Ok(n) = unistd::read(core.tty_fd, &mut ch) {
                     let s = String::from_utf8(ch[..n].to_vec()).unwrap();
-                    eprintln!("stop: {}", &s);
-                    if s.starts_with("C") {
+                    if s == "" { //STOP with CTRL+D
                         break;
                     }
                 }
