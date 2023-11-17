@@ -6,6 +6,7 @@ use crate::elements::{command, io};
 use nix::unistd;
 use super::{Command, Pipe, Redirect};
 use nix::unistd::{ForkResult, Pid};
+use nix::fcntl;
 
 #[derive(Debug)]
 pub struct WhileCommand {
@@ -37,7 +38,15 @@ impl Command for WhileCommand {
 
 impl WhileCommand {
     fn nofork_exec(&mut self, core: &mut ShellCore) {
+        let mut ch = [0;1000];
+        fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NONBLOCK))
+                .expect("Can't allocate fd for backup");
+
         loop {
+            if let Ok(n) = unistd::read(core.tty_fd, &mut ch) {
+                eprintln!("yes: {}", String::from_utf8(ch[..n].to_vec()).unwrap());
+            }
+
             self.condition.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
                 .exec(core, &mut vec![]);
