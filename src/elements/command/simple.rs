@@ -104,7 +104,7 @@ impl SimpleCommand {
         }
     }
 
-    fn ng_word_as_first(w: &str) -> bool {
+    fn reserved(w: &str) -> bool {
         w == "{" || w == "}" || w == "while" || w == "do" || w == "done"
     }
  
@@ -115,7 +115,7 @@ impl SimpleCommand {
         }
  
         let word = feeder.consume(arg_len);
-        if ans.args.len() == 0 && Self::ng_word_as_first(&word) {
+        if ans.args.len() == 0 && Self::reserved(&word) {
             return false;
         }
  
