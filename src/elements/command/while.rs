@@ -39,16 +39,20 @@ impl Command for WhileCommand {
 impl WhileCommand {
     fn nofork_exec(&mut self, core: &mut ShellCore) {
         let mut ch = [0;16];
-        fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NDELAY))
+        if core.tty_fd >= 0 {
+            fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NDELAY))
                 .expect("Can't set nonblock");
+        }
 
         loop {
-            if let Ok(n) = unistd::read(core.tty_fd, &mut ch) {
-                let s= String::from_utf8(ch[..n].to_vec()).unwrap();
-                if s.len() > 0 && s.starts_with("C") {
-                    break;
+            if core.tty_fd >= 0 {
+                if let Ok(n) = unistd::read(core.tty_fd, &mut ch) {
+                    let s= String::from_utf8(ch[..n].to_vec()).unwrap();
+                    if s.len() > 0 && s.starts_with("C") {
+                        break;
+                    }
+                    //eprintln!("yes: {}", String::from_utf8(ch[..n].to_vec()).unwrap());
                 }
-                //eprintln!("yes: {}", String::from_utf8(ch[..n].to_vec()).unwrap());
             }
 
             self.condition.as_mut()
@@ -64,8 +68,10 @@ impl WhileCommand {
                 .exec(core, &mut vec![]);
         }
 
-        fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_SYNC))
-            .expect("Can't return from nonblock");
+        if core.tty_fd >= 0 {
+            fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_SYNC))
+                .expect("Can't return from nonblock");
+        }
     }
 
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
