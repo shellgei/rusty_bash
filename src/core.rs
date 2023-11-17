@@ -26,6 +26,7 @@ pub struct ShellCore {
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
+    pub in_loop: bool,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -61,6 +62,7 @@ impl ShellCore {
             is_subshell: false,
             tty_fd: -1,
             job_table: vec![],
+            in_loop: false,
         };
 
         core.set_initial_vars();
@@ -98,6 +100,9 @@ impl ShellCore {
             },
             Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
                 eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
+                if self.in_loop {
+                    self.input_interrupt = true;
+                }
                 128+signal as i32
             },
             Ok(unsupported) => {
