@@ -38,13 +38,17 @@ impl Command for WhileCommand {
 
 impl WhileCommand {
     fn nofork_exec(&mut self, core: &mut ShellCore) {
-        let mut ch = [0;1000];
-        fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NONBLOCK))
-                .expect("Can't allocate fd for backup");
+        let mut ch = [0;16];
+        fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NDELAY))
+                .expect("Can't set nonblock");
 
         loop {
             if let Ok(n) = unistd::read(core.tty_fd, &mut ch) {
-                eprintln!("yes: {}", String::from_utf8(ch[..n].to_vec()).unwrap());
+                let s= String::from_utf8(ch[..n].to_vec()).unwrap();
+                if s.len() > 0 && s.starts_with("C") {
+                    break;
+                }
+                //eprintln!("yes: {}", String::from_utf8(ch[..n].to_vec()).unwrap());
             }
 
             self.condition.as_mut()
@@ -59,6 +63,9 @@ impl WhileCommand {
                 .expect("SUSH INTERNAL ERROR (no script)")
                 .exec(core, &mut vec![]);
         }
+
+        fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_SYNC))
+            .expect("Can't return from nonblock");
     }
 
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
