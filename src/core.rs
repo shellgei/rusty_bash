@@ -48,6 +48,9 @@ fn restore_signal(sig: Signal) {
 
 impl ShellCore {
     pub fn new() -> ShellCore {
+        ignore_signal(Signal::SIGINT);
+        ignore_signal(Signal::SIGTERM);
+
         let mut core = ShellCore{
             history: Vec::new(),
             flags: String::new(),
@@ -171,6 +174,9 @@ impl ShellCore {
     }
 
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
+        restore_signal(Signal::SIGINT);
+        restore_signal(Signal::SIGTERM);
+
         self.is_subshell = true;
         self.set_pgid(pid, pgid);
         self.set_subshell_vars();
