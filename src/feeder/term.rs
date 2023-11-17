@@ -290,7 +290,12 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
     let mut writer = Writer::new(core.history.len(), left);
 
     for c in stdin().keys() {
-        match &c.as_ref().unwrap() {
+        let k = match c.as_ref() {
+            Ok(c) => c, 
+            Err(_) => continue,
+        };
+
+        match k {
             event::Key::Ctrl('a') => writer.move_cursor_to_head(),
             event::Key::Ctrl('b') => writer.move_cursor(-1),
             event::Key::Ctrl('c') => {

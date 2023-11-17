@@ -39,19 +39,19 @@ impl Command for WhileCommand {
 impl WhileCommand {
     fn nofork_exec(&mut self, core: &mut ShellCore) {
         let mut ch = [0;16];
-        if core.tty_fd >= 0 {
+        if core.tty_fd >= 0 || ! core.is_subshell {
             fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NDELAY))
                 .expect("Can't set nonblock");
         }
 
         loop {
-            if core.tty_fd >= 0 {
+            if core.tty_fd >= 0 || ! core.is_subshell {
                 if let Ok(n) = unistd::read(core.tty_fd, &mut ch) {
-                    let s= String::from_utf8(ch[..n].to_vec()).unwrap();
-                    if s.len() > 0 && s.starts_with("C") {
+                    let s = String::from_utf8(ch[..n].to_vec()).unwrap();
+                    eprintln!("stop: {}", &s);
+                    if s.starts_with("C") {
                         break;
                     }
-                    //eprintln!("yes: {}", String::from_utf8(ch[..n].to_vec()).unwrap());
                 }
             }
 
@@ -68,7 +68,7 @@ impl WhileCommand {
                 .exec(core, &mut vec![]);
         }
 
-        if core.tty_fd >= 0 {
+        if core.tty_fd >= 0 || ! core.is_subshell {
             fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_SYNC))
                 .expect("Can't return from nonblock");
         }
