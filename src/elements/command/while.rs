@@ -39,7 +39,7 @@ impl Command for WhileCommand {
 impl WhileCommand {
     fn nofork_exec(&mut self, core: &mut ShellCore) {
         let mut ch = [0;16];
-        if core.tty_fd >= 0 || ! core.is_subshell {
+        if core.tty_fd >= 0 && ! core.is_subshell {
             core.in_loop = true;
             fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NDELAY))
                 .expect("Can't set nonblock");
@@ -50,7 +50,7 @@ impl WhileCommand {
                 core.input_interrupt = false;
                 break;
             }
-            if core.tty_fd >= 0 || ! core.is_subshell {
+            if core.tty_fd >= 0 && ! core.is_subshell {
                 if let Ok(n) = unistd::read(core.tty_fd, &mut ch) {
                     let s = String::from_utf8(ch[..n].to_vec()).unwrap();
                     if s == "" { //STOP with CTRL+D
@@ -72,7 +72,7 @@ impl WhileCommand {
                 .exec(core, &mut vec![]);
         }
 
-        if core.tty_fd >= 0 || ! core.is_subshell {
+        if core.tty_fd >= 0 && ! core.is_subshell {
             fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_SYNC))
                 .expect("Can't return from nonblock");
             core.in_loop = false;
