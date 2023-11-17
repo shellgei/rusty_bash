@@ -26,10 +26,6 @@ fn main() {
         show_version();
     }
 
-    /* Ignore Ctrl+C (Childlen will receive instead.) */
-//    ctrlc::set_handler(move || { })
-//    .expect("Unable to set the Ctrl+C handler.");
-
     let mut core = ShellCore::new();
     main_loop(&mut core);
 }
