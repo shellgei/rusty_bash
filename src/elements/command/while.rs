@@ -64,6 +64,7 @@ impl WhileCommand {
                 if let Ok(n) = unistd::read(core.tty_fd, &mut ch) {
                     let s = String::from_utf8(ch[..n].to_vec()).unwrap();
                     if s == "" { //STOP with CTRL+D
+                        eprintln!("^C");
                         break;
                     }
                 }
