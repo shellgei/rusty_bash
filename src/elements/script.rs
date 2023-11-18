@@ -8,6 +8,10 @@ use nix::unistd::{ForkResult, Pid};
 use super::{io, Pipe};
 use super::io::redirect::Redirect;
 
+use nix::sys::termios;
+use nix::sys::termios::SetArg::TCSAFLUSH;
+use nix::sys::termios::SpecialCharacterIndices;
+
 enum Status{
     UnexpectedSymbol(String),
     NeedMoreLine,
@@ -45,6 +49,14 @@ impl Script {
             Ok(ForkResult::Parent { child } ) => {
                 core.set_pgid(child, pipe.pgid);
                 pipe.parent_close();
+
+                if core.tty_fd >= 0 && ! core.is_subshell {
+                    let mut term = termios::tcgetattr(core.tty_fd).expect("!");
+                    term.control_chars[SpecialCharacterIndices::VEOF as usize ] = 4; 
+                    term.control_chars[SpecialCharacterIndices::VINTR as usize] = 3;
+                    termios::tcsetattr(core.tty_fd, TCSAFLUSH, &term).expect("!");
+                }
+
                 Some(child) //   core.wait_process(child);
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),

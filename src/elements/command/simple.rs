@@ -69,12 +69,12 @@ impl SimpleCommand {
                 core.set_pgid(child, pipe.pgid);
                 pipe.parent_close();
 
-        if core.tty_fd >= 0 && ! core.is_subshell {
-            let mut term = termios::tcgetattr(core.tty_fd).expect("!");
-            term.control_chars[SpecialCharacterIndices::VEOF as usize ] = 4; 
-            term.control_chars[SpecialCharacterIndices::VINTR as usize] = 3;
-            termios::tcsetattr(core.tty_fd, TCSAFLUSH, &term).expect("!");
-                }
+            if core.tty_fd >= 0 && ! core.is_subshell {
+                let mut term = termios::tcgetattr(core.tty_fd).expect("!");
+                term.control_chars[SpecialCharacterIndices::VEOF as usize ] = 4; 
+                term.control_chars[SpecialCharacterIndices::VINTR as usize] = 3;
+                termios::tcsetattr(core.tty_fd, TCSAFLUSH, &term).expect("!");
+            }
 
                 Some(child)
             },
