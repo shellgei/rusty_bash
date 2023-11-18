@@ -70,6 +70,8 @@ impl WhileCommand {
                 }
             }
 
+            fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_SYNC))
+                .expect("Can't set block");
             self.condition.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
                 .exec(core, &mut vec![]);
@@ -81,6 +83,9 @@ impl WhileCommand {
             self.inner.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
                 .exec(core, &mut vec![]);
+
+            fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NDELAY))
+                .expect("Can't set nonblock");
         }
 
         if core.tty_fd >= 0 && ! core.is_subshell {
