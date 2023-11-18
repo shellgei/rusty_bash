@@ -5,6 +5,9 @@ use crate::{ShellCore, Feeder, Script};
 use crate::elements::{command, io};
 use nix::unistd;
 use super::{Command, Pipe, Redirect};
+use nix::sys::termios;
+use nix::sys::termios::SetArg::TCSAFLUSH;
+use nix::sys::termios::SpecialCharacterIndices;
 use nix::unistd::{ForkResult, Pid};
 use nix::fcntl;
 
@@ -43,7 +46,14 @@ impl WhileCommand {
             core.in_loop = true;
             fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_NDELAY))
                 .expect("Can't set nonblock");
+
+            let mut term = termios::tcgetattr(core.tty_fd).expect("!");
+            term.control_chars[SpecialCharacterIndices::VINTR as usize] = termios::_POSIX_VDISABLE;
+            term.control_chars[SpecialCharacterIndices::VEOF as usize ] = 3; 
+            termios::tcsetattr(core.tty_fd, TCSAFLUSH, &term).expect("!");
         }
+
+
 
         loop {
             if core.input_interrupt {
@@ -73,6 +83,11 @@ impl WhileCommand {
         }
 
         if core.tty_fd >= 0 && ! core.is_subshell {
+            let mut term = termios::tcgetattr(core.tty_fd).expect("!");
+            term.control_chars[SpecialCharacterIndices::VEOF as usize ] = 4; 
+            term.control_chars[SpecialCharacterIndices::VINTR as usize] = 3;
+            termios::tcsetattr(core.tty_fd, TCSAFLUSH, &term).expect("!");
+
             fcntl::fcntl(core.tty_fd, nix::fcntl::F_SETFL(nix::fcntl::OFlag::O_SYNC))
                 .expect("Can't return from nonblock");
             core.in_loop = false;

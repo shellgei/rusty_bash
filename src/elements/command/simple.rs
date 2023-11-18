@@ -11,6 +11,10 @@ use std::process;
 use nix::unistd::{ForkResult, Pid};
 use nix::errno::Errno;
 
+use nix::sys::termios;
+use nix::sys::termios::SetArg::TCSAFLUSH;
+use nix::sys::termios::SpecialCharacterIndices;
+
 #[derive(Debug)]
 pub struct SimpleCommand {
     pub text: String,
@@ -64,6 +68,14 @@ impl SimpleCommand {
             Ok(ForkResult::Parent { child } ) => {
                 core.set_pgid(child, pipe.pgid);
                 pipe.parent_close();
+
+        if core.tty_fd >= 0 && ! core.is_subshell {
+            let mut term = termios::tcgetattr(core.tty_fd).expect("!");
+            term.control_chars[SpecialCharacterIndices::VEOF as usize ] = 4; 
+            term.control_chars[SpecialCharacterIndices::VINTR as usize] = 3;
+            termios::tcsetattr(core.tty_fd, TCSAFLUSH, &term).expect("!");
+                }
+
                 Some(child)
             },
             Err(err) => panic!("Failed to fork. {}", err),
