@@ -77,35 +77,20 @@ impl Script {
         len != 0
     }
 
-    fn check_nest_end(feeder: &mut Feeder, ok_ends: &Vec<&str>, jobnum: usize) -> Status {
-        if let Some(end) = ok_ends.iter().find(|e| feeder.starts_with(e)) {
-            if jobnum == 0 {
-                return Status::UnexpectedSymbol(end.to_string());
-            }
-            return Status::NormalEnd;
-        }
-
-        let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done", "||", "&&", "|", "&"];
-        if let Some(end) = ng_ends.iter().find(|e| feeder.starts_with(e)) {
-            return Status::UnexpectedSymbol(end.to_string());
-        }
-
-        if ok_ends.len() == 0 {
-            Status::NormalEnd
-        }else{
-            Status::NeedMoreLine
-        }
-    }
-
     fn check_nest(feeder: &mut Feeder, core: &mut ShellCore, jobnum: usize) -> Status {
-        if let Some(begin) = core.nest.last() {
-            match begin.as_ref() {
-                "(" => Self::check_nest_end(feeder, &vec![")"], jobnum),
-                "{" => Self::check_nest_end(feeder, &vec!["}"], jobnum),
-                _ => Status::NormalEnd,
-            }
-        }else{
-            Self::check_nest_end(feeder, &vec![], jobnum)
+        let nest = core.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
+
+        match ( nest.1.iter().find(|e| feeder.starts_with(e)), jobnum ) {
+            ( Some(end), 0 ) => return Status::UnexpectedSymbol(end.to_string()),
+            ( Some(_), _)    => return Status::NormalEnd,
+            ( None, _)       => {}, 
+        }
+
+        let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&"];
+        match ( ng_ends.iter().find(|e| feeder.starts_with(e)), nest.1.len() ) {
+            (Some(end), _) => return Status::UnexpectedSymbol(end.to_string()),
+            (None, 0)      => return Status::NormalEnd,
+            (None, _)      => return Status::NeedMoreLine,
         }
     }
 
