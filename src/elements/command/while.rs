@@ -17,7 +17,7 @@ pub struct WhileCommand {
 }
 
 impl Command for WhileCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> {
         None
     }
 
@@ -26,7 +26,7 @@ impl Command for WhileCommand {
 }
 
 impl WhileCommand {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<WhileCommand> {
+    pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<WhileCommand> {
         None
     }
 }
