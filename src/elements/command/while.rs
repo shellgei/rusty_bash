@@ -10,8 +10,8 @@ use nix::unistd::Pid;
 #[derive(Debug)]
 pub struct WhileCommand {
     pub text: String,
-    pub condition: Option<Script>,
-    pub inner: Option<Script>,
+    pub while_script: Option<Script>,
+    pub do_script: Option<Script>,
     pub redirects: Vec<Redirect>,
     force_fork: bool,
 }
