@@ -10,8 +10,8 @@ use nix::unistd::Pid;
 #[derive(Debug)]
 pub struct WhileCommand {
     pub text: String,
-    pub condition: Option<Script>,
-    pub inner: Option<Script>,
+    pub while_script: Option<Script>,
+    pub do_script: Option<Script>,
     pub redirects: Vec<Redirect>,
     force_fork: bool,
 }
@@ -26,6 +26,16 @@ impl Command for WhileCommand {
 }
 
 impl WhileCommand {
+    fn new() -> WhileCommand {
+        WhileCommand {
+            text: String::new(),
+            while_script: None,
+            do_script: None,
+            redirects: vec![],
+            force_fork: false,
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<WhileCommand> {
         None
     }
