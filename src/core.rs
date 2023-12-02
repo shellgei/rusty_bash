@@ -21,7 +21,7 @@ pub struct ShellCore {
 
 fn is_interactive() -> bool {
     match unistd::isatty(0) {
-        Ok(result) => result, 
+        Ok(result) => result,
         Err(err) => panic!("{}", err),
     }
 }
