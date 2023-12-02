@@ -5,11 +5,10 @@ pub mod builtins;
 
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
+use nix::unistd;
 use nix::unistd::Pid;
 use std::collections::HashMap;
 use std::process;
-use std::os::linux::fs::MetadataExt;
-use std::path::Path;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -20,10 +19,9 @@ pub struct ShellCore {
     pub input_interrupt: bool,
 }
 
-fn is_interactive(pid: u32) -> bool {
-    let std_path = format!("/proc/{}/fd/0", pid);
-    match Path::new(&std_path).metadata() {
-        Ok(metadata) => metadata.st_mode() == 8592,
+fn is_interactive() -> bool {
+    match unistd::isatty(0) {
+        Ok(result) => result,
         Err(err) => panic!("{}", err),
     }
 }
@@ -40,7 +38,7 @@ impl ShellCore {
         };
 
         let pid = process::id();
-        if is_interactive(pid) {
+        if is_interactive() {
             core.flags += "i";
         }
         core.vars.insert("$".to_string(), pid.to_string());
