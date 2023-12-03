@@ -11,6 +11,13 @@ use std::process;
 use nix::unistd::{ForkResult, Pid};
 use nix::errno::Errno;
 
+fn reserved(w: &str) -> bool {
+    match w {
+        "{" | "}" | "while" | "do" | "done" => true,
+        _ => false,
+    }
+}
+
 #[derive(Debug)]
 pub struct SimpleCommand {
     pub text: String,
@@ -111,7 +118,7 @@ impl SimpleCommand {
         }
  
         let word = feeder.consume(arg_len);
-        if ans.args.len() == 0 && ( word == "{" || word == "}") {
+        if ans.args.len() == 0 && reserved(&word) {
             return false;
         }
  
