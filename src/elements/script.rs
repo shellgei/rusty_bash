@@ -3,10 +3,6 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
-use nix::unistd;
-use nix::unistd::{ForkResult, Pid};
-use super::{io, Pipe};
-use super::io::redirect::Redirect;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -25,24 +21,6 @@ impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
             job.exec(core, end == "&");
-        }
-    }
-
-    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe,
-                     redirects: &mut Vec<Redirect>) -> Option<Pid> {
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
-                core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
-                io::connect(pipe, redirects);
-                self.exec(core);
-                core.exit()
-            },
-            Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, pipe.pgid);
-                pipe.parent_close();
-                Some(child) //   core.wait_process(child);
-            },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
 

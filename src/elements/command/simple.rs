@@ -3,12 +3,12 @@
 
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
-use crate::elements::{command, io};
+use crate::elements::command;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
 
-use nix::unistd::{ForkResult, Pid};
+use nix::unistd::Pid;
 use nix::errno::Errno;
 
 #[derive(Debug)]
@@ -35,7 +35,7 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn fork_exec2(&mut self, core: &mut ShellCore) {
+    fn fork_exec(&mut self, core: &mut ShellCore) {
         if core.run_builtin(&mut self.args) {
             core.exit()
         }else{
@@ -43,6 +43,7 @@ impl Command for SimpleCommand {
         }
     }
 
+    /*
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
@@ -62,6 +63,7 @@ impl Command for SimpleCommand {
             Err(err) => panic!("Failed to fork. {}", err),
         }
     }
+    */
 
     fn nofork_exec(&mut self, core: &mut ShellCore) {
         core.run_builtin(&mut self.args);
