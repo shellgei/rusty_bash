@@ -27,7 +27,7 @@ pub trait Command {
     fn exec_in_fork(&mut self, _: &mut ShellCore);
     fn exec_in_nofork(&mut self, _: &mut ShellCore);
 
-    fn fork_exec_with_redirects(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
@@ -44,7 +44,7 @@ pub trait Command {
         }
     }
 
-    fn nofork_exec_with_redirects(&mut self, core: &mut ShellCore) {
+    fn nofork_exec(&mut self, core: &mut ShellCore) {
         if self.get_redirects().iter_mut().all(|r| r.connect(true)){
             self.exec_in_nofork(core);
         }else{

@@ -15,7 +15,7 @@ pub struct ParenCommand {
 
 impl Command for ParenCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        self.fork_exec_with_redirects(core, pipe)
+        self.fork_exec(core, pipe)
     }
 
     fn exec_in_fork(&mut self, core: &mut ShellCore) {

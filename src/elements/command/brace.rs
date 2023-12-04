@@ -17,9 +17,9 @@ pub struct BraceCommand {
 impl Command for BraceCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if self.force_fork || pipe.is_connected() {
-            self.fork_exec_with_redirects(core, pipe)
+            self.fork_exec(core, pipe)
         }else{
-            self.nofork_exec_with_redirects(core);
+            self.nofork_exec(core);
             None
         }
     }
