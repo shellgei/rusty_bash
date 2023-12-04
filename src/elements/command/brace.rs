@@ -9,8 +9,8 @@ use nix::unistd::Pid;
 #[derive(Debug)]
 pub struct BraceCommand {
     pub text: String,
-    pub script: Option<Script>,
-    pub redirects: Vec<Redirect>,
+    script: Option<Script>,
+    redirects: Vec<Redirect>,
     force_fork: bool,
 }
 
