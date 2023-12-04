@@ -38,7 +38,7 @@ pub trait Command {
             Ok(ForkResult::Parent { child } ) => {
                 core.set_pgid(child, pipe.pgid);
                 pipe.parent_close();
-                Some(child) //   core.wait_process(child);
+                Some(child)
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
