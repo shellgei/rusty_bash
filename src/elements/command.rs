@@ -25,7 +25,7 @@ impl Debug for dyn Command {
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid>;
     fn fork_exec(&mut self, _: &mut ShellCore);
-    fn nofork_exec(&mut self, _: &mut ShellCore) {}
+    fn nofork_exec(&mut self, _: &mut ShellCore);
 
     fn fork_exec_with_redirects(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
