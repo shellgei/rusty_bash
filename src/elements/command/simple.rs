@@ -35,7 +35,7 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn main_process_after_fork(&mut self, core: &mut ShellCore) {
+    fn command_after_fork(&mut self, core: &mut ShellCore) {
         if core.run_builtin(&mut self.args) {
             core.exit()
         }else{
@@ -43,7 +43,7 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn main_process_without_fork(&mut self, core: &mut ShellCore) {
+    fn command_without_fork(&mut self, core: &mut ShellCore) {
         core.run_builtin(&mut self.args);
     }
 
