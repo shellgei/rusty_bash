@@ -53,7 +53,7 @@ impl WhileCommand {
                     break;
                 }
             }
-
+            dbg!("{:?}", &ans);
             Some(ans)
         }else{
             None
