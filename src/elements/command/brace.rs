@@ -19,8 +19,7 @@ impl Command for BraceCommand {
         if self.force_fork || pipe.is_connected() {
             self.fork_exec(core, pipe)
         }else{
-            let mut reds = self.redirects.to_vec();
-            self.nofork_exec_with_redirects(core, &mut reds);
+            self.nofork_exec_with_redirects(core);
             None
         }
     }
@@ -40,11 +39,8 @@ impl Command for BraceCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-
-    fn set_force_fork(&mut self) {
-        self.force_fork = true;
-    }
-
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn set_force_fork(&mut self) { self.force_fork = true; }
 }
 
 impl BraceCommand {

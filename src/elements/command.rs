@@ -26,16 +26,17 @@ pub trait Command {
     fn fork_exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> { None }
     fn nofork_exec(&mut self, _: &mut ShellCore) {}
 
-    fn nofork_exec_with_redirects(&mut self, core: &mut ShellCore, redirects: &mut Vec<Redirect>) {
-        if redirects.iter_mut().all(|r| r.connect(true)){
+    fn nofork_exec_with_redirects(&mut self, core: &mut ShellCore) {
+        if self.get_redirects().iter_mut().all(|r| r.connect(true)){
             self.nofork_exec(core);
         }else{
             core.vars.insert("?".to_string(), "1".to_string());
         }
-        redirects.iter_mut().rev().for_each(|r| r.restore());
+        self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
     }
 
     fn get_text(&self) -> String;
+    fn get_redirects(&mut self) -> &mut Vec<Redirect>;
     fn set_force_fork(&mut self);
 }
 

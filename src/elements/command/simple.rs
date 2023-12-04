@@ -26,7 +26,7 @@ impl Command for SimpleCommand {
         }
         if ! self.force_fork && ! pipe.is_connected() 
                 && core.builtins.contains_key(&self.args[0]) {
-            self.nofork_exec_with_redirects(core, &mut self.redirects.to_vec());
+            self.nofork_exec_with_redirects(core);
             return None;
         }
 
@@ -58,10 +58,8 @@ impl Command for SimpleCommand {
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-
-    fn set_force_fork(&mut self) {
-        self.force_fork = true;
-    }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn set_force_fork(&mut self) { self.force_fork = true; }
 }
 
 impl SimpleCommand {
