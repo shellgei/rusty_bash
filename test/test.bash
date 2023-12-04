@@ -313,4 +313,12 @@ res=$($com <<< 'echo a \
 [ "$res" == "a
 b" ] || err $LINENO
 
+### WHILE TEST ###
+
+res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
+[ "$res" == "wait" ] || err $LINENO
+
+res=$($com <<< 'rm -f /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
+[ "$res" == "" ] || err $LINENO
+
 echo OK $0

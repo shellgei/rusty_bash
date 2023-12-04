@@ -18,7 +18,14 @@ pub struct WhileCommand {
 }
 
 impl Command for WhileCommand {
-    fn exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, core: &mut ShellCore, _: &mut Pipe) -> Option<Pid> {
+        if self.redirects.iter_mut().all(|r| r.connect(true)){
+            self.nofork_exec(core);
+        }else{
+            core.vars.insert("?".to_string(), "1".to_string());
+        }
+        self.redirects.iter_mut().rev().for_each(|r| r.restore());
+
         None
     }
 
@@ -27,6 +34,22 @@ impl Command for WhileCommand {
 }
 
 impl WhileCommand {
+    fn nofork_exec(&mut self, core: &mut ShellCore) {
+        loop {
+            self.while_script.as_mut()
+                .expect("SUSH INTERNAL ERROR (no script)")
+                .exec(core, &mut vec![]);
+
+            if core.vars["?"] != "0" {
+                break;
+            }
+
+            self.do_script.as_mut()
+                .expect("SUSH INTERNAL ERROR (no script)")
+                .exec(core, &mut vec![]);
+        }
+    }
+
     fn new() -> WhileCommand {
         WhileCommand {
             text: String::new(),
@@ -53,7 +76,7 @@ impl WhileCommand {
                     break;
                 }
             }
-            dbg!("{:?}", &ans);
+            //dbg!("{:?}", &ans);
             Some(ans)
         }else{
             None
