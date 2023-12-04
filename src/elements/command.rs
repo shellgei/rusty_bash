@@ -24,15 +24,15 @@ impl Debug for dyn Command {
 
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid>;
-    fn fork_exec(&mut self, _: &mut ShellCore);
-    fn nofork_exec(&mut self, _: &mut ShellCore);
+    fn exec_in_fork(&mut self, _: &mut ShellCore);
+    fn exec_in_nofork(&mut self, _: &mut ShellCore);
 
     fn fork_exec_with_redirects(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects());
-                self.fork_exec(core);
+                self.exec_in_fork(core);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
@@ -46,7 +46,7 @@ pub trait Command {
 
     fn nofork_exec_with_redirects(&mut self, core: &mut ShellCore) {
         if self.get_redirects().iter_mut().all(|r| r.connect(true)){
-            self.nofork_exec(core);
+            self.exec_in_nofork(core);
         }else{
             core.vars.insert("?".to_string(), "1".to_string());
         }

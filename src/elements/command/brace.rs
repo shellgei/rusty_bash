@@ -24,14 +24,14 @@ impl Command for BraceCommand {
         }
     }
 
-    fn fork_exec(&mut self, core: &mut ShellCore) {
+    fn exec_in_fork(&mut self, core: &mut ShellCore) {
         match self.script {
             Some(ref mut s) => s.exec(core),
             _ => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
         }
     }
 
-    fn nofork_exec(&mut self, core: &mut ShellCore){
+    fn exec_in_nofork(&mut self, core: &mut ShellCore){
         match self.script {
             Some(ref mut s) => s.exec(core),
             _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
