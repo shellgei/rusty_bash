@@ -23,6 +23,7 @@ impl Command for ParenCommand {
 
     fn get_text(&self) -> String { self.text.clone() }
     fn set_force_fork(&mut self) { }
+    fn nofork_exec(&mut self, _: &mut ShellCore) {}
 }
 
 impl ParenCommand {

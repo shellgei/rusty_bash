@@ -26,7 +26,7 @@ impl Command for SimpleCommand {
         }
         if ! self.force_fork && ! pipe.is_connected() 
                 && core.builtins.contains_key(&self.args[0]) {
-            self.nofork_exec(core);
+            self.nofork_exec_with_redirects(core, &mut self.redirects.to_vec());
             return None;
         }
 
@@ -38,18 +38,13 @@ impl Command for SimpleCommand {
     fn set_force_fork(&mut self) {
         self.force_fork = true;
     }
+
+    fn nofork_exec(&mut self, core: &mut ShellCore) {
+        core.run_builtin(&mut self.args);
+    }
 }
 
 impl SimpleCommand {
-    fn nofork_exec(&mut self, core: &mut ShellCore) {
-        if self.redirects.iter_mut().all(|r| r.connect(true)){
-            core.run_builtin(&mut self.args);
-        }else{
-            core.vars.insert("?".to_string(), "1".to_string());
-        }
-        self.redirects.iter_mut().rev().for_each(|r| r.restore());
-    }
-
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {

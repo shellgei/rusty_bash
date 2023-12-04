@@ -16,16 +16,32 @@ pub struct BraceCommand {
 
 impl Command for BraceCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        /*
         let script = match self.script {
             Some(ref mut s) => s,
             _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
-        };
+        };*/
 
         if self.force_fork || pipe.is_connected() {
-            script.fork_exec(core, pipe, &mut self.redirects)
+            self.fork_exec(core, pipe)
         }else{
-            script.exec(core, &mut self.redirects);
+            let mut reds = self.redirects.to_vec();
+            self.nofork_exec_with_redirects(core, &mut reds);
             None
+        }
+    }
+
+    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        match self.script {
+            Some(ref mut s) => s.fork_exec(core, pipe, &mut self.redirects),
+            _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
+        }
+    }
+
+    fn nofork_exec(&mut self, core: &mut ShellCore){
+        match self.script {
+            Some(ref mut s) => s.exec(core),
+            _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
         }
     }
 
@@ -34,6 +50,7 @@ impl Command for BraceCommand {
     fn set_force_fork(&mut self) {
         self.force_fork = true;
     }
+
 }
 
 impl BraceCommand {

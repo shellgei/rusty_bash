@@ -7,7 +7,7 @@ use std::io::Error;
 use crate::elements::io;
 use crate::{Feeder, ShellCore};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Redirect {
     pub text: String,
     pub symbol: String,

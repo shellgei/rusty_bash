@@ -22,24 +22,19 @@ pub struct Script {
 }
 
 impl Script {
-    pub fn exec(&mut self, core: &mut ShellCore, redirects: &mut Vec<Redirect>) {
-        if redirects.iter_mut().all(|r| r.connect(true)){
-            for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
-                job.exec(core, end == "&");
-            }
-        }else{
-            core.vars.insert("?".to_string(), "1".to_string());
+    pub fn exec(&mut self, core: &mut ShellCore) {
+        for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
+            job.exec(core, end == "&");
         }
-        redirects.iter_mut().rev().for_each(|r| r.restore());
     }
 
-    pub fn fork_exec(&mut self, core: &mut ShellCore,pipe: &mut Pipe,
+    pub fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe,
                      redirects: &mut Vec<Redirect>) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, redirects);
-                self.exec(core, &mut vec![]);
+                self.exec(core);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
