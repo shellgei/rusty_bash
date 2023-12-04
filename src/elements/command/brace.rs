@@ -31,13 +31,6 @@ impl Command for BraceCommand {
         }
     }
 
-    fn exec_in_nofork(&mut self, core: &mut ShellCore){
-        match self.script {
-            Some(ref mut s) => s.exec(core),
-            _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
-        }
-    }
-
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
