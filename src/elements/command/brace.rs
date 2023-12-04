@@ -24,7 +24,7 @@ impl Command for BraceCommand {
         }
     }
 
-    fn main_process_after_fork(&mut self, core: &mut ShellCore) {
+    fn main_process(&mut self, core: &mut ShellCore) {
         match self.script {
             Some(ref mut s) => s.exec(core),
             _ => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),

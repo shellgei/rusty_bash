@@ -51,10 +51,14 @@ pub trait Command {
         self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
     }
 
-    fn main_process_after_fork(&mut self, _: &mut ShellCore);
+    fn main_process(&mut self, _: &mut ShellCore) {}
+
+    fn main_process_after_fork(&mut self, core: &mut ShellCore) {
+        self.main_process(core);
+    }
 
     fn main_process_without_fork(&mut self, core: &mut ShellCore) {
-        self.main_process_after_fork(core);
+        self.main_process(core);
     }
 
     fn get_text(&self) -> String;
