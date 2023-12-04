@@ -11,9 +11,10 @@ use self::paren::ParenCommand;
 use self::brace::BraceCommand;
 use std::fmt;
 use std::fmt::Debug;
-use super::Pipe;
+use super::{io, Pipe};
 use super::io::redirect::Redirect;
-use nix::unistd::Pid;
+use nix::unistd;
+use nix::unistd::{ForkResult, Pid};
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -24,7 +25,25 @@ impl Debug for dyn Command {
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid>;
     fn fork_exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> { None }
+    fn fork_exec2(&mut self, _: &mut ShellCore);
     fn nofork_exec(&mut self, _: &mut ShellCore) {}
+
+    fn fork_exec_with_redirects(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
+                core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
+                io::connect(pipe, self.get_redirects());
+                self.fork_exec2(core);
+                core.exit()
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                core.set_pgid(child, pipe.pgid);
+                pipe.parent_close();
+                Some(child) //   core.wait_process(child);
+            },
+            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
+        }
+    }
 
     fn nofork_exec_with_redirects(&mut self, core: &mut ShellCore) {
         if self.get_redirects().iter_mut().all(|r| r.connect(true)){

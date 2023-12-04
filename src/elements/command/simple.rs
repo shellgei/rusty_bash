@@ -13,7 +13,7 @@ use nix::errno::Errno;
 
 #[derive(Debug)]
 pub struct SimpleCommand {
-    pub text: String,
+    text: String,
     args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool,
@@ -28,10 +28,18 @@ impl Command for SimpleCommand {
         if self.force_fork 
         || pipe.is_connected() 
         || ! core.builtins.contains_key(&self.args[0]) {
-            self.fork_exec(core, pipe)
+            self.fork_exec_with_redirects(core, pipe)
         }else{
             self.nofork_exec_with_redirects(core);
             None
+        }
+    }
+
+    fn fork_exec2(&mut self, core: &mut ShellCore) {
+        if core.run_builtin(&mut self.args) {
+            core.exit()
+        }else{
+            Self::exec_external_command(&mut self.args)
         }
     }
 

@@ -8,7 +8,7 @@ use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct BraceCommand {
-    pub text: String,
+    text: String,
     script: Option<Script>,
     redirects: Vec<Redirect>,
     force_fork: bool,
@@ -17,10 +17,17 @@ pub struct BraceCommand {
 impl Command for BraceCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if self.force_fork || pipe.is_connected() {
-            self.fork_exec(core, pipe)
+            self.fork_exec_with_redirects(core, pipe)
         }else{
             self.nofork_exec_with_redirects(core);
             None
+        }
+    }
+
+    fn fork_exec2(&mut self, core: &mut ShellCore) {
+        match self.script {
+            Some(ref mut s) => s.exec(core),
+            _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
         }
     }
 
