@@ -56,7 +56,9 @@ impl BraceCommand {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceCommand> {
         let mut ans = Self::new();
         if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.script) {
-            ans.text = "{".to_string() + &ans.script.as_mut().unwrap().text.clone() + &feeder.consume(1);
+            ans.text.push_str("{");
+            ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
+            ans.text.push_str(&feeder.consume(1));
 
             loop {
                 command::eat_blank_with_comment(feeder, core, &mut ans.text);
@@ -65,7 +67,6 @@ impl BraceCommand {
                 }
             }
 
-//            eprintln!("{:?}", ans);
             Some(ans)
         }else{
             None

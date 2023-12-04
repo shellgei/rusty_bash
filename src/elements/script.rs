@@ -18,7 +18,7 @@ enum Status{
 pub struct Script {
     pub jobs: Vec<Job>,
     pub job_ends: Vec<String>,
-    pub text: String,
+    text: String,
 }
 
 impl Script {
@@ -45,6 +45,8 @@ impl Script {
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
+
+    pub fn get_text(&self) -> String { self.text.clone() }
 
     pub fn new() -> Script {
         Script {
