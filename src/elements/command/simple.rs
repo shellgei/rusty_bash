@@ -33,18 +33,6 @@ impl Command for SimpleCommand {
         self.fork_exec(core, pipe)
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-
-    fn set_force_fork(&mut self) {
-        self.force_fork = true;
-    }
-
-    fn nofork_exec(&mut self, core: &mut ShellCore) {
-        core.run_builtin(&mut self.args);
-    }
-}
-
-impl SimpleCommand {
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
@@ -65,6 +53,18 @@ impl SimpleCommand {
         }
     }
 
+    fn nofork_exec(&mut self, core: &mut ShellCore) {
+        core.run_builtin(&mut self.args);
+    }
+
+    fn get_text(&self) -> String { self.text.clone() }
+
+    fn set_force_fork(&mut self) {
+        self.force_fork = true;
+    }
+}
+
+impl SimpleCommand {
     fn exec_external_command(args: &mut Vec<String>) -> ! {
         let cargs = Self::to_cargs(args);
         match unistd::execvp(&cargs[0], &cargs) {

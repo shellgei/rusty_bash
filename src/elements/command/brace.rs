@@ -16,12 +16,6 @@ pub struct BraceCommand {
 
 impl Command for BraceCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        /*
-        let script = match self.script {
-            Some(ref mut s) => s,
-            _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
-        };*/
-
         if self.force_fork || pipe.is_connected() {
             self.fork_exec(core, pipe)
         }else{

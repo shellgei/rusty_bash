@@ -23,7 +23,7 @@ impl Debug for dyn Command {
 
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid>;
-    fn fork_exec(&mut self, _: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> { None }
+    fn fork_exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> { None }
     fn nofork_exec(&mut self, _: &mut ShellCore) {}
 
     fn nofork_exec_with_redirects(&mut self, core: &mut ShellCore, redirects: &mut Vec<Redirect>) {
