@@ -8,20 +8,29 @@ use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct ParenCommand {
-    pub text: String,
-    pub script: Option<Script>,
-    pub redirects: Vec<Redirect>,
+    text: String,
+    script: Option<Script>,
+    redirects: Vec<Redirect>,
 }
 
 impl Command for ParenCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        self.fork_exec(core, pipe)
+    }
+
+    fn run_command(&mut self, core: &mut ShellCore, fork: bool) {
+        if ! fork {
+            panic!("SUSH INTERNAL ERROR (no fork for subshell)");
+        }
+
         match self.script {
-            Some(ref mut s) => s.fork_exec(core, pipe, &mut self.redirects),
-            _               => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
+            Some(ref mut s) => s.exec(core),
+            _ => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
         }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { }
 }
 
@@ -37,7 +46,9 @@ impl ParenCommand {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
         let mut ans = Self::new();
         if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script) {
-            ans.text = "(".to_string() + &ans.script.as_mut().unwrap().text.clone() + &feeder.consume(1);
+            ans.text.push_str("(");
+            ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
+            ans.text.push_str(&feeder.consume(1));
 
             loop {
                 command::eat_blank_with_comment(feeder, core, &mut ans.text);
@@ -46,7 +57,6 @@ impl ParenCommand {
                 }
             }
 
-//            eprintln!("{:?}", ans);
             Some(ans)
         }else{
             None

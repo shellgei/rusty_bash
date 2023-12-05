@@ -3,17 +3,17 @@
 
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
-use crate::elements::{command, io};
+use crate::elements::command;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
 
-use nix::unistd::{ForkResult, Pid};
+use nix::unistd::Pid;
 use nix::errno::Errno;
 
 #[derive(Debug)]
 pub struct SimpleCommand {
-    pub text: String,
+    text: String,
     args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool,
@@ -24,52 +24,36 @@ impl Command for SimpleCommand {
         if self.args.len() == 0 {
             return None;
         }
-        if ! self.force_fork && ! pipe.is_connected() 
-                && core.builtins.contains_key(&self.args[0]) {
+
+        if self.force_fork 
+        || pipe.is_connected() 
+        || ! core.builtins.contains_key(&self.args[0]) {
+            self.fork_exec(core, pipe)
+        }else{
             self.nofork_exec(core);
-            return None;
+            None
+        }
+    }
+
+    fn run_command(&mut self, core: &mut ShellCore, fork: bool) {
+        if ! fork {
+            core.run_builtin(&mut self.args);
+            return;
         }
 
-        self.fork_exec(core, pipe)
+        if core.run_builtin(&mut self.args) {
+            core.exit()
+        }else{
+            Self::exec_external_command(&mut self.args)
+        }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
-
-    fn set_force_fork(&mut self) {
-        self.force_fork = true;
-    }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn set_force_fork(&mut self) { self.force_fork = true; }
 }
 
 impl SimpleCommand {
-    fn nofork_exec(&mut self, core: &mut ShellCore) {
-        if self.redirects.iter_mut().all(|r| r.connect(true)){
-            core.run_builtin(&mut self.args);
-        }else{
-            core.vars.insert("?".to_string(), "1".to_string());
-        }
-        self.redirects.iter_mut().rev().for_each(|r| r.restore());
-    }
-
-    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
-                core.set_pgid(Pid::from_raw(0), pipe.pgid);
-                io::connect(pipe, &mut self.redirects);
-                if core.run_builtin(&mut self.args) {
-                    core.exit()
-                }else{
-                    Self::exec_external_command(&mut self.args)
-                }
-            },
-            Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, pipe.pgid);
-                pipe.parent_close();
-                Some(child)
-            },
-            Err(err) => panic!("Failed to fork. {}", err),
-        }
-    }
-
     fn exec_external_command(args: &mut Vec<String>) -> ! {
         let cargs = Self::to_cargs(args);
         match unistd::execvp(&cargs[0], &cargs) {
