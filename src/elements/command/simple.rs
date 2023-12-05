@@ -35,16 +35,17 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn run_command_after_fork(&mut self, core: &mut ShellCore) {
+    fn run_command(&mut self, core: &mut ShellCore, fork: bool) {
+        if ! fork {
+            core.run_builtin(&mut self.args);
+            return;
+        }
+
         if core.run_builtin(&mut self.args) {
             core.exit()
         }else{
             Self::exec_external_command(&mut self.args)
         }
-    }
-
-    fn run_command_without_fork(&mut self, core: &mut ShellCore) {
-        core.run_builtin(&mut self.args);
     }
 
     fn get_text(&self) -> String { self.text.clone() }

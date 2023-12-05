@@ -30,7 +30,7 @@ pub trait Command {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects());
-                self.run_command_after_fork(core);
+                self.run_command(core, true);
                 core.exit()
             },
             Ok(ForkResult::Parent { child } ) => {
@@ -44,25 +44,14 @@ pub trait Command {
 
     fn nofork_exec(&mut self, core: &mut ShellCore) {
         if self.get_redirects().iter_mut().all(|r| r.connect(true)){
-            self.run_command_without_fork(core);
+            self.run_command(core, false);
         }else{
             core.vars.insert("?".to_string(), "1".to_string());
         }
         self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
     }
 
-    /* override if the command execution procedure is the same whether the process forks or not */
-    fn run_command(&mut self, _: &mut ShellCore) {}
-
-    /* override for the command execution procedure after fork */
-    fn run_command_after_fork(&mut self, core: &mut ShellCore) {
-        self.run_command(core);
-    }
-
-    /* override for the command execution procedure without fork */
-    fn run_command_without_fork(&mut self, core: &mut ShellCore) {
-        self.run_command(core);
-    }
+    fn run_command(&mut self, _: &mut ShellCore, fork: bool);
 
     fn get_text(&self) -> String;
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
