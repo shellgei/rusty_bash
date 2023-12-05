@@ -19,26 +19,15 @@ pub struct WhileCommand {
 
 impl Command for WhileCommand {
     fn exec(&mut self, core: &mut ShellCore, _: &mut Pipe) -> Option<Pid> {
-        if self.redirects.iter_mut().all(|r| r.connect(true)){
-            self.nofork_exec(core);
-        }else{
-            core.vars.insert("?".to_string(), "1".to_string());
-        }
-        self.redirects.iter_mut().rev().for_each(|r| r.restore());
-
+        self.nofork_exec(core);
         None
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-    fn set_force_fork(&mut self) { self.force_fork = true; }
-}
-
-impl WhileCommand {
-    fn nofork_exec(&mut self, core: &mut ShellCore) {
+    fn run_command(&mut self, core: &mut ShellCore, _: bool) {
         loop {
             self.while_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
-                .exec(core, &mut vec![]);
+                .exec(core);
 
             if core.vars["?"] != "0" {
                 break;
@@ -46,10 +35,16 @@ impl WhileCommand {
 
             self.do_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
-                .exec(core, &mut vec![]);
+                .exec(core);
         }
     }
 
+    fn get_text(&self) -> String { self.text.clone() }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn set_force_fork(&mut self) { self.force_fork = true; }
+}
+
+impl WhileCommand {
     fn new() -> WhileCommand {
         WhileCommand {
             text: String::new(),
@@ -65,9 +60,9 @@ impl WhileCommand {
         if command::eat_inner_script(feeder, core, "while", vec!["do"], &mut ans.while_script)
         && command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.do_script) {
             ans.text.push_str("while");
-            ans.text.push_str(&ans.while_script.as_mut().unwrap().text.clone());
+            ans.text.push_str(&ans.while_script.as_mut().unwrap().get_text());
             ans.text.push_str("do");
-            ans.text.push_str(&ans.do_script.as_mut().unwrap().text.clone());
+            ans.text.push_str(&ans.do_script.as_mut().unwrap().get_text());
             ans.text.push_str(&feeder.consume(4)); //done
 
             loop {
