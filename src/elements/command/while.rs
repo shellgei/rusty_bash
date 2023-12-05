@@ -17,16 +17,13 @@ pub struct WhileCommand {
 }
 
 impl Command for WhileCommand {
-    fn exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> {
-        None
-    }
-
+    fn exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> { None }
+    fn run_command(&mut self, _: &mut ShellCore, _: bool) {}
     fn get_text(&self) -> String { self.text.clone() }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
 }
 
 impl WhileCommand {
-    pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<WhileCommand> {
-        None
-    }
+    pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<WhileCommand> { None }
 }
