@@ -13,9 +13,10 @@ use self::brace::BraceCommand;
 use self::r#while::WhileCommand;
 use std::fmt;
 use std::fmt::Debug;
-use super::Pipe;
+use super::{io, Pipe};
 use super::io::redirect::Redirect;
-use nix::unistd::Pid;
+use nix::unistd;
+use nix::unistd::{ForkResult, Pid};
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -25,7 +26,36 @@ impl Debug for dyn Command {
 
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid>;
+
+    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
+                core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
+                io::connect(pipe, self.get_redirects());
+                self.run_command(core, true);
+                core.exit()
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                core.set_pgid(child, pipe.pgid);
+                pipe.parent_close();
+                Some(child)
+            },
+            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
+        }
+    }
+
+    fn nofork_exec(&mut self, core: &mut ShellCore) {
+        if self.get_redirects().iter_mut().all(|r| r.connect(true)){
+            self.run_command(core, false);
+        }else{
+            core.vars.insert("?".to_string(), "1".to_string());
+        }
+        self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
+    }
+
+    fn run_command(&mut self, _: &mut ShellCore, fork: bool);
     fn get_text(&self) -> String;
+    fn get_redirects(&mut self) -> &mut Vec<Redirect>;
     fn set_force_fork(&mut self);
 }
 

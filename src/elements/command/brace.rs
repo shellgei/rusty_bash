@@ -8,32 +8,32 @@ use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct BraceCommand {
-    pub text: String,
-    pub script: Option<Script>,
-    pub redirects: Vec<Redirect>,
+    text: String,
+    script: Option<Script>,
+    redirects: Vec<Redirect>,
     force_fork: bool,
 }
 
 impl Command for BraceCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        let script = match self.script {
-            Some(ref mut s) => s,
-            _ => panic!("SUSH INTERNAL ERROR (BraceCommand::exec)"),
-        };
-
         if self.force_fork || pipe.is_connected() {
-            script.fork_exec(core, pipe, &mut self.redirects)
+            self.fork_exec(core, pipe)
         }else{
-            script.exec(core, &mut self.redirects);
+            self.nofork_exec(core);
             None
         }
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-
-    fn set_force_fork(&mut self) {
-        self.force_fork = true;
+    fn run_command(&mut self, core: &mut ShellCore, _: bool) {
+        match self.script {
+            Some(ref mut s) => s.exec(core),
+            _ => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
+        }
     }
+
+    fn get_text(&self) -> String { self.text.clone() }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn set_force_fork(&mut self) { self.force_fork = true; }
 }
 
 impl BraceCommand {
@@ -49,7 +49,9 @@ impl BraceCommand {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceCommand> {
         let mut ans = Self::new();
         if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.script) {
-            ans.text = "{".to_string() + &ans.script.as_mut().unwrap().text.clone() + &feeder.consume(1);
+            ans.text.push_str("{");
+            ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
+            ans.text.push_str(&feeder.consume(1));
 
             loop {
                 command::eat_blank_with_comment(feeder, core, &mut ans.text);
@@ -58,7 +60,6 @@ impl BraceCommand {
                 }
             }
 
-//            eprintln!("{:?}", ans);
             Some(ans)
         }else{
             None
