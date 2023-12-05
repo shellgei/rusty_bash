@@ -52,7 +52,6 @@ pub trait Command {
     }
 
     fn run_command(&mut self, _: &mut ShellCore, fork: bool);
-
     fn get_text(&self) -> String;
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
     fn set_force_fork(&mut self);
