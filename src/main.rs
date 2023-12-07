@@ -44,6 +44,7 @@ fn check_signals(signal: i32, flags: &mut Arc<Mutex<Vec<bool>>>) {
         consts::SIGINT => {
             let mut mtx = flags.lock().unwrap();
             mtx[consts::SIGINT as usize] = true;
+            eprint!("^C");
         },
         _ => {},
     }
