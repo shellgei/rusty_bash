@@ -7,6 +7,7 @@ mod scanner;
 use std::io;
 use crate::ShellCore;
 use std::process;
+use signal_hook::consts;
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
@@ -74,7 +75,7 @@ impl Feeder {
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
-        if core.input_interrupt {
+        if core.check_signal(consts::SIGINT) {
             return false;
         }
 

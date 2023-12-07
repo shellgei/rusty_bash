@@ -3,6 +3,7 @@
 
 use std::io;
 use std::io::{Write, stdout, stdin, Stdout};
+use signal_hook::consts;
 
 use termion::{event,terminal_size};
 use termion::cursor::DetectCursorPos;
@@ -294,7 +295,8 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
             event::Key::Ctrl('a') => writer.move_cursor_to_head(),
             event::Key::Ctrl('b') => writer.move_cursor(-1),
             event::Key::Ctrl('c') => {
-                core.input_interrupt = true;
+                //core.input_interrupt = true;
+                core.set_signal(consts::SIGINT);
                 writer.chars.clear();
                 writer.end("^C\r\n");
                 core.vars.insert("?".to_string(), "130".to_string());

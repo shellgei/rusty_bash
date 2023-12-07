@@ -61,12 +61,11 @@ fn main() {
 }
 
 fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-    if ! core.check_signal(consts::SIGINT) && ! core.input_interrupt {
+    if ! core.check_signal(consts::SIGINT) {
         return false;
     }
 
     core.unset_signal(consts::SIGINT);
-    core.input_interrupt = false;
     core.vars.insert("?".to_string(), "130".to_string());
     feeder.consume(feeder.len());
     true

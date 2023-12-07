@@ -15,8 +15,7 @@ use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
-use std::sync::Mutex;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -24,11 +23,10 @@ pub struct ShellCore {
     pub vars: HashMap<String, String>, 
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<(String, Vec<String>)>,
-    pub input_interrupt: bool,
+    pub signal_flags: Arc<Mutex<Vec<bool>>>,
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
-    pub signal_flags: Arc<Mutex<Vec<bool>>>,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -57,7 +55,6 @@ impl ShellCore {
             vars: HashMap::new(),
             builtins: HashMap::new(),
             nest: vec![("".to_string(), vec![])],
-            input_interrupt: false,
             signal_flags: Arc::new(Mutex::new(vec![false; 65])), //65は本来定数で指定
             is_subshell: false,
             tty_fd: -1,
@@ -183,11 +180,16 @@ impl ShellCore {
 
     pub fn check_signal(&self, signal: i32) -> bool {
         let flags = self.signal_flags.lock().unwrap();
-        flags[signal as usize] 
+        flags[signal as usize]
     }
 
     pub fn unset_signal(&mut self, signal: i32) {
         let mut flags = self.signal_flags.lock().unwrap();
-        flags[signal as usize] = false; 
+        flags[signal as usize] = false;
+    }
+
+    pub fn set_signal(&mut self, signal: i32) {
+        let mut flags = self.signal_flags.lock().unwrap();
+        flags[signal as usize] = true;
     }
 }
