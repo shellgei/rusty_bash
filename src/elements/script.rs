@@ -3,6 +3,7 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
+use signal_hook::consts;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -21,6 +22,12 @@ impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
             job.exec(core, end == "&");
+        }
+
+        let mut flags = core.signal_flags.lock().unwrap();
+        if flags[consts::SIGINT as usize] {
+            flags[consts::SIGINT as usize] = false;
+            core.vars.insert("?".to_string(), "130".to_string());
         }
     }
 

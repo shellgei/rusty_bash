@@ -60,13 +60,14 @@ fn main() {
     main_loop(&mut core);
 }
 
-fn interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
     let mut flags = core.signal_flags.lock().unwrap();
-    if ! flags[consts::SIGINT as usize] {
+    if ! flags[consts::SIGINT as usize] && ! core.input_interrupt {
         return false;
     }
 
     flags[consts::SIGINT as usize] = false;
+    core.input_interrupt = false;
     core.vars.insert("?".to_string(), "130".to_string());
     feeder.consume(feeder.len());
     true
@@ -79,7 +80,7 @@ fn main_loop(core: &mut ShellCore) {
         core.jobtable_print_status_change();
         if ! feeder.feed_line(core) {
             if core.has_flag('i') {
-                interrupt_check(&mut feeder, core);
+                input_interrupt_check(&mut feeder, core);
                 continue;
             }else{
                 break;
@@ -88,8 +89,9 @@ fn main_loop(core: &mut ShellCore) {
 
         match Script::parse(&mut feeder, core){
             Some(mut s) => {
-                    s.exec(core);
-                    interrupt_check(&mut feeder, core);
+                if ! input_interrupt_check(&mut feeder, core) {
+                    s.exec(core)
+                }
             },
             None => continue,
         }
