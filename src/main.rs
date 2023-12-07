@@ -87,7 +87,12 @@ fn main_loop(core: &mut ShellCore) {
 
         match Script::parse(&mut feeder, core){
             Some(mut s) => s.exec(core),
-            None => continue,
+            None => {},
+        }
+
+        if core.check_signal(consts::SIGINT) {
+            core.unset_signal(consts::SIGINT);
+            core.vars.insert("?".to_string(), "130".to_string());
         }
     }
     core.exit();
