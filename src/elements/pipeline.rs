@@ -17,11 +17,8 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
-        {
-            let flags = core.signal_flags.lock().unwrap();
-            if flags[consts::SIGINT as usize] {
-                return vec![];
-            }
+        if core.check_signal(consts::SIGINT) {
+            return vec![];
         }
 
         let mut prev = -1;

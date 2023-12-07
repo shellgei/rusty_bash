@@ -24,9 +24,8 @@ impl Script {
             job.exec(core, end == "&");
         }
 
-        let mut flags = core.signal_flags.lock().unwrap();
-        if flags[consts::SIGINT as usize] {
-            flags[consts::SIGINT as usize] = false;
+        if core.check_signal(consts::SIGINT) {
+            core.unset_signal(consts::SIGINT);
             core.vars.insert("?".to_string(), "130".to_string());
         }
     }

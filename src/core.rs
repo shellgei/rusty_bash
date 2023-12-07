@@ -180,4 +180,14 @@ impl ShellCore {
         self.set_subshell_vars();
         self.job_table.clear();
     }
+
+    pub fn check_signal(&self, signal: i32) -> bool {
+        let flags = self.signal_flags.lock().unwrap();
+        flags[signal as usize] 
+    }
+
+    pub fn unset_signal(&mut self, signal: i32) {
+        let mut flags = self.signal_flags.lock().unwrap();
+        flags[signal as usize] = false; 
+    }
 }
