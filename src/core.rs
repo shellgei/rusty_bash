@@ -15,6 +15,8 @@ use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
+use std::sync::Mutex;
+use std::sync::Arc;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -26,6 +28,7 @@ pub struct ShellCore {
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
+    pub signal_flags: Arc<Mutex<Vec<bool>>>,
 }
 
 fn is_interactive(pid: u32) -> bool {
@@ -55,6 +58,7 @@ impl ShellCore {
             builtins: HashMap::new(),
             nest: vec![("".to_string(), vec![])],
             input_interrupt: false,
+            signal_flags: Arc::new(Mutex::new(vec![false; 65])), //65は本来定数で指定
             is_subshell: false,
             tty_fd: -1,
             job_table: vec![],

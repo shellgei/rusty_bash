@@ -297,6 +297,7 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
                 core.input_interrupt = true;
                 writer.chars.clear();
                 writer.end("^C\r\n");
+                core.vars.insert("?".to_string(), "130".to_string());
                 return None;
             },
             event::Key::Ctrl('e') => writer.move_cursor_to_tail(),

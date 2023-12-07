@@ -6,6 +6,7 @@ use super::command;
 use super::command::Command;
 use super::Pipe;
 use nix::unistd::Pid;
+use signal_hook::consts;
 
 #[derive(Debug)]
 pub struct Pipeline {
@@ -16,6 +17,13 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
+        {
+            let flags = core.signal_flags.lock().unwrap();
+            if flags[consts::SIGINT as usize] {
+                return vec![];
+            }
+        }
+
         let mut prev = -1;
         let mut pids = vec![];
         let mut pgid = pgid;
