@@ -22,7 +22,7 @@ fn show_version() {
 }
 
 fn run_signal_check(core: &mut ShellCore) {
-    thread::spawn(move || loop {
+    thread::spawn(|| loop {
         thread::sleep(time::Duration::from_millis(1000));
         eprint!("COME HERE");
     });
