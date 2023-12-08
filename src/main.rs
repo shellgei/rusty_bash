@@ -5,7 +5,7 @@ mod core;
 mod feeder;
 mod elements;
 
-use std::{env, process};
+use std::{env, process, thread, time};
 use crate::core::ShellCore;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
@@ -21,6 +21,16 @@ fn show_version() {
     process::exit(0);
 }
 
+//thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
+fn run_signal_check(core: &mut ShellCore) {
+    thread::spawn(move || {
+        loop {
+            thread::sleep(time::Duration::from_millis(1000));
+            eprint!("COME HERE\r\n");
+        }
+    });
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
@@ -28,6 +38,7 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
+    run_signal_check(&mut core);
     main_loop(&mut core);
 }
 
