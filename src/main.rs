@@ -44,7 +44,7 @@ fn check_signals(signal: i32, arc: &mut Arc<Mutex<Vec<bool>>>) {
         consts::SIGINT => {
             let mut flags = arc.lock().unwrap();
             flags[consts::SIGINT as usize] = true;
-            eprintln!("\nCOME HERE\n"); //確認用
+            //eprintln!("\nCOME HERE\n"); //確認用
         },
         _ => {},
     }
@@ -87,12 +87,12 @@ fn main_loop(core: &mut ShellCore) {
         }
 
         match Script::parse(&mut feeder, core){
-            Some(mut s) => {
-                if ! input_interrupt_check(&mut feeder, core) {
-                    s.exec(core)
-                }
-            },
-            None => continue,
+            Some(mut s) => s.exec(core),
+            None => {},
+        }
+
+        if core.check_signal(consts::SIGINT) {
+            core.unset_signal(consts::SIGINT);
         }
     }
     core.exit();
