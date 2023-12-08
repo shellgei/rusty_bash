@@ -74,7 +74,7 @@ impl Feeder {
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
-        if core.input_interrupt {
+        if core.check_signal(signal_hook::consts::SIGINT) { //core.input_interrupt {
             return false;
         }
 

@@ -294,7 +294,7 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
             event::Key::Ctrl('a') => writer.move_cursor_to_head(),
             event::Key::Ctrl('b') => writer.move_cursor(-1),
             event::Key::Ctrl('c') => {
-                core.input_interrupt = true;
+                core.set_signal(signal_hook::consts::SIGINT);//core.input_interrupt = true;
                 writer.chars.clear();
                 writer.end("^C\r\n");
                 return None;
