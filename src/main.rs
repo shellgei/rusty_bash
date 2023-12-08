@@ -90,10 +90,7 @@ fn main_loop(core: &mut ShellCore) {
             Some(mut s) => s.exec(core),
             None => {},
         }
-
-        if core.check_signal(consts::SIGINT) {
-            core.unset_signal(consts::SIGINT);
-        }
+        core.unset_signal(consts::SIGINT);
     }
     core.exit();
 }
