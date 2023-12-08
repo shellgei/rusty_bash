@@ -21,7 +21,6 @@ fn show_version() {
     process::exit(0);
 }
 
-//thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 fn run_signal_check(core: &mut ShellCore) {
     thread::spawn(move || {
         loop {
@@ -29,7 +28,7 @@ fn run_signal_check(core: &mut ShellCore) {
             eprint!("COME HERE\r\n");
         }
     });
-}
+} //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
 fn main() {
     let args: Vec<String> = env::args().collect();
