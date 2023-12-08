@@ -25,7 +25,7 @@ fn run_signal_check(core: &mut ShellCore) {
     thread::spawn(move || {
         loop {
             thread::sleep(time::Duration::from_millis(1000));
-            eprint!("COME HERE\r\n");
+            eprint!("COME HERE");
         }
     });
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
