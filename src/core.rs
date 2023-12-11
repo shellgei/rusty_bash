@@ -9,8 +9,6 @@ use nix::{fcntl, unistd};
 use nix::unistd::Pid;
 use std::collections::HashMap;
 use std::process;
-use std::os::linux::fs::MetadataExt;
-use std::path::Path;
 use std::os::fd::RawFd;
 use nix::sys::signal;
 use nix::sys::signal::{Signal, SigHandler};
@@ -26,10 +24,9 @@ pub struct ShellCore {
     pub tty_fd: RawFd,
 }
 
-fn is_interactive(pid: u32) -> bool {
-    let std_path = format!("/proc/{}/fd/0", pid);
-    match Path::new(&std_path).metadata() {
-        Ok(metadata) => metadata.st_mode() == 8592,
+fn is_interactive() -> bool {
+    match unistd::isatty(0) {
+        Ok(result) => result,
         Err(err) => panic!("{}", err),
     }
 }
@@ -58,7 +55,7 @@ impl ShellCore {
         };
 
         let pid = process::id();
-        if is_interactive(pid) {
+        if is_interactive() {
             core.flags += "i";
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("Can't allocate fd for tty FD");
