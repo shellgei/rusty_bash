@@ -6,8 +6,6 @@ pub mod jobtable;
 
 use std::collections::HashMap;
 use std::os::fd::RawFd;
-use std::os::linux::fs::MetadataExt;
-use std::path::Path;
 use std::process;
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
@@ -28,10 +26,9 @@ pub struct ShellCore {
     pub job_table: Vec<JobEntry>,
 }
 
-fn is_interactive(pid: u32) -> bool {
-    let std_path = format!("/proc/{}/fd/0", pid);
-    match Path::new(&std_path).metadata() {
-        Ok(metadata) => metadata.st_mode() == 8592,
+fn is_interactive() -> bool {
+    match unistd::isatty(0) {
+        Ok(result) => result,
         Err(err) => panic!("{}", err),
     }
 }
@@ -62,7 +59,7 @@ impl ShellCore {
 
         core.set_initial_vars();
 
-        if is_interactive(process::id()) {
+        if is_interactive() {
             core.flags += "i";
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("Can't allocate fd for tty FD");
