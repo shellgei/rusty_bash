@@ -16,6 +16,7 @@ use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
 use std::sync::{Arc, Mutex};
+use std::sync::atomic::AtomicBool;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -24,6 +25,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<(String, Vec<String>)>,
     pub signal_flags: Arc<Mutex<Vec<bool>>>, //pub input_interrupt: bool,
+    pub sigint: AtomicBool, 
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
@@ -58,6 +60,7 @@ impl ShellCore {
             builtins: HashMap::new(),
             nest: vec![("".to_string(), vec![])],
             signal_flags: Arc::new(Mutex::new(vec![false; Self::SIGNAL_NUM])),
+            sigint: AtomicBool::new(false),
             is_subshell: false,
             tty_fd: -1,
             job_table: vec![],
