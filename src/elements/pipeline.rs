@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use std::sync::atomic::Ordering::Relaxed;
 use super::command;
 use super::command::Command;
 use super::Pipe;
 use nix::unistd::Pid;
-use signal_hook::consts;
 
 #[derive(Debug)]
 pub struct Pipeline {
@@ -17,7 +17,7 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
-        if core.check_signal(consts::SIGINT) {
+        if core.sigint.load(Relaxed) {
             core.vars.insert("?".to_string(), "130".to_string());
             return vec![];
         }

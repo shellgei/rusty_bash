@@ -11,8 +11,7 @@ use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use signal_hook::consts;
 use signal_hook::iterator::Signals;
-use std::sync::{Arc, Mutex};
-use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
 
 fn show_version() {
@@ -26,8 +25,7 @@ fn show_version() {
 }
 
 fn run_signal_check(core: &mut ShellCore) {
-    let mut arc = Arc::clone(&core.signal_flags); //追加
-    let mut sigint = Arc::clone(&core.sigint);
+    let sigint = Arc::clone(&core.sigint); //追加
  
     thread::spawn(move || { //クロージャの処理全体を{}で囲みましょう
         let mut signals = Signals::new(vec![consts::SIGINT])
@@ -36,12 +34,15 @@ fn run_signal_check(core: &mut ShellCore) {
         loop {
             thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
             for signal in signals.pending() {
-                check_signals(signal, &mut arc, &mut sigint);
+                if signal == consts::SIGINT {
+                    sigint.store(true, Relaxed);
+                }
             }
         }
     });
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
+/*
 fn check_signals(signal: i32, arc: &mut Arc<Mutex<Vec<bool>>>, sigint: &mut Arc<AtomicBool>) {
     match signal {
         consts::SIGINT => {
@@ -52,7 +53,7 @@ fn check_signals(signal: i32, arc: &mut Arc<Mutex<Vec<bool>>>, sigint: &mut Arc<
         },
         _ => {},
     }
-}
+}*/
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -66,11 +67,11 @@ fn main() {
 }
 
 fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-    if ! core.check_signal(consts::SIGINT) { //core.input_interrupt {
+    if ! core.sigint.load(Relaxed) { //core.input_interrupt {
         return false;
     }
 
-    core.unset_signal(consts::SIGINT); //core.input_interrupt = false;
+    core.sigint.store(false, Relaxed); //core.input_interrupt = false;
     core.vars.insert("?".to_string(), "130".to_string());
     feeder.consume(feeder.len());
     true
@@ -94,7 +95,7 @@ fn main_loop(core: &mut ShellCore) {
             Some(mut s) => s.exec(core),
             None => {},
         }
-        core.unset_signal(consts::SIGINT);
+        core.sigint.store(false, Relaxed);
     }
     core.exit();
 }
