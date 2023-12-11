@@ -9,8 +9,6 @@ use nix::{fcntl, unistd};
 use nix::unistd::Pid;
 use std::collections::HashMap;
 use std::process;
-use std::os::linux::fs::MetadataExt;
-use std::path::Path;
 use std::os::fd::RawFd;
 use nix::sys::signal;
 use nix::sys::signal::{Signal, SigHandler};
@@ -26,10 +24,9 @@ pub struct ShellCore {
     pub tty_fd: RawFd,
 }
 
-fn is_interactive(pid: u32) -> bool {
-    let std_path = format!("/proc/{}/fd/0", pid);
-    match Path::new(&std_path).metadata() {
-        Ok(metadata) => metadata.st_mode() == 8592,
+fn is_interactive() -> bool {
+    match unistd::isatty(0) {
+        Ok(result) => result,
         Err(err) => panic!("{}", err),
     }
 }
@@ -58,11 +55,12 @@ impl ShellCore {
         };
 
         let pid = process::id();
-        if is_interactive(pid) {
+        if is_interactive() {
             core.flags += "i";
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("Can't allocate fd for tty FD");
         }
+
         core.vars.insert("$".to_string(), pid.to_string());
         core.vars.insert("BASHPID".to_string(), core.vars["$"].clone());
         core.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
@@ -104,14 +102,14 @@ impl ShellCore {
     } 
 
     fn set_foreground(&self) {
-        if self.tty_fd < 0 {
+        if self.tty_fd < 0 { // tty_fdが無効なら何もしない
             return;
         }
- 
-        ignore_signal(Signal::SIGTTOU);
+
+        ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
         unistd::tcsetpgrp(self.tty_fd, unistd::getpid())
             .expect("sush(fatal): cannot get the terminal");
-        restore_signal(Signal::SIGTTOU);
+        restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
@@ -122,7 +120,6 @@ impl ShellCore {
         for pid in pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         }
-
         self.set_foreground();
     }
 
