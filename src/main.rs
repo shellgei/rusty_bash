@@ -79,13 +79,10 @@ fn main_loop(core: &mut ShellCore) {
         }
 
         match Script::parse(&mut feeder, core){
-            Some(mut s) => {
-                if ! input_interrupt_check(&mut feeder, core) {
-                    s.exec(core)
-                }
-            },
-            None => continue,
+            Some(mut s) => s.exec(core),
+            None => {},
         }
+        core.sigint.store(false, Relaxed);
     }
     core.exit();
 }
