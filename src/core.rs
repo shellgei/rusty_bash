@@ -22,7 +22,7 @@ pub struct ShellCore {
     pub vars: HashMap<String, String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<(String, Vec<String>)>,
-    pub sigint: Arc<AtomicBool>, //pub input_interrupt: bool,
+    pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
