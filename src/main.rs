@@ -30,7 +30,6 @@ fn run_signal_check(core: &mut ShellCore) {
     thread::spawn(move || { //クロージャの処理全体を{}で囲みましょう
         let mut signals = Signals::new(vec![consts::SIGINT])
                           .expect("sush(fatal): cannot prepare signal data");
-
         loop {
             thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
             for signal in signals.pending() {
@@ -41,19 +40,6 @@ fn run_signal_check(core: &mut ShellCore) {
         }
     });
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
-
-/*
-fn check_signals(signal: i32, arc: &mut Arc<Mutex<Vec<bool>>>, sigint: &mut Arc<AtomicBool>) {
-    match signal {
-        consts::SIGINT => {
-            let mut flags = arc.lock().unwrap();
-            flags[consts::SIGINT as usize] = true;
-            sigint.store(true, Relaxed);
-            //eprintln!("\nCOME HERE\n"); //確認用
-        },
-        _ => {},
-    }
-}*/
 
 fn main() {
     let args: Vec<String> = env::args().collect();
