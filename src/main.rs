@@ -35,7 +35,7 @@ fn run_signal_check(core: &mut ShellCore) {
             for signal in signals.pending() {
                 if signal == consts::SIGINT {
                     sigint.store(true, Relaxed);
-                    eprint!("COME HERE");
+                    //eprint!("COME HERE");
                 }
             }
         }
