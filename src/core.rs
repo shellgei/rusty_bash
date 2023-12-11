@@ -15,6 +15,7 @@ use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -105,6 +106,9 @@ impl ShellCore {
             },
         };
 
+        if exit_status == 130 {
+            self.sigint.store(true, Relaxed);
+        }
         self.vars.insert("?".to_string(), exit_status.to_string()); //追加
     } 
 
@@ -170,6 +174,8 @@ impl ShellCore {
     }
 
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
+        restore_signal(Signal::SIGINT);
+
         self.is_subshell = true;
         self.set_pgid(pid, pgid);
         self.set_subshell_vars();
