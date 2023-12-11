@@ -7,6 +7,7 @@ mod scanner;
 use std::io;
 use crate::ShellCore;
 use std::process;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
@@ -74,7 +75,7 @@ impl Feeder {
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
-        if core.check_signal(signal_hook::consts::SIGINT) { //core.input_interrupt {
+        if core.sigint.load(Relaxed) { //core.input_interrupt {
             return false;
         }
 

@@ -15,8 +15,8 @@ use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -24,8 +24,7 @@ pub struct ShellCore {
     pub vars: HashMap<String, String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<(String, Vec<String>)>,
-    pub signal_flags: Arc<Mutex<Vec<bool>>>, //pub input_interrupt: bool,
-    pub sigint: AtomicBool, 
+    pub sigint: Arc<AtomicBool>, 
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
@@ -50,8 +49,6 @@ fn restore_signal(sig: Signal) {
 }
 
 impl ShellCore {
-    const SIGNAL_NUM: usize = 65;
-
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
             history: Vec::new(),
@@ -59,8 +56,7 @@ impl ShellCore {
             vars: HashMap::new(),
             builtins: HashMap::new(),
             nest: vec![("".to_string(), vec![])],
-            signal_flags: Arc::new(Mutex::new(vec![false; Self::SIGNAL_NUM])),
-            sigint: AtomicBool::new(false),
+            sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
             tty_fd: -1,
             job_table: vec![],
@@ -181,20 +177,5 @@ impl ShellCore {
         self.set_pgid(pid, pgid);
         self.set_subshell_vars();
         self.job_table.clear();
-    }
-
-    pub fn check_signal(&self, signal: i32) -> bool {
-        let flags = self.signal_flags.lock().unwrap();
-        flags[signal as usize]
-    }
-
-    pub fn set_signal(&mut self, signal: i32) {
-        let mut flags = self.signal_flags.lock().unwrap();
-        flags[signal as usize] = true;
-    }
-
-    pub fn unset_signal(&mut self, signal: i32) {
-        let mut flags = self.signal_flags.lock().unwrap();
-        flags[signal as usize] = false;
     }
 }
