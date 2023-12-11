@@ -17,20 +17,20 @@ pub struct Pipeline {
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore) -> Vec<Option<Pid>> {
         let mut prev = -1;
-        let mut pids = vec![];
-        let mut pgid = Pid::from_raw(0);
+        let mut pids = vec![];            //返すPIDのリスト
+        let mut pgid = Pid::from_raw(0);  //pgidに「PID0」を設定
         for (i, p) in self.pipes.iter_mut().enumerate() {
-            p.set(prev, pgid);
-            pids.push(self.commands[i].exec(core, p));
-            if i == 0 {
+            p.set(prev, pgid);           //Pipe::setに引数を追加
+            pids.push(self.commands[i].exec(core, p)); //返ってきたPIDをpidsにpush
+            if i == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
                 pgid = pids[0].expect("SUSHI INTERNAL ERROR (unforked in pipeline)");
             }
             prev = p.recv;
         }
 
-        pids.push(
+        pids.push( //パイプライン最後のコマンドもPIDを記録
             self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid))
-        );
+        );                                               //ここでもpgidを渡す↑
 
         pids
     }
