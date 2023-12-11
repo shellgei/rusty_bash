@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use std::sync::atomic::Ordering::Relaxed;
 use super::command;
 use super::command::Command;
 use super::Pipe;
@@ -17,11 +16,6 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
-        if core.sigint.load(Relaxed) {
-            core.vars.insert("?".to_string(), "130".to_string());
-            return vec![];
-        }
-
         let mut prev = -1;
         let mut pids = vec![];
         let mut pgid = pgid;
