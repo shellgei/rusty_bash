@@ -16,6 +16,8 @@ use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
 use std::sync::{Arc, Mutex};
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 
 pub struct ShellCore {
     pub history: Vec<String>,
@@ -24,6 +26,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<(String, Vec<String>)>,
     pub signal_flags: Arc<Mutex<Vec<bool>>>, //pub input_interrupt: bool,
+    pub sigint: Arc<AtomicBool>, 
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
@@ -58,6 +61,7 @@ impl ShellCore {
             builtins: HashMap::new(),
             nest: vec![("".to_string(), vec![])],
             signal_flags: Arc::new(Mutex::new(vec![false; Self::SIGNAL_NUM])),
+            sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
             tty_fd: -1,
             job_table: vec![],
@@ -183,17 +187,26 @@ impl ShellCore {
     }
 
     pub fn check_signal(&self, signal: i32) -> bool {
+        /*
         let flags = self.signal_flags.lock().unwrap();
         flags[signal as usize]
+        */
+        self.sigint.load(Relaxed)
     }
 
     pub fn set_signal(&mut self, signal: i32) {
+        /*
         let mut flags = self.signal_flags.lock().unwrap();
         flags[signal as usize] = true;
+        */
+        self.sigint.store(true, Relaxed)
     }
 
     pub fn unset_signal(&mut self, signal: i32) {
+        /*
         let mut flags = self.signal_flags.lock().unwrap();
         flags[signal as usize] = false;
+        */
+        self.sigint.store(false, Relaxed)
     }
 }

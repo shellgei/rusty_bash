@@ -12,6 +12,8 @@ use crate::feeder::Feeder;
 use signal_hook::consts;
 use signal_hook::iterator::Signals;
 use std::sync::{Arc, Mutex};
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");
@@ -25,6 +27,7 @@ fn show_version() {
 
 fn run_signal_check(core: &mut ShellCore) {
     let mut arc = Arc::clone(&core.signal_flags); //追加
+    let mut sigint = Arc::clone(&core.sigint);
  
     thread::spawn(move || { //クロージャの処理全体を{}で囲みましょう
         let mut signals = Signals::new(vec![consts::SIGINT])
@@ -33,17 +36,18 @@ fn run_signal_check(core: &mut ShellCore) {
         loop {
             thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
             for signal in signals.pending() {
-                check_signals(signal, &mut arc);
+                check_signals(signal, &mut arc, &mut sigint);
             }
         }
     });
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
-fn check_signals(signal: i32, arc: &mut Arc<Mutex<Vec<bool>>>) {
+fn check_signals(signal: i32, arc: &mut Arc<Mutex<Vec<bool>>>, sigint: &mut Arc<AtomicBool>) {
     match signal {
         consts::SIGINT => {
             let mut flags = arc.lock().unwrap();
             flags[consts::SIGINT as usize] = true;
+            sigint.store(true, Relaxed);
             //eprintln!("\nCOME HERE\n"); //確認用
         },
         _ => {},
