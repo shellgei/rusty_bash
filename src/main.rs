@@ -6,13 +6,13 @@ mod feeder;
 mod elements;
 
 use std::{env, process, thread, time};
+use std::sync::Arc;
+use std::sync::atomic::Ordering::Relaxed;
 use crate::core::ShellCore;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use signal_hook::consts;
 use signal_hook::iterator::Signals;
-use std::sync::Arc;
-use std::sync::atomic::Ordering::Relaxed;
 
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");
