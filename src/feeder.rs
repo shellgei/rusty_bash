@@ -32,11 +32,11 @@ impl Feeder {
 
     pub fn set_backup(&mut self) {
         self.backup.push(self.remaining.clone());
-    }   
+    }
 
     pub fn pop_backup(&mut self) {
         self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
-    }   
+    }
 
     pub fn rewind(&mut self) {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
