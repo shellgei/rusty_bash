@@ -24,7 +24,7 @@ pub struct ShellCore {
     pub vars: HashMap<String, String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub nest: Vec<(String, Vec<String>)>,
-    pub sigint: Arc<AtomicBool>, 
+    pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
@@ -180,22 +180,4 @@ impl ShellCore {
         self.set_subshell_vars();
         self.job_table.clear();
     }
-
-    /*
-    pub fn check_signal(&self, signal: i32) -> bool {
-        self.sigint.load(Relaxed)
-    }
-
-    pub fn set_signal(&mut self, signal: i32) {
-        self.sigint.store(true, Relaxed)
-    }
-
-    pub fn unset_signal(&mut self, signal: i32) {
-        /*
-        let mut flags = self.signal_flags.lock().unwrap();
-        flags[signal as usize] = false;
-        */
-        self.sigint.store(false, Relaxed)
-    }
-*/
 }
