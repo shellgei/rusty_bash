@@ -49,7 +49,6 @@ fn run_signal_check(core: &mut ShellCore) {
             }
         }
     });
-
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
 fn main() {
