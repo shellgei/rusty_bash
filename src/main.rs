@@ -12,10 +12,11 @@ mod utils;
 mod feeder;
 mod debuginfo;
 
-use std::{env, process, path};
-use std::os::linux::fs::MetadataExt;
+use std::{env, process};
 use std::fs::{File,OpenOptions};
-use std::io::Read;
+use nix::libc;
+use nix::unistd::isatty;
+use nix::sys::utsname::uname;
 
 use crate::core::ShellCore;
 use crate::core::proc;
@@ -26,10 +27,9 @@ use crate::elements::script::Script;
 use crate::file_descs::FileDescs;
 use std::os::unix::io::IntoRawFd;
 
-fn is_interactive(pid: u32) -> bool {
-    let std_path = format!("/proc/{}/fd/0", pid);
-    match path::Path::new(&std_path).metadata() {
-        Ok(metadata) => metadata.st_mode() == 8592, 
+fn is_interactive() -> bool {
+    match isatty(libc::STDIN_FILENO) {
+        Ok(atty) => atty,
         Err(err) => panic!("{}", err),
     }
 }
@@ -44,12 +44,9 @@ fn read_bashrc(core: &mut ShellCore){
 }
 
 fn get_hostname() -> String{
-    if let Ok(mut file) = File::open("/etc/hostname") {
-
-        let mut fullname = String::new();
-        if let Ok(_) = file.read_to_string(&mut fullname) {
-            return fullname.trim_end().to_string();
-        }
+    if let Ok(uts) = uname() {
+        let fullname = uts.nodename().to_string_lossy();
+        return fullname.to_string();
     }
 
     "unknown".to_string()
@@ -121,7 +118,7 @@ fn main() {
     core.set_var("HOSTNAME", &get_hostname());
     core.set_var("SHELL", "rustybash");
     core.set_var("BASH", &core.args[0].to_string());
-    if is_interactive(pid) {
+    if is_interactive() {
         core.flags += "i";
     }
 

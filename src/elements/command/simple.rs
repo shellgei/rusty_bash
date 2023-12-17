@@ -3,7 +3,7 @@
 
 use std::env;
 
-use nix::unistd::{execvpe, fork, ForkResult, Pid}; 
+use nix::unistd::{execve, fork, ForkResult, Pid}; 
 use nix::unistd;
 use std::ffi::CString;
 use std::process::exit;
@@ -222,7 +222,7 @@ impl SimpleCommand {
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect();
 
-        let _ = execvpe(&cargs[0], &cargs, &envs);
+        let _ = execve(&cargs[0], &cargs, &envs);
 
         eprintln!("Command not found: {:?}", &cargs[0]);
         exit(127);
