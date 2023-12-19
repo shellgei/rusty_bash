@@ -27,11 +27,13 @@ hello
 
 ## For Contributors 
 
-* You can choose the following branches for adding your codes with pull requests. 
-    * [dev-builtins](https://github.com/shellgei/rusty_bash/tree/dev-builtins): for builtin commands 
-    * [dev-signal](https://github.com/shellgei/rusty_bash/tree/dev-signal): for development on signal
-    * [dev-compounds](https://github.com/shellgei/rusty_bash/tree/dev-compounds): for development on compoundss
-    * [dev-args](https://github.com/shellgei/rusty_bash/tree/dev-args): for development on arguments
+Since the main branch must synchronize the articles, further developments are reflected in the following branches. We prepared dev-* branches for adding your codes with pull requests.
+* [dev-builtins](https://github.com/shellgei/rusty_bash/tree/dev-builtins): for builtin commands 
+* [dev-signal](https://github.com/shellgei/rusty_bash/tree/dev-signal): for development on signal
+* [dev-compounds](https://github.com/shellgei/rusty_bash/tree/dev-compounds): for development on compoundss
+* [dev-args](https://github.com/shellgei/rusty_bash/tree/dev-args): for development on arguments
+
+These dev-* branches will be merged to the main branch. 
 
 ## List of Features
 
