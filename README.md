@@ -7,7 +7,7 @@
 
 ## What's this?
 
-a clone of Bash 
+A clone of Bash, which is developed as a hobby of our group and for monthly articles on SoftwareDesign magazine published by Gijutsu-Hyohron Co., Ltd.
 
 ## Quick Start
 
