@@ -49,8 +49,8 @@ hello
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| cd | :no_good: | pwd | :no_good: | read | :no_good: |
-| exit | :no_good: | source | :no_good: | set | :no_good: | 
+| cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :no_good: |
+| exit | :heavy_check_mark: | source | :no_good: | set | :no_good: | 
 | shopt | :no_good: | : | :no_good: | . | :no_good: | [ | :no_good: |
 | alias | :no_good: | bg | :no_good: | bind | :no_good: |
 | break | :no_good: | builtin | :no_good: | caller | :no_good: |
