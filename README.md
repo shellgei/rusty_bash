@@ -8,3 +8,17 @@
 ## What's this?
 
 a clone of Bash 
+
+## Quick Start
+
+```bash
+$ git clone https://github.com/shellgei/rusty_bash.git
+$ cd rusty_bash
+$ cargo build
+...
+🍣 echo hello
+hello
+🍣 exit
+```
+
+## Current activity
