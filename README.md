@@ -21,7 +21,7 @@ hello
 🍣 exit
 ```
 
-## list of features (main branch)
+## list of features
 
 * :heavy_check_mark: :available
 * :construction: :partially available (or having known bugs) 
