@@ -25,6 +25,12 @@ hello
 🍣 exit
 ```
 
+## For Contributors 
+
+* You can choose the following branches for adding your codes with pull requests. 
+    * [dev-builtins](https://github.com/shellgei/rusty_bash/tree/dev-builtins): for builtin commands 
+    * [dev-signal](https://github.com/shellgei/rusty_bash/tree/dev-signal): for development on signals
+
 ## List of Features
 
 * :heavy_check_mark: :available
