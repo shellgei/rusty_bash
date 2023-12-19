@@ -32,6 +32,7 @@ Since the main branch must synchronize the articles, further developments are re
 * [dev-signal](https://github.com/shellgei/rusty_bash/tree/dev-signal): for development on signal
 * [dev-compounds](https://github.com/shellgei/rusty_bash/tree/dev-compounds): for development on compoundss
 * [dev-args](https://github.com/shellgei/rusty_bash/tree/dev-args): for development on arguments
+* [dev-test](https://github.com/shellgei/rusty_bash/tree/dev-test): for development of a nice test system and test cases (we need more sophisticated test)
 * [dev-others](https://github.com/shellgei/rusty_bash/tree/dev-others): for development of other features
 
 These dev-* branches will be merged to the main branch depending on the situation of the articles. You can also propose some dev-foobar branches. 
