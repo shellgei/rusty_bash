@@ -21,4 +21,17 @@ hello
 🍣 exit
 ```
 
-## Current activity
+## list of features (main branch)
+
+* :heavy_check_mark: :available
+* :construction: :partially available (or having known bugs) 
+* :no_good: : not implemented
+
+
+### compound commands
+
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| if | :no_good: | while | :heavy_check_mark: | () | :heavy_check_mark: | 
+| {} | :heavy_check_mark: | case | :no_good: | until | :no_good: | select | :no_good: | 
+| for | :no_good: |
