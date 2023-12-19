@@ -1,4 +1,4 @@
-# Rusty Bash (sush shell)
+# Rusty Bash (sushi 🍣 shell)
 
 
 **IMPORTANT: I switche the main branch to the shell develped for articles on SoftwareDesign.**
