@@ -50,23 +50,23 @@ hello
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | cd | :no_good: | pwd | :no_good: | read | :no_good: |
-| exit | :no_good: | source | :no_good: | set | :construction: | 
-| shopt | :construction: | : | :no_good: | . | :no_good: | [ | :no_good: |
-| alias | :no_good: | bg | :construction: | bind | :no_good: |
+| exit | :no_good: | source | :no_good: | set | :no_good: | 
+| shopt | :no_good: | : | :no_good: | . | :no_good: | [ | :no_good: |
+| alias | :no_good: | bg | :no_good: | bind | :no_good: |
 | break | :no_good: | builtin | :no_good: | caller | :no_good: |
 | command | :no_good: | compgen | :no_good: | complete | :no_good: |
 | compopt | :no_good: | continue | :no_good: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :no_good: | exec | :no_good: |
-| fc | :no_good: | fg | :construction: | getopts | :no_good: |
-| hash | :no_good: | help | :no_good: | history | :construction: |
-| jobs | :construction: | kill | :no_good: | let | :no_good: |
+| fc | :no_good: | fg | :no_good: | getopts | :no_good: |
+| hash | :no_good: | help | :no_good: | history | :no_good: |
+| jobs | :no_good: | kill | :no_good: | let | :no_good: |
 | local | :no_good: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
-| read | :no_good: | readonly | :no_good: | return | :construction: |
+| read | :no_good: | readonly | :no_good: | return | :no_good: |
 | shift | :no_good: | suspend | :no_good: | test | :no_good: |
 | times | :no_good: | trap | :no_good: | true | :no_good: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
-| umask | :no_good: | unalias | :no_good: | unset | :construction: |
-| wait | :construction: | export | :construction: | false | :no_good: |
+| umask | :no_good: | unalias | :no_good: | unset | :no_good: |
+| wait | :no_good: | export | :no_good: | false | :no_good: |
 
