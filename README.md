@@ -33,7 +33,7 @@ Since the main branch must synchronize the articles, further developments are re
 * [dev-compounds](https://github.com/shellgei/rusty_bash/tree/dev-compounds): for development on compoundss
 * [dev-args](https://github.com/shellgei/rusty_bash/tree/dev-args): for development on arguments
 
-These dev-* branches will be merged to the main branch. 
+These dev-* branches will be merged to the main branch depending on the situation of the articles. You can also propose some dev-foobar branches. 
 
 ## List of Features
 
