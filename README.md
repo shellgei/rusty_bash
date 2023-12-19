@@ -2,8 +2,9 @@
 
 
 **IMPORTANT: the main branch is switched to the shell develped for articles on [SoftwareDesign](https://gihyo.jp/magazine/SD).**
+（今までのメインブランチは、連載のものに比べて散らかりすぎなので、連載のものをmainに切り替えました。）
 
-* [old main branch](https://github.com/shellgei/rusty_bash/tree/alpha_main)
+* [old main branch](https://github.com/shellgei/rusty_bash/tree/old_main)
 
 ## What's this?
 
