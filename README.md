@@ -1,4 +1,4 @@
-# Rusty Bash (sushi 🍣 shell)
+# Rusty Bash (a.k.a. sushi 🍣 shell)
 
 
 **IMPORTANT: I switche the main branch to the shell develped for articles on [SoftwareDesign](https://gihyo.jp/magazine/SD).**
@@ -35,3 +35,12 @@ hello
 | if | :no_good: | while | :heavy_check_mark: | () | :heavy_check_mark: | 
 | {} | :heavy_check_mark: | case | :no_good: | until | :no_good: | select | :no_good: | 
 | for | :no_good: |
+
+
+### control operator
+
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
+| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :heavy_check_mark: |
+| \|& | :heavy_check_mark: | 
