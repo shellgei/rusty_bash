@@ -68,8 +68,11 @@ impl ShellCore {
                 .expect("Can't allocate fd for tty FD");
         }
 
+        core.builtins.insert(":".to_string(), builtins::true_);
         core.builtins.insert("cd".to_string(), builtins::cd);
         core.builtins.insert("exit".to_string(), builtins::exit);
+        core.builtins.insert("false".to_string(), builtins::false_);
+        core.builtins.insert("true".to_string(), builtins::true_);
 
         core
     }
