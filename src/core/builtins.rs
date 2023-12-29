@@ -5,24 +5,26 @@ use crate::ShellCore;
 use std::{env, fs};
 use std::path::Path;
 
-pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    eprintln!("exit");
-    if args.len() > 1 {
-        core.vars.insert("?".to_string(), args[1].clone());
+impl ShellCore {
+    pub fn set_builtins(&mut self) {
+        self.builtins.insert(":".to_string(), true_);
+        self.builtins.insert("cd".to_string(), cd);
+        self.builtins.insert("exit".to_string(), exit);
+        self.builtins.insert("false".to_string(), false_);
+        self.builtins.insert("pwd".to_string(), pwd);
+        self.builtins.insert("true".to_string(), true_);
     }
-    core.exit()
 }
 
 pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 0 {
-        eprintln!("Bug of this shell");
+        eprintln!("SUSH INTERNAL ERROR: (no arg for cd)");
         return 1;
     }
     if args.len() > 2 {
-        eprintln!("{}", "bash: cd: too many arguments");
+        eprintln!("sush: cd: too many arguments");
         return 1;
     }
-
 
     if args.len() == 1 { //only "cd"
         let var = env::var("HOME").expect("HOME is not defined");
@@ -45,9 +47,21 @@ pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         0
     }else{
-        eprintln!("Not exist directory");
+        eprintln!("sush: cd: {:?}: No such file or directory", &path);
         1
     }
+}
+
+pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    eprintln!("exit");
+    if args.len() > 1 {
+        core.vars.insert("?".to_string(), args[1].clone());
+    }
+    core.exit()
+}
+
+pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    1
 }
 
 pub fn pwd(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
@@ -65,8 +79,4 @@ pub fn pwd(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
-}
-
-pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
-    1
 }
