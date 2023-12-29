@@ -49,3 +49,11 @@ pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         1
     }
 }
+
+pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    0
+}
+
+pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    1
+}
