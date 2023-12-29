@@ -46,7 +46,7 @@ impl ShellCore {
         if is_interactive() {
             core.flags += "i";
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
-                .expect("Can't allocate fd for tty FD");
+                .expect("sush(fatal): Can't allocate fd for tty FD");
         }
 
         core.vars.insert("$".to_string(), pid.to_string());
