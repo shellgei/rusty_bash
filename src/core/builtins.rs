@@ -50,6 +50,19 @@ pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 }
 
+pub fn pwd(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    match env::current_dir() {
+        Ok(path) => {
+            println!("{}", path.display());
+            0
+        },
+        Err(err) => {
+            eprintln!("pwd: error retrieving current directory: {:?}", err);
+            1
+        }
+    }
+}
+
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
