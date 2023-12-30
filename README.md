@@ -2,6 +2,7 @@
 
 [![ubuntu-latest](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml)
 [![macos-latest](https://github.com/shellgei/rusty_bash/actions/workflows/macos.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/macos.yml)
+![](https://img.shields.io/github/license/shellgei/rusty_bash)
 
 
 **IMPORTANT: the main branch is switched to the shell develped for articles on [SoftwareDesign](https://gihyo.jp/magazine/SD).**
@@ -9,8 +10,6 @@
 
 * [old main branch](https://github.com/shellgei/rusty_bash/tree/old_main)
 
-[![Rust](https://github.com/shellgei/rusty_bash/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/shellgei/rusty_bash/actions/workflows/test.yml)
-![](https://img.shields.io/github/license/shellgei/rusty_bash)
 
 ## What's this?
 
