@@ -205,7 +205,7 @@ res=$($com <<< '
 	cd - > /tmp/rusty_bash2
 	cat /tmp/rusty_bash1
 	cat /tmp/rusty_bash2
-	pwd')
+	pwd' | sed s@.private@@)
 [ "$res" = "/etc
 /tmp
 /tmp" ] || err $LINENO
@@ -217,7 +217,7 @@ res=$($com <<< '
 	{ cd - ; } > /tmp/rusty_bash2
 	cat /tmp/rusty_bash1
 	cat /tmp/rusty_bash2
-	pwd')
+	pwd' | sed s@.private@@)
 [ "$res" = "/etc
 /tmp
 a
