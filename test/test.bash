@@ -230,19 +230,19 @@ res=$($com <<< '
 	ls /aaaa 2> /tmp/rusty_bash
 	ls /bbbb 2>> /tmp/rusty_bash
 	cat /tmp/rusty_bash | grep ls | wc -l
-	')
+	' | tr -dc 0-9)
 [ "$res" = "2" ] || err $LINENO
 
 # &>
 
-res=$($com <<< 'ls /etc/passwd aaaa &> /tmp/rusty_bash; cat /tmp/rusty_bash | wc -l')
+res=$($com <<< 'ls /etc/passwd aaaa &> /tmp/rusty_bash; cat /tmp/rusty_bash | wc -l | tr -dc 0-9')
 [ "$res" == "2" ] || err $LINENO
 
 # &> for non-fork redirects
 
 res=$($com <<< '
 	{ ls /etc/passwd aaaa ; } &> /tmp/rusty_bash 
-	cat /tmp/rusty_bash | wc -l')
+	cat /tmp/rusty_bash | wc -l | tr -dc 0-9')
 [ "$res" == "2" ] || err $LINENO
 
 res=$(LANG=C $com <<< '
