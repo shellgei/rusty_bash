@@ -110,16 +110,16 @@ res=$($com <<< 'eeeeeecho hoge')
 res=$($com <<< 'seq 10 | rev | tail -n 1')
 [ "$res" = "01" ] || err $LINENO
 
-res=$($com <<< 'seq 3 |
+res=$($com <<< 'seq 10 |
 	rev | tail -n 1')
 [ "$res" = "01" ] || err $LINENO
 
-res=$($com <<< 'seq 3 |    
+res=$($com <<< 'seq 10 |    
 
 	  rev | tail -n 1')
 [ "$res" = "01" ] || err $LINENO
 
-res=$($com <<< 'seq 3 |  #コメントだよ
+res=$($com <<< 'seq 10 |  #コメントだよ
 
 #コメントだよ
     #こめんとだよ
@@ -127,7 +127,7 @@ res=$($com <<< 'seq 3 |  #コメントだよ
 	  rev | tail -n 1')
 [ "$res" = "01" ] || err $LINENO
 
-res=$($com <<< 'seq 3 |   | head -n 1')
+res=$($com <<< 'seq 10 |   | head -n 1')
 [ "$?" = "2" ] || err $LINENO
 
 ### COMMENT ###
