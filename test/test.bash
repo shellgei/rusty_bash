@@ -73,8 +73,8 @@ res=$($com <<< '(echo hoge; false)')
 res=$($com <<< 'cd / ; (cd /etc); pwd')
 [ "$res" = / ] || err $LINENO
 
-res=$($com <<< 'cd / ; { cd /etc ; } ; pwd')
-[ "$res" = /etc ] || err $LINENO
+res=$($com <<< 'cd ; { cd / ; } ; pwd')
+[ "$res" = / ] || err $LINENO
 
 res=$($com <<< '( )')
 [ "$?" = 2 ] || err $LINENO
