@@ -252,7 +252,7 @@ res=$(LANG=C $com <<< '
 	{ ls /etc/passwd ; }
 	{ ls aaaa ; } 2> /tmp/rusty_bash2
 	cat /tmp/rusty_bash2 | wc -l
-	')
+	' | tr -d [:blank:])
 [ "$res" == "2
 /etc/passwd
 1" ] || err $LINENO
@@ -264,7 +264,7 @@ res=$($com <<< '
 	{ cd - ; } &> /tmp/rusty_bash2
 	cat /tmp/rusty_bash1
 	cat /tmp/rusty_bash2
-	pwd')
+	pwd' | sed s@.private@@)
 [ "$res" = "/etc
 /tmp
 a
