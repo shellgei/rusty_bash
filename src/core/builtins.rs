@@ -2,10 +2,10 @@
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod utils;
 mod pwd;
 
 use crate::ShellCore;
-use super::builtin_utils;
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -42,7 +42,7 @@ pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         core.vars.insert("OLDPWD".to_string(), old.display().to_string());
     };
 
-    let path = builtin_utils::make_canonical_path(builtin_utils::make_absolute_path(core, &args[1]));
+    let path = utils::make_canonical_path(utils::make_absolute_path(core, &args[1]));
     if core.set_current_directory(&path).is_ok() {
         core.vars.insert("PWD".to_string(), path.display().to_string());
         0
