@@ -5,6 +5,24 @@
 use crate::ShellCore;
 use super::utils;
 
+pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() > 2 {
+        eprintln!("sush: cd: too many arguments");
+        return 1;
+    }
+
+    if args.len() == 1 { //only "cd"
+        return cd_1arg(core, args);
+    }
+
+    if args[1] == "-" { // cd -
+        cd_oldpwd(core, args)
+    }else{ // cd /some/dir
+        set_oldpwd(core);
+        change_directory(core, args)
+    }
+}
+
 fn cd_1arg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let var = "~".to_string();
     args.push(var);
@@ -39,23 +57,5 @@ fn change_directory(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }else{
         eprintln!("sush: cd: {:?}: No such file or directory", &path);
         1
-    }
-}
-
-pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() > 2 {
-        eprintln!("sush: cd: too many arguments");
-        return 1;
-    }
-
-    if args.len() == 1 { //only "cd"
-        return cd_1arg(core, args);
-    }
-
-    if args[1] == "-" { // cd -
-        cd_oldpwd(core, args)
-    }else{ // cd /some/dir
-        set_oldpwd(core);
-        change_directory(core, args)
     }
 }

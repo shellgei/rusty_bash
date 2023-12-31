@@ -4,19 +4,6 @@
 
 use crate::ShellCore;
 
-fn show_pwd(core: &mut ShellCore, physical: bool) -> i32 {
-    if let Some(mut path) = core.get_current_directory().clone() {
-        if physical && path.is_symlink() {
-            if let Ok(c) = path.canonicalize() {
-                path = c;
-            }
-        }
-        println!("{}", path.display());
-        return 0;
-    }
-    1
-}
-
 pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 || &args[1][..1] != "-" { // $ pwd, $ pwd aaa
         return show_pwd(core, false);
@@ -31,4 +18,17 @@ pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             1
         },
     }
+}
+
+fn show_pwd(core: &mut ShellCore, physical: bool) -> i32 {
+    if let Some(mut path) = core.get_current_directory().clone() {
+        if physical && path.is_symlink() {
+            if let Ok(c) = path.canonicalize() {
+                path = c;
+            }
+        }
+        println!("{}", path.display());
+        return 0;
+    }
+    1
 }
