@@ -22,16 +22,13 @@ pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return show_pwd(core, false);
     }
 
-    if &args[1][..1] == "-" { // $pwd -L, pwd -P, pwd hogehoge
-        match args[1].as_str() {
-            "-P" => return show_pwd(core, true), // シンボリックリンク名を解決して表示する
-            "-L" => return show_pwd(core, false), // シンボリックリンク名をそのまま表示する（bash default）
-            _ => {
-                eprintln!("sush: pwd: {}: invalid option", &args[1]);
-                eprintln!("pwd: usage: pwd [-LP]");
-                return 1;
-            },
-        }
+    match args[1].as_str() { //$pwd -L, pwd -P, pwd -aaaa
+        "-P" => show_pwd(core, true), // シンボリックリンク名を解決して表示
+        "-L" => show_pwd(core, false), // シンボリックリンク名をそのまま表示（bash default）
+        _ => {
+            eprintln!("sush: pwd: {}: invalid option", &args[1]);
+            eprintln!("pwd: usage: pwd [-LP]");
+            1
+        },
     }
-    show_pwd(core, false)
 }
