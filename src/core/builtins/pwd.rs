@@ -4,30 +4,7 @@
 
 use crate::ShellCore;
 
-pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut physical: bool = false;
-
-    match args.len() {
-        0 => {
-            eprintln!("Bug of this shell");
-            return 1;    
-        },
-        2 => {
-            if &args[1][..1] == "-" {
-                match args[1].as_str() {
-                    "-P" => { physical = true }, // シンボリックリンク名を解決して表示する
-                    "-L" => (), // シンボリックリンク名をそのまま表示する（bash default）
-                    _ => {
-                        eprintln!("{}", "sush: pwd: invalid option");
-                        eprintln!("{}", "pwd: usage: pwd [-LP]");
-                        return 1;
-                    },
-                }
-            }
-        },
-        _ => (),
-    }
-
+fn show_pwd(core: &mut ShellCore, physical: bool) -> i32 {
     if let Some(mut path) = core.get_current_directory().clone() {
         if physical && path.is_symlink() {
             if let Ok(c) = path.canonicalize() {
@@ -38,4 +15,23 @@ pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
     1
+}
+
+pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() == 1 { // $ pwd
+        return show_pwd(core, false);
+    }
+
+    if &args[1][..1] == "-" { // $pwd -L, pwd -P, pwd hogehoge
+        match args[1].as_str() {
+            "-P" => return show_pwd(core, true), // シンボリックリンク名を解決して表示する
+            "-L" => return show_pwd(core, false), // シンボリックリンク名をそのまま表示する（bash default）
+            _ => {
+                eprintln!("{}", "sush: pwd: invalid option");
+                eprintln!("{}", "pwd: usage: pwd [-LP]");
+                return 1;
+            },
+        }
+    }
+    show_pwd(core, false)
 }

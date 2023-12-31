@@ -19,10 +19,6 @@ impl ShellCore {
 }
 
 pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() == 0 {
-        eprintln!("SUSH INTERNAL ERROR: (no arg for cd)");
-        return 1;
-    }
     if args.len() > 2 {
         eprintln!("sush: cd: too many arguments");
         return 1;

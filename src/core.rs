@@ -137,6 +137,10 @@ impl ShellCore {
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
+        if args.len() == 0 {
+            panic!("SUSH INTERNAL ERROR (no arg for builtins)");
+        }
+
         if ! self.builtins.contains_key(&args[0]) {
             return false;
         }
