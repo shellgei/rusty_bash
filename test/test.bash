@@ -26,6 +26,15 @@ res=$($com <<< '	echo hoge')
 res=$($com <<< 'echo hoge;')
 [ "$res" = "hoge" ] || err $LINENO
 
+### BUILTIN COMMAND TEST ###
+
+res=$($com <<< 'cd /; pwd')
+[ "$res" = "/" ] || err $LINENO
+
+res=$($com <<< 'cd /tmp; mkdir hoge; ln -s hoge link; cd link; pwd -L; pwd -P')
+[ "$res" = "/tmp/link
+/tmp/hoge" ] || err $LINENO
+
 ### COMPOUND COMMAND TEST ###
 
 res=$($com <<< '(echo hoge; echo fuge)')
