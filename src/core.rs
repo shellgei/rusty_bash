@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod builtins;
+pub mod builtin_utils;
 pub mod jobtable;
 
 use std::collections::HashMap;
