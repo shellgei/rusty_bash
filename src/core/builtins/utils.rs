@@ -30,7 +30,8 @@ pub fn make_absolute_path(core: &mut ShellCore, path_str: &str) -> PathBuf {
     absolute
 }
 
-pub fn make_canonical_path(path: PathBuf) -> PathBuf {
+pub fn make_canonical_path(core: &mut ShellCore, path_str: &str) -> PathBuf {
+    let path = make_absolute_path(core, path_str);
     let mut canonical = PathBuf::new();
     for component in path.components() {
         match component {

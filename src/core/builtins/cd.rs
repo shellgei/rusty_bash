@@ -50,7 +50,7 @@ fn set_oldpwd(core: &mut ShellCore) {
 }
 
 fn change_directory(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let path = utils::make_canonical_path(utils::make_absolute_path(core, &args[1]));
+    let path = utils::make_canonical_path(core, &args[1]);
     if core.set_current_directory(&path).is_ok() {
         core.vars.insert("PWD".to_string(), path.display().to_string());
         0
