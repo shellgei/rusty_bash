@@ -25,6 +25,18 @@ hello
 🍣 exit
 ```
 
+## For Contributors 
+
+Since the main branch must synchronize the articles, further developments are reflected in the following branches. We prepared dev-* branches for adding your codes with pull requests.
+* [dev-builtins](https://github.com/shellgei/rusty_bash/tree/dev-builtins): for builtin commands 
+* [dev-signal](https://github.com/shellgei/rusty_bash/tree/dev-signal): for development on signal
+* [dev-compounds](https://github.com/shellgei/rusty_bash/tree/dev-compounds): for development on compoundss
+* [dev-args](https://github.com/shellgei/rusty_bash/tree/dev-args): for development on arguments
+* [dev-test](https://github.com/shellgei/rusty_bash/tree/dev-test): for development of a nice test system and test cases (we need more sophisticated test)
+* [dev-others](https://github.com/shellgei/rusty_bash/tree/dev-others): for development of other features
+
+These dev-* branches will be merged to the main branch depending on the situation of the articles. You can also propose some dev-foobar branches. 
+
 ## List of Features
 
 * :heavy_check_mark: :available
@@ -55,7 +67,7 @@ hello
 |-------------------|----|-------------------|----|-------------------|----|
 | cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :no_good: |
 | exit | :heavy_check_mark: | source | :no_good: | set | :no_good: | 
-| shopt | :no_good: | : | :no_good: | . | :no_good: | [ | :no_good: |
+| shopt | :no_good: | : | :heavy_check_mark: | . | :no_good: | [ | :no_good: |
 | alias | :no_good: | bg | :no_good: | bind | :no_good: |
 | break | :no_good: | builtin | :no_good: | caller | :no_good: |
 | command | :no_good: | compgen | :no_good: | complete | :no_good: |
@@ -69,10 +81,10 @@ hello
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | read | :no_good: | readonly | :no_good: | return | :no_good: |
 | shift | :no_good: | suspend | :no_good: | test | :no_good: |
-| times | :no_good: | trap | :no_good: | true | :no_good: |
+| times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
 | umask | :no_good: | unalias | :no_good: | unset | :no_good: |
-| wait | :no_good: | export | :no_good: | false | :no_good: |
+| wait | :no_good: | export | :no_good: | false | :heavy_check_mark: |
 
 ## Thanks to
 

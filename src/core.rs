@@ -64,19 +64,13 @@ impl ShellCore {
 
         core.get_current_directory();
         core.set_initial_vars();
+        core.set_builtins();
 
         if is_interactive() {
             core.flags += "i";
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("Can't allocate fd for tty FD");
         }
-
-        core.builtins.insert(":".to_string(), builtins::true_);
-        core.builtins.insert("cd".to_string(), builtins::cd);
-        core.builtins.insert("exit".to_string(), builtins::exit);
-        core.builtins.insert("false".to_string(), builtins::false_);
-        core.builtins.insert("pwd".to_string(), builtins::pwd);
-        core.builtins.insert("true".to_string(), builtins::true_);
 
         core
     }
