@@ -35,6 +35,10 @@ res=$($com <<< 'cd /tmp; mkdir hoge; ln -s hoge link; cd link; pwd -L; pwd -P')
 [ "$res" = "/tmp/link
 /tmp/hoge" ] || err $LINENO
 
+res=$($com <<< 'pwd -a 2>/tmp/rusty_bash; cat /tmp/rusty_bash')
+[ "$res" = "sush: pwd: -a: invalid option
+pwd: usage: pwd [-LP]" ] || err $LINENO
+
 ### COMPOUND COMMAND TEST ###
 
 res=$($com <<< '(echo hoge; echo fuge)')
