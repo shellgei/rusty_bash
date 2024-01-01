@@ -6,7 +6,7 @@ pub mod jobtable;
 
 use std::collections::HashMap;
 use std::os::fd::RawFd;
-use std::process;
+use std::{io, process, env, path};
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
 use nix::sys::signal::{Signal, SigHandler};
@@ -27,6 +27,7 @@ pub struct ShellCore {
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
+    pub tcwd: Option<path::PathBuf>, // the_current_working_directory
 }
 
 fn is_interactive() -> bool {
@@ -58,8 +59,10 @@ impl ShellCore {
             is_subshell: false,
             tty_fd: -1,
             job_table: vec![],
+            tcwd: None,
         };
 
+        core.get_current_directory();
         core.set_initial_vars();
 
         if is_interactive() {
@@ -83,6 +86,7 @@ impl ShellCore {
         self.vars.insert("BASHPID".to_string(), self.vars["$"].clone());
         self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
         self.vars.insert("?".to_string(), "0".to_string());
+        self.vars.insert("HOME".to_string(), env::var("HOME").unwrap_or("/".to_string()));
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
@@ -184,5 +188,27 @@ impl ShellCore {
         self.set_pgid(pid, pgid);
         self.set_subshell_vars();
         self.job_table.clear();
+    }
+
+    pub fn get_current_directory(&mut self) -> &Option<path::PathBuf> {
+        if self.tcwd.is_none() {
+            match env::current_dir() {
+                Ok(path) => {
+                    self.tcwd = Some(path);
+                },
+                Err(err) => {
+                    eprintln!("pwd: error retrieving current directory: {:?}", err);
+                }
+            }
+        }
+        &self.tcwd
+    }
+
+    pub fn set_current_directory(&mut self, path: &path::PathBuf) -> Result<(), io::Error> {
+        let res = env::set_current_dir(path);
+        if res.is_ok() {
+            self.tcwd = Some(path.clone());
+        }
+        res
     }
 }
