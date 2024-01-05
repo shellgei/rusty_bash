@@ -86,8 +86,8 @@ res=$($com <<< '(echo hoge; false)')
 res=$($com <<< 'cd / ; (cd /etc); pwd')
 [ "$res" = / ] || err $LINENO
 
-res=$($com <<< 'cd / ; { cd /etc ; } ; pwd')
-[ "$res" = /etc ] || err $LINENO
+res=$($com <<< 'cd ; { cd / ; } ; pwd')
+[ "$res" = / ] || err $LINENO
 
 res=$($com <<< '( )')
 [ "$?" = 2 ] || err $LINENO
@@ -120,27 +120,27 @@ res=$($com <<< 'eeeeeecho hoge')
 
 ### PIPELINE ###
 
-res=$($com <<< 'seq 3 | tac | head -n 1')
-[ "$res" = "3" ] || err $LINENO
+res=$($com <<< 'seq 10 | rev | tail -n 1')
+[ "$res" = "01" ] || err $LINENO
 
-res=$($com <<< 'seq 3 |
-	tac | head -n 1')
-[ "$res" = "3" ] || err $LINENO
+res=$($com <<< 'seq 10 |
+	rev | tail -n 1')
+[ "$res" = "01" ] || err $LINENO
 
-res=$($com <<< 'seq 3 |    
+res=$($com <<< 'seq 10 |    
 
-	  tac | head -n 1')
-[ "$res" = "3" ] || err $LINENO
+	  rev | tail -n 1')
+[ "$res" = "01" ] || err $LINENO
 
-res=$($com <<< 'seq 3 |  #コメントだよ
+res=$($com <<< 'seq 10 |  #コメントだよ
 
 #コメントだよ
     #こめんとだよ
 
-	  tac | head -n 1')
-[ "$res" = "3" ] || err $LINENO
+	  rev | tail -n 1')
+[ "$res" = "01" ] || err $LINENO
 
-res=$($com <<< 'seq 3 |   | head -n 1')
+res=$($com <<< 'seq 10 |   | head -n 1')
 [ "$?" = "2" ] || err $LINENO
 
 ### COMMENT ###
@@ -189,7 +189,7 @@ res=$($com <<< 'echo hoge |\
 & rev')
 [ "$res" = "egoh" ] || err $LINENO
 
-res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l')
+res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l | tr -dc 0-9')
 [ "$res" = "2" ] || err $LINENO
 
 res=$($com <<< 'ls |  | rev')
@@ -218,7 +218,7 @@ res=$($com <<< '
 	cd - > /tmp/rusty_bash2
 	cat /tmp/rusty_bash1
 	cat /tmp/rusty_bash2
-	pwd')
+	pwd' | sed s@.private@@)
 [ "$res" = "/etc
 /tmp
 /tmp" ] || err $LINENO
@@ -230,7 +230,7 @@ res=$($com <<< '
 	{ cd - ; } > /tmp/rusty_bash2
 	cat /tmp/rusty_bash1
 	cat /tmp/rusty_bash2
-	pwd')
+	pwd' | sed s@.private@@)
 [ "$res" = "/etc
 /tmp
 a
@@ -243,19 +243,19 @@ res=$($com <<< '
 	ls /aaaa 2> /tmp/rusty_bash
 	ls /bbbb 2>> /tmp/rusty_bash
 	cat /tmp/rusty_bash | grep ls | wc -l
-	')
+	' | tr -dc 0-9)
 [ "$res" = "2" ] || err $LINENO
 
 # &>
 
-res=$($com <<< 'ls /etc/passwd aaaa &> /tmp/rusty_bash; cat /tmp/rusty_bash | wc -l')
+res=$($com <<< 'ls /etc/passwd aaaa &> /tmp/rusty_bash; cat /tmp/rusty_bash | wc -l | tr -dc 0-9')
 [ "$res" == "2" ] || err $LINENO
 
 # &> for non-fork redirects
 
 res=$($com <<< '
 	{ ls /etc/passwd aaaa ; } &> /tmp/rusty_bash 
-	cat /tmp/rusty_bash | wc -l')
+	cat /tmp/rusty_bash | wc -l | tr -dc 0-9')
 [ "$res" == "2" ] || err $LINENO
 
 res=$(LANG=C $com <<< '
@@ -265,7 +265,7 @@ res=$(LANG=C $com <<< '
 	{ ls /etc/passwd ; }
 	{ ls aaaa ; } 2> /tmp/rusty_bash2
 	cat /tmp/rusty_bash2 | wc -l
-	')
+	' | tr -d [:blank:])
 [ "$res" == "2
 /etc/passwd
 1" ] || err $LINENO
@@ -277,7 +277,7 @@ res=$($com <<< '
 	{ cd - ; } &> /tmp/rusty_bash2
 	cat /tmp/rusty_bash1
 	cat /tmp/rusty_bash2
-	pwd')
+	pwd' | sed s@.private@@)
 [ "$res" = "/etc
 /tmp
 a
