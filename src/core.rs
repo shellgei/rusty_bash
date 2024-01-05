@@ -210,4 +210,3 @@ impl ShellCore {
         res
     }
 }
-
