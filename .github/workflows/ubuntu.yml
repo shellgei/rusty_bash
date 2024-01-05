@@ -1,8 +1,9 @@
-name: Rust
+name: ubuntu-latest
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, sd/* ]
+    paths: ['src/**', 'test/**', '!README.md' ]
   pull_request:
     branches: [ main ]
 
@@ -15,10 +16,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Bash tests
       run: bash -xv ./test/test.bash
-    - name: Old tests
-      run: bash -xve ./test/old_test.bash
-      #- name: Internal tests
-      #run: cargo test --verbose
