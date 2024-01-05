@@ -1,6 +1,6 @@
 [package]
 name = "sush"
-version = "2024.7.4"
+version = "2024.7.5"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
