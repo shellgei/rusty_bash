@@ -1,23 +1,15 @@
 # Rusty Bash (a.k.a. sushi 🍣 shell)
 
-<<<<<<< HEAD
-=======
 [![ubuntu-latest](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml)
 [![macos-latest](https://github.com/shellgei/rusty_bash/actions/workflows/macos.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/macos.yml)
 ![](https://img.shields.io/github/license/shellgei/rusty_bash)
 
->>>>>>> sd/202407_5
 
 **IMPORTANT: the main branch is switched to the shell develped for articles on [SoftwareDesign](https://gihyo.jp/magazine/SD).**
 （今までのメインブランチは、連載のものに比べて散らかりすぎなので、連載のものをmainに切り替えました。）
 
 * [old main branch](https://github.com/shellgei/rusty_bash/tree/old_main)
 
-<<<<<<< HEAD
-[![Rust](https://github.com/shellgei/rusty_bash/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/shellgei/rusty_bash/actions/workflows/test.yml)
-![](https://img.shields.io/github/license/shellgei/rusty_bash)
-=======
->>>>>>> sd/202407_5
 
 ## What's this?
 
