@@ -28,7 +28,7 @@ impl Pipeline {
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
             pids.push(self.commands[i].exec(core, p));
-            if i == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
+            if i == 0 && pgid.as_raw() == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
                 pgid = pids[0].expect("SUSHI INTERNAL ERROR (unforked in pipeline)");
             }
             prev = p.recv;
