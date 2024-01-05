@@ -64,7 +64,7 @@ impl ShellCore {
         if is_interactive() {
             core.flags += "i";
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
-                .expect("Can't allocate fd for tty FD");
+                .expect("sush(fatal): Can't allocate fd for tty FD");
         }
 
         core.builtins.insert("cd".to_string(), builtins::cd);
@@ -176,3 +176,4 @@ impl ShellCore {
         self.job_table.clear();
     }
 }
+
