@@ -7,6 +7,7 @@ mod pwd;
 mod utils;
 
 use crate::ShellCore;
+use std::{io, env, path};
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -16,6 +17,28 @@ impl ShellCore {
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("true".to_string(), true_);
+    }
+
+    pub fn get_current_directory(&mut self) -> &Option<path::PathBuf> {
+        if self.tcwd.is_none() {
+            match env::current_dir() {
+                Ok(path) => {
+                    self.tcwd = Some(path);
+                },
+                Err(err) => {
+                    eprintln!("pwd: error retrieving current directory: {:?}", err);
+                }
+            }
+        }
+        &self.tcwd
+    }
+
+    pub fn set_current_directory(&mut self, path: &path::PathBuf) -> Result<(), io::Error> {
+        let res = env::set_current_dir(path);
+        if res.is_ok() {
+            self.tcwd = Some(path.clone());
+        }
+        res
     }
 }
 
