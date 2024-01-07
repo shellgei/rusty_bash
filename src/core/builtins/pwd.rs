@@ -3,7 +3,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::utils;
 
 pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 || &args[1][..1] != "-" { // $ pwd, $ pwd aaa
@@ -22,7 +21,7 @@ pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 fn show_pwd(core: &mut ShellCore, physical: bool) -> i32 {
-    if let Some(mut path) = utils::get_current_directory(core) {
+    if let Some(mut path) = core.get_current_directory() {
         if physical && path.is_symlink() {
             if let Ok(c) = path.canonicalize() {
                 path = c;

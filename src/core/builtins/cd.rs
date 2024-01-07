@@ -44,7 +44,7 @@ fn cd_oldpwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 fn set_oldpwd(core: &mut ShellCore) {
-    if let Some(old) = utils::get_current_directory(core) {
+    if let Some(old) = core.get_current_directory() {
         core.vars.insert("OLDPWD".to_string(), old.display().to_string());
     };
 }

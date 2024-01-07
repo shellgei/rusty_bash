@@ -6,7 +6,7 @@ pub mod jobtable;
 
 use std::collections::HashMap;
 use std::os::fd::RawFd;
-use std::{process, env, path};
+use std::{io, env, path, process};
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
 use nix::sys::signal::{Signal, SigHandler};
@@ -27,7 +27,7 @@ pub struct ShellCore {
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
-    pub tcwd: Option<path::PathBuf>, // the_current_working_directory
+    tcwd: Option<path::PathBuf>, // the_current_working_directory
 }
 
 fn is_interactive() -> bool {
@@ -193,5 +193,21 @@ impl ShellCore {
             Ok(path) => self.tcwd = Some(path),
             Err(err) => eprintln!("pwd: error retrieving current directory: {:?}", err),
         }
+    }
+
+    pub fn get_current_directory(&mut self) -> Option<path::PathBuf> {
+        if self.tcwd.is_none() {
+            self.init_current_directory();
+        }
+        self.tcwd.clone()
+    }
+
+
+    pub fn set_current_directory(&mut self, path: &path::PathBuf) -> Result<(), io::Error> {
+        let res = env::set_current_dir(path);
+        if res.is_ok() {
+            self.tcwd = Some(path.clone());
+        }
+        res
     }
 }

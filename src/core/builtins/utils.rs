@@ -4,14 +4,6 @@
 
 use crate::ShellCore;
 use std::path::{Path, PathBuf, Component};
-use std::path;
-
-pub fn get_current_directory(core: &mut ShellCore) -> Option<path::PathBuf> {
-    if core.tcwd.is_none() {
-        core.init_current_directory();
-    }
-    core.tcwd.clone()
-}
 
 pub fn make_absolute_path(core: &mut ShellCore, path_str: &str) -> PathBuf {
     let path = Path::new(&path_str);
@@ -31,7 +23,7 @@ pub fn make_absolute_path(core: &mut ShellCore, path_str: &str) -> PathBuf {
             }
         }
     } else { // current
-        if let Some(tcwd) = get_current_directory(core) {
+        if let Some(tcwd) = core.get_current_directory() {
             absolute.push(tcwd);
             absolute.push(path);
         };
