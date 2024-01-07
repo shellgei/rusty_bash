@@ -62,7 +62,7 @@ impl ShellCore {
             tcwd: None,
         };
 
-        core.get_current_directory();
+        core.init_current_directory();
         core.set_initial_vars();
         core.set_builtins();
 
@@ -186,5 +186,12 @@ impl ShellCore {
         self.set_pgid(pid, pgid);
         self.set_subshell_vars();
         self.job_table.clear();
+    }
+
+    pub fn init_current_directory(&mut self) {
+        match env::current_dir() {
+            Ok(path) => self.tcwd = Some(path),
+            Err(err) => eprintln!("pwd: error retrieving current directory: {:?}", err),
+        }
     }
 }
