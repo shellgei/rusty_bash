@@ -61,7 +61,7 @@ impl Script {
             ( None, _)       => {}, 
         }
 
-        let ng_ends = vec![")", "}", "then", "else", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&"];
+        let ng_ends = vec![")", "}", "then", "else", "if", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&"];
         match ( ng_ends.iter().find(|e| feeder.starts_with(e)), nest.1.len() ) {
             (Some(end), _) => return Status::UnexpectedSymbol(end.to_string()),
             (None, 0)      => return Status::NormalEnd,

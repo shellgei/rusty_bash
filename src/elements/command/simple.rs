@@ -13,7 +13,7 @@ use nix::errno::Errno;
 
 fn reserved(w: &str) -> bool {
     match w {
-        "{" | "}" | "while" | "do" | "done" => true,
+        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" => true,
         _ => false,
     }
 }

@@ -5,12 +5,14 @@ pub mod simple;
 pub mod paren;
 pub mod brace;
 pub mod r#while;
+pub mod r#if;
 
 use crate::{ShellCore, Feeder, Script};
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
 use self::r#while::WhileCommand;
+use self::r#if::IfCommand;
 use std::fmt;
 use std::fmt::Debug;
 use super::{io, Pipe};
@@ -99,5 +101,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Comman
     else if let Some(a) = ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
     else{ None }
 }
