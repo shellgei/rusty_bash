@@ -24,5 +24,16 @@ impl Command for IfCommand {
 }
 
 impl IfCommand {
+    fn new() -> IfCommand {
+        IfCommand {
+            text: String::new(),
+            if_elif_scripts: vec![],
+            then_scripts: vec![],
+            else_script: None,
+            redirects: vec![],
+            force_fork: false,
+        }
+    }
+
     pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<IfCommand> {None}
 }
