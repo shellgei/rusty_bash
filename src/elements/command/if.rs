@@ -45,33 +45,36 @@ impl IfCommand {
         }
     }
 
-    fn eat_script(word: &str, feeder: &mut Feeder, ans: &mut IfCommand, core: &mut ShellCore) -> bool {
+    fn set_script(word: &str, ans: &mut IfCommand, script: Option<Script>) {
+        match word {
+            "if" | "elif" => ans.if_elif_scripts.push(script.unwrap()),
+            "then"        => ans.then_scripts.push(script.unwrap()),
+            "else"        => ans.else_script = script,
+            _ => panic!("SUSH INTERNAL ERROR (if parse error)"),
+        };
+    }
+
+    fn eat_conditioned_script(word: &str, feeder: &mut Feeder,
+                              ans: &mut IfCommand, core: &mut ShellCore) -> bool {
         let mut s = None;
-        if command::eat_inner_script(feeder, core, word, Self::end_words(word), &mut s) {
-            ans.text.push_str(word);
-            ans.text.push_str(&s.as_mut().unwrap().get_text());
-
-            match word {
-                "if" | "elif" => ans.if_elif_scripts.push(s.unwrap()),
-                "then"        => ans.then_scripts.push(s.unwrap()),
-                "else"        => ans.else_script = s,
-                _ => panic!("SUSH INTERNAL ERROR (if parse error)"),
-            };
-
-            true
-        }else{
-            false
+        if ! command::eat_inner_script(feeder, core, word, Self::end_words(word), &mut s) {
+            return false;
         }
+
+        ans.text.push_str(word);
+        ans.text.push_str(&s.as_mut().unwrap().get_text());
+        Self::set_script(word, ans, s);
+        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<IfCommand> {
         let mut ans = Self::new();
-
+ 
         let mut if_or_elif = "if";
-        while Self::eat_script(if_or_elif, feeder, &mut ans, core) 
-           && Self::eat_script("then", feeder, &mut ans, core) {
+        while Self::eat_conditioned_script(if_or_elif, feeder, &mut ans, core) 
+           && Self::eat_conditioned_script("then", feeder, &mut ans, core) {
 
-            Self::eat_script("else", feeder, &mut ans, core); //optional
+            Self::eat_conditioned_script("else", feeder, &mut ans, core); //optional
 
             if feeder.starts_with("fi") { // If "else" exists, always it comes here.
                 ans.text.push_str(&feeder.consume(2));
