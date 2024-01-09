@@ -57,7 +57,8 @@ impl IfCommand {
     fn eat_word_and_script(word: &str, feeder: &mut Feeder,
                            ans: &mut IfCommand, core: &mut ShellCore) -> bool {
         let mut s = None;
-        if ! command::eat_inner_script(feeder, core, word, Self::end_words(word), &mut s) {
+        let ends = Self::end_words(word);
+        if ! command::eat_inner_script(feeder, core, word, ends, &mut s) {
             return false;
         }
 
