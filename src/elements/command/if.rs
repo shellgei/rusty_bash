@@ -54,8 +54,8 @@ impl IfCommand {
         };
     }
 
-    fn eat_conditioned_script(word: &str, feeder: &mut Feeder,
-                              ans: &mut IfCommand, core: &mut ShellCore) -> bool {
+    fn eat_word_and_script(word: &str, feeder: &mut Feeder,
+                           ans: &mut IfCommand, core: &mut ShellCore) -> bool {
         let mut s = None;
         if ! command::eat_inner_script(feeder, core, word, Self::end_words(word), &mut s) {
             return false;
@@ -71,10 +71,10 @@ impl IfCommand {
         let mut ans = Self::new();
  
         let mut if_or_elif = "if";
-        while Self::eat_conditioned_script(if_or_elif, feeder, &mut ans, core) 
-           && Self::eat_conditioned_script("then", feeder, &mut ans, core) {
+        while Self::eat_word_and_script(if_or_elif, feeder, &mut ans, core) 
+           && Self::eat_word_and_script("then", feeder, &mut ans, core) {
 
-            Self::eat_conditioned_script("else", feeder, &mut ans, core); //optional
+            Self::eat_word_and_script("else", feeder, &mut ans, core); //optional
 
             if feeder.starts_with("fi") { // If "else" exists, always it comes here.
                 ans.text.push_str(&feeder.consume(2));
