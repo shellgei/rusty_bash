@@ -63,7 +63,7 @@ impl IfCommand {
         }
 
         ans.text.push_str(word);
-        ans.text.push_str(&s.as_mut().unwrap().get_text());
+        ans.text.push_str(&s.as_ref().unwrap().get_text());
         Self::set_script(word, ans, s);
         true
     }
