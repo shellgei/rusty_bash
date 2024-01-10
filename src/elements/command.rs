@@ -83,7 +83,7 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
     ! ans.is_none()
 }
 
-pub fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
+fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
                      ans: &mut Vec<Redirect>, ans_text: &mut String) -> bool {
     if let Some(r) = Redirect::parse(feeder, core) {
         *ans_text += &r.text.clone();
