@@ -340,4 +340,11 @@ res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo w
 [ "$res" == "wait
 wait" ] || err $LINENO
 
+### IF TEST ###
+res=$($com <<< 'if true ; then ; fi')
+[ "$?" == "2" ] || err $LINENO
+
+res=$($com <<< 'if ; then true ; fi')
+[ "$?" == "2" ] || err $LINENO
+
 echo OK $0
