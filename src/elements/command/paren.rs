@@ -50,13 +50,7 @@ impl ParenCommand {
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
 
-            loop {
-                command::eat_blank_with_comment(feeder, core, &mut ans.text);
-                if ! command::eat_redirect(feeder, core, &mut ans.redirects, &mut ans.text){
-                    break;
-                }
-            }
-
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             Some(ans)
         }else{
             None

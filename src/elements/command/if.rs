@@ -89,12 +89,7 @@ impl IfCommand {
             return None;
         }
 
-        loop {
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if ! command::eat_redirect(feeder, core, &mut ans.redirects, &mut ans.text){
-                break;
-            }
-        }
+        command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
         Some(ans)
     }
 }
