@@ -67,13 +67,7 @@ impl WhileCommand {
             ans.text.push_str(&ans.do_script.as_mut().unwrap().get_text());
             ans.text.push_str(&feeder.consume(4)); //done
 
-            loop {
-                command::eat_blank_with_comment(feeder, core, &mut ans.text);
-                if ! command::eat_redirect(feeder, core, &mut ans.redirects, &mut ans.text){
-                    break;
-                }
-            }
-            //dbg!("{:?}", &ans);
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             Some(ans)
         }else{
             None

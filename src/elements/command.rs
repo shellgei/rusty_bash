@@ -94,6 +94,16 @@ pub fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
     }
 }
 
+pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
+                     ans: &mut Vec<Redirect>, ans_text: &mut String) {
+    loop {
+        eat_blank_with_comment(feeder, core, ans_text);
+        if ! eat_redirect(feeder, core, ans, ans_text){
+            break;
+        }
+    }
+}
+
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
