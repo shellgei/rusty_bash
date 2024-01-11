@@ -90,6 +90,7 @@ impl IfCommand {
         }
 
         command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+        eprintln!("{:?}", &ans);
         Some(ans)
     }
 }
