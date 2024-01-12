@@ -182,4 +182,3 @@ impl ShellCore {
         self.job_table.clear();
     }
 }
-
