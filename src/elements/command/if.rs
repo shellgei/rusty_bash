@@ -18,7 +18,7 @@ pub struct IfCommand {
 
 impl Command for IfCommand {
     fn exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> {None}
-    fn run_command(&mut self, _: &mut ShellCore, _: bool) {}
+    fn run(&mut self, _: &mut ShellCore, _: bool) {}
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
