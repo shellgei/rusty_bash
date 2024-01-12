@@ -25,7 +25,7 @@ impl Command for WhileCommand {
         }
     }
 
-    fn run_command(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) {
         loop {
             self.while_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
