@@ -18,7 +18,7 @@ impl Command for ParenCommand {
         self.fork_exec(core, pipe)
     }
 
-    fn run_command(&mut self, core: &mut ShellCore, fork: bool) {
+    fn run(&mut self, core: &mut ShellCore, fork: bool) {
         if ! fork {
             panic!("SUSH INTERNAL ERROR (no fork for subshell)");
         }

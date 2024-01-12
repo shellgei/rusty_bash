@@ -42,7 +42,7 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn run_command(&mut self, core: &mut ShellCore, fork: bool) {
+    fn run(&mut self, core: &mut ShellCore, fork: bool) {
         if ! fork {
             core.run_builtin(&mut self.args);
             return;
