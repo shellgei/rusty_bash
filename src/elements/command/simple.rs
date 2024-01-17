@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -21,6 +22,7 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug)]
 pub struct SimpleCommand {
     text: String,
+    words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool,
@@ -28,8 +30,12 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        if self.args.len() == 0 {
+        if self.words.len() == 0 {
             return None;
+        }
+
+        for a in &mut self.words {
+            self.args.extend(a.get_args());
         }
 
         if self.force_fork 
@@ -89,6 +95,7 @@ impl SimpleCommand {
     fn new() -> SimpleCommand {
         SimpleCommand {
             text: String::new(),
+            words: vec![],
             args: vec![],
             redirects: vec![],
             force_fork: false,
@@ -96,18 +103,18 @@ impl SimpleCommand {
     }
  
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
-        let arg_len = feeder.scanner_word(core);
-        if arg_len == 0 {
+        let word_len = feeder.scanner_word(core);
+        if word_len == 0 {
             return false;
         }
  
-        let word = feeder.consume(arg_len);
-        if ans.args.len() == 0 && reserved(&word) {
+        let word = feeder.consume(word_len);
+        if ans.words.len() == 0 && reserved(&word) {
             return false;
         }
  
         ans.text += &word.clone();
-        ans.args.push(word);
+        ans.words.push(Word{ text: word });
         true
     }
 
@@ -122,7 +129,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.args.len() + ans.redirects.len() > 0 {
+        if ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{
