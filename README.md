@@ -10,7 +10,6 @@
 
 * [old main branch](https://github.com/shellgei/rusty_bash/tree/old_main)
 
-
 ## What's this?
 
 A clone of Bash, which is developed as a hobby of our group and for monthly articles on SoftwareDesign magazine published by Gijutsu-Hyohron Co., Ltd.
