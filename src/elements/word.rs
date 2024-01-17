@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{Feeder, ShellCore};
 
 #[derive(Debug)]
 pub struct Word {
@@ -9,14 +9,14 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn get_args(&mut self) -> Vec<String> {
-        vec![self.text.clone()]
-    }
-
     fn new() -> Word {
         Word {
             text: String::new(),
         }
+    }
+
+    pub fn get_args(&mut self) -> Vec<String> {
+        vec![self.text.clone()]
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
