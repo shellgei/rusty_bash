@@ -202,7 +202,6 @@ impl ShellCore {
         self.tcwd.clone()
     }
 
-
     pub fn set_current_directory(&mut self, path: &path::PathBuf) -> Result<(), io::Error> {
         let res = env::set_current_dir(path);
         if res.is_ok() {
