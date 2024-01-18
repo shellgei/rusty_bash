@@ -347,4 +347,139 @@ res=$($com <<< 'if true ; then ; fi')
 res=$($com <<< 'if ; then true ; fi')
 [ "$?" == "2" ] || err $LINENO
 
+res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; fi')
+[ "$res" = "aa" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; else echo bb; fi')
+[ "$res" = "bb" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi' || echo x)
+[ "$res" = "x" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo a ; fi ; if [ "b" == "b" ] ; then echo bb ; fi')
+[ "$res" = "bb" ] || err $LINENO
+
+res=$($com <<< 'echo file > /tmp/rusty_bash; if [ "a" == "a" ] ; then echo aa; fi >> /tmp/rusty_bash; cat /tmp/rusty_bash')
+[ "$res" = "file
+aa" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "c" ] ; then echo bb; else echo cc; fi')
+[ "$res" = "cc" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "c" ] ; then echo bb; elif [ "c" = "c" ] ; then echo cc ; else echo dd; fi')
+[ "$res" = "cc" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; elif [ "b" == "c" ] ; then echo bb; else echo cc; fi')
+[ "$res" = "aa" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then echo bb; else echo cc; fi')
+[ "$res" = "bb" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; elif [ "b" == "b" ] ; then echo bb; fi')
+[ "$res" = "bb" ] || err $LINENO
+
+res=$($com << 'EOF'
+if
+false
+then
+echo hoge
+elif
+false
+then
+echo hoge
+elif
+false
+then
+echo hoge
+else
+echo true
+fi
+EOF
+)
+[ "$res" = "true" ] || err $LINENO
+
+res=$($com << 'EOF'
+if false ; then echo hoge
+elif false ; then
+echo hoge
+elif false ;then echo hoge
+else
+echo true
+echo hoge
+fi
+EOF
+)
+[ "$res" = "true
+hoge" ] || err $LINENO
+
+res=$($com << 'EOF'
+if false ;then echo hoge
+else
+echo true
+echo hoge
+fi
+EOF
+)
+[ "$res" = "true
+hoge" ] || err $LINENO
+
+res=$($com << 'EOF'
+if true ;then
+echo true
+echo hoge
+fi
+EOF
+)
+[ "$res" = "true
+hoge" ] || err $LINENO
+
+res=$($com << 'EOF'
+if false ;then
+echo a
+elif true ;then
+echo x
+echo y
+else
+echo true
+echo hoge
+fi
+EOF
+)
+[ "$res" = "x
+y" ] || err $LINENO
+
+res=$($com << 'EOF'
+if true ;then
+    if true ;then
+	echo a
+    fi
+fi
+EOF
+)
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com << 'EOF'
+if true ;then
+    if true ;then
+	echo a
+	echo a
+    fi
+fi
+EOF
+)
+[ "$res" = "a
+a" ] || err $LINENO
+
+res=$($com << 'EOF'
+if true ;then
+    if true ;then
+	echo a
+    fi
+    echo a
+fi
+EOF
+)
+[ "$res" = "a
+a" ] || err $LINENO
+
 echo OK $0
