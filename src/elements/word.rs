@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::elements::subword;
+use crate::elements::subword::Subword;
 
 #[derive(Debug)]
 pub struct Word {
