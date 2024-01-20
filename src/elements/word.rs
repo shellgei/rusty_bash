@@ -8,12 +8,14 @@ use crate::elements::subword::Subword;
 #[derive(Debug)]
 pub struct Word {
     pub text: String,
+    pub subwords: Vec<Box<dyn Subword>>,
 }
 
 impl Word {
     fn new() -> Word {
         Word {
             text: String::new(),
+            subwords: vec![],
         }
     }
 
@@ -23,13 +25,15 @@ impl Word {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         let mut ans = Word::new();
-        let arg_len = feeder.scanner_word(core);
-
-        if arg_len > 0 {
-            ans.text = feeder.consume(arg_len);
-            Some(ans)
-        }else{
-            None
+        while let Some(sw) = subword::parse(feeder, core) {
+            ans.text += &sw.get_text();
+            ans.subwords.push(sw);
         }
-     }
+ 
+        if ans.text.len() == 0 {
+            None
+        }else{
+             Some(ans)
+        }
+    }
 }

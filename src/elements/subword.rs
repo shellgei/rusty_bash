@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod unquoted;
-pub mod brace;
 
 use crate::{Feeder, ShellCore};
 use super::subword::unquoted::UnquotedSubword;
