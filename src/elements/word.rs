@@ -29,11 +29,11 @@ impl Word {
             ans.text += &sw.get_text();
             ans.subwords.push(sw);
         }
- 
+
         if ans.text.len() == 0 {
             None
         }else{
-             Some(ans)
+            Some(ans)
         }
     }
 }
