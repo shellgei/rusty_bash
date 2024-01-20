@@ -29,6 +29,6 @@ impl Word {
         }else{
             None
         }
-     }
+    }
 }
 
