@@ -3,10 +3,12 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::Subword;
+use crate::elements::word::Word;
 
 #[derive(Debug)]
 pub struct BraceSubword {
-    pub text: String,
+    text: String,
+    words: Vec<Word>,
 }
 
 impl Subword for BraceSubword {
@@ -18,6 +20,18 @@ impl BraceSubword {
     fn new() -> BraceSubword {
         BraceSubword {
             text: String::new(),
+            words: vec![],
+        }
+    }
+
+    fn eat_word(feeder: &mut Feeder, ans: &mut BraceSubword, core: &mut ShellCore) -> bool {
+        match Word::parse(feeder, core) {
+            Some(w) => {
+                ans.text += &w.text;
+                ans.words.push(w);
+                true
+            },
+            _  => false,
         }
     }
 
