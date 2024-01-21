@@ -2,12 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword::unquoted::UnquotedSubword;
+use crate::elements::subword;
+use crate::elements::subword::Subword;
 
 #[derive(Debug)]
 pub struct Word {
     pub text: String,
-    pub subwords: Vec<UnquotedSubword>,
+    pub subwords: Vec<Box<dyn Subword>>,
 }
 
 impl Word {
@@ -24,8 +25,8 @@ impl Word {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         let mut ans = Word::new();
-        while let Some(sw) = UnquotedSubword::parse(feeder, core) {
-            ans.text += &sw.text.clone();
+        while let Some(sw) = subword::parse(feeder, core) {
+            ans.text += &sw.get_text();
             ans.subwords.push(sw);
         }
 
