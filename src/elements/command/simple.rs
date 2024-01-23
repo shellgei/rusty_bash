@@ -34,11 +34,9 @@ impl Command for SimpleCommand {
             return None;
         }
 
-        for a in &self.words {
-            if a.text != "" {
-                self.args.push(a.text.clone());
-            }
-        }
+        self.args = self.words.iter()
+                        .filter(|w| w.text != "")
+                        .map(|w| w.text.clone()).collect();
 
         if self.force_fork 
         || pipe.is_connected() 
