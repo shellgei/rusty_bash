@@ -6,7 +6,7 @@ use crate::elements::subword::Subword;
 
 #[derive(Debug)]
 pub struct UnquotedSubword {
-    pub text: String,
+    text: String,
 }
 
 impl Subword for UnquotedSubword {
