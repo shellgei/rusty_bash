@@ -12,15 +12,11 @@ pub struct Word {
 }
 
 impl Word {
-    fn new() -> Word {
+    pub fn new() -> Word {
         Word {
             text: String::new(),
             subwords: vec![],
         }
-    }
-
-    pub fn get_args(&mut self) -> Vec<String> {
-        vec![self.text.clone()]
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
