@@ -34,8 +34,10 @@ impl Command for SimpleCommand {
             return None;
         }
 
-        for a in &mut self.words {
-            self.args.extend(a.get_args());
+        for a in &self.words {
+            if a.text != "" {
+                self.args.push(a.text.clone());
+            }
         }
 
         if self.force_fork 
