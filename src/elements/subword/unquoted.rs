@@ -11,7 +11,6 @@ pub struct UnquotedSubword {
 
 impl Subword for UnquotedSubword {
     fn get_text(&self) -> String { self.text.clone() }
-    fn eval(&mut self) -> Vec<Vec<String>> { vec![vec![self.text.clone()]] }
 }
 
 impl UnquotedSubword {
