@@ -19,10 +19,6 @@ impl Word {
         }
     }
 
-    pub fn get_args(&mut self) -> Vec<String> {
-        vec![self.text.clone()]
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         let mut ans = Word::new();
         while let Some(sw) = subword::parse(feeder, core) {
