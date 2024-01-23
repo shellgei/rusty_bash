@@ -12,7 +12,7 @@ pub struct Word {
 }
 
 impl Word {
-    fn new() -> Word {
+    pub fn new() -> Word {
         Word {
             text: String::new(),
             subwords: vec![],
