@@ -30,13 +30,13 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        if self.words.len() == 0 {
-            return None;
-        }
-
         self.args = self.words.iter()
                     .filter(|w| w.text != "")
                     .map(|w| w.text.clone()).collect();
+
+        if self.args.len() == 0 {
+            return None;
+        }
 
         if self.force_fork 
         || pipe.is_connected() 
