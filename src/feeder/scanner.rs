@@ -46,13 +46,20 @@ impl Feeder {
             return 0;
         }
 
+        let ng = match core.word_nest.last().unwrap().as_str() {
+            "{" => " \t\n;&|()<>},",
+            _   => " \t\n;&|()<>",
+        };
+
         let mut next_line = false; 
         let mut ans = 0;
         for ch in self.remaining.chars() {
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }else if let Some(_) = " \t\n;&|()<>".find(ch) {
+            }else if let Some(_) = ng.find(ch) {
+                break;
+            }else if ch == '{' && ans != 0 {
                 break;
             }
             ans += ch.len_utf8();
