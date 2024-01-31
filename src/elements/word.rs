@@ -45,7 +45,15 @@ impl Word {
 
             if feeder.len() == 0 {
                 break;
-            }else if left == "{" && feeder.starts_with(",") {
+            }else if feeder.starts_with("{"){
+                let c = feeder.consume(1);
+                ans.text += &c;
+                let sw = UnquotedSubword::new(&c);
+                ans.subwords.push(Box::new(sw));
+                continue;
+            }
+
+            if left == "{" && feeder.starts_with(",") {
                 break;
             }else if left == "," && ( feeder.starts_with(",") || feeder.starts_with("}") ) {
                 break;
@@ -64,7 +72,7 @@ impl Word {
         if ans.text.len() == 0 {
             None
         }else{
-            dbg!("{:?}", &ans);
+            //dbg!("{:?}", &ans);
             Some(ans)
         }
     }
