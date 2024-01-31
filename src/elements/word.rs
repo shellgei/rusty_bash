@@ -28,13 +28,16 @@ impl Word {
         let left = core.word_nest.last().unwrap().to_string();
         let mut ans = Word::new();
 
-        if core.word_nest.last().unwrap() == "" {
-            if feeder.starts_with("{}") {
-                let sw = UnquotedSubword::new("{}");
-                feeder.consume(2);
-                ans.subwords.push(Box::new(sw));
-                ans.text += &"{}";
-            }
+        if feeder.starts_with("{}") {
+            let sw = UnquotedSubword::new("{}");
+            feeder.consume(2);
+            ans.subwords.push(Box::new(sw));
+            ans.text += &"{}";
+        }else if feeder.starts_with("}") && left != "," {
+            let sw = UnquotedSubword::new("}");
+            feeder.consume(1);
+            ans.subwords.push(Box::new(sw));
+            ans.text += &"}";
         }
 
         loop {
@@ -51,6 +54,10 @@ impl Word {
                 let sw = UnquotedSubword::new(&c);
                 ans.subwords.push(Box::new(sw));
                 continue;
+            }
+
+            if left == "{" && feeder.starts_with("}") {
+                break;
             }
 
             if left == "{" && feeder.starts_with(",") {
