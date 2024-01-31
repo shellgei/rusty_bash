@@ -6,6 +6,7 @@ pub mod unquoted;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::brace::BraceSubword;
+use crate::elements::word::Word;
 use super::subword::unquoted::UnquotedSubword;
 use std::fmt;
 use std::fmt::Debug;
@@ -18,6 +19,8 @@ impl Debug for dyn Subword {
 
 pub trait Subword {
     fn get_text(&self) -> String;
+    fn copy(&self) -> Box<dyn Subword>;
+    fn brace_expansion(&mut self, ans: &mut Vec<Word>);
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {

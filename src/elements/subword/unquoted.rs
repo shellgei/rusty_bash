@@ -3,14 +3,26 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::Subword;
+use crate::elements::word::Word;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnquotedSubword {
     text: String,
 }
 
 impl Subword for UnquotedSubword {
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn copy(&self) -> Box<dyn Subword> {
+        Box::new(self.clone())
+    }   
+
+    fn brace_expansion(&mut self, ans: &mut Vec<Word>) {
+        for a in ans.iter_mut() {
+            a.subwords.push(self.copy());
+            a.text += &self.text.clone();
+        }
+    }
 }
 
 impl UnquotedSubword {

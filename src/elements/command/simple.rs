@@ -30,7 +30,12 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        self.args = self.words.iter()
+        let mut words = vec![];
+        for w in self.words.iter_mut() {
+            words.extend(w.brace_expansion());
+        }
+
+        self.args = words.iter()
                     .filter(|w| w.text != "")
                     .map(|w| w.text.clone()).collect();
 

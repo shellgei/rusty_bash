@@ -13,6 +13,26 @@ pub struct BraceSubword {
 
 impl Subword for BraceSubword {
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn copy(&self) -> Box<dyn Subword> {
+        Box::new( BraceSubword { 
+            text: self.text.clone(),
+            words: self.words.iter().map(|w| w.copy()).collect(),
+        } )
+    }   
+
+    fn brace_expansion(&mut self, lefts: &mut Vec<Word>) {
+        let mut rights = vec![];
+        for w in self.words.iter_mut() {
+            rights.extend(w.brace_expansion());
+        }
+
+        let mut ans = vec![];
+        for lf in lefts.iter_mut() {
+            ans.extend(self.add_expended(lf, &rights));
+        }
+        *lefts = ans;
+    }
 }
 
 impl BraceSubword {
@@ -21,6 +41,25 @@ impl BraceSubword {
             text: String::new(),
             words: vec![],
         }
+    }
+
+    fn add_expended(&mut self, left: &mut Word, rights: &Vec<Word>) -> Vec<Word> {
+        if self.words.len() < 2 { 
+            left.add_text("{");
+        }
+
+        let mut ans = vec![];
+        for rw in rights {
+            let mut lw = left.copy();
+            lw.concat(&rw);
+            ans.push(lw);
+        }
+
+        if self.words.len() < 2 { 
+            ans.iter_mut().for_each(|w| w.add_text("}"));
+        }
+
+        ans
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut BraceSubword, core: &mut ShellCore) -> bool {

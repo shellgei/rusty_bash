@@ -19,6 +19,34 @@ impl Word {
             subwords: vec![],
         }
     }
+    pub fn copy(&self) -> Word {
+        Word {
+            text: self.text.clone(),
+            subwords: self.subwords.iter().map(|e| e.copy()).collect(),
+        }
+    }
+
+    pub fn concat(&mut self, left: &Word) {
+        self.text += &left.text;
+        for e in left.subwords.iter() {
+            self.subwords.push(e.copy());
+        }
+    }
+
+    pub fn add_text(&mut self, s: &str) {
+        self.text += &s.to_string();
+        self.subwords.push(Box::new(UnquotedSubword::new(s)));
+    }
+
+    pub fn brace_expansion(&mut self) -> Vec<Word> {
+        let mut ans = vec![Word::new()];
+
+        for sub in self.subwords.iter_mut() {
+            sub.brace_expansion(&mut ans);
+        }
+
+        ans
+    }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         if feeder.starts_with("#") {
