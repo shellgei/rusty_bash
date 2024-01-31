@@ -4,6 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::elements::subword;
 use crate::elements::subword::Subword;
+use crate::elements::subword::unquoted::UnquotedSubword;
 
 #[derive(Debug)]
 pub struct Word {
@@ -24,17 +25,46 @@ impl Word {
             return None;
         }
 
+        let left = core.word_nest.last().unwrap().to_string();
         let mut ans = Word::new();
 
-        while let Some(sw) = subword::parse(feeder, core) {
-            ans.text += &sw.get_text();
-            ans.subwords.push(sw);
+        if core.word_nest.last().unwrap() == "" {
+            if feeder.starts_with("{}") {
+                let sw = UnquotedSubword::new("{}");
+                feeder.consume(2);
+                ans.subwords.push(Box::new(sw));
+                ans.text += &"{}";
+            }
+        }
+
+        loop {
+            while let Some(sw) = subword::parse(feeder, core) {
+                ans.text += &sw.get_text();
+                ans.subwords.push(sw);
+            }
+
+            if feeder.len() == 0 {
+                break;
+            }else if left == "{" && feeder.starts_with(",") {
+                break;
+            }else if left == "," && ( feeder.starts_with(",") || feeder.starts_with("}") ) {
+                break;
+            }
+
+            if feeder.starts_with(",") || feeder.starts_with("}") {
+                let c = feeder.consume(1);
+                ans.text += &c;
+                let sw = UnquotedSubword::new(&c);
+                ans.subwords.push(Box::new(sw));
+            }else{
+                break;
+            }
         }
 
         if ans.text.len() == 0 {
             None
         }else{
-            //dbg!("{:?}", &ans);
+            dbg!("{:?}", &ans);
             Some(ans)
         }
     }

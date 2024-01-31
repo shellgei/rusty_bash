@@ -35,14 +35,40 @@ impl BraceSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceSubword> {
-        let mut ans = Self::new();
-
-        let len = feeder.scanner_word(core);
-        if len == 0 {
+       if ! feeder.starts_with("{") {
             return None;
         }
- 
-        ans.text = feeder.consume(len);
-        Some(ans)
+        feeder.set_backup();
+        core.word_nest.push("{".to_string());
+
+        let mut ans = Self::new();
+        let mut closed = false;
+
+        /*
+        ans.text = feeder.consume(1); // {
+
+        while Self::eat_word(feeder, &mut ans, core) {
+            if feeder.starts_with(",") {
+                ans.text += &feeder.consume(1);
+                continue;
+            }
+
+            if feeder.starts_with("}") {
+                ans.text += &feeder.consume(1);
+                closed = true;
+            }
+            break;
+        }
+        */
+
+        core.word_nest.pop();
+
+        if closed {
+            feeder.pop_backup();
+            Some(ans)
+        }else{
+            feeder.rewind();
+            None
+        }
     }
 }
