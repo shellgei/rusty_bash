@@ -20,7 +20,12 @@ impl Word {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
+        if feeder.starts_with("#") {
+            return None;
+        }
+
         let mut ans = Word::new();
+
         while let Some(sw) = subword::parse(feeder, core) {
             ans.text += &sw.get_text();
             ans.subwords.push(sw);
@@ -29,6 +34,7 @@ impl Word {
         if ans.text.len() == 0 {
             None
         }else{
+            //dbg!("{:?}", &ans);
             Some(ans)
         }
     }

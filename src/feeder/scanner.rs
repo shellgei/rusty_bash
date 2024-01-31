@@ -42,14 +42,7 @@ impl Feeder {
     }
 
     pub fn scanner_word(&mut self, core: &mut ShellCore) -> usize {
-        if self.remaining.starts_with("#") {
-            return 0;
-        }
-
-        let ng = match core.word_nest.last().unwrap().as_str() {
-            "{" => " \t\n;&|()<>},",
-            _   => " \t\n;&|()<>",
-        };
+        let ng = " \t\n;&|()<>{},";
 
         let mut next_line = false; 
         let mut ans = 0;

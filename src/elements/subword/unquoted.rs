@@ -14,21 +14,24 @@ impl Subword for UnquotedSubword {
 }
 
 impl UnquotedSubword {
-    fn new() -> UnquotedSubword {
+    fn new(s: &str) -> UnquotedSubword {
         UnquotedSubword {
-            text: String::new(),
+            text: s.to_string(),
         }
-    }
+    } 
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<UnquotedSubword> {
-        let mut ans = Self::new();
+        if feeder.starts_with("{") 
+        || feeder.starts_with(",") 
+        || feeder.starts_with("}") {
+            return Some(Self::new( &feeder.consume(1) )); 
+        }
 
         let len = feeder.scanner_word(core);
         if len == 0 {
             return None;
         }
  
-        ans.text = feeder.consume(len);
-        Some(ans)
+        Some( Self::new(&feeder.consume(len)) )
     }
 }
