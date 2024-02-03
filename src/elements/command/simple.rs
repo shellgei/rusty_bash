@@ -101,20 +101,18 @@ impl SimpleCommand {
             force_fork: false,
         }
     }
- 
+
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
-        let arg_len = feeder.scanner_word(core);
-        if arg_len == 0 {
+        let w = match Word::parse(feeder, core) {
+            Some(w) => w,
+            _       => return false,
+        };
+
+        if ans.words.len() == 0 && reserved(&w.text) {
             return false;
         }
- 
-        let word = feeder.consume(arg_len);
-        if ans.args.len() == 0 && reserved(&word) {
-            return false;
-        }
- 
-        ans.text += &word.clone();
-        ans.args.push(word);
+        ans.text += &w.text;
+        ans.words.push(w);
         true
     }
 
@@ -129,7 +127,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.args.len() + ans.redirects.len() > 0 {
+        if ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{

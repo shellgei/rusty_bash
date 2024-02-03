@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::{ShellCore, Feeder};
 use std::fmt;
 use std::fmt::Debug;
 
@@ -19,4 +20,8 @@ impl Clone for Box::<dyn Subword> {
 pub trait Subword {
     fn get_text(&self) -> &str;
     fn boxed_clone(&self) -> Box<dyn Subword>;
+}
+
+pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    None
 }
