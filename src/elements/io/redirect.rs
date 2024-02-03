@@ -5,13 +5,14 @@ use std::fs::{File, OpenOptions};
 use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::elements::io;
+use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone)]
 pub struct Redirect {
     pub text: String,
     pub symbol: String,
-    pub right: String,
+    pub right: Word,
     pub left: String,
     left_fd: RawFd,
     left_backup: RawFd,
@@ -20,6 +21,11 @@ pub struct Redirect {
 
 impl Redirect {
     pub fn connect(&mut self, restore: bool) -> bool {
+        if self.right.eval().len() != 1 {
+            eprintln!("sush: {}: ambiguous redirect", self.right.text);
+            return false;
+        }
+
         match self.symbol.as_str() {
             "<" => self.redirect_simple_input(restore),
             ">" => self.redirect_simple_output(restore),
@@ -53,7 +59,7 @@ impl Redirect {
                 result
             },
             _  => {
-                eprintln!("sush: {}: {}", &self.right, Error::last_os_error().kind());
+                eprintln!("sush: {}: {}", &self.right.text, Error::last_os_error().kind());
                 false
             },
         }
@@ -61,23 +67,23 @@ impl Redirect {
 
     fn redirect_simple_input(&mut self, restore: bool) -> bool {
         self.set_left_fd(0);
-        self.connect_to_file(File::open(&self.right), restore)
+        self.connect_to_file(File::open(&self.right.text), restore)
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
         self.set_left_fd(1);
-        self.connect_to_file(File::create(&self.right), restore)
+        self.connect_to_file(File::create(&self.right.text), restore)
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {
         self.set_left_fd(1);
         self.connect_to_file(OpenOptions::new().create(true)
-                .write(true).append(true).open(&self.right), restore)
+                .write(true).append(true).open(&self.right.text), restore)
     }
 
     fn redirect_both_output(&mut self, restore: bool) -> bool {
         self.left_fd = 1;
-        if ! self.connect_to_file(File::create(&self.right), restore){
+        if ! self.connect_to_file(File::create(&self.right.text), restore){
             return false;
         }
 
@@ -101,7 +107,7 @@ impl Redirect {
         Redirect {
             text: String::new(),
             symbol: String::new(),
-            right: String::new(),
+            right: Word::new(),
             left: String::new(),
             left_fd: -1,
             left_backup: -1,
@@ -124,14 +130,14 @@ impl Redirect {
         let blank_len = feeder.scanner_blank(core);
         ans.text += &feeder.consume(blank_len);
 
-        match feeder.scanner_word(core) {
-            0 => false,
-            n => {
-                ans.right = feeder.consume(n);
-                ans.text += &ans.right.clone();
-                true
-            },
-        }
+        let w = match Word::parse(feeder, core) {
+            Some(w) => w,
+            _       => return false,
+        };
+
+        ans.text += &w.text.clone();
+        ans.right = w;
+        true
     }
 
     fn eat_left(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -153,8 +159,8 @@ impl Redirect {
         let mut ans = Self::new();
         feeder.set_backup(); //追加
 
-        if Self::eat_left(feeder, &mut ans, core) &&   //追加
-           Self::eat_symbol(feeder, &mut ans, core) && //ifを除去
+        if Self::eat_left(feeder, &mut ans, core) &&
+           Self::eat_symbol(feeder, &mut ans, core) &&
            Self::eat_right(feeder, &mut ans, core) {
             feeder.pop_backup();
             Some(ans)
