@@ -13,6 +13,7 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct Feeder {
     remaining: String,
     backup: Vec<String>,
+    pub nest: Vec<(String, Vec<String>)>,
 }
 
 impl Feeder {
@@ -20,6 +21,7 @@ impl Feeder {
         Feeder {
             remaining: "".to_string(),
             backup: vec![],
+            nest: vec![("".to_string(), vec![])],
         }
     }
 
