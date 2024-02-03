@@ -8,3 +8,9 @@ pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,
 }
+
+impl Word {
+    pub fn eval(&mut self) -> Vec<String> {
+        vec![self.text.clone()]
+    }
+}

@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -21,6 +22,7 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug)]
 pub struct SimpleCommand {
     text: String,
+    words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool,
@@ -28,6 +30,10 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        for w in self.words.iter_mut() {
+            self.args.append(&mut w.eval());
+        }
+
         if self.args.len() == 0 {
             return None;
         }
@@ -89,6 +95,7 @@ impl SimpleCommand {
     fn new() -> SimpleCommand {
         SimpleCommand {
             text: String::new(),
+            words: vec![],
             args: vec![],
             redirects: vec![],
             force_fork: false,
