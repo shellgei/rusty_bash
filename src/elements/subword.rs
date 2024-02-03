@@ -10,13 +10,6 @@ impl Debug for dyn Subword {
     }
 }
 
-impl Clone for Box::<dyn Subword> {
-    fn clone(&self) -> Box<dyn Subword> {
-        self.boxed_clone()
-    }
-}
-
 pub trait Subword {
     fn get_text(&self) -> &str;
-    fn boxed_clone(&self) -> Box<dyn Subword>;
 }

@@ -6,7 +6,6 @@ pub mod job;
 pub mod pipeline;
 pub mod command;
 pub mod io;
-pub mod word;
 pub mod subword;
 
 use self::io::pipe::Pipe;
