@@ -41,6 +41,16 @@ impl Feeder {
         ans
     }
 
+    pub fn scanner_brace_expansion_symbol(&self) -> usize {
+        if self.starts_with("{")
+        || self.starts_with(",")
+        || self.starts_with("}"){
+            1
+        }else{
+            0
+        }
+    }
+
     pub fn scanner_unquoted_subword(&mut self, core: &mut ShellCore) -> usize {
         let mut next_line = false; 
         let mut ans = 0;
@@ -48,7 +58,7 @@ impl Feeder {
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }else if let Some(_) = " \t\n;&|()<>".find(ch) {
+            }else if let Some(_) = " \t\n;&|()<>{},".find(ch) {
                 break;
             }
             ans += ch.len_utf8();

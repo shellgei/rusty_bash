@@ -22,6 +22,11 @@ impl UnquotedSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<UnquotedSubword> {
+        let len = feeder.scanner_brace_expansion_symbol();
+        if len != 0 {
+            return Some(Self::new( &feeder.consume(len) ));
+        }
+
         let len = feeder.scanner_unquoted_subword(core);
         if len == 0 {
             None
