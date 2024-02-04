@@ -371,8 +371,8 @@ res=$($com <<< 'echo c{a,b')
 res=$($com <<< 'echo c{a,b,')
 [ "$res" == "c{a,b," ] || err $LINENO
 
-res=$($com <<< 'echo {{a,b},{c,d},')
-[ "$res" == "{a,c, {a,d, {b,c, {b,d," ] || err $LINENO
+res=$($com <<< 'echo {{a,あいうえお@},{c,d},')
+[ "$res" == "{a,c, {a,d, {あいうえお@,c, {あいうえお@,d," ] || err $LINENO
 
 res=$($com <<< 'echo {{a,b},{c,d')
 [ "$res" == "{a,{c,d {b,{c,d" ] || err $LINENO
