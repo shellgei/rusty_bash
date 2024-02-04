@@ -32,14 +32,6 @@ impl Word {
         self.subwords.push(subword.clone());
     }
 
-    fn extend(&mut self, subwords: &[Box<dyn Subword>]) -> &mut Word {
-        for sw in subwords {
-            self.text += &sw.get_text();
-            self.subwords.push(sw.clone());
-        }
-        self
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         if feeder.starts_with("#") {
             return None;
