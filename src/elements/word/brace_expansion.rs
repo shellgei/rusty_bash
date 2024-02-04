@@ -6,9 +6,6 @@ use crate::elements::word::Word;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     let mut start_pos = open_brace_pos(word);
-    if word.text.starts_with("{}") {
-        start_pos.remove(0);
-    }
 
     for i in start_pos {
         if let Some(d) = parse(&word.subwords[i..]) {
