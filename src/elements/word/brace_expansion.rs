@@ -63,20 +63,7 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<Vec<usize>> {
     }
 }
 
-pub fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
-    let mut left_subs = Word::new();
-    left_subs.extend(&subwords[..delimiters[0]]);
-
-    let mut ans = vec![];
-    let right = delimiters[delimiters.len()-1]+1;
-
-    let mut from = delimiters[0] + 1;
-    for to in &delimiters[1..] {
-        let mut left = left_subs.clone();
-        let w = left.extend(&subwords[from..*to])
-                    .extend(&subwords[right..]);
-        ans.append(&mut eval(w));
-        from = *to + 1;
-    }
-    ans
+pub fn expand(_: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
+    eprintln!("{:?}", delimiters); 
+    vec![]
 }
