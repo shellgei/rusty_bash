@@ -21,9 +21,12 @@ pub struct Redirect {
 
 impl Redirect {
     pub fn connect(&mut self, restore: bool) -> bool {
-        if self.right.eval().len() != 1 {
+        let args = self.right.eval();
+        if args.len() != 1 {
             eprintln!("sush: {}: ambiguous redirect", self.right.text);
             return false;
+        }else{
+            self.right.text = args[0].clone();
         }
 
         match self.symbol.as_str() {
