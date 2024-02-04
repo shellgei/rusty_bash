@@ -5,7 +5,7 @@ use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
-    let mut start_pos = open_brace_pos(word);
+    let start_pos = open_brace_pos(word);
 
     for i in start_pos {
         if let Some(d) = parse(&word.subwords[i..]) {
