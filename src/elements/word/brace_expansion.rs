@@ -28,5 +28,55 @@ fn open_brace_pos(w: &Word) -> Vec<usize> {
         .collect()
 }
 
-fn parse(_: &[Box<dyn Subword>]) -> Option<Vec<usize>> { None }
-fn expand(_: &Vec<Box<dyn Subword>>, _: &Vec<usize>) -> Vec<Word> { vec![] }
+pub fn parse(subwords: &[Box<dyn Subword>]) -> Option<Vec<usize>> {
+    let mut stack = vec![];
+    for sw in subwords {
+        stack.push(Some(sw.get_text()));
+        if sw.get_text() == "}" {
+            match get_delimiters(&mut stack) {
+                Some(ds) => return Some(ds),
+                _        => {},
+            }
+        }
+    }
+    None
+}
+
+fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<Vec<usize>> {
+    let mut comma_pos = vec![];
+    for i in (1..stack.len()-1).rev() {
+        if stack[i] == Some(",") {
+            comma_pos.push(i);
+        }else if stack[i] == Some("{") { // find an inner brace expcomma_posion
+            stack[i..].iter_mut().for_each(|e| *e = None);
+            return None;
+        }
+    }
+
+    if comma_pos.len() > 0 {
+        comma_pos.reverse();
+        comma_pos.insert(0, 0); // add "{" pos
+        comma_pos.push(stack.len()-1); // add "}" pos
+        Some(comma_pos)
+    }else{
+        None
+    }
+}
+
+pub fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
+    let mut left_subs = Word::new();
+    left_subs.extend(&subwords[..delimiters[0]]);
+
+    let mut ans = vec![];
+    let right = delimiters[delimiters.len()-1]+1;
+
+    let mut from = delimiters[0] + 1;
+    for to in &delimiters[1..] {
+        let mut left = left_subs.clone();
+        let w = left.extend(&subwords[from..*to])
+                    .extend(&subwords[right..]);
+        ans.append(&mut eval(w));
+        from = *to + 1;
+    }
+    ans
+}
