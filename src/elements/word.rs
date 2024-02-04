@@ -1,6 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod brace_expansion;
+
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use crate::elements::subword::Subword;
@@ -13,7 +15,9 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self) -> Vec<String> {
-        vec![self.text.clone()]
+        let ws = brace_expansion::eval(self);
+
+        ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect()
     }
 
     pub fn new() -> Word {
