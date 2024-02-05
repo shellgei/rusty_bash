@@ -24,8 +24,8 @@ fn invalidate_brace(subwords: &mut Vec<Box<dyn Subword>>) {
 
     if subwords[0].get_text() == "{"
     && subwords[1].get_text() == "}" {
-        let left = subwords.remove(1);
-        subwords[0].merge(&left);
+        let right = subwords.remove(1);
+        subwords[0].merge(&right);
     }
 }
 
