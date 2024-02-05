@@ -44,7 +44,8 @@ impl Feeder {
     pub fn scanner_subword_symbol(&self) -> usize {
         if self.starts_with("{")
         || self.starts_with(",")
-        || self.starts_with("}"){
+        || self.starts_with("}")
+        || self.starts_with("$"){
             1
         }else{
             0
