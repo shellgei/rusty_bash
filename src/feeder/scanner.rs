@@ -41,7 +41,7 @@ impl Feeder {
         ans
     }
 
-    pub fn scanner_brace_expansion_symbol(&self) -> usize {
+    pub fn scanner_subword_symbol(&self) -> usize {
         if self.starts_with("{")
         || self.starts_with(",")
         || self.starts_with("}"){
