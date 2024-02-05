@@ -5,7 +5,7 @@ use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
-    invalid_brace(&mut word.subwords);
+    invalidate_brace(&mut word.subwords);
 
     for i in open_brace_pos(word) {
         if let Some(d) = parse(&word.subwords[i..]) {
@@ -17,7 +17,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     vec![word.clone()]
 }
 
-fn invalid_brace(subwords: &mut Vec<Box<dyn Subword>>) {
+fn invalidate_brace(subwords: &mut Vec<Box<dyn Subword>>) {
     if subwords.len() < 2 {
         return;
     }
@@ -75,7 +75,7 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<Vec<usize>> {
 pub fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
     let left = &subwords[..delimiters[0]];
     let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
-    invalid_brace(&mut right);
+    invalidate_brace(&mut right);
 
     let mut ans = vec![];
     let mut from = delimiters[0] + 1;
