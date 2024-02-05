@@ -417,8 +417,8 @@ res=$($com <<< 'echo {d}d{},dba}')
 [ "$res" == "d}d{} dba" ] || err $LINENO
 #[ "$res" == "" ] || err $LINENO
 
-#res=$($com <<< 'echo {,}{}a,b}')
-#[ "$res" == "{}a,b} {}a,b}" ] || err $LINENO
+res=$($com <<< 'echo {,}{}a,b}')
+[ "$res" == "{}a,b} {}a,b}" ] || err $LINENO
 
 res=$($com <<< 'echo a{}},b}')
 [ "$res" == "a}} ab" ] || err $LINENO
