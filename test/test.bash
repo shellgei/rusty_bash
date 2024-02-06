@@ -441,6 +441,14 @@ res=$($com <<< 'echo あ{a,b}{},c}')
 res=$($com <<< 'echo あ{a,b}d{},c}')
 [ "$res" == "あad} あadc あbd} あbdc" ] || err $LINENO
 
+# escaping
+
+res=$($com <<< 'echo \(')
+[ "$res" == "(" ] || err $LINENO
+
+#res=$($com <<< 'echo \')
+#[ "$res" == "\\" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )

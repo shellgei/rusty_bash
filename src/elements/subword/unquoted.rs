@@ -16,6 +16,14 @@ impl Subword for UnquotedSubword {
     fn merge(&mut self, right: &Box<dyn Subword>) {
         self.text += &right.get_text().clone();
     }
+
+    fn unquote(&mut self) {
+        if ! self.text.starts_with("\\") || self.text.len() == 1 {
+            return;
+        }
+
+        self.text.remove(0);
+    }
 }
 
 impl UnquotedSubword {
