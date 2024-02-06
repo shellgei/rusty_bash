@@ -8,7 +8,7 @@ impl Feeder {
     fn feed_and_connect(&mut self, core: &mut ShellCore) -> bool {
         self.remaining.pop();
         self.remaining.pop();
-        match self.feed_additional_line(core){
+        match self.feed_additional_line_core(core){
             Ok(()) => true,
             Err(_) => false,
         }
