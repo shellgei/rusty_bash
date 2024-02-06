@@ -6,8 +6,13 @@ mod scanner;
 
 use std::io;
 use crate::ShellCore;
-use std::process;
 use std::sync::atomic::Ordering::Relaxed;
+
+pub enum InputError {
+    Interrupt,
+    TerminalProblem,
+    Eof,
+}
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
@@ -76,9 +81,9 @@ impl Feeder {
         Some(line)
     }
 
-    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         if core.sigint.load(Relaxed) { //core.input_interrupt {
-            return false;
+            return Err(InputError::Interrupt);
         }
 
         let ret = if core.has_flag('i') {
@@ -86,7 +91,7 @@ impl Feeder {
             if let Some(s) = term::read_line_terminal(len_prompt, core){
                 Some(s)
             }else {
-                return false;
+                return Err(InputError::TerminalProblem);
             }
         }else{
             Self::read_line_stdin()
@@ -103,10 +108,9 @@ impl Feeder {
                 *b += &line.clone();
             }
         }else{
-            eprintln!("sush: syntax error: unexpected end of file");
-            process::exit(2);
+            return Err(InputError::Eof);
         }
-        true
+        Ok(())
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
