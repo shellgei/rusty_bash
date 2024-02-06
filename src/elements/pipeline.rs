@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::feeder::InputError;
 use super::command;
 use super::command::Command;
 use super::Pipe;
@@ -98,17 +97,8 @@ impl Pipeline {
                 if Self::eat_command(feeder, &mut ans, core) {
                     break; //コマンドがあれば73行目のloopを抜けてパイプを探す
                 }
-                if feeder.len() != 0 {
+                if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
                     return None;
-                }
-                match feeder.feed_additional_line(core) {
-                    Ok(()) => {}, 
-                    Err(InputError::Eof) => {
-                        eprintln!("sush: syntax error: unexpected end of file");
-                        core.vars.insert("?".to_string(), 2.to_string());
-                        core.exit();
-                    },
-                    _ => return None,
                 }
             }
         }

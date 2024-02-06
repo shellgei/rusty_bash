@@ -10,7 +10,6 @@ use std::sync::atomic::Ordering::Relaxed;
 
 pub enum InputError {
     Interrupt,
-    TerminalProblem,
     Eof,
 }
 
@@ -49,25 +48,6 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    /*
-    pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
-        let line;
-        let len_prompt = term::prompt_normal(core);
-        if let Some(ln) = term::read_line_terminal(len_prompt, core) {
-            line = ln
-        }else{
-            return false;
-        };
-
-        self.add_line(line);
-
-        if self.len_as_chars() < 2 {
-            return true;
-        }
-
-        true
-    }
-    */
     fn read_line_stdin() -> Option<String> {
         let mut line = String::new();
 
@@ -81,8 +61,8 @@ impl Feeder {
         Some(line)
     }
 
-    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        if core.sigint.load(Relaxed) { //core.input_interrupt {
+    fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
+        if core.sigint.load(Relaxed) {
             return Err(InputError::Interrupt);
         }
 
@@ -91,7 +71,7 @@ impl Feeder {
             if let Some(s) = term::read_line_terminal(len_prompt, core){
                 Some(s)
             }else {
-                return Err(InputError::TerminalProblem);
+                return Err(InputError::Interrupt);
             }
         }else{
             Self::read_line_stdin()
@@ -113,8 +93,22 @@ impl Feeder {
         Ok(())
     }
 
+    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+        match self.feed_additional_line_core(core) {
+            Ok(()) => true,
+            Err(InputError::Eof) => {
+                eprintln!("sush: syntax error: unexpected end of file");
+                core.vars.insert("?".to_string(), 2.to_string());
+                core.exit();
+            },
+            Err(InputError::Interrupt) => {
+                core.vars.insert("?".to_string(), 130.to_string());
+                false
+            },
+        }
+    }
+
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
-        //let line = if core.flags.i {
         let line = if core.has_flag('i') {
             let len_prompt = term::prompt_normal(core);
             if let Some(ln) = term::read_line_terminal(len_prompt, core) {
@@ -130,27 +124,11 @@ impl Feeder {
             }
         };
         self.add_line(line);
-
-        /*
-        while self.remaining.ends_with("\\\n") {
-            self.remaining.pop();
-            self.remaining.pop();
-            if !self.feed_additional_line(core){
-                self.remaining = "".to_string();
-                return true;
-            }
-        }*/
         true
     }
 
     fn add_line(&mut self, line: String) {
-        //self.to_lineno += 1;
-
         if self.remaining.len() == 0 {
-            /*
-            self.from_lineno = self.to_lineno;
-            self.pos_in_line = 0;
-            */
             self.remaining = line;
         }else{
             self.remaining += &line;
