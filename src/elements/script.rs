@@ -82,6 +82,7 @@ impl Script {
                 },
                 Status::UnexpectedSymbol(s) => {
                     eprintln!("Unexpected token: {}", s);
+                    core.vars.insert("?".to_string(), "2".to_string());
                     break;
                 },
                 Status::NeedMoreLine => {
@@ -92,7 +93,6 @@ impl Script {
             }
         }
 
-        core.vars.insert("?".to_string(), "2".to_string());
         feeder.consume(feeder.len());
         return None;
     }

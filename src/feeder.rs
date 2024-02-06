@@ -101,7 +101,10 @@ impl Feeder {
                 core.vars.insert("?".to_string(), 2.to_string());
                 core.exit();
             },
-            _ => false,
+            Err(InputError::Interrupt) => {
+                core.vars.insert("?".to_string(), 130.to_string());
+                false
+            },
         }
     }
 
