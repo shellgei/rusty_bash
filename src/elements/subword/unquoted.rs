@@ -36,7 +36,7 @@ impl UnquotedSubword {
             return Some(Self::new( &feeder.consume(len) ));
         }
 
-        let len = feeder.scanner_unquoted_subword(core);
+        let len = feeder.scanner_unquoted_subword();
         if len == 0 {
             None
         }else{

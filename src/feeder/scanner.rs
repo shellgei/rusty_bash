@@ -67,23 +67,13 @@ impl Feeder {
         }
     }
 
-    pub fn scanner_unquoted_subword(&mut self, core: &mut ShellCore) -> usize {
-        let mut next_line = false; 
+    pub fn scanner_unquoted_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            /*
-            if &self.remaining[ans..] == "\\\n" {
-                next_line = true;
-                break;
-            }else*/ if let Some(_) = " \t\n;&|()<>{},\\".find(ch) {
+            if let Some(_) = " \t\n;&|()<>{},\\".find(ch) {
                 break;
             }
             ans += ch.len_utf8();
-        }
-
-        if next_line {
-            self.feed_and_connect(core);
-            return self.scanner_unquoted_subword(core);
         }
         ans
     }
