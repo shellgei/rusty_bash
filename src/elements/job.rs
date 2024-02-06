@@ -3,6 +3,7 @@
 
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
+use crate::feeder::InputError;
 use crate::core::jobtable::JobEntry;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
@@ -128,8 +129,17 @@ impl Job {
                 if Self::eat_pipeline(feeder, &mut ans, core) {
                     break;  
                 }
-                if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
+                if feeder.len() != 0 {
                     return None;
+                }
+                match feeder.feed_additional_line(core) {
+                    Ok(()) => {}, 
+                    Err(InputError::Eof) => {
+                        eprintln!("sush: syntax error: unexpected end of file");
+                        core.vars.insert("?".to_string(), 2.to_string());
+                        core.exit();
+                    },
+                    _ => return None,
                 }
             }
         }

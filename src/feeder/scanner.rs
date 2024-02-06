@@ -3,13 +3,16 @@
 
 use super::Feeder;
 use crate::ShellCore;
+use crate::feeder::InputError;
 
 impl Feeder {
     fn feed_and_connect(&mut self, core: &mut ShellCore) {
         self.remaining.pop();
         self.remaining.pop();
-        if ! self.feed_additional_line(core){
-            self.remaining = String::new();
+        match self.feed_additional_line(core){
+            Ok(()) => {},
+            Err(InputError::Eof) => {self.remaining.push_str("\\\n")},
+            Err(_) => self.remaining = String::new(),
         }
     }
 
