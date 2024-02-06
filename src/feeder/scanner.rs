@@ -9,8 +9,8 @@ impl Feeder {
         self.remaining.pop();
         self.remaining.pop();
         match self.feed_additional_line(core){
-            Ok(()) => {return true;},
-            Err(_) => {return false;},
+            Ok(()) => true,
+            Err(_) => false,
         }
     }
 
