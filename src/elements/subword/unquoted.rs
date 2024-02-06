@@ -18,7 +18,7 @@ impl Subword for UnquotedSubword {
     }
 
     fn unquote(&mut self) {
-        if ! self.text.starts_with("\\") || self.text.len() == 1 {
+        if ! self.text.starts_with("\\") {
             return;
         }
 

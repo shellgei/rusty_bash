@@ -3,16 +3,14 @@
 
 use super::Feeder;
 use crate::ShellCore;
-use crate::feeder::InputError;
 
 impl Feeder {
-    fn feed_and_connect(&mut self, core: &mut ShellCore) {
+    fn feed_and_connect(&mut self, core: &mut ShellCore) -> bool {
         self.remaining.pop();
         self.remaining.pop();
         match self.feed_additional_line(core){
-            Ok(()) => {},
-            Err(InputError::Eof) => {self.remaining.push_str("\\\n")},
-            Err(_) => self.remaining = String::new(),
+            Ok(()) => {return true;},
+            Err(_) => {return false;},
         }
     }
 
@@ -57,7 +55,10 @@ impl Feeder {
 
     pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
         if self.starts_with("\\\n") {
-            self.feed_and_connect(core);
+            if ! self.feed_and_connect(core) {
+                self.remaining.push_str("\\\n");
+                return 2;
+            }
         }
 
         if ! self.starts_with("\\") {
