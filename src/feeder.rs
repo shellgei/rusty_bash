@@ -96,7 +96,7 @@ impl Feeder {
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
         match self.feed_additional_line_core(core) {
-            Ok(()) => {return true},
+            Ok(()) => true,
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
                 core.vars.insert("?".to_string(), 2.to_string());
@@ -107,7 +107,7 @@ impl Feeder {
                 core.vars.insert("?".to_string(), 2.to_string());
                 core.exit();
             },
-            _ => {return false},
+            _ => false,
         }
     }
 
