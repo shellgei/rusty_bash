@@ -3,7 +3,6 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
-use crate::feeder::InputError;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -83,23 +82,17 @@ impl Script {
                 },
                 Status::UnexpectedSymbol(s) => {
                     eprintln!("Unexpected token: {}", s);
+                    core.vars.insert("?".to_string(), "2".to_string());
                     break;
                 },
                 Status::NeedMoreLine => {
-                    match feeder.feed_additional_line(core) {
-                        Ok(()) => {}, 
-                        Err(InputError::Eof) => {
-                            eprintln!("sush: syntax error: unexpected end of file");
-                            core.vars.insert("?".to_string(), 2.to_string());
-                            core.exit();
-                        },
-                        _ => break,
+                    if ! feeder.feed_additional_line(core) {
+                        break;
                     }
                 },
             }
         }
 
-        core.vars.insert("?".to_string(), "2".to_string());
         feeder.consume(feeder.len());
         return None;
     }
