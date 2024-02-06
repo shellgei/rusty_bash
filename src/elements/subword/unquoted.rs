@@ -26,21 +26,13 @@ impl UnquotedSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<UnquotedSubword> {
-        let len = feeder.scanner_escaped_char(core);
-        if len != 0 {
-            return Some(Self::new( &feeder.consume(len) ));
+        for len in [feeder.scanner_escaped_char(core),
+                    feeder.scanner_subword_symbol(),
+                    feeder.scanner_unquoted_subword()] {
+            if len != 0 {
+                return Some(Self::new( &feeder.consume(len) ));
+            }
         }
-
-        let len = feeder.scanner_subword_symbol();
-        if len != 0 {
-            return Some(Self::new( &feeder.consume(len) ));
-        }
-
-        let len = feeder.scanner_unquoted_subword();
-        if len == 0 {
-            None
-        }else{
-            Some(Self::new( &feeder.consume(len) ))
-        }
+        None
     }
 }
