@@ -10,7 +10,6 @@ use std::sync::atomic::Ordering::Relaxed;
 
 pub enum InputError {
     Interrupt,
-    TerminalProblem,
     Eof,
 }
 
@@ -72,7 +71,7 @@ impl Feeder {
             if let Some(s) = term::read_line_terminal(len_prompt, core){
                 Some(s)
             }else {
-                return Err(InputError::TerminalProblem);
+                return Err(InputError::Interrupt);
             }
         }else{
             Self::read_line_stdin()
@@ -99,11 +98,6 @@ impl Feeder {
             Ok(()) => true,
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
-                core.vars.insert("?".to_string(), 2.to_string());
-                core.exit();
-            },
-            Err(InputError::TerminalProblem) => {
-                eprintln!("sush: unknown error: unexpected terminal problem");
                 core.vars.insert("?".to_string(), 2.to_string());
                 core.exit();
             },
