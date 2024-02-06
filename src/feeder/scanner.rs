@@ -52,14 +52,30 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
+        if self.starts_with("\\\n") {
+            self.feed_and_connect(core);
+        }
+
+        if ! self.starts_with("\\") {
+            return 0;
+        }
+
+        match self.remaining.chars().nth(1) {
+            Some(ch) => 1 + ch.len_utf8(),
+            None =>     1,
+        }
+    }
+
     pub fn scanner_unquoted_subword(&mut self, core: &mut ShellCore) -> usize {
         let mut next_line = false; 
         let mut ans = 0;
         for ch in self.remaining.chars() {
+            /*
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }else if let Some(_) = " \t\n;&|()<>{},".find(ch) {
+            }else*/ if let Some(_) = " \t\n;&|()<>{},\\".find(ch) {
                 break;
             }
             ans += ch.len_utf8();
