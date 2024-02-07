@@ -79,21 +79,19 @@ impl Feeder {
 
         let ret = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
-            match term::read_line_terminal(len_prompt, core){
-                Some(s) => Ok(s),
-                _       => return Err(InputError::Interrupt),
-            }
+            term::read_line_terminal(len_prompt, core)
         }else{
             Self::read_line_stdin()
         };
 
-        if let Ok(line) = ret {
-            self.add_line(line.clone());
-            self.add_backup(&line);
-        }else{
-            return Err(InputError::Eof);
+        match ret { 
+            Ok(line) => {
+                self.add_line(line.clone());
+                self.add_backup(&line);
+                Ok(())
+            },
+            Err(e) => Err(e),
         }
-        Ok(())
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
@@ -115,8 +113,8 @@ impl Feeder {
         let line = if core.has_flag('i') {
             let len_prompt = term::prompt_normal(core);
             match term::read_line_terminal(len_prompt, core) {
-                Some(ln) => ln,
-                _        => return false,
+                Ok(ln) => ln,
+                _      => return false,
             }
         }else{ 
             match Self::read_line_stdin() {

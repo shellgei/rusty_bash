@@ -11,6 +11,7 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 
 use crate::ShellCore;
+use super::InputError;
 
 extern crate unicode_width;
 use unicode_width::UnicodeWidthStr;
@@ -287,7 +288,7 @@ pub fn prompt_normal(_core: &mut ShellCore) -> u16 {
     (chars_to_width(&host.chars().collect()) + 1 ) as u16
 }
 
-pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
+pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Result<String, InputError>{
     let mut writer = Writer::new(core.history.len(), left);
 
     for c in stdin().keys() {
@@ -298,7 +299,7 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
                 core.sigint.store(true, Relaxed); //core.input_interrupt = true;
                 writer.chars.clear();
                 writer.end("^C\r\n");
-                return None;
+                return Err(InputError::Interrupt);
             },
             event::Key::Ctrl('e') => writer.move_cursor_to_tail(),
             event::Key::Ctrl('f') => writer.move_cursor(1),
@@ -321,5 +322,5 @@ pub fn read_line_terminal(left: u16, core: &mut ShellCore) -> Option<String>{
     if ans.len() != 0 {
         core.history.push(ans.clone());
     };
-    Some(ans + "\n")
+    Ok(ans + "\n")
 }
