@@ -58,7 +58,7 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_line_stdin() -> Option<String> {
+    fn read_line_stdin() -> Result<String, InputError> {
         let mut line = String::new();
 
         let len = io::stdin()
@@ -66,9 +66,10 @@ impl Feeder {
             .expect("Failed to read line");
 
         if len == 0 {
-            return None;
+            Err(InputError::Eof)
+        }else{
+            Ok(line)
         }
-        Some(line)
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
@@ -79,14 +80,14 @@ impl Feeder {
         let ret = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
             match term::read_line_terminal(len_prompt, core){
-                Some(s) => Some(s),
+                Some(s) => Ok(s),
                 _       => return Err(InputError::Interrupt),
             }
         }else{
             Self::read_line_stdin()
         };
 
-        if let Some(line) = ret {
+        if let Ok(line) = ret {
             self.add_line(line.clone());
             self.add_backup(&line);
         }else{
@@ -113,16 +114,14 @@ impl Feeder {
     pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
         let line = if core.has_flag('i') {
             let len_prompt = term::prompt_normal(core);
-            if let Some(ln) = term::read_line_terminal(len_prompt, core) {
-                ln
-            }else{
-                return false;
+            match term::read_line_terminal(len_prompt, core) {
+                Some(ln) => ln,
+                _        => return false,
             }
         }else{ 
-            if let Some(s) = Self::read_line_stdin() {
-                s
-            }else{
-                return false;
+            match Self::read_line_stdin() {
+                Ok(s) => s,
+                _     => return false,
             }
         };
         self.add_line(line);
@@ -130,10 +129,9 @@ impl Feeder {
     }
 
     fn add_line(&mut self, line: String) {
-        if self.remaining.len() == 0 {
-            self.remaining = line;
-        }else{
-            self.remaining += &line;
+        match self.remaining.len() {
+            0 => self.remaining = line,
+            _ => self.remaining += &line,
         };
     }
 
