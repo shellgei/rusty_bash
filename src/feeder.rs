@@ -44,6 +44,16 @@ impl Feeder {
         self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }
 
+    pub fn add_backup(&mut self, line: &str) {
+        for b in self.backup.iter_mut() {
+            if b.ends_with("\\\n") {
+                b.pop();
+                b.pop();
+            }
+            *b += &line.clone();
+        }
+    }
+
     pub fn rewind(&mut self) {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
@@ -68,10 +78,9 @@ impl Feeder {
 
         let ret = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
-            if let Some(s) = term::read_line_terminal(len_prompt, core){
-                Some(s)
-            }else {
-                return Err(InputError::Interrupt);
+            match term::read_line_terminal(len_prompt, core){
+                Some(s) => Some(s),
+                _       => return Err(InputError::Interrupt),
             }
         }else{
             Self::read_line_stdin()
@@ -79,14 +88,7 @@ impl Feeder {
 
         if let Some(line) = ret {
             self.add_line(line.clone());
-
-            for b in self.backup.iter_mut() {
-                if b.ends_with("\\\n") {
-                    b.pop();
-                    b.pop();
-                }
-                *b += &line.clone();
-            }
+            self.add_backup(&line);
         }else{
             return Err(InputError::Eof);
         }
