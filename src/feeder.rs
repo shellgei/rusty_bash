@@ -44,11 +44,21 @@ impl Feeder {
         self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }
 
+    pub fn add_backup(&mut self, line: &str) {
+        for b in self.backup.iter_mut() {
+            if b.ends_with("\\\n") {
+                b.pop();
+                b.pop();
+            }
+            *b += &line.clone();
+        }
+    }
+
     pub fn rewind(&mut self) {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_line_stdin() -> Option<String> {
+    fn read_line_stdin() -> Result<String, InputError> {
         let mut line = String::new();
 
         let len = io::stdin()
@@ -56,9 +66,10 @@ impl Feeder {
             .expect("Failed to read line");
 
         if len == 0 {
-            return None;
+            Err(InputError::Eof)
+        }else{
+            Ok(line)
         }
-        Some(line)
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
@@ -66,31 +77,21 @@ impl Feeder {
             return Err(InputError::Interrupt);
         }
 
-        let ret = if core.has_flag('i') {
+        let line = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
-            if let Some(s) = term::read_line_terminal(len_prompt, core){
-                Some(s)
-            }else {
-                return Err(InputError::Interrupt);
-            }
+            term::read_line_terminal(len_prompt, core)
         }else{
             Self::read_line_stdin()
         };
 
-        if let Some(line) = ret {
-            self.add_line(line.clone());
-
-            for b in self.backup.iter_mut() {
-                if b.ends_with("\\\n") {
-                    b.pop();
-                    b.pop();
-                }
-                *b += &line.clone();
-            }
-        }else{
-            return Err(InputError::Eof);
+        match line { 
+            Ok(ln) => {
+                self.add_line(ln.clone());
+                self.add_backup(&ln);
+                Ok(())
+            },
+            Err(e) => Err(e),
         }
-        Ok(())
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
@@ -108,30 +109,27 @@ impl Feeder {
         }
     }
 
-    pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
+    pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = if core.has_flag('i') {
             let len_prompt = term::prompt_normal(core);
-            if let Some(ln) = term::read_line_terminal(len_prompt, core) {
-                ln
-            }else{
-                return false;
-            }
+            term::read_line_terminal(len_prompt, core)
         }else{ 
-            if let Some(s) = Self::read_line_stdin() {
-                s
-            }else{
-                return false;
-            }
+            Self::read_line_stdin()
         };
-        self.add_line(line);
-        true
+
+        match line {
+            Ok(ln) => {
+                self.add_line(ln);
+                Ok(())
+            },
+            Err(e) => Err(e),
+        }
     }
 
     fn add_line(&mut self, line: String) {
-        if self.remaining.len() == 0 {
-            self.remaining = line;
-        }else{
-            self.remaining += &line;
+        match self.remaining.len() {
+            0 => self.remaining = line,
+            _ => self.remaining += &line,
         };
     }
 

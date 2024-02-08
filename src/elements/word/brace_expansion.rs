@@ -85,8 +85,7 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<Vec<usize>> {
 
 pub fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
     let left = &subwords[..delimiters[0]];
-    let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
-    invalidate_brace(&mut right);
+    let right = &subwords[(delimiters.last().unwrap()+1)..];
 
     let mut ans = vec![];
     let mut from = delimiters[0] + 1;
