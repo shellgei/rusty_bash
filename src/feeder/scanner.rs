@@ -5,13 +5,10 @@ use super::Feeder;
 use crate::ShellCore;
 
 impl Feeder {
-    fn feed_and_connect(&mut self, core: &mut ShellCore) -> bool {
+    fn feed_and_connect(&mut self, core: &mut ShellCore) {
         self.remaining.pop();
         self.remaining.pop();
-        match self.feed_additional_line_core(core) {
-            Ok(()) => true,
-            _      => false,
-        }
+        let _ = self.feed_additional_line_core(core);
     }
 
     fn backslash_check_and_feed(&mut self, starts: Vec<&str>, core: &mut ShellCore) {
@@ -55,10 +52,7 @@ impl Feeder {
 
     pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
         if self.starts_with("\\\n") {
-            if ! self.feed_and_connect(core) {
-                self.remaining.push_str("\\\n");
-                return 2;
-            }
+            self.feed_and_connect(core);
         }
 
         if ! self.starts_with("\\") {
