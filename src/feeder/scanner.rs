@@ -10,10 +10,7 @@ impl Feeder {
         self.remaining.pop();
         match self.feed_additional_line_core(core) {
             Ok(()) => true,
-            _      => {
-                self.remaining.push_str("\\\n");
-                false
-            },
+            _      => false,
         }
     }
 
@@ -59,6 +56,7 @@ impl Feeder {
     pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
         if self.starts_with("\\\n") {
             if ! self.feed_and_connect(core) {
+                self.remaining.push_str("\\\n");
                 return 2;
             }
         }
