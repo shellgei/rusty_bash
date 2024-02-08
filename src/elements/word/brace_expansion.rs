@@ -8,10 +8,6 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     invalidate_brace(&mut word.subwords);
 
     for i in open_brace_pos(word) {
-        if i < skip_until {
-            continue;
-        }
-
         if let Some(d) = parse(&word.subwords[i..]) {
             let shift_d = d.iter().map(|e| e+i).collect();
             return expand(&word.subwords, &shift_d);
