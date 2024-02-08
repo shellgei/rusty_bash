@@ -7,20 +7,13 @@ use crate::elements::word::Word;
 pub fn eval(word: &mut Word) -> Vec<Word> {
     invalidate_brace(&mut word.subwords);
 
-    let mut skip_until = 0;
     for i in open_brace_pos(word) {
         if i < skip_until {
             continue;
         }
 
         if let Some(d) = parse(&word.subwords[i..]) {
-            let shift_d: Vec<usize> = d.iter().map(|e| e+i).collect();
-
-            if i > 0 && word.subwords[i-1].get_text() == "$" {
-                skip_until = *shift_d.last().unwrap();
-                continue;
-            }
-
+            let shift_d = d.iter().map(|e| e+i).collect();
             return expand(&word.subwords, &shift_d);
         }
     }
