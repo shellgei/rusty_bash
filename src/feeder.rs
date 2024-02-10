@@ -6,8 +6,12 @@ mod scanner;
 
 use std::io;
 use crate::ShellCore;
-use std::process;
 use std::sync::atomic::Ordering::Relaxed;
+
+pub enum InputError {
+    Interrupt,
+    Eof,
+}
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
@@ -40,30 +44,21 @@ impl Feeder {
         self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }
 
+    pub fn add_backup(&mut self, line: &str) {
+        for b in self.backup.iter_mut() {
+            if b.ends_with("\\\n") {
+                b.pop();
+                b.pop();
+            }
+            *b += &line.clone();
+        }
+    }
+
     pub fn rewind(&mut self) {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    /*
-    pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
-        let line;
-        let len_prompt = term::prompt_normal(core);
-        if let Some(ln) = term::read_line_terminal(len_prompt, core) {
-            line = ln
-        }else{
-            return false;
-        };
-
-        self.add_line(line);
-
-        if self.len_as_chars() < 2 {
-            return true;
-        }
-
-        true
-    }
-    */
-    fn read_line_stdin() -> Option<String> {
+    fn read_line_stdin() -> Result<String, InputError> {
         let mut line = String::new();
 
         let len = io::stdin()
@@ -71,85 +66,70 @@ impl Feeder {
             .expect("Failed to read line");
 
         if len == 0 {
-            return None;
+            Err(InputError::Eof)
+        }else{
+            Ok(line)
         }
-        Some(line)
     }
 
-    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
-        if core.sigint.load(Relaxed) { //core.input_interrupt {
-            return false;
+    fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
+        if core.sigint.load(Relaxed) {
+            return Err(InputError::Interrupt);
         }
 
-        let ret = if core.has_flag('i') {
+        let line = if core.has_flag('i') {
             let len_prompt = term::prompt_additional();
-            if let Some(s) = term::read_line_terminal(len_prompt, core){
-                Some(s)
-            }else {
-                return false;
-            }
+            term::read_line_terminal(len_prompt, core)
         }else{
             Self::read_line_stdin()
         };
 
-        if let Some(line) = ret {
-            self.add_line(line.clone());
-
-            for b in self.backup.iter_mut() {
-                if b.ends_with("\\\n") {
-                    b.pop();
-                    b.pop();
-                }
-                *b += &line.clone();
-            }
-        }else{
-            eprintln!("sush: syntax error: unexpected end of file");
-            process::exit(2);
+        match line { 
+            Ok(ln) => {
+                self.add_line(ln.clone());
+                self.add_backup(&ln);
+                Ok(())
+            },
+            Err(e) => Err(e),
         }
-        true
     }
 
-    pub fn feed_line(&mut self, core: &mut ShellCore) -> bool {
-        //let line = if core.flags.i {
+    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+        match self.feed_additional_line_core(core) {
+            Ok(()) => true,
+            Err(InputError::Eof) => {
+                eprintln!("sush: syntax error: unexpected end of file");
+                core.vars.insert("?".to_string(), 2.to_string());
+                core.exit();
+            },
+            Err(InputError::Interrupt) => {
+                core.vars.insert("?".to_string(), 130.to_string());
+                false
+            },
+        }
+    }
+
+    pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = if core.has_flag('i') {
             let len_prompt = term::prompt_normal(core);
-            if let Some(ln) = term::read_line_terminal(len_prompt, core) {
-                ln
-            }else{
-                return false;
-            }
+            term::read_line_terminal(len_prompt, core)
         }else{ 
-            if let Some(s) = Self::read_line_stdin() {
-                s
-            }else{
-                return false;
-            }
+            Self::read_line_stdin()
         };
-        self.add_line(line);
 
-        /*
-        while self.remaining.ends_with("\\\n") {
-            self.remaining.pop();
-            self.remaining.pop();
-            if !self.feed_additional_line(core){
-                self.remaining = "".to_string();
-                return true;
-            }
-        }*/
-        true
+        match line {
+            Ok(ln) => {
+                self.add_line(ln);
+                Ok(())
+            },
+            Err(e) => Err(e),
+        }
     }
 
     fn add_line(&mut self, line: String) {
-        //self.to_lineno += 1;
-
-        if self.remaining.len() == 0 {
-            /*
-            self.from_lineno = self.to_lineno;
-            self.pos_in_line = 0;
-            */
-            self.remaining = line;
-        }else{
-            self.remaining += &line;
+        match self.remaining.len() {
+            0 => self.remaining = line,
+            _ => self.remaining += &line,
         };
     }
 

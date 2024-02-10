@@ -12,6 +12,18 @@ pub struct UnquotedSubword {
 impl Subword for UnquotedSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
+
+    fn merge(&mut self, right: &Box<dyn Subword>) {
+        self.text += &right.get_text().clone();
+    }
+
+    fn unquote(&mut self) {
+        if ! self.text.starts_with("\\") {
+            return;
+        }
+
+        self.text.remove(0);
+    }
 }
 
 impl UnquotedSubword {
@@ -22,16 +34,17 @@ impl UnquotedSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<UnquotedSubword> {
-        let len = feeder.scanner_brace_expansion_symbol();
-        if len != 0 {
-            return Some(Self::new( &feeder.consume(len) ));
+        for i in 0..3 {
+            let len = match i {
+                0 => feeder.scanner_escaped_char(core),
+                1 => feeder.scanner_subword_symbol(),
+                2 => feeder.scanner_unquoted_subword(),
+                _ => 0,
+            };
+            if len != 0 {
+                return Some(Self::new( &feeder.consume(len) ));
+            }
         }
-
-        let len = feeder.scanner_unquoted_subword(core);
-        if len == 0 {
-            None
-        }else{
-            Some(Self::new( &feeder.consume(len) ))
-        }
+        None
     }
 }

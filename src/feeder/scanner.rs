@@ -8,9 +8,7 @@ impl Feeder {
     fn feed_and_connect(&mut self, core: &mut ShellCore) {
         self.remaining.pop();
         self.remaining.pop();
-        if ! self.feed_additional_line(core){
-            self.remaining = String::new();
-        }
+        let _ = self.feed_additional_line_core(core);
     }
 
     fn backslash_check_and_feed(&mut self, starts: Vec<&str>, core: &mut ShellCore) {
@@ -41,32 +39,39 @@ impl Feeder {
         ans
     }
 
-    pub fn scanner_brace_expansion_symbol(&self) -> usize {
+    pub fn scanner_subword_symbol(&self) -> usize {
         if self.starts_with("{")
         || self.starts_with(",")
-        || self.starts_with("}"){
+        || self.starts_with("}")
+        || self.starts_with("$"){
             1
         }else{
             0
         }
     }
 
-    pub fn scanner_unquoted_subword(&mut self, core: &mut ShellCore) -> usize {
-        let mut next_line = false; 
+    pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
+        if self.starts_with("\\\n") {
+            self.feed_and_connect(core);
+        }
+
+        if ! self.starts_with("\\") {
+            return 0;
+        }
+
+        match self.remaining.chars().nth(1) {
+            Some(ch) => 1 + ch.len_utf8(),
+            None =>     1,
+        }
+    }
+
+    pub fn scanner_unquoted_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if &self.remaining[ans..] == "\\\n" {
-                next_line = true;
-                break;
-            }else if let Some(_) = " \t\n;&|()<>{},".find(ch) {
+            if let Some(_) = " \t\n;&|()<>{},\\".find(ch) {
                 break;
             }
             ans += ch.len_utf8();
-        }
-
-        if next_line {
-            self.feed_and_connect(core);
-            return self.scanner_unquoted_subword(core);
         }
         ans
     }

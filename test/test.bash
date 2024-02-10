@@ -417,11 +417,40 @@ res=$($com <<< 'echo {d}d{},dba}')
 [ "$res" == "d}d{} dba" ] || err $LINENO
 #[ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'echo {}a,b}')
+[ "$res" == "{}a,b}" ] || err $LINENO
+
+res=$($com <<< 'echo c{}a,b}')
+[ "$res" == "c}a cb" ] || err $LINENO
+
 res=$($com <<< 'echo {,}{}a,b}')
 [ "$res" == "{}a,b} {}a,b}" ] || err $LINENO
 
 res=$($com <<< 'echo a{}},b}')
 [ "$res" == "a}} ab" ] || err $LINENO
+
+res=$($com <<< 'echo $${a,b}')
+[ "$res" == "\$\${a,b}" ] || err $LINENO
+
+res=$($com <<< 'echo $${a,{b,c},d}')
+[ "$res" == "\$\${a,{b,c},d}" ] || err $LINENO
+
+res=$($com <<< 'echo あ{a,b}{},c}')
+[ "$res" == "あa{},c} あb{},c}" ] || err $LINENO
+
+res=$($com <<< 'echo あ{a,b}d{},c}')
+[ "$res" == "あad} あadc あbd} あbdc" ] || err $LINENO
+
+# escaping
+
+res=$($com <<< 'echo \(')
+[ "$res" == "(" ] || err $LINENO
+
+res=$($com <<< 'echo \')
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'echo -n \')
+[ "$res" == "" ] || err $LINENO
 
 ### WHILE TEST ###
 

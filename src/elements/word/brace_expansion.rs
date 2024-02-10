@@ -5,19 +5,39 @@ use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
-    let mut start_pos = open_brace_pos(word);
-    if word.text.starts_with("{}") {
-        start_pos.remove(0);
-    }
+    invalidate_brace(&mut word.subwords);
 
-    for i in start_pos {
+    let mut skip_until = 0;
+    for i in open_brace_pos(word) {
+        if i < skip_until { //ブレース展開の終わりまで処理をスキップ
+             continue;
+        }
+
         if let Some(d) = parse(&word.subwords[i..]) {
-            let shift_d = d.iter().map(|e| e+i).collect();
+            let shift_d: Vec<usize> = d.iter().map(|e| e+i).collect();
+
+            if i > 0 && word.subwords[i-1].get_text() == "$" {
+                skip_until = *shift_d.last().unwrap();
+                continue;
+            }
+
             return expand(&word.subwords, &shift_d);
         }
     }
 
     vec![word.clone()]
+}
+
+fn invalidate_brace(subwords: &mut Vec<Box<dyn Subword>>) {
+    if subwords.len() < 2 {
+        return;
+    }
+
+    if subwords[0].get_text() == "{"
+    && subwords[1].get_text() == "}" {
+        let right = subwords.remove(1);
+        subwords[0].merge(&right);
+    }
 }
 
 fn open_brace_pos(w: &Word) -> Vec<usize> {
@@ -65,7 +85,8 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<Vec<usize>> {
 
 pub fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
     let left = &subwords[..delimiters[0]];
-    let right = &subwords[(delimiters.last().unwrap()+1)..];
+    let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
+    invalidate_brace(&mut right);
 
     let mut ans = vec![];
     let mut from = delimiters[0] + 1;

@@ -10,7 +10,7 @@ use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::ShellCore;
 use crate::elements::script::Script;
-use crate::feeder::Feeder;
+use crate::feeder::{Feeder, InputError};
 use signal_hook::consts;
 use signal_hook::iterator::Signals;
 
@@ -78,13 +78,14 @@ fn main_loop(core: &mut ShellCore) {
     loop {
         core.jobtable_check_status();
         core.jobtable_print_status_change();
-        if ! feeder.feed_line(core) {
-            if core.has_flag('i') {
+
+        match feeder.feed_line(core) {
+            Ok(()) => {}, 
+            Err(InputError::Interrupt) => {
                 input_interrupt_check(&mut feeder, core);
                 continue;
-            }else{
-                break;
-            }   
+            },
+            _ => break,
         }
 
         match Script::parse(&mut feeder, core){
