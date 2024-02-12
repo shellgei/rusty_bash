@@ -25,7 +25,7 @@ impl Feeder {
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }else if let Some(_) = charlist.find(ch) {
+            }else if charlist.find(ch) != None {
                 ans += 1;
             }else{
                 break;
@@ -68,7 +68,7 @@ impl Feeder {
     pub fn scanner_unquoted_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = " \t\n;&|()<>{},\\".find(ch) {
+            if " \t\n;&|()<>{},\\".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();
@@ -90,7 +90,7 @@ impl Feeder {
 
     pub fn scanner_job_end(&mut self) -> usize {
         if let Some(ch) = self.remaining.chars().nth(0) {
-            if let Some(_) = ";&\n".find(ch) {
+            if ";&\n".find(ch) != None {
                 return 1;
             }
         }
@@ -121,7 +121,7 @@ impl Feeder {
 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = "\n".find(ch) {
+            if "\n".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();

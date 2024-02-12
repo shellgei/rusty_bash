@@ -83,10 +83,7 @@ impl ShellCore {
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        if let Some(_) = self.flags.find(flag) {
-            return true;
-        }
-        false
+        self.flags.find(flag) != None 
     }
 
     pub fn wait_process(&mut self, child: Pid) {
