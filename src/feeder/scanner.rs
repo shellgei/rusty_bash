@@ -50,7 +50,7 @@ impl Feeder {
         }
     }
 
-    pub fn scanner_unquoted_subword(&mut self, core: &mut ShellCore) -> usize {
+    pub fn scanner_subword(&mut self, core: &mut ShellCore) -> usize {
         let mut next_line = false; 
         let mut ans = 0;
         for ch in self.remaining.chars() {
@@ -65,7 +65,7 @@ impl Feeder {
 
         if next_line {
             self.feed_and_connect(core);
-            return self.scanner_unquoted_subword(core);
+            return self.scanner_subword(core);
         }
         ans
     }
