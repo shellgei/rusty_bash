@@ -5,24 +5,24 @@ use crate::{ShellCore, Feeder};
 use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
-pub struct UnquotedSubword {
+pub struct SimpleSubword {
     pub text: String,
 }
 
-impl Subword for UnquotedSubword {
+impl Subword for SimpleSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 }
 
-impl UnquotedSubword {
-    fn new(s: &str) -> UnquotedSubword {
-        UnquotedSubword {
+impl SimpleSubword {
+    fn new(s: &str) -> SimpleSubword {
+        SimpleSubword {
             text: s.to_string(),
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<UnquotedSubword> {
-        let len = feeder.scanner_unquoted_subword(core);
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
+        let len = feeder.scanner_subword(core);
         if len == 0 {
             None
         }else{
