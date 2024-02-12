@@ -22,7 +22,7 @@ impl ShellCore {
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
-        core.vars.insert("?".to_string(), args[1].clone());
+        core.parameters.insert("?".to_string(), args[1].clone());
     }
     core.exit()
 }

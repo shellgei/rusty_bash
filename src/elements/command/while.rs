@@ -31,7 +31,7 @@ impl Command for WhileCommand {
                 .expect("SUSH INTERNAL ERROR (no script)")
                 .exec(core);
 
-            if core.vars["?"] != "0" {
+            if core.parameters["?"] != "0" {
                 break;
             }
 

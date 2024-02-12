@@ -18,7 +18,7 @@ pub struct Pipeline {
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
         if core.sigint.load(Relaxed) { //以下4行追加
-            core.vars.insert("?".to_string(), "130".to_string());
+            core.parameters.insert("?".to_string(), "130".to_string());
             return vec![];
         }
 

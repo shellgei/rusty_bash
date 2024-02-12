@@ -50,7 +50,7 @@ pub trait Command {
         if self.get_redirects().iter_mut().all(|r| r.connect(true)){
             self.run(core, false);
         }else{
-            core.vars.insert("?".to_string(), "1".to_string());
+            core.parameters.insert("?".to_string(), "1".to_string());
         }
         self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
     }
