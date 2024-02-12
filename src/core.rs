@@ -75,11 +75,11 @@ impl ShellCore {
     }
 
     fn set_initial_parameters(&mut self) {
-        self.parameters.insert("$".to_string(), process::id().to_string());
-        self.parameters.insert("BASHPID".to_string(), self.parameters["$"].clone());
-        self.parameters.insert("BASH_SUBSHELL".to_string(), "0".to_string());
-        self.parameters.insert("?".to_string(), "0".to_string());
-        self.parameters.insert("HOME".to_string(), env::var("HOME").unwrap_or("/".to_string()));
+        self.set_param("$", &process::id().to_string());
+        self.set_param("BASHPID", &process::id().to_string());
+        self.set_param("BASH_SUBSHELL", "0");
+        self.set_param("?", "0");
+        self.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
