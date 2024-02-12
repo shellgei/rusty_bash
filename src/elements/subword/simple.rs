@@ -34,11 +34,12 @@ impl SimpleSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
-        for i in 0..3 {
+        for i in 0..4 {
             let len = match i {
-                0 => feeder.scanner_escaped_char(core),
-                1 => feeder.scanner_subword_symbol(),
-                2 => feeder.scanner_subword(),
+                0 => feeder.scanner_single_quoted_subword(core),
+                1 => feeder.scanner_escaped_char(core),
+                2 => feeder.scanner_subword_symbol(),
+                3 => feeder.scanner_subword(),
                 _ => 0,
             };
             if len != 0 {
