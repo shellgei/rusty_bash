@@ -81,16 +81,14 @@ impl Feeder {
             return 0;
         }
 
-        match self.remaining[1..].find("'") {
-            Some(n) => return n+2,
-            None    => {},
+        loop {
+            if let Some(n) = self.remaining[1..].find("'") {
+                return n + 2;
+            }else if ! self.feed_additional_line(core) {
+                break;
+            }
         }
-
-        if self.feed_additional_line(core){
-            self.scanner_single_quoted_subword(core)
-        }else{
-            0
-        }
+        0
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
