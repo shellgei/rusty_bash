@@ -81,12 +81,9 @@ impl Feeder {
             return 0;
         }
 
-        let mut ans = 1;
-        for ch in self.remaining[1..].chars() {
-            ans += ch.len_utf8();
-            if ch == '\'' {
-                return ans;
-            }
+        match self.remaining[1..].find("'") {
+            Some(n) => return n+2,
+            None    => {},
         }
 
         if self.feed_additional_line(core){
