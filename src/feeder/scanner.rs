@@ -68,12 +68,32 @@ impl Feeder {
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},\\".find(ch) != None {
+            if " \t\n;&|()<>{},\\'".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();
         }
         ans
+    }
+
+    pub fn scanner_single_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
+        if ! self.starts_with("'") {
+            return 0;
+        }
+
+        let mut ans = 1;
+        for ch in self.remaining[1..].chars() {
+            ans += ch.len_utf8();
+            if ch == '\'' {
+                return ans;
+            }
+        }
+
+        if self.feed_additional_line(core){
+            self.scanner_single_quoted_subword(core)
+        }else{
+            0
+        }
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
