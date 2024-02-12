@@ -3,6 +3,7 @@
 
 pub mod builtins;
 pub mod jobtable;
+pub mod parameter;
 
 use std::collections::HashMap;
 use std::os::fd::RawFd;
@@ -20,7 +21,7 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct ShellCore {
     pub history: Vec<String>,
     pub flags: String,
-    pub parameters: HashMap<String, String>,
+    parameters: HashMap<String, String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,

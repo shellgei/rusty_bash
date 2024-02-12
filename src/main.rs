@@ -68,7 +68,7 @@ fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
     }
 
     core.sigint.store(false, Relaxed); //core.input_interrupt = false;
-    core.parameters.insert("?".to_string(), "130".to_string());
+    core.set_param("?", "130");
     feeder.consume(feeder.len());
     true
 }
