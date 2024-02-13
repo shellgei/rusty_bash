@@ -24,14 +24,6 @@ impl Subword for SimpleSubword {
     fn merge(&mut self, right: &Box<dyn Subword>) {
         self.text += &right.get_text().clone();
     }
-
-    fn unquote(&mut self) {
-        if ! self.text.starts_with("\\") {
-            return;
-        }
-
-        self.text.remove(0);
-    }
 }
 
 impl SimpleSubword {

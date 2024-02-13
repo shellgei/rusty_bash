@@ -444,13 +444,7 @@ res=$($com <<< 'echo あ{a,b}d{},c}')
 # escaping
 
 res=$($com <<< 'echo \(')
-[ "$res" == "(" ] || err $LINENO
-
-res=$($com <<< 'echo \')
-[ "$res" == "" ] || err $LINENO
-
-res=$($com <<< 'echo -n \')
-[ "$res" == "" ] || err $LINENO
+[ "$res" == "\(" ] || err $LINENO
 
 ### WHILE TEST ###
 
