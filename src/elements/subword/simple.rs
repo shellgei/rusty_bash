@@ -3,10 +3,12 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::Subword;
+use crate::elements::subword::SubwordType;
 
 #[derive(Debug, Clone)]
 pub struct SimpleSubword {
     pub text: String,
+    subword_type: SubwordType,
 }
 
 impl Subword for SimpleSubword {
@@ -18,33 +20,41 @@ impl Subword for SimpleSubword {
     }
 
     fn unquote(&mut self) {
-        if ! self.text.starts_with("\\") {
-            return;
+        match self.subword_type {
+            SubwordType::Escaped => {self.text.remove(0);},
+            _ => {},
         }
+    }
 
-        self.text.remove(0);
+    fn get_type(&self) -> &SubwordType {
+        &self.subword_type
     }
 }
 
 impl SimpleSubword {
-    fn new(s: &str) -> SimpleSubword {
+    fn new(s: &str, tp: SubwordType) -> SimpleSubword {
         SimpleSubword {
             text: s.to_string(),
+            subword_type: tp,
         }
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
-        for i in 0..3 {
-            let len = match i {
-                0 => feeder.scanner_escaped_char(core),
-                1 => feeder.scanner_subword_symbol(),
-                2 => feeder.scanner_subword(),
-                _ => 0,
-            };
-            if len != 0 {
-                return Some(Self::new( &feeder.consume(len) ));
-            }
+        let len = feeder.scanner_escaped_char(core);
+        if len > 0 {
+            return Some(Self::new( &feeder.consume(len), SubwordType::Escaped) );
         }
+
+        let len = feeder.scanner_subword_symbol();
+        if len > 0 {
+            return Some(Self::new( &feeder.consume(len), SubwordType::Symbol) );
+        }
+
+        let len = feeder.scanner_subword();
+        if len > 0 {
+            return Some(Self::new( &feeder.consume(len), SubwordType::Other) );
+        }
+
         None
     }
 }

@@ -8,6 +8,13 @@ use crate::elements::subword::simple::SimpleSubword;
 use std::fmt;
 use std::fmt::Debug;
 
+#[derive(Debug, Clone)]
+enum SubwordType {
+    Escaped,
+    Symbol,
+    Other,
+}
+
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.get_text()).finish()
@@ -25,6 +32,7 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn merge(&mut self, right: &Box<dyn Subword>);
     fn unquote(&mut self);
+    fn get_type(&self) -> &SubwordType;
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
