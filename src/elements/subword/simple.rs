@@ -27,15 +27,15 @@ impl SimpleSubword {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
         let len = feeder.scanner_subword_symbol();
-        if len != 0 {
+        if len > 0 {
             return Some(Self::new( &feeder.consume(len) ));
         }
 
         let len = feeder.scanner_subword(core);
-        if len == 0 {
-            None
-        }else{
+        if len > 0 {
             Some(Self::new( &feeder.consume(len) ))
         }
+
+        None
     }
 }
