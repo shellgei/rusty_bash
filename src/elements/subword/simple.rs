@@ -33,7 +33,7 @@ impl SimpleSubword {
 
         let len = feeder.scanner_subword(core);
         if len > 0 {
-            Some(Self::new( &feeder.consume(len) ))
+            return Some(Self::new( &feeder.consume(len) ));
         }
 
         None
