@@ -3,7 +3,13 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::Subword;
-use crate::elements::subword::SubwordType;
+
+#[derive(Debug, Clone)]
+enum SubwordType {
+    Symbol,
+    Escaped,
+    Other,
+}
 
 #[derive(Debug, Clone)]
 pub struct SimpleSubword {
@@ -25,10 +31,6 @@ impl Subword for SimpleSubword {
             _ => {},
         }
     }
-
-    fn get_type(&self) -> &SubwordType {
-        &self.subword_type
-    }
 }
 
 impl SimpleSubword {
@@ -42,17 +44,17 @@ impl SimpleSubword {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
         let len = feeder.scanner_escaped_char(core);
         if len > 0 {
-            return Some(Self::new( &feeder.consume(len), SubwordType::Escaped) );
+            return Some(Self::new(&feeder.consume(len), SubwordType::Escaped));
         }
 
         let len = feeder.scanner_subword_symbol();
         if len > 0 {
-            return Some(Self::new( &feeder.consume(len), SubwordType::Symbol) );
+            return Some(Self::new(&feeder.consume(len), SubwordType::Symbol));
         }
 
         let len = feeder.scanner_subword();
         if len > 0 {
-            return Some(Self::new( &feeder.consume(len), SubwordType::Other) );
+            return Some(Self::new(&feeder.consume(len), SubwordType::Other));
         }
 
         None
