@@ -26,11 +26,10 @@ impl Subword for SimpleSubword {
     }
 
     fn unquote(&mut self) {
-        if ! self.text.starts_with("\\") {
-            return;
+        match self.subword_type {
+            SubwordType::Escaped => {self.text.remove(0);},
+            _ => {},
         }
-
-        self.text.remove(0);
     }
 }
 
