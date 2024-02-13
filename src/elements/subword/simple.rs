@@ -6,6 +6,7 @@ use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
 enum SubwordType {
+    SingleQuoted,
     Symbol,
     Escaped,
     Other,
@@ -27,7 +28,13 @@ impl Subword for SimpleSubword {
 
     fn unquote(&mut self) {
         match self.subword_type {
-            SubwordType::Escaped => {self.text.remove(0);},
+            SubwordType::SingleQuoted => {
+                self.text.remove(0);
+                self.text.pop();
+            },
+            SubwordType::Escaped => {
+                self.text.remove(0);
+            },
             _ => {},
         }
     }
@@ -42,6 +49,11 @@ impl SimpleSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
+        let len = feeder.scanner_single_quoted_subword(core);
+        if len > 0 {
+            return Some(Self::new(&feeder.consume(len), SubwordType::SingleQuoted));
+        }
+
         let len = feeder.scanner_escaped_char(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::Escaped));
