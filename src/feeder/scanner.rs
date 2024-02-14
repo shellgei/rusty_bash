@@ -72,7 +72,7 @@ impl Feeder {
         self.backslash_check_and_feed(vec!["$"], core);
 
         match self.remaining.chars().nth(1) {
-            Some(c) => if "$?@#-!0_".find(c) != None { 2 }else{ 0 },
+            Some(c) => if "$?*@#-!0_".find(c) != None { 2 }else{ 0 },
             None    => 0,
         }
     }
