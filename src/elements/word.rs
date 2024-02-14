@@ -14,7 +14,7 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn eval(&mut self) -> Vec<String> {
+    pub fn eval(&mut self, _: &mut ShellCore) -> Vec<String> {
         let mut ws = brace_expansion::eval(self);
 
         ws.iter_mut().for_each(|w| w.unquote());

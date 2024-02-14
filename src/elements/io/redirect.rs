@@ -20,8 +20,8 @@ pub struct Redirect {
 }
 
 impl Redirect {
-    pub fn connect(&mut self, restore: bool) -> bool {
-        let args = self.right.eval();
+    pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> bool {
+        let args = self.right.eval(core);
         if args.len() != 1 {
             eprintln!("sush: {}: ambiguous redirect", self.right.text);
             return false;
