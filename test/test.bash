@@ -443,6 +443,9 @@ res=$($com <<< 'echo あ{a,b}d{},c}')
 
 # escaping
 
+res=$($com <<< "echo a\ \ \ a")
+[ "$res" == "a   a" ] || err $LINENO
+
 res=$($com <<< 'echo \(')
 [ "$res" == "(" ] || err $LINENO
 
@@ -451,6 +454,21 @@ res=$($com <<< 'echo \')
 
 res=$($com <<< 'echo -n \')
 [ "$res" == "" ] || err $LINENO
+
+# quotation
+ 
+res=$($com <<< "echo 'abc'")
+[ "$res" == "abc" ] || err $LINENO
+ 
+res=$($com <<< "echo 'abあいうc'")
+[ "$res" == "abあいうc" ] || err $LINENO
+ 
+res=$($com <<< "echo 123'abc'")
+[ "$res" == "123abc" ] || err $LINENO
+
+res=$($com <<< "echo 123'abc'def")
+[ "$res" == "123abcdef" ] || err $LINENO
+
 
 ### WHILE TEST ###
 
