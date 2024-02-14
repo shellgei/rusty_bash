@@ -29,6 +29,16 @@ impl Subword for SimpleSubword {
         self.text += &right.get_text().clone();
     }
 
+    fn parameter_expansion(&mut self, core: &mut ShellCore) {
+        match self.subword_type {
+            SubwordType::ParamSpecial => {
+                let value = core.get_param_ref(&self.text[1..]);
+                self.text = value.to_string();
+            },
+            _ => {},
+        }
+    }
+
     fn unquote(&mut self) {
         match self.subword_type {
             SubwordType::SingleQuoted => {
@@ -37,16 +47,6 @@ impl Subword for SimpleSubword {
             },
             SubwordType::Escaped => {
                 self.text.remove(0);
-            },
-            _ => {},
-        }
-    }
-
-    fn parameter_expansion(&mut self, core: &mut ShellCore) {
-        match self.subword_type {
-            SubwordType::ParamSpecial => {
-                let value = core.get_param_ref(&self.text[1..]);
-                self.text = value.to_string();
             },
             _ => {},
         }
