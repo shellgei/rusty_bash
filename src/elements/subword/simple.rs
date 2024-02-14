@@ -6,6 +6,9 @@ use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
 enum SubwordType {
+    /* parameters and variables */
+    ParamSpecial,
+    /* simple subwords */
     SingleQuoted,
     Symbol,
     Escaped,
