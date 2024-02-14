@@ -429,11 +429,11 @@ res=$($com <<< 'echo {,}{}a,b}')
 res=$($com <<< 'echo a{}},b}')
 [ "$res" == "a}} ab" ] || err $LINENO
 
-res=$($com <<< 'echo $${a,b}')
-[ "$res" == "\$\${a,b}" ] || err $LINENO
+res=$($com <<< 'echo $${a,b} | sed -E s/[0-9]+/num/g' )
+[ "$res" == "num{a,b}" ] || err $LINENO
 
-res=$($com <<< 'echo $${a,{b,c},d}')
-[ "$res" == "\$\${a,{b,c},d}" ] || err $LINENO
+res=$($com <<< 'echo $${a,{b,c},d} | sed -E s/[0-9]+/num/g')
+[ "$res" == "num{a,{b,c},d}" ] || err $LINENO
 
 res=$($com <<< 'echo あ{a,b}{},c}')
 [ "$res" == "あa{},c} あb{},c}" ] || err $LINENO
