@@ -256,12 +256,12 @@ res=$($com <<< 'ls /etc/passwd aaaa &> /tmp/rusty_bash; cat /tmp/rusty_bash | wc
 # &> for non-fork redirects
 
 res=$($com <<< '
-	{ ls /etc/passwd aaaa ; } &> /tmp/rusty_bash 
+	{ ls /etc/passwd aaaa ; } &> /tmp/rusty_bash
 	cat /tmp/rusty_bash | wc -l | tr -dc 0-9')
 [ "$res" == "2" ] || err $LINENO
 
 res=$(LANG=C $com <<< '
-	{ ls /etc/passwd aaaa ; } &> /tmp/rusty_bash 
+	{ ls /etc/passwd aaaa ; } &> /tmp/rusty_bash
 	cat /tmp/rusty_bash | wc -l
 	#ちゃんと標準出力が原状復帰されているか調査
 	{ ls /etc/passwd ; }
@@ -456,13 +456,13 @@ res=$($com <<< 'echo -n \')
 [ "$res" == "" ] || err $LINENO
 
 # quotation
- 
+
 res=$($com <<< "echo 'abc'")
 [ "$res" == "abc" ] || err $LINENO
- 
+
 res=$($com <<< "echo 'abあいうc'")
 [ "$res" == "abあいうc" ] || err $LINENO
- 
+
 res=$($com <<< "echo 123'abc'")
 [ "$res" == "123abc" ] || err $LINENO
 

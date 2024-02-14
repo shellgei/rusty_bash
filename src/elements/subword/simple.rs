@@ -28,7 +28,13 @@ impl Subword for SimpleSubword {
 
     fn unquote(&mut self) {
         match self.subword_type {
-            SubwordType::Escaped => {self.text.remove(0);},
+            SubwordType::SingleQuoted => {
+                self.text.remove(0);
+                self.text.pop();
+            },
+            SubwordType::Escaped => {
+                self.text.remove(0);
+            },
             _ => {},
         }
     }
