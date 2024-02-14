@@ -25,6 +25,7 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn merge(&mut self, right: &Box<dyn Subword>);
     fn unquote(&mut self);
+    fn parameter_expansion(&mut self, core: &mut ShellCore);
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {

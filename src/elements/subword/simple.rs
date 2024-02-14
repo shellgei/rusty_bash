@@ -41,6 +41,16 @@ impl Subword for SimpleSubword {
             _ => {},
         }
     }
+
+    fn parameter_expansion(&mut self, core: &mut ShellCore) {
+        match self.subword_type {
+            SubwordType::ParamSpecial => {
+                let value = core.get_param_ref(&self.text[1..]);
+                self.text = value.to_string();
+            },
+            _ => {},
+        }
+    }
 }
 
 impl SimpleSubword {
@@ -52,6 +62,11 @@ impl SimpleSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
+        let len = feeder.scanner_dollar_special_param(core);
+        if len > 0 {
+            return Some(Self::new(&feeder.consume(len), SubwordType::ParamSpecial));
+        }
+
         let len = feeder.scanner_single_quoted_subword(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::SingleQuoted));

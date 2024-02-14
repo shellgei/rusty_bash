@@ -6,7 +6,7 @@ pub mod redirect;
 
 use std::os::unix::prelude::RawFd;
 use nix::{fcntl, unistd};
-use crate::process;
+use crate::{process, ShellCore};
 use nix::errno::Errno;
 use crate::elements::Pipe;
 use crate::elements::io::redirect::Redirect;
@@ -50,8 +50,8 @@ fn backup(from: RawFd) -> RawFd {
            .expect("Can't allocate fd for backup")
 }
 
-pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>) {
-    if ! rs.iter_mut().all(|r| r.connect(false)){
+pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>, core: &mut ShellCore) {
+    if ! rs.iter_mut().all(|r| r.connect(false, core)){
         process::exit(1);
     }
     pipe.connect();

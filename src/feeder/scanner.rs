@@ -65,17 +65,15 @@ impl Feeder {
         }
     }
 
-    pub fn scanner_special_param(&mut self, core: &mut ShellCore) -> usize {
+    pub fn scanner_dollar_special_param(&mut self, core: &mut ShellCore) -> usize {
         if ! self.starts_with("$") {
             return 0;
         }
         self.backslash_check_and_feed(vec!["$"], core);
 
-        let ch = self.remaining.chars().nth(1).unwrap();
-        if "$?@#-!0_".find(ch) != None {
-            2
-        }else{
-            0
+        match self.remaining.chars().nth(1) {
+            Some(c) => if "$?@#-!0_".find(c) != None { 2 }else{ 0 },
+            None    => 0,
         }
     }
 

@@ -14,12 +14,17 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn eval(&mut self) -> Vec<String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Vec<String> {
         let mut ws = brace_expansion::eval(self);
 
+        ws.iter_mut().for_each(|w| w.parameter_expansion(core));
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
         ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect()
+    }
+
+    fn parameter_expansion(&mut self, core: &mut ShellCore) {
+        self.subwords.iter_mut().for_each(|w| w.parameter_expansion(core));
     }
 
     fn unquote(&mut self) {

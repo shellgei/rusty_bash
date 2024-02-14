@@ -33,7 +33,7 @@ pub trait Command {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
-                io::connect(pipe, self.get_redirects());
+                io::connect(pipe, self.get_redirects(), core);
                 self.run(core, true);
                 core.exit()
             },
@@ -47,7 +47,7 @@ pub trait Command {
     }
 
     fn nofork_exec(&mut self, core: &mut ShellCore) {
-        if self.get_redirects().iter_mut().all(|r| r.connect(true)){
+        if self.get_redirects().iter_mut().all(|r| r.connect(true, core)){
             self.run(core, false);
         }else{
             core.set_param("?", "1");
