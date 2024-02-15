@@ -115,6 +115,9 @@ res=$($com <<< '{ echo } ; }')
 res=$($com <<< '{ echo a }')
 [ "$?" = 2 ] || err $LINENO
 
+res=$($com <<< 'echo (')
+[ "$?" = 2 ] || err $LINENO
+
 ### IRREGULAR COMMAND TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')
