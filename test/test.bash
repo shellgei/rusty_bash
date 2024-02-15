@@ -115,6 +115,9 @@ res=$($com <<< '{ echo } ; }')
 res=$($com <<< '{ echo a }')
 [ "$?" = 2 ] || err $LINENO
 
+res=$($com <<< 'echo (')
+[ "$?" = 2 ] || err $LINENO
+
 ### IRREGULAR COMMAND TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')
@@ -444,13 +447,7 @@ res=$($com <<< 'echo あ{a,b}d{},c}')
 # escaping
 
 res=$($com <<< 'echo \(')
-[ "$res" == "(" ] || err $LINENO
-
-res=$($com <<< 'echo \')
-[ "$res" == "" ] || err $LINENO
-
-res=$($com <<< 'echo -n \')
-[ "$res" == "" ] || err $LINENO
+[ "$res" == "\(" ] || err $LINENO
 
 ### WHILE TEST ###
 
