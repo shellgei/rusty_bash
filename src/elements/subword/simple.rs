@@ -53,7 +53,7 @@ impl SimpleSubword {
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::SingleQuoted));
         }
-
+    
         let len = feeder.scanner_escaped_char(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::Escaped));
