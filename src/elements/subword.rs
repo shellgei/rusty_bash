@@ -1,8 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod simple;
 use crate::{ShellCore, Feeder};
 use std::fmt;
+use crate::elements::subword::simple::SimpleSubword;
 use std::fmt::Debug;
 
 impl Debug for dyn Subword {
@@ -22,6 +24,7 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
 }
 
-pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<Box<dyn Subword>> {
-    None
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
+    else{ None }
 }
