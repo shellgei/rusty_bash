@@ -127,7 +127,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.args.len() + ans.redirects.len() > 0 {
+        if ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{
