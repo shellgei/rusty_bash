@@ -450,7 +450,7 @@ res=$($com <<< "echo a\ \ \ a")
 [ "$res" == "a   a" ] || err $LINENO
 
 res=$($com <<< 'echo \(')
-[ "$res" == "\(" ] || err $LINENO
+[ "$res" == "(" ] || err $LINENO
 
 # quotation
 
