@@ -15,21 +15,9 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self, _: &mut ShellCore) -> Vec<String> {
-        let mut ws = brace_expansion::eval(self);
+        let ws = brace_expansion::eval(self);
 
-        ws.iter_mut().for_each(|w| w.unquote());
-        ws.iter_mut().for_each(|w| w.connect_subwords());
         ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect()
-    }
-
-    fn unquote(&mut self) {
-        self.subwords.iter_mut().for_each(|w| w.unquote());
-    }
-
-    fn connect_subwords(&mut self) {
-        self.text = self.subwords.iter()
-                    .map(|s| s.get_text().clone())
-                    .collect::<String>();
     }
 
     pub fn new() -> Word {
