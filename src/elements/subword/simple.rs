@@ -7,7 +7,7 @@ use crate::elements::subword::Subword;
 #[derive(Debug, Clone)]
 enum SubwordType {
     /* parameters and variables */
-    ParamSpecial,
+    ParamSpecialPositional,
     /* simple subwords */
     SingleQuoted,
     Symbol,
@@ -31,7 +31,7 @@ impl Subword for SimpleSubword {
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) {
         match self.subword_type {
-            SubwordType::ParamSpecial => {
+            SubwordType::ParamSpecialPositional => {
                 let value = core.get_param_ref(&self.text[1..]);
                 self.text = value.to_string();
             },
@@ -62,9 +62,9 @@ impl SimpleSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
-        let len = feeder.scanner_dollar_special_param(core);
+        let len = feeder.scanner_dollar_special_and_positional_param(core);
         if len > 0 {
-            return Some(Self::new(&feeder.consume(len), SubwordType::ParamSpecial));
+            return Some(Self::new(&feeder.consume(len), SubwordType::ParamSpecialPositional));
         }
 
         let len = feeder.scanner_single_quoted_subword(core);
