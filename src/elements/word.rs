@@ -30,7 +30,7 @@ impl Word {
     fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|w| w.unquote());
     }
-
+    
     fn connect_subwords(&mut self) {
         self.text = self.subwords.iter()
                     .map(|s| s.get_text().clone())
