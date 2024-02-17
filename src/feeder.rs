@@ -50,7 +50,7 @@ impl Feeder {
                 b.pop();
                 b.pop();
             }
-            *b += &line.clone();
+            *b += &line;
         }
     }
 

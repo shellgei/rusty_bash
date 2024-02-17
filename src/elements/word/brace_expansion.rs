@@ -81,7 +81,7 @@ pub fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<
         w.subwords.extend(left.to_vec());
         w.subwords.extend(subwords[from..*to].to_vec());
         w.subwords.extend(right.to_vec());
-        w.text = w.subwords.iter().map(|s| s.get_text().clone()).collect();
+        w.text = w.subwords.iter().map(|s| s.get_text()).collect();
         ans.append(&mut eval(&mut w));
         from = *to + 1;
     }
