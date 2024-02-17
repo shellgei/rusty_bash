@@ -18,21 +18,19 @@ impl Feeder {
         }
     }
 
-    fn scanner_chars(&mut self, judge: fn(char) -> bool, core: &mut ShellCore) -> usize {
+    fn scanner_chars(&mut self, judge: fn(char) -> bool,
+                     core: &mut ShellCore) -> usize {
         loop {
-            let mut next_line = false;
             let mut ans = 0;
             for ch in self.remaining.chars() {
                 if judge(ch) {
                     ans += ch.len_utf8();
-                    continue;
-                }else if &self.remaining[ans..] == "\\\n" {
-                    next_line = true;
+                } else {
+                    break;
                 }
-                break;
             }
 
-            if next_line {
+            if &self.remaining[ans..] == "\\\n" {
                 self.feed_and_connect(core);
             }else{
                 return ans;
