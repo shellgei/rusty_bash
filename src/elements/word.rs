@@ -13,6 +13,14 @@ pub struct Word {
     pub subwords: Vec<Box<dyn Subword>>,
 }
 
+fn dollar_pos(w: &Word) -> Vec<usize> {
+    w.subwords.iter()
+        .enumerate()
+        .filter(|e| e.1.get_text() == "$")
+        .map(|e| e.0)
+        .collect()
+}
+
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Vec<String> {
         let mut ws = brace_expansion::eval(self);
@@ -24,6 +32,19 @@ impl Word {
     }
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) {
+        let dollar_pos = dollar_pos(self);
+        for i in dollar_pos {
+            for j in i+1..self.subwords.len() {
+                if ! self.subwords[j].is_name() {
+                    break;
+                }
+
+                let right = self.subwords[j].clone();
+                self.subwords[i].merge(&right);
+                self.subwords[j].clear();
+            }
+        }
+        dbg!("{:?}", &self);
         self.subwords.iter_mut().for_each(|w| w.parameter_expansion(core));
     }
 

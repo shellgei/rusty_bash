@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::Subword;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum SubwordType {
     /* parameters and variables */
     ParamSpecialPositional,
@@ -52,6 +52,9 @@ impl Subword for SimpleSubword {
             _ => {},
         }
     }
+
+    fn is_name(&self) -> bool { self.subword_type == SubwordType::VarName }
+    fn clear(&mut self) { self.text = String::new(); }
 }
 
 impl SimpleSubword {
