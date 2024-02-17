@@ -8,6 +8,7 @@ use crate::elements::subword::Subword;
 enum SubwordType {
     /* parameters and variables */
     ParamSpecialPositional,
+    VarName,
     /* simple subwords */
     SingleQuoted,
     Symbol,
@@ -65,6 +66,11 @@ impl SimpleSubword {
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::ParamSpecialPositional));
+        }
+
+        let len = feeder.scanner_name(core);
+        if len > 0 {
+            return Some(Self::new(&feeder.consume(len), SubwordType::VarName));
         }
 
         let len = feeder.scanner_single_quoted_subword(core);
