@@ -19,24 +19,25 @@ impl Feeder {
     }
 
     fn scanner_chars(&mut self, judge: fn(char) -> bool, core: &mut ShellCore) -> usize {
-        let mut next_line = false;
-        let mut ans = 0;
-        for ch in self.remaining.chars() {
-            if &self.remaining[ans..] == "\\\n" {
-                next_line = true;
-                break;
-            }else if judge(ch) {
-                ans += 1;
-            }else{
+        loop {
+            let mut next_line = false;
+            let mut ans = 0;
+            for ch in self.remaining.chars() {
+                if judge(ch) {
+                    ans += ch.len_utf8();
+                    continue;
+                }else if &self.remaining[ans..] == "\\\n" {
+                    next_line = true;
+                }
                 break;
             }
-        }
 
-        if next_line {
-            self.feed_and_connect(core);
-            return self.scanner_chars(judge, core);
+            if next_line {
+                self.feed_and_connect(core);
+            }else{
+                return ans;
+            }
         }
-        ans
     }
 
     pub fn scanner_subword_symbol(&self) -> usize {
