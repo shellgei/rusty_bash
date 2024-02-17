@@ -76,18 +76,18 @@ impl Feeder {
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
-        let f = |ch| " \t".find(ch) != None;
-        self.scanner_chars(f, core)
+        let judge = |ch| " \t".find(ch) != None;
+        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
-        let f = |ch| " \t\n".find(ch) != None;
-        self.scanner_chars(f, core)
+        let judge = |ch| " \t\n".find(ch) != None;
+        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
-        let f = |ch| '0' <= ch && ch <= '9';
-        self.scanner_chars(f, core)
+        let judge = |ch| '0' <= ch && ch <= '9';
+        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_job_end(&mut self) -> usize {
