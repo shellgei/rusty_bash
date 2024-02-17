@@ -18,14 +18,14 @@ impl Feeder {
         }
     }
 
-    fn scanner_chars(&mut self, charlist: &str, core: &mut ShellCore) -> usize {
+    fn scanner_chars(&mut self, judge: fn(char) -> bool, core: &mut ShellCore) -> usize {
         let mut next_line = false;
         let mut ans = 0;
         for ch in self.remaining.chars() {
             if &self.remaining[ans..] == "\\\n" {
                 next_line = true;
                 break;
-            }else if charlist.find(ch) != None {
+            }else if judge(ch) {
                 ans += 1;
             }else{
                 break;
@@ -34,7 +34,7 @@ impl Feeder {
 
         if next_line {
             self.feed_and_connect(core);
-            return self.scanner_chars(charlist, core);
+            return self.scanner_chars(judge, core);
         }
         ans
     }
@@ -77,15 +77,18 @@ impl Feeder {
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_chars(" \t", core)
+        let f = |ch| " \t".find(ch) != None;
+        self.scanner_chars(f, core)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_chars(" \t\n", core)
+        let f = |ch| " \t\n".find(ch) != None;
+        self.scanner_chars(f, core)
     }
 
     pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_chars("0123456789", core)
+        let f = |ch| '0' <= ch && ch <= '9';
+        self.scanner_chars(f, core)
     }
 
     pub fn scanner_job_end(&mut self) -> usize {
