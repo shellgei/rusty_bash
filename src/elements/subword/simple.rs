@@ -23,7 +23,7 @@ impl Subword for SimpleSubword {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn merge(&mut self, right: &Box<dyn Subword>) {
-        self.text += &right.get_text().clone();
+        self.text += &right.get_text();
     }
 
     fn unquote(&mut self) {
