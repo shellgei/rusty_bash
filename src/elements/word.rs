@@ -44,7 +44,7 @@ impl Word {
                 self.subwords[j].clear();
             }
         }
-        dbg!("{:?}", &self);
+    //    dbg!("{:?}", &self);
         self.subwords.iter_mut().for_each(|w| w.parameter_expansion(core));
     }
 
