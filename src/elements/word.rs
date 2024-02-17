@@ -33,7 +33,7 @@ impl Word {
     
     fn connect_subwords(&mut self) {
         self.text = self.subwords.iter()
-                    .map(|s| s.get_text().clone())
+                    .map(|s| s.get_text())
                     .collect::<String>();
     }
 
