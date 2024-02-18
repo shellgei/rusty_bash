@@ -34,6 +34,14 @@ impl Word {
                     .collect::<String>();
     }
 
+    fn scan_pos(&self, s: &str) -> Vec<usize> {
+        self.subwords.iter()
+            .enumerate()
+            .filter(|e| e.1.get_text() == s)
+            .map(|e| e.0)
+            .collect()
+    }
+
     pub fn new() -> Word {
         Word {
             text: String::new(),
