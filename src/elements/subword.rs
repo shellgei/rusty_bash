@@ -8,6 +8,19 @@ use crate::elements::subword::simple::SimpleSubword;
 use std::fmt;
 use std::fmt::Debug;
 
+#[derive(Debug, Clone, PartialEq)]
+enum SubwordType {
+    /* parameters and variables */
+    ParamSpecialPositional,
+    VarName,
+    /* simple subwords */
+    SingleQuoted,
+    Symbol,
+    Escaped,
+    Other,
+}
+
+
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.get_text()).finish()

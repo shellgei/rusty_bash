@@ -466,6 +466,16 @@ res=$($com <<< "echo 123'abc'")
 res=$($com <<< "echo 123'abc'def")
 [ "$res" == "123abcdef" ] || err $LINENO
 
+# parameter expansion
+
+res=$($com <<< 'echo $?')
+[ "$res" == "0" ] || err $LINENO
+
+res=$($com <<< 'ls aaaaaaaa ; echo $?')
+[ "$res" == "2" ] || err $LINENO
+
+res=$($com <<< 'echo $BASH{PID,_SUBSHELL} | sed -E s@[0-9]+@num@')
+[ "$res" == "num 0" ] || err $LINENO
 
 ### WHILE TEST ###
 

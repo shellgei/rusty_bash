@@ -2,19 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::Subword;
-
-#[derive(Debug, Clone, PartialEq)]
-enum SubwordType {
-    /* parameters and variables */
-    ParamSpecialPositional,
-    VarName,
-    /* simple subwords */
-    SingleQuoted,
-    Symbol,
-    Escaped,
-    Other,
-}
+use crate::elements::subword::{Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct SimpleSubword {
