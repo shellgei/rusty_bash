@@ -9,9 +9,9 @@ use std::fmt;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone, PartialEq)]
-enum SubwordType {
+pub enum SubwordType {
     /* parameters and variables */
-    ParamSpecialPositional,
+    Parameter,
     VarName,
     /* simple subwords */
     SingleQuoted,
@@ -36,7 +36,7 @@ impl Clone for Box::<dyn Subword> {
 pub trait Subword {
     fn get_text(&self) -> &str;
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn merge(&mut self, right: &Box<dyn Subword>);
+    fn merge(&mut self, left_type: SubwordType, right: &Box<dyn Subword>);
     fn parameter_expansion(&mut self, core: &mut ShellCore);
     fn unquote(&mut self);
     fn is_name(&self) -> bool { false }

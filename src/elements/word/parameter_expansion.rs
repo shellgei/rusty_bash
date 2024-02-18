@@ -3,6 +3,7 @@
 
 use crate::ShellCore;
 use crate::elements::word::Word;
+use crate::elements::subword::SubwordType;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
     for i in word.scan_pos("$") {
@@ -12,7 +13,7 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
             }
 
             let right = word.subwords[j].clone();
-            word.subwords[i].merge(&right);
+            word.subwords[i].merge(SubwordType::Parameter, &right);
             word.subwords[j].clear();
         }
     }

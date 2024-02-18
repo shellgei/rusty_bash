@@ -14,21 +14,16 @@ impl Subword for SimpleSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn merge(&mut self, right: &Box<dyn Subword>) {
+    fn merge(&mut self, left_type: SubwordType, right: &Box<dyn Subword>) {
         self.text += &right.get_text();
+        self.subword_type = left_type;
     }
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) {
         match self.subword_type {
-            SubwordType::ParamSpecialPositional => {
+            SubwordType::Parameter => {
                 let value = core.get_param_ref(&self.text[1..]);
                 self.text = value.to_string();
-            },
-            SubwordType::Symbol => {
-                if self.text.len() > 1 && self.text.starts_with("$") {
-                    let value = core.get_param_ref(&self.text[1..]);
-                    self.text = value.to_string();
-                }
             },
             _ => {},
         }
@@ -62,7 +57,7 @@ impl SimpleSubword {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         if len > 0 {
-            return Some(Self::new(&feeder.consume(len), SubwordType::ParamSpecialPositional));
+            return Some(Self::new(&feeder.consume(len), SubwordType::Parameter));
         }
 
         let len = feeder.scanner_name(core);
