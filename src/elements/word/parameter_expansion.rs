@@ -8,7 +8,7 @@ use crate::elements::subword::SubwordType;
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
     for i in word.scan_pos("$") {
         for j in i+1..word.subwords.len() {
-            if ! word.subwords[j].is_name() {
+            if word.subwords[j].get_type() != SubwordType::VarName {
                 break;
             }
 

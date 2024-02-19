@@ -39,7 +39,7 @@ pub trait Subword {
     fn merge(&mut self, left_type: SubwordType, right: &Box<dyn Subword>);
     fn parameter_expansion(&mut self, core: &mut ShellCore);
     fn unquote(&mut self);
-    fn is_name(&self) -> bool { false }
+    fn get_type(&self) -> SubwordType;
     fn clear(&mut self);
 }
 

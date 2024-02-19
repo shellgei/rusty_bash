@@ -42,7 +42,7 @@ impl Subword for SimpleSubword {
         }
     }
 
-    fn is_name(&self) -> bool { self.subword_type == SubwordType::VarName }
+    fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
     fn clear(&mut self) { self.text = String::new(); }
 }
 
