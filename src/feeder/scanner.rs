@@ -118,8 +118,8 @@ impl Feeder {
     }
 
     pub fn scanner_name(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| ch == '_' || ('0' <= ch && ch <= '9') 
-                         || ('a' <= ch && ch <= 'z') 
+        let judge = |ch| ch == '_' || ('0' <= ch && ch <= '9')
+                         || ('a' <= ch && ch <= 'z')
                          || ('A' <= ch && ch <= 'Z');
         self.scanner_chars(judge, core)
     }
