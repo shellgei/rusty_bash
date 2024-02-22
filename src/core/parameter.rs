@@ -2,9 +2,14 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use std::env;
 
 impl ShellCore {
-    pub fn get_param_ref(&self, key: &str) -> &str {
+    pub fn get_param_ref(&mut self, key: &str) -> &str {
+        if let Ok(val) = env::var(key) {
+            self.set_param(key, &val);
+        }
+
         match self.parameters.get(key) {
             Some(val) => val,
             None      => "",
