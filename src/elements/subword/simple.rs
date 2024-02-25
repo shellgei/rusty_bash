@@ -25,7 +25,7 @@ impl Subword for SimpleSubword {
                 self.text = value.to_string();
                 self.subword_type = SubwordType::Other;
             },
-           _ => {},
+            _ => {},
         }
     }
 

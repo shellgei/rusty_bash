@@ -7,26 +7,24 @@ use crate::elements::subword::{Subword, SubwordType};
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
     for i in word.scan_pos("$") {
-        replace_variable(&mut word.subwords[i..], core);
+        connect_names(&mut word.subwords[i..]);
     }
     word.subwords
         .iter_mut()
-        .for_each(|s| s.parameter_expansion(core));
+        .for_each(|w| w.parameter_expansion(core));
 }
 
-fn replace_variable(subwords: &mut [Box<dyn Subword>], core: &mut ShellCore) {
-    let mut text = String::new();
+fn connect_names(subwords: &mut [Box<dyn Subword>]) {
+    let mut text = "$".to_string();
     let mut pos = 1;
     for s in &mut subwords[1..] {
         if s.get_type() != SubwordType::VarName {
             break;
         }
-
         text += s.get_text();
         pos += 1;
     }
 
-   let v = core.get_param_ref(&text);
-    subwords[0].set(SubwordType::Other, &v);
+    subwords[0].set(SubwordType::Parameter, &text);
     subwords[1..pos].iter_mut().for_each(|s| s.clear());
 }
