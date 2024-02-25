@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
-    if word.subwords.len() == 0 
+    if word.subwords.len() == 0
     || word.subwords[0].get_text() != "~" {
         return;
     }
@@ -33,8 +33,8 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
 fn get_value(text: &str, core: &mut ShellCore) -> String {
     let key = match text {
         "" => "HOME",
-        "+" => "PWD", 
-        "-" => "OLDPWD", 
+        "+" => "PWD",
+        "-" => "OLDPWD",
         _ => return solve_home_dir(text),
     };
 
