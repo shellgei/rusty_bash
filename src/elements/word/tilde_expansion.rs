@@ -23,14 +23,12 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
         pos += 1;
     }
 
-    let v = get_value(&text, core);
-    if v == "" {
-        return;
-    }
-    word.subwords[0].set(SubwordType::Other, &v);
-    for i in 1..pos {
-        word.subwords[i].clear();
-    }
+    let value = match get_value(&text, core).as_ref() {
+        "" => return,
+        v  => v.to_string(),
+    };
+    word.subwords[0].set(SubwordType::Other, &value);
+    word.subwords[1..pos].iter_mut().for_each(|w| w.clear());
 }
 
 fn get_value(text: &str, core: &mut ShellCore) -> String {
