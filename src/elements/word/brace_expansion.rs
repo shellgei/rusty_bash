@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 
 fn after_dollar(s: &str) -> bool {
@@ -40,7 +40,7 @@ fn invalidate_brace(subwords: &mut Vec<Box<dyn Subword>>) {
     if subwords[0].get_text() == "{"
     && subwords[1].get_text() == "}" {
         let right = subwords.remove(1);
-        subwords[0].merge(SubwordType::Other, &right);
+        subwords[0].merge(&right);
     }
 }
 

@@ -14,9 +14,8 @@ impl Subword for SimpleSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn merge(&mut self, left_type: SubwordType, right: &Box<dyn Subword>) {
+    fn merge(&mut self, right: &Box<dyn Subword>) {
         self.text += &right.get_text();
-        self.subword_type = left_type;
     }
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) {
