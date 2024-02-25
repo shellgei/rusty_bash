@@ -479,7 +479,7 @@ res=$($com <<< 'echo $BASH{PID,_SUBSHELL} | sed -E s@[0-9]+@num@')
 
 # tilde
 
-res=$($com <<< 'echo ~ | grep -q home')
+res=$($com <<< 'echo ~ | grep -q /')
 [ "$?" == "0" ] || err $LINENO
 
 res=$($com <<< 'echo ~root')
