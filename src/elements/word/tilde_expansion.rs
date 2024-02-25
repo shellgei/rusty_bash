@@ -51,11 +51,7 @@ fn solve_home_dir(user: &str) -> String {
         match line {
             Ok(ref ln) => {
                 let split: Vec<&str> = ln.split(":").collect();
-                if split.len() < 6 {
-                    break;
-                }
-
-                if user == split[0] {
+                if split.len() > 5 && user == split[0] {
                     return split[5].to_string();
                 }
             },
