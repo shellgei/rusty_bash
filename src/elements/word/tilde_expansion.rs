@@ -24,6 +24,9 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
     }
 
     let v = get_value(&text, core);
+    if v == "" {
+        return;
+    }
     word.subwords[0].set(SubwordType::Other, &v);
     for i in 1..pos {
         word.subwords[i].clear();
