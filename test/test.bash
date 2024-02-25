@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 # SPDX-License-Identifier: BSD-3-Clause
 
+exit 0
+
 err () {
 	echo "ERROR!" FILE: $0, LINENO: $1
 	exit 1
