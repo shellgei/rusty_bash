@@ -6,22 +6,35 @@ use crate::elements::word::Word;
 use crate::elements::subword::{Subword, SubwordType};
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
-    for i in word.scan_pos("$") {
-        connect_names(&mut word.subwords[i..]);
+    for s in &mut word.subwords {
+        if s.get_type() == SubwordType::Parameter {
+            let text = s.get_text();
+            let v = core.get_param_ref(&text[1..]);
+            s.set(SubwordType::Other, &v);
+        }
     }
-    word.subwords
-        .iter_mut()
-        .for_each(|w| w.parameter_expansion(core));
+
+    for i in word.scan_pos("$") {
+        replace(&mut word.subwords[i..], core);
+    }
 }
 
-pub fn connect_names(subwords: &mut [Box<dyn Subword>]) {
-    for i in 1..subwords.len() {
-        if subwords[i].get_type() != SubwordType::VarName {
-            return;
+fn replace(subwords: &mut [Box<dyn Subword>], core: &mut ShellCore) {
+    let mut text = String::new();
+    let mut pos = 1;
+    for s in &mut subwords[1..] {
+        if s.get_type() == SubwordType::VarName {
+            text += s.get_text();
+            pos += 1;
+        }else{
+            break;
         }
+    }
 
-        let right = subwords[i].clone();
-        subwords[0].merge(SubwordType::Parameter, &right);
+   let v = core.get_param_ref(&text);
+    subwords[0].set(SubwordType::Other, &v);
+    for i in 1..pos {
         subwords[i].clear();
     }
+
 }
