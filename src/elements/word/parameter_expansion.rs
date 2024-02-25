@@ -9,17 +9,9 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
     for i in word.scan_pos("$") {
         replace_variable(&mut word.subwords[i..], core);
     }
-    for s in &mut word.subwords {
-        replace_parameter(s, core);
-    }
-}
-
-fn replace_parameter(sw: &mut Box<dyn Subword>, core: &mut ShellCore) {
-    if sw.get_type() == SubwordType::Parameter {
-        let text = sw.get_text();
-        let v = core.get_param_ref(&text[1..]);
-        sw.set(SubwordType::Other, &v);
-    }
+    word.subwords
+        .iter_mut()
+        .for_each(|s| s.parameter_expansion(core));
 }
 
 fn replace_variable(subwords: &mut [Box<dyn Subword>], core: &mut ShellCore) {

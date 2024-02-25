@@ -38,6 +38,7 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn merge(&mut self, right: &Box<dyn Subword>);
     fn set(&mut self, subword_type: SubwordType, s: &str);
+    fn parameter_expansion(&mut self, core: &mut ShellCore);
     fn unquote(&mut self);
     fn get_type(&self) -> SubwordType;
     fn clear(&mut self);
