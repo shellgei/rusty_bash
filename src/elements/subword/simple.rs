@@ -19,6 +19,11 @@ impl Subword for SimpleSubword {
         self.subword_type = left_type; //引数で指定されたSubwordTypeを設定
     }
 
+    fn set(&mut self, subword_type: SubwordType, s: &str){
+        self.text = s.to_string();
+        self.subword_type = subword_type;
+    }
+
     fn parameter_expansion(&mut self, core: &mut ShellCore) {
         match self.subword_type {
             SubwordType::Parameter => {

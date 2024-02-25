@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
+mod tilde_expansion;
 mod parameter_expansion;
 
 use crate::{ShellCore, Feeder};
@@ -18,6 +19,7 @@ impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Vec<String> {
         let mut ws = brace_expansion::eval(self);
 
+        ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
         ws.iter_mut().for_each(|w| parameter_expansion::eval(w, core));
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
