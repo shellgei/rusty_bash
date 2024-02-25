@@ -23,10 +23,10 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
         pos += 1;
     }
 
-    let value = match get_value(&text, core).as_ref() {
-        "" => return,
-        v  => v.to_string(),
-    };
+    let value = get_value(&text, core);
+    if value == "" {
+        return;
+    }
     word.subwords[0].set(SubwordType::Other, &value);
     word.subwords[1..pos].iter_mut().for_each(|w| w.clear());
 }
