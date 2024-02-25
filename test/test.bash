@@ -479,8 +479,11 @@ res=$($com <<< 'echo $BASH{PID,_SUBSHELL} | sed -E s@[0-9]+@num@')
 
 # tilde
 
+res=$($com <<< 'echo ~ | grep -q home')
+[ "$?" == "0" ] || err $LINENO
+
 res=$($com <<< 'echo ~root')
-[ "$res" == "/root" ] || err $LINENO
+[ "$res" == "/root" -o "$res" == "/var/root" ] || err $LINENO
 
 res=$($com <<< 'cd /; cd /etc; echo ~+; echo ~-')
 [ "$res" == "/etc
