@@ -127,12 +127,7 @@ impl Feeder {
     }
 
     pub fn scanner_job_end(&mut self) -> usize {
-        if let Some(ch) = self.remaining.chars().nth(0) {
-            if ";&\n".find(ch) != None {
-                return 1;
-            }
-        }
-        0
+        self.scanner_one_of(&[";", "&", "\n"])
     }
 
     pub fn scanner_and_or(&mut self, core: &mut ShellCore) -> usize {
@@ -142,7 +137,10 @@ impl Feeder {
 
     pub fn scanner_pipe(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["|"], core);
-        self.scanner_one_of(&["||", "|&", "|"])
+        if self.starts_with("||") {
+            return 0;
+        }
+        self.scanner_one_of(&["|&","|"])
     }
 
     pub fn scanner_comment(&self) -> usize {
