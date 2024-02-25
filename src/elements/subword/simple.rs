@@ -18,20 +18,19 @@ impl Subword for SimpleSubword {
         self.text += &right.get_text();
     }
 
+    fn set(&mut self, subword_type: SubwordType, s: &str){
+        self.text = s.to_string();
+        self.subword_type = subword_type;
+    }
+
     fn parameter_expansion(&mut self, core: &mut ShellCore) {
         match self.subword_type {
             SubwordType::Parameter => {
                 let value = core.get_param_ref(&self.text[1..]);
                 self.text = value.to_string();
-                self.subword_type = SubwordType::Other;
             },
             _ => {},
         }
-    }
-
-    fn set(&mut self, subword_type: SubwordType, s: &str){
-        self.text = s.to_string();
-        self.subword_type = subword_type;
     }
 
     fn unquote(&mut self) {
