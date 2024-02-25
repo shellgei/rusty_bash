@@ -477,6 +477,15 @@ res=$($com <<< 'ls aaaaaaaa ; echo $?')
 res=$($com <<< 'echo $BASH{PID,_SUBSHELL} | sed -E s@[0-9]+@num@')
 [ "$res" == "num 0" ] || err $LINENO
 
+# tilde
+
+res=$($com <<< 'echo ~root')
+[ "$res" == "/root" ] || err $LINENO
+
+res=$($com <<< 'cd /; cd /etc; echo ~+; echo ~-')
+[ "$res" == "/etc
+/" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )

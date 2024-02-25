@@ -48,14 +48,11 @@ fn solve_home_dir(user: &str) -> String {
     };
 
     for line in reader.lines() {
-        match line {
-            Ok(ref ln) => {
-                let split: Vec<&str> = ln.split(":").collect();
-                if split.len() > 5 && user == split[0] {
-                    return split[5].to_string();
-                }
-            },
-            _ => break,
+        if let Ok(ref ln) = line {
+            let split: Vec<&str> = ln.split(":").collect();
+            if split.len() > 5 && user == split[0] {
+                return split[5].to_string();
+            }
         }
     }
 
