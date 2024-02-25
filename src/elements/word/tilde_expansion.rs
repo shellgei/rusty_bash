@@ -50,9 +50,9 @@ fn solve_home_dir(user: &str) -> String {
 
     for line in reader.lines() {
         if let Ok(ref ln) = line {
-            let split: Vec<&str> = ln.split(":").collect();
-            if split.len() > 5 && user == split[0] {
-                return split[5].to_string();
+            let fields: Vec<&str> = ln.split(":").collect();
+            if fields.len() > 5 && user == fields[0] {
+                return fields[5].to_string();
             }
         }
     }
