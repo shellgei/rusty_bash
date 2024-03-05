@@ -49,7 +49,10 @@ fn get_value(text: &str, core: &mut ShellCore) -> String {
 
 fn get_home_dir(user: &str) -> String {
     match User::from_name(user) {
-        Ok(Some(u)) => return u.dir.into_os_string().into_string().unwrap(),
-        _ => return String::new(),
+        Ok(Some(u)) => u.dir
+                        .into_os_string()
+                        .into_string()
+                        .unwrap(),
+        _ => String::new(),
     }
 }
