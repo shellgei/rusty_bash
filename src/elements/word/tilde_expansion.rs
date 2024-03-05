@@ -8,27 +8,33 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
-    if word.subwords.len() == 0
-    || word.subwords[0].get_text() != "~" {
-        return;
-    }
+    let length = match prefix_length(word) {
+        0 => return,
+        n => n,
+    };
 
-    let mut text = String::new();
-    let mut pos = 1;
-    for sw in &word.subwords[1..] {
-        if sw.get_text() == "/" {
-            break;
-        }
-        text += &sw.get_text();
-        pos += 1;
-    }
+    let text: String = word.subwords[1..length].iter()
+               .map(|e| e.get_text().to_string())
+               .collect::<Vec<String>>()
+               .concat();
 
     let value = get_value(&text, core);
     if value == "" {
         return;
     }
     word.subwords[0].set(SubwordType::Other, &value);
-    word.subwords[1..pos].iter_mut().for_each(|w| w.clear());
+    word.subwords[1..length].iter_mut().for_each(|w| w.clear());
+}
+
+fn prefix_length(word: &Word) -> usize {
+    if word.subwords.len() == 0 || word.subwords[0].get_text() != "~" {
+        return 0;
+    }
+
+    match word.subwords.iter().position(|e| e.get_text() == "/") {
+        None    => word.subwords.len(),
+        Some(n) => n,
+    }
 }
 
 fn get_value(text: &str, core: &mut ShellCore) -> String {
