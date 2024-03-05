@@ -42,13 +42,13 @@ fn get_value(text: &str, core: &mut ShellCore) -> String {
         "" => "HOME",
         "+" => "PWD",
         "-" => "OLDPWD",
-        _ => return solve_home_dir(text),
+        _ => return get_home_dir(text),
     };
 
     core.get_param_ref(key).to_string()
 }
 
-fn solve_home_dir(user: &str) -> String {
+fn get_home_dir(user: &str) -> String {
     let reader = match File::open("/etc/passwd") {
         Ok(f) => BufReader::new(f),
         _ => return String::new(),
