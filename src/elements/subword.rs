@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod simple;
+mod braced_param;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::simple::SimpleSubword;
@@ -11,6 +12,7 @@ use std::fmt::Debug;
 #[derive(Debug, Clone, PartialEq)]
 pub enum SubwordType {
     /* parameters and variables */
+    BracedParameter,
     Parameter,
     VarName,
     /* simple subwords */
@@ -39,7 +41,7 @@ pub trait Subword {
     fn merge(&mut self, right: &Box<dyn Subword>);
     fn set(&mut self, subword_type: SubwordType, s: &str);
     fn parameter_expansion(&mut self, core: &mut ShellCore);
-    fn unquote(&mut self);
+    fn unquote(&mut self) {}
     fn get_type(&self) -> SubwordType;
     fn clear(&mut self);
 }
