@@ -471,10 +471,16 @@ res=$($com <<< "echo 123'abc'def")
 res=$($com <<< 'echo $?')
 [ "$res" == "0" ] || err $LINENO
 
+res=$($com <<< 'echo ${?}')
+[ "$res" == "0" ] || err $LINENO
+
 res=$($com <<< 'ls aaaaaaaa ; echo $?')
 [ "$res" != "0" ] || err $LINENO
 
 res=$($com <<< 'echo $BASH{PID,_SUBSHELL} | sed -E s@[0-9]+@num@')
+[ "$res" == "num 0" ] || err $LINENO
+
+res=$($com <<< 'echo ${BASHPID} ${BASH_SUBSHELL} | sed -E s@[0-9]+@num@')
 [ "$res" == "num 0" ] || err $LINENO
 
 # tilde
