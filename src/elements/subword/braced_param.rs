@@ -50,6 +50,8 @@ impl BracedParam {
         ans.text += &feeder.consume(2);
 
         loop {
+            let len = feeder.scanner_blank(core);
+            ans.text += &feeder.consume(len);
             match subword::parse(feeder, core) {
                 Some(sw) => {
                     ans.text += sw.get_text();
@@ -57,9 +59,20 @@ impl BracedParam {
                         return Some(ans);
                     }
                 },
-                _ => break,
+                _ => {
+                    let len = feeder.scanner_until_close_brace(core);
+                    ans.text += &feeder.consume(len);
+                    
+                    if feeder.starts_with("}") {
+                        ans.text += &feeder.consume(1);
+                        return Some(ans);
+                    }
+
+                    if ! feeder.feed_additional_line(core) {
+                        return None;
+                    }
+                },
             }
         }
-        None
     }
 }
