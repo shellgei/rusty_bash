@@ -6,6 +6,7 @@ mod braced_param;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::simple::SimpleSubword;
+use crate::elements::subword::braced_param::BracedParam;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -47,6 +48,7 @@ pub trait Subword {
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
-    if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
+    if let Some(a) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }

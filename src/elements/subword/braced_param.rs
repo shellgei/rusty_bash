@@ -2,11 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elements::subword;
 use crate::elements::subword::{Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct BracedParam {
     pub text: String,
+    pub subwords: Vec<Box<dyn Subword>>,
     subword_type: SubwordType,
 }
 
@@ -24,13 +26,9 @@ impl Subword for BracedParam {
     }
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) {
-        match self.subword_type {
-            SubwordType::Parameter => {
-                let value = core.get_param_ref(&self.text[1..]);
-                self.text = value.to_string();
-            },
-            _ => {},
-        }
+        let len = self.text.len();
+        let value = core.get_param_ref(&self.text[2..len-1]);
+        self.text = value.to_string();
     }
 
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
@@ -41,6 +39,7 @@ impl BracedParam {
     fn new() -> BracedParam {
         BracedParam {
             text: String::new(),
+            subwords: vec![],
             subword_type: SubwordType::BracedParameter,
         }
     }
@@ -49,11 +48,21 @@ impl BracedParam {
         if ! feeder.starts_with("${") {
             return None;
         }
-
-
         let mut ans = Self::new();
         ans.text += &feeder.consume(2);
-        
+
+        loop {
+            match subword::parse(feeder, core) {
+                Some(sw) => {
+                    ans.text += sw.get_text();
+                    ans.subwords.push(sw.clone());
+                    if sw.get_text() == "}" {
+                        return Some(ans);
+                    }
+                },
+                _ => break,
+            }
+        }
         None
     }
 }
