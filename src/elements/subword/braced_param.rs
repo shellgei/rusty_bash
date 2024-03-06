@@ -8,7 +8,6 @@ use crate::elements::subword::{Subword, SubwordType};
 #[derive(Debug, Clone)]
 pub struct BracedParam {
     pub text: String,
-    pub subwords: Vec<Box<dyn Subword>>,
     subword_type: SubwordType,
 }
 
@@ -39,7 +38,6 @@ impl BracedParam {
     fn new() -> BracedParam {
         BracedParam {
             text: String::new(),
-            subwords: vec![],
             subword_type: SubwordType::BracedParameter,
         }
     }
@@ -55,7 +53,6 @@ impl BracedParam {
             match subword::parse(feeder, core) {
                 Some(sw) => {
                     ans.text += sw.get_text();
-                    ans.subwords.push(sw.clone());
                     if sw.get_text() == "}" {
                         return Some(ans);
                     }
