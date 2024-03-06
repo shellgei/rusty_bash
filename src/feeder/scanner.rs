@@ -104,8 +104,8 @@ impl Feeder {
         0
     }
 
-    pub fn scanner_until_close_brace(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| ch != '}';
+    pub fn scanner_unknown_in_param_brace(&mut self, core: &mut ShellCore) -> usize {
+        let judge = |ch| ch != '}' && ch != '$';
         self.scanner_chars(judge, core)
     }
 

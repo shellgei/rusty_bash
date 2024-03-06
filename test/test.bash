@@ -483,6 +483,10 @@ res=$($com <<< 'echo $BASH{PID,_SUBSHELL} | sed -E s@[0-9]+@num@')
 res=$($com <<< 'echo ${BASHPID} ${BASH_SUBSHELL} | sed -E s@[0-9]+@num@')
 [ "$res" == "num 0" ] || err $LINENO
 
+res=$($com <<< 'echo ${ ')
+[ "$?" == "2" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
 # tilde
 
 res=$($com <<< 'echo ~ | grep -q /')

@@ -60,7 +60,7 @@ impl BracedParam {
                     }
                 },
                 _ => {
-                    let len = feeder.scanner_until_close_brace(core);
+                    let len = feeder.scanner_unknown_in_param_brace(core);
                     ans.text += &feeder.consume(len);
                     
                     if feeder.starts_with("}") {
