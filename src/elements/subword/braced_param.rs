@@ -42,6 +42,31 @@ impl BracedParam {
         }
     }
 
+    fn eat(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if feeder.len() == 0 && ! feeder.feed_additional_line(core) {
+            ans.text.clear();
+            feeder.consume(feeder.len());
+            return false;
+        }
+
+        match subword::parse(feeder, core) {
+            Some(sw) => {
+                ans.text += sw.get_text();
+                return sw.get_text() != "}"; //end if "}"
+            },
+            _ => {
+                let len = feeder.scanner_unknown_in_param_brace();
+                if len == 0 {
+                    ans.text.clear();
+                    feeder.consume(feeder.len());
+                    return false;
+                }
+                ans.text += &feeder.consume(len);
+                return true;
+            },
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BracedParam> {
         if ! feeder.starts_with("${") {
             return None;
@@ -49,30 +74,12 @@ impl BracedParam {
         let mut ans = Self::new();
         ans.text += &feeder.consume(2);
 
-        loop {
-            let len = feeder.scanner_blank(core);
-            ans.text += &feeder.consume(len);
-            match subword::parse(feeder, core) {
-                Some(sw) => {
-                    ans.text += sw.get_text();
-                    if sw.get_text() == "}" {
-                        return Some(ans);
-                    }
-                },
-                _ => {
-                    let len = feeder.scanner_unknown_in_param_brace(core);
-                    ans.text += &feeder.consume(len);
-                    
-                    if feeder.starts_with("}") {
-                        ans.text += &feeder.consume(1);
-                        return Some(ans);
-                    }
+        while Self::eat(feeder, &mut ans, core) {}
 
-                    if ! feeder.feed_additional_line(core) {
-                        return None;
-                    }
-                },
-            }
+        if ans.text.len() == 0 {
+            None
+        }else{
+            Some(ans)
         }
     }
 }
