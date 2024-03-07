@@ -11,6 +11,18 @@ pub struct BracedParam {
     subword_type: SubwordType,
 }
 
+fn is_param(s :&String) -> bool {
+    if s.len() == 0 {
+        return false;
+    }
+        /*
+    if s.len() == 1 {
+        if "$?*@#-!_0123456789".find(s.chars().nth(0).unwrap())
+    }*/
+
+    true
+}
+
 impl Subword for BracedParam {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
@@ -24,10 +36,18 @@ impl Subword for BracedParam {
         self.subword_type = subword_type;
     }
 
-    fn parameter_expansion(&mut self, core: &mut ShellCore) {
+    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
         let len = self.text.len();
-        let value = core.get_param_ref(&self.text[2..len-1]);
+        let param = self.text[2..len-1].to_string();
+
+        if ! is_param(&param) {
+            eprintln!("sush: {}: bad substitution", &self.text);
+            return false;
+        }
+
+        let value = core.get_param_ref(&param);
         self.text = value.to_string();
+        true
     }
 
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }

@@ -23,7 +23,7 @@ impl Subword for SimpleSubword {
         self.subword_type = subword_type;
     }
 
-    fn parameter_expansion(&mut self, core: &mut ShellCore) {
+    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
         match self.subword_type {
             SubwordType::Parameter => {
                 let value = core.get_param_ref(&self.text[1..]);
@@ -31,6 +31,7 @@ impl Subword for SimpleSubword {
             },
             _ => {},
         }
+        true
     }
 
     fn unquote(&mut self) {

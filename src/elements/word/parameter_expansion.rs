@@ -5,13 +5,13 @@ use crate::ShellCore;
 use crate::elements::word::Word;
 use crate::elements::subword::{Subword, SubwordType};
 
-pub fn eval(word: &mut Word, core: &mut ShellCore) {
+pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
     word.subwords
         .iter_mut()
-        .for_each(|w| w.parameter_expansion(core));
+        .all(|w| w.parameter_expansion(core))
 }
 
 fn connect_names(subwords: &mut [Box<dyn Subword>]) {

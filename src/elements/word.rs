@@ -16,14 +16,18 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Vec<String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
         let mut ws = brace_expansion::eval(self);
 
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
-        ws.iter_mut().for_each(|w| parameter_expansion::eval(w, core));
+        if ! ws.iter_mut().all(|w| parameter_expansion::eval(w, core)) {
+            return None;
+        }
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
-        ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect()
+        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+
+        Some(ans)
     }
 
     fn unquote(&mut self) {
