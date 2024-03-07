@@ -487,6 +487,22 @@ res=$($com <<< 'echo ${ ')
 [ "$?" == "2" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'echo ${ A}')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'echo ${A }')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'echo ${_A32523j2}')
+[ "$?" == "0" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'echo ${_A32*523j2}')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
 # tilde
 
 res=$($com <<< 'echo ~ | grep -q /')

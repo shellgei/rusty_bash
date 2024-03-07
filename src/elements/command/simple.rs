@@ -34,7 +34,7 @@ impl Command for SimpleCommand {
             match w.eval(core) {
                 Some(ws) => self.args.extend(ws),
                 None => {
-                    core.set_param("?", "2");
+                    core.set_param("?", "1");
                     return None;
                 },
             }
