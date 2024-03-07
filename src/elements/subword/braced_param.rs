@@ -72,10 +72,8 @@ impl BracedParam {
     }
 
     fn eat(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if feeder.len() == 0 && ! feeder.feed_additional_line(core) {
-            ans.text.clear();
-            feeder.consume(feeder.len());
-            return false;
+        if feeder.len() == 0 {
+            feeder.feed_additional_line(core);
         }
 
         match subword::parse(feeder, core) {
@@ -83,15 +81,17 @@ impl BracedParam {
                 ans.text += sw.get_text();
                 return sw.get_text() != "}"; //end if "}"
             },
-            _ => {
-                let len = feeder.scanner_unknown_in_param_brace();
-                if len == 0 {
-                    ans.text.clear();
-                    feeder.consume(feeder.len());
-                    return false;
+            None => {
+                match feeder.scanner_unknown_in_param_brace() {
+                    0 => {
+                        ans.text.clear();
+                        return false;
+                    },
+                    len => {
+                        ans.text += &feeder.consume(len);
+                        return true;
+                    },
                 }
-                ans.text += &feeder.consume(len);
-                return true;
             },
         }
     }
@@ -106,6 +106,7 @@ impl BracedParam {
         while Self::eat(feeder, &mut ans, core) {}
 
         if ans.text.len() == 0 {
+            feeder.consume(feeder.len());
             None
         }else{
             Some(ans)
