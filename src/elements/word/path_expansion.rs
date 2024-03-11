@@ -6,5 +6,5 @@ use crate::elements::word::Word;
 use glob;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
-    glob::glob(&word.text);
+    dbg!("{:?}", glob::glob(&word.text));
 }

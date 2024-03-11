@@ -26,6 +26,7 @@ impl Word {
         }
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
+        ws.iter_mut().for_each(|w| path_expansion::eval(w, core));
         let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
 
         Some(ans)
