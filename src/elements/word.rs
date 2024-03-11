@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
+mod tilde_expansion;
+mod parameter_expansion;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
@@ -14,22 +16,36 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn eval(&mut self) -> Vec<String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
         let mut ws = brace_expansion::eval(self);
 
+        ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
+        if ! ws.iter_mut().all(|w| parameter_expansion::eval(w, core)) {
+            return None;
+        }
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
-        ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect()
+        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+
+        Some(ans)
     }
 
     fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|w| w.unquote());
     }
-
+    
     fn connect_subwords(&mut self) {
         self.text = self.subwords.iter()
-                    .map(|s| s.get_text().clone())
+                    .map(|s| s.get_text())
                     .collect::<String>();
+    }
+
+    fn scan_pos(&self, s: &str) -> Vec<usize> {
+        self.subwords.iter()
+            .enumerate()
+            .filter(|e| e.1.get_text() == s)
+            .map(|e| e.0)
+            .collect()
     }
 
     pub fn new() -> Word {

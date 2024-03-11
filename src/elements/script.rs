@@ -61,7 +61,7 @@ impl Script {
             ( None, _)       => {}, 
         }
 
-        let ng_ends = vec![")", "}", "then", "else", "if", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&"];
+        let ng_ends = vec!["(", ")", "}", "then", "else", "if", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&"];
         match ( ng_ends.iter().find(|e| feeder.starts_with(e)), nest.1.len() ) {
             (Some(end), _) => return Status::UnexpectedSymbol(end.to_string()),
             (None, 0)      => return Status::NormalEnd,
@@ -82,7 +82,7 @@ impl Script {
                 },
                 Status::UnexpectedSymbol(s) => {
                     eprintln!("Unexpected token: {}", s);
-                    core.vars.insert("?".to_string(), "2".to_string());
+                    core.set_param("?", "2");
                     break;
                 },
                 Status::NeedMoreLine => {

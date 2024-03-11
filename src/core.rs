@@ -3,6 +3,7 @@
 
 pub mod builtins;
 pub mod jobtable;
+pub mod parameter;
 
 use std::collections::HashMap;
 use std::os::fd::RawFd;
@@ -20,7 +21,7 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct ShellCore {
     pub history: Vec<String>,
     pub flags: String,
-    pub vars: HashMap<String, String>,
+    parameters: HashMap<String, String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
@@ -51,7 +52,7 @@ impl ShellCore {
         let mut core = ShellCore{
             history: Vec::new(),
             flags: String::new(),
-            vars: HashMap::new(),
+            parameters: HashMap::new(),
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
@@ -61,7 +62,7 @@ impl ShellCore {
         };
 
         core.init_current_directory();
-        core.set_initial_vars();
+        core.set_initial_parameters();
         core.set_builtins();
 
         if is_interactive() {
@@ -73,19 +74,16 @@ impl ShellCore {
         core
     }
 
-    fn set_initial_vars(&mut self) {
-        self.vars.insert("$".to_string(), process::id().to_string());
-        self.vars.insert("BASHPID".to_string(), self.vars["$"].clone());
-        self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string());
-        self.vars.insert("?".to_string(), "0".to_string());
-        self.vars.insert("HOME".to_string(), env::var("HOME").unwrap_or("/".to_string()));
+    fn set_initial_parameters(&mut self) {
+        self.set_param("$", &process::id().to_string());
+        self.set_param("BASHPID", &process::id().to_string());
+        self.set_param("BASH_SUBSHELL", "0");
+        self.set_param("?", "0");
+        self.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        if let Some(_) = self.flags.find(flag) {
-            return true;
-        }
-        false
+        self.flags.find(flag) != None 
     }
 
     pub fn wait_process(&mut self, child: Pid) {
@@ -109,7 +107,7 @@ impl ShellCore {
         if exit_status == 130 {
             self.sigint.store(true, Relaxed);
         }
-        self.vars.insert("?".to_string(), exit_status.to_string()); //追加
+        self.parameters.insert("?".to_string(), exit_status.to_string()); //追加
     } 
 
     fn set_foreground(&self) {
@@ -145,15 +143,15 @@ impl ShellCore {
 
         let func = self.builtins[&args[0]];
         let status = func(self, args);
-        self.vars.insert("?".to_string(), status.to_string());
+        self.parameters.insert("?".to_string(), status.to_string());
         true
     }
 
     pub fn exit(&self) -> ! {
-        let exit_status = match self.vars["?"].parse::<i32>() {
+        let exit_status = match self.parameters["?"].parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
-                eprintln!("sush: exit: {}: numeric argument required", self.vars["?"]);
+                eprintln!("sush: exit: {}: numeric argument required", self.parameters["?"]);
                 2
             },
         };
@@ -161,12 +159,12 @@ impl ShellCore {
         process::exit(exit_status)
     }
 
-    fn set_subshell_vars(&mut self) {
+    fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.vars.insert("BASHPID".to_string(), pid.to_string());
-        match self.vars["BASH_SUBSHELL"].parse::<usize>() {
-            Ok(num) => self.vars.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
-            Err(_) =>  self.vars.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
+        self.parameters.insert("BASHPID".to_string(), pid.to_string());
+        match self.parameters["BASH_SUBSHELL"].parse::<usize>() {
+            Ok(num) => self.parameters.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
+            Err(_) =>  self.parameters.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
     }
 
@@ -182,7 +180,7 @@ impl ShellCore {
 
         self.is_subshell = true;
         self.set_pgid(pid, pgid);
-        self.set_subshell_vars();
+        self.set_subshell_parameters();
         self.job_table.clear();
     }
 

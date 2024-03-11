@@ -38,7 +38,7 @@ impl Job {
                 let pids = pipeline.exec(core, pgid);
                 core.wait_pipeline(pids);
             }
-            do_next = (&core.vars["?"] == "0") == (end == "&&");
+            do_next = (core.get_param_ref("?") == "0") == (end == "&&");
         }
     }
 

@@ -31,7 +31,13 @@ pub struct SimpleCommand {
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         for w in self.words.iter_mut() {
-            self.args.append(&mut w.eval());
+            match w.eval(core) {
+                Some(ws) => self.args.extend(ws),
+                None => {
+                    core.set_param("?", "1");
+                    return None;
+                },
+            }
         }
 
         if self.args.len() == 0 {
