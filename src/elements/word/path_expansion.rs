@@ -6,5 +6,12 @@ use crate::elements::word::Word;
 use glob;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
-    dbg!("{:?}", glob::glob(&word.text));
+    match glob::glob(&word.text) {
+        Ok(paths) => {
+            for path in paths {
+                dbg!("{:?}", path.expect("").display());
+            }
+        },
+        _ => return,
+    };
 }
