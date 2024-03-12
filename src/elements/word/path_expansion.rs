@@ -11,7 +11,7 @@ use std::path::PathBuf;
 fn to_string(path :&Result<PathBuf, GlobError>) -> String {
     match path {
         Ok(p) => p.to_string_lossy().to_string(),
-        _ => panic!("sush: unexpected path name"),
+        _ => "".to_string(),
     }
 }
 
@@ -33,7 +33,11 @@ pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
 
     let mut ans = vec![];
     if let Ok(paths) = glob::glob(&word.text) {
-        for p in paths.map(|p| to_string(&p)).collect::<Vec<String>>() {
+        let paths = paths.map(|p| to_string(&p))
+                      .filter(|s| s != "")
+                      .collect::<Vec<String>>();
+
+        for p in paths {
             let mut w = word.clone();
             while w.subwords.len() > 1 {
                 w.subwords.pop();
