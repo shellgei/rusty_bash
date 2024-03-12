@@ -22,15 +22,16 @@ pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
     if ans.len() > 0 {
         ans
     }else{
+        eprintln!("NO");
         vec![org]
     }
 }
 
 fn has_glob_symbol(w: &Word) -> bool {
     for sw in &w.subwords {
-        let t = sw.get_text();
-        if t == "[" || t == "]" || t == "*" || t == "?" {
-            return true;
+        match sw.get_text() {
+            "[" | "]" | "*" | "?" => return true,
+            _ => continue,
         }
     }
 

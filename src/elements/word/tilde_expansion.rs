@@ -23,7 +23,6 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
     }
     word.subwords[0].set(SubwordType::Other, &value);
     word.subwords[1..length].iter_mut().for_each(|w| w.clear());
-    word.text = word.subwords.iter().map(|s| s.get_text().to_string()).collect();
 }
 
 fn prefix_length(word: &Word) -> usize {
