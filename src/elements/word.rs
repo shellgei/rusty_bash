@@ -26,11 +26,7 @@ impl Word {
         }
         ws.iter_mut().for_each(|w| w.connect_subwords());
 
-        let mut tmp = vec![];
-        for mut globed in ws.iter_mut().map(|w| path_expansion::eval(w, core)) {
-            tmp.append(&mut globed);
-        }
-        let mut ws = tmp;
+        ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w, core)) );
 
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
