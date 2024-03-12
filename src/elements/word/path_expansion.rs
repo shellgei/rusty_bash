@@ -10,10 +10,6 @@ use std::path::PathBuf;
 
 pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
     let org = word.clone();
-    if ! has_glob_symbol(word) {
-        return vec![org];
-    }
-
     let ans = do_glob(&word.text)
               .into_iter()
               .map(|p| rewrite(word, &p))
@@ -22,20 +18,8 @@ pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
     if ans.len() > 0 {
         ans
     }else{
-        eprintln!("NO");
         vec![org]
     }
-}
-
-fn has_glob_symbol(w: &Word) -> bool {
-    for sw in &w.subwords {
-        match sw.get_text() {
-            "[" | "]" | "*" | "?" => return true,
-            _ => continue,
-        }
-    }
-
-    false
 }
 
 fn do_glob(path: &str) -> Vec<String> {
