@@ -8,10 +8,21 @@ use glob;
 use glob::GlobError;
 use std::path::PathBuf;
 
-fn to_string(path :&Result<PathBuf, GlobError>) -> String {
-    match path {
-        Ok(p) => p.to_string_lossy().to_string(),
-        _ => "".to_string(),
+pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
+    let org = word.clone();
+    if ! has_glob_symbol(word) {
+        return vec![org];
+    }
+
+    let ans = do_glob(&word.text)
+              .into_iter()
+              .map(|p| rewrite(word, &p))
+              .collect::<Vec<Word>>();
+
+    if ans.len() > 0 {
+        ans
+    }else{
+        vec![org]
     }
 }
 
@@ -26,31 +37,27 @@ fn has_glob_symbol(w: &Word) -> bool {
     false
 }
 
-pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
-    if ! has_glob_symbol(word) {
-        return vec![word.clone()];
-    }
-
-    let mut ans = vec![];
-    let paths = if let Ok(ps) = glob::glob(&word.text) {
+fn do_glob(path: &str) -> Vec<String> {
+    if let Ok(ps) = glob::glob(&path) {
         ps.map(|p| to_string(&p))
           .filter(|s| s != "")
           .collect::<Vec<String>>()
     }else{
-        return vec![word.clone()];
-    };
-
-    for p in paths {
-        let mut w = word.clone();
-        while w.subwords.len() > 1 {
-            w.subwords.pop();
-        }
-        w.subwords[0].set(SubwordType::Other, &p);
-        ans.push(w);
+        vec![]
     }
+}
 
-    if ans.len() == 0 {
-        ans.push(word.clone());
+fn to_string(path :&Result<PathBuf, GlobError>) -> String {
+    match path {
+        Ok(p) => p.to_string_lossy().to_string(),
+        _ => "".to_string(),
     }
-    ans
+}
+
+fn rewrite(word: &mut Word, path: &str) -> Word {
+    word.subwords[0].set(SubwordType::Other, &path);
+    while word.subwords.len() > 1 {
+        word.subwords.pop();
+    }
+    word.clone()
 }
