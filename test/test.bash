@@ -515,6 +515,14 @@ res=$($com <<< 'cd /; cd /etc; echo ~+; echo ~-')
 [ "$res" == "/etc
 /" ] || err $LINENO
 
+# wildcard
+
+res=$($com <<< 'echo /*' | grep -F '*')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'echo /bin/?' | grep -F '/bin/[')
+[ "$?" == "0" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )
