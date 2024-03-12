@@ -26,7 +26,7 @@ fn has_glob_symbol(w: &Word) -> bool {
     false
 }
 
-pub fn eval(word: &mut Word, core: &mut ShellCore) -> Vec<Word> {
+pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
     if ! has_glob_symbol(word) {
         return vec![word.clone()];
     }
