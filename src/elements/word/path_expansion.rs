@@ -1,14 +1,13 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
 use crate::elements::subword::SubwordType;
 use crate::elements::word::Word;
 use glob;
 use glob::{GlobError, MatchOptions};
 use std::path::PathBuf;
 
-pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
+pub fn eval(word: &mut Word) -> Vec<Word> {
     let org = word.clone();
     let ans = do_glob(&word.text)
               .into_iter()
