@@ -32,19 +32,21 @@ pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
     }
 
     let mut ans = vec![];
-    if let Ok(paths) = glob::glob(&word.text) {
-        let paths = paths.map(|p| to_string(&p))
-                      .filter(|s| s != "")
-                      .collect::<Vec<String>>();
+    let paths = if let Ok(ps) = glob::glob(&word.text) {
+        ps.map(|p| to_string(&p))
+          .filter(|s| s != "")
+          .collect::<Vec<String>>()
+    }else{
+        return vec![word.clone()];
+    };
 
-        for p in paths {
-            let mut w = word.clone();
-            while w.subwords.len() > 1 {
-                w.subwords.pop();
-            }
-            w.subwords[0].set(SubwordType::Other, &p);
-            ans.push(w);
+    for p in paths {
+        let mut w = word.clone();
+        while w.subwords.len() > 1 {
+            w.subwords.pop();
         }
+        w.subwords[0].set(SubwordType::Other, &p);
+        ans.push(w);
     }
 
     if ans.len() == 0 {
