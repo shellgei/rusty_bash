@@ -517,11 +517,17 @@ res=$($com <<< 'cd /; cd /etc; echo ~+; echo ~-')
 
 # wildcard
 
-res=$($com <<< 'echo /*' | grep -F '*')
-[ "$?" == "1" ] || err $LINENO
-
 res=$($com <<< 'echo /bin/?' | grep -F '/bin/[')
 [ "$?" == "0" ] || err $LINENO
+
+res=$($com <<< 'echo /*' | grep '/etc')
+[ "$?" == 0 ] || err $LINENO
+
+res=$($com <<< 'echo ~+/*' | grep '*')
+[ "$?" == 1 ] || err $LINENO
+
+#res=$($com <<< 'echo ~/*' | grep -F '/.')
+#[ "$?" == 1 ] || err $LINENO
 
 ### WHILE TEST ###
 
