@@ -31,7 +31,7 @@ res=$($com <<< 'echo hoge;')
 res=$($com <<< 'cd /; pwd')
 [ "$res" = "/" ] || err $LINENO
 
-res=$($com <<< 'cd /tmp; mkdir hoge; ln -s hoge link; cd link; pwd -L; pwd -P')
+res=$($com <<< 'rm -f /tmp/link; cd /tmp; mkdir -p hoge; ln -s hoge link; cd link; pwd -L; pwd -P')
 [ "$res" = "/tmp/link
 /tmp/hoge" ] ||
 [ "$res" = "/tmp/link

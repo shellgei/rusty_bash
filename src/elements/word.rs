@@ -24,10 +24,16 @@ impl Word {
         if ! ws.iter_mut().all(|w| parameter_expansion::eval(w, core)) {
             return None;
         }
-        ws.iter_mut().for_each(|w| w.unquote());
-        ws.iter_mut().for_each(|w| w.connect_subwords());
-        ws.iter_mut().for_each(|w| path_expansion::eval(w, core));
-        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+
+        let mut ws2 = vec![];
+        for mut globed in ws.iter_mut().map(|w| path_expansion::eval(w, core)) {
+            ws2.append(&mut globed);
+        }
+//        dbg!("{:?}", ws2);
+
+        ws2.iter_mut().for_each(|w| w.unquote());
+        ws2.iter_mut().for_each(|w| w.connect_subwords());
+        let ans = ws2.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
 
         Some(ans)
     }
