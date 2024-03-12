@@ -5,7 +5,7 @@ use crate::ShellCore;
 use crate::elements::subword::SubwordType;
 use crate::elements::word::Word;
 use glob;
-use glob::GlobError;
+use glob::{GlobError, MatchOptions};
 use std::path::PathBuf;
 
 pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
@@ -23,7 +23,13 @@ pub fn eval(word: &mut Word, _core: &mut ShellCore) -> Vec<Word> {
 }
 
 fn do_glob(path: &str) -> Vec<String> {
-    if let Ok(ps) = glob::glob(&path) {
+    let options = MatchOptions {
+        case_sensitive: true,
+        require_literal_separator: true,
+        require_literal_leading_dot: true,
+    };
+
+    if let Ok(ps) = glob::glob_with(&path, options) {
         ps.map(|p| to_string(&p))
           .filter(|s| s != "")
           .collect::<Vec<String>>()
