@@ -10,7 +10,7 @@ use std::path::PathBuf;
 pub fn eval(word: &Word) -> Vec<Word> {
     let mut tmp = word.clone();
     let ans = do_glob(&word.text)
-              .into_iter()
+              .iter()
               .map(|p| rewrite(&mut tmp, &p))
               .collect::<Vec<Word>>();
 
