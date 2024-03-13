@@ -8,36 +8,33 @@ use glob::{GlobError, MatchOptions};
 use std::path::PathBuf;
 
 pub fn eval(word: &Word) -> Vec<Word> {
-    let mut tmp = word.clone();
-    let ans = do_glob(&word.text)
-              .iter()
-              .map(|p| rewrite(&mut tmp, &p))
-              .collect::<Vec<Word>>();
+    let paths = expand(&word.text);
 
-    if ans.len() > 0 {
-        ans
+    if paths.len() > 0 {
+        let mut tmp = word.clone();
+        paths.iter()
+             .map(|p| rewrite(&mut tmp, &p))
+             .collect()
     }else{
-        vec![tmp]
+        vec![word.clone()]
     }
 }
 
-fn do_glob(path: &str) -> Vec<String> {
-    let options = MatchOptions {
+fn expand(path: &str) -> Vec<String> {
+    let opts = MatchOptions {
         case_sensitive: true,
         require_literal_separator: true,
         require_literal_leading_dot: true,
     };
 
-    if let Ok(ps) = glob::glob_with(&path, options) {
-        ps.map(|p| to_string(&p))
-          .filter(|s| s != "")
-          .collect::<Vec<String>>()
-    }else{
-        vec![]
+    match glob::glob_with(&path, opts) {
+        Ok(ps) => ps.map(|p| to_str(&p))
+                    .filter(|s| s != "").collect(), 
+        _ => vec![]
     }
 }
 
-fn to_string(path :&Result<PathBuf, GlobError>) -> String {
+fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     match path {
         Ok(p) => p.to_string_lossy().to_string(),
         _ => "".to_string(),
