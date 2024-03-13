@@ -25,9 +25,7 @@ impl Word {
             return None;
         }
         ws.iter_mut().for_each(|w| w.connect_subwords());
-
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
-
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
         let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
