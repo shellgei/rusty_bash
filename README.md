@@ -1,2 +1,3 @@
-# bash_r
-practice on Rusy
+# sush
+
+最初のディレクトリ構造
