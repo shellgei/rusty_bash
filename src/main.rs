@@ -4,12 +4,14 @@
 use std::{env, process};
 
 fn show_version() {
-    eprintln!("Sushi Shell book version");
-    eprintln!("© 2024 Ryuichi Ueda");
-    eprintln!("License: BSD 3-Clause\n");
+    let s = "Sushi Shell book version
+© 2024 Ryuichi Ueda
+License: BSD 3-Clause
 
-    eprintln!("This is open source software. You can redistirbute and use in source\nand binary forms with or without modification under the license.");
-    eprintln!("There is no warranty, to the extent permitted by law.");
+This is open source software. You can redistirbute and use in source
+and binary forms with or without modification under the license.
+There is no warranty, to the extent permitted by law.";
+    eprintln!("{}", s);
     process::exit(0);
 }
 
