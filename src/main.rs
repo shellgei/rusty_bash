@@ -15,12 +15,14 @@ use signal_hook::consts;
 use signal_hook::iterator::Signals;
 
 fn show_version() {
-    eprintln!("Sushi Shell 202305_5");
-    eprintln!("© 2023 Ryuichi Ueda");
-    eprintln!("License: BSD 3-Clause\n");
+    let s = "Sushi Shell SoftwareDesign version
+© 2023 Ryuichi Ueda
+License: BSD 3-Clause
 
-    eprintln!("This is open source software. You can redistirbute and use in source\nand binary forms with or without modification under the license.");
-    eprintln!("There is no warranty, to the extent permitted by law.");
+This is open source software. You can redistirbute and use in source
+and binary forms with or without modification under the license.
+There is no warranty, to the extent permitted by law.";
+    eprintln!("{}", s);
     process::exit(0);
 }
 
