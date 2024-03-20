@@ -1,25 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::{env, process};
-
-fn show_version() {
-    let s = "Sushi Shell book version
-© 2024 Ryuichi Ueda
-License: BSD 3-Clause
-
-This is open source software. You can redistirbute and use in source
-and binary forms with or without modification under the license.
-There is no warranty, to the extent permitted by law.";
-    eprintln!("{}", s);
-    process::exit(0);
-}
+use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() > 1 && args[1] == "--version" {
-        show_version();
-    }
-
-    println!("Hello, world!");
+    println!("{:?}", args);
 }
