@@ -4,14 +4,14 @@
 use std::{env, process};
 
 fn show_version() {
-    let s = "Sushi Shell book version
+    const S: &str = "Sushi Shell book version
 © 2024 Ryuichi Ueda
 License: BSD 3-Clause
 
 This is open source software. You can redistirbute and use in source
 and binary forms with or without modification under the license.
 There is no warranty, to the extent permitted by law.";
-    eprintln!("{}", s);
+    eprintln!("{}", S);
     process::exit(0);
 }
 
