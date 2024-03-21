@@ -21,5 +21,5 @@ fn main() {
         show_version();
     }
 
-    println!("Hello, world!");
+    println!("--versionを指定すると、ここには来ません！");
 }
