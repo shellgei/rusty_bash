@@ -28,8 +28,6 @@ fn main() {
 }
 
 fn main_loop() {
-    let mut feeder = Feeder::new();
-    loop {
-        feeder.feed_line();
-    }
+    let feeder = Feeder::new();
+    //ここでフィーダーに字を読んで処理するループ
 }
