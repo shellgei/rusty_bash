@@ -11,7 +11,7 @@ License: BSD 3-Clause
 This is open source software. You can redistirbute and use in source
 and binary forms with or without modification under the license.
 There is no warranty, to the extent permitted by law.";
-    eprintln!("{}", S);
+    println!("{}", S);
     process::exit(0);
 }
 
