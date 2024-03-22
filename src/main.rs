@@ -1,6 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod feeder;
+
+use crate::feeder::Feeder;
 use std::{env, process};
 
 fn show_version() {
@@ -21,5 +24,12 @@ fn main() {
         show_version();
     }
 
-    println!("--versionを指定すると、ここには来ません！");
+    main_loop();
+}
+
+fn main_loop() {
+    let mut feeder = Feeder::new();
+    loop {
+        feeder.feed_line();
+    }
 }
