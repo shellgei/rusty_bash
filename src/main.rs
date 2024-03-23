@@ -24,10 +24,5 @@ fn main() {
         show_version();
     }
 
-    main_loop();
-}
-
-fn main_loop() {
-    let feeder = Feeder::new();
-    //ここでフィーダーに字を読んで処理するループ
+    let feeder = Feeder::new(); //とりあえずインスタンスを作ってみる
 }
