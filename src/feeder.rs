@@ -2,14 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub struct Feeder {
-    //ここにフィールドが並ぶ
+    remaining: String,
 }
 
 impl Feeder {
     pub fn new() -> Feeder {
         return Feeder {
-            //ここにデータの
-            //初期化の手続きが並ぶ
+            remaining: String::new(),
         };
     }
 }
