@@ -10,7 +10,7 @@ pub struct Feeder {
 impl Feeder {
     pub fn new() -> Feeder {
         Feeder {
-            remaining: "".to_string(),
+            remaining: String:new(),
         }
     }
 
