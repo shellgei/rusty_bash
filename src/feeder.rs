@@ -24,6 +24,6 @@ impl Feeder {
 
     pub fn feed_line(&mut self) {
         self.read_line_stdin();
-        print!("{}", self.remaining);
+        print!("{}", &self.remaining);
     }
 }
