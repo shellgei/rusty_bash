@@ -9,9 +9,9 @@ pub struct Feeder {
 
 impl Feeder {
     pub fn new() -> Feeder {
-        return Feeder {
+        Feeder {
             remaining: String::new(),
-        };
+        }
     }
 
     fn read_line_stdin(&mut self) {
