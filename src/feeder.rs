@@ -3,6 +3,10 @@
 
 use std::io;
 
+pub enum InputError {
+    Eof,
+}
+
 pub struct Feeder {
     remaining: String,
 }
@@ -14,16 +18,23 @@ impl Feeder {
         };
     }
 
-    fn read_line_stdin(&mut self) {
+    fn read_line_stdin() -> Result<String, InputError> {
         let mut line = String::new();
-        io::stdin().read_line(&mut line)
-                   .expect("Failed to read line");
 
-        self.remaining = line;
+        match io::stdin().read_line(&mut line) {
+            Ok(0) => Err(InputError::Eof),
+            Ok(_) => Ok(line),
+            Err(e) => panic!("sush: {}", &e),
+        }
     }
 
-    pub fn feed_line(&mut self) {
-        self.read_line_stdin();
-        print!("{}", &self.remaining);
-    }
+    pub fn feed_line(&mut self) -> Result<(), InputError> {
+        match Self::read_line_stdin() {
+            Ok(ln) => {
+                self.remaining = ln;
+                Ok(())
+            },
+            Err(e) => Err(e),
+        }
+    } 
 }
