@@ -14,7 +14,7 @@ impl Feeder {
         }
     }
 
-    pub fn feed_line(&mut self) {
+    pub fn feed_line(self: &mut Feeder) {
         io::stdin().read_line(&mut self.remaining).expect("エラー");
         print!("{}", &self.remaining);
     } 
