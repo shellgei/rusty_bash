@@ -3,7 +3,7 @@
 
 mod feeder;
 
-use crate::feeder::Feeder;
+use crate::feeder::{InputError, Feeder};
 use std::{env, process};
 
 fn show_version() {
@@ -31,8 +31,8 @@ fn main_loop() {
     let mut feeder = Feeder::new();
     loop {
         match feeder.feed_line() {
-            Ok(_)  => {},
-            Err(_) => return,
+            Ok(())               => {},
+            Err(InputError::Eof) => break,
         }
     }
 }
