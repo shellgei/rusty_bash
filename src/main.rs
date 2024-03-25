@@ -30,6 +30,6 @@ fn main() {
 fn main_loop() {
     let mut feeder = Feeder::new();
     loop {
-        let _ = feeder.feed_line();
+        feeder.feed_line();
     }
 }
