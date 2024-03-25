@@ -32,6 +32,7 @@ impl Feeder {
         match Self::read_line_stdin() {
             Ok(ln) => {
                 self.remaining = ln;
+                print!("{}", &self.remaining);
                 Ok(())
             },
             Err(e) => Err(e),
