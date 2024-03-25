@@ -16,10 +16,7 @@ impl Feeder {
 
     fn read_line_stdin() -> String {
         let mut line = String::new();
-
-        io::stdin().read_line(&mut line)
-                   .expect("sush: read_line error");
-
+        io::stdin().read_line(&mut line).expect("sush: read_line error");
         line
     }
 
