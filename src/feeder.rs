@@ -14,14 +14,8 @@ impl Feeder {
         }
     }
 
-    fn read_line_stdin() -> String {
-        let mut line = String::new();
-        io::stdin().read_line(&mut line).expect("sush: read_line error");
-        line
-    }
-
     pub fn feed_line(&mut self) {
-        self.remaining = Self::read_line_stdin();
+        io::stdin().read_line(&mut self.remaining).expect("エラー");
         print!("{}", &self.remaining);
     } 
 }
