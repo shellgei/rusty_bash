@@ -17,6 +17,7 @@ impl Feeder {
     fn read_line_stdin() -> String {
         let mut line = String::new();
         match io::stdin().read_line(&mut line) {
+            Ok(0)  => panic!("おわり！"),
             Ok(_)  => line,
             Err(e) => panic!("sush: error reading input file: {}", &e),
         }
