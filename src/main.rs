@@ -31,7 +31,7 @@ fn main_loop() {
     let mut feeder = Feeder::new();
     loop {
         match feeder.feed_line() {
-            Ok(())               => {},
+            Ok(()) => {},
             Err(InputError::Eof) => break,
         }
     }
