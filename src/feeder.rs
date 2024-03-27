@@ -5,7 +5,6 @@ use std::io;
 
 pub enum InputError {
     Eof,
-    //Interrupt,
 }
 
 pub struct Feeder {
