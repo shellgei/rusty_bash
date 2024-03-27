@@ -1,8 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod core;
 mod feeder;
 
+use crate::core::ShellCore;
 use crate::feeder::{InputError, Feeder};
 use std::{env, process};
 
@@ -24,13 +26,14 @@ fn main() {
         show_version();
     }
 
-    main_loop();
+    let mut core = ShellCore::new();
+    main_loop(&mut core);
 }
 
-fn main_loop() {
+fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
-        match feeder.feed_line() {
+        match feeder.feed_line(core) {
             Ok(()) => {},
             Err(InputError::Eof) => break,
         }

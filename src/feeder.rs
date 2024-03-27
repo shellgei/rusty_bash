@@ -1,6 +1,7 @@
-//SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::core::ShellCore;
 use std::io;
 
 pub enum InputError {
@@ -26,8 +27,14 @@ impl Feeder {
         }
     }
 
-    pub fn feed_line(&mut self) -> Result<(), InputError> {
-        match Self::read_line_stdin() {
+    pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
+        let line = if core.has_flag('i') {
+            panic!("インタラクティブですよ")
+        }else{ 
+            Self::read_line_stdin()
+        };
+
+        match line {
             Ok(ln) => {
                 self.remaining = ln;
                 print!("{}", &self.remaining);
