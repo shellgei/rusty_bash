@@ -4,7 +4,7 @@
 use nix::unistd;
 
 pub struct ShellCore {
-    pub flags: String,
+    flags: String,
 }
 
 fn is_interactive() -> bool {
