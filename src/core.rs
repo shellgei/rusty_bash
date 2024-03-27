@@ -13,9 +13,10 @@ impl ShellCore {
             flags: String::new(),
         };
 
-        if unistd::isatty(0)
-                   .expect("sush: isatty error") {
-            core.flags += "i";
+        match unistd::isatty(0) {
+            Ok(true)  => core.flags += "i",
+            Ok(false) => {},
+            Err(_) => panic!("sush: isatty error"),
         }
 
         core
