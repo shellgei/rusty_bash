@@ -28,6 +28,6 @@ impl ShellCore {
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        self.flags.find(flag) != None 
-    } 
+        self.flags.find(flag) != None
+    }
 }

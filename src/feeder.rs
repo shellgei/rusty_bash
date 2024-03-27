@@ -30,7 +30,7 @@ impl Feeder {
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = if core.has_flag('i') {
             panic!("インタラクティブですよ")
-        }else{ 
+        }else{
             Self::read_line_stdin()
         };
 
@@ -42,5 +42,5 @@ impl Feeder {
             },
             Err(e) => Err(e),
         }
-    } 
+    }
 }
