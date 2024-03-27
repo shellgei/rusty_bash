@@ -7,20 +7,14 @@ pub struct ShellCore {
     flags: String,
 }
 
-fn is_interactive() -> bool {
-    match unistd::isatty(0) {
-        Ok(result) => result,
-        Err(err) => panic!("{}", err),
-    }
-}
-
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore {
             flags: String::new(),
         };
 
-        if is_interactive() {
+        if unistd::isatty(0)
+                   .expect("sush: isatty error") {
             core.flags += "i";
         }
 
