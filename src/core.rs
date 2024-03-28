@@ -20,7 +20,8 @@ impl ShellCore {
 
         if unistd::isatty(0) == Ok(true) {
             core.flags += "i";
-            core.set_param("PS1", "🍣");
+            core.set_param("PS1", "🍣 ");
+            core.set_param("PS2", "> ");
         }
 
         core
