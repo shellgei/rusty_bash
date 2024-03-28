@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::core::ShellCore;
-use crate::terminal::Terminal;
 use std::io;
 
 pub enum InputError {
@@ -11,15 +10,11 @@ pub enum InputError {
 
 pub struct Feeder {
     remaining: String,
-    term: Option<Terminal>,
 }
 
 impl Feeder {
-    pub fn new(core: &ShellCore) -> Feeder {
-        Feeder {
-            remaining: String::new(),
-            term: if core.has_flag('i') { Some(Terminal::new()) } else { None },
-        }
+    pub fn new() -> Feeder {
+        Feeder { remaining: String::new(), }
     }
 
     fn read_line_stdin() -> Result<String, InputError> {
@@ -33,9 +28,10 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = match self.term.as_mut() {
-            Some(t) => {let _ = t.read_line_normal(core); Self::read_line_stdin()},
-            _ => Self::read_line_stdin(),
+        let line = if core.has_flag('i') {
+            panic!("インタラクティブですよ")
+        }else{
+            Self::read_line_stdin()
         };
 
         match line {

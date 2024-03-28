@@ -3,7 +3,6 @@
 
 mod core;
 mod feeder;
-mod terminal;
 
 use crate::core::ShellCore;
 use crate::feeder::{InputError, Feeder};
@@ -32,7 +31,7 @@ fn main() {
 }
 
 fn main_loop(core: &mut ShellCore) {
-    let mut feeder = Feeder::new(core);
+    let mut feeder = Feeder::new();
     loop {
         match feeder.feed_line(core) {
             Ok(()) => {},
