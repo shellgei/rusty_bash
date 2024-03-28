@@ -15,13 +15,13 @@ impl Terminal {
         }
     }
 
-    fn prompt_normal(&mut self, _core: &mut ShellCore) -> u16 {
-        const PROMPT: &str = "🍣";
+    fn prompt_normal(&mut self, core: &mut ShellCore) -> usize {
+        let prompt = core.get_param_ref("PS1");
     
-        print!("{} ", PROMPT);
+        print!("{} ", prompt);
         io::stdout().flush().unwrap();
     
-        (UnicodeWidthStr::width(PROMPT) + 1 ) as u16 
+        UnicodeWidthStr::width(prompt) + 1
     }
 
     pub fn read_line_normal(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
