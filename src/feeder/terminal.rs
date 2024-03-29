@@ -4,6 +4,7 @@
 use crate::{InputError, ShellCore};
 use std::io;
 use std::io::{Write, Stdout};
+use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
@@ -35,6 +36,9 @@ impl Terminal {
     pub fn insert(&mut self, c: &char) {
         self.chars[self.insert_point_y].insert(self.insert_point_x, *c);
         self.insert_point_x += 1;
+        write!(self.stdout, "{}", *c).unwrap();
+        self.stdout.flush().unwrap();
+        //eprintln!("{:?}", self.stdout.cursor_pos().unwrap());
     }
 
     pub fn get_string(&self) -> String {
@@ -55,15 +59,15 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 write!(term.stdout, "^C\r\n").unwrap();
                 return Err(InputError::Interrupt);
             },
-            event::Key::Char('\n') => {
-                write!(term.stdout, "\r\n").unwrap();
-                break;
-            },
             event::Key::Char(c) => {
                 term.insert(c);
+                if *c == '\n' {
+                    break;
+                }
             },
             _  => {},
         }
     }
+    write!(term.stdout, "\r").unwrap();
     Ok(term.get_string())
 }
