@@ -4,7 +4,6 @@
 use crate::{InputError, ShellCore};
 use std::io;
 use std::io::{Write, Stdout};
-use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
@@ -13,9 +12,8 @@ use unicode_width::UnicodeWidthStr;
 struct Terminal {
     prompt_len: usize,
     stdout: RawTerminal<Stdout>,
-    chars: Vec<Vec<char>>,
-    insert_point_x: usize,
-    insert_point_y: usize,
+    chars: Vec<char>,
+    insert_point: usize,
 }
 
 impl Terminal {
@@ -27,27 +25,21 @@ impl Terminal {
         Terminal {
             prompt_len: UnicodeWidthStr::width(prompt),
             stdout: io::stdout().into_raw_mode().unwrap(),
-            chars: vec![vec![]],
-            insert_point_x: 0,
-            insert_point_y: 0,
+            chars: vec![],
+            insert_point: 0,
         }
     }
 
     pub fn insert(&mut self, c: &char) {
-        self.chars[self.insert_point_y].insert(self.insert_point_x, *c);
-        self.insert_point_x += 1;
+        self.chars.insert(self.insert_point, *c);
+        self.insert_point += 1;
         write!(self.stdout, "{}", *c).unwrap();
         self.stdout.flush().unwrap();
         //eprintln!("{:?}", self.stdout.cursor_pos().unwrap());
     }
 
     pub fn get_string(&self) -> String {
-        let mut ans = String::new();
-        for line in &self.chars {
-            ans.push_str(&line.iter().collect::<String>());
-            ans.push_str("<br>\n"); //デバッグ用
-        }
-        ans
+        self.chars.iter().collect::<String>()
     }
 }
 
