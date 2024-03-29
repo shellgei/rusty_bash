@@ -31,7 +31,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut term = Terminal::new(core, prompt);
 
     for c in io::stdin().keys() {
-        match &c.as_ref().unwrap() {
+        match c.as_ref().unwrap() {
             event::Key::Ctrl('c') => {
                 write!(term.stdout, "^C\r\n").unwrap();
                 return Err(InputError::Interrupt);
