@@ -10,8 +10,11 @@ use termion::input::TermRead;
 use unicode_width::UnicodeWidthStr;
 
 struct Terminal {
-    pub prompt_len: usize,
-    pub stdout: RawTerminal<Stdout>,
+    prompt_len: usize,
+    stdout: RawTerminal<Stdout>,
+    chars: Vec<Vec<char>>,
+    insert_point_x: usize,
+    insert_point_y: usize,
 }
 
 impl Terminal {
@@ -23,7 +26,23 @@ impl Terminal {
         Terminal {
             prompt_len: UnicodeWidthStr::width(prompt),
             stdout: io::stdout().into_raw_mode().unwrap(),
+            chars: vec![vec![]],
+            insert_point_x: 0,
+            insert_point_y: 0,
         }
+    }
+
+    pub fn insert(&mut self, c: &char) {
+        self.chars[self.insert_point_y].insert(self.insert_point_x, *c);
+        self.insert_point_x += 1;
+    }
+
+    pub fn get_string(&self) -> String {
+        let mut ans = String::new();
+        for line in &self.chars {
+            ans.push_str(&line.iter().collect::<String>());
+        }
+        ans
     }
 }
 
@@ -40,8 +59,11 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 write!(term.stdout, "\r\n").unwrap();
                 break;
             },
+            event::Key::Char(c) => {
+                term.insert(c);
+            },
             _  => {},
         }
     }
-    Ok(String::new())
+    Ok(term.get_string())
 }
