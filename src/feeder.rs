@@ -30,7 +30,7 @@ impl Feeder {
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         if core.has_flag('i') {
-            print!("🍣 ");
+            print!("{}", core.get_param_ref("PS1"));
             let _ = io::stdout().flush();
         }
 
