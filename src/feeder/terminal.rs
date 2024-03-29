@@ -35,7 +35,6 @@ impl Terminal {
         self.insert_point += 1;
         write!(self.stdout, "{}", *c).unwrap();
         self.stdout.flush().unwrap();
-        //eprintln!("{:?}", self.stdout.cursor_pos().unwrap());
     }
 
     pub fn get_string(&self) -> String {
