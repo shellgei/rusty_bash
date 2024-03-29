@@ -4,11 +4,10 @@
 use crate::{InputError, ShellCore};
 use std::io;
 use std::io::{Write, Stdout};
-use unicode_width::UnicodeWidthStr;
-
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
+use unicode_width::UnicodeWidthStr;
 
 pub struct Terminal {
     pub prompt_len: usize,
@@ -16,8 +15,8 @@ pub struct Terminal {
 }
 
 impl Terminal {
-    pub fn new(core: &mut ShellCore, mode: &str) -> Terminal {
-        let prompt = core.get_param_ref(mode);
+    pub fn new(core: &mut ShellCore, ps: &str) -> Terminal {
+        let prompt = core.get_param_ref(ps);
         print!("{} ", prompt);
         io::stdout().flush().unwrap();
         let prompt_len = UnicodeWidthStr::width(prompt);
