@@ -40,7 +40,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 return Err(InputError::Interrupt);
             },
             event::Key::Char('\n') => {
-                write!(term.stdout, "\r\n").unwrap();
                 break;
             },
             _  => {},
