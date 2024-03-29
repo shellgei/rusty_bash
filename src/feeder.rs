@@ -34,7 +34,7 @@ impl Feeder {
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = match self.term.as_mut() {
-            Some(t) => {let _ = t.read_line_normal(core); Self::read_line_stdin()},
+            Some(t) => {t.show_prompt(core, "PS1"); Self::read_line_stdin()},
             _ => Self::read_line_stdin(),
         };
 
