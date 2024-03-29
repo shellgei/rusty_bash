@@ -3,7 +3,7 @@
 
 use crate::{InputError, ShellCore};
 use std::io;
-use std::io::{Write, stdout, stdin, Stdout};
+use std::io::{Write, Stdout};
 use unicode_width::UnicodeWidthStr;
 
 use termion::event;
@@ -24,7 +24,7 @@ impl Terminal {
 
         Terminal {
             prompt_len: prompt_len,
-            stdout: stdout().into_raw_mode().unwrap(),
+            stdout: io::stdout().into_raw_mode().unwrap(),
         }
     }
 
@@ -33,7 +33,7 @@ impl Terminal {
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
 
-    for c in stdin().keys() {
+    for c in io::stdin().keys() {
         match &c.as_ref().unwrap() {
             event::Key::Ctrl('c') => {
                 write!(term.stdout, "^C\r\n").unwrap();
