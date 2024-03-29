@@ -10,8 +10,8 @@ use termion::input::TermRead;
 use unicode_width::UnicodeWidthStr;
 
 struct Terminal {
-    pub prompt_len: usize,
-    pub stdout: RawTerminal<Stdout>,
+    prompt_len: usize,
+    stdout: RawTerminal<Stdout>,
 }
 
 impl Terminal {
