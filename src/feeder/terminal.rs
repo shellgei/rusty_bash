@@ -32,7 +32,7 @@ impl Terminal {
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
-     
+
     for c in stdin().keys() {
         match &c.as_ref().unwrap() {
             event::Key::Ctrl('c') => {
@@ -43,10 +43,8 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 write!(term.stdout, "\r\n").unwrap();
                 break;
             },
-            _  => {}, 
+            _  => {},
         }
-
-    }   
-
+    }
     Ok("\n".to_string())
 }
