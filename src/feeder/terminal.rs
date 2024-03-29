@@ -15,7 +15,7 @@ struct Terminal {
 }
 
 impl Terminal {
-    pub fn new(core: &mut ShellCore, ps: &str) -> Terminal {
+    pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let prompt = core.get_param_ref(ps);
         print!("{} ", prompt);
         io::stdout().flush().unwrap();
