@@ -3,6 +3,7 @@
 
 use crate::core::ShellCore;
 use std::io;
+use std::io::Write;
 
 pub enum InputError {
     Eof,
@@ -28,13 +29,12 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = if core.has_flag('i') {
-            panic!("インタラクティブですよ")
-        }else{
-            Self::read_line_stdin()
-        };
+        if core.has_flag('i') {
+            print!("🍣 ");
+            let _ = io::stdout().flush();
+        }
 
-        match line {
+        match Self::read_line_stdin() {
             Ok(ln) => {
                 self.remaining = ln;
                 print!("{}", &self.remaining);
