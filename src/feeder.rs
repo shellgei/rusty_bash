@@ -31,7 +31,7 @@ impl Feeder {
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         if core.has_flag('i') {
             print!("🍣 ");
-            let _ = io::stdout().flush();
+            io::stdout().flush().unwrap();
         }
 
         match Self::read_line_stdin() {
