@@ -45,8 +45,18 @@ impl Terminal {
         let mut ans = String::new();
         for line in &self.chars {
             ans.push_str(&line.iter().collect::<String>());
+            ans.push_str("<br>\n"); //デバッグ用
         }
         ans
+    }
+
+    fn move_cursor(&mut self, inc: i32) {
+        let new_x = self.insert_point_x as i32 + inc;
+        self.insert_point_x = if new_x < 0 {
+            0 
+        }else{
+            new_x as usize
+        };
     }
 }
 
@@ -65,6 +75,8 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                     break;
                 }
             },
+            event::Key::Left  => term.move_cursor(-1),
+            event::Key::Right => term.move_cursor(1),
             _  => {},
         }
     }
