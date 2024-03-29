@@ -19,10 +19,9 @@ impl Terminal {
         let prompt = core.get_param_ref(ps);
         print!("{} ", prompt);
         io::stdout().flush().unwrap();
-        let prompt_len = UnicodeWidthStr::width(prompt);
 
         Terminal {
-            prompt_len: prompt_len,
+            prompt_len: UnicodeWidthStr::width(prompt),
             stdout: io::stdout().into_raw_mode().unwrap(),
         }
     }
