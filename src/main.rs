@@ -3,7 +3,6 @@
 
 mod core;
 mod feeder;
-mod terminal;
 
 use crate::core::ShellCore;
 use crate::feeder::{InputError, Feeder};

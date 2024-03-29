@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod terminal;
+
 use crate::core::ShellCore;
-use crate::terminal;
 use std::io;
 
 pub enum InputError {
