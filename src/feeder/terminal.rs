@@ -45,6 +45,7 @@ impl Terminal {
         let mut ans = String::new();
         for line in &self.chars {
             ans.push_str(&line.iter().collect::<String>());
+            ans.push_str("<br>\n"); //デバッグ用
         }
         ans
     }
