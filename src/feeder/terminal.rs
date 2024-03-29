@@ -26,7 +26,6 @@ impl Terminal {
             stdout: io::stdout().into_raw_mode().unwrap(),
         }
     }
-
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
