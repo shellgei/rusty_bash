@@ -2,24 +2,21 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::core::ShellCore;
-use crate::terminal::Terminal;
+use crate::terminal;
 use std::io;
 
 pub enum InputError {
     Eof,
+    Interrupt,
 }
 
 pub struct Feeder {
     remaining: String,
-    term: Option<Terminal>,
 }
 
 impl Feeder {
-    pub fn new(core: &ShellCore) -> Feeder {
-        Feeder {
-            remaining: String::new(),
-            term: if core.has_flag('i') { Some(Terminal::new()) } else { None },
-        }
+    pub fn new() -> Feeder {
+        Feeder { remaining: String::new(), }
     }
 
     fn read_line_stdin() -> Result<String, InputError> {
@@ -33,9 +30,9 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = match self.term.as_mut() {
-            Some(t) => {t.show_prompt(core, "PS1"); Self::read_line_stdin()},
-            _ => Self::read_line_stdin(),
+        let line = match core.has_flag('i') {
+            true  => terminal::read_line(core, "PS1"),
+            false => Self::read_line_stdin(),
         };
 
         match line {

@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 nix = {version = "0.28.0", features = ["fs"] }
 unicode-width = "0.1.11"
+termion = "3.0.0"
