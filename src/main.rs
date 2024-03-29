@@ -36,7 +36,7 @@ fn main_loop(core: &mut ShellCore) {
         match feeder.feed_line(core) {
             Ok(()) => {},
             Err(InputError::Eof) => break,
-            Err(InputError::Interrupt) => break,
+            Err(InputError::Interrupt) => {},
         }
     }
 }

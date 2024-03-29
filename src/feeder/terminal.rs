@@ -9,7 +9,7 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthStr;
 
-pub struct Terminal {
+struct Terminal {
     pub prompt_len: usize,
     pub stdout: RawTerminal<Stdout>,
 }
