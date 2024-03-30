@@ -10,12 +10,6 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthStr;
 
-fn goto(pos: (usize, usize)) -> String {
-    termion::cursor::Goto(
-        pos.0.try_into().unwrap(),
-        pos.1.try_into().unwrap()
-    ).to_string()
-}
 
 struct Terminal {
     prompt: String,
@@ -28,8 +22,6 @@ struct Terminal {
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let prompt = core.get_param_ref(ps);
-        print!("{}", prompt);
-        io::stdout().flush().unwrap();
 
         let mut term = Terminal {
             prompt: prompt.to_string(),
@@ -39,6 +31,8 @@ impl Terminal {
             original_row: 0,
         };
 
+        print!("{}", prompt);
+        term.flush();
         term.original_row = term.stdout.cursor_pos().unwrap().1 as usize;
 
         term
@@ -49,22 +43,33 @@ impl Terminal {
         let x = UnicodeWidthStr::width(s.as_str()) + 1;
         (x, self.original_row)
     }
+
+    fn goto(&mut self, char_pos: usize) {
+        let pos = self.cursor_pos(char_pos);
+        self.write(
+            &termion::cursor::Goto(
+                pos.0.try_into().unwrap(),
+                pos.1.try_into().unwrap()
+            ).to_string()
+        );
+    }
     
     fn write(&mut self, s: &str) {
         write!(self.stdout, "{}", s).unwrap();
+    }
+
+    fn flush(&mut self) {
+        self.stdout.flush().unwrap();
     }
 
     pub fn insert(&mut self, c: char) {
         self.chars.insert(self.insert_pos, c);
         self.insert_pos += 1;
 
-        let prompt_pos = self.cursor_pos(self.prompt.chars().count());
-        let pos = self.cursor_pos(self.insert_pos);
-
-        self.write(&goto(prompt_pos));
+        self.goto(self.prompt.chars().count());
         self.write(&self.get_string());
-        self.write(&goto(pos));
-        self.stdout.flush().unwrap();
+        self.goto(self.insert_pos);
+        self.flush();
     }
 
     pub fn get_string(&self) -> String {
@@ -74,9 +79,8 @@ impl Terminal {
 
     pub fn goto_origin(&mut self) {
         self.insert_pos = self.prompt.chars().count();
-        let pos = self.cursor_pos(self.insert_pos);
-        write!(self.stdout, "{}", goto(pos)).unwrap();
-        self.stdout.flush().unwrap();
+        self.goto(self.insert_pos);
+        self.flush();
     }
 }
 
