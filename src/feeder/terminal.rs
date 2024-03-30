@@ -80,12 +80,43 @@ impl Terminal {
         self.goto(self.insert_pos);
         self.flush();
     }
+
+    fn count_lines(&self) -> usize {
+        let (col, _) = termion::terminal_size().unwrap();
+
+        let mut len = 0;
+        let mut lines = 1;
+        for c in &self.chars {
+            let x = UnicodeWidthStr::width(c.to_string().as_str());
+            if len + x > col as usize {
+                lines += 1;
+                len = x;
+            } else {
+                len += x;
+            }
+        }
+        lines
+    }
+
+    pub fn check_scroll(&mut self) {
+        /*
+       eprintln!("{:?}", &self.original_row);
+       eprintln!("{:?}", termion::terminal_size().unwrap());
+       */
+       let lines = self.count_lines();
+//       eprintln!("{:?}", &lines);
+        let (_, row) = termion::terminal_size().unwrap();
+
+       self.original_row = row as usize - lines + 1;
+    }
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
 
     for c in io::stdin().keys() {
+        term.check_scroll();
+
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('c') => {
