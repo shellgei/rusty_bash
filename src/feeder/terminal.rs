@@ -8,6 +8,7 @@ use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
+use unicode_width::UnicodeWidthStr;
 
 struct Terminal {
     prompt: String,
@@ -38,6 +39,13 @@ impl Terminal {
         term
     }
 
+    fn cursor_pos(&self) -> (u16, u16) {
+        let s = self.chars[..self.insert_pos].iter().collect::<String>();
+        let x = UnicodeWidthStr::width(&s[0..]) + 1;
+
+        (x.try_into().unwrap(), self.y0)
+    }
+
     pub fn insert(&mut self, c: char) {
         self.chars.insert(self.insert_pos, c);
         self.insert_pos += 1;
@@ -45,9 +53,12 @@ impl Terminal {
         if self.insert_pos == self.chars.len() {
             write!(self.stdout, "{}", c).unwrap();
         }else{
-            write!(self.stdout, "{}{}",
+            let pos = self.cursor_pos();
+
+            write!(self.stdout, "{}{}{}",
                    termion::cursor::Goto(self.x0, self.y0),
                    self.get_string(),
+                   termion::cursor::Goto(pos.0, pos.1),
             ).unwrap();
         }
 
@@ -61,6 +72,10 @@ impl Terminal {
 
     pub fn goto_origin(&mut self) {
         self.insert_pos = self.prompt.chars().count();
+        write!(self.stdout, "{}",
+               termion::cursor::Goto(self.x0, self.y0),
+        ).unwrap();
+        self.stdout.flush().unwrap();
     }
 }
 
