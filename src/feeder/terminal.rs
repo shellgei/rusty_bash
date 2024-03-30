@@ -30,10 +30,10 @@ impl Terminal {
         }
     }
 
-    pub fn insert(&mut self, c: &char) {
-        self.chars.insert(self.insert_point, *c);
+    pub fn insert(&mut self, c: char) {
+        self.chars.insert(self.insert_point, c);
         self.insert_point += 1;
-        write!(self.stdout, "{}", *c).unwrap();
+        write!(self.stdout, "{}", c).unwrap();
         self.stdout.flush().unwrap();
     }
 
@@ -52,7 +52,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 return Err(InputError::Interrupt);
             },
             event::Key::Char(c) => {
-                term.insert(c);
+                term.insert(*c);
                 if *c == '\n' {
                     break;
                 }
