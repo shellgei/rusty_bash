@@ -46,7 +46,7 @@ impl Terminal {
     }
 
     fn cursor_pos(&self, ins_pos: usize) -> (usize, usize) {
-        let (col, _) = Self::size();
+        let (col, _) = Terminal::size();
         let mut x = 0;
         let mut y = 0;
         for c in &self.chars[..ins_pos] {
@@ -102,29 +102,13 @@ impl Terminal {
     }
 
     fn count_lines(&self) -> usize {
-        /*
-        let (col, _) = Self::size();
-
-        let mut len = 0;
-        let mut lines = 1;
-        for c in &self.chars {
-            let x = Self::char_width(c);
-            if len + x > col {
-                lines += 1;
-                len = x;
-            } else {
-                len += x;
-            }
-        }
-        lines
-        */
         let (_, y) = self.cursor_pos(self.chars.len());
         y + 1 - self.original_row
     }
 
     pub fn check_scroll(&mut self) {
         let lines = self.count_lines();
-        let (_, row) = Self::size();
+        let (_, row) = Terminal::size();
 
         if self.original_row + lines - 1 > row {
             self.original_row = row - lines + 1;
@@ -142,16 +126,16 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('c') => {
                 term.goto(term.chars.len());
-                write!(term.stdout, "^C\r\n").unwrap();
+                term.write("^C\r\n");
                 return Err(InputError::Interrupt);
             },
             event::Key::Ctrl('d') => {
-                write!(term.stdout, "\r\n").unwrap();
+                term.write("\r\n");
                 return Err(InputError::Eof);
             },
             event::Key::Char('\n') => {
                 term.goto(term.chars.len());
-                write!(term.stdout, "\r\n").unwrap();
+                term.write("\r\n");
                 term.chars.push('\n');
                 break;
             },
