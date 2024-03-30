@@ -55,15 +55,15 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 write!(term.stdout, "\r\n").unwrap();
                 return Err(InputError::Eof);
             },
+            event::Key::Char('\n') => {
+                write!(term.stdout, "\r\n").unwrap();
+                break;
+            },
             event::Key::Char(c) => {
                 term.insert(*c);
-                if *c == '\n' {
-                    break;
-                }
             },
             _  => {},
         }
     }
-    write!(term.stdout, "\r").unwrap();
-    Ok(term.get_string())
+    Ok(term.get_string() + "\n")
 }
