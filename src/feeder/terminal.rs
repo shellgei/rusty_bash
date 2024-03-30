@@ -4,6 +4,7 @@
 use crate::{InputError, ShellCore};
 use std::io;
 use std::io::{Write, Stdout};
+use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
@@ -13,6 +14,8 @@ struct Terminal {
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
     insert_pos: usize,
+    x0: u16,
+    y0: u16,
 }
 
 impl Terminal {
@@ -21,18 +24,33 @@ impl Terminal {
         print!("{}", prompt);
         io::stdout().flush().unwrap();
 
-        Terminal {
+        let mut term = Terminal {
             prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
             insert_pos: prompt.chars().count(),
-        }
+            x0: 0,
+            y0: 0,
+        };
+
+        (term.x0, term.y0) = term.stdout.cursor_pos().unwrap();
+
+        term
     }
 
     pub fn insert(&mut self, c: char) {
         self.chars.insert(self.insert_pos, c);
         self.insert_pos += 1;
-        write!(self.stdout, "{}", c).unwrap();
+
+        if self.insert_pos == self.chars.len() {
+            write!(self.stdout, "{}", c).unwrap();
+        }else{
+            write!(self.stdout, "{}{}",
+                   termion::cursor::Goto(self.x0, self.y0),
+                   self.get_string(),
+            ).unwrap();
+        }
+
         self.stdout.flush().unwrap();
     }
 
