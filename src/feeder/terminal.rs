@@ -36,13 +36,22 @@ impl Terminal {
         term
     }
 
+    fn char_width(c: &char) -> usize {
+         UnicodeWidthStr::width(c.to_string().as_str())
+    }
+    
+    fn size() -> (usize, usize) {
+        let (c, r) = termion::terminal_size().unwrap();
+        (c as usize, r as usize)
+    }
+
     fn cursor_pos(&self, ins_pos: usize) -> (usize, usize) {
-        let (col, _) = termion::terminal_size().unwrap();
+        let (col, _) = Self::size();
         let mut x = 0;
         let mut y = 0;
         for c in &self.chars[..ins_pos] {
-            let w = UnicodeWidthStr::width(c.to_string().as_str());
-            if x + w > col as usize {
+            let w = Self::char_width(c);
+            if x + w > col {
                 x = w;
                 y += 1;
             }else{
@@ -61,6 +70,7 @@ impl Terminal {
             ).to_string()
         );
     }
+
     
     fn write(&mut self, s: &str) {
         write!(self.stdout, "{}", s).unwrap();
@@ -92,13 +102,13 @@ impl Terminal {
     }
 
     fn count_lines(&self) -> usize {
-        let (col, _) = termion::terminal_size().unwrap();
+        let (col, _) = Self::size();
 
         let mut len = 0;
         let mut lines = 1;
         for c in &self.chars {
-            let x = UnicodeWidthStr::width(c.to_string().as_str());
-            if len + x > col as usize {
+            let x = Self::char_width(c);
+            if len + x > col {
                 lines += 1;
                 len = x;
             } else {
@@ -110,10 +120,10 @@ impl Terminal {
 
     pub fn check_scroll(&mut self) {
         let lines = self.count_lines();
-        let (_, row) = termion::terminal_size().unwrap();
+        let (_, row) = Self::size();
 
-        if self.original_row + lines - 1 > row as usize {
-            self.original_row = row as usize - lines + 1;
+        if self.original_row + lines - 1 > row {
+            self.original_row = row - lines + 1;
         }
     }
 }
