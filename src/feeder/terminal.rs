@@ -37,8 +37,8 @@ impl Terminal {
     }
 
     pub fn get_string(&self) -> String {
-        let prompt_len = self.prompt.chars().count();
-        self.chars[prompt_len..].iter().collect()
+        let cut = self.prompt.chars().count();
+        self.chars[cut..].iter().collect()
     }
 }
 
