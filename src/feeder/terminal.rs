@@ -4,18 +4,15 @@
 use crate::{InputError, ShellCore};
 use std::io;
 use std::io::{Write, Stdout};
-use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
-use unicode_width::UnicodeWidthStr;
 
 struct Terminal {
-    prompt_len: usize,
+    prompt: String,
     stdout: RawTerminal<Stdout>,
-    chars: Vec<Vec<char>>,
-    insert_point_x: usize,
-    insert_point_y: usize,
+    chars: Vec<char>,
+    insert_pos: usize,
 }
 
 impl Terminal {
@@ -25,38 +22,27 @@ impl Terminal {
         io::stdout().flush().unwrap();
 
         Terminal {
-            prompt_len: UnicodeWidthStr::width(prompt),
+            prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
-            chars: vec![vec![]],
-            insert_point_x: 0,
-            insert_point_y: 0,
+            chars: prompt.chars().collect(),
+            insert_pos: prompt.chars().count(),
         }
     }
 
-    pub fn insert(&mut self, c: &char) {
-        self.chars[self.insert_point_y].insert(self.insert_point_x, *c);
-        self.insert_point_x += 1;
-        write!(self.stdout, "{}", *c).unwrap();
+    pub fn insert(&mut self, c: char) {
+        self.chars.insert(self.insert_pos, c);
+        self.insert_pos += 1;
+        write!(self.stdout, "{}", c).unwrap();
         self.stdout.flush().unwrap();
-        //eprintln!("{:?}", self.stdout.cursor_pos().unwrap());
     }
 
     pub fn get_string(&self) -> String {
-        let mut ans = String::new();
-        for line in &self.chars {
-            ans.push_str(&line.iter().collect::<String>());
-            ans.push_str("<br>\n"); //デバッグ用
-        }
-        ans
+        let cut = self.prompt.chars().count();
+        self.chars[cut..].iter().collect()
     }
 
-    fn move_cursor(&mut self, inc: i32) {
-        let new_x = self.insert_point_x as i32 + inc;
-        self.insert_point_x = if new_x < 0 {
-            0 
-        }else{
-            new_x as usize
-        };
+    pub fn goto_origin(&mut self) {
+        self.insert_pos = self.prompt.chars().count();
     }
 }
 
@@ -65,18 +51,23 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
 
     for c in io::stdin().keys() {
         match c.as_ref().unwrap() {
+            event::Key::Ctrl('a') => {
+                term.goto_origin();
+            },
             event::Key::Ctrl('c') => {
                 write!(term.stdout, "^C\r\n").unwrap();
                 return Err(InputError::Interrupt);
             },
+            event::Key::Ctrl('d') => {
+                write!(term.stdout, "\r\n").unwrap();
+                return Err(InputError::Eof);
+            },
             event::Key::Char(c) => {
-                term.insert(c);
+                term.insert(*c);
                 if *c == '\n' {
                     break;
                 }
             },
-            event::Key::Left  => term.move_cursor(-1),
-            event::Key::Right => term.move_cursor(1),
             _  => {},
         }
     }
