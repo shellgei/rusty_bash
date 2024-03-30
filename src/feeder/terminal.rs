@@ -102,6 +102,7 @@ impl Terminal {
     }
 
     fn count_lines(&self) -> usize {
+        /*
         let (col, _) = Self::size();
 
         let mut len = 0;
@@ -116,6 +117,9 @@ impl Terminal {
             }
         }
         lines
+        */
+        let (_, y) = self.cursor_pos(self.chars.len());
+        y + 1 - self.original_row
     }
 
     pub fn check_scroll(&mut self) {
@@ -137,6 +141,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('c') => {
+                term.goto(term.chars.len());
                 write!(term.stdout, "^C\r\n").unwrap();
                 return Err(InputError::Interrupt);
             },
@@ -145,6 +150,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 return Err(InputError::Eof);
             },
             event::Key::Char('\n') => {
+                term.goto(term.chars.len());
                 write!(term.stdout, "\r\n").unwrap();
                 term.chars.push('\n');
                 break;
