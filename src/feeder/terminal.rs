@@ -123,8 +123,6 @@ impl Terminal {
             self.write(&self.chars.iter().collect::<String>());
             self.goto(self.insert_pos);
             self.flush();
-
-            return;
         }
     }
 }
