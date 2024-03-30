@@ -16,6 +16,7 @@ struct Terminal {
     chars: Vec<char>,
     insert_pos: usize,
     original_row: usize,
+    prev_size: (usize, usize),
 }
 
 impl Terminal {
@@ -27,6 +28,7 @@ impl Terminal {
             chars: prompt.chars().collect(),
             insert_pos: prompt.chars().count(),
             original_row: 0,
+            prev_size: Terminal::size(),
         };
 
         print!("{}", prompt);
@@ -108,8 +110,22 @@ impl Terminal {
 
     pub fn check_scroll(&mut self) {
         let lines = self.count_lines();
-        let (_, row) = Terminal::size();
 
+        if self.prev_size != Terminal::size() {
+            self.prev_size = Terminal::size();
+            let (_, row) = self.stdout.cursor_pos().unwrap();
+            self.original_row = row as usize - lines + 1;
+
+            self.goto(0);
+            write!(self.stdout, "{}", termion::clear::AfterCursor).unwrap();
+            self.write(&self.chars.iter().collect::<String>());
+            self.goto(self.insert_pos);
+            self.flush();
+
+            return;
+        }
+
+        let (_, row) = Terminal::size();
         if self.original_row + lines - 1 > row {
             self.original_row = row - lines + 1;
         }
