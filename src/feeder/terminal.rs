@@ -99,15 +99,12 @@ impl Terminal {
     }
 
     pub fn check_scroll(&mut self) {
-        /*
-       eprintln!("{:?}", &self.original_row);
-       eprintln!("{:?}", termion::terminal_size().unwrap());
-       */
-       let lines = self.count_lines();
-//       eprintln!("{:?}", &lines);
+        let lines = self.count_lines();
         let (_, row) = termion::terminal_size().unwrap();
 
-       self.original_row = row as usize - lines + 1;
+        if self.original_row + lines - 1 > row as usize {
+            self.original_row = row as usize - lines + 1;
+        }
     }
 }
 
