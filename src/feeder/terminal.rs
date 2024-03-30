@@ -57,6 +57,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             event::Key::Char('\n') => {
                 write!(term.stdout, "\r\n").unwrap();
+                term.chars.push('\n');
                 break;
             },
             event::Key::Char(c) => {
@@ -65,5 +66,5 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             _  => {},
         }
     }
-    Ok(term.get_string() + "\n")
+    Ok(term.get_string())
 }
