@@ -10,12 +10,20 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthStr;
 
+fn goto(pos: (usize, usize)) -> String {
+    termion::cursor::Goto(
+        pos.0.try_into().unwrap(),
+        pos.1.try_into().unwrap()
+    ).to_string()
+}
+
+
 struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
     insert_pos: usize,
-    prompt_row: u16,
+    prompt_row: usize,
 }
 
 impl Terminal {
@@ -32,16 +40,16 @@ impl Terminal {
             prompt_row: 0,
         };
 
-        term.prompt_row = term.stdout.cursor_pos().unwrap().1;
+        term.prompt_row = term.stdout.cursor_pos().unwrap().1 as usize;
 
         term
     }
 
-    fn cursor_pos(&self, ins_pos: usize) -> (u16, u16) {
+    fn cursor_pos(&self, ins_pos: usize) -> (usize, usize) {
         let s = self.chars[..ins_pos].iter().collect::<String>();
         let x = UnicodeWidthStr::width(&s[0..]) + 1;
 
-        (x.try_into().unwrap(), self.prompt_row)
+        (x, self.prompt_row)
     }
 
     pub fn insert(&mut self, c: char) {
@@ -55,9 +63,7 @@ impl Terminal {
             let pos = self.cursor_pos(self.insert_pos);
 
             write!(self.stdout, "{}{}{}",
-                   termion::cursor::Goto(prompt_pos.0, prompt_pos.1),
-                   self.get_string(),
-                   termion::cursor::Goto(pos.0, pos.1),
+                   goto(prompt_pos), self.get_string(), goto(pos),
             ).unwrap();
         }
 
@@ -72,9 +78,7 @@ impl Terminal {
     pub fn goto_origin(&mut self) {
         self.insert_pos = self.prompt.chars().count();
         let pos = self.cursor_pos(self.insert_pos);
-        write!(self.stdout, "{}",
-               termion::cursor::Goto(pos.0, pos.1),
-        ).unwrap();
+        write!(self.stdout, "{}", goto(pos)).unwrap();
         self.stdout.flush().unwrap();
     }
 }
