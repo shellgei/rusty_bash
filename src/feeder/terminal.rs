@@ -17,7 +17,6 @@ fn goto(pos: (usize, usize)) -> String {
     ).to_string()
 }
 
-
 struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
@@ -47,26 +46,24 @@ impl Terminal {
 
     fn cursor_pos(&self, ins_pos: usize) -> (usize, usize) {
         let s = self.chars[..ins_pos].iter().collect::<String>();
-        let x = UnicodeWidthStr::width(&s[0..]) + 1;
-
+        let x = UnicodeWidthStr::width(s.as_str()) + 1;
         (x, self.prompt_row)
+    }
+    
+    fn write(&mut self, s: &str) {
+        write!(self.stdout, "{}", s).unwrap();
     }
 
     pub fn insert(&mut self, c: char) {
         self.chars.insert(self.insert_pos, c);
         self.insert_pos += 1;
 
-        if self.insert_pos == self.chars.len() {
-            write!(self.stdout, "{}", c).unwrap();
-        }else{
-            let prompt_pos = self.cursor_pos(self.prompt.chars().count());
-            let pos = self.cursor_pos(self.insert_pos);
+        let prompt_pos = self.cursor_pos(self.prompt.chars().count());
+        let pos = self.cursor_pos(self.insert_pos);
 
-            write!(self.stdout, "{}{}{}",
-                   goto(prompt_pos), self.get_string(), goto(pos),
-            ).unwrap();
-        }
-
+        self.write(&goto(prompt_pos));
+        self.write(&self.get_string());
+        self.write(&goto(pos));
         self.stdout.flush().unwrap();
     }
 
