@@ -15,7 +15,7 @@ struct Terminal {
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
     insert_pos: usize,
-    y0: u16,
+    prompt_row: u16,
 }
 
 impl Terminal {
@@ -29,10 +29,10 @@ impl Terminal {
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
             insert_pos: prompt.chars().count(),
-            y0: 0,
+            prompt_row: 0,
         };
 
-        term.y0 = term.stdout.cursor_pos().unwrap().1;
+        term.prompt_row = term.stdout.cursor_pos().unwrap().1;
 
         term
     }
@@ -41,7 +41,7 @@ impl Terminal {
         let s = self.chars[..ins_pos].iter().collect::<String>();
         let x = UnicodeWidthStr::width(&s[0..]) + 1;
 
-        (x.try_into().unwrap(), self.y0)
+        (x.try_into().unwrap(), self.prompt_row)
     }
 
     pub fn insert(&mut self, c: char) {
