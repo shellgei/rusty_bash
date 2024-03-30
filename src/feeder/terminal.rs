@@ -15,7 +15,6 @@ struct Terminal {
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
     insert_pos: usize,
-    x0: u16,
     y0: u16,
 }
 
@@ -30,17 +29,16 @@ impl Terminal {
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
             insert_pos: prompt.chars().count(),
-            x0: 0,
             y0: 0,
         };
 
-        (term.x0, term.y0) = term.stdout.cursor_pos().unwrap();
+        term.y0 = term.stdout.cursor_pos().unwrap().1;
 
         term
     }
 
-    fn cursor_pos(&self) -> (u16, u16) {
-        let s = self.chars[..self.insert_pos].iter().collect::<String>();
+    fn cursor_pos(&self, ins_pos: usize) -> (u16, u16) {
+        let s = self.chars[..ins_pos].iter().collect::<String>();
         let x = UnicodeWidthStr::width(&s[0..]) + 1;
 
         (x.try_into().unwrap(), self.y0)
@@ -53,10 +51,11 @@ impl Terminal {
         if self.insert_pos == self.chars.len() {
             write!(self.stdout, "{}", c).unwrap();
         }else{
-            let pos = self.cursor_pos();
+            let prompt_pos = self.cursor_pos(self.prompt.chars().count());
+            let pos = self.cursor_pos(self.insert_pos);
 
             write!(self.stdout, "{}{}{}",
-                   termion::cursor::Goto(self.x0, self.y0),
+                   termion::cursor::Goto(prompt_pos.0, prompt_pos.1),
                    self.get_string(),
                    termion::cursor::Goto(pos.0, pos.1),
             ).unwrap();
@@ -72,8 +71,9 @@ impl Terminal {
 
     pub fn goto_origin(&mut self) {
         self.insert_pos = self.prompt.chars().count();
+        let pos = self.cursor_pos(self.insert_pos);
         write!(self.stdout, "{}",
-               termion::cursor::Goto(self.x0, self.y0),
+               termion::cursor::Goto(pos.0, pos.1),
         ).unwrap();
         self.stdout.flush().unwrap();
     }
