@@ -22,7 +22,7 @@ struct Terminal {
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
     insert_pos: usize,
-    prompt_row: usize,
+    original_row: usize,
 }
 
 impl Terminal {
@@ -36,10 +36,10 @@ impl Terminal {
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
             insert_pos: prompt.chars().count(),
-            prompt_row: 0,
+            original_row: 0,
         };
 
-        term.prompt_row = term.stdout.cursor_pos().unwrap().1 as usize;
+        term.original_row = term.stdout.cursor_pos().unwrap().1 as usize;
 
         term
     }
@@ -47,7 +47,7 @@ impl Terminal {
     fn cursor_pos(&self, ins_pos: usize) -> (usize, usize) {
         let s = self.chars[..ins_pos].iter().collect::<String>();
         let x = UnicodeWidthStr::width(s.as_str()) + 1;
-        (x, self.prompt_row)
+        (x, self.original_row)
     }
     
     fn write(&mut self, s: &str) {
