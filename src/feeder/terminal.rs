@@ -112,7 +112,12 @@ impl Terminal {
         let lines = self.count_lines();
         let (_, row) = Terminal::size();
         if self.original_row + lines - 1 > row {
-            self.original_row = row - lines + 1;
+            let tmp = row as i32 - lines as i32 + 1;
+            if tmp < 1 {
+                self.original_row = 1;
+            }else {
+                self.original_row = row - lines + 1;
+            }
         }
 
         if self.prev_size != Terminal::size() {
