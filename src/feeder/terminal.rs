@@ -110,11 +110,13 @@ impl Terminal {
 
     pub fn check_scroll(&mut self) {
         let lines = self.count_lines();
+        let (_, row) = Terminal::size();
+        if self.original_row + lines - 1 > row {
+            self.original_row = row - lines + 1;
+        }
 
         if self.prev_size != Terminal::size() {
             self.prev_size = Terminal::size();
-            let (_, row) = self.stdout.cursor_pos().unwrap();
-            self.original_row = row as usize - lines + 1;
 
             self.goto(0);
             write!(self.stdout, "{}", termion::clear::AfterCursor).unwrap();
@@ -124,11 +126,6 @@ impl Terminal {
 
             return;
         }
-
-        let (_, row) = Terminal::size();
-        if self.original_row + lines - 1 > row {
-            self.original_row = row - lines + 1;
-        }
     }
 }
 
@@ -136,8 +133,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut term = Terminal::new(core, prompt);
 
     for c in io::stdin().keys() {
-        term.check_scroll();
-
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('c') => {
@@ -160,6 +155,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             _  => {},
         }
+        term.check_scroll();
     }
     Ok(term.get_string())
 }
