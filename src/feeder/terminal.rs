@@ -10,7 +10,6 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthStr;
 
-
 struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
@@ -22,7 +21,6 @@ struct Terminal {
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let prompt = core.get_param_ref(ps);
-
         let mut term = Terminal {
             prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
