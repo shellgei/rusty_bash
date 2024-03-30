@@ -12,7 +12,7 @@ struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
-    insert_point: usize,
+    insert_pos: usize,
 }
 
 impl Terminal {
@@ -25,13 +25,13 @@ impl Terminal {
             prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
-            insert_point: prompt.chars().count(),
+            insert_pos: prompt.chars().count(),
         }
     }
 
     pub fn insert(&mut self, c: char) {
-        self.chars.insert(self.insert_point, c);
-        self.insert_point += 1;
+        self.chars.insert(self.insert_pos, c);
+        self.insert_pos += 1;
         write!(self.stdout, "{}", c).unwrap();
         self.stdout.flush().unwrap();
     }
