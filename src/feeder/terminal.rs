@@ -7,10 +7,9 @@ use std::io::{Write, Stdout};
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
-use unicode_width::UnicodeWidthStr;
 
 struct Terminal {
-    prompt_len: usize,
+    prompt: String,
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
     insert_point: usize,
@@ -23,10 +22,10 @@ impl Terminal {
         io::stdout().flush().unwrap();
 
         Terminal {
-            prompt_len: UnicodeWidthStr::width(prompt),
+            prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
-            chars: vec![],
-            insert_point: 0,
+            chars: prompt.chars().collect(),
+            insert_point: prompt.chars().count(),
         }
     }
 
@@ -38,7 +37,8 @@ impl Terminal {
     }
 
     pub fn get_string(&self) -> String {
-        self.chars.iter().collect::<String>()
+        let prompt_len = self.prompt.chars().count();
+        self.chars[prompt_len..].iter().collect()
     }
 }
 
