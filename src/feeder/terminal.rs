@@ -37,9 +37,19 @@ impl Terminal {
     }
 
     fn cursor_pos(&self, ins_pos: usize) -> (usize, usize) {
-        let s = self.chars[..ins_pos].iter().collect::<String>();
-        let x = UnicodeWidthStr::width(s.as_str()) + 1;
-        (x, self.original_row)
+        let (col, _) = termion::terminal_size().unwrap();
+        let mut x = 0;
+        let mut y = 0;
+        for c in &self.chars[..ins_pos] {
+            let w = UnicodeWidthStr::width(c.to_string().as_str());
+            if x + w > col as usize {
+                x = w;
+                y += 1;
+            }else{
+                x += w;
+            }
+        }
+        (x + 1, y + self.original_row)
     }
 
     fn goto(&mut self, char_pos: usize) {
