@@ -7,10 +7,9 @@ use std::io::{Write, Stdout};
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
-use unicode_width::UnicodeWidthStr;
 
 struct Terminal {
-    prompt_len: usize,
+    prompt: String,
     stdout: RawTerminal<Stdout>,
 }
 
@@ -21,7 +20,7 @@ impl Terminal {
         io::stdout().flush().unwrap();
 
         Terminal {
-            prompt_len: UnicodeWidthStr::width(prompt),
+            prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
         }
     }
