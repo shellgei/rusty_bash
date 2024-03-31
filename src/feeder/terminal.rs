@@ -14,7 +14,7 @@ struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
-    insert_pos: usize,
+    head: usize,
     original_row: usize,
 }
 
@@ -25,7 +25,7 @@ impl Terminal {
             prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
-            insert_pos: prompt.chars().count(),
+            head: prompt.chars().count(),
             original_row: 0,
         };
 
@@ -81,23 +81,22 @@ impl Terminal {
     }
 
     pub fn insert(&mut self, c: char) {
-        self.chars.insert(self.insert_pos, c);
-        self.insert_pos += 1;
+        self.chars.insert(self.head, c);
+        self.head += 1;
 
-        self.goto(self.prompt.chars().count());
-        self.write(&self.get_string());
-        self.goto(self.insert_pos);
+        self.goto(0);
+        self.write(&self.get_string(0));
+        self.goto(self.head);
         self.flush();
     }
 
-    pub fn get_string(&self) -> String {
-        let cut = self.prompt.chars().count();
-        self.chars[cut..].iter().collect()
+    pub fn get_string(&self, from: usize) -> String {
+        self.chars[from..].iter().collect()
     }
 
     pub fn goto_origin(&mut self) {
-        self.insert_pos = self.prompt.chars().count();
-        self.goto(self.insert_pos);
+        self.head = self.prompt.chars().count();
+        self.goto(self.head);
         self.flush();
     }
 
@@ -145,5 +144,5 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             _  => {},
         }
     }
-    Ok(term.get_string())
+    Ok(term.get_string(term.prompt.chars().count()))
 }
