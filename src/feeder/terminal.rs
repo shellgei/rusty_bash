@@ -70,8 +70,8 @@ impl Terminal {
         (x + 1, y)
     }
 
-    fn goto(&mut self, char_pos: usize) {
-        let pos = self.cursor_pos(char_pos, self.prompt_row);
+    fn goto(&mut self, head: usize) {
+        let pos = self.cursor_pos(head, self.prompt_row);
         let size = Terminal::size();
 
         let x: u16 = std::cmp::min(size.0, pos.0).try_into().unwrap();
