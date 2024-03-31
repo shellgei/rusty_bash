@@ -14,7 +14,6 @@ struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
-    prev_size: (usize, usize),
     head: usize,
     prompt_row: usize,
 }
@@ -28,7 +27,6 @@ impl Terminal {
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
             prompt_row: 0,
-            prev_size: Terminal::size(),
         };
 
         print!("{}", prompt);
@@ -112,16 +110,6 @@ impl Terminal {
             }else{
                 self.prompt_row = 1;
             }
-        }
-
-        if self.prev_size != Terminal::size() {
-            self.prev_size = Terminal::size();
-
-            self.goto(0);
-            write!(self.stdout, "{}", termion::clear::AfterCursor).unwrap();
-            self.write(&self.chars.iter().collect::<String>());
-            self.goto(self.head);
-            self.flush();
         }
     }
 }
