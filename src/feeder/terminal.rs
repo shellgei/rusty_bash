@@ -100,27 +100,28 @@ impl Terminal {
         self.flush();
     }
 
-    pub fn check_row_change(&mut self) {
-        let (_, extra_lines) = self.cursor_pos(self.chars.len(), 0);
-        let (_, row) = Terminal::size();
+    pub fn check_scroll(&mut self) {
+        let extra_lines = self.cursor_pos(self.chars.len(), 0).1;
+        let row = Terminal::size().1;
 
         if self.prompt_row + extra_lines > row {
-            if row > extra_lines {
-                self.prompt_row = row - extra_lines;
-            }else{
-                self.prompt_row = 1;
-            }
+            let tmp = row as i32 - extra_lines as i32;
+            self.prompt_row = std::cmp::max(tmp, 1) as usize;
+        }
+    }
+
+    pub fn check_size_change(&mut self) {
+        if self.prev_size == Terminal::size() {
+            return;
         }
 
-        if self.prev_size != Terminal::size() {
-            self.prev_size = Terminal::size();
+        self.prev_size = Terminal::size();
 
-            self.goto(0);
-            write!(self.stdout, "{}", termion::clear::AfterCursor).unwrap();
-            self.write(&self.chars.iter().collect::<String>());
-            self.goto(self.head);
-            self.flush();
-        }
+        self.goto(0);
+        write!(self.stdout, "{}", termion::clear::AfterCursor).unwrap();
+        self.write(&self.chars.iter().collect::<String>());
+        self.goto(self.head);
+        self.flush();
     }
 }
 
@@ -150,7 +151,8 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             _  => {},
         }
-        term.check_row_change();
+        term.check_scroll();
+        term.check_size_change();
     }
     Ok(term.get_string(term.prompt.chars().count()))
 }
