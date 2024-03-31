@@ -12,7 +12,7 @@ struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
-    insert_pos: usize,
+    head: usize,
 }
 
 impl Terminal {
@@ -25,20 +25,19 @@ impl Terminal {
             prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
-            insert_pos: prompt.chars().count(),
+            head: prompt.chars().count(),
         }
     }
 
     pub fn insert(&mut self, c: char) {
-        self.chars.insert(self.insert_pos, c);
-        self.insert_pos += 1;
+        self.chars.insert(self.head, c);
+        self.head += 1;
         write!(self.stdout, "{}", c).unwrap();
         self.stdout.flush().unwrap();
     }
 
-    pub fn get_string(&self) -> String {
-        let cut = self.prompt.chars().count();
-        self.chars[cut..].iter().collect()
+    pub fn get_string(&self, from: usize) -> String {
+        self.chars[from..].iter().collect()
     }
 }
 
@@ -66,5 +65,5 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             _  => {},
         }
     }
-    Ok(term.get_string())
+    Ok(term.get_string(term.prompt.chars().count()))
 }
