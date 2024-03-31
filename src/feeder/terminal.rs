@@ -105,8 +105,8 @@ impl Terminal {
         let row = Terminal::size().1;
 
         if self.prompt_row + extra_lines > row {
-            let tmp = row as i32 - extra_lines as i32;
-            self.prompt_row = std::cmp::max(tmp, 1) as usize;
+            let ans = row as i32 - extra_lines as i32;
+            self.prompt_row = std::cmp::max(ans, 1) as usize;
         }
     }
 
@@ -114,11 +114,10 @@ impl Terminal {
         if self.prev_size == Terminal::size() {
             return;
         }
-
         self.prev_size = Terminal::size();
 
         self.goto(0);
-        write!(self.stdout, "{}", termion::clear::AfterCursor).unwrap();
+        self.write(&termion::clear::AfterCursor.to_string());
         self.write(&self.chars.iter().collect::<String>());
         self.goto(self.head);
         self.flush();
