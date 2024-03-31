@@ -16,7 +16,6 @@ struct Terminal {
     prompt_row: usize,
     chars: Vec<char>,
     head: usize,
-    prev_exlines: usize,
 }
 
 impl Terminal {
@@ -34,7 +33,6 @@ impl Terminal {
             prompt_row: row as usize,
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
-            prev_exlines: 0,
         }
     }
 
@@ -138,7 +136,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             _  => {},
         }
         term.check_scroll();
-        term.prev_exlines = term.cursor_pos(term.chars.len(), 0).1;
     }
     Ok(term.get_string(term.prompt.chars().count()))
 }
