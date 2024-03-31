@@ -13,27 +13,27 @@ use unicode_width::UnicodeWidthStr;
 struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
+    prompt_row: usize,
     chars: Vec<char>,
     head: usize,
-    prompt_row: usize,
 }
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let prompt = core.get_param_ref(ps);
-        let mut term = Terminal {
+        print!("{}", prompt);
+        io::stdout().flush().unwrap();
+
+        let mut sout = io::stdout().into_raw_mode().unwrap();
+        let row = sout.cursor_pos().unwrap().1;
+
+        Terminal {
             prompt: prompt.to_string(),
-            stdout: io::stdout().into_raw_mode().unwrap(),
+            stdout: sout,
+            prompt_row: row as usize,
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
-            prompt_row: 0,
-        };
-
-        print!("{}", prompt);
-        term.flush();
-        term.prompt_row = term.stdout.cursor_pos().unwrap().1 as usize;
-
-        term
+        }
     }
 
     fn write(&mut self, s: &str) {
@@ -53,16 +53,15 @@ impl Terminal {
         (c as usize, r as usize)
     }
 
-    fn cursor_pos(&self, ins_pos: usize, y_origin: usize) -> (usize, usize) {
-        let (col, _) = Terminal::size();
-        let mut x = 0;
-        let mut y = y_origin;
+    fn cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
+        let col = Terminal::size().0;
+        let (mut x, mut y) = (0, y_origin);
 
-        for c in &self.chars[..ins_pos] {
+        for c in &self.chars[..head] {
             let w = Self::char_width(c);
             if x + w > col {
-                x = w;
                 y += 1;
+                x = w;
             }else{
                 x += w;
             }
@@ -71,14 +70,13 @@ impl Terminal {
         (x + 1, y)
     }
 
-    fn goto(&mut self, char_pos: usize) {
-        let pos = self.cursor_pos(char_pos, self.prompt_row);
-        self.write(
-            &termion::cursor::Goto(
-                pos.0.try_into().unwrap(),
-                pos.1.try_into().unwrap()
-            ).to_string()
-        );
+    fn goto(&mut self, head: usize) {
+        let pos = self.cursor_pos(head, self.prompt_row);
+        let size = Terminal::size();
+
+        let x: u16 = std::cmp::min(size.0, pos.0).try_into().unwrap();
+        let y: u16 = std::cmp::min(size.1, pos.1).try_into().unwrap();
+        self.write(&termion::cursor::Goto(x, y).to_string());
     }
 
     pub fn insert(&mut self, c: char) {
@@ -98,19 +96,6 @@ impl Terminal {
         self.head = self.prompt.chars().count();
         self.goto(self.head);
         self.flush();
-    }
-
-    pub fn check_scroll(&mut self) {
-        let (_, extra_lines) = self.cursor_pos(self.chars.len(), 0);
-        let (_, row) = Terminal::size();
-
-        if self.prompt_row + extra_lines > row {
-            if row > extra_lines {
-                self.prompt_row = row - extra_lines;
-            }else{
-                self.prompt_row = 1;
-            }
-        }
     }
 }
 
