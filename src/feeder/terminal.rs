@@ -85,6 +85,7 @@ impl Terminal {
         self.head += 1;
         self.goto(0);
         self.write(&self.get_string(0));
+        self.goto(self.head);
         self.flush();
     }
 
