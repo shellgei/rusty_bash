@@ -16,6 +16,7 @@ struct Terminal {
     prompt_row: usize,
     chars: Vec<char>,
     head: usize,
+    prev_size: (usize, usize),
 }
 
 impl Terminal {
@@ -33,6 +34,7 @@ impl Terminal {
             prompt_row: row as usize,
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
+            prev_size: Terminal::size(),
         }
     }
 
@@ -97,6 +99,29 @@ impl Terminal {
         self.goto(self.head);
         self.flush();
     }
+
+    pub fn check_row_change(&mut self) {
+        let (_, extra_lines) = self.cursor_pos(self.chars.len(), 0);
+        let (_, row) = Terminal::size();
+
+        if self.prompt_row + extra_lines > row {
+            if row > extra_lines {
+                self.prompt_row = row - extra_lines;
+            }else{
+                self.prompt_row = 1;
+            }
+        }
+
+        if self.prev_size != Terminal::size() {
+            self.prev_size = Terminal::size();
+
+            self.goto(0);
+            write!(self.stdout, "{}", termion::clear::AfterCursor).unwrap();
+            self.write(&self.chars.iter().collect::<String>());
+            self.goto(self.head);
+            self.flush();
+        }
+    }
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
@@ -125,7 +150,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             _  => {},
         }
-        term.check_scroll();
+        term.check_row_change();
     }
     Ok(term.get_string(term.prompt.chars().count()))
 }
