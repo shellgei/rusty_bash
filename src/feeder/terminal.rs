@@ -48,27 +48,9 @@ impl Terminal {
          UnicodeWidthStr::width(c.to_string().as_str())
     }
 
-    fn size() -> (usize, usize) {
-        let (c, r) = termion::terminal_size().unwrap();
-        (c as usize, r as usize)
-    }
-
     fn cursor_pos(&self, ins_pos: usize, y_origin: usize) -> (usize, usize) {
-        let (col, _) = Terminal::size();
-        let mut x = 0;
-        let mut y = y_origin;
-
-        for c in &self.chars[..ins_pos] {
-            let w = Self::char_width(c);
-            if x + w > col {
-                x = w;
-                y += 1;
-            }else{
-                x += w;
-            }
-        }
-
-        (x + 1, y)
+        let x: usize = self.chars[..ins_pos].iter().map(|c| Self::char_width(c)).sum();
+        (x + 1, y_origin)
     }
 
     fn goto(&mut self, char_pos: usize) {
@@ -99,19 +81,6 @@ impl Terminal {
         self.goto(self.head);
         self.flush();
     }
-
-    pub fn check_scroll(&mut self) {
-        let (_, extra_lines) = self.cursor_pos(self.chars.len(), 0);
-        let (_, row) = Terminal::size();
-
-        if self.prompt_row + extra_lines > row {
-            if row > extra_lines {
-                self.prompt_row = row - extra_lines;
-            }else{
-                self.prompt_row = 1;
-            }
-        }
-    }
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
@@ -140,7 +109,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             _  => {},
         }
-        term.check_scroll();
     }
     Ok(term.get_string(term.prompt.chars().count()))
 }
