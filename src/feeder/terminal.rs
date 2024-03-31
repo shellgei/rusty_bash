@@ -60,8 +60,8 @@ impl Terminal {
         for c in &self.chars[..head] {
             let w = Self::char_width(c);
             if x + w > col {
-                x = w;
                 y += 1;
+                x = w;
             }else{
                 x += w;
             }
