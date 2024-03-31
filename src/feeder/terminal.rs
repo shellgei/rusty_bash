@@ -83,10 +83,8 @@ impl Terminal {
     pub fn insert(&mut self, c: char) {
         self.chars.insert(self.head, c);
         self.head += 1;
-
         self.goto(0);
         self.write(&self.get_string(0));
-        self.goto(self.head);
         self.flush();
     }
 
