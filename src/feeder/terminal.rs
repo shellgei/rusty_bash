@@ -15,7 +15,7 @@ struct Terminal {
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
     head: usize,
-    original_row: usize,
+    prompt_row: usize,
 }
 
 impl Terminal {
@@ -26,20 +26,28 @@ impl Terminal {
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
-            original_row: 0,
+            prompt_row: 0,
         };
 
         print!("{}", prompt);
         term.flush();
-        term.original_row = term.stdout.cursor_pos().unwrap().1 as usize;
+        term.prompt_row = term.stdout.cursor_pos().unwrap().1 as usize;
 
         term
+    }
+
+    fn write(&mut self, s: &str) {
+        write!(self.stdout, "{}", s).unwrap();
+    }
+
+    fn flush(&mut self) {
+        self.stdout.flush().unwrap();
     }
 
     fn char_width(c: &char) -> usize {
          UnicodeWidthStr::width(c.to_string().as_str())
     }
-    
+
     fn size() -> (usize, usize) {
         let (c, r) = termion::terminal_size().unwrap();
         (c as usize, r as usize)
@@ -60,7 +68,7 @@ impl Terminal {
         }
 
         if absolute {
-            y += self.original_row;
+            y += self.prompt_row;
         }
 
         (x + 1, y)
@@ -74,15 +82,6 @@ impl Terminal {
                 pos.1.try_into().unwrap()
             ).to_string()
         );
-    }
-
-    
-    fn write(&mut self, s: &str) {
-        write!(self.stdout, "{}", s).unwrap();
-    }
-
-    fn flush(&mut self) {
-        self.stdout.flush().unwrap();
     }
 
     pub fn insert(&mut self, c: char) {
@@ -104,17 +103,16 @@ impl Terminal {
         self.flush();
     }
 
-    fn count_lines(&self) -> usize {
-        let (_, y) = self.cursor_pos(self.chars.len(), false);
-        y + 1
-    }
-
     pub fn check_scroll(&mut self) {
-        let lines = self.count_lines();
+        let (_, extra_lines) = self.cursor_pos(self.chars.len(), false);
         let (_, row) = Terminal::size();
 
-        if self.original_row + lines - 1 > row {
-            self.original_row = row - lines + 1;
+        if self.prompt_row + extra_lines > row {
+            if row > extra_lines {
+                self.prompt_row = row - extra_lines;
+            }else{
+                self.prompt_row = 1;
+            }
         }
     }
 }
