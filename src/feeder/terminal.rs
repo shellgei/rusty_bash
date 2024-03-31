@@ -45,7 +45,7 @@ impl Terminal {
         (c as usize, r as usize)
     }
 
-    fn cursor_pos(&self, ins_pos: usize) -> (usize, usize) {
+    fn cursor_pos(&self, ins_pos: usize, absolute: bool) -> (usize, usize) {
         let (col, _) = Terminal::size();
         let mut x = 0;
         let mut y = 0;
@@ -58,11 +58,16 @@ impl Terminal {
                 x += w;
             }
         }
-        (x + 1, y + self.original_row)
+
+        if absolute {
+            y += self.original_row;
+        }
+
+        (x + 1, y)
     }
 
     fn goto(&mut self, char_pos: usize) {
-        let pos = self.cursor_pos(char_pos);
+        let pos = self.cursor_pos(char_pos, true);
         self.write(
             &termion::cursor::Goto(
                 pos.0.try_into().unwrap(),
@@ -100,8 +105,8 @@ impl Terminal {
     }
 
     fn count_lines(&self) -> usize {
-        let (_, y) = self.cursor_pos(self.chars.len());
-        y + 1 - self.original_row
+        let (_, y) = self.cursor_pos(self.chars.len(), false);
+        y + 1
     }
 
     pub fn check_scroll(&mut self) {
