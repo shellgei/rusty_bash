@@ -14,9 +14,9 @@ struct Terminal {
     prompt: String,
     stdout: RawTerminal<Stdout>,
     chars: Vec<char>,
-    insert_pos: usize,
-    original_row: usize,
     prev_size: (usize, usize),
+    head: usize,
+    prompt_row: usize,
 }
 
 impl Terminal {
@@ -26,31 +26,40 @@ impl Terminal {
             prompt: prompt.to_string(),
             stdout: io::stdout().into_raw_mode().unwrap(),
             chars: prompt.chars().collect(),
-            insert_pos: prompt.chars().count(),
-            original_row: 0,
+            head: prompt.chars().count(),
+            prompt_row: 0,
             prev_size: Terminal::size(),
         };
 
         print!("{}", prompt);
         term.flush();
-        term.original_row = term.stdout.cursor_pos().unwrap().1 as usize;
+        term.prompt_row = term.stdout.cursor_pos().unwrap().1 as usize;
 
         term
+    }
+
+    fn write(&mut self, s: &str) {
+        write!(self.stdout, "{}", s).unwrap();
+    }
+
+    fn flush(&mut self) {
+        self.stdout.flush().unwrap();
     }
 
     fn char_width(c: &char) -> usize {
          UnicodeWidthStr::width(c.to_string().as_str())
     }
-    
+
     fn size() -> (usize, usize) {
         let (c, r) = termion::terminal_size().unwrap();
         (c as usize, r as usize)
     }
 
-    fn cursor_pos(&self, ins_pos: usize) -> (usize, usize) {
+    fn cursor_pos(&self, ins_pos: usize, y_origin: usize) -> (usize, usize) {
         let (col, _) = Terminal::size();
         let mut x = 0;
-        let mut y = 0;
+        let mut y = y_origin;
+
         for c in &self.chars[..ins_pos] {
             let w = Self::char_width(c);
             if x + w > col {
@@ -60,11 +69,12 @@ impl Terminal {
                 x += w;
             }
         }
-        (x + 1, y + self.original_row)
+
+        (x + 1, y)
     }
 
     fn goto(&mut self, char_pos: usize) {
-        let pos = self.cursor_pos(char_pos);
+        let pos = self.cursor_pos(char_pos, self.prompt_row);
         self.write(
             &termion::cursor::Goto(
                 pos.0.try_into().unwrap(),
@@ -73,50 +83,34 @@ impl Terminal {
         );
     }
 
-    
-    fn write(&mut self, s: &str) {
-        write!(self.stdout, "{}", s).unwrap();
-    }
-
-    fn flush(&mut self) {
-        self.stdout.flush().unwrap();
-    }
-
     pub fn insert(&mut self, c: char) {
-        self.chars.insert(self.insert_pos, c);
-        self.insert_pos += 1;
-
-        self.goto(self.prompt.chars().count());
-        self.write(&self.get_string());
-        self.goto(self.insert_pos);
+        self.chars.insert(self.head, c);
+        self.head += 1;
+        self.goto(0);
+        self.write(&self.get_string(0));
+        self.goto(self.head);
         self.flush();
     }
 
-    pub fn get_string(&self) -> String {
-        let cut = self.prompt.chars().count();
-        self.chars[cut..].iter().collect()
+    pub fn get_string(&self, from: usize) -> String {
+        self.chars[from..].iter().collect()
     }
 
     pub fn goto_origin(&mut self) {
-        self.insert_pos = self.prompt.chars().count();
-        self.goto(self.insert_pos);
+        self.head = self.prompt.chars().count();
+        self.goto(self.head);
         self.flush();
     }
 
-    fn count_lines(&self) -> usize {
-        let (_, y) = self.cursor_pos(self.chars.len());
-        y + 1 - self.original_row
-    }
-
     pub fn check_scroll(&mut self) {
-        let lines = self.count_lines();
+        let (_, extra_lines) = self.cursor_pos(self.chars.len(), 0);
         let (_, row) = Terminal::size();
-        if self.original_row + lines - 1 > row {
-            let tmp = row as i32 - lines as i32 + 1;
-            if tmp < 1 {
-                self.original_row = 1;
-            }else {
-                self.original_row = row - lines + 1;
+
+        if self.prompt_row + extra_lines > row {
+            if row > extra_lines {
+                self.prompt_row = row - extra_lines;
+            }else{
+                self.prompt_row = 1;
             }
         }
 
@@ -126,7 +120,7 @@ impl Terminal {
             self.goto(0);
             write!(self.stdout, "{}", termion::clear::AfterCursor).unwrap();
             self.write(&self.chars.iter().collect::<String>());
-            self.goto(self.insert_pos);
+            self.goto(self.head);
             self.flush();
         }
     }
@@ -160,5 +154,5 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         }
         term.check_scroll();
     }
-    Ok(term.get_string())
+    Ok(term.get_string(term.prompt.chars().count()))
 }
