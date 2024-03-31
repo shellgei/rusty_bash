@@ -54,9 +54,8 @@ impl Terminal {
     }
 
     fn cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
-        let (col, _) = Terminal::size();
-        let mut x = 0;
-        let mut y = y_origin;
+        let col = Terminal::size().0;
+        let (mut x, mut y) = (0, y_origin);
 
         for c in &self.chars[..head] {
             let w = Self::char_width(c);
