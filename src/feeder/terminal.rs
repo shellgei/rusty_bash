@@ -118,8 +118,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut term = Terminal::new(core, prompt);
 
     for c in io::stdin().keys() {
-        term.check_scroll();
-
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('c') => {
@@ -142,6 +140,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             _  => {},
         }
+        term.check_scroll();
     }
     Ok(term.get_string(term.prompt.chars().count()))
 }
