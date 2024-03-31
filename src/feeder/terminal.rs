@@ -17,6 +17,7 @@ struct Terminal {
     chars: Vec<char>,
     head: usize,
     prev_size: (usize, usize),
+    prev_exlines: usize,
 }
 
 impl Terminal {
@@ -35,6 +36,7 @@ impl Terminal {
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
             prev_size: Terminal::size(),
+            prev_exlines: 0,
         }
     }
 
@@ -116,6 +118,12 @@ impl Terminal {
         }
         self.prev_size = Terminal::size();
 
+        let ex_lines = self.cursor_pos(self.chars.len(), 0).1;
+        let diff = ex_lines as i32 - self.prev_exlines as i32;
+        if diff >= 0 {
+            self.prompt_row = std::cmp::max(self.prompt_row as i32 - diff, 1) as usize;
+        }
+
         self.goto(0);
         self.write(&termion::clear::AfterCursor.to_string());
         self.write(&self.chars.iter().collect::<String>());
@@ -152,6 +160,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         }
         term.check_scroll();
         term.check_size_change();
+        term.prev_exlines = term.cursor_pos(term.chars.len(), 0).1;
     }
     Ok(term.get_string(term.prompt.chars().count()))
 }
