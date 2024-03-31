@@ -54,8 +54,21 @@ impl Terminal {
     }
 
     fn cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
-        let x: usize = self.chars[..head].iter().map(|c| Self::char_width(c)).sum();
-        (x + 1, y_origin)
+        let (col, _) = Terminal::size();
+        let mut x = 0;
+        let mut y = y_origin;
+
+        for c in &self.chars[..head] {
+            let w = Self::char_width(c);
+            if x + w > col {
+                x = w;
+                y += 1;
+            }else{
+                x += w;
+            }
+        }
+
+        (x + 1, y)
     }
 
     fn goto(&mut self, char_pos: usize) {
