@@ -111,7 +111,7 @@ impl Terminal {
     }
 
     pub fn check_size_change(&mut self) {
-        if self.prev_size != Terminal::size() {
+        if self.prev_size == Terminal::size() {
             return;
         }
 
