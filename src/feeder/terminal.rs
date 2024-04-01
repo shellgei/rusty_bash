@@ -16,6 +16,7 @@ struct Terminal {
     prompt_row: usize,
     chars: Vec<char>,
     head: usize,
+    prev_size: (usize, usize),
 }
 
 impl Terminal {
@@ -33,6 +34,7 @@ impl Terminal {
             prompt_row: row as usize,
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
+            prev_size: Terminal::size(),
         }
     }
 
@@ -107,12 +109,27 @@ impl Terminal {
             self.prompt_row = std::cmp::max(ans, 1) as usize;
         }
     }
+
+    pub fn check_size_change(&mut self) {
+        let size = Terminal::size();
+        if self.prev_size == size {
+            return;
+        }
+
+        let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap();
+        let upper_lines = self.cursor_pos(self.head, 0).1;
+        //print!("{}, {} {}", cur_col, cur_row, upper_lines);
+        //self.flush();
+        self.prompt_row = (cur_row as i32 - upper_lines as i32 ) as usize;
+    }
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
 
     for c in io::stdin().keys() {
+        term.check_size_change();
+
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('c') => {
@@ -136,6 +153,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             _  => {},
         }
         term.check_scroll();
+        term.prev_size = Terminal::size();
     }
     Ok(term.get_string(term.prompt.chars().count()))
 }
