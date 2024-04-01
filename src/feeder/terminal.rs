@@ -53,7 +53,7 @@ impl Terminal {
         (c as usize, r as usize)
     }
 
-    fn to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
+    fn chars_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
         let col = Terminal::size().0;
         let (mut x, mut y) = (0, y_origin);
 
@@ -71,7 +71,7 @@ impl Terminal {
     }
 
     fn goto(&mut self, head: usize) {
-        let pos = self.to_cursor_pos(head, self.prompt_row);
+        let pos = self.chars_to_cursor_pos(head, self.prompt_row);
         let size = Terminal::size();
 
         let x: u16 = std::cmp::min(size.0, pos.0).try_into().unwrap();
