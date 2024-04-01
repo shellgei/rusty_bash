@@ -119,16 +119,7 @@ impl Terminal {
         let cur_row = self.stdout.cursor_pos().unwrap().1;
         let upper_lines = self.cursor_pos(self.head, 0).1;
         let ans = cur_row as i32 - upper_lines as i32;
-        if ans >= 1 {
-            self.prompt_row = ans as usize;
-        }else{
-            self.prompt_row = 1;
-            self.write(&termion::clear::All.to_string());
-            self.goto(0);
-            self.write(&self.get_string(0));
-            self.goto(self.head);
-            self.flush();
-        }
+        self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 }
 
