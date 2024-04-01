@@ -117,8 +117,8 @@ impl Terminal {
         self.prev_size = Terminal::size();
 
         let cur_row = self.stdout.cursor_pos().unwrap().1;
-        let upper_lines = self.head_to_cursor_pos(self.head, 0).1;
-        let ans = cur_row as i32 - upper_lines as i32;
+        let diff = self.head_to_cursor_pos(self.head, 0).1;
+        let ans = cur_row as i32 - diff as i32;
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 }
