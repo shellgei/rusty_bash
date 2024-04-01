@@ -116,11 +116,10 @@ impl Terminal {
             return;
         }
 
-        let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap();
+        let cur_row = self.stdout.cursor_pos().unwrap().1;
         let upper_lines = self.cursor_pos(self.head, 0).1;
-        //print!("{}, {} {}", cur_col, cur_row, upper_lines);
-        //self.flush();
-        self.prompt_row = (cur_row as i32 - upper_lines as i32 ) as usize;
+        let ans = cur_row as i32 - upper_lines as i32;
+        self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 }
 
