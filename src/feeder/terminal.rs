@@ -88,7 +88,7 @@ impl Terminal {
         self.flush();
     }
 
-    pub fn remove(&mut self) {
+    pub fn back_space(&mut self) {
         if self.head <= self.prompt.chars().count() {
             return;
         }
@@ -169,7 +169,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             event::Key::Ctrl('e') => term.goto_end(),
             event::Key::Left => term.shift_cursor(-1),
             event::Key::Right => term.shift_cursor(1),
-            event::Key::Backspace  => term.remove(),
+            event::Key::Backspace  => term.back_space(),
             event::Key::Char('\n') => {
                 term.goto(term.chars.len());
                 term.write("\r\n");
