@@ -114,6 +114,7 @@ impl Terminal {
         if self.prev_size == Terminal::size() {
             return;
         }
+        self.prev_size = Terminal::size();
 
         let cur_row = self.stdout.cursor_pos().unwrap().1;
         let upper_lines = self.head_to_cursor_pos(self.head, 0).1;
@@ -151,7 +152,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             _  => {},
         }
         term.check_scroll();
-        term.prev_size = Terminal::size();
     }
     Ok(term.get_string(term.prompt.chars().count()))
 }
