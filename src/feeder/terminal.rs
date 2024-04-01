@@ -124,6 +124,10 @@ impl Terminal {
         }else{
             self.prompt_row = 1;
             self.write(&termion::clear::All.to_string());
+            self.goto(0);
+            self.write(&self.get_string(0));
+            self.goto(self.head);
+            self.flush();
         }
     }
 }
