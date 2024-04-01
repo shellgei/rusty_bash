@@ -88,40 +88,12 @@ impl Terminal {
         self.flush();
     }
 
-    pub fn remove(&mut self) {
-        if self.head <= self.prompt.chars().count() {
-            return;
-        }
-
-        self.head -= 1;
-        self.chars.remove(self.head);
-        self.goto(0);
-        self.write(&termion::clear::AfterCursor.to_string());
-        self.write(&self.get_string(0));
-        self.goto(self.head);
-        self.flush();
-    }
-
     pub fn get_string(&self, from: usize) -> String {
         self.chars[from..].iter().collect()
     }
 
     pub fn goto_origin(&mut self) {
         self.head = self.prompt.chars().count();
-        self.goto(self.head);
-        self.flush();
-    }
-
-    pub fn goto_end(&mut self) {
-        self.head = self.chars.len();
-        self.goto(self.head);
-        self.flush();
-    }
-
-    pub fn shift_cursor(&mut self, shift: i32) {
-        let head = self.head as i32 + shift;
-        self.head = std::cmp::max(head, self.prompt.chars().count() as i32) as usize;
-        self.head = std::cmp::min(self.head, self.chars.len());
         self.goto(self.head);
         self.flush();
     }
@@ -166,10 +138,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 term.write("\r\n");
                 return Err(InputError::Eof);
             },
-            event::Key::Ctrl('e') => term.goto_end(),
-            event::Key::Left => term.shift_cursor(-1),
-            event::Key::Right => term.shift_cursor(1),
-            event::Key::Backspace  => term.remove(),
             event::Key::Char('\n') => {
                 term.goto(term.chars.len());
                 term.write("\r\n");
