@@ -55,7 +55,7 @@ impl Terminal {
         (c as usize, r as usize)
     }
 
-    fn to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
+    fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
         let col = Terminal::size().0;
         let (mut x, mut y) = (0, y_origin);
 
@@ -73,7 +73,7 @@ impl Terminal {
     }
 
     fn goto(&mut self, head: usize) {
-        let pos = self.to_cursor_pos(head, self.prompt_row);
+        let pos = self.head_to_cursor_pos(head, self.prompt_row);
         let size = Terminal::size();
 
         let x: u16 = std::cmp::min(size.0, pos.0).try_into().unwrap();
@@ -101,7 +101,7 @@ impl Terminal {
     }
 
     pub fn check_scroll(&mut self) {
-        let extra_lines = self.to_cursor_pos(self.chars.len(), 0).1;
+        let extra_lines = self.head_to_cursor_pos(self.chars.len(), 0).1;
         let row = Terminal::size().1;
 
         if self.prompt_row + extra_lines > row {
@@ -117,7 +117,7 @@ impl Terminal {
         }
 
         let cur_row = self.stdout.cursor_pos().unwrap().1;
-        let upper_lines = self.to_cursor_pos(self.head, 0).1;
+        let upper_lines = self.head_to_cursor_pos(self.head, 0).1;
         let ans = cur_row as i32 - upper_lines as i32;
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
