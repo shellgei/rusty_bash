@@ -88,6 +88,14 @@ impl Terminal {
         self.flush();
     }
 
+    pub fn move_cursor(&mut self, shift: i32) {
+        let head = self.head as i32 + shift;
+        self.head = std::cmp::max(head, self.prompt.chars().count() as i32) as usize;
+        self.head = std::cmp::min(self.head, self.chars.len());
+        self.goto(self.head);
+        self.flush();
+    }
+
     pub fn get_string(&self, from: usize) -> String {
         self.chars[from..].iter().collect()
     }
@@ -138,6 +146,8 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 term.write("\r\n");
                 return Err(InputError::Eof);
             },
+            event::Key::Left => term.move_cursor(-1),
+            event::Key::Right => term.move_cursor(1),
             event::Key::Char('\n') => {
                 term.goto(term.chars.len());
                 term.write("\r\n");
