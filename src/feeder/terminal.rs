@@ -127,7 +127,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
 
     for c in io::stdin().keys() {
         term.check_size_change(&mut term_size);
-
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('c') => {
