@@ -16,7 +16,6 @@ struct Terminal {
     prompt_row: usize,
     chars: Vec<char>,
     head: usize,
-    prev_size: (usize, usize),
 }
 
 impl Terminal {
@@ -34,7 +33,6 @@ impl Terminal {
             prompt_row: row as usize,
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
-            prev_size: Terminal::size(),
         }
     }
 
@@ -110,11 +108,11 @@ impl Terminal {
         }
     }
 
-    pub fn check_size_change(&mut self) {
-        if self.prev_size == Terminal::size() {
+    pub fn check_size_change(&mut self, prev_size: &mut (usize, usize)) {
+        if *prev_size == Terminal::size() {
             return;
         }
-        self.prev_size = Terminal::size();
+        *prev_size = Terminal::size();
 
         let cur_row = self.stdout.cursor_pos().unwrap().1;
         let diff = self.head_to_cursor_pos(self.head, 0).1;
@@ -125,9 +123,10 @@ impl Terminal {
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
+    let mut term_size = Terminal::size();
 
     for c in io::stdin().keys() {
-        term.check_size_change();
+        term.check_size_change(&mut term_size);
 
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
