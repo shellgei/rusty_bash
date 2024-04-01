@@ -16,6 +16,8 @@ struct Terminal {
     prompt_row: usize,
     chars: Vec<char>,
     head: usize,
+    hist_ptr: usize,
+    history_buffer: Vec<String>,
 }
 
 impl Terminal {
@@ -33,6 +35,8 @@ impl Terminal {
             prompt_row: row as usize,
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
+            hist_ptr: 0,
+            history_buffer: vec![],
         }
     }
 
@@ -147,6 +151,12 @@ impl Terminal {
         let ans = cur_row as i32 - diff as i32;
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
+
+    pub fn call_history(&mut self, inc: i32, history: &Vec<String>){
+        if self.hist_ptr as i32 + inc < 0 {
+            self.hist_ptr = 0;
+        }
+    }
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
@@ -167,8 +177,10 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 return Err(InputError::Eof);
             },
             event::Key::Ctrl('e') => term.goto_end(),
+            event::Key::Down => term.call_history(-1, &core.history),
             event::Key::Left => term.shift_cursor(-1),
             event::Key::Right => term.shift_cursor(1),
+            event::Key::Up => term.call_history(1, &core.history),
             event::Key::Backspace  => term.back_space(),
             event::Key::Char('\n') => {
                 term.goto(term.chars.len());
