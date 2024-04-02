@@ -86,15 +86,14 @@ impl Terminal {
     pub fn insert(&mut self, c: char) {
         self.chars.insert(self.head, c);
         self.head += 1;
-        self.goto(0);
-        self.write(&self.get_string(0));
-        self.goto(self.head);
-        self.flush();
+        self.rewrite(false);
     }
 
-    fn rewrite(&mut self) {
+    fn rewrite(&mut self, erase: bool) {
         self.goto(0);
-        self.write(&termion::clear::AfterCursor.to_string());
+        if erase {
+            self.write(&termion::clear::AfterCursor.to_string());
+        }
         self.write(&self.get_string(0));
         self.goto(self.head);
         self.flush();
@@ -115,7 +114,7 @@ impl Terminal {
 
         self.head -= 1;
         self.chars.remove(self.head);
-        self.rewrite();
+        self.rewrite(true);
     }
 
     pub fn get_string(&self, from: usize) -> String {
@@ -174,7 +173,7 @@ impl Terminal {
 
         self.chars = self.history_buffer[self.hist_ptr].clone();
         self.head = self.chars.len();
-        self.rewrite();
+        self.rewrite(true);
     }
 }
 
