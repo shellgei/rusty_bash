@@ -162,14 +162,16 @@ impl Terminal {
     }
 
     pub fn call_history(&mut self, inc: i32, history: &mut Vec<Vec<char>>){
-        history[self.hist_ptr] = self.chars.clone();
+        let prompt_len = self.prompt.chars().count();
+        history[self.hist_ptr] = self.chars[prompt_len..].to_vec();
 
-        Self::shift_in_range(&mut self.hist_ptr, inc, 0, history.len());
+        Self::shift_in_range(&mut self.hist_ptr, inc, 0, prompt_len + history.len());
         if self.hist_ptr == history.len() {
-            history.push(self.prompt.chars().collect());
+            history.push(vec![]);
         }
 
-        self.chars = history[self.hist_ptr].clone();
+        self.chars = self.prompt.chars().collect();
+        self.chars.extend(history[self.hist_ptr].clone());
         self.head = self.chars.len();
         self.rewrite(true);
     }
