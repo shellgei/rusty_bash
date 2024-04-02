@@ -34,7 +34,13 @@ fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
         match feeder.feed_line(core) {
-            Ok(()) => {},
+            Ok(()) => {
+                let mut chars: Vec<char> = feeder.remaining.chars().collect();
+                chars.pop();
+                if chars.len() != 0 {
+                    core.history.insert(0, chars);
+                }
+            },
             Err(InputError::Eof) => break,
             Err(InputError::Interrupt) => {},
         }

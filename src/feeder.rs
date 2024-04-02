@@ -12,7 +12,7 @@ pub enum InputError {
 }
 
 pub struct Feeder {
-    remaining: String,
+    pub remaining: String,
 }
 
 impl Feeder {

@@ -161,17 +161,17 @@ impl Terminal {
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 
-    pub fn call_history(&mut self, inc: i32, history: &mut Vec<Vec<char>>){
+    pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
         let prompt_len = self.prompt.chars().count();
-        history[self.hist_ptr] = self.chars[prompt_len..].to_vec();
+        core.history[self.hist_ptr] = self.chars[prompt_len..].to_vec();
 
-        Self::shift_in_range(&mut self.hist_ptr, inc, 0, prompt_len + history.len());
-        if self.hist_ptr == history.len() {
-            history.push(vec![]);
+        Self::shift_in_range(&mut self.hist_ptr, inc, 0, prompt_len + core.history.len());
+        if self.hist_ptr == core.history.len() {
+            core.history.push(vec![]);
         }
 
         self.chars = self.prompt.chars().collect();
-        self.chars.extend(history[self.hist_ptr].clone());
+        self.chars.extend(core.history[self.hist_ptr].clone());
         self.head = self.chars.len();
         self.rewrite(true);
     }
@@ -180,6 +180,7 @@ impl Terminal {
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
+    core.history.insert(0, vec![]);
 
     for c in io::stdin().keys() {
         term.check_size_change(&mut term_size);
@@ -195,10 +196,10 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 return Err(InputError::Eof);
             },
             event::Key::Ctrl('e') => term.goto_end(),
-            event::Key::Down => term.call_history(-1, &mut core.history),
+            event::Key::Down => term.call_history(-1, core),
             event::Key::Left => term.shift_cursor(-1),
             event::Key::Right => term.shift_cursor(1),
-            event::Key::Up => term.call_history(1, &mut core.history),
+            event::Key::Up => term.call_history(1, core),
             event::Key::Backspace  => term.back_space(),
             event::Key::Char('\n') => {
                 term.goto(term.chars.len());
