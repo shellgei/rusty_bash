@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 pub struct ShellCore {
     flags: String,
-    pub history: Vec<String>, 
+    pub history: Vec<String>,
     parameters: HashMap<String, String>,
 }
 

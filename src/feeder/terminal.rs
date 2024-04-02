@@ -57,6 +57,14 @@ impl Terminal {
         (c as usize, r as usize)
     }
 
+    fn shift_in_range(x: &mut usize, shift: i32, min: usize, max: usize) {
+        let after = *x as i32 + shift;
+
+        *x = if      after < min as i32  { min }
+             else if after > max as i32  { max }
+             else                        { after as usize };
+    }
+
     fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
         let col = Terminal::size().0;
         let (mut x, mut y) = (0, y_origin);
@@ -83,12 +91,6 @@ impl Terminal {
         self.write(&termion::cursor::Goto(x, y).to_string());
     }
 
-    pub fn insert(&mut self, c: char) {
-        self.chars.insert(self.head, c);
-        self.head += 1;
-        self.rewrite(false);
-    }
-
     fn rewrite(&mut self, erase: bool) {
         self.goto(0);
         if erase {
@@ -99,12 +101,10 @@ impl Terminal {
         self.flush();
     }
 
-    fn shift_in_range(x: &mut usize, y: i32, min: usize, max: usize) {
-        let after = *x as i32 + y;
-
-        *x = if      after < min as i32  { min }
-             else if after > max as i32  { max }
-             else                       { after as usize };
+    pub fn insert(&mut self, c: char) {
+        self.chars.insert(self.head, c);
+        self.head += 1;
+        self.rewrite(false);
     }
 
     pub fn back_space(&mut self) {
