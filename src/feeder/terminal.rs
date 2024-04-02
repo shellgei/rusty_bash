@@ -17,7 +17,6 @@ struct Terminal {
     chars: Vec<char>,
     head: usize,
     hist_ptr: usize,
-    history_buffer: Vec<Vec<char>>,
 }
 
 impl Terminal {
@@ -36,7 +35,6 @@ impl Terminal {
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
             hist_ptr: 0,
-            history_buffer: vec![vec![]],
         }
     }
 
@@ -163,15 +161,15 @@ impl Terminal {
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 
-    pub fn call_history(&mut self, inc: i32, history: &Vec<String>){
-        self.history_buffer[self.hist_ptr] = self.chars.clone();
+    pub fn call_history(&mut self, inc: i32, history: &mut Vec<Vec<char>>){
+        history[self.hist_ptr] = self.chars.clone();
 
-        Self::shift_in_range(&mut self.hist_ptr, inc, 0, self.history_buffer.len());
-        if self.hist_ptr == self.history_buffer.len() {
-            self.history_buffer.push(self.prompt.chars().collect());
+        Self::shift_in_range(&mut self.hist_ptr, inc, 0, history.len());
+        if self.hist_ptr == history.len() {
+            history.push(self.prompt.chars().collect());
         }
 
-        self.chars = self.history_buffer[self.hist_ptr].clone();
+        self.chars = history[self.hist_ptr].clone();
         self.head = self.chars.len();
         self.rewrite(true);
     }
@@ -195,10 +193,10 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 return Err(InputError::Eof);
             },
             event::Key::Ctrl('e') => term.goto_end(),
-            event::Key::Down => term.call_history(-1, &core.history),
+            event::Key::Down => term.call_history(-1, &mut core.history),
             event::Key::Left => term.shift_cursor(-1),
             event::Key::Right => term.shift_cursor(1),
-            event::Key::Up => term.call_history(1, &core.history),
+            event::Key::Up => term.call_history(1, &mut core.history),
             event::Key::Backspace  => term.back_space(),
             event::Key::Char('\n') => {
                 term.goto(term.chars.len());

@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 pub struct ShellCore {
     flags: String,
-    pub history: Vec<String>,
+    pub history: Vec<Vec<char>>,
     parameters: HashMap<String, String>,
 }
 
@@ -16,7 +16,7 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore {
             flags: String::new(),
-            history: vec!["".to_string()],
+            history: vec![vec![]],
             parameters: HashMap::new(),
         };
 
