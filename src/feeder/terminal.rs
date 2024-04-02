@@ -79,13 +79,20 @@ impl Terminal {
         self.write(&termion::cursor::Goto(x, y).to_string());
     }
 
-    pub fn insert(&mut self, c: char) {
-        self.chars.insert(self.head, c);
-        self.head += 1;
+    fn rewrite(&mut self, erase: bool) {
         self.goto(0);
+        if erase {
+            self.write(&termion::clear::AfterCursor.to_string());
+        }
         self.write(&self.get_string(0));
         self.goto(self.head);
         self.flush();
+    }
+
+    pub fn insert(&mut self, c: char) {
+        self.chars.insert(self.head, c);
+        self.head += 1;
+        self.rewrite(false);
     }
 
     pub fn get_string(&self, from: usize) -> String {
