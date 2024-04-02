@@ -53,6 +53,14 @@ impl Terminal {
         (c as usize, r as usize)
     }
 
+    fn shift_in_range(x: &mut usize, y: i32, min: usize, max: usize) {
+        let after = *x as i32 + y;
+
+        *x = if      after < min as i32  { min }
+             else if after > max as i32  { max }
+             else                       { after as usize };
+    }
+
     fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
         let col = Terminal::size().0;
         let (mut x, mut y) = (0, y_origin);
@@ -79,13 +87,20 @@ impl Terminal {
         self.write(&termion::cursor::Goto(x, y).to_string());
     }
 
-    pub fn insert(&mut self, c: char) {
-        self.chars.insert(self.head, c);
-        self.head += 1;
+    fn rewrite(&mut self, erase: bool) {
         self.goto(0);
+        if erase {
+            self.write(&termion::clear::AfterCursor.to_string());
+        }
         self.write(&self.get_string(0));
         self.goto(self.head);
         self.flush();
+    }
+
+    pub fn insert(&mut self, c: char) {
+        self.chars.insert(self.head, c);
+        self.head += 1;
+        self.rewrite(false);
     }
 
     pub fn back_space(&mut self) {
@@ -95,11 +110,7 @@ impl Terminal {
 
         self.head -= 1;
         self.chars.remove(self.head);
-        self.goto(0);
-        self.write(&termion::clear::AfterCursor.to_string());
-        self.write(&self.get_string(0));
-        self.goto(self.head);
-        self.flush();
+        self.rewrite(true);
     }
 
     pub fn get_string(&self, from: usize) -> String {
@@ -119,9 +130,9 @@ impl Terminal {
     }
 
     pub fn shift_cursor(&mut self, shift: i32) {
-        let head = self.head as i32 + shift;
-        self.head = std::cmp::max(head, self.prompt.chars().count() as i32) as usize;
-        self.head = std::cmp::min(self.head, self.chars.len());
+        Self::shift_in_range(&mut self.head, shift, 
+                             self.prompt.chars().count(),
+                             self.chars.len());
         self.goto(self.head);
         self.flush();
     }
