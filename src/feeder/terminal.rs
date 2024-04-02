@@ -17,7 +17,7 @@ struct Terminal {
     chars: Vec<char>,
     head: usize,
     hist_ptr: usize,
-    history_buffer: Vec<String>,
+    history_buffer: Vec<Vec<char>>,
 }
 
 impl Terminal {
@@ -36,7 +36,7 @@ impl Terminal {
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
             hist_ptr: 0,
-            history_buffer: vec![],
+            history_buffer: vec![vec![]],
         }
     }
 
@@ -92,6 +92,22 @@ impl Terminal {
         self.flush();
     }
 
+    fn rewrite(&mut self) {
+        self.goto(0);
+        self.write(&termion::clear::AfterCursor.to_string());
+        self.write(&self.get_string(0));
+        self.goto(self.head);
+        self.flush();
+    }
+
+    fn shift_in_range(x: &mut usize, y: i32, min: usize, max: usize) {
+        let after = *x as i32 + y;
+
+        *x = if      after < min as i32  { min }
+             else if after > max as i32  { max }
+             else                       { after as usize };
+    }
+
     pub fn back_space(&mut self) {
         if self.head <= self.prompt.chars().count() {
             return;
@@ -99,11 +115,7 @@ impl Terminal {
 
         self.head -= 1;
         self.chars.remove(self.head);
-        self.goto(0);
-        self.write(&termion::clear::AfterCursor.to_string());
-        self.write(&self.get_string(0));
-        self.goto(self.head);
-        self.flush();
+        self.rewrite();
     }
 
     pub fn get_string(&self, from: usize) -> String {
@@ -123,9 +135,9 @@ impl Terminal {
     }
 
     pub fn shift_cursor(&mut self, shift: i32) {
-        let head = self.head as i32 + shift;
-        self.head = std::cmp::max(head, self.prompt.chars().count() as i32) as usize;
-        self.head = std::cmp::min(self.head, self.chars.len());
+        Self::shift_in_range(&mut self.head, shift, 
+                             self.prompt.chars().count(),
+                             self.chars.len());
         self.goto(self.head);
         self.flush();
     }
@@ -153,9 +165,16 @@ impl Terminal {
     }
 
     pub fn call_history(&mut self, inc: i32, history: &Vec<String>){
-        if self.hist_ptr as i32 + inc < 0 {
-            self.hist_ptr = 0;
+        self.history_buffer[self.hist_ptr] = self.chars.clone();
+
+        Self::shift_in_range(&mut self.hist_ptr, inc, 0, self.history_buffer.len());
+        if self.hist_ptr == self.history_buffer.len() {
+            self.history_buffer.push(self.prompt.chars().collect());
         }
+
+        self.chars = self.history_buffer[self.hist_ptr].clone();
+        self.head = self.chars.len();
+        self.rewrite();
     }
 }
 
