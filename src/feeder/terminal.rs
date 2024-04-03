@@ -208,7 +208,14 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         }
         term.check_scroll();
     }
+
     core.history[0] = term.get_string(term.prompt.chars().count());
     core.history[0].pop();
+
+    if core.history[0].len() == 0 
+    || (core.history.len() > 1 && core.history[0] == core.history[1]) {
+        core.history.remove(0);
+    }
+
     Ok(term.get_string(term.prompt.chars().count()))
 }
