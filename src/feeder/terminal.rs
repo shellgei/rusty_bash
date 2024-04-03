@@ -171,8 +171,8 @@ impl Terminal {
             let mut rev_lines = RevLines::new(BufReader::new(hist_file));
             if let Some(Ok(s)) = rev_lines.nth(self.hist_ptr-1) {
                 return s;
-            };
-        };
+            }
+        }
 
         String::new()
     }
