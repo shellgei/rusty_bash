@@ -58,9 +58,11 @@ impl Terminal {
     }
 
     fn shift_in_range(x: &mut usize, shift: i32, min: usize, max: usize) {
-        *x = if      shift < 0 && *x < min + (- shift as usize) { min }
-             else if shift > 0 && *x + (shift as usize) > max   { max }
-             else                      { (*x as i32 + shift) as usize };
+        let after = *x as i32 + shift;
+
+        *x = if      shift < 0 && *x < min + (- shift) as usize { min }
+             else if shift > 0 && *x + shift as usize > max     { max }
+             else                                  { after as usize };
     }
 
     fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
@@ -162,15 +164,12 @@ impl Terminal {
     }
 
     fn fetch_history(&self, core: &mut ShellCore) -> String {
-        if self.hist_ptr == 0 {
-            return String::new();
-        }
-
         let home = core.get_param_ref("HOME");
 
         if let Ok(hist_file) = File::open(home.to_string() + "/.bash_history"){
             let mut rev_lines = RevLines::new(BufReader::new(hist_file));
-            if let Some(Ok(s)) = rev_lines.nth(self.hist_ptr-1) {
+            dbg!("{}, {:?}", self.hist_ptr, &rev_lines.nth(self.hist_ptr));
+            if let Some(Ok(s)) = rev_lines.nth(self.hist_ptr) {
                 return s;
             };
         };

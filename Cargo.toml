@@ -7,3 +7,4 @@ edition = "2021"
 nix = {version = "0.28.0", features = ["fs"] }
 unicode-width = "0.1.11"
 termion = "3.0.0"
+rev_lines = "0.3.0"
