@@ -167,7 +167,6 @@ impl Terminal {
         }
 
         let home = core.get_param_ref("HOME");
-
         if let Ok(hist_file) = File::open(home.to_string() + "/.bash_history"){
             let mut rev_lines = RevLines::new(BufReader::new(hist_file));
             if let Some(Ok(s)) = rev_lines.nth(self.hist_ptr-1) {
