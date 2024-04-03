@@ -2,15 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{InputError, ShellCore};
-use std::fs::File;
 use std::io;
-use std::io::{BufReader, Write, Stdout};
+use std::io::{Write, Stdout};
 use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthStr;
-use rev_lines::RevLines;
 
 struct Terminal {
     prompt: String,
@@ -161,31 +159,11 @@ impl Terminal {
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 
-    fn fetch_history(&self, core: &mut ShellCore) -> String {
-        if self.hist_ptr == 0 {
-            return String::new();
-        }
-
-        let mut line = self.hist_ptr - 1;
-        if let Ok(n) = core.get_param_ref("HISTFILESIZE").parse::<usize>() {
-            line %= n;
-        }
-
-        if let Ok(hist_file) = File::open(core.get_param_ref("HISTFILE")){
-            let mut rev_lines = RevLines::new(BufReader::new(hist_file));
-            if let Some(Ok(s)) = rev_lines.nth(line) {
-                return s;
-            }
-        }
-
-        String::new()
-    }
-
     pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
         Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::usize::MAX);
 
         self.chars = self.prompt.chars().collect();
-        self.chars.extend(self.fetch_history(core).chars());
+        self.chars.extend(core.fetch_history(self.hist_ptr).chars());
         self.head = self.chars.len();
         self.rewrite(true);
     }
