@@ -11,6 +11,7 @@ pub struct ShellCore {
     flags: String,
     parameters: HashMap<String, String>,
     rewritten_history: HashMap<usize, String>,
+    pub history: Vec<String>,
 }
 
 impl ShellCore {
@@ -19,6 +20,7 @@ impl ShellCore {
             flags: String::new(),
             parameters: HashMap::new(),
             rewritten_history: HashMap::new(),
+            history: vec![],
         };
 
         if unistd::isatty(0) == Ok(true) {

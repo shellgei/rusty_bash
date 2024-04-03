@@ -174,6 +174,7 @@ impl Terminal {
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
+    core.history.insert(0, String::new());
 
     for c in io::stdin().keys() {
         term.check_size_change(&mut term_size);
@@ -207,5 +208,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         }
         term.check_scroll();
     }
+    core.history[0] = term.get_string(term.prompt.chars().count());
+    core.history[0].pop();
     Ok(term.get_string(term.prompt.chars().count()))
 }
