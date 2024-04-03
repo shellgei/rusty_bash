@@ -161,7 +161,7 @@ impl Terminal {
 
     pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
         let prev = self.hist_ptr;
-        let prev_str = self.chars[self.prompt.chars().count()..].iter().collect();
+        let prev_str = self.get_string(self.prompt.chars().count());
         Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::usize::MAX);
 
         self.chars = self.prompt.chars().collect();
