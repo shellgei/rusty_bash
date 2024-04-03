@@ -54,11 +54,9 @@ impl Terminal {
     }
 
     fn shift_in_range(x: &mut usize, shift: i32, min: usize, max: usize) {
-        let after = *x as i32 + shift;
-
-        *x = if      after < min as i32  { min }
-             else if after > max as i32  { max }
-             else                        { after as usize };
+        *x = if      shift < 0 && *x < min + (- shift as usize) { min }
+             else if shift > 0 && *x + (shift as usize) > max   { max }
+             else                      { (*x as i32 + shift) as usize };
     }
 
     fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
