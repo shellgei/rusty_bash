@@ -9,6 +9,10 @@ use std::io::BufReader;
 impl ShellCore {
     pub fn fetch_history(&mut self, pos: usize, prev: usize, prev_str: String) -> String {
         self.rewritten_history.insert(prev, prev_str);
+        self.fetch_history_file(pos)
+    }
+
+    pub fn fetch_history_file(&mut self, pos: usize) -> String {
         if let Some(s) = self.rewritten_history.get(&pos) {
             return s.to_string();
         }
