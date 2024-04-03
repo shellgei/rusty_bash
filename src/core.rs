@@ -10,6 +10,7 @@ use std::collections::HashMap;
 pub struct ShellCore {
     flags: String,
     parameters: HashMap<String, String>,
+    rewritten_history: HashMap<usize, String>,
 }
 
 impl ShellCore {
@@ -17,6 +18,7 @@ impl ShellCore {
         let mut core = ShellCore {
             flags: String::new(),
             parameters: HashMap::new(),
+            rewritten_history: HashMap::new(),
         };
 
         if unistd::isatty(0) == Ok(true) {

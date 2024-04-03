@@ -7,7 +7,11 @@ use std::fs::File;
 use std::io::BufReader;
 
 impl ShellCore {
-    pub fn fetch_history(&mut self, pos: usize) -> String {
+    pub fn fetch_history(&mut self, pos: usize, prev: usize, prev_str: String) -> String {
+        self.rewritten_history.insert(prev, prev_str);
+        if let Some(s) = self.rewritten_history.get(&pos) {
+            return s.to_string();
+        }
         if pos == 0 {
             return String::new();
         }
