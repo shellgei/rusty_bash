@@ -163,7 +163,7 @@ impl Terminal {
         Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::usize::MAX);
 
         self.chars = self.prompt.chars().collect();
-        self.chars.extend(core.fetch_history(self.hist_ptr).chars());
+        self.chars.extend(core.fetch_history_file(self.hist_ptr).chars());
         self.head = self.chars.len();
         self.rewrite(true);
     }
