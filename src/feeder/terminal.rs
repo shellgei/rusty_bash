@@ -166,10 +166,14 @@ impl Terminal {
             return String::new();
         }
 
-        let home = core.get_param_ref("HOME");
-        if let Ok(hist_file) = File::open(home.to_string() + "/.bash_history"){
+        let mut line = self.hist_ptr - 1;
+        if let Ok(n) = core.get_param_ref("HISTFILESIZE").parse::<usize>() {
+            line %= n;
+        }
+
+        if let Ok(hist_file) = File::open(core.get_param_ref("HISTFILE")){
             let mut rev_lines = RevLines::new(BufReader::new(hist_file));
-            if let Some(Ok(s)) = rev_lines.nth(self.hist_ptr-1) {
+            if let Some(Ok(s)) = rev_lines.nth(line) {
                 return s;
             }
         }

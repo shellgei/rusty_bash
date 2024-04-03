@@ -24,6 +24,10 @@ impl ShellCore {
             core.set_param("PS2", "> ");
         }
 
+        let home = core.get_param_ref("HOME").to_string();
+        core.set_param("HISTFILE", &(home + "/.bash_history"));
+        core.set_param("HISTFILESIZE", "2000");
+
         core
     }
 
