@@ -58,7 +58,7 @@ impl Terminal {
     fn shift_in_range(x: &mut usize, shift: i32, min: usize, max: usize) {
         *x = if      shift < 0 && *x < min + (- shift as usize) { min }
              else if shift > 0 && *x + (shift as usize) > max   { max }
-             else                      { (*x as i32 + shift) as usize };
+             else           { (*x as isize + shift as isize) as usize };
     }
 
     fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
@@ -212,7 +212,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     core.history[0] = term.get_string(term.prompt.chars().count());
     core.history[0].pop();
 
-    if core.history[0].len() == 0 
+    if core.history[0].len() == 0
     || (core.history.len() > 1 && core.history[0] == core.history[1]) {
         core.history.remove(0);
     }
