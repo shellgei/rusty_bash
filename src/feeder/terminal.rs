@@ -56,6 +56,10 @@ impl Terminal {
     }
 
     fn shift_in_range(x: &mut usize, shift: i32, min: usize, max: usize) {
+        if *x >= std::i32::MAX as usize {
+            panic!("sush: overflow on terminal");
+        }
+
         *x = if      shift < 0 && *x < min + (- shift as usize) { min }
              else if shift > 0 && *x + (shift as usize) > max   { max }
              else                      { (*x as i32 + shift) as usize };
