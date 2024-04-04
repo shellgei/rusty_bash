@@ -58,7 +58,7 @@ impl Terminal {
     fn shift_in_range(x: &mut usize, shift: i32, min: usize, max: usize) {
         *x = if      shift < 0 && *x < min + (- shift as usize) { min }
              else if shift > 0 && *x + (shift as usize) > max   { max }
-             else                      { (*x as i32 + shift) as usize };
+             else                    { (*x as isize + shift) as usize };
     }
 
     fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
@@ -162,7 +162,7 @@ impl Terminal {
     pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
         let prev = self.hist_ptr;
         let prev_str = self.get_string(self.prompt.chars().count());
-        Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::i32::MAX as usize);
+        Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::isize::MAX as usize);
 
         self.chars = self.prompt.chars().collect();
         self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str).chars());
