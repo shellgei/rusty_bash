@@ -110,7 +110,7 @@ impl Terminal {
         let row = Terminal::size().1;
 
         if self.prompt_row + extra_lines > row {
-            let ans = row as i32 - extra_lines as i32;
+            let ans = row as isize - extra_lines as isize;
             self.prompt_row = std::cmp::max(ans, 1) as usize;
         }
     }
