@@ -140,7 +140,7 @@ impl Terminal {
         let row = Terminal::size().1;
 
         if self.prompt_row + extra_lines > row {
-            let ans = row as i32 - extra_lines as i32;
+            let ans = row as isize - extra_lines as isize;
             self.prompt_row = std::cmp::max(ans, 1) as usize;
         }
     }
@@ -153,7 +153,7 @@ impl Terminal {
 
         let cur_row = self.stdout.cursor_pos().unwrap().1;
         let diff = self.head_to_cursor_pos(self.head, 0).1;
-        let ans = cur_row as i32 - diff as i32;
+        let ans = cur_row as isize - diff as isize;
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 }
