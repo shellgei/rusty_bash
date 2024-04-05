@@ -5,7 +5,7 @@ pub mod builtins;
 pub mod jobtable;
 
 use std::collections::HashMap;
-use std::os::fd::RawFd;
+use std::os::fd::{FromRawFd, OwnedFd, RawFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
@@ -120,7 +120,7 @@ impl ShellCore {
         }
 
         ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
-        unistd::tcsetpgrp(self.tty_fd, unistd::getpid())
+        unistd::tcsetpgrp(unsafe{OwnedFd::from_raw_fd(self.tty_fd)}, unistd::getpid())
             .expect("sush(fatal): cannot get the terminal");
         restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
