@@ -103,12 +103,19 @@ impl Terminal {
         self.rewrite(false);
     }
 
-    pub fn back_space(&mut self) {
+    pub fn backspace(&mut self) {
         if self.head <= self.prompt.chars().count() {
             return;
         }
-
         self.head -= 1;
+        self.chars.remove(self.head);
+        self.rewrite(true);
+    }
+
+    pub fn delete(&mut self) {
+        if self.head >= self.chars.len() {
+            return;
+        }
         self.chars.remove(self.head);
         self.rewrite(true);
     }
@@ -186,15 +193,20 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 return Err(InputError::Interrupt);
             },
             event::Key::Ctrl('d') => {
-                term.write("\r\n");
-                return Err(InputError::Eof);
+                if term.chars.len() == term.prompt.chars().count() {
+                    term.write("\r\n");
+                    return Err(InputError::Eof);
+                }else{
+                    term.delete();
+                }
             },
             event::Key::Ctrl('e') => term.goto_end(),
             event::Key::Down => term.call_history(-1, core),
             event::Key::Left => term.shift_cursor(-1),
             event::Key::Right => term.shift_cursor(1),
             event::Key::Up => term.call_history(1, core),
-            event::Key::Backspace  => term.back_space(),
+            event::Key::Backspace  => term.backspace(),
+            event::Key::Delete  => term.delete(),
             event::Key::Char('\n') => {
                 term.goto(term.chars.len());
                 term.write("\r\n");
