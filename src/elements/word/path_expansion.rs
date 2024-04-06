@@ -78,7 +78,7 @@ fn add_slash(path: &mut String) {
 }
 
 fn remove_dot_slash(path: &mut String) {
-    if path.starts_with("./") {
+    if path.starts_with("./") && path.len() >= 3 {
         path.remove(0);
         path.remove(0);
     }
