@@ -55,17 +55,15 @@ fn rewrite(word: &mut Word, path: &str) -> Word {
 fn absorb_dialect(org: &str, paths: &mut Vec<String>) {
     if let Some(tail1) = org.chars().last() {
         if tail1 == '/' {
-            add_slash(paths);
+            paths.iter_mut().for_each(|p| add_slash(p));
         }
     }
 }
 
-fn add_slash(paths: &mut Vec<String>) {
-    for path in paths {
-        if let Some(tail2) = path.chars().last() {
-            if tail2 != '/' {
-                path.push('/');
-            }
+fn add_slash(path: &mut String) {
+    if let Some(tail2) = path.chars().last() {
+        if tail2 != '/' {
+            path.push('/');
         }
     }
 }
