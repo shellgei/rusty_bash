@@ -63,7 +63,10 @@ fn absorb_dialect(org: &str, paths: &mut Vec<String>) {
             paths.iter_mut().for_each(|p| remove_dot_slash(p));
     }
 
-    paths.sort()
+    if paths.len() >= 2 && paths[0] == ".." && paths[1] == "." {
+        paths[0].pop();
+        paths[1].push('.');
+    }
 }
 
 fn add_slash(path: &mut String) {
