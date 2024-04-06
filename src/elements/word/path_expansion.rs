@@ -27,11 +27,14 @@ fn expand(path: &str) -> Vec<String> {
         require_literal_leading_dot: true,
     };
 
-    match glob::glob_with(&path, opts) {
+    let mut ans = match glob::glob_with(&path, opts) {
         Ok(ps) => ps.map(|p| to_str(&p))
                     .filter(|s| s != "").collect(), 
-        _ => vec![]
-    }
+        _ => return vec![],
+    };
+
+    absorb_dialect(path, &mut ans);
+    ans
 }
 
 fn to_str(path :&Result<PathBuf, GlobError>) -> String {
@@ -47,4 +50,22 @@ fn rewrite(word: &mut Word, path: &str) -> Word {
         word.subwords.pop();
     }
     word.clone()
+}
+
+fn absorb_dialect(org: &str, paths: &mut Vec<String>) {
+    if let Some(tail1) = org.chars().last() {
+        if tail1 == '/' {
+            add_slash(paths);
+        }
+    }
+}
+
+fn add_slash(paths: &mut Vec<String>) {
+    for path in paths {
+        if let Some(tail2) = path.chars().last() {
+            if tail2 != '/' {
+                path.push('/');
+            }
+        }
+    }
 }
