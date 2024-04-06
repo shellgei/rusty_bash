@@ -58,6 +58,12 @@ fn absorb_dialect(org: &str, paths: &mut Vec<String>) {
             paths.iter_mut().for_each(|p| add_slash(p));
         }
     }
+
+    if ! org.starts_with("./") {
+            paths.iter_mut().for_each(|p| remove_dot_slash(p));
+    }
+
+    paths.sort()
 }
 
 fn add_slash(path: &mut String) {
@@ -65,5 +71,12 @@ fn add_slash(path: &mut String) {
         if tail2 != '/' {
             path.push('/');
         }
+    }
+}
+
+fn remove_dot_slash(path: &mut String) {
+    if path.starts_with("./") {
+        path.remove(0);
+        path.remove(0);
     }
 }

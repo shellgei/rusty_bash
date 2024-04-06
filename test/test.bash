@@ -535,6 +535,9 @@ res=$($com <<< 'echo ~/.*' | grep -F '/.')
 res=$($com <<< 'echo /etc*/' | grep -F '/etc/')
 [ "$?" == 0 ] || err $LINENO
 
+res=$($com <<< 'echo .*' | grep -F './.')
+[ "$?" == 1 ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )
