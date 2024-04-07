@@ -15,7 +15,7 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         if split.len() == 1 {
             continue;
         }
-        
+
         ans.append(&mut rearrange(word, split, i));
     }
 
