@@ -18,7 +18,7 @@ impl Subword for SimpleSubword {
         self.text += &right.get_text();
     }
 
-    fn set(&mut self, subword_type: SubwordType, s: &str) {
+    fn set(&mut self, subword_type: SubwordType, s: &str){
         self.text = s.to_string();
         self.subword_type = subword_type;
     }
