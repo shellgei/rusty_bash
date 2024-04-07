@@ -49,13 +49,13 @@ pub trait Subword {
             return vec![self.boxed_clone()];
         }
 
-        let mut ans = vec![];
         let mut tmp = SimpleSubword::new("", SubwordType::Other);
-        for token in splits {
-            tmp.set(SubwordType::Other, token);
-            ans.push(tmp.boxed_clone());
-        }
-        ans
+        let mut copy = |text| {
+            tmp.set(SubwordType::Other, text);
+            tmp.boxed_clone()
+        };
+
+        splits.iter().map(|s| copy(s)).collect()
     }
 
     fn unquote(&mut self) {}
