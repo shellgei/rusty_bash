@@ -17,14 +17,14 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         }
 
         ans.append(&mut rearrange(word, split, i));
-        let last = ans.pop().unwrap();
-        ans.append(&mut eval(&last, core));
         break;
     }
 
     if ans.len() == 0 {
         vec![word.clone()]
     }else{
+        let last = ans.pop().unwrap();
+        ans.append(&mut eval(&last, core));
         ans
     }
 }
