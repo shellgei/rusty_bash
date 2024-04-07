@@ -44,9 +44,6 @@ pub trait Subword {
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool;
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        if self.get_type() == SubwordType::SingleQuoted {
-            return vec![self.boxed_clone()];
-        }
         let splits = self.get_text().split('\n').collect::<Vec<&str>>();
         if splits.len() < 2 {
             return vec![self.boxed_clone()];
