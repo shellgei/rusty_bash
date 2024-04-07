@@ -6,7 +6,6 @@ use crate::elements::word::Word;
 use crate::elements::subword::{Subword, SubwordType};
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
-    let mut ans = vec![];
     for (i, sw) in word.subwords.iter().enumerate() {
         if sw.get_type() == SubwordType::SingleQuoted {
             continue;
@@ -16,17 +15,13 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
             continue;
         }
 
-        ans.append(&mut rearrange(word, split, i));
-        break;
-    }
-
-    if ans.len() == 0 {
-        vec![word.clone()]
-    }else{
+        let mut ans = rearrange(word, split, i);
         let last = ans.pop().unwrap();
         ans.append(&mut eval(&last, core));
-        ans
+        return ans;
     }
+
+    vec![word.clone()]
 }
 
 fn rearrange(word: &Word, subwords: Vec<Box<dyn Subword>>, pos: usize) -> Vec<Word> {
