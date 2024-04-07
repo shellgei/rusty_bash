@@ -547,6 +547,11 @@ res=$($com <<< 'echo $RUSTY_BASH_A')
 
 export RUSTY_BASH_A='a
 b'
+res=$($com <<< 'echo $RUSTY_BASH_A$RUSTY_BASH_A')
+[ "$res" == "a ba b" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b'
 res=$($com <<< 'echo ${RUSTY_BASH_A}c')
 [ "$res" == "a bc" ] || err $LINENO
 
