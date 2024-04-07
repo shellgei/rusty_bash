@@ -34,6 +34,7 @@ fn expand(path: &str) -> Vec<String> {
     };
 
     absorb_dialect(path, &mut ans);
+    ans.sort();
     ans
 }
 
@@ -61,11 +62,6 @@ fn absorb_dialect(org: &str, paths: &mut Vec<String>) {
 
     if ! org.starts_with("./") {
             paths.iter_mut().for_each(|p| remove_dot_slash(p));
-    }
-
-    if paths.len() >= 2 && paths[0] == ".." && paths[1] == "." {
-        paths[0].pop();
-        paths[1].push('.');
     }
 }
 

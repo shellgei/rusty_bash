@@ -538,6 +538,12 @@ res=$($com <<< 'echo /etc*/' | grep -F '/etc/')
 res=$($com <<< 'echo .*' | grep -F './.')
 [ "$?" == 1 ] || err $LINENO
 
+res=$($com <<< 'mkdir tmp; cd tmp; echo .* | grep -F '. ..'; cd ..; rmdir tmp')
+[ "$res" == '. ..' ] || err $LINENO
+
+res=$($com <<< 'mkdir tmp; cd tmp; echo .*/ | grep -F '. ..'; cd ..; rmdir tmp')
+[ "$res" == '../ ./' ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )
