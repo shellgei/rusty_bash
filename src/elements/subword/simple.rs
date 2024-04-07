@@ -34,8 +34,18 @@ impl Subword for SimpleSubword {
         true
     }
 
-    fn split(&self, core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        vec![self.boxed_clone()]
+    fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
+        if self.subword_type != SubwordType::Other {
+            return vec![self.boxed_clone()];
+        }
+
+        let mut ans = vec![];
+        let mut tmp = Self::new("", SubwordType::Other);
+        for token in self.text.split('\n') {
+            tmp.set(SubwordType::Other, token);
+            ans.push(tmp.boxed_clone());
+        }
+        ans
     }
 
     fn unquote(&mut self) {
