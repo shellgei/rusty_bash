@@ -545,6 +545,17 @@ b'
 res=$($com <<< 'echo $RUSTY_BASH_A')
 [ "$res" == "a b" ] || err $LINENO
 
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo ${RUSTY_BASH_A}c')
+[ "$res" == "a bc" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b
+'
+res=$($com <<< 'echo ${RUSTY_BASH_A}c')
+[ "$res" == "a b c" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )
