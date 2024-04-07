@@ -29,9 +29,7 @@ fn rearrange(word: &Word, subwords: Vec<Box<dyn Subword>>, pos: usize) -> Vec<Wo
     let split_len = subwords.len();
 
     let mut left = Word::new();
-    if pos != 0 {
-        left.subwords = word.subwords[..pos].to_vec();
-    }
+    left.subwords = word.subwords[..pos].to_vec();
     left.subwords.push(subwords[0].clone());
     ans.push(left);
 
@@ -43,9 +41,7 @@ fn rearrange(word: &Word, subwords: Vec<Box<dyn Subword>>, pos: usize) -> Vec<Wo
 
     let mut right = Word::new();
     right.subwords.push(subwords[split_len-1].clone());
-    if pos != word.subwords.len()-1 {
-        right.subwords.append(&mut word.subwords[pos+1..].to_vec());
-    }
+    right.subwords.append(&mut word.subwords[pos+1..].to_vec());
     ans.push(right);
 
     ans
