@@ -538,6 +538,13 @@ res=$($com <<< 'echo /etc*/' | grep -F '/etc/')
 res=$($com <<< 'echo .*' | grep -F './.')
 [ "$?" == 1 ] || err $LINENO
 
+# split
+
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo $RUSTY_BASH_A')
+[ "$res" == "a b" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )

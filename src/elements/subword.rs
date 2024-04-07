@@ -43,10 +43,6 @@ pub trait Subword {
     fn set(&mut self, subword_type: SubwordType, s: &str);
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool;
 
-    /*
-    fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        panic!("SUSH INTERNAL ERROR: word split should not be applied to {:?}", self.get_type());
-    }*/
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
         if self.get_type() == SubwordType::SingleQuoted {
             return vec![self.boxed_clone()];
