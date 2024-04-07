@@ -35,12 +35,12 @@ fn rearrange(word: &Word, subwords: Vec<Box<dyn Subword>>, pos: usize) -> Vec<Wo
 
     for sw in subwords[1..split_len-1].iter() {
         let mut mid = Word::new();
-        mid.subwords.push(sw.clone());
+        mid.subwords = vec![sw.clone()];
         ans.push(mid);
     }
 
     let mut right = Word::new();
-    right.subwords.push(subwords[split_len-1].clone());
+    right.subwords = vec![subwords[split_len-1].clone()];
     right.subwords.append(&mut word.subwords[pos+1..].to_vec());
     ans.push(right);
 
