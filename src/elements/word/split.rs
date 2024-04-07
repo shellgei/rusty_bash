@@ -4,11 +4,14 @@
 use crate::ShellCore;
 use crate::elements::word::Word;
 use crate::elements::subword::{Subword, SubwordType};
-use nix::unistd::User;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     let mut ans = vec![];
     for (i, sw) in word.subwords.iter().enumerate() {
+        if sw.get_type() != SubwordType::Other {
+            continue;
+        }
+
         let split = sw.split(core);
         if split.len() == 1 {
             continue;

@@ -34,6 +34,10 @@ impl Subword for SimpleSubword {
         true
     }
 
+    fn split(&self, core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
+        vec![self.boxed_clone()]
+    }
+
     fn unquote(&mut self) {
         match self.subword_type {
             SubwordType::SingleQuoted => {
