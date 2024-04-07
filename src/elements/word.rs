@@ -5,6 +5,7 @@ mod brace_expansion;
 mod tilde_expansion;
 mod parameter_expansion;
 mod path_expansion;
+mod split;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
@@ -24,6 +25,7 @@ impl Word {
         if ! ws.iter_mut().all(|w| parameter_expansion::eval(w, core)) {
             return None;
         }
+        ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws.iter_mut().for_each(|w| w.connect_subwords());
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
         ws.iter_mut().for_each(|w| w.unquote());
