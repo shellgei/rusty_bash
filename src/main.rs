@@ -3,6 +3,7 @@
 
 mod core;
 mod feeder;
+mod elements;
 
 use crate::core::ShellCore;
 use crate::feeder::{InputError, Feeder};
