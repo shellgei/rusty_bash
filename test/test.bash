@@ -569,6 +569,45 @@ res=$($com <<< 'mkdir tmp; cd tmp; echo .*/ | grep -F '. ..'; cd ..; rmdir tmp')
 
 # double quotation
 
+res=$($com <<< 'echo "*"')
+[ "$res" == "*" ] || err $LINENO
+
+res=$($com <<< 'echo "{a,{b},c}"')
+[ "$res" == "{a,{b},c}" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo "$RUSTY_BASH_A"')
+[ "$res" == "a
+b" ] || err $LINENO
+
+res=$($com <<< 'echo "$BASH{PID,_SUBSHELL}"')
+[ "$res" == "{PID,_SUBSHELL}" ] || err $LINENO
+
+### WHILE TEST ###
+
+res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )
+[ "$res" == "wait
+wait" ] || err $LINENO
+
+### IF TEST ###
+res=$($com <<< 'if true ; then ; fi')
+[ "$?" == "2" ] || err $LINENO
+
+res=$($com <<< 'if ; then true ; fi')
+[ "$?" == "2" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; fi')
+[ "$res" = "aa" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; else echo bb; fi')
+[ "$res" = "bb" ] || err $LINENO
+
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi' || echo x)
+
+res=$($com <<< 'echo "~"')
+[ "$res" == "~" ] || err $LINENO
+
 res=$($com <<< 'echo "{a,{b},c}"')
 [ "$res" == "{a,{b},c}" ] || err $LINENO
 
