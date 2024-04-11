@@ -14,14 +14,8 @@ pub struct DoubleQuoted {
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn merge(&mut self, right: &Box<dyn Subword>) {
-        self.text += &right.get_text();
-    }
-
-    fn set(&mut self, subword_type: SubwordType, s: &str){
-        self.text = s.to_string();
-        self.subword_type = subword_type;
-    }
+    fn merge(&mut self, _: &Box<dyn Subword>) { panic!("SUSH INTERNAL ERROR: DoubleQuoted::merge"); }
+    fn set(&mut self, _: SubwordType, _: &str) { panic!("SUSH INTERNAL ERROR: DoubleQuoted::set"); }
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
         if ! self.subwords.iter_mut().all(|sw| sw.parameter_expansion(core)) {
@@ -37,7 +31,10 @@ impl Subword for DoubleQuoted {
     }
 
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
-    fn clear(&mut self) { self.text = String::new(); }
+    fn clear(&mut self) {
+        self.text = String::new();
+        self.subwords.clear();
+    }
 }
 
 impl DoubleQuoted {
@@ -79,7 +76,7 @@ impl DoubleQuoted {
         true
     }
 
-    fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_other(feeder: &mut Feeder, ans: &mut Self) -> bool {
         let len = feeder.scanner_double_quoted_subword();
         if len == 0 {
             return false;
@@ -99,7 +96,7 @@ impl DoubleQuoted {
         ans.text = feeder.consume(1);
 
         while Self::eat_braced_param(feeder, &mut ans, core)  
-           || Self::eat_other(feeder, &mut ans, core) 
+           || Self::eat_other(feeder, &mut ans) 
            || Self::eat_special_or_positional_param(feeder, &mut ans, core){}
 
         if feeder.starts_with("\"") {
