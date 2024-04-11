@@ -3,10 +3,12 @@
 
 mod simple;
 mod braced_param;
+mod double_quoted;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subword::braced_param::BracedParam;
+use crate::elements::subword::double_quoted::DoubleQuoted;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -18,6 +20,7 @@ pub enum SubwordType {
     VarName,
     /* simple subwords */
     SingleQuoted,
+    DoubleQuoted,
     Symbol,
     Escaped,
     Other,
@@ -65,6 +68,7 @@ pub trait Subword {
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
     if let Some(a) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }
