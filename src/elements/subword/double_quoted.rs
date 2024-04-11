@@ -45,6 +45,18 @@ impl DoubleQuoted {
         }
     }
 
+    fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_double_quoted_subword();
+        if len == 0 {
+            return false;
+        }
+
+         let txt = feeder.consume(len);
+        ans.text += &txt;
+        ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::Other)));
+        true
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {
         if ! feeder.starts_with("\"") {
             return None;
@@ -52,12 +64,7 @@ impl DoubleQuoted {
         let mut ans = Self::new();
         ans.text = feeder.consume(1);
 
-        let len = feeder.scanner_double_quoted_subword();
-        if len > 0 {
-            let txt = feeder.consume(len);
-            ans.text += &txt;
-            ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::Other)));
-        }
+        while Self::eat_other(feeder, &mut ans, core) {}
 
         if feeder.starts_with("\"") {
             ans.text += &feeder.consume(1);
