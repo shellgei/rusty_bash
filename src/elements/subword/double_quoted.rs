@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::{BracedParam, SimpleSubword, Subword, SubwordType};
-use crate::elements::word::{Word, parameter_expansion};
+use crate::elements::word::{parameter_expansion, Word};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
