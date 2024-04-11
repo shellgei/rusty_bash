@@ -187,6 +187,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         term.check_size_change(&mut term_size);
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
+            event::Key::Ctrl('b') => term.shift_cursor(-1),
             event::Key::Ctrl('c') => {
                 term.goto(term.chars.len());
                 term.write("^C\r\n");
@@ -201,6 +202,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 }
             },
             event::Key::Ctrl('e') => term.goto_end(),
+            event::Key::Ctrl('f') => term.shift_cursor(1),
             event::Key::Down => term.call_history(-1, core),
             event::Key::Left => term.shift_cursor(-1),
             event::Key::Right => term.shift_cursor(1),
