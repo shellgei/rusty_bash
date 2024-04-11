@@ -20,12 +20,10 @@ impl Subword for DoubleQuoted {
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
         let mut word = Word::new();
-        word.text = self.text.clone();
         word.subwords = self.subwords.to_vec();
         if ! parameter_expansion::eval(&mut word, core) {
             return false;
         }
-
         word.connect_subwords();
         self.text = "\"".to_owned() + &word.text + "\"";
         self.subwords = word.subwords;
