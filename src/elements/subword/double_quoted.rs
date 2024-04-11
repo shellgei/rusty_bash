@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::{SimpleSubword, Subword, SubwordType};
+use crate::elements::subword::{BracedParam, SimpleSubword, Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
@@ -57,6 +57,16 @@ impl DoubleQuoted {
         self.text += &"\"";
     }
 
+    fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if let Some(a) = BracedParam::parse(feeder, core){
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
+    }
+
     fn eat_special_or_positional_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         if len == 0 {
@@ -88,8 +98,9 @@ impl DoubleQuoted {
         let mut ans = Self::new();
         ans.text = feeder.consume(1);
 
-        while Self::eat_other(feeder, &mut ans, core) ||
-              Self::eat_special_or_positional_param(feeder, &mut ans, core){}
+        while Self::eat_braced_param(feeder, &mut ans, core)  
+           || Self::eat_other(feeder, &mut ans, core) 
+           || Self::eat_special_or_positional_param(feeder, &mut ans, core){}
 
         if feeder.starts_with("\"") {
             ans.text += &feeder.consume(1);
