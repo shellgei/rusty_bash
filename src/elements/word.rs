@@ -3,7 +3,7 @@
 
 mod brace_expansion;
 mod tilde_expansion;
-mod parameter_expansion;
+pub mod parameter_expansion;
 mod path_expansion;
 mod split;
 
@@ -39,7 +39,7 @@ impl Word {
         self.subwords.iter_mut().for_each(|w| w.unquote());
     }
     
-    fn connect_subwords(&mut self) {
+    pub fn connect_subwords(&mut self) {
         self.text = self.subwords.iter()
                     .map(|s| s.get_text())
                     .collect::<String>();

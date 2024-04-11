@@ -567,6 +567,17 @@ res=$($com <<< 'mkdir tmp; cd tmp; echo .* | grep -F '. ..'; cd ..; rmdir tmp')
 res=$($com <<< 'mkdir tmp; cd tmp; echo .*/ | grep -F '. ..'; cd ..; rmdir tmp')
 [ "$res" == '../ ./' ] || err $LINENO
 
+# double quotation
+
+res=$($com <<< 'echo "{a,{b},c}"')
+[ "$res" == "{a,{b},c}" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo "$RUSTY_BASH_A"')
+[ "$res" == "a
+b" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )

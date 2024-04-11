@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword::{BracedParam, SimpleSubword, Subword, SubwordType};
+use crate::elements::word::{Word, parameter_expansion};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
@@ -18,10 +19,16 @@ impl Subword for DoubleQuoted {
     fn set(&mut self, _: SubwordType, _: &str) { panic!("SUSH INTERNAL ERROR: DoubleQuoted::set"); }
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
-        if ! self.subwords.iter_mut().all(|sw| sw.parameter_expansion(core)) {
+        let mut word = Word::new();
+        word.text = self.text.clone();
+        word.subwords = self.subwords.to_vec();
+        if ! parameter_expansion::eval(&mut word, core) {
             return false;
         }
-        self.connect_subwords();
+
+        word.connect_subwords();
+        self.text = "\"".to_owned() + &word.text + "\"";
+        self.subwords = word.subwords;
         true
     }
 
@@ -46,14 +53,6 @@ impl DoubleQuoted {
         }
     }
 
-    fn connect_subwords(&mut self) {
-        self.text = "\"".to_string();
-        self.text += &self.subwords.iter()
-                    .map(|s| s.get_text())
-                    .collect::<String>();
-        self.text += &"\"";
-    }
-
     fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(a) = BracedParam::parse(feeder, core){
             ans.text += a.get_text();
@@ -73,6 +72,28 @@ impl DoubleQuoted {
         let txt = feeder.consume(len);
         ans.text += &txt;
         ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::Parameter)));
+        true
+    }
+
+    fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if feeder.starts_with("$") {
+            ans.text += &feeder.consume(1);
+            ans.subwords.push(Box::new(SimpleSubword::new("$", SubwordType::Symbol)));
+            true
+        }else{
+            false
+        }
+    }
+
+    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name(core);
+        if len == 0 {
+            return false;
+        }
+
+        let txt = feeder.consume(len);
+        ans.text += &txt;
+        ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::VarName)));
         true
     }
 
@@ -96,8 +117,10 @@ impl DoubleQuoted {
         ans.text = feeder.consume(1);
 
         while Self::eat_braced_param(feeder, &mut ans, core)  
-           || Self::eat_other(feeder, &mut ans) 
-           || Self::eat_special_or_positional_param(feeder, &mut ans, core){}
+           || Self::eat_special_or_positional_param(feeder, &mut ans, core)
+           || Self::eat_name(feeder, &mut ans, core)
+           || Self::eat_doller(feeder, &mut ans)
+           || Self::eat_other(feeder, &mut ans) {}
 
         if feeder.starts_with("\"") {
             ans.text += &feeder.consume(1);

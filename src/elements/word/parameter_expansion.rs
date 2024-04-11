@@ -14,7 +14,7 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
         .all(|w| w.parameter_expansion(core))
 }
 
-fn connect_names(subwords: &mut [Box<dyn Subword>]) {
+pub fn connect_names(subwords: &mut [Box<dyn Subword>]) {
     let mut text = "$".to_string();
     let mut pos = 1;
     for s in &mut subwords[1..] {
