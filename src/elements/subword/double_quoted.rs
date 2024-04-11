@@ -24,7 +24,11 @@ impl Subword for DoubleQuoted {
     }
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
-        self.subwords.iter_mut().all(|sw| sw.parameter_expansion(core)) 
+        if ! self.subwords.iter_mut().all(|sw| sw.parameter_expansion(core)) {
+            return false;
+        }
+        self.connect_subwords();
+        true
     }
 
     fn unquote(&mut self) {
@@ -45,13 +49,33 @@ impl DoubleQuoted {
         }
     }
 
+    fn connect_subwords(&mut self) {
+        self.text = "\"".to_string();
+        self.text += &self.subwords.iter()
+                    .map(|s| s.get_text())
+                    .collect::<String>();
+        self.text += &"\"";
+    }
+
+    fn eat_special_or_positional_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_dollar_special_and_positional_param(core);
+        if len == 0 {
+            return false;
+        }
+
+        let txt = feeder.consume(len);
+        ans.text += &txt;
+        ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::Parameter)));
+        true
+    }
+
     fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_double_quoted_subword();
         if len == 0 {
             return false;
         }
 
-         let txt = feeder.consume(len);
+        let txt = feeder.consume(len);
         ans.text += &txt;
         ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::Other)));
         true
@@ -64,7 +88,8 @@ impl DoubleQuoted {
         let mut ans = Self::new();
         ans.text = feeder.consume(1);
 
-        while Self::eat_other(feeder, &mut ans, core) {}
+        while Self::eat_other(feeder, &mut ans, core) ||
+              Self::eat_special_or_positional_param(feeder, &mut ans, core){}
 
         if feeder.starts_with("\"") {
             ans.text += &feeder.consume(1);
