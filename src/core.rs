@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod builtins;
+pub mod history;
 pub mod jobtable;
 pub mod parameter;
 
@@ -19,22 +20,16 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
 pub struct ShellCore {
-    pub history: Vec<String>,
     pub flags: String,
     parameters: HashMap<String, String>,
+    rewritten_history: HashMap<usize, String>,
+    pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
     pub tty_fd: RawFd,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory
-}
-
-fn is_interactive() -> bool {
-    match unistd::isatty(0) {
-        Ok(result) => result,
-        Err(err) => panic!("{}", err),
-    }
 }
 
 fn ignore_signal(sig: Signal) {
@@ -50,9 +45,10 @@ fn restore_signal(sig: Signal) {
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
-            history: Vec::new(),
             flags: String::new(),
             parameters: HashMap::new(),
+            rewritten_history: HashMap::new(),
+            history: vec![],
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
@@ -65,11 +61,17 @@ impl ShellCore {
         core.set_initial_parameters();
         core.set_builtins();
 
-        if is_interactive() {
+        if unistd::isatty(0) == Ok(true) {
             core.flags += "i";
+            core.set_param("PS1", "🍣 ");
+            core.set_param("PS2", "> ");
             core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
         }
+
+        let home = core.get_param_ref("HOME").to_string();
+        core.set_param("HISTFILE", &(home + "/.bash_history"));
+        core.set_param("HISTFILESIZE", "2000");
 
         core
     }
