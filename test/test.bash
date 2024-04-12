@@ -593,6 +593,9 @@ res=$($com <<< 'echo "\a"')
 res=$($com <<< 'echo "\\"')
 [ "$res" == '\' ] || err $LINENO
 
+res=$($com <<< 'echo "a   b"')
+[ "$res" == 'a   b' ] || err $LINENO
+
 res=$($com <<< 'echo "a
 b
 c"')
