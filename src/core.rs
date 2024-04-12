@@ -7,7 +7,7 @@ pub mod jobtable;
 pub mod parameter;
 
 use std::collections::HashMap;
-use std::os::fd::RawFd;
+use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
@@ -27,7 +27,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
-    pub tty_fd: RawFd,
+    pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory
 }
@@ -52,7 +52,7 @@ impl ShellCore {
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
-            tty_fd: -1,
+            tty_fd: None,
             job_table: vec![],
             tcwd: None,
         };
@@ -65,8 +65,9 @@ impl ShellCore {
             core.flags += "i";
             core.set_param("PS1", "🍣 ");
             core.set_param("PS2", "> ");
-            core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
+            let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
+            core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
         let home = core.get_param_ref("HOME").to_string();
@@ -113,14 +114,12 @@ impl ShellCore {
     } 
 
     fn set_foreground(&self) {
-        if self.tty_fd < 0 { // tty_fdが無効なら何もしない
-            return;
+        if let Some(fd) = self.tty_fd.as_ref() {
+            ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
+            unistd::tcsetpgrp(fd, unistd::getpid())
+                .expect("sush(fatal): cannot get the terminal");
+            restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
         }
-
-        ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
-        unistd::tcsetpgrp(self.tty_fd, unistd::getpid())
-            .expect("sush(fatal): cannot get the terminal");
-        restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {

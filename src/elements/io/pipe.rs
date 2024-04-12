@@ -3,6 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::io;
+use std::os::fd::IntoRawFd;
 use std::os::unix::prelude::RawFd;
 use nix::unistd;
 use nix::unistd::Pid;
@@ -45,7 +46,9 @@ impl Pipe {
     }
 
     pub fn set(&mut self, prev: RawFd, pgid: Pid) {
-        (self.recv, self.send) = unistd::pipe().expect("Cannot open pipe");
+        let (recv, send) = unistd::pipe().expect("Cannot open pipe");
+        self.recv = recv.into_raw_fd();
+        self.send = send.into_raw_fd();
         self.prev = prev;
         self.pgid = pgid;
     }
