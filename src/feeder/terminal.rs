@@ -22,7 +22,7 @@ struct Terminal {
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let prompt = core.get_param_ref(ps);
-        print!("{}", prompt);
+        print!("\x1b[1;35m{}\x1b[m", prompt);
         io::stdout().flush().unwrap();
 
         let mut sout = io::stdout().into_raw_mode().unwrap();
@@ -92,7 +92,8 @@ impl Terminal {
         if erase {
             self.write(&termion::clear::AfterCursor.to_string());
         }
-        self.write(&self.get_string(0));
+        print!("\x1b[1;35m{}\x1b[m", self.prompt);
+        self.write(&self.get_string(self.prompt.chars().count()));
         self.goto(self.head);
         self.flush();
     }
