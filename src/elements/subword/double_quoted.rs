@@ -26,8 +26,7 @@ impl Subword for DoubleQuoted {
         }
         self.subwords = word.subwords;
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
-        self.text.insert(0, '"');
-        self.text.push_str("\"");
+        self.text = "\"".to_owned() + &self.text + "\"";
         true
     }
 
