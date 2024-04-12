@@ -116,22 +116,12 @@ impl ShellCore {
     } 
 
     fn set_foreground(&self) {
-        /*
-        if self.tty_fd == None { // tty_fdが無効なら何もしない
-            return;
-        }*/
-
-        match self.tty_fd.as_ref() {
-            Some(fd) => {
-                ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
-                unistd::tcsetpgrp(fd, unistd::getpid())
-                    .expect("sush(fatal): cannot get the terminal");
-                restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
-            },
-            _ => {},
+        if let Some(fd) = self.tty_fd.as_ref() {
+            ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
+            unistd::tcsetpgrp(fd, unistd::getpid())
+                .expect("sush(fatal): cannot get the terminal");
+            restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
         }
-
-
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
