@@ -24,10 +24,10 @@ impl Subword for DoubleQuoted {
         if ! parameter_expansion::eval(&mut word, core) {
             return false;
         }
+        self.subwords = word.subwords;
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
         self.text.insert(0, '"');
         self.text.push_str("\"");
-        self.subwords = word.subwords;
         true
     }
 
