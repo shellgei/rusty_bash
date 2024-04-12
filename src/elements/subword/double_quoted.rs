@@ -7,9 +7,9 @@ use crate::elements::word::{parameter_expansion, Word};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
-    pub text: String,
+    text: String,
     subword_type: SubwordType,
-    pub subwords: Vec<Box<dyn Subword>>,
+    subwords: Vec<Box<dyn Subword>>,
 }
 
 impl Subword for DoubleQuoted {
