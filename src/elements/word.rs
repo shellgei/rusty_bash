@@ -39,7 +39,7 @@ impl Word {
         self.subwords.iter_mut().for_each(|w| w.unquote());
     }
     
-    pub fn connect_subwords(&mut self) {
+    fn connect_subwords(&mut self) {
         self.text = self.subwords.iter()
                     .map(|s| s.get_text())
                     .collect::<String>();

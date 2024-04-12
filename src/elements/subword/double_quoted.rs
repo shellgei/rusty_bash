@@ -24,17 +24,16 @@ impl Subword for DoubleQuoted {
         if ! parameter_expansion::eval(&mut word, core) {
             return false;
         }
-        word.connect_subwords();
-        self.text = "\"".to_owned() + &word.text + "\"";
+        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
+        self.text.insert(0, '"');
+        self.text.push_str("\"");
         self.subwords = word.subwords;
         true
     }
 
     fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|sw| sw.unquote());
-        self.text = self.subwords.iter()
-                    .map(|s| s.get_text())
-                    .collect::<String>();
+        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
     }
 
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
