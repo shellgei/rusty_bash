@@ -5,7 +5,7 @@ pub mod builtins;
 pub mod jobtable;
 
 use std::collections::HashMap;
-use std::os::fd::{FromRawFd, OwnedFd, RawFd};
+use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
