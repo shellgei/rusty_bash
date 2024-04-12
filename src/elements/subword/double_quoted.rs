@@ -36,6 +36,7 @@ impl Subword for DoubleQuoted {
     }
 
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
+
     fn clear(&mut self) {
         self.text = String::new();
         self.subwords.clear();
@@ -97,12 +98,12 @@ impl DoubleQuoted {
         }
     }
 
-    fn eat_name_or_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
-        if Self::set_subword(feeder, ans, len, SubwordType::VarName) {
-            return true;
-        }
+        Self::set_subword(feeder, ans, len, SubwordType::VarName)
+    }
 
+    fn eat_name_other(feeder: &mut Feeder, ans: &mut Self) -> bool {
         let len = feeder.scanner_double_quoted_subword();
         Self::set_subword(feeder, ans, len, SubwordType::Other) 
     }
@@ -119,7 +120,8 @@ impl DoubleQuoted {
                || Self::eat_special_or_positional_param(feeder, &mut ans, core)
                || Self::eat_doller(feeder, &mut ans)
                || Self::eat_escaped_char(feeder, &mut ans, core)
-               || Self::eat_name_or_other(feeder, &mut ans, core) {}
+               || Self::eat_name(feeder, &mut ans, core)
+               || Self::eat_name_other(feeder, &mut ans) {}
     
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
