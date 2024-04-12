@@ -136,4 +136,8 @@ impl Feeder {
     pub fn len(&self) -> usize {
         self.remaining.len()
     }
+
+    pub fn nth(&mut self, pos: usize) -> Option<char> {
+        self.remaining.chars().nth(pos)
+    }
 }

@@ -31,8 +31,10 @@ impl Subword for DoubleQuoted {
     }
 
     fn unquote(&mut self) {
-        self.text.remove(0);
-        self.text.pop();
+        self.subwords.iter_mut().for_each(|sw| sw.unquote());
+        self.text = self.subwords.iter()
+                    .map(|s| s.get_text())
+                    .collect::<String>();
     }
 
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
@@ -51,6 +53,17 @@ impl DoubleQuoted {
         }
     }
 
+    fn set_subword(feeder: &mut Feeder, ans: &mut Self, len: usize, tp: SubwordType) -> bool {
+        if len == 0 {
+            return false;
+        }
+
+        let txt = feeder.consume(len);
+        ans.text += &txt;
+        ans.subwords.push(Box::new(SimpleSubword::new(&txt, tp)));
+        true
+    }
+
     fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(a) = BracedParam::parse(feeder, core){
             ans.text += a.get_text();
@@ -63,48 +76,37 @@ impl DoubleQuoted {
 
     fn eat_special_or_positional_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_dollar_special_and_positional_param(core);
-        if len == 0 {
-            return false;
-        }
-
-        let txt = feeder.consume(len);
-        ans.text += &txt;
-        ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::Parameter)));
-        true
+        Self::set_subword(feeder, ans, len, SubwordType::Parameter)
     }
 
     fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("$") {
-            ans.text += &feeder.consume(1);
-            ans.subwords.push(Box::new(SimpleSubword::new("$", SubwordType::Symbol)));
-            true
+            Self::set_subword(feeder, ans, 1, SubwordType::Symbol)
         }else{
             false
         }
     }
 
-    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_name(core);
-        if len == 0 {
+    fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_escaped_char(core);
+        if len < 2 {
             return false;
         }
-
-        let txt = feeder.consume(len);
-        ans.text += &txt;
-        ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::VarName)));
-        true
+        
+        match feeder.nth(1).unwrap() {
+            '$' | '\\' => Self::set_subword(feeder, ans, len, SubwordType::Escaped),
+            _          => Self::set_subword(feeder, ans, len, SubwordType::Other),
+        }
     }
 
-    fn eat_other(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        let len = feeder.scanner_double_quoted_subword();
-        if len == 0 {
-            return false;
+    fn eat_name_or_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name(core);
+        if Self::set_subword(feeder, ans, len, SubwordType::VarName) {
+            return true;
         }
 
-        let txt = feeder.consume(len);
-        ans.text += &txt;
-        ans.subwords.push(Box::new(SimpleSubword::new(&txt, SubwordType::Other)));
-        true
+        let len = feeder.scanner_double_quoted_subword();
+        Self::set_subword(feeder, ans, len, SubwordType::Other) 
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {
@@ -116,9 +118,9 @@ impl DoubleQuoted {
 
         while Self::eat_braced_param(feeder, &mut ans, core)  
            || Self::eat_special_or_positional_param(feeder, &mut ans, core)
-           || Self::eat_name(feeder, &mut ans, core)
            || Self::eat_doller(feeder, &mut ans)
-           || Self::eat_other(feeder, &mut ans) {}
+           || Self::eat_escaped_char(feeder, &mut ans, core)
+           || Self::eat_name_or_other(feeder, &mut ans, core) {}
 
         if feeder.starts_with("\"") {
             ans.text += &feeder.consume(1);
