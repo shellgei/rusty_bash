@@ -116,17 +116,19 @@ impl DoubleQuoted {
         let mut ans = Self::new();
         ans.text = feeder.consume(1);
 
-        while Self::eat_braced_param(feeder, &mut ans, core)  
-           || Self::eat_special_or_positional_param(feeder, &mut ans, core)
-           || Self::eat_doller(feeder, &mut ans)
-           || Self::eat_escaped_char(feeder, &mut ans, core)
-           || Self::eat_name_or_other(feeder, &mut ans, core) {}
-
-        if feeder.starts_with("\"") {
-            ans.text += &feeder.consume(1);
-            Some(ans)
-        }else{
-            None
+        loop {
+            while Self::eat_braced_param(feeder, &mut ans, core)  
+               || Self::eat_special_or_positional_param(feeder, &mut ans, core)
+               || Self::eat_doller(feeder, &mut ans)
+               || Self::eat_escaped_char(feeder, &mut ans, core)
+               || Self::eat_name_or_other(feeder, &mut ans, core) {}
+    
+            if feeder.starts_with("\"") {
+                ans.text += &feeder.consume(1);
+                return Some(ans);
+            }else if ! feeder.feed_additional_line(core) {
+                return None;
+            }
         }
     }
 }
