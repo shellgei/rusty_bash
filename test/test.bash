@@ -590,6 +590,9 @@ res=$($com <<< 'echo "\$HOME"')
 res=$($com <<< 'echo "\a"')
 [ "$res" == '\a' ] || err $LINENO
 
+res=$($com <<< 'echo "\\"')
+[ "$res" == '\' ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )
