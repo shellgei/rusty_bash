@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::{Subword, SubwordType};
+use super::{Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
