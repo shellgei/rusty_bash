@@ -338,6 +338,27 @@ res=$($com <<< 'echo a \
 [ "$res" == "a
 b" ] || err $LINENO
 
+# double quotation
+
+res=$($com <<< 'echo "*"')
+[ "$res" == "*" ] || err $LINENO
+
+res=$($com <<< 'echo "{a,{b},c}"')
+[ "$res" == "{a,{b},c}" ] || err $LINENO
+
+res=$($com <<< 'echo "a   b"')
+[ "$res" == 'a   b' ] || err $LINENO
+
+res=$($com <<< 'echo "a
+b
+c"')
+[ "$res" == 'a
+b
+c' ] || err $LINENO
+
+res=$($com <<< 'echo "')
+[ "$?" == 2 ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')

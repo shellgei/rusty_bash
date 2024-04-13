@@ -72,6 +72,9 @@ impl DoubleQuoted {
         loop {
             while Self::eat_braced_param(feeder, &mut ans, core)
                || Self::eat_special_or_positional_param(feeder, &mut ans, core)
+            //   || Self::eat_doller(feeder, &mut ans)
+            //   || Self::eat_escaped_char(feeder, &mut ans, core)
+            //   || Self::eat_name(feeder, &mut ans, core)
                || Self::eat_other(feeder, &mut ans, core) {}
 
             if feeder.starts_with("\"") {
