@@ -13,7 +13,7 @@ pub struct DoubleQuoted {
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {false}
+    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {true}
     fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted  }
 }
 
@@ -53,7 +53,7 @@ impl DoubleQuoted {
 
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
-                eprintln!("{:?}", &ans);
+//                eprintln!("{:?}", &ans);
                 return Some(ans);
             }else if feeder.len() > 0 {
                 panic!("SUSH INTERNAL ERROR: unknown chars in double quoted word");
