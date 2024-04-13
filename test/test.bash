@@ -468,6 +468,9 @@ res=$($com <<< "echo 123'abc'def")
 
 # parameter expansion
 
+res=$($com <<< 'echo $')
+[ "$res" == "$" ] || err $LINENO
+
 res=$($com <<< 'echo $?')
 [ "$res" == "0" ] || err $LINENO
 
