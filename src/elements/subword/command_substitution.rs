@@ -16,12 +16,12 @@ impl Subword for CommandSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitution(&mut self, core: &mut ShellCore) -> bool {
-        match self.script.as_mut() {
-            Some(s) => {
-                s.exec(core);
+        match self.script {
+            Some(_) => {
+                self.text = self.exec(core);
                 true
             },
-            _ => false
+            _ => false,
         }
     }
 
@@ -35,6 +35,10 @@ impl CommandSubstitution {
             text: String::new(),
             script: None,
         }
+    }
+
+    fn exec(&mut self, core: &mut ShellCore) -> String {
+        "ok".to_string()
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
