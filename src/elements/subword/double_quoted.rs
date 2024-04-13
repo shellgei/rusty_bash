@@ -25,7 +25,7 @@ impl DoubleQuoted {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<Self> {
         None
     }
 }
