@@ -25,6 +25,10 @@ fn connect_names(subwords: &mut [Box<dyn Subword>]) {
         pos += 1;
     }
 
+    if pos == 1 {
+        return;
+    }
+
     subwords[0].set(SubwordType::Parameter, &text);
     subwords[1..pos].iter_mut().for_each(|s| s.clear());
 }
