@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod term;
+mod terminal;
 mod scanner;
 
 use std::io;
@@ -77,11 +77,9 @@ impl Feeder {
             return Err(InputError::Interrupt);
         }
 
-        let line = if core.has_flag('i') {
-            let len_prompt = term::prompt_additional();
-            term::read_line_terminal(len_prompt, core)
-        }else{
-            Self::read_line_stdin()
+        let line = match core.has_flag('i') {
+            true  => terminal::read_line(core, "PS2"),
+            false => Self::read_line_stdin(),
         };
 
         match line { 
@@ -110,11 +108,12 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = if core.has_flag('i') {
-            let len_prompt = term::prompt_normal(core);
-            term::read_line_terminal(len_prompt, core)
-        }else{ 
-            Self::read_line_stdin()
+        let pwd = core.get_param_ref("PWD").to_string();
+        core.set_param("PS1", &(pwd + "🍣 "));
+
+        let line = match core.has_flag('i') {
+            true  => terminal::read_line(core, "PS1"),
+            false => Self::read_line_stdin(),
         };
 
         match line {

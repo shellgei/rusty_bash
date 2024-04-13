@@ -31,7 +31,7 @@ res=$($com <<< 'echo hoge;')
 res=$($com <<< 'cd /; pwd')
 [ "$res" = "/" ] || err $LINENO
 
-res=$($com <<< 'cd /tmp; mkdir hoge; ln -s hoge link; cd link; pwd -L; pwd -P')
+res=$($com <<< 'rm -f /tmp/link; cd /tmp; mkdir -p hoge; ln -s hoge link; cd link; pwd -L; pwd -P')
 [ "$res" = "/tmp/link
 /tmp/hoge" ] ||
 [ "$res" = "/tmp/link
@@ -338,6 +338,45 @@ res=$($com <<< 'echo a \
 [ "$res" == "a
 b" ] || err $LINENO
 
+# double quotation
+
+res=$($com <<< 'echo "*"')
+[ "$res" == "*" ] || err $LINENO
+
+res=$($com <<< 'echo "{a,{b},c}"')
+[ "$res" == "{a,{b},c}" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo "$RUSTY_BASH_A"')
+[ "$res" == "a
+b" ] || err $LINENO
+
+res=$($com <<< 'echo "$BASH{PID,_SUBSHELL}"')
+[ "$res" == "{PID,_SUBSHELL}" ] || err $LINENO
+
+res=$($com <<< 'echo "\$HOME"')
+[ "$res" == '$HOME' ] || err $LINENO
+
+res=$($com <<< 'echo "\a"')
+[ "$res" == '\a' ] || err $LINENO
+
+res=$($com <<< 'echo "\\"')
+[ "$res" == '\' ] || err $LINENO
+
+res=$($com <<< 'echo "a   b"')
+[ "$res" == 'a   b' ] || err $LINENO
+
+res=$($com <<< 'echo "a
+b
+c"')
+[ "$res" == 'a
+b
+c' ] || err $LINENO
+
+res=$($com <<< 'echo "')
+[ "$?" == 2 ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
@@ -514,6 +553,58 @@ res=$($com <<< 'echo ~root')
 res=$($com <<< 'cd /; cd /etc; echo ~+; echo ~-')
 [ "$res" == "/etc
 /" ] || err $LINENO
+
+# wildcard
+
+res=$($com <<< 'echo /bin/?' | grep -F '/bin/[')
+[ "$?" == "0" ] || err $LINENO
+
+res=$($com <<< 'echo /*' | grep '/etc')
+[ "$?" == 0 ] || err $LINENO
+
+res=$($com <<< 'echo ~+/*' | grep '*')
+[ "$?" == 1 ] || err $LINENO
+
+res=$($com <<< 'echo ~/*' | grep -F '/.')
+[ "$?" == 1 ] || err $LINENO
+
+res=$($com <<< 'echo ~/.*' | grep -F '/.')
+[ "$?" == 0 ] || err $LINENO
+
+res=$($com <<< 'echo /etc*/' | grep -F '/etc/')
+[ "$?" == 0 ] || err $LINENO
+
+res=$($com <<< 'echo .*' | grep -F './.')
+[ "$?" == 1 ] || err $LINENO
+
+# split
+
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo $RUSTY_BASH_A')
+[ "$res" == "a b" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo $RUSTY_BASH_A$RUSTY_BASH_A')
+[ "$res" == "a ba b" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo ${RUSTY_BASH_A}c')
+[ "$res" == "a bc" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b
+'
+res=$($com <<< 'echo ${RUSTY_BASH_A}c')
+[ "$res" == "a b c" ] || err $LINENO
+
+res=$($com <<< 'mkdir tmp; cd tmp; echo .* | grep -F '. ..'; cd ..; rmdir tmp')
+[ "$res" == '. ..' ] || err $LINENO
+
+res=$($com <<< 'mkdir tmp; cd tmp; echo .*/ | grep -F '. ..'; cd ..; rmdir tmp')
+[ "$res" == '../ ./' ] || err $LINENO
 
 ### WHILE TEST ###
 

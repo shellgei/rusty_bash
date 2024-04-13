@@ -3,10 +3,12 @@
 
 mod simple;
 mod braced_param;
+mod double_quoted;
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::simple::SimpleSubword;
-use crate::elements::subword::braced_param::BracedParam;
+use self::simple::SimpleSubword;
+use self::braced_param::BracedParam;
+use self::double_quoted::DoubleQuoted;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -16,8 +18,9 @@ pub enum SubwordType {
     BracedParameter,
     Parameter,
     VarName,
-    /* simple subwords */
+    /* other subwords */
     SingleQuoted,
+    DoubleQuoted,
     Symbol,
     Escaped,
     Other,
@@ -39,16 +42,33 @@ impl Clone for Box::<dyn Subword> {
 pub trait Subword {
     fn get_text(&self) -> &str;
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn merge(&mut self, right: &Box<dyn Subword>);
-    fn set(&mut self, subword_type: SubwordType, s: &str);
+    fn merge(&mut self, _right: &Box<dyn Subword>) {}
+    fn set(&mut self, _subword_type: SubwordType, _s: &str) {}
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool;
+
+    fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
+        let splits = self.get_text().split('\n').collect::<Vec<&str>>();
+        if splits.len() < 2 {
+            return vec![self.boxed_clone()];
+        }
+
+        let mut tmp = SimpleSubword::new("", SubwordType::Other);
+        let mut copy = |text| {
+            tmp.set(SubwordType::Other, text);
+            tmp.boxed_clone()
+        };
+
+        splits.iter().map(|s| copy(s)).collect()
+    }
+
     fn unquote(&mut self) {}
     fn get_type(&self) -> SubwordType;
-    fn clear(&mut self);
+    fn clear(&mut self) {}
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
     if let Some(a) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }

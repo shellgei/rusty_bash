@@ -52,7 +52,7 @@ impl Subword for SimpleSubword {
 }
 
 impl SimpleSubword {
-    fn new(s: &str, tp: SubwordType) -> SimpleSubword {
+    pub fn new(s: &str, tp: SubwordType) -> SimpleSubword {
         SimpleSubword {
             text: s.to_string(),
             subword_type: tp,
