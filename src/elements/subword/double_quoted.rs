@@ -53,7 +53,7 @@ impl DoubleQuoted {
 
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
-                dbg!("{:?}", &ans);
+                eprintln!("{:?}", &ans);
                 return Some(ans);
             }else if feeder.len() > 0 {
                 panic!("SUSH INTERNAL ERROR: unknown chars in double quoted word");
