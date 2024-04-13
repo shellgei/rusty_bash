@@ -35,11 +35,6 @@ impl Subword for DoubleQuoted {
     }
 
     fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted  }
-
-    fn clear(&mut self) {
-        self.text = String::new();
-        self.subwords.clear();
-    }
 }
 
 impl DoubleQuoted {
