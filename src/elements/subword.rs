@@ -6,9 +6,9 @@ mod braced_param;
 mod double_quoted;
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::simple::SimpleSubword;
-use crate::elements::subword::braced_param::BracedParam;
-use crate::elements::subword::double_quoted::DoubleQuoted;
+use self::simple::SimpleSubword;
+use self::braced_param::BracedParam;
+use self::double_quoted::DoubleQuoted;
 use std::fmt;
 use std::fmt::Debug;
 
