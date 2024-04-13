@@ -16,7 +16,6 @@ impl Subword for DoubleQuoted {
     fn merge(&mut self, right: &Box<dyn Subword>) { }
     fn set(&mut self, subword_type: SubwordType, s: &str){ }
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {false}
-    fn unquote(&mut self) { }
     fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted  }
     fn clear(&mut self) { self.text = String::new(); }
 }
