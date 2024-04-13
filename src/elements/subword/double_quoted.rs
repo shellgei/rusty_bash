@@ -8,7 +8,6 @@ use crate::elements::word::{parameter_expansion, Word};
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
     text: String,
-    subword_type: SubwordType,
     subwords: Vec<Box<dyn Subword>>,
 }
 
@@ -35,7 +34,7 @@ impl Subword for DoubleQuoted {
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
     }
 
-    fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
+    fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted  }
 
     fn clear(&mut self) {
         self.text = String::new();
@@ -47,7 +46,6 @@ impl DoubleQuoted {
     pub fn new() -> DoubleQuoted {
         DoubleQuoted {
             text: String::new(),
-            subword_type: SubwordType::DoubleQuoted,
             subwords: vec![],
         }
     }
