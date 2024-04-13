@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::{BracedParam, SimpleSubword, Subword, SubwordType};
+use super::{BracedParam, SimpleSubword, Subword, SubwordType};
 use crate::elements::word::{parameter_expansion, Word};
 
 #[derive(Debug, Clone)]
