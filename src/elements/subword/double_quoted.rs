@@ -80,7 +80,6 @@ impl DoubleQuoted {
         if feeder.starts_with("\\$") || feeder.starts_with("\\\\") {
             return Self::set_subword(feeder, ans, 2, SubwordType::Escaped);
         }
-
         let len = feeder.scanner_escaped_char(core);
         Self::set_subword(feeder, ans, len, SubwordType::Other)
     }
