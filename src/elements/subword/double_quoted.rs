@@ -94,9 +94,9 @@ impl DoubleQuoted {
         Self::set_subword(feeder, ans, len, SubwordType::VarName)
     }
 
-    fn eat_other(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        let len = feeder.scanner_double_quoted_subword();
-        Self::set_subword(feeder, ans, len, SubwordType::Other) 
+    fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_double_quoted_subword(core);
+        Self::set_subword(feeder, ans, len, SubwordType::Other)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {
@@ -112,11 +112,13 @@ impl DoubleQuoted {
                || Self::eat_doller(feeder, &mut ans)
                || Self::eat_escaped_char(feeder, &mut ans, core)
                || Self::eat_name(feeder, &mut ans, core)
-               || Self::eat_other(feeder, &mut ans) {}
+               || Self::eat_other(feeder, &mut ans, core) {}
     
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
                 return Some(ans);
+            }else if feeder.len() > 0 {
+                panic!("SUSH INTERNAL ERROR: unknown chars in double quoted word");
             }else if ! feeder.feed_additional_line(core) {
                 return None;
             }

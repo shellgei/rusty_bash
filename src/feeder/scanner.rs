@@ -89,15 +89,9 @@ impl Feeder {
         ans
     }
 
-    pub fn scanner_double_quoted_subword(&mut self) -> usize {
-        let mut ans = 0;
-        for ch in self.remaining.chars() {
-            if "\"\\$".find(ch) != None {
-                break;
-            }
-            ans += ch.len_utf8();
-        }
-        ans
+    pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
+        let judge = |ch| "\"\\$".find(ch) == None;
+        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_single_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
