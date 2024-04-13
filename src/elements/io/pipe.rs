@@ -8,7 +8,7 @@ use std::os::unix::prelude::RawFd;
 use nix::unistd;
 use nix::unistd::Pid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Pipe {
     pub text: String,
     pub recv: RawFd,

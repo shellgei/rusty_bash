@@ -10,7 +10,7 @@ enum Status{
     NormalEnd,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Script {
     pub jobs: Vec<Job>,
     pub job_ends: Vec<String>,

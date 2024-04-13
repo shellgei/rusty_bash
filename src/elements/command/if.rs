@@ -6,7 +6,7 @@ use crate::elements::command;
 use nix::unistd::Pid;
 use super::{Command, Pipe, Redirect};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IfCommand {
     pub text: String,
     pub if_elif_scripts: Vec<Script>,
@@ -44,6 +44,7 @@ impl Command for IfCommand {
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
+    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
 }
 
 impl IfCommand {

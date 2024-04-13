@@ -7,7 +7,7 @@ use crate::core::jobtable::JobEntry;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
     pub pipeline_ends: Vec<String>,

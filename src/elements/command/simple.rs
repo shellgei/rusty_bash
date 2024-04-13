@@ -19,7 +19,7 @@ fn reserved(w: &str) -> bool {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SimpleCommand {
     text: String,
     words: Vec<Word>,
@@ -70,6 +70,7 @@ impl Command for SimpleCommand {
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
+    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
 }
 
 impl SimpleCommand {

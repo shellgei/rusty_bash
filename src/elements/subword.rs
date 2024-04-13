@@ -3,6 +3,7 @@
 
 mod simple;
 mod braced_param;
+mod command_substitution;
 mod double_quoted;
 
 use crate::{ShellCore, Feeder};
@@ -19,6 +20,7 @@ pub enum SubwordType {
     Parameter,
     VarName,
     /* other subwords */
+    CommandSubstitution,
     SingleQuoted,
     DoubleQuoted,
     Symbol,

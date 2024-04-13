@@ -26,6 +26,12 @@ impl Debug for dyn Command {
     }
 }
 
+impl Clone for Box::<dyn Command> {
+    fn clone(&self) -> Box<dyn Command> {
+        self.boxed_clone()
+    }
+}
+
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid>;
 
@@ -59,6 +65,7 @@ pub trait Command {
     fn get_text(&self) -> String;
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
     fn set_force_fork(&mut self);
+    fn boxed_clone(&self) -> Box<dyn Command>;
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
