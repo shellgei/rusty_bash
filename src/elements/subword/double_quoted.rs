@@ -38,7 +38,7 @@ impl DoubleQuoted {
 
     fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_double_quoted_subword(core);
-        Self::set_subword(feeder, ans, len, SubwordType::Other) 
+        Self::set_subword(feeder, ans, len, SubwordType::Other)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {
@@ -50,7 +50,7 @@ impl DoubleQuoted {
 
         loop {
             while Self::eat_other(feeder, &mut ans, core) {}
-    
+
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
                 dbg!("{:?}", &ans);
