@@ -13,8 +13,6 @@ pub struct DoubleQuoted {
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn merge(&mut self, right: &Box<dyn Subword>) { }
-    fn set(&mut self, subword_type: SubwordType, s: &str){ }
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {false}
     fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted  }
     fn clear(&mut self) { self.text = String::new(); }
