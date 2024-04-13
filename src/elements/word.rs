@@ -3,7 +3,7 @@
 
 mod brace_expansion;
 mod tilde_expansion;
-mod parameter_expansion;
+pub mod parameter_expansion;
 mod path_expansion;
 mod split;
 
