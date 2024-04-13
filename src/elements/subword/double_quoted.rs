@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use super::{Subword, SubwordType};
+use super::{SimpleSubword, Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
@@ -25,7 +25,38 @@ impl DoubleQuoted {
         }
     }
 
-    pub fn parse(_: &mut Feeder, _: &mut ShellCore) -> Option<Self> {
-        None
+    fn set_subword(feeder: &mut Feeder, ans: &mut Self, len: usize, tp: SubwordType) -> bool {
+        if len == 0 {
+            return false;
+        }
+
+        let txt = feeder.consume(len);
+        ans.text += &txt;
+        ans.subwords.push(Box::new(SimpleSubword::new(&txt, tp)));
+        true
+    }
+
+    fn eat_other(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        let len = feeder.scanner_double_quoted_subword();
+        Self::set_subword(feeder, ans, len, SubwordType::Other) 
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {
+        if ! feeder.starts_with("\"") {
+            return None;
+        }
+        let mut ans = Self::new();
+        ans.text = feeder.consume(1);
+
+        loop {
+            while Self::eat_other(feeder, &mut ans) {}
+    
+            if feeder.starts_with("\"") {
+                ans.text += &feeder.consume(1);
+                return Some(ans);
+            }else if ! feeder.feed_additional_line(core) {
+                return None;
+            }
+        }
     }
 }
