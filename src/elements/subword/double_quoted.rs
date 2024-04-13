@@ -15,7 +15,6 @@ impl Subword for DoubleQuoted {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {false}
     fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted  }
-    fn clear(&mut self) { self.text = String::new(); }
 }
 
 impl DoubleQuoted {
@@ -26,7 +25,7 @@ impl DoubleQuoted {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         None
     }
 }

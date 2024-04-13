@@ -63,7 +63,7 @@ pub trait Subword {
 
     fn unquote(&mut self) {}
     fn get_type(&self) -> SubwordType;
-    fn clear(&mut self);
+    fn clear(&mut self) {}
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
