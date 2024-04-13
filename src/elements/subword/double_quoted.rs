@@ -14,6 +14,12 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {true}
+
+    fn unquote(&mut self) {
+        self.subwords.iter_mut().for_each(|sw| sw.unquote());
+        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
+    }
+
     fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted  }
 }
 
