@@ -2,7 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use super::{SimpleSubword, Subword, SubwordType};
+use crate::elements::word::{Word, parameter_expansion};
+use super::{BracedParam, SimpleSubword, Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
@@ -13,7 +14,18 @@ pub struct DoubleQuoted {
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {true}
+
+    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
+        let mut word = Word::new();
+        word.subwords = self.subwords.to_vec();
+        if ! parameter_expansion::eval(&mut word, core) {
+            return false;
+        }
+        self.subwords = word.subwords;
+        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
+        self.text = "\"".to_owned() + &self.text + "\"";
+        true
+    }
 
     fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|sw| sw.unquote());
@@ -42,6 +54,21 @@ impl DoubleQuoted {
         true
     }
 
+    fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if let Some(a) = BracedParam::parse(feeder, core){
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
+    }
+
+    fn eat_special_or_positional_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_dollar_special_and_positional_param(core);
+        Self::set_subword(feeder, ans, len, SubwordType::Parameter)
+    }
+
     fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_double_quoted_subword(core);
         Self::set_subword(feeder, ans, len, SubwordType::Other)
@@ -55,7 +82,9 @@ impl DoubleQuoted {
         ans.text = feeder.consume(1);
 
         loop {
-            while Self::eat_other(feeder, &mut ans, core) {}
+            while Self::eat_braced_param(feeder, &mut ans, core)
+               || Self::eat_special_or_positional_param(feeder, &mut ans, core)
+               || Self::eat_other(feeder, &mut ans, core) {}
 
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
