@@ -13,7 +13,7 @@ pub struct CommandSubstitution {
 impl Subword for CommandSubstitution {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {true}
+    fn substitution(&mut self, core: &mut ShellCore) -> bool {true}
     fn get_type(&self) -> SubwordType { SubwordType::CommandSubstitution }
     fn clear(&mut self) { self.text = String::new(); }
 }

@@ -46,7 +46,7 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn merge(&mut self, _right: &Box<dyn Subword>) {}
     fn set(&mut self, _subword_type: SubwordType, _s: &str) {}
-    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool;
+    fn substitution(&mut self, core: &mut ShellCore) -> bool;
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
         let splits = self.get_text().split('\n').collect::<Vec<&str>>();
