@@ -16,7 +16,7 @@ pub enum SubwordType {
     BracedParameter,
     Parameter,
     VarName,
-    /* simple subwords */
+    /* other subwords */
     SingleQuoted,
     Symbol,
     Escaped,
