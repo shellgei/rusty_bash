@@ -14,8 +14,6 @@ pub struct DoubleQuoted {
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn merge(&mut self, _: &Box<dyn Subword>) { panic!("SUSH INTERNAL ERROR: DoubleQuoted::merge"); }
-    fn set(&mut self, _: SubwordType, _: &str) { panic!("SUSH INTERNAL ERROR: DoubleQuoted::set"); }
 
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
         let mut word = Word::new();
