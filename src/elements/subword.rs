@@ -9,6 +9,7 @@ mod double_quoted;
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
+use self::command_substitution::CommandSubstitution;
 use self::double_quoted::DoubleQuoted;
 use std::fmt;
 use std::fmt::Debug;
@@ -70,6 +71,7 @@ pub trait Subword {
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
     if let Some(a) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
