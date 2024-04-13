@@ -82,9 +82,6 @@ impl DoubleQuoted {
         }
 
         let len = feeder.scanner_escaped_char(core);
-        if len == 0 {
-            return false;
-        }
         Self::set_subword(feeder, ans, len, SubwordType::Other)
     }
 
