@@ -55,6 +55,8 @@ impl DoubleQuoted {
                 ans.text += &feeder.consume(1);
                 dbg!("{:?}", &ans);
                 return Some(ans);
+            }else if feeder.len() > 0 {
+                panic!("SUSH INTERNAL ERROR: unknown chars in double quoted word");
             }else if ! feeder.feed_additional_line(core) {
                 return None;
             }
