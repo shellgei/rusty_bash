@@ -39,8 +39,8 @@ impl Clone for Box::<dyn Subword> {
 pub trait Subword {
     fn get_text(&self) -> &str;
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn merge(&mut self, right: &Box<dyn Subword>) {}
-    fn set(&mut self, subword_type: SubwordType, s: &str) {}
+    fn merge(&mut self, _right: &Box<dyn Subword>) {}
+    fn set(&mut self, _subword_type: SubwordType, _s: &str) {}
     fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool;
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
