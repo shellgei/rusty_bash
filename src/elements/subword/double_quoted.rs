@@ -53,6 +53,7 @@ impl DoubleQuoted {
     
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
+                dbg!("{:?}", &ans);
                 return Some(ans);
             }else if ! feeder.feed_additional_line(core) {
                 return None;
