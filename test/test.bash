@@ -338,6 +338,45 @@ res=$($com <<< 'echo a \
 [ "$res" == "a
 b" ] || err $LINENO
 
+# double quotation
+
+res=$($com <<< 'echo "*"')
+[ "$res" == "*" ] || err $LINENO
+
+res=$($com <<< 'echo "{a,{b},c}"')
+[ "$res" == "{a,{b},c}" ] || err $LINENO
+
+export RUSTY_BASH_A='a
+b'
+res=$($com <<< 'echo "$RUSTY_BASH_A"')
+[ "$res" == "a
+b" ] || err $LINENO
+
+res=$($com <<< 'echo "$BASH{PID,_SUBSHELL}"')
+[ "$res" == "{PID,_SUBSHELL}" ] || err $LINENO
+
+res=$($com <<< 'echo "\$HOME"')
+[ "$res" == '$HOME' ] || err $LINENO
+
+res=$($com <<< 'echo "\a"')
+[ "$res" == '\a' ] || err $LINENO
+
+res=$($com <<< 'echo "\\"')
+[ "$res" == '\' ] || err $LINENO
+
+res=$($com <<< 'echo "a   b"')
+[ "$res" == 'a   b' ] || err $LINENO
+
+res=$($com <<< 'echo "a
+b
+c"')
+[ "$res" == 'a
+b
+c' ] || err $LINENO
+
+res=$($com <<< 'echo "')
+[ "$?" == 2 ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
