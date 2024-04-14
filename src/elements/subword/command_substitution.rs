@@ -51,9 +51,8 @@ impl CommandSubstitution {
         let mut f = unsafe { File::from_raw_fd(pipe.recv) };
         let mut input = String::new();
         let _ = f.read_to_string(&mut input);
-        input = input.trim_end_matches("\n").to_string();
         core.wait_pipeline(vec![pid]);
-        input
+        input.trim_end_matches("\n").to_string()
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
