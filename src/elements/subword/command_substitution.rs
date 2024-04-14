@@ -50,11 +50,9 @@ impl CommandSubstitution {
         let pid = c.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
-        /*
-        if ! result {
-            eprintln!("HERE");
-            thread::sleep(time::Duration::from_millis(400));
-        }*/
+        if core.get_param_ref("?") == "130" {
+            thread::sleep(time::Duration::from_millis(200));
+        }
         result
     }
 
