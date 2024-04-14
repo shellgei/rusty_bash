@@ -23,11 +23,8 @@ impl Subword for CommandSubstitution {
 
     fn substitution(&mut self, core: &mut ShellCore) -> bool {
         match self.command {
-            Some(_) => {
-                self.text = self.exec(core);
-                true
-            },
-            _ => false,
+            Some(_) => self.exec(core),
+            _       => false,
         }
     }
 
@@ -43,16 +40,19 @@ impl CommandSubstitution {
         }
     }
 
-    fn exec(&mut self, core: &mut ShellCore) -> String {
+    fn exec(&mut self, core: &mut ShellCore) -> bool {
         let c = self.command.as_mut().unwrap();
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
         let pid = c.exec(core, &mut pipe);
         let mut f = unsafe { File::from_raw_fd(pipe.recv) };
-        let mut input = String::new();
-        let _ = f.read_to_string(&mut input);
+        self.text.clear();
+        let _ = f.read_to_string(&mut self.text);
         core.wait_pipeline(vec![pid]);
-        input.trim_end_matches("\n").to_string()
+        if self.text.ends_with("\n") {
+            self.text.pop();
+        }
+        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
