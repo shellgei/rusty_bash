@@ -7,7 +7,7 @@ use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::{Subword, SubwordType};
 use nix::unistd;
-use std::io::{BufReader, BufRead};
+use std::io::{BufReader, BufRead, Error};
 use std::fs::File;
 use std::os::fd::{FromRawFd, RawFd};
 use std::sync::atomic::Ordering::Relaxed;
@@ -47,36 +47,46 @@ impl CommandSubstitution {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
         let pid = c.exec(core, &mut pipe);
-
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
         result
     }
 
+    fn set_line(&mut self, line: Result<String, Error>) -> bool {
+        match line {
+            Ok(ln) => {
+                self.text.push_str(&ln);
+                self.text.push('\n');
+                true
+            },
+            Err(e) => {
+                eprintln!("sush: {}", &e);
+                false
+            },
+        }
+    }
+
+    fn check_interrupt(&mut self, count: usize, core: &mut ShellCore) -> bool {
+        if core.sigint.load(Relaxed) {
+            core.set_param("?", "130");
+            return false;
+        }
+        if count%100 == 99 { //To receive Ctrl+C
+            thread::sleep(time::Duration::from_millis(1));
+        }
+        true
+    }
+
     fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
         let f = unsafe { File::from_raw_fd(fd) };
         let reader = BufReader::new(f);
-
         self.text.clear();
-
-        for line in reader.lines() {
-            thread::sleep(time::Duration::from_millis(1));
-            if core.sigint.load(Relaxed) { //以下4行追加
-                core.set_param("?", "130");
+        for (i, line) in reader.lines().enumerate() {
+            if ! self.check_interrupt(i, core) 
+            || ! self.set_line(line) {
                 return false;
             }
-            match line {
-                Ok(ln) => {
-                    self.text.push_str(&ln);
-                    self.text.push('\n');
-                },
-                Err(_) => {
-                    eprintln!("sush: command substitution I/O error");
-                    return false;
-                },
-            }
         }
-
         self.text.pop();
         true
     }
