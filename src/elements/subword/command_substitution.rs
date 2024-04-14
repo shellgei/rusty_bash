@@ -9,7 +9,7 @@ use crate::elements::subword::{Subword, SubwordType};
 use nix::unistd;
 use std::io::Read;
 use std::fs::File;
-use std::os::fd::FromRawFd;
+use std::os::fd::{FromRawFd, RawFd};
 
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
@@ -45,14 +45,20 @@ impl CommandSubstitution {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
         let pid = c.exec(core, &mut pipe);
-        let mut f = unsafe { File::from_raw_fd(pipe.recv) };
+
+        self.read(pipe.recv); 
+        core.wait_pipeline(vec![pid]);
+
+        true
+    }
+
+    fn read(&mut self, fd: RawFd) {
+        let mut f = unsafe { File::from_raw_fd(fd) };
         self.text.clear();
         let _ = f.read_to_string(&mut self.text);
-        core.wait_pipeline(vec![pid]);
         if self.text.ends_with("\n") {
             self.text.pop();
         }
-        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
