@@ -85,6 +85,10 @@ impl SimpleCommand {
                 println!("{}: command not found", &args[0]);
                 process::exit(127)
             },
+            Err(Errno::E2BIG) => {
+                println!("bash: {}: Arg list too long", &args[0]);
+                process::exit(127)
+            },
             Err(err) => {
                 println!("Failed to execute. {:?}", err);
                 process::exit(127)
