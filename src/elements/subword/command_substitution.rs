@@ -6,12 +6,15 @@ use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::{Subword, SubwordType};
+use nix::unistd;
+use std::io::Read;
+use std::fs::File;
+use std::os::fd::FromRawFd;
 
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
     pub text: String,
     command: Option<ParenCommand>,
-    pipe: Pipe,
 }
 
 impl Subword for CommandSubstitution {
@@ -37,16 +40,23 @@ impl CommandSubstitution {
         CommandSubstitution {
             text: String::new(),
             command: None,
-            pipe: Pipe::new("|".to_string()),
         }
     }
 
     fn exec(&mut self, core: &mut ShellCore) -> String {
         match self.command.as_mut() {
-            Some(c) => {c.exec(core, &mut self.pipe);},
-            _ => {},
+            Some(c) => {
+                let mut pipe = Pipe::new("|".to_string());
+                pipe.set(-1, unistd::getpgrp());
+                let pid = c.exec(core, &mut pipe);
+                let mut f = unsafe { File::from_raw_fd(pipe.recv) };
+                let mut input = String::new();
+                let _ = f.read_to_string(&mut input);
+                core.wait_pipeline(vec![pid]);
+                return input;
+            },
+            _ => String::new(),
         }
-        "ok".to_string()
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
