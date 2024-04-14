@@ -7,7 +7,7 @@ use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::{Subword, SubwordType};
 use nix::unistd;
-use std::io::{BufReader, BufRead, Read};
+use std::io::{BufReader, BufRead};
 use std::fs::File;
 use std::os::fd::{FromRawFd, RawFd};
 use std::sync::atomic::Ordering::Relaxed;
@@ -53,12 +53,11 @@ impl CommandSubstitution {
     }
 
     fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
-        let mut f = unsafe { File::from_raw_fd(fd) };
-        let mut reader = BufReader::new(f);
+        let f = unsafe { File::from_raw_fd(fd) };
+        let reader = BufReader::new(f);
 
         self.text.clear();
 
-        let mut line = String::new();
         for line in reader.lines() {
             if core.sigint.load(Relaxed) { //以下4行追加
                 core.set_param("?", "130");
