@@ -67,6 +67,7 @@ impl CommandSubstitution {
         ans.text = feeder.consume(1);
 
         if let Some(pc) = ParenCommand::parse(feeder, core) {
+            ans.text += &pc.get_text();
             ans.command = Some(pc);
             Some(ans)
         }else{
