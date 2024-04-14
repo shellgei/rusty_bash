@@ -45,18 +45,31 @@ impl CommandSubstitution {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
         let pid = c.exec(core, &mut pipe);
-        self.read(pipe.recv); 
-        core.wait_pipeline(vec![pid]);
-        true
+
+        match self.read(pipe.recv) {
+            true  => {
+                core.wait_pipeline(vec![pid]);
+                true
+            },
+            false => false,
+        }
     }
 
-    fn read(&mut self, fd: RawFd) {
+    fn read(&mut self, fd: RawFd) -> bool {
         let mut f = unsafe { File::from_raw_fd(fd) };
         self.text.clear();
-        f.read_to_string(&mut self.text)
-            .expect("sush: command substitution I/O error");
-        if self.text.ends_with("\n") {
-            self.text.pop();
+
+        match f.read_to_string(&mut self.text) {
+            Ok(_) => {
+                if self.text.ends_with("\n") {
+                    self.text.pop();
+                }
+                true
+            },
+            Err(_) => {
+                eprintln!("sush: command substitution I/O error");
+                false
+            },
         }
     }
 
