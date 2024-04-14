@@ -377,6 +377,14 @@ c' ] || err $LINENO
 res=$($com <<< 'echo "')
 [ "$?" == 2 ] || err $LINENO
 
+# command substitution
+
+res=$($com <<< 'echo $(pwd)')
+[ "$res" == "$(pwd)" ] || err $LINENO
+
+res=$($com <<< 'echo {,,}$(date "+%w")')
+[ "$res" == "$(echo {,,}$(date "+%w"))" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
