@@ -46,13 +46,9 @@ impl CommandSubstitution {
         pipe.set(-1, unistd::getpgrp());
         let pid = c.exec(core, &mut pipe);
 
-        match self.read(pipe.recv) {
-            true  => {
-                core.wait_pipeline(vec![pid]);
-                true
-            },
-            false => false,
-        }
+        let result = self.read(pipe.recv);
+        core.wait_pipeline(vec![pid]);
+        result
     }
 
     fn read(&mut self, fd: RawFd) -> bool {
