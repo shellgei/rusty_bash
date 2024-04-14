@@ -542,6 +542,15 @@ res=$($com <<< 'echo ${_A32*523j2}')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+# command expansion
+
+res=$($com <<< 'echo a$(seq 2)b')
+[ "$res" == "a1 2b" ] || err $LINENO
+
+res=$($com <<< 'echo "a$(seq 2)b"')
+[ "$res" == "a1
+2b" ] || err $LINENO
+
 # tilde
 
 res=$($com <<< 'echo ~ | grep -q /')
