@@ -7,9 +7,10 @@ use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::{Subword, SubwordType};
 use nix::unistd;
-use std::io::Read;
+use std::io::{BufReader, BufRead, Read};
 use std::fs::File;
 use std::os::fd::{FromRawFd, RawFd};
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
@@ -46,27 +47,37 @@ impl CommandSubstitution {
         pipe.set(-1, unistd::getpgrp());
         let pid = c.exec(core, &mut pipe);
 
-        let result = self.read(pipe.recv);
+        let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
         result
     }
 
-    fn read(&mut self, fd: RawFd) -> bool {
+    fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
         let mut f = unsafe { File::from_raw_fd(fd) };
+        let mut reader = BufReader::new(f);
+
         self.text.clear();
 
-        match f.read_to_string(&mut self.text) {
-            Ok(_) => {
-                if self.text.ends_with("\n") {
-                    self.text.pop();
-                }
-                true
-            },
-            Err(_) => {
-                eprintln!("sush: command substitution I/O error");
-                false
-            },
+        let mut line = String::new();
+        for line in reader.lines() {
+            if core.sigint.load(Relaxed) { //以下4行追加
+                core.set_param("?", "130");
+                return false;
+            }
+            match line {
+                Ok(ln) => {
+                    self.text.push_str(&ln);
+                    self.text.push('\n');
+                },
+                Err(_) => {
+                    eprintln!("sush: command substitution I/O error");
+                    return false;
+                },
+            }
         }
+
+        self.text.pop();
+        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
