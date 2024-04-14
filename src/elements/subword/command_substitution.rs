@@ -11,6 +11,7 @@ use std::io::{BufReader, BufRead};
 use std::fs::File;
 use std::os::fd::{FromRawFd, RawFd};
 use std::sync::atomic::Ordering::Relaxed;
+use std::{thread, time};
 
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
@@ -59,6 +60,7 @@ impl CommandSubstitution {
         self.text.clear();
 
         for line in reader.lines() {
+            thread::sleep(time::Duration::from_millis(1));
             if core.sigint.load(Relaxed) { //以下4行追加
                 core.set_param("?", "130");
                 return false;
