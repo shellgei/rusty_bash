@@ -53,7 +53,7 @@ impl CommandSubstitution {
         if core.get_param_ref("?") == "130" {
             thread::sleep(time::Duration::from_millis(200));
         }
-        result
+        result && core.get_param_ref("?") != "130"
     }
 
     fn set_line(&mut self, line: Result<String, Error>) -> bool {

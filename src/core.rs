@@ -107,10 +107,6 @@ impl ShellCore {
             },
         };
 
-        //eprintln!("PID: {} | {} -> {}", unistd::getpid(), self.get_param_ref("?"), exit_status);
-        if self.sigint.load(Relaxed) {
-            return;
-        }
         if exit_status == 130 {
             self.sigint.store(true, Relaxed);
         }

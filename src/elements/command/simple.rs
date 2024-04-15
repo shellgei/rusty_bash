@@ -39,7 +39,6 @@ impl Command for SimpleCommand {
                 Some(ws) => self.args.extend(ws),
                 None => {
                     if ! core.sigint.load(Relaxed) {
-                    //if core.get_param_ref("?") == "0" {
                         core.set_param("?", "1");
                     }
                     return None;
