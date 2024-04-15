@@ -82,8 +82,7 @@ impl CommandSubstitution {
         let reader = BufReader::new(f);
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {
-            if self.interrupted(i, core) 
-            || ! self.set_line(line) {
+            if self.interrupted(i, core) || ! self.set_line(line) {
                 return false;
             }
         }
