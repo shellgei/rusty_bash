@@ -4,6 +4,7 @@
 use crate::{InputError, ShellCore};
 use std::io;
 use std::io::{Write, Stdout};
+use std::sync::atomic::Ordering::Relaxed;
 use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
@@ -190,6 +191,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('b') => term.shift_cursor(-1),
             event::Key::Ctrl('c') => {
+                core.sigint.store(true, Relaxed);
                 term.goto(term.chars.len());
                 term.write("^C\r\n");
                 return Err(InputError::Interrupt);
