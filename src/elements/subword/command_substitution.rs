@@ -70,11 +70,11 @@ impl CommandSubstitution {
         }
     }
 
-    fn check_interrupt(&mut self, count: usize, core: &mut ShellCore) -> bool {
+    fn interrupted(&mut self, count: usize, core: &mut ShellCore) -> bool {
         if count%100 == 99 { //To receive Ctrl+C
             thread::sleep(time::Duration::from_millis(1));
         }
-        ! core.sigint.load(Relaxed) 
+        core.sigint.load(Relaxed) 
     }
 
     fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
@@ -82,7 +82,7 @@ impl CommandSubstitution {
         let reader = BufReader::new(f);
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {
-            if ! self.check_interrupt(i, core) 
+            if self.interrupted(i, core) 
             || ! self.set_line(line) {
                 return false;
             }
