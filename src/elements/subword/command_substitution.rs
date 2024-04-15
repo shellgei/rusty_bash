@@ -52,8 +52,9 @@ impl CommandSubstitution {
         core.wait_pipeline(vec![pid]);
         if core.get_param_ref("?") == "130" {
             thread::sleep(time::Duration::from_millis(200));
+            return false;
         }
-        result && core.get_param_ref("?") != "130"
+        result
     }
 
     fn set_line(&mut self, line: Result<String, Error>) -> bool {
