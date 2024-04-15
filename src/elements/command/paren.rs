@@ -6,7 +6,7 @@ use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use nix::unistd::Pid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ParenCommand {
     text: String,
     script: Option<Script>,
@@ -32,6 +32,7 @@ impl Command for ParenCommand {
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { }
+    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
 }
 
 impl ParenCommand {
