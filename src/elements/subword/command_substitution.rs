@@ -7,7 +7,6 @@ use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::{Subword, SubwordType};
 use nix::unistd;
-use nix::sys::signal;
 use std::io::{BufReader, BufRead, Error};
 use std::fs::File;
 use std::os::fd::{FromRawFd, RawFd};
@@ -73,8 +72,6 @@ impl CommandSubstitution {
 
     fn check_interrupt(&mut self, count: usize, core: &mut ShellCore) -> bool {
         if core.sigint.load(Relaxed) {
-            core.set_param("?", "130");
-            let _ = signal::raise(signal::Signal::SIGINT);
             return false;
         }
         if count%100 == 99 { //To receive Ctrl+C
