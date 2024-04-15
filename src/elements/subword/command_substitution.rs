@@ -71,13 +71,10 @@ impl CommandSubstitution {
     }
 
     fn check_interrupt(&mut self, count: usize, core: &mut ShellCore) -> bool {
-        if core.sigint.load(Relaxed) {
-            return false;
-        }
         if count%100 == 99 { //To receive Ctrl+C
             thread::sleep(time::Duration::from_millis(1));
         }
-        true
+        ! core.sigint.load(Relaxed) 
     }
 
     fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
