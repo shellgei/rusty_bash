@@ -49,7 +49,7 @@ impl CommandSubstitution {
         let pid = c.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
-        if core.get_param_ref("?") == "130" {
+        if core.sigint.load(Relaxed) {
             thread::sleep(time::Duration::from_millis(200));
             return false;
         }
