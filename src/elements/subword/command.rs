@@ -24,13 +24,11 @@ impl CommandSubstitution {
         if ! feeder.starts_with("$(") {
             return None;
         }
-        let mut ans = CommandSubstitution::new();
-        ans.text = feeder.consume(1);
+        let mut text = feeder.consume(1);
 
         if let Some(pc) = ParenCommand::parse(feeder, core) {
-            ans.text += &pc.get_text();
-            ans.command = Some(pc);
-            Some(ans)
+            text += &pc.get_text();
+            Some( CommandSubstitution { text: text, command: pc } )
         }else{
             None
         }
