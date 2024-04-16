@@ -39,8 +39,7 @@ impl CommandSubstitution {
         let mut reader = BufReader::new(f);
         self.text.clear();
         reader.read_to_string(&mut self.text);
-        
-       // self.text.pop();
+        self.text.pop();
         true
     }
 
