@@ -45,7 +45,7 @@ impl Subword for BracedParam {
         self.subword_type = subword_type;
     }
 
-    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore) -> bool {
         let len = self.text.len();
         let param = self.text[2..len-1].to_string();
 

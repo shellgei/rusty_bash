@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::word::{Word, parameter_expansion};
+use crate::elements::word::{Word, substitution};
 use super::{BracedParam, SimpleSubword, Subword, SubwordType};
 
 #[derive(Debug, Clone)]
@@ -15,10 +15,10 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore) -> bool {
         let mut word = Word::new();
         word.subwords = self.subwords.to_vec();
-        if ! parameter_expansion::eval(&mut word, core) {
+        if ! substitution::eval(&mut word, core) {
             return false;
         }
         self.subwords = word.subwords;
