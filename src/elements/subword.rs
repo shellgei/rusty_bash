@@ -3,13 +3,13 @@
 
 mod simple;
 mod braced_param;
-mod command_substitution;
+mod command;
 mod double_quoted;
 
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
-use self::command_substitution::CommandSubstitution;
+use self::command::CommandSubstitution;
 use self::double_quoted::DoubleQuoted;
 use std::fmt;
 use std::fmt::Debug;
