@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::{Subword, SubwordType};
 
@@ -27,6 +28,18 @@ impl CommandSubstitution {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
-        None
+        if ! feeder.starts_with("$(") {
+            return None;
+        }
+        let mut ans = CommandSubstitution::new();
+        ans.text = feeder.consume(1);
+
+        if let Some(pc) = ParenCommand::parse(feeder, core) {
+            ans.text += &pc.get_text();
+            ans.command = Some(pc);
+            Some(ans)
+        }else{
+            None
+        }
     }
 }
