@@ -10,6 +10,7 @@ use nix::unistd;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::os::fd::{FromRawFd, RawFd};
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
@@ -27,7 +28,7 @@ impl Subword for CommandSubstitution {
         let pid = self.command.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
-        result
+        result && ! core.sigint.load(Relaxed)
     }
 
     fn get_type(&self) -> SubwordType { SubwordType::CommandSubstitution }

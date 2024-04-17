@@ -88,6 +88,7 @@ fn main_loop(core: &mut ShellCore) {
             _ => break,
         }
 
+        core.sigint.store(false, Relaxed);
         match Script::parse(&mut feeder, core){
             Some(mut s) => s.exec(core),
             None => {},

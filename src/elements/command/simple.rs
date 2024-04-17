@@ -8,6 +8,7 @@ use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
+use std::sync::atomic::Ordering::Relaxed;
 
 use nix::unistd::Pid;
 use nix::errno::Errno;
@@ -37,7 +38,9 @@ impl Command for SimpleCommand {
             match w.eval(core) {
                 Some(ws) => self.args.extend(ws),
                 None => {
-                    core.set_param("?", "1");
+                    if ! core.sigint.load(Relaxed) {
+                        core.set_param("?", "1");
+                    }
                     return None;
                 },
             }
