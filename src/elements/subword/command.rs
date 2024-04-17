@@ -7,8 +7,9 @@ use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::{Subword, SubwordType};
 use nix::unistd;
+use std::{thread, time};
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{BufReader, BufRead, Error};
 use std::os::fd::{FromRawFd, RawFd};
 use std::sync::atomic::Ordering::Relaxed;
 
@@ -35,12 +36,36 @@ impl Subword for CommandSubstitution {
 }
 
 impl CommandSubstitution {
+    fn set_line(&mut self, line: Result<String, Error>) -> bool {
+        match line {
+            Ok(ln) => {
+                self.text.push_str(&ln);
+                self.text.push('\n');
+                true
+            },
+            Err(e) => {
+                eprintln!("sush: {}", &e);
+                false
+            },
+        }
+    }
+
+    fn interrupted(&mut self, count: usize, core: &mut ShellCore) -> bool {
+        if count%100 == 99 { //To receive Ctrl+C
+            thread::sleep(time::Duration::from_millis(1));
+        }
+        core.sigint.load(Relaxed) 
+    }
+
     fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
         let f = unsafe { File::from_raw_fd(fd) };
-        let mut reader = BufReader::new(f);
+        let reader = BufReader::new(f);
         self.text.clear();
-        reader.read_to_string(&mut self.text);
-        self.text.pop();
+        for (i, line) in reader.lines().enumerate() {
+            if ! self.set_line(line) || self.interrupted(i, core) {
+                return false;
+            }
+        }
         true
     }
 
