@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::word::{Word, substitution};
+use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, SimpleSubword, Subword, SubwordType};
 
 #[derive(Debug, Clone)]
@@ -64,6 +65,16 @@ impl DoubleQuoted {
         }
     }
 
+    fn eat_command_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if let Some(a) = CommandSubstitution::parse(feeder, core){
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
+    }
+
     fn eat_special_or_positional_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         Self::set_subword(feeder, ans, len, SubwordType::Parameter)
@@ -103,6 +114,7 @@ impl DoubleQuoted {
 
         loop {
             while Self::eat_braced_param(feeder, &mut ans, core)
+               || Self::eat_command_substitution(feeder, &mut ans, core)
                || Self::eat_special_or_positional_param(feeder, &mut ans, core)
                || Self::eat_doller(feeder, &mut ans)
                || Self::eat_escaped_char(feeder, &mut ans, core)
