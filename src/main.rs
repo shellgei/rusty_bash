@@ -30,6 +30,7 @@ fn run_signal_check(core: &mut ShellCore) {
     }
 
     let sigint = Arc::clone(&core.sigint); //追加
+    let duration = 100;
  
     thread::spawn(move || { //クロージャの処理全体を{}で囲みましょう
         let mut signals = Signals::new(vec![consts::SIGINT])
@@ -40,7 +41,7 @@ fn run_signal_check(core: &mut ShellCore) {
         }
 
         loop {
-            thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
+            thread::sleep(time::Duration::from_millis(duration)); //0.1秒周期に変更
             for signal in signals.pending() {
                 if signal == consts::SIGINT {
                     sigint.store(true, Relaxed);
@@ -87,6 +88,7 @@ fn main_loop(core: &mut ShellCore) {
             _ => break,
         }
 
+        core.sigint.store(false, Relaxed);
         match Script::parse(&mut feeder, core){
             Some(mut s) => s.exec(core),
             None => {},

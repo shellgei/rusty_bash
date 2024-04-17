@@ -49,11 +49,12 @@ impl CommandSubstitution {
         let pid = c.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
+        /*
         if core.sigint.load(Relaxed) {
-            thread::sleep(time::Duration::from_millis(200));
+ //           thread::sleep(time::Duration::from_millis(200));
             return false;
-        }
-        result
+        }*/
+        result && ! core.sigint.load(Relaxed)
     }
 
     fn set_line(&mut self, line: Result<String, Error>) -> bool {
