@@ -80,6 +80,10 @@ impl SimpleCommand {
     fn exec_external_command(args: &mut Vec<String>) -> ! {
         let cargs = Self::to_cargs(args);
         match unistd::execvp(&cargs[0], &cargs) {
+            Err(Errno::E2BIG) => {
+                println!("sush: {}: Arg list too long", &args[0]);
+                process::exit(126)
+            },
             Err(Errno::EACCES) => {
                 println!("sush: {}: Permission denied", &args[0]);
                 process::exit(126)
