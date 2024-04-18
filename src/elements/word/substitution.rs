@@ -9,9 +9,7 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
-    word.subwords
-        .iter_mut()
-        .all(|w| w.parameter_expansion(core))
+    word.subwords.iter_mut().all(|w| w.substitute(core))
 }
 
 fn connect_names(subwords: &mut [Box<dyn Subword>]) {
@@ -25,6 +23,8 @@ fn connect_names(subwords: &mut [Box<dyn Subword>]) {
         pos += 1;
     }
 
-    subwords[0].set(SubwordType::Parameter, &text);
-    subwords[1..pos].iter_mut().for_each(|s| s.clear());
+    if pos > 1 {
+        subwords[0].set(SubwordType::Parameter, &text);
+        subwords[1..pos].iter_mut().for_each(|s| s.clear());
+    }
 }

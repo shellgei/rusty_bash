@@ -3,7 +3,7 @@
 
 mod brace_expansion;
 mod tilde_expansion;
-pub mod parameter_expansion;
+pub mod substitution;
 mod path_expansion;
 mod split;
 
@@ -22,7 +22,7 @@ impl Word {
         let mut ws = brace_expansion::eval(self);
 
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
-        if ! ws.iter_mut().all(|w| parameter_expansion::eval(w, core)) {
+        if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
             return None;
         }
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );

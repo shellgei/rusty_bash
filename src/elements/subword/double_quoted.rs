@@ -2,7 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::word::{Word, parameter_expansion};
+use crate::elements::word::{Word, substitution};
+use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, SimpleSubword, Subword, SubwordType};
 
 #[derive(Debug, Clone)]
@@ -15,10 +16,10 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn parameter_expansion(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore) -> bool {
         let mut word = Word::new();
         word.subwords = self.subwords.to_vec();
-        if ! parameter_expansion::eval(&mut word, core) {
+        if ! substitution::eval(&mut word, core) {
             return false;
         }
         self.subwords = word.subwords;
@@ -56,6 +57,16 @@ impl DoubleQuoted {
 
     fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(a) = BracedParam::parse(feeder, core){
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
+    }
+
+    fn eat_command_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if let Some(a) = CommandSubstitution::parse(feeder, core){
             ans.text += a.get_text();
             ans.subwords.push(Box::new(a));
             true
@@ -103,6 +114,7 @@ impl DoubleQuoted {
 
         loop {
             while Self::eat_braced_param(feeder, &mut ans, core)
+               || Self::eat_command_substitution(feeder, &mut ans, core)
                || Self::eat_special_or_positional_param(feeder, &mut ans, core)
                || Self::eat_doller(feeder, &mut ans)
                || Self::eat_escaped_char(feeder, &mut ans, core)

@@ -8,6 +8,7 @@ use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
+use std::sync::atomic::Ordering::Relaxed;
 
 use nix::unistd::Pid;
 use nix::errno::Errno;
@@ -19,7 +20,7 @@ fn reserved(w: &str) -> bool {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SimpleCommand {
     text: String,
     words: Vec<Word>,
@@ -30,11 +31,16 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        for w in self.words.iter_mut() {
+        self.args.clear();
+        let mut words = self.words.to_vec();
+
+        for w in words.iter_mut() {
             match w.eval(core) {
                 Some(ws) => self.args.extend(ws),
                 None => {
-                    core.set_param("?", "1");
+                    if ! core.sigint.load(Relaxed) {
+                        core.set_param("?", "1");
+                    }
                     return None;
                 },
             }
@@ -70,12 +76,17 @@ impl Command for SimpleCommand {
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
+    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
 }
 
 impl SimpleCommand {
     fn exec_external_command(args: &mut Vec<String>) -> ! {
         let cargs = Self::to_cargs(args);
         match unistd::execvp(&cargs[0], &cargs) {
+            Err(Errno::E2BIG) => {
+                println!("sush: {}: Arg list too long", &args[0]);
+                process::exit(126)
+            },
             Err(Errno::EACCES) => {
                 println!("sush: {}: Permission denied", &args[0]);
                 process::exit(126)
