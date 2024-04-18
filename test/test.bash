@@ -387,6 +387,14 @@ res=$($com <<< 'rm -f /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo w
 
 ### ARG TEST ###
 
+# substitution
+
+res=$($com <<< 'A=BBB echo ok')
+[ "$res" == "ok" ] || err $LINENO
+
+res=$($com <<< 'A=BBB B= echo ok')
+[ "$res" == "ok" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
