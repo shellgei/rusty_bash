@@ -122,6 +122,7 @@ impl SimpleCommand {
     }
 
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name_and_equal(core);
         false
     }
 
