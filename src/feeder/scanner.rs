@@ -133,7 +133,7 @@ impl Feeder {
 
     pub fn scanner_name(&mut self, core: &mut ShellCore) -> usize {
         let c = self.remaining.chars().nth(0).unwrap_or('0');
-        if '0' <= c && c <= '9' {
+        if ('0' <= c && c <= '9') || c == '=' {
             return 0;
         }
 

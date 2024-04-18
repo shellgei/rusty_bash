@@ -23,7 +23,7 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug, Clone)]
 pub struct SimpleCommand {
     text: String,
-    substitutions: Vec<(String, Word)>,
+    substitutions: Vec<(String, Option<Word>)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -123,7 +123,21 @@ impl SimpleCommand {
 
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name_and_equal(core);
-        false
+        if len == 0 {
+            return false;
+        }
+
+        let mut name_eq = feeder.consume(len);
+        ans.text += &name_eq;
+        name_eq.pop();
+
+        let w = match Word::parse(feeder, core) {
+            Some(w) => Some(w),
+            _       => None,
+        };
+
+        ans.substitutions.push( (name_eq, w) );
+        true
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
