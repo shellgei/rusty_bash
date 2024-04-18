@@ -23,6 +23,7 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug, Clone)]
 pub struct SimpleCommand {
     text: String,
+    substitutions: Vec<(String, Word)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -112,11 +113,16 @@ impl SimpleCommand {
     fn new() -> SimpleCommand {
         SimpleCommand {
             text: String::new(),
+            substitutions: vec![],
             words: vec![],
             args: vec![],
             redirects: vec![],
             force_fork: false,
         }
+    }
+
+    fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        false
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
@@ -136,6 +142,8 @@ impl SimpleCommand {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = Self::new();
         feeder.set_backup();
+
+        while Self::eat_substitution(feeder, &mut ans, core) {}
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
