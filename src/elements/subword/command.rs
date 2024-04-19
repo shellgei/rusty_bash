@@ -23,7 +23,7 @@ impl Subword for CommandSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        let mut c = match self.command.as_mut() {
+        let c = match self.command.as_mut() {
             Some(c) => c, 
             None => { 
                 self.text = "".to_string();
