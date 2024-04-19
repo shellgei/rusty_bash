@@ -10,7 +10,6 @@ mod split;
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use crate::elements::subword::Subword;
-use itertools::Itertools;
 
 #[derive(Debug, Clone)]
 pub struct Word {
@@ -21,34 +20,27 @@ pub struct Word {
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
         let mut ws = brace_expansion::eval(self);
-
-        ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
-        if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
-            return None;
-        }
-        ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
-        ws.iter_mut().for_each(|w| w.connect_subwords());
-        ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
-        ws.iter_mut().for_each(|w| w.unquote());
-        ws.iter_mut().for_each(|w| w.connect_subwords());
-        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
-
-        Some(ans)
+        Self::eval_common(&mut ws, core)
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
-        let mut ws = vec![self.clone()];
+        match Self::eval_common(&mut vec![self.clone()], core) {
+            Some(ans) => Some(ans.join(" ")),
+            None      => None,
+        }
+    }
 
+    pub fn eval_common(ws: &mut Vec<Word>, core: &mut ShellCore) -> Option<Vec<String>> {
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
         if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
             return None;
         }
-        ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
+        *ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws.iter_mut().for_each(|w| w.connect_subwords());
-        ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
+        *ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
-        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).join(" ");
+        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
 
         Some(ans)
     }
