@@ -404,8 +404,11 @@ res=$($com <<< 'A=BBB bash -c "echo \$A"')
 res=$($com <<< 'A=BBB B=CCC bash -c "echo \$A \$B"')
 [ "$res" == "BBB CCC" ] || err $LINENO
 
-res=$($com <<< 'A=$(echo BBB)C; echo $A')
-[ "$res" == "BBBC" ] || err $LINENO
+res=$($com <<< 'A=A$(echo BBB)C; echo $A')
+[ "$res" == "ABBBC" ] || err $LINENO
+
+res=$($com <<< 'A={a,b}; echo $A')
+[ "$res" == "{a,b}" ] || err $LINENO
 
 # brace
 
