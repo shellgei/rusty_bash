@@ -66,6 +66,7 @@ impl CommandSubstitution {
                 return false;
             }
         }
+        self.text.pop();
         true
     }
 
