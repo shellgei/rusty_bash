@@ -24,7 +24,7 @@ fn reserved(w: &str) -> bool {
 pub struct SimpleCommand {
     text: String,
     substitutions: Vec<(String, Option<Word>)>,
-    evaluated_subs: Vec<(String, String)>,
+    evaluated_subs: Vec<(String, String, bool)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -121,7 +121,7 @@ impl SimpleCommand {
 
     fn set_evaluated_subs(&mut self, core: &mut ShellCore) -> bool {
         self.evaluated_subs = self.substitutions.iter()
-            .map(|(k, v)| (k.clone(), Self::eval_value(&v, core) ) ).collect();
+            .map(|(k, v)| (k.clone(), Self::eval_value(&v, core), true ) ).collect();
         true
     }
 
