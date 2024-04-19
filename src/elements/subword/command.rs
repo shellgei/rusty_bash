@@ -22,9 +22,17 @@ impl Subword for CommandSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
+        let mut c = match self.command.as_mut() {
+            Some(c) => c, 
+            None => { 
+                self.text = "".to_string();
+                return true;
+            },
+        };
+
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let pid = self.command.exec(core, &mut pipe);
+        let pid = c.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
         result
