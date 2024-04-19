@@ -37,7 +37,7 @@ impl Subword for CommandSubstitution {
         let pid = c.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
-        result && ! core.sigint.load(Relaxed)
+        result
     }
 
     fn get_type(&self) -> SubwordType { SubwordType::CommandSubstitution }
@@ -70,7 +70,10 @@ impl CommandSubstitution {
         let reader = BufReader::new(f);
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {
-            if ! self.set_line(line) || self.interrupted(i, core) {
+            if self.interrupted(i, core) {
+                break;
+            }
+            if ! self.set_line(line) {
                 return false;
             }
         }
