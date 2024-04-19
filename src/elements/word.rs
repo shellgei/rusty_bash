@@ -36,19 +36,21 @@ impl Word {
         Some(ans)
     }
 
-    pub fn eval_as_value(&self, core: &mut ShellCore) -> String {
+    pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
         let mut ws = vec![self.clone()];
 
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
         if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
-            return "".to_string();
+            return None;
         }
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws.iter_mut().for_each(|w| w.connect_subwords());
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
         ws.iter_mut().for_each(|w| w.unquote());
         ws.iter_mut().for_each(|w| w.connect_subwords());
-        ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).join(" ")
+        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).join(" ");
+
+        Some(ans)
     }
 
     fn unquote(&mut self) {
