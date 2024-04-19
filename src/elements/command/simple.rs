@@ -47,14 +47,7 @@ impl Command for SimpleCommand {
             return None;
         }
 
-        if self.force_fork 
-        || pipe.is_connected() 
-        || ! core.builtins.contains_key(&self.args[0]) {
-            self.fork_exec(core, pipe)
-        }else{
-            self.nofork_exec(core);
-            None
-        }
+        self.exec_command(core, pipe)
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
@@ -97,6 +90,17 @@ impl SimpleCommand {
                 process::exit(127)
             }
             _ => panic!("SUSH INTERNAL ERROR (never come here)")
+        }
+    }
+
+    fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        if self.force_fork 
+        || pipe.is_connected() 
+        || ! core.builtins.contains_key(&self.args[0]) {
+            self.fork_exec(core, pipe)
+        }else{
+            self.nofork_exec(core);
+            None
         }
     }
 
