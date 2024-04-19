@@ -8,7 +8,7 @@ use crate::elements::subword::{Subword, SubwordType};
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
     pub text: String,
-    command: ParenCommand,
+    command: Option<ParenCommand>,
 }
 
 impl Subword for CommandSubstitution {
