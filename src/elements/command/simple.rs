@@ -38,15 +38,18 @@ impl Command for SimpleCommand {
             match w.eval(core) {
                 Some(ws) => self.args.extend(ws),
                 None => {
-                    if ! core.sigint.load(Relaxed) {
-                        core.set_param("?", "1");
-                    }
+                    core.set_param("?", "1");
                     return None;
                 },
             }
         }
 
         if self.args.len() == 0 {
+            return None;
+        }
+
+        if core.sigint.load(Relaxed) {
+            core.set_param("?", "130");
             return None;
         }
 
