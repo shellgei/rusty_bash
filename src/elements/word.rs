@@ -30,7 +30,7 @@ impl Word {
         }
     }
 
-    pub fn eval_common(ws: &mut Vec<Word>, core: &mut ShellCore) -> Option<Vec<String>> {
+    fn eval_common(ws: &mut Vec<Word>, core: &mut ShellCore) -> Option<Vec<String>> {
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
         if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
             return None;
