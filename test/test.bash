@@ -395,6 +395,12 @@ res=$($com <<< 'A=BBB echo ok')
 res=$($com <<< 'A=BBB B= echo ok')
 [ "$res" == "ok" ] || err $LINENO
 
+res=$($com <<< 'A=BBB bash -c "echo \$A"')
+[ "$res" == "BBB" ] || err $LINENO
+
+res=$($com <<< 'A=BBB B=CCC bash -c "echo \$A \$B"')
+[ "$res" == "BBB CCC" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
