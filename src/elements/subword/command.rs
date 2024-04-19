@@ -56,7 +56,8 @@ impl CommandSubstitution {
             return None;
         }
         if feeder.starts_with("$()") {
-            return Some( CommandSubstitution { text: "$()".to_string(), command: None } );
+            let text = feeder.consume(3);
+            return Some( CommandSubstitution { text: text, command: None } );
         }
 
         let mut text = feeder.consume(1);
