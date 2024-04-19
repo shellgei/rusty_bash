@@ -617,6 +617,10 @@ res=$($com <<< 'echo a$(seq 2)b')
 res=$($com <<< 'echo a$()b')
 [ "$res" == "ab" ] || err $LINENO
 
+res=$($com <<< 'echo "a$(seq 2)b"')
+[ "$res" == "a1
+2b" ] || err $LINENO
+
 res=$($com <<< 'echo $(pwd)')
 [ "$res" == "$(pwd)" ] || err $LINENO
 
