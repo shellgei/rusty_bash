@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
-use std::process;
+use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 
 use nix::unistd::Pid;
@@ -24,6 +24,7 @@ fn reserved(w: &str) -> bool {
 pub struct SimpleCommand {
     text: String,
     substitutions: Vec<(String, Option<Word>)>,
+    evaluated_subs: Vec<(String, String)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -35,7 +36,8 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
 
-        let subs: Vec<(String, String)> = self.substitutions.iter()
+        //let subs: Vec<(String, String)> = self.substitutions.iter()
+        self.evaluated_subs = self.substitutions.iter()
             .map(|(k, v)| (k.clone(), Self::eval_value(&v, core) ) ).collect();
 
         if ! words.iter_mut().all(|w| self.set_arg(w, core)) {
@@ -43,7 +45,7 @@ impl Command for SimpleCommand {
         }
 
         if self.args.len() == 0 {
-            subs.iter().for_each(|s| core.set_param(&s.0, &s.1));
+            self.evaluated_subs.iter().for_each(|s| core.set_param(&s.0, &s.1));
             return None;
         }
 
@@ -58,7 +60,7 @@ impl Command for SimpleCommand {
 
         match core.run_builtin(&mut self.args) {
             true  => core.exit(),
-            false => Self::exec_external_command(&mut self.args),
+            false => self.exec_external_command(),
         }
     }
 
@@ -69,19 +71,20 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(args: &mut Vec<String>) -> ! {
-        let cargs = Self::to_cargs(args);
+    fn exec_external_command(&self) -> ! {
+        let cargs = Self::to_cargs(&self.args);
+        self.evaluated_subs.iter().for_each(|s| env::set_var(&s.0, &s.1));
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => {
-                println!("sush: {}: Arg list too long", &args[0]);
+                println!("sush: {}: Arg list too long", &self.args[0]);
                 process::exit(126)
             },
             Err(Errno::EACCES) => {
-                println!("sush: {}: Permission denied", &args[0]);
+                println!("sush: {}: Permission denied", &self.args[0]);
                 process::exit(126)
             },
             Err(Errno::ENOENT) => {
-                println!("{}: command not found", &args[0]);
+                println!("{}: command not found", &self.args[0]);
                 process::exit(127)
             },
             Err(err) => {
@@ -103,7 +106,7 @@ impl SimpleCommand {
         }
     }
 
-    fn to_cargs(args: &mut Vec<String>) -> Vec<CString> {
+    fn to_cargs(args: &Vec<String>) -> Vec<CString> {
         args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
@@ -135,6 +138,7 @@ impl SimpleCommand {
         SimpleCommand {
             text: String::new(),
             substitutions: vec![],
+            evaluated_subs: vec![],
             words: vec![],
             args: vec![],
             redirects: vec![],
