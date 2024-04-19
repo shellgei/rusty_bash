@@ -410,6 +410,12 @@ res=$($com <<< 'A=A$(echo BBB)C; echo $A')
 res=$($com <<< 'A={a,b}; echo $A')
 [ "$res" == "{a,b}" ] || err $LINENO
 
+res=$($com <<< 'A=/*; echo $A | grep -q "*"')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=/*; echo $A | grep -q "etc"')
+[ "$?" == "0" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
