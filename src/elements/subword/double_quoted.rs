@@ -16,10 +16,10 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore, stop_at_sigint: bool) -> bool {
         let mut word = Word::new();
         word.subwords = self.subwords.to_vec();
-        if ! substitution::eval(&mut word, core) {
+        if ! substitution::eval(&mut word, core, stop_at_sigint) {
             return false;
         }
         self.subwords = word.subwords;

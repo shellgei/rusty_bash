@@ -20,19 +20,19 @@ pub struct Word {
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
         let mut ws = brace_expansion::eval(self);
-        Self::eval_common(&mut ws, core)
+        Self::eval_common(&mut ws, core, true)
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
-        match Self::eval_common(&mut vec![self.clone()], core) {
+        match Self::eval_common(&mut vec![self.clone()], core, false) {
             Some(ans) => Some(ans.join(" ")),
             None      => None,
         }
     }
 
-    fn eval_common(ws: &mut Vec<Word>, core: &mut ShellCore) -> Option<Vec<String>> {
+    fn eval_common(ws: &mut Vec<Word>, core: &mut ShellCore, stop_at_sigint: bool) -> Option<Vec<String>> {
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
-        if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
+        if ! ws.iter_mut().all(|w| substitution::eval(w, core, stop_at_sigint)) {
             return None;
         }
         *ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
