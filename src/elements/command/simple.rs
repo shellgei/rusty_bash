@@ -56,10 +56,9 @@ impl Command for SimpleCommand {
             return;
         }
 
-        if core.run_builtin(&mut self.args) {
-            core.exit()
-        }else{
-            Self::exec_external_command(&mut self.args)
+        match core.run_builtin(&mut self.args) {
+            true  => core.exit(),
+            false => Self::exec_external_command(&mut self.args),
         }
     }
 
