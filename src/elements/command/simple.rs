@@ -35,6 +35,15 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
 
+        let mut subs = vec![];
+        for s in &mut self.substitutions {
+            let value = match &s.1 {
+                None => "".to_string(),
+                Some(word) => word.eval_as_value(core),
+            };
+            subs.push( (s.0.clone(), value) );
+        }
+
         for w in words.iter_mut() {
             match w.eval(core) {
                 Some(ws) => self.args.extend(ws),
@@ -169,7 +178,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.words.len() + ans.redirects.len() > 0 {
+        if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{
