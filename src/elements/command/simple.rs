@@ -36,7 +36,6 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
 
-        //let subs: Vec<(String, String)> = self.substitutions.iter()
         self.evaluated_subs = self.substitutions.iter()
             .map(|(k, v)| (k.clone(), Self::eval_value(&v, core) ) ).collect();
 

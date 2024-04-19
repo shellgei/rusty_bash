@@ -389,6 +389,9 @@ res=$($com <<< 'rm -f /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo w
 
 # substitution
 
+res=$($com <<< 'A=BBB; echo $A')
+[ "$res" == "BBB" ] || err $LINENO
+
 res=$($com <<< 'A=BBB echo ok')
 [ "$res" == "ok" ] || err $LINENO
 
@@ -400,6 +403,9 @@ res=$($com <<< 'A=BBB bash -c "echo \$A"')
 
 res=$($com <<< 'A=BBB B=CCC bash -c "echo \$A \$B"')
 [ "$res" == "BBB CCC" ] || err $LINENO
+
+res=$($com <<< 'A=$(echo BBB)C; echo $A')
+[ "$res" == "BBBC" ] || err $LINENO
 
 # brace
 
