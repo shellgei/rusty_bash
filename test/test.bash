@@ -416,6 +416,10 @@ res=$($com <<< 'A=/*; echo $A | grep -q "*"')
 res=$($com <<< 'A=/*; echo $A | grep -q "etc"')
 [ "$?" == "0" ] || err $LINENO
 
+#res=$($com <<< 'A="${ }"; echo NG')
+#[ "$?" == 1 ] || err $LINENO
+#[ "$ref" != "NG" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
