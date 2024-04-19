@@ -38,22 +38,12 @@ impl Command for SimpleCommand {
         let subs: Vec<(String, String)> = self.substitutions.iter()
             .map(|(k, v)| (k.clone(), Self::eval_value(&v, core) ) ).collect();
 
-        for w in words.iter_mut() {
-            match w.eval(core) {
-                Some(ws) => self.args.extend(ws),
-                None => {
-                    if ! core.sigint.load(Relaxed) {
-                        core.set_param("?", "1");
-                    }
-                    return None;
-                },
-            }
+        if ! words.iter_mut().all(|w| self.set_arg(w, core)) {
+            return None;
         }
 
         if self.args.len() == 0 {
-            for s in subs {
-                core.set_param(&s.0, &s.1);
-            }
+            subs.iter().for_each(|s| core.set_param(&s.0, &s.1));
             return None;
         }
 
@@ -120,6 +110,21 @@ impl SimpleCommand {
         match s {
             None => "".to_string(),
             Some(word) => word.eval_as_value(core),
+        }
+    }
+
+    fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
+        match word.eval(core) {
+            Some(ws) => {
+                self.args.extend(ws);
+                true
+            },
+            None => {
+                if ! core.sigint.load(Relaxed) {
+                    core.set_param("?", "1");
+                }
+                false
+            },
         }
     }
 
