@@ -44,13 +44,13 @@ impl CommandSubstitution {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+        if ! feeder.starts_with("$(") {
+            return None;
+        }
         if feeder.starts_with("$()") {
             return Some( CommandSubstitution { text: "$()".to_string(), command: None } );
         }
 
-        if ! feeder.starts_with("$(") {
-            return None;
-        }
         let mut text = feeder.consume(1);
 
         if let Some(pc) = ParenCommand::parse(feeder, core) {
