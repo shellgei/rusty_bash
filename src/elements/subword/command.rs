@@ -37,7 +37,7 @@ impl Subword for CommandSubstitution {
         let pid = c.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
-        result && ! (core.sigint.load(Relaxed) && stop_at_sigint)
+        result // && ! (core.sigint.load(Relaxed) && stop_at_sigint)
     }
 
     fn get_type(&self) -> SubwordType { SubwordType::CommandSubstitution }

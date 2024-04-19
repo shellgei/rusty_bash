@@ -50,6 +50,10 @@ impl Command for SimpleCommand {
             return None;
         }
 
+        if core.sigint.load(Relaxed) {
+            return None;
+        }
+
         self.exec_command(core, pipe)
     }
 
