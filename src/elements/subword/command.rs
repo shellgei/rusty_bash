@@ -9,7 +9,7 @@ use crate::elements::subword::{Subword, SubwordType};
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
     pub text: String,
-    command: ParenCommand,
+    command: Option<ParenCommand>,
 }
 
 impl Subword for CommandSubstitution {
@@ -21,6 +21,10 @@ impl Subword for CommandSubstitution {
 
 impl CommandSubstitution {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+        if feeder.starts_with("$()") {
+            return Some( CommandSubstitution { text: "$()".to_string(), command: None } );
+        }
+
         if ! feeder.starts_with("$(") {
             return None;
         }
@@ -28,7 +32,7 @@ impl CommandSubstitution {
 
         if let Some(pc) = ParenCommand::parse(feeder, core) {
             text += &pc.get_text();
-            Some( CommandSubstitution { text: text, command: pc } )
+            Some( CommandSubstitution { text: text, command: Some(pc) } )
         }else{
             None
         }
