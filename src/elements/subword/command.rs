@@ -8,7 +8,7 @@ use crate::elements::subword::{Subword, SubwordType};
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
     pub text: String,
-    command: Option<ParenCommand>,
+    command: ParenCommand,
 }
 
 impl Subword for CommandSubstitution {
@@ -19,13 +19,6 @@ impl Subword for CommandSubstitution {
 }
 
 impl CommandSubstitution {
-    fn new() -> CommandSubstitution {
-        CommandSubstitution {
-            text: String::new(),
-            command: None,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         None
     }
