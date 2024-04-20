@@ -81,7 +81,7 @@ impl IfCommand {
                            ans: &mut IfCommand, core: &mut ShellCore) -> bool {
         let mut s = None;
         let ends = Self::end_words(word);
-        if ! command::eat_inner_script(feeder, core, word, ends, &mut s) {
+        if ! command::eat_inner_script(feeder, core, word, ends, &mut s, false) {
             return false;
         }
 

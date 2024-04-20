@@ -27,35 +27,15 @@ impl CommandSubstitution {
         }
     }
 
-    fn eat_blank_line(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let num = feeder.scanner_blank(core);
-        ans.text += &feeder.consume(num);
-        let com_num = feeder.scanner_comment();
-        ans.text += &feeder.consume(com_num);
-        if feeder.starts_with("\n") {
-            ans.text += &feeder.consume(1);
-            true
-        }else{
-            false
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("$(") {
             return None;
         }
         let mut ans = Self::new();
         
-        while Self::eat_blank_line(feeder, &mut ans, core) {}
-        
-        if feeder.starts_with(")") {
-            ans.text += &feeder.consume(1);
-            return Some(ans);
-        }
-
         ans.text = feeder.consume(1);
 
-        if let Some(pc) = ParenCommand::parse(feeder, core) {
+        if let Some(pc) = ParenCommand::parse(feeder, core, true) {
             ans.text += &pc.get_text();
             ans.command = Some(pc);
             Some(ans)
