@@ -44,9 +44,9 @@ impl ParenCommand {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_empty: bool) -> Option<ParenCommand> {
         let mut ans = Self::new();
-        if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script) {
+        if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, permit_empty) {
             ans.text.push_str("(");
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
