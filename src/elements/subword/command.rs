@@ -22,9 +22,17 @@ impl Subword for CommandSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
+        let c = match self.command.as_mut() {
+            Some(c) => c, 
+            None => { 
+                self.text = "".to_string();
+                return true;
+            },
+        };
+
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let pid = self.command.exec(core, &mut pipe);
+        let pid = c.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
         result
@@ -45,7 +53,7 @@ impl CommandSubstitution {
         let f = unsafe { File::from_raw_fd(fd) };
         let mut reader = BufReader::new(f);
         self.text.clear();
-        reader.read_to_string(&mut self.text);
+        let _ = reader.read_to_string(&mut self.text);
         self.text.pop();
         true
     }
