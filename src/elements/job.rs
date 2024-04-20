@@ -136,6 +136,12 @@ impl Job {
                 }
             }
         }
-        Some(ans)
+
+        if ans.pipelines.len() > 0 {
+//            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
+            Some(ans)
+        }else{
+            None
+        }
     }
 }
