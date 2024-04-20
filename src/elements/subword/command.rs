@@ -10,7 +10,6 @@ use nix::unistd;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::os::fd::{FromRawFd, RawFd};
-use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
