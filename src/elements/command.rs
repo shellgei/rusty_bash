@@ -69,13 +69,13 @@ pub trait Command {
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
-           left: &str, right: Vec<&str>, ans: &mut Option<Script>) -> bool {
+           left: &str, right: Vec<&str>, ans: &mut Option<Script>, permit_empty: bool) -> bool {
    if ! feeder.starts_with(left) {
        return false;
     }
     feeder.nest.push( (left.to_string(), right.iter().map(|e| e.to_string()).collect()) );
     feeder.consume(left.len());
-    *ans = Script::parse(feeder, core);
+    *ans = Script::parse(feeder, core, permit_empty);
     feeder.nest.pop();
     ! ans.is_none()
 }
@@ -115,7 +115,7 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
     else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }

@@ -88,7 +88,7 @@ fn main_loop(core: &mut ShellCore) {
             _ => break,
         }
 
-        match Script::parse(&mut feeder, core){
+        match Script::parse(&mut feeder, core, false){
             Some(mut s) => s.exec(core),
             None => {},
         }

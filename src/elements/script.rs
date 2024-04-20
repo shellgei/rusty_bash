@@ -34,6 +34,11 @@ impl Script {
         }
     }
 
+    pub fn add_dummy_job(&mut self) {
+        self.jobs.push(Job::new());
+        self.job_ends.push("\n".to_string());
+    }
+
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool {
         if let Some(job) = Job::parse(feeder, core){
             ans.text += &job.text.clone();
@@ -69,13 +74,17 @@ impl Script {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_empty: bool) -> Option<Script> {
         let mut ans = Self::new();
+
+        if permit_empty {
+            ans.add_dummy_job();
+        }
 
         loop {
             while Self::eat_job(feeder, core, &mut ans) 
                && Self::eat_job_end(feeder, &mut ans) {}
-    
+
             match Self::check_nest(feeder, ans.jobs.len()){
                 Status::NormalEnd => {
                     return Some(ans)

@@ -78,7 +78,7 @@ impl Job {
         }
     }
 
-    fn new() -> Job {
+    pub fn new() -> Job {
         Job {
             text: String::new(),
             pipeline_ends: vec![],
@@ -136,12 +136,6 @@ impl Job {
                 }
             }
         }
-    
-        if ans.pipelines.len() > 0 {
-//            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
-            Some(ans)
-        }else{
-            None
-        }
+        Some(ans)
     }
 }
