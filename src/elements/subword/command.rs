@@ -20,6 +20,13 @@ impl Subword for CommandSubstitution {
 }
 
 impl CommandSubstitution {
+    fn new() -> CommandSubstitution {
+        CommandSubstitution {
+            text: String::new(),
+            command: None,
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("$(") {
             return None;
