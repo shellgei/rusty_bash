@@ -34,10 +34,6 @@ impl Script {
         }
     }
 
-    pub fn add_dummy_job(&mut self) {
-        self.jobs.push(Job::new());
-    }
-
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool {
         if let Some(job) = Job::parse(feeder, core){
             ans.text += &job.text.clone();
@@ -73,11 +69,13 @@ impl Script {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_empty: bool) -> Option<Script> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+                 permit_empty: bool) -> Option<Script> {
         let mut ans = Self::new();
-
+        
         if permit_empty {
-            ans.add_dummy_job();
+            ans.jobs.push(Job::new());
+            ans.job_ends.push("".to_string());
         }
 
         loop {

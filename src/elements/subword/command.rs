@@ -32,7 +32,7 @@ impl CommandSubstitution {
             return None;
         }
         let mut ans = Self::new();
-        
+
         ans.text = feeder.consume(1);
 
         if let Some(pc) = ParenCommand::parse(feeder, core, true) {
