@@ -69,8 +69,14 @@ impl Script {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+                 permit_empty: bool) -> Option<Script> {
         let mut ans = Self::new();
+        
+        if permit_empty {
+            ans.jobs.push(Job::new());
+            ans.job_ends.push("".to_string());
+        }
 
         loop {
             while Self::eat_job(feeder, core, &mut ans) 

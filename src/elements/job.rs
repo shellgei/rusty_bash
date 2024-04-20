@@ -78,7 +78,7 @@ impl Job {
         }
     }
 
-    fn new() -> Job {
+    pub fn new() -> Job {
         Job {
             text: String::new(),
             pipeline_ends: vec![],
