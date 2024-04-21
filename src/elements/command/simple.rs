@@ -65,7 +65,7 @@ impl Command for SimpleCommand {
         if core.run_builtin(&mut self.args) {
             core.exit()
         }else{
-            Self::exec_external_command(&mut self.args)
+            self.exec_external_command()
         }
     }
 
@@ -76,19 +76,19 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(args: &mut Vec<String>) -> ! {
-        let cargs = Self::to_cargs(args);
+    fn exec_external_command(&self) -> ! {
+        let cargs = Self::to_cargs(&self.args);
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => {
-                println!("sush: {}: Arg list too long", &args[0]);
+                println!("sush: {}: Arg list too long", &self.args[0]);
                 process::exit(126)
             },
             Err(Errno::EACCES) => {
-                println!("sush: {}: Permission denied", &args[0]);
+                println!("sush: {}: Permission denied", &self.args[0]);
                 process::exit(126)
             },
             Err(Errno::ENOENT) => {
-                println!("{}: command not found", &args[0]);
+                println!("{}: command not found", &self.args[0]);
                 process::exit(127)
             },
             Err(err) => {
@@ -110,7 +110,7 @@ impl SimpleCommand {
         }
     }
 
-    fn to_cargs(args: &mut Vec<String>) -> Vec<CString> {
+    fn to_cargs(args: &Vec<String>) -> Vec<CString> {
         args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
