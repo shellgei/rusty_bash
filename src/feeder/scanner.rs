@@ -132,10 +132,28 @@ impl Feeder {
     }
 
     pub fn scanner_name(&mut self, core: &mut ShellCore) -> usize {
+        let c = self.remaining.chars().nth(0).unwrap_or('0');
+        if '0' <= c && c <= '9' {
+            return 0;
+        }
+
         let judge = |ch| ch == '_' || ('0' <= ch && ch <= '9')
                          || ('a' <= ch && ch <= 'z')
                          || ('A' <= ch && ch <= 'Z');
         self.scanner_chars(judge, core)
+    }
+
+    pub fn scanner_name_and_equal(&mut self, core: &mut ShellCore) -> usize {
+        let name_len = self.scanner_name(core);
+        if name_len == 0 {
+            return 0;
+        }
+
+        if self.remaining.chars().nth(name_len).unwrap_or('x') == '=' {
+            name_len + 1
+        }else{
+            0
+        }
     }
 
     pub fn scanner_job_end(&mut self) -> usize {
