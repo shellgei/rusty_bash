@@ -34,17 +34,8 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
 
-        for w in words.iter_mut() {
-            match w.eval(core) {
-                Some(ws) => self.args.extend(ws),
-                None => {
-                    core.set_param("?", "1");
-                    return None;
-                },
-            }
-        }
-
-        if self.args.len() == 0 {
+        if ! words.iter_mut().all(|w| self.set_arg(w, core)) 
+        || self.args.len() == 0 {
             return None;
         }
 
@@ -114,6 +105,21 @@ impl SimpleCommand {
         args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
+    }
+
+    fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
+        match word.eval(core) {
+            Some(ws) => {
+                self.args.extend(ws);
+                true
+            },
+            None => {
+                if ! core.sigint.load(Relaxed) {
+                    core.set_param("?", "1");
+                }
+                false
+            },
+        }
     }
 
     fn new() -> SimpleCommand {
