@@ -35,12 +35,8 @@ impl Command for SimpleCommand {
         let mut words = self.words.to_vec();
 
         if ! words.iter_mut().all(|w| self.set_arg(w, core)) 
+        || Self::check_sigint(core) 
         || self.args.len() == 0 {
-            return None;
-        }
-
-        if core.sigint.load(Relaxed) {
-            core.set_param("?", "130");
             return None;
         }
 
@@ -53,10 +49,9 @@ impl Command for SimpleCommand {
             return;
         }
 
-        if core.run_builtin(&mut self.args) {
-            core.exit()
-        }else{
-            self.exec_external_command()
+        match core.run_builtin(&mut self.args) {
+            true  => core.exit(),
+            false => self.exec_external_command(),
         }
     }
 
@@ -99,6 +94,14 @@ impl SimpleCommand {
             self.nofork_exec(core);
             None
         }
+    }
+
+    fn check_sigint(core: &mut ShellCore) -> bool {
+        if core.sigint.load(Relaxed) {
+            core.set_param("?", "130");
+            return true;
+        }
+        false
     }
 
     fn to_cargs(args: &Vec<String>) -> Vec<CString> {
