@@ -16,7 +16,7 @@ use std::sync::atomic::Ordering::Relaxed;
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
     pub text: String,
-    command: ParenCommand,
+    command: Option<ParenCommand>,
 }
 
 impl Subword for CommandSubstitution {
@@ -24,12 +24,20 @@ impl Subword for CommandSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
+        let c = match self.command.as_mut() {
+            Some(c) => c, 
+            None => { 
+                self.text = "".to_string();
+                return true;
+            },
+        };
+
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let pid = self.command.exec(core, &mut pipe);
+        let pid = c.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
-        result && ! core.sigint.load(Relaxed)
+        result
     }
 
     fn get_type(&self) -> SubwordType { SubwordType::CommandSubstitution }
@@ -62,10 +70,14 @@ impl CommandSubstitution {
         let reader = BufReader::new(f);
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {
-            if ! self.set_line(line) || self.interrupted(i, core) {
+            if self.interrupted(i, core) {
+                break;
+            }
+            if ! self.set_line(line) {
                 return false;
             }
         }
+        self.text.pop();
         true
     }
 
@@ -73,11 +85,16 @@ impl CommandSubstitution {
         if ! feeder.starts_with("$(") {
             return None;
         }
+        if feeder.starts_with("$()") {
+            let text = feeder.consume(3);
+            return Some( CommandSubstitution { text: text, command: None } );
+        }
+
         let mut text = feeder.consume(1);
 
         if let Some(pc) = ParenCommand::parse(feeder, core) {
             text += &pc.get_text();
-            Some( CommandSubstitution { text: text, command: pc } )
+            Some( CommandSubstitution { text: text, command: Some(pc) } )
         }else{
             None
         }

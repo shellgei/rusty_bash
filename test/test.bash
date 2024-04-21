@@ -609,6 +609,24 @@ res=$($com <<< 'mkdir tmp; cd tmp; echo .* | grep -F '. ..'; cd ..; rmdir tmp')
 res=$($com <<< 'mkdir tmp; cd tmp; echo .*/ | grep -F '. ..'; cd ..; rmdir tmp')
 [ "$res" == '../ ./' ] || err $LINENO
 
+# command expansion
+
+res=$($com <<< 'echo a$(seq 2)b')
+[ "$res" == "a1 2b" ] || err $LINENO
+
+res=$($com <<< 'echo a$()b')
+[ "$res" == "ab" ] || err $LINENO
+
+res=$($com <<< 'echo "a$(seq 2)b"')
+[ "$res" == "a1
+2b" ] || err $LINENO
+
+res=$($com <<< 'echo $(pwd)')
+[ "$res" == "$(pwd)" ] || err $LINENO
+
+res=$($com <<< 'echo {,,}$(date "+%w")')
+[ "$res" == "$(echo {,,}$(date "+%w"))" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )
