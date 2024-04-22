@@ -23,6 +23,8 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug, Clone)]
 pub struct SimpleCommand {
     text: String,
+    substitutions: Vec<(String, Option<Word>)>,
+    evaluated_subs: Vec<(String, String)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -128,6 +130,8 @@ impl SimpleCommand {
     fn new() -> SimpleCommand {
         SimpleCommand {
             text: String::new(),
+            substitutions: vec![],
+            evaluated_subs: vec![],
             words: vec![],
             args: vec![],
             redirects: vec![],
