@@ -139,6 +139,28 @@ impl SimpleCommand {
         }
     }
 
+    fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name_and_equal(core);
+        if len == 0 {
+            return false;
+        }
+
+        let mut name_eq = feeder.consume(len);
+        ans.text += &name_eq;
+        name_eq.pop();
+
+        let w = match Word::parse(feeder, core) {
+            Some(w) => {
+                ans.text += &w.text;
+                Some(w)
+            },
+            _       => None,
+        };
+
+        ans.substitutions.push( (name_eq, w) );
+        true
+    }
+
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let w = match Word::parse(feeder, core) {
             Some(w) => w,
@@ -157,6 +179,10 @@ impl SimpleCommand {
         let mut ans = Self::new();
         feeder.set_backup();
 
+        while Self::eat_substitution(feeder, &mut ans, core) {
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+        }
+
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             if ! Self::eat_word(feeder, &mut ans, core) {
@@ -164,7 +190,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.words.len() + ans.redirects.len() > 0 {
+        if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{
