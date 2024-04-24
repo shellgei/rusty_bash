@@ -51,10 +51,10 @@ impl Command for SimpleCommand {
         }
 
         if Self::check_sigint(core) {
-            return None;
+            None
+        }else{
+            self.exec_command(core, pipe)
         }
-
-        self.exec_command(core, pipe)
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
