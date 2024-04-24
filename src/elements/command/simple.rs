@@ -112,6 +112,27 @@ impl SimpleCommand {
             .collect()
     }
 
+    /*
+    fn eval_value(s: &Option<Word>, core: &mut ShellCore) -> Option<String> {
+        match s {
+            None => Some("".to_string()),
+            Some(word) => word.eval_as_value(core),
+        }
+    }
+
+    fn eval_and_set_subs(&mut self, core: &mut ShellCore) -> bool {
+        self.evaluated_subs.clear();
+
+        for sub in self.substitutions.iter() {
+            let key = sub.0.clone();
+            match Self::eval_value(&sub.1, core) {
+                Some(value) => self.evaluated_subs.push( (key, value) ),
+                None => return false,
+            }
+        }
+        true
+    }*/
+
     fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
         match word.eval(core) {
             Some(ws) => {
