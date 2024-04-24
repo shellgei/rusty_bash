@@ -39,14 +39,18 @@ impl Command for SimpleCommand {
         if ! self.eval_substitutions(core){
             core.set_param("?", "1");
             return None;
-        }else if self.words.len() == 0 {
+        }
+
+        if ! words.iter_mut().all(|w| self.set_arg(w, core)){
+            return None;
+        }
+
+        if self.args.len() == 0 {
             self.evaluated_subs.iter().for_each(|s| core.set_param(&s.0, &s.1));
             return None;
         }
 
-        if ! words.iter_mut().all(|w| self.set_arg(w, core)) 
-        || Self::check_sigint(core) 
-        || self.args.len() == 0 {
+        if Self::check_sigint(core) {
             return None;
         }
 
