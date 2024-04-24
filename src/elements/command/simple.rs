@@ -36,6 +36,11 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
 
+        if ! self.eval_substitutions(core){
+            core.set_param("?", "1");
+            return None;
+        }
+
         if ! words.iter_mut().all(|w| self.set_arg(w, core)) 
         || Self::check_sigint(core) 
         || self.args.len() == 0 {
@@ -112,7 +117,6 @@ impl SimpleCommand {
             .collect()
     }
 
-    /*
     fn eval_value(s: &Option<Word>, core: &mut ShellCore) -> Option<String> {
         match s {
             None => Some("".to_string()),
@@ -120,7 +124,7 @@ impl SimpleCommand {
         }
     }
 
-    fn eval_and_set_subs(&mut self, core: &mut ShellCore) -> bool {
+    fn eval_substitutions(&mut self, core: &mut ShellCore) -> bool {
         self.evaluated_subs.clear();
 
         for sub in self.substitutions.iter() {
@@ -131,7 +135,7 @@ impl SimpleCommand {
             }
         }
         true
-    }*/
+    }
 
     fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
         match word.eval(core) {
