@@ -387,6 +387,41 @@ res=$($com <<< 'rm -f /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo w
 
 ### ARG TEST ###
 
+# substitution
+
+res=$($com <<< 'A=BBB; echo $A')
+[ "$res" == "BBB" ] || err $LINENO
+
+res=$($com <<< 'A=BBB echo ok')
+[ "$res" == "ok" ] || err $LINENO
+
+res=$($com <<< 'A=BBB B= echo ok')
+[ "$res" == "ok" ] || err $LINENO
+
+#res=$($com <<< 'A=BBB bash -c "echo \$A"')
+#[ "$res" == "BBB" ] || err $LINENO
+#
+#res=$($com <<< 'A=BBB B=CCC bash -c "echo \$A \$B"')
+#[ "$res" == "BBB CCC" ] || err $LINENO
+#
+#res=$($com <<< 'A=A$(echo BBB)C; echo $A')
+#[ "$res" == "ABBBC" ] || err $LINENO
+#
+#res=$($com <<< 'A={a,b}; echo $A')
+#[ "$res" == "{a,b}" ] || err $LINENO
+#
+#res=$($com <<< 'A=/*; echo $A | grep -q "*"')
+#[ "$?" == "1" ] || err $LINENO
+#
+#res=$($com <<< 'A=/*; echo $A | grep -q "etc"')
+#[ "$?" == "0" ] || err $LINENO
+#
+#res=$($com <<< 'A=${ }; echo NG')
+#[ "$ref" != "NG" ] || err $LINENO
+#
+#res=$($com <<< 'A=${ }')
+#[ "$?" == 1 ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
