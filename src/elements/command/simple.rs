@@ -48,9 +48,7 @@ impl Command for SimpleCommand {
         if self.args.len() == 0 {
             self.evaluated_subs.iter().for_each(|s| core.set_param(&s.0, &s.1));
             return None;
-        }
-
-        if Self::check_sigint(core) {
+        }else if Self::check_sigint(core) {
             None
         }else{
             self.exec_command(core, pipe)
