@@ -20,17 +20,23 @@ pub struct FunctionDefinition {
     name: String,
     command: Option<Box<dyn Command>>,
     redirects: Vec<Redirect>,
+    force_fork: bool,
 }
 
 impl Command for FunctionDefinition {
-    fn exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        if self.force_fork || pipe.is_connected() {
+            return None;
+        }
+
+        core.functions.insert(self.name.to_string(), self.command.as_mut().unwrap().clone());
         None
     }
 
     fn run(&mut self, _: &mut ShellCore, _: bool) { }
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
-    fn set_force_fork(&mut self) { }
+    fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
 }
 
@@ -41,6 +47,7 @@ impl FunctionDefinition {
             name: String::new(),
             command: None,
             redirects: vec![],
+            force_fork: false,
         }
     }
 
