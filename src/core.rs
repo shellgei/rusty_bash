@@ -116,10 +116,10 @@ impl ShellCore {
     } 
 
     fn set_foreground(&self) {
-        let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
-                   .expect("sush(fatal): cannot get pgid");
-
         if let Some(fd) = self.tty_fd.as_ref() {
+            let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
+                       .expect("sush(fatal): cannot get pgid");
+
             if unistd::tcgetpgrp(fd) == Ok(pgid) {
                 return;
             }
