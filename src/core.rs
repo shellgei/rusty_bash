@@ -116,19 +116,21 @@ impl ShellCore {
     } 
 
     fn set_foreground(&self) {
-        if let Some(fd) = self.tty_fd.as_ref() {
-            let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
-                       .expect("sush(fatal): cannot get pgid");
+        let fd = match self.tty_fd.as_ref() {
+            Some(fd) => fd,
+            _        => return,
+        };
+        let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
+                   .expect("sush(fatal): cannot get pgid");
 
-            if unistd::tcgetpgrp(fd) == Ok(pgid) {
-                return;
-            }
-
-            ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
-            unistd::tcsetpgrp(fd, pgid)
-                .expect("sush(fatal): cannot get the terminal");
-            restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
+        if unistd::tcgetpgrp(fd) == Ok(pgid) {
+            return;
         }
+
+        ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
+        unistd::tcsetpgrp(fd, pgid)
+            .expect("sush(fatal): cannot get the terminal");
+        restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
