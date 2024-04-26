@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script};
+use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
@@ -23,11 +23,11 @@ pub struct FunctionDefinition {
 }
 
 impl Command for FunctionDefinition {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, _: &mut ShellCore, _: &mut Pipe) -> Option<Pid> {
         None
     }
 
-    fn run(&mut self, core: &mut ShellCore, fork: bool) { }
+    fn run(&mut self, _: &mut ShellCore, _: bool) { }
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { }
@@ -86,9 +86,10 @@ impl FunctionDefinition {
 
         Self::eat_compound_command(feeder, &mut ans, core);
 
-        if let Some(c) = &ans.command {
+        if let Some(_) = &ans.command {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             feeder.pop_backup();
+            //dbg!("{:?}", &ans);
             Some(ans)
         }else{
             feeder.rewind();
