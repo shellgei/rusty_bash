@@ -51,17 +51,26 @@ impl FunctionDefinition {
             return false;
         }
         ans.text += &ans.name;
-
+        command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
         true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+        eprintln!("here {:?}", &feeder);
         let mut ans = Self::new();
+        feeder.set_backup();
         
-        Self::eat_name(feeder, &mut ans, core);
+        if ! Self::eat_name(feeder, &mut ans, core) 
+        || feeder.starts_with("()") {
+            feeder.rewind();
+            return None;
+        }
+
+        dbg!("{:?}", &ans);
 
 
+        feeder.rewind();
         None
     }
 }
