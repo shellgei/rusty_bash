@@ -6,6 +6,13 @@ use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use nix::unistd::Pid;
 
+fn reserved(w: &str) -> bool {
+    match w {
+        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" => true,
+        _ => false,
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct FunctionDefinition {
     text: String,
@@ -36,7 +43,25 @@ impl FunctionDefinition {
         }
     }
 
+    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name(core);
+        ans.name = feeder.consume(len).to_string();
+
+        if ans.name.len() == 0 && reserved(&ans.name) {
+            return false;
+        }
+        ans.text += &ans.name;
+
+
+        true
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+        let mut ans = Self::new();
+        
+        Self::eat_name(feeder, &mut ans, core);
+
+
         None
     }
 }
