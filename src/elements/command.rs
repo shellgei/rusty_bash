@@ -12,6 +12,7 @@ use crate::{ShellCore, Feeder, Script};
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
+use self::function_def::FunctionDefinition;
 use self::r#while::WhileCommand;
 use self::r#if::IfCommand;
 use std::fmt;
@@ -120,5 +121,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Comman
     else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = FunctionDefinition::parse(feeder, core) { Some(Box::new(a)) }
     else{ None }
 }

@@ -36,7 +36,7 @@ impl FunctionDefinition {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_empty: bool) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         None
     }
 }
