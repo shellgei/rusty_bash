@@ -14,7 +14,7 @@ use std::os::fd::{FromRawFd, RawFd};
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
     pub text: String,
-    command: Option<ParenCommand>,
+    command: ParenCommand,
 }
 
 impl Subword for CommandSubstitution {
@@ -22,17 +22,9 @@ impl Subword for CommandSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        let c = match self.command.as_mut() {
-            Some(c) => c, 
-            None => { 
-                self.text = "".to_string();
-                return true;
-            },
-        };
-
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let pid = c.exec(core, &mut pipe);
+        let pid = self.command.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         core.wait_pipeline(vec![pid]);
         result
@@ -55,16 +47,11 @@ impl CommandSubstitution {
         if ! feeder.starts_with("$(") {
             return None;
         }
-        if feeder.starts_with("$()") {
-            let text = feeder.consume(3);
-            return Some( CommandSubstitution { text: text, command: None } );
-        }
-
         let mut text = feeder.consume(1);
 
-        if let Some(pc) = ParenCommand::parse(feeder, core) {
+        if let Some(pc) = ParenCommand::parse(feeder, core, true) {
             text += &pc.get_text();
-            Some( CommandSubstitution { text: text, command: Some(pc) } )
+            Some(CommandSubstitution {text: text, command: pc} )
         }else{
             None
         }

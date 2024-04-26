@@ -114,9 +114,16 @@ impl ShellCore {
     } 
 
     fn set_foreground(&self) {
+        let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
+                   .expect("sush(fatal): cannot get pgid");
+
         if let Some(fd) = self.tty_fd.as_ref() {
+            if unistd::tcgetpgrp(fd) == Ok(pgid) {
+                return;
+            }
+
             ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
-            unistd::tcsetpgrp(fd, unistd::getpid())
+            unistd::tcsetpgrp(fd, pgid)
                 .expect("sush(fatal): cannot get the terminal");
             restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
         }
