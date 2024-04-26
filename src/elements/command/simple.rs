@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
-use std::process;
+use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 
 use nix::unistd::Pid;
@@ -76,6 +76,7 @@ impl Command for SimpleCommand {
 impl SimpleCommand {
     fn exec_external_command(&self) -> ! {
         let cargs = Self::to_cargs(&self.args);
+        self.evaluated_subs.iter().for_each(|s| env::set_var(&s.0, &s.1));
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => {
                 println!("sush: {}: Arg list too long", &self.args[0]);
