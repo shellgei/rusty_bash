@@ -4,6 +4,7 @@
 pub mod simple;
 pub mod paren;
 pub mod brace;
+pub mod function_def;
 pub mod r#while;
 pub mod r#if;
 
