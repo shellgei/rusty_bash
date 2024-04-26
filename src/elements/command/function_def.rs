@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder, Script};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
 use nix::unistd::Pid;
 
 fn reserved(w: &str) -> bool {
@@ -17,7 +18,7 @@ fn reserved(w: &str) -> bool {
 pub struct FunctionDefinition {
     text: String,
     name: String,
-    script: Option<Box<dyn Command>>,
+    command: Option<Box<dyn Command>>,
     redirects: Vec<Redirect>,
 }
 
@@ -38,7 +39,7 @@ impl FunctionDefinition {
         FunctionDefinition {
             text: String::new(),
             name: String::new(),
-            script: None,
+            command: None,
             redirects: vec![],
         }
     }
@@ -56,21 +57,39 @@ impl FunctionDefinition {
         true
     }
 
+    fn eat_compound_command(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        ans.command = if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
+        else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
+        else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
+        else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
+        else {None};
+
+        if let Some(c) = &ans.command {
+            ans.text += &c.get_text();
+            true
+        }else{
+            false
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
-        eprintln!("here {:?}", &feeder);
         let mut ans = Self::new();
         feeder.set_backup();
         
         if ! Self::eat_name(feeder, &mut ans, core) 
-        || feeder.starts_with("()") {
+        || ! feeder.starts_with("()") {
             feeder.rewind();
             return None;
         }
+        ans.text += &feeder.consume(2);
+        command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
-        dbg!("{:?}", &ans);
-
-
-        feeder.rewind();
-        None
+        if let Some(c) = &ans.command {
+            feeder.pop_backup();
+            Some(ans)
+        }else{
+            feeder.rewind();
+            None
+        }
     }
 }
