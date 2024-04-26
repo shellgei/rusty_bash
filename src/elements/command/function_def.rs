@@ -75,6 +75,11 @@ impl FunctionDefinition {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         let mut ans = Self::new();
         feeder.set_backup();
+
+        if feeder.starts_with("function") {
+            ans.text += &feeder.consume(8);
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+        }
         
         if ! Self::eat_name(feeder, &mut ans, core) 
         || ! feeder.starts_with("()") {
@@ -85,11 +90,10 @@ impl FunctionDefinition {
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
         Self::eat_compound_command(feeder, &mut ans, core);
+        command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
         if let Some(_) = &ans.command {
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             feeder.pop_backup();
-            //dbg!("{:?}", &ans);
             Some(ans)
         }else{
             feeder.rewind();
