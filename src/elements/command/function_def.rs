@@ -84,7 +84,10 @@ impl FunctionDefinition {
         ans.text += &feeder.consume(2);
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
+        Self::eat_compound_command(feeder, &mut ans, core);
+
         if let Some(c) = &ans.command {
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             feeder.pop_backup();
             Some(ans)
         }else{
