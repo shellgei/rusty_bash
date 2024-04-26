@@ -171,6 +171,7 @@ impl ShellCore {
 
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
         restore_signal(Signal::SIGINT);
+
         self.is_subshell = true;
         self.set_pgid(pid, pgid);
         self.set_subshell_vars();
