@@ -99,6 +99,11 @@ impl SimpleCommand {
     }
 
     fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        if core.functions.contains_key(&self.args[0]) {
+            let mut command = core.functions[&self.args[0]].clone();
+            return command.exec(core, pipe);
+        }
+
         if self.force_fork 
         || pipe.is_connected() 
         || ! core.builtins.contains_key(&self.args[0]) {
