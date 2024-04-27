@@ -101,7 +101,16 @@ impl SimpleCommand {
     fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if core.functions.contains_key(&self.args[0]) {
             let mut command = core.functions[&self.args[0]].clone();
-            return command.exec(core, pipe);
+
+            let backup = core.position_parameters.to_vec();
+            self.args[0] = backup[0].clone();
+            core.position_parameters = self.args.to_vec();
+
+            let pid = command.exec(core, pipe);
+
+            core.position_parameters = backup;
+
+            return pid;
         }
 
         if self.force_fork 

@@ -23,7 +23,7 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct ShellCore {
     pub flags: String,
     parameters: HashMap<String, String>,
-    position_parameters: Vec<String>,
+    pub position_parameters: Vec<String>,
     pub functions: HashMap<String, Box<dyn Command>>,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
