@@ -44,7 +44,30 @@ impl Terminal {
 
     fn make_width_map(prompt: &str) -> Vec<usize> {
         //TODO: \[・・・\]内の文字の幅をゼロにする
-        vec![]
+        let tmp = prompt.replace("\\[", "\x01").replace("\\]", "\x02").replace("\x1b","@").to_string();
+        //eprintln!("{:?}\r\n", &tmp);
+        let mut in_escape = false;
+        let mut ans = vec![];
+        for c in tmp.chars() {
+            if c == '\x01' {
+                in_escape = true;
+                continue;
+            }
+            if c == '\x02' {
+                in_escape = false;
+                continue;
+            }
+
+            let wid = if in_escape {
+                0
+            }else{
+                UnicodeWidthStr::width(c.to_string().as_str())
+            };
+
+            //eprintln!("{}: {:?}\r\n", c, &wid);
+            ans.push(wid);
+        }
+        ans
     }
 
     fn write(&mut self, s: &str) {
@@ -56,8 +79,8 @@ impl Terminal {
     }
 
     fn char_width(&self, c: &char, pos: usize) -> usize {
-        if pos >= self.prompt.len() {
-            return UnicodeWidthStr::width(c.to_string().as_str());
+        if pos < self.prompt.chars().count() {
+            return self.prompt_width_map[pos];
         }
 
         UnicodeWidthStr::width(c.to_string().as_str())
