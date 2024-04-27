@@ -25,7 +25,7 @@ impl ShellCore {
 
         if unistd::isatty(0) == Ok(true) {
             core.flags += "i";
-            core.set_param("PS1", r"\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]🍣 ");
+            core.set_param("PS1", r"\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;35m\]\w\[\033[00m\]🍣 ");
             core.set_param("PS2", "> ");
         }
 

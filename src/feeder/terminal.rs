@@ -56,8 +56,23 @@ impl Terminal {
             _ => "".to_string(),
         };
 
+        let homedir = match User::from_uid(uid) {
+            Ok(Some(u)) => u.dir.to_string_lossy().to_string(),
+            _ => "".to_string(),
+        };
+        let mut cwd = match unistd::getcwd() {
+            Ok(p) => p.to_string_lossy()
+                      .to_string(),
+            _ => "".to_string(),
+        };
+
+        if cwd.starts_with(&homedir) {
+            cwd = cwd.replacen(&homedir, "~", 1);
+        }
+
         raw.replace("\\u", &user)
            .replace("\\h", &hostname)
+           .replace("\\w", &cwd)
            .to_string()
     }
 
