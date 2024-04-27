@@ -43,6 +43,7 @@ impl Terminal {
     }
 
     fn make_width_map(prompt: &str) -> Vec<usize> {
+        //TODO: \[・・・\]内の文字の幅をゼロにする
         vec![]
     }
 
