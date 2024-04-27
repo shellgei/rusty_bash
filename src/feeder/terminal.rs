@@ -21,7 +21,8 @@ struct Terminal {
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
-        let prompt = core.get_param_ref(ps);
+        let raw_prompt = core.get_param_ref(ps);
+        let prompt = Self::build_ansi_escape(&raw_prompt);
         print!("{}", prompt);
         io::stdout().flush().unwrap();
 
@@ -36,6 +37,13 @@ impl Terminal {
             head: prompt.chars().count(),
             hist_ptr: 0,
         }
+    }
+
+    fn build_ansi_escape(raw: &str) -> String {
+        raw.replace("\\033", "\x1b")
+           .replace("\\[", "")
+           .replace("\\]", "")
+           .to_string()
     }
 
     fn write(&mut self, s: &str) {
