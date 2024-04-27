@@ -43,28 +43,19 @@ impl Terminal {
     }
 
     fn make_width_map(prompt: &str) -> Vec<usize> {
-        //TODO: \[・・・\]内の文字の幅をゼロにする
-        let tmp = prompt.replace("\\[", "\x01").replace("\\]", "\x02").replace("\x1b","@").to_string();
-        //eprintln!("{:?}\r\n", &tmp);
+        let tmp = prompt.replace("\\[", "\x01").replace("\\]", "\x02").to_string();
         let mut in_escape = false;
         let mut ans = vec![];
         for c in tmp.chars() {
-            if c == '\x01' {
-                in_escape = true;
-                continue;
-            }
-            if c == '\x02' {
-                in_escape = false;
+            if c == '\x01' || c == '\x02' {
+                in_escape = c == '\x01';
                 continue;
             }
 
-            let wid = if in_escape {
-                0
-            }else{
-                UnicodeWidthStr::width(c.to_string().as_str())
+            let wid = match in_escape {
+                true  => 0,
+                false => UnicodeWidthStr::width(c.to_string().as_str()),
             };
-
-            //eprintln!("{}: {:?}\r\n", c, &wid);
             ans.push(wid);
         }
         ans
