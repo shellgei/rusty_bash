@@ -17,12 +17,14 @@ struct Terminal {
     chars: Vec<char>,
     head: usize,
     hist_ptr: usize,
+    prompt_width_map: Vec<usize>,
 }
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let raw_prompt = core.get_param_ref(ps);
-        let prompt = Self::build_ansi_escape(&raw_prompt);
+        let ansi_on_prompt = raw_prompt.replace("\\033", "\x1b").to_string();
+        let prompt = ansi_on_prompt.replace("\\[", "").replace("\\]", "").to_string();
         print!("{}", prompt);
         io::stdout().flush().unwrap();
 
@@ -36,14 +38,12 @@ impl Terminal {
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
             hist_ptr: 0,
+            prompt_width_map: Self::make_width_map(&ansi_on_prompt),
         }
     }
 
-    fn build_ansi_escape(raw: &str) -> String {
-        raw.replace("\\033", "\x1b")
-           .replace("\\[", "")
-           .replace("\\]", "")
-           .to_string()
+    fn make_width_map(prompt: &str) -> Vec<usize> {
+        vec![]
     }
 
     fn write(&mut self, s: &str) {
@@ -54,8 +54,12 @@ impl Terminal {
         self.stdout.flush().unwrap();
     }
 
-    fn char_width(c: &char) -> usize {
-         UnicodeWidthStr::width(c.to_string().as_str())
+    fn char_width(&self, c: &char, pos: usize) -> usize {
+        if pos >= self.prompt.len() {
+            return UnicodeWidthStr::width(c.to_string().as_str());
+        }
+
+        UnicodeWidthStr::width(c.to_string().as_str())
     }
 
     fn size() -> (usize, usize) {
@@ -73,8 +77,8 @@ impl Terminal {
         let col = Terminal::size().0;
         let (mut x, mut y) = (0, y_origin);
 
-        for c in &self.chars[..head] {
-            let w = Self::char_width(c);
+        for (i, c) in self.chars[..head].iter().enumerate() {
+            let w = self.char_width(c, i);
             if x + w > col {
                 y += 1;
                 x = w;
