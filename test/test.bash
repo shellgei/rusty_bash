@@ -193,6 +193,13 @@ res=$($com <<< 'function f () { A=BBB ; } ; f | cat; echo $A')
 res=$($com <<< 'function f () { tac ; } ; seq 3 | f | tr -d \\n')
 [ "$res" = "321" ] || err $LINENO
 
+res=$($com <<< 'set a b c ; function f () { echo $2 ; } ; f')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'set a b c ; function f () { echo $2 ; } ; f; echo $2')
+[ "$res" = "
+b" ] || err $LINENO
+
 ### NEW LINE ###
 
 res=$($com <<< 'e\
