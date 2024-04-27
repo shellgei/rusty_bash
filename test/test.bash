@@ -200,6 +200,10 @@ res=$($com <<< 'set a b c ; function f () { echo $2 ; } ; f; echo $2')
 [ "$res" = "
 b" ] || err $LINENO
 
+res=$($com <<< 'set a b c ; function f () { set 1 2 3 ; echo $2 ; } ; f; echo $2')
+[ "$res" = "2
+b" ] || err $LINENO
+
 ### NEW LINE ###
 
 res=$($com <<< 'e\
