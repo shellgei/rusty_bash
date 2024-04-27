@@ -4,6 +4,8 @@
 use crate::{InputError, ShellCore};
 use std::io;
 use std::io::{Write, Stdout};
+use nix::unistd;
+use nix::unistd::User;
 use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
@@ -24,7 +26,8 @@ impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let raw_prompt = core.get_param_ref(ps);
         let ansi_on_prompt = raw_prompt.replace("\\033", "\x1b").to_string();
-        let prompt = ansi_on_prompt.replace("\\[", "").replace("\\]", "").to_string();
+        let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
+        let prompt = replaced_prompt.replace("\\[", "").replace("\\]", "").to_string();
         print!("{}", prompt);
         io::stdout().flush().unwrap();
 
@@ -38,8 +41,18 @@ impl Terminal {
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
             hist_ptr: 0,
-            prompt_width_map: Self::make_width_map(&ansi_on_prompt),
+            prompt_width_map: Self::make_width_map(&replaced_prompt),
         }
+    }
+
+    fn make_prompt_string(raw: &str) -> String {
+        let uid = unistd::getuid();
+        let user = match User::from_uid(uid) {
+            Ok(Some(u)) => u.name,
+            _ => "".to_string(),
+        };
+
+        raw.replace("\\u", &user).to_string()
     }
 
     fn make_width_map(prompt: &str) -> Vec<usize> {
