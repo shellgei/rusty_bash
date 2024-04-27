@@ -173,6 +173,26 @@ res=$($com <<< '{ echo a; }#aaaaa')
 res=$($com <<< '{ echo a; } #aaaaa')
 [ "$res" = "a" ] || err $LINENO
 
+### FUNCTION TEST ###
+
+res=$($com <<< 'f () { echo a; } ; f')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< 'function f () { echo a; } ; f')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< 'function f () { A=BBB ; } ; f; echo $A')
+[ "$res" = "BBB" ] || err $LINENO
+
+res=$($com <<< 'function f () ( A=BBB ) ; f; echo $A')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'function f () { A=BBB ; } ; f | cat; echo $A')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'function f () { tac ; } ; seq 3 | f | tr -d \\n')
+[ "$res" = "321" ] || err $LINENO
+
 ### NEW LINE ###
 
 res=$($com <<< 'e\
@@ -404,29 +424,29 @@ res=$($com <<< 'A=BBB $(); echo $A')
 res=$($com <<< 'A=BBB $(echo); echo $A')
 [ "$res" == "BBB" ] || err $LINENO
 
-#res=$($com <<< 'A=BBB bash -c "echo \$A"')
-#[ "$res" == "BBB" ] || err $LINENO
-#
-#res=$($com <<< 'A=BBB B=CCC bash -c "echo \$A \$B"')
-#[ "$res" == "BBB CCC" ] || err $LINENO
-#
-#res=$($com <<< 'A=A$(echo BBB)C; echo $A')
-#[ "$res" == "ABBBC" ] || err $LINENO
-#
-#res=$($com <<< 'A={a,b}; echo $A')
-#[ "$res" == "{a,b}" ] || err $LINENO
-#
-#res=$($com <<< 'A=/*; echo $A | grep -q "*"')
-#[ "$?" == "1" ] || err $LINENO
-#
-#res=$($com <<< 'A=/*; echo $A | grep -q "etc"')
-#[ "$?" == "0" ] || err $LINENO
-#
-#res=$($com <<< 'A=${ }; echo NG')
-#[ "$ref" != "NG" ] || err $LINENO
-#
-#res=$($com <<< 'A=${ }')
-#[ "$?" == 1 ] || err $LINENO
+res=$($com <<< 'A=BBB bash -c "echo \$A"')
+[ "$res" == "BBB" ] || err $LINENO
+
+res=$($com <<< 'A=BBB B=CCC bash -c "echo \$A \$B"')
+[ "$res" == "BBB CCC" ] || err $LINENO
+
+res=$($com <<< 'A=A$(echo BBB)C; echo $A')
+[ "$res" == "ABBBC" ] || err $LINENO
+
+res=$($com <<< 'A={a,b}; echo $A')
+[ "$res" == "{a,b}" ] || err $LINENO
+
+res=$($com <<< 'A=/*; echo $A | grep -q "*"')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=/*; echo $A | grep -q "etc"')
+[ "$?" == "0" ] || err $LINENO
+
+res=$($com <<< 'A=${ }; echo NG')
+[ "$ref" != "NG" ] || err $LINENO
+
+res=$($com <<< 'A=${ }')
+[ "$?" == 1 ] || err $LINENO
 
 # brace
 
