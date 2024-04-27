@@ -8,7 +8,7 @@ mod elements;
 use std::{env, process, thread, time};
 use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
-use crate::core::ShellCore;
+use crate::core::{builtins, ShellCore};
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
 use signal_hook::consts;
@@ -52,12 +52,13 @@ fn run_signal_check(core: &mut ShellCore) {
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let mut args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
 
     let mut core = ShellCore::new();
+    builtins::set(&mut core, &mut args);
     run_signal_check(&mut core);
     main_loop(&mut core);
 }

@@ -6,6 +6,18 @@ use std::env;
 
 impl ShellCore {
     pub fn get_param_ref(&mut self, key: &str) -> &str {
+        if key.len() == 1 {
+            let c = key.chars().nth(0).unwrap();
+            if '0' <= c && c <= '9' {
+                let n = key.parse::<usize>().unwrap();
+                if n < self.position_parameters.len() {
+                    return &self.position_parameters[n];
+                }else{
+                    return "";
+                }
+            }
+        }
+
         if  self.parameters.get(key) == None {
             if let Ok(val) = env::var(key) {
                 self.set_param(key, &val);
