@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-nix = {version = "0.28.0", features = ["fs", "user"] }
+nix = {version = "0.28.0", features = ["fs", "user", "hostname"] }
 unicode-width = "0.1.11"
 termion = "3.0.0"
 rev_lines = "0.3.0"

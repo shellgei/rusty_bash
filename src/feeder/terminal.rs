@@ -51,8 +51,14 @@ impl Terminal {
             Ok(Some(u)) => u.name,
             _ => "".to_string(),
         };
+        let hostname = match unistd::gethostname() {
+            Ok(h) => h.to_string_lossy().to_string(),
+            _ => "".to_string(),
+        };
 
-        raw.replace("\\u", &user).to_string()
+        raw.replace("\\u", &user)
+           .replace("\\h", &hostname)
+           .to_string()
     }
 
     fn make_width_map(prompt: &str) -> Vec<usize> {
