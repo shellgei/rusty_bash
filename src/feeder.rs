@@ -108,9 +108,6 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let pwd = core.get_param_ref("PWD").to_string();
-        core.set_param("PS1", &(pwd + "🍣 "));
-
         let line = match core.has_flag('i') {
             true  => terminal::read_line(core, "PS1"),
             false => Self::read_line_stdin(),
