@@ -19,6 +19,11 @@ impl ShellCore {
     }
 
     pub fn set_param(&mut self, key: &str, val: &str) {
+        match env::var(key) {
+            Ok(_) => env::set_var(key, val),
+            _     => {},
+        }
+
         self.parameters.insert(key.to_string(), val.to_string());
     }
 }
