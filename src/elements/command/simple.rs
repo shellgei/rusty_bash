@@ -50,6 +50,8 @@ impl Command for SimpleCommand {
             return None;
         }else if Self::check_sigint(core) {
             None
+        }else if core.functions.contains_key(&self.args[0]) {
+            self.exec_function(core, pipe)
         }else{
             self.exec_command(core, pipe)
         }
@@ -99,20 +101,6 @@ impl SimpleCommand {
     }
 
     fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        if core.functions.contains_key(&self.args[0]) {
-            let mut command = core.functions[&self.args[0]].clone();
-
-            let backup = core.position_parameters.to_vec();
-            self.args[0] = backup[0].clone();
-            core.position_parameters = self.args.to_vec();
-
-            let pid = command.exec(core, pipe);
-
-            core.position_parameters = backup;
-
-            return pid;
-        }
-
         if self.force_fork 
         || pipe.is_connected() 
         || ! core.builtins.contains_key(&self.args[0]) {
@@ -121,6 +109,20 @@ impl SimpleCommand {
             self.nofork_exec(core);
             None
         }
+    }
+
+    fn exec_function(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        let mut command = core.functions[&self.args[0]].clone();
+
+        let backup = core.position_parameters.to_vec();
+        self.args[0] = backup[0].clone();
+        core.position_parameters = self.args.to_vec();
+
+        let pid = command.exec(core, pipe);
+
+        core.position_parameters = backup;
+
+        return pid;
     }
 
     fn check_sigint(core: &mut ShellCore) -> bool {
