@@ -4,6 +4,7 @@
 pub mod simple;
 pub mod paren;
 pub mod brace;
+pub mod function_def;
 pub mod r#while;
 pub mod r#if;
 
@@ -11,6 +12,7 @@ use crate::{ShellCore, Feeder, Script};
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
+use self::function_def::FunctionDefinition;
 use self::r#while::WhileCommand;
 use self::r#if::IfCommand;
 use std::fmt;
@@ -114,10 +116,11 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
+    if let Some(a) = FunctionDefinition::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
     else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
     else{ None }
 }

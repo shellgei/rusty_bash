@@ -15,6 +15,7 @@ use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
+use crate::elements::command::Command;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
@@ -22,6 +23,8 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct ShellCore {
     pub flags: String,
     parameters: HashMap<String, String>,
+    pub position_parameters: Vec<String>,
+    pub functions: HashMap<String, Box<dyn Command>>,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
@@ -47,6 +50,8 @@ impl ShellCore {
         let mut core = ShellCore{
             flags: String::new(),
             parameters: HashMap::new(),
+            position_parameters: vec![],
+            functions: HashMap::new(),
             rewritten_history: HashMap::new(),
             history: vec![],
             builtins: HashMap::new(),
@@ -63,7 +68,7 @@ impl ShellCore {
 
         if unistd::isatty(0) == Ok(true) {
             core.flags += "i";
-            core.set_param("PS1", "🍣 ");
+            core.set_param("PS1", r"\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;35m\]\w\[\033[00m\]🍣\[\033[01;36m\]\b\[\033[00m\] ");
             core.set_param("PS2", "> ");
             let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
@@ -114,9 +119,16 @@ impl ShellCore {
     } 
 
     fn set_foreground(&self) {
+        let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
+                   .expect("sush(fatal): cannot get pgid");
+
         if let Some(fd) = self.tty_fd.as_ref() {
+            if unistd::tcgetpgrp(fd) == Ok(pgid) {
+                return;
+            }
+
             ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
-            unistd::tcsetpgrp(fd, unistd::getpid())
+            unistd::tcsetpgrp(fd, pgid)
                 .expect("sush(fatal): cannot get the terminal");
             restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
         }
@@ -138,14 +150,14 @@ impl ShellCore {
             panic!("SUSH INTERNAL ERROR (no arg for builtins)");
         }
 
-        if ! self.builtins.contains_key(&args[0]) {
-            return false;
+        if self.builtins.contains_key(&args[0]) {
+            let func = self.builtins[&args[0]];
+            let status = func(self, args);
+            self.parameters.insert("?".to_string(), status.to_string());
+            return true;
         }
 
-        let func = self.builtins[&args[0]];
-        let status = func(self, args);
-        self.parameters.insert("?".to_string(), status.to_string());
-        true
+        false
     }
 
     pub fn exit(&self) -> ! {

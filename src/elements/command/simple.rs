@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
-use std::process;
+use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 
 use nix::unistd::Pid;
@@ -23,6 +23,8 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug, Clone)]
 pub struct SimpleCommand {
     text: String,
+    substitutions: Vec<(String, Option<Word>)>,
+    evaluated_subs: Vec<(String, String)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -34,32 +36,24 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
 
-        for w in words.iter_mut() {
-            match w.eval(core) {
-                Some(ws) => self.args.extend(ws),
-                None => {
-                    core.set_param("?", "1");
-                    return None;
-                },
-            }
+        if ! self.eval_substitutions(core){
+            core.set_param("?", "1");
+            return None;
+        }
+
+        if ! words.iter_mut().all(|w| self.set_arg(w, core)){
+            return None;
         }
 
         if self.args.len() == 0 {
+            self.evaluated_subs.iter().for_each(|s| core.set_param(&s.0, &s.1));
             return None;
-        }
-
-        if core.sigint.load(Relaxed) {
-            core.set_param("?", "130");
-            return None;
-        }
-
-        if self.force_fork 
-        || pipe.is_connected() 
-        || ! core.builtins.contains_key(&self.args[0]) {
-            self.fork_exec(core, pipe)
-        }else{
-            self.nofork_exec(core);
+        }else if Self::check_sigint(core) {
             None
+        }else if core.functions.contains_key(&self.args[0]) {
+            self.exec_function(core, pipe)
+        }else{
+            self.exec_command(core, pipe)
         }
     }
 
@@ -69,10 +63,9 @@ impl Command for SimpleCommand {
             return;
         }
 
-        if core.run_builtin(&mut self.args) {
-            core.exit()
-        }else{
-            Self::exec_external_command(&mut self.args)
+        match core.run_builtin(&mut self.args) {
+            true  => core.exit(),
+            false => self.exec_external_command(),
         }
     }
 
@@ -83,19 +76,20 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(args: &mut Vec<String>) -> ! {
-        let cargs = Self::to_cargs(args);
+    fn exec_external_command(&self) -> ! {
+        let cargs = Self::to_cargs(&self.args);
+        self.evaluated_subs.iter().for_each(|s| env::set_var(&s.0, &s.1));
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => {
-                println!("sush: {}: Arg list too long", &args[0]);
+                println!("sush: {}: Arg list too long", &self.args[0]);
                 process::exit(126)
             },
             Err(Errno::EACCES) => {
-                println!("sush: {}: Permission denied", &args[0]);
+                println!("sush: {}: Permission denied", &self.args[0]);
                 process::exit(126)
             },
             Err(Errno::ENOENT) => {
-                println!("{}: command not found", &args[0]);
+                println!("{}: command not found", &self.args[0]);
                 process::exit(127)
             },
             Err(err) => {
@@ -106,20 +100,112 @@ impl SimpleCommand {
         }
     }
 
-    fn to_cargs(args: &mut Vec<String>) -> Vec<CString> {
+    fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        if self.force_fork 
+        || pipe.is_connected() 
+        || ! core.builtins.contains_key(&self.args[0]) {
+            self.fork_exec(core, pipe)
+        }else{
+            self.nofork_exec(core);
+            None
+        }
+    }
+
+    fn exec_function(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        let mut command = core.functions[&self.args[0]].clone();
+
+        let backup = core.position_parameters.to_vec();
+        self.args[0] = backup[0].clone();
+        core.position_parameters = self.args.to_vec();
+
+        let pid = command.exec(core, pipe);
+
+        core.position_parameters = backup;
+
+        return pid;
+    }
+
+    fn check_sigint(core: &mut ShellCore) -> bool {
+        if core.sigint.load(Relaxed) {
+            core.set_param("?", "130");
+            return true;
+        }
+        false
+    }
+
+    fn to_cargs(args: &Vec<String>) -> Vec<CString> {
         args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
     }
 
+    fn eval_value(s: &Option<Word>, core: &mut ShellCore) -> Option<String> {
+        match s {
+            None => Some("".to_string()),
+            Some(word) => word.eval_as_value(core),
+        }
+    }
+
+    fn eval_substitutions(&mut self, core: &mut ShellCore) -> bool {
+        self.evaluated_subs.clear();
+
+        for sub in self.substitutions.iter() {
+            let key = sub.0.clone();
+            match Self::eval_value(&sub.1, core) {
+                Some(value) => self.evaluated_subs.push( (key, value) ),
+                None => return false,
+            }
+        }
+        true
+    }
+
+    fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
+        match word.eval(core) {
+            Some(ws) => {
+                self.args.extend(ws);
+                true
+            },
+            None => {
+                if ! core.sigint.load(Relaxed) {
+                    core.set_param("?", "1");
+                }
+                false
+            },
+        }
+    }
+
     fn new() -> SimpleCommand {
         SimpleCommand {
             text: String::new(),
+            substitutions: vec![],
+            evaluated_subs: vec![],
             words: vec![],
             args: vec![],
             redirects: vec![],
             force_fork: false,
         }
+    }
+
+    fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name_and_equal(core);
+        if len == 0 {
+            return false;
+        }
+
+        let mut name_eq = feeder.consume(len);
+        ans.text += &name_eq;
+        name_eq.pop();
+
+        let w = match Word::parse(feeder, core) {
+            Some(w) => {
+                ans.text += &w.text;
+                Some(w)
+            },
+            _       => None,
+        };
+
+        ans.substitutions.push( (name_eq, w) );
+        true
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
@@ -140,6 +226,10 @@ impl SimpleCommand {
         let mut ans = Self::new();
         feeder.set_backup();
 
+        while Self::eat_substitution(feeder, &mut ans, core) {
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+        }
+
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             if ! Self::eat_word(feeder, &mut ans, core) {
@@ -147,7 +237,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.words.len() + ans.redirects.len() > 0 {
+        if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{
