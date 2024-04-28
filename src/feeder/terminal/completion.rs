@@ -26,7 +26,13 @@ fn expand(path: &str) -> Vec<String> {
 
 fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     match path {
-        Ok(p) => p.to_string_lossy().to_string(),
+        Ok(p) => {
+            let mut s = p.to_string_lossy().to_string();
+            if p.is_dir() && s.chars().last() != Some('/') {
+                s.push('/');
+            }
+            s
+        },
         _ => "".to_string(),
     }
 }
