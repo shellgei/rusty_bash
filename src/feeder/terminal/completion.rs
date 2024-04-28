@@ -97,7 +97,8 @@ impl Terminal {
     pub fn show_path_candidates(&mut self, paths: &Vec<String>) {
         eprintln!("\r");
 
-        let opt_max_length = paths.iter().map(|p| UnicodeWidthStr::width(p.as_str())).max();
+        let widths: Vec<usize> = paths.iter().map(|p| UnicodeWidthStr::width(p.as_str())).collect();
+        let opt_max_length = widths.iter().max();
         if opt_max_length == None {
             paths.iter().for_each(|p| print!("{}  ", &p));
             self.rewrite(true);
@@ -112,18 +113,18 @@ impl Terminal {
 
         for row in 0..row_num {
             for col in 0..col_num {
-                let i = row*col_num + col;
+                let i = col*row_num + row;
                 if i >= paths.len() {
                     continue;
                 }
 
-                print!("{}  ", paths[i]);
+                let space_num = slot_len - widths[i];
+                let s = String::from_utf8(vec![b' '; space_num]).unwrap();
+
+                print!("{}{}", paths[i], &s);
             }
             print!("\r\n");
         }
-
-        eprintln!("{:?}", &paths);
-        eprintln!("{:?}", &col_num);
         self.rewrite(true);
     }
 
@@ -138,4 +139,3 @@ impl Terminal {
         self.rewrite(false);
     }
 }
-
