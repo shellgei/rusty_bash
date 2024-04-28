@@ -1,6 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod completion;
+
 use crate::{InputError, ShellCore};
 use std::io;
 use std::io::{Write, Stdout};
@@ -273,6 +275,9 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 term.write("\r\n");
                 term.chars.push('\n');
                 break;
+            },
+            event::Key::Char('\t') => {
+                term.completion(core);
             },
             event::Key::Char(c) => {
                 term.insert(*c);
