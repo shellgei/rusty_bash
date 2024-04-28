@@ -5,6 +5,7 @@ use crate::feeder::terminal::Terminal;
 use glob;
 use glob::{GlobError, MatchOptions};
 use std::path::PathBuf;
+use unicode_width::UnicodeWidthStr;
 
 fn expand(path: &str) -> Vec<String> {
     let opts = MatchOptions {
@@ -82,7 +83,7 @@ impl Terminal {
                 let common = common_string(&paths);
                 if common.len() == last.len() {
                     if double_tab {
-                        self.double_tab_file_completion(&paths);
+                        self.show_path_candidates(&paths);
                     }else{
                         self.cloop();
                     }
@@ -93,9 +94,36 @@ impl Terminal {
         }
     }
 
-    pub fn double_tab_file_completion(&mut self, paths: &Vec<String>) {
+    pub fn show_path_candidates(&mut self, paths: &Vec<String>) {
         eprintln!("\r");
+
+        let opt_max_length = paths.iter().map(|p| UnicodeWidthStr::width(p.as_str())).max();
+        if opt_max_length == None {
+            paths.iter().for_each(|p| print!("{}  ", &p));
+            self.rewrite(true);
+            return;
+        }
+
+        let slot_len = opt_max_length.unwrap() + 2;
+        let (col_width, _) = Terminal::size();
+
+        let col_num = col_width / slot_len;
+        let row_num = (paths.len()-1) / col_num + 1;
+
+        for row in 0..row_num {
+            for col in 0..col_num {
+                let i = row*col_num + col;
+                if i >= paths.len() {
+                    continue;
+                }
+
+                print!("{}  ", paths[i]);
+            }
+            print!("\r\n");
+        }
+
         eprintln!("{:?}", &paths);
+        eprintln!("{:?}", &col_num);
         self.rewrite(true);
     }
 
