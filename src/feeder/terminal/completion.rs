@@ -100,7 +100,7 @@ impl Terminal {
         let widths: Vec<usize> = paths.iter().map(|p| UnicodeWidthStr::width(p.as_str())).collect();
         let opt_max_length = widths.iter().max();
         if opt_max_length == None {
-            paths.iter().for_each(|p| print!("{}  ", &p));
+            paths.iter().for_each(|p| print!("{}\r\n", &p));
             self.rewrite(true);
             return;
         }
@@ -109,6 +109,12 @@ impl Terminal {
         let (col_width, _) = Terminal::size();
 
         let col_num = col_width / slot_len;
+        if col_num == 0 {
+            paths.iter().for_each(|p| print!("{}\r\n", &p));
+            self.rewrite(true);
+            return;
+        }
+
         let row_num = (paths.len()-1) / col_num + 1;
 
         for row in 0..row_num {
