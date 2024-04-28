@@ -7,6 +7,7 @@ use faccess;
 use faccess::PathExt;
 use glob;
 use glob::{GlobError, MatchOptions};
+use std::collections::HashSet;
 use std::path::PathBuf;
 use unicode_width::UnicodeWidthStr;
 
@@ -102,18 +103,19 @@ impl Terminal {
     }
 
     pub fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
-        let mut comlist = vec![];
+        let mut comlist = HashSet::new();
         for path in core.get_param_ref("PATH").to_string().split(":") {
             for file in expand(&(path.to_string() + "/*"), true, false) {
                 let tmp = file.clone();
                 let command = tmp.split("/").last().map(|s| s.to_string()).unwrap();
                 if command.starts_with(target) {
-                    comlist.push(command.clone());
+                    comlist.insert(command.clone());
                 }
             }
         }
-        comlist.sort();
-        comlist
+        let mut ans: Vec<String> = comlist.iter().map(|c| c.to_string()).collect();
+        ans.sort();
+        ans
     }
 
     pub fn command_completion(&mut self, target: &String, core: &mut ShellCore) {
