@@ -63,7 +63,11 @@ fn common_string(paths: &Vec<String>) -> String {
 }
 
 impl Terminal {
-    pub fn completion (&mut self) {
+    pub fn completion (&mut self, double_tab: bool) {
+        self.file_completion(double_tab);
+    }
+
+    pub fn file_completion (&mut self, double_tab: bool) {
         let input = self.get_string(self.prompt.chars().count());
         let last = match input.split(" ").last() {
             Some(s) => s, 
@@ -77,12 +81,22 @@ impl Terminal {
             _ => {
                 let common = common_string(&paths);
                 if common.len() == last.len() {
-                    self.cloop();
+                    if double_tab {
+                        self.double_tab_file_completion(&paths);
+                    }else{
+                        self.cloop();
+                    }
                     return;
                 }
                 self.replace_input(&common, &last);
             },
         }
+    }
+
+    pub fn double_tab_file_completion(&mut self, paths: &Vec<String>) {
+        eprintln!("\r");
+        eprintln!("{:?}", &paths);
+        self.rewrite(true);
     }
 
     fn replace_input(&mut self, path: &String, last: &str) {
@@ -93,7 +107,7 @@ impl Terminal {
         self.chars.drain(len - last_char_num..);
         self.chars.extend(path_chars.chars());
         self.head = self.chars.len();
-        self.rewrite(false)
+        self.rewrite(false);
     }
 }
 

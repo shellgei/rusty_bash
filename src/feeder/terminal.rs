@@ -257,9 +257,11 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
     core.history.insert(0, String::new());
+    let mut prev_key = event::Key::Char('a');
 
     for c in io::stdin().keys() {
         term.check_size_change(&mut term_size);
+
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('c') => {
@@ -289,7 +291,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 break;
             },
             event::Key::Char('\t') => {
-                term.completion();
+                term.completion(prev_key == event::Key::Char('\t'));
             },
             event::Key::Char(c) => {
                 term.insert(*c);
@@ -297,6 +299,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             _  => {},
         }
         term.check_scroll();
+        prev_key = c.as_ref().unwrap().clone();
     }
 
     core.history[0] = term.get_string(term.prompt.chars().count());
