@@ -1,10 +1,16 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod completion;
+
 use crate::{InputError, ShellCore};
 use std::io;
+use std::fs::File;
 use std::io::{Write, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
+use std::path::Path;
+use nix::unistd;
+use nix::unistd::User;
 use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
@@ -18,12 +24,16 @@ struct Terminal {
     chars: Vec<char>,
     head: usize,
     hist_ptr: usize,
+    prompt_width_map: Vec<usize>,
 }
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
-        let prompt = core.get_param_ref(ps);
-        print!("\x1b[1;35m{}\x1b[m", prompt);
+        let raw_prompt = core.get_param_ref(ps);
+        let ansi_on_prompt = raw_prompt.replace("\\033", "\x1b").to_string();
+        let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
+        let prompt = replaced_prompt.replace("\\[", "").replace("\\]", "").to_string();
+        print!("{}", prompt);
         io::stdout().flush().unwrap();
 
         let mut sout = io::stdout().into_raw_mode().unwrap();
@@ -36,7 +46,80 @@ impl Terminal {
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
             hist_ptr: 0,
+            prompt_width_map: Self::make_width_map(&replaced_prompt),
         }
+    }
+
+    fn get_branch(cwd: &String) -> String {
+        let mut dirs: Vec<String> = cwd.split("/").map(|s| s.to_string()).collect();
+        while dirs.len() > 0 {
+            let path = dirs.join("/") + "/.git/HEAD";
+            dirs.pop();
+
+            let p = Path::new(&path);
+            if p.is_file() {
+                if let Ok(mut f) = File::open(p){
+                    return match f.read_line() {
+                        Ok(Some(s)) => s.replace("ref: refs/heads/"," ") + "🌵",
+                        _ => "".to_string(),
+                    };
+                }
+            }
+        }
+
+        "".to_string()
+    }
+
+    fn make_prompt_string(raw: &str) -> String {
+        let uid = unistd::getuid();
+        let user = match User::from_uid(uid) {
+            Ok(Some(u)) => u.name,
+            _ => "".to_string(),
+        };
+        let hostname = match unistd::gethostname() {
+            Ok(h) => h.to_string_lossy().to_string(),
+            _ => "".to_string(),
+        };
+
+        let homedir = match User::from_uid(uid) {
+            Ok(Some(u)) => u.dir.to_string_lossy().to_string(),
+            _ => "".to_string(),
+        };
+        let mut cwd = match unistd::getcwd() {
+            Ok(p) => p.to_string_lossy()
+                      .to_string(),
+            _ => "".to_string(),
+        };
+        let branch = Self::get_branch(&cwd);
+
+        if cwd.starts_with(&homedir) {
+            cwd = cwd.replacen(&homedir, "~", 1);
+        }
+
+        raw.replace("\\u", &user)
+           .replace("\\h", &hostname)
+           .replace("\\w", &cwd)
+           .replace("\\b", &branch)
+           .to_string()
+    }
+
+    fn make_width_map(prompt: &str) -> Vec<usize> {
+        let tmp = prompt.replace("\\[", "\x01").replace("\\]", "\x02").to_string();
+        let mut in_escape = false;
+        let mut ans = vec![];
+        for c in tmp.chars() {
+            if c == '\x01' || c == '\x02' {
+                in_escape = c == '\x01';
+                continue;
+            }
+
+            let wid = match in_escape {
+                true  => 0,
+                false => UnicodeWidthStr::width(c.to_string().as_str()),
+            };
+            ans.push(wid);
+        }
+        ans
     }
 
     fn write(&mut self, s: &str) {
@@ -47,8 +130,12 @@ impl Terminal {
         self.stdout.flush().unwrap();
     }
 
-    fn char_width(c: &char) -> usize {
-         UnicodeWidthStr::width(c.to_string().as_str())
+    fn char_width(&self, c: &char, pos: usize) -> usize {
+        if pos < self.prompt.chars().count() {
+            return self.prompt_width_map[pos];
+        }
+
+        UnicodeWidthStr::width(c.to_string().as_str())
     }
 
     fn size() -> (usize, usize) {
@@ -66,8 +153,8 @@ impl Terminal {
         let col = Terminal::size().0;
         let (mut x, mut y) = (0, y_origin);
 
-        for c in &self.chars[..head] {
-            let w = Self::char_width(c);
+        for (i, c) in self.chars[..head].iter().enumerate() {
+            let w = self.char_width(c, i);
             if x + w > col {
                 y += 1;
                 x = w;
@@ -93,8 +180,7 @@ impl Terminal {
         if erase {
             self.write(&termion::clear::AfterCursor.to_string());
         }
-        print!("\x1b[1;35m{}\x1b[m", self.prompt);
-        self.write(&self.get_string(self.prompt.chars().count()));
+        self.write(&self.get_string(0));
         self.goto(self.head);
         self.flush();
     }
@@ -139,9 +225,16 @@ impl Terminal {
     }
 
     pub fn shift_cursor(&mut self, shift: i32) {
+        let prev = self.head;
         Self::shift_in_range(&mut self.head, shift, 
                              self.prompt.chars().count(),
                              self.chars.len());
+
+        if prev == self.head {
+            self.cloop();
+            return;
+        }
+
         self.goto(self.head);
         self.flush();
     }
@@ -178,15 +271,22 @@ impl Terminal {
         self.head = self.chars.len();
         self.rewrite(true);
     }
+
+    pub fn cloop(&mut self) {
+        print!("\x07");
+        self.flush();
+    }
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
     core.history.insert(0, String::new());
+    let mut prev_key = event::Key::Char('a');
 
     for c in io::stdin().keys() {
         term.check_size_change(&mut term_size);
+
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('b') => term.shift_cursor(-1),
@@ -218,12 +318,16 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 term.chars.push('\n');
                 break;
             },
+            event::Key::Char('\t') => {
+                term.completion(core, prev_key == event::Key::Char('\t'));
+            },
             event::Key::Char(c) => {
                 term.insert(*c);
             },
             _  => {},
         }
         term.check_scroll();
+        prev_key = c.as_ref().unwrap().clone();
     }
 
     core.history[0] = term.get_string(term.prompt.chars().count());
