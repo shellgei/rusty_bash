@@ -71,10 +71,6 @@ fn common_string(paths: &Vec<String>) -> String {
 
 impl Terminal {
     pub fn completion(&mut self, double_tab: bool) {
-        self.file_completion(double_tab);
-    }
-
-    pub fn file_completion(&mut self, double_tab: bool) {
         let input = self.get_string(self.prompt.chars().count());
         let words: Vec<String> = input.split(" ").map(|e| e.to_string()).collect();
         let last = match words.last() {
@@ -88,14 +84,17 @@ impl Terminal {
                 command_pos += 1;
             }
         }
-
         let search_executable = command_pos == words.len()-1;
 
-        let paths = expand(&(last.to_string() + "*"), search_executable);
+        self.file_completion(last, double_tab, search_executable);
+    }
+
+    pub fn file_completion(&mut self, target: &String, double_tab: bool, search_executable: bool) {
+        let paths = expand(&(target.to_string() + "*"), search_executable);
         match paths.len() {
             0 => self.cloop(),
-            1 => self.replace_input(&paths[0], &last),
-            _ => self.file_completion_multicands(&last.to_string(), &paths, double_tab),
+            1 => self.replace_input(&paths[0], &target),
+            _ => self.file_completion_multicands(&target.to_string(), &paths, double_tab),
         }
     }
 
