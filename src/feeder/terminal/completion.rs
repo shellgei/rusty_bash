@@ -2,12 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::feeder::terminal::Terminal;
+use faccess;
+use faccess::PathExt;
 use glob;
 use glob::{GlobError, MatchOptions};
 use std::path::PathBuf;
 use unicode_width::UnicodeWidthStr;
 
-fn expand(path: &str) -> Vec<String> {
+fn expand(path: &str, executable_only: bool) -> Vec<String> {
     let opts = MatchOptions {
         case_sensitive: true,
         require_literal_separator: true,
@@ -15,7 +17,7 @@ fn expand(path: &str) -> Vec<String> {
     };
 
     let mut ans: Vec<String> = match glob::glob_with(&path, opts) {
-        Ok(ps) => ps.map(|p| to_str(&p))
+        Ok(ps) => ps.map(|p| to_str(&p, executable_only))
                     .filter(|s| s != "").collect(),
         _ => return vec![],
     };
@@ -24,9 +26,15 @@ fn expand(path: &str) -> Vec<String> {
     ans
 }
 
-fn to_str(path :&Result<PathBuf, GlobError>) -> String {
+fn to_str(path :&Result<PathBuf, GlobError>, executable_only: bool) -> String {
     match path {
         Ok(p) => {
+            if executable_only {
+                if ! p.executable() && ! p.is_dir() {
+                    return "".to_string();
+                }
+            }
+
             let mut s = p.to_string_lossy().to_string();
             if p.is_dir() && s.chars().last() != Some('/') {
                 s.push('/');
@@ -70,12 +78,22 @@ impl Terminal {
 
     pub fn file_completion(&mut self, double_tab: bool) {
         let input = self.get_string(self.prompt.chars().count());
-        let last = match input.split(" ").last() {
+        let words: Vec<String> = input.split(" ").map(|e| e.to_string()).collect();
+        let last = match words.last() {
             Some(s) => s, 
             None => return, 
         };
 
-        let paths = expand(&(last.to_owned() + "*"));
+        let mut command_pos = 0;
+        for w in &words {
+            if w.find("=") != None {
+                command_pos += 1;
+            }
+        }
+
+        let search_executable = command_pos == words.len()-1;
+
+        let paths = expand(&(last.to_string() + "*"), search_executable);
         match paths.len() {
             0 => self.cloop(),
             1 => self.replace_input(&paths[0], &last),
