@@ -73,20 +73,31 @@ impl Terminal {
     pub fn completion(&mut self, double_tab: bool) {
         let input = self.get_string(self.prompt.chars().count());
         let words: Vec<String> = input.split(" ").map(|e| e.to_string()).collect();
-        let last = match words.last() {
-            Some(s) => s, 
-            None => return, 
-        };
+        if words.len() == 0 || words.last().unwrap() == "" {
+            self.cloop();
+            return;
+        }
+
+        let last = words.last().unwrap().clone();
 
         let mut command_pos = 0;
         for w in &words {
             if w.find("=") != None {
                 command_pos += 1;
+            }else{
+                break;
             }
         }
         let search_executable = command_pos == words.len()-1;
 
-        self.file_completion(last, double_tab, search_executable);
+        if search_executable && ! last.starts_with(".") && ! last.starts_with("/"){
+            self.command_completion(&last);
+        }else{
+            self.file_completion(&last, double_tab, search_executable);
+        }
+    }
+
+    pub fn command_completion(&mut self, target: &String) {
     }
 
     pub fn file_completion(&mut self, target: &String, double_tab: bool, search_executable: bool) {
