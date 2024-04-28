@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
 use crate::feeder::terminal::Terminal;
 use glob;
 use glob::{GlobError, MatchOptions};
@@ -64,7 +63,7 @@ fn common_string(paths: &Vec<String>) -> String {
 }
 
 impl Terminal {
-    pub fn completion (&mut self, core: &mut ShellCore) {
+    pub fn completion (&mut self) {
         let input = self.get_string(self.prompt.chars().count());
         let last = match input.split(" ").last() {
             Some(s) => s, 
@@ -77,7 +76,7 @@ impl Terminal {
             1 => self.replace_input(&paths[0], &last),
             _ => {
                 let common = common_string(&paths);
-                if common.len() == 0 {
+                if common.len() == last.len() {
                     self.cloop();
                     return;
                 }

@@ -289,7 +289,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 break;
             },
             event::Key::Char('\t') => {
-                term.completion(core);
+                term.completion();
             },
             event::Key::Char(c) => {
                 term.insert(*c);
