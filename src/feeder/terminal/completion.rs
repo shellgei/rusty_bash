@@ -98,7 +98,7 @@ impl Terminal {
         if search_executable && ! last.starts_with(".") && ! last.starts_with("/"){
             self.command_completion(&last, core);
         }else{
-            self.file_completion(&last, double_tab, search_executable);
+            self.file_completion(&last, core, double_tab, search_executable);
         }
     }
 
@@ -122,17 +122,28 @@ impl Terminal {
         let comlist = Self::command_list(target, core);
         match comlist.len() {
             0 => self.cloop(),
-            1 => self.replace_input(&(comlist[0].to_string() + " "), &target),
+            1 => self.replace_input(&(comlist[0].to_string() + " "), &target, core, false),
             _ => self.show_list(&comlist),
         }
     }
 
-    pub fn file_completion(&mut self, target: &String, double_tab: bool, search_executable: bool) {
-        let paths = expand(&(target.to_string() + "*"), search_executable, true);
+    pub fn file_completion(&mut self, target: &String, core: &mut ShellCore, double_tab: bool, search_executable: bool) {
+        let mut wildcard = target.to_string() + "*";
+        let mut tilde = false;
+
+        let mut target_tilde = target.to_string();
+        if target.starts_with("~/") {
+            tilde = true;
+            let home = core.get_param_ref("HOME").to_string() + "/";
+            wildcard = wildcard.replacen("~/", &home, 1);    
+            target_tilde = target_tilde.replacen("~/", &home, 1);
+        }
+
+        let paths = expand(&wildcard, search_executable, true);
         match paths.len() {
             0 => self.cloop(),
-            1 => self.replace_input(&paths[0], &target),
-            _ => self.file_completion_multicands(&target.to_string(), &paths, double_tab),
+            1 => self.replace_input(&paths[0], &target, core, tilde),
+            _ => self.file_completion_multicands(core, &target_tilde, &paths, double_tab, tilde),
         }
     }
 
@@ -169,30 +180,33 @@ impl Terminal {
         self.rewrite(true);
     }
 
-    pub fn file_completion_multicands(&mut self, dir: &String, paths: &Vec<String>, double_tab: bool) {
+    pub fn file_completion_multicands(&mut self, core: &mut ShellCore, 
+                                      dir: &String, paths: &Vec<String>,
+                                      double_tab: bool, tilde: bool) {
         let common = common_string(&paths);
         if common.len() == dir.len() {
             if double_tab {
-                self.show_path_candidates(&dir.to_string(), &paths);
+                self.show_path_candidates(&dir.to_string(), &paths, core);
             }else{
                 self.cloop();
             }
             return;
         }
-        self.replace_input(&common, &dir);
+        self.replace_input(&common, &dir, core, tilde);
     }
 
-    pub fn show_path_candidates(&mut self, dir: &String, paths: &Vec<String>) {
+    pub fn show_path_candidates(&mut self, dir: &String, paths: &Vec<String>, core: &mut ShellCore) {
+        let home = core.get_param_ref("HOME").to_string() + "/";
         let ps = if dir.chars().last() == Some('/') {
-            paths.iter().map(|p| p.replacen(dir, "", 1)).collect()
+            paths.iter().map(|p| p.replacen(dir, "", 1).replacen(&home, "~/", 1)).collect()
         }else{
-            paths.to_vec()
+            paths.iter().map(|p| p.replacen(&home, "~/", 1)).collect()
         };
 
         self.show_list(&ps);
     }
 
-    fn replace_input(&mut self, path: &String, last: &str) {
+    fn replace_input(&mut self, path: &String, last: &str, core: &mut ShellCore, tilde: bool) {
         let last_char_num = last.chars().count();
         let len = self.chars.len();
         let mut path_chars = path.to_string();
@@ -200,6 +214,11 @@ impl Terminal {
         if last.starts_with("./") {
             path_chars.insert(0, '/');
             path_chars.insert(0, '.');
+        }
+        
+        if tilde {
+            let home = core.get_param_ref("HOME").to_string() + "/";
+            path_chars = path_chars.replacen(&home, "~/", 1);
         }
 
         self.chars.drain(len - last_char_num..);
