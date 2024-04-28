@@ -37,6 +37,32 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     }
 }
 
+fn common_length(chars: &Vec<char>, s: &String) -> usize {
+    let max_len = chars.len();
+    for (i, c) in s.chars().enumerate() {
+        if i >= max_len || chars[i] != c {
+            return i;
+        }
+    }
+    max_len
+}
+
+fn common_string(paths: &Vec<String>) -> String {
+    if paths.len() == 0 {
+        return "".to_string();
+    }
+
+    let ref_chars: Vec<char> = paths[0].chars().collect();
+    let mut common_len = ref_chars.len();
+
+    for path in &paths[1..] {
+        let len = common_length(&ref_chars, &path);
+        common_len = std::cmp::min(common_len, len);
+    }
+
+    ref_chars[..common_len].iter().collect()
+}
+
 impl Terminal {
     pub fn completion (&mut self, core: &mut ShellCore) {
         let input = self.get_string(self.prompt.chars().count());
@@ -47,8 +73,12 @@ impl Terminal {
 
         let paths = expand(&(last.to_owned() + "*"));
         match paths.len() {
+            0 => {},
             1 => self.replace_input(&paths[0], &last),
-            _ => {},
+            _ => {
+                let common = common_string(&paths);
+                self.replace_input(&common, &last);
+            },
         }
     }
 
