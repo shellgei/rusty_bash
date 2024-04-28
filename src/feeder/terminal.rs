@@ -1,10 +1,14 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod completion;
+
 use crate::{InputError, ShellCore};
 use std::io;
+use std::fs::File;
 use std::io::{Write, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
+use std::path::Path;
 use nix::unistd;
 use nix::unistd::User;
 use termion::cursor::DetectCursorPos;
@@ -46,6 +50,26 @@ impl Terminal {
         }
     }
 
+    fn get_branch(cwd: &String) -> String {
+        let mut dirs: Vec<String> = cwd.split("/").map(|s| s.to_string()).collect();
+        while dirs.len() > 0 {
+            let path = dirs.join("/") + "/.git/HEAD";
+            dirs.pop();
+
+            let p = Path::new(&path);
+            if p.is_file() {
+                if let Ok(mut f) = File::open(p){
+                    return match f.read_line() {
+                        Ok(Some(s)) => s.replace("ref: refs/heads/"," ") + "🌵",
+                        _ => "".to_string(),
+                    };
+                }
+            }
+        }
+
+        "".to_string()
+    }
+
     fn make_prompt_string(raw: &str) -> String {
         let uid = unistd::getuid();
         let user = match User::from_uid(uid) {
@@ -66,6 +90,7 @@ impl Terminal {
                       .to_string(),
             _ => "".to_string(),
         };
+        let branch = Self::get_branch(&cwd);
 
         if cwd.starts_with(&homedir) {
             cwd = cwd.replacen(&homedir, "~", 1);
@@ -74,6 +99,7 @@ impl Terminal {
         raw.replace("\\u", &user)
            .replace("\\h", &hostname)
            .replace("\\w", &cwd)
+           .replace("\\b", &branch)
            .to_string()
     }
 
@@ -199,9 +225,16 @@ impl Terminal {
     }
 
     pub fn shift_cursor(&mut self, shift: i32) {
+        let prev = self.head;
         Self::shift_in_range(&mut self.head, shift, 
                              self.prompt.chars().count(),
                              self.chars.len());
+
+        if prev == self.head {
+            self.cloop();
+            return;
+        }
+
         self.goto(self.head);
         self.flush();
     }
@@ -238,15 +271,22 @@ impl Terminal {
         self.head = self.chars.len();
         self.rewrite(true);
     }
+
+    pub fn cloop(&mut self) {
+        print!("\x07");
+        self.flush();
+    }
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
     core.history.insert(0, String::new());
+    let mut prev_key = event::Key::Char('a');
 
     for c in io::stdin().keys() {
         term.check_size_change(&mut term_size);
+
         match c.as_ref().unwrap() {
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('b') => term.shift_cursor(-1),
@@ -278,12 +318,16 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 term.chars.push('\n');
                 break;
             },
+            event::Key::Char('\t') => {
+                term.completion(core, prev_key == event::Key::Char('\t'));
+            },
             event::Key::Char(c) => {
                 term.insert(*c);
             },
             _  => {},
         }
         term.check_scroll();
+        prev_key = c.as_ref().unwrap().clone();
     }
 
     core.history[0] = term.get_string(term.prompt.chars().count());
