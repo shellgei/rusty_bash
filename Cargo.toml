@@ -6,10 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nix = { version = "0.28.0", features = ["fs", "process", "signal", "term", "user", "time"]}
+nix = { version = "0.28.0", features = ["fs", "process", "signal", "term", "user", "time", "hostname"]}
 termion = "3.0.0"
 unicode-width = "0.1.11"
 signal-hook = "0.3.17"
 glob = "0.3.1"
 itertools = "0.12.1"
 rev_lines = "0.3.0"
+faccess = "0.2.4"
