@@ -122,7 +122,7 @@ impl Terminal {
         let comlist = Self::command_list(target, core);
         match comlist.len() {
             0 => self.cloop(),
-            1 => self.replace_input(&comlist[0], &target),
+            1 => self.replace_input(&(comlist[0].to_string() + " "), &target),
             _ => self.show_list(&comlist),
         }
     }
