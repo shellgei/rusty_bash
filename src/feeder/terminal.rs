@@ -4,11 +4,11 @@
 mod completion;
 
 use crate::{InputError, ShellCore};
-use std::{env, io};
+use std::io;
 use std::fs::File;
 use std::io::{Write, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use nix::unistd;
 use nix::unistd::User;
 use termion::cursor::DetectCursorPos;
