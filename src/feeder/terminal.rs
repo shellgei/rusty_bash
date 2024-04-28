@@ -200,9 +200,16 @@ impl Terminal {
     }
 
     pub fn shift_cursor(&mut self, shift: i32) {
+        let prev = self.head;
         Self::shift_in_range(&mut self.head, shift, 
                              self.prompt.chars().count(),
                              self.chars.len());
+
+        if prev == self.head {
+            self.cloop();
+            return;
+        }
+
         self.goto(self.head);
         self.flush();
     }
@@ -238,6 +245,11 @@ impl Terminal {
         self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str).chars());
         self.head = self.chars.len();
         self.rewrite(true);
+    }
+
+    pub fn cloop(&mut self) {
+        print!("\x07");
+        self.flush();
     }
 }
 

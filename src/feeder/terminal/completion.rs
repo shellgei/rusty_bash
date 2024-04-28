@@ -73,10 +73,14 @@ impl Terminal {
 
         let paths = expand(&(last.to_owned() + "*"));
         match paths.len() {
-            0 => {},
+            0 => { self.cloop(); },
             1 => self.replace_input(&paths[0], &last),
             _ => {
                 let common = common_string(&paths);
+                if common.len() == 0 {
+                    self.cloop();
+                    return;
+                }
                 self.replace_input(&common, &last);
             },
         }
