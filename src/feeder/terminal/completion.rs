@@ -11,7 +11,7 @@ fn expand(path: &str) -> Vec<String> {
     let opts = MatchOptions {
         case_sensitive: true,
         require_literal_separator: true,
-        require_literal_leading_dot: true,
+        require_literal_leading_dot: false,
     };
 
     let mut ans: Vec<String> = match glob::glob_with(&path, opts) {
