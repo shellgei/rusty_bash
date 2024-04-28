@@ -4,9 +4,11 @@
 mod completion;
 
 use crate::{InputError, ShellCore};
-use std::io;
+use std::{env, io};
+use std::fs::File;
 use std::io::{Write, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
+use std::path::{Path, PathBuf};
 use nix::unistd;
 use nix::unistd::User;
 use termion::cursor::DetectCursorPos;
@@ -48,6 +50,26 @@ impl Terminal {
         }
     }
 
+    fn get_branch(cwd: &String) -> String {
+        let mut dirs: Vec<String> = cwd.split("/").map(|s| s.to_string()).collect();
+        while dirs.len() > 0 {
+            let path = dirs.join("/") + "/.git/HEAD";
+            dirs.pop();
+
+            let p = Path::new(&path);
+            if p.is_file() {
+                if let Ok(mut f) = File::open(p){
+                    return match f.read_line() {
+                        Ok(Some(s)) => s.replace("ref: refs/heads/"," ") + "🌵",
+                        _ => "".to_string(),
+                    };
+                }
+            }
+        }
+
+        "".to_string()
+    }
+
     fn make_prompt_string(raw: &str) -> String {
         let uid = unistd::getuid();
         let user = match User::from_uid(uid) {
@@ -68,6 +90,7 @@ impl Terminal {
                       .to_string(),
             _ => "".to_string(),
         };
+        let branch = Self::get_branch(&cwd);
 
         if cwd.starts_with(&homedir) {
             cwd = cwd.replacen(&homedir, "~", 1);
@@ -76,6 +99,7 @@ impl Terminal {
         raw.replace("\\u", &user)
            .replace("\\h", &hostname)
            .replace("\\w", &cwd)
+           .replace("\\b", &branch)
            .to_string()
     }
 
