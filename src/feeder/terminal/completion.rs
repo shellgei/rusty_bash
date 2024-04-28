@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::ShellCore;
 use crate::feeder::terminal::Terminal;
 use faccess;
 use faccess::PathExt;
@@ -9,7 +10,7 @@ use glob::{GlobError, MatchOptions};
 use std::path::PathBuf;
 use unicode_width::UnicodeWidthStr;
 
-fn expand(path: &str, executable_only: bool) -> Vec<String> {
+fn expand(path: &str, executable_only: bool, search_dir: bool) -> Vec<String> {
     let opts = MatchOptions {
         case_sensitive: true,
         require_literal_separator: true,
@@ -17,7 +18,7 @@ fn expand(path: &str, executable_only: bool) -> Vec<String> {
     };
 
     let mut ans: Vec<String> = match glob::glob_with(&path, opts) {
-        Ok(ps) => ps.map(|p| to_str(&p, executable_only))
+        Ok(ps) => ps.map(|p| to_str(&p, executable_only, search_dir))
                     .filter(|s| s != "").collect(),
         _ => return vec![],
     };
@@ -26,10 +27,13 @@ fn expand(path: &str, executable_only: bool) -> Vec<String> {
     ans
 }
 
-fn to_str(path :&Result<PathBuf, GlobError>, executable_only: bool) -> String {
+fn to_str(path :&Result<PathBuf, GlobError>, executable_only: bool, search_dir: bool) -> String {
     match path {
         Ok(p) => {
             if executable_only && ! p.executable() && ! p.is_dir() {
+                return "".to_string();
+            }
+            if ! search_dir && p.is_dir() {
                 return "".to_string();
             }
 
@@ -70,7 +74,7 @@ fn common_string(paths: &Vec<String>) -> String {
 }
 
 impl Terminal {
-    pub fn completion(&mut self, double_tab: bool) {
+    pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         let input = self.get_string(self.prompt.chars().count());
         let words: Vec<String> = input.split(" ").map(|e| e.to_string()).collect();
         if words.len() == 0 || words.last().unwrap() == "" {
@@ -91,17 +95,38 @@ impl Terminal {
         let search_executable = command_pos == words.len()-1;
 
         if search_executable && ! last.starts_with(".") && ! last.starts_with("/"){
-            self.command_completion(&last);
+            self.command_completion(&last, core);
         }else{
             self.file_completion(&last, double_tab, search_executable);
         }
     }
 
-    pub fn command_completion(&mut self, target: &String) {
+    pub fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
+        let mut comlist = vec![];
+        for path in core.get_param_ref("PATH").to_string().split(":") {
+            for file in expand(&(path.to_string() + "/*"), true, false) {
+                let tmp = file.clone();
+                let command = tmp.split("/").last().map(|s| s.to_string()).unwrap();
+                if command.starts_with(target) {
+                    comlist.push(command.clone());
+                }
+            }
+        }
+        comlist.sort();
+        comlist
+    }
+
+    pub fn command_completion(&mut self, target: &String, core: &mut ShellCore) {
+        let comlist = Self::command_list(target, core);
+        match comlist.len() {
+            0 => self.cloop(),
+            1 => self.replace_input(&comlist[0], &target),
+            _ => self.show_list(&comlist),
+        }
     }
 
     pub fn file_completion(&mut self, target: &String, double_tab: bool, search_executable: bool) {
-        let paths = expand(&(target.to_string() + "*"), search_executable);
+        let paths = expand(&(target.to_string() + "*"), search_executable, true);
         match paths.len() {
             0 => self.cloop(),
             1 => self.replace_input(&paths[0], &target),
