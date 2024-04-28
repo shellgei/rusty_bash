@@ -190,8 +190,8 @@ res=$($com <<< 'function f () ( A=BBB ) ; f; echo $A')
 res=$($com <<< 'function f () { A=BBB ; } ; f | cat; echo $A')
 [ "$res" = "" ] || err $LINENO
 
-res=$($com <<< 'function f () { tac ; } ; seq 3 | f | tr -d \\n')
-[ "$res" = "321" ] || err $LINENO
+res=$($com <<< 'function f () { tr -d \\n ; } ; seq 3 | f')
+[ "$res" = "123" ] || err $LINENO
 
 res=$($com <<< 'set a b c ; function f () { echo $2 ; } ; f')
 [ "$res" = "" ] || err $LINENO
