@@ -29,10 +29,8 @@ fn expand(path: &str, executable_only: bool) -> Vec<String> {
 fn to_str(path :&Result<PathBuf, GlobError>, executable_only: bool) -> String {
     match path {
         Ok(p) => {
-            if executable_only {
-                if ! p.executable() && ! p.is_dir() {
-                    return "".to_string();
-                }
+            if executable_only && ! p.executable() && ! p.is_dir() {
+                return "".to_string();
             }
 
             let mut s = p.to_string_lossy().to_string();
