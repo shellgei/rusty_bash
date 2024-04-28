@@ -157,7 +157,12 @@ impl Terminal {
     fn replace_input(&mut self, path: &String, last: &str) {
         let last_char_num = last.chars().count();
         let len = self.chars.len();
-        let path_chars = path.to_string();
+        let mut path_chars = path.to_string();
+
+        if last.starts_with("./") {
+            path_chars.insert(0, '/');
+            path_chars.insert(0, '.');
+        }
 
         self.chars.drain(len - last_char_num..);
         self.chars.extend(path_chars.chars());
