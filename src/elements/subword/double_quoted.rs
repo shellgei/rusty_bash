@@ -28,6 +28,7 @@ impl Subword for DoubleQuoted {
         true
     }
 
+
     fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|sw| sw.unquote());
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
