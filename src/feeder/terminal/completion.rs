@@ -64,47 +64,31 @@ fn common_string(paths: &Vec<String>) -> String {
 }
 
 impl Terminal {
-    pub fn completion (&mut self, double_tab: bool) {
+    pub fn completion(&mut self, double_tab: bool) {
         self.file_completion(double_tab);
     }
 
-    pub fn file_completion (&mut self, double_tab: bool) {
+    pub fn file_completion(&mut self, double_tab: bool) {
         let input = self.get_string(self.prompt.chars().count());
         let last = match input.split(" ").last() {
             Some(s) => s, 
             None => return, 
         };
 
-        let mut paths = expand(&(last.to_owned() + "*"));
+        let paths = expand(&(last.to_owned() + "*"));
         match paths.len() {
-            0 => { self.cloop(); },
+            0 => self.cloop(),
             1 => self.replace_input(&paths[0], &last),
-            _ => {
-                let common = common_string(&paths);
-                if common.len() == last.len() {
-                    if double_tab {
-                        if last.chars().last() == Some('/') {
-                            let mut reduced_paths = vec![];
-                            for p in paths.iter() {
-                                reduced_paths.push(p.replacen(last, "", 1));
-                            }
-                            paths = reduced_paths;
-                        }
-                        self.show_path_candidates(&paths);
-                    }else{
-                        self.cloop();
-                    }
-                    return;
-                }
-                self.replace_input(&common, &last);
-            },
+            _ => self.file_completion_multicands(&last.to_string(), &paths, double_tab),
         }
     }
 
     fn show_list(&mut self, list: &Vec<String>) {
         eprintln!("\r");
 
-        let widths: Vec<usize> = list.iter().map(|p| UnicodeWidthStr::width(p.as_str())).collect();
+        let widths: Vec<usize> = list.iter()
+                                     .map(|p| UnicodeWidthStr::width(p.as_str()))
+                                     .collect();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
 
         let col_num = Terminal::size().0 / max_entry_width;
@@ -132,8 +116,27 @@ impl Terminal {
         self.rewrite(true);
     }
 
-    pub fn show_path_candidates(&mut self, paths: &Vec<String>) {
-        self.show_list(paths);
+    pub fn file_completion_multicands(&mut self, dir: &String, paths: &Vec<String>, double_tab: bool) {
+        let common = common_string(&paths);
+        if common.len() == dir.len() {
+            if double_tab {
+                self.show_path_candidates(&dir.to_string(), &paths);
+            }else{
+                self.cloop();
+            }
+            return;
+        }
+        self.replace_input(&common, &dir);
+    }
+
+    pub fn show_path_candidates(&mut self, dir: &String, paths: &Vec<String>) {
+        let ps = if dir.chars().last() == Some('/') {
+            paths.iter().map(|p| p.replacen(dir, "", 1)).collect()
+        }else{
+            paths.to_vec()
+        };
+
+        self.show_list(&ps);
     }
 
     fn replace_input(&mut self, path: &String, last: &str) {
