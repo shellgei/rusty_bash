@@ -75,7 +75,7 @@ impl Terminal {
             None => return, 
         };
 
-        let paths = expand(&(last.to_owned() + "*"));
+        let mut paths = expand(&(last.to_owned() + "*"));
         match paths.len() {
             0 => { self.cloop(); },
             1 => self.replace_input(&paths[0], &last),
@@ -83,6 +83,13 @@ impl Terminal {
                 let common = common_string(&paths);
                 if common.len() == last.len() {
                     if double_tab {
+                        if last.chars().last() == Some('/') {
+                            let mut reduced_paths = vec![];
+                            for p in paths.iter() {
+                                reduced_paths.push(p.replacen(last, "", 1));
+                            }
+                            paths = reduced_paths;
+                        }
                         self.show_path_candidates(&paths);
                     }else{
                         self.cloop();
@@ -94,44 +101,39 @@ impl Terminal {
         }
     }
 
-    pub fn show_path_candidates(&mut self, paths: &Vec<String>) {
+    fn show_list(&mut self, list: &Vec<String>) {
         eprintln!("\r");
 
-        let widths: Vec<usize> = paths.iter().map(|p| UnicodeWidthStr::width(p.as_str())).collect();
-        let opt_max_length = widths.iter().max();
-        if opt_max_length == None {
-            paths.iter().for_each(|p| print!("{}\r\n", &p));
-            self.rewrite(true);
-            return;
-        }
+        let widths: Vec<usize> = list.iter().map(|p| UnicodeWidthStr::width(p.as_str())).collect();
+        let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
 
-        let slot_len = opt_max_length.unwrap() + 2;
-        let (col_width, _) = Terminal::size();
-
-        let col_num = col_width / slot_len;
+        let col_num = Terminal::size().0 / max_entry_width;
         if col_num == 0 {
-            paths.iter().for_each(|p| print!("{}\r\n", &p));
+            list.iter().for_each(|p| print!("{}\r\n", &p));
             self.rewrite(true);
             return;
         }
 
-        let row_num = (paths.len()-1) / col_num + 1;
+        let row_num = (list.len()-1) / col_num + 1;
 
         for row in 0..row_num {
             for col in 0..col_num {
                 let i = col*row_num + row;
-                if i >= paths.len() {
+                if i >= list.len() {
                     continue;
                 }
 
-                let space_num = slot_len - widths[i];
+                let space_num = max_entry_width - widths[i];
                 let s = String::from_utf8(vec![b' '; space_num]).unwrap();
-
-                print!("{}{}", paths[i], &s);
+                print!("{}{}", list[i], &s);
             }
             print!("\r\n");
         }
         self.rewrite(true);
+    }
+
+    pub fn show_path_candidates(&mut self, paths: &Vec<String>) {
+        self.show_list(paths);
     }
 
     fn replace_input(&mut self, path: &String, last: &str) {
