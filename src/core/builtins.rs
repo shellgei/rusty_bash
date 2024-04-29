@@ -50,7 +50,10 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
     let file = match File::open(&args[1]) {
         Ok(f) => f, 
-        _     => return 1, 
+        _     => {
+            eprintln!("sush: {}: No such file or directory", &args[1]);
+            return 1;
+        }, 
     };
 
     let fd = file.into_raw_fd();
