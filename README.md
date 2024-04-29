@@ -47,7 +47,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| command | :heavy_check_mark: | substitution | :heavy_check_mark: | function definition | :heavy_check_mark: | 
+| command | :heavy_check_mark: | substitutions | :heavy_check_mark: | function definition | :heavy_check_mark: | 
 
 
 ### compound commands
@@ -65,6 +65,15 @@ These dev-* branches will be merged to the main branch depending on the situatio
 | \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
 | ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :heavy_check_mark: |
 | \|& | :heavy_check_mark: | 
+
+### expansion
+
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| brace | :construction: | tilde | :heavy_check_mark: | parameter/variable | :construction: | 
+| command substitution | :heavy_check_mark: | arithmetic | :no_good: | word splitting | :heavy_check_mark: | 
+| path name | :heavy_check_mark: |  |  |  |  | 
+
 
 ### builtin commands
 
