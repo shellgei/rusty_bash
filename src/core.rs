@@ -23,6 +23,7 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct ShellCore {
     pub flags: String,
     parameters: HashMap<String, String>,
+    pub aliases: HashMap<String, String>,
     pub position_parameters: Vec<String>,
     pub functions: HashMap<String, Box<dyn Command>>,
     rewritten_history: HashMap<usize, String>,
@@ -49,6 +50,7 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
             flags: String::new(),
+            aliases: HashMap::new(),
             parameters: HashMap::new(),
             position_parameters: vec![],
             functions: HashMap::new(),

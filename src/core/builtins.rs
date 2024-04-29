@@ -15,6 +15,7 @@ use std::path::Path;
 impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
+        self.builtins.insert("alias".to_string(), alias);
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
@@ -24,6 +25,22 @@ impl ShellCore {
         self.builtins.insert(".".to_string(), source);
         self.builtins.insert("true".to_string(), true_);
     }
+}
+
+pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() == 1 {
+        for (k, v) in &core.aliases {
+            println!("alias {}='{}'", k, v);
+        }
+        return 0;
+    }
+
+    if args.len() == 2 && args[1].find("=") != None {
+        let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
+        core.aliases.insert(kv[0].clone(), kv[1..].join("="));
+    }
+
+    0
 }
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
