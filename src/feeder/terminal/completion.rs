@@ -122,7 +122,7 @@ impl Terminal {
         let comlist = Self::command_list(target, core);
         match comlist.len() {
             0 => self.cloop(),
-            1 => self.replace_input(&(comlist[0].to_string() + " "), &target, core, false),
+            1 => self.replace_input(&(comlist[0].to_string() + " "), &target, false),
             _ => self.show_list(&comlist),
         }
     }
@@ -133,17 +133,21 @@ impl Terminal {
 
         let mut target_tilde = target.to_string();
         if target.starts_with("~/") {
+            self.tilde_prefix = "~/".to_string();
+            self.tilde_path = core.get_param_ref("HOME").to_string() + "/";
             tilde = true;
-            let home = core.get_param_ref("HOME").to_string() + "/";
-            wildcard = wildcard.replacen("~/", &home, 1);    
-            target_tilde = target_tilde.replacen("~/", &home, 1);
+            wildcard = wildcard.replacen(&self.tilde_prefix, &self.tilde_path, 1);    
+            target_tilde = target_tilde.replacen(&self.tilde_prefix, &self.tilde_path, 1);
+        }else{
+            self.tilde_prefix = String::new();
+            self.tilde_path = String::new();
         }
 
         let paths = expand(&wildcard, search_executable, true);
         match paths.len() {
             0 => self.cloop(),
-            1 => self.replace_input(&paths[0], &target, core, tilde),
-            _ => self.file_completion_multicands(core, &target_tilde, &paths, double_tab, tilde),
+            1 => self.replace_input(&paths[0], &target, tilde),
+            _ => self.file_completion_multicands(&target_tilde, &paths, double_tab, tilde),
         }
     }
 
@@ -180,33 +184,36 @@ impl Terminal {
         self.rewrite(true);
     }
 
-    pub fn file_completion_multicands(&mut self, core: &mut ShellCore, 
-                                      dir: &String, paths: &Vec<String>,
+    pub fn file_completion_multicands(&mut self, dir: &String, paths: &Vec<String>,
                                       double_tab: bool, tilde: bool) {
         let common = common_string(&paths);
         if common.len() == dir.len() {
             if double_tab {
-                self.show_path_candidates(&dir.to_string(), &paths, core);
+                self.show_path_candidates(&dir.to_string(), &paths);
             }else{
                 self.cloop();
             }
             return;
         }
-        self.replace_input(&common, &dir, core, tilde);
+        self.replace_input(&common, &dir, tilde);
     }
 
-    pub fn show_path_candidates(&mut self, dir: &String, paths: &Vec<String>, core: &mut ShellCore) {
-        let home = core.get_param_ref("HOME").to_string() + "/";
+    pub fn show_path_candidates(&mut self, dir: &String, paths: &Vec<String>) {
         let ps = if dir.chars().last() == Some('/') {
-            paths.iter().map(|p| p.replacen(dir, "", 1).replacen(&home, "~/", 1)).collect()
+            paths.iter()
+                 .map(|p| p.replacen(dir, "", 1)
+                 .replacen(&self.tilde_path, &self.tilde_prefix, 1))
+                 .collect()
         }else{
-            paths.iter().map(|p| p.replacen(&home, "~/", 1)).collect()
+            paths.iter()
+                 .map(|p| p.replacen(&self.tilde_path, &self.tilde_prefix, 1))
+                 .collect()
         };
 
         self.show_list(&ps);
     }
 
-    fn replace_input(&mut self, path: &String, last: &str, core: &mut ShellCore, tilde: bool) {
+    fn replace_input(&mut self, path: &String, last: &str, tilde: bool) {
         let last_char_num = last.chars().count();
         let len = self.chars.len();
         let mut path_chars = path.to_string();
@@ -217,8 +224,7 @@ impl Terminal {
         }
         
         if tilde {
-            let home = core.get_param_ref("HOME").to_string() + "/";
-            path_chars = path_chars.replacen(&home, "~/", 1);
+            path_chars = path_chars.replacen(&self.tilde_path, &self.tilde_prefix, 1);
         }
 
         self.chars.drain(len - last_char_num..);

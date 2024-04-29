@@ -24,6 +24,8 @@ struct Terminal {
     head: usize,
     hist_ptr: usize,
     prompt_width_map: Vec<usize>,
+    tilde_prefix: String,
+    tilde_path: String,
 }
 
 impl Terminal {
@@ -46,6 +48,8 @@ impl Terminal {
             head: prompt.chars().count(),
             hist_ptr: 0,
             prompt_width_map: Self::make_width_map(&replaced_prompt),
+            tilde_path: String::new(),
+            tilde_prefix: String::new(),
         }
     }
 
