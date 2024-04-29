@@ -65,7 +65,7 @@ impl Terminal {
             if p.is_file() {
                 if let Ok(mut f) = File::open(p){
                     return match f.read_line() {
-                        Ok(Some(s)) => s.replace("ref: refs/heads/"," ") + "🌵",
+                        Ok(Some(s)) => s.replace("ref: refs/heads/","") + "🌵",
                         _ => "".to_string(),
                     };
                 }
