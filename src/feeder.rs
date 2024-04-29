@@ -111,6 +111,16 @@ impl Feeder {
         }
     }
 
+    fn replace_alias(line: &mut String, core: &mut ShellCore) {
+        if core.has_flag('i') {
+            if let Some(head) = line.replace("\n", " ").split(' ').nth(0) {
+                if let Some(value) = core.aliases.get(head) {
+                    *line = line.replacen(head, value, 1);
+                }
+            }
+        }
+    }
+
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = match core.has_flag('i') {
             true  => terminal::read_line(core, "PS1"),
@@ -118,7 +128,8 @@ impl Feeder {
         };
 
         match line {
-            Ok(ln) => {
+            Ok(mut ln) => {
+                Self::replace_alias(&mut ln, core);
                 self.add_line(ln);
                 Ok(())
             },
