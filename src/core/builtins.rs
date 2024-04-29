@@ -61,7 +61,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut feeder = Feeder::new();
     loop {
         match feeder.feed_line(core) {
-            Ok(()) => {eprintln!("{:?}", &feeder);}, 
+            Ok(()) => {}, 
             _ => break,
         }
 
