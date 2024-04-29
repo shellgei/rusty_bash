@@ -112,11 +112,13 @@ impl Feeder {
     }
 
     fn replace_alias(line: &mut String, core: &mut ShellCore) {
-        if core.has_flag('i') {
-            if let Some(head) = line.replace("\n", " ").split(' ').nth(0) {
-                if let Some(value) = core.aliases.get(head) {
-                    *line = line.replacen(head, value, 1);
-                }
+        if ! core.has_flag('i') {
+            return;
+        }
+
+        if let Some(head) = line.replace("\n", " ").split(' ').nth(0) {
+            if let Some(value) = core.aliases.get(head) {
+                *line = line.replacen(head, value, 1);
             }
         }
     }
