@@ -100,6 +100,12 @@ These dev-* branches will be merged to the main branch depending on the situatio
 | umask | :no_good: | unalias | :no_good: | unset | :no_good: |
 | wait | :no_good: | export | :no_good: | false | :heavy_check_mark: |
 
+### beyond Bash
+
+|features | status |
+|-------------------|----|
+| branch display in prompt | :heavy_check_mark: |
+
 ## Thanks to
 
 Partially in Japanese.
