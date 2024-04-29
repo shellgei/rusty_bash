@@ -31,10 +31,8 @@ fn expand(path: &str, executable_only: bool, search_dir: bool) -> Vec<String> {
 fn to_str(path :&Result<PathBuf, GlobError>, executable_only: bool, search_dir: bool) -> String {
     match path {
         Ok(p) => {
-            if executable_only && ! p.executable() && ! p.is_dir() {
-                return "".to_string();
-            }
-            if ! search_dir && p.is_dir() {
+            if ( executable_only && ! p.executable() && ! p.is_dir() )
+            || ( ! search_dir && p.is_dir() ) {
                 return "".to_string();
             }
 
@@ -87,18 +85,16 @@ impl Terminal {
 
         let mut command_pos = 0;
         for w in &words {
-            if w.find("=") != None {
-                command_pos += 1;
-            }else{
-                break;
+            match w.find("=") {
+                None => break,
+                _    => command_pos +=1,
             }
         }
-        let search_executable = command_pos == words.len()-1;
+        let search_command = command_pos == words.len()-1;
 
-        if search_executable && ! last.starts_with(".") && ! last.starts_with("/"){
-            self.command_completion(&last, core);
-        }else{
-            self.file_completion(&last, core, double_tab, search_executable);
+        match search_command && ! last.starts_with(".") && ! last.starts_with("/"){
+            true  => self.command_completion(&last, core),
+            false => self.file_completion(&last, core, double_tab, search_command),
         }
     }
 
@@ -127,7 +123,8 @@ impl Terminal {
         }
     }
 
-    pub fn file_completion(&mut self, target: &String, core: &mut ShellCore, double_tab: bool, search_executable: bool) {
+    pub fn file_completion(&mut self, target: &String, core: &mut ShellCore,
+                           double_tab: bool, search_executable: bool) {
         let mut wildcard = target.to_string() + "*";
 
         let mut target_tilde = target.to_string();
@@ -186,10 +183,9 @@ impl Terminal {
                                       paths: &Vec<String>, double_tab: bool) {
         let common = common_string(&paths);
         if common.len() == dir.len() {
-            if double_tab {
-                self.show_path_candidates(&dir.to_string(), &paths);
-            }else{
-                self.cloop();
+            match double_tab {
+                true => self.show_path_candidates(&dir.to_string(), &paths),
+                false => self.cloop(),
             }
             return;
         }

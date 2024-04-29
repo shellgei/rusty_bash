@@ -24,6 +24,7 @@ struct Terminal {
     head: usize,
     hist_ptr: usize,
     prompt_width_map: Vec<usize>,
+    /* for completion */
     tilde_prefix: String,
     tilde_path: String,
 }
