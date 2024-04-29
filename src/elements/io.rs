@@ -11,13 +11,13 @@ use nix::errno::Errno;
 use crate::elements::Pipe;
 use crate::elements::io::redirect::Redirect;
 
-fn close(fd: RawFd, err_str: &str){
+pub fn close(fd: RawFd, err_str: &str){
     if fd >= 0 {
         unistd::close(fd).expect(err_str);
     }
 }
 
-fn replace(from: RawFd, to: RawFd) -> bool {
+pub fn replace(from: RawFd, to: RawFd) -> bool {
     if from < 0 || to < 0 {
         return false;
     }
@@ -45,7 +45,7 @@ fn share(from: RawFd, to: RawFd) {
     unistd::dup2(from, to).expect("Can't copy file descriptors");
 }
 
-fn backup(from: RawFd) -> RawFd {
+pub fn backup(from: RawFd) -> RawFd {
     fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(10))
            .expect("Can't allocate fd for backup")
 }

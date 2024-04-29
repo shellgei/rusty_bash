@@ -16,11 +16,11 @@ pub fn make_absolute_path(core: &mut ShellCore, path_str: &str) -> PathBuf {
     if path.starts_with("~") { // tilde -> $HOME
         if let Some(home_dir) = core.parameters.get("HOME") {
             absolute.push(PathBuf::from(home_dir));
-            if path_str.len() > 1 && path_str.starts_with("~/") {
-                absolute.push(PathBuf::from(&path_str[2..]));
-            } else {
-                absolute.push(PathBuf::from(&path_str[1..]));
-            }
+            let num = match path_str.len() > 1 && path_str.starts_with("~/") {
+                true  => 2,
+                false => 1,
+            };
+            absolute.push(PathBuf::from(&path_str[num..]));
         }
     } else { // current
         if let Some(tcwd) = core.get_current_directory() {
