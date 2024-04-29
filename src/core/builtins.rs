@@ -57,6 +57,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let backup = io::backup(0);
     io::replace(fd, 0);
     core.flags = core.flags.replace("i", "@");
+    core.flags.push('S');
 
     let mut feeder = Feeder::new();
     loop {
@@ -72,8 +73,10 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     core.flags = core.flags.replace("@", "i");
+    core.flags = core.flags.replace("S", "");
     io::replace(backup, 0);
-    0
+    core.get_param_ref("?").parse::<i32>()
+        .expect("SUSH INTERNAL ERROR: BAD EXIT STATUS")
 }
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
