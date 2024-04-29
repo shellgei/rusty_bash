@@ -102,8 +102,7 @@ impl Terminal {
         let mut comlist = HashSet::new();
         for path in core.get_param_ref("PATH").to_string().split(":") {
             for file in expand(&(path.to_string() + "/*"), true, false) {
-                let tmp = file.clone();
-                let command = tmp.split("/").last().map(|s| s.to_string()).unwrap();
+                let command = file.split("/").last().map(|s| s.to_string()).unwrap();
                 if command.starts_with(target) {
                     comlist.insert(command.clone());
                 }
