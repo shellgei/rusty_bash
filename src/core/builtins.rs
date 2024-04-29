@@ -10,6 +10,7 @@ use crate::{Feeder, Script, ShellCore};
 use crate::elements::io;
 use std::fs::File;
 use std::os::fd::IntoRawFd;
+use std::path::Path;
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -48,10 +49,16 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         eprintln!("source: usage: source filename [arguments]");
         return 2;
     }
+
+    if Path::new(&args[1]).is_dir() {
+        eprintln!("bash: source: {}: is a directory", &args[1]);
+        return 1;
+    }
+
     let file = match File::open(&args[1]) {
-        Ok(f) => f, 
-        _     => {
-            eprintln!("sush: {}: No such file or directory", &args[1]);
+        Ok(f)  => f, 
+        Err(e) => {
+            eprintln!("sush: {}: {}", &args[1], &e);
             return 1;
         }, 
     };

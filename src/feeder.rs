@@ -63,7 +63,7 @@ impl Feeder {
 
         let len = io::stdin()
             .read_line(&mut line)
-            .expect("Failed to read line");
+            .expect("SUSHI INTERNAL ERROR: Failed to read line");
 
         if len == 0 {
             Err(InputError::Eof)
