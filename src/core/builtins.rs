@@ -9,7 +9,6 @@ mod utils;
 use crate::{Feeder, Script, ShellCore};
 use crate::elements::io;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::os::fd::IntoRawFd;
 
 impl ShellCore {
