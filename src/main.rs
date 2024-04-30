@@ -51,14 +51,12 @@ fn run_signal_check(core: &mut ShellCore) {
     });
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
-fn read_rc(shell_path: &String, core: &mut ShellCore) {
-    let rc_path = if shell_path.find("/target/debug/sush") != None {
-        shell_path.replace("/target/debug/sush", "") + "/.sushrc"
-    } else {
-        core.get_param_ref("HOME").to_string() + "/.sushrc"
+fn read_rc_file(core: &mut ShellCore) {
+    let dir = match core.get_param_ref("CARGO_MANIFEST_DIR") {
+        "" => core.get_param_ref("HOME").to_string(),
+        s  => s.to_string(),
     };
-
-    core.run_builtin(&mut vec![".".to_string(), rc_path]);
+    core.run_builtin(&mut vec![".".to_string(), dir + "/.sushrc"]);
 }
 
 fn main() {
@@ -70,7 +68,7 @@ fn main() {
     let mut core = ShellCore::new();
     builtins::set(&mut core, &mut args);
     run_signal_check(&mut core);
-    read_rc(&args[0], &mut core);
+    read_rc_file(&mut core);
     main_loop(&mut core);
 }
 
