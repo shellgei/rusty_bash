@@ -63,7 +63,7 @@ impl Feeder {
 
         let len = io::stdin()
             .read_line(&mut line)
-            .expect("Failed to read line");
+            .expect("SUSHI INTERNAL ERROR: Failed to read line");
 
         if len == 0 {
             Err(InputError::Eof)
@@ -98,12 +98,28 @@ impl Feeder {
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
                 core.set_param("?", "2");
-                core.exit();
+
+                match core.has_flag('S') { //S: on source command
+                    true  => return false,
+                    false => core.exit(),
+                }
             },
             Err(InputError::Interrupt) => {
                 core.set_param("?", "130");
                 false
             },
+        }
+    }
+
+    fn replace_alias(line: &mut String, core: &mut ShellCore) {
+        if ! core.has_flag('i') {
+            return;
+        }
+
+        if let Some(head) = line.replace("\n", " ").split(' ').nth(0) {
+            if let Some(value) = core.aliases.get(head) {
+                *line = line.replacen(head, value, 1);
+            }
         }
     }
 
@@ -114,7 +130,8 @@ impl Feeder {
         };
 
         match line {
-            Ok(ln) => {
+            Ok(mut ln) => {
+                Self::replace_alias(&mut ln, core);
                 self.add_line(ln);
                 Ok(())
             },

@@ -23,6 +23,7 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct ShellCore {
     pub flags: String,
     parameters: HashMap<String, String>,
+    pub aliases: HashMap<String, String>,
     pub position_parameters: Vec<String>,
     pub functions: HashMap<String, Box<dyn Command>>,
     rewritten_history: HashMap<usize, String>,
@@ -49,6 +50,7 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
             flags: String::new(),
+            aliases: HashMap::new(),
             parameters: HashMap::new(),
             position_parameters: vec![],
             functions: HashMap::new(),
@@ -68,7 +70,7 @@ impl ShellCore {
 
         if unistd::isatty(0) == Ok(true) {
             core.flags += "i";
-            core.set_param("PS1", r"\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\b\[\033[00m\]\[\033[01;35m\]\w\[\033[00m\]🍣 ");
+            core.set_param("PS1", "🍣 ");
             core.set_param("PS2", "> ");
             let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");

@@ -41,6 +41,14 @@ res=$($com <<< 'pwd -a 2>/tmp/rusty_bash; cat /tmp/rusty_bash')
 [ "$res" = "sush: pwd: -a: invalid option
 pwd: usage: pwd [-LP]" ] || err $LINENO
 
+echo aaaaaaaaaaaaaaaa > /tmp/hoge.txt
+res=$($com <<< 'source /tmp/hoge.txt')
+[ "$?" = "127" ] || err $LINENO
+
+echo '(' > /tmp/hoge.txt
+res=$($com <<< 'source /tmp/hoge.txt')
+[ "$?" = "2" ] || err $LINENO
+
 ### COMPOUND COMMAND TEST ###
 
 res=$($com <<< '(echo hoge; echo fuge)')
