@@ -6,6 +6,7 @@ mod feeder;
 mod elements;
 
 use std::{env, process, thread, time};
+use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
@@ -58,7 +59,12 @@ fn read_rc_file(core: &mut ShellCore) {
         "" => core.get_param_ref("HOME").to_string(),
         s  => s.to_string(),
     };
-    core.run_builtin(&mut vec![".".to_string(), dir + "/.sushrc"]);
+
+    let rc_file = dir + "/.sushrc";
+
+    if Path::new(&rc_file).is_file() {
+        core.run_builtin(&mut vec![".".to_string(), rc_file]);
+    }
 }
 
 fn main() {
