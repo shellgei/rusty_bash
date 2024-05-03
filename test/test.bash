@@ -696,6 +696,9 @@ res=$($com <<< 'echo "a$(seq 2)b"')
 res=$($com <<< 'echo $(pwd)')
 [ "$res" == "$(pwd)" ] || err $LINENO
 
+res=$($com <<< 'echo $(pwd) a')
+[ "$res" == "$(pwd) a" ] || err $LINENO
+
 res=$($com <<< 'echo {,,}$(date "+%w")')
 [ "$res" == "$(echo {,,}$(date "+%w"))" ] || err $LINENO
 
