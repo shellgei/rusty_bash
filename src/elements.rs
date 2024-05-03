@@ -5,6 +5,7 @@ pub mod script;
 pub mod job;
 pub mod pipeline;
 pub mod command;
+pub mod array;
 pub mod io;
 pub mod word;
 pub mod subword;

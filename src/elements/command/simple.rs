@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::array::Array;
 use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
@@ -195,6 +196,14 @@ impl SimpleCommand {
         let mut name_eq = feeder.consume(len);
         ans.text += &name_eq;
         name_eq.pop();
+
+        match Array::parse(feeder, core) {
+            Some(a) => {
+                ans.text += &a.text;
+                return true;
+            },
+            _       => {},
+        }
 
         let w = match Word::parse(feeder, core) {
             Some(w) => {
