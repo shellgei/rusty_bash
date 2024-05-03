@@ -26,7 +26,6 @@ impl Array {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        command::eat_blank_with_comment(feeder, core, &mut ans.text);
         if feeder.starts_with(")") {
             return false;
         }
@@ -47,14 +46,25 @@ impl Array {
 
         let mut ans = Self::new();
         ans.text = feeder.consume(1);
-        while Self::eat_word(feeder, &mut ans, core) {}
+        loop {
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            if Self::eat_word(feeder, &mut ans, core) {
+                continue;
+            }
 
-        if feeder.starts_with(")") {
-            ans.text += &feeder.consume(1);
-            dbg!("{:?}", &ans);
-            Some(ans)
-        }else {
-            None
+            if feeder.starts_with(")") {
+                ans.text += &feeder.consume(1);
+                break;
+            }else if feeder.starts_with("\n") {
+                ans.text += &feeder.consume(1);
+            }
+
+            if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
+                return None;
+            }
         }
+
+        dbg!("{:?}", &ans);
+        Some(ans)
     }
 }
