@@ -8,6 +8,7 @@ use crate::elements::subword::{Subword, SubwordType};
 #[derive(Debug, Clone)]
 pub struct BracedParam {
     pub text: String,
+    pub name: String,
     subword_type: SubwordType,
 }
 
@@ -67,8 +68,27 @@ impl BracedParam {
     fn new() -> BracedParam {
         BracedParam {
             text: String::new(),
+            name: String::new(),
             subword_type: SubwordType::BracedParameter,
         }
+    }
+
+    fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name(core);
+        if len != 0 {
+            ans.name = feeder.consume(len);
+            ans.text += &ans.name;
+            return true;
+        }
+
+        let len = feeder.scanner_special_and_positional_param();
+        if len != 0 {
+            ans.name = feeder.consume(len);
+            ans.text += &ans.name;
+            return true;
+        }
+
+        feeder.starts_with("}")
     }
 
     fn eat(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -103,13 +123,18 @@ impl BracedParam {
         let mut ans = Self::new();
         ans.text += &feeder.consume(2);
 
-        while Self::eat(feeder, &mut ans, core) {}
+        while ! feeder.starts_with("}") {
+            if ! Self::eat_param(feeder, &mut ans, core) {
+                Self::eat(feeder, &mut ans, core);
+            }
+        }
 
-        if ans.text.len() == 0 {
+        if feeder.starts_with("}") {
+            ans.text += &feeder.consume(1);
+            Some(ans)
+        }else{
             feeder.consume(feeder.len());
             None
-        }else{
-            Some(ans)
         }
     }
 }
