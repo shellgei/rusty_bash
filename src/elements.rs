@@ -8,6 +8,7 @@ pub mod command;
 pub mod array;
 pub mod io;
 pub mod word;
+pub mod subscript;
 pub mod subword;
 
 use self::io::pipe::Pipe;

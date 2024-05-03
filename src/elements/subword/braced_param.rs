@@ -4,12 +4,13 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subscript::Subscript;
 
 #[derive(Debug, Clone)]
 pub struct BracedParam {
     pub text: String,
     pub name: String,
-    pub subscript: String,
+    pub subscript: Option<Subscript>,
     subword_type: SubwordType,
 }
 
@@ -57,8 +58,14 @@ impl Subword for BracedParam {
             return false;
         }
 
-        let value = core.data.get_param_ref(&self.name);
-        self.text = value.to_string();
+        if let Some(sub) = self.subscript.as_mut() {
+            if let Some(s) = sub.eval() {
+                self.text = core.data.get_array(&self.name, s);
+            }
+        }else{
+            let value = core.data.get_param_ref(&self.name);
+            self.text = value.to_string();
+        }
         true
     }
 
@@ -71,9 +78,19 @@ impl BracedParam {
         BracedParam {
             text: String::new(),
             name: String::new(),
-            subscript: String::new(),
+            subscript: None,
             subword_type: SubwordType::BracedParameter,
         }
+    }
+
+    fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if let Some(s) = Subscript::parse(feeder, core) {
+            ans.text += &s.text;
+            ans.subscript = Some(s);
+            return true;
+        }
+
+        false
     }
 
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -94,7 +111,7 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_unknown(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if feeder.len() == 0 {
             feeder.feed_additional_line(core);
         }
@@ -128,8 +145,10 @@ impl BracedParam {
 
         let mut num = 0;
         while ! feeder.starts_with("}") {
-            if ! Self::eat_param(feeder, &mut ans, core) {
-                Self::eat(feeder, &mut ans, core);
+            if Self::eat_param(feeder, &mut ans, core) {
+                Self::eat_subscript(feeder, &mut ans, core);
+            }else{
+                Self::eat_unknown(feeder, &mut ans, core);
             }
             num += 1;
         }

@@ -116,6 +116,11 @@ impl Feeder {
         0
     }
 
+    pub fn scanner_inner_subscript(&mut self, core: &mut ShellCore) -> usize {
+        let judge = |ch| "]".find(ch) == None;
+        self.scanner_chars(judge, core)
+    }
+
     pub fn scanner_unknown_in_param_brace(&mut self) -> usize {
         match self.remaining.chars().nth(0) {
             Some(c) => if "'$".find(c) == None { c.len_utf8() }else{ 0 },

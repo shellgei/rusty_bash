@@ -41,6 +41,24 @@ impl Data {
         }
     }
 
+    pub fn get_array(&mut self, key: &str, pos: String) -> String {
+        if  self.arrays.get(key) == None {
+            return "".to_string();
+        }
+
+        match self.arrays.get(key) {
+            Some(a) => {
+                if pos == "@" {
+                    return a.join(" ");
+                }
+            },
+            _ => {},
+        }
+
+
+        "".to_string()
+    }
+
     fn get_position_param_pos(&self, key: &str) -> Option<usize> {
         if ! (key.len() == 1 && "0" <= key && key <= "9") {
             return None;
