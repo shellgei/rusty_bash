@@ -47,15 +47,16 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        let len = self.text.len();
-        let param = self.text[2..len-1].to_string();
+        if self.name.len() == 0 {
+            return false;
+        }
 
-        if ! is_param(&param) {
+        if ! is_param(&self.name) {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
         }
 
-        let value = core.data.get_param_ref(&param);
+        let value = core.data.get_param_ref(&self.name);
         self.text = value.to_string();
         true
     }
@@ -123,10 +124,16 @@ impl BracedParam {
         let mut ans = Self::new();
         ans.text += &feeder.consume(2);
 
+        let mut num = 0;
         while ! feeder.starts_with("}") {
             if ! Self::eat_param(feeder, &mut ans, core) {
                 Self::eat(feeder, &mut ans, core);
             }
+            num += 1;
+        }
+
+        if num > 1 {
+            ans.name.clear();
         }
 
         if feeder.starts_with("}") {
