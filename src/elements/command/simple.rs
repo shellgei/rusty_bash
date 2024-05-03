@@ -26,6 +26,8 @@ pub struct SimpleCommand {
     text: String,
     substitutions: Vec<(String, Option<Word>)>,
     evaluated_subs: Vec<(String, String)>,
+    arrays: Vec<(String, Array)>,
+    evaluated_arrays: Vec<(String, Vec<String>)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -157,6 +159,18 @@ impl SimpleCommand {
                 None => return false,
             }
         }
+
+        self.evaluated_arrays.clear();
+        for array in self.arrays.iter_mut() {
+            let key = array.0.clone();
+            match array.1.eval(core) {
+                Some(values) => self.evaluated_arrays.push( (key, values) ),
+                None => return false,
+            }
+        }
+
+        dbg!("{:?}", &self.evaluated_arrays);
+
         true
     }
 
@@ -180,6 +194,8 @@ impl SimpleCommand {
             text: String::new(),
             substitutions: vec![],
             evaluated_subs: vec![],
+            arrays: vec![],
+            evaluated_arrays: vec![],
             words: vec![],
             args: vec![],
             redirects: vec![],
@@ -200,6 +216,8 @@ impl SimpleCommand {
         match Array::parse(feeder, core) {
             Some(a) => {
                 ans.text += &a.text;
+                ans.arrays.push( (name_eq, a) );
+                eprintln!("{:?}", &ans.arrays);
                 return true;
             },
             _       => {},

@@ -15,7 +15,16 @@ pub struct Array {
 
 impl Array {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
-        None
+        let mut ans = vec![];
+
+        for w in &mut self.words {
+            match w.eval(core) {
+                None     => return None,
+                Some(ws) => ans.extend(ws),
+            }
+        }
+
+        Some(ans)
     }
 
     pub fn new() -> Array {
@@ -64,7 +73,6 @@ impl Array {
             }
         }
 
-        dbg!("{:?}", &ans);
         Some(ans)
     }
 }
