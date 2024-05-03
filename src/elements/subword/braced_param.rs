@@ -54,7 +54,7 @@ impl Subword for BracedParam {
             return false;
         }
 
-        let value = core.get_param_ref(&param);
+        let value = core.data.get_param_ref(&param);
         self.text = value.to_string();
         true
     }

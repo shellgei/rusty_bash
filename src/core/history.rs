@@ -30,11 +30,11 @@ impl ShellCore {
         }
 
         let mut file_line = pos - 1;
-        if let Ok(n) = self.get_param_ref("HISTFILESIZE").parse::<usize>() {
+        if let Ok(n) = self.data.get_param_ref("HISTFILESIZE").parse::<usize>() {
             file_line %= n;
         }
 
-        if let Ok(hist_file) = File::open(self.get_param_ref("HISTFILE")){
+        if let Ok(hist_file) = File::open(self.data.get_param_ref("HISTFILE")){
             let mut rev_lines = RevLines::new(BufReader::new(hist_file));
             if let Some(Ok(s)) = rev_lines.nth(file_line) {
                 return s;

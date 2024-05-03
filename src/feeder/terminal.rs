@@ -32,7 +32,7 @@ struct Terminal {
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
-        let raw_prompt = core.get_param_ref(ps);
+        let raw_prompt = core.data.get_param_ref(ps);
         let ansi_on_prompt = raw_prompt.replace("\\033", "\x1b").to_string();
         let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
         let prompt = replaced_prompt.replace("\\[", "").replace("\\]", "").to_string();

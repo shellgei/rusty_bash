@@ -100,7 +100,7 @@ impl Terminal {
 
     pub fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
         let mut comlist = HashSet::new();
-        for path in core.get_param_ref("PATH").to_string().split(":") {
+        for path in core.data.get_param_ref("PATH").to_string().split(":") {
             for file in expand(&(path.to_string() + "/*"), true, false) {
                 let command = file.split("/").last().map(|s| s.to_string()).unwrap();
                 if command.starts_with(target) {
@@ -129,7 +129,7 @@ impl Terminal {
         let mut target_tilde = target.to_string();
         if target.starts_with("~/") {
             self.tilde_prefix = "~/".to_string();
-            self.tilde_path = core.get_param_ref("HOME").to_string() + "/";
+            self.tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
             wildcard = wildcard.replacen(&self.tilde_prefix, &self.tilde_path, 1);    
             target_tilde = target_tilde.replacen(&self.tilde_prefix, &self.tilde_path, 1);
         }else{

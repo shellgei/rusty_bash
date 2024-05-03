@@ -55,8 +55,8 @@ fn run_signal_check(core: &mut ShellCore) {
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
 fn read_rc_file(core: &mut ShellCore) {
-    let dir = match core.get_param_ref("CARGO_MANIFEST_DIR") {
-        "" => core.get_param_ref("HOME").to_string(),
+    let dir = match core.data.get_param_ref("CARGO_MANIFEST_DIR") {
+        "" => core.data.get_param_ref("HOME").to_string(),
         s  => s.to_string(),
     };
 
@@ -86,7 +86,7 @@ fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
     }
 
     core.sigint.store(false, Relaxed); //core.input_interrupt = false;
-    core.set_param("?", "130");
+    core.data.set_param("?", "130");
     feeder.consume(feeder.len());
     true
 }

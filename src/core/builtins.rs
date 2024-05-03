@@ -46,7 +46,7 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
-        core.parameters.insert("?".to_string(), args[1].clone());
+        core.data.parameters.insert("?".to_string(), args[1].clone());
     }
     core.exit()
 }
@@ -56,7 +56,7 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    core.position_parameters = args.to_vec();
+    core.data.position_parameters = args.to_vec();
     0
 }
 
@@ -102,7 +102,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.flags = core.flags.replace("@", "i");
     core.flags = core.flags.replace("S", "");
     io::replace(backup, 0);
-    core.get_param_ref("?").parse::<i32>()
+    core.data.get_param_ref("?").parse::<i32>()
         .expect("SUSH INTERNAL ERROR: BAD EXIT STATUS")
 }
 

@@ -37,7 +37,7 @@ impl Command for SimpleCommand {
         let mut words = self.words.to_vec();
 
         if ! self.eval_substitutions(core){
-            core.set_param("?", "1");
+            core.data.set_param("?", "1");
             return None;
         }
 
@@ -46,7 +46,7 @@ impl Command for SimpleCommand {
         }
 
         if self.args.len() == 0 {
-            self.evaluated_subs.iter().for_each(|s| core.set_param(&s.0, &s.1));
+            self.evaluated_subs.iter().for_each(|s| core.data.set_param(&s.0, &s.1));
             return None;
         }else if Self::check_sigint(core) {
             None
@@ -114,20 +114,20 @@ impl SimpleCommand {
     fn exec_function(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         let mut command = core.functions[&self.args[0]].clone();
 
-        let backup = core.position_parameters.to_vec();
+        let backup = core.data.position_parameters.to_vec();
         self.args[0] = backup[0].clone();
-        core.position_parameters = self.args.to_vec();
+        core.data.position_parameters = self.args.to_vec();
 
         let pid = command.exec(core, pipe);
 
-        core.position_parameters = backup;
+        core.data.position_parameters = backup;
 
         return pid;
     }
 
     fn check_sigint(core: &mut ShellCore) -> bool {
         if core.sigint.load(Relaxed) {
-            core.set_param("?", "130");
+            core.data.set_param("?", "130");
             return true;
         }
         false
@@ -167,7 +167,7 @@ impl SimpleCommand {
             },
             None => {
                 if ! core.sigint.load(Relaxed) {
-                    core.set_param("?", "1");
+                    core.data.set_param("?", "1");
                 }
                 false
             },

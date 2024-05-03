@@ -1,10 +1,24 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
 use std::env;
+use std::collections::HashMap;
 
-impl ShellCore {
+pub struct Data {
+    pub parameters: HashMap<String, String>,
+    pub position_parameters: Vec<String>,
+}
+
+impl Data {
+    pub fn new() -> Data {
+        Data {
+            parameters: HashMap::new(),
+            position_parameters: vec![],
+        }
+    }
+//}
+
+//impl ShellCore {
     pub fn get_param_ref(&mut self, key: &str) -> &str {
         if let Some(n) = self.get_position_param_pos(key) {
             return &self.position_parameters[n];

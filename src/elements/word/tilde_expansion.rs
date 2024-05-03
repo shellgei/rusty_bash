@@ -44,7 +44,7 @@ fn get_value(text: &str, core: &mut ShellCore) -> String {
         _ => return get_home_dir(text),
     };
 
-    core.get_param_ref(key).to_string()
+    core.data.get_param_ref(key).to_string()
 }
 
 fn get_home_dir(user: &str) -> String {

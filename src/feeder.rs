@@ -97,7 +97,7 @@ impl Feeder {
             Ok(()) => true,
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
-                core.set_param("?", "2");
+                core.data.set_param("?", "2");
 
                 match core.has_flag('S') { //S: on source command
                     true  => return false,
@@ -105,7 +105,7 @@ impl Feeder {
                 }
             },
             Err(InputError::Interrupt) => {
-                core.set_param("?", "130");
+                core.data.set_param("?", "130");
                 false
             },
         }
