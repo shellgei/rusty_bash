@@ -9,6 +9,7 @@ use crate::elements::subword::{Subword, SubwordType};
 pub struct BracedParam {
     pub text: String,
     pub name: String,
+    pub subscript: String,
     subword_type: SubwordType,
 }
 
@@ -70,6 +71,7 @@ impl BracedParam {
         BracedParam {
             text: String::new(),
             name: String::new(),
+            subscript: String::new(),
             subword_type: SubwordType::BracedParameter,
         }
     }
