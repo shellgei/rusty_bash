@@ -48,17 +48,10 @@ fn split_str(s: &str) -> Vec<&str> {
     let mut pos = 0;
     let mut ans = vec![];
 
-    //eprintln!("IN: {:?}", &s);
     for c in s.chars() {
-        if c == '\\' && ! esc {
-            esc = true;
-            pos += 1;
-            continue;
-        }
-
-        if esc {
+        if esc || c == '\\' {
+            esc = ! esc;
             pos += c.len_utf8();
-            esc = false;
             continue;
         }
 
@@ -72,7 +65,6 @@ fn split_str(s: &str) -> Vec<&str> {
     }
 
     ans.push(&s[from..]);
-    //eprintln!("OUT: {:?}", &ans);
     ans
 }
 
@@ -84,11 +76,6 @@ pub trait Subword {
     fn substitute(&mut self, core: &mut ShellCore) -> bool;
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        /*
-        let binding = self.get_text().replace(' ', "\n");
-        let splits = binding.split('\n').collect::<Vec<&str>>();
-        */
-
         let splits = split_str(self.get_text());
 
         if splits.len() < 2 {
