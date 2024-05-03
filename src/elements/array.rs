@@ -16,9 +16,13 @@ impl Array {
         let mut ans = vec![];
 
         for w in &mut self.words {
+                    dbg!("{:?}", &w);
             match w.eval(core) {
                 None     => return None,
-                Some(ws) => ans.extend(ws),
+                Some(ws) => {
+                    dbg!("{:?}", &ws);
+                    ans.extend(ws)
+                },
             }
         }
 

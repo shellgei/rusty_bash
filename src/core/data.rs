@@ -62,4 +62,8 @@ impl Data {
 
         self.parameters.insert(key.to_string(), val.to_string());
     }
+
+    pub fn set_array(&mut self, key: &str, vals: &Vec<String>) {
+        self.arrays.insert(key.to_string(), vals.to_vec());
+    }
 }

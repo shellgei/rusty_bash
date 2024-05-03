@@ -50,6 +50,7 @@ impl Command for SimpleCommand {
 
         if self.args.len() == 0 {
             self.evaluated_subs.iter().for_each(|s| core.data.set_param(&s.0, &s.1));
+            self.evaluated_arrays.iter().for_each(|s| core.data.set_array(&s.0, &s.1));
             return None;
         }else if Self::check_sigint(core) {
             None
