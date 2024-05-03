@@ -16,7 +16,6 @@ use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
-use crate::elements::command::Command;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
@@ -24,8 +23,6 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct ShellCore {
     pub flags: String,
     pub data: Data,
-    pub aliases: HashMap<String, String>,
-    pub functions: HashMap<String, Box<dyn Command>>,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
@@ -51,9 +48,6 @@ impl ShellCore {
         let mut core = ShellCore{
             flags: String::new(),
             data: Data::new(),
-            aliases: HashMap::new(),
-            //parameters: HashMap::new(),
-            functions: HashMap::new(),
             rewritten_history: HashMap::new(),
             history: vec![],
             builtins: HashMap::new(),

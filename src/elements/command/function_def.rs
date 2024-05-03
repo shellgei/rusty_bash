@@ -29,7 +29,7 @@ impl Command for FunctionDefinition {
             return None;
         }
 
-        core.functions.insert(self.name.to_string(), self.command.as_mut().unwrap().clone());
+        core.data.functions.insert(self.name.to_string(), self.command.as_mut().unwrap().clone());
         None
     }
 

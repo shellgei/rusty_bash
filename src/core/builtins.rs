@@ -29,7 +29,7 @@ impl ShellCore {
 
 pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 {
-        for (k, v) in &core.aliases {
+        for (k, v) in &core.data.aliases {
             println!("alias {}='{}'", k, v);
         }
         return 0;
@@ -37,7 +37,7 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() == 2 && args[1].find("=") != None {
         let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
-        core.aliases.insert(kv[0].clone(), kv[1..].join("="));
+        core.data.aliases.insert(kv[0].clone(), kv[1..].join("="));
     }
 
     0

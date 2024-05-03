@@ -1,12 +1,15 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::elements::command::Command;
 use std::env;
 use std::collections::HashMap;
 
 pub struct Data {
     pub parameters: HashMap<String, String>,
     pub position_parameters: Vec<String>,
+    pub aliases: HashMap<String, String>,
+    pub functions: HashMap<String, Box<dyn Command>>,
 }
 
 impl Data {
@@ -14,11 +17,11 @@ impl Data {
         Data {
             parameters: HashMap::new(),
             position_parameters: vec![],
+            aliases: HashMap::new(),
+            functions: HashMap::new(),
         }
     }
-//}
 
-//impl ShellCore {
     pub fn get_param_ref(&mut self, key: &str) -> &str {
         if let Some(n) = self.get_position_param_pos(key) {
             return &self.position_parameters[n];

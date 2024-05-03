@@ -50,7 +50,7 @@ impl Command for SimpleCommand {
             return None;
         }else if Self::check_sigint(core) {
             None
-        }else if core.functions.contains_key(&self.args[0]) {
+        }else if core.data.functions.contains_key(&self.args[0]) {
             self.exec_function(core, pipe)
         }else{
             self.exec_command(core, pipe)
@@ -112,7 +112,7 @@ impl SimpleCommand {
     }
 
     fn exec_function(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        let mut command = core.functions[&self.args[0]].clone();
+        let mut command = core.data.functions[&self.args[0]].clone();
 
         let backup = core.data.position_parameters.to_vec();
         self.args[0] = backup[0].clone();

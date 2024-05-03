@@ -117,7 +117,7 @@ impl Feeder {
         }
 
         if let Some(head) = line.replace("\n", " ").split(' ').nth(0) {
-            if let Some(value) = core.aliases.get(head) {
+            if let Some(value) = core.data.aliases.get(head) {
                 *line = line.replacen(head, value, 1);
             }
         }
