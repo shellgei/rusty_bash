@@ -42,6 +42,40 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
+fn split_str(s: &str) -> Vec<&str> {
+    let mut esc = false;
+    let mut from = 0;
+    let mut pos = 0;
+    let mut ans = vec![];
+
+    //eprintln!("IN: {:?}", &s);
+    for c in s.chars() {
+        if c == '\\' && ! esc {
+            esc = true;
+            pos += 1;
+            continue;
+        }
+
+        if esc {
+            pos += c.len_utf8();
+            esc = false;
+            continue;
+        }
+
+        if c == ' ' || c == '\t' || c == '\n' {
+            ans.push(&s[from..pos]);
+            pos += 1;
+            from = pos;
+        }else{
+            pos += c.len_utf8();
+        }
+    }
+
+    ans.push(&s[from..]);
+    //eprintln!("OUT: {:?}", &ans);
+    ans
+}
+
 pub trait Subword {
     fn get_text(&self) -> &str;
     fn boxed_clone(&self) -> Box<dyn Subword>;
@@ -50,7 +84,13 @@ pub trait Subword {
     fn substitute(&mut self, core: &mut ShellCore) -> bool;
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        let splits = self.get_text().split('\n').collect::<Vec<&str>>();
+        /*
+        let binding = self.get_text().replace(' ', "\n");
+        let splits = binding.split('\n').collect::<Vec<&str>>();
+        */
+
+        let splits = split_str(self.get_text());
+
         if splits.len() < 2 {
             return vec![self.boxed_clone()];
         }
