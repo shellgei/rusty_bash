@@ -49,18 +49,15 @@ fn split_str(s: &str) -> Vec<&str> {
     let mut ans = vec![];
 
     for c in s.chars() {
+        pos += c.len_utf8();
         if esc || c == '\\' {
             esc = ! esc;
-            pos += c.len_utf8();
             continue;
         }
 
         if c == ' ' || c == '\t' || c == '\n' {
-            ans.push(&s[from..pos]);
-            pos += 1;
+            ans.push(&s[from..pos-1]);
             from = pos;
-        }else{
-            pos += c.len_utf8();
         }
     }
 
