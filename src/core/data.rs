@@ -51,6 +51,15 @@ impl Data {
                 if pos == "@" {
                     return a.join(" ");
                 }
+
+                match pos.parse::<usize>() {
+                    Ok(n) => {
+                        if n < a.len() {
+                            return a[n].clone();
+                        }
+                    },
+                    _ => {},
+                }
             },
             _ => {},
         }
