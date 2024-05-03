@@ -713,6 +713,14 @@ res=$($com <<< 'echo {,,}$(date "+%w")')
 res=$($com <<< 'echo $(date) | grep "  "')
 [ "$?" == "1" ] || err $LINENO
 
+# array
+
+res=$($com <<< 'A=( a b ); echo ${A[1]}')
+[ "$res" == "b" ] || err $LINENO
+
+res=$($com <<< 'A=( a b ); echo ${A[@]}')
+[ "$res" == "a b" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done > /tmp/rusty_bash1'; cat /tmp/rusty_bash1 ; cat /tmp/rusty_bash1 )
