@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 pub struct Data {
     pub parameters: HashMap<String, String>,
+    pub arrays: HashMap<String, Vec<String>>,
     pub position_parameters: Vec<String>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, Box<dyn Command>>,
@@ -16,6 +17,7 @@ impl Data {
     pub fn new() -> Data {
         Data {
             parameters: HashMap::new(),
+            arrays: HashMap::new(),
             position_parameters: vec![],
             aliases: HashMap::new(),
             functions: HashMap::new(),

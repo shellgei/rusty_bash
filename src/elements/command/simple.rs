@@ -169,8 +169,6 @@ impl SimpleCommand {
             }
         }
 
-        dbg!("{:?}", &self.evaluated_arrays);
-
         true
     }
 
@@ -217,7 +215,6 @@ impl SimpleCommand {
             Some(a) => {
                 ans.text += &a.text;
                 ans.arrays.push( (name_eq, a) );
-                eprintln!("{:?}", &ans.arrays);
                 return true;
             },
             _       => {},
@@ -264,7 +261,8 @@ impl SimpleCommand {
             }
         }
 
-        if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
+        if ans.substitutions.len() + ans.arrays.len() 
+            + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{

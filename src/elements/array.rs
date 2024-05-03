@@ -3,8 +3,6 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::command;
-use super::subword;
-use super::subword::Subword;
 use super::word::Word;
 
 #[derive(Debug, Clone)]
