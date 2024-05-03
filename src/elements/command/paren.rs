@@ -44,14 +44,16 @@ impl ParenCommand {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_empty: bool) -> Option<ParenCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<Self> {
         let mut ans = Self::new();
-        if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, permit_empty) {
+        if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, substitution) {
             ans.text.push_str("(");
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
 
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+            if ! substitution {
+                command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+            }
             Some(ans)
         }else{
             None
