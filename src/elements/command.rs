@@ -82,7 +82,7 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
     ! ans.is_none()
 }
 
-fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {
+pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {
     let blank_len = feeder.scanner_blank(core);
     if blank_len == 0 {
         return false;
