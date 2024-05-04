@@ -29,8 +29,9 @@ pub fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     feeder.add_line(args[2].to_string());
     while feeder.len() != 0 {
         match Word::parse(&mut feeder, core) {
-            Some(w) => {
-                ans.push(w.text);
+            Some(mut w) => {
+                w.unquote();
+                ans.push(w.text)
             },
             _ => {
                 let len = feeder.scanner_multiline_blank(core);
@@ -39,12 +40,10 @@ pub fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    for mut a in ans {
-        if a.starts_with("'") && a.ends_with("'") {
-            a.remove(0);
-            a.remove(a.len()-1);
-        }
-        println!("{}", a);
+    if args.len() > 3 {
+        ans.retain(|a| a.starts_with(&args[3]));
     }
+
+    ans.iter().for_each(|a| println!("{}", a));
     0
 }

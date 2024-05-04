@@ -39,14 +39,14 @@ impl Word {
         ws.iter_mut().for_each(|w| w.connect_subwords());
         *ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
         ws.iter_mut().for_each(|w| w.unquote());
-        ws.iter_mut().for_each(|w| w.connect_subwords());
         let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
 
         Some(ans)
     }
 
-    fn unquote(&mut self) {
+    pub fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|w| w.unquote());
+        self.connect_subwords();
     }
     
     fn connect_subwords(&mut self) {
