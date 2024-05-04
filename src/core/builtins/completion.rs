@@ -40,8 +40,10 @@ pub fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    if args.len() > 3 {
+    if args.len() > 3 && args[3] != "--" {
         ans.retain(|a| a.starts_with(&args[3]));
+    }else if args.len() > 4 {
+        ans.retain(|a| a.starts_with(&args[4]));
     }
 
     ans.iter().for_each(|a| println!("{}", a));
