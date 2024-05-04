@@ -3,6 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod cd;
+mod completion;
 mod pwd;
 mod utils;
 
@@ -17,6 +18,7 @@ impl ShellCore {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias);
         self.builtins.insert("cd".to_string(), cd::cd);
+        self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
