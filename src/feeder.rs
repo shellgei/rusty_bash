@@ -139,7 +139,7 @@ impl Feeder {
         }
     }
 
-    fn add_line(&mut self, line: String) {
+    pub fn add_line(&mut self, line: String) {
         match self.remaining.len() {
             0 => self.remaining = line,
             _ => self.remaining += &line,
