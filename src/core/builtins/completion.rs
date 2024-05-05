@@ -67,7 +67,7 @@ fn replace_args(args: &mut Vec<String>) -> bool {
         "command" => "-c",
         "file" => "-f",
         "directory" => "-d",
-        _ => return false,
+        a => a,
     };
 
     args[1] = replace.to_string();
