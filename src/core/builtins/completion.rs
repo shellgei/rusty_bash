@@ -93,31 +93,45 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 }
 
-pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut commands = vec![];
     if args.len() > 2 {
         commands.extend(get_paths(core, args));
     }
     commands.retain(|p| Path::new(p).executable());
+
+    let mut aliases: Vec<String> = core.data.aliases.clone().into_keys().collect();
+    commands.append(&mut aliases);
+    let mut builtins: Vec<String> = core.builtins.clone().into_keys().collect();
+    commands.append(&mut builtins);
+    let mut functions: Vec<String> = core.data.functions.clone().into_keys().collect();
+    commands.append(&mut functions);
+
+    if args.len() > 2 && args[2] != "--" {
+        commands.retain(|a| a.starts_with(&args[2]));
+    }else if args.len() > 3 {
+        commands.retain(|a| a.starts_with(&args[3]));
+    }
+
     commands.iter().for_each(|a| println!("{}", &a));
     0
 }
 
-pub fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut paths = get_paths(core, args);
     paths.retain(|p| Path::new(p).is_dir());
     paths.iter().for_each(|a| println!("{}", &a));
     0
 }
 
-pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let paths = get_paths(core, args);
     paths.iter().for_each(|a| println!("{}", a));
     0
 }
 
 
-pub fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
         eprintln!("sush: compgen: -W: option requires an argument");
         return 2;
