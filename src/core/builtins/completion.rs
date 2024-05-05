@@ -3,12 +3,13 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
-use faccess;
-use faccess::PathExt;
+//use faccess;
+//use faccess::PathExt;
 use std::path::PathBuf;
 use glob;
 use glob::{GlobError, MatchOptions};
 
+/*
 fn expand(path: &str, executable_only: bool, search_dir: bool) -> Vec<String> {
     let opts = MatchOptions {
         case_sensitive: true,
@@ -31,6 +32,33 @@ fn to_str(path :&Result<PathBuf, GlobError>, executable_only: bool, search_dir: 
                 return "".to_string();
             }
 
+            let mut s = p.to_string_lossy().to_string();
+            if p.is_dir() && s.chars().last() != Some('/') {
+                s.push('/');
+            }
+            s
+        },
+        _ => "".to_string(),
+    }
+}
+*/
+
+fn expand(path: &str) -> Vec<String> {
+    let opts = MatchOptions {
+        case_sensitive: true,
+        require_literal_separator: true,
+        require_literal_leading_dot: false,
+    };
+
+    match glob::glob_with(&path, opts) {
+        Ok(ps) => ps.map(|p| to_str(&p)).filter(|s| s != "").collect(),
+        _ => vec![],
+    }
+}
+
+fn to_str(path :&Result<PathBuf, GlobError>) -> String {
+    match path {
+        Ok(p) => {
             let mut s = p.to_string_lossy().to_string();
             if p.is_dir() && s.chars().last() != Some('/') {
                 s.push('/');
@@ -67,7 +95,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         path = path.replace("~/", &home);
     }
 
-    let mut paths = expand(&path, false, true);
+    let mut paths = expand(&path);
     paths.iter_mut().for_each(|p| if p.ends_with("/") { p.pop(); });
     paths.iter().for_each(|a| println!("{}", a));
     0
