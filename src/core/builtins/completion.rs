@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
 use faccess;
 use faccess::PathExt;
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::path::Path;
 use glob;
@@ -74,6 +75,25 @@ fn replace_args(args: &mut Vec<String>) -> bool {
     true
 }
 
+fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
+    let mut comlist = HashSet::new();
+    for path in core.data.get_param_ref("PATH").to_string().split(":") {
+        for file in expand(&(path.to_string() + "/*")) {
+            if ! Path::new(&file).executable() {
+                continue;
+            }
+
+            let command = file.split("/").last().map(|s| s.to_string()).unwrap();
+            if command.starts_with(target) {
+                comlist.insert(command.clone());
+            }
+        }
+    }
+    let mut ans: Vec<String> = comlist.iter().map(|c| c.to_string()).collect();
+    ans.sort();
+    ans
+}
+
 pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         return 0;
@@ -107,11 +127,17 @@ fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut functions: Vec<String> = core.data.functions.clone().into_keys().collect();
     commands.append(&mut functions);
 
-    if args.len() > 2 && args[2] != "--" {
-        commands.retain(|a| a.starts_with(&args[2]));
+    let head = if args.len() > 2 && args[2] != "--" {
+        args[2].clone()
     }else if args.len() > 3 {
-        commands.retain(|a| a.starts_with(&args[3]));
-    }
+        args[3].clone()
+    }else{
+        "".to_string()
+    };
+
+    commands.retain(|a| a.starts_with(&head));
+    let mut command_in_paths = command_list(&head, core);
+    commands.append(&mut command_in_paths);
 
     commands.iter().for_each(|a| println!("{}", &a));
     0
