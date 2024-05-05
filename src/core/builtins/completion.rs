@@ -37,7 +37,7 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     }
 }
 
-fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut path = match args.len() {
         2 => "*".to_string(),
         _ => {

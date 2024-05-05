@@ -4,47 +4,7 @@
 use crate::ShellCore;
 use crate::core::builtins::completion;
 use crate::feeder::terminal::Terminal;
-use faccess;
-use faccess::PathExt;
-use glob;
-use glob::{GlobError, MatchOptions};
-use std::path::PathBuf;
 use unicode_width::UnicodeWidthStr;
-
-fn expand(path: &str, executable_only: bool, search_dir: bool) -> Vec<String> {
-    let opts = MatchOptions {
-        case_sensitive: true,
-        require_literal_separator: true,
-        require_literal_leading_dot: false,
-    };
-
-    let mut ans: Vec<String> = match glob::glob_with(&path, opts) {
-        Ok(ps) => ps.map(|p| to_str(&p, executable_only, search_dir))
-                    .filter(|s| s != "").collect(),
-        _ => return vec![],
-    };
-
-    ans.sort();
-    ans
-}
-
-fn to_str(path :&Result<PathBuf, GlobError>, executable_only: bool, search_dir: bool) -> String {
-    match path {
-        Ok(p) => {
-            if ( executable_only && ! p.executable() && ! p.is_dir() )
-            || ( ! search_dir && p.is_dir() ) {
-                return "".to_string();
-            }
-
-            let mut s = p.to_string_lossy().to_string();
-            if p.is_dir() && s.chars().last() != Some('/') {
-                s.push('/');
-            }
-            s
-        },
-        _ => "".to_string(),
-    }
-}
 
 fn common_length(chars: &Vec<char>, s: &String) -> usize {
     let max_len = chars.len();
@@ -92,9 +52,9 @@ impl Terminal {
         }
         let search_command = command_pos == words.len()-1;
 
-        match search_command && ! last.starts_with(".") && ! last.starts_with("/"){
+        match search_command { //&& ! last.starts_with(".") && ! last.starts_with("/"){
             true  => self.command_completion(&last, core),
-            false => self.file_completion(&last, core, double_tab, search_command),
+            false => self.file_completion(&last, core, double_tab/*, search_command*/),
         }
     }
 
@@ -109,22 +69,20 @@ impl Terminal {
         }
     }
 
-    pub fn file_completion(&mut self, target: &String, core: &mut ShellCore,
-                           double_tab: bool, search_executable: bool) {
-        let mut wildcard = target.to_string() + "*";
-
+    pub fn file_completion(&mut self, target: &String, core: &mut ShellCore, double_tab: bool) {
         let mut target_tilde = target.to_string();
         if target.starts_with("~/") {
             self.tilde_prefix = "~/".to_string();
             self.tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
-            wildcard = wildcard.replacen(&self.tilde_prefix, &self.tilde_path, 1);    
             target_tilde = target_tilde.replacen(&self.tilde_prefix, &self.tilde_path, 1);
         }else{
             self.tilde_prefix = String::new();
             self.tilde_path = String::new();
         }
 
-        let paths = expand(&wildcard, search_executable, true);
+        let mut args = vec!["".to_string(), "".to_string(), target.to_string()];
+        let paths = completion::compgen_f(core, &mut args);
+
         match paths.len() {
             0 => self.cloop(),
             1 => self.replace_input(&paths[0], &target),
