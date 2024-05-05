@@ -137,7 +137,7 @@ impl Terminal {
     }
 
     pub fn show_path_candidates(&mut self, dir: &String, paths: &Vec<String>) {
-        let ps = if dir.chars().last() == Some('/') {
+        let ps = if dir.chars().last() == Some('/') && dir.len() > 1 {
             paths.iter()
                  .map(|p| p.replacen(dir, "", 1)
                  .replacen(&self.tilde_path, &self.tilde_prefix, 1))
