@@ -116,10 +116,22 @@ impl Feeder {
             return;
         }
 
-        if let Some(head) = line.replace("\n", " ").split(' ').nth(0) {
-            if let Some(value) = core.data.aliases.get(head) {
-                *line = line.replacen(head, value, 1);
+        let mut prev_head = "".to_string();
+
+        loop {
+            let head = match line.replace("\n", " ").split(' ').nth(0) {
+                Some(h) => h.to_string(),
+                _ => return,
+            };
+
+            if prev_head == head {
+                return;
             }
+    
+            if let Some(value) = core.data.aliases.get(&head) {
+                *line = line.replacen(&head, value, 1);
+            }
+            prev_head = head;
         }
     }
 
