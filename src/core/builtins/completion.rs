@@ -3,9 +3,10 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
-//use faccess;
-//use faccess::PathExt;
+use faccess;
+use faccess::PathExt;
 use std::path::PathBuf;
+use std::path::Path;
 use glob;
 use glob::{GlobError, MatchOptions};
 
@@ -69,22 +70,7 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     }
 }
 
-pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() <= 1 {
-        return 0;
-    }
-
-    match args[1].as_str() {
-        "-f" => compgen_f(core, args),
-        "-W" => compgen_large_w(core, args),
-        _ => {
-            eprintln!("sush: compgen: {}: invalid option", &args[1]);
-            return 2;
-        },
-    }
-}
-
-pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn get_paths(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut path = match args.len() {
         2 => "*".to_string(),
         _ => args[2].to_string() + "*",
@@ -97,9 +83,38 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut paths = expand(&path);
     paths.iter_mut().for_each(|p| if p.ends_with("/") { p.pop(); });
+    paths
+}
+
+pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() <= 1 {
+        return 0;
+    }
+
+    match args[1].as_str() {
+        "-f" => compgen_f(core, args),
+        "-d" => compgen_d(core, args),
+        "-W" => compgen_large_w(core, args),
+        _ => {
+            eprintln!("sush: compgen: {}: invalid option", &args[1]);
+            return 2;
+        },
+    }
+}
+
+pub fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut paths = get_paths(core, args);
+    paths.retain(|p| Path::new(p).is_dir());
+    paths.iter().for_each(|a| println!("{}", &a));
+    0
+}
+
+pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let paths = get_paths(core, args);
     paths.iter().for_each(|a| println!("{}", a));
     0
 }
+
 
 pub fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
