@@ -10,40 +10,6 @@ use std::path::Path;
 use glob;
 use glob::{GlobError, MatchOptions};
 
-/*
-fn expand(path: &str, executable_only: bool, search_dir: bool) -> Vec<String> {
-    let opts = MatchOptions {
-        case_sensitive: true,
-        require_literal_separator: true,
-        require_literal_leading_dot: false,
-    };
-
-    match glob::glob_with(&path, opts) {
-        Ok(ps) => ps.map(|p| to_str(&p, executable_only, search_dir))
-                    .filter(|s| s != "").collect(),
-        _ => vec![],
-    }
-}
-
-fn to_str(path :&Result<PathBuf, GlobError>, executable_only: bool, search_dir: bool) -> String {
-    match path {
-        Ok(p) => {
-            if ( executable_only && ! p.executable() && ! p.is_dir() )
-            || ( ! search_dir && p.is_dir() ) {
-                return "".to_string();
-            }
-
-            let mut s = p.to_string_lossy().to_string();
-            if p.is_dir() && s.chars().last() != Some('/') {
-                s.push('/');
-            }
-            s
-        },
-        _ => "".to_string(),
-    }
-}
-*/
-
 fn expand(path: &str) -> Vec<String> {
     let opts = MatchOptions {
         case_sensitive: true,
@@ -73,7 +39,12 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
 fn get_paths(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut path = match args.len() {
         2 => "*".to_string(),
-        _ => args[2].to_string() + "*",
+        _ => {
+            match args[2].as_str() {
+                "--" => args[3].to_string() + "*",
+                _ => args[2].to_string() + "*"
+            }
+        },
     };
 
     if path.starts_with("~/") {
@@ -86,20 +57,50 @@ fn get_paths(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     paths
 }
 
+fn replace_args(args: &mut Vec<String>) -> bool {
+    if args.len() < 3 || args[1] != "-A" {
+        return true;
+    }
+
+    args.remove(1);
+    let replace = match args[1].as_str() {
+        "command" => "-c",
+        "file" => "-f",
+        "directory" => "-d",
+        _ => return false,
+    };
+
+    args[1] = replace.to_string();
+    true
+}
+
 pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         return 0;
     }
 
+    replace_args(args);
+
     match args[1].as_str() {
-        "-f" => compgen_f(core, args),
+        "-c" => compgen_c(core, args),
         "-d" => compgen_d(core, args),
+        "-f" => compgen_f(core, args),
         "-W" => compgen_large_w(core, args),
         _ => {
             eprintln!("sush: compgen: {}: invalid option", &args[1]);
             return 2;
         },
     }
+}
+
+pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut commands = vec![];
+    if args.len() > 2 {
+        commands.extend(get_paths(core, args));
+    }
+    commands.retain(|p| Path::new(p).executable());
+    commands.iter().for_each(|a| println!("{}", &a));
+    0
 }
 
 pub fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

@@ -61,6 +61,14 @@ b=$(compgen -d /etc | wc -l )
 res=$($com <<< 'compgen -d /etc | wc -l')
 [ "$res" = "$b" ] || err $LINENO
 
+b=$(compgen -d -- /etc | wc -l )
+res=$($com <<< 'compgen -d -- /etc | wc -l')
+[ "$res" = "$b" ] || err $LINENO
+
+b=$(cd ; compgen -f . | wc -l )
+res=$($com <<< 'cd ; compgen -f . | wc -l')
+[ "$res" = "$b" ] || err $LINENO
+
 ### COMPOUND COMMAND TEST ###
 
 res=$($com <<< '(echo hoge; echo fuge)')
