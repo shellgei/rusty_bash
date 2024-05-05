@@ -37,7 +37,7 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     }
 }
 
-fn get_paths(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut path = match args.len() {
         2 => "*".to_string(),
         _ => {
@@ -101,22 +101,31 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     replace_args(args);
 
-    match args[1].as_str() {
+    let ans = match args[1].as_str() {
         "-c" => compgen_c(core, args),
         "-d" => compgen_d(core, args),
         "-f" => compgen_f(core, args),
-        "-W" => compgen_large_w(core, args),
+        "-W" => {
+            if args.len() < 2 {
+                eprintln!("sush: compgen: -W: option requires an argument");
+                return 2;
+            }
+            compgen_large_w(core, args)
+        },
         _ => {
             eprintln!("sush: compgen: {}: invalid option", &args[1]);
             return 2;
         },
-    }
+    };
+
+    ans.iter().for_each(|a| println!("{}", &a));
+    0
 }
 
-fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
     if args.len() > 2 {
-        commands.extend(get_paths(core, args));
+        commands.extend(compgen_f(core, args));
     }
     commands.retain(|p| Path::new(p).executable());
 
@@ -138,31 +147,16 @@ fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     commands.retain(|a| a.starts_with(&head));
     let mut command_in_paths = command_list(&head, core);
     commands.append(&mut command_in_paths);
-
-    commands.iter().for_each(|a| println!("{}", &a));
-    0
+    commands
 }
 
-fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut paths = get_paths(core, args);
+fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut paths = compgen_f(core, args);
     paths.retain(|p| Path::new(p).is_dir());
-    paths.iter().for_each(|a| println!("{}", &a));
-    0
+    paths
 }
 
-fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let paths = get_paths(core, args);
-    paths.iter().for_each(|a| println!("{}", a));
-    0
-}
-
-
-fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() < 2 {
-        eprintln!("sush: compgen: -W: option requires an argument");
-        return 2;
-    }
-
+fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
     let mut feeder = Feeder::new();
     feeder.add_line(args[2].to_string());
@@ -184,7 +178,5 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }else if args.len() > 4 {
         ans.retain(|a| a.starts_with(&args[4]));
     }
-
-    ans.iter().for_each(|a| println!("{}", a));
-    0
+    ans
 }
