@@ -52,7 +52,7 @@ impl Terminal {
         }
         let search_command = command_pos == words.len()-1;
 
-        match search_command { //&& ! last.starts_with(".") && ! last.starts_with("/"){
+        match search_command {
             true  => self.command_completion(&last, core),
             false => self.file_completion(&last, core, double_tab/*, search_command*/),
         }
