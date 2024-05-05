@@ -49,6 +49,14 @@ echo '(' > /tmp/hoge.txt
 res=$($com <<< 'source /tmp/hoge.txt')
 [ "$?" = "2" ] || err $LINENO
 
+res=$($com <<< 'compgen -W "aaa abc aac" -- aa')
+[ "$res" = "aaa
+aac" ] || err $LINENO
+
+b=$(compgen -f / | wc -l )
+res=$($com <<< 'compgen -f / | wc -l')
+[ "$res" = "$b" ] || err $LINENO
+
 ### COMPOUND COMMAND TEST ###
 
 res=$($com <<< '(echo hoge; echo fuge)')
