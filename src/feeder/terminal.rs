@@ -281,6 +281,26 @@ impl Terminal {
         print!("\x07");
         self.flush();
     }
+
+    pub fn set_completion_info(&mut self, core: &mut ShellCore){
+        let pcc = self.prompt.chars().count();
+        let s = self.get_string(pcc);
+        let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
+        ws.retain(|e| e != "");
+        core.data.set_array("COMP_WORDS", &ws);
+
+        let s: String = self.chars[pcc..self.head].iter().collect();
+        let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
+        ws.retain(|e| e != "");
+        let mut num = ws.len();
+
+        match s.chars().last() {
+            Some(' ') => {},
+            Some(_) => num -= 1,
+            _ => {},
+        }
+        core.data.set_param("COMP_CWORD", &num.to_string());
+    }
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
@@ -333,6 +353,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         }
         term.check_scroll();
         prev_key = c.as_ref().unwrap().clone();
+        term.set_completion_info(core);
     }
 
     core.history[0] = term.get_string(term.prompt.chars().count());
