@@ -3,7 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod cd;
-mod completion;
+pub mod completion;
 mod pwd;
 mod utils;
 

@@ -122,7 +122,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
     if args.len() > 2 {
         commands.extend(compgen_f(core, args));
