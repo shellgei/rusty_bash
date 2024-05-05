@@ -4,6 +4,7 @@
 use crate::ShellCore;
 use crate::core::builtins::completion;
 use crate::feeder::terminal::Terminal;
+use std::path::Path;
 use unicode_width::UnicodeWidthStr;
 
 fn common_length(chars: &Vec<char>, s: &String) -> usize {
@@ -64,7 +65,13 @@ impl Terminal {
 
         match comlist.len() {
             0 => self.cloop(),
-            1 => self.replace_input(&(comlist[0].to_string() + " "), &target),
+            1 => {
+                let last = match Path::new(&comlist[0]).is_dir() {
+                    true  => "/",
+                    false => " ",
+                };
+                self.replace_input(&(comlist[0].to_string() + last), &target)
+            },
             _ => self.show_list(&comlist),
         }
     }
