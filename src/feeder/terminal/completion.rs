@@ -42,6 +42,8 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
+        self.set_completion_info(core);
+
         if ! self.set_default_compreply(core) {
             self.cloop();
             return;
@@ -164,5 +166,25 @@ impl Terminal {
         }
 
         (tilde_prefix, tilde_path, last_tilde_expanded)
+    }
+
+    pub fn set_completion_info(&mut self, core: &mut ShellCore){
+        let pcc = self.prompt.chars().count();
+        let s = self.get_string(pcc);
+        let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
+        ws.retain(|e| e != "");
+        core.data.set_array("COMP_WORDS", &ws);
+
+        let s: String = self.chars[pcc..self.head].iter().collect();
+        let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
+        ws.retain(|e| e != "");
+        let mut num = ws.len();
+
+        match s.chars().last() {
+            Some(' ') => {},
+            Some(_) => num -= 1,
+            _ => {},
+        }
+        core.data.set_param("COMP_CWORD", &num.to_string());
     }
 }
