@@ -168,7 +168,7 @@ impl Terminal {
         (tilde_prefix, tilde_path, last_tilde_expanded)
     }
 
-    pub fn set_completion_info(&mut self, core: &mut ShellCore){
+    fn set_completion_info(&mut self, core: &mut ShellCore){
         let pcc = self.prompt.chars().count();
         let s = self.get_string(pcc);
         let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
