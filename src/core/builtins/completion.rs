@@ -6,6 +6,8 @@ use crate::elements::word::Word;
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::path::Path;
 use glob;
@@ -66,8 +68,9 @@ fn replace_args(args: &mut Vec<String>) -> bool {
     args.remove(1);
     let replace = match args[1].as_str() {
         "command" => "-c",
-        "file" => "-f",
         "directory" => "-d",
+        "file" => "-f",
+        "user" => "-u",
         a => a,
     };
 
@@ -105,6 +108,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-c" => compgen_c(core, args),
         "-d" => compgen_d(core, args),
         "-f" => compgen_f(core, args),
+        "-u" => compgen_u(core, args),
         "-W" => {
             if args.len() < 2 {
                 eprintln!("sush: compgen: -W: option requires an argument");
@@ -122,6 +126,23 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
+fn get_head(args: &mut Vec<String>, pos: usize) -> String {
+    if args.len() > pos && args[pos] != "--" {
+        args[pos].clone()
+    }else if args.len() > pos+1 {
+        args[pos+1].clone()
+    }else{
+        "".to_string()
+    }
+}
+
+fn drop_unmatch(args: &mut Vec<String>, pos: usize, list: &mut Vec<String>) {
+    let head = get_head(args, pos);
+    if head != "" {
+        list.retain(|s| s.starts_with(&head));
+    }
+}
+
 pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
     if args.len() > 2 {
@@ -136,15 +157,10 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut functions: Vec<String> = core.data.functions.clone().into_keys().collect();
     commands.append(&mut functions);
 
-    let head = if args.len() > 2 && args[2] != "--" {
-        args[2].clone()
-    }else if args.len() > 3 {
-        args[3].clone()
-    }else{
-        "".to_string()
-    };
-
-    commands.retain(|a| a.starts_with(&head));
+    let head = get_head(args, 2);
+    if head != "" {
+        commands.retain(|a| a.starts_with(&head));
+    }
     let mut command_in_paths = command_list(&head, core);
     commands.append(&mut command_in_paths);
     commands
@@ -173,10 +189,25 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
         }
     }
 
-    if args.len() > 3 && args[3] != "--" {
-        ans.retain(|a| a.starts_with(&args[3]));
-    }else if args.len() > 4 {
-        ans.retain(|a| a.starts_with(&args[4]));
+    drop_unmatch(args, 3, &mut ans);
+    ans
+}
+
+fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut ans = vec![];
+
+    if let Ok(f) = File::open("/etc/passwd") {
+        for line in BufReader::new(f).lines() {
+            match line {
+                Ok(line) => {
+                    let splits: Vec<&str> = line.split(':').collect();
+                    ans.push(splits[0].to_string());
+                },
+                _ => return vec![],
+            }
+        }
     }
+
+    drop_unmatch(args, 2, &mut ans);
     ans
 }
