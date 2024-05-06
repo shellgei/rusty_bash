@@ -87,13 +87,13 @@ impl Terminal {
                 true  => "/",
                 false => " ",
             };
-            self.replace_input(&(output + tail), &target);
+            self.replace_input(&(output + tail));
             return;
         }
 
         let common = common_string(&core.data.arrays["COMPREPLY"]);
         if common.len() != target.len() {
-            self.replace_input(&common, &target);
+            self.replace_input(&common);
             return;
         }
         self.cloop();
@@ -132,33 +132,18 @@ impl Terminal {
         self.rewrite(true);
     }
 
-    fn replace_input(&mut self, to: &String, from: &str) {
+    fn replace_input(&mut self, to: &String) {
         let min = self.prompt.chars().count();
         while min < self.head && self.head > 0 && self.chars[self.head-1] != ' ' {
             self.backspace();
+        }
+        while self.head < self.chars.len() && self.chars[self.head] != ' ' {
+            self.delete();
         }
 
         for c in to.chars() {
             self.insert(c);
         }
-        /*
-        let pos = core.data.get_param_ref("COMP_CWORD").to_string();
-        let last = core.data.get_array("COMP_WORDS", &pos);
-
-        let last_char_num = last.chars().count();
-        let len = self.chars.len();
-        let mut path_chars = path.to_string();
-
-        if last.starts_with("./") {
-            path_chars.insert(0, '/');
-            path_chars.insert(0, '.');
-        }
-        
-        self.chars.drain(len - last_char_num..);
-        self.chars.extend(path_chars.chars());
-        self.head = self.chars.len();
-        self.rewrite(false);
-        */
     }
 
     fn set_tilde_transform(last: &str, core: &mut ShellCore) -> (String, String, String) {
