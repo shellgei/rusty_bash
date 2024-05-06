@@ -43,19 +43,7 @@ impl Terminal {
         }
 
         let last = words.last().unwrap().clone();
-        let mut last_tilde_expanded = last.clone();
-
-        let tilde_prefix;
-        let tilde_path;
-
-        if last.starts_with("~/") {
-            tilde_prefix = "~/".to_string();
-            tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
-            last_tilde_expanded = last.replacen(&tilde_prefix, &tilde_path, 1);
-        }else{
-            tilde_prefix = String::new();
-            tilde_path = String::new();
-        }
+        let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
 
         let mut command_pos = 0;
         for w in &words {
@@ -148,5 +136,23 @@ impl Terminal {
         self.chars.extend(path_chars.chars());
         self.head = self.chars.len();
         self.rewrite(false);
+    }
+
+    fn set_tilde_transform(last: &str, core: &mut ShellCore) -> (String, String, String) {
+        let tilde_prefix;
+        let tilde_path;
+        let last_tilde_expanded;
+
+        if last.starts_with("~/") {
+            tilde_prefix = "~/".to_string();
+            tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
+            last_tilde_expanded = last.replacen(&tilde_prefix, &tilde_path, 1);
+        }else{
+            tilde_prefix = String::new();
+            tilde_path = String::new();
+            last_tilde_expanded = last.to_string();
+        }
+
+        (tilde_prefix, tilde_path, last_tilde_expanded)
     }
 }
