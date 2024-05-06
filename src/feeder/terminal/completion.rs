@@ -33,6 +33,13 @@ fn common_string(paths: &Vec<String>) -> String {
     ref_chars[..common_len].iter().collect()
 }
 
+fn is_dir(s: &str, core: &mut ShellCore) -> bool {
+    let tilde_prefix = "~/".to_string();
+    let tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
+
+    Path::new(&s.replace(&tilde_prefix, &tilde_path)).is_dir()
+}
+
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         let input = self.get_string(self.prompt.chars().count());
@@ -65,17 +72,17 @@ impl Terminal {
             return;
         }
 
-        let list_output = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
-        core.data.set_array("COMPREPLY", &list_output);
+        let tmp = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
+        core.data.set_array("COMPREPLY", &tmp);
 
         if double_tab {
             self.show_list(&core.data.arrays["COMPREPLY"]);
             return;
         }
 
-        if list.len() == 1 {
+        if core.data.arrays["COMPREPLY"].len() == 1 {
             let output = core.data.arrays["COMPREPLY"][0].clone();
-            let tail = match Path::new(&list[0]).is_dir() {
+            let tail = match is_dir(&output, core) {
                 true  => "/",
                 false => " ",
             };
@@ -84,7 +91,7 @@ impl Terminal {
         }
 
         let common = common_string(&core.data.arrays["COMPREPLY"]);
-        if common.len() < last.len() {
+        if common.len() != last.len() {
             self.replace_input(&common, &last);
             return;
         }
