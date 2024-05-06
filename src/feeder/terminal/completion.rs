@@ -134,15 +134,22 @@ impl Terminal {
 
     fn replace_input(&mut self, to: &String) {
         while self.head > self.prompt.chars().count() 
-           && self.head > 0 && self.chars[self.head-1] != ' ' {
+        && self.head > 0 && self.chars[self.head-1] != ' ' {
             self.backspace();
         }
-        while self.head < self.chars.len() && self.chars[self.head] != ' ' {
+        while self.head < self.chars.len() 
+        && self.chars[self.head] != ' ' {
             self.delete();
         }
 
         for c in to.chars() {
             self.insert(c);
+        }
+
+        if to.ends_with(" ") 
+        && self.head < self.chars.len() 
+        && self.chars[self.head] == ' ' {
+            self.backspace();
         }
     }
 
