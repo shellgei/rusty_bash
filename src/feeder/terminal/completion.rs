@@ -92,7 +92,13 @@ impl Terminal {
 
         match paths.len() {
             0 => self.cloop(),
-            1 => self.replace_input(&paths[0], &target),
+            1 => {
+                let last = match Path::new(&paths[0]).is_dir() {
+                    true  => "/",
+                    false => " ",
+                };
+                self.replace_input(&(paths[0].to_string() + last), &target)
+            },
             _ => self.file_completion_multicands(&target_tilde, &paths, double_tab),
         }
     }
