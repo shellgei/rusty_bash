@@ -42,6 +42,20 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
+        if ! self.set_default_compreply(core) {
+            self.cloop();
+            return;
+        }
+
+        if double_tab {
+            self.show_list(&core.data.arrays["COMPREPLY"]);
+            return;
+        }
+
+        self.try_completion(core);
+    }
+
+    pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> bool {
         let pos = core.data.get_param_ref("COMP_CWORD").to_string();
         let last = core.data.get_array("COMP_WORDS", &pos);
 
@@ -55,19 +69,12 @@ impl Terminal {
         };
 
         if list.len() == 0 {
-            self.cloop();
-            return;
+            return false;
         }
 
         let tmp = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
         core.data.set_array("COMPREPLY", &tmp);
-
-        if double_tab {
-            self.show_list(&core.data.arrays["COMPREPLY"]);
-            return;
-        }
-
-        self.try_completion(core);
+        true
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) {
