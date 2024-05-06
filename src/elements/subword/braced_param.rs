@@ -60,7 +60,7 @@ impl Subword for BracedParam {
 
         if let Some(sub) = self.subscript.as_mut() {
             if let Some(s) = sub.eval() {
-                self.text = core.data.get_array(&self.name, s);
+                self.text = core.data.get_array(&self.name, &s);
             }
         }else{
             let value = core.data.get_param_ref(&self.name);

@@ -41,7 +41,7 @@ impl Data {
         }
     }
 
-    pub fn get_array(&mut self, key: &str, pos: String) -> String {
+    pub fn get_array(&mut self, key: &str, pos: &str) -> String {
         if  self.arrays.get(key) == None {
             return "".to_string();
         }

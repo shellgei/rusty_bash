@@ -80,6 +80,32 @@ impl Terminal {
             return;
         }
 
+        self.try_completion(core);
+
+        /*
+        if core.data.arrays["COMPREPLY"].len() == 1 {
+            let output = core.data.arrays["COMPREPLY"][0].clone();
+            let tail = match is_dir(&output, core) {
+                true  => "/",
+                false => " ",
+            };
+            self.replace_input(&(output + tail), &last);
+            return;
+        }
+
+        let common = common_string(&core.data.arrays["COMPREPLY"]);
+        if common.len() != last.len() {
+            self.replace_input(&common, &last);
+            return;
+        }
+        self.cloop();
+        */
+    }
+
+    pub fn try_completion(&mut self, core: &mut ShellCore) {
+       let pos = core.data.get_param_ref("COMP_CWORD").to_string();
+        let last = core.data.get_array("COMP_WORDS", &pos);
+
         if core.data.arrays["COMPREPLY"].len() == 1 {
             let output = core.data.arrays["COMPREPLY"][0].clone();
             let tail = match is_dir(&output, core) {
