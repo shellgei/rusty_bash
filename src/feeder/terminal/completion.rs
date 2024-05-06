@@ -65,23 +65,25 @@ impl Terminal {
             return;
         }
 
-        let list_output: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
+        let list_output = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
+        core.data.set_array("COMPREPLY", &list_output);
 
         if double_tab {
-            self.show_list(&list_output);
+            self.show_list(&core.data.arrays["COMPREPLY"]);
             return;
         }
 
         if list.len() == 1 {
+            let output = core.data.arrays["COMPREPLY"][0].clone();
             let tail = match Path::new(&list[0]).is_dir() {
                 true  => "/",
                 false => " ",
             };
-            self.replace_input(&(list_output[0].to_string() + tail), &last);
+            self.replace_input(&(output + tail), &last);
             return;
         }
 
-        let common = common_string(&list_output);
+        let common = common_string(&core.data.arrays["COMPREPLY"]);
         if common.len() < last.len() {
             self.replace_input(&common, &last);
             return;
