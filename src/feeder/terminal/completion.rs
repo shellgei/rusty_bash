@@ -133,8 +133,8 @@ impl Terminal {
     }
 
     fn replace_input(&mut self, to: &String) {
-        let min = self.prompt.chars().count();
-        while min < self.head && self.head > 0 && self.chars[self.head-1] != ' ' {
+        while self.head > self.prompt.chars().count() 
+           && self.head > 0 && self.chars[self.head-1] != ' ' {
             self.backspace();
         }
         while self.head < self.chars.len() && self.chars[self.head] != ' ' {
