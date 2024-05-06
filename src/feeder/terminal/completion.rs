@@ -79,7 +79,7 @@ impl Terminal {
 
     pub fn try_completion(&mut self, core: &mut ShellCore) {
         let pos = core.data.get_param_ref("COMP_CWORD").to_string();
-        let last = core.data.get_array("COMP_WORDS", &pos);
+        let target = core.data.get_array("COMP_WORDS", &pos);
 
         if core.data.arrays["COMPREPLY"].len() == 1 {
             let output = core.data.arrays["COMPREPLY"][0].clone();
@@ -87,13 +87,13 @@ impl Terminal {
                 true  => "/",
                 false => " ",
             };
-            self.replace_input(&(output + tail), &last);
+            self.replace_input(&(output + tail), &target);
             return;
         }
 
         let common = common_string(&core.data.arrays["COMPREPLY"]);
-        if common.len() != last.len() {
-            self.replace_input(&common, &last);
+        if common.len() != target.len() {
+            self.replace_input(&common, &target);
             return;
         }
         self.cloop();
@@ -132,7 +132,19 @@ impl Terminal {
         self.rewrite(true);
     }
 
-    fn replace_input(&mut self, path: &String, last: &str) {
+    fn replace_input(&mut self, to: &String, from: &str) {
+        let min = self.prompt.chars().count();
+        while min < self.head && self.head > 0 && self.chars[self.head-1] != ' ' {
+            self.backspace();
+        }
+
+        for c in to.chars() {
+            self.insert(c);
+        }
+        /*
+        let pos = core.data.get_param_ref("COMP_CWORD").to_string();
+        let last = core.data.get_array("COMP_WORDS", &pos);
+
         let last_char_num = last.chars().count();
         let len = self.chars.len();
         let mut path_chars = path.to_string();
@@ -146,6 +158,7 @@ impl Terminal {
         self.chars.extend(path_chars.chars());
         self.head = self.chars.len();
         self.rewrite(false);
+        */
     }
 
     fn set_tilde_transform(last: &str, core: &mut ShellCore) -> (String, String, String) {
