@@ -45,13 +45,16 @@ impl Terminal {
         let last = words.last().unwrap().clone();
         let mut last_tilde_expanded = last.clone();
 
+        let tilde_prefix;
+        let tilde_path;
+
         if last.starts_with("~/") {
-            self.tilde_prefix = "~/".to_string();
-            self.tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
-            last_tilde_expanded = last.replacen(&self.tilde_prefix, &self.tilde_path, 1);
+            tilde_prefix = "~/".to_string();
+            tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
+            last_tilde_expanded = last.replacen(&tilde_prefix, &tilde_path, 1);
         }else{
-            self.tilde_prefix = String::new();
-            self.tilde_path = String::new();
+            tilde_prefix = String::new();
+            tilde_path = String::new();
         }
 
         let mut command_pos = 0;
@@ -69,10 +72,16 @@ impl Terminal {
             false => completion::compgen_f(core, &mut args),
         };
 
-        let list_output: Vec<String> = list.iter().map(|p| p.replacen(&self.tilde_path, &self.tilde_prefix, 1)).collect();
+        if list.len() == 0 {
+            self.cloop();
+            return;
+        }
+
+        let list_output: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
 
         if double_tab {
             self.show_list(&list_output);
+            return;
         }
 
         if list.len() == 1 {
@@ -84,8 +93,12 @@ impl Terminal {
             return;
         }
 
-        let common = common_string(&list);
-        self.replace_input(&common, &last);
+        let common = common_string(&list_output);
+        if common.len() < last.len() {
+            self.replace_input(&common, &last);
+            return;
+        }
+        self.cloop();
     }
 
     fn show_list(&mut self, list: &Vec<String>) {
@@ -131,89 +144,9 @@ impl Terminal {
             path_chars.insert(0, '.');
         }
         
-        path_chars = path_chars.replacen(&self.tilde_path, &self.tilde_prefix, 1);
-
         self.chars.drain(len - last_char_num..);
         self.chars.extend(path_chars.chars());
         self.head = self.chars.len();
         self.rewrite(false);
     }
-
-    /*
-    pub fn command_completion(&mut self, target: &String, core: &mut ShellCore) {
-        let mut args = vec!["".to_string(), "".to_string(), target.to_string()];
-        let comlist = completion::compgen_c(core, &mut args);
-
-        match comlist.len() {
-            0 => self.cloop(),
-            1 => {
-                let last = match Path::new(&comlist[0]).is_dir() {
-                    true  => "/",
-                    false => " ",
-                };
-                self.replace_input(&(comlist[0].to_string() + last), &target)
-            },
-            _ => self.show_list(&comlist),
-        }
-    }
-
-    pub fn file_completion(&mut self, target: &String, core: &mut ShellCore, double_tab: bool) {
-        let mut target_tilde = target.to_string();
-        if target.starts_with("~/") {
-            self.tilde_prefix = "~/".to_string();
-            self.tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
-            target_tilde = target_tilde.replacen(&self.tilde_prefix, &self.tilde_path, 1);
-        }else{
-            self.tilde_prefix = String::new();
-            self.tilde_path = String::new();
-        }
-
-        let mut args = vec!["".to_string(), "".to_string(), target.to_string()];
-        let paths = completion::compgen_f(core, &mut args);
-        core.data.set_array("COMPREPLY", &paths);
-
-        match paths.len() {
-            0 => self.cloop(),
-            1 => {
-                let last = match Path::new(&paths[0]).is_dir() {
-                    true  => "/",
-                    false => " ",
-                };
-                self.replace_input(&(paths[0].to_string() + last), &target)
-            },
-            _ => self.file_completion_multicands(&target_tilde, &paths, double_tab),
-        }
-    }
-    */
-
-    /*
-    pub fn file_completion_multicands(&mut self, dir: &String,
-                                      paths: &Vec<String>, double_tab: bool) {
-        let common = common_string(&paths);
-        if common.len() == dir.len() {
-            match double_tab {
-                true => self.show_path_candidates(&dir.to_string(), &paths),
-                false => self.cloop(),
-            }
-            return;
-        }
-        self.replace_input(&common, &dir);
-    }
-
-    pub fn show_path_candidates(&mut self, dir: &String, paths: &Vec<String>) {
-        let ps = if dir.chars().last() == Some('/') && dir.len() > 1 {
-            paths.iter()
-                 .map(|p| p.replacen(dir, "", 1)
-                 .replacen(&self.tilde_path, &self.tilde_prefix, 1))
-                 .collect()
-        }else{
-            paths.iter()
-                 .map(|p| p.replacen(&self.tilde_path, &self.tilde_prefix, 1))
-                 .collect()
-        };
-
-        self.show_list(&ps);
-    }
-    */
-
 }
