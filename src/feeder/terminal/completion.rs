@@ -43,6 +43,16 @@ impl Terminal {
         }
 
         let last = words.last().unwrap().clone();
+        let mut last_tilde_expanded = last.clone();
+
+        if last.starts_with("~/") {
+            self.tilde_prefix = "~/".to_string();
+            self.tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
+            last_tilde_expanded = last.replacen(&self.tilde_prefix, &self.tilde_path, 1);
+        }else{
+            self.tilde_prefix = String::new();
+            self.tilde_path = String::new();
+        }
 
         let mut command_pos = 0;
         for w in &words {
@@ -53,12 +63,32 @@ impl Terminal {
         }
         let search_command = command_pos == words.len()-1;
 
-        match search_command {
-            true  => self.command_completion(&last, core),
-            false => self.file_completion(&last, core, double_tab/*, search_command*/),
+        let mut args = vec!["".to_string(), "".to_string(), last_tilde_expanded.to_string()];
+        let list = match search_command {
+            true  => completion::compgen_c(core, &mut args),
+            false => completion::compgen_f(core, &mut args),
+        };
+
+        let list_output: Vec<String> = list.iter().map(|p| p.replacen(&self.tilde_path, &self.tilde_prefix, 1)).collect();
+
+        if double_tab {
+            self.show_list(&list_output);
         }
+
+        if list.len() == 1 {
+            let tail = match Path::new(&list[0]).is_dir() {
+                true  => "/",
+                false => " ",
+            };
+            self.replace_input(&(list_output[0].to_string() + tail), &last);
+            return;
+        }
+
+        let common = common_string(&list);
+        self.replace_input(&common, &last);
     }
 
+    /*
     pub fn command_completion(&mut self, target: &String, core: &mut ShellCore) {
         let mut args = vec!["".to_string(), "".to_string(), target.to_string()];
         let comlist = completion::compgen_c(core, &mut args);
@@ -89,6 +119,7 @@ impl Terminal {
 
         let mut args = vec!["".to_string(), "".to_string(), target.to_string()];
         let paths = completion::compgen_f(core, &mut args);
+        core.data.set_array("COMPREPLY", &paths);
 
         match paths.len() {
             0 => self.cloop(),
@@ -102,6 +133,7 @@ impl Terminal {
             _ => self.file_completion_multicands(&target_tilde, &paths, double_tab),
         }
     }
+    */
 
     fn show_list(&mut self, list: &Vec<String>) {
         eprintln!("\r");
@@ -136,6 +168,7 @@ impl Terminal {
         self.rewrite(true);
     }
 
+    /*
     pub fn file_completion_multicands(&mut self, dir: &String,
                                       paths: &Vec<String>, double_tab: bool) {
         let common = common_string(&paths);
@@ -163,6 +196,7 @@ impl Terminal {
 
         self.show_list(&ps);
     }
+    */
 
     fn replace_input(&mut self, path: &String, last: &str) {
         let last_char_num = last.chars().count();
