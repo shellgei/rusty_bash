@@ -49,12 +49,10 @@ impl Terminal {
             return;
         }
 
-        if double_tab {
-            self.show_list(&core.data.arrays["COMPREPLY"]);
-            return;
+        match double_tab {
+            true  => self.show_list(&core.data.arrays["COMPREPLY"]),
+            false => self.try_completion(core),
         }
-
-        self.try_completion(core);
     }
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> bool {
