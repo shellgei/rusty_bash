@@ -42,27 +42,14 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
-        let input = self.get_string(self.prompt.chars().count());
-        let words: Vec<String> = input.split(" ").map(|e| e.to_string()).collect();
-        if words.len() == 0 || words.last().unwrap() == "" {
-            self.cloop();
-            return;
-        }
+        let pos = core.data.get_param_ref("COMP_CWORD").to_string();
+        let last = core.data.get_array("COMP_WORDS", &pos);
 
-        let last = words.last().unwrap().clone();
         let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
 
-        let mut command_pos = 0;
-        for w in &words {
-            match w.find("=") {
-                None => break,
-                _    => command_pos +=1,
-            }
-        }
-        let search_command = command_pos == words.len()-1;
 
         let mut args = vec!["".to_string(), "".to_string(), last_tilde_expanded.to_string()];
-        let list = match search_command {
+        let list = match pos == "0" {
             true  => completion::compgen_c(core, &mut args),
             false => completion::compgen_f(core, &mut args),
         };
@@ -81,29 +68,10 @@ impl Terminal {
         }
 
         self.try_completion(core);
-
-        /*
-        if core.data.arrays["COMPREPLY"].len() == 1 {
-            let output = core.data.arrays["COMPREPLY"][0].clone();
-            let tail = match is_dir(&output, core) {
-                true  => "/",
-                false => " ",
-            };
-            self.replace_input(&(output + tail), &last);
-            return;
-        }
-
-        let common = common_string(&core.data.arrays["COMPREPLY"]);
-        if common.len() != last.len() {
-            self.replace_input(&common, &last);
-            return;
-        }
-        self.cloop();
-        */
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) {
-       let pos = core.data.get_param_ref("COMP_CWORD").to_string();
+        let pos = core.data.get_param_ref("COMP_CWORD").to_string();
         let last = core.data.get_array("COMP_WORDS", &pos);
 
         if core.data.arrays["COMPREPLY"].len() == 1 {
