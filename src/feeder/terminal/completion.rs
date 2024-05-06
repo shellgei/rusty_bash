@@ -88,6 +88,57 @@ impl Terminal {
         self.replace_input(&common, &last);
     }
 
+    fn show_list(&mut self, list: &Vec<String>) {
+        eprintln!("\r");
+
+        let widths: Vec<usize> = list.iter()
+                                     .map(|p| UnicodeWidthStr::width(p.as_str()))
+                                     .collect();
+        let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
+
+        let col_num = Terminal::size().0 / max_entry_width;
+        if col_num == 0 {
+            list.iter().for_each(|p| print!("{}\r\n", &p));
+            self.rewrite(true);
+            return;
+        }
+
+        let row_num = (list.len()-1) / col_num + 1;
+
+        for row in 0..row_num {
+            for col in 0..col_num {
+                let i = col*row_num + row;
+                if i >= list.len() {
+                    continue;
+                }
+
+                let space_num = max_entry_width - widths[i];
+                let s = String::from_utf8(vec![b' '; space_num]).unwrap();
+                print!("{}{}", list[i], &s);
+            }
+            print!("\r\n");
+        }
+        self.rewrite(true);
+    }
+
+    fn replace_input(&mut self, path: &String, last: &str) {
+        let last_char_num = last.chars().count();
+        let len = self.chars.len();
+        let mut path_chars = path.to_string();
+
+        if last.starts_with("./") {
+            path_chars.insert(0, '/');
+            path_chars.insert(0, '.');
+        }
+        
+        path_chars = path_chars.replacen(&self.tilde_path, &self.tilde_prefix, 1);
+
+        self.chars.drain(len - last_char_num..);
+        self.chars.extend(path_chars.chars());
+        self.head = self.chars.len();
+        self.rewrite(false);
+    }
+
     /*
     pub fn command_completion(&mut self, target: &String, core: &mut ShellCore) {
         let mut args = vec!["".to_string(), "".to_string(), target.to_string()];
@@ -135,39 +186,6 @@ impl Terminal {
     }
     */
 
-    fn show_list(&mut self, list: &Vec<String>) {
-        eprintln!("\r");
-
-        let widths: Vec<usize> = list.iter()
-                                     .map(|p| UnicodeWidthStr::width(p.as_str()))
-                                     .collect();
-        let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
-
-        let col_num = Terminal::size().0 / max_entry_width;
-        if col_num == 0 {
-            list.iter().for_each(|p| print!("{}\r\n", &p));
-            self.rewrite(true);
-            return;
-        }
-
-        let row_num = (list.len()-1) / col_num + 1;
-
-        for row in 0..row_num {
-            for col in 0..col_num {
-                let i = col*row_num + row;
-                if i >= list.len() {
-                    continue;
-                }
-
-                let space_num = max_entry_width - widths[i];
-                let s = String::from_utf8(vec![b' '; space_num]).unwrap();
-                print!("{}{}", list[i], &s);
-            }
-            print!("\r\n");
-        }
-        self.rewrite(true);
-    }
-
     /*
     pub fn file_completion_multicands(&mut self, dir: &String,
                                       paths: &Vec<String>, double_tab: bool) {
@@ -198,21 +216,4 @@ impl Terminal {
     }
     */
 
-    fn replace_input(&mut self, path: &String, last: &str) {
-        let last_char_num = last.chars().count();
-        let len = self.chars.len();
-        let mut path_chars = path.to_string();
-
-        if last.starts_with("./") {
-            path_chars.insert(0, '/');
-            path_chars.insert(0, '.');
-        }
-        
-        path_chars = path_chars.replacen(&self.tilde_path, &self.tilde_prefix, 1);
-
-        self.chars.drain(len - last_char_num..);
-        self.chars.extend(path_chars.chars());
-        self.head = self.chars.len();
-        self.rewrite(false);
-    }
 }
