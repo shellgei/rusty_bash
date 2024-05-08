@@ -6,5 +6,5 @@ alias ll='ls -l'
 # completion test
 # thanks to: https://blog.cybozu.io/entry/2016/09/26/080000
 
- _dummy () { COMPREPLY=(one two); }
+ _dummy () { COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) ; }
 complete -F _dummy hoge

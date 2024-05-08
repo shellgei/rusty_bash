@@ -51,8 +51,15 @@ impl Terminal {
 
         let mut set = false;
         if pos >= 0 && pos < core.data.arrays["COMP_WORDS"].len() as i32 {
-            let word = core.data.get_array("COMP_WORDS", &pos.to_string());
-            match core.completion_functions.get(&word) {
+            let prev_word = core.data.get_array("COMP_WORDS", &pos.to_string());
+
+            let cur = match ((pos + 1) as usize) < core.data.arrays["COMP_WORDS"].len() {
+                true => core.data.get_array("COMP_WORDS", &(pos+1).to_string()),
+                false => "".to_string(),
+            };
+            core.data.set_param("cur", &cur);
+
+            match core.completion_functions.get(&prev_word) {
                 Some(value) => {
                     core.run_function(&mut vec![value.to_string()]);
                     set = true;
@@ -65,7 +72,6 @@ impl Terminal {
             self.cloop();
             return;
         }
-
 
         match double_tab {
             true  => self.show_list(&core.data.arrays["COMPREPLY"]),
