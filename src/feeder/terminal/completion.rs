@@ -44,6 +44,23 @@ impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         self.set_completion_info(core);
 
+        /*
+        let pos = match core.data.get_param_ref("COMP_CWORD").parse::<i32>() {
+            Ok(i) => i - 1,
+            _     => -1, 
+        };
+        if pos >= 0 && pos < core.data.arrays["COMP_WORDS"].len() as i32 {
+            let word = core.data.get_array("COMP_WORDS", &pos.to_string());
+            match core.completion_functions.get(&word) {
+                Some(value) => {
+                    core.run_builtin(&mut vec![value.to_string()]);
+                    eprintln!("{:?}", &core.data.arrays["COMPREPLY"]);
+                    return;
+                },
+                _ => {},
+            }
+        }*/
+
         if ! self.set_default_compreply(core) {
             self.cloop();
             return;

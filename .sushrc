@@ -1,3 +1,13 @@
 PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\b\[\033[00m\]\[\033[01;35m\]\w\[\033[00m\](debug)🍣 '
 PS2='> '
 alias ll='ls -l'
+
+
+# completion test
+# thanks to: https://blog.cybozu.io/entry/2016/09/26/080000
+
+ _dummy () {
+	echo called
+	COMPREPLY=(one two)
+}
+complete -F _dummy hoge
