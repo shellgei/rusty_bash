@@ -31,6 +31,7 @@ pub struct ShellCore {
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory
+    pub completion_functions: HashMap<String, String>,
 }
 
 fn ignore_signal(sig: Signal) {
@@ -56,6 +57,7 @@ impl ShellCore {
             tty_fd: None,
             job_table: vec![],
             tcwd: None,
+            completion_functions: HashMap::new(),
         };
 
         core.init_current_directory();

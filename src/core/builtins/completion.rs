@@ -99,7 +99,8 @@ fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
 
 pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
-        return 0;
+        eprintln!("sush: {}: still unsupported", &args[0]);
+        return 1;
     }
 
     replace_args(args);
@@ -210,4 +211,14 @@ fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
     drop_unmatch(args, 2, &mut ans);
     ans
+}
+
+pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 4 || args[1] != "-F" {
+        eprintln!("sush: {}: still unsupported", &args[0]);
+        return 1;
+    }
+
+    core.completion_functions.insert(args[3].clone(), args[2].clone());
+    0
 }

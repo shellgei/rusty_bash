@@ -19,6 +19,7 @@ impl ShellCore {
         self.builtins.insert("alias".to_string(), alias);
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("compgen".to_string(), completion::compgen);
+        self.builtins.insert("complete".to_string(), completion::complete);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
