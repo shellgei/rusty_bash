@@ -16,7 +16,6 @@ use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
-use crate::elements::io::pipe::Pipe;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
@@ -157,21 +156,6 @@ impl ShellCore {
         }
 
         false
-    }
-
-    pub fn run_function(&mut self, args: &mut Vec<String>) -> Option<Pid> {
-        let mut command = self.data.functions[&args[0]].clone();
-
-        let backup = self.data.position_parameters.to_vec();
-        args[0] = backup[0].clone();
-        self.data.position_parameters = args.to_vec();
-
-        let mut pipe = Pipe::new("|".to_string());
-        let pid = command.run_as_command(args, self, &mut pipe);
-
-        self.data.position_parameters = backup;
-
-        return pid;
     }
 
     pub fn exit(&self) -> ! {
