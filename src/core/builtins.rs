@@ -22,6 +22,7 @@ impl ShellCore {
         self.builtins.insert("complete".to_string(), completion::complete);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
+        self.builtins.insert("local".to_string(), local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("set".to_string(), set);
         self.builtins.insert("source".to_string(), source);
@@ -56,6 +57,15 @@ pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     1
+}
+
+pub fn local(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    if core.data.local_parameters.len() == 0 {
+        eprintln!("sush: local: can only be used in a function");
+        return 1;
+    }
+
+    0
 }
 
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
