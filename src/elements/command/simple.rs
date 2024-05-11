@@ -169,7 +169,6 @@ impl SimpleCommand {
             text: String::new(),
             substitutions: vec![],
             evaluated_subs: vec![],
-        //    arrays: vec![],
             evaluated_arrays: vec![],
             words: vec![],
             args: vec![],
@@ -178,38 +177,15 @@ impl SimpleCommand {
         }
     }
 
-    /*
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_name_and_equal(core);
-        if len == 0 {
-            return false;
+        if let Some(s) = Substitution::parse(feeder, core) {
+            ans.text += &s.text;
+            ans.substitutions.push(s);
+            true
+        }else{
+            false
         }
-
-        let mut name_eq = feeder.consume(len);
-        ans.text += &name_eq;
-        name_eq.pop();
-
-        match Array::parse(feeder, core) {
-            Some(a) => {
-                ans.text += &a.text;
-                ans.arrays.push( (name_eq, a) );
-                return true;
-            },
-            _       => {},
-        }
-
-        let w = match Word::parse(feeder, core) {
-            Some(w) => {
-                ans.text += &w.text;
-                Some(w)
-            },
-            _       => None,
-        };
-
-        ans.substitutions.push( (name_eq, w) );
-        true
     }
-    */
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let w = match Word::parse(feeder, core) {
@@ -229,13 +205,7 @@ impl SimpleCommand {
         let mut ans = Self::new();
         feeder.set_backup();
 
-        loop {
-            if let Some(s) = Substitution::parse(feeder, core) {
-                ans.text += &s.text;
-                ans.substitutions.push(s);
-            }else{
-                break;
-            }
+        while Self::eat_substitution(feeder, &mut ans, core) {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
 
