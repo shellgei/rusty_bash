@@ -16,25 +16,25 @@ pub struct Substitution {
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore) -> (Option<String>, Option<Vec<String>>) {
         match (self.value.clone(), self.array.clone()) {
-            (None, None) => return (Some("".to_string()), None),
-            (Some(v), None) => {
-                match Self::eval_value(&v, core) {
-                    Some(s) => return (Some(s), None),
-                    None => return (None, None),
-                }
-            },
-            (None, Some(mut a)) => {
-                match a.eval(core) {
-                    Some(values) => return (None, Some(values)),
-                    None => return (None, None),
-                }
-            },
-            _ => return (None, None), 
+            (None, None)        => (Some("".to_string()), None),
+            (Some(v), None)     => Self::eval_as_value(&v, core),
+            (None, Some(mut a)) => Self::eval_as_array(&mut a, core),
+            _                   => (None, None), 
         }
     }
 
-    fn eval_value(s: &Word, core: &mut ShellCore) -> Option<String> {
-         s.eval_as_value(core)
+    fn eval_as_value(w: &Word, core: &mut ShellCore) -> (Option<String>, Option<Vec<String>>) {
+        match w.eval_as_value(core) {
+            Some(s) => (Some(s), None),
+            None    => (None, None),
+        }
+    }
+
+    fn eval_as_array(a: &mut Array, core: &mut ShellCore) -> (Option<String>, Option<Vec<String>>) {
+        match a.eval(core) {
+            Some(values) => (None, Some(values)),
+            None         => (None, None),
+        }
     }
 
     pub fn new() -> Substitution {
