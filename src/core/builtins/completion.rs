@@ -21,7 +21,13 @@ fn expand(path: &str) -> Vec<String> {
     };
 
     match glob::glob_with(&path, opts) {
-        Ok(ps) => ps.map(|p| to_str(&p)).filter(|s| s != "").collect(),
+        Ok(ps) => {
+            let mut paths: Vec<String> = ps.map(|p| to_str(&p)).filter(|s| s != "").collect();
+            if path.starts_with("./") {
+                paths = paths.iter_mut().map(|p| p.replacen("", "./", 1)).collect();
+            }
+            paths
+        },
         _ => vec![],
     }
 }
@@ -149,7 +155,7 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     if args.len() > 2 {
         commands.extend(compgen_f(core, args));
     }
-    commands.retain(|p| Path::new(p).executable());
+    commands.retain(|p| Path::new(p).executable() || Path::new(p).is_dir());
 
     let mut aliases: Vec<String> = core.data.aliases.clone().into_keys().collect();
     commands.append(&mut aliases);

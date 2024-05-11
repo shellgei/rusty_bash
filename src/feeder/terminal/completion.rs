@@ -86,7 +86,6 @@ impl Terminal {
 
         let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
 
-
         let mut args = vec!["".to_string(), "".to_string(), last_tilde_expanded.to_string()];
         let list = match pos == "0" {
             true  => completion::compgen_c(core, &mut args),
