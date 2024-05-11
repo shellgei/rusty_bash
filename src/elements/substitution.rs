@@ -2,24 +2,29 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::array::Array;
-use crate::elements::word::Word;
+use super::array::Array;
+use super::word::Word;
+
+#[derive(Debug, Clone)]
+enum Value {
+    None,
+    Single(Word),
+    Array(Array),
+}
 
 #[derive(Debug, Clone)]
 pub struct Substitution {
     pub text: String,
     pub key: String,
-    value: Option<Word>,
-    array: Option<Array>,
+    value: Value,
 }
 
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore) -> (Option<String>, Option<Vec<String>>) {
-        match (self.value.clone(), self.array.clone()) {
-            (None, None)        => (Some("".to_string()), None),
-            (Some(v), None)     => Self::eval_as_value(&v, core),
-            (None, Some(mut a)) => Self::eval_as_array(&mut a, core),
-            _                   => (None, None), 
+        match &self.value {
+            Value::None      => (Some("".to_string()), None),
+            Value::Single(v) => Self::eval_as_value(&v, core),
+            Value::Array(a)  => Self::eval_as_array(&mut a.clone(), core),
         }
     }
 
@@ -41,8 +46,7 @@ impl Substitution {
         Substitution {
             text: String::new(),
             key: String::new(),
-            value: None,
-            array: None,
+            value: Value::None,
         }
     }
 
@@ -61,11 +65,11 @@ impl Substitution {
 
         if let Some(a) = Array::parse(feeder, core) {
             ans.text += &a.text;
-            ans.array = Some(a);
+            ans.value = Value::Array(a);
             Some(ans)
         }else if let Some(w) = Word::parse(feeder, core) {
             ans.text += &w.text;
-            ans.value = Some(w);
+            ans.value = Value::Single(w);
             Some(ans)
         }else {
             None
