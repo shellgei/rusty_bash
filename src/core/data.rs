@@ -32,6 +32,14 @@ impl Data {
             return &self.position_parameters[layer-1][n];
         }
 
+        let local_layer = self.local_parameters.len();
+        if local_layer > 0 {
+            return match self.local_parameters[local_layer-1].get(key) {
+                Some(val) => val,
+                None      => "",
+            };
+        }
+
         if  self.parameters.get(key) == None {
             if let Ok(val) = env::var(key) {
                 self.set_param(key, &val);

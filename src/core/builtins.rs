@@ -59,10 +59,18 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     1
 }
 
-pub fn local(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if core.data.local_parameters.len() == 0 {
         eprintln!("sush: local: can only be used in a function");
         return 1;
+    }
+
+    let layer = core.data.local_parameters.len();
+
+    for arg in &args[1..] {
+        if arg.find("=") == None {
+            core.data.local_parameters[layer-1].insert(arg.to_string(), "test".to_string());
+        }
     }
 
     0
