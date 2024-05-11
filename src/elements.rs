@@ -9,6 +9,7 @@ pub mod array;
 pub mod io;
 pub mod word;
 pub mod subscript;
+pub mod substitution;
 pub mod subword;
 
 use self::io::pipe::Pipe;

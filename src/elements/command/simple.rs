@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
-use crate::elements::array::Array;
+use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
@@ -24,9 +24,8 @@ fn reserved(w: &str) -> bool {
 #[derive(Debug, Clone)]
 pub struct SimpleCommand {
     text: String,
-    substitutions: Vec<(String, Option<Word>)>,
+    substitutions: Vec<Substitution>,
     evaluated_subs: Vec<(String, String)>,
-    arrays: Vec<(String, Array)>,
     evaluated_arrays: Vec<(String, Vec<String>)>,
     words: Vec<Word>,
     args: Vec<String>,
@@ -134,30 +133,16 @@ impl SimpleCommand {
             .collect()
     }
 
-    fn eval_value(s: &Option<Word>, core: &mut ShellCore) -> Option<String> {
-        match s {
-            None => Some("".to_string()),
-            Some(word) => word.eval_as_value(core),
-        }
-    }
-
     fn eval_substitutions(&mut self, core: &mut ShellCore) -> bool {
         self.evaluated_subs.clear();
-
-        for sub in self.substitutions.iter() {
-            let key = sub.0.clone();
-            match Self::eval_value(&sub.1, core) {
-                Some(value) => self.evaluated_subs.push( (key, value) ),
-                None => return false,
-            }
-        }
-
         self.evaluated_arrays.clear();
-        for array in self.arrays.iter_mut() {
-            let key = array.0.clone();
-            match array.1.eval(core) {
-                Some(values) => self.evaluated_arrays.push( (key, values) ),
-                None => return false,
+
+        for s in self.substitutions.iter_mut() {
+            match s.eval(core) {
+                (None, None)    => return false,
+                (Some(v), None) => self.evaluated_subs.push( (s.key.clone(), v) ),
+                (None, Some(a)) => self.evaluated_arrays.push( (s.key.clone(), a) ),
+                _ => return false,
             }
         }
 
@@ -184,7 +169,7 @@ impl SimpleCommand {
             text: String::new(),
             substitutions: vec![],
             evaluated_subs: vec![],
-            arrays: vec![],
+        //    arrays: vec![],
             evaluated_arrays: vec![],
             words: vec![],
             args: vec![],
@@ -193,6 +178,7 @@ impl SimpleCommand {
         }
     }
 
+    /*
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name_and_equal(core);
         if len == 0 {
@@ -223,6 +209,7 @@ impl SimpleCommand {
         ans.substitutions.push( (name_eq, w) );
         true
     }
+    */
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let w = match Word::parse(feeder, core) {
@@ -242,7 +229,13 @@ impl SimpleCommand {
         let mut ans = Self::new();
         feeder.set_backup();
 
-        while Self::eat_substitution(feeder, &mut ans, core) {
+        loop {
+            if let Some(s) = Substitution::parse(feeder, core) {
+                ans.text += &s.text;
+                ans.substitutions.push(s);
+            }else{
+                break;
+            }
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
 
@@ -253,8 +246,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.substitutions.len() + ans.arrays.len() 
-            + ans.words.len() + ans.redirects.len() > 0 {
+        if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
             Some(ans)
         }else{
