@@ -130,7 +130,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.flags = core.flags.replace("@", "i");
     core.flags = core.flags.replace("S", "");
     io::replace(backup, 0);
-    core.data.get_param_ref("?").parse::<i32>()
+    core.data.get_param("?").parse::<i32>()
         .expect("SUSH INTERNAL ERROR: BAD EXIT STATUS")
 }
 

@@ -73,7 +73,7 @@ impl ShellCore {
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
-        let home = core.data.get_param_ref("HOME").to_string();
+        let home = core.data.get_param("HOME").to_string();
         core.data.set_param("HISTFILE", &(home + "/.bash_history"));
         core.data.set_param("HISTFILESIZE", "2000");
 

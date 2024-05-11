@@ -35,7 +35,7 @@ fn common_string(paths: &Vec<String>) -> String {
 
 fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     let tilde_prefix = "~/".to_string();
-    let tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
+    let tilde_path = core.data.get_param("HOME").to_string() + "/";
 
     Path::new(&s.replace(&tilde_prefix, &tilde_path)).is_dir()
 }
@@ -44,7 +44,7 @@ impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         self.set_completion_info(core);
 
-        let pos = match core.data.get_param_ref("COMP_CWORD").parse::<i32>() {
+        let pos = match core.data.get_param("COMP_CWORD").parse::<i32>() {
             Ok(i) => i - 1,
             _     => -1, 
         };
@@ -81,7 +81,7 @@ impl Terminal {
     }
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> bool {
-        let pos = core.data.get_param_ref("COMP_CWORD").to_string();
+        let pos = core.data.get_param("COMP_CWORD").to_string();
         let last = core.data.get_array("COMP_WORDS", &pos);
 
         let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
@@ -103,7 +103,7 @@ impl Terminal {
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) {
-        let pos = core.data.get_param_ref("COMP_CWORD").to_string();
+        let pos = core.data.get_param("COMP_CWORD").to_string();
         let target = core.data.get_array("COMP_WORDS", &pos);
 
         if core.data.arrays["COMPREPLY"].len() == 1 {
@@ -185,7 +185,7 @@ impl Terminal {
 
         if last.starts_with("~/") {
             tilde_prefix = "~/".to_string();
-            tilde_path = core.data.get_param_ref("HOME").to_string() + "/";
+            tilde_path = core.data.get_param("HOME").to_string() + "/";
             last_tilde_expanded = last.replacen(&tilde_prefix, &tilde_path, 1);
         }else{
             tilde_prefix = String::new();

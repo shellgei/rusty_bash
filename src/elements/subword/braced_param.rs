@@ -63,7 +63,7 @@ impl Subword for BracedParam {
                 self.text = core.data.get_array(&self.name, &s);
             }
         }else{
-            let value = core.data.get_param_ref(&self.name);
+            let value = core.data.get_param(&self.name);
             self.text = value.to_string();
         }
         true

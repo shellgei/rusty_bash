@@ -26,29 +26,31 @@ impl Data {
         }
     }
 
-    pub fn get_param_ref(&mut self, key: &str) -> &str {
+    pub fn get_param(&mut self, key: &str) -> String {
         if let Some(n) = self.get_position_param_pos(key) {
             let layer = self.position_parameters.len();
-            return &self.position_parameters[layer-1][n];
+            return self.position_parameters[layer-1][n].to_string();
         }
 
-        let local_layer = self.local_parameters.len();
-        if local_layer > 0 {
-            return match self.local_parameters[local_layer-1].get(key) {
-                Some(val) => val,
-                None      => "",
-            };
+        let num = self.local_parameters.len();
+        if num > 0 {
+            for layer in num-1..0 {
+                match self.local_parameters[layer].get(key) {
+                    Some(val) => return val.to_string(),
+                    None      => {},
+                }
+            }
         }
 
-        if  self.parameters.get(key) == None {
+        if self.parameters.get(key) == None {
             if let Ok(val) = env::var(key) {
                 self.set_param(key, &val);
             }
         }
 
         match self.parameters.get(key) {
-            Some(val) => val,
-            None      => "",
+            Some(val) => val.to_string(),
+            None      => "".to_string(),
         }
     }
 

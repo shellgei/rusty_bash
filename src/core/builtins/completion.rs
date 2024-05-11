@@ -51,7 +51,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     };
 
     if path.starts_with("~/") {
-        let home = core.data.get_param_ref("HOME").to_string() + "/";
+        let home = core.data.get_param("HOME").to_string() + "/";
         path = path.replace("~/", &home);
     }
 
@@ -80,7 +80,7 @@ fn replace_args(args: &mut Vec<String>) -> bool {
 
 fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
     let mut comlist = HashSet::new();
-    for path in core.data.get_param_ref("PATH").to_string().split(":") {
+    for path in core.data.get_param("PATH").to_string().split(":") {
         for file in expand(&(path.to_string() + "/*")) {
             if ! Path::new(&file).executable() {
                 continue;

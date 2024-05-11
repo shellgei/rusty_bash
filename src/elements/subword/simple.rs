@@ -26,7 +26,7 @@ impl Subword for SimpleSubword {
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
         match self.subword_type {
             SubwordType::Parameter => {
-                let value = core.data.get_param_ref(&self.text[1..]);
+                let value = core.data.get_param(&self.text[1..]);
                 self.text = value.to_string();
             },
             _ => {},
