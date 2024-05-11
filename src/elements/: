@@ -47,6 +47,8 @@ impl Command for SimpleCommand {
         }
 
         if self.args.len() == 0 {
+            //self.evaluated_subs.iter().for_each(|s| core.data.set_param(&s.0, &s.1));
+            //self.evaluated_arrays.iter().for_each(|s| core.data.set_array(&s.0, &s.1));
             for s in &self.evaluated_subs {
                 match &s.1 {
                     Value::EvaluatedSingle(v) => core.data.set_param(&s.0, &v),
@@ -143,11 +145,11 @@ impl SimpleCommand {
     }
 
     fn eval_substitutions(&mut self, core: &mut ShellCore) -> bool {
-        self.evaluated_subs.clear();
-        for s in &mut self.substitutions {
-            match s.eval(core) {
+        self.evaluated_subs = self.substitutions.iter().map(|s| (s.key.clone(), s.eval(core))).collect();
+        for s in self.evaluated_subs {
+            match s.1 {
                 Value::None => return false,
-                a           => self.evaluated_subs.push( (s.key.clone(), a) ),
+                _ => {},
             }
         }
         true

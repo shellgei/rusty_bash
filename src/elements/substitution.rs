@@ -6,39 +6,42 @@ use super::array::Array;
 use super::word::Word;
 
 #[derive(Debug, Clone)]
-enum Value {
+pub enum Value {
     None,
     Single(Word),
+    EvaluatedSingle(String),
     Array(Array),
+    EvaluatedArray(Vec<String>),
 }
 
 #[derive(Debug, Clone)]
 pub struct Substitution {
     pub text: String,
     pub key: String,
-    value: Value,
+    pub value: Value,
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore) -> (Option<String>, Option<Vec<String>>) {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Value {
         match &self.value {
-            Value::None      => (Some("".to_string()), None),
+            Value::None      => Value::EvaluatedSingle("".to_string()),
             Value::Single(v) => Self::eval_as_value(&v, core),
             Value::Array(a)  => Self::eval_as_array(&mut a.clone(), core),
+            _                => Value::None,
         }
     }
 
-    fn eval_as_value(w: &Word, core: &mut ShellCore) -> (Option<String>, Option<Vec<String>>) {
+    fn eval_as_value(w: &Word, core: &mut ShellCore) -> Value {
         match w.eval_as_value(core) {
-            Some(s) => (Some(s), None),
-            None    => (None, None),
+            Some(s) => Value::EvaluatedSingle(s),
+            None    => Value::None,
         }
     }
 
-    fn eval_as_array(a: &mut Array, core: &mut ShellCore) -> (Option<String>, Option<Vec<String>>) {
+    fn eval_as_array(a: &mut Array, core: &mut ShellCore) -> Value {
         match a.eval(core) {
-            Some(values) => (None, Some(values)),
-            None         => (None, None),
+            Some(values) => Value::EvaluatedArray(values),
+            None         => Value::None,
         }
     }
 
