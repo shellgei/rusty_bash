@@ -167,7 +167,7 @@ impl ShellCore {
         self.data.position_parameters = args.to_vec();
 
         let mut pipe = Pipe::new("|".to_string());
-        let pid = command.exec(self, &mut pipe);
+        let pid = command.run_as_command(args, self, &mut pipe);
 
         self.data.position_parameters = backup;
 

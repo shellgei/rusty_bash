@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::elements::command::Command;
+use crate::elements::command::function_def::FunctionDefinition;
 use std::env;
 use std::collections::HashMap;
 
@@ -10,7 +10,7 @@ pub struct Data {
     pub arrays: HashMap<String, Vec<String>>,
     pub position_parameters: Vec<String>,
     pub aliases: HashMap<String, String>,
-    pub functions: HashMap<String, Box<dyn Command>>,
+    pub functions: HashMap<String, FunctionDefinition>,
 }
 
 impl Data {

@@ -29,7 +29,7 @@ impl Command for FunctionDefinition {
             return None;
         }
 
-        core.data.functions.insert(self.name.to_string(), self.command.as_mut().unwrap().clone());
+        core.data.functions.insert(self.name.to_string(), self.clone());
         None
     }
 
@@ -49,6 +49,20 @@ impl FunctionDefinition {
             redirects: vec![],
             force_fork: false,
         }
+    }
+
+    pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+//        let mut command = core.data.functions[&args[0]].clone();
+
+        let backup = core.data.position_parameters.to_vec();
+        args[0] = backup[0].clone();
+        core.data.position_parameters = args.to_vec();
+
+        let pid = self.command.clone().expect("SUSH INTERNAL ERROR: empty function").exec(core, pipe);
+
+        core.data.position_parameters = backup;
+
+        return pid;
     }
 
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
