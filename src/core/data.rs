@@ -8,7 +8,7 @@ use std::collections::HashMap;
 pub struct Data {
     pub parameters: HashMap<String, String>,
     pub arrays: HashMap<String, Vec<String>>,
-    pub position_parameters: Vec<String>,
+    pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
 }
@@ -18,7 +18,7 @@ impl Data {
         Data {
             parameters: HashMap::new(),
             arrays: HashMap::new(),
-            position_parameters: vec![],
+            position_parameters: vec![vec![]],
             aliases: HashMap::new(),
             functions: HashMap::new(),
         }
@@ -26,7 +26,8 @@ impl Data {
 
     pub fn get_param_ref(&mut self, key: &str) -> &str {
         if let Some(n) = self.get_position_param_pos(key) {
-            return &self.position_parameters[n];
+            let layer = self.position_parameters.len();
+            return &self.position_parameters[layer-1][n];
         }
 
         if  self.parameters.get(key) == None {
@@ -74,7 +75,8 @@ impl Data {
         }
 
         let n = key.parse::<usize>().unwrap();
-        if n < self.position_parameters.len() {
+        let layer = self.position_parameters.len();
+        if n < self.position_parameters[layer-1].len() {
             Some(n)
         }else{
             None

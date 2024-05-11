@@ -51,16 +51,27 @@ impl FunctionDefinition {
         }
     }
 
-    pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-//        let mut command = core.data.functions[&args[0]].clone();
+    pub fn run_as_command(&mut self, args: &mut Vec<String>,
+                          core: &mut ShellCore, pipe: Option<&mut Pipe>) -> Option<Pid> {
+        //let backup = core.data.position_parameters.to_vec();
+        //args[0] = core.data.position_parameters[0].clone();
+        //core.data.position_parameters = args.to_vec();
 
-        let backup = core.data.position_parameters.to_vec();
-        args[0] = backup[0].clone();
-        core.data.position_parameters = args.to_vec();
+        let len = core.data.position_parameters.len();
+        args[0] = core.data.position_parameters[len-1][0].clone();
+        core.data.position_parameters.push(args.to_vec());
+        let mut empty = Pipe::new("|".to_string());
+        let p = match pipe {
+            Some(p) => p,
+            _       => &mut empty,
+        };
 
-        let pid = self.command.clone().expect("SUSH INTERNAL ERROR: empty function").exec(core, pipe);
+        let pid = self.command.clone()
+                        .expect("SUSH INTERNAL ERROR: empty function")
+                        .exec(core, p);
 
-        core.data.position_parameters = backup;
+        core.data.position_parameters.pop();
+        //core.data.position_parameters = backup;
 
         return pid;
     }

@@ -3,7 +3,6 @@
 
 use crate::ShellCore;
 use crate::core::builtins::completion;
-use crate::elements::io::pipe::Pipe;
 use crate::feeder::terminal::Terminal;
 use std::path::Path;
 use unicode_width::UnicodeWidthStr;
@@ -62,9 +61,8 @@ impl Terminal {
 
             match core.completion_functions.get(&prev_word) {
                 Some(value) => {
-                    let mut command = core.data.functions[value].clone();
-                    let mut pipe = Pipe::new("|".to_string());
-                    command.run_as_command(&mut vec![value.to_string()], core, &mut pipe);
+                    let mut f = core.data.functions[value].clone();
+                    f.run_as_command(&mut vec![value.to_string()], core, None);
                     set = true;
                 },
                 _ => {},

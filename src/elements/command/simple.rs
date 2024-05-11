@@ -117,7 +117,7 @@ impl SimpleCommand {
 
     fn exec_function(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         let mut command = core.data.functions[&self.args[0]].clone();
-        command.run_as_command(&mut self.args, core, pipe)
+        command.run_as_command(&mut self.args, core, Some(pipe))
     }
 
     fn check_sigint(core: &mut ShellCore) -> bool {

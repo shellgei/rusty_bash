@@ -59,7 +59,14 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    core.data.position_parameters = args.to_vec();
+    let len = core.data.position_parameters.len();
+
+    if len == 0 {
+        panic!("SUSH INTERNAL ERROR: empty param stack");
+    }
+
+    core.data.position_parameters[len-1].clear();
+    core.data.position_parameters[len-1].append(args);
     0
 }
 
