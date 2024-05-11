@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use std::collections::HashMap;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
@@ -60,6 +61,7 @@ impl FunctionDefinition {
         let len = core.data.position_parameters.len();
         args[0] = core.data.position_parameters[len-1][0].clone();
         core.data.position_parameters.push(args.to_vec());
+        core.data.local_parameters.push(HashMap::new());
         let mut empty = Pipe::new("|".to_string());
         let p = match pipe {
             Some(p) => p,
@@ -71,7 +73,7 @@ impl FunctionDefinition {
                         .exec(core, p);
 
         core.data.position_parameters.pop();
-        //core.data.position_parameters = backup;
+        core.data.local_parameters.pop();
 
         return pid;
     }
