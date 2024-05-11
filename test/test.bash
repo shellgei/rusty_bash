@@ -686,6 +686,9 @@ res=$($com <<< 'echo /etc*/' | grep -F '/etc/')
 res=$($com <<< 'echo .*' | grep -F './.')
 [ "$?" == 1 ] || err $LINENO
 
+res=$($com <<< 'echo ./*' | grep -F './')
+[ "$?" == "0" ] || err $LINENO
+
 # split
 
 export RUSTY_BASH_A='a
