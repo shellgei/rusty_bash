@@ -9,6 +9,7 @@ mod utils;
 
 use crate::{Feeder, Script, ShellCore};
 use crate::elements::io;
+use crate::elements::substitution::{Substitution, Value};
 use std::fs::File;
 use std::os::fd::IntoRawFd;
 use std::path::Path;
@@ -68,8 +69,24 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let layer = core.data.local_parameters.len();
 
     for arg in &args[1..] {
-        if arg.find("=") == None {
-            core.data.local_parameters[layer-1].insert(arg.to_string(), "test".to_string());
+        let mut feeder = Feeder::new();
+        feeder.add_line(arg.clone());
+        match Substitution::parse(&mut feeder, core) {
+            Some(mut sub) => {
+                match sub.eval(core) {
+                    Value::EvaluatedSingle(s) => {
+                        core.data.local_parameters[layer-1].insert(sub.key.to_string(), s);
+                    },
+                    _ => {
+                        eprintln!("sush: local: `{}': not a valid dentifier", arg);
+                        return 1;
+                    },
+                }
+            },
+            _ => {
+                eprintln!("sush: local: `{}': not a valid dentifier", arg);
+                return 1;
+            },
         }
     }
 
