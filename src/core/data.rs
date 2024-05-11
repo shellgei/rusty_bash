@@ -34,7 +34,7 @@ impl Data {
 
         let num = self.local_parameters.len();
         if num > 0 {
-            for layer in num-1..0 {
+            for layer in (0..num).rev() {
                 match self.local_parameters[layer].get(key) {
                     Some(val) => return val.to_string(),
                     None      => {},
