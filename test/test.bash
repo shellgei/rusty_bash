@@ -146,10 +146,16 @@ res=$($com <<< '{ echo a }')
 res=$($com <<< 'echo (')
 [ "$?" = 2 ] || err $LINENO
 
-### IRREGULAR COMMAND TEST ###
+### IRREGULAR INPUT TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')
 [ "$?" = 127 ] || err $LINENO
+
+res=$($com <<< ';')
+[ "$?" = 2 ] || err $LINENO
+
+res=$($com <<< ';a')
+[ "$?" = 2 ] || err $LINENO
 
 ### PIPELINE ###
 
