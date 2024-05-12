@@ -33,6 +33,10 @@ impl Command for CaseCommand {
                 let w = self.word.clone().unwrap().text;
                 if t == w {
                     e.1.exec(core);
+
+                    if e.2 == ";;" {
+                        return;
+                    }
                 }
             }
         }
