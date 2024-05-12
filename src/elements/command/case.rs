@@ -28,11 +28,20 @@ impl Command for CaseCommand {
 
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         let mut next = false;
+        let word = self.word.clone().expect("SUSH INTERNAL ERROR: no case condition");
 
         for e in &mut self.patterns_script_end {
+            let word = word.clone();
             for pattern in &e.0 {
-                let t = pattern.clone().text;
-                let w = self.word.clone().unwrap().text;
+                let t = match pattern.eval_as_value(core) {
+                    Some(w) => w, 
+                    _       => continue,
+                };
+                let w = match word.eval_as_value(core) {
+                    Some(w) => w, 
+                    _       => continue,
+                };
+
                 if t == w || next {
                     e.1.exec(core);
 
