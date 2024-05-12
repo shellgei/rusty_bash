@@ -91,7 +91,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 | fc | :no_good: | fg | :no_good: | getopts | :no_good: |
 | hash | :no_good: | help | :no_good: | history | :no_good: |
 | jobs | :no_good: | kill | :no_good: | let | :no_good: |
-| local | :no_good: | logout | :no_good: | mapfile | :no_good: |
+| local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | read | :no_good: | readonly | :no_good: | return | :no_good: |
 | shift | :no_good: | suspend | :no_good: | test | :no_good: |

@@ -45,6 +45,10 @@ impl Script {
     }
 
     fn eat_job_end(feeder: &mut Feeder, ans: &mut Script) -> bool {
+        if feeder.starts_with(";;") {
+            ans.job_ends.push("".to_string());
+            return true;
+        }
         let len = feeder.scanner_job_end();
         let end = &feeder.consume(len);
         ans.job_ends.push(end.clone());

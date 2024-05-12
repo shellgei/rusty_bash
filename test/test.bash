@@ -907,4 +907,16 @@ EOF
 [ "$res" = "a
 a" ] || err $LINENO
 
+
+### CASE TEST ###
+
+res=$($com << 'EOF'
+case aaa in
+    bbb) echo NG ;;
+    aaa) echo OK ;;
+esac
+EOF
+)
+[ "$res" = "OK" ] || err $LINENO
+
 echo OK $0
