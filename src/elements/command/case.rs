@@ -29,14 +29,14 @@ impl Command for CaseCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         let mut next = false;
         let word = self.word.clone().expect("SUSH INTERNAL ERROR: no case condition");
-        let w = match word.eval_as_value(core) {
+        let w = match word.eval_as_value(core) { //TODO: change eval rule
             Some(w) => w, 
             _       => return,
         };
 
         for e in &mut self.patterns_script_end {
             for pattern in &e.0 {
-                let p = match pattern.eval_as_value(core) {
+                let p = match pattern.eval_as_value(core) { //TODO: change eval rule
                     Some(p) => p, 
                     _       => continue,
                 };
