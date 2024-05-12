@@ -910,13 +910,7 @@ a" ] || err $LINENO
 
 ### CASE TEST ###
 
-res=$($com << 'EOF'
-case aaa in
-    bbb) echo NG ;;
-    aaa) echo OK ;;
-esac
-EOF
-)
+res=$($com <<< 'case aaa in bbb) echo NG ;; aaa) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
 echo OK $0
