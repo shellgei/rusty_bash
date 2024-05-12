@@ -947,4 +947,8 @@ OK3" ] || err $LINENO
 res=$($com <<< 'case aaa in bbb) echo OK1 ;& bbb) echo OK2 ;& bbb) echo OK3 ;; esac')
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< 'echo ; case $? in 1) echo NG ;; 0) echo OK ;; esac')
+[ "$res" = "
+OK" ] || err $LINENO
+
 echo OK $0
