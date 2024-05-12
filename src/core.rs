@@ -113,7 +113,7 @@ impl ShellCore {
         if exit_status == 130 {
             self.sigint.store(true, Relaxed);
         }
-        self.data.parameters.insert("?".to_string(), exit_status.to_string()); //追加
+        self.data.parameters[0].insert("?".to_string(), exit_status.to_string()); //追加
     } 
 
     fn set_foreground(&self) {
@@ -151,7 +151,7 @@ impl ShellCore {
         if self.builtins.contains_key(&args[0]) {
             let func = self.builtins[&args[0]];
             let status = func(self, args);
-            self.data.parameters.insert("?".to_string(), status.to_string());
+            self.data.parameters[0].insert("?".to_string(), status.to_string());
             return true;
         }
 
@@ -159,10 +159,10 @@ impl ShellCore {
     }
 
     pub fn exit(&self) -> ! {
-        let exit_status = match self.data.parameters["?"].parse::<i32>() {
+        let exit_status = match self.data.parameters[0]["?"].parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
-                eprintln!("sush: exit: {}: numeric argument required", self.data.parameters["?"]);
+                eprintln!("sush: exit: {}: numeric argument required", self.data.parameters[0]["?"]);
                 2
             },
         };
@@ -172,10 +172,10 @@ impl ShellCore {
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.data.parameters.insert("BASHPID".to_string(), pid.to_string());
-        match self.data.parameters["BASH_SUBSHELL"].parse::<usize>() {
-            Ok(num) => self.data.parameters.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
-            Err(_) =>  self.data.parameters.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
+        self.data.parameters[0].insert("BASHPID".to_string(), pid.to_string());
+        match self.data.parameters[0]["BASH_SUBSHELL"].parse::<usize>() {
+            Ok(num) => self.data.parameters[0].insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
+            Err(_) =>  self.data.parameters[0].insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
     }
 

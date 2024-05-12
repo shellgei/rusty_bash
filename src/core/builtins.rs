@@ -51,7 +51,7 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
-        core.data.parameters.insert("?".to_string(), args[1].clone());
+        core.data.parameters[0].insert("?".to_string(), args[1].clone());
     }
     core.exit()
 }
@@ -61,12 +61,12 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if core.data.local_parameters.len() == 0 {
+    if core.data.parameters.len() == 0 {
         eprintln!("sush: local: can only be used in a function");
         return 1;
     }
 
-    let layer = core.data.local_parameters.len();
+    let layer = core.data.parameters.len();
 
     for arg in &args[1..] {
         let mut feeder = Feeder::new();
@@ -75,7 +75,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             Some(mut sub) => {
                 match sub.eval(core) {
                     Value::EvaluatedSingle(s) => {
-                        core.data.local_parameters[layer-1].insert(sub.key.to_string(), s);
+                        core.data.parameters[layer-1].insert(sub.key.to_string(), s);
                     },
                     _ => {
                         eprintln!("sush: local: `{}': not a valid dentifier", arg);

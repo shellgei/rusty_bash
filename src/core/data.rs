@@ -6,8 +6,7 @@ use std::env;
 use std::collections::HashMap;
 
 pub struct Data {
-    pub parameters: HashMap<String, String>,
-    pub local_parameters: Vec<HashMap<String, String>>,
+    pub parameters: Vec<HashMap<String, String>>,
     pub arrays: HashMap<String, Vec<String>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
@@ -17,8 +16,7 @@ pub struct Data {
 impl Data {
     pub fn new() -> Data {
         Data {
-            parameters: HashMap::new(),
-            local_parameters: vec![],
+            parameters: vec![HashMap::new()],
             arrays: HashMap::new(),
             position_parameters: vec![vec![]],
             aliases: HashMap::new(),
@@ -32,23 +30,23 @@ impl Data {
             return self.position_parameters[layer-1][n].to_string();
         }
 
-        let num = self.local_parameters.len();
+        let num = self.parameters.len();
         if num > 0 {
             for layer in (0..num).rev() {
-                match self.local_parameters[layer].get(key) {
+                match self.parameters[layer].get(key) {
                     Some(val) => return val.to_string(),
                     None      => {},
                 }
             }
         }
 
-        if self.parameters.get(key) == None {
+        if self.parameters[0].get(key) == None {
             if let Ok(val) = env::var(key) {
                 self.set_param(key, &val);
             }
         }
 
-        match self.parameters.get(key) {
+        match self.parameters[0].get(key) {
             Some(val) => val.to_string(),
             None      => "".to_string(),
         }
@@ -101,7 +99,7 @@ impl Data {
             _     => {},
         }
 
-        self.parameters.insert(key.to_string(), val.to_string());
+        self.parameters[0].insert(key.to_string(), val.to_string());
     }
 
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) {

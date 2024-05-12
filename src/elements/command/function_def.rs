@@ -61,7 +61,7 @@ impl FunctionDefinition {
         let len = core.data.position_parameters.len();
         args[0] = core.data.position_parameters[len-1][0].clone();
         core.data.position_parameters.push(args.to_vec());
-        core.data.local_parameters.push(HashMap::new());
+        core.data.parameters.push(HashMap::new());
         let mut empty = Pipe::new("|".to_string());
         let p = match pipe {
             Some(p) => p,
@@ -73,7 +73,7 @@ impl FunctionDefinition {
                         .exec(core, p);
 
         core.data.position_parameters.pop();
-        core.data.local_parameters.pop();
+        core.data.parameters.pop();
 
         return pid;
     }
