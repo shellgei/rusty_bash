@@ -27,16 +27,19 @@ impl Command for CaseCommand {
     }
 
     fn run(&mut self, core: &mut ShellCore, _: bool) {
+        let mut next = false;
+
         for e in &mut self.patterns_script_end {
             for pattern in &e.0 {
                 let t = pattern.clone().text;
                 let w = self.word.clone().unwrap().text;
-                if t == w {
+                if t == w || next {
                     e.1.exec(core);
 
                     if e.2 == ";;" {
                         return;
                     }
+                    next = e.2 == ";&";
                 }
             }
         }
