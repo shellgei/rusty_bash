@@ -45,7 +45,7 @@ impl Script {
     }
 
     fn eat_job_end(feeder: &mut Feeder, ans: &mut Script) -> bool {
-        if feeder.starts_with(";;") {
+        if feeder.starts_with(";;") || feeder.starts_with(";&") {
             ans.job_ends.push("".to_string());
             return true;
         }

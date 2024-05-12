@@ -11,7 +11,7 @@ use super::{Command, Pipe, Redirect};
 pub struct CaseCommand {
     pub text: String,
     pub word: Option<Word>,
-    pub patterns_and_script: Vec<(Vec<Word>, Script)>,
+    pub patterns_script_end: Vec<(Vec<Word>, Script, String)>,
     pub redirects: Vec<Redirect>,
     force_fork: bool,
 }
@@ -27,7 +27,7 @@ impl Command for CaseCommand {
     }
 
     fn run(&mut self, core: &mut ShellCore, _: bool) {
-        for e in &mut self.patterns_and_script {
+        for e in &mut self.patterns_script_end {
             for pattern in &e.0 {
                 let t = pattern.clone().text;
                 let w = self.word.clone().unwrap().text;
@@ -49,7 +49,7 @@ impl CaseCommand {
         CaseCommand {
             text: String::new(),
             word: None,
-            patterns_and_script: vec![],
+            patterns_script_end: vec![],
             redirects: vec![],
             force_fork: false,
         }
@@ -130,16 +130,22 @@ impl CaseCommand {
             }
 
             let mut script = None;
-            if command::eat_inner_script(feeder, core, ")", vec![";;"], &mut script, false) {
+            if command::eat_inner_script(feeder, core, ")", vec![";;&", ";;", ";&"], &mut script, false) {
                 ans.text.push_str(&script.as_ref().unwrap().get_text());
-                ans.text.push_str(&feeder.consume(2));
-                ans.patterns_and_script.push( (patterns, script.unwrap() ) );
+                let end_len = if feeder.starts_with(";;&") {
+                    3
+                }else{
+                    2
+                };
+                let end = feeder.consume(end_len);
+                ans.text.push_str(&end);
+                ans.patterns_script_end.push( (patterns, script.unwrap(), end ) );
             }else{
                 return None;
             }
         }
 
-        if ans.patterns_and_script.len() > 0 {
+        if ans.patterns_script_end.len() > 0 {
             Some(ans)
         }else{
             None
