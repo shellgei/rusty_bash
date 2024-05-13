@@ -10,6 +10,6 @@ alias ll='ls -l'
 complete -F _dummy hoge
 
 case aaa in
-	*a) echo OK ;;
+	a*) echo OK ;;
         *) echo NG ;;
 esac
