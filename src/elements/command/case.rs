@@ -1,6 +1,8 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod tools;
+
 use crate::{ShellCore, Feeder, Script};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -41,7 +43,8 @@ impl Command for CaseCommand {
                     _       => continue,
                 };
 
-                if p == w || next { //TODO: compare wildcard
+                //if p == w || next { //TODO: compare wildcard
+                if tools::compare(&w, &p) || next { //TODO: compare wildcard
                     e.1.exec(core);
 
                     if e.2 == ";;" {
@@ -87,6 +90,7 @@ impl CaseCommand {
         loop {
             match Word::parse(feeder, core) {
                 Some(w) => {
+            //dbg!("{:?}", &w);
                     *text += &w.text;
                     ans.push(w)
                 },
