@@ -208,6 +208,8 @@ impl SimpleCommand {
         let mut ans = Self::new();
         feeder.set_backup();
 
+//        let local_flag = feeder.starts_with("local");
+
         while Self::eat_substitution(feeder, &mut ans, core) {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }

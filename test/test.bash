@@ -244,7 +244,7 @@ res=$($com <<< 'function f () { local A=BBB ; echo $A; } ; f')
 res=$($com <<< 'function f () { local A=BBB ; echo $A ; } ; echo $A')
 [ "$res" = "" ] || err $LINENO
 
-#res=$($com <<< 'function f () { local A=( a b c ) ; echo ${A[1]; } ; f')
+#res=$($com <<< 'function f () { local A=( a b c ) ; echo ${A[1]}; } ; f')
 #[ "$res" = b ] || err $LINENO
 
 ### NEW LINE ###

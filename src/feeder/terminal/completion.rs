@@ -50,10 +50,10 @@ impl Terminal {
         };
 
         let mut set = false;
-        if pos >= 0 && pos < core.data.arrays["COMP_WORDS"].len() as i32 {
+        if pos >= 0 && pos < core.data.arrays[0]["COMP_WORDS"].len() as i32 {
             let prev_word = core.data.get_array("COMP_WORDS", &pos.to_string());
 
-            let cur = match ((pos + 1) as usize) < core.data.arrays["COMP_WORDS"].len() {
+            let cur = match ((pos + 1) as usize) < core.data.arrays[0]["COMP_WORDS"].len() {
                 true => core.data.get_array("COMP_WORDS", &(pos+1).to_string()),
                 false => "".to_string(),
             };
@@ -75,7 +75,7 @@ impl Terminal {
         }
 
         match double_tab {
-            true  => self.show_list(&core.data.arrays["COMPREPLY"]),
+            true  => self.show_list(&core.data.arrays[0]["COMPREPLY"]),
             false => self.try_completion(core),
         }
     }
@@ -105,8 +105,8 @@ impl Terminal {
         let pos = core.data.get_param("COMP_CWORD").to_string();
         let target = core.data.get_array("COMP_WORDS", &pos);
 
-        if core.data.arrays["COMPREPLY"].len() == 1 {
-            let output = core.data.arrays["COMPREPLY"][0].clone();
+        if core.data.arrays[0]["COMPREPLY"].len() == 1 {
+            let output = core.data.arrays[0]["COMPREPLY"][0].clone();
             let tail = match is_dir(&output, core) {
                 true  => "/",
                 false => " ",
@@ -115,7 +115,7 @@ impl Terminal {
             return;
         }
 
-        let common = common_string(&core.data.arrays["COMPREPLY"]);
+        let common = common_string(&core.data.arrays[0]["COMPREPLY"]);
         if common.len() != target.len() {
             self.replace_input(&common);
             return;

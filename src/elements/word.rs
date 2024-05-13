@@ -19,25 +19,40 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
-        let mut ws = brace_expansion::eval(self);
-        Self::eval_common(&mut ws, core)
+        self.eval_common(core, true, true)
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
-        match Self::eval_common(&mut vec![self.clone()], core) {
+        match self.eval_common(core, false, true) {
             Some(ans) => Some(ans.join(" ")),
             None      => None,
         }
     }
 
-    fn eval_common(ws: &mut Vec<Word>, core: &mut ShellCore) -> Option<Vec<String>> {
+    pub fn eval_for_case(&self, core: &mut ShellCore) -> Option<String> {
+        match self.eval_common(core, false, false) {
+            Some(ans) => Some(ans.join(" ")),
+            None      => None,
+        }
+    }
+
+    fn eval_common(&self, core: &mut ShellCore, brace: bool, path: bool) -> Option<Vec<String>> {
+        let mut ws = match brace {
+            true  => brace_expansion::eval(&mut self.clone()),
+            false => vec![self.clone()],
+        };
+        
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
         if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
             return None;
         }
-        *ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
+        ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws.iter_mut().for_each(|w| w.connect_subwords());
-        *ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
+
+        if path {
+            ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
+        }
+
         ws.iter_mut().for_each(|w| w.unquote());
         let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
 

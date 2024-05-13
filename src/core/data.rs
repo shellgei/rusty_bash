@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 pub struct Data {
     pub parameters: Vec<HashMap<String, String>>,
-    pub arrays: HashMap<String, Vec<String>>,
+    pub arrays: Vec<HashMap<String, Vec<String>>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -17,7 +17,7 @@ impl Data {
     pub fn new() -> Data {
         Data {
             parameters: vec![HashMap::new()],
-            arrays: HashMap::new(),
+            arrays: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             aliases: HashMap::new(),
             functions: HashMap::new(),
@@ -53,11 +53,11 @@ impl Data {
     }
 
     pub fn get_array(&mut self, key: &str, pos: &str) -> String {
-        if  self.arrays.get(key) == None {
+        if  self.arrays[0].get(key) == None {
             return "".to_string();
         }
 
-        match self.arrays.get(key) {
+        match self.arrays[0].get(key) {
             Some(a) => {
                 if pos == "@" {
                     return a.join(" ");
@@ -103,6 +103,6 @@ impl Data {
     }
 
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) {
-        self.arrays.insert(key.to_string(), vals.to_vec());
+        self.arrays[0].insert(key.to_string(), vals.to_vec());
     }
 }

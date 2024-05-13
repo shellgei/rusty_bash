@@ -69,6 +69,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let layer = core.data.parameters.len();
 
     for arg in &args[1..] {
+        dbg!("{:?}", &arg);
         let mut feeder = Feeder::new();
         feeder.add_line(arg.clone());
         match Substitution::parse(&mut feeder, core) {
@@ -76,6 +77,9 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 match sub.eval(core) {
                     Value::EvaluatedSingle(s) => {
                         core.data.parameters[layer-1].insert(sub.key.to_string(), s);
+                    },
+                    Value::EvaluatedArray(a) => {
+                        core.data.arrays[layer-1].insert(sub.key.to_string(), a);
                     },
                     _ => {
                         eprintln!("sush: local: `{}': not a valid dentifier", arg);
