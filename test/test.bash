@@ -969,4 +969,13 @@ res=$($com <<< 'case aaa in bbb) echo NG ;; a\aa) echo OK ;; esac')
 res=$($com <<< 'case aaa in bbb) echo NG ;; a\aa\ ) echo OK ;; esac')
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< 'case 山 in kawa) echo NG ;; 山) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case aaa in b*) echo NG ;; *) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case aaa in ...) echo NG ;; *) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 echo OK $0

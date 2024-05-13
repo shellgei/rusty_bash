@@ -22,13 +22,18 @@ fn to_regex(pattern: &str) -> Regex {
             },
         }
 
-        match scanner_asterisk(&remaining) {
-            0 => {},
-            _ => {
-                consume(&mut remaining, 1);
-                regex_str += ".*";
-                continue;
-            },
+        if remaining.starts_with("*") {
+            consume(&mut remaining, 1);
+            regex_str += ".*";
+            continue;
+        }else if remaining.starts_with("?") {
+            consume(&mut remaining, 1);
+            regex_str += ".";
+            continue;
+        }else if remaining.starts_with(".") {
+            consume(&mut remaining, 1);
+            regex_str += "\\.";
+            continue;
         }
 
         let len = scanner_char(&remaining);
@@ -48,13 +53,6 @@ fn scanner_escaped_char(remaining: &str) -> usize {
     match remaining.chars().nth(1) {
         None    => 1,
         Some(c) => 1 + c.len_utf8(),
-    }
-}
-
-fn scanner_asterisk(remaining: &str) -> usize {
-    match remaining.chars().nth(0) {
-        Some('*') => 1,
-        _         => 0,
     }
 }
 
