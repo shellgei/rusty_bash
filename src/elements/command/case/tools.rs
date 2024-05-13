@@ -14,7 +14,9 @@ fn to_regex(pattern: &str) -> Regex {
     while remaining.len() > 0 {
         let len = scanner_escaped_char(&remaining);
         if len > 0 {
-            regex_str += &consume(&mut remaining, len);
+            let mut ans = consume(&mut remaining, len);
+            ans.remove(0);
+            regex_str += &ans;
             continue;
         }
 

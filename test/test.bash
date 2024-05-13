@@ -963,4 +963,10 @@ res=$($com <<< 'echo ; case $? in 1) echo NG ;; 0) echo OK ;; esac')
 [ "$res" = "
 OK" ] || err $LINENO
 
+res=$($com <<< 'case aaa in bbb) echo NG ;; a\aa) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case aaa in bbb) echo NG ;; a\aa\ ) echo OK ;; esac')
+[ "$res" = "" ] || err $LINENO
+
 echo OK $0
