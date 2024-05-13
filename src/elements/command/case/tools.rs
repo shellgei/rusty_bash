@@ -12,18 +12,27 @@ fn to_regex(pattern: &str) -> Regex {
     let mut remaining = pattern.to_string();
 
     while remaining.len() > 0 {
-        let len = scanner_escaped_char(&remaining);
-        if len > 0 {
-            let mut ans = consume(&mut remaining, len);
-            ans.remove(0);
-            regex_str += &ans;
-            continue;
+        match scanner_escaped_char(&remaining) {
+            0 => {}, 
+            len => {
+                let mut ans = consume(&mut remaining, len);
+                ans.remove(0);
+                regex_str += &ans;
+                continue;
+            },
+        }
+
+        match scanner_asterisk(&remaining) {
+            0 => {},
+            _ => {
+                consume(&mut remaining, 1);
+                regex_str += ".*";
+                continue;
+            },
         }
 
         let len = scanner_char(&remaining);
-        if len > 0 {
-            regex_str += &consume(&mut remaining, len);
-        }
+        regex_str += &consume(&mut remaining, len);
     }
 
     let re = Regex::new(&(r"^".to_owned() + &regex_str + "$")).unwrap();
@@ -39,6 +48,13 @@ fn scanner_escaped_char(remaining: &str) -> usize {
     match remaining.chars().nth(1) {
         None    => 1,
         Some(c) => 1 + c.len_utf8(),
+    }
+}
+
+fn scanner_asterisk(remaining: &str) -> usize {
+    match remaining.chars().nth(0) {
+        Some('*') => 1,
+        _         => 0,
     }
 }
 

@@ -9,12 +9,13 @@ alias ll='ls -l'
  _dummy () { COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) ; }
 complete -F _dummy hoge
 
-case aaa in
-	a*) echo OK ;;
-        *) echo NG ;;
+case 山 in
+	kawa) echo NG ;;
+	山) echo OK ;;
 esac
 
 case aaa in
-	bbb) echo NG ;;
-	aaa) echo OK ;;
+	b*) echo NG ;;
+        *) echo OK ;;
 esac
+
