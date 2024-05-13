@@ -13,3 +13,8 @@ case aaa in
 	a*) echo OK ;;
         *) echo NG ;;
 esac
+
+case aaa in
+	bbb) echo NG ;;
+	aaa) echo OK ;;
+esac
