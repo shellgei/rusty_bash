@@ -22,7 +22,7 @@ pub fn compare(word: &String, pattern: &str) -> bool {
         }
     }
 
-    candidates.len() > 0
+    candidates.iter().any(|c| c == "")
 }
 
 pub fn compare_normal(cands: &mut Vec<String>, s: &String) {

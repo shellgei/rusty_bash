@@ -981,4 +981,10 @@ res=$($com <<< 'case aaa in ...) echo NG ;; *) echo OK ;; esac')
 res=$($com <<< 'case ... in aa) echo NG ;; ...) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case あ in ?) echo OK ;; あ) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case あbiuoあああ in ?) echo NG ;; あ*) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 echo OK $0
