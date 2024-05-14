@@ -6,19 +6,23 @@ enum Wildcard {
     Normal(String),
     Asterisk,
     Question,
-    //OneOf(Vec<char>),
-    //NotOneOf(Vec<char>),
+    OneOf(Vec<char>),
+    NotOneOf(Vec<char>),
 }
 
 pub fn compare(word: &String, pattern: &str) -> bool {
     let wildcards = parse(pattern);
     let mut candidates = vec![word.to_string()];
 
+//    dbg!("{:?}", &pattern);
+//    dbg!("{:?}", &wildcards);
     for w in wildcards {
         match w {
             Wildcard::Normal(s) => compare_normal(&mut candidates, &s),
             Wildcard::Asterisk  => asterisk(&mut candidates),
             Wildcard::Question  => question(&mut candidates),
+            Wildcard::OneOf(cs) => one_of(&mut candidates, &cs, false),
+            Wildcard::NotOneOf(cs) => one_of(&mut candidates, &cs, true),
         }
     }
 
@@ -67,6 +71,17 @@ pub fn question(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
+pub fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
+    let mut ans = vec![];
+    for cand in cands.into_iter() {
+        if cs.iter().any(|c| cand.starts_with(*c)) ^ inverse {
+            let h = cand.chars().nth(0).unwrap();
+            ans.push(cand[h.len_utf8()..].to_string());
+        }
+    }
+    *cands = ans;
+}
+
 fn parse(pattern: &str) -> Vec<Wildcard > {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
@@ -84,6 +99,13 @@ fn parse(pattern: &str) -> Vec<Wildcard > {
             },
         }
 
+        let (len, wc) = scanner_bracket(&remaining);
+        if len > 0 {
+            consume(&mut remaining, len);
+            ans.push(wc);
+            continue;
+        }
+
         if remaining.starts_with("*") {
             consume(&mut remaining, 1);
             ans.push( Wildcard::Asterisk );
@@ -95,7 +117,13 @@ fn parse(pattern: &str) -> Vec<Wildcard > {
         }
 
         let len = scanner_chars(&remaining);
-        let s = consume(&mut remaining, len);
+        if len > 0 {
+            let s = consume(&mut remaining, len);
+            ans.push( Wildcard::Normal(s) );
+            continue;
+        }
+
+        let s = consume(&mut remaining, 1);
         ans.push( Wildcard::Normal(s) );
     }
 
@@ -116,13 +144,54 @@ fn scanner_escaped_char(remaining: &str) -> usize {
 fn scanner_chars(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
-        if c == '*' || c == '?' {
+        if "*?[".find(c) != None {
             return ans;
         }
 
         ans += c.len_utf8();
     }
     ans
+}
+
+fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
+    if ! remaining.starts_with("[") {
+        return (0, Wildcard::OneOf(vec![]) );
+    }
+    
+    let mut chars = vec![];
+    let mut len = 1;
+    let mut escaped = false;
+    let mut not = false;
+
+    if remaining.starts_with("[^") || remaining.starts_with("[!") {
+        not = true;
+        len = 2;
+    }
+
+    for c in remaining[len..].chars() {
+        len += c.len_utf8();
+
+        if escaped {
+            chars.push(c); 
+            escaped = false;
+            continue;
+        }
+        if c == '\\' {
+            escaped = true;
+            continue;
+        }
+
+        if c == ']' {
+            match not {
+                false => return (len, Wildcard::OneOf(chars) ),
+                true  => return (len, Wildcard::NotOneOf(chars) ),
+            }
+        }
+
+        chars.push(c);
+    }
+
+    (0, Wildcard::OneOf(vec![]) )
 }
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
