@@ -17,7 +17,7 @@ use nix::errno::Errno;
 
 fn reserved(w: &str) -> bool {
     match w {
-        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" | "local" => true,
+        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
         _ => false,
     }
 }
@@ -30,7 +30,9 @@ pub struct SimpleCommand {
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
-    force_fork: bool,
+    force_fork: bool, 
+    substitutions_as_args: Vec<Substitution>,
+    permit_substitution_arg: bool,
 }
 
 impl Command for SimpleCommand {
@@ -78,7 +80,8 @@ impl Command for SimpleCommand {
                 }
             }
 
-            core.run_builtin(&mut self.args);
+            let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
+            core.run_builtin(&mut self.args, &mut special_args);
 
             core.data.parameters.pop();
             core.data.arrays.pop();
@@ -86,7 +89,7 @@ impl Command for SimpleCommand {
             return;
         }
 
-        match core.run_builtin(&mut self.args) {
+        match core.run_builtin(&mut self.args, &mut vec![]) {
             true  => core.exit(),
             false => self.exec_external_command(),
         }
@@ -193,13 +196,18 @@ impl SimpleCommand {
             args: vec![],
             redirects: vec![],
             force_fork: false,
+            substitutions_as_args: vec![],
+            permit_substitution_arg: false,
         }
     }
 
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(s) = Substitution::parse(feeder, core) {
             ans.text += &s.text;
-            ans.substitutions.push(s);
+            match ans.permit_substitution_arg {
+                true  => ans.substitutions_as_args.push(s),
+                false => ans.substitutions.push(s),
+            }
             true
         }else{
             false
@@ -212,8 +220,12 @@ impl SimpleCommand {
             _       => return false,
         };
 
-        if ans.words.len() == 0 && reserved(&w.text) {
-            return false;
+        if ans.words.len() == 0 {
+            if reserved(&w.text) {
+                return false;
+            }else if w.text == "local" {
+                ans.permit_substitution_arg = true;
+            }
         }
         ans.text += &w.text;
         ans.words.push(w);
@@ -224,14 +236,17 @@ impl SimpleCommand {
         let mut ans = Self::new();
         feeder.set_backup();
 
-//        let local_flag = feeder.starts_with("local");
-
         while Self::eat_substitution(feeder, &mut ans, core) {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+            if ans.permit_substitution_arg 
+            && Self::eat_substitution(feeder, &mut ans, core) {
+                continue;
+            }
+
             if ! Self::eat_word(feeder, &mut ans, core) {
                 break;
             }

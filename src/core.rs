@@ -143,13 +143,14 @@ impl ShellCore {
         self.set_foreground();
     }
 
-    pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
+    pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
         if args.len() == 0 {
             panic!("SUSH INTERNAL ERROR (no arg for builtins)");
         }
 
         if self.builtins.contains_key(&args[0]) {
             let func = self.builtins[&args[0]];
+            args.append(special_args);
             let status = func(self, args);
             self.data.parameters[0].insert("?".to_string(), status.to_string());
             return true;

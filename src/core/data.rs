@@ -53,28 +53,30 @@ impl Data {
     }
 
     pub fn get_array(&mut self, key: &str, pos: &str) -> String {
-        if  self.arrays[0].get(key) == None {
-            return "".to_string();
+        let num = self.parameters.len();
+        for layer in (0..num).rev()  {
+            if  self.arrays[layer].get(key) == None {
+                continue;
+            }
+    
+            match self.arrays[layer].get(key) {
+                Some(a) => {
+                    if pos == "@" {
+                        return a.join(" ");
+                    }
+    
+                    match pos.parse::<usize>() {
+                        Ok(n) => {
+                            if n < a.len() {
+                                return a[n].clone();
+                            }
+                        },
+                        _ => {},
+                    }
+                },
+                _ => {},
+            }
         }
-
-        match self.arrays[0].get(key) {
-            Some(a) => {
-                if pos == "@" {
-                    return a.join(" ");
-                }
-
-                match pos.parse::<usize>() {
-                    Ok(n) => {
-                        if n < a.len() {
-                            return a[n].clone();
-                        }
-                    },
-                    _ => {},
-                }
-            },
-            _ => {},
-        }
-
 
         "".to_string()
     }

@@ -63,7 +63,7 @@ fn read_rc_file(core: &mut ShellCore) {
     let rc_file = dir + "/.sushrc";
 
     if Path::new(&rc_file).is_file() {
-        core.run_builtin(&mut vec![".".to_string(), rc_file]);
+        core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]);
     }
 }
 
