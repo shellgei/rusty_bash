@@ -15,9 +15,9 @@ use std::sync::atomic::Ordering::Relaxed;
 use nix::unistd::Pid;
 use nix::errno::Errno;
 
-fn reserved(w: &str) -> bool {
+fn target(w: &str) -> bool {
     match w {
-        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
+        "local" => true,
         _ => false,
     }
 }
@@ -212,7 +212,7 @@ impl SubstituteCommand {
             _       => return false,
         };
 
-        if ans.words.len() == 0 && reserved(&w.text) {
+        if ans.words.len() == 0 && ! target(&w.text) {
             return false;
         }
         ans.text += &w.text;
@@ -223,8 +223,6 @@ impl SubstituteCommand {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SubstituteCommand> {
         let mut ans = Self::new();
         feeder.set_backup();
-
-//        let local_flag = feeder.starts_with("local");
 
         while Self::eat_substitution(feeder, &mut ans, core) {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);

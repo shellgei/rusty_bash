@@ -61,7 +61,7 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if core.data.parameters.len() == 0 {
+    if core.data.parameters.len() <= 2 {
         eprintln!("sush: local: can only be used in a function");
         return 1;
     }
@@ -81,13 +81,13 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                         core.data.arrays[layer].insert(sub.key.to_string(), a);
                     },
                     _ => {
-                        eprintln!("sush: local: `{}': not a valid dentifier", arg);
+                        eprintln!("sush: local: `{}': not a valid identifier", arg);
                         return 1;
                     },
                 }
             },
             _ => {
-                eprintln!("sush: local: `{}': not a valid dentifier", arg);
+                eprintln!("sush: local: `{}': not a valid identifier", arg);
                 return 1;
             },
         }
