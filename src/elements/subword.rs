@@ -89,6 +89,7 @@ pub trait Subword {
     }
 
     fn unquote(&mut self) {}
+    fn unquote2(&mut self) {self.unquote()}
     fn get_type(&self) -> SubwordType;
     fn clear(&mut self) {}
 }

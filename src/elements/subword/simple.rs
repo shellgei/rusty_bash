@@ -47,6 +47,16 @@ impl Subword for SimpleSubword {
         }
     }
 
+    fn unquote2(&mut self) {
+        match self.subword_type {
+            SubwordType::SingleQuoted => {
+                self.text.remove(0);
+                self.text.pop();
+            },
+            _ => {},
+        }
+    }
+
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
     fn clear(&mut self) { self.text = String::new(); }
 }

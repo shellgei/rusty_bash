@@ -19,39 +19,16 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
-        self.eval_common(core, true, true)
-    }
-
-    pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
-        match self.eval_common(core, false, true) {
-            Some(ans) => Some(ans.join(" ")),
-            None      => None,
-        }
-    }
-
-    pub fn eval_for_case(&self, core: &mut ShellCore) -> Option<String> {
-        match self.eval_common(core, false, false) {
-            Some(ans) => Some(ans.join(" ")),
-            None      => None,
-        }
-    }
-
-    fn eval_common(&self, core: &mut ShellCore, brace: bool, path: bool) -> Option<Vec<String>> {
-        let mut ws = match brace {
-            true  => brace_expansion::eval(&mut self.clone()),
-            false => vec![self.clone()],
-        };
+        let mut ws = brace_expansion::eval(&mut self.clone());
         
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
         if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
             return None;
         }
+
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws.iter_mut().for_each(|w| w.connect_subwords());
-
-        if path {
-            ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
-        }
+        ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
         ws.iter_mut().for_each(|w| w.unquote());
         let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
@@ -59,8 +36,53 @@ impl Word {
         Some(ans)
     }
 
+    pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
+        let mut ws = vec![self.clone()];
+        
+        ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
+        if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
+            return None;
+        }
+
+        ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
+        ws.iter_mut().for_each(|w| w.connect_subwords());
+        ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
+
+        ws.iter_mut().for_each(|w| w.unquote());
+        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+
+        Some(ans)
+    }
+
+    pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
+        let mut ws = vec![self.clone()];
+        ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
+        if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
+            return None;
+        }
+        ws.iter_mut().for_each(|w| w.unquote());
+        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+        Some(ans)
+    }
+
+    pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Option<String> {
+        let mut ws = vec![self.clone()];
+        ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
+        if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
+            return None;
+        }
+        ws.iter_mut().for_each(|w| w.unquote2());
+        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+        Some(ans)
+    }
+
     pub fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|w| w.unquote());
+        self.connect_subwords();
+    }
+
+    pub fn unquote2(&mut self) {
+        self.subwords.iter_mut().for_each(|w| w.unquote2());
         self.connect_subwords();
     }
     

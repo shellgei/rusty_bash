@@ -14,8 +14,8 @@ pub fn compare(word: &String, pattern: &str) -> bool {
     let wildcards = parse(pattern);
     let mut candidates = vec![word.to_string()];
 
-//    dbg!("{:?}", &pattern);
-//    dbg!("{:?}", &wildcards);
+    //dbg!("{:?} {}", &pattern, pattern.len());
+    //dbg!("{:?}", &wildcards);
     for w in wildcards {
         match w {
             Wildcard::Normal(s) => compare_normal(&mut candidates, &s),
@@ -144,7 +144,7 @@ fn scanner_escaped_char(remaining: &str) -> usize {
 fn scanner_chars(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
-        if "*?[".find(c) != None {
+        if "*?[\\".find(c) != None {
             return ans;
         }
 
