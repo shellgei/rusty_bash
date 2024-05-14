@@ -502,6 +502,9 @@ res=$($com <<< 'A=${ }; echo NG')
 res=$($com <<< 'A=${ }')
 [ "$?" == 1 ] || err $LINENO
 
+res=$($com <<< 'A=B cd ; echo $A')
+[ "$res" == "" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')

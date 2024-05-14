@@ -93,16 +93,34 @@ impl Data {
         }
     }
 
-    pub fn set_param(&mut self, key: &str, val: &str) {
+    fn set_layer_param(&mut self, key: &str, val: &str, layer: usize) {
         match env::var(key) {
             Ok(_) => env::set_var(key, val),
             _     => {},
         }
 
-        self.parameters[0].insert(key.to_string(), val.to_string());
+        self.parameters[layer].insert(key.to_string(), val.to_string());
+    }
+
+    pub fn set_param(&mut self, key: &str, val: &str) {
+        self.set_layer_param(key, val, 0);
+    }
+
+    pub fn set_local_param(&mut self, key: &str, val: &str) {
+        let layer = self.parameters.len();
+        self.set_layer_param(key, val, layer-1);
+    }
+
+    pub fn set_layer_array(&mut self, key: &str, vals: &Vec<String>, layer: usize) {
+        self.arrays[layer].insert(key.to_string(), vals.to_vec());
     }
 
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) {
-        self.arrays[0].insert(key.to_string(), vals.to_vec());
+        self.set_layer_array(key, vals, 0);
+    }
+
+    pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) {
+        let layer = self.arrays.len();
+        self.set_layer_array(key, vals, layer-1);
     }
 }
