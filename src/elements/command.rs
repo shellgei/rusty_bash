@@ -3,6 +3,7 @@
 
 pub mod case;
 pub mod simple;
+pub mod substitute_command;
 pub mod paren;
 pub mod brace;
 pub mod function_def;
@@ -12,6 +13,7 @@ pub mod r#if;
 use crate::{ShellCore, Feeder, Script};
 use self::case::CaseCommand;
 use self::simple::SimpleCommand;
+use self::substitute_command::SubstituteCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
 use self::function_def::FunctionDefinition;
@@ -119,6 +121,7 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) = FunctionDefinition::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = SubstituteCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
