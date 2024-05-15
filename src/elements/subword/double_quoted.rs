@@ -28,11 +28,11 @@ impl Subword for DoubleQuoted {
         true
     }
 
-    fn make_glob_string(&mut self) {
+    fn make_glob_string(&mut self) -> String {
         self.text.pop();
         self.text.remove(0);
 
-        self.text = self.text
+        return self.text
             .replace("\\", "\\\\")
             .replace("*", "\\*")
             .replace("?", "\\?")

@@ -79,9 +79,11 @@ impl Word {
     }
 
     fn make_glob_string(&mut self) -> String {
-        self.subwords.iter_mut().for_each(|w| w.make_glob_string() );
-        self.connect_subwords();
-        self.text.clone()
+        let mut ans = String::new();
+        for s in &mut self.subwords {
+            ans += &s.make_glob_string();
+        }
+        ans
     }
 
     fn connect_subwords(&mut self) {

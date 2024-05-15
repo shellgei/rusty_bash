@@ -34,22 +34,20 @@ impl Subword for SimpleSubword {
         true
     }
 
-    fn make_glob_string(&mut self) {
+    fn make_glob_string(&mut self) -> String {
         if ! self.text.starts_with("'") 
         || ! self.text.ends_with("'") {
-            return;
+            return self.text.clone();
         }
         self.text.pop();
         self.text.remove(0);
 
-        self.text = self.text
+        return self.text
             .replace("\\", "\\\\")
             .replace("*", "\\*")
             .replace("?", "\\?")
             .replace("[", "\\[")
             .replace("]", "\\]");
-
-        self.subword_type = SubwordType::ConvertedQuoted;
     }
 
     fn unquote(&mut self) {

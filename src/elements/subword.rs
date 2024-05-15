@@ -89,7 +89,7 @@ pub trait Subword {
         splits.iter().map(|s| copy(s)).collect()
     }
 
-    fn make_glob_string(&mut self) {}
+    fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
     fn unquote(&mut self) {}
     fn get_type(&self) -> SubwordType;
     fn clear(&mut self) {}
