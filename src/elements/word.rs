@@ -27,7 +27,8 @@ impl Word {
         }
 
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
-        ws.iter_mut().for_each(|w| w.connect_subwords());
+        //ws.iter_mut().for_each(|w| w.connect_subwords());
+        ws.iter_mut().for_each(|w| w.quote_to_escape());
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
         ws.iter_mut().for_each(|w| w.unquote());
@@ -45,7 +46,8 @@ impl Word {
         }
 
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
-        ws.iter_mut().for_each(|w| w.connect_subwords());
+        //ws.iter_mut().for_each(|w| w.connect_subwords());
+        ws.iter_mut().for_each(|w| w.quote_to_escape());
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
         ws.iter_mut().for_each(|w| w.unquote());
@@ -78,6 +80,11 @@ impl Word {
 
     pub fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|w| w.unquote());
+        self.connect_subwords();
+    }
+
+    pub fn quote_to_escape(&mut self) {
+        self.subwords.iter_mut().for_each(|w| w.quote_to_escape());
         self.connect_subwords();
     }
 

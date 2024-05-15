@@ -34,6 +34,24 @@ impl Subword for SimpleSubword {
         true
     }
 
+    fn quote_to_escape(&mut self) {
+        if ! self.text.starts_with("'") 
+        || ! self.text.ends_with("'") {
+            return;
+        }
+        self.text.pop();
+        self.text.remove(0);
+
+        self.text = self.text
+            .replace("\\", "\\\\")
+            .replace("*", "\\*")
+            .replace("?", "\\?")
+            .replace("[", "\\[")
+            .replace("]", "\\]");
+
+        self.subword_type = SubwordType::Other;
+    }
+
     fn unquote(&mut self) {
         match self.subword_type {
             SubwordType::SingleQuoted => {

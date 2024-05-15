@@ -704,8 +704,14 @@ res=$($com <<< 'echo ./*' | grep -F './')
 res=$($com <<< 'echo *"$PATH"')
 [ "$?" == "0" ] || err $LINENO
 
-#res=$($com <<< 'echo /*"b"*' | grep -F '*')
-#[ "$?" == "1" ] || err $LINENO
+res=$($com <<< 'echo /*"b"*' | grep -F '*')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< "echo /*'b'*" | grep -F '*')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'echo /"*"' | grep -F '*')
+[ "$?" == "0" ] || err $LINENO
 
 # split
 
