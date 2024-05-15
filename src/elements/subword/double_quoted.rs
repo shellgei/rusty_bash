@@ -10,7 +10,6 @@ use super::{BracedParam, SimpleSubword, Subword, SubwordType};
 pub struct DoubleQuoted {
     text: String,
     subwords: Vec<Box<dyn Subword>>,
-    subword_type: SubwordType,
 }
 
 impl Subword for DoubleQuoted {
@@ -39,8 +38,6 @@ impl Subword for DoubleQuoted {
             .replace("?", "\\?")
             .replace("[", "\\[")
             .replace("]", "\\]");
-
-        self.subword_type = SubwordType::ConvertedQuoted;
     }
 
     fn unquote(&mut self) {
@@ -48,7 +45,7 @@ impl Subword for DoubleQuoted {
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
     }
 
-    fn get_type(&self) -> SubwordType { self.subword_type.clone() }
+    fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted }
 }
 
 impl DoubleQuoted {
@@ -56,7 +53,6 @@ impl DoubleQuoted {
         DoubleQuoted {
             text: String::new(),
             subwords: vec![],
-            subword_type: SubwordType::DoubleQuoted,
         }
     }
 
