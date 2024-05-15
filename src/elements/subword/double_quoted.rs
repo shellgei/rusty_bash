@@ -28,7 +28,7 @@ impl Subword for DoubleQuoted {
         true
     }
 
-    fn quote_to_escape(&mut self) {
+    fn make_glob_string(&mut self) {
         self.text.pop();
         self.text.remove(0);
 

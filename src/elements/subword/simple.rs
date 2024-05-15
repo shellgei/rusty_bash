@@ -34,7 +34,7 @@ impl Subword for SimpleSubword {
         true
     }
 
-    fn quote_to_escape(&mut self) {
+    fn make_glob_string(&mut self) {
         if ! self.text.starts_with("'") 
         || ! self.text.ends_with("'") {
             return;
