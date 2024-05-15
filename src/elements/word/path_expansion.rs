@@ -7,8 +7,8 @@ use glob;
 use glob::{GlobError, MatchOptions};
 use std::path::PathBuf;
 
-pub fn eval(word: &Word) -> Vec<Word> {
-    let paths = expand(&word.text);
+pub fn eval(word: &mut Word) -> Vec<Word> {
+    let paths = expand(word.make_glob_string().as_str());
 
     if paths.len() > 0 {
         let mut tmp = word.clone();
