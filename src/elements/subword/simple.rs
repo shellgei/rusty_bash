@@ -39,34 +39,24 @@ impl Subword for SimpleSubword {
         || ! self.text.ends_with("'") {
             return self.text.clone();
         }
-        self.text.pop();
-        self.text.remove(0);
 
-        return self.text
+        let mut ans = self.text
             .replace("\\", "\\\\")
             .replace("*", "\\*")
             .replace("?", "\\?")
             .replace("[", "\\[")
             .replace("]", "\\]");
+
+        ans.pop();
+        ans.remove(0);
+        ans
     }
 
     fn unquote(&mut self) {
         match self.subword_type {
-            SubwordType::ConvertedQuoted => {
-                let mut ans = vec![];
-                let mut quoted = false;
-                for c in self.text.chars() {
-                    if quoted {
-                        quoted = false;
-                        ans.push(c);
-                    }else if c == '\\' {
-                        quoted = true;
-                    }else {
-                        ans.push(c);
-                    }
-                }
-
-                self.text = ans.iter().collect();
+            SubwordType::SingleQuoted => {
+                self.text.pop();
+                self.text.remove(0);
             },
             SubwordType::Escaped => {
                 self.text.remove(0);
