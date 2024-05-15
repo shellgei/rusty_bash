@@ -40,7 +40,7 @@ impl Subword for DoubleQuoted {
             .replace("[", "\\[")
             .replace("]", "\\]");
 
-        self.subword_type = SubwordType::Other;
+        self.subword_type = SubwordType::ConvertedQuoted;
     }
 
     fn unquote(&mut self) {

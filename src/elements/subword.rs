@@ -24,6 +24,7 @@ pub enum SubwordType {
     /* other subwords */
     SingleQuoted,
     DoubleQuoted,
+    ConvertedQuoted,
     Symbol,
     Escaped,
     Other,

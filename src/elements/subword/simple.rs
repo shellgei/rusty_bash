@@ -49,14 +49,26 @@ impl Subword for SimpleSubword {
             .replace("[", "\\[")
             .replace("]", "\\]");
 
-        self.subword_type = SubwordType::Other;
+        self.subword_type = SubwordType::ConvertedQuoted;
     }
 
     fn unquote(&mut self) {
         match self.subword_type {
-            SubwordType::SingleQuoted => {
-                self.text.remove(0);
-                self.text.pop();
+            SubwordType::ConvertedQuoted => {
+                let mut ans = vec![];
+                let mut quoted = false;
+                for c in self.text.chars() {
+                    if quoted {
+                        quoted = false;
+                        ans.push(c);
+                    }else if c == '\\' {
+                        quoted = true;
+                    }else {
+                        ans.push(c);
+                    }
+                }
+
+                self.text = ans.iter().collect();
             },
             SubwordType::Escaped => {
                 self.text.remove(0);
