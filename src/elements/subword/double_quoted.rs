@@ -48,11 +48,6 @@ impl Subword for DoubleQuoted {
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
     }
 
-    fn unquote2(&mut self) {
-        self.subwords.iter_mut().for_each(|sw| sw.unquote2());
-        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
-    }
-
     fn get_type(&self) -> SubwordType { self.subword_type.clone() }
 }
 
