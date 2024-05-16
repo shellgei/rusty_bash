@@ -63,14 +63,13 @@ impl Word {
         Some(ans)
     }
 
-    pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval_for_case_pattern(&mut self, core: &mut ShellCore) -> Option<String> {
         let mut ws = vec![self.clone()];
         ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
         if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
             return None;
         }
-        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
-        Some(ans)
+        Some(self.make_glob_string().clone())
     }
 
     pub fn unquote(&mut self) {
@@ -79,11 +78,10 @@ impl Word {
     }
 
     fn make_glob_string(&mut self) -> String {
-        let mut ans = String::new();
-        for s in &mut self.subwords {
-            ans += &s.make_glob_string();
-        }
-        ans
+        self.subwords.iter_mut()
+            .map(|s| s.make_glob_string())
+            .collect::<Vec<String>>()
+            .concat()
     }
 
     fn connect_subwords(&mut self) {
