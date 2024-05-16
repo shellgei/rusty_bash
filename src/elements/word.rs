@@ -74,7 +74,9 @@ impl Word {
 
     pub fn unquote(&mut self) {
         self.subwords.iter_mut().for_each(|w| w.unquote());
-        self.connect_subwords();
+        self.text = self.subwords.iter()
+                    .map(|s| s.get_text())
+                    .collect::<String>();
     }
 
     fn make_glob_string(&mut self) -> String {
@@ -82,12 +84,6 @@ impl Word {
             .map(|s| s.make_glob_string())
             .collect::<Vec<String>>()
             .concat()
-    }
-
-    fn connect_subwords(&mut self) {
-        self.text = self.subwords.iter()
-                    .map(|s| s.get_text())
-                    .collect::<String>();
     }
 
     fn scan_pos(&self, s: &str) -> Vec<usize> {
