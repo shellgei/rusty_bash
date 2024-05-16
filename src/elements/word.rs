@@ -29,8 +29,9 @@ impl Word {
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
-        ws.iter_mut().for_each(|w| w.unquote());
-        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+        //ws.iter_mut().for_each(|w| w.unquote());
+        //let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+        let ans = ws.iter_mut().map(|w| w.make_unquoted_word()).filter(|arg| arg.len() > 0).collect();
 
         Some(ans)
     }
@@ -46,8 +47,9 @@ impl Word {
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
-        ws.iter_mut().for_each(|w| w.unquote());
-        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+        //ws.iter_mut().for_each(|w| w.unquote());
+        //let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+        let ans = ws.iter_mut().map(|w| w.make_unquoted_word()).filter(|arg| arg.len() > 0).collect();
 
         Some(ans)
     }
@@ -58,8 +60,9 @@ impl Word {
         if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
             return None;
         }
-        ws.iter_mut().for_each(|w| w.unquote());
-        let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+        //ws.iter_mut().for_each(|w| w.unquote());
+        //let ans = ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect();
+        let ans = ws.iter_mut().map(|w| w.make_unquoted_word()).filter(|arg| arg.len() > 0).collect();
         Some(ans)
     }
 
@@ -72,11 +75,14 @@ impl Word {
         Some(self.make_glob_string().clone())
     }
 
-    pub fn unquote(&mut self) {
+    pub fn make_unquoted_word(&mut self) -> String {
         self.subwords.iter_mut().for_each(|w| w.unquote());
+        /*
         self.text = self.subwords.iter()
                     .map(|s| s.get_text())
                     .collect::<String>();
+        */
+        self.subwords.iter().map(|s| s.get_text()).collect::<String>()
     }
 
     fn make_glob_string(&mut self) -> String {
