@@ -22,12 +22,12 @@ impl Word {
         let mut ws = vec![];
         for w in brace_expansion::eval(&mut self.clone()) {
             match w.tilde_and_dollar_expansion(core) {
-                Some(w) => ws.append( &mut split::eval(&w, core) ),
+                Some(w) => ws.append( &mut w.split_and_path_expansion(core) ),
                 None    => return None,
             };
         }
 
-        ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
+        //ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
         Some( Self::make_args(&mut ws) )
     }
@@ -65,6 +65,14 @@ impl Word {
             true  => Some(w),
             false => None,
         }
+    }
+
+    pub fn split_and_path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
+        let mut ans = vec![];
+        for mut w in split::eval(self, core) {
+            ans.append(&mut path_expansion::eval(&mut w) );
+        }
+        ans
     }
 
     pub fn make_args(words: &mut Vec<Word>) -> Vec<String> {
