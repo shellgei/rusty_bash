@@ -35,22 +35,21 @@ impl Subword for SimpleSubword {
     }
 
     fn make_glob_string(&mut self) -> String {
-        if ! self.text.starts_with("'") 
-        || ! self.text.ends_with("'") {
-            return self.text.clone();
+        match self.subword_type {
+            SubwordType::SingleQuoted => {
+                let ans = self.text
+                    .replace("\\", "\\\\")
+                    .replace("*", "\\*")
+                    .replace("?", "\\?")
+                    .replace("[", "\\[")
+                    .replace("]", "\\]");
+                let len = ans.len();
+                ans[1..len-1].to_string()
+            },
+            _ => self.text.clone(),
         }
-
-        let mut ans = self.text
-            .replace("\\", "\\\\")
-            .replace("*", "\\*")
-            .replace("?", "\\?")
-            .replace("[", "\\[")
-            .replace("]", "\\]");
-
-        ans.pop();
-        ans.remove(0);
-        ans
     }
+
 
     fn make_unquoted_string(&mut self) -> String {
         match self.subword_type {
