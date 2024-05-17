@@ -36,9 +36,11 @@ impl Subword for DoubleQuoted {
             .replace("]", "\\]");
     }
 
-    fn make_unquoted_string(&mut self) -> &str {
-        self.text = self.subwords.iter_mut().map(|s| s.make_unquoted_string().to_string()).collect::<Vec<String>>().concat();
-        &self.text
+    fn make_unquoted_string(&mut self) -> String {
+        self.subwords.iter_mut()
+            .map(|s| s.make_unquoted_string().to_string())
+            .collect::<Vec<String>>()
+            .concat()
     }
 
     fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted }
