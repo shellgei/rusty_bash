@@ -27,19 +27,14 @@ impl Word {
             };
         }
 
-        //ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
-
         Some( Self::make_args(&mut ws) )
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
-        let mut w = match self.tilde_and_dollar_expansion(core) {
-            Some(w) => w,
+        let mut ws = match self.tilde_and_dollar_expansion(core) {
+            Some(w) => w.split_and_path_expansion(core),
             None    => return None,
         };
-
-        let mut ws = split::eval(&mut w, core);
-        ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
         Some( Self::make_args(&mut ws).join(" ") )
     }
