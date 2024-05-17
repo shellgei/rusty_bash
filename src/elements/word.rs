@@ -29,10 +29,7 @@ impl Word {
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
-        Some( ws.iter_mut()
-            .map(|w| w.make_unquoted_word())
-            .filter(|arg| arg.len() > 0)
-            .collect() )
+        Some( Self::make_args(&mut ws) )
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
@@ -46,10 +43,7 @@ impl Word {
         ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
-        Some( ws.iter_mut()
-            .map(|w| w.make_unquoted_word())
-            .filter(|arg| arg.len() > 0)
-            .collect() )
+        Some( Self::make_args(&mut ws).join(" ") )
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
@@ -59,10 +53,7 @@ impl Word {
             return None;
         }
 
-        Some( ws.iter_mut()
-            .map(|w| w.make_unquoted_word())
-            .filter(|arg| arg.len() > 0)
-            .collect() )
+        Some( Self::make_args(&mut ws).join(" ") )
     }
 
     pub fn eval_for_case_pattern(&mut self, core: &mut ShellCore) -> Option<String> {
@@ -72,6 +63,13 @@ impl Word {
             return None;
         }
         Some(self.make_glob_string().clone())
+    }
+
+    pub fn make_args(words: &mut Vec<Word>) -> Vec<String> {
+        words.iter_mut()
+              .map(|w| w.make_unquoted_word())
+              .filter(|arg| arg.len() > 0)
+              .collect()
     }
 
     pub fn make_unquoted_word(&mut self) -> String {
