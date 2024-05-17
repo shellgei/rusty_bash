@@ -24,14 +24,10 @@ impl Subword for DoubleQuoted {
         }
         self.subwords = word.subwords;
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
-        self.text = "\"".to_owned() + &self.text + "\"";
         true
     }
 
     fn make_glob_string(&mut self) -> String {
-        self.text.pop();
-        self.text.remove(0);
-
         return self.text
             .replace("\\", "\\\\")
             .replace("*", "\\*")
