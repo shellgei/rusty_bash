@@ -6,7 +6,7 @@ use crate::elements::subword::{Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct SimpleSubword {
-    pub text: String,
+    text: String,
     subword_type: SubwordType,
 }
 

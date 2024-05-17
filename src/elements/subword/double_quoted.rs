@@ -38,7 +38,7 @@ impl Subword for DoubleQuoted {
 
     fn make_unquoted_string(&mut self) -> String {
         self.subwords.iter_mut()
-            .map(|s| s.make_unquoted_string().to_string())
+            .map(|s| s.make_unquoted_string())
             .collect::<Vec<String>>()
             .concat()
     }
