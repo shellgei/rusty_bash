@@ -28,6 +28,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
+    pub in_source: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory
@@ -54,6 +55,7 @@ impl ShellCore {
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
+            in_source: false,
             tty_fd: None,
             job_table: vec![],
             tcwd: None,

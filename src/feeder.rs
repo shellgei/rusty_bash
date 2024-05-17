@@ -136,7 +136,7 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = match core.has_flag('i') {
+        let line = match core.has_flag('i') && ! core.in_source {
             true  => terminal::read_line(core, "PS1"),
             false => Self::read_line_stdin(),
         };

@@ -8,4 +8,3 @@ alias ll='ls -l'
 
  _dummy () { COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) ; }
 complete -F _dummy hoge
-
