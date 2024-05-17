@@ -126,9 +126,9 @@ impl Terminal {
     fn show_list(&mut self, list: &Vec<String>) {
         eprintln!("\r");
 
-        let widths: Vec<usize> = list.iter()
-                                     .map(|p| UnicodeWidthStr::width(p.as_str()))
-                                     .collect();
+        let widths = list.iter()
+                     .map(|p| UnicodeWidthStr::width(p.as_str()))
+                     .collect::<Vec<usize>>();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
 
         let col_num = Terminal::size().0 / max_entry_width;
@@ -142,18 +142,23 @@ impl Terminal {
 
         for row in 0..row_num {
             for col in 0..col_num {
-                let i = col*row_num + row;
-                if i >= list.len() {
-                    continue;
-                }
-
-                let space_num = max_entry_width - widths[i];
-                let s = String::from_utf8(vec![b' '; space_num]).unwrap();
-                print!("{}{}", list[i], &s);
+                Self::print_an_entry(list, &widths, row, col, row_num, max_entry_width);
             }
             print!("\r\n");
         }
         self.rewrite(true);
+    }
+
+    fn print_an_entry(list: &Vec<String>, widths: &Vec<usize>,
+        row: usize, col: usize, row_num: usize, width: usize) {
+        let i = col*row_num + row;
+        if i >= list.len() {
+            return;
+        }
+
+        let space_num = width - widths[i];
+        let s = String::from_utf8(vec![b' '; space_num]).unwrap();
+        print!("{}{}", list[i], &s);
     }
 
     fn replace_input(&mut self, to: &String) {
