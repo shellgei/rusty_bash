@@ -6,6 +6,7 @@ use std::env;
 use std::collections::HashMap;
 
 pub struct Data {
+    pub flags: String,
     pub parameters: Vec<HashMap<String, String>>,
     pub arrays: Vec<HashMap<String, Vec<String>>>,
     pub position_parameters: Vec<Vec<String>>,
@@ -16,6 +17,7 @@ pub struct Data {
 impl Data {
     pub fn new() -> Data {
         Data {
+            flags: String::new(),
             parameters: vec![HashMap::new()],
             arrays: vec![HashMap::new()],
             position_parameters: vec![vec![]],
@@ -25,6 +27,10 @@ impl Data {
     }
 
     pub fn get_param(&mut self, key: &str) -> String {
+        if key == "-" {
+            return self.flags.clone();
+        }
+
         if let Some(n) = self.get_position_param_pos(key) {
             let layer = self.position_parameters.len();
             return self.position_parameters[layer-1][n].to_string();

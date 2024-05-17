@@ -77,7 +77,7 @@ impl Feeder {
             return Err(InputError::Interrupt);
         }
 
-        let line = match core.has_flag('i') {
+        let line = match core.has_flag('i') && ! core.in_source {
             true  => terminal::read_line(core, "PS2"),
             false => Self::read_line_stdin(),
         };

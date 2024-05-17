@@ -21,7 +21,6 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
 pub struct ShellCore {
-    pub flags: String,
     pub data: Data,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
@@ -29,6 +28,7 @@ pub struct ShellCore {
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
     pub in_source: bool,
+    pub return_flag: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory
@@ -48,7 +48,6 @@ fn restore_signal(sig: Signal) {
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
-            flags: String::new(),
             data: Data::new(),
             rewritten_history: HashMap::new(),
             history: vec![],
@@ -56,6 +55,7 @@ impl ShellCore {
             sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
             in_source: false,
+            return_flag: false,
             tty_fd: None,
             job_table: vec![],
             tcwd: None,
@@ -67,7 +67,7 @@ impl ShellCore {
         core.set_builtins();
 
         if unistd::isatty(0) == Ok(true) {
-            core.flags += "i";
+            core.data.flags += "i";
             core.data.set_param("PS1", "🍣 ");
             core.data.set_param("PS2", "> ");
             let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
@@ -91,7 +91,7 @@ impl ShellCore {
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        self.flags.find(flag) != None 
+        self.data.flags.find(flag) != None 
     }
 
     pub fn wait_process(&mut self, child: Pid) {

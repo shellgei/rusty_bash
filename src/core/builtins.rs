@@ -25,6 +25,7 @@ impl ShellCore {
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("local".to_string(), local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
+        self.builtins.insert("return".to_string(), return_);
         self.builtins.insert("set".to_string(), set);
         self.builtins.insert("source".to_string(), source);
         self.builtins.insert(".".to_string(), source);
@@ -134,7 +135,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.in_source = true;
 
     let mut feeder = Feeder::new();
-    loop {
+    while ! core.return_flag {
         match feeder.feed_line(core) {
             Ok(()) => {}, 
             _ => break,
@@ -148,10 +149,16 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     io::replace(backup, 0);
     core.in_source = false;
+    core.return_flag = false;
     core.data.get_param("?").parse::<i32>()
         .expect("SUSH INTERNAL ERROR: BAD EXIT STATUS")
 }
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    0
+}
+
+pub fn return_(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    core.return_flag = true;
     0
 }

@@ -37,6 +37,10 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        if core.in_source && core.return_flag {
+            return None;
+        }
+
         self.args.clear();
         let mut words = self.words.to_vec();
 
