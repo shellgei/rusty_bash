@@ -52,16 +52,16 @@ impl Subword for SimpleSubword {
         ans
     }
 
-    fn unquote(&mut self) {
+    fn unquote(&mut self) -> &str {
         match self.subword_type {
             SubwordType::SingleQuoted => {
-                self.text.pop();
-                self.text.remove(0);
+                let len = self.text.len();
+                &self.text[1..len-1]
             },
             SubwordType::Escaped => {
-                self.text.remove(0);
+                &self.text[1..]
             },
-            _ => {},
+            _ => &self.text,
         }
     }
 
