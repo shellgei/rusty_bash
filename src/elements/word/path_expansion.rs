@@ -8,7 +8,7 @@ use glob::{GlobError, MatchOptions};
 use std::path::PathBuf;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
-    let paths = expand(word.make_glob_string().as_str());
+    let paths = expand(word.make_glob_string());
 
     if paths.len() > 0 {
         let mut tmp = word.clone();
@@ -20,7 +20,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     }
 }
 
-fn expand(path: &str) -> Vec<String> {
+fn expand(path: String) -> Vec<String> {
     let opts = MatchOptions {
         case_sensitive: true,
         require_literal_separator: true,
@@ -33,7 +33,7 @@ fn expand(path: &str) -> Vec<String> {
         _ => return vec![],
     };
 
-    absorb_dialect(path, &mut ans);
+    absorb_dialect(&path, &mut ans);
     ans.sort();
     ans
 }

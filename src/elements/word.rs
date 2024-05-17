@@ -46,7 +46,7 @@ impl Word {
         }
     }
 
-    pub fn eval_for_case_pattern(&mut self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Option<String> {
         match self.tilde_and_dollar_expansion(core) {
             Some(mut w) => Some(w.make_glob_string()),
             None    => return None,
