@@ -19,14 +19,14 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
-        let mut ws = brace_expansion::eval(&mut self.clone());
-        
-        ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
-        if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
-            return None;
+        let mut ws = vec![];
+        for w in brace_expansion::eval(&mut self.clone()) {
+            match w.tilde_and_dollar_expansion(core) {
+                Some(w) => ws.append( &mut split::eval(&w, core) ),
+                None    => return None,
+            };
         }
 
-        ws = itertools::concat(ws.iter_mut().map(|w| split::eval(w, core)) );
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
 
         Some( Self::make_args(&mut ws) )
