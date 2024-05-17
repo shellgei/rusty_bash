@@ -50,7 +50,6 @@ impl Subword for SimpleSubword {
         }
     }
 
-
     fn make_unquoted_string(&mut self) -> String {
         match self.subword_type {
             SubwordType::SingleQuoted => {
