@@ -45,21 +45,17 @@ impl Word {
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
-        let mut w = match self.tilde_and_dollar_expansion(core) {
-            Some(w) => w,
+        match self.tilde_and_dollar_expansion(core) {
+            Some(mut w) => Some(w.make_unquoted_word()),
             None    => return None,
-        };
-
-        Some( w.make_unquoted_word() )
+        }
     }
 
     pub fn eval_for_case_pattern(&mut self, core: &mut ShellCore) -> Option<String> {
-        let mut w = match self.tilde_and_dollar_expansion(core) {
-            Some(w) => w,
+        match self.tilde_and_dollar_expansion(core) {
+            Some(mut w) => Some(w.make_glob_string()),
             None    => return None,
-        };
-
-        Some( w.make_glob_string() )
+        }
     }
 
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Option<Word> {
