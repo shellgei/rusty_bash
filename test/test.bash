@@ -1005,4 +1005,10 @@ res=$($com <<< 'case yes in y[abcde\]s) echo NG ;; *) echo OK ;; esac')
 res=$($com <<< 'case yes in y[^abcde]s) echo NG ;; *) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case yes in y[^abcde]s) echo NG ;; *) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case yes in y[\^abcde]s) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 echo OK $0
