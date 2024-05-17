@@ -47,13 +47,13 @@ impl Word {
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
-        let mut ws = vec![self.clone()];
-        ws.iter_mut().for_each(|w| tilde_expansion::eval(w, core));
-        if ! ws.iter_mut().all(|w| substitution::eval(w, core)) {
+        let mut w = self.clone();
+        tilde_expansion::eval(&mut w, core);
+        if ! substitution::eval(&mut w, core) {
             return None;
         }
 
-        Some( Self::make_args(&mut ws).join(" ") )
+        Some( w.make_unquoted_word() )
     }
 
     pub fn eval_for_case_pattern(&mut self, core: &mut ShellCore) -> Option<String> {
