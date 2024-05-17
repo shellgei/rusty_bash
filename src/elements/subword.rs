@@ -89,7 +89,7 @@ pub trait Subword {
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
-    fn unquote(&mut self) -> &str { self.get_text() }
+    fn make_unquoted_string(&mut self) -> &str { self.get_text() }
     fn get_type(&self) -> SubwordType;
     fn clear(&mut self) {}
 }

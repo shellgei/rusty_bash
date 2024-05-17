@@ -36,10 +36,8 @@ impl Subword for DoubleQuoted {
             .replace("]", "\\]");
     }
 
-    fn unquote(&mut self) -> &str {
-        //self.subwords.iter_mut().for_each(|sw| sw.unquote());
-        //self.text = self.subwords.iter().map(|s| s.get_text()).collect();
-        self.text = self.subwords.iter_mut().map(|s| s.unquote().to_string()).collect::<Vec<String>>().concat();
+    fn make_unquoted_string(&mut self) -> &str {
+        self.text = self.subwords.iter_mut().map(|s| s.make_unquoted_string().to_string()).collect::<Vec<String>>().concat();
         &self.text
     }
 

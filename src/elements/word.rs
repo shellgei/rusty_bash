@@ -78,7 +78,7 @@ impl Word {
     }
 
     pub fn make_unquoted_word(&mut self) -> String {
-        self.subwords.iter_mut().map(|s| s.unquote()).collect::<String>()
+        self.subwords.iter_mut().map(|s| s.make_unquoted_string()).collect::<String>()
     }
 
     fn make_glob_string(&mut self) -> String {
