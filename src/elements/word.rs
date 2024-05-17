@@ -33,12 +33,10 @@ impl Word {
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
-        let mut w = self.clone();
-        tilde_expansion::eval(&mut w, core);
-
-        if ! substitution::eval(&mut w, core) {
-            return None;
-        }
+        let mut w = match self.tilde_and_dollar_expansion(core) {
+            Some(w) => w,
+            None    => return None,
+        };
 
         let mut ws = split::eval(&mut w, core);
         ws = itertools::concat(ws.iter_mut().map(|w| path_expansion::eval(w)) );
@@ -47,25 +45,30 @@ impl Word {
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
-        let mut w = self.clone();
-        tilde_expansion::eval(&mut w, core);
-
-        if ! substitution::eval(&mut w, core) {
-            return None;
-        }
+        let mut w = match self.tilde_and_dollar_expansion(core) {
+            Some(w) => w,
+            None    => return None,
+        };
 
         Some( w.make_unquoted_word() )
     }
 
     pub fn eval_for_case_pattern(&mut self, core: &mut ShellCore) -> Option<String> {
+        let mut w = match self.tilde_and_dollar_expansion(core) {
+            Some(w) => w,
+            None    => return None,
+        };
+
+        Some( w.make_glob_string() )
+    }
+
+    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Option<Word> {
         let mut w = self.clone();
         tilde_expansion::eval(&mut w, core);
-
-        if ! substitution::eval(&mut w, core) {
-            return None;
+        match substitution::eval(&mut w, core) {
+            true  => Some(w),
+            false => None,
         }
-
-        Some(w.make_glob_string().clone())
     }
 
     pub fn make_args(words: &mut Vec<Word>) -> Vec<String> {
