@@ -5,6 +5,7 @@ use crate::elements::subword::SubwordType;
 use crate::elements::word::Word;
 use glob;
 use glob::{GlobError, MatchOptions};
+use regex::Regex;
 use std::path::PathBuf;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
@@ -27,7 +28,10 @@ fn expand(path: String) -> Vec<String> {
         require_literal_leading_dot: true,
     };
 
-    let mut ans = match glob::glob_with(&path, opts) {
+    let re = Regex::new(r"\*+").unwrap(); //prohibit globstar
+    let fix_path = re.replace_all(&path, "*");
+
+    let mut ans = match glob::glob_with(&fix_path, opts) {
         Ok(ps) => ps.map(|p| to_str(&p))
                     .filter(|s| s != "").collect(), 
         _ => return vec![],

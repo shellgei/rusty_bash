@@ -12,6 +12,7 @@ use std::path::PathBuf;
 use std::path::Path;
 use glob;
 use glob::{GlobError, MatchOptions};
+use regex::Regex;
 
 fn expand(path: &str) -> Vec<String> {
     let opts = MatchOptions {
@@ -20,7 +21,10 @@ fn expand(path: &str) -> Vec<String> {
         require_literal_leading_dot: false,
     };
 
-    match glob::glob_with(&path, opts) {
+    let re = Regex::new(r"\*+").unwrap(); //prohibit globstar
+    let fix_path = re.replace_all(path, "*");
+
+    match glob::glob_with(&fix_path, opts) {
         Ok(ps) => {
             let mut paths: Vec<String> = ps.map(|p| to_str(&p)).filter(|s| s != "").collect();
             if path.starts_with("./") {
