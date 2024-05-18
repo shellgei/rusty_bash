@@ -7,7 +7,7 @@ use std::io::Error;
 use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
-//use nix::unistd;
+use nix::unistd;
 
 #[derive(Debug, Clone)]
 pub struct Redirect {
@@ -85,7 +85,6 @@ impl Redirect {
     }
 
     fn redirect_output_fd(&mut self, _: bool) -> bool {
-        /*
         let fd = match self.right.text.parse::<RawFd>() {
             Ok(n) => n,
             _     => return false,
@@ -94,7 +93,6 @@ impl Redirect {
         self.set_left_fd(1);
         unistd::dup2(fd, self.left_fd);
         //io::replace(fd, self.left_fd)
-        */
         true
     }
 

@@ -365,8 +365,8 @@ a
 
 # &> for non-fork redirects
 
-#res=$($com <<< 'ls aaaaaaaaaaaaaa 2>&1 | wc -l')
-#[ "$res" == "1" ] || err $LINENO
+res=$($com <<< 'ls aaaaaaaaaaaaaa 2>&1 | wc -l')
+[ "$res" == "1" ] || err $LINENO
 
 # with expansion
 
