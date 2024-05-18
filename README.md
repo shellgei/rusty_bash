@@ -50,7 +50,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| if | :no_good: | while | :heavy_check_mark: | () | :heavy_check_mark: | 
+| if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: | 
 | {} | :heavy_check_mark: | case | :no_good: | until | :no_good: | select | :no_good: | 
 | for | :no_good: |
 
