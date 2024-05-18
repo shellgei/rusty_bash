@@ -37,7 +37,14 @@ impl Clone for Box::<dyn Command> {
 }
 
 pub trait Command {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid>;
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        if self.force_fork() || pipe.is_connected() {
+            self.fork_exec(core, pipe)
+        }else{
+            self.nofork_exec(core);
+            None
+        }
+    }
 
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         match unsafe{unistd::fork()} {
@@ -70,6 +77,7 @@ pub trait Command {
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
+    fn force_fork(&self) -> bool;
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,

@@ -2,9 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
-use super::{Command, Pipe, Redirect};
+use super::{Command, Redirect};
 use crate::elements::command;
-use nix::unistd::Pid;
 
 #[derive(Debug, Clone)]
 pub struct BraceCommand {
@@ -15,15 +14,6 @@ pub struct BraceCommand {
 }
 
 impl Command for BraceCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        if self.force_fork || pipe.is_connected() {
-            self.fork_exec(core, pipe)
-        }else{
-            self.nofork_exec(core);
-            None
-        }
-    }
-
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         match self.script {
             Some(ref mut s) => s.exec(core),
@@ -35,6 +25,7 @@ impl Command for BraceCommand {
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
+    fn force_fork(&self) -> bool { self.force_fork }
 }
 
 impl BraceCommand {

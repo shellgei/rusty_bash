@@ -6,8 +6,7 @@ mod tools;
 use crate::{ShellCore, Feeder, Script};
 use crate::elements::command;
 use crate::elements::word::Word;
-use nix::unistd::Pid;
-use super::{Command, Pipe, Redirect};
+use super::{Command, Redirect};
 
 #[derive(Debug, Clone)]
 pub struct CaseCommand {
@@ -19,15 +18,6 @@ pub struct CaseCommand {
 }
 
 impl Command for CaseCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        if self.force_fork || pipe.is_connected() {
-            self.fork_exec(core, pipe)
-        }else{
-            self.nofork_exec(core);
-            None
-        }
-    }
-
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         let mut next = false;
         let word = self.word.clone().expect("SUSH INTERNAL ERROR: no case condition");
@@ -60,6 +50,7 @@ impl Command for CaseCommand {
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
+    fn force_fork(&self) -> bool { self.force_fork }
 }
 
 impl CaseCommand {
