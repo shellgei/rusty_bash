@@ -58,6 +58,7 @@ impl Command for SimpleCommand {
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
+    fn force_fork(&self) -> bool { self.force_fork }
 }
 
 impl SimpleCommand {
