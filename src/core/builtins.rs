@@ -164,7 +164,7 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn return_(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
-    if ! core.in_source {
+    if ! core.in_source && ! core.in_function {
         eprintln!("sush: return: can only `return' from a function or sourced script");
         return 2;
     }
