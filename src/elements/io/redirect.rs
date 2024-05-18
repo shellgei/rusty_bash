@@ -36,6 +36,7 @@ impl Redirect {
         match self.symbol.as_str() {
             "<" => self.redirect_simple_input(restore),
             ">" => self.redirect_simple_output(restore),
+            ">&" => self.redirect_output_fd(restore),
             ">>" => self.redirect_append(restore),
             "&>" => self.redirect_both_output(restore),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
@@ -80,6 +81,16 @@ impl Redirect {
     fn redirect_simple_output(&mut self, restore: bool) -> bool {
         self.set_left_fd(1);
         self.connect_to_file(File::create(&self.right.text), restore)
+    }
+
+    fn redirect_output_fd(&mut self, _: bool) -> bool {
+        let fd = match self.right.text.parse::<RawFd>() {
+            Ok(n) => n,
+            _     => return false,
+        };
+
+        self.set_left_fd(1);
+        io::share(fd, self.left_fd)
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {
