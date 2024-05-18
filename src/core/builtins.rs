@@ -135,14 +135,19 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.in_source = true;
 
     let mut feeder = Feeder::new();
-    while ! core.return_flag {
+//    while ! core.return_flag {
+    loop {
         match feeder.feed_line(core) {
             Ok(()) => {}, 
             _ => break,
         }
 
         match Script::parse(&mut feeder, core, false){
-            Some(mut s) => s.exec(core),
+            Some(mut s) => {
+                if ! core.return_flag {
+                    s.exec(core);
+                }
+            },
             None => {},
         }
     }
