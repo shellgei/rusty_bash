@@ -18,13 +18,26 @@ A clone of Bash, which is developed as a hobby of our group and for monthly arti
 ## Quick Start
 
 ```bash
-ueda@uedaP1g6:~$ git clone https://github.com/shellgei/rusty_bash.git
-ueda@uedaP1g6:~$ cd rusty_bash
-ueda@uedaP1g6:~$ cargo run
+$ git clone https://github.com/shellgei/rusty_bash.git
+$ cd rusty_bash
+$ cargo run
    Compiling sush v2025.6.9 (/home/ueda/GIT/rusty_bash)
     Finished dev [unoptimized + debuginfo] target(s) in 2.33s
      Running `target/debug/sush`
 ueda@uedaP1g6:~🍣 main🌵
+```
+
+## Install 
+
+```bash
+$ git clone https://github.com/shellgei/rusty_bash.git
+$ cd rusty_bash
+$ cargo build --release
+### ↓  Change /bin/ to /usr/local/bin/ or another path in $PATH if you are using Mac or BSD ###
+$ sudo cp target/release/sush /bin/
+$ cp .sushrc_for_linux ~/.sushrc
+$ sush
+ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
 
 ## For Contributors 
