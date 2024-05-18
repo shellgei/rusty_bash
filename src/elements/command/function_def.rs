@@ -71,6 +71,7 @@ impl FunctionDefinition {
                         .expect("SUSH INTERNAL ERROR: empty function")
                         .exec(core, p);
         core.in_function = false;
+        core.return_flag = false;
 
         core.data.position_parameters.pop();
         core.data.parameters.pop();

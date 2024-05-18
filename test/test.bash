@@ -247,6 +247,15 @@ res=$($com <<< 'function f () { local A=BBB ; echo $A ; } ; echo $A')
 res=$($com <<< 'function f () { local A=( a b c ) ; echo ${A[1]}; } ; f')
 [ "$res" = b ] || err $LINENO
 
+res=$($com <<< 'function f () { return; echo NG; } ; f')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'function f () { echo ok && return; } ; f')
+[ "$res" = "ok" ] || err $LINENO
+
+res=$($com <<< 'f () { g () { return; echo NG; } ; g ; echo OK; } ; f')
+[ "$res" = "OK" ] || err $LINENO
+
 ### NEW LINE ###
 
 res=$($com <<< 'e\
