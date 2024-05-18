@@ -1,0 +1,245 @@
+execve("/usr/bin/bash", ["bash", "-c", "echo 10000 2>&1 | rev"], 0x7ffcbf5b1150 /* 56 vars */) = 0
+brk(NULL)                               = 0x55b3d3aa0000
+arch_prctl(0x3001 /* ARCH_??? */, 0x7ffcc18b4410) = -1 EINVAL (無効な引数です)
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7593b6fa6000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/glibc-hwcaps/x86-64-v3/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/glibc-hwcaps/x86-64-v3", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/glibc-hwcaps/x86-64-v2/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/glibc-hwcaps/x86-64-v2", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/tls/haswell/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/tls/haswell/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/tls/haswell/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/tls/haswell", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/tls/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/tls/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/tls/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/tls", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/haswell/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/haswell/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/haswell/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/haswell", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/glibc-hwcaps/x86-64-v3/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/glibc-hwcaps/x86-64-v3", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/glibc-hwcaps/x86-64-v2/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/glibc-hwcaps/x86-64-v2", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/tls/haswell/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/tls/haswell/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/tls/haswell/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/tls/haswell", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/tls/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/tls/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/tls/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/tls", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/haswell/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/haswell/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/haswell/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/haswell", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/glibc-hwcaps/x86-64-v3/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/glibc-hwcaps/x86-64-v3", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/glibc-hwcaps/x86-64-v2/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/glibc-hwcaps/x86-64-v2", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/tls/haswell/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/tls/haswell/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/tls/haswell/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/tls/haswell", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/tls/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/tls/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/tls/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/tls", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/haswell/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/haswell/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/haswell/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/haswell", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+openat(AT_FDCWD, "/opt/ros/humble/lib/glibc-hwcaps/x86-64-v3/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/glibc-hwcaps/x86-64-v3", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/glibc-hwcaps/x86-64-v2/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/glibc-hwcaps/x86-64-v2", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/tls/haswell/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/tls/haswell/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/tls/haswell/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/tls/haswell", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/tls/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/tls/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/tls/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/tls", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/haswell/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/haswell/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/haswell/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/haswell", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib/x86_64", 0x7ffcc18b3630, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/opt/ros/humble/lib", {st_mode=S_IFDIR|0755, st_size=57344, ...}, 0) = 0
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=163183, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 163183, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7593b6f7e000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=200136, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 203040, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7593b6f4c000
+mmap(0x7593b6f5a000, 69632, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xe000) = 0x7593b6f5a000
+mmap(0x7593b6f6b000, 57344, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1f000) = 0x7593b6f6b000
+mmap(0x7593b6f79000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2c000) = 0x7593b6f79000
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/opt/rviz_ogre_vendor/lib/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/opt/ros/humble/lib/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\237\2\0\0\0\0\0"..., 832) = 832
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+pread64(3, "\4\0\0\0 \0\0\0\5\0\0\0GNU\0\2\0\0\300\4\0\0\0\3\0\0\0\0\0\0\0"..., 48, 848) = 48
+pread64(3, "\4\0\0\0\24\0\0\0\3\0\0\0GNU\0\226 \25\252\235\23<l\274\3731\3540\5\226\327"..., 68, 896) = 68
+newfstatat(3, "", {st_mode=S_IFREG|0755, st_size=2220400, ...}, AT_EMPTY_PATH) = 0
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+mmap(NULL, 2264656, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7593b6c00000
+mprotect(0x7593b6c28000, 2023424, PROT_NONE) = 0
+mmap(0x7593b6c28000, 1658880, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x28000) = 0x7593b6c28000
+mmap(0x7593b6dbd000, 360448, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1bd000) = 0x7593b6dbd000
+mmap(0x7593b6e16000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x215000) = 0x7593b6e16000
+mmap(0x7593b6e1c000, 52816, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7593b6e1c000
+close(3)                                = 0
+mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7593b6f49000
+arch_prctl(ARCH_SET_FS, 0x7593b6f49740) = 0
+set_tid_address(0x7593b6f49a10)         = 37663
+set_robust_list(0x7593b6f49a20, 24)     = 0
+rseq(0x7593b6f4a0e0, 0x20, 0, 0x53053053) = 0
+mprotect(0x7593b6e16000, 16384, PROT_READ) = 0
+mprotect(0x7593b6f79000, 16384, PROT_READ) = 0
+mprotect(0x55b3d1da5000, 16384, PROT_READ) = 0
+mprotect(0x7593b6fe0000, 8192, PROT_READ) = 0
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+munmap(0x7593b6f7e000, 163183)          = 0
+openat(AT_FDCWD, "/dev/tty", O_RDWR|O_NONBLOCK) = 3
+close(3)                                = 0
+getrandom("\x03\xc5\x3f\x66\x53\xb5\xcd\x26", 8, GRND_NONBLOCK) = 8
+brk(NULL)                               = 0x55b3d3aa0000
+brk(0x55b3d3ac1000)                     = 0x55b3d3ac1000
+openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=6784496, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 6784496, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7593b6400000
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", O_RDONLY) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=27002, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 27002, PROT_READ, MAP_SHARED, 3, 0) = 0x7593b6f9f000
+close(3)                                = 0
+futex(0x7593b6e1ba6c, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+getuid()                                = 1000
+getgid()                                = 1000
+geteuid()                               = 1000
+getegid()                               = 1000
+rt_sigprocmask(SIG_BLOCK, NULL, [], 8)  = 0
+ioctl(-1, TIOCGPGRP, 0x7ffcc18b4304)    = -1 EBADF (不正なファイル記述子です)
+sysinfo({uptime=130065, loads=[90624, 95168, 78816], totalram=67044507648, freeram=53388742656, sharedram=1675583488, bufferram=846495744, totalswap=2147479552, freeswap=2147479552, procs=1475, totalhigh=0, freehigh=0, mem_unit=1}) = 0
+rt_sigaction(SIGCHLD, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGCHLD, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7593b6c42520}, 8) = 0
+rt_sigaction(SIGINT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGINT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, 8) = 0
+rt_sigaction(SIGQUIT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGQUIT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, 8) = 0
+rt_sigaction(SIGTSTP, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTSTP, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, 8) = 0
+rt_sigaction(SIGTTIN, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTTIN, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, 8) = 0
+rt_sigaction(SIGTTOU, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTTOU, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, 8) = 0
+rt_sigprocmask(SIG_BLOCK, NULL, [], 8)  = 0
+rt_sigaction(SIGQUIT, {sa_handler=SIG_IGN, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, 8) = 0
+uname({sysname="Linux", nodename="uedaP1g6", ...}) = 0
+newfstatat(AT_FDCWD, "/home/ueda/GIT/rusty_bash", {st_mode=S_IFDIR|0775, st_size=4096, ...}, 0) = 0
+newfstatat(AT_FDCWD, ".", {st_mode=S_IFDIR|0775, st_size=4096, ...}, 0) = 0
+newfstatat(AT_FDCWD, "/home", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+newfstatat(AT_FDCWD, "/home/ueda", {st_mode=S_IFDIR|0750, st_size=4096, ...}, 0) = 0
+newfstatat(AT_FDCWD, "/home/ueda/GIT", {st_mode=S_IFDIR|0775, st_size=4096, ...}, 0) = 0
+newfstatat(AT_FDCWD, "/home/ueda/GIT/rusty_bash", {st_mode=S_IFDIR|0775, st_size=4096, ...}, 0) = 0
+getpid()                                = 37663
+getppid()                               = 37660
+newfstatat(AT_FDCWD, ".", {st_mode=S_IFDIR|0775, st_size=4096, ...}, 0) = 0
+newfstatat(AT_FDCWD, "/opt/ros/humble/bin/bash", 0x7ffcc18b3f40, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/home/ueda/.local/bin/bash", 0x7ffcc18b3f40, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/local/sbin/bash", 0x7ffcc18b3f40, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/local/bin/bash", 0x7ffcc18b3f40, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/sbin/bash", 0x7ffcc18b3f40, 0) = -1 ENOENT (そのようなファイルやディレクトリはありません)
+newfstatat(AT_FDCWD, "/usr/bin/bash", {st_mode=S_IFREG|0755, st_size=1396520, ...}, 0) = 0
+newfstatat(AT_FDCWD, "/usr/bin/bash", {st_mode=S_IFREG|0755, st_size=1396520, ...}, 0) = 0
+geteuid()                               = 1000
+getegid()                               = 1000
+getuid()                                = 1000
+getgid()                                = 1000
+access("/usr/bin/bash", X_OK)           = 0
+newfstatat(AT_FDCWD, "/usr/bin/bash", {st_mode=S_IFREG|0755, st_size=1396520, ...}, 0) = 0
+geteuid()                               = 1000
+getegid()                               = 1000
+getuid()                                = 1000
+getgid()                                = 1000
+access("/usr/bin/bash", R_OK)           = 0
+newfstatat(AT_FDCWD, "/usr/bin/bash", {st_mode=S_IFREG|0755, st_size=1396520, ...}, 0) = 0
+newfstatat(AT_FDCWD, "/usr/bin/bash", {st_mode=S_IFREG|0755, st_size=1396520, ...}, 0) = 0
+geteuid()                               = 1000
+getegid()                               = 1000
+getuid()                                = 1000
+getgid()                                = 1000
+access("/usr/bin/bash", X_OK)           = 0
+newfstatat(AT_FDCWD, "/usr/bin/bash", {st_mode=S_IFREG|0755, st_size=1396520, ...}, 0) = 0
+geteuid()                               = 1000
+getegid()                               = 1000
+getuid()                                = 1000
+getgid()                                = 1000
+access("/usr/bin/bash", R_OK)           = 0
+getpid()                                = 37663
+getppid()                               = 37660
+getpid()                                = 37663
+getppid()                               = 37660
+getpgrp()                               = 37660
+ioctl(2, TIOCGPGRP, 0x7ffcc18b41a4)     = -1 ENOTTY (デバイスに対する不適切なioctlです)
+rt_sigaction(SIGCHLD, {sa_handler=0x55b3d1cbad70, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7593b6c42520}, 8) = 0
+ioctl(2, TIOCGPGRP, 0x7ffcc18b4174)     = -1 ENOTTY (デバイスに対する不適切なioctlです)
+prlimit64(0, RLIMIT_NPROC, NULL, {rlim_cur=255456, rlim_max=255456}) = 0
+rt_sigprocmask(SIG_BLOCK, NULL, [], 8)  = 0
+getpeername(0, 0x7ffcc18b4310, [16])    = -1 ENOTSOCK (ソケットでないものにソケット操作をしています)
+rt_sigprocmask(SIG_BLOCK, NULL, [], 8)  = 0
+rt_sigprocmask(SIG_BLOCK, [CHLD], [], 8) = 0
+pipe2([3, 4], 0)                        = 0
+rt_sigprocmask(SIG_BLOCK, NULL, [CHLD], 8) = 0
+rt_sigprocmask(SIG_BLOCK, [INT TERM CHLD], [CHLD], 8) = 0
+clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7593b6f49a10) = 37664
+rt_sigprocmask(SIG_SETMASK, [CHLD], NULL, 8) = 0
+close(4)                                = 0
+close(4)                                = -1 EBADF (不正なファイル記述子です)
+rt_sigprocmask(SIG_BLOCK, NULL, [CHLD], 8) = 0
+rt_sigprocmask(SIG_BLOCK, [INT TERM CHLD], [CHLD], 8) = 0
+clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7593b6f49a10) = 37665
+rt_sigprocmask(SIG_SETMASK, [CHLD], NULL, 8) = 0
+close(3)                                = 0
+rt_sigprocmask(SIG_BLOCK, [CHLD], [CHLD], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [CHLD], NULL, 8) = 0
+rt_sigprocmask(SIG_BLOCK, [CHLD], [CHLD], 8) = 0
+rt_sigaction(SIGINT, {sa_handler=0x55b3d1cbce40, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, 8) = 0
+wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 37664
+wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 37665
+rt_sigaction(SIGINT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, {sa_handler=0x55b3d1cbce40, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7593b6c42520}, 8) = 0
+ioctl(2, TIOCGWINSZ, 0x7ffcc18b3ba0)    = -1 ENOTTY (デバイスに対する不適切なioctlです)
+rt_sigprocmask(SIG_SETMASK, [CHLD], NULL, 8) = 0
+close(3)                                = -1 EBADF (不正なファイル記述子です)
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=37664, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+wait4(-1, 0x7ffcc18b3190, WNOHANG, NULL) = -1 ECHILD (子プロセスがありません)
+rt_sigreturn({mask=[]})                 = 0
+rt_sigprocmask(SIG_BLOCK, [CHLD], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+exit_group(0)                           = ?
++++ exited with 0 +++

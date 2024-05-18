@@ -363,6 +363,11 @@ a
 /etc
 /etc" ] || err $LINENO
 
+# &> for non-fork redirects
+
+#res=$($com <<< 'ls aaaaaaaaaaaaaa 2>&1 | wc -l')
+#[ "$res" == "1" ] || err $LINENO
+
 # with expansion
 
 res=$($com <<< 'echo a > {a,b}' 2>&1)
