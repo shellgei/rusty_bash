@@ -47,15 +47,15 @@ These dev-* branches will be merged to the main branch depending on the situatio
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| command | :heavy_check_mark: | substitutions | :heavy_check_mark: | function definition | :heavy_check_mark: | 
+| command | :heavy_check_mark: | substitutions | :heavy_check_mark: | function definition | :heavy_check_mark: |
 
 
 ### compound commands
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: | 
-| {} | :heavy_check_mark: | case | :no_good: | until | :no_good: | select | :no_good: | 
+| if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: |
+| {} | :heavy_check_mark: | case | :no_good: | until | :no_good: | select | :no_good: |
 | for | :no_good: |
 
 ### control operator
@@ -64,7 +64,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 |-------------------|----|-------------------|----|-------------------|----|
 | \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
 | ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :heavy_check_mark: |
-| \|& | :heavy_check_mark: | 
+| \|& | :heavy_check_mark: |
 
 ### expansion
 
@@ -80,7 +80,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :no_good: |
-| exit | :heavy_check_mark: | source | :no_good: | set | :no_good: | 
+| exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :no_good: |
 | shopt | :no_good: | : | :heavy_check_mark: | . | :no_good: | [ | :no_good: |
 | alias | :no_good: | bg | :no_good: | bind | :no_good: |
 | break | :no_good: | builtin | :no_good: | caller | :no_good: |
@@ -93,7 +93,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 | jobs | :no_good: | kill | :no_good: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
-| read | :no_good: | readonly | :no_good: | return | :no_good: |
+| read | :no_good: | readonly | :no_good: | return | :construction: |
 | shift | :no_good: | suspend | :no_good: | test | :no_good: |
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
