@@ -7,7 +7,6 @@ use std::io::Error;
 use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
-use nix::unistd;
 
 #[derive(Debug, Clone)]
 pub struct Redirect {
@@ -91,9 +90,7 @@ impl Redirect {
         };
 
         self.set_left_fd(1);
-        unistd::dup2(fd, self.left_fd);
-        //io::replace(fd, self.left_fd)
-        true
+        io::share(fd, self.left_fd)
     }
 
     fn redirect_append(&mut self, restore: bool) -> bool {

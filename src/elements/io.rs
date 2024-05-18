@@ -38,11 +38,22 @@ pub fn replace(from: RawFd, to: RawFd) -> bool {
     }
 }
 
-fn share(from: RawFd, to: RawFd) {
+fn share(from: RawFd, to: RawFd) -> bool {
     if from < 0 || to < 0 {
-        return;
+        return false;
     }
-    unistd::dup2(from, to).expect("Can't copy file descriptors");
+
+    match unistd::dup2(from, to) {
+        Ok(_) => true,
+        Err(Errno::EBADF) => {
+            eprintln!("sush: {}: Bad file descriptor", to);
+            false
+        },
+        Err(_) => {
+            eprintln!("sush: dup2 Unknown error");
+            false
+        },
+    }
 }
 
 pub fn backup(from: RawFd) -> RawFd {
