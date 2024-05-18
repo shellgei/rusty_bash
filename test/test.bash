@@ -365,8 +365,9 @@ a
 
 # >&
 
+b=$(ls aaaaaaaaaaaaaa 2>&1 | wc -l)
 res=$($com <<< 'ls aaaaaaaaaaaaaa 2>&1 | wc -l')
-[ "$res" == "1" ] || err $LINENO
+[ "$b" == "1" ] || err $LINENO
 
 res=$($com <<< 'pwd 200>&100')
 [ "$?" == "1" ] || err $LINENO
