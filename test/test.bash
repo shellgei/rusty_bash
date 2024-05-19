@@ -247,6 +247,16 @@ res=$($com <<< 'function f () { local A=BBB ; echo $A ; } ; echo $A')
 res=$($com <<< 'function f () { local A=( a b c ) ; echo ${A[1]}; } ; f')
 [ "$res" = b ] || err $LINENO
 
+res=$($com <<< 'function f () { return; echo NG; } ; f')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'function f () { echo ok && return 3; } ; f')
+[ "$?" = "3" ] || err $LINENO
+[ "$res" = "ok" ] || err $LINENO
+
+res=$($com <<< 'f () { g () { return; echo NG; } ; g ; echo OK; } ; f')
+[ "$res" = "OK" ] || err $LINENO
+
 ### NEW LINE ###
 
 res=$($com <<< 'e\
@@ -1026,7 +1036,33 @@ res=$($com <<< 'case yes in y[\^abcde]s) echo OK ;; *) echo NG ;; esac')
 res=$($com <<< 'case $- in *i*) echo NG ;; *) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+### BUILTIN COMMANDS ###
+
+# source command
+
 res=$($com <<< 'echo $PS1')
 [ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'case aaa in aaa) return && echo NG ;; esac')
+[ "$?" = "2" ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+# break command
+
+$com <<< 'while true ; do break ; done'
+#[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'while true ; do break ; echo NG ; done')
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'while true ; do while true ; do break ; done ; echo OK ;break ; done; echo OK')
+[ "$res" == "OK
+OK" ] || err $LINENO
+
+res=$($com <<< 'while true ; do while true ; do break 2 ; done ; echo NG ; done ; echo OK')
+[ "$res" == "OK" ] || err $LINENO
+
+res=$($com <<< 'while true ; do while true ; do break 10 ; done ; echo NG ; done ; echo OK')
+[ "$res" == "OK" ] || err $LINENO
 
 echo OK $0

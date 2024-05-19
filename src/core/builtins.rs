@@ -18,6 +18,7 @@ impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias);
+        self.builtins.insert("break".to_string(), break_);
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
@@ -132,7 +133,11 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let fd = file.into_raw_fd();
     let backup = io::backup(0);
     io::replace(fd, 0);
-    core.in_source = true;
+    //core.in_source = true;
+    let read_stdin_backup = core.read_stdin;
+    core.read_stdin = true;
+    //core.in_source = true;
+    core.source_function_level += 1;
 
     let mut feeder = Feeder::new();
     loop {
@@ -153,8 +158,10 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 
     io::replace(backup, 0);
-    core.in_source = false;
+    core.source_function_level -= 1;
+    //core.in_source = false;
     core.return_flag = false;
+    core.read_stdin = read_stdin_backup;
     core.data.get_param("?").parse::<i32>()
         .expect("SUSH INTERNAL ERROR: BAD EXIT STATUS")
 }
@@ -163,7 +170,50 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn return_(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if core.source_function_level <= 0 {
+        eprintln!("sush: return: can only `return' from a function or sourced script");
+        return 2;
+    }
     core.return_flag = true;
+
+    if args.len() < 2 {
+        return 0;
+    }
+
+    match args[1].parse::<i32>() {
+        Ok(n)  => n%256,
+        Err(_) => {
+            eprintln!("sush: return: {}: numeric argument required", args[1]);
+            2
+        },
+    }
+}
+
+pub fn break_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if core.loop_level <= 0 {
+        eprintln!("sush: break: only meaningful in a `for', `while', or `until' loop");
+        return 0;
+    }
+
+    core.break_counter += 1;
+    if args.len() < 2 {
+        return 0;
+    }
+
+    match args[1].parse::<i32>() {
+        Ok(n)  => {
+            if n > 0 {
+                core.break_counter += n - 1;
+            }else{
+                eprintln!("sush: break: {}: loop count out of range", args[1]);
+                return 1;
+            }
+        },
+        Err(_) => {
+            eprintln!("sush: break: {}: numeric argument required", args[1]);
+            return 128;
+        },
+    };
     0
 }

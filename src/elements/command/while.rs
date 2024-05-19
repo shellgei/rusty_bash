@@ -16,6 +16,7 @@ pub struct WhileCommand {
 
 impl Command for WhileCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
+        core.loop_level += 1;
         loop {
             self.while_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
@@ -28,6 +29,15 @@ impl Command for WhileCommand {
             self.do_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
                 .exec(core);
+
+            if core.break_counter > 0 {
+                core.break_counter -= 1;
+                break;
+            }
+        }
+        core.loop_level -= 1;
+        if core.loop_level == 0 {
+            core.break_counter = 0;
         }
     }
 
