@@ -26,6 +26,7 @@ pub struct ShellCore {
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
+    pub read_stdin: bool,
     pub is_subshell: bool,
     pub in_source: bool,
     pub in_function: bool,
@@ -54,6 +55,7 @@ impl ShellCore {
             history: vec![],
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
+            read_stdin: true,
             is_subshell: false,
             in_source: false,
             in_function: false,
@@ -70,6 +72,7 @@ impl ShellCore {
 
         if unistd::isatty(0) == Ok(true) {
             core.data.flags += "i";
+            core.read_stdin = false;
             core.data.set_param("PS1", "🍣 ");
             core.data.set_param("PS2", "> ");
             let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
