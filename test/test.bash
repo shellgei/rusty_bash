@@ -1054,4 +1054,14 @@ $com <<< 'while true ; do break ; done'
 res=$($com <<< 'while true ; do break ; echo NG ; done')
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'while true ; do while true ; do break ; done ; echo OK ;break ; done; echo OK')
+[ "$res" == "OK
+OK" ] || err $LINENO
+
+res=$($com <<< 'while true ; do while true ; do break 2 ; done ; echo NG ; done ; echo OK')
+[ "$res" == "OK" ] || err $LINENO
+
+res=$($com <<< 'while true ; do while true ; do break 10 ; done ; echo NG ; done ; echo OK')
+[ "$res" == "OK" ] || err $LINENO
+
 echo OK $0

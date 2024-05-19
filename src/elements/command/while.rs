@@ -36,6 +36,9 @@ impl Command for WhileCommand {
             }
         }
         core.loop_level -= 1;
+        if core.loop_level == 0 {
+            core.break_counter = 0;
+        }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
