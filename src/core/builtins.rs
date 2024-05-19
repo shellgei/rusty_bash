@@ -18,6 +18,7 @@ impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias);
+        self.builtins.insert("break".to_string(), break_);
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
@@ -187,4 +188,32 @@ pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             2
         },
     }
+}
+
+pub fn break_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if core.loop_level <= 0 {
+        eprintln!("sush: break: only meaningful in a `for', `while', or `until' loop");
+        return 0;
+    }
+
+    core.break_counter += 1;
+    if args.len() < 2 {
+        return 0;
+    }
+
+    match args[1].parse::<i32>() {
+        Ok(n)  => {
+            if n > 0 {
+                core.break_counter += n - 1;
+            }else{
+                eprintln!("sush: break: {}: loop count out of range", args[1]);
+                return 1;
+            }
+        },
+        Err(_) => {
+            eprintln!("sush: break: {}: numeric argument required", args[1]);
+            return 128;
+        },
+    };
+    0
 }

@@ -1035,6 +1035,8 @@ res=$($com <<< 'case yes in y[\^abcde]s) echo OK ;; *) echo NG ;; esac')
 res=$($com <<< 'case $- in *i*) echo NG ;; *) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+### BUILTIN COMMANDS ###
+
 # source command
 
 res=$($com <<< 'echo $PS1')
@@ -1043,5 +1045,13 @@ res=$($com <<< 'echo $PS1')
 res=$($com <<< 'case aaa in aaa) return && echo NG ;; esac')
 [ "$?" = "2" ] || err $LINENO
 [ "$res" = "" ] || err $LINENO
+
+# break command
+
+$com <<< 'while true ; do break ; done'
+#[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'while true ; do break ; echo NG ; done')
+[ "$res" == "" ] || err $LINENO
 
 echo OK $0
