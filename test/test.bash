@@ -250,7 +250,8 @@ res=$($com <<< 'function f () { local A=( a b c ) ; echo ${A[1]}; } ; f')
 res=$($com <<< 'function f () { return; echo NG; } ; f')
 [ "$res" = "" ] || err $LINENO
 
-res=$($com <<< 'function f () { echo ok && return; } ; f')
+res=$($com <<< 'function f () { echo ok && return 3; } ; f')
+[ "$?" = "3" ] || err $LINENO
 [ "$res" = "ok" ] || err $LINENO
 
 res=$($com <<< 'f () { g () { return; echo NG; } ; g ; echo OK; } ; f')

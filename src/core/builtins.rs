@@ -169,11 +169,22 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn return_(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if core.source_function_level <= 0 {
         eprintln!("sush: return: can only `return' from a function or sourced script");
         return 2;
     }
     core.return_flag = true;
-    0
+
+    if args.len() < 2 {
+        return 0;
+    }
+
+    match args[1].parse::<i32>() {
+        Ok(n)  => n%256,
+        Err(_) => {
+            eprintln!("sush: return: {}: numeric argument required", args[1]);
+            2
+        },
+    }
 }
