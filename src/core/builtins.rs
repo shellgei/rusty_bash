@@ -132,10 +132,11 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let fd = file.into_raw_fd();
     let backup = io::backup(0);
     io::replace(fd, 0);
-    core.in_source = true;
+    //core.in_source = true;
     let read_stdin_backup = core.read_stdin;
     core.read_stdin = true;
-    core.in_source = true;
+    //core.in_source = true;
+    core.source_function_level += 1;
 
     let mut feeder = Feeder::new();
     loop {
@@ -156,7 +157,8 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 
     io::replace(backup, 0);
-    core.in_source = false;
+    core.source_function_level -= 1;
+    //core.in_source = false;
     core.return_flag = false;
     core.read_stdin = read_stdin_backup;
     core.data.get_param("?").parse::<i32>()
@@ -168,7 +170,7 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn return_(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
-    if ! core.in_source && ! core.in_function {
+    if core.source_function_level <= 0 {
         eprintln!("sush: return: can only `return' from a function or sourced script");
         return 2;
     }

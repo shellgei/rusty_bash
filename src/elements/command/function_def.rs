@@ -66,12 +66,14 @@ impl FunctionDefinition {
             _       => &mut empty,
         };
 
-        core.in_function = true;
+        //core.in_function = true;
+        core.source_function_level += 1;
         let pid = self.command.clone()
                         .expect("SUSH INTERNAL ERROR: empty function")
                         .exec(core, p);
-        core.in_function = false;
+        //core.in_function = false;
         core.return_flag = false;
+        core.source_function_level -= 1;
 
         core.data.position_parameters.pop();
         core.data.parameters.pop();
