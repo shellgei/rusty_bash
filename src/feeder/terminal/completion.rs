@@ -47,7 +47,7 @@ impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         self.set_completion_info(core);
 
-        if ! Self::set_custom_completion(core)
+        if ! Self::set_custom_compreply(core)
         && ! self.set_default_compreply(core) {
             self.cloop();
             return;
@@ -59,7 +59,7 @@ impl Terminal {
         }
     }
 
-    fn set_custom_completion(core: &mut ShellCore) -> bool {
+    fn set_custom_compreply(core: &mut ShellCore) -> bool {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
         let word_num = core.data.arrays[0]["COMP_WORDS"].len() as i32;
@@ -69,10 +69,7 @@ impl Terminal {
         }
 
         let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
-        let cur_word = match cur_pos < word_num {
-            true => core.data.get_array("COMP_WORDS", &cur_pos.to_string()),
-            false => "".to_string(),
-        };
+        let cur_word = core.data.get_array("COMP_WORDS", &cur_pos.to_string());
 
         match core.completion_functions.get(&prev_word) {
             Some(value) => {
