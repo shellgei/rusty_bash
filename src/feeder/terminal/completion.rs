@@ -47,10 +47,8 @@ impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         self.set_completion_info(core);
 
-        let set = Self::set_custom_completion(core); 
-
-
-        if ! set && ! self.set_default_compreply(core) {
+        if ! Self::set_custom_completion(core)
+        && ! self.set_default_compreply(core) {
             self.cloop();
             return;
         }
