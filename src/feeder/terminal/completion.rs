@@ -1,8 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::core::builtins::completion;
+use crate::elements::command::simple::SimpleCommand;
+use crate::elements::command::Command;
+use crate::elements::io::pipe::Pipe;
 use crate::feeder::terminal::Terminal;
 use std::path::Path;
 use unicode_width::UnicodeWidthStr;
@@ -44,10 +47,24 @@ impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         self.set_completion_info(core);
 
+        let set = Self::set_custom_completion(core); 
+
+
+        if ! set && ! self.set_default_compreply(core) {
+            self.cloop();
+            return;
+        }
+
+        match double_tab {
+            true  => self.show_list(&core.data.arrays[0]["COMPREPLY"]),
+            false => self.try_completion(core),
+        }
+    }
+
+    fn set_custom_completion(core: &mut ShellCore) -> bool {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
 
-        let mut set = false;
         if prev_pos >= 0 && prev_pos < core.data.arrays[0]["COMP_WORDS"].len() as i32 {
             let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
 
@@ -59,23 +76,21 @@ impl Terminal {
 
             match core.completion_functions.get(&prev_word) {
                 Some(value) => {
-                    let mut f = core.data.functions[value].clone();
-                    f.run_as_command(&mut vec![value.to_string()], core/*, vec![("cur", &cur)]*/);
-                    set = true;
+                    let mut feeder = Feeder::new();
+                    let command = format!("cur={} {}", &cur, &value); 
+                    feeder.add_line(command);
+
+                    if let Some(mut a) = SimpleCommand::parse(&mut feeder, core) {
+                        let mut dummy = Pipe::new("".to_string());
+                        a.exec(core, &mut dummy);
+                    }
+                    return true;
                 },
                 _ => {},
             }
         }
 
-        if ! set && ! self.set_default_compreply(core) {
-            self.cloop();
-            return;
-        }
-
-        match double_tab {
-            true  => self.show_list(&core.data.arrays[0]["COMPREPLY"]),
-            false => self.try_completion(core),
-        }
+        return false;
     }
 
     fn get_cur_pos(core: &mut ShellCore) -> i32 {
