@@ -60,7 +60,7 @@ impl Terminal {
             match core.completion_functions.get(&prev_word) {
                 Some(value) => {
                     let mut f = core.data.functions[value].clone();
-                    f.run_as_command(&mut vec![value.to_string()], core, None/*, vec![("cur", &cur)]*/);
+                    f.run_as_command(&mut vec![value.to_string()], core/*, vec![("cur", &cur)]*/);
                     set = true;
                 },
                 _ => {},

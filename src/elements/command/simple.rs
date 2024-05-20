@@ -67,7 +67,7 @@ impl Command for SimpleCommand {
 
         if core.data.functions.contains_key(&self.args[0]) {
             let mut f = core.data.functions[&self.args[0]].clone();
-            f.run_as_command(&mut self.args, core, None);
+            f.run_as_command(&mut self.args, core);
         } else if core.builtins.contains_key(&self.args[0]) {
             let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
             core.run_builtin(&mut self.args, &mut special_args);
