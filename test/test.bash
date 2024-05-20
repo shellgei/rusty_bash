@@ -215,6 +215,12 @@ res=$($com <<< 'f () { echo a; } ; f')
 res=$($com <<< 'function f () { echo a; } ; f')
 [ "$res" = "a" ] || err $LINENO
 
+res=$($com <<< 'function f () { echo $A; } ; A=OK f')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'function f () { echo $A; } ; A=OK f | rev')
+[ "$res" = "KO" ] || err $LINENO
+
 res=$($com <<< 'function f () { A=BBB ; } ; f; echo $A')
 [ "$res" = "BBB" ] || err $LINENO
 

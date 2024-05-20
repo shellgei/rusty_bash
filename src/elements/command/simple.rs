@@ -64,28 +64,31 @@ impl Command for SimpleCommand {
             return None;
         }else if Self::check_sigint(core) {
             None
-        }else if core.data.functions.contains_key(&self.args[0]) {
-            self.exec_function(core, pipe)
         }else{
             self.exec_command(core, pipe)
         }
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
-        if ! fork {
-            core.data.parameters.push(HashMap::new());
-            core.data.arrays.push(HashMap::new());
+        core.data.parameters.push(HashMap::new());
+        core.data.arrays.push(HashMap::new());
 
-            for s in &self.evaluated_subs {
-                match &s.1 {
-                    Value::EvaluatedSingle(v) => core.data.set_local_param(&s.0, &v),
-                    Value::EvaluatedArray(a) => core.data.set_local_array(&s.0, &a),
-                    _ => {},
-                }
+        for s in &self.evaluated_subs {
+            match &s.1 {
+                Value::EvaluatedSingle(v) => core.data.set_local_param(&s.0, &v),
+                Value::EvaluatedArray(a) => core.data.set_local_array(&s.0, &a),
+                _ => {},
             }
+        }
 
-            let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
-            core.run_builtin(&mut self.args, &mut special_args);
+        if ! fork {
+            if core.data.functions.contains_key(&self.args[0]) {
+                let mut command = core.data.functions[&self.args[0]].clone();
+                command.run_as_command(&mut self.args, core, None);
+            }else {
+                let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
+                core.run_builtin(&mut self.args, &mut special_args);
+            }
 
             core.data.parameters.pop();
             core.data.arrays.pop();
@@ -93,9 +96,13 @@ impl Command for SimpleCommand {
             return;
         }
 
-        match core.run_builtin(&mut self.args, &mut vec![]) {
-            true  => core.exit(),
-            false => self.exec_external_command(),
+        if core.data.functions.contains_key(&self.args[0]) {
+                let mut f = core.data.functions[&self.args[0]].clone();
+                f.run_as_command(&mut self.args, core, None);
+        }else if core.run_builtin(&mut self.args, &mut vec![]) {
+                core.exit();
+        }else {
+                self.exec_external_command();
         }
     }
 
@@ -139,7 +146,8 @@ impl SimpleCommand {
     fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if self.force_fork 
         || pipe.is_connected() 
-        || ! core.builtins.contains_key(&self.args[0]) {
+        || ( ! core.builtins.contains_key(&self.args[0]) 
+           && ! core.data.functions.contains_key(&self.args[0]) ) {
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core);

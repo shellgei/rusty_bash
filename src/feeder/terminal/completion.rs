@@ -44,17 +44,15 @@ impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         self.set_completion_info(core);
 
-        let pos = match core.data.get_param("COMP_CWORD").parse::<i32>() {
-            Ok(i) => i - 1,
-            _     => -1, 
-        };
+        let cur_pos = Self::get_cur_pos(core);
+        let prev_pos = cur_pos - 1;
 
         let mut set = false;
-        if pos >= 0 && pos < core.data.arrays[0]["COMP_WORDS"].len() as i32 {
-            let prev_word = core.data.get_array("COMP_WORDS", &pos.to_string());
+        if prev_pos >= 0 && prev_pos < core.data.arrays[0]["COMP_WORDS"].len() as i32 {
+            let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
 
-            let cur = match ((pos + 1) as usize) < core.data.arrays[0]["COMP_WORDS"].len() {
-                true => core.data.get_array("COMP_WORDS", &(pos+1).to_string()),
+            let cur = match ((prev_pos + 1) as usize) < core.data.arrays[0]["COMP_WORDS"].len() {
+                true => core.data.get_array("COMP_WORDS", &(prev_pos+1).to_string()),
                 false => "".to_string(),
             };
             core.data.set_param("cur", &cur);
@@ -62,7 +60,7 @@ impl Terminal {
             match core.completion_functions.get(&prev_word) {
                 Some(value) => {
                     let mut f = core.data.functions[value].clone();
-                    f.run_as_command(&mut vec![value.to_string()], core, None);
+                    f.run_as_command(&mut vec![value.to_string()], core, None/*, vec![("cur", &cur)]*/);
                     set = true;
                 },
                 _ => {},
@@ -77,6 +75,13 @@ impl Terminal {
         match double_tab {
             true  => self.show_list(&core.data.arrays[0]["COMPREPLY"]),
             false => self.try_completion(core),
+        }
+    }
+
+    fn get_cur_pos(core: &mut ShellCore) -> i32 {
+        match core.data.get_param("COMP_CWORD").parse::<i32>() {
+            Ok(i) => i,
+            _     => panic!("SUSH INTERNAL ERROR: no COMP_CWORD"),
         }
     }
 

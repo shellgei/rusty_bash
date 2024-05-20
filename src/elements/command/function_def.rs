@@ -54,12 +54,12 @@ impl FunctionDefinition {
     }
 
     pub fn run_as_command(&mut self, args: &mut Vec<String>,
-                          core: &mut ShellCore, pipe: Option<&mut Pipe>) -> Option<Pid> {
+                          core: &mut ShellCore, pipe: Option<&mut Pipe>,
+                          /*local_params: Vec<(&str, &str)>*/) -> Option<Pid> {
         let len = core.data.position_parameters.len();
         args[0] = core.data.position_parameters[len-1][0].clone();
         core.data.position_parameters.push(args.to_vec());
-        core.data.parameters.push(HashMap::new());
-        core.data.arrays.push(HashMap::new());
+
         let mut empty = Pipe::new("|".to_string());
         let p = match pipe {
             Some(p) => p,
@@ -74,8 +74,6 @@ impl FunctionDefinition {
         core.source_function_level -= 1;
 
         core.data.position_parameters.pop();
-        core.data.parameters.pop();
-        core.data.arrays.pop();
 
         return pid;
     }
