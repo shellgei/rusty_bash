@@ -60,32 +60,33 @@ impl Terminal {
     }
 
     fn set_custom_completion(core: &mut ShellCore) -> bool {
-        let cur_pos = Self::get_cur_pos(core);
-        let prev_pos = cur_pos - 1;
+        let prev_pos = Self::get_cur_pos(core) - 1;
 
-        if prev_pos >= 0 && prev_pos < core.data.arrays[0]["COMP_WORDS"].len() as i32 {
-            let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
+        if prev_pos < 0 || prev_pos >= core.data.arrays[0]["COMP_WORDS"].len() as i32 {
+            return false;
+        }
 
-            let cur = match ((prev_pos + 1) as usize) < core.data.arrays[0]["COMP_WORDS"].len() {
-                true => core.data.get_array("COMP_WORDS", &(prev_pos+1).to_string()),
-                false => "".to_string(),
-            };
-            core.data.set_param("cur", &cur);
+        let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
 
-            match core.completion_functions.get(&prev_word) {
-                Some(value) => {
-                    let mut feeder = Feeder::new();
-                    let command = format!("cur={} {}", &cur, &value); 
-                    feeder.add_line(command);
+        let cur = match ((prev_pos + 1) as usize) < core.data.arrays[0]["COMP_WORDS"].len() {
+            true => core.data.get_array("COMP_WORDS", &(prev_pos+1).to_string()),
+            false => "".to_string(),
+        };
+        core.data.set_param("cur", &cur);
 
-                    if let Some(mut a) = SimpleCommand::parse(&mut feeder, core) {
-                        let mut dummy = Pipe::new("".to_string());
-                        a.exec(core, &mut dummy);
-                    }
-                    return true;
-                },
-                _ => {},
-            }
+        match core.completion_functions.get(&prev_word) {
+            Some(value) => {
+                let mut feeder = Feeder::new();
+                let command = format!("cur={} {}", &cur, &value); 
+                feeder.add_line(command);
+
+                if let Some(mut a) = SimpleCommand::parse(&mut feeder, core) {
+                    let mut dummy = Pipe::new("".to_string());
+                    a.exec(core, &mut dummy);
+                }
+                return true;
+            },
+            _ => {},
         }
 
         return false;
