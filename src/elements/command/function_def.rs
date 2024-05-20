@@ -59,12 +59,12 @@ impl FunctionDefinition {
         args[0] = core.data.position_parameters[len-1][0].clone();
         core.data.position_parameters.push(args.to_vec());
 
-        let mut p = Pipe::new("|".to_string());
+        let mut dummy = Pipe::new("|".to_string());
 
         core.source_function_level += 1;
         let pid = self.command.clone()
                         .expect("SUSH INTERNAL ERROR: empty function")
-                        .exec(core, &mut p);
+                        .exec(core, &mut dummy);
         core.return_flag = false;
         core.source_function_level -= 1;
 
