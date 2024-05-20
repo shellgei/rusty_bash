@@ -81,28 +81,21 @@ impl Command for SimpleCommand {
             }
         }
 
-        if ! fork {
-            if core.data.functions.contains_key(&self.args[0]) {
-                let mut command = core.data.functions[&self.args[0]].clone();
-                command.run_as_command(&mut self.args, core, None);
-            }else {
-                let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
-                core.run_builtin(&mut self.args, &mut special_args);
-            }
-
-            core.data.parameters.pop();
-            core.data.arrays.pop();
-
-            return;
+        if core.data.functions.contains_key(&self.args[0]) {
+            let mut f = core.data.functions[&self.args[0]].clone();
+            f.run_as_command(&mut self.args, core, None);
+        } else if core.builtins.contains_key(&self.args[0]) {
+            let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
+            core.run_builtin(&mut self.args, &mut special_args);
+        } else {
+            self.exec_external_command();
         }
 
-        if core.data.functions.contains_key(&self.args[0]) {
-                let mut f = core.data.functions[&self.args[0]].clone();
-                f.run_as_command(&mut self.args, core, None);
-        }else if core.run_builtin(&mut self.args, &mut vec![]) {
-                core.exit();
-        }else {
-                self.exec_external_command();
+        core.data.parameters.pop();
+        core.data.arrays.pop();
+
+        if fork {
+            core.exit();
         }
     }
 
@@ -153,11 +146,6 @@ impl SimpleCommand {
             self.nofork_exec(core);
             None
         }
-    }
-
-    fn exec_function(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        let mut command = core.data.functions[&self.args[0]].clone();
-        command.run_as_command(&mut self.args, core, Some(pipe))
     }
 
     fn check_sigint(core: &mut ShellCore) -> bool {
