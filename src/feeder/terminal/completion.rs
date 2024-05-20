@@ -60,36 +60,34 @@ impl Terminal {
     }
 
     fn set_custom_completion(core: &mut ShellCore) -> bool {
-        let prev_pos = Self::get_cur_pos(core) - 1;
+        let cur_pos = Self::get_cur_pos(core);
+        let prev_pos = cur_pos - 1;
+        let word_num = core.data.arrays[0]["COMP_WORDS"].len() as i32;
 
-        if prev_pos < 0 || prev_pos >= core.data.arrays[0]["COMP_WORDS"].len() as i32 {
+        if prev_pos < 0 || prev_pos >= word_num {
             return false;
         }
 
         let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
-
-        let cur = match ((prev_pos + 1) as usize) < core.data.arrays[0]["COMP_WORDS"].len() {
-            true => core.data.get_array("COMP_WORDS", &(prev_pos+1).to_string()),
+        let cur_word = match cur_pos < word_num {
+            true => core.data.get_array("COMP_WORDS", &cur_pos.to_string()),
             false => "".to_string(),
         };
-        core.data.set_param("cur", &cur);
 
         match core.completion_functions.get(&prev_word) {
             Some(value) => {
                 let mut feeder = Feeder::new();
-                let command = format!("cur={} {}", &cur, &value); 
-                feeder.add_line(command);
+                let command = format!("cur={} {}", &cur_word, &value); //TODO: cur should be set
+                feeder.add_line(command);                              // by bash-completion
 
                 if let Some(mut a) = SimpleCommand::parse(&mut feeder, core) {
                     let mut dummy = Pipe::new("".to_string());
                     a.exec(core, &mut dummy);
                 }
-                return true;
+                true
             },
-            _ => {},
+            _ => false
         }
-
-        return false;
     }
 
     fn get_cur_pos(core: &mut ShellCore) -> i32 {
