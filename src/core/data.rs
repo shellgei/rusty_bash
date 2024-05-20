@@ -131,4 +131,14 @@ impl Data {
         let layer = self.arrays.len();
         self.set_layer_array(key, vals, layer-1);
     }
+
+    pub fn push_local(&mut self) {
+        self.parameters.push(HashMap::new());
+        self.arrays.push(HashMap::new());
+    }
+
+    pub fn pop_local(&mut self) {
+        self.parameters.pop();
+        self.arrays.pop();
+    }
 }

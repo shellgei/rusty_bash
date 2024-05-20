@@ -7,7 +7,6 @@ use crate::elements::command;
 use crate::elements::substitution::{Substitution, Value};
 use crate::elements::word::Word;
 use nix::unistd;
-use std::collections::HashMap;
 use std::ffi::CString;
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
@@ -63,9 +62,7 @@ impl Command for SimpleCommand {
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
-        core.data.parameters.push(HashMap::new());
-        core.data.arrays.push(HashMap::new());
-
+        core.data.push_local();
         self.set_local_params(core);
 
         if core.data.functions.contains_key(&self.args[0]) {
@@ -78,8 +75,7 @@ impl Command for SimpleCommand {
             self.exec_external_command();
         }
 
-        core.data.parameters.pop();
-        core.data.arrays.pop();
+        core.data.pop_local();
 
         if fork {
             core.exit();
