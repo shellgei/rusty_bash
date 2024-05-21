@@ -1078,4 +1078,8 @@ res=$($com <<< 'seq 2 | while read a ; do echo $a ; done ; echo $a ; echo A')
 
 A" ] || err $LINENO
 
+res=$($com <<< 'A=BBB; seq 2 | while read $A ; do echo $BBB ; done')
+[ "$res" == "1
+2" ] || err $LINENO
+
 echo OK $0
