@@ -28,6 +28,8 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! is_varname(&a) {
             eprintln!("bash: read: `{}': not a valid identifier", &a);
             return 1;
+        }else{
+            core.data.set_param(&a, "");
         }
     }
 
