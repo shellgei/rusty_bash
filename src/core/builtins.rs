@@ -5,6 +5,7 @@
 mod cd;
 pub mod completion;
 mod pwd;
+mod read;
 mod return_break;
 mod utils;
 
@@ -27,7 +28,7 @@ impl ShellCore {
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("local".to_string(), local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
-        self.builtins.insert("read".to_string(), read);
+        self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), return_break::return_);
         self.builtins.insert("set".to_string(), set);
         self.builtins.insert("source".to_string(), source);
@@ -168,96 +169,3 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
-
-fn is_varname(s :&String) -> bool {
-    if s.len() == 0 {
-        return false;
-    }
-
-    let first_ch = s.chars().nth(0).unwrap();
-
-    if '0' <= first_ch && first_ch <= '9' {
-        return false;
-    }
-
-    let name_c = |c| ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
-                     || ('0' <= c && c <= '9') || '_' == c;
-    s.chars().position(|c| !name_c(c)) == None
-}
-
-pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() <= 1 {
-        return 0;
-    }
-
-    for a in &args[1..] {
-        if ! is_varname(&a) {
-            eprintln!("bash: read: `{}': not a valid identifier", &a);
-            return 1;
-        }
-    }
-
-    let mut line = String::new();
-    let len = std::io::stdin()
-        .read_line(&mut line)
-        .expect("SUSHI INTERNAL ERROR: Failed to read line");
-
-    if args.len() >= 2 {
-        core.data.set_param(&args[1], &line.trim_end());
-    }
-
-    match len == 0 {
-        true  => 1,
-        false => 0,
-    }
-}
-
-/*
-pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if core.source_function_level <= 0 {
-        eprintln!("sush: return: can only `return' from a function or sourced script");
-        return 2;
-    }
-    core.return_flag = true;
-
-    if args.len() < 2 {
-        return 0;
-    }
-
-    match args[1].parse::<i32>() {
-        Ok(n)  => n%256,
-        Err(_) => {
-            eprintln!("sush: return: {}: numeric argument required", args[1]);
-            2
-        },
-    }
-}
-
-pub fn break_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if core.loop_level <= 0 {
-        eprintln!("sush: break: only meaningful in a `for', `while', or `until' loop");
-        return 0;
-    }
-
-    core.break_counter += 1;
-    if args.len() < 2 {
-        return 0;
-    }
-
-    match args[1].parse::<i32>() {
-        Ok(n)  => {
-            if n > 0 {
-                core.break_counter += n - 1;
-            }else{
-                eprintln!("sush: break: {}: loop count out of range", args[1]);
-                return 1;
-            }
-        },
-        Err(_) => {
-            eprintln!("sush: break: {}: numeric argument required", args[1]);
-            return 128;
-        },
-    };
-    0
-}
-*/
