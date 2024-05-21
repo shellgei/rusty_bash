@@ -6,15 +6,12 @@ mod cd;
 pub mod completion;
 mod pwd;
 mod read;
+mod source;
 mod return_break;
 mod utils;
 
-use crate::{Feeder, Script, ShellCore};
-use crate::elements::io;
+use crate::{ShellCore, Feeder};
 use crate::elements::substitution::{Substitution, Value};
-use std::fs::File;
-use std::os::fd::IntoRawFd;
-use std::path::Path;
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -31,8 +28,8 @@ impl ShellCore {
         self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), return_break::return_);
         self.builtins.insert("set".to_string(), set);
-        self.builtins.insert("source".to_string(), source);
-        self.builtins.insert(".".to_string(), source);
+        self.builtins.insert("source".to_string(), source::source);
+        self.builtins.insert(".".to_string(), source::source);
         self.builtins.insert("true".to_string(), true_);
     }
 }
@@ -113,6 +110,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
+/*
 pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
         eprintln!("sush: source: filename argument required");
@@ -165,6 +163,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.data.get_param("?").parse::<i32>()
         .expect("SUSH INTERNAL ERROR: BAD EXIT STATUS")
 }
+*/
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
