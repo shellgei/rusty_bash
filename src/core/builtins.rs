@@ -26,6 +26,7 @@ impl ShellCore {
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("local".to_string(), local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
+        self.builtins.insert("read".to_string(), read);
         self.builtins.insert("return".to_string(), return_);
         self.builtins.insert("set".to_string(), set);
         self.builtins.insert("source".to_string(), source);
@@ -133,10 +134,8 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let fd = file.into_raw_fd();
     let backup = io::backup(0);
     io::replace(fd, 0);
-    //core.in_source = true;
     let read_stdin_backup = core.read_stdin;
     core.read_stdin = true;
-    //core.in_source = true;
     core.source_function_level += 1;
 
     let mut feeder = Feeder::new();
@@ -159,7 +158,6 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     io::replace(backup, 0);
     core.source_function_level -= 1;
-    //core.in_source = false;
     core.return_flag = false;
     core.read_stdin = read_stdin_backup;
     core.data.get_param("?").parse::<i32>()
@@ -168,6 +166,22 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
+}
+
+pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut line = String::new();
+    let len = std::io::stdin()
+        .read_line(&mut line)
+        .expect("SUSHI INTERNAL ERROR: Failed to read line");
+
+    if args.len() >= 2 {
+        core.data.set_param(&args[1], &line.trim_end());
+    }
+
+    match len == 0 {
+        true  => 1,
+        false => 0,
+    }
 }
 
 pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

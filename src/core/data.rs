@@ -5,6 +5,7 @@ use crate::elements::command::function_def::FunctionDefinition;
 use std::env;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct Data {
     pub flags: String,
     pub parameters: Vec<HashMap<String, String>>,
