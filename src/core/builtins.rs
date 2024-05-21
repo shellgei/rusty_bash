@@ -168,7 +168,34 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
 
+fn is_varname(s :&String) -> bool {
+    if s.len() == 0 {
+        return false;
+    }
+
+    let first_ch = s.chars().nth(0).unwrap();
+
+    if '0' <= first_ch && first_ch <= '9' {
+        return false;
+    }
+
+    let name_c = |c| ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+                     || ('0' <= c && c <= '9') || '_' == c;
+    s.chars().position(|c| !name_c(c)) == None
+}
+
 pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() <= 1 {
+        return 0;
+    }
+
+    for a in &args[1..] {
+        if ! is_varname(&a) {
+            eprintln!("bash: read: `{}': not a valid identifier", &a);
+            return 1;
+        }
+    }
+
     let mut line = String::new();
     let len = std::io::stdin()
         .read_line(&mut line)
