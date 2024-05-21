@@ -5,6 +5,7 @@
 mod cd;
 pub mod completion;
 mod pwd;
+mod return_break;
 mod utils;
 
 use crate::{Feeder, Script, ShellCore};
@@ -18,7 +19,7 @@ impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias);
-        self.builtins.insert("break".to_string(), break_);
+        self.builtins.insert("break".to_string(), return_break::break_);
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
@@ -27,7 +28,7 @@ impl ShellCore {
         self.builtins.insert("local".to_string(), local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read);
-        self.builtins.insert("return".to_string(), return_);
+        self.builtins.insert("return".to_string(), return_break::return_);
         self.builtins.insert("set".to_string(), set);
         self.builtins.insert("source".to_string(), source);
         self.builtins.insert(".".to_string(), source);
@@ -211,6 +212,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 }
 
+/*
 pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if core.source_function_level <= 0 {
         eprintln!("sush: return: can only `return' from a function or sourced script");
@@ -258,3 +260,4 @@ pub fn break_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
     0
 }
+*/
