@@ -43,6 +43,9 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             core.data.set_param(&args[pos], &w);
             pos += 1;
         }else{
+            if overflow.len() != 0 {
+                overflow += " ";
+            }
             overflow += &w;
             core.data.set_param(&args[pos], &overflow);
         }
