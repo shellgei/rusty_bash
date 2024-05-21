@@ -7,7 +7,6 @@ use crate::elements::command;
 use crate::elements::substitution::{Substitution, Value};
 use crate::elements::word::Word;
 use nix::unistd;
-use std::collections::HashMap;
 use std::ffi::CString;
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
@@ -54,48 +53,32 @@ impl Command for SimpleCommand {
         }
 
         if self.args.len() == 0 {
-            for s in &self.evaluated_subs {
-                match &s.1 {
-                    Value::EvaluatedSingle(v) => core.data.set_param(&s.0, &v),
-                    Value::EvaluatedArray(a) => core.data.set_array(&s.0, &a),
-                    _ => {},
-                }
-            }
-            return None;
+            self.exec_set_params(core)
         }else if Self::check_sigint(core) {
             None
-        }else if core.data.functions.contains_key(&self.args[0]) {
-            self.exec_function(core, pipe)
         }else{
             self.exec_command(core, pipe)
         }
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
-        if ! fork {
-            core.data.parameters.push(HashMap::new());
-            core.data.arrays.push(HashMap::new());
+        core.data.push_local();
+        self.set_local_params(core);
 
-            for s in &self.evaluated_subs {
-                match &s.1 {
-                    Value::EvaluatedSingle(v) => core.data.set_local_param(&s.0, &v),
-                    Value::EvaluatedArray(a) => core.data.set_local_array(&s.0, &a),
-                    _ => {},
-                }
-            }
-
+        if core.data.functions.contains_key(&self.args[0]) {
+            let mut f = core.data.functions[&self.args[0]].clone();
+            f.run_as_command(&mut self.args, core);
+        } else if core.builtins.contains_key(&self.args[0]) {
             let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
             core.run_builtin(&mut self.args, &mut special_args);
-
-            core.data.parameters.pop();
-            core.data.arrays.pop();
-
-            return;
+        } else {
+            self.exec_external_command();
         }
 
-        match core.run_builtin(&mut self.args, &mut vec![]) {
-            true  => core.exit(),
-            false => self.exec_external_command(),
+        core.data.pop_local();
+
+        if fork {
+            core.exit();
         }
     }
 
@@ -107,14 +90,10 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(&self) -> ! {
+    fn exec_external_command(&mut self) -> ! {
+        self.set_environment_variables();
         let cargs = Self::to_cargs(&self.args);
-        for s in &self.evaluated_subs {
-            match &s.1 {
-                Value::EvaluatedSingle(v) => env::set_var(&s.0, &v),
-                _ => {},
-            }
-        }
+
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => {
                 println!("sush: {}: Arg list too long", &self.args[0]);
@@ -139,17 +118,13 @@ impl SimpleCommand {
     fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if self.force_fork 
         || pipe.is_connected() 
-        || ! core.builtins.contains_key(&self.args[0]) {
+        || ( ! core.builtins.contains_key(&self.args[0]) 
+           && ! core.data.functions.contains_key(&self.args[0]) ) {
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core);
             None
         }
-    }
-
-    fn exec_function(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        let mut command = core.data.functions[&self.args[0]].clone();
-        command.run_as_command(&mut self.args, core, Some(pipe))
     }
 
     fn check_sigint(core: &mut ShellCore) -> bool {
@@ -158,6 +133,36 @@ impl SimpleCommand {
             return true;
         }
         false
+    }
+
+    fn exec_set_params(&mut self, core: &mut ShellCore) -> Option<Pid> {
+        for s in &self.evaluated_subs {
+            match &s.1 {
+                Value::EvaluatedSingle(v) => core.data.set_param(&s.0, &v),
+                Value::EvaluatedArray(a) => core.data.set_array(&s.0, &a),
+                _ => {},
+            }
+        }
+        None
+    }
+
+    fn set_local_params(&mut self, core: &mut ShellCore) {
+        for s in &self.evaluated_subs {
+            match &s.1 {
+                Value::EvaluatedSingle(v) => core.data.set_local_param(&s.0, &v),
+                Value::EvaluatedArray(a) => core.data.set_local_array(&s.0, &a),
+                _ => {},
+            }
+        }
+    }
+
+    fn set_environment_variables(&mut self) {
+        for s in &self.evaluated_subs {
+            match &s.1 {
+                Value::EvaluatedSingle(v) => env::set_var(&s.0, &v),
+                _ => {},
+            }
+        }
     }
 
     fn to_cargs(args: &Vec<String>) -> Vec<CString> {

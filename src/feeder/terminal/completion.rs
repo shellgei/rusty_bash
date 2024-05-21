@@ -1,8 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::core::builtins::completion;
+use crate::elements::command::simple::SimpleCommand;
+use crate::elements::command::Command;
+use crate::elements::io::pipe::Pipe;
 use crate::feeder::terminal::Terminal;
 use std::path::Path;
 use unicode_width::UnicodeWidthStr;
@@ -44,32 +47,8 @@ impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
         self.set_completion_info(core);
 
-        let pos = match core.data.get_param("COMP_CWORD").parse::<i32>() {
-            Ok(i) => i - 1,
-            _     => -1, 
-        };
-
-        let mut set = false;
-        if pos >= 0 && pos < core.data.arrays[0]["COMP_WORDS"].len() as i32 {
-            let prev_word = core.data.get_array("COMP_WORDS", &pos.to_string());
-
-            let cur = match ((pos + 1) as usize) < core.data.arrays[0]["COMP_WORDS"].len() {
-                true => core.data.get_array("COMP_WORDS", &(pos+1).to_string()),
-                false => "".to_string(),
-            };
-            core.data.set_param("cur", &cur);
-
-            match core.completion_functions.get(&prev_word) {
-                Some(value) => {
-                    let mut f = core.data.functions[value].clone();
-                    f.run_as_command(&mut vec![value.to_string()], core, None);
-                    set = true;
-                },
-                _ => {},
-            }
-        }
-
-        if ! set && ! self.set_default_compreply(core) {
+        if ! Self::set_custom_compreply(core)
+        && ! self.set_default_compreply(core) {
             self.cloop();
             return;
         }
@@ -77,6 +56,41 @@ impl Terminal {
         match double_tab {
             true  => self.show_list(&core.data.arrays[0]["COMPREPLY"]),
             false => self.try_completion(core),
+        }
+    }
+
+    fn set_custom_compreply(core: &mut ShellCore) -> bool {
+        let cur_pos = Self::get_cur_pos(core);
+        let prev_pos = cur_pos - 1;
+        let word_num = core.data.arrays[0]["COMP_WORDS"].len() as i32;
+
+        if prev_pos < 0 || prev_pos >= word_num {
+            return false;
+        }
+
+        let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
+        let cur_word = core.data.get_array("COMP_WORDS", &cur_pos.to_string());
+
+        match core.completion_functions.get(&prev_word) {
+            Some(value) => {
+                let mut feeder = Feeder::new();
+                let command = format!("cur={} {}", &cur_word, &value); //TODO: cur should be set
+                feeder.add_line(command);                              // by bash-completion
+
+                if let Some(mut a) = SimpleCommand::parse(&mut feeder, core) {
+                    let mut dummy = Pipe::new("".to_string());
+                    a.exec(core, &mut dummy);
+                }
+                true
+            },
+            _ => false
+        }
+    }
+
+    fn get_cur_pos(core: &mut ShellCore) -> i32 {
+        match core.data.get_param("COMP_CWORD").parse::<i32>() {
+            Ok(i) => i,
+            _     => panic!("SUSH INTERNAL ERROR: no COMP_CWORD"),
         }
     }
 

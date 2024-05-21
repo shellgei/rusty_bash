@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use std::collections::HashMap;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
@@ -54,28 +53,22 @@ impl FunctionDefinition {
     }
 
     pub fn run_as_command(&mut self, args: &mut Vec<String>,
-                          core: &mut ShellCore, pipe: Option<&mut Pipe>) -> Option<Pid> {
+                          core: &mut ShellCore,
+                          /*local_params: Vec<(&str, &str)>*/) -> Option<Pid> {
         let len = core.data.position_parameters.len();
         args[0] = core.data.position_parameters[len-1][0].clone();
         core.data.position_parameters.push(args.to_vec());
-        core.data.parameters.push(HashMap::new());
-        core.data.arrays.push(HashMap::new());
-        let mut empty = Pipe::new("|".to_string());
-        let p = match pipe {
-            Some(p) => p,
-            _       => &mut empty,
-        };
+
+        let mut dummy = Pipe::new("|".to_string());
 
         core.source_function_level += 1;
         let pid = self.command.clone()
                         .expect("SUSH INTERNAL ERROR: empty function")
-                        .exec(core, p);
+                        .exec(core, &mut dummy);
         core.return_flag = false;
         core.source_function_level -= 1;
 
         core.data.position_parameters.pop();
-        core.data.parameters.pop();
-        core.data.arrays.pop();
 
         return pid;
     }
