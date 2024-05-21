@@ -36,8 +36,16 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         .read_line(&mut line)
         .expect("SUSHI INTERNAL ERROR: Failed to read line");
 
-    if args.len() >= 2 {
-        core.data.set_param(&args[1], &line.trim_end());
+    let mut pos = 1;
+    let mut overflow = String::new();
+    for w in line.trim_end().split(' ') {
+        if pos < args.len()-1 {
+            core.data.set_param(&args[pos], &w);
+            pos += 1;
+        }else{
+            overflow += &w;
+            core.data.set_param(&args[pos], &overflow);
+        }
     }
 
     match len == 0 {
