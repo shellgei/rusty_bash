@@ -75,14 +75,37 @@ impl SimpleSubword {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
-        /*
+    pub fn replace_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_history_expansion(core);
-        if len > 0 {
-            feeder.consume(len);
-            return Some(Self::new("{a,b}", SubwordType::History));
+        if len == 0 {
+            return false;
         }
-*/
+
+        let history_len = core.history.len();
+        if history_len < 2 {
+            feeder.replace(len, "");
+            return true;
+        }
+
+        let mut his = String::new();
+        for h in &core.history[1..] {
+            let last = h.split(" ").last().unwrap();
+
+            if ! last.starts_with("!$") {
+                his = last.to_string();
+                break;
+            }
+        }
+
+        feeder.replace(len, &his);
+        true
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
+        if Self::replace_expansion(feeder, core) {
+            return Self::parse(feeder, core);
+        }
+
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::Parameter));

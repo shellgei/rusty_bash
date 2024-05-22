@@ -160,7 +160,7 @@ impl Feeder {
 
     pub fn replace(&mut self, num: usize, to: &str) {
         self.consume(num);
-        self.remaining += to;
+        self.remaining = to.to_string() + &self.remaining;
     }
 
     pub fn starts_with(&self, s: &str) -> bool {
