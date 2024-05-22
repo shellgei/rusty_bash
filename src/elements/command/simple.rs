@@ -120,9 +120,11 @@ impl SimpleCommand {
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.data.functions.contains_key(&self.args[0]) ) {
+            core.data.set_param("_", self.args.last().unwrap());
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core);
+            core.data.set_param("_", self.args.last().unwrap());
             None
         }
     }
