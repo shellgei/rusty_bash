@@ -123,8 +123,9 @@ impl SimpleCommand {
             core.data.set_param("_", self.args.last().unwrap());
             self.fork_exec(core, pipe)
         }else{
+            let backup = self.args.last().unwrap().clone();
             self.nofork_exec(core);
-            core.data.set_param("_", self.args.last().unwrap());
+            core.data.set_param("_", &backup);
             None
         }
     }

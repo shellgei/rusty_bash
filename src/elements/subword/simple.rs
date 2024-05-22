@@ -76,6 +76,12 @@ impl SimpleSubword {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
+        /*
+        let len = feeder.scanner_history_expansion(core);
+        if len > 0 {
+            return Some(Self::new(&feeder.consume(len), SubwordType::History));
+        }*/
+
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::Parameter));
