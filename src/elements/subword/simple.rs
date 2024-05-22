@@ -79,9 +79,10 @@ impl SimpleSubword {
         /*
         let len = feeder.scanner_history_expansion(core);
         if len > 0 {
-            return Some(Self::new(&feeder.consume(len), SubwordType::History));
-        }*/
-
+            feeder.consume(len);
+            return Some(Self::new("{a,b}", SubwordType::History));
+        }
+*/
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::Parameter));
