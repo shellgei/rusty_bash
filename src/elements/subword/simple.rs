@@ -76,10 +76,11 @@ impl SimpleSubword {
             return Self::parse(feeder, core);
         }
 
+        /*
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::Parameter));
-        }
+        }*/
 
         let len = feeder.scanner_name(core);
         if len > 0 {

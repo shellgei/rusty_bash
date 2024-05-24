@@ -7,6 +7,7 @@ mod braced_param;
 mod command;
 mod escaped_char;
 mod double_quoted;
+mod special_and_position_param;
 
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleSubword;
@@ -15,6 +16,7 @@ use self::command::CommandSubstitution;
 use self::escaped_char::EscapedChar;
 use self::double_quoted::DoubleQuoted;
 use self::single_quoted::SingleQuoted;
+use self::special_and_position_param::SpecialAndPositionParam;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -105,6 +107,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subwor
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SpecialAndPositionParam::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }
