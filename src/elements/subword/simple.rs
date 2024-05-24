@@ -35,33 +35,11 @@ impl Subword for SimpleSubword {
     }
 
     fn make_glob_string(&mut self) -> String {
-        match self.subword_type {
-            SubwordType::SingleQuoted => {
-                let ans = self.text
-                    .replace("\\", "\\\\")
-                    .replace("*", "\\*")
-                    .replace("?", "\\?")
-                    .replace("[", "\\[")
-                    .replace("]", "\\]");
-                let len = ans.len();
-                ans[1..len-1].to_string()
-            },
-            _ => self.text.clone(),
-        }
+        self.text.clone()
     }
 
     fn make_unquoted_string(&mut self) -> String {
-        match self.subword_type {
-            SubwordType::SingleQuoted => {
-                let len = self.text.len();
-                self.text[1..len-1].to_string()
-            },
-            /*
-            SubwordType::EscapedChar => {
-                self.text[1..].to_string()
-            },*/
-            _ => self.text.clone()
-        }
+        self.text.clone()
     }
 
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
@@ -117,17 +95,12 @@ impl SimpleSubword {
             return Some(Self::new(&feeder.consume(len), SubwordType::VarName));
         }
 
+        /*
         let len = feeder.scanner_single_quoted_subword(core);
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::SingleQuoted));
-        }
-    
-        /*
-        let len = feeder.scanner_escaped_char(core);
-        if len > 0 {
-            return Some(Self::new(&feeder.consume(len), SubwordType::EscapedChar));
         }*/
-
+    
         let len = feeder.scanner_subword_symbol();
         if len > 0 {
             return Some(Self::new(&feeder.consume(len), SubwordType::Symbol));
