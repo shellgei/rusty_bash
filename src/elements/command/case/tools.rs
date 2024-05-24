@@ -8,14 +8,13 @@ enum Wildcard {
     Question,
     OneOf(Vec<char>),
     NotOneOf(Vec<char>),
+    ExtQuestion(Vec<String>),
 }
 
 pub fn compare(word: &String, pattern: &str) -> bool {
     let wildcards = parse(pattern);
     let mut candidates = vec![word.to_string()];
 
-    //dbg!("{:?} {}", &pattern, pattern.len());
-    //dbg!("{:?}", &wildcards);
     for w in wildcards {
         match w {
             Wildcard::Normal(s) => compare_normal(&mut candidates, &s),
@@ -23,6 +22,7 @@ pub fn compare(word: &String, pattern: &str) -> bool {
             Wildcard::Question  => question(&mut candidates),
             Wildcard::OneOf(cs) => one_of(&mut candidates, &cs, false),
             Wildcard::NotOneOf(cs) => one_of(&mut candidates, &cs, true),
+            Wildcard::ExtQuestion(ps) => ext_question(&mut candidates, &ps),
         }
     }
 
@@ -71,6 +71,20 @@ pub fn question(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
+fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
+    let mut ans = vec![];
+    for cand in cands.into_iter() {
+        ans.push(cand.to_string());
+        for p in patterns {
+            if cand.starts_with(p) {
+                ans.push(cand[p.len()..].to_string());
+                break;
+            }
+        }
+    }
+    *cands = ans;
+}
+
 pub fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
     let mut ans = vec![];
     for cand in cands.into_iter() {
@@ -97,6 +111,13 @@ fn parse(pattern: &str) -> Vec<Wildcard > {
                 ans.push( Wildcard::Normal(s) );
                 continue;
             },
+        }
+
+        let (len, wc) = scanner_ext_question(&remaining);
+        if len > 0 {
+            consume(&mut remaining, len);
+            ans.push(wc);
+            continue;
         }
 
         let (len, wc) = scanner_bracket(&remaining);
@@ -192,6 +213,38 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
     }
 
     (0, Wildcard::OneOf(vec![]) )
+}
+
+fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
+    if ! remaining.starts_with("?(") {
+        return (0, Wildcard::ExtQuestion(vec![]) );
+    }
+    
+    let mut chars = vec![];
+    let mut len = 2;
+    let mut escaped = false;
+
+    for c in remaining[len..].chars() {
+        len += c.len_utf8();
+
+        if escaped {
+            chars.push(c); 
+            escaped = false;
+            continue;
+        }
+        if c == '\\' {
+            escaped = true;
+            continue;
+        }
+
+        if c == ')' {
+            return (len, Wildcard::ExtQuestion(vec![chars.iter().collect()]) );
+        }
+
+        chars.push(c);
+    }
+
+    (0, Wildcard::ExtQuestion(vec![]) )
 }
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {

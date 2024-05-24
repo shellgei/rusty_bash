@@ -5,6 +5,7 @@ use crate::elements::command::function_def::FunctionDefinition;
 use std::env;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct Data {
     pub flags: String,
     pub parameters: Vec<HashMap<String, String>>,
@@ -130,5 +131,15 @@ impl Data {
     pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) {
         let layer = self.arrays.len();
         self.set_layer_array(key, vals, layer-1);
+    }
+
+    pub fn push_local(&mut self) {
+        self.parameters.push(HashMap::new());
+        self.arrays.push(HashMap::new());
+    }
+
+    pub fn pop_local(&mut self) {
+        self.parameters.pop();
+        self.arrays.pop();
     }
 }

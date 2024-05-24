@@ -24,6 +24,7 @@ pub enum SubwordType {
     Parameter,
     VarName,
     /* other subwords */
+    History,
     SingleQuoted,
     DoubleQuoted,
     Symbol,

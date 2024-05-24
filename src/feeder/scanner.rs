@@ -66,6 +66,13 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_history_expansion(&mut self, _: &mut ShellCore) -> usize {
+        match self.starts_with("!$") {
+            true  => 2,
+            false => 0,
+        }
+    }
+
     pub fn scanner_dollar_special_and_positional_param(&mut self, core: &mut ShellCore) -> usize {
         if ! self.starts_with("$") {
             return 0;

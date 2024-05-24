@@ -215,6 +215,12 @@ res=$($com <<< 'f () { echo a; } ; f')
 res=$($com <<< 'function f () { echo a; } ; f')
 [ "$res" = "a" ] || err $LINENO
 
+res=$($com <<< 'function f () { echo $A; } ; A=OK f')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'function f () { echo $A; } ; A=OK f | rev')
+[ "$res" = "KO" ] || err $LINENO
+
 res=$($com <<< 'function f () { A=BBB ; } ; f; echo $A')
 [ "$res" = "BBB" ] || err $LINENO
 
@@ -1035,6 +1041,9 @@ res=$($com <<< 'case yes in y[\^abcde]s) echo OK ;; *) echo NG ;; esac')
 res=$($com <<< 'case $- in *i*) echo NG ;; *) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+#res=$($com <<< 'case aaa in ?(a)aa) echo OK ;; *) echo NG ;; esac')
+#[ "$res" = "OK" ] || err $LINENO
+
 ### BUILTIN COMMANDS ###
 
 # source command
@@ -1063,5 +1072,21 @@ res=$($com <<< 'while true ; do while true ; do break 2 ; done ; echo NG ; done 
 
 res=$($com <<< 'while true ; do while true ; do break 10 ; done ; echo NG ; done ; echo OK')
 [ "$res" == "OK" ] || err $LINENO
+
+# read
+
+res=$($com <<< 'seq 2 | while read a ; do echo $a ; done ; echo $a ; echo A')
+[ "$res" == "1
+2
+
+A" ] || err $LINENO
+
+res=$($com <<< 'A=BBB; seq 2 | while read $A ; do echo $BBB ; done')
+[ "$res" == "1
+2" ] || err $LINENO
+
+res=$($com <<< 'echo あ い う | while read a b ; do echo $a ; echo $b ; done')
+[ "$res" == "あ
+い う" ] || err $LINENO
 
 echo OK $0
