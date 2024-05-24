@@ -5,12 +5,14 @@ mod simple;
 mod single_quoted;
 mod braced_param;
 mod command;
+mod escaped_char;
 mod double_quoted;
 
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
 use self::command::CommandSubstitution;
+use self::escaped_char::EscapedChar;
 use self::double_quoted::DoubleQuoted;
 use self::single_quoted::SingleQuoted;
 use std::fmt;
@@ -28,7 +30,7 @@ pub enum SubwordType {
     SingleQuoted,
     DoubleQuoted,
     Symbol,
-    Escaped,
+    EscapedChar,
     Other,
 }
 
@@ -102,6 +104,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subwor
     else if let Some(a) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }

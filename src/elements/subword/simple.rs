@@ -56,9 +56,10 @@ impl Subword for SimpleSubword {
                 let len = self.text.len();
                 self.text[1..len-1].to_string()
             },
-            SubwordType::Escaped => {
+            /*
+            SubwordType::EscapedChar => {
                 self.text[1..].to_string()
-            },
+            },*/
             _ => self.text.clone()
         }
     }
@@ -121,10 +122,11 @@ impl SimpleSubword {
             return Some(Self::new(&feeder.consume(len), SubwordType::SingleQuoted));
         }
     
+        /*
         let len = feeder.scanner_escaped_char(core);
         if len > 0 {
-            return Some(Self::new(&feeder.consume(len), SubwordType::Escaped));
-        }
+            return Some(Self::new(&feeder.consume(len), SubwordType::EscapedChar));
+        }*/
 
         let len = feeder.scanner_subword_symbol();
         if len > 0 {
