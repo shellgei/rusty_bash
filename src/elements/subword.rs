@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod simple;
+mod single_quoted;
 mod braced_param;
 mod command;
 mod double_quoted;
@@ -11,6 +12,7 @@ use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
 use self::command::CommandSubstitution;
 use self::double_quoted::DoubleQuoted;
+use self::single_quoted::SingleQuoted;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -70,7 +72,7 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn merge(&mut self, _right: &Box<dyn Subword>) {}
     fn set(&mut self, _subword_type: SubwordType, _s: &str) {}
-    fn substitute(&mut self, core: &mut ShellCore) -> bool;
+    fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
         let splits = split_str(self.get_text());
@@ -97,6 +99,7 @@ pub trait Subword {
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
     if let Some(a) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
