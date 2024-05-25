@@ -6,6 +6,7 @@ mod single_quoted;
 mod braced_param;
 mod command;
 mod escaped_char;
+mod ext_glob;
 mod double_quoted;
 pub mod parameter;
 mod varname;
@@ -15,6 +16,7 @@ use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
 use self::command::CommandSubstitution;
 use self::escaped_char::EscapedChar;
+use self::ext_glob::ExtGlob;
 use self::double_quoted::DoubleQuoted;
 use self::single_quoted::SingleQuoted;
 use self::parameter::Parameter;
@@ -110,6 +112,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subwor
     else if let Some(a) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = ExtGlob::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = VarName::parse(feeder, core){ Some(Box::new(a)) }

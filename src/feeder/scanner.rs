@@ -51,6 +51,10 @@ impl Feeder {
         self.scanner_one_of(&["{", "}", ",", "$", "~", "/"])
     }
 
+    pub fn scanner_extglob_head(&self) -> usize {
+        self.scanner_one_of(&["?(", "*(", "+(", "@(", "!("])
+    }
+
     pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
         if self.starts_with("\\\n") {
             self.feed_and_connect(core);
@@ -105,6 +109,11 @@ impl Feeder {
 
     pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| "\"\\$".find(ch) == None;
+        self.scanner_chars(judge, core)
+    }
+
+    pub fn scanner_extglob_subword(&mut self, core: &mut ShellCore) -> usize {
+        let judge = |ch| ")|".find(ch) == None;
         self.scanner_chars(judge, core)
     }
 
