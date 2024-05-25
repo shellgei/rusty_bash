@@ -1057,6 +1057,9 @@ res=$($com <<< 'case baa in @(a|b)aa) echo OK ;; *) echo NG ;; esac')
 res=$($com <<< 'case aa in @(a|b)aa) echo NG ;; *) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case aa in @(a||b)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 res=$($com <<< 'case acaa in @(a|b|ac)aa) echo OK ;; *) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
