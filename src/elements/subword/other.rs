@@ -5,12 +5,12 @@ use crate::{ShellCore, Feeder};
 use crate::elements::subword::{Subword, SubwordType};
 
 #[derive(Debug, Clone)]
-pub struct SimpleSubword {
-    text: String,
-    subword_type: SubwordType,
+pub struct OtherSubword {
+    pub text: String,
+    pub subword_type: SubwordType,
 }
 
-impl Subword for SimpleSubword {
+impl Subword for OtherSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn merge(&mut self, right: &Box<dyn Subword>) { self.text += &right.get_text(); }
@@ -26,9 +26,9 @@ impl Subword for SimpleSubword {
     fn clear(&mut self) { self.text = String::new(); }
 }
 
-impl SimpleSubword {
-    pub fn new(s: &str, tp: SubwordType) -> SimpleSubword {
-        SimpleSubword {
+impl OtherSubword {
+    pub fn new(s: &str, tp: SubwordType) -> OtherSubword {
+        OtherSubword {
             text: s.to_string(),
             subword_type: tp,
         }
@@ -60,7 +60,7 @@ impl SimpleSubword {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<OtherSubword> {
         if Self::replace_expansion(feeder, core) {
             return Self::parse(feeder, core);
         }

@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
-use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, SubwordType};
+use super::{BracedParam, EscapedChar, OtherSubword, Parameter, Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
@@ -64,7 +64,7 @@ impl DoubleQuoted {
         match tp {
             SubwordType::EscapedChar => ans.subwords.push(Box::new(EscapedChar{ text: txt })),
             SubwordType::Parameter   => ans.subwords.push(Box::new(Parameter{ text: txt })),
-            _ => ans.subwords.push(Box::new(SimpleSubword::new(&txt, tp))),
+            _ => ans.subwords.push(Box::new(OtherSubword::new(&txt, tp))),
         }
         true
     }
