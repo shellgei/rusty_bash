@@ -113,7 +113,7 @@ impl Feeder {
     }
 
     pub fn scanner_extglob_subword(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| ")|".find(ch) == None;
+        let judge = |ch| ")|,}".find(ch) == None;
         self.scanner_chars(judge, core)
     }
 

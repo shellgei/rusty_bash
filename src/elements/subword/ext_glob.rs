@@ -138,7 +138,6 @@ impl ExtGlob {
             if feeder.starts_with(")") {
                 ans.text += &feeder.consume(1);
                 ans.subwords.push( Box::new( SimpleSubword {text: ")".to_string() } ) );
-//                dbg!("{:?}", &ans);
                 return Some(ans);
             }else if feeder.starts_with("|") {
                 ans.text += &feeder.consume(1);
