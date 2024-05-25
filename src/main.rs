@@ -16,14 +16,14 @@ use signal_hook::consts;
 use signal_hook::iterator::Signals;
 
 fn show_version() {
-    let s = "Sushi Shell SoftwareDesign version
-© 2023 Ryuichi Ueda
+    const V: &'static str = env!("CARGO_PKG_VERSION");
+    eprintln!("Rusty Bash, version {}
+© 2024 Ryuichi Ueda
 License: BSD 3-Clause
 
 This is open source software. You can redistirbute and use in source
 and binary forms with or without modification under the license.
-There is no warranty, to the extent permitted by law.";
-    eprintln!("{}", s);
+There is no warranty, to the extent permitted by law.", V);
     process::exit(0);
 }
 

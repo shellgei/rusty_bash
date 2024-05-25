@@ -18,10 +18,9 @@ impl Subword for VarName {
 
 impl VarName {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<VarName> {
-        let len = feeder.scanner_name(core);
-        match len > 0 {
-            true  => Some( Self{ text: feeder.consume(len) } ),
-            false => None,
+        match feeder.scanner_name(core) {
+            0 => None,
+            n => Some( Self{ text: feeder.consume(n) } ),
         }
     }
 }

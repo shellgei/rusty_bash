@@ -27,10 +27,10 @@ impl Subword for SingleQuoted {
 impl SingleQuoted {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         match feeder.scanner_single_quoted_subword(core) {
-            0   => None,
-            len => {
-                let s = feeder.consume(len);
-                Some(SingleQuoted{ text: s[1..len-1].to_string() })
+            0 => None,
+            n => {
+                let s = feeder.consume(n);
+                Some(SingleQuoted{ text: s[1..n-1].to_string() })
             },
         }
     }
