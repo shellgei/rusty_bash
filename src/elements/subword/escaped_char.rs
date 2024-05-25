@@ -12,11 +12,8 @@ pub struct EscapedChar {
 impl Subword for EscapedChar {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn merge(&mut self, right: &Box<dyn Subword>) { self.text += &right.get_text(); }
-    fn make_glob_string(&mut self) -> String { self.text.clone() }
     fn make_unquoted_string(&mut self) -> String { self.text[1..].to_string() }
     fn get_type(&self) -> SubwordType { SubwordType::EscapedChar  }
-    fn clear(&mut self) { self.text = String::new(); }
 }
 
 impl EscapedChar {

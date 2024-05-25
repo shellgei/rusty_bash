@@ -30,7 +30,6 @@ impl Subword for SingleQuoted {
     }
 
     fn get_type(&self) -> SubwordType { SubwordType::SingleQuoted  }
-    fn clear(&mut self) { self.text = String::new(); }
 }
 
 impl SingleQuoted {

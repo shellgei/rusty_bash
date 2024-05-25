@@ -12,7 +12,6 @@ pub struct Parameter {
 impl Subword for Parameter {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn merge(&mut self, right: &Box<dyn Subword>) { self.text += &right.get_text(); }
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
         let value = core.data.get_param(&self.text[1..]);
@@ -20,10 +19,7 @@ impl Subword for Parameter {
         true
     }
 
-    fn make_glob_string(&mut self) -> String { self.text.clone() }
-    fn make_unquoted_string(&mut self) -> String { self.text.clone() }
     fn get_type(&self) -> SubwordType { SubwordType::Parameter  }
-    fn clear(&mut self) { self.text = String::new(); }
 }
 
 impl Parameter {
