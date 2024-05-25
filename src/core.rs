@@ -93,6 +93,7 @@ impl ShellCore {
         self.data.set_param("$", &process::id().to_string());
         self.data.set_param("BASHPID", &process::id().to_string());
         self.data.set_param("BASH_SUBSHELL", "0");
+        self.data.set_param("BASH_VERSION", &(env!("CARGO_PKG_VERSION").to_string() + "-rusty_bash"));
         self.data.set_param("?", "0");
         self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
