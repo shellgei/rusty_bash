@@ -89,7 +89,37 @@ pub trait Subword {
     fn get_type(&self) -> SubwordType;
 }
 
+fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+    let len = feeder.scanner_history_expansion(core);
+    if len == 0 {
+        return false;
+    }
+
+    let history_len = core.history.len();
+    if history_len < 2 {
+        feeder.replace(len, "");
+        return true;
+    }
+
+    let mut his = String::new();
+    for h in &core.history[1..] {
+        let last = h.split(" ").last().unwrap();
+
+        if ! last.starts_with("!$") {
+            his = last.to_string();
+            break;
+        }
+    }
+
+    feeder.replace(len, &his);
+    true
+}
+
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    if replace_history_expansion(feeder, core) {
+        return parse(feeder, core);
+    }
+
     if let Some(a) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
