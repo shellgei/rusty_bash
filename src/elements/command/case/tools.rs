@@ -8,7 +8,7 @@ enum Wildcard {
     Question,
     OneOf(Vec<char>),
     NotOneOf(Vec<char>),
-    ExtQuestion(Vec<String>),
+    ExtQuestion(String),
 }
 
 pub fn compare(word: &String, pattern: &str) -> bool {
@@ -16,17 +16,21 @@ pub fn compare(word: &String, pattern: &str) -> bool {
     let mut candidates = vec![word.to_string()];
 
     for w in wildcards {
-        match w {
-            Wildcard::Normal(s) => compare_normal(&mut candidates, &s),
-            Wildcard::Asterisk  => asterisk(&mut candidates),
-            Wildcard::Question  => question(&mut candidates),
-            Wildcard::OneOf(cs) => one_of(&mut candidates, &cs, false),
-            Wildcard::NotOneOf(cs) => one_of(&mut candidates, &cs, true),
-            Wildcard::ExtQuestion(ps) => ext_question(&mut candidates, &ps),
-        }
+        compare_internal(&mut candidates, &w);
     }
 
     candidates.iter().any(|c| c == "")
+}
+
+fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
+    match w {
+        Wildcard::Normal(s) => compare_normal(candidates, &s),
+        Wildcard::Asterisk  => asterisk(candidates),
+        Wildcard::Question  => question(candidates),
+        Wildcard::OneOf(cs) => one_of(candidates, &cs, false),
+        Wildcard::NotOneOf(cs) => one_of(candidates, &cs, true),
+        Wildcard::ExtQuestion(p) => ext_question(candidates, &p),
+    }
 }
 
 pub fn compare_normal(cands: &mut Vec<String>, s: &String) {
@@ -71,18 +75,13 @@ pub fn question(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
-fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
-    let mut ans = vec![];
-    for cand in cands.into_iter() {
-        ans.push(cand.to_string());
-        for p in patterns {
-            if cand.starts_with(p) {
-                ans.push(cand[p.len()..].to_string());
-                break;
-            }
-        }
+fn ext_question(cands: &mut Vec<String>, pattern: &String) {
+    let mut backup = cands.clone();
+    //let wildcards = parse(pattern);
+    for w in parse(pattern) {
+        compare_internal(cands, &w);
     }
-    *cands = ans;
+    cands.append(&mut backup);
 }
 
 pub fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
@@ -217,7 +216,7 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
 
 fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
     if ! remaining.starts_with("?(") {
-        return (0, Wildcard::ExtQuestion(vec![]) );
+        return (0, Wildcard::ExtQuestion(String::new()) );
     }
     
     let mut chars = vec![];
@@ -248,7 +247,7 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
 
         if c == ')' {
             match nest {
-                0 => return (len, Wildcard::ExtQuestion(vec![chars.iter().collect()]) ),
+                0 => return (len, Wildcard::ExtQuestion(chars.iter().collect()) ),
                 _ => nest -= 1,
             }
         }
@@ -256,7 +255,7 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
         chars.push(c);
     }
 
-    (0, Wildcard::ExtQuestion(vec![]) )
+    (0, Wildcard::ExtQuestion(String::new()) )
 }
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
