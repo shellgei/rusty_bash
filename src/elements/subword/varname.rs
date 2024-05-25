@@ -17,16 +17,10 @@ impl Subword for VarName {
 }
 
 impl VarName {
-    pub fn new(s: &str) -> VarName {
-        VarName {
-            text: s.to_string(),
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<VarName> {
         let len = feeder.scanner_name(core);
         match len > 0 {
-            true  => Some(Self::new(&feeder.consume(len))),
+            true  => Some( Self{ text: feeder.consume(len) } ),
             false => None,
         }
     }

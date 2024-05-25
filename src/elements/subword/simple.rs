@@ -17,21 +17,15 @@ impl Subword for SimpleSubword {
 }
 
 impl SimpleSubword {
-    pub fn new(s: &str) -> SimpleSubword {
-        SimpleSubword {
-            text: s.to_string(),
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder) -> Option<SimpleSubword> {
         let len = feeder.scanner_subword_symbol();
         if len > 0 {
-            return Some(Self::new(&feeder.consume(len)));
+            return Some( Self{ text :feeder.consume(len) } );
         }
 
         let len = feeder.scanner_subword();
         if len > 0 {
-            return Some(Self::new(&feeder.consume(len)));
+            return Some( Self{ text :feeder.consume(len) } );
         }
 
         None

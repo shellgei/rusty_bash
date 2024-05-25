@@ -54,14 +54,14 @@ impl DoubleQuoted {
         }
     }
 
-    fn set_subword(feeder: &mut Feeder, ans: &mut Self, len: usize) -> bool {
+    fn set_simple_subword(feeder: &mut Feeder, ans: &mut Self, len: usize) -> bool {
         if len == 0 {
             return false;
         }
 
         let txt = feeder.consume(len);
         ans.text += &txt;
-        ans.subwords.push(Box::new(SimpleSubword::new(&txt)));
+        ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
         true
     }
 
@@ -97,7 +97,7 @@ impl DoubleQuoted {
 
     fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
         match feeder.starts_with("$") {
-            true  => Self::set_subword(feeder, ans, 1),
+            true  => Self::set_simple_subword(feeder, ans, 1),
             false => false,
         }
     }
@@ -110,7 +110,7 @@ impl DoubleQuoted {
             return true;
         }
         let len = feeder.scanner_escaped_char(core);
-        Self::set_subword(feeder, ans, len)
+        Self::set_simple_subword(feeder, ans, len)
     }
 
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -121,13 +121,13 @@ impl DoubleQuoted {
 
         let txt = feeder.consume(len);
         ans.text += &txt;
-        ans.subwords.push(Box::new(VarName::new(&txt)));
+        ans.subwords.push(Box::new( VarName{ text: txt}));
         true
     }
 
     fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_double_quoted_subword(core);
-        Self::set_subword(feeder, ans, len)
+        Self::set_simple_subword(feeder, ans, len)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {
