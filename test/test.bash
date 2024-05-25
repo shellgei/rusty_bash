@@ -1090,6 +1090,12 @@ res=$($com <<< 'case 山田山田aa in +(山|山本|山田)aa) echo OK ;; *) ech
 res=$($com <<< 'case 山aa in 山*(本|田)aa) echo OK ;; *) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case 山aa in 山+(本||田)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case 山aa in 山*(本||田)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 res=$($com <<< 'case 山aa in 山+(本|田)aa) echo NG ;; *) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 

@@ -99,38 +99,33 @@ fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
 fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
     let mut ans = vec![];
     let mut tmp = cands.clone();
+    let mut len = tmp.len();
 
-    while tmp.len() > 0  {
+    while len > 0  {
         ans.extend(tmp.clone());
         ext_once(&mut tmp, patterns);
-    }
-    *cands = ans;
-    /*
-    let mut ans = vec![];
-    for c in cands.into_iter() {
-        let mut s = c.to_string();
-        ans.push(s.clone());
-
-        while s.len() > 0 {
-            s.remove(0);
-
-            match patterns.iter().any(|p| compare_forward(&s, p)) {
-                true  => ans.push(s.clone()),
-                false => break,
-            }
+        for a in &ans {
+            tmp.retain(|t| a.as_str() != t.as_str());
         }
+
+        len = tmp.len();
     }
     *cands = ans;
-    */
 }
 
 fn ext_more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
-    let mut ans = vec![];
-    let mut tmp = cands.clone();
+    let mut ans: Vec<String> = vec![];
+    let mut tmp: Vec<String> = cands.clone();
+    let mut len = tmp.len();
 
-    while tmp.len() > 0  {
+    while len > 0  {
         ext_once(&mut tmp, patterns);
+
+        for a in &ans {
+            tmp.retain(|t| a.as_str() != t.as_str());
+        }
         ans.extend(tmp.clone());
+        len = tmp.len();
     }
     *cands = ans;
 }
