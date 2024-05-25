@@ -20,17 +20,6 @@ impl Subword for SimpleSubword {
         self.subword_type = subword_type;
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        match self.subword_type {
-            SubwordType::Parameter => {
-                let value = core.data.get_param(&self.text[1..]);
-                self.text = value.to_string();
-            },
-            _ => {},
-        }
-        true
-    }
-
     fn make_glob_string(&mut self) -> String { self.text.clone() }
     fn make_unquoted_string(&mut self) -> String { self.text.clone() }
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
@@ -75,12 +64,6 @@ impl SimpleSubword {
         if Self::replace_expansion(feeder, core) {
             return Self::parse(feeder, core);
         }
-
-        /*
-        let len = feeder.scanner_dollar_special_and_positional_param(core);
-        if len > 0 {
-            return Some(Self::new(&feeder.consume(len), SubwordType::Parameter));
-        }*/
 
         let len = feeder.scanner_name(core);
         if len > 0 {

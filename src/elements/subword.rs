@@ -7,7 +7,7 @@ mod braced_param;
 mod command;
 mod escaped_char;
 mod double_quoted;
-mod special_and_position_param;
+pub mod special_and_position_param;
 
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleSubword;
