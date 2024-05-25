@@ -217,15 +217,16 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
 }
 
 fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
-    /*
-    match remaining.chars().nth(1) {
-        Some(c) => 
-    }*/
+    let prefix = match remaining.chars().nth(0) {
+        Some(c) => c, 
+        None => return (0, None),
+    };
 
-    if ! remaining.starts_with("?(") {
-        return (0, None );
+    if "?*+@!".find(prefix) == None 
+    || remaining.chars().nth(1) != Some('(') {
+        return (0, None);
     }
-    
+
     let mut chars = vec![];
     let mut len = 2;
     let mut escaped = false;
@@ -262,7 +263,7 @@ fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
             match nest {
                 0 => return {
                     patterns.push(chars.iter().collect());
-                    (len, Some(Wildcard::ExtGlob('?', patterns)) )
+                    (len, Some(Wildcard::ExtGlob(prefix, patterns)) )
                 },
                 _ => nest -= 1,
             }
