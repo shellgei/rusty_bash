@@ -22,6 +22,17 @@ pub fn compare(word: &String, pattern: &str) -> bool {
     candidates.iter().any(|c| c == "")
 }
 
+pub fn compare_forward(word: &String, pattern: &str) -> bool {
+    let wildcards = parse(pattern);
+    let mut candidates = vec![word.to_string()];
+
+    for w in wildcards {
+        compare_internal(&mut candidates, &w);
+    }
+
+    candidates.iter().any(|c| c != word)
+}
+
 fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
     match w {
         Wildcard::Normal(s) => compare_normal(candidates, &s),
@@ -78,6 +89,8 @@ pub fn question(cands: &mut Vec<String>) {
 fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
     match prefix {
         '?' => ext_question(cands, patterns),
+        '*' => ext_zero_or_more(cands, patterns),
+        '+' => ext_more_than_zero(cands, patterns),
         '@' => ext_once(cands, patterns),
         '!' => ext_not(cands, patterns),
         _ => panic!("!!!"),
@@ -90,6 +103,40 @@ fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
         let mut tmp = cands.clone();
         parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
         ans.append(&mut tmp);
+    }
+    *cands = ans;
+}
+
+fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
+    let mut ans = vec![];
+    for c in cands.into_iter() {
+        let mut s = c.to_string();
+        ans.push(s.clone());
+
+        while s.len() > 0 {
+            s.remove(0);
+
+            match patterns.iter().any(|p| compare_forward(&s, p)) {
+                true  => ans.push(s.clone()),
+                false => break,
+            }
+        }
+    }
+    *cands = ans;
+}
+
+fn ext_more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
+    let mut ans = vec![];
+    for c in cands.into_iter() {
+        let mut s = c.to_string();
+
+        while s.len() > 0 {
+            match patterns.iter().any(|p| compare_forward(&s, p)) {
+                true  => ans.push(s.clone()),
+                false => break,
+            }
+            s.remove(0);
+        }
     }
     *cands = ans;
 }
@@ -120,15 +167,6 @@ fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
         }
     }
     *cands = ans;
-    /*
-    let mut ans = cands.clone();
-    for p in patterns {
-        let mut tmp = cands.clone();
-        parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
-        ans.append(&mut tmp);
-    }
-    *cands = ans;
-    */
 }
 
 pub fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {

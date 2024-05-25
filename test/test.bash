@@ -1069,6 +1069,18 @@ res=$($com <<< 'case "" in !(a|b)aa) echo NG ;; *) echo OK ;; esac')
 res=$($com <<< 'case cccccccccccaa in !(a|b)aa) echo OK ;; *) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case cccccccccccaa in *(a|b|c)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case aa in *(a|b|c)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case cccccccccccaa in +(a|b|c)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+#res=$($com <<< 'case aa in +(a|b|c)aa) echo NG ;; *) echo OK ;; esac')
+#[ "$res" = "OK" ] || err $LINENO
+
 ### BUILTIN COMMANDS ###
 
 # source command
