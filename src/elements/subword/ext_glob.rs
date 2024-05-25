@@ -66,6 +66,16 @@ impl ExtGlob {
         }
     }
 
+    fn eat_extglob(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if let Some(a) = Self::parse(feeder, core){
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
+    }
+
     fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
         match feeder.starts_with("$") {
             true  => Self::set_simple_subword(feeder, ans, 1),
@@ -117,6 +127,7 @@ impl ExtGlob {
         loop {
             while Self::eat_braced_param(feeder, &mut ans, core)
                || Self::eat_command_substitution(feeder, &mut ans, core)
+               || Self::eat_extglob(feeder, &mut ans, core)
                || Self::eat_special_or_positional_param(feeder, &mut ans, core)
                || Self::eat_doller(feeder, &mut ans)
                || Self::eat_escaped_char(feeder, &mut ans, core)

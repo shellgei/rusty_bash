@@ -223,8 +223,11 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
     let mut chars = vec![];
     let mut len = 2;
     let mut escaped = false;
+    let mut nest = 0;
+    let mut next_nest = false;
 
     for c in remaining[len..].chars() {
+        //eprintln!("{:?}, {:?}", &next_nest, &c);
         len += c.len_utf8();
 
         if escaped {
@@ -237,8 +240,17 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
             continue;
         }
 
+        if next_nest && c == '(' {
+            nest += 1;
+        }
+
+        next_nest = c == '?';
+
         if c == ')' {
-            return (len, Wildcard::ExtQuestion(vec![chars.iter().collect()]) );
+            match nest {
+                0 => return (len, Wildcard::ExtQuestion(vec![chars.iter().collect()]) ),
+                _ => nest -= 1,
+            }
         }
 
         chars.push(c);
