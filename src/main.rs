@@ -17,7 +17,7 @@ use signal_hook::iterator::Signals;
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");
-    eprintln!("Rusty Bash, version {}
+    eprintln!("Rusty Bash (a.k.a. Sushi shell), version {}
 © 2024 Ryuichi Ueda
 License: BSD 3-Clause
 
