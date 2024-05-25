@@ -96,7 +96,7 @@ impl DoubleQuoted {
 
     fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
         match feeder.starts_with("$") {
-            true  => Self::set_subword(feeder, ans, 1, SubwordType::Symbol),
+            true  => Self::set_subword(feeder, ans, 1, SubwordType::Other),
             false => false,
         }
     }

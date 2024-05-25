@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod other;
+pub mod other;
 mod single_quoted;
 mod braced_param;
 mod command;
@@ -28,10 +28,8 @@ pub enum SubwordType {
     Parameter,
     VarName,
     /* other subwords */
-    History,
     SingleQuoted,
     DoubleQuoted,
-    Symbol,
     EscapedChar,
     Other,
 }
@@ -76,7 +74,6 @@ pub trait Subword {
     fn get_text(&self) -> &str;
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn merge(&mut self, _right: &Box<dyn Subword>) {}
-    fn set(&mut self, _subword_type: SubwordType, _s: &str) {}
     fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
@@ -88,7 +85,7 @@ pub trait Subword {
 
         let mut tmp = OtherSubword::new("", SubwordType::Other);
         let mut copy = |text: &str| {
-            tmp.set(SubwordType::Other, text);
+            tmp.text = text.to_string();
             tmp.boxed_clone()
         };
 

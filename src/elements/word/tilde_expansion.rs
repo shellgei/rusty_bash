@@ -4,6 +4,7 @@
 use crate::ShellCore;
 use crate::elements::word::Word;
 use crate::elements::subword::SubwordType;
+use crate::elements::subword::other::OtherSubword;
 use nix::unistd::User;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
@@ -21,7 +22,7 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
     if value == "" {
         return;
     }
-    word.subwords[0].set(SubwordType::Other, &value);
+    word.subwords[0] = Box::new(OtherSubword{ text: value, subword_type: SubwordType::Other });
     word.subwords[1..length].iter_mut().for_each(|w| w.clear());
 }
 
