@@ -29,7 +29,7 @@ fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
         Wildcard::Question  => question(candidates),
         Wildcard::OneOf(cs) => one_of(candidates, &cs, false),
         Wildcard::NotOneOf(cs) => one_of(candidates, &cs, true),
-        Wildcard::ExtGlob(_, ps) => ext_question(candidates, &ps),
+        Wildcard::ExtGlob(prefix, ps) => ext_paren(candidates, *prefix, &ps),
     }
 }
 
@@ -75,9 +75,26 @@ pub fn question(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
+fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
+    match prefix {
+        '?' => ext_question(cands, patterns),
+        '@' => ext_at(cands, patterns),
+        _ => panic!("!!!"),
+    }
+}
+
 fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
-    dbg!("{:?}", &patterns);
     let mut ans = cands.clone();
+    for p in patterns {
+        let mut tmp = cands.clone();
+        parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
+        ans.append(&mut tmp);
+    }
+    *cands = ans;
+}
+
+fn ext_at(cands: &mut Vec<String>, patterns: &Vec<String>) {
+    let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
         parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
