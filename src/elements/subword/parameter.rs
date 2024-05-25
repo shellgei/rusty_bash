@@ -5,11 +5,11 @@ use crate::{ShellCore, Feeder};
 use crate::elements::subword::{Subword, SubwordType};
 
 #[derive(Debug, Clone)]
-pub struct SpecialAndPositionParam {
+pub struct Parameter {
     pub text: String,
 }
 
-impl Subword for SpecialAndPositionParam {
+impl Subword for Parameter {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn merge(&mut self, right: &Box<dyn Subword>) { self.text += &right.get_text(); }
@@ -26,7 +26,7 @@ impl Subword for SpecialAndPositionParam {
     fn clear(&mut self) { self.text = String::new(); }
 }
 
-impl SpecialAndPositionParam {
+impl Parameter {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         let len = feeder.scanner_dollar_special_and_positional_param(core);
         match len > 0 {

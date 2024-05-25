@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::elements::word::Word;
 use crate::elements::subword::{Subword, SubwordType};
-use crate::elements::subword::special_and_position_param::SpecialAndPositionParam;
+use crate::elements::subword::parameter::Parameter;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
     for i in word.scan_pos("$") {
@@ -26,7 +26,7 @@ fn connect_names(subwords: &mut [Box<dyn Subword>]) {
 
     if pos > 1 {
         //subwords[0].set(SubwordType::Parameter, &text);
-        subwords[0] = Box::new(SpecialAndPositionParam{ text: text });
+        subwords[0] = Box::new(Parameter{ text: text });
         subwords[1..pos].iter_mut().for_each(|s| s.clear());
     }
 }
