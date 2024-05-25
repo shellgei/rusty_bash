@@ -61,11 +61,7 @@ impl DoubleQuoted {
 
         let txt = feeder.consume(len);
         ans.text += &txt;
-        match tp {
-            SubwordType::EscapedChar => ans.subwords.push(Box::new(EscapedChar{ text: txt })),
-            SubwordType::Parameter   => ans.subwords.push(Box::new(Parameter{ text: txt })),
-            _ => ans.subwords.push(Box::new(SimpleSubword::new(&txt, tp))),
-        }
+        ans.subwords.push(Box::new(SimpleSubword::new(&txt, tp)));
         true
     }
 
@@ -90,8 +86,13 @@ impl DoubleQuoted {
     }
 
     fn eat_special_or_positional_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_dollar_special_and_positional_param(core);
-        Self::set_subword(feeder, ans, len, SubwordType::Parameter)
+        if let Some(a) = Parameter::parse(feeder, core){
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
     }
 
     fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
@@ -103,7 +104,10 @@ impl DoubleQuoted {
 
     fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if feeder.starts_with("\\$") || feeder.starts_with("\\\\") {
-            return Self::set_subword(feeder, ans, 2, SubwordType::EscapedChar);
+            let txt = feeder.consume(2);
+            ans.text += &txt;
+            ans.subwords.push(Box::new(EscapedChar{ text: txt }));
+            return true;
         }
         let len = feeder.scanner_escaped_char(core);
         Self::set_subword(feeder, ans, len, SubwordType::Simple)
