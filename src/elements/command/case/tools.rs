@@ -127,16 +127,11 @@ fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: bu
 
 fn ext_more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
     let mut ans = vec![];
-    for c in cands.into_iter() {
-        let mut s = c.to_string();
+    let mut tmp = cands.clone();
 
-        while s.len() > 0 {
-            match patterns.iter().any(|p| compare_forward(&s, p)) {
-                true  => ans.push(s.clone()),
-                false => break,
-            }
-            s.remove(0);
-        }
+    while tmp.len() > 0  {
+        ext_once(&mut tmp, patterns);
+        ans.extend(tmp.clone());
     }
     *cands = ans;
 }
