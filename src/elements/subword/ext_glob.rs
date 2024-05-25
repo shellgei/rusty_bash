@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
 
@@ -15,6 +14,7 @@ pub struct ExtGlob {
 impl Subword for ExtGlob {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
+    fn subsubwords(&self) -> Option<&Vec<Box<dyn Subword>>> { Some(&self.subwords) }
 }
 
 impl ExtGlob {
@@ -73,6 +73,11 @@ impl ExtGlob {
         }
     }
 
+    fn eat_symbol(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        let len = feeder.scanner_subword_symbol();
+        Self::set_simple_subword(feeder, ans, len)
+    }
+
     fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if feeder.starts_with("\\$") || feeder.starts_with("\\\\") {
             let txt = feeder.consume(2);
@@ -107,6 +112,7 @@ impl ExtGlob {
         }
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
+        ans.subwords.push( Box::new( SimpleSubword {text: ans.text.clone() } ) );
 
         loop {
             while Self::eat_braced_param(feeder, &mut ans, core)
@@ -115,11 +121,13 @@ impl ExtGlob {
                || Self::eat_doller(feeder, &mut ans)
                || Self::eat_escaped_char(feeder, &mut ans, core)
                || Self::eat_name(feeder, &mut ans, core)
+               || Self::eat_symbol(feeder, &mut ans)
                || Self::eat_other(feeder, &mut ans, core) {}
 
             if feeder.starts_with(")") {
                 ans.text += &feeder.consume(1);
-//                eprintln!("{:?}", &ans);
+                ans.subwords.push( Box::new( SimpleSubword {text: ")".to_string() } ) );
+//                dbg!("{:?}", &ans);
                 return Some(ans);
             }else if feeder.len() > 0 {
                 panic!("SUSH INTERNAL ERROR: unknown chars in double quoted word");

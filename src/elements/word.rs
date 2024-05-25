@@ -118,10 +118,19 @@ impl Word {
             ans.push(&sw);
         }
 
-        if ans.text.len() == 0 {
-            None
-        }else{
-            Some(ans)
+        match ans.text.len() {
+            0 => None,
+            _ => {
+                let mut ans2 = Word::new();
+                ans2.text = ans.text;
+                for s in ans.subwords {
+                    match s.subsubwords() {
+                        None      => ans2.subwords.push(s),
+                        Some(sws) => ans2.subwords.append(&mut sws.to_vec()),
+                    }
+                }
+                Some(ans2)
+            },
         }
     }
 }
