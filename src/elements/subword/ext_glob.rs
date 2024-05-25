@@ -129,6 +129,9 @@ impl ExtGlob {
                 ans.subwords.push( Box::new( SimpleSubword {text: ")".to_string() } ) );
 //                dbg!("{:?}", &ans);
                 return Some(ans);
+            }else if feeder.starts_with("|") {
+                ans.text += &feeder.consume(1);
+                ans.subwords.push( Box::new( SimpleSubword {text: "|".to_string() } ) );
             }else if feeder.len() > 0 {
                 panic!("SUSH INTERNAL ERROR: unknown chars in double quoted word");
             }else if ! feeder.feed_additional_line(core) {
