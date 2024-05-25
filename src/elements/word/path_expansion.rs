@@ -1,8 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::subword::SubwordType;
-use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::word::Word;
 use glob;
 use glob::{GlobError, MatchOptions};
@@ -51,8 +49,7 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
 }
 
 fn rewrite(word: &mut Word, path: &str) -> Word {
-    //word.subwords[0].set(SubwordType::Simple, &path);
-    word.subwords[0] = Box::new(SimpleSubword{ text: path.to_string(), subword_type: SubwordType::Simple });
+    word.subwords[0] = Word::make_simple_subword(path.to_string());
     while word.subwords.len() > 1 {
         word.subwords.pop();
     }

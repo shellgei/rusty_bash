@@ -19,6 +19,7 @@ use self::single_quoted::SingleQuoted;
 use self::parameter::Parameter;
 use std::fmt;
 use std::fmt::Debug;
+use super::word::Word;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SubwordType {
@@ -77,19 +78,10 @@ pub trait Subword {
     fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        let splits = split_str(self.get_text());
-
-        if splits.len() < 2 {
-            return vec![self.boxed_clone()];
-        }
-
-        let mut tmp = SimpleSubword::new("", SubwordType::Simple);
-        let mut copy = |text: &str| {
-            tmp.text = text.to_string();
-            tmp.boxed_clone()
-        };
-
-        splits.iter().map(|s| copy(s)).collect()
+        split_str(self.get_text())
+            .iter()
+            .map(|s| Word::make_simple_subword(s.to_string()))
+            .collect()
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
