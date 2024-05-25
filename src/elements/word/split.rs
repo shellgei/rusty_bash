@@ -7,8 +7,7 @@ use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     for (i, sw) in word.subwords.iter().enumerate() {
-        if sw.get_text().starts_with("\"") 
-        || sw.get_text().starts_with("'") { 
+        if sw.is_quoted() {
             continue;
         }
         let split = sw.split(core);

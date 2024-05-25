@@ -22,10 +22,9 @@ impl Subword for Parameter {
 
 impl Parameter {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
-        let len = feeder.scanner_dollar_special_and_positional_param(core);
-        match len > 0 {
-            true  => Some(Self { text: feeder.consume(len) } ),
-            false => None,
+        match feeder.scanner_dollar_special_and_positional_param(core) {
+            0 => None,
+            n => Some(Self { text: feeder.consume(n) } ),
         }
     }
 }

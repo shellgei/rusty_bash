@@ -23,19 +23,16 @@ impl Subword for DoubleQuoted {
             return false;
         }
         self.subwords = word.subwords;
-        let tmp: String = self.subwords.iter().map(|s| s.get_text()).collect();
-        self.text = "\"".to_string()+ &tmp + "\"";
+        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
         true
     }
 
     fn make_glob_string(&mut self) -> String {
-        let mut tmp = self.text[1..].to_string();
-        tmp.pop();
-        return tmp.replace("\\", "\\\\")
-                  .replace("*", "\\*")
-                  .replace("?", "\\?")
-                  .replace("[", "\\[")
-                  .replace("]", "\\]");
+        return self.text.replace("\\", "\\\\")
+                        .replace("*", "\\*")
+                        .replace("?", "\\?")
+                        .replace("[", "\\[")
+                        .replace("]", "\\]");
     }
 
     fn make_unquoted_string(&mut self) -> String {
@@ -44,6 +41,8 @@ impl Subword for DoubleQuoted {
             .collect::<Vec<String>>()
             .concat()
     }
+
+    fn is_quoted(&self) -> bool {true}
 }
 
 impl DoubleQuoted {

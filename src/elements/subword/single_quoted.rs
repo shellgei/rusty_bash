@@ -14,28 +14,24 @@ impl Subword for SingleQuoted {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn make_glob_string(&mut self) -> String {
-        let ans = self.text
-            .replace("\\", "\\\\")
+        self.text.replace("\\", "\\\\")
             .replace("*", "\\*")
             .replace("?", "\\?")
             .replace("[", "\\[")
-            .replace("]", "\\]");
-        let len = ans.len();
-        ans[1..len-1].to_string()
+            .replace("]", "\\]")
     }
 
-    fn make_unquoted_string(&mut self) -> String {
-        let len = self.text.len();
-        self.text[1..len-1].to_string()
-    }
+    fn is_quoted(&self) -> bool {true}
 }
 
 impl SingleQuoted {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
-        let len = feeder.scanner_single_quoted_subword(core);
-        match len > 0 {
-            true  => Some(SingleQuoted{ text: feeder.consume(len) }),
-            false => None,
+        match feeder.scanner_single_quoted_subword(core) {
+            0 => None,
+            n => {
+                let s = feeder.consume(n);
+                Some(SingleQuoted{ text: s[1..n-1].to_string() })
+            },
         }
     }
 }

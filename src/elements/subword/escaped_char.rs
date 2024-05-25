@@ -17,10 +17,9 @@ impl Subword for EscapedChar {
 
 impl EscapedChar {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
-        let len = feeder.scanner_escaped_char(core);
-        match len > 0 {
-            true  => Some(EscapedChar{ text: feeder.consume(len) }),
-            false => None,
+        match feeder.scanner_escaped_char(core) {
+            0 => None,
+            n => Some(EscapedChar{ text: feeder.consume(n) }),
         }
     }
 }
