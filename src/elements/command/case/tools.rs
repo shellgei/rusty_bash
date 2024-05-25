@@ -82,7 +82,7 @@ fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
         '+' => ext_more_than_zero(cands, patterns),
         '@' => ext_once(cands, patterns),
         '!' => ext_not(cands, patterns),
-        _ => panic!("!!!"),
+        _   => panic!("SUSH INTERNAL ERROR: unknown extglob prefix"),
     }
 }
 
