@@ -114,10 +114,10 @@ fn parse(pattern: &str) -> Vec<Wildcard > {
             },
         }
 
-        let (len, wc) = scanner_ext_question(&remaining);
+        let (len, extparen) = scanner_ext_paren(&remaining);
         if len > 0 {
             consume(&mut remaining, len);
-            ans.push(wc);
+            ans.push(extparen.unwrap());
             continue;
         }
 
@@ -216,9 +216,14 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
     (0, Wildcard::OneOf(vec![]) )
 }
 
-fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
+fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
+    /*
+    match remaining.chars().nth(1) {
+        Some(c) => 
+    }*/
+
     if ! remaining.starts_with("?(") {
-        return (0, Wildcard::ExtGlob('?', vec![String::new()]) );
+        return (0, None );
     }
     
     let mut chars = vec![];
@@ -257,7 +262,7 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
             match nest {
                 0 => return {
                     patterns.push(chars.iter().collect());
-                    (len, Wildcard::ExtGlob('?', patterns) )
+                    (len, Some(Wildcard::ExtGlob('?', patterns)) )
                 },
                 _ => nest -= 1,
             }
@@ -266,7 +271,7 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
         chars.push(c);
     }
 
-    (0, Wildcard::ExtGlob('?', vec![String::new()]) )
+    (0, None)
 }
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
