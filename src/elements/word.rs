@@ -9,7 +9,7 @@ mod split;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
-use super::subword::{Subword, SubwordType};
+use super::subword::Subword;
 use super::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
@@ -98,7 +98,7 @@ impl Word {
     }
 
     pub fn make_simple_subword(text: String) -> Box<dyn Subword> {
-        Box::new( SimpleSubword {text: text, subword_type: SubwordType::Simple }) 
+        Box::new( SimpleSubword {text: text }) 
     }
 
     pub fn new() -> Word {

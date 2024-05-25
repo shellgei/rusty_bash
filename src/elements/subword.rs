@@ -8,6 +8,7 @@ mod command;
 mod escaped_char;
 mod double_quoted;
 pub mod parameter;
+mod varname;
 
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleSubword;
@@ -17,6 +18,7 @@ use self::escaped_char::EscapedChar;
 use self::double_quoted::DoubleQuoted;
 use self::single_quoted::SingleQuoted;
 use self::parameter::Parameter;
+use self::varname::VarName;
 use std::fmt;
 use std::fmt::Debug;
 use super::word::Word;
@@ -126,6 +128,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subwor
     else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = VarName::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }
