@@ -1048,6 +1048,9 @@ res=$($com <<< 'case aaa in ?(a)aa) echo OK ;; *) echo NG ;; esac')
 res=$($com <<< 'case aa in ?(a)aa) echo OK ;; *) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case baa in ?(a|b)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 ### BUILTIN COMMANDS ###
 
 # source command

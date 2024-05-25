@@ -8,7 +8,7 @@ enum Wildcard {
     Question,
     OneOf(Vec<char>),
     NotOneOf(Vec<char>),
-    ExtGlob(char, String),
+    ExtGlob(char, Vec<String>),
 }
 
 pub fn compare(word: &String, pattern: &str) -> bool {
@@ -29,7 +29,7 @@ fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
         Wildcard::Question  => question(candidates),
         Wildcard::OneOf(cs) => one_of(candidates, &cs, false),
         Wildcard::NotOneOf(cs) => one_of(candidates, &cs, true),
-        Wildcard::ExtGlob(_, p) => ext_question(candidates, &p),
+        Wildcard::ExtGlob(_, ps) => ext_question(candidates, &ps),
     }
 }
 
@@ -75,10 +75,15 @@ pub fn question(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
-fn ext_question(cands: &mut Vec<String>, pattern: &String) {
-    let mut backup = cands.clone();
-    parse(pattern).iter().for_each(|w| compare_internal(cands, &w));
-    cands.append(&mut backup);
+fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
+    dbg!("{:?}", &patterns);
+    let mut ans = cands.clone();
+    for p in patterns {
+        let mut tmp = cands.clone();
+        parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
+        ans.append(&mut tmp);
+    }
+    *cands = ans;
 }
 
 pub fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
@@ -213,7 +218,7 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
 
 fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
     if ! remaining.starts_with("?(") {
-        return (0, Wildcard::ExtGlob('?', String::new()) );
+        return (0, Wildcard::ExtGlob('?', vec![String::new()]) );
     }
     
     let mut chars = vec![];
@@ -221,9 +226,9 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
     let mut escaped = false;
     let mut nest = 0;
     let mut next_nest = false;
+    let mut patterns = vec![];
 
     for c in remaining[len..].chars() {
-        //eprintln!("{:?}, {:?}", &next_nest, &c);
         len += c.len_utf8();
 
         if escaped {
@@ -236,6 +241,12 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
             continue;
         }
 
+        if c == '|' && nest == 0 {
+            patterns.push(chars.iter().collect());
+            chars.clear();
+            continue;
+        }
+
         if next_nest && c == '(' {
             nest += 1;
         }
@@ -244,7 +255,10 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
 
         if c == ')' {
             match nest {
-                0 => return (len, Wildcard::ExtGlob('?', chars.iter().collect()) ),
+                0 => return {
+                    patterns.push(chars.iter().collect());
+                    (len, Wildcard::ExtGlob('?', patterns) )
+                },
                 _ => nest -= 1,
             }
         }
@@ -252,7 +266,7 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
         chars.push(c);
     }
 
-    (0, Wildcard::ExtGlob('?', String::new()) )
+    (0, Wildcard::ExtGlob('?', vec![String::new()]) )
 }
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
