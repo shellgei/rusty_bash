@@ -77,10 +77,7 @@ pub fn question(cands: &mut Vec<String>) {
 
 fn ext_question(cands: &mut Vec<String>, pattern: &String) {
     let mut backup = cands.clone();
-    //let wildcards = parse(pattern);
-    for w in parse(pattern) {
-        compare_internal(cands, &w);
-    }
+    parse(pattern).iter().for_each(|w| compare_internal(cands, &w));
     cands.append(&mut backup);
 }
 
