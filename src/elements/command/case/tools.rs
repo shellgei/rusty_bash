@@ -78,7 +78,8 @@ pub fn question(cands: &mut Vec<String>) {
 fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
     match prefix {
         '?' => ext_question(cands, patterns),
-        '@' => ext_at(cands, patterns),
+        '@' => ext_once(cands, patterns),
+        '!' => ext_not(cands, patterns),
         _ => panic!("!!!"),
     }
 }
@@ -93,7 +94,7 @@ fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn ext_at(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn ext_once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
@@ -101,6 +102,33 @@ fn ext_at(cands: &mut Vec<String>, patterns: &Vec<String>) {
         ans.append(&mut tmp);
     }
     *cands = ans;
+}
+
+fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
+    let mut ans = vec![];
+    for c in cands.into_iter() {
+        if ! patterns.iter().any(|p| compare(c, p)) {
+            let mut s = c.to_string();
+            loop {
+                ans.push(s.clone());
+
+                match s.len() {
+                    0 => break,
+                    _ => {s.remove(0);},
+                }
+            }
+        }
+    }
+    *cands = ans;
+    /*
+    let mut ans = cands.clone();
+    for p in patterns {
+        let mut tmp = cands.clone();
+        parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
+        ans.append(&mut tmp);
+    }
+    *cands = ans;
+    */
 }
 
 pub fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
