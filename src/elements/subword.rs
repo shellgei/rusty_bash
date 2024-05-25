@@ -23,21 +23,6 @@ use std::fmt;
 use std::fmt::Debug;
 use super::word::Word;
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum SubwordType {
-    /* related dollar substitution */
-    BracedParameter,
-    CommandSubstitution,
-    Parameter,
-    VarName,
-    /* other subwords */
-    SingleQuoted,
-    DoubleQuoted,
-    EscapedChar,
-    Simple,
-}
-
-
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.get_text()).finish()
@@ -88,7 +73,7 @@ pub trait Subword {
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
     fn make_unquoted_string(&mut self) -> String { self.get_text().to_string() }
-    fn get_type(&self) -> SubwordType;
+    fn is_name(&self) -> bool {false}
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {

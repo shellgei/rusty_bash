@@ -3,12 +3,12 @@
 
 use crate::ShellCore;
 use crate::elements::word::Word;
-use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     for (i, sw) in word.subwords.iter().enumerate() {
-        if sw.get_type() == SubwordType::SingleQuoted 
-        || sw.get_type() == SubwordType::DoubleQuoted {
+        if sw.get_text().starts_with("\"") 
+        || sw.get_text().starts_with("'") { 
             continue;
         }
         let split = sw.split(core);

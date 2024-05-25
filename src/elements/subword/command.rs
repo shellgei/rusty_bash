@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
-use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subword::Subword;
 use nix::unistd;
 use std::{thread, time};
 use std::fs::File;
@@ -31,8 +31,6 @@ impl Subword for CommandSubstitution {
         core.wait_pipeline(vec![pid]);
         result
     }
-
-    fn get_type(&self) -> SubwordType { SubwordType::CommandSubstitution }
 }
 
 impl CommandSubstitution {

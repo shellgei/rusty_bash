@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub struct SimpleSubword {
@@ -13,7 +13,6 @@ impl Subword for SimpleSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn get_type(&self) -> SubwordType { SubwordType::Simple }
 }
 
 impl SimpleSubword {

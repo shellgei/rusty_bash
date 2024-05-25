@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub struct SingleQuoted {
@@ -28,8 +28,6 @@ impl Subword for SingleQuoted {
         let len = self.text.len();
         self.text[1..len-1].to_string()
     }
-
-    fn get_type(&self) -> SubwordType { SubwordType::SingleQuoted  }
 }
 
 impl SingleQuoted {

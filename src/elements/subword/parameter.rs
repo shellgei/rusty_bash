@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub struct Parameter {
@@ -18,8 +18,6 @@ impl Subword for Parameter {
         self.text = value.to_string();
         true
     }
-
-    fn get_type(&self) -> SubwordType { SubwordType::Parameter  }
 }
 
 impl Parameter {

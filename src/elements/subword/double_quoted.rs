@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
-use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, SubwordType, VarName};
+use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
@@ -23,17 +23,19 @@ impl Subword for DoubleQuoted {
             return false;
         }
         self.subwords = word.subwords;
-        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
+        let tmp: String = self.subwords.iter().map(|s| s.get_text()).collect();
+        self.text = "\"".to_string()+ &tmp + "\"";
         true
     }
 
     fn make_glob_string(&mut self) -> String {
-        return self.text
-            .replace("\\", "\\\\")
-            .replace("*", "\\*")
-            .replace("?", "\\?")
-            .replace("[", "\\[")
-            .replace("]", "\\]");
+        let mut tmp = self.text[1..].to_string();
+        tmp.pop();
+        return tmp.replace("\\", "\\\\")
+                  .replace("*", "\\*")
+                  .replace("?", "\\?")
+                  .replace("[", "\\[")
+                  .replace("]", "\\]");
     }
 
     fn make_unquoted_string(&mut self) -> String {
@@ -42,8 +44,6 @@ impl Subword for DoubleQuoted {
             .collect::<Vec<String>>()
             .concat()
     }
-
-    fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted }
 }
 
 impl DoubleQuoted {

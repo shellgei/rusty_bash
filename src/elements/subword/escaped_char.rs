@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub struct EscapedChar {
@@ -13,7 +13,6 @@ impl Subword for EscapedChar {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn make_unquoted_string(&mut self) -> String { self.text[1..].to_string() }
-    fn get_type(&self) -> SubwordType { SubwordType::EscapedChar  }
 }
 
 impl EscapedChar {
