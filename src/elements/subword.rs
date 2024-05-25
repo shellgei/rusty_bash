@@ -21,7 +21,6 @@ use self::parameter::Parameter;
 use self::varname::VarName;
 use std::fmt;
 use std::fmt::Debug;
-use super::word::Word;
 
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -65,10 +64,9 @@ pub trait Subword {
     fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        split_str(self.get_text())
-            .iter()
-            .map(|s| Word::make_simple_subword(s.to_string()))
-            .collect()
+        let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
+
+        split_str(self.get_text()).iter().map(|s| f(s.to_string())).collect()
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}

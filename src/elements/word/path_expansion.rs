@@ -6,6 +6,7 @@ use glob;
 use glob::{GlobError, MatchOptions};
 use regex::Regex;
 use std::path::PathBuf;
+use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     let paths = expand(word.make_glob_string());
@@ -49,7 +50,7 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
 }
 
 fn rewrite(word: &mut Word, path: &str) -> Word {
-    word.subwords[0] = Word::make_simple_subword(path.to_string());
+    word.subwords[0] = Box::new( SimpleSubword{ text: path.to_string() } );
     while word.subwords.len() > 1 {
         word.subwords.pop();
     }

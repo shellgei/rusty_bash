@@ -10,7 +10,6 @@ mod split;
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use super::subword::Subword;
-use super::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
 pub struct Word {
@@ -95,10 +94,6 @@ impl Word {
             .filter(|e| e.1.get_text() == s)
             .map(|e| e.0)
             .collect()
-    }
-
-    pub fn make_simple_subword(text: String) -> Box<dyn Subword> {
-        Box::new( SimpleSubword {text: text }) 
     }
 
     pub fn new() -> Word {

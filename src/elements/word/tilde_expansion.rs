@@ -4,6 +4,7 @@
 use crate::ShellCore;
 use crate::elements::word::Word;
 use nix::unistd::User;
+use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
     let length = match prefix_length(word) {
@@ -20,7 +21,8 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
     if value == "" {
         return;
     }
-    word.subwords[0] = Word::make_simple_subword(value);
+    //word.subwords[0] = Word::make_simple_subword(value);
+    word.subwords[0] = Box::new( SimpleSubword{ text: value } );
     word.subwords[1..length].iter_mut().for_each(|w| w.set_text(""));
 }
 
