@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
-use super::{BracedParam, EscapedChar, OtherSubword, Parameter, Subword, SubwordType};
+use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, SubwordType};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
@@ -64,7 +64,7 @@ impl DoubleQuoted {
         match tp {
             SubwordType::EscapedChar => ans.subwords.push(Box::new(EscapedChar{ text: txt })),
             SubwordType::Parameter   => ans.subwords.push(Box::new(Parameter{ text: txt })),
-            _ => ans.subwords.push(Box::new(OtherSubword::new(&txt, tp))),
+            _ => ans.subwords.push(Box::new(SimpleSubword::new(&txt, tp))),
         }
         true
     }
@@ -96,7 +96,7 @@ impl DoubleQuoted {
 
     fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
         match feeder.starts_with("$") {
-            true  => Self::set_subword(feeder, ans, 1, SubwordType::Other),
+            true  => Self::set_subword(feeder, ans, 1, SubwordType::Simple),
             false => false,
         }
     }
@@ -106,7 +106,7 @@ impl DoubleQuoted {
             return Self::set_subword(feeder, ans, 2, SubwordType::EscapedChar);
         }
         let len = feeder.scanner_escaped_char(core);
-        Self::set_subword(feeder, ans, len, SubwordType::Other)
+        Self::set_subword(feeder, ans, len, SubwordType::Simple)
     }
 
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -116,7 +116,7 @@ impl DoubleQuoted {
 
     fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_double_quoted_subword(core);
-        Self::set_subword(feeder, ans, len, SubwordType::Other)
+        Self::set_subword(feeder, ans, len, SubwordType::Simple)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {

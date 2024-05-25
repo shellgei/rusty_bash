@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub mod other;
+pub mod simple;
 mod single_quoted;
 mod braced_param;
 mod command;
@@ -10,7 +10,7 @@ mod double_quoted;
 pub mod parameter;
 
 use crate::{ShellCore, Feeder};
-use self::other::OtherSubword;
+use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
 use self::command::CommandSubstitution;
 use self::escaped_char::EscapedChar;
@@ -31,7 +31,7 @@ pub enum SubwordType {
     SingleQuoted,
     DoubleQuoted,
     EscapedChar,
-    Other,
+    Simple,
 }
 
 
@@ -83,7 +83,7 @@ pub trait Subword {
             return vec![self.boxed_clone()];
         }
 
-        let mut tmp = OtherSubword::new("", SubwordType::Other);
+        let mut tmp = SimpleSubword::new("", SubwordType::Simple);
         let mut copy = |text: &str| {
             tmp.text = text.to_string();
             tmp.boxed_clone()
@@ -105,6 +105,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subwor
     else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = OtherSubword::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
     else{ None }
 }

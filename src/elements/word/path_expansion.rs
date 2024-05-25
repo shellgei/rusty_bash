@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::subword::SubwordType;
-use crate::elements::subword::other::OtherSubword;
+use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::word::Word;
 use glob;
 use glob::{GlobError, MatchOptions};
@@ -51,8 +51,8 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
 }
 
 fn rewrite(word: &mut Word, path: &str) -> Word {
-    //word.subwords[0].set(SubwordType::Other, &path);
-    word.subwords[0] = Box::new(OtherSubword{ text: path.to_string(), subword_type: SubwordType::Other });
+    //word.subwords[0].set(SubwordType::Simple, &path);
+    word.subwords[0] = Box::new(SimpleSubword{ text: path.to_string(), subword_type: SubwordType::Simple });
     while word.subwords.len() > 1 {
         word.subwords.pop();
     }

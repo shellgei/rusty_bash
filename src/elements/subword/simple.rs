@@ -5,12 +5,12 @@ use crate::{ShellCore, Feeder};
 use crate::elements::subword::{Subword, SubwordType};
 
 #[derive(Debug, Clone)]
-pub struct OtherSubword {
+pub struct SimpleSubword {
     pub text: String,
     pub subword_type: SubwordType,
 }
 
-impl Subword for OtherSubword {
+impl Subword for SimpleSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn merge(&mut self, right: &Box<dyn Subword>) { self.text += &right.get_text(); }
@@ -18,9 +18,9 @@ impl Subword for OtherSubword {
     fn clear(&mut self) { self.text = String::new(); }
 }
 
-impl OtherSubword {
-    pub fn new(s: &str, tp: SubwordType) -> OtherSubword {
-        OtherSubword {
+impl SimpleSubword {
+    pub fn new(s: &str, tp: SubwordType) -> SimpleSubword {
+        SimpleSubword {
             text: s.to_string(),
             subword_type: tp,
         }
@@ -52,7 +52,7 @@ impl OtherSubword {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<OtherSubword> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
         if Self::replace_expansion(feeder, core) {
             return Self::parse(feeder, core);
         }
@@ -64,12 +64,12 @@ impl OtherSubword {
 
         let len = feeder.scanner_subword_symbol();
         if len > 0 {
-            return Some(Self::new(&feeder.consume(len), SubwordType::Other));
+            return Some(Self::new(&feeder.consume(len), SubwordType::Simple));
         }
 
         let len = feeder.scanner_subword();
         if len > 0 {
-            return Some(Self::new(&feeder.consume(len), SubwordType::Other));
+            return Some(Self::new(&feeder.consume(len), SubwordType::Simple));
         }
 
         None
