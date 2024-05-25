@@ -124,7 +124,7 @@ impl Word {
                 let mut ans2 = Word::new();
                 ans2.text = ans.text;
                 for s in ans.subwords {
-                    match s.subsubwords() {
+                    match s.get_child_subwords() {
                         None      => ans2.subwords.push(s),
                         Some(sws) => ans2.subwords.append(&mut sws.to_vec()),
                     }
