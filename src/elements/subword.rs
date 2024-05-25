@@ -1,35 +1,26 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod simple;
+pub mod simple;
+mod single_quoted;
 mod braced_param;
 mod command;
+mod escaped_char;
 mod double_quoted;
+pub mod parameter;
+mod varname;
 
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
 use self::command::CommandSubstitution;
+use self::escaped_char::EscapedChar;
 use self::double_quoted::DoubleQuoted;
+use self::single_quoted::SingleQuoted;
+use self::parameter::Parameter;
+use self::varname::VarName;
 use std::fmt;
 use std::fmt::Debug;
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum SubwordType {
-    /* related dollar substitution */
-    BracedParameter,
-    CommandSubstitution,
-    Parameter,
-    VarName,
-    /* other subwords */
-    History,
-    SingleQuoted,
-    DoubleQuoted,
-    Symbol,
-    Escaped,
-    Other,
-}
-
 
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -68,37 +59,59 @@ fn split_str(s: &str) -> Vec<&str> {
 
 pub trait Subword {
     fn get_text(&self) -> &str;
+    fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn merge(&mut self, _right: &Box<dyn Subword>) {}
-    fn set(&mut self, _subword_type: SubwordType, _s: &str) {}
-    fn substitute(&mut self, core: &mut ShellCore) -> bool;
+    fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        let splits = split_str(self.get_text());
+        let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
 
-        if splits.len() < 2 {
-            return vec![self.boxed_clone()];
-        }
-
-        let mut tmp = SimpleSubword::new("", SubwordType::Other);
-        let mut copy = |text| {
-            tmp.set(SubwordType::Other, text);
-            tmp.boxed_clone()
-        };
-
-        splits.iter().map(|s| copy(s)).collect()
+        split_str(self.get_text()).iter().map(|s| f(s.to_string())).collect()
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
     fn make_unquoted_string(&mut self) -> String { self.get_text().to_string() }
-    fn get_type(&self) -> SubwordType;
-    fn clear(&mut self) {}
+    fn is_name(&self) -> bool {false}
+}
+
+fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+    let len = feeder.scanner_history_expansion(core);
+    if len == 0 {
+        return false;
+    }
+
+    let history_len = core.history.len();
+    if history_len < 2 {
+        feeder.replace(len, "");
+        return true;
+    }
+
+    let mut his = String::new();
+    for h in &core.history[1..] {
+        let last = h.split(" ").last().unwrap();
+
+        if ! last.starts_with("!$") {
+            his = last.to_string();
+            break;
+        }
+    }
+
+    feeder.replace(len, &his);
+    true
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    if replace_history_expansion(feeder, core) {
+        return parse(feeder, core);
+    }
+
     if let Some(a) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = VarName::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }

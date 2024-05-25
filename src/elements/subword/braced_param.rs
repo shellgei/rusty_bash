@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
-use crate::elements::subword::{Subword, SubwordType};
+use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 
 #[derive(Debug, Clone)]
@@ -11,7 +11,6 @@ pub struct BracedParam {
     pub text: String,
     pub name: String,
     pub subscript: Option<Subscript>,
-    subword_type: SubwordType,
 }
 
 fn is_param(s :&String) -> bool {
@@ -39,15 +38,6 @@ impl Subword for BracedParam {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn merge(&mut self, right: &Box<dyn Subword>) {
-        self.text += &right.get_text();
-    }
-
-    fn set(&mut self, subword_type: SubwordType, s: &str){
-        self.text = s.to_string();
-        self.subword_type = subword_type;
-    }
-
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
         if self.name.len() == 0 {
             return false;
@@ -69,8 +59,7 @@ impl Subword for BracedParam {
         true
     }
 
-    fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
-    fn clear(&mut self) { self.text = String::new(); }
+    fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 }
 
 impl BracedParam {
@@ -79,7 +68,6 @@ impl BracedParam {
             text: String::new(),
             name: String::new(),
             subscript: None,
-            subword_type: SubwordType::BracedParameter,
         }
     }
 

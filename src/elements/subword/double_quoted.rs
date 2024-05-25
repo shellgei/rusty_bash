@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
-use super::{BracedParam, SimpleSubword, Subword, SubwordType};
+use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone)]
 pub struct DoubleQuoted {
@@ -23,17 +23,19 @@ impl Subword for DoubleQuoted {
             return false;
         }
         self.subwords = word.subwords;
-        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
+        let tmp: String = self.subwords.iter().map(|s| s.get_text()).collect();
+        self.text = "\"".to_string()+ &tmp + "\"";
         true
     }
 
     fn make_glob_string(&mut self) -> String {
-        return self.text
-            .replace("\\", "\\\\")
-            .replace("*", "\\*")
-            .replace("?", "\\?")
-            .replace("[", "\\[")
-            .replace("]", "\\]");
+        let mut tmp = self.text[1..].to_string();
+        tmp.pop();
+        return tmp.replace("\\", "\\\\")
+                  .replace("*", "\\*")
+                  .replace("?", "\\?")
+                  .replace("[", "\\[")
+                  .replace("]", "\\]");
     }
 
     fn make_unquoted_string(&mut self) -> String {
@@ -42,8 +44,6 @@ impl Subword for DoubleQuoted {
             .collect::<Vec<String>>()
             .concat()
     }
-
-    fn get_type(&self) -> SubwordType { SubwordType::DoubleQuoted }
 }
 
 impl DoubleQuoted {
@@ -54,14 +54,14 @@ impl DoubleQuoted {
         }
     }
 
-    fn set_subword(feeder: &mut Feeder, ans: &mut Self, len: usize, tp: SubwordType) -> bool {
+    fn set_simple_subword(feeder: &mut Feeder, ans: &mut Self, len: usize) -> bool {
         if len == 0 {
             return false;
         }
 
         let txt = feeder.consume(len);
         ans.text += &txt;
-        ans.subwords.push(Box::new(SimpleSubword::new(&txt, tp)));
+        ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
         true
     }
 
@@ -86,33 +86,48 @@ impl DoubleQuoted {
     }
 
     fn eat_special_or_positional_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_dollar_special_and_positional_param(core);
-        Self::set_subword(feeder, ans, len, SubwordType::Parameter)
+        if let Some(a) = Parameter::parse(feeder, core){
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
     }
 
     fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
         match feeder.starts_with("$") {
-            true  => Self::set_subword(feeder, ans, 1, SubwordType::Symbol),
+            true  => Self::set_simple_subword(feeder, ans, 1),
             false => false,
         }
     }
 
     fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if feeder.starts_with("\\$") || feeder.starts_with("\\\\") {
-            return Self::set_subword(feeder, ans, 2, SubwordType::Escaped);
+            let txt = feeder.consume(2);
+            ans.text += &txt;
+            ans.subwords.push(Box::new(EscapedChar{ text: txt }));
+            return true;
         }
         let len = feeder.scanner_escaped_char(core);
-        Self::set_subword(feeder, ans, len, SubwordType::Other)
+        Self::set_simple_subword(feeder, ans, len)
     }
 
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
-        Self::set_subword(feeder, ans, len, SubwordType::VarName)
+        if len == 0 {
+            return false;
+        }
+
+        let txt = feeder.consume(len);
+        ans.text += &txt;
+        ans.subwords.push(Box::new( VarName{ text: txt}));
+        true
     }
 
     fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_double_quoted_subword(core);
-        Self::set_subword(feeder, ans, len, SubwordType::Other)
+        Self::set_simple_subword(feeder, ans, len)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {

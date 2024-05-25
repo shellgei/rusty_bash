@@ -9,7 +9,7 @@ mod split;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
-use crate::elements::subword::Subword;
+use super::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub struct Word {

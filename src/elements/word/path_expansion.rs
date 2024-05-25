@@ -1,12 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::subword::SubwordType;
 use crate::elements::word::Word;
 use glob;
 use glob::{GlobError, MatchOptions};
 use regex::Regex;
 use std::path::PathBuf;
+use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     let paths = expand(word.make_glob_string());
@@ -50,7 +50,7 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
 }
 
 fn rewrite(word: &mut Word, path: &str) -> Word {
-    word.subwords[0].set(SubwordType::Other, &path);
+    word.subwords[0] = Box::new( SimpleSubword{ text: path.to_string() } );
     while word.subwords.len() > 1 {
         word.subwords.pop();
     }

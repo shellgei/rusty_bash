@@ -1042,6 +1042,9 @@ res=$($com <<< 'case yes in y[\^abcde]s) echo OK ;; *) echo NG ;; esac')
 res=$($com <<< 'case $- in *i*) echo NG ;; *) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+#res=$($com <<< 'case aaa in ?(a)aa) echo OK ;; *) echo NG ;; esac')
+#[ "$res" = "OK" ] || err $LINENO
+
 ### BUILTIN COMMANDS ###
 
 # source command
