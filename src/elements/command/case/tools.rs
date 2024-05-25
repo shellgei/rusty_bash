@@ -8,7 +8,7 @@ enum Wildcard {
     Question,
     OneOf(Vec<char>),
     NotOneOf(Vec<char>),
-    ExtQuestion(String),
+    ExtGlob(char, String),
 }
 
 pub fn compare(word: &String, pattern: &str) -> bool {
@@ -29,7 +29,7 @@ fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
         Wildcard::Question  => question(candidates),
         Wildcard::OneOf(cs) => one_of(candidates, &cs, false),
         Wildcard::NotOneOf(cs) => one_of(candidates, &cs, true),
-        Wildcard::ExtQuestion(p) => ext_question(candidates, &p),
+        Wildcard::ExtGlob(_, p) => ext_question(candidates, &p),
     }
 }
 
@@ -213,7 +213,7 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
 
 fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
     if ! remaining.starts_with("?(") {
-        return (0, Wildcard::ExtQuestion(String::new()) );
+        return (0, Wildcard::ExtGlob('?', String::new()) );
     }
     
     let mut chars = vec![];
@@ -240,11 +240,11 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
             nest += 1;
         }
 
-        next_nest = c == '?';
+        next_nest = "?*+@!".find(c) != None;
 
         if c == ')' {
             match nest {
-                0 => return (len, Wildcard::ExtQuestion(chars.iter().collect()) ),
+                0 => return (len, Wildcard::ExtGlob('?', chars.iter().collect()) ),
                 _ => nest -= 1,
             }
         }
@@ -252,7 +252,7 @@ fn scanner_ext_question(remaining: &str) -> (usize, Wildcard) {
         chars.push(c);
     }
 
-    (0, Wildcard::ExtQuestion(String::new()) )
+    (0, Wildcard::ExtGlob('?', String::new()) )
 }
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
