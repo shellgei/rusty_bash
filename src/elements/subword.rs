@@ -73,8 +73,9 @@ fn split_str(s: &str) -> Vec<&str> {
 
 pub trait Subword {
     fn get_text(&self) -> &str;
+    fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn merge(&mut self, _right: &Box<dyn Subword>) {}
+    //fn merge(&mut self, _right: &Box<dyn Subword>) {}
     fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
@@ -87,7 +88,6 @@ pub trait Subword {
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
     fn make_unquoted_string(&mut self) -> String { self.get_text().to_string() }
     fn get_type(&self) -> SubwordType;
-    fn clear(&mut self) {}
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {

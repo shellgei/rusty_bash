@@ -61,7 +61,7 @@ impl Subword for BracedParam {
     }
 
     fn get_type(&self) -> SubwordType { self.subword_type.clone()  }
-    fn clear(&mut self) { self.text = String::new(); }
+    fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 }
 
 impl BracedParam {
