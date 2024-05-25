@@ -22,17 +22,6 @@ pub fn compare(word: &String, pattern: &str) -> bool {
     candidates.iter().any(|c| c == "")
 }
 
-pub fn compare_forward(word: &String, pattern: &str) -> bool {
-    let wildcards = parse(pattern);
-    let mut candidates = vec![word.to_string()];
-
-    for w in wildcards {
-        compare_internal(&mut candidates, &w);
-    }
-
-    candidates.iter().any(|c| c != word)
-}
-
 fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
     match w {
         Wildcard::Normal(s) => compare_normal(candidates, &s),
@@ -109,6 +98,15 @@ fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
 
 fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
     let mut ans = vec![];
+    let mut tmp = cands.clone();
+
+    while tmp.len() > 0  {
+        ans.extend(tmp.clone());
+        ext_once(&mut tmp, patterns);
+    }
+    *cands = ans;
+    /*
+    let mut ans = vec![];
     for c in cands.into_iter() {
         let mut s = c.to_string();
         ans.push(s.clone());
@@ -123,6 +121,7 @@ fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: bu
         }
     }
     *cands = ans;
+    */
 }
 
 fn ext_more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
