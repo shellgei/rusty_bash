@@ -72,6 +72,7 @@ pub trait Subword {
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
     fn make_unquoted_string(&mut self) -> String { self.get_text().to_string() }
     fn is_name(&self) -> bool {false}
+    fn is_quoted(&self) -> bool {false}
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {

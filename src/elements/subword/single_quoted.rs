@@ -28,6 +28,8 @@ impl Subword for SingleQuoted {
         let len = self.text.len();
         self.text[1..len-1].to_string()
     }
+
+    fn is_quoted(&self) -> bool {true}
 }
 
 impl SingleQuoted {
