@@ -243,7 +243,7 @@ fn scanner_escaped_char(remaining: &str) -> usize {
 fn scanner_chars(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
-        if "*?[\\".find(c) != None {
+        if "@!+*?[\\".find(c) != None {
             return ans;
         }
 

@@ -617,10 +617,10 @@ res=$($com <<< 'echo {,}{}a,b}')
 res=$($com <<< 'echo a{}},b}')
 [ "$res" == "a}} ab" ] || err $LINENO
 
-res=$($com <<< 'echo $${a,b} | sed -E s/[0-9]+/num/g' )
+res=$($com <<< 'echo $${a,b} | sed -E "s/[0-9]+/num/g"' )
 [ "$res" == "num{a,b}" ] || err $LINENO
 
-res=$($com <<< 'echo $${a,{b,c},d} | sed -E s/[0-9]+/num/g')
+res=$($com <<< 'echo $${a,{b,c},d} | sed -E "s/[0-9]+/num/g"')
 [ "$res" == "num{a,{b,c},d}" ] || err $LINENO
 
 res=$($com <<< 'echo あ{a,b}{},c}')
@@ -665,10 +665,10 @@ res=$($com <<< 'echo ${?}')
 res=$($com <<< 'ls aaaaaaaa ; echo $?')
 [ "$res" != "0" ] || err $LINENO
 
-res=$($com <<< 'echo $BASH{PID,_SUBSHELL} | sed -E s@[0-9]+@num@')
+res=$($com <<< 'echo $BASH{PID,_SUBSHELL} | sed -E "s@[0-9]+@num@"')
 [ "$res" == "num 0" ] || err $LINENO
 
-res=$($com <<< 'echo ${BASHPID} ${BASH_SUBSHELL} | sed -E s@[0-9]+@num@')
+res=$($com <<< 'echo ${BASHPID} ${BASH_SUBSHELL} | sed -E "s@[0-9]+@num@"')
 [ "$res" == "num 0" ] || err $LINENO
 
 res=$($com <<< 'echo ${ ')
@@ -1082,6 +1082,12 @@ res=$($com <<< 'case cccccccccccaa in +(a|b|c)aa) echo OK ;; *) echo NG ;; esac'
 [ "$res" = "OK" ] || err $LINENO
 
 res=$($com <<< 'case aa in +(a|b|c)aa) echo NG ;; *) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case 山田山田aa in +(山|山本|山田)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case 上山田山田aa in 上+(山|上山|山本|山田)aa) echo OK ;; *) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
 ### BUILTIN COMMANDS ###
