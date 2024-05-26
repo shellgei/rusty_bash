@@ -101,7 +101,7 @@ fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: bu
     let mut tmp = cands.clone();
     let mut len = tmp.len();
 
-    while len > 0  {
+    while len > 0 {
         ans.extend(tmp.clone());
         ext_once(&mut tmp, patterns);
         for a in &ans {
@@ -140,18 +140,30 @@ fn ext_once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
+fn ext_once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
+    let mut tmp = vec![cand.clone()];
+    ext_once(&mut tmp, patterns);
+    tmp.iter().any(|t| t == "")
+}
+
+fn make_prefix_strings(s: &String) -> Vec<String> {
+    let mut ans = vec![];
+    let mut prefix = s.clone();
+
+    ans.push(prefix.clone());
+    while prefix.len() > 0 {
+        prefix.pop();
+        ans.push(prefix.clone());
+    }
+    ans
+}
+
 fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
-    for c in cands.into_iter() {
-        if ! patterns.iter().any(|p| compare(c, p)) {
-            let mut s = c.to_string();
-            loop {
-                ans.push(s.clone());
-
-                match s.len() {
-                    0 => break,
-                    _ => {s.remove(0);},
-                }
+    for cand in cands.iter_mut() {
+        for prefix in make_prefix_strings(cand)  {
+            if ! ext_once_exact_match(&prefix, patterns) {
+                ans.push(cand[prefix.len()..].to_string());
             }
         }
     }
