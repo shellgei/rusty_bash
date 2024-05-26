@@ -140,55 +140,33 @@ fn ext_once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
+fn ext_once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
+    let mut tmp = vec![cand.clone()];
+    ext_once(&mut tmp, patterns);
+    tmp.iter().any(|t| t == "")
+}
+
+fn make_partial_strings(s: &String) -> Vec<String> {
+    let mut ans = vec![];
+    let mut s2 = s.clone();
+
+    ans.push(s2.clone());
+    while s2.len() > 0 {
+        s2.pop();
+        ans.push(s2.clone());
+    }
+    ans
+}
+
 fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
-    for c in cands.iter_mut() {
-        let mut tmp = vec![];
-        let mut s = c.clone();
-
-        tmp.push(s.clone());
-        while s.len() > 0 {
-            s.pop();
-            tmp.push(s.clone());
-        }
-
-        for c2 in &tmp {
-            let mut ok = true;
-            let mut tmp2 = vec![c2.clone()];
-            dbg!("{:?}", &c2);
-            ext_once(&mut tmp2, patterns);
-            dbg!("{:?}", &tmp2);
-            if tmp2.iter().all(|t| t != "") {
-                ans.push(c[c2.len()..].to_string());
+    for cand in cands.iter_mut() {
+        for prefix in make_partial_strings(cand)  {
+            if ! ext_once_exact_match(&prefix, patterns) {
+                ans.push(cand[prefix.len()..].to_string());
             }
         }
     }
-
-    /*
-    for c in cands.iter_mut() {
-        let mut ng = false;
-
-        for p in patterns {
-            let mut tmp = vec![c.clone()];
-            parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
-            if tmp.len() != 0 {
-                ng = true;
-                break;
-            }
-        }
-
-        let mut s = c.clone();
-        if ng {
-            ans.push(s);
-            continue;
-        }
-
-        while s.len() > 0 {
-            ans.push(s.clone());
-            s.remove(0);
-        }
-    }
-    */
     *cands = ans;
 }
 
