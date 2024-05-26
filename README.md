@@ -68,7 +68,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: |
-| {} | :heavy_check_mark: | case | :no_good: | until | :no_good: | select | :no_good: |
+| {} | :heavy_check_mark: | case | :heavy_check_mark: | until | :no_good: | select | :no_good: |
 | for | :no_good: |
 
 ### control operator
@@ -93,11 +93,11 @@ These dev-* branches will be merged to the main branch depending on the situatio
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :no_good: |
-| exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :no_good: |
+| exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: |
 | shopt | :no_good: | : | :heavy_check_mark: | . | :no_good: | [ | :no_good: |
-| alias | :no_good: | bg | :no_good: | bind | :no_good: |
-| break | :no_good: | builtin | :no_good: | caller | :no_good: |
-| command | :no_good: | compgen | :no_good: | complete | :no_good: |
+| alias | :heavy_check_mark: | bg | :no_good: | bind | :no_good: |
+| break | :heavy_check_mark: | builtin | :no_good: | caller | :no_good: |
+| command | :no_good: | compgen | :construction: | complete | :construction: |
 | compopt | :no_good: | continue | :no_good: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :no_good: | exec | :no_good: |
@@ -106,7 +106,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 | jobs | :no_good: | kill | :no_good: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
-| read | :no_good: | readonly | :no_good: | return | :construction: |
+| read | :no_good: | readonly | :no_good: | return | :heavy_check_mark: |
 | shift | :no_good: | suspend | :no_good: | test | :no_good: |
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
