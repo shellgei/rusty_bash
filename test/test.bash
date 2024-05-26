@@ -1078,6 +1078,12 @@ res=$($com <<< 'case cccccccccccaa in !(a|b)aa) echo OK ;; *) echo NG ;; esac')
 res=$($com <<< 'case cccccccccccaa in *(a|b|c)aa) echo OK ;; *) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case "" in *(a|b|c)) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'case "" in +(a|b|c)) echo NG ;; *) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 res=$($com <<< 'case aa in *(a|b|c)aa) echo OK ;; *) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 

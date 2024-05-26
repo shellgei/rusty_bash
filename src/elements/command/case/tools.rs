@@ -101,7 +101,7 @@ fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: bu
     let mut tmp = cands.clone();
     let mut len = tmp.len();
 
-    while len > 0  {
+    while len > 0 {
         ans.extend(tmp.clone());
         ext_once(&mut tmp, patterns);
         for a in &ans {
