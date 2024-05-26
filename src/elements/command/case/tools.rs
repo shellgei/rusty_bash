@@ -142,19 +142,53 @@ fn ext_once(cands: &mut Vec<String>, patterns: &Vec<String>) {
 
 fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
-    for c in cands.into_iter() {
-        if ! patterns.iter().any(|p| compare(c, p)) {
-            let mut s = c.to_string();
-            loop {
-                ans.push(s.clone());
+    for c in cands.iter_mut() {
+        let mut tmp = vec![];
+        let mut s = c.clone();
 
-                match s.len() {
-                    0 => break,
-                    _ => {s.remove(0);},
-                }
+        tmp.push(s.clone());
+        while s.len() > 0 {
+            s.pop();
+            tmp.push(s.clone());
+        }
+
+        for c2 in &tmp {
+            let mut ok = true;
+            let mut tmp2 = vec![c2.clone()];
+            dbg!("{:?}", &c2);
+            ext_once(&mut tmp2, patterns);
+            dbg!("{:?}", &tmp2);
+            if tmp2.iter().all(|t| t != "") {
+                ans.push(c[c2.len()..].to_string());
             }
         }
     }
+
+    /*
+    for c in cands.iter_mut() {
+        let mut ng = false;
+
+        for p in patterns {
+            let mut tmp = vec![c.clone()];
+            parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
+            if tmp.len() != 0 {
+                ng = true;
+                break;
+            }
+        }
+
+        let mut s = c.clone();
+        if ng {
+            ans.push(s);
+            continue;
+        }
+
+        while s.len() > 0 {
+            ans.push(s.clone());
+            s.remove(0);
+        }
+    }
+    */
     *cands = ans;
 }
 

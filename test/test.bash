@@ -1105,6 +1105,15 @@ res=$($com <<< 'case 山aa in 山+(本|田)aa) echo NG ;; *) echo OK ;; esac')
 res=$($com <<< 'case 上山田山田aa in 上+(山|上山|山本|山田)aa) echo OK ;; *) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case 小山田 in !(五反|山|小山)田) echo マッチ ;; *) echo マッチせず ;; esac')
+[ "$res" = "マッチせず" ] || err $LINENO
+
+res=$($com <<< 'case 山小田 in !(山)田) echo マッチ ;; *) echo マッチせず ;; esac')
+[ "$res" = "マッチ" ] || err $LINENO
+
+res=$($com <<< 'case 山小小小田 in !(山)田) echo マッチ ;; *) echo マッチせず ;; esac')
+[ "$res" = "マッチ" ] || err $LINENO
+
 ### BUILTIN COMMANDS ###
 
 # source command
