@@ -148,12 +148,12 @@ fn ext_once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
 
 fn make_partial_strings(s: &String) -> Vec<String> {
     let mut ans = vec![];
-    let mut s2 = s.clone();
+    let mut prefix = s.clone();
 
-    ans.push(s2.clone());
-    while s2.len() > 0 {
-        s2.pop();
-        ans.push(s2.clone());
+    ans.push(prefix.clone());
+    while prefix.len() > 0 {
+        prefix.pop();
+        ans.push(prefix.clone());
     }
     ans
 }
