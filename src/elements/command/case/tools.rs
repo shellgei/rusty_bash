@@ -146,7 +146,7 @@ fn ext_once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
     tmp.iter().any(|t| t == "")
 }
 
-fn make_partial_strings(s: &String) -> Vec<String> {
+fn make_prefix_strings(s: &String) -> Vec<String> {
     let mut ans = vec![];
     let mut prefix = s.clone();
 
@@ -161,7 +161,7 @@ fn make_partial_strings(s: &String) -> Vec<String> {
 fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for cand in cands.iter_mut() {
-        for prefix in make_partial_strings(cand)  {
+        for prefix in make_prefix_strings(cand)  {
             if ! ext_once_exact_match(&prefix, patterns) {
                 ans.push(cand[prefix.len()..].to_string());
             }
