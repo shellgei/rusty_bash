@@ -25,8 +25,8 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         };
 
         match sub.eval(core) {
-            Value::EvaluatedSingle(s) => {core.data.parameters[layer].insert(sub.key.to_string(), s);},
-            Value::EvaluatedArray(a)  => {core.data.arrays[layer].insert(sub.key.to_string(), a);},
+            Value::EvaluatedSingle(s) => core.data.set_layer_param(&sub.key, &s, layer),
+            Value::EvaluatedArray(a)  => core.data.set_layer_array(&sub.key, &a, layer),
             _ => panic!("SUSH INTERNAL ERROR: unsupported substitution"),
         }
     }

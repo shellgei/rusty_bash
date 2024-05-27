@@ -102,7 +102,7 @@ impl Data {
         }
     }
 
-    fn set_layer_param(&mut self, key: &str, val: &str, layer: usize) {
+    pub fn set_layer_param(&mut self, key: &str, val: &str, layer: usize) {
         match env::var(key) {
             Ok(_) => env::set_var(key, val),
             _     => {},
