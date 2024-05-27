@@ -1,21 +1,8 @@
-//SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
-//SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
 use crate::elements::substitution::{Substitution, Value};
-
-fn parse(arg: &str, core: &mut ShellCore) -> Option<Substitution> {
-    let mut feeder = Feeder::new(arg);
-
-    match Substitution::parse(&mut feeder, core) {
-        Some(sub) => Some(sub),
-        _ => {
-            eprintln!("sush: local: `{}': not a valid identifier", arg);
-            None
-        },
-    }
-}
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let layer = if core.data.parameters.len() > 2 {
@@ -26,9 +13,12 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
 
     for arg in &args[1..] {
-        let mut sub = match parse(arg, core) {
+        let mut sub = match Substitution::parse(&mut Feeder::new(arg), core) {
             Some(s) => s,
-            None    => return 1,
+            _ => {
+                eprintln!("sush: local: `{}': not a valid identifier", arg);
+                return 1;
+            },
         };
 
         match sub.eval(core) {
