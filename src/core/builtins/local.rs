@@ -5,23 +5,31 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::substitution::{Substitution, Value};
 
+fn parse(arg: &str, core: &mut ShellCore) -> Option<Substitution> {
+    let mut feeder = Feeder::new();
+    feeder.add_line(arg.to_string());
+
+    match Substitution::parse(&mut feeder, core) {
+        Some(sub) => Some(sub),
+        _ => {
+            eprintln!("sush: local: `{}': not a valid identifier", arg);
+            None
+        },
+    }
+}
+
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if core.data.parameters.len() <= 2 {
+    let layer = if core.data.parameters.len() > 2 {
+        core.data.parameters.len() - 2 //The last element of data.parameters is for local itself.
+    }else{
         eprintln!("sush: local: can only be used in a function");
         return 1;
-    }
-
-    let layer = core.data.parameters.len() - 2; //The last element of data.parameters is for local itself.
+    };
 
     for arg in &args[1..] {
-        let mut feeder = Feeder::new();
-        feeder.add_line(arg.clone());
-        let mut sub = match Substitution::parse(&mut feeder, core) {
-            Some(sub) => sub,
-            _ => {
-                eprintln!("sush: local: `{}': not a valid identifier", arg);
-                return 1;
-            },
+        let mut sub = match parse(arg, core) {
+            Some(s) => s,
+            None    => return 1,
         };
 
         match sub.eval(core) {
