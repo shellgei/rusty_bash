@@ -80,6 +80,18 @@ fn main() {
     main_loop(&mut core);
 }
 
+fn set_history(core: &mut ShellCore, s: &str) {
+    if core.read_stdin {
+        return;
+    }
+
+    core.history[0] = s.trim_end().to_string();
+    if core.history[0].len() == 0
+    || (core.history.len() > 1 && core.history[0] == core.history[1]) {
+        core.history.remove(0);
+    }
+}
+
 fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
     if ! core.sigint.load(Relaxed) { //core.input_interrupt {
         return false;
@@ -108,7 +120,10 @@ fn main_loop(core: &mut ShellCore) {
 
         core.sigint.store(false, Relaxed);
         match Script::parse(&mut feeder, core, false){
-            Some(mut s) => s.exec(core),
+            Some(mut s) => {
+                s.exec(core);
+                set_history(core, &s.get_text());
+            },
             None => {},
         }
         core.sigint.store(false, Relaxed);
