@@ -16,25 +16,18 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     for arg in &args[1..] {
         let mut feeder = Feeder::new();
         feeder.add_line(arg.clone());
-        match Substitution::parse(&mut feeder, core) {
-            Some(mut sub) => {
-                match sub.eval(core) {
-                    Value::EvaluatedSingle(s) => {
-                        core.data.parameters[layer].insert(sub.key.to_string(), s);
-                    },
-                    Value::EvaluatedArray(a) => {
-                        core.data.arrays[layer].insert(sub.key.to_string(), a);
-                    },
-                    _ => {
-                        eprintln!("sush: local: `{}': not a valid identifier", arg);
-                        return 1;
-                    },
-                }
-            },
+        let mut sub = match Substitution::parse(&mut feeder, core) {
+            Some(sub) => sub,
             _ => {
                 eprintln!("sush: local: `{}': not a valid identifier", arg);
                 return 1;
             },
+        };
+
+        match sub.eval(core) {
+            Value::EvaluatedSingle(s) => {core.data.parameters[layer].insert(sub.key.to_string(), s);},
+            Value::EvaluatedArray(a)  => {core.data.arrays[layer].insert(sub.key.to_string(), a);},
+            _ => panic!("SUSH INTERNAL ERROR: unsupported substitution"),
         }
     }
 
