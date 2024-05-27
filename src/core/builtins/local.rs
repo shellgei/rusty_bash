@@ -29,11 +29,8 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    for arg in &args[1..] {
-        if ! set(arg, core, layer) {
-            return 1;
-        }
+    match args[1..].iter().all(|a| set(a, core, layer)) {
+        true  => 0,
+        false => 1,
     }
-
-    0
 }
