@@ -7,7 +7,22 @@ use std::collections::HashMap;
 fn set_no_arg(core: &mut ShellCore) -> i32 {
     let mut output = HashMap::new();
     for layer in &core.data.parameters {
-        layer.iter().for_each(|e| {output.insert(e.0, e.1); } );
+        layer.iter().for_each(|e| {output.insert(e.0.to_string(), e.1.to_string()); } );
+    }
+
+    for layer in &core.data.arrays {
+        for e in layer {
+            let mut formatted = String::new();
+            formatted += "(";
+            for (i, v) in e.1.iter().enumerate() {
+                formatted += &format!("[{}]=\"{}\" ", i, v).clone();
+            }
+            if formatted.ends_with(" ") {
+                formatted.pop();
+            }
+            formatted += ")";
+            output.insert(e.0.to_string(), formatted);
+        }
     }
 
     for e in output {
