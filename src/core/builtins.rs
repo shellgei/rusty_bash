@@ -4,14 +4,14 @@
 
 mod cd;
 pub mod completion;
+mod local;
 mod pwd;
 mod read;
 mod source;
 mod return_break;
 mod utils;
 
-use crate::{ShellCore, Feeder};
-use crate::elements::substitution::{Substitution, Value};
+use crate::ShellCore;
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -23,7 +23,7 @@ impl ShellCore {
         self.builtins.insert("complete".to_string(), completion::complete);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
-        self.builtins.insert("local".to_string(), local);
+        self.builtins.insert("local".to_string(), local::local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), return_break::return_);
@@ -62,6 +62,7 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     1
 }
 
+/*
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if core.data.parameters.len() <= 2 {
         eprintln!("sush: local: can only be used in a function");
@@ -97,6 +98,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     0
 }
+*/
 
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let len = core.data.position_parameters.len();
@@ -109,61 +111,6 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.data.position_parameters[len-1].append(args);
     0
 }
-
-/*
-pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() < 2 {
-        eprintln!("sush: source: filename argument required");
-        eprintln!("source: usage: source filename [arguments]");
-        return 2;
-    }
-
-    if Path::new(&args[1]).is_dir() {
-        eprintln!("bash: source: {}: is a directory", &args[1]);
-        return 1;
-    }
-
-    let file = match File::open(&args[1]) {
-        Ok(f)  => f, 
-        Err(e) => {
-            eprintln!("sush: {}: {}", &args[1], &e);
-            return 1;
-        }, 
-    };
-
-    let fd = file.into_raw_fd();
-    let backup = io::backup(0);
-    io::replace(fd, 0);
-    let read_stdin_backup = core.read_stdin;
-    core.read_stdin = true;
-    core.source_function_level += 1;
-
-    let mut feeder = Feeder::new();
-    loop {
-        match feeder.feed_line(core) {
-            Ok(()) => {}, 
-            _ => break,
-        }
-
-        if core.return_flag {
-            feeder.consume(feeder.len());
-        }
-
-        match Script::parse(&mut feeder, core, false){
-            Some(mut s) => s.exec(core),
-            None => {},
-        }
-    }
-
-
-    io::replace(backup, 0);
-    core.source_function_level -= 1;
-    core.return_flag = false;
-    core.read_stdin = read_stdin_backup;
-    core.data.get_param("?").parse::<i32>()
-        .expect("SUSH INTERNAL ERROR: BAD EXIT STATUS")
-}
-*/
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
