@@ -187,6 +187,7 @@ impl Terminal {
 
         for c in to.chars() {
             self.insert(c);
+            self.check_scroll();
         }
 
         if to.ends_with(" ") 
