@@ -4,6 +4,23 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::substitution::{Substitution, Value};
 
+fn set(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
+    let mut sub = match Substitution::parse(&mut Feeder::new(arg), core) {
+        Some(s) => s,
+        _ => {
+            eprintln!("sush: local: `{}': not a valid identifier", arg);
+            return false;
+        },
+    };
+
+    match sub.eval(core) {
+        Value::EvaluatedSingle(s) => core.data.set_layer_param(&sub.key, &s, layer),
+        Value::EvaluatedArray(a)  => core.data.set_layer_array(&sub.key, &a, layer),
+        _ => panic!("SUSH INTERNAL ERROR: unsupported substitution"),
+    }
+    true
+}
+
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let layer = if core.data.parameters.len() > 2 {
         core.data.parameters.len() - 2 //The last element of data.parameters is for local itself.
@@ -13,18 +30,8 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
 
     for arg in &args[1..] {
-        let mut sub = match Substitution::parse(&mut Feeder::new(arg), core) {
-            Some(s) => s,
-            _ => {
-                eprintln!("sush: local: `{}': not a valid identifier", arg);
-                return 1;
-            },
-        };
-
-        match sub.eval(core) {
-            Value::EvaluatedSingle(s) => core.data.set_layer_param(&sub.key, &s, layer),
-            Value::EvaluatedArray(a)  => core.data.set_layer_array(&sub.key, &a, layer),
-            _ => panic!("SUSH INTERNAL ERROR: unsupported substitution"),
+        if ! set(arg, core, layer) {
+            return 1;
         }
     }
 
