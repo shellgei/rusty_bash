@@ -62,53 +62,12 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     1
 }
 
-/*
-pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if core.data.parameters.len() <= 2 {
-        eprintln!("sush: local: can only be used in a function");
-        return 1;
-    }
-
-    let layer = core.data.parameters.len() - 2; //The last element of data.parameters is for local itself.
-
-    for arg in &args[1..] {
-        let mut feeder = Feeder::new();
-        feeder.add_line(arg.clone());
-        match Substitution::parse(&mut feeder, core) {
-            Some(mut sub) => {
-                match sub.eval(core) {
-                    Value::EvaluatedSingle(s) => {
-                        core.data.parameters[layer].insert(sub.key.to_string(), s);
-                    },
-                    Value::EvaluatedArray(a) => {
-                        core.data.arrays[layer].insert(sub.key.to_string(), a);
-                    },
-                    _ => {
-                        eprintln!("sush: local: `{}': not a valid identifier", arg);
-                        return 1;
-                    },
-                }
-            },
-            _ => {
-                eprintln!("sush: local: `{}': not a valid identifier", arg);
-                return 1;
-            },
-        }
-    }
-
-    0
-}
-*/
-
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let len = core.data.position_parameters.len();
-
-    if len == 0 {
-        panic!("SUSH INTERNAL ERROR: empty param stack");
+    match core.data.position_parameters.pop() {
+        None => panic!("SUSH INTERNAL ERROR: empty param stack"),
+        _    => {},
     }
-
-    core.data.position_parameters[len-1].clear();
-    core.data.position_parameters[len-1].append(args);
+    core.data.position_parameters.push(args.to_vec());
     0
 }
 
