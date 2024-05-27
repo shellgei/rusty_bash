@@ -7,6 +7,7 @@ pub mod completion;
 mod local;
 mod pwd;
 mod read;
+pub mod set;
 mod source;
 mod return_break;
 mod utils;
@@ -27,7 +28,7 @@ impl ShellCore {
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), return_break::return_);
-        self.builtins.insert("set".to_string(), set);
+        self.builtins.insert("set".to_string(), set::set);
         self.builtins.insert("source".to_string(), source::source);
         self.builtins.insert(".".to_string(), source::source);
         self.builtins.insert("true".to_string(), true_);
@@ -62,6 +63,7 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     1
 }
 
+/*
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     match core.data.position_parameters.pop() {
         None => panic!("SUSH INTERNAL ERROR: empty param stack"),
@@ -69,7 +71,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
     core.data.position_parameters.push(args.to_vec());
     0
-}
+}*/
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0

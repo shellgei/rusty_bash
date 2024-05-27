@@ -74,7 +74,7 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
-    builtins::set(&mut core, &mut args);
+    builtins::set::set(&mut core, &mut args);
     run_signal_check(&mut core);
     read_rc_file(&mut core);
     main_loop(&mut core);
