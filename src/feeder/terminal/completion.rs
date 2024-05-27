@@ -73,9 +73,8 @@ impl Terminal {
 
         match core.completion_functions.get(&prev_word) {
             Some(value) => {
-                let mut feeder = Feeder::new();
                 let command = format!("cur={} {}", &cur_word, &value); //TODO: cur should be set
-                feeder.add_line(command);                              // by bash-completion
+                let mut feeder = Feeder::new(&command);                // by bash-completion
 
                 if let Some(mut a) = SimpleCommand::parse(&mut feeder, core) {
                     let mut dummy = Pipe::new("".to_string());

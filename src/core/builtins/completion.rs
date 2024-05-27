@@ -185,8 +185,8 @@ fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
-    let mut feeder = Feeder::new();
-    feeder.add_line(args[2].to_string());
+    let mut feeder = Feeder::new(&args[2]);
+    //feeder.add_line(args[2].to_string());
     while feeder.len() != 0 {
         match Word::parse(&mut feeder, core) {
             Some(mut w) => {

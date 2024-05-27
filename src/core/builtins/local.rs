@@ -6,8 +6,7 @@ use crate::{ShellCore, Feeder};
 use crate::elements::substitution::{Substitution, Value};
 
 fn parse(arg: &str, core: &mut ShellCore) -> Option<Substitution> {
-    let mut feeder = Feeder::new();
-    feeder.add_line(arg.to_string());
+    let mut feeder = Feeder::new(arg);
 
     match Substitution::parse(&mut feeder, core) {
         Some(sub) => Some(sub),
