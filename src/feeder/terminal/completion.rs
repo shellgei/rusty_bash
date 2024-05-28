@@ -178,7 +178,7 @@ impl Terminal {
         if ! completion_set {
             self.double_tab_completion_string = String::new();
         }
-        self.rewrite(true);
+        //self.rewrite(true);
     }
 
     fn print_an_entry(list: &Vec<String>, widths: &Vec<usize>,
