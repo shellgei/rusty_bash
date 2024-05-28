@@ -44,7 +44,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 }
 
 impl Terminal {
-    pub fn completion(&mut self, core: &mut ShellCore, double_tab: bool) {
+    pub fn completion(&mut self, core: &mut ShellCore, tab_num: usize) {
         self.set_completion_info(core);
 
         if ! Self::set_custom_compreply(core)
@@ -53,9 +53,9 @@ impl Terminal {
             return;
         }
 
-        match double_tab {
-            true  => self.show_list(&core.data.arrays[0]["COMPREPLY"]),
-            false => self.try_completion(core),
+        match tab_num == 1 {
+            true  => self.try_completion(core),
+            false => self.show_list(&core.data.arrays[0]["COMPREPLY"], tab_num),
         }
     }
 
@@ -136,7 +136,7 @@ impl Terminal {
         self.cloop();
     }
 
-    fn show_list(&mut self, list: &Vec<String>) {
+    fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
         eprintln!("\r");
 
         let widths = list.iter()
@@ -152,18 +152,37 @@ impl Terminal {
         }
 
         let row_num = (list.len()-1) / col_num + 1;
+        let mut i = 0;
+        let mut completion_set = false;
 
         for row in 0..row_num {
             for col in 0..col_num {
-                Self::print_an_entry(list, &widths, row, col, row_num, max_entry_width);
+                let pos = col*row_num + row;
+                if pos >= list.len() {
+                    continue;
+                }
+
+                let target = (tab_num - 2)%(1+list.len()) == (i+1)%(1+list.len());
+
+                Self::print_an_entry(list, &widths, row, col, 
+                    row_num, max_entry_width, target);
+
+                if target {
+                    self.double_tab_completion_string = list[pos].clone();
+                    completion_set = true;
+                }
+                i += 1;
             }
             print!("\r\n");
+        }
+        if ! completion_set {
+            self.double_tab_completion_string = String::new();
         }
         self.rewrite(true);
     }
 
     fn print_an_entry(list: &Vec<String>, widths: &Vec<usize>,
-        row: usize, col: usize, row_num: usize, width: usize) {
+        row: usize, col: usize, row_num: usize, width: usize, nega: bool) {
         let i = col*row_num + row;
         if i >= list.len() {
             return;
@@ -171,10 +190,14 @@ impl Terminal {
 
         let space_num = width - widths[i];
         let s = String::from_utf8(vec![b' '; space_num]).unwrap();
-        print!("{}{}", list[i], &s);
+        if nega {
+            print!("\x1b[01;7m{}{}\x1b[00m", list[i], &s);
+        }else{
+            print!("{}{}", list[i], &s);
+        }
     }
 
-    fn replace_input(&mut self, to: &String) {
+    pub fn replace_input(&mut self, to: &String) {
         while self.head > self.prompt.chars().count() 
         && self.head > 0 && self.chars[self.head-1] != ' ' {
             self.backspace();

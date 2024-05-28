@@ -25,6 +25,7 @@ struct Terminal {
     head: usize,
     hist_ptr: usize,
     prompt_width_map: Vec<usize>,
+    double_tab_completion_string: String,
 }
 
 impl Terminal {
@@ -47,6 +48,7 @@ impl Terminal {
             head: prompt.chars().count(),
             hist_ptr: 0,
             prompt_width_map: Self::make_width_map(&replaced_prompt),
+            double_tab_completion_string: String::new(),
         }
     }
 
@@ -272,6 +274,11 @@ impl Terminal {
         self.rewrite(true);
     }
 
+    pub fn set_double_tab_completion(&mut self) {
+        let s = self.double_tab_completion_string.clone() + " ";
+        self.replace_input(&s);
+    }
+
     pub fn cloop(&mut self) {
         print!("\x07");
         self.flush();
@@ -283,6 +290,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut term_size = Terminal::size();
     core.history.insert(0, String::new());
     let mut prev_key = event::Key::Char('a');
+    let mut tab_num = 0;
 
     for c in io::stdin().keys() {
         term.check_size_change(&mut term_size);
@@ -306,6 +314,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             event::Key::Ctrl('e') => term.goto_end(),
             event::Key::Ctrl('f') => term.shift_cursor(1),
+            //event::Key::Ctrl('t') => term.set_double_tab_completion(),
             event::Key::Down => term.call_history(-1, core),
             event::Key::Left => term.shift_cursor(-1),
             event::Key::Right => term.shift_cursor(1),
@@ -313,13 +322,20 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             event::Key::Backspace  => term.backspace(),
             event::Key::Delete  => term.delete(),
             event::Key::Char('\n') => {
-                term.goto(term.chars.len());
-                term.write("\r\n");
-                term.chars.push('\n');
-                break;
+                if term.double_tab_completion_string.len() > 0 {
+                    term.set_double_tab_completion();
+                }else{
+                    term.goto(term.chars.len());
+                    term.write("\r\n");
+                    term.chars.push('\n');
+                    break;
+                }
             },
             event::Key::Char('\t') => {
-                term.completion(core, prev_key == event::Key::Char('\t'));
+                if tab_num == 0 || prev_key == event::Key::Char('\t') {
+                    tab_num += 1;
+                }
+                term.completion(core, tab_num);
             },
             event::Key::Char(c) => {
                 term.insert(*c);
@@ -328,6 +344,10 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         }
         term.check_scroll();
         prev_key = c.as_ref().unwrap().clone();
+        if prev_key != event::Key::Char('\t') {
+            tab_num = 0;
+            term.double_tab_completion_string = String::new();
+        }
     }
 
     core.history[0] = term.get_string(term.prompt.chars().count());
