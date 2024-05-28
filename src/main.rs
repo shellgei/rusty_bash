@@ -81,7 +81,7 @@ fn main() {
 }
 
 fn set_history(core: &mut ShellCore, s: &str) {
-    if core.read_stdin {
+    if core.read_stdin || core.history.len() == 0 {
         return;
     }
 
