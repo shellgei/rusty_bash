@@ -207,7 +207,15 @@ impl Terminal {
             self.delete();
         }
 
-        for c in to.chars() {
+        let to_escaped = if to.ends_with(" ") {
+            let mut tmp = to.to_string();
+            tmp.pop();
+            tmp.replace(" ", "\\ ") + " "
+        }else {
+            to.replace(" ", "\\ ").to_string()
+        };
+
+        for c in to_escaped.chars() {
             self.insert(c);
             self.check_scroll();
         }
