@@ -8,6 +8,7 @@ use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;
 use crate::feeder::terminal::Terminal;
 use std::path::Path;
+use termion::cursor::DetectCursorPos;
 use unicode_width::UnicodeWidthStr;
 
 fn common_length(chars: &Vec<char>, s: &String) -> usize {
@@ -53,9 +54,9 @@ impl Terminal {
             return;
         }
 
-        match tab_num == 1 {
-            true  => self.try_completion(core),
-            false => self.show_list(&core.data.arrays[0]["COMPREPLY"], tab_num),
+        match tab_num  {
+            1 => self.try_completion(core),
+            _ => self.show_list(&core.data.arrays[0]["COMPREPLY"], tab_num),
         }
     }
 
@@ -178,7 +179,12 @@ impl Terminal {
         if ! completion_set {
             self.double_tab_completion_string = String::new();
         }
-        self.rewrite(false);
+        let row = Terminal::size().1;
+        let cur_row = self.stdout.cursor_pos().unwrap().1 as usize;
+
+        self.check_scroll();
+        self.rewrite(cur_row == row);
+        //eprintln!("{:?}, {:?}", row, cur_row);
     }
 
     fn print_an_entry(list: &Vec<String>, widths: &Vec<usize>,
