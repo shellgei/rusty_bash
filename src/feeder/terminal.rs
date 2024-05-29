@@ -26,6 +26,7 @@ struct Terminal {
     hist_ptr: usize,
     prompt_width_map: Vec<usize>,
     double_tab_completion_string: String,
+    adjust_flag: bool,
 }
 
 impl Terminal {
@@ -49,6 +50,7 @@ impl Terminal {
             hist_ptr: 0,
             prompt_width_map: Self::make_width_map(&replaced_prompt),
             double_tab_completion_string: String::new(),
+            adjust_flag: false,
         }
     }
 

@@ -138,6 +138,10 @@ impl Terminal {
     }
 
     fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
+        if tab_num > 2 && self.adjust_flag {
+            print!("\x1b[1A");
+            self.flush();
+        }
         eprintln!("\r");
 
         let widths = list.iter()
@@ -179,12 +183,21 @@ impl Terminal {
         if ! completion_set {
             self.double_tab_completion_string = String::new();
         }
-        let row = Terminal::size().1;
+        let terminal_row_num = Terminal::size().1;
         let cur_row = self.stdout.cursor_pos().unwrap().1 as usize;
 
         self.check_scroll();
-        self.rewrite(cur_row == row);
-        //eprintln!("{:?}, {:?}", row, cur_row);
+        match cur_row == terminal_row_num {
+            true => {
+                if cur_row as i16 - row_num as i16 > 1 {
+                    self.write(&termion::cursor::Goto(1, (cur_row - row_num).try_into().unwrap()).to_string());
+                }else{
+                    self.write(&termion::cursor::Goto(1, 1).to_string());
+                }
+            },
+            false => self.rewrite(false),
+        }
+        self.adjust_flag = cur_row == terminal_row_num;
     }
 
     fn print_an_entry(list: &Vec<String>, widths: &Vec<usize>,
