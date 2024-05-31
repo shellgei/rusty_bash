@@ -31,7 +31,8 @@ fn cd_1arg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 fn cd_oldpwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if let Some(old) = core.data.parameters[0].get("OLDPWD") {
+    let old = core.data.get_param("OLDPWD");
+    if old != "" {
         println!("{}", &old);
         args[1] = old.to_string();
     }else {
@@ -45,14 +46,14 @@ fn cd_oldpwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 fn set_oldpwd(core: &mut ShellCore) {
     if let Some(old) = core.get_current_directory() {
-        core.data.parameters[0].insert("OLDPWD".to_string(), old.display().to_string());
+        core.data.set_layer_param("OLDPWD", &old.display().to_string(), 0);
     };
 }
 
 fn change_directory(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let path = utils::make_canonical_path(core, &args[1]);
     if core.set_current_directory(&path).is_ok() {
-        core.data.parameters[0].insert("PWD".to_string(), path.display().to_string());
+        core.data.set_layer_param("PWD", &path.display().to_string(), 0);
         0
     }else{
         eprintln!("sush: cd: {:?}: No such file or directory", &path);

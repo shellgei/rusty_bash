@@ -2,7 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::substitution::{Substitution, Value};
+use crate::core::data::Value;
+use crate::elements::substitution::Substitution;
 
 fn set(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
     let mut sub = match Substitution::parse(&mut Feeder::new(arg), core) {

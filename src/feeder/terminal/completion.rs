@@ -60,14 +60,16 @@ impl Terminal {
 
         match tab_num  {
             1 => self.try_completion(core),
-            _ => self.show_list(&core.data.arrays[0]["COMPREPLY"], tab_num),
+            //_ => self.show_list(&core.data.arrays[0]["COMPREPLY"], tab_num),
+            _ => self.show_list(&core.data.get_array_all("COMPREPLY"), tab_num),
         }
     }
 
     fn set_custom_compreply(core: &mut ShellCore) -> bool {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
-        let word_num = core.data.arrays[0]["COMP_WORDS"].len() as i32;
+        //let word_num = core.data.arrays[0]["COMP_WORDS"].len() as i32;
+        let word_num = core.data.get_array_len("COMP_WORDS") as i32;
 
         if prev_pos < 0 || prev_pos >= word_num {
             return false;
@@ -123,8 +125,10 @@ impl Terminal {
         let pos = core.data.get_param("COMP_CWORD").to_string();
         let target = core.data.get_array("COMP_WORDS", &pos);
 
-        if core.data.arrays[0]["COMPREPLY"].len() == 1 {
-            let output = core.data.arrays[0]["COMPREPLY"][0].clone();
+        //if core.data.arrays[0]["COMPREPLY"].len() == 1 {
+        if core.data.get_array_len("COMPREPLY") == 1 {
+            //let output = core.data.arrays[0]["COMPREPLY"][0].clone();
+            let output = core.data.get_array("COMPREPLY", "0");
             let tail = match is_dir(&output, core) {
                 true  => "/",
                 false => " ",
@@ -133,7 +137,8 @@ impl Terminal {
             return;
         }
 
-        let common = common_string(&core.data.arrays[0]["COMPREPLY"]);
+//        let common = common_string(&core.data.parameters[0]["COMPREPLY"]);
+        let common = common_string(&core.data.get_array_all("COMPREPLY"));
         if common.len() != target.len() {
             self.replace_input(&common);
             return;

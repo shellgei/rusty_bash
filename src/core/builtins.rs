@@ -54,7 +54,7 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
-        core.data.parameters[0].insert("?".to_string(), args[1].clone());
+        core.data.set_layer_param("?", &args[1], 0);
     }
     core.exit()
 }

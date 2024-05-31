@@ -3,8 +3,9 @@
 
 use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
+use crate::core::data::Value;
 use crate::elements::command;
-use crate::elements::substitution::{Substitution, Value};
+use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;

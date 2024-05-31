@@ -2,9 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::core::data::Value;
 use super::array::Array;
 use super::word::Word;
 
+/*
 #[derive(Debug, Clone)]
 pub enum Value {
     None,
@@ -12,7 +14,7 @@ pub enum Value {
     EvaluatedSingle(String),
     Array(Array),
     EvaluatedArray(Vec<String>),
-}
+}*/
 
 #[derive(Debug, Clone)]
 pub struct Substitution {

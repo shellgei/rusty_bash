@@ -123,7 +123,8 @@ impl ShellCore {
         if exit_status == 130 {
             self.sigint.store(true, Relaxed);
         }
-        self.data.parameters[0].insert("?".to_string(), exit_status.to_string()); //追加
+        //self.data.parameters[0].insert("?".to_string(), exit_status.to_string()); //追加
+        self.data.set_layer_param("?", &exit_status.to_string(), 0); //追加
     } 
 
     fn set_foreground(&self) {
@@ -164,18 +165,21 @@ impl ShellCore {
             let func = self.builtins[&args[0]];
             args.append(special_args);
             let status = func(self, args);
-            self.data.parameters[0].insert("?".to_string(), status.to_string());
+            //self.data.parameters[0].insert("?".to_string(), status.to_string());
+            self.data.set_layer_param("?", &status.to_string(), 0);
             return true;
         }
 
         false
     }
 
-    pub fn exit(&self) -> ! {
-        let exit_status = match self.data.parameters[0]["?"].parse::<i32>() {
+    pub fn exit(&mut self) -> ! {
+        //let exit_status = match self.data.parameters[0]["?"].parse::<i32>() {
+        let exit_status = match self.data.get_param("?").parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
-                eprintln!("sush: exit: {}: numeric argument required", self.data.parameters[0]["?"]);
+                //eprintln!("sush: exit: {}: numeric argument required", self.data.parameters[0]["?"]);
+                eprintln!("sush: exit: {}: numeric argument required", self.data.get_param("?"));
                 2
             },
         };
@@ -185,10 +189,12 @@ impl ShellCore {
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.data.parameters[0].insert("BASHPID".to_string(), pid.to_string());
-        match self.data.parameters[0]["BASH_SUBSHELL"].parse::<usize>() {
-            Ok(num) => self.data.parameters[0].insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
-            Err(_) =>  self.data.parameters[0].insert("BASH_SUBSHELL".to_string(), "0".to_string()),
+        self.data.set_layer_param("BASHPID", &pid.to_string(), 0);
+        match self.data.get_param("BASH_SUBSHELL").parse::<usize>() {
+            //Ok(num) => self.data.parameters[0].insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
+            Ok(num) => self.data.set_layer_param("BASH_SUBSHELL", &(num+1).to_string(), 0),
+            //Err(_) =>  self.data.parameters[0].insert("BASH_SUBSHELL".to_string(), "0".to_string()),
+            Err(_) =>  self.data.set_layer_param("BASH_SUBSHELL", "0", 0),
         };
     }
 

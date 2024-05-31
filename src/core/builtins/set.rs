@@ -2,19 +2,28 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::core::data::Value;
 use std::collections::HashMap;
 
 fn set_no_arg(core: &mut ShellCore) -> i32 {
     let mut output = HashMap::new();
     for layer in &core.data.parameters {
-        layer.iter().for_each(|e| {output.insert(e.0.to_string(), e.1.to_string()); } );
+        for e in layer {
+            match e.1 {
+                Value::EvaluatedSingle(s) => {output.insert(e.0.to_string(), s.to_string());},
+                Value::EvaluatedArray(a) => {
+
+                    /*
+        }
     }
 
     for layer in &core.data.arrays {
         for e in layer {
+                    */
             let mut formatted = String::new();
             formatted += "(";
-            for (i, v) in e.1.iter().enumerate() {
+            //for (i, v) in e.1.iter().enumerate() {
+            for (i, v) in a.iter().enumerate() {
                 formatted += &format!("[{}]=\"{}\" ", i, v).clone();
             }
             if formatted.ends_with(" ") {
@@ -22,6 +31,9 @@ fn set_no_arg(core: &mut ShellCore) -> i32 {
             }
             formatted += ")";
             output.insert(e.0.to_string(), formatted);
+                },
+                _ => {},
+        }
         }
     }
 

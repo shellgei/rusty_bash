@@ -38,7 +38,7 @@ impl Terminal {
         io::stdout().flush().unwrap();
 
         let mut sout = io::stdout().into_raw_mode().unwrap();
-        let row = sout.cursor_pos().unwrap().1;
+        let row = sout.cursor_pos().unwrap_or((1,1)).1;
 
         Terminal {
             prompt: prompt.to_string(),

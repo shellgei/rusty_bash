@@ -1,15 +1,26 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::elements::array::Array;
+use crate::elements::word::Word;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::env;
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
+pub enum Value {
+    None,
+    Single(Word),
+    EvaluatedSingle(String),
+    Array(Array),
+    EvaluatedArray(Vec<String>),
+}
+
 #[derive(Debug)]
 pub struct Data {
     pub flags: String,
-    pub parameters: Vec<HashMap<String, String>>,
-    pub arrays: Vec<HashMap<String, Vec<String>>>,
+    pub parameters: Vec<HashMap<String, Value>>,
+    //pub arrays: Vec<HashMap<String, Vec<String>>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -20,7 +31,7 @@ impl Data {
         Data {
             flags: String::new(),
             parameters: vec![HashMap::new()],
-            arrays: vec![HashMap::new()],
+//            arrays: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             aliases: HashMap::new(),
             functions: HashMap::new(),
@@ -41,33 +52,44 @@ impl Data {
         if num > 0 {
             for layer in (0..num).rev() {
                 match self.parameters[layer].get(key) {
-                    Some(val) => return val.to_string(),
-                    None      => {},
+                    Some(Value::EvaluatedSingle(v)) => return v.to_string(),
+                    Some(Value::EvaluatedArray(a)) => {
+                        match a.len() {
+                            0 => return "".to_string(),
+                            _ => return a[0].to_string(),
+                        }
+                    },
+                    Some(_) | None  => {},
                 }
             }
         }
 
-        if self.parameters[0].get(key) == None {
-            if let Ok(val) = env::var(key) {
-                self.set_param(key, &val);
-            }
+        match self.parameters[0].get(key) {
+            None => {
+                if let Ok(val) = env::var(key) {
+                    self.set_param(key, &val);
+                }
+            },
+            _ => {},
         }
 
         match self.parameters[0].get(key) {
-            Some(val) => val.to_string(),
-            None      => "".to_string(),
+            Some(Value::EvaluatedSingle(v)) => v.to_string(),
+            Some(Value::EvaluatedArray(a)) => {
+                match a.len() {
+                    0 => return "".to_string(),
+                    _ => return a[0].to_string(),
+                }
+            },
+            Some(_) | None => "".to_string(),
         }
     }
 
     pub fn get_array(&mut self, key: &str, pos: &str) -> String {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {
-            if  self.arrays[layer].get(key) == None {
-                continue;
-            }
-    
-            match self.arrays[layer].get(key) {
-                Some(a) => {
+            match self.parameters[layer].get(key) {
+                Some(Value::EvaluatedArray(a)) => {
                     if pos == "@" {
                         return a.join(" ");
                     }
@@ -81,11 +103,42 @@ impl Data {
                         _ => {},
                     }
                 },
+                Some(Value::EvaluatedSingle(v)) => {
+                    match pos.parse::<usize>() {
+                        Ok(0) => return v.to_string(),
+                        Ok(_) => return "".to_string(),
+                        _ => return v.to_string(), 
+                    }
+                },
                 _ => {},
             }
         }
 
         "".to_string()
+    }
+
+    pub fn get_array_len(&mut self, key: &str) -> usize {
+        let num = self.parameters.len();
+        for layer in (0..num).rev() {
+            match self.parameters[layer].get(key) {
+                Some(Value::EvaluatedArray(a)) => return a.len(),
+                Some(_) => return 0,
+                _ => {},
+            }
+        }
+        0
+    }
+
+    pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
+        let num = self.parameters.len();
+        for layer in (0..num).rev() {
+            match self.parameters[layer].get(key) {
+                Some(Value::EvaluatedArray(a)) => return a.clone(),
+                Some(_) => return vec![],
+                _ => {},
+            }
+        }
+        vec![]
     }
 
     fn get_position_param_pos(&self, key: &str) -> Option<usize> {
@@ -108,7 +161,7 @@ impl Data {
             _     => {},
         }
 
-        self.parameters[layer].insert(key.to_string(), val.to_string());
+        self.parameters[layer].insert(key.to_string(), Value::EvaluatedSingle(val.to_string()));
     }
 
     pub fn set_param(&mut self, key: &str, val: &str) {
@@ -121,7 +174,7 @@ impl Data {
     }
 
     pub fn set_layer_array(&mut self, key: &str, vals: &Vec<String>, layer: usize) {
-        self.arrays[layer].insert(key.to_string(), vals.to_vec());
+        self.parameters[layer].insert(key.to_string(), Value::EvaluatedArray(vals.to_vec()));
     }
 
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) {
@@ -129,17 +182,17 @@ impl Data {
     }
 
     pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) {
-        let layer = self.arrays.len();
+        let layer = self.parameters.len();
         self.set_layer_array(key, vals, layer-1);
     }
 
     pub fn push_local(&mut self) {
         self.parameters.push(HashMap::new());
-        self.arrays.push(HashMap::new());
+        //self.arrays.push(HashMap::new());
     }
 
     pub fn pop_local(&mut self) {
         self.parameters.pop();
-        self.arrays.pop();
+        //self.arrays.pop();
     }
 }
