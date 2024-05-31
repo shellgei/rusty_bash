@@ -46,72 +46,46 @@ impl Data {
             return self.position_parameters[layer-1][n].to_string();
         }
 
-        let num = self.parameters.len();
-        if num > 0 {
-            for layer in (0..num).rev() {
-                match self.parameters[layer].get(key) {
-                    Some(Value::EvaluatedSingle(v)) => return v.to_string(),
-                    Some(Value::EvaluatedArray(a)) => {
-                        match a.len() {
-                            0 => return "".to_string(),
-                            _ => return a[0].to_string(),
-                        }
-                    },
-                    Some(_) | None  => {},
-                }
-            }
-        }
-
-        match self.parameters[0].get(key) {
-            None => {
-                if let Ok(val) = env::var(key) {
-                    self.set_param(key, &val);
-                }
-            },
-            _ => {},
-        }
-
-        match self.parameters[0].get(key) {
-            Some(Value::EvaluatedSingle(v)) => v.to_string(),
+        match self.get_value(key) {
+            Some(Value::EvaluatedSingle(v)) => return v.to_string(),
             Some(Value::EvaluatedArray(a)) => {
                 match a.len() {
-                    0 => "".to_string(),
-                    _ => a[0].to_string(),
+                    0 => return "".to_string(),
+                    _ => return a[0].to_string(),
                 }
             },
-            Some(_) | None => "".to_string(),
+            _  => {},
+        }
+
+        match env::var(key) {
+            Ok(v) => {
+                self.set_layer_param(key, &v, 0);
+                v
+            },
+            _ => "".to_string()
         }
     }
 
     pub fn get_array(&mut self, key: &str, pos: &str) -> String {
-        let num = self.parameters.len();
-        for layer in (0..num).rev()  {
-            match self.parameters[layer].get(key) {
-                Some(Value::EvaluatedArray(a)) => {
-                    if pos == "@" {
-                        return a.join(" ");
+        match self.get_value(key) {
+            Some(Value::EvaluatedArray(a)) => {
+                if pos == "@" {
+                    return a.join(" ");
+                } else if let Ok(n) = pos.parse::<usize>() {
+                    if n < a.len() {
+                        return a[n].clone();
                     }
-    
-                    match pos.parse::<usize>() {
-                        Ok(n) => {
-                            if n < a.len() {
-                                return a[n].clone();
-                            }
-                        },
-                        _ => {},
-                    }
-                },
-                Some(Value::EvaluatedSingle(v)) => {
-                    match pos.parse::<usize>() {
-                        Ok(0) => return v.to_string(),
-                        Ok(_) => return "".to_string(),
-                        _ => return v.to_string(), 
-                    }
-                },
-                _ => {},
-            }
+                }
+            },
+            Some(Value::EvaluatedSingle(v)) => {
+                match pos.parse::<usize>() {
+                    Ok(0) => return v.to_string(),
+                    Ok(_) => return "".to_string(),
+                    _ => return v.to_string(), 
+                }
+            },
+            _ => {},
         }
-
         "".to_string()
     }
 
