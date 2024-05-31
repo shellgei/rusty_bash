@@ -20,7 +20,6 @@ pub enum Value {
 pub struct Data {
     pub flags: String,
     pub parameters: Vec<HashMap<String, Value>>,
-    //pub arrays: Vec<HashMap<String, Vec<String>>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -31,7 +30,6 @@ impl Data {
         Data {
             flags: String::new(),
             parameters: vec![HashMap::new()],
-//            arrays: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             aliases: HashMap::new(),
             functions: HashMap::new(),
@@ -77,8 +75,8 @@ impl Data {
             Some(Value::EvaluatedSingle(v)) => v.to_string(),
             Some(Value::EvaluatedArray(a)) => {
                 match a.len() {
-                    0 => return "".to_string(),
-                    _ => return a[0].to_string(),
+                    0 => "".to_string(),
+                    _ => a[0].to_string(),
                 }
             },
             Some(_) | None => "".to_string(),
@@ -188,11 +186,9 @@ impl Data {
 
     pub fn push_local(&mut self) {
         self.parameters.push(HashMap::new());
-        //self.arrays.push(HashMap::new());
     }
 
     pub fn pop_local(&mut self) {
         self.parameters.pop();
-        //self.arrays.pop();
     }
 }

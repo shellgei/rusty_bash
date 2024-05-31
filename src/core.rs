@@ -191,9 +191,7 @@ impl ShellCore {
         let pid = nix::unistd::getpid();
         self.data.set_layer_param("BASHPID", &pid.to_string(), 0);
         match self.data.get_param("BASH_SUBSHELL").parse::<usize>() {
-            //Ok(num) => self.data.parameters[0].insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
             Ok(num) => self.data.set_layer_param("BASH_SUBSHELL", &(num+1).to_string(), 0),
-            //Err(_) =>  self.data.parameters[0].insert("BASH_SUBSHELL".to_string(), "0".to_string()),
             Err(_) =>  self.data.set_layer_param("BASH_SUBSHELL", "0", 0),
         };
     }
