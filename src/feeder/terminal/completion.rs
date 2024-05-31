@@ -157,7 +157,6 @@ impl Terminal {
         }
 
         let row_num = (list.len()-1) / col_num + 1;
-        let mut i = 0;
         let mut completion_set = false;
 
         for row in 0..row_num {
@@ -167,7 +166,7 @@ impl Terminal {
                     continue;
                 }
 
-                let target = (tab_num - 2)%(1+list.len()) == (i+1)%(1+list.len());
+                let target = (tab_num - 2)%(1+list.len()) == row + col*row_num;
 
                 Self::print_an_entry(list, &widths, row, col, 
                     row_num, max_entry_width, target);
@@ -176,7 +175,6 @@ impl Terminal {
                     self.double_tab_completion_string = list[pos].clone();
                     completion_set = true;
                 }
-                i += 1;
             }
             print!("\r\n");
         }
