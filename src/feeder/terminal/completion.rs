@@ -161,15 +161,9 @@ impl Terminal {
 
         for row in 0..row_num {
             for col in 0..col_num {
-                let pos = col*row_num + row;
-                let tab = (tab_num - 2)%(1+list.len()) == pos;
-
-                Self::print_an_entry(list, &widths, row, col, 
+                let tab = (tab_num - 2)%(1+list.len()) == col*row_num + row;
+                self.print_an_entry(list, &widths, row, col, 
                     row_num, max_entry_width, tab);
-
-                if tab && pos < list.len() {
-                    self.double_tab_completion_string = list[pos].clone();
-                }
             }
             print!("\r\n");
         }
@@ -191,7 +185,7 @@ impl Terminal {
         self.adjust_flag = cur_row == terminal_row_num;
     }
 
-    fn print_an_entry(list: &Vec<String>, widths: &Vec<usize>,
+    fn print_an_entry(&mut self, list: &Vec<String>, widths: &Vec<usize>,
         row: usize, col: usize, row_num: usize, width: usize, nega: bool) {
         let i = col*row_num + row;
         if i >= list.len() {
@@ -202,6 +196,7 @@ impl Terminal {
         let s = String::from_utf8(vec![b' '; space_num]).unwrap();
         if nega {
             print!("\x1b[01;7m{}{}\x1b[00m", list[i], &s);
+            self.double_tab_completion_string = list[i].clone();
         }else{
             print!("{}{}", list[i], &s);
         }
