@@ -138,10 +138,6 @@ impl Terminal {
     }
 
     fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
-        if tab_num > 2 && self.adjust_flag {
-            print!("\x1b[1A");
-            self.flush();
-        }
         eprintln!("\r");
 
         let widths = list.iter()
@@ -167,17 +163,18 @@ impl Terminal {
         }
 
         let terminal_row_num = Terminal::size().1;
-        let cur_row = self.stdout.cursor_pos().unwrap().1 as usize;
+        let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap() as (u16, u16);
 
         self.check_scroll();
-        match cur_row == terminal_row_num {
+        match cur_row as usize == terminal_row_num {
             true => {
                 let back_row = std::cmp::max(cur_row as i16 - row_num as i16, 1);
-                self.write(&termion::cursor::Goto(1, back_row as u16).to_string());
+                self.write(&termion::cursor::Goto(cur_col, back_row as u16).to_string());
+                print!("\x1b[1A");
+                self.flush();
             },
             false => self.rewrite(false),
         }
-        self.adjust_flag = cur_row == terminal_row_num;
     }
 
     fn print_an_entry(&mut self, list: &Vec<String>, widths: &Vec<usize>,
