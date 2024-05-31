@@ -23,8 +23,8 @@ fn set(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let layer = if core.data.parameters.len() > 2 {
-        core.data.parameters.len() - 2 //The last element of data.parameters is for local itself.
+    let layer = if core.data.get_layer_num() > 2 {
+        core.data.get_layer_num() - 2 //The last element of data.parameters is for local itself.
     }else{
         eprintln!("sush: local: can only be used in a function");
         return 1;

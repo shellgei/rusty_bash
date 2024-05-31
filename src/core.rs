@@ -150,10 +150,13 @@ impl ShellCore {
             return;
         }
 
+        let mut pipestatus = vec![];
         for pid in pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
+            pipestatus.push(self.data.get_param("?"));
         }
         self.set_foreground();
+        self.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {

@@ -5,7 +5,7 @@ use crate::elements::array::Array;
 use crate::elements::word::Word;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::env;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -19,7 +19,7 @@ pub enum Value {
 #[derive(Debug)]
 pub struct Data {
     pub flags: String,
-    pub parameters: Vec<HashMap<String, Value>>,
+    parameters: Vec<HashMap<String, Value>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -46,97 +46,72 @@ impl Data {
             return self.position_parameters[layer-1][n].to_string();
         }
 
-        let num = self.parameters.len();
-        if num > 0 {
-            for layer in (0..num).rev() {
-                match self.parameters[layer].get(key) {
-                    Some(Value::EvaluatedSingle(v)) => return v.to_string(),
-                    Some(Value::EvaluatedArray(a)) => {
-                        match a.len() {
-                            0 => return "".to_string(),
-                            _ => return a[0].to_string(),
-                        }
-                    },
-                    Some(_) | None  => {},
-                }
-            }
-        }
-
-        match self.parameters[0].get(key) {
-            None => {
-                if let Ok(val) = env::var(key) {
-                    self.set_param(key, &val);
-                }
-            },
-            _ => {},
-        }
-
-        match self.parameters[0].get(key) {
-            Some(Value::EvaluatedSingle(v)) => v.to_string(),
+        match self.get_value(key) {
+            Some(Value::EvaluatedSingle(v)) => return v.to_string(),
             Some(Value::EvaluatedArray(a)) => {
                 match a.len() {
-                    0 => "".to_string(),
-                    _ => a[0].to_string(),
+                    0 => return "".to_string(),
+                    _ => return a[0].to_string(),
                 }
             },
-            Some(_) | None => "".to_string(),
+            _  => {},
+        }
+
+        match env::var(key) {
+            Ok(v) => {
+                self.set_layer_param(key, &v, 0);
+                v
+            },
+            _ => "".to_string()
         }
     }
 
     pub fn get_array(&mut self, key: &str, pos: &str) -> String {
-        let num = self.parameters.len();
-        for layer in (0..num).rev()  {
-            match self.parameters[layer].get(key) {
-                Some(Value::EvaluatedArray(a)) => {
-                    if pos == "@" {
-                        return a.join(" ");
+        match self.get_value(key) {
+            Some(Value::EvaluatedArray(a)) => {
+                if pos == "@" {
+                    return a.join(" ");
+                } else if let Ok(n) = pos.parse::<usize>() {
+                    if n < a.len() {
+                        return a[n].clone();
                     }
-    
-                    match pos.parse::<usize>() {
-                        Ok(n) => {
-                            if n < a.len() {
-                                return a[n].clone();
-                            }
-                        },
-                        _ => {},
-                    }
-                },
-                Some(Value::EvaluatedSingle(v)) => {
-                    match pos.parse::<usize>() {
-                        Ok(0) => return v.to_string(),
-                        Ok(_) => return "".to_string(),
-                        _ => return v.to_string(), 
-                    }
-                },
-                _ => {},
-            }
+                }
+            },
+            Some(Value::EvaluatedSingle(v)) => {
+                match pos.parse::<usize>() {
+                    Ok(0) => return v.to_string(),
+                    Ok(_) => return "".to_string(),
+                    _ => return v.to_string(), 
+                }
+            },
+            _ => {},
         }
-
         "".to_string()
     }
 
-    pub fn get_array_len(&mut self, key: &str) -> usize {
+    pub fn get_value(&mut self, key: &str) -> Option<Value> {
         let num = self.parameters.len();
-        for layer in (0..num).rev() {
+        for layer in (0..num).rev()  {
             match self.parameters[layer].get(key) {
-                Some(Value::EvaluatedArray(a)) => return a.len(),
-                Some(_) => return 0,
+                Some(v) => return Some(v.clone()),
                 _ => {},
             }
         }
-        0
+        None
+    }
+
+    pub fn get_array_len(&mut self, key: &str) -> usize {
+        match self.get_value(key) {
+            Some(Value::EvaluatedArray(a)) => a.len(),
+            _ => 0,
+        }
     }
 
     pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
-        let num = self.parameters.len();
-        for layer in (0..num).rev() {
-            match self.parameters[layer].get(key) {
-                Some(Value::EvaluatedArray(a)) => return a.clone(),
-                Some(_) => return vec![],
-                _ => {},
-            }
+        match self.get_value(key) {
+            Some(Value::EvaluatedArray(a)) => a.clone(),
+            _ => vec![],
         }
-        vec![]
     }
 
     fn get_position_param_pos(&self, key: &str) -> Option<usize> {
@@ -190,5 +165,21 @@ impl Data {
 
     pub fn pop_local(&mut self) {
         self.parameters.pop();
+    }
+
+    pub fn get_layer_num(&mut self) -> usize {
+        self.parameters.len()
+    }
+
+    pub fn get_keys(&mut self) -> Vec<String> {
+        let mut output = HashSet::new();
+        for layer in &self.parameters {
+            for k in layer.keys() {
+                output.insert(k);
+            }
+        }
+        let mut ans: Vec<String> = output.iter().map(|c| c.to_string()).collect();
+        ans.sort();
+        ans
     }
 }
