@@ -162,16 +162,12 @@ impl Terminal {
         for row in 0..row_num {
             for col in 0..col_num {
                 let pos = col*row_num + row;
-                if pos >= list.len() {
-                    continue;
-                }
-
-                let tab = (tab_num - 2)%(1+list.len()) == row + col*row_num;
+                let tab = (tab_num - 2)%(1+list.len()) == pos;
 
                 Self::print_an_entry(list, &widths, row, col, 
                     row_num, max_entry_width, tab);
 
-                if tab {
+                if tab && pos < list.len() {
                     self.double_tab_completion_string = list[pos].clone();
                 }
             }
