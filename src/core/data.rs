@@ -101,27 +101,17 @@ impl Data {
     }
 
     pub fn get_array_len(&mut self, key: &str) -> usize {
-        let num = self.parameters.len();
-        for layer in (0..num).rev() {
-            match self.parameters[layer].get(key) {
-                Some(Value::EvaluatedArray(a)) => return a.len(),
-                Some(_) => return 0,
-                _ => {},
-            }
+        match self.get_value(key) {
+            Some(Value::EvaluatedArray(a)) => a.len(),
+            _ => 0,
         }
-        0
     }
 
     pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
-        let num = self.parameters.len();
-        for layer in (0..num).rev() {
-            match self.parameters[layer].get(key) {
-                Some(Value::EvaluatedArray(a)) => return a.clone(),
-                Some(_) => return vec![],
-                _ => {},
-            }
+        match self.get_value(key) {
+            Some(Value::EvaluatedArray(a)) => a.clone(),
+            _ => vec![],
         }
-        vec![]
     }
 
     fn get_position_param_pos(&self, key: &str) -> Option<usize> {
