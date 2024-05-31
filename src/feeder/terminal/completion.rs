@@ -142,19 +142,14 @@ impl Terminal {
     }
 
     fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
-        eprintln!("\r");
-
         let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
-
-        let mut col_num = Terminal::size().0 / max_entry_width;
-        if col_num == 0 {
-            col_num = 1;
-        }
+        let col_num = std::cmp::max(Terminal::size().0 / max_entry_width, 1);
 
         let row_num = (list.len()-1) / col_num + 1;
         self.double_tab_completion_string = String::new();
 
+        eprintln!("\r");
         for row in 0..row_num {
             for col in 0..col_num {
                 let tab = (tab_num - 2)%(1+list.len()) == col*row_num + row;
