@@ -5,7 +5,7 @@ use crate::elements::array::Array;
 use crate::elements::word::Word;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::env;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -19,7 +19,7 @@ pub enum Value {
 #[derive(Debug)]
 pub struct Data {
     pub flags: String,
-    pub parameters: Vec<HashMap<String, Value>>,
+    parameters: Vec<HashMap<String, Value>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -115,6 +115,17 @@ impl Data {
         "".to_string()
     }
 
+    pub fn get_value(&mut self, key: &str) -> Option<Value> {
+        let num = self.parameters.len();
+        for layer in (0..num).rev()  {
+            match self.parameters[layer].get(key) {
+                Some(v) => return Some(v.clone()),
+                _ => {},
+            }
+        }
+        None
+    }
+
     pub fn get_array_len(&mut self, key: &str) -> usize {
         let num = self.parameters.len();
         for layer in (0..num).rev() {
@@ -190,5 +201,21 @@ impl Data {
 
     pub fn pop_local(&mut self) {
         self.parameters.pop();
+    }
+
+    pub fn get_layer_num(&mut self) -> usize {
+        self.parameters.len()
+    }
+
+    pub fn get_keys(&mut self) -> Vec<String> {
+        let mut output = HashSet::new();
+        for layer in &self.parameters {
+            for k in layer.keys() {
+                output.insert(k);
+            }
+        }
+        let mut ans: Vec<String> = output.iter().map(|c| c.to_string()).collect();
+        ans.sort();
+        ans
     }
 }

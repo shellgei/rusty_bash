@@ -7,35 +7,47 @@ use std::collections::HashMap;
 
 fn set_no_arg(core: &mut ShellCore) -> i32 {
     let mut output = HashMap::new();
+    for k in core.data.get_keys() {
+        match core.data.get_value(&k) {
+                Some(Value::EvaluatedSingle(s)) => {output.insert(k.to_string(), s.to_string());},
+                Some(Value::EvaluatedArray(a)) => {
+                    let mut formatted = String::new();
+                    formatted += "(";
+                    for (i, v) in a.iter().enumerate() {
+                        formatted += &format!("[{}]=\"{}\" ", i, v).clone();
+                    }
+                    if formatted.ends_with(" ") {
+                        formatted.pop();
+                    }
+                    formatted += ")";
+                    output.insert(k.to_string(), formatted);
+                },
+                _ => {},
+        }
+    }
+
+    /*
     for layer in &core.data.parameters {
         for e in layer {
             match e.1 {
                 Value::EvaluatedSingle(s) => {output.insert(e.0.to_string(), s.to_string());},
                 Value::EvaluatedArray(a) => {
-
-                    /*
-        }
-    }
-
-    for layer in &core.data.arrays {
-        for e in layer {
-                    */
-            let mut formatted = String::new();
-            formatted += "(";
-            //for (i, v) in e.1.iter().enumerate() {
-            for (i, v) in a.iter().enumerate() {
-                formatted += &format!("[{}]=\"{}\" ", i, v).clone();
-            }
-            if formatted.ends_with(" ") {
-                formatted.pop();
-            }
-            formatted += ")";
-            output.insert(e.0.to_string(), formatted);
+                    let mut formatted = String::new();
+                    formatted += "(";
+                    for (i, v) in a.iter().enumerate() {
+                        formatted += &format!("[{}]=\"{}\" ", i, v).clone();
+                    }
+                    if formatted.ends_with(" ") {
+                        formatted.pop();
+                    }
+                    formatted += ")";
+                    output.insert(e.0.to_string(), formatted);
                 },
                 _ => {},
         }
         }
     }
+    */
 
     for e in output {
         println!("{}={}", e.0, e.1); 
