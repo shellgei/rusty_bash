@@ -172,7 +172,7 @@ impl Terminal {
         self.check_scroll();
         match cur_row == terminal_row_num {
             true => {
-                let r = if cur_row as i16 - row_num as i16 > 1 {
+                let r = if cur_row > row_num + 1 {
                     (cur_row - row_num).try_into().unwrap()
                 }else{
                     1
