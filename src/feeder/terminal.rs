@@ -15,7 +15,7 @@ use termion::cursor::DetectCursorPos;
 use termion::event;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
-use unicode_width::UnicodeWidthStr;
+use unicode_width::UnicodeWidthChar;
 
 struct Terminal {
     prompt: String,
@@ -117,7 +117,7 @@ impl Terminal {
 
             let wid = match in_escape {
                 true  => 0,
-                false => UnicodeWidthStr::width(c.to_string().as_str()),
+                false => UnicodeWidthChar::width(c).unwrap_or(0),
             };
             ans.push(wid);
         }
@@ -137,7 +137,7 @@ impl Terminal {
             return self.prompt_width_map[pos];
         }
 
-        UnicodeWidthStr::width(c.to_string().as_str())
+        UnicodeWidthChar::width(*c).unwrap_or(0)
     }
 
     fn size() -> (usize, usize) {

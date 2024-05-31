@@ -11,6 +11,10 @@ use std::path::Path;
 use termion::cursor::DetectCursorPos;
 use unicode_width::UnicodeWidthStr;
 
+fn str_width(s: &str) -> usize {
+    UnicodeWidthStr::width(s)
+}
+
 fn common_length(chars: &Vec<char>, s: &String) -> usize {
     let max_len = chars.len();
     for (i, c) in s.chars().enumerate() {
@@ -140,9 +144,7 @@ impl Terminal {
     fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
         eprintln!("\r");
 
-        let widths = list.iter()
-                     .map(|p| UnicodeWidthStr::width(p.as_str()))
-                     .collect::<Vec<usize>>();
+        let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
 
         let mut col_num = Terminal::size().0 / max_entry_width;
