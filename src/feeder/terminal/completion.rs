@@ -149,11 +149,9 @@ impl Terminal {
                      .collect::<Vec<usize>>();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
 
-        let col_num = Terminal::size().0 / max_entry_width;
+        let mut col_num = Terminal::size().0 / max_entry_width;
         if col_num == 0 {
-            list.iter().for_each(|p| print!("{}\r\n", &p));
-            self.rewrite(true);
-            return;
+            col_num = 1;
         }
 
         let row_num = (list.len()-1) / col_num + 1;
@@ -174,11 +172,12 @@ impl Terminal {
         self.check_scroll();
         match cur_row == terminal_row_num {
             true => {
-                if cur_row as i16 - row_num as i16 > 1 {
-                    self.write(&termion::cursor::Goto(1, (cur_row - row_num).try_into().unwrap()).to_string());
+                let r = if cur_row as i16 - row_num as i16 > 1 {
+                    (cur_row - row_num).try_into().unwrap()
                 }else{
-                    self.write(&termion::cursor::Goto(1, 1).to_string());
-                }
+                    1
+                };
+                self.write(&termion::cursor::Goto(1, r).to_string());
             },
             false => self.rewrite(false),
         }
