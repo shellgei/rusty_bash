@@ -163,7 +163,7 @@ impl Terminal {
         }
 
         let terminal_row_num = Terminal::size().1;
-        let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap() as (u16, u16);
+        let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap();
 
         self.check_scroll();
         match cur_row as usize == terminal_row_num {
