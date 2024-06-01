@@ -124,7 +124,7 @@ impl Redirect {
         let blank_len = feeder.scanner_blank(core);
         ans.text += &feeder.consume(blank_len);
 
-        match feeder.scanner_word(core) {
+        match feeder.scanner_subword(core) {
             0 => false,
             n => {
                 ans.right = feeder.consume(n);
