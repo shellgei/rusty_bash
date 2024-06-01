@@ -60,7 +60,6 @@ impl Terminal {
 
         match tab_num  {
             1 => self.try_completion(core),
-            //_ => self.show_list(&core.data.arrays[0]["COMPREPLY"], tab_num),
             _ => self.show_list(&core.data.get_array_all("COMPREPLY"), tab_num),
         }
     }
@@ -68,7 +67,6 @@ impl Terminal {
     fn set_custom_compreply(core: &mut ShellCore) -> bool {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
-        //let word_num = core.data.arrays[0]["COMP_WORDS"].len() as i32;
         let word_num = core.data.get_array_len("COMP_WORDS") as i32;
 
         if prev_pos < 0 || prev_pos >= word_num {
@@ -152,12 +150,16 @@ impl Terminal {
         let col_num = std::cmp::max(Terminal::size().0 / max_entry_width, 1);
 
         let row_num = (list.len()-1) / col_num + 1;
-        self.double_tab_completion_string = String::new();
+        self.completion_candidate = String::new();
+
+        let i = (self.tab_col*row_num as i32 + self.tab_row)%((row_num*col_num) as i32);
+        self.tab_col = i/(row_num as i32);
+        self.tab_row = i%(row_num as i32);
 
         eprintln!("\r");
         for row in 0..row_num {
             for col in 0..col_num {
-                let tab = (tab_num - 2)%(1+list.len()) == col*row_num + row;
+                let tab = self.tab_row == row as i32 && self.tab_col == col as i32;
                 self.print_an_entry(list, &widths, row, col, 
                     row_num, max_entry_width, tab);
             }
@@ -190,7 +192,7 @@ impl Terminal {
         let s = String::from_utf8(vec![b' '; space_num]).unwrap();
         if nega {
             print!("\x1b[01;7m{}{}\x1b[00m", list[i], &s);
-            self.double_tab_completion_string = list[i].clone();
+            self.completion_candidate = list[i].clone();
         }else{
             print!("{}{}", list[i], &s);
         }
