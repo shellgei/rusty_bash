@@ -154,11 +154,13 @@ impl Terminal {
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
         let terminal_row_num = Terminal::size().1;
         let col_num = std::cmp::min(
-            std::cmp::max(Terminal::size().0 / max_entry_width, 1),
-            list.len());
+                          std::cmp::max(Terminal::size().0 / max_entry_width, 1),
+                          list.len()
+                      );
         let row_num = std::cmp::min(
-            (list.len()-1) / col_num + 1,
-            std::cmp::max(terminal_row_num - 2, 1));
+                          (list.len()-1) / col_num + 1,
+                          std::cmp::max(terminal_row_num - 2, 1)
+                      );
         self.completion_candidate = String::new();
 
         if tab_num > 2 {
@@ -190,19 +192,23 @@ impl Terminal {
     }
 
     fn print_an_entry(&mut self, list: &Vec<String>, widths: &Vec<usize>,
-        row: usize, col: usize, row_num: usize, width: usize, nega: bool) {
+        row: usize, col: usize, row_num: usize, width: usize, pointed: bool) {
         let i = col*row_num + row;
-        if i >= list.len() {
-            return;
-        }
+        let space_num = match i < list.len() {
+            true  => width - widths[i],
+            false => width,
+        };
+        let cand = match i < list.len() {
+            true  => list[i].clone(),
+            false => "".to_string(),
+        };
 
-        let space_num = width - widths[i];
         let s = String::from_utf8(vec![b' '; space_num]).unwrap();
-        if nega {
-            print!("\x1b[01;7m{}{}\x1b[00m", list[i], &s);
-            self.completion_candidate = list[i].clone();
+        if pointed {
+            print!("\x1b[01;7m{}{}\x1b[00m", &cand, &s);
+            self.completion_candidate = cand;
         }else{
-            print!("{}{}", list[i], &s);
+            print!("{}{}", &cand, &s);
         }
     }
 
