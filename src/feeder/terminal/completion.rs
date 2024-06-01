@@ -144,17 +144,24 @@ impl Terminal {
         self.cloop();
     }
 
-    fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
-        let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();
-        let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
-        let col_num = std::cmp::max(Terminal::size().0 / max_entry_width, 1);
-
-        let row_num = (list.len()-1) / col_num + 1;
-        self.completion_candidate = String::new();
-
+    fn normalize_tab(&mut self, row_num: usize, col_num: usize) {
         let i = (self.tab_col*row_num as i32 + self.tab_row)%((row_num*col_num) as i32);
         self.tab_col = i/(row_num as i32);
         self.tab_row = i%(row_num as i32);
+    }
+
+    fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
+        let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();
+        let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
+        let col_num = std::cmp::min(
+            std::cmp::max(Terminal::size().0 / max_entry_width, 1),
+            list.len());
+        let row_num = (list.len()-1) / col_num + 1;
+        self.completion_candidate = String::new();
+
+        if tab_num > 2 {
+            self.normalize_tab(row_num, col_num);
+        }
 
         eprintln!("\r");
         for row in 0..row_num {
