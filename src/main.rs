@@ -34,7 +34,7 @@ fn run_signal_check(core: &mut ShellCore) {
 
     let sigint = Arc::clone(&core.sigint); //追加
  
-    thread::spawn(move || { //クロージャの処理全体を{}で囲みましょう
+    thread::spawn(move || {
         let mut signals = Signals::new(vec![consts::SIGINT])
                           .expect("sush(fatal): cannot prepare signal data");
 

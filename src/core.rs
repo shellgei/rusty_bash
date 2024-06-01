@@ -71,6 +71,7 @@ impl ShellCore {
         core.init_current_directory();
         core.set_initial_parameters();
         core.set_builtins();
+        ignore_signal(Signal::SIGPIPE);
 
         if unistd::isatty(0) == Ok(true) {
             core.data.flags += "i";
@@ -123,7 +124,6 @@ impl ShellCore {
         if exit_status == 130 {
             self.sigint.store(true, Relaxed);
         }
-        //self.data.parameters[0].insert("?".to_string(), exit_status.to_string()); //追加
         self.data.set_layer_param("?", &exit_status.to_string(), 0); //追加
     } 
 
@@ -208,6 +208,7 @@ impl ShellCore {
 
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
         restore_signal(Signal::SIGINT);
+        restore_signal(Signal::SIGPIPE);
 
         self.is_subshell = true;
         self.set_pgid(pid, pgid);
