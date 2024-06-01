@@ -3,7 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword;
-use crate::elements::subword::Subword;
+use super::subword::Subword;
 
 #[derive(Debug, Clone)] //Cloneも指定しておく
 pub struct Word {

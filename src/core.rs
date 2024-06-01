@@ -5,7 +5,7 @@ pub mod builtins;
 pub mod jobtable;
 
 use std::collections::HashMap;
-use std::os::fd::RawFd;
+use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
@@ -25,7 +25,7 @@ pub struct ShellCore {
     pub nest: Vec<(String, Vec<String>)>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
-    pub tty_fd: RawFd,
+    pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory
 }
@@ -57,7 +57,7 @@ impl ShellCore {
             nest: vec![("".to_string(), vec![])],
             sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
-            tty_fd: -1,
+            tty_fd: None,
             job_table: vec![],
             tcwd: None,
         };
@@ -68,8 +68,9 @@ impl ShellCore {
 
         if is_interactive() {
             core.flags += "i";
-            core.tty_fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
+            let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
+            core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
         core
@@ -115,12 +116,19 @@ impl ShellCore {
     } 
 
     fn set_foreground(&self) {
-        if self.tty_fd < 0 { // tty_fdが無効なら何もしない
+        let fd = match self.tty_fd.as_ref() {
+            Some(fd) => fd,
+            _        => return,
+        };
+        let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
+                   .expect("sush(fatal): cannot get pgid");
+
+        if unistd::tcgetpgrp(fd) == Ok(pgid) {
             return;
         }
 
         ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
-        unistd::tcsetpgrp(self.tty_fd, unistd::getpid())
+        unistd::tcsetpgrp(fd, pgid)
             .expect("sush(fatal): cannot get the terminal");
         restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
