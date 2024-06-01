@@ -43,8 +43,11 @@ impl Job {
     }
 
     fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
-        let backup = core.tty_fd;
-        core.tty_fd = -1;
+        let backup = match core.tty_fd.as_ref() {
+            Some(fd) => Some(fd.try_clone().unwrap()),
+            _ => None,
+        };
+        core.tty_fd = None;
 
         let pids = if self.pipelines.len() == 1 {
             if self.pipelines[0].commands.len() == 1 {

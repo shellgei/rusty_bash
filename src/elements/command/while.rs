@@ -2,9 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
-use super::{Command, Pipe, Redirect};
+use super::{Command, Redirect};
 use crate::elements::command;
-use nix::unistd::Pid;
 
 #[derive(Debug)]
 pub struct WhileCommand {
@@ -16,15 +15,6 @@ pub struct WhileCommand {
 }
 
 impl Command for WhileCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        if self.force_fork || pipe.is_connected() {
-            self.fork_exec(core, pipe)
-        }else{
-            self.nofork_exec(core);
-            None
-        }
-    }
-
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         loop {
             self.while_script.as_mut()
@@ -44,6 +34,7 @@ impl Command for WhileCommand {
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
+    fn force_fork(&self) -> bool { self.force_fork }
 }
 
 impl WhileCommand {
