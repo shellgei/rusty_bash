@@ -144,10 +144,15 @@ impl Terminal {
         self.cloop();
     }
 
-    fn normalize_tab(&mut self, row_num: usize, col_num: usize) {
-        let i = (self.tab_col*row_num as i32 + self.tab_row)%((row_num*col_num) as i32);
-        self.tab_col = i/(row_num as i32);
-        self.tab_row = i%(row_num as i32);
+    fn normalize_tab(&mut self, row_num: i32, col_num: i32) {
+        if self.tab_col < 0        { self.tab_col += col_num; }
+        if self.tab_col >= col_num { self.tab_col -= col_num; }
+        if self.tab_row < 0        { self.tab_row += row_num; }
+        if self.tab_row >= row_num { self.tab_row -= row_num; }
+
+        let i = (self.tab_col*row_num + self.tab_row)%(row_num*col_num);
+        self.tab_col = i/row_num;
+        self.tab_row = i%row_num;
     }
 
     fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
@@ -160,7 +165,7 @@ impl Terminal {
         self.completion_candidate = String::new();
 
         if tab_num > 2 {
-            self.normalize_tab(row_num, col_num);
+            self.normalize_tab(row_num as i32, col_num as i32);
         }
 
         eprintln!("\r");

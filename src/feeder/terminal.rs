@@ -292,7 +292,8 @@ impl Terminal {
 
 fn is_completion_key(key: event::Key) -> bool {
     match key {
-        event::Key::Char('\t') | event::Key::Left 
+        event::Key::Char('\t') 
+            | event::Key::Left | event::Key::Down
             | event::Key::Right | event::Key::Up => true,
         _ => false,
     }
@@ -327,17 +328,37 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             event::Key::Ctrl('e') => term.goto_end(),
             event::Key::Ctrl('f') => term.shift_cursor(1),
-            event::Key::Down => term.call_history(-1, core),
-            event::Key::Left => term.shift_cursor(-1),
-            event::Key::Right => term.shift_cursor(1),
-            event::Key::Up => {
-                /*
+            event::Key::Down => {
                 if tab_num > 1 {
+                    term.tab_row += 1;
                     term.completion(core, tab_num);
                 }else{
-                */
+                    term.call_history(-1, core);
+                }
+            },
+            event::Key::Left => {
+                if tab_num > 1 {
+                    term.tab_col -= 1;
+                    term.completion(core, tab_num);
+                }else{
+                    term.shift_cursor(-1);
+                }
+            },
+            event::Key::Right => {
+                if tab_num > 1 {
+                    term.tab_col += 1;
+                    term.completion(core, tab_num);
+                }else{
+                    term.shift_cursor(1);
+                }
+            },
+            event::Key::Up => {
+                if tab_num > 1 {
+                    term.tab_row -= 1;
+                    term.completion(core, tab_num);
+                }else{
                     term.call_history(1, core);
-                //}
+                }
             },
             event::Key::Backspace  => term.backspace(),
             event::Key::Delete  => term.delete(),
