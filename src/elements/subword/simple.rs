@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{Feeder, ShellCore};
 use super::Subword;
 
 #[derive(Debug, Clone)]
@@ -15,18 +15,12 @@ impl Subword for SimpleSubword {
 }
 
 impl SimpleSubword {
-    fn new(s: &str) -> SimpleSubword {
-        SimpleSubword {
-            text: s.to_string(),
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+        let len = feeder.scanner_subword(core);
+        if len > 0 {
+            return Some( Self{ text :feeder.consume(len) } );
         }
-    }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
-        let len = feeder.scanner_word(core);
-        if len == 0 {
-            None
-        }else{
-            Some(Self::new( &feeder.consume(len) ))
-        }
+        None
     }
 }
