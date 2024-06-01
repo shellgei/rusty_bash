@@ -299,6 +299,27 @@ fn is_completion_key(key: event::Key) -> bool {
     }
 }
 
+fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: usize) {
+    if tab_num > 1 {
+        match key {
+            event::Key::Down  => term.tab_row += 1,
+            event::Key::Up    => term.tab_row -= 1,
+            event::Key::Right => term.tab_col += 1,
+            event::Key::Left  => term.tab_col -= 1,
+            _ => {},
+        }
+        term.completion(core, tab_num);
+    }else{
+        match key {
+            event::Key::Down  => term.call_history(-1, core),
+            event::Key::Up    => term.call_history(1, core),
+            event::Key::Right => term.shift_cursor(1),
+            event::Key::Left  => term.shift_cursor(-1),
+            _ => {},
+        }
+    }
+}
+
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
@@ -328,40 +349,12 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             event::Key::Ctrl('e') => term.goto_end(),
             event::Key::Ctrl('f') => term.shift_cursor(1),
-            event::Key::Down => {
-                if tab_num > 1 {
-                    term.tab_row += 1;
-                    term.completion(core, tab_num);
-                }else{
-                    term.call_history(-1, core);
-                }
-            },
-            event::Key::Left => {
-                if tab_num > 1 {
-                    term.tab_col -= 1;
-                    term.completion(core, tab_num);
-                }else{
-                    term.shift_cursor(-1);
-                }
-            },
-            event::Key::Right => {
-                if tab_num > 1 {
-                    term.tab_col += 1;
-                    term.completion(core, tab_num);
-                }else{
-                    term.shift_cursor(1);
-                }
-            },
-            event::Key::Up => {
-                if tab_num > 1 {
-                    term.tab_row -= 1;
-                    term.completion(core, tab_num);
-                }else{
-                    term.call_history(1, core);
-                }
-            },
-            event::Key::Backspace  => term.backspace(),
-            event::Key::Delete  => term.delete(),
+            event::Key::Down |
+            event::Key::Left |
+            event::Key::Right |
+            event::Key::Up => on_arrow_key(&mut term, core, c.as_ref().unwrap(), tab_num),
+            event::Key::Backspace => term.backspace(),
+            event::Key::Delete => term.delete(),
             event::Key::Char('\n') => {
                 if term.completion_candidate.len() > 0 {
                     term.set_double_tab_completion();

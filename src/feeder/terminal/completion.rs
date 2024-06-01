@@ -135,7 +135,6 @@ impl Terminal {
             return;
         }
 
-//        let common = common_string(&core.data.parameters[0]["COMPREPLY"]);
         let common = common_string(&core.data.get_array_all("COMPREPLY"));
         if common.len() != target.len() {
             self.replace_input(&common);
@@ -145,12 +144,7 @@ impl Terminal {
     }
 
     fn normalize_tab(&mut self, row_num: i32, col_num: i32) {
-        if self.tab_col < 0        { self.tab_col += col_num; }
-        if self.tab_col >= col_num { self.tab_col -= col_num; }
-        if self.tab_row < 0        { self.tab_row += row_num; }
-        if self.tab_row >= row_num { self.tab_row -= row_num; }
-
-        let i = (self.tab_col*row_num + self.tab_row)%(row_num*col_num);
+        let i = (self.tab_col*row_num + self.tab_row + row_num*col_num)%(row_num*col_num);
         self.tab_col = i/row_num;
         self.tab_row = i%row_num;
     }
@@ -158,10 +152,13 @@ impl Terminal {
     fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
         let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
+        let terminal_row_num = Terminal::size().1;
         let col_num = std::cmp::min(
             std::cmp::max(Terminal::size().0 / max_entry_width, 1),
             list.len());
-        let row_num = (list.len()-1) / col_num + 1;
+        let row_num = std::cmp::min(
+            (list.len()-1) / col_num + 1,
+            std::cmp::max(terminal_row_num - 2, 1));
         self.completion_candidate = String::new();
 
         if tab_num > 2 {
@@ -178,7 +175,6 @@ impl Terminal {
             print!("\r\n");
         }
 
-        let terminal_row_num = Terminal::size().1;
         let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap();
 
         self.check_scroll();
