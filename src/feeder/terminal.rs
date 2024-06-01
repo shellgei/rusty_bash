@@ -25,7 +25,10 @@ struct Terminal {
     head: usize,
     hist_ptr: usize,
     prompt_width_map: Vec<usize>,
-    double_tab_completion_string: String,
+    /* for extended completion */
+    completion_candidate: String,
+    tab_row: i32,
+    tab_col: i32,
 }
 
 impl Terminal {
@@ -48,7 +51,9 @@ impl Terminal {
             head: prompt.chars().count(),
             hist_ptr: 0,
             prompt_width_map: Self::make_width_map(&replaced_prompt),
-            double_tab_completion_string: String::new(),
+            completion_candidate: String::new(),
+            tab_row: -1,
+            tab_col: -1,
         }
     }
 
@@ -275,13 +280,22 @@ impl Terminal {
     }
 
     pub fn set_double_tab_completion(&mut self) {
-        let s = self.double_tab_completion_string.clone() + " ";
+        let s = self.completion_candidate.clone() + " ";
         self.replace_input(&s);
     }
 
     pub fn cloop(&mut self) {
         print!("\x07");
         self.flush();
+    }
+}
+
+fn is_completion_key(key: event::Key) -> bool {
+    match key {
+        event::Key::Char('\t') 
+            | event::Key::Left | event::Key::Down
+            | event::Key::Right | event::Key::Up => true,
+        _ => false,
     }
 }
 
@@ -314,15 +328,42 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             event::Key::Ctrl('e') => term.goto_end(),
             event::Key::Ctrl('f') => term.shift_cursor(1),
-            //event::Key::Ctrl('t') => term.set_double_tab_completion(),
-            event::Key::Down => term.call_history(-1, core),
-            event::Key::Left => term.shift_cursor(-1),
-            event::Key::Right => term.shift_cursor(1),
-            event::Key::Up => term.call_history(1, core),
+            event::Key::Down => {
+                if tab_num > 1 {
+                    term.tab_row += 1;
+                    term.completion(core, tab_num);
+                }else{
+                    term.call_history(-1, core);
+                }
+            },
+            event::Key::Left => {
+                if tab_num > 1 {
+                    term.tab_col -= 1;
+                    term.completion(core, tab_num);
+                }else{
+                    term.shift_cursor(-1);
+                }
+            },
+            event::Key::Right => {
+                if tab_num > 1 {
+                    term.tab_col += 1;
+                    term.completion(core, tab_num);
+                }else{
+                    term.shift_cursor(1);
+                }
+            },
+            event::Key::Up => {
+                if tab_num > 1 {
+                    term.tab_row -= 1;
+                    term.completion(core, tab_num);
+                }else{
+                    term.call_history(1, core);
+                }
+            },
             event::Key::Backspace  => term.backspace(),
             event::Key::Delete  => term.delete(),
             event::Key::Char('\n') => {
-                if term.double_tab_completion_string.len() > 0 {
+                if term.completion_candidate.len() > 0 {
                     term.set_double_tab_completion();
                 }else{
                     term.goto(term.chars.len());
@@ -335,6 +376,12 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                 if tab_num == 0 || prev_key == event::Key::Char('\t') {
                     tab_num += 1;
                 }
+                if tab_num == 2 {
+                    term.tab_row = -1;
+                    term.tab_col = 0;
+                }else if tab_num > 2 {
+                    term.tab_row += 1;
+                }
                 term.completion(core, tab_num);
             },
             event::Key::Char(c) => {
@@ -344,9 +391,9 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         }
         term.check_scroll();
         prev_key = c.as_ref().unwrap().clone();
-        if prev_key != event::Key::Char('\t') {
+        if ! is_completion_key(prev_key) {
             tab_num = 0;
-            term.double_tab_completion_string = String::new();
+            term.completion_candidate = String::new();
         }
     }
 
