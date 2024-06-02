@@ -20,6 +20,8 @@ _git () {
 		COMPREPLY=( $(compgen -W "${CANDS[@]}" -- "${cur}") ) 
 	elif [ "$COMP_CWORD" = 2 -a "$prev" = switch ] ; then
 		COMPREPLY=( $(compgen -W "$( git branch )" -- "${cur}" ) ) 
+	elif [ "$COMP_CWORD" = 2 -a "$prev" = diff ] ; then
+		COMPREPLY=( $(compgen -W "$( git branch ) $(compgen -f)" -- "${cur}" ) ) 
 	fi
 }
 complete -F _git git
