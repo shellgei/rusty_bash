@@ -20,6 +20,8 @@ _git_comp () {
 		COMPREPLY=( $(compgen -W "${CANDS[@]}" -- "${cur}") ) 
 	elif [ "$COMP_CWORD" = 2 -a "$prev" = switch ] ; then
 		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' )" -- "${cur}" ) ) 
+	elif [ "$COMP_CWORD" = 2 -a "$prev" = merge ] ; then
+		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' )" -- "${cur}" ) ) 
 	elif [ "$COMP_CWORD" = 2 -a "$prev" = diff ] ; then
 		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' ) $(compgen -f)" -- "${cur}" ) ) 
 	fi
