@@ -73,10 +73,10 @@ impl Terminal {
             return false;
         }
 
-        let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
+        let org_word = core.data.get_array("COMP_WORDS", "0");
         let cur_word = core.data.get_array("COMP_WORDS", &cur_pos.to_string());
 
-        match core.completion_functions.get(&prev_word) {
+        match core.completion_functions.get(&org_word) {
             Some(value) => {
                 let command = format!("cur={} {}", &cur_word, &value); //TODO: cur should be set
                 let mut feeder = Feeder::new(&command);                // by bash-completion

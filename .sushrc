@@ -10,5 +10,14 @@ alias ll='ls -l'
 # completion test
 # thanks to: https://blog.cybozu.io/entry/2016/09/26/080000
 
- _dummy () { COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) ; }
+_dummy () { COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) ; }
 complete -F _dummy hoge
+
+_git () {
+	if [ "$cur" = "git" ] ; then 
+		COMPREPLY=( $( git |& grep '^  *[a-z]' | awk '{print $1}') ) 
+	else 
+		COMPREPLY=( $( git branch ) ) 
+	fi
+}
+complete -F _git git
