@@ -482,8 +482,8 @@ res=$($com <<< 'echo "')
 res=$($com <<< 'echo "" a')
 [ "$res" == " a" ] || err $LINENO
 
-#res=$($com <<< "echo '' a")
-#[ "$res" == " a" ] || err $LINENO
+res=$($com <<< "echo '' a")
+[ "$res" == " a" ] || err $LINENO
 
 ### WHILE TEST ###
 

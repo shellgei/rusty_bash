@@ -128,7 +128,7 @@ impl Word {
             ans.push(&sw);
         }
 
-        match ans.text.len() {
+        match ans.subwords.len() {
             0 => None,
             _ => {
                 let mut ans2 = Word::new();

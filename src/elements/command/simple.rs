@@ -231,7 +231,9 @@ impl SimpleCommand {
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let w = match Word::parse(feeder, core) {
             Some(w) => w,
-            _       => return false,
+            _       => {
+                return false;
+            },
         };
 
         if ans.words.len() == 0 {
@@ -261,6 +263,7 @@ impl SimpleCommand {
                 continue;
             }
 
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
             if ! Self::eat_word(feeder, &mut ans, core) {
                 break;
             }
