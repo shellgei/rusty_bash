@@ -16,9 +16,10 @@ complete -F _dummy hoge
 _git () {
 	COMPREPLY=( ) 
 	if [ "$COMP_CWORD" = 1 ] ; then 
-		COMPREPLY=( $( git |& grep '^  *[a-z]' | awk '{print $1}') ) 
+		CANDS=( $( git |& grep '^  *[a-z]' | awk '{print $1}') ) 
+		COMPREPLY=( $(compgen -W "${CANDS[@]}" -- "${cur}") ) 
 	elif [ "$COMP_CWORD" = 2 -a "$prev" = switch ] ; then
-		COMPREPLY=( $( git branch ) ) 
+		COMPREPLY=( $(compgen -W "$( git branch )" -- "${cur}" ) ) 
 	fi
 }
 complete -F _git git

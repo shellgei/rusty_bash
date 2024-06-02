@@ -124,9 +124,7 @@ impl Terminal {
         let pos = core.data.get_param("COMP_CWORD").to_string();
         let target = core.data.get_array("COMP_WORDS", &pos);
 
-        //if core.data.arrays[0]["COMPREPLY"].len() == 1 {
         if core.data.get_array_len("COMPREPLY") == 1 {
-            //let output = core.data.arrays[0]["COMPREPLY"][0].clone();
             let output = core.data.get_array("COMPREPLY", "0");
             let tail = match is_dir(&output, core) {
                 true  => "/",
