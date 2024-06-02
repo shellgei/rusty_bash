@@ -10,18 +10,17 @@ alias ll='ls -l'
 # completion test
 # thanks to: https://blog.cybozu.io/entry/2016/09/26/080000
 
-_dummy () { COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) ; }
-complete -F _dummy hoge
+_dummy () {
+	COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) 
+} && complete -F _dummy hoge
 
-_git () {
-	COMPREPLY=( ) 
+_git_comp () {
 	if [ "$COMP_CWORD" = 1 ] ; then 
 		CANDS=( $( git |& grep '^  *[a-z]' | awk '{print $1}') ) 
 		COMPREPLY=( $(compgen -W "${CANDS[@]}" -- "${cur}") ) 
 	elif [ "$COMP_CWORD" = 2 -a "$prev" = switch ] ; then
-		COMPREPLY=( $(compgen -W "$( git branch )" -- "${cur}" ) ) 
+		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' )" -- "${cur}" ) ) 
 	elif [ "$COMP_CWORD" = 2 -a "$prev" = diff ] ; then
-		COMPREPLY=( $(compgen -W "$( git branch ) $(compgen -f)" -- "${cur}" ) ) 
+		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' ) $(compgen -f)" -- "${cur}" ) ) 
 	fi
-}
-complete -F _git git
+} && complete -F _git_comp git
