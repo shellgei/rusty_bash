@@ -17,7 +17,7 @@ _git () {
 	COMPREPLY=( ) 
 	if [ "$COMP_CWORD" = 1 ] ; then 
 		COMPREPLY=( $( git |& grep '^  *[a-z]' | awk '{print $1}') ) 
-	elif [ "$COMP_CWORD" = 2 ] ; then
+	elif [ "$COMP_CWORD" = 2 -a "$prev" = switch ] ; then
 		COMPREPLY=( $( git branch ) ) 
 	fi
 }
