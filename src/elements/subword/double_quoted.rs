@@ -35,11 +35,13 @@ impl Subword for DoubleQuoted {
                         .replace("]", "\\]");
     }
 
-    fn make_unquoted_string(&mut self) -> String {
-        self.subwords.iter_mut()
+    fn make_unquoted_string(&mut self) -> Option<String> {
+        Some(self.subwords.iter_mut()
             .map(|s| s.make_unquoted_string())
+            .filter(|s| *s != None)
+            .map(|s| s.unwrap())
             .collect::<Vec<String>>()
-            .concat()
+            .concat() )
     }
 
     fn is_quoted(&self) -> bool {true}

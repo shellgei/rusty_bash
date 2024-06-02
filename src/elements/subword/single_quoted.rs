@@ -13,6 +13,8 @@ impl Subword for SingleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
+    //fn make_unquoted_string(&mut self) -> Option<String> { Some(self.text.clone()) }
+
     fn make_glob_string(&mut self) -> String {
         self.text.replace("\\", "\\\\")
             .replace("*", "\\*")

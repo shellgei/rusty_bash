@@ -41,7 +41,7 @@ impl Word {
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
         match self.tilde_and_dollar_expansion(core) {
-            Some(mut w) => Some(w.make_unquoted_word()),
+            Some(mut w) => w.make_unquoted_word(),
             None    => return None,
         }
     }
@@ -73,12 +73,22 @@ impl Word {
     pub fn make_args(words: &mut Vec<Word>) -> Vec<String> {
         words.iter_mut()
               .map(|w| w.make_unquoted_word())
-              .filter(|arg| arg.len() > 0)
+              .filter(|w| *w != None)
+              .map(|w| w.unwrap())
               .collect()
     }
 
-    pub fn make_unquoted_word(&mut self) -> String {
-        self.subwords.iter_mut().map(|s| s.make_unquoted_string()).collect::<String>()
+    pub fn make_unquoted_word(&mut self) -> Option<String> {
+        let sw: Vec<Option<String>> = self.subwords.iter_mut()
+            .map(|s| s.make_unquoted_string())
+            .filter(|s| *s != None)
+            .collect();
+
+        if sw.len() == 0 {
+            return None;
+        }
+
+        Some(sw.into_iter().map(|s| s.unwrap()).collect::<String>())
     }
 
     fn make_glob_string(&mut self) -> String {

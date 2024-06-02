@@ -72,7 +72,14 @@ pub trait Subword {
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
-    fn make_unquoted_string(&mut self) -> String { self.get_text().to_string() }
+
+    fn make_unquoted_string(&mut self) -> Option<String> {
+        match self.get_text() {
+            "" => None,
+            s  => Some(s.to_string()),
+        }
+    }
+
     fn is_name(&self) -> bool {false}
     fn is_quoted(&self) -> bool {false}
     fn get_child_subwords(&self) -> Option<&Vec<Box<dyn Subword>>> { None }

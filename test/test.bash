@@ -479,6 +479,12 @@ c' ] || err $LINENO
 res=$($com <<< 'echo "')
 [ "$?" == 2 ] || err $LINENO
 
+res=$($com <<< 'echo "" a')
+[ "$res" == " a" ] || err $LINENO
+
+#res=$($com <<< "echo '' a")
+#[ "$res" == " a" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
@@ -804,6 +810,11 @@ res=$($com <<< 'A=( a b ); echo ${A[1]}')
 
 res=$($com <<< 'A=( a b ); echo ${A[@]}')
 [ "$res" == "a b" ] || err $LINENO
+
+# symbol
+
+res=$($com <<< 'echo ]')
+[ "$res" == "]" ] || err $LINENO
 
 ### WHILE TEST ###
 
