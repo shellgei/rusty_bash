@@ -242,6 +242,8 @@ impl Terminal {
         && self.chars[self.head] == ' ' {
             self.backspace();
         }
+
+        self.rewrite(true);
     }
 
     fn set_tilde_transform(last: &str, core: &mut ShellCore) -> (String, String, String) {
