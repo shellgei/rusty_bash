@@ -14,9 +14,10 @@ _dummy () { COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) ; }
 complete -F _dummy hoge
 
 _git () {
-	if [ "$cur" = "git" ] ; then 
+	COMPREPLY=( ) 
+	if [ "$COMP_CWORD" = 1 ] ; then 
 		COMPREPLY=( $( git |& grep '^  *[a-z]' | awk '{print $1}') ) 
-	else 
+	elif [ "$COMP_CWORD" = 2 ] ; then
 		COMPREPLY=( $( git branch ) ) 
 	fi
 }

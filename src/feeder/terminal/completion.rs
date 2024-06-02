@@ -74,18 +74,20 @@ impl Terminal {
         }
 
         let org_word = core.data.get_array("COMP_WORDS", "0");
+        let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
         let cur_word = core.data.get_array("COMP_WORDS", &cur_pos.to_string());
 
         match core.completion_functions.get(&org_word) {
             Some(value) => {
-                let command = format!("cur={} {}", &cur_word, &value); //TODO: cur should be set
-                let mut feeder = Feeder::new(&command);                // by bash-completion
+                let command = format!("prev={} {}", &prev_word, &value); //TODO: cur should be set
+                let command = format!("cur={} {}", &cur_word, &value); // by bash-completion 
+                let mut feeder = Feeder::new(&command);
 
                 if let Some(mut a) = SimpleCommand::parse(&mut feeder, core) {
                     let mut dummy = Pipe::new("".to_string());
                     a.exec(core, &mut dummy);
                 }
-                true
+                core.data.get_array_len("COMPREPLY") != 0
             },
             _ => false
         }
@@ -150,6 +152,9 @@ impl Terminal {
     }
 
     fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
+        if list.len() == 0 {
+            return;
+        }
         let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
         let terminal_row_num = Terminal::size().1;
