@@ -36,14 +36,13 @@ impl Command for SimpleCommand {
             return None;
         }
 
-        self.args.clear();
-        let mut words = self.words.to_vec();
-
         if ! self.eval_substitutions(core){
             core.data.set_param("?", "1");
             return None;
         }
 
+        self.args.clear();
+        let mut words = self.words.to_vec();
         if ! words.iter_mut().all(|w| self.set_arg(w, core)){
             return None;
         }
