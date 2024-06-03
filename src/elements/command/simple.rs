@@ -1,10 +1,11 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+pub mod parser;
+
+use crate::ShellCore;
 use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
-use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use nix::unistd;
@@ -14,13 +15,6 @@ use std::sync::atomic::Ordering::Relaxed;
 
 use nix::unistd::Pid;
 use nix::errno::Errno;
-
-fn reserved(w: &str) -> bool {
-    match w {
-        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
-        _ => false,
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct SimpleCommand {
@@ -35,20 +29,20 @@ pub struct SimpleCommand {
     permit_substitution_arg: bool,
 }
 
+
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if core.return_flag || core.break_counter > 0 {
             return None;
         }
 
-        self.args.clear();
-        let mut words = self.words.to_vec();
-
         if ! self.eval_substitutions(core){
             core.data.set_param("?", "1");
             return None;
         }
 
+        self.args.clear();
+        let mut words = self.words.to_vec();
         if ! words.iter_mut().all(|w| self.set_arg(w, core)){
             return None;
         }
@@ -198,83 +192,6 @@ impl SimpleCommand {
                 }
                 false
             },
-        }
-    }
-
-    fn new() -> SimpleCommand {
-        SimpleCommand {
-            text: String::new(),
-            substitutions: vec![],
-            evaluated_subs: vec![],
-            words: vec![],
-            args: vec![],
-            redirects: vec![],
-            force_fork: false,
-            substitutions_as_args: vec![],
-            permit_substitution_arg: false,
-        }
-    }
-
-    fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(s) = Substitution::parse(feeder, core) {
-            ans.text += &s.text;
-            match ans.permit_substitution_arg {
-                true  => ans.substitutions_as_args.push(s),
-                false => ans.substitutions.push(s),
-            }
-            true
-        }else{
-            false
-        }
-    }
-
-    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
-        let w = match Word::parse(feeder, core) {
-            Some(w) => w,
-            _       => {
-                return false;
-            },
-        };
-
-        if ans.words.len() == 0 {
-            if reserved(&w.text) {
-                return false;
-            }else if w.text == "local" {
-                ans.permit_substitution_arg = true;
-            }
-        }
-        ans.text += &w.text;
-        ans.words.push(w);
-        true
-    }
-
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
-        let mut ans = Self::new();
-        feeder.set_backup();
-
-        while Self::eat_substitution(feeder, &mut ans, core) {
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-        }
-
-        loop {
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            if ans.permit_substitution_arg 
-            && Self::eat_substitution(feeder, &mut ans, core) {
-                continue;
-            }
-
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if ! Self::eat_word(feeder, &mut ans, core) {
-                break;
-            }
-        }
-
-        if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
-            feeder.pop_backup();
-            Some(ans)
-        }else{
-            feeder.rewind();
-            None
         }
     }
 }
