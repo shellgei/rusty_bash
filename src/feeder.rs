@@ -111,30 +111,6 @@ impl Feeder {
         }
     }
 
-    pub fn replace_alias(line: &mut String, core: &mut ShellCore) {
-        if ! core.has_flag('i') {
-            return;
-        }
-
-        let mut prev_head = "".to_string();
-
-        loop {
-            let head = match line.replace("\n", " ").split(' ').nth(0) {
-                Some(h) => h.to_string(),
-                _ => return,
-            };
-
-            if prev_head == head {
-                return;
-            }
-    
-            if let Some(value) = core.data.aliases.get(&head) {
-                *line = line.replacen(&head, value, 1);
-            }
-            prev_head = head;
-        }
-    }
-
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = match ! core.read_stdin {
             true  => terminal::read_line(core, "PS1"),
@@ -142,8 +118,7 @@ impl Feeder {
         };
 
         match line {
-            Ok(mut ln) => {
-                //Self::replace_alias(&mut ln, core);
+            Ok(ln) => {
                 self.add_line(ln);
                 Ok(())
             },

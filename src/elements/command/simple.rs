@@ -46,7 +46,7 @@ impl Command for SimpleCommand {
 
         if words.len() > 0 {
             let mut w = words[0].text.clone();
-            Feeder::replace_alias(&mut w, core);
+            core.data.replace_alias(&mut w);
             let mut feeder = Feeder::new(&mut w);
             let mut alias_words = vec![];
             loop {

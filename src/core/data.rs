@@ -182,4 +182,29 @@ impl Data {
         ans.sort();
         ans
     }
+
+    pub fn replace_alias(&self, word: &mut String) {
+        //if ! core.has_flag('i') {
+        if self.flags.find('i') == None {
+            return;
+        }
+
+        let mut prev_head = "".to_string();
+
+        loop {
+            let head = match word.replace("\n", " ").split(' ').nth(0) {
+                Some(h) => h.to_string(),
+                _ => return,
+            };
+
+            if prev_head == head {
+                return;
+            }
+    
+            if let Some(value) = self.aliases.get(&head) {
+                *word = word.replacen(&head, value, 1);
+            }
+            prev_head = head;
+        }
+    }
 }
