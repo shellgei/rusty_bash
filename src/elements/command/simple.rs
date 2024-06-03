@@ -35,6 +35,7 @@ pub struct SimpleCommand {
     permit_substitution_arg: bool,
 }
 
+
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if core.return_flag || core.break_counter > 0 {
@@ -43,28 +44,6 @@ impl Command for SimpleCommand {
 
         self.args.clear();
         let mut words = self.words.to_vec();
-
-        if words.len() > 0 {
-            let mut w = words[0].text.clone();
-            core.data.replace_alias(&mut w);
-            let mut feeder = Feeder::new(&mut w);
-            let mut alias_words = vec![];
-            loop {
-                match Word::parse(&mut feeder, core) {
-                    Some(w) => alias_words.push(w),
-                    None    => break,
-                }
-                let mut dummy = String::new();
-                command::eat_blank_with_comment(&mut feeder, core, &mut dummy);
-            }
-
-            if alias_words.len() > 0 {
-                words.remove(0);
-                alias_words.append(&mut words);
-                words = alias_words;
-            }
-        }
-
 
         if ! self.eval_substitutions(core){
             core.data.set_param("?", "1");
@@ -270,6 +249,33 @@ impl SimpleCommand {
         true
     }
 
+    fn set_alias(words: &mut Vec<Word>, core: &mut ShellCore) {
+        if words.len() == 0 {
+            return;
+        }
+
+        let mut w = words[0].text.clone();
+        core.data.replace_alias(&mut w);
+        let mut feeder = Feeder::new(&mut w);
+        let mut alias_words = vec![];
+        let mut dummy = String::new();
+        loop {
+            match Word::parse(&mut feeder, core) {
+                Some(w) => alias_words.push(w),
+                None    => break,
+            }
+            command::eat_blank_with_comment(&mut feeder, core, &mut dummy);
+        }
+
+        if alias_words.len() == 0 {
+            return;
+        }
+
+        words.remove(0);
+        alias_words.append(words);
+        *words = alias_words;
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
         let mut ans = Self::new();
         feeder.set_backup();
@@ -293,6 +299,7 @@ impl SimpleCommand {
 
         if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
+            Self::set_alias(&mut ans.words, core);
             Some(ans)
         }else{
             feeder.rewind();
