@@ -111,7 +111,7 @@ impl Feeder {
         }
     }
 
-    fn replace_alias(line: &mut String, core: &mut ShellCore) {
+    pub fn replace_alias(line: &mut String, core: &mut ShellCore) {
         if ! core.has_flag('i') {
             return;
         }
@@ -143,7 +143,7 @@ impl Feeder {
 
         match line {
             Ok(mut ln) => {
-                Self::replace_alias(&mut ln, core);
+                //Self::replace_alias(&mut ln, core);
                 self.add_line(ln);
                 Ok(())
             },

@@ -44,6 +44,28 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
 
+        if words.len() > 0 {
+            let mut w = words[0].text.clone();
+            Feeder::replace_alias(&mut w, core);
+            let mut feeder = Feeder::new(&mut w);
+            let mut alias_words = vec![];
+            loop {
+                match Word::parse(&mut feeder, core) {
+                    Some(w) => alias_words.push(w),
+                    None    => break,
+                }
+                let mut dummy = String::new();
+                command::eat_blank_with_comment(&mut feeder, core, &mut dummy);
+            }
+
+            if alias_words.len() > 0 {
+                words.remove(0);
+                alias_words.append(&mut words);
+                words = alias_words;
+            }
+        }
+
+
         if ! self.eval_substitutions(core){
             core.data.set_param("?", "1");
             return None;
