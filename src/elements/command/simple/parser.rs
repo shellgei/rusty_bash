@@ -75,7 +75,6 @@ impl SimpleCommand {
         }
 
         let mut feeder_local = Feeder::new(&mut w);
-        let mut dummy = String::new();
         loop {
             match Word::parse(&mut feeder_local, core) {
                 Some(w) => {
@@ -84,7 +83,7 @@ impl SimpleCommand {
                 },
                 None    => break,
             }
-            command::eat_blank_with_comment(&mut feeder_local, core, &mut dummy);
+            command::eat_blank_with_comment(&mut feeder_local, core, text);
         }
 
         if words.len() == 0 {
