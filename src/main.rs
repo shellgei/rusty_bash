@@ -4,6 +4,7 @@
 mod core;
 mod feeder;
 mod elements;
+mod utils;
 
 use std::{env, process, thread, time};
 use std::path::Path;

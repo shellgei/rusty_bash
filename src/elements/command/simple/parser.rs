@@ -1,18 +1,19 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, utils};
 use super::{SimpleCommand};
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 
+/*
 fn reserved(w: &str) -> bool {
     match w {
         "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
         _ => false,
     }
-}
+}*/
 
 impl SimpleCommand {
     fn new() -> SimpleCommand {
@@ -51,42 +52,47 @@ impl SimpleCommand {
         };
 
         if ans.words.len() == 0 {
-            if reserved(&w.text) {
+            if utils::reserved(&w.text) {
                 return false;
             }else if w.text == "local" {
                 ans.permit_substitution_arg = true;
             }
         }
+        if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder) {
+            return true;
+        }
+
         ans.text += &w.text;
         ans.words.push(w);
+
         true
     }
 
-    fn set_alias(words: &mut Vec<Word>, core: &mut ShellCore) {
-        if words.len() == 0 {
-            return;
+    fn set_alias(word: &Word, words: &mut Vec<Word>, text: &mut String,
+                 core: &mut ShellCore, feeder: &mut Feeder) -> bool {
+        let mut w = word.text.clone();
+        if ! core.data.replace_alias(&mut w) {
+            return false;
         }
 
-        let mut w = words[0].text.clone();
-        core.data.replace_alias(&mut w);
-        let mut feeder = Feeder::new(&mut w);
-        let mut alias_words = vec![];
-        let mut dummy = String::new();
+        let mut feeder_local = Feeder::new(&mut w);
         loop {
-            match Word::parse(&mut feeder, core) {
-                Some(w) => alias_words.push(w),
+            match Word::parse(&mut feeder_local, core) {
+                Some(w) => {
+                    text.push_str(&w.text);
+                    words.push(w);
+                },
                 None    => break,
             }
-            command::eat_blank_with_comment(&mut feeder, core, &mut dummy);
+            command::eat_blank_with_comment(&mut feeder_local, core, text);
         }
 
-        if alias_words.len() == 0 {
-            return;
+        if words.len() == 0 {
+            panic!("sush: alias: fatal alias");
         }
 
-        words.remove(0);
-        alias_words.append(words);
-        *words = alias_words;
+        feeder.replace(0, &feeder_local.consume(feeder_local.len()));
+        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
@@ -112,7 +118,6 @@ impl SimpleCommand {
 
         if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
-            Self::set_alias(&mut ans.words, core);
             Some(ans)
         }else{
             feeder.rewind();
