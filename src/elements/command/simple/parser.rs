@@ -1,18 +1,19 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, utils};
 use super::{SimpleCommand};
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 
+/*
 fn reserved(w: &str) -> bool {
     match w {
         "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
         _ => false,
     }
-}
+}*/
 
 impl SimpleCommand {
     fn new() -> SimpleCommand {
@@ -51,7 +52,7 @@ impl SimpleCommand {
         };
 
         if ans.words.len() == 0 {
-            if reserved(&w.text) {
+            if utils::reserved(&w.text) {
                 return false;
             }else if w.text == "local" {
                 ans.permit_substitution_arg = true;
