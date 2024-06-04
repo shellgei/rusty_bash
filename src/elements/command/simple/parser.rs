@@ -57,19 +57,18 @@ impl SimpleCommand {
                 ans.permit_substitution_arg = true;
             }
         }
+        if Self::set_alias(&w, &mut ans.words, core, feeder) {
+            return true;
+        }
+
         ans.text += &w.text;
         ans.words.push(w);
-        Self::set_alias(&mut ans.words, core, feeder);
 
         true
     }
 
-    fn set_alias(words: &mut Vec<Word>, core: &mut ShellCore, feeder: &mut Feeder) {
-        if words.len() == 0 {
-            return;
-        }
-
-        let mut w = words[0].text.clone();
+    fn set_alias(word: &Word, words: &mut Vec<Word>, core: &mut ShellCore, feeder: &mut Feeder) -> bool {
+        let mut w = word.text.clone();
         core.data.replace_alias(&mut w);
         let mut feeder_local = Feeder::new(&mut w);
         let mut alias_words = vec![];
@@ -83,14 +82,14 @@ impl SimpleCommand {
         }
 
         if alias_words.len() == 0 {
-            return;
+            return false;
         }
 
         feeder.replace(0, &feeder_local.consume(feeder_local.len()));
 
-        words.remove(0);
         alias_words.append(words);
         *words = alias_words;
+        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
@@ -116,7 +115,6 @@ impl SimpleCommand {
 
         if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
-            //Self::set_alias(&mut ans.words, core, feeder);
             Some(ans)
         }else{
             feeder.rewind();
