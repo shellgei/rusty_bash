@@ -57,10 +57,7 @@ impl SimpleCommand {
                 ans.permit_substitution_arg = true;
             }
         }
-        if Self::set_alias(&w, &mut ans.words, core, feeder) {
-            for w in &ans.words {
-                ans.text += &w.text;
-            }
+        if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder) {
             return true;
         }
 
@@ -70,7 +67,8 @@ impl SimpleCommand {
         true
     }
 
-    fn set_alias(word: &Word, words: &mut Vec<Word>, core: &mut ShellCore, feeder: &mut Feeder) -> bool {
+    fn set_alias(word: &Word, words: &mut Vec<Word>, text: &mut String,
+                 core: &mut ShellCore, feeder: &mut Feeder) -> bool {
         let mut w = word.text.clone();
         if ! core.data.replace_alias(&mut w) {
             return false;
@@ -80,7 +78,10 @@ impl SimpleCommand {
         let mut dummy = String::new();
         loop {
             match Word::parse(&mut feeder_local, core) {
-                Some(w) => words.push(w),
+                Some(w) => {
+                    text.push_str(&w.text);
+                    words.push(w);
+                },
                 None    => break,
             }
             command::eat_blank_with_comment(&mut feeder_local, core, &mut dummy);
