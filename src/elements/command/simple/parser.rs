@@ -69,7 +69,10 @@ impl SimpleCommand {
 
     fn set_alias(word: &Word, words: &mut Vec<Word>, core: &mut ShellCore, feeder: &mut Feeder) -> bool {
         let mut w = word.text.clone();
-        core.data.replace_alias(&mut w);
+        if ! core.data.replace_alias(&mut w) {
+            return false;
+        }
+
         let mut feeder_local = Feeder::new(&mut w);
         let mut alias_words = vec![];
         let mut dummy = String::new();
@@ -87,7 +90,7 @@ impl SimpleCommand {
 
         feeder.replace(0, &feeder_local.consume(feeder_local.len()));
 
-        alias_words.append(words);
+        //alias_words.append(words);
         *words = alias_words;
         true
     }
