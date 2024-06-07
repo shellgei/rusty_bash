@@ -10,9 +10,12 @@ pub struct SingleQuoted {
 }
 
 impl Subword for SingleQuoted {
-    fn get_text(&self) -> &str {&self.text[1..self.text.len()-1]}
+    fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn make_unquoted_string(&mut self) -> Option<String> { Some(self.get_text().to_string()) }
+
+    fn make_unquoted_string(&mut self) -> Option<String> {
+        Some( self.text[1..self.text.len()-1].to_string() )
+    }
 
     fn make_glob_string(&mut self) -> String {
         self.text[1..self.text.len()-1].replace("\\", "\\\\")
