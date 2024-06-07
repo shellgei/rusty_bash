@@ -187,7 +187,7 @@ impl Terminal {
         if erase {
             self.write(&termion::clear::AfterCursor.to_string());
         }
-        self.write(&self.get_string(0));
+        self.write(&self.get_string(0).replace("\n", "\n\r"));
         self.goto(self.head);
         self.flush();
     }
@@ -274,7 +274,7 @@ impl Terminal {
         Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::isize::MAX as usize);
 
         self.chars = self.prompt.chars().collect();
-        self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str).replace("\n", " ; ").chars());
+        self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str)/*.replace("\n", " ; ")*/.chars());
         self.head = self.chars.len();
         self.rewrite(true);
     }
