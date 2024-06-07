@@ -161,6 +161,12 @@ impl Terminal {
         let (mut x, mut y) = (0, y_origin);
 
         for (i, c) in self.chars[..head].iter().enumerate() {
+            if *c == '\n' {
+                y += 1;
+                x = 0;
+                continue;
+            }
+
             let w = self.char_width(c, i);
             if x + w > col {
                 y += 1;
