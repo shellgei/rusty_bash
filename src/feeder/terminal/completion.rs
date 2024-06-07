@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
+use crate::{Feeder, ShellCore, utils};
 use crate::core::builtins::completion;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
@@ -267,14 +267,18 @@ impl Terminal {
     fn set_completion_info(&mut self, core: &mut ShellCore){
         let pcc = self.prompt.chars().count();
         let s = self.get_string(pcc);
-        let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
+        //let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
+        let mut ws = utils::split_words(&s);
         ws.retain(|e| e != "");
         core.data.set_array("COMP_WORDS", &ws);
+        //dbg!("{:?}", &ws);
 
         let s: String = self.chars[pcc..self.head].iter().collect();
-        let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
+        let mut ws = utils::split_words(&s);
+        //let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
         ws.retain(|e| e != "");
         let mut num = ws.len();
+        //dbg!("{:?}", &ws);
 
         match s.chars().last() {
             Some(' ') => {},

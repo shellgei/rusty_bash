@@ -7,14 +7,6 @@ use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 
-/*
-fn reserved(w: &str) -> bool {
-    match w {
-        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
-        _ => false,
-    }
-}*/
-
 impl SimpleCommand {
     fn new() -> SimpleCommand {
         SimpleCommand {
