@@ -58,7 +58,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
                 _ => args[2].to_string() + "*"
             }
         },
-    };
+    }.replace("\\", "");
 
     if path.starts_with("~/") {
         let home = core.data.get_param("HOME").to_string() + "/";

@@ -216,7 +216,9 @@ impl Terminal {
 
     pub fn replace_input(&mut self, to: &String) {
         while self.head > self.prompt.chars().count() 
-        && self.head > 0 && self.chars[self.head-1] != ' ' {
+        && ( self.head > 0 && self.chars[self.head-1] != ' ' ||
+           (self.head > 1 && self.chars[self.head-1] == ' ' 
+            && self.chars[self.head-2] == '\\') ) {
             self.backspace();
         }
         while self.head < self.chars.len() 
@@ -278,9 +280,6 @@ impl Terminal {
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
         core.data.set_array("COMP_WORDS", &words_all);
-
-//        dbg!("{:?}", &words_all);
-//        dbg!("{:?}", &words_left);
 
         let mut num = words_left.len();
         match left_string.chars().last() {
