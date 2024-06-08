@@ -269,17 +269,20 @@ impl Terminal {
         let all_string = self.get_string(prompt);
         let mut words_all = utils::split_words(&all_string);
         words_all.retain(|e| e != "");
-        core.data.set_array("COMP_WORDS", &words_all);
-        //dbg!("{:?}", &ws);
 
         let left_string: String = self.chars[prompt..self.head].iter().collect();
         let mut words_left = utils::split_words(&left_string);
         words_left.retain(|e| e != "");
-        //let from = completion_from(&ws_current, core);
-        //ws_current = ws[from..].to_vec();
-        let mut num = words_left.len();
-        //dbg!("{:?}", &ws);
+        let from = completion_from(&words_left, core);
 
+        words_all = words_all[from..].to_vec();
+        words_left = words_left[from..].to_vec();
+        core.data.set_array("COMP_WORDS", &words_all);
+
+//        dbg!("{:?}", &words_all);
+//        dbg!("{:?}", &words_left);
+
+        let mut num = words_left.len();
         match left_string.chars().last() {
             Some(' ') => {},
             Some(_) => num -= 1,

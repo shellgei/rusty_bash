@@ -27,3 +27,10 @@ _git_comp () {
 		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' ) $(compgen -f)" -- "${cur}" ) ) 
 	fi
 } && complete -F _git_comp git
+
+_colcon_comp () {
+        if [ "$COMP_CWORD" = 1 ] ; then 
+                CANDS=( $( colcon |& sed -n 2p | tr , \\n | tr -d '{} ' ) ) 
+                COMPREPLY=( $(compgen -W "${CANDS[@]}" -- "${cur}") ) 
+        fi
+} && complete -F _colcon_comp colcon
