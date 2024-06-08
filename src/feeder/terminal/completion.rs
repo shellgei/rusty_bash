@@ -265,26 +265,37 @@ impl Terminal {
     }
 
     fn set_completion_info(&mut self, core: &mut ShellCore){
-        let pcc = self.prompt.chars().count();
-        let s = self.get_string(pcc);
-        //let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
-        let mut ws = utils::split_words(&s);
-        ws.retain(|e| e != "");
-        core.data.set_array("COMP_WORDS", &ws);
+        let prompt = self.prompt.chars().count();
+        let all_string = self.get_string(prompt);
+        let mut words_all = utils::split_words(&all_string);
+        words_all.retain(|e| e != "");
+        core.data.set_array("COMP_WORDS", &words_all);
         //dbg!("{:?}", &ws);
 
-        let s: String = self.chars[pcc..self.head].iter().collect();
-        let mut ws = utils::split_words(&s);
-        //let mut ws = s.split(" ").map(|e| e.to_string()).collect::<Vec<String>>();
-        ws.retain(|e| e != "");
-        let mut num = ws.len();
+        let left_string: String = self.chars[prompt..self.head].iter().collect();
+        let mut words_left = utils::split_words(&left_string);
+        words_left.retain(|e| e != "");
+        //let from = completion_from(&ws_current, core);
+        //ws_current = ws[from..].to_vec();
+        let mut num = words_left.len();
         //dbg!("{:?}", &ws);
 
-        match s.chars().last() {
+        match left_string.chars().last() {
             Some(' ') => {},
             Some(_) => num -= 1,
             _ => {},
         }
         core.data.set_param("COMP_CWORD", &num.to_string());
     }
+}
+
+fn completion_from(ws: &Vec<String>, core: &mut ShellCore) -> usize {
+    for i in (0..ws.len()).rev() {
+        let s = ws[i..].join(" ");
+        let mut feeder = Feeder::new(&s);
+        if let None = SimpleCommand::parse(&mut feeder, core) {
+            return i+1;
+        }
+    }
+    0
 }
