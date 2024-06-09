@@ -21,10 +21,10 @@ A clone of Bash, which is developed as a hobby of our group and for monthly arti
 $ git clone https://github.com/shellgei/rusty_bash.git
 $ cd rusty_bash
 $ cargo run
-   Compiling sush v2025.6.9 (/home/ueda/GIT/rusty_bash)
-    Finished dev [unoptimized + debuginfo] target(s) in 2.33s
+・・・
+    Finished dev [unoptimized + debuginfo] target(s) in 0.04s
      Running `target/debug/sush`
-ueda@uedaP1g6:~🍣 main🌵
+ueda@uedaP1g6:main🌵~/GIT/rusty_bash(debug)🍣
 ```
 
 ## Install 
@@ -35,7 +35,7 @@ $ cd rusty_bash
 $ cargo build --release
 ### ↓  Change /bin/ to /usr/local/bin/ or another path in $PATH if you are using Mac or BSD ###
 $ sudo cp target/release/sush /bin/
-$ cp .sushrc_for_linux ~/.sushrc
+$ cp .sushrc_for_linux ~/.sushrc # edit if some errors occur
 $ sush
 ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
