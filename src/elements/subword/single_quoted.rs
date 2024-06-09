@@ -25,7 +25,7 @@ impl Subword for SingleQuoted {
             .replace("]", "\\]")
     }
 
-    fn is_quoted(&self) -> bool {true}
+    fn no_split(&self) -> bool {true}
 }
 
 impl SingleQuoted {
