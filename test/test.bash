@@ -711,6 +711,9 @@ res=$($com <<< 'echo ${_A32*523j2}')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'set a b c;echo $@')
+[ "$res" == "a b c" ] || err $LINENO
+
 # tilde
 
 res=$($com <<< 'echo ~ | grep -q /')
