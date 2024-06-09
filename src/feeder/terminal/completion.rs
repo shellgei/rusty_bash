@@ -282,12 +282,13 @@ impl Terminal {
         core.data.set_array("COMP_WORDS", &words_all);
 
         let mut num = words_left.len();
-        //dbg!("{:?}", &from);
-        //dbg!("{:?}", &words_left);
-        //dbg!("{:?}", &left_string);
         match left_string.chars().last() {
             Some(' ') => {},
-            Some(_) => num -= 1,
+            Some(_) => {
+                if num > 0 {
+                    num -= 1
+                }
+            },
             _ => {},
         }
         core.data.set_param("COMP_CWORD", &num.to_string());
