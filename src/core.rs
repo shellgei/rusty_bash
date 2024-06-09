@@ -74,6 +74,9 @@ impl ShellCore {
         ignore_signal(Signal::SIGPIPE);
 
         if unistd::isatty(0) == Ok(true) {
+            const V: &'static str = env!("CARGO_PKG_VERSION");
+            eprintln!("Rusty Bash (a.k.a. Sushi shell), version {}", V);
+
             core.data.flags += "i";
             core.read_stdin = false;
             core.data.set_param("PS1", "🍣 ");
