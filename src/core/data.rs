@@ -41,6 +41,13 @@ impl Data {
             return self.flags.clone();
         }
 
+        if key == "@" {
+            return match self.position_parameters.last() {
+                Some(a) => a[1..].join(" "),
+                _       => "".to_string(),
+            };
+        }
+
         if let Some(n) = self.get_position_param_pos(key) {
             let layer = self.position_parameters.len();
             return self.position_parameters[layer-1][n].to_string();

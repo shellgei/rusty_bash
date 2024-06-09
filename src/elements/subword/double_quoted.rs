@@ -84,8 +84,9 @@ impl DoubleQuoted {
                     ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
                     self.split_points.push(ans.len());
                 }
+            }else{
+                ans.push(sw.boxed_clone());
             }
-            ans.push(sw.boxed_clone());
         }
         ans
     }

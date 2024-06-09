@@ -491,6 +491,9 @@ res=$($com <<< 'set あ; echo a"$@"c')
 res=$($com <<< 'set あ い; echo a"$@"c')
 [ "$res" == "aあ いc" ] || err $LINENO
 
+res=$($com <<< 'echo a"$@"c')
+[ "$res" == "ac" ] || err $LINENO
+
 # single quoted
 
 res=$($com <<< "echo '' a")
