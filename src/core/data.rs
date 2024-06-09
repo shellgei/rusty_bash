@@ -114,6 +114,13 @@ impl Data {
         }
     }
 
+    fn get_position_params(&self) -> Vec<String> {
+        match self.position_parameters.last() {
+            Some(v) => v.clone(),
+            _       => vec![],
+        }
+    }
+
     fn get_position_param_pos(&self, key: &str) -> Option<usize> {
         if ! (key.len() == 1 && "0" <= key && key <= "9") {
             return None;

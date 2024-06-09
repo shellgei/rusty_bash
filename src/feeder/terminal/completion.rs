@@ -282,6 +282,9 @@ impl Terminal {
         core.data.set_array("COMP_WORDS", &words_all);
 
         let mut num = words_left.len();
+        //dbg!("{:?}", &from);
+        //dbg!("{:?}", &words_left);
+        //dbg!("{:?}", &left_string);
         match left_string.chars().last() {
             Some(' ') => {},
             Some(_) => num -= 1,
@@ -293,6 +296,10 @@ impl Terminal {
 
 fn completion_from(ws: &Vec<String>, core: &mut ShellCore) -> usize {
     for i in (0..ws.len()).rev() {
+        if utils::reserved(&ws[i]) {
+            continue;
+        }
+
         let s = ws[i..].join(" ");
         let mut feeder = Feeder::new(&s);
         if let None = SimpleCommand::parse(&mut feeder, core) {
