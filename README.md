@@ -87,6 +87,13 @@ These dev-* branches will be merged to the main branch depending on the situatio
 | parameter/variable `$A ${A}` | :heavy_check_mark: | parameter/variable  (others) | :no_good: | command substitution | :heavy_check_mark: |
 | arithmetic | :no_good: | word splitting | :heavy_check_mark: | path name | :heavy_check_mark: |
 
+### special parameters
+
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| $ | :heavy_check_mark: | ? | :heavy_check_mark: | * | :no_good: |
+| @ | :heavy_check_mark: | # | :no_good:          | - | :heavy_check_mark: |
+| ! | :no_good: | _ | :heavy_check_mark: |
 
 ### builtin commands
 
