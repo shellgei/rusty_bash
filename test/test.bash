@@ -485,6 +485,24 @@ res=$($com <<< 'echo "" a')
 res=$($com <<< 'set a b c; echo a"$@"c')
 [ "$res" == "aa b cc" ] || err $LINENO
 
+res=$($com <<< 'set a b c; A=( A"$@"C ); echo ${A[0]}')
+[ "$res" == "Aa" ] || err $LINENO
+
+res=$($com <<< 'set a b c; A=( A"$@"C ); echo ${A[2]}')
+[ "$res" == "cC" ] || err $LINENO
+
+res=$($com <<< 'set a b c; A=( A"$*"C ); echo ${A[0]}')
+[ "$res" == "Aa b cC" ] || err $LINENO
+
+res=$($com <<< 'set a b c; A=( A$*C ); echo ${A[1]}')
+[ "$res" == "b" ] || err $LINENO
+
+res=$($com <<< 'set a; A=( A"$@"C ); echo ${A[0]}')
+[ "$res" == "AaC" ] || err $LINENO
+
+res=$($com <<< 'A=( A"$@"C ); echo ${A[0]}')
+[ "$res" == "AC" ] || err $LINENO
+
 res=$($com <<< 'set あ; echo a"$@"c')
 [ "$res" == "aあc" ] || err $LINENO
 

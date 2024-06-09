@@ -91,7 +91,7 @@ These dev-* branches will be merged to the main branch depending on the situatio
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| $ | :heavy_check_mark: | ? | :heavy_check_mark: | * | :no_good: |
+| $ | :heavy_check_mark: | ? | :heavy_check_mark: | * | :heavy_check_mark: |
 | @ | :heavy_check_mark: | # | :no_good:          | - | :heavy_check_mark: |
 | ! | :no_good: | _ | :heavy_check_mark: |
 

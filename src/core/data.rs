@@ -41,7 +41,7 @@ impl Data {
             return self.flags.clone();
         }
 
-        if key == "@" {
+        if key == "@" || key == "*" {
             return match self.position_parameters.last() {
                 Some(a) => a[1..].join(" "),
                 _       => "".to_string(),
