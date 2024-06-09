@@ -46,18 +46,17 @@ impl Subword for DoubleQuoted {
     }
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
-        let mut last = 0;
         let mut ans = vec![];
-        for (i, p) in self.split_points.iter().enumerate() {
+
+        let mut points = self.split_points.clone();
+        points[self.split_points.len()-1] = self.split_points.len();
+
+        let mut last = 0;
+        for p in points {
             let mut tmp = Self::new();
-            if i + 1 != self.split_points.len() {
-                tmp.subwords = self.subwords[last..*p].to_vec();
-                ans.push(Box::new(tmp) as Box<dyn Subword>);
-                last = *p;
-            }else{
-                tmp.subwords = self.subwords[last..].to_vec();
-                ans.push(Box::new(tmp) as Box<dyn Subword>);
-            }
+            tmp.subwords = self.subwords[last..p].to_vec();
+            ans.push(Box::new(tmp) as Box<dyn Subword>);
+            last = p;
         }
 
         ans
