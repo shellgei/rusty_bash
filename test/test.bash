@@ -482,6 +482,17 @@ res=$($com <<< 'echo "')
 res=$($com <<< 'echo "" a')
 [ "$res" == " a" ] || err $LINENO
 
+res=$($com <<< 'set a b c; echo a"$@"c')
+[ "$res" == "aa b cc" ] || err $LINENO
+
+res=$($com <<< 'set あ; echo a"$@"c')
+[ "$res" == "aあc" ] || err $LINENO
+
+res=$($com <<< 'set あ い; echo a"$@"c')
+[ "$res" == "aあ いc" ] || err $LINENO
+
+# single quoted
+
 res=$($com <<< "echo '' a")
 [ "$res" == " a" ] || err $LINENO
 
