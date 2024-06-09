@@ -10,6 +10,7 @@ use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName
 pub struct DoubleQuoted {
     text: String,
     subwords: Vec<Box<dyn Subword>>,
+    split_points: Vec<usize>,
 }
 
 impl Subword for DoubleQuoted {
@@ -18,7 +19,7 @@ impl Subword for DoubleQuoted {
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
         let mut word = Word::new();
-        word.subwords = self.subwords.to_vec();
+        word.subwords = self.replace_position_params(core);
         if ! substitution::eval(&mut word, core) {
             return false;
         }
@@ -44,7 +45,29 @@ impl Subword for DoubleQuoted {
             .concat() )
     }
 
-    fn is_quoted(&self) -> bool {true}
+    fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
+        if self.split_points.len() < 2 {
+            return vec![self.boxed_clone()];
+        }
+
+        let mut last = 0;
+        let mut ans = vec![];
+        for (i, p) in self.split_points.iter().enumerate() {
+            let mut tmp = Self::new();
+            if i + 1 != self.split_points.len() {
+                tmp.subwords = self.subwords[last..*p].to_vec();
+                ans.push(Box::new(tmp) as Box<dyn Subword>);
+                last = *p;
+            }else{
+                tmp.subwords = self.subwords[last..].to_vec();
+                ans.push(Box::new(tmp) as Box<dyn Subword>);
+            }
+        }
+
+        ans
+    }
+
+    fn is_quoted(&self) -> bool {false}
 }
 
 impl DoubleQuoted {
@@ -52,7 +75,23 @@ impl DoubleQuoted {
         DoubleQuoted {
             text: String::new(),
             subwords: vec![],
+            split_points: vec![],
         }
+    }
+
+    fn replace_position_params(&mut self, core: &mut ShellCore) -> Vec<Box<dyn Subword>> {
+        let mut ans = vec![];
+
+        for sw in &self.subwords {
+            if sw.get_text() == "$@" {
+                for pp in core.data.get_position_params() {
+                    ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
+                    self.split_points.push(ans.len());
+                }
+            }
+            ans.push(sw.boxed_clone());
+        }
+        ans
     }
 
     fn set_simple_subword(feeder: &mut Feeder, ans: &mut Self, len: usize) -> bool {

@@ -114,9 +114,9 @@ impl Data {
         }
     }
 
-    fn get_position_params(&self) -> Vec<String> {
+    pub fn get_position_params(&self) -> Vec<String> {
         match self.position_parameters.last() {
-            Some(v) => v.clone(),
+            Some(v) => v[1..].to_vec(),
             _       => vec![],
         }
     }
