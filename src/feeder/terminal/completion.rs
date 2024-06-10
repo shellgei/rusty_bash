@@ -50,6 +50,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, tab_num: usize) {
+        core.data.set_array("COMPREPLY", &vec![]);
         self.set_completion_info(core);
 
         if ! Self::set_custom_compreply(core)
