@@ -13,13 +13,18 @@ pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub pipes: Vec<Pipe>,
     pub text: String,
+    exclamation: bool,
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
+    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> (Vec<Option<Pid>>, bool) {
         if core.sigint.load(Relaxed) { //以下4行追加
             core.data.set_param("?", "130");
-            return vec![];
+            return (vec![], false);
+        }
+
+        if self.commands.len() == 0 { // the case of only '!'
+            return (vec![], true);
         }
 
         let mut prev = -1;
@@ -38,7 +43,7 @@ impl Pipeline {
             self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid))
         );
 
-        pids
+        (pids, self.exclamation)
     }
 
     pub fn new() -> Pipeline {
@@ -46,6 +51,7 @@ impl Pipeline {
             text: String::new(),
             commands: vec![],
             pipes: vec![],
+            exclamation: false,
         }
     }
 
@@ -87,15 +93,25 @@ impl Pipeline {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
 
-        if ! Self::eat_command(feeder, &mut ans, core){      //最初のコマンド
-            return None;
+        if feeder.starts_with("!") {
+            ans.text += &feeder.consume(1);
+            ans.exclamation = true;
+            let blank_len = feeder.scanner_blank(core);
+            ans.text += &feeder.consume(blank_len);
+        }
+
+        if ! Self::eat_command(feeder, &mut ans, core){
+            match ans.exclamation {
+                true  => return Some(ans),
+                false => return None,
+            }
         }
 
         while Self::eat_pipe(feeder, &mut ans, core){
             loop {
                 Self::eat_blank_and_comment(feeder, &mut ans, core);
                 if Self::eat_command(feeder, &mut ans, core) {
-                    break; //コマンドがあれば73行目のloopを抜けてパイプを探す
+                    break;
                 }
                 if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
                     return None;

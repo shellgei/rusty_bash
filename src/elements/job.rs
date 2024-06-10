@@ -35,8 +35,8 @@ impl Job {
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
                 core.jobtable_check_status();
-                let pids = pipeline.exec(core, pgid);
-                core.wait_pipeline(pids);
+                let (pids, exclamation) = pipeline.exec(core, pgid);
+                core.wait_pipeline(pids, exclamation);
             }
             do_next = (core.data.get_param("?") == "0") == (end == "&&");
         }
@@ -53,7 +53,7 @@ impl Job {
             if self.pipelines[0].commands.len() == 1 {
                 self.pipelines[0].commands[0].set_force_fork();
             }
-            self.pipelines[0].exec(core, pgid)
+            self.pipelines[0].exec(core, pgid).0
         }else{
             vec![self.exec_fork_bg(core, pgid)]
         };

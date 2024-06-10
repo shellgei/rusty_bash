@@ -28,7 +28,7 @@ impl Subword for CommandSubstitution {
         pipe.set(-1, unistd::getpgrp());
         let pid = self.command.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
-        core.wait_pipeline(vec![pid]);
+        core.wait_pipeline(vec![pid], false);
         result
     }
 }

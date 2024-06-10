@@ -148,18 +148,31 @@ impl ShellCore {
         restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
-    pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
+    pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>, exclamation: bool) {
         if pids.len() == 1 && pids[0] == None {
+            if exclamation {
+                match self.data.get_param("?").as_ref() {
+                    "0" => self.data.set_param("?", "1"),
+                    _   => self.data.set_param("?", "0"),
+                }
+            }
             return;
         }
 
         let mut pipestatus = vec![];
-        for pid in pids {
+        for pid in &pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
             pipestatus.push(self.data.get_param("?"));
         }
         self.set_foreground();
         self.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
+
+        if exclamation {
+            match self.data.get_param("?").as_ref() {
+                "0" => self.data.set_param("?", "1"),
+                _   => self.data.set_param("?", "0"),
+            }
+        }
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {

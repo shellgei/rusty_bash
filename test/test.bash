@@ -26,6 +26,18 @@ res=$($com <<< '	echo hoge')
 res=$($com <<< 'echo hoge;')
 [ "$res" = "hoge" ] || err $LINENO
 
+res=$($com <<< '! eeee' )
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com <<< '! echo' )
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com <<< '! cd' )
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com <<< '!' )
+[ "$?" = "1" ] || err $LINENO
+
 ### BUILTIN COMMAND TEST ###
 
 res=$($com <<< 'cd /; pwd')
