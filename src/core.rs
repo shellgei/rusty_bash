@@ -34,7 +34,7 @@ pub struct ShellCore {
     pub return_flag: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
-    tcwd: Option<path::PathBuf>, // the_current_working_directory
+    current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
 }
 
@@ -64,7 +64,7 @@ impl ShellCore {
             return_flag: false,
             tty_fd: None,
             job_table: vec![],
-            tcwd: None,
+            current_dir: None,
             completion_functions: HashMap::new(),
         };
 
@@ -148,13 +148,17 @@ impl ShellCore {
         restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
+    fn flip_exit_status(&mut self) {
+        match self.data.get_param("?").as_ref() {
+            "0" => self.data.set_param("?", "1"),
+            _   => self.data.set_param("?", "0"),
+        }
+    }
+
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>, exclamation: bool) {
         if pids.len() == 1 && pids[0] == None {
             if exclamation {
-                match self.data.get_param("?").as_ref() {
-                    "0" => self.data.set_param("?", "1"),
-                    _   => self.data.set_param("?", "0"),
-                }
+                self.flip_exit_status();
             }
             return;
         }
@@ -168,10 +172,7 @@ impl ShellCore {
         self.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
 
         if exclamation {
-            match self.data.get_param("?").as_ref() {
-                "0" => self.data.set_param("?", "1"),
-                _   => self.data.set_param("?", "0"),
-            }
+            self.flip_exit_status();
         }
     }
 
@@ -184,7 +185,6 @@ impl ShellCore {
             let func = self.builtins[&args[0]];
             args.append(special_args);
             let status = func(self, args);
-            //self.data.parameters[0].insert("?".to_string(), status.to_string());
             self.data.set_layer_param("?", &status.to_string(), 0);
             return true;
         }
@@ -193,7 +193,6 @@ impl ShellCore {
     }
 
     pub fn exit(&mut self) -> ! {
-        //let exit_status = match self.data.parameters[0]["?"].parse::<i32>() {
         let exit_status = match self.data.get_param("?").parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
@@ -234,23 +233,23 @@ impl ShellCore {
 
     pub fn init_current_directory(&mut self) {
         match env::current_dir() {
-            Ok(path) => self.tcwd = Some(path),
+            Ok(path) => self.current_dir = Some(path),
             Err(err) => eprintln!("pwd: error retrieving current directory: {:?}", err),
         }
     }
 
     pub fn get_current_directory(&mut self) -> Option<path::PathBuf> {
-        if self.tcwd.is_none() {
+        if self.current_dir.is_none() {
             self.init_current_directory();
         }
-        self.tcwd.clone()
+        self.current_dir.clone()
     }
 
 
     pub fn set_current_directory(&mut self, path: &path::PathBuf) -> Result<(), io::Error> {
         let res = env::set_current_dir(path);
         if res.is_ok() {
-            self.tcwd = Some(path.clone());
+            self.current_dir = Some(path.clone());
         }
         res
     }
