@@ -14,6 +14,9 @@ use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
 use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
+use nix::sys::time::TimeSpec;
+use nix::time;
+use nix::time::ClockId;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
@@ -36,6 +39,7 @@ pub struct ShellCore {
     pub job_table: Vec<JobEntry>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
+    pub real_time: TimeSpec, 
 }
 
 fn ignore_signal(sig: Signal) {
@@ -66,6 +70,7 @@ impl ShellCore {
             job_table: vec![],
             current_dir: None,
             completion_functions: HashMap::new(),
+            real_time: TimeSpec::new(0, 0),
         };
 
         core.init_current_directory();
@@ -155,9 +160,21 @@ impl ShellCore {
         }
     }
 
+    fn show_time(&self) {
+            let end_time = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+            let real_diff = end_time - self.real_time;
+            eprintln!("\nreal\t{}m{}.{:09}s",
+                      real_diff.tv_sec()/60,
+                      real_diff.tv_sec()%60,
+                      real_diff.tv_nsec());
+    }
+
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>,
-                         exclamation: bool, _time: bool) {
+                         exclamation: bool, time: bool) {
         if pids.len() == 1 && pids[0] == None {
+            if time {
+                self.show_time();
+            }
             if exclamation {
                 self.flip_exit_status();
             }
@@ -168,6 +185,10 @@ impl ShellCore {
         for pid in &pids {
             self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
             pipestatus.push(self.data.get_param("?"));
+        }
+
+        if time {
+            self.show_time();
         }
         self.set_foreground();
         self.data.set_layer_array("PIPESTATUS", &pipestatus, 0);

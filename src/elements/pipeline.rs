@@ -5,6 +5,8 @@ use crate::{Feeder, ShellCore};
 use super::command;
 use super::command::Command;
 use super::Pipe;
+use nix::time;
+use nix::time::ClockId;
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
 
@@ -14,7 +16,7 @@ pub struct Pipeline {
     pub pipes: Vec<Pipe>,
     pub text: String,
     exclamation: bool,
-    time: bool,
+    pub time: bool,
 }
 
 impl Pipeline {
@@ -32,6 +34,7 @@ impl Pipeline {
         let mut prev = -1;
         let mut pids = vec![];
         let mut pgid = pgid;
+        core.real_time = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
             pids.push(self.commands[i].exec(core, p));
