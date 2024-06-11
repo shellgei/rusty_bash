@@ -14,6 +14,7 @@ pub struct Pipeline {
     pub pipes: Vec<Pipe>,
     pub text: String,
     exclamation: bool,
+    time: bool,
 }
 
 impl Pipeline {
@@ -52,7 +53,32 @@ impl Pipeline {
             commands: vec![],
             pipes: vec![],
             exclamation: false,
+            time: false,
         }
+    }
+
+    fn eat_exclamation(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        match feeder.starts_with("!") {
+            true  => ans.text += &feeder.consume(1),
+            false => return false,
+        }
+
+        ans.exclamation = ! ans.exclamation;
+        let blank_len = feeder.scanner_blank(core);
+        ans.text += &feeder.consume(blank_len);
+        true
+    }
+
+    fn eat_time(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        match feeder.starts_with("time") {
+            true  => ans.text += &feeder.consume(4),
+            false => return false,
+        }
+
+        ans.time = true;
+        let blank_len = feeder.scanner_blank(core);
+        ans.text += &feeder.consume(blank_len);
+        true
     }
 
     fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
@@ -93,12 +119,8 @@ impl Pipeline {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
         let mut ans = Pipeline::new();
 
-        if feeder.starts_with("!") {
-            ans.text += &feeder.consume(1);
-            ans.exclamation = true;
-            let blank_len = feeder.scanner_blank(core);
-            ans.text += &feeder.consume(blank_len);
-        }
+        while Self::eat_exclamation(feeder, &mut ans, core) 
+        || Self::eat_time(feeder, &mut ans, core) { }
 
         if ! Self::eat_command(feeder, &mut ans, core){
             match ans.exclamation {
