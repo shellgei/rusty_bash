@@ -34,7 +34,12 @@ impl Pipeline {
         let mut prev = -1;
         let mut pids = vec![];
         let mut pgid = pgid;
-        core.real_time = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+
+        if self.time {
+            core.real_time = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+            core.user_time = time::clock_gettime(ClockId::CLOCK_PROCESS_CPUTIME_ID).unwrap();
+        }
+
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
             pids.push(self.commands[i].exec(core, p));

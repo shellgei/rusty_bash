@@ -40,6 +40,7 @@ pub struct ShellCore {
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
     pub real_time: TimeSpec, 
+    pub user_time: TimeSpec, 
 }
 
 fn ignore_signal(sig: Signal) {
@@ -71,6 +72,7 @@ impl ShellCore {
             current_dir: None,
             completion_functions: HashMap::new(),
             real_time: TimeSpec::new(0, 0),
+            user_time: TimeSpec::new(0, 0),
         };
 
         core.init_current_directory();
@@ -161,12 +163,15 @@ impl ShellCore {
     }
 
     fn show_time(&self) {
-            let end_time = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
-            let real_diff = end_time - self.real_time;
-            eprintln!("\nreal\t{}m{}.{:09}s",
-                      real_diff.tv_sec()/60,
-                      real_diff.tv_sec()%60,
-                      real_diff.tv_nsec());
+            let user_end_time = time::clock_gettime(ClockId::CLOCK_PROCESS_CPUTIME_ID).unwrap();
+            let real_end_time = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+
+            let real_diff = real_end_time - self.real_time;
+            eprint!("\nreal\t{}m{}.{:09}s", real_diff.tv_sec()/60,
+                      real_diff.tv_sec()%60, real_diff.tv_nsec());
+            let user_diff = user_end_time - self.user_time;
+            eprintln!("\nuser\t{}m{}.{:09}s", user_diff.tv_sec()/60,
+                      user_diff.tv_sec()%60, user_diff.tv_nsec());
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>,
