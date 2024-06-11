@@ -36,8 +36,12 @@ impl Pipeline {
         let mut pgid = pgid;
 
         if self.time {
-            core.real_time = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
-            core.user_time = time::clock_gettime(ClockId::CLOCK_PROCESS_CPUTIME_ID).unwrap();
+            let self_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_SELF).unwrap();
+            let children_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_CHILDREN).unwrap();
+
+            core.user_time = self_usage.user_time() + children_usage.user_time();
+            core.sys_time = self_usage.system_time() + children_usage.system_time();
+            core.real_time = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
         }
 
         for (i, p) in self.pipes.iter_mut().enumerate() {

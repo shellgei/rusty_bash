@@ -14,7 +14,7 @@ use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
 use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
-use nix::sys::time::TimeSpec;
+use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
 use nix::unistd::Pid;
@@ -40,7 +40,8 @@ pub struct ShellCore {
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
     pub real_time: TimeSpec, 
-    pub user_time: TimeSpec, 
+    pub user_time: TimeVal, 
+    pub sys_time: TimeVal, 
 }
 
 fn ignore_signal(sig: Signal) {
@@ -72,7 +73,8 @@ impl ShellCore {
             current_dir: None,
             completion_functions: HashMap::new(),
             real_time: TimeSpec::new(0, 0),
-            user_time: TimeSpec::new(0, 0),
+            user_time: TimeVal::new(0, 0),
+            sys_time: TimeVal::new(0, 0),
         };
 
         core.init_current_directory();
@@ -163,15 +165,21 @@ impl ShellCore {
     }
 
     fn show_time(&self) {
-            let user_end_time = time::clock_gettime(ClockId::CLOCK_PROCESS_CPUTIME_ID).unwrap();
-            let real_end_time = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+           // let user_end_time = time::clock_gettime(ClockId::CLOCK_PROCESS_CPUTIME_ID).unwrap();
+            let real_end_time = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
+
+            let self_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_SELF).unwrap();
+            let children_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_CHILDREN).unwrap();
 
             let real_diff = real_end_time - self.real_time;
-            eprint!("\nreal\t{}m{}.{:09}s", real_diff.tv_sec()/60,
-                      real_diff.tv_sec()%60, real_diff.tv_nsec());
-            let user_diff = user_end_time - self.user_time;
-            eprintln!("\nuser\t{}m{}.{:09}s", user_diff.tv_sec()/60,
-                      user_diff.tv_sec()%60, user_diff.tv_nsec());
+            eprintln!("\nreal\t{}m{}.{:06}s", real_diff.tv_sec()/60,
+                      real_diff.tv_sec()%60, real_diff.tv_nsec()/1000);
+            let user_diff = self_usage.user_time() + children_usage.user_time() - self.user_time;
+            eprintln!("user\t{}m{}.{:06}s", user_diff.tv_sec()/60,
+                      user_diff.tv_sec()%60, user_diff.tv_usec());
+            let sys_diff = self_usage.system_time() + children_usage.system_time() - self.sys_time;
+            eprintln!("sys \t{}m{}.{:06}s", sys_diff.tv_sec()/60,
+                      sys_diff.tv_sec()%60, sys_diff.tv_usec());
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>,
