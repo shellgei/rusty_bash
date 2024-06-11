@@ -28,6 +28,7 @@ impl Pipeline {
         }
 
         if self.commands.len() == 0 { // the case of only '!'
+            self.set_time(core);
             return (vec![], self.exclamation, self.time);
         }
 
@@ -35,14 +36,7 @@ impl Pipeline {
         let mut pids = vec![];
         let mut pgid = pgid;
 
-        if self.time {
-            let self_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_SELF).unwrap();
-            let children_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_CHILDREN).unwrap();
-
-            core.user_time = self_usage.user_time() + children_usage.user_time();
-            core.sys_time = self_usage.system_time() + children_usage.system_time();
-            core.real_time = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
-        }
+        self.set_time(core);
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
@@ -58,6 +52,19 @@ impl Pipeline {
         );
 
         (pids, self.exclamation, self.time)
+    }
+
+    fn set_time(&mut self, core: &mut ShellCore) {
+        if ! self.time {
+            return;
+        }
+
+        let self_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_SELF).unwrap();
+        let children_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_CHILDREN).unwrap();
+
+        core.user_time = self_usage.user_time() + children_usage.user_time();
+        core.sys_time = self_usage.system_time() + children_usage.system_time();
+        core.real_time = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
     }
 
     pub fn new() -> Pipeline {
