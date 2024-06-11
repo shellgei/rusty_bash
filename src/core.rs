@@ -155,7 +155,8 @@ impl ShellCore {
         }
     }
 
-    pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>, exclamation: bool) {
+    pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>,
+                         exclamation: bool, _time: bool) {
         if pids.len() == 1 && pids[0] == None {
             if exclamation {
                 self.flip_exit_status();
@@ -196,7 +197,6 @@ impl ShellCore {
         let exit_status = match self.data.get_param("?").parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
-                //eprintln!("sush: exit: {}: numeric argument required", self.data.parameters[0]["?"]);
                 eprintln!("sush: exit: {}: numeric argument required", self.data.get_param("?"));
                 2
             },

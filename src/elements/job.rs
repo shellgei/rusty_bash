@@ -35,8 +35,8 @@ impl Job {
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
                 core.jobtable_check_status();
-                let (pids, exclamation) = pipeline.exec(core, pgid);
-                core.wait_pipeline(pids, exclamation);
+                let (pids, exclamation, time) = pipeline.exec(core, pgid);
+                core.wait_pipeline(pids, exclamation, time);
             }
             do_next = (core.data.get_param("?") == "0") == (end == "&&");
         }

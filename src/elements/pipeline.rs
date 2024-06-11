@@ -18,14 +18,15 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> (Vec<Option<Pid>>, bool) {
+    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid)
+           -> (Vec<Option<Pid>>, bool, bool) {
         if core.sigint.load(Relaxed) { //以下4行追加
             core.data.set_param("?", "130");
-            return (vec![], false);
+            return (vec![], false, false);
         }
 
         if self.commands.len() == 0 { // the case of only '!'
-            return (vec![], true);
+            return (vec![], self.exclamation, self.time);
         }
 
         let mut prev = -1;
@@ -44,7 +45,7 @@ impl Pipeline {
             self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid))
         );
 
-        (pids, self.exclamation)
+        (pids, self.exclamation, self.time)
     }
 
     pub fn new() -> Pipeline {
@@ -123,7 +124,7 @@ impl Pipeline {
         || Self::eat_time(feeder, &mut ans, core) { }
 
         if ! Self::eat_command(feeder, &mut ans, core){
-            match ans.exclamation {
+            match ans.exclamation || ans.time {
                 true  => return Some(ans),
                 false => return None,
             }
