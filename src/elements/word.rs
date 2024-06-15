@@ -1,11 +1,11 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{Feeder, ShellCore};
 use crate::elements::subword;
-use crate::elements::subword::Subword;
+use super::subword::Subword;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone)] //Cloneも指定しておく
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,
