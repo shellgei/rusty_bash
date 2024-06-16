@@ -51,10 +51,25 @@ impl Feeder {
         self.scanner_one_of(&["{", "}", ",", "$"])
     }
 
+    pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
+        if self.starts_with("\\\n") {
+            self.feed_and_connect(core);
+        }
+
+        if ! self.starts_with("\\") {
+            return 0;
+        }
+
+        match self.remaining.chars().nth(1) {
+            Some(ch) => 1 + ch.len_utf8(),
+            None =>     1,
+        }
+    }
+
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},".find(ch) != None {
+            if " \t\n;&|()<>{},\\".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();
