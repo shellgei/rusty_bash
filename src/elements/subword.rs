@@ -4,8 +4,8 @@
 mod simple;
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::simple::SimpleSubword;
 use std::fmt;
+use self::simple::SimpleSubword;
 use std::fmt::Debug;
 
 impl Debug for dyn Subword {
