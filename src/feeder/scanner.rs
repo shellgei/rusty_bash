@@ -39,14 +39,17 @@ impl Feeder {
         ans
     }
 
-    pub fn scanner_subword_symbol(&self) -> usize {
-        if self.starts_with("{")
-        || self.starts_with(",")
-        || self.starts_with("}"){
-            1
-        }else{
-            0
+    fn scanner_one_of(&self, cands: &[&str]) -> usize {
+        for c in cands {
+            if self.starts_with(c) {
+                return c.len();
+            }
         }
+        0
+    }
+
+    pub fn scanner_subword_symbol(&self) -> usize {
+        self.scanner_one_of(&["{", "}", ","])
     }
 
     pub fn scanner_subword(&mut self, core: &mut ShellCore) -> usize {

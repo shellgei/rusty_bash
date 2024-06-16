@@ -1,23 +1,23 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
 
-use crate::{ShellCore, Feeder};
+use crate::{Feeder, ShellCore};
 use crate::elements::subword;
-use crate::elements::subword::Subword;
+use super::subword::Subword;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone)] //Cloneも指定しておく
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,
 }
 
 impl Word {
-    pub fn eval(&mut self) -> Vec<String> {
+    pub fn eval(&mut self) -> Option<Vec<String>> {
         let ws = brace_expansion::eval(self);
 
-        ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect()
+        Some(ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect())
     }
 
     pub fn new() -> Word {
