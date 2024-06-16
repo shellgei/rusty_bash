@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
-use crate::elements::subword::Subword;
+use crate::Feeder;
+use super::Subword;
 
 #[derive(Debug, Clone)]
 pub struct SimpleSubword {
@@ -14,26 +14,20 @@ impl Subword for SimpleSubword {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn merge(&mut self, right: &Box<dyn Subword>) {
-        self.text += &right.get_text().clone();
+        self.text += &right.get_text();
     }
 }
 
 impl SimpleSubword {
-    fn new(s: &str) -> SimpleSubword {
-        SimpleSubword {
-            text: s.to_string(),
-        }
-    }
-
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleSubword> {
+    pub fn parse(feeder: &mut Feeder) -> Option<Self> {
         let len = feeder.scanner_subword_symbol();
         if len > 0 {
-            return Some(Self::new( &feeder.consume(len) ));
+            return Some( Self{ text :feeder.consume(len) } );
         }
 
-        let len = feeder.scanner_subword(core);
+        let len = feeder.scanner_subword();
         if len > 0 {
-            return Some(Self::new( &feeder.consume(len) ));
+            return Some( Self{ text :feeder.consume(len) } );
         }
 
         None
