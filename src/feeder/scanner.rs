@@ -18,57 +18,43 @@ impl Feeder {
         }
     }
 
-    fn scanner_chars(&mut self, charlist: &str, core: &mut ShellCore) -> usize {
-        let mut next_line = false;
-        let mut ans = 0;
-        for ch in self.remaining.chars() {
+    fn scanner_chars(&mut self, judge: fn(char) -> bool,
+                     core: &mut ShellCore) -> usize {
+        loop {
+            let mut ans = 0;
+            for ch in self.remaining.chars() {
+                if judge(ch) {
+                    ans += ch.len_utf8();
+                } else {
+                    break;
+                }
+            }
+
             if &self.remaining[ans..] == "\\\n" {
-                next_line = true;
-                break;
-            }else if let Some(_) = charlist.find(ch) {
-                ans += 1;
+                self.feed_and_connect(core);
             }else{
-                break;
+                return ans;
             }
         }
+    }
 
-        if next_line {
-            self.feed_and_connect(core);
-            return self.scanner_chars(charlist, core);
+    fn scanner_one_of(&self, cands: &[&str]) -> usize {
+        for c in cands {
+            if self.starts_with(c) {
+                return c.len();
+            }
         }
-        ans
+        0
     }
 
     pub fn scanner_subword_symbol(&self) -> usize {
-        if self.starts_with("{")
-        || self.starts_with(",")
-        || self.starts_with("}")
-        || self.starts_with("$"){
-            1
-        }else{
-            0
-        }
-    }
-
-    pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
-        if self.starts_with("\\\n") {
-            self.feed_and_connect(core);
-        }
-
-        if ! self.starts_with("\\") {
-            return 0;
-        }
-
-        match self.remaining.chars().nth(1) {
-            Some(ch) => 1 + ch.len_utf8(),
-            None =>     1,
-        }
+        self.scanner_one_of(&["{", "}", ",", "$"])
     }
 
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = " \t\n;&|()<>{},\\".find(ch) {
+            if " \t\n;&|()<>{},".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();
@@ -77,41 +63,35 @@ impl Feeder {
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_chars(" \t", core)
+        let judge = |ch| " \t".find(ch) != None;
+        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_chars(" \t\n", core)
+        let judge = |ch| " \t\n".find(ch) != None;
+        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
-        self.scanner_chars("0123456789", core)
+        let judge = |ch| '0' <= ch && ch <= '9';
+        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_job_end(&mut self) -> usize {
-        if let Some(ch) = self.remaining.chars().nth(0) {
-            if let Some(_) = ";&\n".find(ch) {
-                return 1;
-            }
-        }
-        0
+        self.scanner_one_of(&[";", "&", "\n"])
     }
 
     pub fn scanner_and_or(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["|", "&"], core);
-
-        if self.remaining.starts_with("||")     { 2 }
-        else if self.remaining.starts_with("&&"){ 2 }
-        else{ 0 }
+        self.scanner_one_of(&["||", "&&"])
     }
 
     pub fn scanner_pipe(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["|"], core);
-
-        if self.remaining.starts_with("||")     { 0 }
-        else if self.remaining.starts_with("|&"){ 2 }
-        else if self.remaining.starts_with("|") { 1 }
-        else{ 0 }
+        if self.starts_with("||") {
+            return 0;
+        }
+        self.scanner_one_of(&["|&","|"])
     }
 
     pub fn scanner_comment(&self) -> usize {
@@ -121,7 +101,7 @@ impl Feeder {
 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if let Some(_) = "\n".find(ch) {
+            if "\n".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();
@@ -131,11 +111,6 @@ impl Feeder {
 
     pub fn scanner_redirect_symbol(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec![">", "&"], core);
-
-        if self.remaining.starts_with("&>")     { 2 } //追加
-        else if self.remaining.starts_with(">>"){ 2 }
-        else if self.remaining.starts_with("<"){ 1 }
-        else if self.remaining.starts_with(">"){ 1 }
-        else{ 0 }
+        self.scanner_one_of(&["&>", ">&", ">>", "<", ">"])
     }
 }

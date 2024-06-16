@@ -3,9 +3,9 @@
 
 mod simple;
 
-use crate::{ShellCore, Feeder};
-use crate::elements::subword::simple::SimpleSubword;
+use crate::{Feeder, ShellCore};
 use std::fmt;
+use self::simple::SimpleSubword;
 use std::fmt::Debug;
 
 impl Debug for dyn Subword {
@@ -26,7 +26,7 @@ pub trait Subword {
     fn merge(&mut self, right: &Box<dyn Subword>);
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
-    if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
+pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }
