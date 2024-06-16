@@ -3,7 +3,7 @@
 
 mod simple;
 
-use crate::{ShellCore, Feeder};
+use crate::{Feeder, ShellCore};
 use std::fmt;
 use self::simple::SimpleSubword;
 use std::fmt::Debug;
@@ -25,7 +25,7 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
-    if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
+pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }
