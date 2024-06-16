@@ -34,7 +34,7 @@ impl Command for SimpleCommand {
         let mut words = self.words.to_vec();
 
         for w in words.iter_mut() {
-            self.args.append(&mut w.eval());
+            self.args.append(&mut w.eval().unwrap());
         }
 
         if self.args.len() == 0 {

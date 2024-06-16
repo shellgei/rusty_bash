@@ -14,10 +14,10 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn eval(&mut self) -> Vec<String> {
+    pub fn eval(&mut self) -> Option<Vec<String>> {
         let ws = brace_expansion::eval(self);
 
-        ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect()
+        Some(ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect())
     }
 
     pub fn new() -> Word {
