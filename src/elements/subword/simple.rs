@@ -11,11 +11,8 @@ pub struct SimpleSubword {
 
 impl Subword for SimpleSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
+    fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-
-    fn merge(&mut self, right: &Box<dyn Subword>) {
-        self.text += &right.get_text();
-    }
 }
 
 impl SimpleSubword {
