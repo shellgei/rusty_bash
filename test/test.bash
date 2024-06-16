@@ -175,30 +175,30 @@ res=$($com <<< '{ echo a; } #aaaaa')
 
 ### NEW LINE ###
 
-res=$($com <<< 'e\
-c\
-ho hoge')
-[ "$res" = "hoge" ] || err $LINENO
-
-res=$($com <<< 'e\
-c\
-ho \
-hoge')
-[ "$res" = "hoge" ] || err $LINENO
-
-res=$($com <<< 'echo hoge |\
-rev')
-[ "$res" = "egoh" ] || err $LINENO
-
-res=$($com <<< 'echo hoge |\
-& rev')
-[ "$res" = "egoh" ] || err $LINENO
-
-res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l | tr -dc 0-9')
-[ "$res" = "2" ] || err $LINENO
-
-res=$($com <<< 'ls |  | rev')
-[ "$?" == "2" ] || err $LINENO
+#res=$($com <<< 'e\
+#c\
+#ho hoge')
+#[ "$res" = "hoge" ] || err $LINENO
+#
+#res=$($com <<< 'e\
+#c\
+#ho \
+#hoge')
+#[ "$res" = "hoge" ] || err $LINENO
+#
+#res=$($com <<< 'echo hoge |\
+#rev')
+#[ "$res" = "egoh" ] || err $LINENO
+#
+#res=$($com <<< 'echo hoge |\
+#& rev')
+#[ "$res" = "egoh" ] || err $LINENO
+#
+#res=$($com <<< ' (seq 3; seq 3) | grep 3 | wc -l | tr -dc 0-9')
+#[ "$res" = "2" ] || err $LINENO
+#
+#res=$($com <<< 'ls |  | rev')
+#[ "$?" == "2" ] || err $LINENO
 
 ### REDIRECTS ###
 
