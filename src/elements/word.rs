@@ -10,7 +10,7 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn eval(&mut self) -> Vec<String> {
-        vec![self.text.clone()]
+    pub fn eval(&mut self) -> Option<Vec<String>> {
+        Some(vec![self.text.clone()])
     }
 }
