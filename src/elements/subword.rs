@@ -1,10 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod escaped_char;
 mod simple;
 
 use crate::{Feeder, ShellCore};
 use std::fmt;
+use self::escaped_char::EscapedChar;
 use self::simple::SimpleSubword;
 use std::fmt::Debug;
 
@@ -26,7 +28,8 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
 }
 
-pub fn parse(feeder: &mut Feeder, _: &mut ShellCore) -> Option<Box<dyn Subword>> {
-    if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }
