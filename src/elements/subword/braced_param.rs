@@ -39,11 +39,7 @@ impl Subword for BracedParam {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        if self.name.len() == 0 {
-            return false;
-        }
-
-        if ! is_param(&self.name) {
+        if self.name.len() == 0 || ! is_param(&self.name) {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
         }
