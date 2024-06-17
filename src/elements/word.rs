@@ -29,7 +29,7 @@ impl Word {
 
     pub fn make_unquoted_word(&mut self) -> Option<String> {
         let sw: Vec<Option<String>> = self.subwords.iter_mut()
-            .map(|s| s.make_unquoted_string())
+            .map(|s| s.make_unquoted_string()) //""や''はNoneにならずに空文字として残る
             .filter(|s| *s != None)
             .collect();
 
