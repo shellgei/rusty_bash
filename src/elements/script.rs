@@ -73,6 +73,14 @@ impl Script {
         }
     }
 
+    fn unalias(&mut self, core: &mut ShellCore) {
+        for a in core.data.alias_memo.iter() {
+            self.text = self.text.replace(&a.1, &a.0);
+        }
+
+        core.data.alias_memo.clear();
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
                  permit_empty: bool) -> Option<Script> {
         let mut ans = Self::new();
@@ -88,6 +96,7 @@ impl Script {
 
             match Self::check_nest(feeder, ans.jobs.len()){
                 Status::NormalEnd => {
+                    ans.unalias(core);
                     return Some(ans)
                 },
                 Status::UnexpectedSymbol(s) => {
@@ -104,6 +113,7 @@ impl Script {
         }
 
         feeder.consume(feeder.len());
+        core.data.alias_memo.clear();
         return None;
     }
 }

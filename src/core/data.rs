@@ -23,6 +23,7 @@ pub struct Data {
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
+    pub alias_memo: Vec<(String, String)>,
 }
 
 impl Data {
@@ -33,6 +34,7 @@ impl Data {
             position_parameters: vec![vec![]],
             aliases: HashMap::new(),
             functions: HashMap::new(),
+            alias_memo: vec![],
         }
     }
 
@@ -197,7 +199,18 @@ impl Data {
         ans
     }
 
-    pub fn replace_alias(&self, word: &mut String) -> bool {
+    pub fn replace_alias(&mut self, word: &mut String) -> bool {
+        let before = word.clone();
+        match self.replace_alias_core(word) {
+            true => {
+                self.alias_memo.push( (before, word.clone()) );
+                true
+            },
+            false => false,
+        }
+    }
+
+    fn replace_alias_core(&self, word: &mut String) -> bool {
         if self.flags.find('i') == None {
             return false;
         }
