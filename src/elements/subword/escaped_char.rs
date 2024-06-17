@@ -15,7 +15,7 @@ impl Subword for EscapedChar {
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         match self.text.len() {
-            0 => panic!("SUSH INTERNAL ERROR: non-escaped escaped char"),
+            0 => panic!("SUSH INTERNAL ERROR: unescaped escaped char"),
             1 => None,
             _ => Some(self.text[1..].to_string()),
         }
