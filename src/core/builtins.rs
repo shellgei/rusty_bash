@@ -4,6 +4,7 @@
 
 mod cd;
 pub mod completion;
+mod history;
 mod local;
 mod pwd;
 mod read;
@@ -24,6 +25,7 @@ impl ShellCore {
         self.builtins.insert("complete".to_string(), completion::complete);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
+        self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("local".to_string(), local::local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
