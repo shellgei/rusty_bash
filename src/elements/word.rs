@@ -70,7 +70,7 @@ impl Word {
         ans
     }
 
-    pub fn make_args(words: &mut Vec<Word>) -> Vec<String> {
+    fn make_args(words: &mut Vec<Word>) -> Vec<String> {
         words.iter_mut()
               .map(|w| w.make_unquoted_word())
               .filter(|w| *w != None)
