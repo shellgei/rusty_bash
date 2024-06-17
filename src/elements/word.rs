@@ -25,7 +25,7 @@ impl Word {
               .filter(|w| *w != None)
               .map(|w| w.unwrap())
               .collect()
-    } 
+    }
 
     pub fn make_unquoted_word(&mut self) -> Option<String> {
         let sw: Vec<Option<String>> = self.subwords.iter_mut()
@@ -33,9 +33,9 @@ impl Word {
             .filter(|s| *s != None)
             .collect();
 
-        if sw.len() == 0 { 
+        if sw.len() == 0 {
             return None;
-        }   
+        }
 
         Some(sw.into_iter().map(|s| s.unwrap()).collect::<String>())
     }
