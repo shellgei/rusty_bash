@@ -4,7 +4,8 @@
 use crate::ShellCore;
 use rev_lines::RevLines;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, BufWriter, Write};
+use std::fs::OpenOptions;
 
 impl ShellCore {
     pub fn fetch_history(&mut self, pos: usize, prev: usize, prev_str: String) -> String {
@@ -42,5 +43,35 @@ impl ShellCore {
         }
 
         String::new()
+    }
+
+    pub fn write_history_to_file(&mut self) {
+        if ! self.has_flag('i') || self.is_subshell {
+            return;
+        }
+        let filename = self.data.get_param("HISTFILE");
+        if filename == "" {
+            eprintln!("sush: HISTFILE is not set");
+            return;
+        }
+    
+        let file = match OpenOptions::new().create(true)
+                .write(true).append(true).open(&filename) {
+            Ok(f) => f,
+            _     => {
+                eprintln!("sush: invalid history file");
+                return;
+            },
+        };
+    
+        let mut f = BufWriter::new(file);
+        for h in self.history.iter().rev() {
+            if h == "" {
+                continue;
+            }
+            let _ = f.write(h.as_bytes());
+            let _ = f.write(&vec![0x0A]);
+        }
+        let _ = f.flush();
     }
 }

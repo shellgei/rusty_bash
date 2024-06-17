@@ -96,7 +96,7 @@ impl ShellCore {
         }
 
         let home = core.data.get_param("HOME").to_string();
-        core.data.set_param("HISTFILE", &(home + "/.bash_history"));
+        core.data.set_param("HISTFILE", &(home + "/.sush_history"));
         core.data.set_param("HISTFILESIZE", "2000");
 
         core
@@ -228,6 +228,8 @@ impl ShellCore {
     }
 
     pub fn exit(&mut self) -> ! {
+        self.write_history_to_file();
+
         let exit_status = match self.data.get_param("?").parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
