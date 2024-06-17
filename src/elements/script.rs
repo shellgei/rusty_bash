@@ -74,7 +74,7 @@ impl Script {
     }
 
     fn unalias(&mut self, core: &mut ShellCore) {
-        for a in core.data.alias_memo.iter() {
+        for a in core.data.alias_memo.iter().rev() {
             self.text = self.text.replace(&a.1, &a.0);
         }
 
