@@ -28,7 +28,7 @@ pub trait Subword {
     fn boxed_clone(&self) -> Box<dyn Subword>;
 
     fn make_unquoted_string(&mut self) -> Option<String> {
-        Some(self.get_text().to_string())
+        Some(self.get_text().to_string()) //空文字:->Noneに、""や''->空文字に
     }
 }
 
