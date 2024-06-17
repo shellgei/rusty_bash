@@ -12,7 +12,14 @@ pub struct EscapedChar {
 impl Subword for EscapedChar {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn make_unquoted_string(&mut self) -> Option<String> { Some(self.text[1..].to_string()) }
+
+    fn make_unquoted_string(&mut self) -> Option<String> {
+        match self.text.len() {
+            0 => panic!("SUSH INTERNAL ERROR: unescaped escaped char"),
+            1 => None,
+            _ => Some(self.text[1..].to_string()),
+        }
+    }
 }
 
 impl EscapedChar {
