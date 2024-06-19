@@ -29,6 +29,7 @@ struct Terminal {
     completion_candidate: String,
     tab_row: i32,
     tab_col: i32,
+    escape_at_completion: bool,
 }
 
 impl Terminal {
@@ -54,6 +55,7 @@ impl Terminal {
             completion_candidate: String::new(),
             tab_row: -1,
             tab_col: -1,
+            escape_at_completion: true,
         }
     }
 

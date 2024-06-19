@@ -119,6 +119,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-c" => compgen_c(core, args),
         "-d" => compgen_d(core, args),
         "-f" => compgen_f(core, args),
+        "-h" => compgen_h(core, args), //history (sush original)
         "-u" => compgen_u(core, args),
         "-W" => {
             if args.len() < 2 {
@@ -181,6 +182,16 @@ fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut paths = compgen_f(core, args);
     paths.retain(|p| Path::new(p).is_dir());
     paths
+}
+
+pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
+    let len = core.history.len();
+
+    if len >= 10 {
+        return core.history[0..10].to_vec();
+    }
+
+    core.history.to_vec()
 }
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {

@@ -50,6 +50,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, tab_num: usize) {
+        self.escape_at_completion = true;
         core.data.set_array("COMPREPLY", &vec![]);
         self.set_completion_info(core);
 
@@ -101,6 +102,7 @@ impl Terminal {
     }
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> bool {
+
         let pos = core.data.get_param("COMP_CWORD").to_string();
         let last = core.data.get_array("COMP_WORDS", &pos);
 
@@ -108,7 +110,14 @@ impl Terminal {
 
         let mut args = vec!["".to_string(), "".to_string(), last_tilde_expanded.to_string()];
         let list = match pos == "0" {
-            true  => completion::compgen_c(core, &mut args),
+            true  => {
+                if core.data.get_array_len("COMP_WORDS") == 0 {
+                    self.escape_at_completion = false;
+                    completion::compgen_h(core, &mut args).to_vec().into_iter().filter(|h| h.len() > 0).collect()
+                }else{
+                    completion::compgen_c(core, &mut args)
+                }
+            },
             false => completion::compgen_f(core, &mut args),
         };
 
@@ -230,9 +239,15 @@ impl Terminal {
         let to_escaped = if to.ends_with(" ") {
             let mut tmp = to.to_string();
             tmp.pop();
-            tmp.replace(" ", "\\ ") + " "
+            match self.escape_at_completion {
+                true  => tmp.replace(" ", "\\ ") + " ",
+                false => tmp + " ",
+            }
         }else {
-            to.replace(" ", "\\ ").to_string()
+            match self.escape_at_completion {
+                true  => to.replace(" ", "\\ ").to_string(),
+                false => to.to_string(),
+            }
         };
 
         for c in to_escaped.chars() {
