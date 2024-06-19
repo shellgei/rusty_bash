@@ -13,6 +13,7 @@ use std::path::Path;
 use glob;
 use glob::{GlobError, MatchOptions};
 use regex::Regex;
+use rev_lines::RevLines;
 
 fn expand(path: &str) -> Vec<String> {
     let opts = MatchOptions {
@@ -186,12 +187,29 @@ fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
     let len = core.history.len();
-
     if len >= 10 {
         return core.history[0..10].to_vec();
     }
 
-    core.history.to_vec()
+    let mut ans = core.history.to_vec();
+
+    if let Ok(hist_file) = File::open(core.data.get_param("HISTFILE")){
+        for h in RevLines::new(BufReader::new(hist_file)) {
+            match h {
+                Ok(s) => ans.push(s),
+                _     => {},
+            }
+
+            if ans.len() >= 10 {
+                return ans;
+            }
+        }
+    }
+
+    while ans.len() < 10 {
+        ans.push("echo Hello World".to_string());
+    }
+    ans
 }
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
