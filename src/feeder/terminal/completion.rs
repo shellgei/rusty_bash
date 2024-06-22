@@ -241,12 +241,12 @@ impl Terminal {
             tmp.pop();
             match self.escape_at_completion {
                 true  => tmp.replace(" ", "\\ ") + " ",
-                false => tmp + " ",
+                false => tmp.replace("↵ \0", "\n") + " ",
             }
         }else {
             match self.escape_at_completion {
                 true  => to.replace(" ", "\\ ").to_string(),
-                false => to.to_string(),
+                false => to.replace("↵ \0", "\n").to_string(),
             }
         };
 

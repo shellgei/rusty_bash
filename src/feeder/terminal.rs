@@ -282,7 +282,7 @@ impl Terminal {
         Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::isize::MAX as usize);
 
         self.chars = self.prompt.chars().collect();
-        self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str)/*.replace("\n", " ; ")*/.chars());
+        self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str).replace("↵ \0", "\n").chars());
         self.head = self.chars.len();
         self.rewrite(true);
     }

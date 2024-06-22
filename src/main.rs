@@ -86,7 +86,7 @@ fn set_history(core: &mut ShellCore, s: &str) {
         return;
     }
 
-    core.history[0] = s.trim_end().to_string();
+    core.history[0] = s.trim_end().replace("\n", "↵ \0").to_string();
     if core.history[0].len() == 0
     || (core.history.len() > 1 && core.history[0] == core.history[1]) {
         core.history.remove(0);
