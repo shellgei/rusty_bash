@@ -59,7 +59,15 @@ fn expand(path: &str) -> Vec<String> {
 
         match compare(&cand, &path) {
             true  => ans.push(cand),
-            false => {},
+            false => {
+                if p.is_dir() {
+                    let with_slash = cand.clone() + "/";
+                    match compare(&with_slash, &path) {
+                        true  => ans.push(with_slash),
+                        false => {},
+                    }
+                }
+            },
         }
     }
 

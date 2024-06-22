@@ -42,7 +42,15 @@ fn expand(path: &str) -> Vec<String> {
 
         match compare(&cand, &path) {
             true  => ans.push(cand),
-            false => {},
+            false => {
+                /*
+                if p.is_dir() {
+                    match compare(&(cand.clone() + "/"), &path) {
+                        true  => ans.push(cand),
+                        false => {},
+                    }
+                }*/
+            },
         }
     }
 
