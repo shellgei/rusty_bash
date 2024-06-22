@@ -33,7 +33,7 @@ fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
     }
 }
 
-pub fn compare_normal(cands: &mut Vec<String>, s: &String) {
+fn compare_normal(cands: &mut Vec<String>, s: &String) {
     let mut ans = vec![];
 
     for c in cands.into_iter() {
@@ -47,7 +47,7 @@ pub fn compare_normal(cands: &mut Vec<String>, s: &String) {
     *cands = ans;
 }
 
-pub fn asterisk(cands: &mut Vec<String>) {
+fn asterisk(cands: &mut Vec<String>) {
     let mut ans = vec![];
     for cand in cands.into_iter() {
         let mut s = String::new();
@@ -61,7 +61,7 @@ pub fn asterisk(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
-pub fn question(cands: &mut Vec<String>) {
+fn question(cands: &mut Vec<String>) {
     let mut ans = vec![];
     for cand in cands.into_iter() {
         match cand.chars().nth(0) {
@@ -170,7 +170,7 @@ fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-pub fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
+fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
     let mut ans = vec![];
     for cand in cands.into_iter() {
         if cs.iter().any(|c| cand.starts_with(*c)) ^ inverse {
