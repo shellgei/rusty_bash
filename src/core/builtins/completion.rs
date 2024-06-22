@@ -10,21 +10,10 @@ use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-//use std::path::PathBuf;
 use std::path::Path;
-//use glob;
-//use glob::GlobError;
-//use regex::Regex;
 use rev_lines::RevLines;
 
 fn expand(path: &str) -> Vec<String> {
-    /*
-    let opts = MatchOptions {
-        case_sensitive: true,
-        require_literal_separator: true,
-        require_literal_leading_dot: false,
-    };*/
-
     let mut dir = match Path::new(path).parent() {
         Some(p) => p, 
         None    => return vec![],
@@ -40,6 +29,7 @@ fn expand(path: &str) -> Vec<String> {
         return vec![];
     }
 
+//    let glob = path.to_owned() + "*";
     let mut ans = vec![];
     for e in fs::read_dir(dir).unwrap() {
         let p = match e {
@@ -51,10 +41,19 @@ fn expand(path: &str) -> Vec<String> {
             cand = cand.replacen("./", "", 1);
         }
 
-        match compare(&cand, &(path.to_owned() + "*")) {
+        match compare(&cand, &path) {
             true  => ans.push(cand),
             false => {},
         }
+    }
+
+    //dbg!("{:?}", &path);
+    if path == ".*" {
+        ans.push(".".to_string());
+        ans.push("..".to_string());
+    }
+    if path == "..*" {
+        ans.push("..".to_string());
     }
 
     ans
@@ -80,7 +79,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
         _ => {
             match args[2].as_str() {
                 "--" => args[3].to_string() + "*",
-                _ => args[2].to_string() + "*"
+                _ => args[2].to_string() + "*",
             }
         },
     }.replace("\\", "");
