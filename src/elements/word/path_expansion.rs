@@ -29,6 +29,8 @@ fn expand(path: &str) -> Vec<String> {
         None    => return vec![],
     };
 
+    let show_hidden = path.starts_with(&(dir.to_string_lossy().to_string() + "."));
+
     let mut remove_dot_slash = false;
     if dir.to_string_lossy() == "" {
         remove_dot_slash = true;
@@ -45,9 +47,14 @@ fn expand(path: &str) -> Vec<String> {
             Ok(p) => p.path(),
             _ => continue,
         };
+        let filename = p.file_name().expect("!").to_string_lossy();
         let mut cand = p.clone().into_os_string().into_string().unwrap();
         if remove_dot_slash {
             cand = cand.replacen("./", "", 1);
+        }
+
+        if ! show_hidden && filename.starts_with(".") {
+            continue;
         }
 
         match compare(&cand, &path) {
