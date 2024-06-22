@@ -1,3 +1,8 @@
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-License-Identifier: BSD-3-Clause
+
+pub mod glob;
+
 pub fn reserved(w: &str) -> bool {
     match w {
         "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,

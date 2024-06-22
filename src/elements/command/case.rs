@@ -1,11 +1,10 @@
-//SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
-
-mod tools;
 
 use crate::{ShellCore, Feeder, Script};
 use crate::elements::command;
 use crate::elements::word::Word;
+use crate::utils::glob;
 use super::{Command, Redirect};
 
 #[derive(Debug, Clone)]
@@ -35,7 +34,7 @@ impl Command for CaseCommand {
                 };
 
                 //if p == w || next { //TODO: compare wildcard
-                if tools::compare(&w, &p) || next { //TODO: compare wildcard
+                if glob::compare(&w, &p) || next { //TODO: compare wildcard
                     e.1.exec(core);
 
                     if e.2 == ";;" {
