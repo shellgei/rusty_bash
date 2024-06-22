@@ -3,25 +3,27 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
+use crate::utils::glob::compare;
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::path::PathBuf;
+//use std::path::PathBuf;
 use std::path::Path;
-use glob;
-use glob::{GlobError, MatchOptions};
-use regex::Regex;
+//use glob;
+//use glob::GlobError;
+//use regex::Regex;
 use rev_lines::RevLines;
 
 fn expand(path: &str) -> Vec<String> {
+    /*
     let opts = MatchOptions {
         case_sensitive: true,
         require_literal_separator: true,
         require_literal_leading_dot: false,
-    };
+    };*/
 
     let mut dir = match Path::new(path).parent() {
         Some(p) => p, 
@@ -38,29 +40,27 @@ fn expand(path: &str) -> Vec<String> {
         return vec![];
     }
 
+    let mut ans = vec![];
     for e in fs::read_dir(dir).unwrap() {
         let p = match e {
             Ok(p) => p.path(),
             _ => continue,
         };
-        dbg!("{:?}", p);
+        let mut cand = p.clone().into_os_string().into_string().unwrap();
+        if remove_dot_slash {
+            cand = cand.replacen("./", "", 1);
+        }
+
+        match compare(&cand, &(path.to_owned() + "*")) {
+            true  => ans.push(cand),
+            false => {},
+        }
     }
 
-    let re = Regex::new(r"\*+").unwrap(); //prohibit globstar
-    let fix_path = re.replace_all(path, "*");
-
-    match glob::glob_with(&fix_path, opts) {
-        Ok(ps) => {
-            let mut paths: Vec<String> = ps.map(|p| to_str(&p)).filter(|s| s != "").collect();
-            if path.starts_with("./") {
-                paths = paths.iter_mut().map(|p| p.replacen("", "./", 1)).collect();
-            }
-            paths
-        },
-        _ => vec![],
-    }
+    ans
 }
 
+/*
 fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     match path {
         Ok(p) => {
@@ -72,7 +72,7 @@ fn to_str(path :&Result<PathBuf, GlobError>) -> String {
         },
         _ => "".to_string(),
     }
-}
+}*/
 
 pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut path = match args.len() {
