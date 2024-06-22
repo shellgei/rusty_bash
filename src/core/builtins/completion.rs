@@ -6,6 +6,7 @@ use crate::elements::word::Word;
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
+use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -21,6 +22,29 @@ fn expand(path: &str) -> Vec<String> {
         require_literal_separator: true,
         require_literal_leading_dot: false,
     };
+
+    let mut dir = match Path::new(path).parent() {
+        Some(p) => p, 
+        None    => return vec![],
+    };
+
+    let mut remove_dot_slash = false;
+    if dir.to_string_lossy() == "" {
+        remove_dot_slash = true;
+        dir = Path::new("./");
+    }
+
+    if ! dir.is_dir() {
+        return vec![];
+    }
+
+    for e in fs::read_dir(dir).unwrap() {
+        let p = match e {
+            Ok(p) => p.path(),
+            _ => continue,
+        };
+        dbg!("{:?}", p);
+    }
 
     let re = Regex::new(r"\*+").unwrap(); //prohibit globstar
     let fix_path = re.replace_all(path, "*");
