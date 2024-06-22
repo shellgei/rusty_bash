@@ -2,14 +2,16 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::word::Word;
+use crate::utils::glob::compare;
 use glob;
 use glob::{GlobError, MatchOptions};
 use regex::Regex;
-use std::path::PathBuf;
+use std::fs;
+use std::path::{Path, PathBuf};
 use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
-    let paths = expand(word.make_glob_string());
+    let paths = expand(&word.make_glob_string());
 
     if paths.len() > 0 {
         let mut tmp = word.clone();
@@ -21,6 +23,51 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     }
 }
 
+fn expand(path: &str) -> Vec<String> {
+    let mut dir = match Path::new(path).parent() {
+        Some(p) => p, 
+        None    => return vec![],
+    };
+
+    let mut remove_dot_slash = false;
+    if dir.to_string_lossy() == "" {
+        remove_dot_slash = true;
+        dir = Path::new("./");
+    }
+
+    if ! dir.is_dir() {
+        return vec![];
+    }
+
+    let mut ans = vec![];
+    for e in fs::read_dir(dir).unwrap() {
+        let p = match e {
+            Ok(p) => p.path(),
+            _ => continue,
+        };
+        let mut cand = p.clone().into_os_string().into_string().unwrap();
+        if remove_dot_slash {
+            cand = cand.replacen("./", "", 1);
+        }
+
+        match compare(&cand, &path) {
+            true  => ans.push(cand),
+            false => {},
+        }
+    }
+
+    if path == ".*" {
+        ans.push(".".to_string());
+        ans.push("..".to_string());
+    }
+    if path == "..*" {
+        ans.push("..".to_string());
+    }
+
+    ans
+}
+
+/*
 fn expand(path: String) -> Vec<String> {
     let opts = MatchOptions {
         case_sensitive: true,
@@ -41,6 +88,7 @@ fn expand(path: String) -> Vec<String> {
     ans.sort();
     ans
 }
+*/
 
 fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     match path {

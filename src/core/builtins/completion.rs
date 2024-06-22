@@ -29,7 +29,6 @@ fn expand(path: &str) -> Vec<String> {
         return vec![];
     }
 
-//    let glob = path.to_owned() + "*";
     let mut ans = vec![];
     for e in fs::read_dir(dir).unwrap() {
         let p = match e {
@@ -47,7 +46,6 @@ fn expand(path: &str) -> Vec<String> {
         }
     }
 
-    //dbg!("{:?}", &path);
     if path == ".*" {
         ans.push(".".to_string());
         ans.push("..".to_string());
