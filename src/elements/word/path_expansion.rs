@@ -6,7 +6,7 @@ use crate::utils::glob::compare;
 use glob;
 use glob::{GlobError, MatchOptions};
 use regex::Regex;
-use std::fs;
+use std::{env, fs};
 use std::path::{Path, PathBuf};
 use super::subword::simple::SimpleSubword;
 
@@ -24,6 +24,18 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 }
 
 fn expand(path: &str) -> Vec<String> {
+    let pwd = match env::current_dir() {
+        Some(p) => p,
+        _ => return vec![],
+    };
+    let dirs: Vec<String> = path.split("/").map(|s| s.to_string()).collect();
+    dbg!("{:?}, {:?}", &pwd, &dirs);
+
+    let search_dir = match dirs.len() >= 2 &&
+
+
+    return vec![];
+    /*
     let mut dir = match Path::new(path).parent() {
         Some(p) => p, 
         None    => return vec![],
@@ -80,6 +92,7 @@ fn expand(path: &str) -> Vec<String> {
     }
 
     ans
+    */
 }
 
 /*
