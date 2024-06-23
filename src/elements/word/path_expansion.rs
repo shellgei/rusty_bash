@@ -24,14 +24,30 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 }
 
 fn expand(path: &str) -> Vec<String> {
+    if path.find("*") == None && path.find("?") == None && path.find("[") == None {
+        return vec![];
+    }
+        
+
     let pwd = match env::current_dir() {
-        Some(p) => p,
+        Ok(p) => p.to_string_lossy().to_string(),
         _ => return vec![],
     };
-    let dirs: Vec<String> = path.split("/").map(|s| s.to_string()).collect();
-    dbg!("{:?}, {:?}", &pwd, &dirs);
 
-    let search_dir = match dirs.len() >= 2 &&
+    let mut dirs: Vec<String> = path.split("/").map(|s| s.to_string()).collect();
+
+    let mut search_dir = match dirs.len() >= 2 && dirs[0] == "" {
+        true  => {
+            dirs.remove(0);
+            "".to_string()
+        },
+        false => pwd,
+    };
+
+    for d in dirs {
+        search_dir += &("/".to_owned() + &d);
+        eprintln!("{}", &search_dir);
+    }
 
 
     return vec![];
