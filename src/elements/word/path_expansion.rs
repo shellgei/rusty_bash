@@ -44,9 +44,12 @@ fn expand(path: &str) -> Vec<String> {
         false => pwd,
     };
 
+    let mut ans = vec![search_dir];
     for d in dirs {
-        search_dir += &("/".to_owned() + &d);
-        eprintln!("{}", &search_dir);
+        for a in &mut ans {
+            a.push_str( &("/".to_owned() + &d) );
+        }
+        eprintln!("{:?}", &ans);
     }
 
 
