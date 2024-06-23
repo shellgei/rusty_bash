@@ -24,7 +24,9 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 }
 
 fn expand(path: &str) -> Vec<String> {
-    if path.find("*") == None && path.find("?") == None && path.find("[") == None {
+    if path.find("*") == None 
+    && path.find("?") == None
+    && path.find("[") == None {
         return vec![];
     }
         
@@ -45,16 +47,28 @@ fn expand(path: &str) -> Vec<String> {
     };
 
     let mut ans = vec![search_dir];
+    let mut ans2 = vec![];
     for d in dirs {
-        for a in &mut ans {
+        while ans.len() > 0 {
+            let mut a = ans.pop().unwrap();
             a.push_str( &("/".to_owned() + &d) );
+            if a.find("*") == None 
+            && a.find("?") == None
+            && a.find("[") == None {
+                ans2.push(a);
+                continue;
+            }
+            ans2.extend( expand_sub(&a));
         }
-        eprintln!("{:?}", &ans);
+        ans = ans2.clone();
+        ans2.clear();
     }
 
+    eprintln!("{:?}", &ans);
+    ans
+}
 
-    return vec![];
-    /*
+fn expand_sub(path: &str) -> Vec<String> {
     let mut dir = match Path::new(path).parent() {
         Some(p) => p, 
         None    => return vec![],
@@ -74,6 +88,7 @@ fn expand(path: &str) -> Vec<String> {
 
     let mut ans = vec![];
     for e in fs::read_dir(dir).unwrap() {
+        eprintln!("{:?}", &e);
         let p = match e {
             Ok(p) => p.path(),
             _ => continue,
@@ -111,7 +126,6 @@ fn expand(path: &str) -> Vec<String> {
     }
 
     ans
-    */
 }
 
 /*
