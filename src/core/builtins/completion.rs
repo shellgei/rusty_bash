@@ -8,60 +8,10 @@ use crate::utils::glob;
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
-use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use rev_lines::RevLines;
-
-fn expand(path: &str) -> Vec<String> {
-    let mut dir = match Path::new(path).parent() {
-        Some(p) => p, 
-        None    => return vec![],
-    };
-
-    let mut remove_dot_slash = false;
-    if dir.to_string_lossy() == "" {
-        remove_dot_slash = true;
-        dir = Path::new("./");
-    }
-
-    if ! dir.is_dir() {
-        return vec![];
-    }
-
-    let readdir = match fs::read_dir(dir) {
-        Ok(rd) => rd,
-        _      => return vec![],
-    };
-
-    let mut ans = vec![];
-    for e in readdir {
-        let p = match e {
-            Ok(p) => p.path(),
-            _ => continue,
-        };
-        let mut cand = p.clone().into_os_string().into_string().unwrap();
-        if remove_dot_slash {
-            cand = cand.replacen("./", "", 1);
-        }
-
-        match glob::compare(&cand, &path) {
-            true  => ans.push(cand),
-            false => {},
-        }
-    }
-
-    if path == ".*" {
-        ans.push(".".to_string());
-        ans.push("..".to_string());
-    }
-    if path == "..*" {
-        ans.push("..".to_string());
-    }
-
-    ans
-}
 
 pub fn compgen_f(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let path = match args.len() {
@@ -115,8 +65,8 @@ fn replace_args(args: &mut Vec<String>) -> bool {
 fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
     let mut comlist = HashSet::new();
     for path in core.data.get_param("PATH").to_string().split(":") {
-        for file in expand(&(path.to_string() + "/*")) {
-            if ! Path::new(&file).executable() {
+        for file in utils::files_in_dir(path).iter() {
+            if ! Path::new(&(path.to_owned() + "/" + file)).executable() {
                 continue;
             }
 
