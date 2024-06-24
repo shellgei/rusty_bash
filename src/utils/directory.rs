@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 use super::glob;
 
-pub fn files_in_dir(org_dir_string: &str) -> Vec<String> {
+pub fn files(org_dir_string: &str) -> Vec<String> {
     let dir = match org_dir_string {
         ""  => ".",
         org => org, 
@@ -28,7 +28,7 @@ pub fn files_in_dir(org_dir_string: &str) -> Vec<String> {
     files
 }
 
-pub fn glob_in_dir(org_dir_string: &str, glob_for_dir: &str) -> Vec<String> {
+pub fn glob(org_dir_string: &str, glob_for_dir: &str) -> Vec<String> {
     let mut ans = vec![];
     if glob_for_dir == "" || glob_for_dir == "." || glob_for_dir == ".." {
         return vec![org_dir_string.to_string() + glob_for_dir + "/"];

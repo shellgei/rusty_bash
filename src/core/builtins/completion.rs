@@ -34,11 +34,11 @@ pub fn compgen_f(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let dir = split.join("/");
 
     if key == "" {
-        let files = directory::files_in_dir(&dir);
+        let files = directory::files(&dir);
         return files.iter().map(|f| dir.clone() + &f).collect();
     }
 
-    let mut ans = directory::glob_in_dir(&dir, &(key + "*"));
+    let mut ans = directory::glob(&dir, &(key + "*"));
     ans.iter_mut().for_each(|a| { a.pop(); } );
     ans.sort();
     ans
@@ -70,7 +70,7 @@ fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
             continue;
         }
 
-        for command in directory::files_in_dir(path).iter() {
+        for command in directory::files(path).iter() {
             if ! Path::new(&(path.to_owned() + "/" + command)).executable() {
                 continue;
             }

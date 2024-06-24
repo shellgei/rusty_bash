@@ -33,7 +33,7 @@ fn expand(globstr: &str) -> Vec<String> {
 
     for glob_elem in globstr.split("/") {
         for cand in ans_cands {
-            tmp_ans_cands.extend( directory::glob_in_dir(&cand, &glob_elem) );
+            tmp_ans_cands.extend( directory::glob(&cand, &glob_elem) );
         }
         ans_cands = tmp_ans_cands.clone();
         tmp_ans_cands.clear();
