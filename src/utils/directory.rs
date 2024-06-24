@@ -11,10 +11,10 @@ pub fn files(org_dir_string: &str) -> Vec<String> {
         dir  => Path::new(dir).read_dir(),
     };
 
-    let to_str = |p: &DirEntry| p.file_name().to_string_lossy().to_string();
+    let to_str = |p: DirEntry| p.file_name().to_string_lossy().to_string();
 
     match readdir {
-        Ok(rd) => rd.map(|e| to_str(&e.unwrap()) ).collect(),
+        Ok(rd) => rd.map(|e| to_str(e.unwrap()) ).collect(),
         _      => vec![],
     }
 }
