@@ -71,23 +71,18 @@ fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
         _      => return vec![],
     };
 
-    for e in readdir {
-        let filename = match e {
-            Ok(p) => p.file_name().to_string_lossy().to_string(),
-            _ => continue,
-        };
-
-        if let Some(a) = comp(&filename, cand, glob_elem) {
+    let mut files = vec![".".to_string(), "..".to_string()];
+    for entry in readdir {
+        if let Ok(f) = entry {
+            files.push( f.file_name().to_string_lossy().to_string() );
+        } 
+    }
+    for f in files {
+        if let Some(a) = comp(&f, cand, glob_elem) {
             ans.push(a);
         }
     }
 
-    if let Some(a) = comp(&".".to_string(), cand, glob_elem) {
-        ans.push(a);
-    }
-    if let Some(a) = comp(&"..".to_string(), cand, glob_elem) {
-        ans.push(a);
-    }
     ans
 }
 
