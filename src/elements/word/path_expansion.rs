@@ -3,11 +3,11 @@
 
 use crate::elements::word::Word;
 use crate::utils::glob::compare;
-use glob;
-use glob::{GlobError, MatchOptions};
-use regex::Regex;
-use std::{env, fs};
-use std::path::{Path, PathBuf};
+//use glob;
+//use glob::{GlobError, MatchOptions};
+//use regex::Regex;
+use std::fs;
+use std::path::Path;
 use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
@@ -43,7 +43,7 @@ fn expand(globstr: &str) -> Vec<String> {
     let mut ans_cands: Vec<String> = vec![start_dir.to_string()];
     let mut tmp_ans_cands = vec![];
     for glob_elem in glob_elems {
-        for mut cand in ans_cands {
+        for cand in ans_cands {
             tmp_ans_cands.extend( expand_sub(&cand, &glob_elem) );
         }
         ans_cands = tmp_ans_cands.clone();
@@ -51,12 +51,11 @@ fn expand(globstr: &str) -> Vec<String> {
     }
 
     ans_cands.iter_mut().for_each(|e| {e.pop();} );
-    eprintln!("{:?}", &ans_cands);
+    //eprintln!("{:?}", &ans_cands);
     ans_cands
 }
 
 fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
-    dbg!("{:?} {:?}", cand, glob_elem);
     let mut ans: Vec<String> = vec![];
 
     if glob_elem == "." || glob_elem == ".." {
@@ -68,51 +67,37 @@ fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
         x  => x, 
     }.to_string();
 
+    if ! Path::new(&dir).is_dir() {
+        return vec![];
+    }
+
     for e in fs::read_dir(dir).unwrap() {
         let filename = match e {
             Ok(p) => p.file_name().to_string_lossy().to_string(),
             _ => continue,
         };
-        eprintln!("{:?}", &filename);
         match compare(&filename, &glob_elem) {
-            true  => ans.push(cand.clone().to_owned() + &filename + "/"),
+            true  => {
+                if ! filename.starts_with(".") || glob_elem.starts_with(".") {
+                    ans.push(cand.to_owned() + &filename + "/");
+                }
+            },
             false => {},
         }
     }
 
-    dbg!("{:?}", &ans);
+    //dbg!("{:?}", &ans);
     ans
 }
 
 /*
-fn expand(path: String) -> Vec<String> {
-    let opts = MatchOptions {
-        case_sensitive: true,
-        require_literal_separator: true,
-        require_literal_leading_dot: true,
-    };
-
-    let re = Regex::new(r"\*+").unwrap(); //prohibit globstar
-    let fix_path = re.replace_all(&path, "*");
-
-    let mut ans = match glob::glob_with(&fix_path, opts) {
-        Ok(ps) => ps.map(|p| to_str(&p))
-                    .filter(|s| s != "").collect(), 
-        _ => return vec![],
-    };
-
-    absorb_dialect(&path, &mut ans);
-    ans.sort();
-    ans
-}
-*/
-
 fn to_str(path :&Result<PathBuf, GlobError>) -> String {
     match path {
         Ok(p) => p.to_string_lossy().to_string(),
         _ => "".to_string(),
     }
 }
+*/
 
 fn rewrite(word: &mut Word, path: &str) -> Word {
     word.subwords[0] = Box::new( SimpleSubword{ text: path.to_string() } );
@@ -122,6 +107,7 @@ fn rewrite(word: &mut Word, path: &str) -> Word {
     word.clone()
 }
 
+/*
 fn absorb_dialect(org: &str, paths: &mut Vec<String>) {
     if let Some(tail1) = org.chars().last() {
         if tail1 == '/' {
@@ -156,4 +142,4 @@ fn remove_dot_slash(path: &mut String) {
         path.remove(0);
         path.remove(0);
     }
-}
+}*/
