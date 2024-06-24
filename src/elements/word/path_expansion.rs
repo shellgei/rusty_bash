@@ -28,10 +28,10 @@ fn expand(globstr: &str) -> Vec<String> {
         return vec![];
     }
         
-    let glob_elems: Vec<String> = globstr.split("/").map(|s| s.to_string()).collect();
-    let mut ans_cands: Vec<String> = vec!["".to_string()];
+    let mut ans_cands = vec!["".to_string()];
     let mut tmp_ans_cands = vec![];
-    for glob_elem in glob_elems {
+
+    for glob_elem in globstr.split("/") {
         for cand in ans_cands {
             tmp_ans_cands.extend( expand_sub(&cand, &glob_elem) );
         }
