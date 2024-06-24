@@ -22,6 +22,8 @@ fn expand(globstr: &str) -> Vec<String> {
     if globstr.find("*") == None 
     && globstr.find("?") == None
     && globstr.find("@") == None
+    && globstr.find("+") == None
+    && globstr.find("!") == None
     && globstr.find("[") == None {
         return vec![];
     }

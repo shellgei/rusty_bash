@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
+use crate::utils;
 use crate::utils::glob;
 use faccess;
 use faccess::PathExt;
@@ -62,25 +63,35 @@ fn expand(path: &str) -> Vec<String> {
     ans
 }
 
-pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
-    let mut path = match args.len() {
-        2 => "*".to_string(),
+pub fn compgen_f(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let path = match args.len() {
+        2 => "".to_string(),
         _ => {
             match args[2].as_str() {
-                "--" => args[3].to_string() + "*",
-                _ => args[2].to_string() + "*",
+                "--" => args[3].to_string(),
+                _ => args[2].to_string(),
             }
         },
     }.replace("\\", "");
 
-    if path.starts_with("~/") {
-        let home = core.data.get_param("HOME").to_string() + "/";
-        path = path.replace("~/", &home);
+    let mut split: Vec<String> = path.split("/").map(|s| s.to_string()).collect();
+    let key = match split.pop() {
+        Some(g) => g, 
+        _       => return vec![],
+    };
+
+    split.push("".to_string());
+    let dir = split.join("/");
+
+    if key == "" {
+        let files = utils::files_in_dir(&dir);
+        return files.iter().map(|f| dir.clone() + &f).collect();
     }
 
-    let mut paths = expand(&path);
-    paths.iter_mut().for_each(|p| if p.ends_with("/") { p.pop(); });
-    paths
+    let mut ans = glob::glob_in_dir(&dir, &(key + "*"));
+    ans.iter_mut().for_each(|a| { a.pop(); } );
+    ans.sort();
+    ans
 }
 
 fn replace_args(args: &mut Vec<String>) -> bool {

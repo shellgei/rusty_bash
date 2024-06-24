@@ -3,6 +3,9 @@
 
 pub mod glob;
 
+use std::fs;
+use std::path::Path;
+
 pub fn reserved(w: &str) -> bool {
     match w {
         "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
@@ -57,4 +60,27 @@ pub fn split_words(s: &str) -> Vec<String> {
     }
 
     ans
+}
+
+pub fn files_in_dir(org_dir_string: &str) -> Vec<String> {
+    let dir = match org_dir_string {
+        ""  => ".",
+        org => org, 
+    };
+
+    if ! Path::new(dir).is_dir() {
+        return vec![];
+    }
+    let readdir = match fs::read_dir(dir) {
+        Ok(rd) => rd,
+        _      => return vec![],
+    };
+
+    let mut files = vec![];
+    for entry in readdir {
+        if let Ok(f) = entry {
+            files.push(f.file_name().to_string_lossy().to_string());
+        } 
+    }
+    files
 }
