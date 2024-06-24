@@ -75,7 +75,7 @@ fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
         };
         match compare(&filename, &glob_elem) {
             true  => {
-            dbg!("{:?} {:?}", &filename, &glob_elem);
+            //dbg!("{:?} {:?}", &filename, &glob_elem);
                 if ! filename.starts_with(".") || glob_elem.starts_with(".") {
                     ans.push(cand.to_owned() + &filename + "/");
                 }
@@ -84,7 +84,7 @@ fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
         }
     }
 
-    dbg!("{:?}", &ans);
+    //dbg!("{:?}", &ans);
     ans
 }
 
