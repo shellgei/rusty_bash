@@ -48,13 +48,12 @@ fn expand(globstr: &str) -> Vec<String> {
     }
 
     ans_cands.iter_mut().for_each(|e| {e.pop();} );
-    //eprintln!("{:?}", &ans_cands);
+    ans_cands.sort();
     ans_cands
 }
 
 fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
-    let mut ans: Vec<String> = vec![];
-
+    let mut ans = vec![];
     if glob_elem == "" || glob_elem == "." || glob_elem == ".." {
         return vec![cand.to_string() + glob_elem + "/"];
     }
@@ -62,9 +61,9 @@ fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
     let dir = match cand {
         "" => ".",
         x  => x, 
-    }.to_string();
+    };
 
-    if ! Path::new(&dir).is_dir() {
+    if ! Path::new(dir).is_dir() {
         return vec![];
     }
 
@@ -73,19 +72,29 @@ fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
             Ok(p) => p.file_name().to_string_lossy().to_string(),
             _ => continue,
         };
-        match compare(&filename, &glob_elem) {
-            true  => {
-            //dbg!("{:?} {:?}", &filename, &glob_elem);
-                if ! filename.starts_with(".") || glob_elem.starts_with(".") {
-                    ans.push(cand.to_owned() + &filename + "/");
-                }
-            },
-            false => {},
+
+        if let Some(a) = comp(&filename, cand, glob_elem) {
+            ans.push(a);
         }
     }
 
-    //dbg!("{:?}", &ans);
+    if let Some(a) = comp(&".".to_string(), cand, glob_elem) {
+        ans.push(a);
+    }
+    if let Some(a) = comp(&"..".to_string(), cand, glob_elem) {
+        ans.push(a);
+    }
     ans
+}
+
+fn comp(filename: &String, cand: &str, glob_elem: &str) -> Option<String> {
+    if compare(&filename, &glob_elem) {
+        if ! filename.starts_with(".") || glob_elem.starts_with(".") {
+            return Some(cand.to_owned() + &filename + "/");
+        }
+    }
+
+    None
 }
 
 fn rewrite(word: &mut Word, path: &str) -> Word {
