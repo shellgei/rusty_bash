@@ -28,16 +28,8 @@ fn expand(globstr: &str) -> Vec<String> {
         return vec![];
     }
         
-    let mut glob_elems: Vec<String> = globstr.split("/").map(|s| s.to_string()).collect();
-    let start_dir = match globstr.starts_with("/") {
-        true  => {
-            glob_elems.remove(0);
-            "/"
-        },
-        false => "",
-    };
-
-    let mut ans_cands: Vec<String> = vec![start_dir.to_string()];
+    let glob_elems: Vec<String> = globstr.split("/").map(|s| s.to_string()).collect();
+    let mut ans_cands: Vec<String> = vec!["".to_string()];
     let mut tmp_ans_cands = vec![];
     for glob_elem in glob_elems {
         for cand in ans_cands {
