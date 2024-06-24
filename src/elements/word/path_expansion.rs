@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::word::Word;
-use crate::utils::glob::compare;
+use crate::utils::glob;
 use std::fs;
 use std::path::Path;
 use super::subword::simple::SimpleSubword;
@@ -33,7 +33,7 @@ fn expand(globstr: &str) -> Vec<String> {
 
     for glob_elem in globstr.split("/") {
         for cand in ans_cands {
-            tmp_ans_cands.extend( expand_sub(&cand, &glob_elem) );
+            tmp_ans_cands.extend( match_files(&cand, &glob_elem) );
         }
         ans_cands = tmp_ans_cands.clone();
         tmp_ans_cands.clear();
@@ -44,7 +44,7 @@ fn expand(globstr: &str) -> Vec<String> {
     ans_cands
 }
 
-fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
+fn match_files(cand: &str, glob_elem: &str) -> Vec<String> {
     let mut ans = vec![];
     if glob_elem == "" || glob_elem == "." || glob_elem == ".." {
         return vec![cand.to_string() + glob_elem + "/"];
@@ -79,7 +79,7 @@ fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
 }
 
 fn comp(filename: &String, cand: &str, glob_elem: &str) -> Option<String> {
-    if compare(&filename, &glob_elem) {
+    if glob::compare(&filename, &glob_elem) {
         if ! filename.starts_with(".") || glob_elem.starts_with(".") {
             return Some(cand.to_owned() + &filename + "/");
         }

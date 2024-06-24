@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
-use crate::utils::glob::compare;
+use crate::utils::glob;
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
@@ -40,17 +40,9 @@ fn expand(path: &str) -> Vec<String> {
             cand = cand.replacen("./", "", 1);
         }
 
-        match compare(&cand, &path) {
+        match glob::compare(&cand, &path) {
             true  => ans.push(cand),
-            false => {
-                /*
-                if p.is_dir() {
-                    match compare(&(cand.clone() + "/"), &path) {
-                        true  => ans.push(cand),
-                        false => {},
-                    }
-                }*/
-            },
+            false => {},
         }
     }
 
