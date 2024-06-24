@@ -66,8 +66,12 @@ fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
     if ! Path::new(dir).is_dir() {
         return vec![];
     }
+    let readdir = match fs::read_dir(dir) {
+        Ok(rd) => rd,
+        _      => return vec![],
+    };
 
-    for e in fs::read_dir(dir).unwrap() {
+    for e in readdir {
         let filename = match e {
             Ok(p) => p.file_name().to_string_lossy().to_string(),
             _ => continue,
