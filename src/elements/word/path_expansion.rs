@@ -23,108 +23,64 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     }
 }
 
-fn expand(path: &str) -> Vec<String> {
-    if path.find("*") == None 
-    && path.find("?") == None
-    && path.find("[") == None {
+fn expand(globstr: &str) -> Vec<String> {
+    if globstr.find("*") == None 
+    && globstr.find("?") == None
+    && globstr.find("[") == None {
         return vec![];
     }
         
-
-    let pwd = match env::current_dir() {
-        Ok(p) => p.to_string_lossy().to_string(),
-        _ => return vec![],
-    };
-
-    let mut dirs: Vec<String> = path.split("/").map(|s| s.to_string()).collect();
-
-    let mut search_dir = match dirs.len() >= 2 && dirs[0] == "" {
+    let mut glob_elems: Vec<String> = globstr.split("/").map(|s| s.to_string()).collect();
+    let start_dir = match globstr.starts_with("/") {
         true  => {
-            dirs.remove(0);
-            "".to_string()
+            glob_elems.remove(0);
+            "/"
         },
-        false => pwd,
+        false => "",
     };
+    //dbg!("{:?}", &dirs);
 
-    let mut ans = vec![search_dir];
-    let mut ans2 = vec![];
-    for d in dirs {
-        while ans.len() > 0 {
-            let mut a = ans.pop().unwrap();
-            a.push_str( &("/".to_owned() + &d) );
-            if a.find("*") == None 
-            && a.find("?") == None
-            && a.find("[") == None {
-                ans2.push(a);
-                continue;
-            }
-            ans2.extend( expand_sub(&a));
+    let mut ans_cands: Vec<String> = vec![start_dir.to_string()];
+    let mut tmp_ans_cands = vec![];
+    for glob_elem in glob_elems {
+        for mut cand in ans_cands {
+            tmp_ans_cands.extend( expand_sub(&cand, &glob_elem) );
         }
-        ans = ans2.clone();
-        ans2.clear();
+        ans_cands = tmp_ans_cands.clone();
+        tmp_ans_cands.clear();
     }
 
-    eprintln!("{:?}", &ans);
-    ans
+    ans_cands.iter_mut().for_each(|e| {e.pop();} );
+    eprintln!("{:?}", &ans_cands);
+    ans_cands
 }
 
-fn expand_sub(path: &str) -> Vec<String> {
-    let mut dir = match Path::new(path).parent() {
-        Some(p) => p, 
-        None    => return vec![],
-    };
+fn expand_sub(cand: &str, glob_elem: &str) -> Vec<String> {
+    dbg!("{:?} {:?}", cand, glob_elem);
+    let mut ans: Vec<String> = vec![];
 
-    let show_hidden = path.starts_with(&(dir.to_string_lossy().to_string() + "."));
-
-    let mut remove_dot_slash = false;
-    if dir.to_string_lossy() == "" {
-        remove_dot_slash = true;
-        dir = Path::new("./");
+    if glob_elem == "." || glob_elem == ".." {
+        return vec![cand.to_string() + glob_elem + "/"];
     }
 
-    if ! dir.is_dir() {
-        return vec![];
-    }
+    let dir = match cand {
+        "" => ".",
+        x  => x, 
+    }.to_string();
 
-    let mut ans = vec![];
     for e in fs::read_dir(dir).unwrap() {
-        eprintln!("{:?}", &e);
-        let p = match e {
-            Ok(p) => p.path(),
+        let filename = match e {
+            Ok(p) => p.file_name().to_string_lossy().to_string(),
             _ => continue,
         };
-        let filename = p.file_name().expect("!").to_string_lossy();
-        let mut cand = p.clone().into_os_string().into_string().unwrap();
-        if remove_dot_slash {
-            cand = cand.replacen("./", "", 1);
-        }
-
-        if ! show_hidden && filename.starts_with(".") {
-            continue;
-        }
-
-        match compare(&cand, &path) {
-            true  => ans.push(cand),
-            false => {
-                if p.is_dir() {
-                    let with_slash = cand.clone() + "/";
-                    match compare(&with_slash, &path) {
-                        true  => ans.push(with_slash),
-                        false => {},
-                    }
-                }
-            },
+        eprintln!("{:?}", &filename);
+        match compare(&filename, &glob_elem) {
+            true  => ans.push(cand.clone().to_owned() + &filename + "/"),
+            false => {},
         }
     }
 
-    if path == ".*" {
-        ans.push(".".to_string());
-        ans.push("..".to_string());
-    }
-    if path == "..*" {
-        ans.push("..".to_string());
-    }
-
+    dbg!("{:?}", &ans);
     ans
 }
 
