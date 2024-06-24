@@ -84,3 +84,12 @@ pub fn files_in_dir(org_dir_string: &str) -> Vec<String> {
     }
     files
 }
+
+pub fn is_wsl() -> bool {
+    if let Ok(info) = nix::sys::utsname::uname() {
+        let release = info.release().to_string_lossy().to_string();
+        return release.find("WSL").is_some();
+    };
+
+    false
+}

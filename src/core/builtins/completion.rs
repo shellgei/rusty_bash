@@ -63,14 +63,18 @@ fn replace_args(args: &mut Vec<String>) -> bool {
 }
 
 fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
+
     let mut comlist = HashSet::new();
     for path in core.data.get_param("PATH").to_string().split(":") {
-        for file in utils::files_in_dir(path).iter() {
-            if ! Path::new(&(path.to_owned() + "/" + file)).executable() {
+        if utils::is_wsl() && path.starts_with("/mnt") {
+            continue;
+        }
+
+        for command in utils::files_in_dir(path).iter() {
+            if ! Path::new(&(path.to_owned() + "/" + command)).executable() {
                 continue;
             }
 
-            let command = file.split("/").last().map(|s| s.to_string()).unwrap();
             if command.starts_with(target) {
                 comlist.insert(command.clone());
             }
