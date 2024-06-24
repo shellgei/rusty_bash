@@ -5,10 +5,10 @@ use std::fs::DirEntry;
 use std::path::Path;
 use super::glob;
 
-pub fn files(org_dir_string: &str) -> Vec<String> {
-    let readdir = match org_dir_string {
-        ""   => Path::new(".").read_dir(),
-        dir  => Path::new(dir).read_dir(),
+pub fn files(dir: &str) -> Vec<String> {
+    let readdir = match dir {
+        "" => Path::new(".").read_dir(),
+        d  => Path::new(d).read_dir(),
     };
 
     let to_str = |p: DirEntry| p.file_name().to_string_lossy().to_string();
@@ -19,21 +19,17 @@ pub fn files(org_dir_string: &str) -> Vec<String> {
     }
 }
 
-pub fn glob(dir_str: &str, glob_str: &str) -> Vec<String> {
-    if glob_str == "" || glob_str == "." || glob_str == ".." {
-        return vec![dir_str.to_string() + glob_str + "/"];
+pub fn glob(dir: &str, glob: &str) -> Vec<String> {
+    if glob == "" || glob == "." || glob == ".." {
+        return vec![dir.to_string() + glob + "/"];
     }
 
-    let mut fs = files(dir_str);
+    let mut fs = files(dir);
     fs.append( &mut vec![".".to_string(), "..".to_string()] );
 
-    let match_condition = |f: &String| {
-        ( ! f.starts_with(".") || glob_str.starts_with(".") )
-        && glob::compare(f, glob_str) 
-    };
+    let make_path = |f| dir.to_owned() + f + "/";
+    let compare = |f: &String| ( ! f.starts_with(".") || glob.starts_with(".") )
+                            && glob::compare(f, glob);
 
-    fs.iter()
-      .filter(|f| match_condition(f) )
-      .map(|f| dir_str.to_owned() + &f + "/")
-      .collect()
+    fs.iter().filter(|f| compare(f) ).map(|f| make_path(f) ).collect()
 }
