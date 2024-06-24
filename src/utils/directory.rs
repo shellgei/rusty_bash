@@ -1,67 +1,50 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::fs;
+use std::fs::{DirEntry, ReadDir};
 use std::path::Path;
 use super::glob;
 
-pub fn files(org_dir_string: &str) -> Vec<String> {
-    let dir = match org_dir_string {
-        ""  => ".",
-        org => org, 
-    };
-
-    if ! Path::new(dir).is_dir() {
-        return vec![];
+fn to_readdir(dir: &str) -> Result<ReadDir, std::io::Error> {
+    match dir {
+        "" => Path::new(".").read_dir(),
+        _  => Path::new(dir).read_dir(),
     }
-    let readdir = match fs::read_dir(dir) {
-        Ok(rd) => rd,
-        _      => return vec![],
-    };
-
-    let mut files = vec![];
-    for entry in readdir {
-        if let Ok(f) = entry {
-            files.push(f.file_name().to_string_lossy().to_string());
-        } 
-    }
-    files
 }
 
-pub fn glob(org_dir_string: &str, glob_for_dir: &str) -> Vec<String> {
-    let mut ans = vec![];
-    if glob_for_dir == "" || glob_for_dir == "." || glob_for_dir == ".." {
-        return vec![org_dir_string.to_string() + glob_for_dir + "/"];
-    }
+fn dentry_to_string(p: &DirEntry) -> String {
+    p.file_name().to_string_lossy().to_string()
+}
 
-    let dir = match org_dir_string {
-        ""  => ".",
-        org => org, 
-    };
-
-    if ! Path::new(dir).is_dir() {
-        return vec![];
-    }
-    let readdir = match fs::read_dir(dir) {
+pub fn files(org_dir_string: &str) -> Vec<String> {
+    let readdir = match to_readdir(org_dir_string) {
         Ok(rd) => rd,
         _      => return vec![],
     };
 
-    let mut files = vec![".".to_string(), "..".to_string()];
-    for entry in readdir {
-        if let Ok(f) = entry {
-            files.push( f.file_name().to_string_lossy().to_string() );
-        } 
-    }
-    for f in files {
-        if f.starts_with(".") && ! glob_for_dir.starts_with(".") {
-            continue;
-        }
+    readdir.map(|e| dentry_to_string(&e.unwrap()) ).collect()
+}
 
-        if glob::compare(&f, glob_for_dir) {
-            ans.push(org_dir_string.to_owned() + &f + "/");
-        }
+pub fn glob(dir_str: &str, glob_str: &str) -> Vec<String> {
+    if glob_str == "" || glob_str == "." || glob_str == ".." {
+        return vec![dir_str.to_string() + glob_str + "/"];
     }
 
-    ans
+    let readdir = match to_readdir(dir_str) {
+        Ok(rd) => rd,
+        _      => return vec![],
+    };
+
+    let mut files = readdir.map(|e| dentry_to_string(&e.unwrap()) )
+                           .collect::<Vec<String>>();
+    files.append( &mut vec![".".to_string(), "..".to_string()] );
+
+    let match_condition = |f: &String| {
+        ( ! f.starts_with(".") || glob_str.starts_with(".") )
+        && glob::compare(f, glob_str) 
+    };
+
+    files.iter()
+        .filter(|f| match_condition(f) )
+        .map(|f| dir_str.to_owned() + &f + "/").collect()
 }
