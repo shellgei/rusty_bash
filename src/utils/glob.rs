@@ -395,20 +395,14 @@ pub fn glob_in_dir(org_dir_string: &str, glob_for_dir: &str) -> Vec<String> {
         } 
     }
     for f in files {
-        if let Some(a) = compare_file(&f, org_dir_string, glob_for_dir) {
-            ans.push(a);
+        if f.starts_with(".") && ! glob_for_dir.starts_with(".") {
+            continue;
+        }
+
+        if compare(&f, glob_for_dir) {
+            ans.push(org_dir_string.to_owned() + &f + "/");
         }
     }
 
     ans
-}
-
-fn compare_file(filename: &String, cand: &str, glob_elem: &str) -> Option<String> {
-    if compare(&filename, &glob_elem) {
-        if ! filename.starts_with(".") || glob_elem.starts_with(".") {
-            return Some(cand.to_owned() + &filename + "/");
-        }
-    }
-
-    None
 }
