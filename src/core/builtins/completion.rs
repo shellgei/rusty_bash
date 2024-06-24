@@ -29,8 +29,13 @@ fn expand(path: &str) -> Vec<String> {
         return vec![];
     }
 
+    let readdir = match fs::read_dir(dir) {
+        Ok(rd) => rd,
+        _      => return vec![],
+    };
+
     let mut ans = vec![];
-    for e in fs::read_dir(dir).unwrap() {
+    for e in readdir {
         let p = match e {
             Ok(p) => p.path(),
             _ => continue,
@@ -56,20 +61,6 @@ fn expand(path: &str) -> Vec<String> {
 
     ans
 }
-
-/*
-fn to_str(path :&Result<PathBuf, GlobError>) -> String {
-    match path {
-        Ok(p) => {
-            let mut s = p.to_string_lossy().to_string();
-            if p.is_dir() && s.chars().last() != Some('/') {
-                s.push('/');
-            }
-            s
-        },
-        _ => "".to_string(),
-    }
-}*/
 
 pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut path = match args.len() {
