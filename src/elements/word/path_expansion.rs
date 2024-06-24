@@ -3,8 +3,6 @@
 
 use crate::elements::word::Word;
 use crate::utils::glob;
-use std::fs;
-use std::path::Path;
 use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
@@ -33,7 +31,7 @@ fn expand(globstr: &str) -> Vec<String> {
 
     for glob_elem in globstr.split("/") {
         for cand in ans_cands {
-            tmp_ans_cands.extend( match_files(&cand, &glob_elem) );
+            tmp_ans_cands.extend( glob::glob_in_dir(&cand, &glob_elem) );
         }
         ans_cands = tmp_ans_cands.clone();
         tmp_ans_cands.clear();
@@ -42,50 +40,6 @@ fn expand(globstr: &str) -> Vec<String> {
     ans_cands.iter_mut().for_each(|e| {e.pop();} );
     ans_cands.sort();
     ans_cands
-}
-
-fn match_files(cand: &str, glob_elem: &str) -> Vec<String> {
-    let mut ans = vec![];
-    if glob_elem == "" || glob_elem == "." || glob_elem == ".." {
-        return vec![cand.to_string() + glob_elem + "/"];
-    }
-
-    let dir = match cand {
-        "" => ".",
-        x  => x, 
-    };
-
-    if ! Path::new(dir).is_dir() {
-        return vec![];
-    }
-    let readdir = match fs::read_dir(dir) {
-        Ok(rd) => rd,
-        _      => return vec![],
-    };
-
-    let mut files = vec![".".to_string(), "..".to_string()];
-    for entry in readdir {
-        if let Ok(f) = entry {
-            files.push( f.file_name().to_string_lossy().to_string() );
-        } 
-    }
-    for f in files {
-        if let Some(a) = comp(&f, cand, glob_elem) {
-            ans.push(a);
-        }
-    }
-
-    ans
-}
-
-fn comp(filename: &String, cand: &str, glob_elem: &str) -> Option<String> {
-    if glob::compare(&filename, &glob_elem) {
-        if ! filename.starts_with(".") || glob_elem.starts_with(".") {
-            return Some(cand.to_owned() + &filename + "/");
-        }
-    }
-
-    None
 }
 
 fn rewrite(word: &mut Word, path: &str) -> Word {

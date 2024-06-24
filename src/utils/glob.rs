@@ -1,6 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use std::fs;
+use std::path::Path;
+
 #[derive(Debug)]
 enum Wildcard {
     Normal(String),
@@ -364,4 +367,48 @@ fn consume(remaining: &mut String, cutpos: usize) -> String {
     *remaining = remaining[cutpos..].to_string();
 
     cut
+}
+
+pub fn glob_in_dir(org_dir_string: &str, glob_for_dir: &str) -> Vec<String> {
+    let mut ans = vec![];
+    if glob_for_dir == "" || glob_for_dir == "." || glob_for_dir == ".." {
+        return vec![org_dir_string.to_string() + glob_for_dir + "/"];
+    }
+
+    let dir = match org_dir_string {
+        ""  => ".",
+        org => org, 
+    };
+
+    if ! Path::new(dir).is_dir() {
+        return vec![];
+    }
+    let readdir = match fs::read_dir(dir) {
+        Ok(rd) => rd,
+        _      => return vec![],
+    };
+
+    let mut files = vec![".".to_string(), "..".to_string()];
+    for entry in readdir {
+        if let Ok(f) = entry {
+            files.push( f.file_name().to_string_lossy().to_string() );
+        } 
+    }
+    for f in files {
+        if let Some(a) = compare_file(&f, org_dir_string, glob_for_dir) {
+            ans.push(a);
+        }
+    }
+
+    ans
+}
+
+fn compare_file(filename: &String, cand: &str, glob_elem: &str) -> Option<String> {
+    if compare(&filename, &glob_elem) {
+        if ! filename.starts_with(".") || glob_elem.starts_with(".") {
+            return Some(cand.to_owned() + &filename + "/");
+        }
+    }
+
+    None
 }
