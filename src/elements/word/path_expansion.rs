@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::word::Word;
-use crate::utils::glob;
+use crate::utils;
 use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
@@ -33,7 +33,7 @@ fn expand(globstr: &str) -> Vec<String> {
 
     for glob_elem in globstr.split("/") {
         for cand in ans_cands {
-            tmp_ans_cands.extend( glob::glob_in_dir(&cand, &glob_elem) );
+            tmp_ans_cands.extend( utils::glob_in_dir(&cand, &glob_elem) );
         }
         ans_cands = tmp_ans_cands.clone();
         tmp_ans_cands.clear();

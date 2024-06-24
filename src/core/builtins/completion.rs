@@ -4,7 +4,6 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
 use crate::utils;
-use crate::utils::glob;
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
@@ -38,7 +37,7 @@ pub fn compgen_f(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
         return files.iter().map(|f| dir.clone() + &f).collect();
     }
 
-    let mut ans = glob::glob_in_dir(&dir, &(key + "*"));
+    let mut ans = utils::glob_in_dir(&dir, &(key + "*"));
     ans.iter_mut().for_each(|a| { a.pop(); } );
     ans.sort();
     ans
