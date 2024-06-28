@@ -251,7 +251,7 @@ impl ShellCore {
     }
 
     pub fn set_pgid(&self, pid: Pid, pgid: Pid) {
-        unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
+        let _ = unistd::setpgid(pid, pgid);
         if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
             self.set_foreground();
         }
