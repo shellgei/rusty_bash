@@ -1,8 +1,7 @@
 # Rusty Bash (a.k.a. sushi 🍣 shell)
 
-![image](https://github.com/shellgei/rusty_bash/assets/1232918/13f9ae0b-45b6-4b89-ab5d-b523aadd09bf)
 
-[![demo](http://img.youtube.com/vi/RL8M6PZfDYo/0.jpg)](https://www.youtube.com/watch?v=RL8M6PZfDYo)
+[![demo](https://github.com/shellgei/rusty_bash/assets/1232918/13f9ae0b-45b6-4b89-ab5d-b523aadd09bf)](https://www.youtube.com/watch?v=RL8M6PZfDYo)
 
 
 [![ubuntu-latest](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml)
