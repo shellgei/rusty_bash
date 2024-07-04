@@ -42,13 +42,11 @@ ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 
 ## For Contributors 
 
-Since the main branch must synchronize the articles, further developments are reflected in the following branches. We prepared dev-* branches for adding your codes with pull requests.
-* [dev-builtins](https://github.com/shellgei/rusty_bash/tree/dev-builtins): for builtin commands 
-* [dev-signal](https://github.com/shellgei/rusty_bash/tree/dev-signal): for development on signal
-* [dev-test](https://github.com/shellgei/rusty_bash/tree/dev-test): for development of a nice test system and test cases (we need more sophisticated test)
-* [dev-others](https://github.com/shellgei/rusty_bash/tree/dev-others): for development of other features
+Please give us issues and pull requrests in a way you think sensible. We do not have a rigid rule at this stage. 
 
-These dev-* branches will be merged to the main branch depending on the situation of the articles. You can also propose some dev-foobar branches. 
+### memo (20240704)
+
+The dev-* branches are deprecated since the main branch is not synchronized to the articles any more. 
 
 ## List of Features
 
