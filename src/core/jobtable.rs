@@ -147,6 +147,12 @@ impl JobEntry {
             _ => return,
         }
     }
+
+    pub fn send_cont(&mut self) {
+        for pid in &self.pids {
+            let _ = signal::kill(*pid, signal::SIGCONT);            
+        }
+    }
 }
 
 impl ShellCore {

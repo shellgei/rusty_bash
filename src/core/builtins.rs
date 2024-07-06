@@ -5,7 +5,7 @@
 mod cd;
 pub mod completion;
 mod history;
-mod jobs;
+mod job_commands;
 mod local;
 mod pwd;
 mod read;
@@ -21,6 +21,7 @@ impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias);
+        self.builtins.insert("bg".to_string(), job_commands::bg);
         self.builtins.insert("break".to_string(), return_break::break_);
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("compgen".to_string(), completion::compgen);
@@ -28,7 +29,7 @@ impl ShellCore {
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("history".to_string(), history::history);
-        self.builtins.insert("jobs".to_string(), jobs::jobs);
+        self.builtins.insert("jobs".to_string(), job_commands::jobs);
         self.builtins.insert("local".to_string(), local::local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
