@@ -98,8 +98,14 @@ impl JobEntry {
 
     }
 
-    pub fn print(&self) {
-        println!("[{}]  {}     {}", self.id, &self.display_status, &self.text);
+    pub fn print(&self, priority: &Vec<usize>) {
+        if priority[0] == self.id {
+            println!("[{}]+  {}     {}", self.id, &self.display_status, &self.text);
+        }else if priority.len() > 1 && priority[1] == self.id {
+            println!("[{}]-  {}     {}", self.id, &self.display_status, &self.text);
+        }else {
+            println!("[{}]   {}     {}", self.id, &self.display_status, &self.text);
+        }
     }
 
     fn display_status_on_signal(signal: &signal::Signal, coredump: bool) -> String {
@@ -165,12 +171,15 @@ impl ShellCore {
     pub fn jobtable_print_status_change(&mut self) {
         for e in self.job_table.iter_mut() {
             if e.change {
-                e.print();
+                e.print(&self.job_table_priority);
                 e.change = false;
             }
         }
 
         self.job_table.retain(|e| still(&e.proc_statuses[0]) || e.display_status == "Stopped");
+
+        let ids = self.job_table.iter().map(|j| j.id).collect::<Vec<usize>>();
+        self.job_table_priority.retain(|id| ids.contains(id) );
     }
 
     pub fn generate_new_job_id(&self) -> usize {

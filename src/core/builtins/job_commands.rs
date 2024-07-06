@@ -12,7 +12,7 @@ pub fn bg(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 
 pub fn jobs(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     for job in core.job_table.iter() {
-        job.print();
+        job.print(&core.job_table_priority);
     }
     0
 }

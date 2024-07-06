@@ -70,6 +70,7 @@ impl Job {
         eprintln!("{}", &pids[0].unwrap().as_raw());
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
+        core.job_table_priority.insert(0, new_job_id);
         core.job_table.push(JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ],
                 &self.text, "Running", new_job_id));
 

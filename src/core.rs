@@ -38,6 +38,7 @@ pub struct ShellCore {
     pub return_flag: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
+    pub job_table_priority: Vec<usize>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
     pub real_time: TimeSpec, 
@@ -71,6 +72,7 @@ impl ShellCore {
             return_flag: false,
             tty_fd: None,
             job_table: vec![],
+            job_table_priority: vec![],
             current_dir: None,
             completion_functions: HashMap::new(),
             real_time: TimeSpec::new(0, 0),
