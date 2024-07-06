@@ -32,6 +32,17 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
     }
 }
 
+fn wait_block(pid: &Pid, status: &mut WaitStatus) {
+    let waitflags = WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
+
+    match waitpid(*pid, Some(waitflags)) {
+        Ok(s) => {
+            *status = s;
+        },
+        _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
+    }
+}
+
 fn still(status: &WaitStatus) -> bool {
     match &status {
         WaitStatus::StillAlive    => true,
@@ -53,11 +64,14 @@ impl JobEntry {
         }
     }
 
-    pub fn update_status(&mut self) {
+    pub fn update_status(&mut self, wait: bool) {
         let before = self.proc_statuses[0];
         for (status, pid) in self.proc_statuses.iter_mut().zip(&self.pids) {
             if still(status) {
-                wait_nonblock(pid, status);
+                match wait {
+                    true  => wait_block(pid, status),
+                    false => wait_nonblock(pid, status),
+                }
             }
         }
         self.change |= before != self.proc_statuses[0];
@@ -131,12 +145,20 @@ impl JobEntry {
             _ => return,
         }
     }
+
+    pub fn wait(&mut self) {
+    }
+
+    /*
+    pub fn get_pids(&self) -> Vec<Option<Pid>> {
+        self.pids.iter().map(|p| Some(p.clone())).collect::<Vec<Option<Pid>>>()
+    }*/
 }
 
 impl ShellCore {
     pub fn jobtable_check_status(&mut self) {
         for e in self.job_table.iter_mut() {
-            e.update_status();
+            e.update_status(false);
         }
     }
 

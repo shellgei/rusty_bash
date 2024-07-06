@@ -110,7 +110,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | enable | :no_good: | eval | :no_good: | exec | :no_good: |
 | fc | :no_good: | fg | :no_good: | getopts | :no_good: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
-| jobs | :no_good: | kill | :no_good: | let | :no_good: |
+| jobs | :construction: | kill | :no_good: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | read | :no_good: | readonly | :no_good: | return | :heavy_check_mark: |
@@ -118,7 +118,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
 | umask | :no_good: | unalias | :no_good: | unset | :no_good: |
-| wait | :no_good: | export | :no_good: | false | :heavy_check_mark: |
+| wait | :construction: | export | :no_good: | false | :heavy_check_mark: |
 
 ### beyond Bash
 

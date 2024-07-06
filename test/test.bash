@@ -1226,4 +1226,11 @@ res=$($com <<< 'echo あ い う | while read a b ; do echo $a ; echo $b ; done'
 [ "$res" == "あ
 い う" ] || err $LINENO
 
+### JOB TEST ###
+
+#res=$($com <<< 'sleep 5 | rev | cat & sleep 1 | killall -SIGSTOP cat & sleep 2 | jobs | grep Stopped ')
+
+#echo $res
+
+
 echo OK $0
