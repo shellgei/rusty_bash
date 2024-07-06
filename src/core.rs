@@ -117,8 +117,8 @@ impl ShellCore {
         self.data.flags.find(flag) != None 
     }
 
-    pub fn wait_process(&mut self, child: Pid) {
-    let waitflags = WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
+    pub fn wait_process(&mut self, child: Pid) -> bool {
+        let waitflags = WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
 
         let exit_status = match wait::waitpid(child, Some(waitflags)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
@@ -148,6 +148,7 @@ impl ShellCore {
             self.sigint.store(true, Relaxed);
         }
         self.data.set_layer_param("?", &exit_status.to_string(), 0); //追加
+        exit_status == 148
     } 
 
     fn set_foreground(&self) {
@@ -205,8 +206,9 @@ impl ShellCore {
         }
 
         let mut pipestatus = vec![];
+        let mut stopped = false;
         for pid in &pids {
-            self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
+            stopped |= self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
             pipestatus.push(self.data.get_param("?"));
         }
 
@@ -218,6 +220,10 @@ impl ShellCore {
 
         if exclamation {
             self.flip_exit_status();
+        }
+
+        if stopped {
+            eprintln!("STOP");
         }
     }
 
