@@ -42,12 +42,12 @@ fn still(status: &WaitStatus) -> bool {
 }
 
 impl JobEntry {
-    pub fn new(pids: Vec<Option<Pid>>, text: &str) -> JobEntry {
-        let len = pids.len();
+    pub fn new(pids: Vec<Option<Pid>>, statuses: &Vec<WaitStatus>, text: &str, status: &str) -> JobEntry {
         JobEntry {
             pids: pids.into_iter().flatten().collect(),
-            proc_statuses: vec![ WaitStatus::StillAlive; len ],
-            display_status: "Running".to_string(), 
+            //proc_statuses: vec![ WaitStatus::StillAlive; len ],
+            proc_statuses: statuses.to_vec(),
+            display_status: status.to_string(),
             text: text.to_string(),
             change: false,
         }
@@ -62,9 +62,24 @@ impl JobEntry {
         }
         self.change |= before != self.proc_statuses[0];
 
-        if self.change {
+        /* check stopped processes */
+        let mut stopped = false;
+        for s in &self.proc_statuses {
+            if let WaitStatus::Stopped(_, _) = s {
+                stopped = true;
+                break;
+            }
+        }
+
+        if stopped {
+            self.display_status = "Stopped".to_string();
+            return;
+        }
+
+        if ! stopped && self.display_status == "Stopped" || self.change {
             self.change_display_status(self.proc_statuses[0]);
         }
+
     }
 
     pub fn print(&self, id: usize) {
@@ -133,6 +148,6 @@ impl ShellCore {
             }
         }
 
-        self.job_table.retain(|e| still(&e.proc_statuses[0]));
+        self.job_table.retain(|e| still(&e.proc_statuses[0]) || e.display_status == "Stopped");
     }
 }

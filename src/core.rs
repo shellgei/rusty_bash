@@ -117,10 +117,11 @@ impl ShellCore {
         self.data.flags.find(flag) != None 
     }
 
-    pub fn wait_process(&mut self, child: Pid) -> bool {
+    pub fn wait_process(&mut self, child: Pid) -> WaitStatus {
         let waitflags = WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
+        let ws = wait::waitpid(child, Some(waitflags));
 
-        let exit_status = match wait::waitpid(child, Some(waitflags)) {
+        let exit_status = match ws {
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
             },
@@ -148,8 +149,8 @@ impl ShellCore {
             self.sigint.store(true, Relaxed);
         }
         self.data.set_layer_param("?", &exit_status.to_string(), 0); //追加
-        exit_status == 148
-    } 
+        ws.expect("SUSH INTERNAL ERROR: no wait status")
+    }
 
     fn set_foreground(&self) {
         let fd = match self.tty_fd.as_ref() {
@@ -194,7 +195,7 @@ impl ShellCore {
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>,
-                         exclamation: bool, time: bool) {
+                         exclamation: bool, time: bool) -> Vec<WaitStatus> {
         if pids.len() == 1 && pids[0] == None {
             if time {
                 self.show_time();
@@ -202,13 +203,15 @@ impl ShellCore {
             if exclamation {
                 self.flip_exit_status();
             }
-            return;
+            return vec![];
         }
 
         let mut pipestatus = vec![];
-        let mut stopped = false;
+        let mut ans = vec![];
         for pid in &pids {
-            stopped |= self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
+            let ws = self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
+            ans.push(ws);
+
             pipestatus.push(self.data.get_param("?"));
         }
 
@@ -222,9 +225,7 @@ impl ShellCore {
             self.flip_exit_status();
         }
 
-        if stopped {
-            eprintln!("STOP");
-        }
+        ans
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {

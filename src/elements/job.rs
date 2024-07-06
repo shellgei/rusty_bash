@@ -4,6 +4,7 @@
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
+use nix::sys::wait::WaitStatus;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
 
@@ -36,7 +37,15 @@ impl Job {
             if do_next {
                 core.jobtable_check_status();
                 let (pids, exclamation, time) = pipeline.exec(core, pgid);
-                core.wait_pipeline(pids, exclamation, time);
+                let waitstatuses = core.wait_pipeline(pids.clone(), exclamation, time);
+
+                for ws in &waitstatuses {
+                    if let WaitStatus::Stopped(_, _) = ws {
+                        let job = JobEntry::new(pids, &waitstatuses, &pipeline.text, "Stopped"); 
+                        core.job_table.push(job);
+                        break;
+                    }
+                }
             }
             do_next = (core.data.get_param("?") == "0") == (end == "&&");
         }
@@ -58,7 +67,8 @@ impl Job {
             vec![self.exec_fork_bg(core, pgid)]
         };
         eprintln!("{}", &pids[0].unwrap().as_raw());
-        core.job_table.push(JobEntry::new(pids, &self.text));
+        let len = pids.len();
+        core.job_table.push(JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ], &self.text, "Running"));
 
         core.tty_fd = backup;
     }
