@@ -8,6 +8,7 @@ use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
 
 #[derive(Debug)]
 pub struct JobEntry {
+    id: usize,
     pids: Vec<Pid>,
     proc_statuses: Vec<WaitStatus>,
     display_status: String,
@@ -53,10 +54,11 @@ fn still(status: &WaitStatus) -> bool {
 }
 
 impl JobEntry {
-    pub fn new(pids: Vec<Option<Pid>>, statuses: &Vec<WaitStatus>, text: &str, status: &str) -> JobEntry {
+    pub fn new(pids: Vec<Option<Pid>>, statuses: &Vec<WaitStatus>,
+               text: &str, status: &str, id: usize) -> JobEntry {
         JobEntry {
+            id: id,
             pids: pids.into_iter().flatten().collect(),
-            //proc_statuses: vec![ WaitStatus::StillAlive; len ],
             proc_statuses: statuses.to_vec(),
             display_status: status.to_string(),
             text: text.to_string(),
@@ -96,8 +98,8 @@ impl JobEntry {
 
     }
 
-    pub fn print(&self, id: usize) {
-        println!("[{}]  {}     {}", id+1, &self.display_status, &self.text);
+    pub fn print(&self) {
+        println!("[{}]  {}     {}", self.id, &self.display_status, &self.text);
     }
 
     fn display_status_on_signal(signal: &signal::Signal, coredump: bool) -> String {
@@ -145,14 +147,6 @@ impl JobEntry {
             _ => return,
         }
     }
-
-    pub fn wait(&mut self) {
-    }
-
-    /*
-    pub fn get_pids(&self) -> Vec<Option<Pid>> {
-        self.pids.iter().map(|p| Some(p.clone())).collect::<Vec<Option<Pid>>>()
-    }*/
 }
 
 impl ShellCore {
@@ -163,13 +157,20 @@ impl ShellCore {
     }
 
     pub fn jobtable_print_status_change(&mut self) {
-        for (i, e) in self.job_table.iter_mut().enumerate() {
+        for e in self.job_table.iter_mut() {
             if e.change {
-                e.print(i);
+                e.print();
                 e.change = false;
             }
         }
 
         self.job_table.retain(|e| still(&e.proc_statuses[0]) || e.display_status == "Stopped");
+    }
+
+    pub fn generate_new_job_id(&self) -> usize {
+        match self.job_table.last() {
+            None      => 1,
+            Some(job) => job.id + 1,
+        }
     }
 }

@@ -41,7 +41,8 @@ impl Job {
 
                 for ws in &waitstatuses {
                     if let WaitStatus::Stopped(_, _) = ws {
-                        let job = JobEntry::new(pids, &waitstatuses, &pipeline.text, "Stopped"); 
+                        let new_job_id = core.generate_new_job_id();
+                        let job = JobEntry::new(pids, &waitstatuses, &pipeline.text, "Stopped", new_job_id); 
                         core.job_table.push(job);
                         break;
                     }
@@ -68,7 +69,9 @@ impl Job {
         };
         eprintln!("{}", &pids[0].unwrap().as_raw());
         let len = pids.len();
-        core.job_table.push(JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ], &self.text, "Running"));
+        let new_job_id = core.generate_new_job_id();
+        core.job_table.push(JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ],
+                &self.text, "Running", new_job_id));
 
         core.tty_fd = backup;
     }
