@@ -14,12 +14,38 @@ fn id_to_job(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
     None
 }
 
-pub fn bg(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
-    if core.job_table_priority.len() == 0 {
-        return 1;
+fn arg_to_id(s: &str, priority: &Vec<usize>) -> usize {
+    if s == "%+" {
+        return match priority.len() {
+            0 => 0, 
+            _ => priority[0],
+        };
     }
 
-    match id_to_job(core.job_table_priority[0], &mut core.job_table) {
+    if s == "%-" {
+        return match priority.len() {
+            0 => 0, 
+            1 => 0, 
+            _ => priority[1],
+        };
+    }
+
+    0
+}
+
+pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let id = if args.len() == 1 {
+        if core.job_table_priority.len() == 0 {
+            return 1;
+        }
+        core.job_table_priority[0]
+    }else if args.len() == 2 {
+        arg_to_id(&args[1], &core.job_table_priority)
+    }else{
+        return 1;
+    };
+
+    match id_to_job(id, &mut core.job_table) {
         Some(job) => job.send_cont(),
         _ => return 1, 
     }
