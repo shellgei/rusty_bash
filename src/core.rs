@@ -81,6 +81,7 @@ impl ShellCore {
         core.set_initial_parameters();
         core.set_builtins();
         ignore_signal(Signal::SIGPIPE);
+        ignore_signal(Signal::SIGTSTP);
 
         if unistd::isatty(0) == Ok(true) {
             const V: &'static str = env!("CARGO_PKG_VERSION");
@@ -259,6 +260,7 @@ impl ShellCore {
 
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
         restore_signal(Signal::SIGINT);
+        restore_signal(Signal::SIGTSTP);
         restore_signal(Signal::SIGPIPE);
 
         self.is_subshell = true;
