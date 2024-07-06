@@ -5,6 +5,7 @@
 mod cd;
 pub mod completion;
 mod history;
+mod jobs;
 mod local;
 mod pwd;
 mod read;
@@ -26,6 +27,7 @@ impl ShellCore {
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("history".to_string(), history::history);
+        self.builtins.insert("jobs".to_string(), jobs::jobs);
         self.builtins.insert("local".to_string(), local::local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
