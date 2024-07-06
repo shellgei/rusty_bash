@@ -8,7 +8,7 @@ use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
 
 #[derive(Debug)]
 pub struct JobEntry {
-    id: usize,
+    pub id: usize,
     pids: Vec<Pid>,
     proc_statuses: Vec<WaitStatus>,
     display_status: String,
