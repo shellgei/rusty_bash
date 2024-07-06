@@ -13,7 +13,7 @@ use std::{io, env, path, process};
 use nix::{fcntl, unistd};
 use nix::sys::{signal, wait};
 use nix::sys::signal::{Signal, SigHandler};
-use nix::sys::wait::WaitStatus;
+use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
@@ -117,13 +117,22 @@ impl ShellCore {
     }
 
     pub fn wait_process(&mut self, child: Pid) {
-        let exit_status = match wait::waitpid(child, None) {
+    let waitflags = WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
+
+        let exit_status = match wait::waitpid(child, Some(waitflags)) {
             Ok(WaitStatus::Exited(_pid, status)) => {
                 status
             },
-            Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
+            Ok(WaitStatus::Signaled(pid, signal, coredump)) => {
+                match coredump {
+                    true  => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
+                    false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
+                }
                 128+signal as i32
+            },
+            Ok(WaitStatus::Stopped(pid, signal)) => {
+                eprintln!("Stopped Pid: {:?}, Signal: {:?}", pid, signal);
+                148
             },
             Ok(unsupported) => {
                 eprintln!("Unsupported: {:?}", unsupported);
