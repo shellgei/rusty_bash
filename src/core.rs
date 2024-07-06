@@ -11,7 +11,8 @@ use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
-use nix::sys::{signal, wait};
+use nix::sys::{resource, signal, wait};
+use nix::sys::resource::UsageWho;
 use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::sys::time::{TimeSpec, TimeVal};
@@ -175,11 +176,10 @@ impl ShellCore {
     }
 
     fn show_time(&self) {
-           // let user_end_time = time::clock_gettime(ClockId::CLOCK_PROCESS_CPUTIME_ID).unwrap();
             let real_end_time = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
 
-            let self_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_SELF).unwrap();
-            let children_usage = nix::sys::resource::getrusage(nix::sys::resource::UsageWho::RUSAGE_CHILDREN).unwrap();
+            let self_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
+            let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
 
             let real_diff = real_end_time - self.real_time;
             eprintln!("\nreal\t{}m{}.{:06}s", real_diff.tv_sec()/60,
