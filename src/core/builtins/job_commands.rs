@@ -30,6 +30,10 @@ fn arg_to_id(s: &str, priority: &Vec<usize>) -> usize {
         };
     }
 
+    if s.starts_with("%") {
+        return s[1..].parse::<usize>().unwrap_or(0);
+    }
+
     0
 }
 
