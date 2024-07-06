@@ -71,35 +71,50 @@ impl JobEntry {
         println!("[{}]  {}     {}", id+1, &self.display_status, &self.text);
     }
 
+    fn display_status_on_signal(signal: &signal::Signal, coredump: bool) -> String {
+        let coredump_msg = match coredump {
+            true  => "    (core dumped)",
+            false => "",
+        };
+
+        let msg = match signal {
+            signal::SIGHUP    => "Hangup",
+            signal::SIGINT    => "Interrupt",
+            signal::SIGQUIT   => "Quit",
+            signal::SIGILL    => "Illeagal instruction",
+            signal::SIGTRAP   => "Trace/breakpoint trap",
+            signal::SIGABRT   => "Aborted",
+            signal::SIGBUS    => "Bus error",
+            signal::SIGFPE    => "Floating point exception",
+            signal::SIGKILL   => "Killed",
+            signal::SIGUSR1   => "User defined signal 1",
+            signal::SIGSEGV   => "Segmentation fault",
+            signal::SIGUSR2   => "User defined signal 2",
+            signal::SIGPIPE   => "Broken pipe",
+            signal::SIGALRM   => "Alarm clock",
+            signal::SIGTERM   => "Terminated",
+            signal::SIGSTKFLT => "Stack fault",
+            signal::SIGXCPU   => "CPU time limit exceeded",
+            signal::SIGXFSZ   => "File size limit exceeded",
+            signal::SIGVTALRM => "Virtual timer expired",
+            signal::SIGPROF   => "Profiling timer expired",
+            signal::SIGPWR    => "Power failure",
+            signal::SIGSYS    => "Bad system call",
+            _ => "",
+        };
+
+        (msg.to_owned() + coredump_msg).to_string()
+    }
+
     fn change_display_status(&mut self, after: WaitStatus) {
         self.display_status = match after {
-            WaitStatus::Exited(_, _)                     => "Done",
-            WaitStatus::Stopped(_, _)                    => "Stopped",
-            WaitStatus::Continued(_)                     => "Running",
-            WaitStatus::Signaled(_, signal::SIGHUP, _)   => "Hangup",
-            WaitStatus::Signaled(_, signal::SIGINT, _)   => "Interrupt",
-            WaitStatus::Signaled(_, signal::SIGQUIT, _)  => "Quit",
-            WaitStatus::Signaled(_, signal::SIGILL, _)   => "Illeagal instruction",
-            WaitStatus::Signaled(_, signal::SIGTRAP, _)  => "Trace/breakpoint trap",
-            WaitStatus::Signaled(_, signal::SIGABRT, _)  => "Aborted",
-            WaitStatus::Signaled(_, signal::SIGBUS, _)   => "Bus error",
-            WaitStatus::Signaled(_, signal::SIGFPE, _)   => "Floating point exception",
-            WaitStatus::Signaled(_, signal::SIGKILL, _)  => "Killed",
-            WaitStatus::Signaled(_, signal::SIGUSR1, _)  => "User defined signal 1",
-            WaitStatus::Signaled(_, signal::SIGSEGV, _)  => "Segmentation fault",
-            WaitStatus::Signaled(_, signal::SIGUSR2, _)  => "User defined signal 2",
-            WaitStatus::Signaled(_, signal::SIGPIPE, _)  => "Broken pipe",
-            WaitStatus::Signaled(_, signal::SIGALRM, _)  => "Alarm clock",
-            WaitStatus::Signaled(_, signal::SIGTERM, _)  => "Terminated",
-            WaitStatus::Signaled(_, signal::SIGSTKFLT, _)=> "Stack fault",
-            WaitStatus::Signaled(_, signal::SIGXCPU, _)  => "CPU time limit exceeded",
-            WaitStatus::Signaled(_, signal::SIGXFSZ, _)  => "File size limit exceeded",
-            WaitStatus::Signaled(_, signal::SIGVTALRM, _)=> "Virtual timer expired",
-            WaitStatus::Signaled(_, signal::SIGPROF, _)  => "Profiling timer expired",
-            WaitStatus::Signaled(_, signal::SIGPWR, _)   => "Power failure",
-            WaitStatus::Signaled(_, signal::SIGSYS, _)   => "Bad system call",
+            WaitStatus::Exited(_, _)                  => "Done".to_string(),
+            WaitStatus::Stopped(_, _)                 => "Stopped".to_string(),
+            WaitStatus::Continued(_)                  => "Running".to_string(),
+            WaitStatus::Signaled(_, signal, coredump) =>
+                Self::display_status_on_signal(&signal, coredump),
             _ => return,
-        }.to_string();
+        }
     }
 }
 
