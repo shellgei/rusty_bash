@@ -39,7 +39,7 @@ impl Job {
                 let (pids, exclamation, time) = pipeline.exec(core, pgid);
                 let waitstatuses = core.wait_pipeline(pids.clone(), exclamation, time);
 
-                if core.is_subshell {
+                if core.is_subshell || pids[0] == None {
                     continue;
                 }
 
