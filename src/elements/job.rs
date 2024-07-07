@@ -39,18 +39,17 @@ impl Job {
                 let (pids, exclamation, time) = pipeline.exec(core, pgid);
                 let waitstatuses = core.wait_pipeline(pids.clone(), exclamation, time);
 
-                if core.is_subshell || pids[0] == None {
-                    continue;
-                }
-
-                for ws in &waitstatuses {
-                    if let WaitStatus::Stopped(_, _) = ws {
-                        let new_job_id = core.generate_new_job_id();
-                        let job = JobEntry::new(pids, &waitstatuses, &pipeline.text, "Stopped", new_job_id); 
-                        core.job_table_priority.insert(0, new_job_id);
-                        core.job_table.push(job);
-                        break;
+                if ! (core.is_subshell || pids.len() == 0 || pids[0] == None) {
+                    for ws in &waitstatuses {
+                        if let WaitStatus::Stopped(_, _) = ws {
+                            let new_job_id = core.generate_new_job_id();
+                            let job = JobEntry::new(pids, &waitstatuses, &pipeline.text, "Stopped", new_job_id); 
+                            core.job_table_priority.insert(0, new_job_id);
+                            core.job_table.push(job);
+                            break;
+                        }
                     }
+
                 }
             }
             do_next = (core.data.get_param("?") == "0") == (end == "&&");
