@@ -130,12 +130,12 @@ impl JobEntry {
             signal::SIGPIPE   => "Broken pipe",
             signal::SIGALRM   => "Alarm clock",
             signal::SIGTERM   => "Terminated",
-            signal::SIGSTKFLT => "Stack fault",
+          //  signal::SIGSTKFLT => "Stack fault",           not in macOS
             signal::SIGXCPU   => "CPU time limit exceeded",
             signal::SIGXFSZ   => "File size limit exceeded",
             signal::SIGVTALRM => "Virtual timer expired",
             signal::SIGPROF   => "Profiling timer expired",
-            signal::SIGPWR    => "Power failure",
+          //  signal::SIGPWR    => "Power failure",         not in macOS
             signal::SIGSYS    => "Bad system call",
             _ => "",
         };
