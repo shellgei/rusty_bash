@@ -92,7 +92,6 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         Ok(_) => {
             eprintln!("{}", &job.text);
             job.send_cont();
-            job.update_status(false);
             job.update_status(true);
             let mypgid = unistd::getpgid(Some(Pid::from_raw(0)))
                    .expect("sush(fatal): cannot get pgid");

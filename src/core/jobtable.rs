@@ -35,9 +35,7 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
 }
 
 fn wait_block(pid: &Pid, status: &mut WaitStatus) {
-    let waitflags = WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
-
-    match waitpid(*pid, Some(waitflags)) {
+    match waitpid(*pid, Some(WaitPidFlag::WUNTRACED)) {
         Ok(s) => {
             *status = s;
         },
