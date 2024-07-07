@@ -77,12 +77,12 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    let job_ref = match id_to_job(id, &mut core.job_table) {
+    let job = match id_to_job(id, &mut core.job_table) {
         Some(job) => job,
         _ => return 1, 
     };
 
-    let pgid = job_ref.solve_pgid();
+    let pgid = job.solve_pgid();
     if pgid.as_raw() == 0 {
         return 1;
     }
@@ -90,8 +90,10 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     ignore_signal(Signal::SIGTTOU);
     match unistd::tcsetpgrp(fd, pgid) {
         Ok(_) => {
-            eprintln!("{}", &job_ref.text);
-            job_ref.update_status(true);
+            eprintln!("{}", &job.text);
+            job.send_cont();
+            job.update_status(false);
+            job.update_status(true);
             let mypgid = unistd::getpgid(Some(Pid::from_raw(0)))
                    .expect("sush(fatal): cannot get pgid");
             let _ = unistd::tcsetpgrp(fd, mypgid);
