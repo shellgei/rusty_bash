@@ -1228,9 +1228,13 @@ res=$($com <<< 'echo あ い う | while read a b ; do echo $a ; echo $b ; done'
 
 ### JOB TEST ###
 
-#res=$($com <<< 'sleep 5 | rev | cat & sleep 1 | killall -SIGSTOP cat & sleep 2 | jobs | grep Stopped ')
+res=$($com <<< 'sleep 1 & sleep 2 & sleep 3 & jobs')
+echo "$res" | grep -F '[1] ' || err $LINENO
+echo "$res" | grep -F '[2]- ' || err $LINENO
+echo "$res" | grep -F '[3]+ ' || err $LINENO
 
-#echo $res
+res=$($com <<< 'sleep 5 | rev | cat & sleep 1 ; killall -SIGSTOP cat ; jobs')
+echo "$res" | grep Stopped || err $LINENO
 
 
 echo OK $0
