@@ -85,6 +85,7 @@ impl ShellCore {
         core.set_builtins();
         ignore_signal(Signal::SIGPIPE);
         ignore_signal(Signal::SIGTSTP);
+        ignore_signal(Signal::SIGTTOU);
 
         if unistd::isatty(0) == Ok(true) {
             const V: &'static str = env!("CARGO_PKG_VERSION");

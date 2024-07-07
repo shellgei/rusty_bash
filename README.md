@@ -102,13 +102,13 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :no_good: |
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: |
 | shopt | :no_good: | : | :heavy_check_mark: | . | :no_good: | [ | :no_good: |
-| alias | :heavy_check_mark: | bg | :no_good: | bind | :no_good: |
+| alias | :heavy_check_mark: | bg | :construction: | bind | :no_good: |
 | break | :heavy_check_mark: | builtin | :no_good: | caller | :no_good: |
 | command | :no_good: | compgen | :construction: | complete | :construction: |
 | compopt | :no_good: | continue | :no_good: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :no_good: | exec | :no_good: |
-| fc | :no_good: | fg | :no_good: | getopts | :no_good: |
+| fc | :no_good: | fg | :construction: | getopts | :no_good: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
 | jobs | :construction: | kill | :no_good: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
