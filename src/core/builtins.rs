@@ -27,6 +27,7 @@ impl ShellCore {
         self.builtins.insert("complete".to_string(), completion::complete);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
+        self.builtins.insert("fg".to_string(), job_commands::fg);
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
         self.builtins.insert("local".to_string(), local::local);
