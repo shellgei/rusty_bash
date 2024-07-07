@@ -34,10 +34,17 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
     }
 }
 
-fn wait_block(pid: &Pid, status: &mut WaitStatus) {
+fn wait_block(pid: &Pid, status: &mut WaitStatus) -> i32 {
     match waitpid(*pid, Some(WaitPidFlag::WUNTRACED)) {
         Ok(s) => {
             *status = s;
+
+            return match status {
+                WaitStatus::Exited(_, es) => *es,
+                WaitStatus::Stopped(_, _) => 148,
+                WaitStatus::Signaled(_, sig, _) => *sig as i32 + 128,
+                _ => 1,
+            };
         },
         _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
     }
@@ -65,12 +72,13 @@ impl JobEntry {
         }
     }
 
-    pub fn update_status(&mut self, wait: bool) {
+    pub fn update_status(&mut self, wait: bool) -> i32 {
+        let mut exit_status = 0;
         let before = self.proc_statuses[0];
         for (status, pid) in self.proc_statuses.iter_mut().zip(&self.pids) {
             if still(status) {
                 match wait {
-                    true  => wait_block(pid, status),
+                    true  => exit_status = wait_block(pid, status),
                     false => wait_nonblock(pid, status),
                 }
             }
@@ -88,13 +96,14 @@ impl JobEntry {
 
         if stopped {
             self.display_status = "Stopped".to_string();
-            return;
+            return 148;
         }
 
         if ! stopped && self.display_status == "Stopped" || self.change {
             self.change_display_status(self.proc_statuses[0]);
         }
 
+        exit_status
     }
 
     pub fn print(&self, priority: &Vec<usize>) {
