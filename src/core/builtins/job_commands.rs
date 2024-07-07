@@ -3,6 +3,10 @@
 
 use crate::ShellCore;
 use crate::core::JobEntry;
+use crate::core::{ignore_signal, restore_signal};
+use nix::sys::signal::Signal;
+use nix::unistd;
+use nix::unistd::Pid;
 
 fn id_to_job(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
     for job in jobs.iter_mut() {
@@ -53,6 +57,51 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         Some(job) => job.send_cont(),
         _ => return 1, 
     }
+    0
+}
+
+pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let fd = match core.tty_fd.as_ref() {
+        Some(fd) => fd,
+        _        => return 1,
+    };
+
+    let id = if args.len() == 1 {
+        if core.job_table_priority.len() == 0 {
+            return 1;
+        }
+        core.job_table_priority[0]
+    }else if args.len() == 2 {
+        arg_to_id(&args[1], &core.job_table_priority)
+    }else{
+        return 1;
+    };
+
+    let job_ref = match id_to_job(id, &mut core.job_table) {
+        Some(job) => job,
+        _ => return 1, 
+    };
+
+    let pgid = job_ref.solve_pgid();
+    if pgid.as_raw() == 0 {
+        return 1;
+    }
+
+    ignore_signal(Signal::SIGTTOU);
+    match unistd::tcsetpgrp(fd, pgid) {
+        Ok(_) => {
+            eprintln!("{}", &job_ref.text);
+            job_ref.update_status(true);
+            let mypgid = unistd::getpgid(Some(Pid::from_raw(0)))
+                   .expect("sush(fatal): cannot get pgid");
+            let _ = unistd::tcsetpgrp(fd, mypgid);
+        },
+        _ => {
+            restore_signal(Signal::SIGTTOU);
+            return 1;
+        },
+    }
+    restore_signal(Signal::SIGTTOU);
     0
 }
 

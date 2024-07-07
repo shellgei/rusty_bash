@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use nix::unistd;
 use nix::unistd::Pid;
 use nix::sys::signal;
 use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
@@ -12,7 +13,7 @@ pub struct JobEntry {
     pids: Vec<Pid>,
     proc_statuses: Vec<WaitStatus>,
     display_status: String,
-    text: String,
+    pub text: String,
     change: bool,
 }
 
@@ -158,6 +159,16 @@ impl JobEntry {
         for pid in &self.pids {
             let _ = signal::kill(*pid, signal::SIGCONT);            
         }
+    }
+
+    pub fn solve_pgid(&self) -> Pid {
+        for pid in &self.pids {
+            match unistd::getpgid(Some(*pid)) {
+                Ok(pgid) => return pgid, 
+                _ => {}, 
+            }
+        }
+        Pid::from_raw(0)
     }
 }
 
