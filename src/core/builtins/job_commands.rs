@@ -62,3 +62,20 @@ pub fn jobs(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     }
     0
 }
+
+pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() <= 1 {
+        for job in core.job_table.iter_mut() {
+            job.update_status(true);
+        }
+        return 0;
+    }
+
+    let id = arg_to_id(&args[1], &core.job_table_priority);
+    match id_to_job(id, &mut core.job_table) {
+        Some(job) => job.update_status(true),
+        _ => return 1, 
+    }
+
+    0
+}

@@ -13,7 +13,6 @@ pub mod set;
 mod source;
 mod return_break;
 mod utils;
-mod wait;
 
 use crate::ShellCore;
 
@@ -38,7 +37,7 @@ impl ShellCore {
         self.builtins.insert("source".to_string(), source::source);
         self.builtins.insert(".".to_string(), source::source);
         self.builtins.insert("true".to_string(), true_);
-        self.builtins.insert("wait".to_string(), wait::wait);
+        self.builtins.insert("wait".to_string(), job_commands::wait);
     }
 }
 
