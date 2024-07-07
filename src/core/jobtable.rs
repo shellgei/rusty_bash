@@ -164,7 +164,7 @@ impl JobEntry {
 
     pub fn send_cont(&mut self) {
         for pid in &self.pids {
-            let _ = signal::kill(*pid, signal::SIGCONT);            
+            let _ = signal::kill(Pid::from_raw(-1 * i32::from(*pid)), signal::SIGCONT);            
         }
     }
 

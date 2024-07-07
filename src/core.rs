@@ -120,8 +120,12 @@ impl ShellCore {
     }
 
     pub fn wait_process(&mut self, child: Pid) -> WaitStatus {
-        let waitflags = WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
-        let ws = wait::waitpid(child, Some(waitflags));
+        let waitflags = match self.is_subshell {
+            true  => None,
+            false => Some(WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED)
+        };
+
+        let ws = wait::waitpid(child, waitflags);
 
         let exit_status = match ws {
             Ok(WaitStatus::Exited(_pid, status)) => {
