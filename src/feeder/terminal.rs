@@ -32,10 +32,46 @@ struct Terminal {
     escape_at_completion: bool,
 }
 
+fn oct_string(s: &str) -> bool {
+    if s.chars().nth(0) != Some('\\') {
+        return false;
+    }
+
+    for i in 1..4 {
+        match s.chars().nth(i) {
+            Some(c) => {
+                if c < '0' || '9' < c {
+                    return false;
+                }
+            },
+            _ => return false,
+        }
+    }
+
+    true
+}
+
+fn oct_to_hex_in_str(from: &str) -> String {
+    let mut i = 0;
+    let mut pos = vec![];
+
+    for ch in from.chars() {
+        if oct_string(&from[i..]) {
+            pos.push(i);
+        }
+            
+        i += ch.len_utf8();
+    }
+
+    String::new()
+}
+
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let raw_prompt = core.data.get_param(ps);
         let ansi_on_prompt = raw_prompt.replace("\\033", "\x1b").replace("\\007", "\x07").to_string();
+        dbg!("{:?}", oct_to_hex_in_str(&raw_prompt));
+
         let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
         let prompt = replaced_prompt.replace("\\[", "").replace("\\]", "").to_string();
         print!("{}", prompt);
