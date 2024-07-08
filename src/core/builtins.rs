@@ -14,7 +14,7 @@ mod source;
 mod return_break;
 mod utils;
 
-use crate::ShellCore;
+use crate::{Feeder, Script, ShellCore};
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -25,6 +25,7 @@ impl ShellCore {
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
+        self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("fg".to_string(), job_commands::fg);
@@ -56,6 +57,20 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     0
+}
+
+pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut feeder = Feeder::new(&args[1..].join(" "));
+
+    match Script::parse(&mut feeder, core, false){
+        Some(mut s) => s.exec(core),
+        None        => {},
+    }
+
+    match core.data.get_param("?").parse::<i32>() {
+        Ok(es) => es,
+        _      => 1,
+    }
 }
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
