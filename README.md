@@ -107,7 +107,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | command | :no_good: | compgen | :construction: | complete | :construction: |
 | compopt | :no_good: | continue | :no_good: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
-| enable | :no_good: | eval | :no_good: | exec | :no_good: |
+| enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
 | fc | :no_good: | fg | :construction: | getopts | :no_good: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
 | jobs | :construction: | kill | :no_good: | let | :no_good: |
