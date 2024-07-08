@@ -81,6 +81,12 @@ b=$(cd ; compgen -f . | wc -l )
 res=$($com <<< 'cd ; compgen -f . | wc -l')
 [ "$res" = "$b" ] || err $LINENO
 
+res=$($com <<< 'eval "echo a" b')
+[ "$res" = "a b" ] || err $LINENO
+
+res=$($com <<< 'eval "(" echo abc ")" "|" rev')
+[ "$res" = "cba" ] || err $LINENO
+
 ### COMPOUND COMMAND TEST ###
 
 res=$($com <<< '(echo hoge; echo fuge)')
