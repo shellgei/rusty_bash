@@ -59,18 +59,26 @@ fn oct_to_hex_in_str(from: &str) -> String {
         if oct_string(&from[i..]) {
             pos.push(i);
         }
-            
         i += ch.len_utf8();
     }
 
-    String::new()
+    let mut prev = 0;
+    let mut ans = String::new();
+    for p in pos {
+        ans += &from[prev..p];
+        if let Ok(n) = u32::from_str_radix(&from[p+1..p+4], 8) {
+            ans += &char::from_u32(n).unwrap().to_string();
+        }
+        prev = p+4;
+    }
+    ans += &from[prev..];
+    ans
 }
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let raw_prompt = core.data.get_param(ps);
-        let ansi_on_prompt = raw_prompt.replace("\\033", "\x1b").replace("\\007", "\x07").to_string();
-        dbg!("{:?}", oct_to_hex_in_str(&raw_prompt));
+        let ansi_on_prompt = oct_to_hex_in_str(&raw_prompt);
 
         let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
         let prompt = replaced_prompt.replace("\\[", "").replace("\\]", "").to_string();
