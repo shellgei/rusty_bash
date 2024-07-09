@@ -90,6 +90,21 @@ res=$($com <<< 'eval "(" echo abc ")" "|" rev')
 res=$($com <<< 'A=aaa ; unset A ; echo $A')
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< 'A=aaa ; unset -f A ; echo $A')
+[ "$res" = "aaa" ] || err $LINENO
+
+res=$($com <<< 'A=aaa ; unset -v A ; echo $A')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A () { echo aaa ; } ; unset -v A ; A')
+[ "$res" = "aaa" ] || err $LINENO
+
+res=$($com <<< 'A () { echo aaa ; } ; unset -f A ; A')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A () { echo aaa ; } ; unset A ; A')
+[ "$res" = "" ] || err $LINENO
+
 ### COMPOUND COMMAND TEST ###
 
 res=$($com <<< '(echo hoge; echo fuge)')

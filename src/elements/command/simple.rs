@@ -91,19 +91,19 @@ impl SimpleCommand {
 
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => {
-                println!("sush: {}: Arg list too long", &self.args[0]);
+                eprintln!("sush: {}: Arg list too long", &self.args[0]);
                 process::exit(126)
             },
             Err(Errno::EACCES) => {
-                println!("sush: {}: Permission denied", &self.args[0]);
+                eprintln!("sush: {}: Permission denied", &self.args[0]);
                 process::exit(126)
             },
             Err(Errno::ENOENT) => {
-                println!("{}: command not found", &self.args[0]);
+                eprintln!("{}: command not found", &self.args[0]);
                 process::exit(127)
             },
             Err(err) => {
-                println!("Failed to execute. {:?}", err);
+                eprintln!("Failed to execute. {:?}", err);
                 process::exit(127)
             }
             _ => panic!("SUSH INTERNAL ERROR (never come here)")
