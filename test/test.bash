@@ -87,6 +87,9 @@ res=$($com <<< 'eval "echo a" b')
 res=$($com <<< 'eval "(" echo abc ")" "|" rev')
 [ "$res" = "cba" ] || err $LINENO
 
+res=$($com <<< 'A=aaa ; unset A ; echo $A')
+[ "$res" = "" ] || err $LINENO
+
 ### COMPOUND COMMAND TEST ###
 
 res=$($com <<< '(echo hoge; echo fuge)')

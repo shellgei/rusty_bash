@@ -117,7 +117,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | shift | :no_good: | suspend | :no_good: | test | :no_good: |
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
-| umask | :no_good: | unalias | :no_good: | unset | :no_good: |
+| umask | :no_good: | unalias | :no_good: | unset | :construction: |
 | wait | :construction: | export | :no_good: | false | :heavy_check_mark: |
 
 ### beyond Bash

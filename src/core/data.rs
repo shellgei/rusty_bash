@@ -157,6 +157,12 @@ impl Data {
         self.set_layer_param(key, val, 0);
     }
 
+    pub fn unset(&mut self, key: &str) {
+        for layer in &mut self.parameters {
+            layer.remove(key);
+        }
+    }
+
     pub fn set_local_param(&mut self, key: &str, val: &str) {
         let layer = self.parameters.len();
         self.set_layer_param(key, val, layer-1);
