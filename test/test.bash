@@ -43,6 +43,13 @@ res=$($com <<< '!' )
 res=$($com <<< 'echo ${A:-abc}' )
 [ "$res" = "abc" ] || err $LINENO
 
+res=$($com <<< 'echo ${A:-abc}; echo $A' )
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'echo ${A:=abc}; echo $A' )
+[ "$res" = "abc
+abc" ] || err $LINENO
+
 ### BUILTIN COMMAND TEST ###
 
 res=$($com <<< 'cd /; pwd')

@@ -82,6 +82,15 @@ impl BracedParam {
             if let Some(s) = self.default_value.eval_as_value(core) {
                 return s;
             }
+            return String::new();
+        }
+
+        if self.default_symbol == ":=" {
+            if let Some(s) = self.default_value.eval_as_value(core) {
+                core.data.set_param(&self.name, &s);
+                return s;
+            }
+            return String::new();
         }
 
         String::new()
