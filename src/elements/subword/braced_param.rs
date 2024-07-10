@@ -55,6 +55,11 @@ impl Subword for BracedParam {
             let value = core.data.get_param(&self.name);
             self.text = value.to_string();
         }
+
+        if self.text == "" {
+            self.text = self.replace_to_default(core);
+        }
+
         true
     }
 
@@ -72,7 +77,14 @@ impl BracedParam {
         }
     }
 
-    fn replace_to_default(&mut self) {
+    fn replace_to_default(&mut self, core: &mut ShellCore) -> String {
+        if self.default_symbol == ":-" {
+            if let Some(s) = self.default_value.eval_as_value(core) {
+                return s;
+            }
+        }
+
+        String::new()
     }
 
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

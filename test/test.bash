@@ -38,6 +38,11 @@ res=$($com <<< '! cd' )
 res=$($com <<< '!' )
 [ "$?" = "1" ] || err $LINENO
 
+### PARAMETER TEST ###
+
+res=$($com <<< 'echo ${A:-abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
 ### BUILTIN COMMAND TEST ###
 
 res=$($com <<< 'cd /; pwd')
