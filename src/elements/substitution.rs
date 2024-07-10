@@ -6,16 +6,6 @@ use crate::core::data::Value;
 use super::array::Array;
 use super::word::Word;
 
-/*
-#[derive(Debug, Clone)]
-pub enum Value {
-    None,
-    Single(Word),
-    EvaluatedSingle(String),
-    Array(Array),
-    EvaluatedArray(Vec<String>),
-}*/
-
 #[derive(Debug, Clone)]
 pub struct Substitution {
     pub text: String,

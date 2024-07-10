@@ -77,10 +77,10 @@ res=$($com <<< 'B=あ ; echo ${A:-$B
 def}' )
 [ "$res" = "あ def" ] || err $LINENO
 
-#res=$($com <<< 'B=あ ; echo ${A:-"$B
-#def"}' )
-#[ "$res" = "あ
-#def" ] || err $LINENO
+res=$($com <<< 'B=あ ; echo ${A:-"$B
+def"}' )
+[ "$res" = "あ
+def" ] || err $LINENO
 
 ### BUILTIN COMMAND TEST ###
 

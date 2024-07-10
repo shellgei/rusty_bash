@@ -10,7 +10,25 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
-    word.subwords.iter_mut().all(|w| w.substitute(core))
+    let ans = word.subwords.iter_mut().all(|w| w.substitute(core));
+
+    let mut pos = 0;
+    while pos < word.subwords.len() {
+        match word.subwords[pos].substitute2() {
+            Some(sw) => {
+                word.subwords.remove(pos);
+                for s in &sw.subwords {
+                    word.subwords.push(s.clone());
+                }
+                pos = sw.subwords.len() - 1;
+            },
+            _ => {},
+        }
+
+        pos += 1;
+    }
+
+    ans
 }
 
 fn connect_names(subwords: &mut [Box<dyn Subword>]) {

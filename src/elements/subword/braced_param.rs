@@ -39,7 +39,8 @@ fn is_param(s :&String) -> bool {
 }
 
 impl Subword for BracedParam {
-    fn get_text(&self) -> &str {&self.text.as_ref()}
+    fn get_text(&self) -> &str { &self.text.as_ref() }
+
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
@@ -66,6 +67,14 @@ impl Subword for BracedParam {
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
+
+    fn substitute2(&self) -> Option<Word> {
+        if self.default_symbol == "" || self.default_value.subwords.len() == 0 {
+            return None;
+        }
+
+        Some(self.default_value.clone())
+    }
 }
 
 impl BracedParam {
@@ -84,10 +93,13 @@ impl BracedParam {
             return true;
         }
 
-        let value = match self.default_value.eval_as_value(core) {
-                Some(s) => s,
-                _       => String::new(),
+        let word = match self.default_value.tilde_and_dollar_expansion(core) {
+                Some(w) => w,
+                _       => return false,
         };
+
+        let value = word.subwords.iter().map(|s| s.get_text()).collect();
+        self.default_value = word;
 
         if self.default_symbol == ":-" {
             self.text = value;
