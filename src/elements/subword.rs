@@ -23,7 +23,6 @@ use self::parameter::Parameter;
 use self::varname::VarName;
 use std::fmt;
 use std::fmt::Debug;
-use super::word::Word;
 
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -65,7 +64,7 @@ pub trait Subword {
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
-    fn substitute2(&self) -> Option<Word> {None}
+    fn substitute_replace(&self) -> Vec<Box<dyn Subword>> {vec![]}
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;

@@ -68,12 +68,12 @@ impl Subword for BracedParam {
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
-    fn substitute2(&self) -> Option<Word> {
+    fn substitute_replace(&self) -> Vec<Box<dyn Subword>> {
         if self.default_symbol == "" || self.default_value.subwords.len() == 0 {
-            return None;
+            return vec![];
         }
 
-        Some(self.default_value.clone())
+        self.default_value.subwords.to_vec()
     }
 }
 
