@@ -50,6 +50,10 @@ res=$($com <<< 'echo ${A:=abc}; echo $A' )
 [ "$res" = "abc
 abc" ] || err $LINENO
 
+res=$($com <<< 'echo ${A:?error}' )
+[ "$?" = "1" ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
 ### BUILTIN COMMAND TEST ###
 
 res=$($com <<< 'cd /; pwd')

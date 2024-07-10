@@ -57,7 +57,7 @@ impl Subword for BracedParam {
         }
 
         if self.text == "" {
-            self.text = self.replace_to_default(core);
+            return self.replace_to_default(core);
         }
 
         true
@@ -77,23 +77,31 @@ impl BracedParam {
         }
     }
 
-    fn replace_to_default(&mut self, core: &mut ShellCore) -> String {
+    fn replace_to_default(&mut self, core: &mut ShellCore) -> bool {
+        if self.default_symbol == "" {
+            return true;
+        }
+
+        let value = match self.default_value.eval_as_value(core) {
+                Some(s) => s,
+                _       => String::new(),
+        };
+
         if self.default_symbol == ":-" {
-            if let Some(s) = self.default_value.eval_as_value(core) {
-                return s;
-            }
-            return String::new();
+            self.text = value;
+            return true;
         }
-
         if self.default_symbol == ":=" {
-            if let Some(s) = self.default_value.eval_as_value(core) {
-                core.data.set_param(&self.name, &s);
-                return s;
-            }
-            return String::new();
+            core.data.set_param(&self.name, &value);
+            self.text = value;
+            return true;
+        }
+        if self.default_symbol == ":?" {
+            eprintln!("sush: {}: {}", &self.name, value);
+            return false;
         }
 
-        String::new()
+        return false;
     }
 
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
