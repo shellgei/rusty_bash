@@ -5,12 +5,15 @@ use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
+use crate::elements::word::Word;
 
 #[derive(Debug, Clone)]
 pub struct BracedParam {
     pub text: String,
     pub name: String,
     pub subscript: Option<Subscript>,
+    pub default_symbol: String,
+    pub default_value: Word,
 }
 
 fn is_param(s :&String) -> bool {
@@ -64,6 +67,8 @@ impl BracedParam {
             text: String::new(),
             name: String::new(),
             subscript: None,
+            default_value: Word::new(),
+            default_symbol: String::new(),
         }
     }
 
@@ -75,6 +80,30 @@ impl BracedParam {
         }
 
         false
+    }
+
+    fn eat_default_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let num = feeder.scanner_parameter_checker();
+        if num == 0 {
+            return false;
+        }
+        ans.default_symbol = feeder.consume(num);
+        ans.text += &ans.default_symbol.clone();
+
+        loop {
+            match subword::parse(feeder, core) {
+                Some(sw) => {
+                    if sw.get_text() == "}" {
+                        return true;
+                    }
+
+                    ans.text += sw.get_text();
+                    ans.default_value.text += sw.get_text();
+                    ans.default_value.subwords.push(sw);
+                },
+                _ => {},
+            }
+        }
     }
 
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -128,9 +157,16 @@ impl BracedParam {
         ans.text += &feeder.consume(2);
 
         let mut num = 0;
+        let mut default_exists = false;
         while ! feeder.starts_with("}") {
             if Self::eat_param(feeder, &mut ans, core) {
                 Self::eat_subscript(feeder, &mut ans, core);
+                default_exists = Self::eat_default_value(feeder, &mut ans, core);
+
+                if default_exists {
+                    break;
+                }
+            
             }else{
                 Self::eat_unknown(feeder, &mut ans, core);
             }
@@ -141,7 +177,10 @@ impl BracedParam {
             ans.name.clear();
         }
 
-        if feeder.starts_with("}") {
+        if default_exists {
+            dbg!("{:?}", &ans);
+            Some(ans)
+        }else if feeder.starts_with("}") {
             ans.text += &feeder.consume(1);
             Some(ans)
         }else{
