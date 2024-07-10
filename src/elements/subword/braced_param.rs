@@ -146,10 +146,12 @@ impl BracedParam {
             }
 
             let num = feeder.scanner_blank(core);
-            let blank = feeder.consume(num);
-            let sw = Box::new(SimpleSubword{ text: blank.clone() });
-            ans.default_value.subwords.push(sw);
-            ans.text += &blank.clone();
+            if num != 0 {
+                let blank = feeder.consume(num);
+                let sw = Box::new(SimpleSubword{ text: blank.clone() });
+                ans.default_value.subwords.push(sw);
+                ans.text += &blank.clone();
+            }
         }
     }
 
