@@ -6,6 +6,7 @@ use crate::elements::subword;
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
+use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
 pub struct BracedParam {
@@ -127,6 +128,9 @@ impl BracedParam {
         ans.default_symbol = feeder.consume(num);
         ans.text += &ans.default_symbol.clone();
 
+        let num = feeder.scanner_blank(core);
+        ans.text += &feeder.consume(num);
+
         loop {
             match subword::parse(feeder, core) {
                 Some(sw) => {
@@ -140,6 +144,12 @@ impl BracedParam {
                 },
                 _ => {},
             }
+
+            let num = feeder.scanner_blank(core);
+            let blank = feeder.consume(num);
+            let sw = Box::new(SimpleSubword{ text: blank.clone() });
+            ans.default_value.subwords.push(sw);
+            ans.text += &blank.clone();
         }
     }
 

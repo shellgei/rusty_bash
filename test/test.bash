@@ -43,6 +43,9 @@ res=$($com <<< '!' )
 res=$($com <<< 'echo ${A:-abc}' )
 [ "$res" = "abc" ] || err $LINENO
 
+res=$($com <<< 'echo ${A:-abc def}' )
+[ "$res" = "abc def" ] || err $LINENO
+
 res=$($com <<< 'echo ${A:-abc}; echo $A' )
 [ "$res" = "abc" ] || err $LINENO
 
@@ -54,10 +57,17 @@ res=$($com <<< 'echo ${A:?error}' )
 [ "$?" = "1" ] || err $LINENO
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< '(echo ${A:?error}) |& cat' )
+[ "$res" = "sush: A: error" ] || err $LINENO
+
 res=$($com <<< 'A= ; echo ${A:+abc}' )
 [ "$res" = "" ] || err $LINENO
 
 res=$($com <<< 'A=aaa ; echo ${A:+abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
+
+res=$($com <<< 'echo ${A:-   abc}' )
 [ "$res" = "abc" ] || err $LINENO
 
 ### BUILTIN COMMAND TEST ###
