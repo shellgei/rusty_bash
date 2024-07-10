@@ -54,6 +54,12 @@ res=$($com <<< 'echo ${A:?error}' )
 [ "$?" = "1" ] || err $LINENO
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< 'A= ; echo ${A:+abc}' )
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=aaa ; echo ${A:+abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
 ### BUILTIN COMMAND TEST ###
 
 res=$($com <<< 'cd /; pwd')
