@@ -73,6 +73,15 @@ res=$($com <<< 'echo ${A:-abc def}' )
 res=$($com <<< 'B=あ ; echo ${A:-$B def}' )
 [ "$res" = "あ def" ] || err $LINENO
 
+res=$($com <<< 'B=あ ; echo ${A:-$B
+def}' )
+[ "$res" = "あ def" ] || err $LINENO
+
+#res=$($com <<< 'B=あ ; echo ${A:-"$B
+#def"}' )
+#[ "$res" = "あ
+#def" ] || err $LINENO
+
 ### BUILTIN COMMAND TEST ###
 
 res=$($com <<< 'cd /; pwd')

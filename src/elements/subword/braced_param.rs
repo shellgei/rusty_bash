@@ -145,6 +145,15 @@ impl BracedParam {
                 _ => {},
             }
 
+            if feeder.starts_with("\n") {
+                let blank = feeder.consume(1);
+                let sw = Box::new(SimpleSubword{ text: blank.clone() });
+                ans.default_value.subwords.push(sw);
+                ans.text += &blank.clone();
+
+                feeder.feed_additional_line(core);
+            }
+
             let num = feeder.scanner_blank(core);
             if num != 0 {
                 let blank = feeder.consume(num);
