@@ -11,24 +11,25 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
         connect_names(&mut word.subwords[i..]);
     }
     let ans = word.subwords.iter_mut().all(|w| w.substitute(core));
+    substitute_in_the_case_subword_increases(word);
 
+    ans
+}
+
+fn substitute_in_the_case_subword_increases(word: &mut Word) {
     let mut pos = 0;
     while pos < word.subwords.len() {
         match word.subwords[pos].substitute2() {
             Some(sw) => {
                 word.subwords.remove(pos);
                 for s in &sw.subwords {
-                    word.subwords.push(s.clone());
+                    word.subwords.insert(pos, s.clone());
+                    pos += 1;
                 }
-                pos = sw.subwords.len() - 1;
             },
-            _ => {},
+            _ => pos += 1, 
         }
-
-        pos += 1;
     }
-
-    ans
 }
 
 fn connect_names(subwords: &mut [Box<dyn Subword>]) {
