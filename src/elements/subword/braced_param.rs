@@ -72,6 +72,9 @@ impl BracedParam {
         }
     }
 
+    fn replace_to_default(&mut self) {
+    }
+
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(s) = Subscript::parse(feeder, core) {
             ans.text += &s.text;
@@ -178,7 +181,6 @@ impl BracedParam {
         }
 
         if default_exists {
-            dbg!("{:?}", &ans);
             Some(ans)
         }else if feeder.starts_with("}") {
             ans.text += &feeder.consume(1);
