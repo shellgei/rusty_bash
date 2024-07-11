@@ -10,10 +10,11 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
-    let ans = word.subwords.iter_mut().all(|w| w.substitute(core));
+    if ! word.subwords.iter_mut().all(|w| w.substitute(core)) {
+        return false;
+    }
     substitute_replace(word);
-
-    ans
+    true
 }
 
 fn substitute_replace(word: &mut Word) {

@@ -58,8 +58,7 @@ impl Subword for BracedParam {
             self.text = value.to_string();
         }
 
-        if self.text == ""
-        || (self.text != "" && self.default_symbol == ":+") {
+        if self.text == "" || self.default_symbol == ":+" {
             return self.replace_to_default(core);
         }
 
@@ -114,8 +113,12 @@ impl BracedParam {
             eprintln!("sush: {}: {}", &self.name, value);
             return false;
         }
+
         if self.default_symbol == ":+" {
-            self.text = value;
+            if self.text != "" {
+                self.text = value;
+            }
+            self.default_value.subwords.clear();
             return true;
         }
 

@@ -57,11 +57,11 @@ res=$($com <<< 'echo ${A:?error}' )
 res=$($com <<< '(echo ${A:?error}) |& cat' )
 [ "$res" = "sush: A: error" ] || err $LINENO
 
-res=$($com <<< 'A= ; echo ${A:+abc}' )
+res=$($com <<< 'A= ; echo ${A:+set}' )
 [ "$res" = "" ] || err $LINENO
 
-res=$($com <<< 'A=aaa ; echo ${A:+abc}' )
-[ "$res" = "abc" ] || err $LINENO
+res=$($com <<< 'A=aaa ; echo ${A:+set}' )
+[ "$res" = "set" ] || err $LINENO
 
 
 res=$($com <<< 'echo ${A:-   abc}' )

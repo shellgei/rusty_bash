@@ -67,7 +67,7 @@ impl Substitution {
             ans.value = Value::Single(w);
             Some(ans)
         }else {
-            None
+            Some(ans)
         }
     }
 }
