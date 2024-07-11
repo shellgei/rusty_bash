@@ -115,10 +115,11 @@ impl BracedParam {
         }
 
         if self.default_symbol == ":+" {
-            if self.text != "" {
+            if self.text == "" {
+                self.default_value.subwords.clear();
+            }else{
                 self.text = value;
             }
-            self.default_value.subwords.clear();
             return true;
         }
 
