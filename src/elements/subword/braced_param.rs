@@ -140,6 +140,13 @@ impl BracedParam {
         false
     }
 
+    fn push_default_subword(len: usize, feeder: &mut Feeder, ans: &mut Self) {
+        let blank = feeder.consume(len);
+        let sw = Box::new(SimpleSubword{ text: blank.clone() });
+        ans.default_value.subwords.push(sw);
+        ans.text += &blank.clone();
+    }
+
     fn eat_default_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let num = feeder.scanner_parameter_checker();
         if num == 0 {
@@ -159,20 +166,13 @@ impl BracedParam {
             }
 
             if feeder.starts_with("\n") {
-                let blank = feeder.consume(1);
-                let sw = Box::new(SimpleSubword{ text: blank.clone() });
-                ans.default_value.subwords.push(sw);
-                ans.text += &blank.clone();
-
+                Self::push_default_subword(1, feeder, ans);
                 feeder.feed_additional_line(core);
             }
 
             let num = feeder.scanner_blank(core);
             if num != 0 {
-                let blank = feeder.consume(num);
-                let sw = Box::new(SimpleSubword{ text: blank.clone() });
-                ans.default_value.subwords.push(sw);
-                ans.text += &blank.clone();
+                Self::push_default_subword(num, feeder, ans);
             }
         }
 
@@ -202,17 +202,15 @@ impl BracedParam {
             feeder.feed_additional_line(core);
         }
 
-        match feeder.scanner_unknown_in_param_brace() {
-            0 => {
-                return false;
-            },
-            len => {
-                let unknown = feeder.consume(len);
-                ans.unknown += &unknown.clone();
-                ans.text += &unknown;
-                return true;
-            },
+        let len = feeder.scanner_unknown_in_param_brace();
+        if len == 0 {
+            return false;
         }
+
+        let unknown = feeder.consume(len);
+        ans.unknown += &unknown.clone();
+        ans.text += &unknown;
+        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BracedParam> {
@@ -227,17 +225,11 @@ impl BracedParam {
             Self::eat_default_value(feeder, &mut ans, core);
         }
 
-        while ! feeder.starts_with("}") {// && ! default_exists {
+        while ! feeder.starts_with("}") {
             Self::eat_unknown(feeder, &mut ans, core);
         }
 
-
-        if feeder.starts_with("}") {
-            ans.text += &feeder.consume(1);
-            Some(ans)
-        }else{
-            feeder.consume(feeder.len());
-            None
-        }
+        ans.text += &feeder.consume(1);
+        Some(ans)
     }
 }
