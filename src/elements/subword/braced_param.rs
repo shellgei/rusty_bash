@@ -151,18 +151,11 @@ impl BracedParam {
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
 
-        loop {
-            if feeder.starts_with("}") {
-                return true;
-            }
-
-            match subword::parse(feeder, core) {
-                Some(sw) => {
-                    ans.text += sw.get_text();
-                    ans.default_value.text += sw.get_text();
-                    ans.default_value.subwords.push(sw);
-                },
-                _ => {},
+        while ! feeder.starts_with("}") {
+            if let Some(sw) = subword::parse(feeder, core) {
+                ans.text += sw.get_text();
+                ans.default_value.text += sw.get_text();
+                ans.default_value.subwords.push(sw);
             }
 
             if feeder.starts_with("\n") {
@@ -182,6 +175,8 @@ impl BracedParam {
                 ans.text += &blank.clone();
             }
         }
+
+        true
     }
 
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
