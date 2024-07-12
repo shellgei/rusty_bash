@@ -41,7 +41,6 @@ fn is_param(s :&String) -> bool {
 
 impl Subword for BracedParam {
     fn get_text(&self) -> &str { &self.text.as_ref() }
-
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
@@ -96,33 +95,28 @@ impl BracedParam {
             return true;
         }
 
-        let word = match self.default_value.tilde_and_dollar_expansion(core) {
+        self.default_value = match self.default_value.tilde_and_dollar_expansion(core) {
                 Some(w) => w,
                 _       => return false,
         };
 
-        let value = word.subwords.iter().map(|s| s.get_text()).collect();
-        self.default_value = word;
+        let value: String = self.default_value.subwords.iter().map(|s| s.get_text()).collect();
 
         if self.default_symbol == ":-" {
-            self.text = value;
             return true;
         }
         if self.default_symbol == ":=" {
             core.data.set_param(&self.name, &value);
-            self.text = value;
             return true;
         }
         if self.default_symbol == ":?" {
-            eprintln!("sush: {}: {}", &self.name, value);
+            eprintln!("sush: {}: {}", &self.name, &value);
             return false;
         }
 
         if self.default_symbol == ":+" {
             if self.text == "" {
                 self.default_value.subwords.clear();
-            }else{
-                self.text = value;
             }
             return true;
         }
@@ -148,7 +142,7 @@ impl BracedParam {
     }
 
     fn eat_default_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let num = feeder.scanner_parameter_checker();
+        let num = feeder.scanner_parameter_default_symbol();
         if num == 0 {
             return false;
         }
