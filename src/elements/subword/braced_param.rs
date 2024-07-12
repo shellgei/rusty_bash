@@ -15,7 +15,7 @@ pub struct BracedParam {
     pub unknown: String,
     pub subscript: Option<Subscript>,
     pub default_symbol: Option<String>,
-    pub default_value: Word,
+    pub default_value: Option<Word>,
 }
 
 fn is_param(s :&String) -> bool {
@@ -67,22 +67,16 @@ impl Subword for BracedParam {
             _ => {},
         }
 
-        /*
-        if self.text == "" || self.default_symbol == Some(":+".to_string()) {
-            return self.replace_to_default(core);
-        }*/
-
         true
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn substitute_replace(&self) -> Vec<Box<dyn Subword>> {
-        if self.default_symbol.is_none() || self.default_value.subwords.len() == 0 {
-            return vec![];
+        match self.default_value.as_ref() {
+            Some(w) => w.subwords.to_vec(),
+            None    => vec![],
         }
-
-        self.default_value.subwords.to_vec()
     }
 }
 
@@ -94,7 +88,7 @@ impl BracedParam {
             unknown: String::new(),
             subscript: None,
             default_symbol: None,
-            default_value: Word::new(),
+            default_value: None,
         }
     }
 
@@ -104,18 +98,23 @@ impl BracedParam {
             None    => return true,
         };
 
-        self.default_value = match self.default_value.tilde_and_dollar_expansion(core) {
-                Some(w) => w,
-                _       => return false,
+        let word = match self.default_value.as_ref() {
+            Some(w) => match w.tilde_and_dollar_expansion(core) {
+                            Some(w2) => w2, 
+                            None     => return false,
+                        },
+            None    => return false,
         };
 
-        let value: String = self.default_value.subwords.iter().map(|s| s.get_text()).collect();
+        let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
 
         if symbol == ":-" {
+            self.default_value = Some(word);
             return true;
         }
         if symbol == ":=" {
             core.data.set_param(&self.name, &value);
+            self.default_value = Some(word);
             return true;
         }
         if symbol == ":?" {
@@ -124,7 +123,9 @@ impl BracedParam {
         }
         if symbol == ":+" {
             if self.text == "" {
-                self.default_value.subwords.clear();
+                self.default_value = None;
+            }else {
+                self.default_value = Some(word);
             }
             return true;
         }
@@ -142,10 +143,10 @@ impl BracedParam {
         false
     }
 
-    fn push_default_subword(len: usize, feeder: &mut Feeder, ans: &mut Self) {
+    fn push_default_subword(len: usize, feeder: &mut Feeder, ans: &mut Self, word: &mut Word) {
         let blank = feeder.consume(len);
         let sw = Box::new(SimpleSubword{ text: blank.clone() });
-        ans.default_value.subwords.push(sw);
+        word.subwords.push(sw);
         ans.text += &blank.clone();
     }
 
@@ -160,24 +161,27 @@ impl BracedParam {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
+        let mut word = Word::new();
 
         while ! feeder.starts_with("}") {
             if let Some(sw) = subword::parse(feeder, core) {
                 ans.text += sw.get_text();
-                ans.default_value.text += sw.get_text();
-                ans.default_value.subwords.push(sw);
+                word.text += sw.get_text();
+                word.subwords.push(sw);
             }
 
             if feeder.starts_with("\n") {
-                Self::push_default_subword(1, feeder, ans);
+                Self::push_default_subword(1, feeder, ans, &mut word);
                 feeder.feed_additional_line(core);
             }
 
             let num = feeder.scanner_blank(core);
             if num != 0 {
-                Self::push_default_subword(num, feeder, ans);
+                Self::push_default_subword(num, feeder, ans, &mut word);
             }
         }
+
+        ans.default_value = Some(word);
 
         true
     }
