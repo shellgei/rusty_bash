@@ -12,6 +12,7 @@ use super::simple::SimpleSubword;
 pub struct BracedParam {
     pub text: String,
     pub name: String,
+    pub unknown: String,
     pub subscript: Option<Subscript>,
     pub default_symbol: String,
     pub default_value: Word,
@@ -44,7 +45,9 @@ impl Subword for BracedParam {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        if self.name.len() == 0 || ! is_param(&self.name) {
+        if self.name.len() == 0 
+        || ! is_param(&self.name)
+        || ( self.unknown.len() > 0 && ! self.unknown.starts_with("-") ) {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
         }
@@ -81,6 +84,7 @@ impl BracedParam {
         BracedParam {
             text: String::new(),
             name: String::new(),
+            unknown: String::new(),
             subscript: None,
             default_value: Word::new(),
             default_symbol: String::new(),
@@ -203,22 +207,15 @@ impl BracedParam {
             feeder.feed_additional_line(core);
         }
 
-        match subword::parse(feeder, core) {
-            Some(sw) => {
-                ans.text += sw.get_text();
-                return sw.get_text() != "}"; //end if "}"
+        match feeder.scanner_unknown_in_param_brace() {
+            0 => {
+                return false;
             },
-            None => {
-                match feeder.scanner_unknown_in_param_brace() {
-                    0 => {
-                        ans.text.clear();
-                        return false;
-                    },
-                    len => {
-                        ans.text += &feeder.consume(len);
-                        return true;
-                    },
-                }
+            len => {
+                let unknown = feeder.consume(len);
+                ans.unknown += &unknown.clone();
+                ans.text += &unknown;
+                return true;
             },
         }
     }
@@ -230,26 +227,17 @@ impl BracedParam {
         let mut ans = Self::new();
         ans.text += &feeder.consume(2);
 
-        let mut num = 0;
         let mut default_exists = false;
-        while ! feeder.starts_with("}") {
-            if Self::eat_param(feeder, &mut ans, core) {
-                Self::eat_subscript(feeder, &mut ans, core);
-                default_exists = Self::eat_default_value(feeder, &mut ans, core);
 
-                if default_exists {
-                    break;
-                }
-            
-            }else{
-                Self::eat_unknown(feeder, &mut ans, core);
-            }
-            num += 1;
+        if Self::eat_param(feeder, &mut ans, core) {
+            Self::eat_subscript(feeder, &mut ans, core);
+            default_exists = Self::eat_default_value(feeder, &mut ans, core);
         }
 
-        if num > 1 {
-            ans.name.clear();
+        while ! feeder.starts_with("}") && ! default_exists {
+            Self::eat_unknown(feeder, &mut ans, core);
         }
+
 
         if default_exists {
             Some(ans)

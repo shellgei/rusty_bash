@@ -68,6 +68,8 @@ ok"}' )
 [ "$res" = "set
 ok" ] || err $LINENO
 
+#res=$($com <<< 'A=aaa ; echo ${A- - - - -}' )
+#[ "$res" = "aaa" ] || err $LINENO
 
 res=$($com <<< 'echo ${A:-   abc}' )
 [ "$res" = "abc" ] || err $LINENO
