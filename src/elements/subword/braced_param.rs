@@ -152,12 +152,12 @@ impl BracedParam {
         ans.text += &feeder.consume(num);
 
         loop {
+            if feeder.starts_with("}") {
+                return true;
+            }
+
             match subword::parse(feeder, core) {
                 Some(sw) => {
-                    if sw.get_text() == "}" {
-                        return true;
-                    }
-
                     ans.text += sw.get_text();
                     ans.default_value.text += sw.get_text();
                     ans.default_value.subwords.push(sw);
@@ -227,21 +227,17 @@ impl BracedParam {
         let mut ans = Self::new();
         ans.text += &feeder.consume(2);
 
-        let mut default_exists = false;
-
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core);
-            default_exists = Self::eat_default_value(feeder, &mut ans, core);
+            Self::eat_default_value(feeder, &mut ans, core);
         }
 
-        while ! feeder.starts_with("}") && ! default_exists {
+        while ! feeder.starts_with("}") {// && ! default_exists {
             Self::eat_unknown(feeder, &mut ans, core);
         }
 
 
-        if default_exists {
-            Some(ans)
-        }else if feeder.starts_with("}") {
+        if feeder.starts_with("}") {
             ans.text += &feeder.consume(1);
             Some(ans)
         }else{
