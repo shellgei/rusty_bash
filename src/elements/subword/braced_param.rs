@@ -113,7 +113,6 @@ impl BracedParam {
             eprintln!("sush: {}: {}", &self.name, &value);
             return false;
         }
-
         if self.default_symbol == ":+" {
             if self.text == "" {
                 self.default_value.subwords.clear();
