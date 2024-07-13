@@ -100,7 +100,7 @@ impl BracedParam {
 
         let word = match self.default_value.as_ref() {
             Some(w) => match w.tilde_and_dollar_expansion(core) {
-                            Some(w2) => w2, 
+                            Some(w2) => w2,
                             None     => return false,
                         },
             None    => return false,
@@ -114,7 +114,8 @@ impl BracedParam {
         }
         if symbol == ":=" {
             core.data.set_param(&self.name, &value);
-            self.default_value = Some(word);
+            self.default_value = None;
+            self.text = value;
             return true;
         }
         if symbol == ":?" {
@@ -122,11 +123,10 @@ impl BracedParam {
             return false;
         }
         if symbol == ":+" {
-            if self.text == "" {
-                self.default_value = None;
-            }else {
-                self.default_value = Some(word);
-            }
+            self.default_value = match self.text.as_str() {
+                "" => None,
+                _  => Some(word),
+            };
             return true;
         }
 

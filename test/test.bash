@@ -50,6 +50,13 @@ res=$($com <<< 'echo ${A:=abc}; echo $A' )
 [ "$res" = "abc
 abc" ] || err $LINENO
 
+res=$($com <<< 'echo ${A:="aaa
+bbb"}
+echo "$A"' )
+[ "$res" = "aaa bbb
+aaa
+bbb" ] || err $LINENO
+
 res=$($com <<< 'echo ${A:?error}' )
 [ "$?" = "1" ] || err $LINENO
 [ "$res" = "" ] || err $LINENO
