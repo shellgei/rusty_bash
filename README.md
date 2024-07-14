@@ -120,6 +120,25 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | umask | :no_good: | unalias | :no_good: | unset | :construction: |
 | wait | :construction: | export | :no_good: | false | :heavy_check_mark: |
 
+### shopt 
+
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| autocd | :no_good: | cdable_vars | :no_good: | cdspell | :no_good: |
+| checkhash | :no_good: | checkjobs | :no_good: | checkwinsize | :no_good: |
+| cmdhist | :no_good: | compat31 | :no_good: | compat32 | :no_good: |
+| compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
+| dotglob | :no_good: | execfail | :no_good: | expand_aliases | :no_good: |
+| extdebug | :no_good: | extglob | :no_good: | extquote | :no_good: |
+| failglob | :no_good: | force_fignore | :no_good: | globstar | :no_good: |
+| gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
+| histverify | :no_good: | hostcomplete | :no_good: | huponexit | :no_good: |
+| interactive_comments | :no_good: | lastpipe | :no_good: | lithist | :no_good: |
+| login_shell | :no_good: | mailwarn | :no_good: | no_empty_cmd_completion | :no_good: |
+| nocaseglob | :no_good: | nocasematch | :no_good: | nullglob | :no_good: |
+| progcomp | :no_good: | promptvars | :no_good: | restricted_shell | :no_good: |
+| shift_verbose | :no_good: | sourcepath | :no_good: | xpg_echo | :no_good: |
+
 ### beyond Bash
 
 |features | status |
