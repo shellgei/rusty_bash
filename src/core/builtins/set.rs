@@ -41,7 +41,7 @@ pub fn set_parameters(core: &mut ShellCore, args: &[String]) -> i32 {
     0
 }
 
-fn set_option(core: &mut ShellCore, opt: char, pm: char) -> bool {
+fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     if pm == '+' {
         core.data.flags.retain(|e| e != opt);
     }else{
@@ -49,7 +49,6 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) -> bool {
             core.data.flags.push(opt);
         }
     }
-    true
 }
 
 fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -59,10 +58,11 @@ fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
         }
         let pm = a.chars().nth(0).unwrap();
         for ch in a[1..].chars() {
-            if ! set_option(core, ch, pm) {
+            if "xv".find(ch).is_none() {
                 eprintln!("sush: set: {}{}: invalid option", &pm, &ch);
                 return 2;
             }
+            set_option(core, ch, pm);
         }
     }
     0
