@@ -5,16 +5,16 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Shopts {
-    shopts: HashMap<String, bool>,
+    opts: HashMap<String, bool>,
 }
 
 impl Shopts {
     pub fn new() -> Shopts {
         let mut shopts = Shopts {
-            shopts: HashMap::new(),
+            opts: HashMap::new(),
         };
 
-        let opts = vec!["autocd", "cdable_vars", "cdspell", "checkhash",
+        let opt_strs = vec!["autocd", "cdable_vars", "cdspell", "checkhash",
                    "checkjobs", "checkwinsize", "cmdhist", "compat31",
                    "compat32", "compat40", "compat41", "dirspell",
                    "dotglob", "execfail", "expand_aliases", "extdebug",
@@ -26,12 +26,31 @@ impl Shopts {
                    "progcomp", "promptvars", "restricted_shell", "shift_verbose",
                    "sourcepath", "xpg_echo"];
 
-        for opt in opts {
-            shopts.shopts.insert(opt.to_string(), false);
+        for opt in opt_strs {
+            shopts.opts.insert(opt.to_string(), false);
         }
 
-        shopts.shopts.insert("extglob".to_string(), true);
+        shopts.opts.insert("extglob".to_string(), true);
 
         shopts
+    }
+
+    pub fn print_all(&self) {
+        let mut list = vec![];
+
+        for opt in &self.opts {
+            let onoff = match opt.1 {
+                true  => "on",
+                false => "off",
+            };
+            if opt.0.len() < 16 {
+                list.push(format!("{:16}{}", opt.0, onoff));
+            }else{
+                list.push(format!("{}\t{}", opt.0, onoff));
+            }
+        }
+
+        list.sort();
+        list.iter().for_each(|e| println!("{}", e));
     }
 }

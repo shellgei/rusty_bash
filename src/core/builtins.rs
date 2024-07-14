@@ -10,6 +10,7 @@ mod local;
 mod pwd;
 mod read;
 pub mod set;
+mod shopt;
 mod source;
 mod return_break;
 mod unset;
@@ -37,6 +38,7 @@ impl ShellCore {
         self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), return_break::return_);
         self.builtins.insert("set".to_string(), set::set);
+        self.builtins.insert("shopt".to_string(), shopt::shopt);
         self.builtins.insert("unset".to_string(), unset::unset);
         self.builtins.insert("source".to_string(), source::source);
         self.builtins.insert(".".to_string(), source::source);
