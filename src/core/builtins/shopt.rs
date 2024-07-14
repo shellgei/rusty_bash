@@ -3,29 +3,42 @@
 
 use crate::ShellCore;
 
-pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() == 1 {
+pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i32 {
+    if all {
         core.shopts.print_all();
         return 0;
     }
 
-    if args[1] == "-s" {
-        if args.len() == 2 {
-            core.shopts.print_if(true);
-        }else{
-            core.shopts.set(&args[2], true);
-        }
-        return 0;
+    let mut res = true;
+    match args[1].as_str() {
+        "-s" => core.shopts.print_if(true),
+        "-u" => core.shopts.print_if(false),
+        opt  => res = core.shopts.print_opt(opt),
     }
 
-    if args[1] == "-u" {
-        if args.len() == 2 {
-            core.shopts.print_if(false);
-        }else{
-            core.shopts.set(&args[2], false);
-        }
-        return 0;
+    match res {
+        true  => 0,
+        false => 1,
+    }
+}
+
+pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 3 {
+        return shopt_print(core, args, args.len() < 2);
     }
 
-    0
+    let res = match args[1].as_str() {
+        "-s" => core.shopts.set(&args[2], true),
+        "-u" => core.shopts.set(&args[2], false),
+        arg  => {
+            eprintln!("sush: shopt: {}: invalid shell option name", arg);
+            eprintln!("shopt: usage: shopt [-su] [optname ...]");
+            false
+        },
+    };
+
+    match res {
+        true  => 0,
+        false => 1,
+    }
 }
