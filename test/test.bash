@@ -1314,6 +1314,11 @@ res=$($com <<< 'echo あ い う | while read a b ; do echo $a ; echo $b ; done'
 [ "$res" == "あ
 い う" ] || err $LINENO
 
+# set command
+
+res=$($com <<< 'set -- a b c ; echo $2')
+[ "$res" == "b" ] || err $LINENO
+
 ### JOB TEST ###
 
 res=$($com <<< 'sleep 1 & sleep 2 & sleep 3 & jobs')

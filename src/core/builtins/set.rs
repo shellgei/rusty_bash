@@ -32,7 +32,7 @@ fn set_no_arg(core: &mut ShellCore) -> i32 {
     0
 }
 
-pub fn set_parameters(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn set_parameters(core: &mut ShellCore, args: &[String]) -> i32 {
     match core.data.position_parameters.pop() {
         None => panic!("SUSH INTERNAL ERROR: empty param stack"),
         _    => {},
@@ -41,10 +41,47 @@ pub fn set_parameters(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
+fn set_option(core: &mut ShellCore, opt: char, pm: char) -> bool {
+    if pm == '+' {
+        core.data.flags.retain(|e| e != opt);
+    }else{
+        if ! core.data.flags.contains(opt) {
+            core.data.flags.push(opt);
+        }
+    }
+    true
+}
+
+fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
+    for a in args {
+        if a.starts_with("--") {
+            return 0;
+        }
+        let pm = a.chars().nth(0).unwrap();
+        for ch in a[1..].chars() {
+            if ! set_option(core, ch, pm) {
+                eprintln!("sush: set: {}{}: invalid option", &pm, &ch);
+                return 2;
+            }
+        }
+    }
+    0
+}
+
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     match args.len() {
         0 => panic!("never come here"),
         1 => set_no_arg(core),
-        _ => set_parameters(core, args),
+        _ => {
+            if args[1].starts_with("--") {
+                args.remove(0);
+                return set_parameters(core, args)
+            }
+
+            match args[1].starts_with("-") || args[1].starts_with("+") {
+                true  => set_options(core, &args[1..]),
+                false => set_parameters(core, args),
+            }
+        },
     }
 }
