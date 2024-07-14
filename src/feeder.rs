@@ -99,7 +99,7 @@ impl Feeder {
                 eprintln!("sush: syntax error: unexpected end of file");
                 core.data.set_param("?", "2");
 
-                match core.has_flag('S') { //S: on source command
+                match core.data.flags.contains('S') { //S: on source command
                     true  => return false,
                     false => core.exit(),
                 }

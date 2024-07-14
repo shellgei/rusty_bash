@@ -46,7 +46,7 @@ impl ShellCore {
     }
 
     pub fn write_history_to_file(&mut self) {
-        if ! self.has_flag('i') || self.is_subshell {
+        if ! self.data.flags.contains('i') || self.is_subshell {
             return;
         }
         let filename = self.data.get_param("HISTFILE");

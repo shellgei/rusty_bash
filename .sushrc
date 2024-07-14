@@ -24,6 +24,7 @@ esac
 
 
 PS2='> '
+PS4='+ '
 alias ll='ls -l'
 alias git-writing='git add -A ; git commit -m Writing ; git push'
 

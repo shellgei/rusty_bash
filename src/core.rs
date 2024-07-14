@@ -119,9 +119,10 @@ impl ShellCore {
         self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
 
+/*
     pub fn has_flag(&self, flag: char) -> bool {
         self.data.flags.find(flag) != None 
-    }
+    }*/
 
     pub fn wait_process(&mut self, child: Pid) -> WaitStatus {
         let waitflags = match self.is_subshell {

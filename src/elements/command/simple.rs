@@ -48,10 +48,12 @@ impl Command for SimpleCommand {
         }
 
         if self.args.len() == 0 {
+            self.option_x_output(core);
             self.exec_set_params(core)
         }else if Self::check_sigint(core) {
             None
         }else{
+            self.option_x_output(core);
             self.exec_command(core, pipe)
         }
     }
@@ -193,5 +195,13 @@ impl SimpleCommand {
                 false
             },
         }
+    }
+
+    fn option_x_output(&self, core: &mut ShellCore) {
+        if ! core.data.flags.contains('x') {
+            return;
+        }
+
+        eprintln!("{}{}", &core.data.get_param("PS4"), &self.args.join(" "));
     }
 }
