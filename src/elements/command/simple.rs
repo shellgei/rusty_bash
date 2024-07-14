@@ -202,6 +202,17 @@ impl SimpleCommand {
             return;
         }
 
-        eprintln!("{}{}", &core.data.get_param("PS4"), &self.args.join(" "));
+        let ps4 = core.data.get_param("PS4");
+        let mut multi_ps4 = ps4.clone();
+        for _ in 0..(core.source_level + core.eval_level) {
+            multi_ps4 = multi_ps4.trim_end().to_owned() + &ps4;
+        }
+
+        for s in &self.substitutions {
+            eprintln!("{}{}", &multi_ps4, &s.text);
+        }
+        if self.args.len() != 0 {
+            eprintln!("{}{}", &multi_ps4, &self.args.join(" "));
+        }
     }
 }

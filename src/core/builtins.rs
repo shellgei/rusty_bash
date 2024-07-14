@@ -66,11 +66,13 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut feeder = Feeder::new(&args[1..].join(" "));
 
+    core.eval_level += 1;
     match Script::parse(&mut feeder, core, false){
         Some(mut s) => s.exec(core),
         None        => {},
     }
 
+    core.eval_level -= 1;
     match core.data.get_param("?").parse::<i32>() {
         Ok(es) => es,
         _      => 1,

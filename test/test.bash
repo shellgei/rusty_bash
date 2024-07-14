@@ -7,10 +7,10 @@ err () {
 	exit 1
 }
 
-cargo build || err $LINENO
+cargo build --release || err $LINENO
 
 cd $(dirname $0)
-com=../target/debug/sush
+com=../target/release/sush
 
 ### SIMPLE COMMAND TEST ###
 
