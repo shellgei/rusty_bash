@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::core::data::Value;
 
-fn set_no_arg_print(k: &str, core: &mut ShellCore) {
+fn print_data(k: &str, core: &mut ShellCore) {
     match core.data.get_value(k) {
         Some(Value::EvaluatedSingle(s)) => {
             println!("{}={}", k.to_string(), s.to_string()); 
@@ -25,10 +25,10 @@ fn set_no_arg_print(k: &str, core: &mut ShellCore) {
     }
 }
 
-fn set_no_arg(core: &mut ShellCore) -> i32 {
+fn print(core: &mut ShellCore) -> i32 {
     core.data.get_keys()
         .into_iter()
-        .for_each(|k| set_no_arg_print(&k, core));
+        .for_each(|k| print_data(&k, core));
     0
 }
 
@@ -71,7 +71,12 @@ fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     match args.len() {
         0 => panic!("never come here"),
-        1 => set_no_arg(core),
+        1 => {
+            match args[0] == "set" {
+                true  => print(core),
+                false => set_parameters(core, args),
+            }
+        },
         _ => {
             if args[1].starts_with("--") {
                 args.remove(0);

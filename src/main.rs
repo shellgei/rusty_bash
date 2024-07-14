@@ -74,7 +74,7 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
-    builtins::set::set_parameters(&mut core, &mut args);
+    builtins::set::set(&mut core, &mut args);
     run_signal_check(&mut core);
     read_rc_file(&mut core);
     main_loop(&mut core);
@@ -102,38 +102,6 @@ fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
     feeder.consume(feeder.len());
     true
 }
-
-/*
-fn write_out_history(core: &mut ShellCore) {
-    if ! core.has_flag('i') || core.is_subshell {
-        return;
-    }
-    let filename = core.data.get_param("HISTFILE");
-    if filename == "" {
-        eprintln!("sush: HISTFILE is not set");
-        return;
-    }
-
-    let file = match OpenOptions::new().create(true)
-            .write(true).append(true).open(&filename) {
-        Ok(f) => f,
-        _     => {
-            eprintln!("sush: invalid history file");
-            return;
-        },
-    };
-
-    let mut f = BufWriter::new(file);
-    for h in core.history.iter().rev() {
-        if h == "" {
-            continue;
-        }
-        let _ = f.write(h.as_bytes());
-        let _ = f.write(&vec![0x0A]);
-    }
-    let _ = f.flush();
-}
-*/
 
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new("");
