@@ -11,11 +11,10 @@ enum Wildcard {
     ExtGlob(char, Vec<String>),
 }
 
-pub fn compare(word: &String, pattern: &str) -> bool {
-    let wildcards = parse(pattern);
+pub fn compare(word: &String, pattern: &str, extglob: bool) -> bool {
     let mut candidates = vec![word.to_string()];
 
-    for w in wildcards {
+    for w in parse(pattern, extglob) {
         compare_internal(&mut candidates, &w);
     }
 
@@ -90,7 +89,7 @@ fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = cands.clone();
     for p in patterns {
         let mut tmp = cands.clone();
-        parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
+        parse(p, true).iter().for_each(|w| compare_internal(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -134,7 +133,7 @@ fn ext_once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
-        parse(p).iter().for_each(|w| compare_internal(&mut tmp, &w));
+        parse(p, true).iter().for_each(|w| compare_internal(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -181,7 +180,7 @@ fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
     *cands = ans;
 }
 
-fn parse(pattern: &str) -> Vec<Wildcard > {
+fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
 
@@ -198,11 +197,13 @@ fn parse(pattern: &str) -> Vec<Wildcard > {
             },
         }
 
-        let (len, extparen) = scanner_ext_paren(&remaining);
-        if len > 0 {
-            consume(&mut remaining, len);
-            ans.push(extparen.unwrap());
-            continue;
+        if extglob {
+            let (len, extparen) = scanner_ext_paren(&remaining);
+            if len > 0 {
+                consume(&mut remaining, len);
+                ans.push(extparen.unwrap());
+                continue;
+            }
         }
 
         let (len, wc) = scanner_bracket(&remaining);

@@ -5,8 +5,8 @@ use crate::elements::word::Word;
 use crate::utils::directory;
 use super::subword::simple::SimpleSubword;
 
-pub fn eval(word: &mut Word) -> Vec<Word> {
-    let paths = expand(&word.make_glob_string());
+pub fn eval(word: &mut Word, extglob: bool) -> Vec<Word> {
+    let paths = expand(&word.make_glob_string(), extglob);
 
     if paths.len() > 0 {
         let mut tmp = word.clone();
@@ -18,7 +18,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     }
 }
 
-fn expand(globstr: &str) -> Vec<String> {
+fn expand(globstr: &str, extglob: bool) -> Vec<String> {
     if globstr.find("*") == None 
     && globstr.find("?") == None
     && globstr.find("@") == None
@@ -33,7 +33,7 @@ fn expand(globstr: &str) -> Vec<String> {
 
     for glob_elem in globstr.split("/") {
         for cand in ans_cands {
-            tmp_ans_cands.extend( directory::glob(&cand, &glob_elem) );
+            tmp_ans_cands.extend( directory::glob(&cand, &glob_elem, extglob) );
         }
         ans_cands = tmp_ans_cands.clone();
         tmp_ans_cands.clear();

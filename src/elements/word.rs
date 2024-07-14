@@ -64,8 +64,9 @@ impl Word {
 
     pub fn split_and_path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
         let mut ans = vec![];
+        let extglob = core.shopts.query("extglob");
         for mut w in split::eval(self, core) {
-            ans.append(&mut path_expansion::eval(&mut w) );
+            ans.append(&mut path_expansion::eval(&mut w, extglob) );
         }
         ans
     }

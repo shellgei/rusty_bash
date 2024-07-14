@@ -13,7 +13,7 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 use rev_lines::RevLines;
 
-pub fn compgen_f(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let path = match args.len() {
         2 => "".to_string(),
         _ => {
@@ -38,7 +38,7 @@ pub fn compgen_f(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
         return files.iter().map(|f| dir.clone() + &f).collect();
     }
 
-    let mut ans = directory::glob(&dir, &(key + "*"));
+    let mut ans = directory::glob(&dir, &(key + "*"), core.shopts.query("extglob"));
     ans.iter_mut().for_each(|a| { a.pop(); } );
     ans.sort();
     ans

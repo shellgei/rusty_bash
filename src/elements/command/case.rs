@@ -20,11 +20,12 @@ impl Command for CaseCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         let mut next = false;
         let word = self.word.clone().expect("SUSH INTERNAL ERROR: no case condition");
-        //dbg!("{:?}", &word.eval_for_case_word(core));
         let w = match word.eval_for_case_word(core) {
             Some(w) => w, 
             _       => "".to_string(),
         };
+
+        let extglob = core.shopts.query("extglob");
 
         for e in &mut self.patterns_script_end {
             for pattern in &mut e.0 {
@@ -33,8 +34,7 @@ impl Command for CaseCommand {
                     _       => continue,
                 };
 
-                //if p == w || next { //TODO: compare wildcard
-                if glob::compare(&w, &p) || next { //TODO: compare wildcard
+                if glob::compare(&w, &p, extglob) || next {
                     e.1.exec(core);
 
                     if e.2 == ";;" {

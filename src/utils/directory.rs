@@ -19,7 +19,7 @@ pub fn files(dir: &str) -> Vec<String> {
     }
 }
 
-pub fn glob(dir: &str, glob: &str) -> Vec<String> {
+pub fn glob(dir: &str, glob: &str, extglob: bool) -> Vec<String> {
     let make_path = |file| dir.to_owned() + file + "/";
 
     if glob == "" || glob == "." || glob == ".." {
@@ -30,7 +30,7 @@ pub fn glob(dir: &str, glob: &str) -> Vec<String> {
     fs.append( &mut vec![".".to_string(), "..".to_string()] );
 
     let compare = |file: &String| ( ! file.starts_with(".") || glob.starts_with(".") )
-                            && glob::compare(file, glob);
+                            && glob::compare(file, glob, extglob);
 
     fs.iter().filter(|f| compare(f) ).map(|f| make_path(f) ).collect()
 }

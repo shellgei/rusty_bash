@@ -1263,6 +1263,12 @@ res=$($com <<< 'case 山小田 in !(山)田) echo マッチ ;; *) echo マッチ
 res=$($com <<< 'case 山小小小田 in !(山)田) echo マッチ ;; *) echo マッチせず ;; esac')
 [ "$res" = "マッチ" ] || err $LINENO
 
+res=$($com <<< 'shopt -u extglob; case baa in @(a|b)aa) echo OK ;; *) echo NG ;; esac')
+[ "$res" = "NG" ] || err $LINENO
+
+res=$($com <<< 'shopt -u extglob; case 山小小小田 in !(山)田) echo マッチ ;; *) echo マッチせず ;; esac')
+[ "$res" = "マッチせず" ] || err $LINENO
+
 ### BUILTIN COMMANDS ###
 
 # source command
