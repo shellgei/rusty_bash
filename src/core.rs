@@ -5,8 +5,10 @@ pub mod builtins;
 pub mod data;
 pub mod history;
 pub mod jobtable;
+pub mod shopts;
 
 use self::data::Data;
+use self::shopts::Shopts;
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
@@ -44,6 +46,7 @@ pub struct ShellCore {
     pub real_time: TimeSpec, 
     pub user_time: TimeVal, 
     pub sys_time: TimeVal, 
+    pub shopts: Shopts,
 }
 
 fn ignore_signal(sig: Signal) {
@@ -78,6 +81,7 @@ impl ShellCore {
             real_time: TimeSpec::new(0, 0),
             user_time: TimeVal::new(0, 0),
             sys_time: TimeVal::new(0, 0),
+            shopts: Shopts::new(),
         };
 
         core.init_current_directory();
