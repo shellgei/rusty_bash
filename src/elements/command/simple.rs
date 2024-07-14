@@ -202,17 +202,22 @@ impl SimpleCommand {
             return;
         }
 
-        let ps4 = core.data.get_param("PS4");
-        let mut multi_ps4 = ps4.clone();
-        for _ in 0..(core.source_level + core.eval_level) {
-            multi_ps4 = multi_ps4.trim_end().to_owned() + &ps4;
+        let ps4 = core.get_ps4();
+        for s in &self.substitutions {
+            eprintln!("{} {}", &ps4, &s.text);
         }
 
-        for s in &self.substitutions {
-            eprintln!("{}{}", &multi_ps4, &s.text);
+        if self.args.len() == 0 {
+            return;
         }
-        if self.args.len() != 0 {
-            eprintln!("{}{}", &multi_ps4, &self.args.join(" "));
+
+        eprint!("{}", &ps4);
+        for a in &self.args {
+            match a.contains(" "){
+                false => eprint!(" {}", &a),
+                true  => eprint!(" '{}'", &a),
+            }
         }
+        eprintln!("");
     }
 }

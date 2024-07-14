@@ -322,4 +322,14 @@ impl ShellCore {
         }
         res
     }
+
+    pub fn get_ps4(&mut self) -> String {
+        let ps4 = self.data.get_param("PS4").trim_end().to_string();
+        let mut multi_ps4 = ps4.to_string();
+        for _ in 0..(self.source_level + self.eval_level) {
+            multi_ps4 += &ps4;
+        }
+
+        multi_ps4
+    }
 }

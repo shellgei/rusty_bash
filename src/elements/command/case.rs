@@ -20,6 +20,12 @@ impl Command for CaseCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         let mut next = false;
         let word = self.word.clone().expect("SUSH INTERNAL ERROR: no case condition");
+
+        if core.data.flags.contains('x') {
+            let ps4 = core.get_ps4();
+            eprintln!("{} case {} in", ps4, word.text);
+        }
+
         let w = match word.eval_for_case_word(core) {
             Some(w) => w, 
             _       => "".to_string(),
@@ -81,7 +87,6 @@ impl CaseCommand {
         loop {
             match Word::parse(feeder, core) {
                 Some(w) => {
-            //dbg!("{:?}", &w);
                     *text += &w.text;
                     ans.push(w)
                 },
