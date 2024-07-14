@@ -117,9 +117,11 @@ impl ExtGlob {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ExtGlob> {
-        if feeder.scanner_extglob_head() == 0 {
+        if ! core.shopts.query("extglob") 
+        || feeder.scanner_extglob_head() == 0 {
             return None;
         }
+
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
         ans.subwords.push( Box::new( SimpleSubword {text: ans.text.clone() } ) );

@@ -1319,6 +1319,16 @@ res=$($com <<< 'echo あ い う | while read a b ; do echo $a ; echo $b ; done'
 res=$($com <<< 'set -- a b c ; echo $2')
 [ "$res" == "b" ] || err $LINENO
 
+# shopt command
+
+res=$($com <<< 'shopt -u extglob ; echo @(a)')
+[ "$res" == "@(a)" ] || err $LINENO
+
+res=$($com <<< 'shopt -u extglob
+echo @(a)')
+[ "$?" == "2" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
 ### JOB TEST ###
 
 res=$($com <<< 'sleep 1 & sleep 2 & sleep 3 & jobs')
