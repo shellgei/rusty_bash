@@ -32,7 +32,10 @@ impl Job {
 
     fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) {
         let mut do_next = true;
+        let susp_e_option = core.suspend_e_option;
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
+            core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
+
             if do_next {
                 core.jobtable_check_status();
                 let (pids, exclamation, time) = pipeline.exec(core, pgid);

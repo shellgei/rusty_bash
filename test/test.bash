@@ -1344,6 +1344,12 @@ res=$($com <<< 'set -e ; false | true ; echo OK')
 res=$($com <<< 'set -e ; ( false ) ; echo NG')
 [ "$res" != "NG" ] || err $LINENO
 
+res=$($com <<< 'set -e ; false || echo OK')
+[ "$res" == "OK" ] || err $LINENO
+
+res=$($com <<< 'set -e ; false || false ; echo NG')
+[ "$res" == "" ] || err $LINENO
+
 res=$($com <<< 'set -e ; while false ; do echo NG ; done ; echo OK')
 [ "$res" == "OK" ] || err $LINENO
 
