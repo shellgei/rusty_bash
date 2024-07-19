@@ -18,11 +18,14 @@ impl Command for WhileCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         core.loop_level += 1;
         loop {
+            core.suspend_e_option = true;
             self.while_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
                 .exec(core);
 
+            core.suspend_e_option = false;
             if core.data.get_param("?") != "0" {
+                core.data.set_param("?", "0");
                 break;
             }
 

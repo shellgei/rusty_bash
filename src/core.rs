@@ -49,6 +49,7 @@ pub struct ShellCore {
     pub user_time: TimeVal, 
     pub sys_time: TimeVal, 
     pub shopts: Shopts,
+    pub suspend_e_option: bool,
 }
 
 fn ignore_signal(sig: Signal) {
@@ -86,6 +87,7 @@ impl ShellCore {
             user_time: TimeVal::new(0, 0),
             sys_time: TimeVal::new(0, 0),
             shopts: Shopts::new(),
+            suspend_e_option: false,
         };
 
         core.init_current_directory();
@@ -209,6 +211,14 @@ impl ShellCore {
                       sys_diff.tv_sec()%60, sys_diff.tv_usec());
     }
 
+    fn check_e_option(&mut self) {
+        if self.data.get_param("?") != "0" 
+        && self.data.flags.contains("e") 
+        && ! self.suspend_e_option {
+            self.exit();
+        }
+    }
+
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>,
                          exclamation: bool, time: bool) -> Vec<WaitStatus> {
         if pids.len() == 1 && pids[0] == None {
@@ -218,6 +228,7 @@ impl ShellCore {
             if exclamation {
                 self.flip_exit_status();
             }
+            self.check_e_option();
             return vec![];
         }
 
@@ -239,6 +250,8 @@ impl ShellCore {
         if exclamation {
             self.flip_exit_status();
         }
+
+        self.check_e_option();
 
         ans
     }

@@ -619,6 +619,10 @@ res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo w
 res=$($com <<< 'rm -f /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'while false ; do echo do not come here ; done')
+[ "$?" == 0 ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
 ### ARG TEST ###
 
 # substitution
@@ -1328,6 +1332,20 @@ res=$($com <<< 'shopt -u extglob
 echo @(a)')
 [ "$?" == "2" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
+
+### OPTION TEST ###
+
+res=$($com <<< 'set -e ; false ; echo NG')
+[ "$res" != "NG" ] || err $LINENO
+
+res=$($com <<< 'set -e ; false | true ; echo OK')
+[ "$res" == "OK" ] || err $LINENO
+
+res=$($com <<< 'set -e ; ( false ) ; echo NG')
+[ "$res" != "NG" ] || err $LINENO
+
+res=$($com <<< 'set -e ; while false ; do echo NG ; done ; echo OK')
+[ "$res" == "OK" ] || err $LINENO
 
 ### JOB TEST ###
 
