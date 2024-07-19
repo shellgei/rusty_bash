@@ -120,6 +120,19 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | umask | :no_good: | unalias | :no_good: | unset | :construction: |
 | wait | :construction: | export | :no_good: | false | :heavy_check_mark: |
 
+### options
+
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| -c | :no_good: | -i | :heavy_check_mark: | -l, --login | :no_good: |
+| -r | :no_good: | -s | :no_good: | -D | :no_good: |
+| [-+]O | :no_good: | -- | :no_good: | --debugger | :no_good: |
+| --dimp-po-strings | :no_good: | --help | :no_good: | --init-file | :no_good: |
+| --rcfile | :no_good: | --noediting | :no_good: | --noprofile | :no_good: |
+| --norc | :no_good: | --posix | :no_good: | --restricted | :no_good: |
+| -v, --verbose | :no_good: | --version | :heavy_check_mark: | | |
+
+
 ### shopt 
 
 |features | status |features | status |features | status |
