@@ -87,6 +87,23 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 if args.len() == 2 {
                     core.options.print_all();
                     return 0;
+                }else{
+                    match core.options.set(&args[2], true) {
+                        true  => return 0,
+                        false => return 2,
+                    }
+                }
+            }
+
+            if args[1] == "+o" {
+                if args.len() == 2 {
+                    core.options.print_all2();
+                    return 0;
+                }else{
+                    match core.options.set(&args[2], false) {
+                        true  => return 0,
+                        false => return 2,
+                    }
                 }
             }
 

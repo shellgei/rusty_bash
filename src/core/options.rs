@@ -58,6 +58,15 @@ impl Options {
         }
     }
 
+    pub fn format2(opt: &str, onoff: bool) -> String {
+        let onoff_str = match onoff {
+            true  => "-",
+            false => "+",
+        };
+
+        format!("set {}o {}", onoff_str, opt)
+    }
+
     pub fn print_opt(&self, opt: &str) -> bool {
         match self.opts.get_key_value(opt) {
             None     => {
@@ -74,6 +83,15 @@ impl Options {
     pub fn print_all(&self) {
         let mut list = self.opts.iter()
                        .map(|opt| Self::format(opt.0, *opt.1))
+                       .collect::<Vec<String>>();
+
+        list.sort();
+        list.iter().for_each(|e| println!("{}", e));
+    }
+
+    pub fn print_all2(&self) {
+        let mut list = self.opts.iter()
+                       .map(|opt| Self::format2(opt.0, *opt.1))
                        .collect::<Vec<String>>();
 
         list.sort();
