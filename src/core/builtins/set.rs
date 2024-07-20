@@ -83,6 +83,9 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 return set_parameters(core, args)
             }
 
+            if args[1] == "-o" {
+            }
+
             match args[1].starts_with("-") || args[1].starts_with("+") {
                 true  => set_options(core, &args[1..]),
                 false => set_parameters(core, args),

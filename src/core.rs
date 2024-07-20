@@ -5,10 +5,10 @@ pub mod builtins;
 pub mod data;
 pub mod history;
 pub mod jobtable;
-pub mod shopts;
+pub mod options;
 
 use self::data::Data;
-use self::shopts::Shopts;
+use self::options::Options;
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
@@ -48,7 +48,8 @@ pub struct ShellCore {
     pub real_time: TimeSpec, 
     pub user_time: TimeVal, 
     pub sys_time: TimeVal, 
-    pub shopts: Shopts,
+    pub options: Options,
+    pub shopts: Options,
     pub suspend_e_option: bool,
 }
 
@@ -86,7 +87,8 @@ impl ShellCore {
             real_time: TimeSpec::new(0, 0),
             user_time: TimeVal::new(0, 0),
             sys_time: TimeVal::new(0, 0),
-            shopts: Shopts::new(),
+            options: Options::new_as_basic_opts(),
+            shopts: Options::new_as_shopts(),
             suspend_e_option: false,
         };
 

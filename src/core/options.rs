@@ -4,13 +4,23 @@
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct Shopts {
+pub struct Options {
     opts: HashMap<String, bool>,
 }
 
-impl Shopts {
-    pub fn new() -> Shopts {
-        let mut shopts = Shopts {
+impl Options {
+    pub fn new_as_basic_opts() -> Options {
+        let mut options = Options {
+            opts: HashMap::new(),
+        };
+
+        options.opts.insert("pipefail".to_string(), false);
+
+        options
+    }
+
+    pub fn new_as_shopts() -> Options {
+        let mut options = Options {
             opts: HashMap::new(),
         };
 
@@ -28,12 +38,12 @@ impl Shopts {
                    "sourcepath", "xpg_echo"];
 
         for opt in opt_strs {
-            shopts.opts.insert(opt.to_string(), false);
+            options.opts.insert(opt.to_string(), false);
         }*/
 
-        shopts.opts.insert("extglob".to_string(), true);
+        options.opts.insert("extglob".to_string(), true);
 
-        shopts
+        options
     }
 
     pub fn format(opt: &str, onoff: bool) -> String {
