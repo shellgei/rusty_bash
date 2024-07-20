@@ -84,6 +84,10 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
 
             if args[1] == "-o" {
+                if args.len() == 2 {
+                    core.options.print_all();
+                    return 0;
+                }
             }
 
             match args[1].starts_with("-") || args[1].starts_with("+") {
