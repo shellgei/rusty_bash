@@ -1353,6 +1353,12 @@ res=$($com <<< 'set -e ; false || false ; echo NG')
 res=$($com <<< 'set -e ; while false ; do echo NG ; done ; echo OK')
 [ "$res" == "OK" ] || err $LINENO
 
+res=$($com <<< 'set -o pipefail; ls aaaa | false | true')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'set -o pipefail; set -e; false | true ; echo NG')
+[ "$res" == "" ] || err $LINENO
+
 ### JOB TEST ###
 
 res=$($com <<< 'sleep 1 & sleep 2 & sleep 3 & jobs')
