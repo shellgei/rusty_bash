@@ -131,6 +131,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | --rcfile | :no_good: | --noediting | :no_good: | --noprofile | :no_good: |
 | --norc | :no_good: | --posix | :no_good: | --restricted | :no_good: |
 | -v, --verbose | :no_good: | --version | :heavy_check_mark: | -e | :heavy_check_mark: |
+| --pipefail | :heavy_check_mark: |  |  |  |  |
 
 
 ### shopt 
