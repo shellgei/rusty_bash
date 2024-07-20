@@ -250,13 +250,11 @@ impl ShellCore {
         self.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
 
         if self.options.query("pipefail") {
-            let mut rightmost_nonzero = "0".to_string();
-            for e in &pipestatus {
-                if e != "0" {
-                    rightmost_nonzero = e.to_string();
-                }
+            pipestatus.retain(|e| e != "0");
+
+            if pipestatus.len() != 0 {
+                self.data.set_param("?", &pipestatus.last().unwrap());
             }
-            self.data.set_param("?", &rightmost_nonzero);
         }
 
         if exclamation {
