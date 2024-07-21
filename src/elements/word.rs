@@ -14,8 +14,11 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn eval(&mut self, _: &mut ShellCore) -> Option<Vec<String>> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
         let mut ws = brace_expansion::eval(self);
+        for w in ws.iter_mut() {
+            w.subwords.iter_mut().for_each(|sw| {sw.substitute(core); } );
+        }
         Some( Self::make_args(&mut ws) )
     }
 
