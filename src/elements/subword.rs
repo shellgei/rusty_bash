@@ -3,11 +3,13 @@
 
 mod escaped_char;
 mod simple;
+mod single_quoted;
 
 use crate::{Feeder, ShellCore};
 use std::fmt;
 use self::escaped_char::EscapedChar;
 use self::simple::SimpleSubword;
+use self::single_quoted::SingleQuoted;
 use std::fmt::Debug;
 
 impl Debug for dyn Subword {
@@ -36,7 +38,8 @@ pub trait Subword {
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
-    if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
+    if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }

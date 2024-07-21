@@ -81,15 +81,17 @@ impl Feeder {
         if ! self.starts_with("'") {
             return 0;
         }
+        if self.starts_with("''") {
+            return 2;
+        }
 
         loop {
             if let Some(n) = self.remaining[1..].find("'") {
                 return n + 2;
             }else if ! self.feed_additional_line(core) {
-                break;
+                return 0;
             }
         }
-        0
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
