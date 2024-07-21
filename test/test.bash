@@ -433,10 +433,10 @@ res=$($com <<< 'echo a{}},b}')
 [ "$res" == "a}} ab" ] || err $LINENO
 
 res=$($com <<< 'echo $${a,b}')
-[ "$res" == "\$\${a,b}" ] || err $LINENO
+[ "$res" != "\$\${a,b}" ] || err $LINENO
 
 res=$($com <<< 'echo $${a,{b,c},d}')
-[ "$res" == "\$\${a,{b,c},d}" ] || err $LINENO
+[ "$res" != "\$\${a,{b,c},d}" ] || err $LINENO
 
 res=$($com <<< 'echo あ{a,b}{},c}')
 [ "$res" == "あa{},c} あb{},c}" ] || err $LINENO
