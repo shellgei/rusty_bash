@@ -66,6 +66,21 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_dollar_special_and_positional_param(&mut self, core: &mut ShellCore) -> usize {
+        if ! self.starts_with("$") {
+            return 0;
+        }
+        self.backslash_check_and_feed(vec!["$"], core);
+
+        match self.remaining.chars().nth(1) {
+            Some(c) => match "$?*@#-!_0123456789".find(c) {
+                Some(_) => 2,
+                None    => 0,
+            },
+            None    => 0,
+        }
+    }
+
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
