@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::Subword;
+use super::Subword;
 
 #[derive(Debug, Clone)]
 pub struct SingleQuoted {

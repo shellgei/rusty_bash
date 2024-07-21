@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
-use crate::elements::subword::Subword;
+use super::Subword;
 
 #[derive(Debug, Clone)]
 pub struct SimpleSubword {
@@ -16,7 +16,7 @@ impl Subword for SimpleSubword {
 }
 
 impl SimpleSubword {
-    pub fn parse(feeder: &mut Feeder) -> Option<SimpleSubword> {
+    pub fn parse(feeder: &mut Feeder) -> Option<Self> {
         let len = feeder.scanner_subword_symbol();
         if len > 0 {
             return Some( Self{ text :feeder.consume(len) } );
