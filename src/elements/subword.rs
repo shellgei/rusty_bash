@@ -5,6 +5,7 @@ mod escaped_char;
 mod parameter;
 mod simple;
 mod single_quoted;
+mod varname;
 
 use crate::{Feeder, ShellCore};
 use std::fmt;
@@ -12,6 +13,7 @@ use self::escaped_char::EscapedChar;
 use self::parameter::Parameter;
 use self::simple::SimpleSubword;
 use self::single_quoted::SingleQuoted;
+use self::varname::VarName;
 use std::fmt::Debug;
 
 impl Debug for dyn Subword {
@@ -44,6 +46,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subwor
     if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = VarName::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }
