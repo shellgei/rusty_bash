@@ -4,6 +4,10 @@
 use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 
+fn after_dollar(s: &str) -> bool {
+    s == "$" || s == "$$"
+}
+
 pub fn eval(word: &mut Word) -> Vec<Word> {
     invalidate_brace(&mut word.subwords);
 
@@ -16,7 +20,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
         if let Some(d) = parse(&word.subwords[i..]) {
             let shift_d: Vec<usize> = d.iter().map(|e| e+i).collect();
 
-            if i > 0 && word.subwords[i-1].get_text() == "$" {
+            if i > 0 && after_dollar(word.subwords[i-1].get_text()) {
                 skip_until = *shift_d.last().unwrap();
                 continue;
             }
@@ -35,8 +39,8 @@ fn invalidate_brace(subwords: &mut Vec<Box<dyn Subword>>) {
 
     if subwords[0].get_text() == "{"
     && subwords[1].get_text() == "}" {
-        let right = subwords.remove(1);
-        subwords[0].merge(&right);
+        subwords.remove(1);
+        subwords[0].set_text("{}");
     }
 }
 
