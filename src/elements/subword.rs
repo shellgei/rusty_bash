@@ -40,6 +40,8 @@ pub trait Subword {
             s  => Some(s.to_string()),
         }
     }
+
+    fn is_name(&self) -> bool {false}
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
