@@ -38,15 +38,17 @@ impl Feeder {
         }
     }
 
-    pub fn scanner_subword_symbol(&self) -> usize {
-        if self.starts_with("{")
-        || self.starts_with(",")
-        || self.starts_with("}")
-        || self.starts_with("$"){
-            1
-        }else{
-            0
+    fn scanner_one_of(&self, cands: &[&str]) -> usize {
+        for c in cands {
+            if self.starts_with(c) {
+                return c.len();
+            }
         }
+        0
+    }
+
+    pub fn scanner_subword_symbol(&self) -> usize {
+        self.scanner_one_of(&["{", "}", ",", "$"])
     }
 
     pub fn scanner_escaped_char(&mut self, core: &mut ShellCore) -> usize {
@@ -91,29 +93,20 @@ impl Feeder {
     }
 
     pub fn scanner_job_end(&mut self) -> usize {
-        if let Some(ch) = self.remaining.chars().nth(0) {
-            if ";&\n".find(ch) != None {
-                return 1;
-            }
-        }
-        0
+        self.scanner_one_of(&[";", "&", "\n"])
     }
 
     pub fn scanner_and_or(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["|", "&"], core);
-
-        if self.remaining.starts_with("||")     { 2 }
-        else if self.remaining.starts_with("&&"){ 2 }
-        else{ 0 }
+        self.scanner_one_of(&["||", "&&"])
     }
 
     pub fn scanner_pipe(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["|"], core);
-
-        if self.remaining.starts_with("||")     { 0 }
-        else if self.remaining.starts_with("|&"){ 2 }
-        else if self.remaining.starts_with("|") { 1 }
-        else{ 0 }
+        if self.starts_with("||") {
+            return 0;
+        }
+        self.scanner_one_of(&["|&","|"])
     }
 
     pub fn scanner_comment(&self) -> usize {
@@ -133,11 +126,6 @@ impl Feeder {
 
     pub fn scanner_redirect_symbol(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec![">", "&"], core);
-
-        if self.remaining.starts_with("&>")     { 2 } //追加
-        else if self.remaining.starts_with(">>"){ 2 }
-        else if self.remaining.starts_with("<"){ 1 }
-        else if self.remaining.starts_with(">"){ 1 }
-        else{ 0 }
+        self.scanner_one_of(&["&>", ">&", ">>", "<", ">"])
     }
 }

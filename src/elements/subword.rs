@@ -1,11 +1,13 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod escaped_char;
 mod simple;
 
-use crate::{ShellCore, Feeder};
-use crate::elements::subword::simple::SimpleSubword;
+use crate::{Feeder, ShellCore};
 use std::fmt;
+use self::escaped_char::EscapedChar;
+use self::simple::SimpleSubword;
 use std::fmt::Debug;
 
 impl Debug for dyn Subword {
@@ -22,12 +24,19 @@ impl Clone for Box::<dyn Subword> {
 
 pub trait Subword {
     fn get_text(&self) -> &str;
+    fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn merge(&mut self, right: &Box<dyn Subword>);
-    fn unquote(&mut self);
+
+    fn make_unquoted_string(&mut self) -> Option<String> {
+        match self.get_text() {
+            "" => None,
+            s  => Some(s.to_string()),
+        }
+    }
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
-    if let Some(a) = SimpleSubword::parse(feeder, core){ Some(Box::new(a)) }
+    if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }
