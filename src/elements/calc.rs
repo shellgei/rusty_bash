@@ -3,7 +3,14 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::command;
+use crate::elements::subword::Subword;
 use super::word::Word;
+
+enum CalcElement {
+    Op(String),
+    //Var(Box<dyn Subword>),
+    Num(String),
+}
 
 #[derive(Debug, Clone)]
 pub struct Calc {
@@ -23,7 +30,27 @@ impl Calc {
         }
     }
 
+    /*
+    fn eat_sign_or_interger(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if feeder.starts_with("+") || feeder.starts_with("-") {
+        }
+
+        if let Some(a) = BracedParam::parse(feeder, core){
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
+    }*/
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Calc> {
+        let mut ans = Calc::new();
+
+        loop {
+            //let len = feeder.scanner_number();
+        }
+
         None
     }
 }

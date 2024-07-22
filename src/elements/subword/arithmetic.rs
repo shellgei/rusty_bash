@@ -33,6 +33,23 @@ impl Arithmetic {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+        if ! feeder.starts_with("$((") {
+            return None;
+        }
+        feeder.set_backup();
+
+        let mut ans = Self::new();
+        ans.text = feeder.consume(3);
+
+        if let Some(c) = Calc::parse(feeder, core) {
+            ans.text += &c.text;
+            ans.text += &feeder.consume(2);
+            ans.calc = c;
+            feeder.pop_backup();
+            return Some(ans);
+        }
+    
+        feeder.rewind();
         None
     }
 }
