@@ -11,5 +11,6 @@ pub mod word;
 pub mod subscript;
 pub mod substitution;
 pub mod subword;
+pub mod calc;
 
 use self::io::pipe::Pipe;

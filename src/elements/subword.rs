@@ -10,6 +10,7 @@ mod ext_glob;
 mod double_quoted;
 pub mod parameter;
 mod varname;
+mod arithmetic;
 
 use crate::{ShellCore, Feeder};
 use self::simple::SimpleSubword;
