@@ -7,7 +7,7 @@ use crate::{ShellCore, Feeder};
 enum CalcElement {
     //Op(String),
     //Var(Box<dyn Subword>),
-    Num(String),
+    Num(i64),
 }
 
 #[derive(Debug, Clone)]
@@ -36,7 +36,7 @@ impl Calc {
     }
 
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
-        let len = feeder.scanner_blank(core);
+        let len = feeder.scanner_multiline_blank(core);
         ans.text += &feeder.consume(len);
     }
 
@@ -48,7 +48,8 @@ impl Calc {
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
-        ans.elements.push( CalcElement::Num(s) );
+        let n = s.parse::<i64>().expect("SUSH INTERNAL ERROR: scanner_integer is wrong");
+        ans.elements.push( CalcElement::Num(n) );
 
         true
     }
@@ -58,12 +59,15 @@ impl Calc {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
-            if ! Self::eat_interger(feeder, &mut ans, core) {
+            if Self::eat_interger(feeder, &mut ans, core) {
+                continue;
+            }
+
+            if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
                 break;
             }
         }
 
-        Self::eat_blank(feeder, &mut ans, core);
         match feeder.starts_with("))") {
             true  => Some(ans),
             false => None,

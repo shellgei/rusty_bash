@@ -672,6 +672,21 @@ res=$($com <<< 'A=B cd ; echo $A')
 res=$($com <<< 'echo $((12345 ))aaa')
 [ "$res" == "12345aaa" ] || err $LINENO
 
+res=$($com <<< 'echo $((echo 123 ) )')
+[ "$res" == "123" ] || err $LINENO
+
+res=$($com <<< 'echo $((
+123
+))')
+[ "$res" == "123" ] || err $LINENO
+
+res=$($com <<< 'echo $((
+123
+)
+)')
+[ "$?" == "0" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
