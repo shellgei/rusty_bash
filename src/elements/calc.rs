@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 
 #[derive(Debug, Clone)]
 enum CalcElement {
-    Op(String),
+    //Op(String),
     //Var(Box<dyn Subword>),
     Num(String),
 }
@@ -13,11 +13,11 @@ enum CalcElement {
 #[derive(Debug, Clone)]
 pub struct Calc {
     pub text: String,
-    pub elements: Vec<CalcElement>,
+    elements: Vec<CalcElement>,
 }
 
 impl Calc {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval(&mut self, _: &mut ShellCore) -> Option<String> {
         for e in &self.elements {
             match e {
                 CalcElement::Num(s) => return Some(s.to_string()),
