@@ -168,6 +168,10 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_calc_operator(&mut self) -> usize {
+        self.scanner_one_of(&["+", "-", "/", "*"])
+    }
+
     pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| '0' <= ch && ch <= '9';
         self.scanner_chars(judge, core, 0)

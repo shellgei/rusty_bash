@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 
 #[derive(Debug, Clone)]
 enum CalcElement {
-    //Op(String),
+    Op(String),
     //Var(Box<dyn Subword>),
     Num(i64),
 }
@@ -14,11 +14,14 @@ enum CalcElement {
 pub struct Calc {
     pub text: String,
     elements: Vec<CalcElement>,
+    rev_polish: Vec<CalcElement>,
 }
 
 impl Calc {
     pub fn eval(&mut self, _: &mut ShellCore) -> Option<String> {
-        for e in &self.elements {
+        self.to_rev_polish();
+
+        for e in &self.rev_polish {
             match e {
                 CalcElement::Num(s) => return Some(s.to_string()),
                 _ => return None,
@@ -28,10 +31,15 @@ impl Calc {
         None
     }
 
+    fn to_rev_polish(&mut self) {
+        self.rev_polish = self.elements.to_vec();
+    }
+
     pub fn new() -> Calc {
         Calc {
             text: String::new(),
             elements: vec![],
+            rev_polish: vec![],
         }
     }
 
@@ -54,12 +62,26 @@ impl Calc {
         true
     }
 
+    fn eat_operator(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        let len = feeder.scanner_calc_operator();
+        if len == 0 {
+            return false;
+        }
+
+        let s = feeder.consume(len);
+        ans.text += &s.clone();
+        ans.elements.push( CalcElement::Op(s) );
+
+        true
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Calc> {
         let mut ans = Calc::new();
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
-            if Self::eat_interger(feeder, &mut ans, core) {
+            if Self::eat_interger(feeder, &mut ans, core) 
+            || Self::eat_operator(feeder, &mut ans) {
                 continue;
             }
 
