@@ -30,25 +30,34 @@ impl Calc {
         }
     }
 
-    /*
     fn eat_sign_or_interger(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let mut text = String::new();
         if feeder.starts_with("+") || feeder.starts_with("-") {
+            text = feeder.consume(1);
         }
 
+        let mut nums_len = feeder.scanner_nonnegative_integer(core);
+        if nums_len > 0 {
+            text += &feeder.consume(nums_len);
+        }
+
+        /*
         if let Some(a) = BracedParam::parse(feeder, core){
             ans.text += a.get_text();
             ans.subwords.push(Box::new(a));
             true
         }else{
             false
-        }
-    }*/
+        }*/
+
+        true
+    }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Calc> {
         let mut ans = Calc::new();
 
         loop {
-            //let len = feeder.scanner_number();
+            Self::eat_sign_or_interger(feeder, &mut ans, core);
         }
 
         None

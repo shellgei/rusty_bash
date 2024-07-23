@@ -19,21 +19,19 @@ impl Feeder {
     }
 
     fn scanner_chars(&mut self, judge: fn(char) -> bool,
-                     core: &mut ShellCore) -> usize {
+                     core: &mut ShellCore, skip_bytes: usize) -> usize {
         loop {
             let mut ans = 0;
-            for ch in self.remaining.chars() {
-                if judge(ch) {
-                    ans += ch.len_utf8();
-                } else {
-                    break;
+            for ch in self.remaining[skip_bytes..].chars() {
+                match judge(ch) {
+                    true  => ans += ch.len_utf8(),
+                    false => break,
                 }
             }
 
-            if &self.remaining[ans..] == "\\\n" {
-                self.feed_and_connect(core);
-            }else{
-                return ans;
+            match &self.remaining[skip_bytes+ans..] == "\\\n" {
+                true  => self.feed_and_connect(core),
+                false => return ans,
             }
         }
     }
@@ -109,12 +107,12 @@ impl Feeder {
 
     pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| "\"\\$".find(ch) == None;
-        self.scanner_chars(judge, core)
+        self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_extglob_subword(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| ")|,}".find(ch) == None;
-        self.scanner_chars(judge, core)
+        self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_single_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
@@ -137,7 +135,7 @@ impl Feeder {
 
     pub fn scanner_inner_subscript(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| "]".find(ch) == None;
-        self.scanner_chars(judge, core)
+        self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_unknown_in_param_brace(&mut self) -> usize {
@@ -149,17 +147,30 @@ impl Feeder {
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| " \t".find(ch) != None;
-        self.scanner_chars(judge, core)
+        self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| " \t\n".find(ch) != None;
-        self.scanner_chars(judge, core)
+        self.scanner_chars(judge, core, 0)
+    }
+
+    pub fn scanner_integer(&mut self, core: &mut ShellCore) -> usize {
+        let skip = match self.starts_with("-") || self.starts_with("+") {
+            true  => 1,
+            false => 0,
+        };
+
+        let judge = |ch| '0' <= ch && ch <= '9';
+        match self.scanner_chars(judge, core, skip) {
+            0 => 0,
+            n => n + skip,
+        }
     }
 
     pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| '0' <= ch && ch <= '9';
-        self.scanner_chars(judge, core)
+        self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_name(&mut self, core: &mut ShellCore) -> usize {
@@ -171,7 +182,7 @@ impl Feeder {
         let judge = |ch| ch == '_' || ('0' <= ch && ch <= '9')
                          || ('a' <= ch && ch <= 'z')
                          || ('A' <= ch && ch <= 'Z');
-        self.scanner_chars(judge, core)
+        self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_name_and_equal(&mut self, core: &mut ShellCore) -> usize {
