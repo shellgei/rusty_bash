@@ -2,9 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::command;
-use crate::elements::subword::Subword;
-use super::word::Word;
 
 #[derive(Debug, Clone)]
 enum CalcElement {
@@ -21,6 +18,13 @@ pub struct Calc {
 
 impl Calc {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
+        for e in &self.elements {
+            match e {
+                CalcElement::Num(s) => return Some(s.to_string()),
+                _ => return None,
+            }
+        }
+
         None
     }
 
