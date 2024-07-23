@@ -669,6 +669,9 @@ res=$($com <<< 'A=${ }')
 res=$($com <<< 'A=B cd ; echo $A')
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'echo $((12345 ))aaa')
+[ "$res" == "12345aaa" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
