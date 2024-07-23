@@ -46,6 +46,7 @@ impl Arithmetic {
             ans.text += &feeder.consume(2);
             ans.calc = c;
             feeder.pop_backup();
+            dbg!("{:?}", &ans);
             return Some(ans);
         }
     
