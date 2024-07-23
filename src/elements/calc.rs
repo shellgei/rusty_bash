@@ -6,6 +6,7 @@ use crate::elements::command;
 use crate::elements::subword::Subword;
 use super::word::Word;
 
+#[derive(Debug, Clone)]
 enum CalcElement {
     Op(String),
     //Var(Box<dyn Subword>),
@@ -15,7 +16,7 @@ enum CalcElement {
 #[derive(Debug, Clone)]
 pub struct Calc {
     pub text: String,
-    pub elements: Vec<String>,
+    pub elements: Vec<CalcElement>,
 }
 
 impl Calc {
@@ -30,25 +31,15 @@ impl Calc {
         }
     }
 
-    fn eat_sign_or_interger(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let mut text = String::new();
-        if feeder.starts_with("+") || feeder.starts_with("-") {
-            text = feeder.consume(1);
+    fn eat_interger(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_integer(core);
+        if len == 0 {
+            return false;
         }
 
-        let mut nums_len = feeder.scanner_nonnegative_integer(core);
-        if nums_len > 0 {
-            text += &feeder.consume(nums_len);
-        }
-
-        /*
-        if let Some(a) = BracedParam::parse(feeder, core){
-            ans.text += a.get_text();
-            ans.subwords.push(Box::new(a));
-            true
-        }else{
-            false
-        }*/
+        let s = feeder.consume(len);
+        ans.text += &s.clone();
+        ans.elements.push( CalcElement::Num(s) );
 
         true
     }
@@ -57,9 +48,14 @@ impl Calc {
         let mut ans = Calc::new();
 
         loop {
-            Self::eat_sign_or_interger(feeder, &mut ans, core);
+            if ! Self::eat_interger(feeder, &mut ans, core) {
+                break;
+            }
         }
 
-        None
+        match feeder.starts_with("))") {
+            true  => Some(ans),
+            false => None,
+        }
     }
 }
