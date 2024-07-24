@@ -4,6 +4,7 @@
 mod calculator;
 
 use crate::{ShellCore, Feeder};
+use self::calculator::calculate;
 
 #[derive(Debug, Clone)]
 enum CalcElement {
@@ -17,10 +18,13 @@ pub struct Calc {
     pub text: String,
     elements: Vec<CalcElement>,
     rev_polish: Vec<CalcElement>,
+    paren_stack: Vec<char>,
 }
 
 impl Calc {
     pub fn eval(&mut self, _: &mut ShellCore) -> Option<String> {
+//        let ans = calculate(&self.elements);
+ //       ans
         self.to_rev_polish();
 
         for e in &self.rev_polish {
@@ -42,6 +46,7 @@ impl Calc {
             text: String::new(),
             elements: vec![],
             rev_polish: vec![],
+            paren_stack: vec![],
         }
     }
 
@@ -64,16 +69,24 @@ impl Calc {
         true
     }
 
-    fn eat_operator(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        let len = feeder.scanner_calc_operator();
+    fn eat_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_calc_operator(core);
         if len == 0 {
             return false;
+        }
+
+        if feeder.starts_with("(") {
+            ans.paren_stack.push( '(' );
+        }else if feeder.starts_with(")") {
+            match ans.paren_stack.last() {
+                Some('(') => {ans.paren_stack.pop();},
+                _         => return false,
+            }
         }
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
         ans.elements.push( CalcElement::Op(s) );
-
         true
     }
 
@@ -83,7 +96,7 @@ impl Calc {
         loop {
             Self::eat_blank(feeder, &mut ans, core);
             if Self::eat_interger(feeder, &mut ans, core) 
-            || Self::eat_operator(feeder, &mut ans) {
+            || Self::eat_operator(feeder, &mut ans, core) {
                 continue;
             }
 

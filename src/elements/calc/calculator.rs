@@ -57,7 +57,29 @@ fn reduce(stack: &mut Vec<i32>, op: String ) {
     }
 }
 
-pub fn calculate(elements: Vec<CalcElement>, core: &mut ShellCore) -> String {
+fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
+    let mut ans = vec![];
+
+    for e in elements {
+        match e {
+            CalcElement::Num(n) => ans.push(CalcElement::Num(*n)),
+            CalcElement::Op(n) => {},
+        }
+    }
+    ans
+}
+
+pub fn calculate(elements: &Vec<CalcElement>) -> Option<String> {
+    let rev_pol = rev_polish(&elements);
+    dbg!("{:?}", &rev_pol);
+
+    for e in &rev_pol {
+        match e {
+            CalcElement::Num(s) => return Some(s.to_string()),
+            _ => return None,
+        }
+    }
+
     /*
     let tokens = tokenizer(expression, core);
     let mut num_stack: Vec<i32> = vec![];
@@ -100,7 +122,7 @@ pub fn calculate(elements: Vec<CalcElement>, core: &mut ShellCore) -> String {
 
     num_stack.pop().unwrap().to_string()
     */
-    "0".to_string()
+    Some("0".to_string())
 }
 
 /*

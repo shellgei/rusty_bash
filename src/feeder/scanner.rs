@@ -168,8 +168,8 @@ impl Feeder {
         }
     }
 
-    pub fn scanner_calc_operator(&mut self) -> usize {
-        self.scanner_one_of(&["+", "-", "/", "*"])
+    pub fn scanner_calc_operator(&mut self, core: &mut ShellCore) -> usize {
+        self.scanner_one_of(&["+", "-", "/", "*", "(", ")"])
     }
 
     pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
