@@ -696,6 +696,9 @@ res=$($com <<< 'echo $((-\
 3))')
 [ "$res" == "-123" ] || err $LINENO
 
+res=$($com <<< 'echo $((123 ) ))')
+[ "$?" == "2" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
 
 # brace
 
