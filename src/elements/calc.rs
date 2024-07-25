@@ -23,7 +23,7 @@ pub struct Calc {
 
 impl Calc {
     pub fn eval(&mut self, _: &mut ShellCore) -> Option<String> {
-//        let ans = calculate(&self.elements);
+        let ans = calculate(&self.elements);
  //       ans
         self.to_rev_polish();
 

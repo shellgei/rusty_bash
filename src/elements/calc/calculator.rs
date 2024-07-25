@@ -4,7 +4,7 @@
 use crate::{ShellCore,Feeder};
 use super::CalcElement;
 
-fn op_order(operator: &String) -> u8 {
+fn op_order(operator: &str) -> u8 {
     let op: &str = &operator.clone();
 
     match op {
@@ -57,15 +57,46 @@ fn reduce(stack: &mut Vec<i32>, op: String ) {
     }
 }
 
+fn to_op_str(calc_elem: Option<&CalcElement>) -> Option<&str> {
+    match calc_elem {
+        Some(CalcElement::Op(s)) => Some(&s),
+        _ => None,
+    }
+}
+
 fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     let mut ans = vec![];
+    let mut stack = vec![];
 
     for e in elements {
         match e {
             CalcElement::Num(n) => ans.push(CalcElement::Num(*n)),
-            CalcElement::Op(n) => {},
+            CalcElement::Op(s) => {
+                loop {
+                    match to_op_str(stack.last()) {
+                        None | Some("(") => {
+                            stack.push(CalcElement::Op(s.clone()));
+                            break;
+                        },
+                        Some(top) => {
+                            if op_order(top) < op_order(s) {
+                                stack.push(CalcElement::Op(s.clone()));
+                                break;
+                            }else{
+                                ans.push(stack.pop().unwrap());
+                            }
+                        },
+                    }
+                }
+            },
+            _ => {},
         }
     }
+
+    while stack.len() > 0 {
+        ans.push(stack.pop().unwrap());
+    }
+
     ans
 }
 
