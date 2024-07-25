@@ -78,8 +78,21 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                             stack.push(CalcElement::Op(s.clone()));
                             break;
                         },
-                        Some(top) => {
-                            if op_order(top) > op_order(s) {
+                        Some(")") => {
+                            stack.pop();
+                            loop {
+                                match to_op_str(stack.last()) {
+                                    None => {},
+                                    Some("(") => {
+                                        stack.pop();
+                                        break;
+                                    },
+                                    Some(e) => ans.push(CalcElement::Op(e.to_string())),
+                                }
+                            }
+                        },
+                        Some(top_str) => {
+                            if op_order(top_str) > op_order(s) {
                                 stack.push(CalcElement::Op(s.clone()));
                                 break;
                             }else{
