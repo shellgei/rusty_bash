@@ -79,7 +79,7 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                             break;
                         },
                         Some(top) => {
-                            if op_order(top) < op_order(s) {
+                            if op_order(top) > op_order(s) {
                                 stack.push(CalcElement::Op(s.clone()));
                                 break;
                             }else{
