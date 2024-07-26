@@ -148,12 +148,10 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Option<CalcElement> {
             _ => Err("unknown operator".to_string()),
         };
 
-        match result {
-            Ok(_) => {}, 
-            Err(err_str) => {
-                eprintln!("sush: @@@ : syntax error: {} (error token is \"{:?}\")", err_str, e);
-                return None;
-            },
+        if let Err(err_str) = result {
+            eprintln!("sush: @@@ : syntax error: {} (error token is \"{:?}\")",
+                      err_str, e);
+            return None;
         }
     }
 
