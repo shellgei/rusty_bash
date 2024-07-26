@@ -71,61 +71,65 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     ans
 }
 
-fn operation_minus(stack: &mut Vec<CalcElement>) {
+fn operation_minus(stack: &mut Vec<CalcElement>) -> Result<(), String> {
     if stack.len() < 2 {
-        panic!("SUSH INTERNAL ERROR: wrong operation");
+        return Err("operand expected".to_string());
     }
 
     let right = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
-        _ => panic!("SUSH INTERNAL ERROR: wrong operation"),
+        _ => return Err("operand expected".to_string()),
     };
 
     let left = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
-        _ => panic!("SUSH INTERNAL ERROR: wrong operation"),
+        _ => return Err("operand expected".to_string()),
     };
 
     stack.push( CalcElement::Num(left - right) );
+    Ok(())
 }
 
-fn operation_plus(stack: &mut Vec<CalcElement>) {
+fn operation_plus(stack: &mut Vec<CalcElement>) -> Result<(), String> {
     if stack.len() < 2 {
-        panic!("SUSH INTERNAL ERROR: wrong operation");
+        return Err("operand expected".to_string());
     }
 
     let right = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
-        _ => panic!("SUSH INTERNAL ERROR: wrong operation"),
+        _ => return Err("operand expected".to_string()),
     };
 
     let left = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
-        _ => panic!("SUSH INTERNAL ERROR: wrong operation"),
+        _ => return Err("operand expected".to_string()),
     };
 
     stack.push( CalcElement::Num(right + left) );
+    Ok(())
 }
 
-fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) {
+fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     match op {
         "+" => operation_plus(stack),
         "-" => operation_minus(stack),
-        _ => {},
+        _ => Err("unexpected operator".to_string()),
     }
 }
 
-fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) {
+fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     let num = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
-        _ => panic!("SUSH INTERNAL ERROR: wrong operation"),
+        _ => return Err("operand expected".to_string()),
     };
 
     match op {
         "+" => stack.push( CalcElement::Num(num) ),
         "-" => stack.push( CalcElement::Num(-num) ),
-        _ => {},
+        _ => return Err("unexpected operator".to_string()),
     }
+
+    Ok(())
 }
 
 
@@ -134,11 +138,22 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Option<CalcElement> {
     let mut stack = vec![];
 
     for e in rev_pol {
-        match e {
-            CalcElement::Num(_) => stack.push(e),
-            CalcElement::BinaryOp(op) => bin_operation(&op, &mut stack),
-            CalcElement::UnaryOp(op) => unary_operation(&op, &mut stack),
-            _ => {}, 
+        let result = match e {
+            CalcElement::Num(_) => {
+                stack.push(e.clone());
+                Ok(())
+            },
+            CalcElement::BinaryOp(ref op) => bin_operation(&op, &mut stack),
+            CalcElement::UnaryOp(ref op) => unary_operation(&op, &mut stack),
+            _ => Err("unknown operator".to_string()),
+        };
+
+        match result {
+            Ok(_) => {}, 
+            Err(err_str) => {
+                eprintln!("sush: @@@ : syntax error: {} (error token is \"{:?}\")", err_str, e);
+                return None;
+            },
         }
     }
 
