@@ -53,9 +53,8 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                             if op_order(last) <= op_order(e) {
                                 stack.push(e.clone());
                                 break;
-                            }else{
-                                ans.push(stack.pop().unwrap());
                             }
+                            ans.push(stack.pop().unwrap());
                         },
                     }
                 }
