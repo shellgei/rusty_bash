@@ -11,6 +11,8 @@ enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Num(i64),
+    LeftParen,
+    RightParen,
 }
 
 #[derive(Debug, Clone)]
@@ -99,7 +101,13 @@ impl Calc {
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
-        ans.elements.push( CalcElement::BinaryOp(s) );
+        if s == "(" {
+            ans.elements.push( CalcElement::LeftParen );
+        }else if s == ")" {
+            ans.elements.push( CalcElement::RightParen );
+        }else{
+            ans.elements.push( CalcElement::BinaryOp(s) );
+        }
         true
     }
 

@@ -29,6 +29,7 @@ fn to_op_str(calc_elem: Option<&CalcElement>) -> Option<&str> {
     match calc_elem {
         Some(CalcElement::BinaryOp(s)) => Some(&s),
         Some(CalcElement::UnaryOp(s)) => Some(&s),
+        Some(CalcElement::LeftParen ) => Some("("),
         _ => None,
     }
 }
@@ -38,12 +39,12 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     let mut stack = vec![];
 
     for e in elements {
-        match to_op_str(Some(e)) {
-            Some("(") => {
+        match e {
+            CalcElement::LeftParen => {
                 stack.push(e.clone());
                 continue;
             },
-            Some(")") => {
+            CalcElement::RightParen => {
                 loop {
                     match to_op_str(stack.last()) {
                         None => {},
@@ -56,10 +57,6 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                 }
                 continue;
             },
-            _ => {},
-        }
-
-        match e {
             CalcElement::Num(n) => ans.push(CalcElement::Num(*n)),
             CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) => {
                 loop {
@@ -157,6 +154,7 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Option<CalcElement> {
             CalcElement::Num(_) => stack.push(e),
             CalcElement::BinaryOp(op) => bin_operation(&op, &mut stack),
             CalcElement::UnaryOp(op) => unary_operation(&op, &mut stack),
+            _ => {}, 
         }
     }
 
