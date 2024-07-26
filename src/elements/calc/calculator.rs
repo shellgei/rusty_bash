@@ -3,21 +3,31 @@
 
 use super::CalcElement;
 
-fn op_order(operator: &str) -> u8 {
-    match operator {
+fn op_order(op: &CalcElement) -> u8 {
+    match op {
+        /*
         "**" => 6,
         "*" | "/" | "%"            => 5, 
         "+" | "-"                  => 4, 
         "<<" | ">>"                => 3, 
         "<=" | ">=" | ">" | "<"    => 2, 
         "(" | ")"                  => 1, 
+        */
+        CalcElement::UnaryOp(_) => 8,
+        CalcElement::BinaryOp(s) => {
+            match s.as_str() {
+                "*" | "/" | "%" => 5, 
+                "+" | "-"       => 4, 
+                _ => 0,
+            }
+        },
         _ => 0, 
     }
 }
 
 fn to_op_str(calc_elem: Option<&CalcElement>) -> Option<&str> {
     match calc_elem {
-        Some(CalcElement::Op(s)) => Some(&s),
+        Some(CalcElement::BinaryOp(s)) => Some(&s),
         _ => None,
     }
 }
@@ -29,11 +39,11 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     for e in elements {
         match e {
             CalcElement::Num(n) => ans.push(CalcElement::Num(*n)),
-            CalcElement::Op(s) => {
+            CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) => {
                 loop {
                     match to_op_str(stack.last()) {
                         None | Some("(") => {
-                            stack.push(CalcElement::Op(s.clone()));
+                            stack.push(e.clone());
                             break;
                         },
                         Some(")") => {
@@ -45,13 +55,14 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                                         stack.pop();
                                         break;
                                     },
-                                    Some(e) => ans.push(CalcElement::Op(e.to_string())),
+                                    Some(_) => ans.push(e.clone()),
                                 }
                             }
                         },
-                        Some(top_str) => {
-                            if op_order(top_str) < op_order(s) {
-                                stack.push(CalcElement::Op(s.clone()));
+                        Some(_) => {
+                            let last = stack.last().unwrap();
+                            if op_order(last) < op_order(e) {
+                                stack.push(e.clone());
                                 break;
                             }else{
                                 ans.push(stack.pop().unwrap());
@@ -106,10 +117,23 @@ fn operation_plus(stack: &mut Vec<CalcElement>) {
     stack.push( CalcElement::Num(right + left) );
 }
 
-fn operation(op: &str, stack: &mut Vec<CalcElement>) {
+fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) {
     match op {
         "+" => operation_plus(stack),
         "-" => operation_minus(stack),
+        _ => {},
+    }
+}
+
+fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) {
+    let num = match stack.pop() {
+        Some(CalcElement::Num(s)) => s,
+        _ => panic!("SUSH INTERNAL ERROR: wrong operation"),
+    };
+
+    match op {
+        "+" => stack.push( CalcElement::Num(num) ),
+        "-" => stack.push( CalcElement::Num(-num) ),
         _ => {},
     }
 }
@@ -122,7 +146,8 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Option<CalcElement> {
     for e in rev_pol {
         match e {
             CalcElement::Num(_) => stack.push(e),
-            CalcElement::Op(op) => operation(&op, &mut stack),
+            CalcElement::BinaryOp(op) => bin_operation(&op, &mut stack),
+            CalcElement::UnaryOp(op) => unary_operation(&op, &mut stack),
         }
     }
 

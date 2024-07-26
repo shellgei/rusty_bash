@@ -8,7 +8,8 @@ use self::calculator::calculate;
 
 #[derive(Debug, Clone)]
 enum CalcElement {
-    Op(String),
+    UnaryOp(String),
+    BinaryOp(String),
     //Var(Box<dyn Subword>),
     Num(i64),
 }
@@ -60,7 +61,29 @@ impl Calc {
         true
     }
 
-    fn eat_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        match &ans.elements.last() {
+            Some(CalcElement::Num(_)) => return false,
+            _ => {},
+        }
+
+        let len = feeder.scanner_calc_operator(core);
+        if len == 0 {
+            return false;
+        }
+
+        let s = if feeder.starts_with("+") || feeder.starts_with("-") {
+            feeder.consume(1)
+        }else{
+            return false
+        };
+
+        ans.text += &s.clone();
+        ans.elements.push( CalcElement::UnaryOp(s) );
+        true
+    }
+
+    fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_calc_operator(core);
         if len == 0 {
             return false;
@@ -77,7 +100,7 @@ impl Calc {
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
-        ans.elements.push( CalcElement::Op(s) );
+        ans.elements.push( CalcElement::BinaryOp(s) );
         true
     }
 
@@ -86,8 +109,9 @@ impl Calc {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
-            if Self::eat_interger(feeder, &mut ans, core)
-            || Self::eat_operator(feeder, &mut ans, core) {
+            if Self::eat_unary_operator(feeder, &mut ans, core)
+            || Self::eat_interger(feeder, &mut ans, core)
+            || Self::eat_binary_operator(feeder, &mut ans, core) {
                 continue;
             }
 

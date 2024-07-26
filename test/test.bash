@@ -718,6 +718,12 @@ res=$($com <<< 'echo $((456 + -123))')
 res=$($com <<< 'echo $((456 -123))')
 [ "$res" == "333" ] || err $LINENO
 
+res=$($com <<< 'echo $((- - - 1))')
+[ "$res" == "-1" ] || err $LINENO
+
+res=$($com <<< 'echo $((- + - 1))')
+[ "$res" == "1" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
