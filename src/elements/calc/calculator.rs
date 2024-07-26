@@ -5,14 +5,6 @@ use super::CalcElement;
 
 fn op_order(op: &CalcElement) -> u8 {
     match op {
-        /*
-        "**" => 6,
-        "*" | "/" | "%"            => 5, 
-        "+" | "-"                  => 4, 
-        "<<" | ">>"                => 3, 
-        "<=" | ">=" | ">" | "<"    => 2, 
-        "(" | ")"                  => 1, 
-        */
         CalcElement::UnaryOp(_) => 8,
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
@@ -30,6 +22,7 @@ fn to_op_str(calc_elem: Option<&CalcElement>) -> Option<&str> {
         Some(CalcElement::BinaryOp(s)) => Some(&s),
         Some(CalcElement::UnaryOp(s)) => Some(&s),
         Some(CalcElement::LeftParen ) => Some("("),
+        Some(CalcElement::RightParen ) => Some(")"),
         _ => None,
     }
 }
