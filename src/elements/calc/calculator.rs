@@ -23,23 +23,14 @@ fn remove_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
             None => {},
             Some(CalcElement::LeftParen) => {
                 stack.pop();
-                break;
+                return;
             },
             Some(_) => ans.push(stack.pop().unwrap()),
         }
     }
 }
 
-fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
-    let mut ans = vec![];
-    let mut stack = vec![];
-
-    for e in elements {
-        match e {
-            CalcElement::LeftParen  => stack.push(e.clone()),
-            CalcElement::RightParen => remove_paren(&mut stack, &mut ans),
-            CalcElement::Num(n) => ans.push(CalcElement::Num(*n)),
-            CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) => {
+fn stack_operator(e: &CalcElement, stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
                 loop {
                     match stack.last() {
                         None | Some(CalcElement::LeftParen) => {
@@ -56,6 +47,37 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                         },
                     }
                 }
+}
+
+fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
+    let mut ans = vec![];
+    let mut stack = vec![];
+
+    for e in elements {
+        match e {
+            CalcElement::LeftParen  => stack.push(e.clone()),
+            CalcElement::RightParen => remove_paren(&mut stack, &mut ans),
+            CalcElement::Num(n)     => ans.push(CalcElement::Num(*n)),
+            CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) => {
+                stack_operator(&e, &mut stack, &mut ans);
+                /*
+                loop {
+                    match stack.last() {
+                        None | Some(CalcElement::LeftParen) => {
+                            stack.push(e.clone());
+                            break;
+                        },
+                        Some(_) => {
+                            let last = stack.last().unwrap();
+                            if op_order(last) <= op_order(e) {
+                                stack.push(e.clone());
+                                break;
+                            }
+                            ans.push(stack.pop().unwrap());
+                        },
+                    }
+                }
+                */
             },
         }
     }
