@@ -745,6 +745,16 @@ res=$($com <<< 'echo $(( (1 + 2) / 3 ))')
 res=$($com <<< 'echo $(( (1 + 2) / -3 ))')
 [ "$res" == "-1" ] || err $LINENO
 
+res=$($com <<< 'echo $(( (1 + 2) / - ))')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'echo $(( ))')
+[ "$res" == "0" ] || err $LINENO
+
+res=$($com <<< 'echo $(( ( ) ))')
+[ "$?" == "1" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')

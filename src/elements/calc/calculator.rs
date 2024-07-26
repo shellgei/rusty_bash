@@ -129,6 +129,10 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String>
 
 
 pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
+    if elements.len() == 0 {
+        return Ok("0".to_string());
+    }
+
     let rev_pol = rev_polish(&elements);
     let mut stack = vec![];
 

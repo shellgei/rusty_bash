@@ -18,9 +18,8 @@ impl Subword for Arithmetic {
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
         match self.calc.eval(core) {
             Some(s) => self.text = s,
-            None    => self.text = "".to_string(),
+            None    => return false,
         }
-
         true
     }
 }
