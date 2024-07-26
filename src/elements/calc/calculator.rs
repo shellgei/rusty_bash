@@ -119,10 +119,30 @@ fn operation_plus(stack: &mut Vec<CalcElement>) -> Result<(), String> {
     Ok(())
 }
 
+fn operation_multi(stack: &mut Vec<CalcElement>) -> Result<(), String> {
+    if stack.len() < 2 {
+        return Err("operand expected".to_string());
+    }
+
+    let right = match stack.pop() {
+        Some(CalcElement::Num(s)) => s,
+        _ => return Err("operand expected".to_string()),
+    };
+
+    let left = match stack.pop() {
+        Some(CalcElement::Num(s)) => s,
+        _ => return Err("operand expected".to_string()),
+    };
+
+    stack.push( CalcElement::Num(right * left) );
+    Ok(())
+}
+
 fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     match op {
         "+" => operation_plus(stack),
         "-" => operation_minus(stack),
+        "*" => operation_multi(stack),
         _ => Err("unexpected operator".to_string()),
     }
 }
