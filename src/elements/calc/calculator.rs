@@ -30,18 +30,18 @@ fn rev_polish_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
     }
 }
 
-fn rev_polish_op(e: &CalcElement,
+fn rev_polish_op(cur_elem: &CalcElement,
                   stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
     loop {
         match stack.last() {
             None | Some(CalcElement::LeftParen) => {
-                stack.push(e.clone());
+                stack.push(cur_elem.clone());
                 break;
             },
             Some(_) => {
                 let last = stack.last().unwrap();
-                if op_order(last) <= op_order(e) {
-                    stack.push(e.clone());
+                if op_order(last) <= op_order(cur_elem) {
+                    stack.push(cur_elem.clone());
                     break;
                 }
                 ans.push(stack.pop().unwrap());
