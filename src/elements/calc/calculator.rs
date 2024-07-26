@@ -28,6 +28,7 @@ fn op_order(op: &CalcElement) -> u8 {
 fn to_op_str(calc_elem: Option<&CalcElement>) -> Option<&str> {
     match calc_elem {
         Some(CalcElement::BinaryOp(s)) => Some(&s),
+        Some(CalcElement::UnaryOp(s)) => Some(&s),
         _ => None,
     }
 }
@@ -37,6 +38,24 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     let mut stack = vec![];
 
     for e in elements {
+        if CalcElement::BinaryOp("(".to_string()) == *e {
+            stack.push(e.clone());
+            continue;
+        }
+        if CalcElement::BinaryOp(")".to_string()) == *e {
+            loop {
+                match to_op_str(stack.last()) {
+                    None => {},
+                    Some("(") => {
+                        stack.pop();
+                        break;
+                    },
+                    Some(_) => ans.push(stack.pop().unwrap()),
+                }
+            }
+            continue;
+        }
+
         match e {
             CalcElement::Num(n) => ans.push(CalcElement::Num(*n)),
             CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) => {
@@ -46,22 +65,9 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                             stack.push(e.clone());
                             break;
                         },
-                        Some(")") => {
-                            stack.pop();
-                            loop {
-                                match to_op_str(stack.last()) {
-                                    None => {},
-                                    Some("(") => {
-                                        stack.pop();
-                                        break;
-                                    },
-                                    Some(_) => ans.push(e.clone()),
-                                }
-                            }
-                        },
                         Some(_) => {
                             let last = stack.last().unwrap();
-                            if op_order(last) < op_order(e) {
+                            if op_order(last) <= op_order(e) {
                                 stack.push(e.clone());
                                 break;
                             }else{

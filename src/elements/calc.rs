@@ -6,7 +6,7 @@ mod calculator;
 use crate::{ShellCore, Feeder};
 use self::calculator::calculate;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
