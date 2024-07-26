@@ -27,13 +27,42 @@ fn to_string(op: &CalcElement) -> String {
     }
 }
 
-fn rev_polish_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
+fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcElement> {
+    let mut ans = vec![];
+    let mut stack = vec![];
+    let mut last = None;
+
+    for e in elements {
+        let ok = match e {
+            CalcElement::LeftParen   => {stack.push(e.clone()); true},
+            CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
+            CalcElement::Num(n)      => {ans.push(CalcElement::Num(*n)); true},
+            CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
+            CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
+        };
+
+        if !ok 
+        || (last == Some(CalcElement::LeftParen) && *e == CalcElement::RightParen) {
+            return Err(e.clone());
+        }
+
+        last = Some(e.clone());
+    }
+
+    while stack.len() > 0 {
+        ans.push(stack.pop().unwrap());
+    }
+
+    Ok(ans)
+}
+
+fn rev_polish_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) -> bool {
     loop {
         match stack.last() {
-            None => {},
+            None => return false, 
             Some(CalcElement::LeftParen) => {
                 stack.pop();
-                return;
+                return true;
             },
             Some(_) => ans.push(stack.pop().unwrap()),
         }
@@ -41,7 +70,7 @@ fn rev_polish_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
 }
 
 fn rev_polish_op(cur_elem: &CalcElement,
-                  stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
+                  stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) -> bool {
     loop {
         match stack.last() {
             None | Some(CalcElement::LeftParen) => {
@@ -58,27 +87,8 @@ fn rev_polish_op(cur_elem: &CalcElement,
             },
         }
     }
-}
 
-fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
-    let mut ans = vec![];
-    let mut stack = vec![];
-
-    for e in elements {
-        match e {
-            CalcElement::LeftParen   => stack.push(e.clone()),
-            CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-            CalcElement::Num(n)      => ans.push(CalcElement::Num(*n)),
-            CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
-            CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
-        }
-    }
-
-    while stack.len() > 0 {
-        ans.push(stack.pop().unwrap());
-    }
-
-    ans
+    true
 }
 
 fn pop_operands(num: usize, stack: &mut Vec<CalcElement>) -> Vec<i64> {
@@ -133,7 +143,16 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
         return Ok("0".to_string());
     }
 
-    let rev_pol = rev_polish(&elements);
+    let rev_pol = match rev_polish(&elements) {
+        Ok(ans) => ans,
+        Err(e)  => {
+            return Err(
+                format!("syntax error: operand expected (error token is \"{}\")",
+                        to_string(&e))
+            );
+        },
+    };
+
     let mut stack = vec![];
 
     for e in rev_pol {
@@ -147,10 +166,10 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
             _ => Err("unknown operator".to_string()),
         };
 
-        if let Err(err_str) = result {
+        if let Err(err_msg) = result {
             return Err(
                 format!("syntax error: {} (error token is \"{}\")",
-                        err_str, to_string(&e))
+                        err_msg, to_string(&e))
             );
         }
     }
