@@ -5,13 +5,13 @@ use super::CalcElement;
 
 fn op_order(operator: &str) -> u8 {
     match operator {
-        "**" => 5,
-        "*" | "/" | "%"            => 6, 
-        "+" | "-"                  => 7, 
-        "<<" | ">>"                => 8, 
-        "<=" | ">=" | ">" | "<"    => 9, 
-        "(" | ")"                  => 20, 
-        _ => 255, 
+        "**" => 6,
+        "*" | "/" | "%"            => 5, 
+        "+" | "-"                  => 4, 
+        "<<" | ">>"                => 3, 
+        "<=" | ">=" | ">" | "<"    => 2, 
+        "(" | ")"                  => 1, 
+        _ => 0, 
     }
 }
 
@@ -50,7 +50,7 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                             }
                         },
                         Some(top_str) => {
-                            if op_order(top_str) > op_order(s) {
+                            if op_order(top_str) < op_order(s) {
                                 stack.push(CalcElement::Op(s.clone()));
                                 break;
                             }else{
