@@ -700,6 +700,24 @@ res=$($com <<< 'echo $((123 ) ))')
 [ "$?" == "2" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'echo $((123 + 456))')
+[ "$res" == "579" ] || err $LINENO
+
+res=$($com <<< 'echo $((123 +456))')
+[ "$res" == "579" ] || err $LINENO
+
+res=$($com <<< 'echo $((123 + 456 + 1))')
+[ "$res" == "580" ] || err $LINENO
+
+res=$($com <<< 'echo $((123 + +456))')
+[ "$res" == "579" ] || err $LINENO
+
+res=$($com <<< 'echo $((456 + -123))')
+[ "$res" == "333" ] || err $LINENO
+
+res=$($com <<< 'echo $((456 -123))')
+[ "$res" == "333" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')

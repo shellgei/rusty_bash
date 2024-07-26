@@ -42,6 +42,11 @@ impl Calc {
     }
 
     fn eat_interger(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        match &ans.elements.last() {
+            Some(CalcElement::Num(_)) => return false,
+            _ => {},
+        }
+
         let len = feeder.scanner_integer(core);
         if len == 0 {
             return false;
@@ -55,8 +60,8 @@ impl Calc {
         true
     }
 
-    fn eat_operator(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        let len = feeder.scanner_calc_operator();
+    fn eat_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_calc_operator(core);
         if len == 0 {
             return false;
         }
@@ -81,8 +86,8 @@ impl Calc {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
-            if Self::eat_interger(feeder, &mut ans, core) 
-            || Self::eat_operator(feeder, &mut ans) {
+            if Self::eat_interger(feeder, &mut ans, core)
+            || Self::eat_operator(feeder, &mut ans, core) {
                 continue;
             }
 

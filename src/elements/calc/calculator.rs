@@ -70,6 +70,24 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     ans
 }
 
+fn operation_minus(stack: &mut Vec<CalcElement>) {
+    if stack.len() < 2 {
+        panic!("SUSH INTERNAL ERROR: wrong operation");
+    }
+
+    let right = match stack.pop() {
+        Some(CalcElement::Num(s)) => s,
+        _ => panic!("SUSH INTERNAL ERROR: wrong operation"),
+    };
+
+    let left = match stack.pop() {
+        Some(CalcElement::Num(s)) => s,
+        _ => panic!("SUSH INTERNAL ERROR: wrong operation"),
+    };
+
+    stack.push( CalcElement::Num(left - right) );
+}
+
 fn operation_plus(stack: &mut Vec<CalcElement>) {
     if stack.len() < 2 {
         panic!("SUSH INTERNAL ERROR: wrong operation");
@@ -91,6 +109,7 @@ fn operation_plus(stack: &mut Vec<CalcElement>) {
 fn operation(op: &str, stack: &mut Vec<CalcElement>) {
     match op {
         "+" => operation_plus(stack),
+        "-" => operation_minus(stack),
         _ => {},
     }
 }
