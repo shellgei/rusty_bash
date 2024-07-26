@@ -10,7 +10,6 @@ use self::calculator::calculate;
 enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
-    //Var(Box<dyn Subword>),
     Num(i64),
 }
 

@@ -38,22 +38,25 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     let mut stack = vec![];
 
     for e in elements {
-        if CalcElement::BinaryOp("(".to_string()) == *e {
-            stack.push(e.clone());
-            continue;
-        }
-        if CalcElement::BinaryOp(")".to_string()) == *e {
-            loop {
-                match to_op_str(stack.last()) {
-                    None => {},
-                    Some("(") => {
-                        stack.pop();
-                        break;
-                    },
-                    Some(_) => ans.push(stack.pop().unwrap()),
+        match to_op_str(Some(e)) {
+            Some("(") => {
+                stack.push(e.clone());
+                continue;
+            },
+            Some(")") => {
+                loop {
+                    match to_op_str(stack.last()) {
+                        None => {},
+                        Some("(") => {
+                            stack.pop();
+                            break;
+                        },
+                        Some(_) => ans.push(stack.pop().unwrap()),
+                    }
                 }
-            }
-            continue;
+                continue;
+            },
+            _ => {},
         }
 
         match e {
