@@ -48,7 +48,7 @@ impl Calc {
             _ => {},
         }
 
-        let len = feeder.scanner_integer(core);
+        let len = feeder.scanner_nonnegative_integer(core);
         if len == 0 {
             return false;
         }
@@ -110,8 +110,8 @@ impl Calc {
         loop {
             Self::eat_blank(feeder, &mut ans, core);
             if Self::eat_unary_operator(feeder, &mut ans, core)
-            || Self::eat_interger(feeder, &mut ans, core)
-            || Self::eat_binary_operator(feeder, &mut ans, core) {
+            || Self::eat_binary_operator(feeder, &mut ans, core)
+            || Self::eat_interger(feeder, &mut ans, core) {
                 continue;
             }
 
