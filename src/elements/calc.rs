@@ -122,13 +122,7 @@ impl Calc {
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
-        if s == "(" {
-            ans.elements.push( CalcElement::LeftParen );
-        }else if s == ")" {
-            ans.elements.push( CalcElement::RightParen );
-        }else{
-            ans.elements.push( CalcElement::BinaryOp(s) );
-        }
+        ans.elements.push( CalcElement::BinaryOp(s) );
         true
     }
 
