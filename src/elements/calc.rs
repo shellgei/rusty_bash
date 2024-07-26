@@ -111,6 +111,7 @@ impl Calc {
             return false;
         }
 
+        /*
         if feeder.starts_with("(") {
             ans.paren_stack.push( '(' );
         }else if feeder.starts_with(")") {
@@ -118,7 +119,7 @@ impl Calc {
                 Some('(') => {ans.paren_stack.pop();},
                 _         => return false,
             }
-        }
+        }*/
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
