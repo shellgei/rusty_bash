@@ -156,8 +156,8 @@ impl Feeder {
     }
 
     pub fn scanner_calc_operator(&mut self, core: &mut ShellCore) -> usize {
-        self.backslash_check_and_feed(vec!["+", "-", "/", "*", "(", ")"], core);
-        self.scanner_one_of(&["+", "-", "/", "*", "(", ")"])
+        self.backslash_check_and_feed(vec!["+", "-", "/", "*"], core);
+        self.scanner_one_of(&["+", "-", "/", "*"])
     }
 
     pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {

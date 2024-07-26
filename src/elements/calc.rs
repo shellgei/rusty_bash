@@ -84,6 +84,27 @@ impl Calc {
         true
     }
 
+    fn eat_paren(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if feeder.starts_with("(") {
+            ans.paren_stack.push( '(' );
+            ans.elements.push( CalcElement::LeftParen );
+        }else if feeder.starts_with(")") {
+            match ans.paren_stack.last() {
+                Some('(') => {
+                    ans.paren_stack.pop();
+                    ans.elements.push( CalcElement::RightParen );
+                },
+                _         => return false,
+            }
+        }else{
+            return false;
+        }
+
+        let s = feeder.consume(1);
+        ans.text += &s.clone();
+        true
+    }
+
     fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_calc_operator(core);
         if len == 0 {
@@ -117,6 +138,7 @@ impl Calc {
         loop {
             Self::eat_blank(feeder, &mut ans, core);
             if Self::eat_unary_operator(feeder, &mut ans, core)
+            || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
             || Self::eat_interger(feeder, &mut ans, core) {
                 continue;
