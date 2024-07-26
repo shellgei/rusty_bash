@@ -733,6 +733,18 @@ res=$($com <<< 'echo $(( (1 + 2 ) ))')
 res=$($com <<< 'echo $(( (3) ))')
 [ "$res" == "3" ] || err $LINENO
 
+res=$($com <<< 'echo $(( 1 + 2 * 3 ))')
+[ "$res" == "7" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 1 + 2 / 3 ))')
+[ "$res" == "1" ] || err $LINENO
+
+res=$($com <<< 'echo $(( (1 + 2) / 3 ))')
+[ "$res" == "1" ] || err $LINENO
+
+res=$($com <<< 'echo $(( (1 + 2) / -3 ))')
+[ "$res" == "-1" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
