@@ -17,6 +17,16 @@ fn op_order(op: &CalcElement) -> u8 {
     }
 }
 
+fn to_string(op: &CalcElement) -> String {
+    match op {
+        CalcElement::Num(n) => n.to_string(),
+        CalcElement::UnaryOp(s) => s.clone(),
+        CalcElement::BinaryOp(s) => s.clone(),
+        CalcElement::LeftParen => "(".to_string(),
+        CalcElement::RightParen => ")".to_string(),
+    }
+}
+
 fn rev_polish_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
     loop {
         match stack.last() {
@@ -150,7 +160,8 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
 
         if let Err(err_str) = result {
             return Err(
-                format!("syntax error: {} (error token is \"{:?}\")", err_str, e)
+                format!("syntax error: {} (error token is \"{}\")",
+                        err_str, to_string(&e))
             );
         }
     }
