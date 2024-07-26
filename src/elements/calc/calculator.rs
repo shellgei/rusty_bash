@@ -133,7 +133,7 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String>
 }
 
 
-pub fn calculate(elements: &Vec<CalcElement>) -> Option<CalcElement> {
+pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
     let rev_pol = rev_polish(&elements);
     let mut stack = vec![];
 
@@ -149,15 +149,18 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Option<CalcElement> {
         };
 
         if let Err(err_str) = result {
-            eprintln!("sush: @@@ : syntax error: {} (error token is \"{:?}\")",
-                      err_str, e);
-            return None;
+            return Err(
+                format!("syntax error: {} (error token is \"{:?}\")", err_str, e)
+            );
         }
     }
 
     if stack.len() != 1 {
-        panic!("SUSH INTERNAL ERROR: wrong operation");
+        return Err( format!("unknown syntax error",) );
     }
 
-    stack.pop()
+    match stack.pop() {
+        Some(CalcElement::Num(n)) => Ok(n.to_string()),
+        _ => Err( format!("unknown syntax error",) ),
+    }
 }

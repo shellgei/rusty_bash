@@ -25,8 +25,11 @@ pub struct Calc {
 impl Calc {
     pub fn eval(&mut self, _: &mut ShellCore) -> Option<String> {
         match calculate(&self.elements) {
-            Some(CalcElement::Num(n)) => Some(n.to_string()),
-            _ => None,
+            Ok(ans)  => Some(ans),
+            Err(msg) => {
+                eprintln!("sush: {}: {}", &self.text, msg);
+                None
+            },
         }
     }
 
