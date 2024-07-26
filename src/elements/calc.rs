@@ -23,15 +23,9 @@ pub struct Calc {
 
 impl Calc {
     pub fn eval(&mut self, _: &mut ShellCore) -> Option<String> {
-        let ans = calculate(&self.elements);
- //       ans
-        self.to_rev_polish();
-
-        for e in &self.rev_polish {
-            match e {
-                CalcElement::Num(s) => return Some(s.to_string()),
-                _ => return None,
-            }
+        match calculate(&self.elements) {
+            Some(CalcElement::Num(n)) => return Some(n.to_string()),
+            _ => return None,
         }
 
         None
