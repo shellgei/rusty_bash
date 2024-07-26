@@ -17,29 +17,27 @@ fn op_order(op: &CalcElement) -> u8 {
     }
 }
 
+fn remove_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) {
+    loop {
+        match stack.last() {
+            None => {},
+            Some(CalcElement::LeftParen) => {
+                stack.pop();
+                break;
+            },
+            Some(_) => ans.push(stack.pop().unwrap()),
+        }
+    }
+}
+
 fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     let mut ans = vec![];
     let mut stack = vec![];
 
     for e in elements {
         match e {
-            CalcElement::LeftParen => {
-                stack.push(e.clone());
-                continue;
-            },
-            CalcElement::RightParen => {
-                loop {
-                    match stack.last() {
-                        None => {},
-                        Some(CalcElement::LeftParen) => {
-                            stack.pop();
-                            break;
-                        },
-                        Some(_) => ans.push(stack.pop().unwrap()),
-                    }
-                }
-                continue;
-            },
+            CalcElement::LeftParen  => stack.push(e.clone()),
+            CalcElement::RightParen => remove_paren(&mut stack, &mut ans),
             CalcElement::Num(n) => ans.push(CalcElement::Num(*n)),
             CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) => {
                 loop {
