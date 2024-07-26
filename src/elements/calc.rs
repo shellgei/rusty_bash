@@ -88,21 +88,20 @@ impl Calc {
         if feeder.starts_with("(") {
             ans.paren_stack.push( '(' );
             ans.elements.push( CalcElement::LeftParen );
-        }else if feeder.starts_with(")") {
-            match ans.paren_stack.last() {
-                Some('(') => {
-                    ans.paren_stack.pop();
-                    ans.elements.push( CalcElement::RightParen );
-                },
-                _         => return false,
-            }
-        }else{
-            return false;
+            ans.text += &feeder.consume(1);
+            return true;
         }
 
-        let s = feeder.consume(1);
-        ans.text += &s.clone();
-        true
+        if feeder.starts_with(")") {
+            if let Some('(') = ans.paren_stack.last() {
+                ans.paren_stack.pop();
+                ans.elements.push( CalcElement::RightParen );
+                ans.text += &feeder.consume(1);
+                return true;
+            }
+        }
+
+        false
     }
 
     fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -110,16 +109,6 @@ impl Calc {
         if len == 0 {
             return false;
         }
-
-        /*
-        if feeder.starts_with("(") {
-            ans.paren_stack.push( '(' );
-        }else if feeder.starts_with(")") {
-            match ans.paren_stack.last() {
-                Some('(') => {ans.paren_stack.pop();},
-                _         => return false,
-            }
-        }*/
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
