@@ -81,70 +81,35 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     ans
 }
 
-fn operation_minus(stack: &mut Vec<CalcElement>) -> Result<(), String> {
-    if stack.len() < 2 {
-        return Err("operand expected".to_string());
+fn pop_operands(num: usize, stack: &mut Vec<CalcElement>) -> Vec<i64> {
+    let mut ans = vec![];
+
+    for _ in 0..num {
+        let n = match stack.pop() {
+            Some(CalcElement::Num(s)) => s,
+            _ => return vec![],
+        };
+        ans.push(n);
     }
 
-    let right = match stack.pop() {
-        Some(CalcElement::Num(s)) => s,
-        _ => return Err("operand expected".to_string()),
-    };
-
-    let left = match stack.pop() {
-        Some(CalcElement::Num(s)) => s,
-        _ => return Err("operand expected".to_string()),
-    };
-
-    stack.push( CalcElement::Num(left - right) );
-    Ok(())
-}
-
-fn operation_plus(stack: &mut Vec<CalcElement>) -> Result<(), String> {
-    if stack.len() < 2 {
-        return Err("operand expected".to_string());
-    }
-
-    let right = match stack.pop() {
-        Some(CalcElement::Num(s)) => s,
-        _ => return Err("operand expected".to_string()),
-    };
-
-    let left = match stack.pop() {
-        Some(CalcElement::Num(s)) => s,
-        _ => return Err("operand expected".to_string()),
-    };
-
-    stack.push( CalcElement::Num(right + left) );
-    Ok(())
-}
-
-fn operation_multi(stack: &mut Vec<CalcElement>) -> Result<(), String> {
-    if stack.len() < 2 {
-        return Err("operand expected".to_string());
-    }
-
-    let right = match stack.pop() {
-        Some(CalcElement::Num(s)) => s,
-        _ => return Err("operand expected".to_string()),
-    };
-
-    let left = match stack.pop() {
-        Some(CalcElement::Num(s)) => s,
-        _ => return Err("operand expected".to_string()),
-    };
-
-    stack.push( CalcElement::Num(right * left) );
-    Ok(())
+    ans
 }
 
 fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
-    match op {
-        "+" => operation_plus(stack),
-        "-" => operation_minus(stack),
-        "*" => operation_multi(stack),
-        _ => Err("unexpected operator".to_string()),
+    let operands = pop_operands(2, stack);
+    if operands.len() != 2 {
+        return Err("operand expected".to_string());
     }
+
+    match op {
+        "+" => stack.push( CalcElement::Num(operands[1] + operands[0]) ),
+        "-" => stack.push( CalcElement::Num(operands[1] - operands[0]) ),
+        "*" => stack.push( CalcElement::Num(operands[1] * operands[0]) ),
+        "/" => stack.push( CalcElement::Num(operands[1] / operands[0]) ),
+        _   => return Err("unexpected operator".to_string()),
+    }
+
+    Ok(())
 }
 
 fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
