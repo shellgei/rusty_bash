@@ -1,13 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore,Feeder};
 use super::CalcElement;
 
 fn op_order(operator: &str) -> u8 {
-    let op: &str = &operator.clone();
-
-    match op {
+    match operator {
         "**" => 5,
         "*" | "/" | "%"            => 6, 
         "+" | "-"                  => 7, 
@@ -63,7 +60,6 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
                     }
                 }
             },
-            _ => {},
         }
     }
 
@@ -106,9 +102,8 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Option<CalcElement> {
 
     for e in rev_pol {
         match e {
-            CalcElement::Num(s) => stack.push(e),
+            CalcElement::Num(_) => stack.push(e),
             CalcElement::Op(op) => operation(&op, &mut stack),
-            _ => return None,
         }
     }
 

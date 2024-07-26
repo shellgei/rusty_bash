@@ -17,29 +17,21 @@ enum CalcElement {
 pub struct Calc {
     pub text: String,
     elements: Vec<CalcElement>,
-    rev_polish: Vec<CalcElement>,
     paren_stack: Vec<char>,
 }
 
 impl Calc {
     pub fn eval(&mut self, _: &mut ShellCore) -> Option<String> {
         match calculate(&self.elements) {
-            Some(CalcElement::Num(n)) => return Some(n.to_string()),
-            _ => return None,
+            Some(CalcElement::Num(n)) => Some(n.to_string()),
+            _ => None,
         }
-
-        None
-    }
-
-    fn to_rev_polish(&mut self) {
-        self.rev_polish = self.elements.to_vec();
     }
 
     pub fn new() -> Calc {
         Calc {
             text: String::new(),
             elements: vec![],
-            rev_polish: vec![],
             paren_stack: vec![],
         }
     }
@@ -63,8 +55,8 @@ impl Calc {
         true
     }
 
-    fn eat_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_calc_operator(core);
+    fn eat_operator(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        let len = feeder.scanner_calc_operator();
         if len == 0 {
             return false;
         }
@@ -90,7 +82,7 @@ impl Calc {
         loop {
             Self::eat_blank(feeder, &mut ans, core);
             if Self::eat_interger(feeder, &mut ans, core) 
-            || Self::eat_operator(feeder, &mut ans, core) {
+            || Self::eat_operator(feeder, &mut ans) {
                 continue;
             }
 
