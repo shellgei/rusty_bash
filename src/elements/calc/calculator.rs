@@ -17,16 +17,6 @@ fn op_order(op: &CalcElement) -> u8 {
     }
 }
 
-fn to_op_str(calc_elem: Option<&CalcElement>) -> Option<&str> {
-    match calc_elem {
-        Some(CalcElement::BinaryOp(s)) => Some(&s),
-        Some(CalcElement::UnaryOp(s)) => Some(&s),
-        Some(CalcElement::LeftParen ) => Some("("),
-        Some(CalcElement::RightParen ) => Some(")"),
-        _ => None,
-    }
-}
-
 fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
     let mut ans = vec![];
     let mut stack = vec![];
@@ -39,9 +29,9 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
             },
             CalcElement::RightParen => {
                 loop {
-                    match to_op_str(stack.last()) {
+                    match stack.last() {
                         None => {},
-                        Some("(") => {
+                        Some(CalcElement::LeftParen) => {
                             stack.pop();
                             break;
                         },
@@ -53,8 +43,8 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Vec<CalcElement> {
             CalcElement::Num(n) => ans.push(CalcElement::Num(*n)),
             CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) => {
                 loop {
-                    match to_op_str(stack.last()) {
-                        None | Some("(") => {
+                    match stack.last() {
+                        None | Some(CalcElement::LeftParen) => {
                             stack.push(e.clone());
                             break;
                         },
