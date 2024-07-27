@@ -11,6 +11,7 @@ enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Num(i64),
+    Name(String),
     LeftParen,
     RightParen,
 }
@@ -62,6 +63,18 @@ impl Calc {
         let n = s.parse::<i64>().expect("SUSH INTERNAL ERROR: scanner_integer is wrong");
         ans.elements.push( CalcElement::Num(n) );
 
+        true
+    }
+
+    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name(core);
+        if len == 0 {
+            return false;
+        }
+
+        let s = feeder.consume(len);
+        ans.elements.push( CalcElement::Name(s.clone()) );
+        ans.text += &s;
         true
     }
 
@@ -124,7 +137,8 @@ impl Calc {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
-            if Self::eat_unary_operator(feeder, &mut ans, core)
+            if Self::eat_name(feeder, &mut ans, core) 
+            || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
             || Self::eat_interger(feeder, &mut ans, core) {

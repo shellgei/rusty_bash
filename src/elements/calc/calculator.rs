@@ -20,6 +20,7 @@ fn op_order(op: &CalcElement) -> u8 {
 fn to_string(op: &CalcElement) -> String {
     match op {
         CalcElement::Num(n) => n.to_string(),
+        CalcElement::Name(s) => s.clone(),
         CalcElement::UnaryOp(s) => s.clone(),
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),
@@ -37,6 +38,7 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
             CalcElement::Num(n)      => {ans.push(CalcElement::Num(*n)); true},
+            CalcElement::Name(s)     => {ans.push(CalcElement::Name(s.clone())); true},
             CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
             CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
         };
