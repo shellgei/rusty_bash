@@ -139,6 +139,10 @@ fn gen_chars(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn 
         _ => return vec![],
     };
 
+    if start.chars().count() > 1 || end.chars().count() > 1 {
+        return vec![];
+    }
+
     let mut gen_subword = |n: char| { tmp.set_text(&n.to_string()); tmp.clone() };
 
     if start_num < end_num {
