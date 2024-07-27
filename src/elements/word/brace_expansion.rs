@@ -59,6 +59,6 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<Vec<usize>> {
 }
 
 pub fn expand(_: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
-    eprintln!("{:?}", delimiters); 
+    eprintln!("{:?}", delimiters);
     vec![]
 }
