@@ -133,6 +133,20 @@ fn gen_nums(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn S
     }
 }
 
+fn make_series_words(series: Vec<Box<dyn Subword>>,
+                     left: &[Box<dyn Subword>], right: &[Box<dyn Subword>]) -> Vec<Word> {
+    let mut ans = vec![];
+    for sw in series {
+        let mut w = Word::new();
+        w.subwords.extend(left.to_vec());
+        w.subwords.push(sw);
+        w.subwords.extend(right.to_vec());
+        w.text = w.subwords.iter().map(|s| s.get_text()).collect();
+        ans.push(w);
+    }
+    ans
+}
+
 fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
     let left = &subwords[..delimiters[0]];
     let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
@@ -142,24 +156,13 @@ fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
     let start = subwords[delimiters[0]+1].get_text();
     let end = subwords[delimiters[len-1]-1].get_text();
 
-    let mut ans = vec![];
     let mut sw = subwords[delimiters[0]+1].clone();
     let series = gen_nums(start, end, &mut sw);
 
-    if series.len() == 0 {
-        return expand_range_brace_failure(subwords);
+    match series.len() {
+        0 => return expand_range_brace_failure(subwords),
+        _ => return make_series_words(series, left, &right), 
     }
-
-    for sw in series {
-        let mut w = Word::new();
-        w.subwords.extend(left.to_vec());
-        w.subwords.push(sw);
-        w.subwords.extend(right.to_vec());
-        w.text = w.subwords.iter().map(|s| s.get_text()).collect();
-        ans.push(w);
-    }
-
-    return ans;
 }
 
 fn expand_range_brace_failure(subwords: &Vec<Box<dyn Subword>>) -> Vec<Word> {
