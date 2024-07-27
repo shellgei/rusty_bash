@@ -85,7 +85,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 |-------------------|----|-------------------|----|-------------------|----|
 | brace `{a,b}` | :heavy_check_mark: | brace `{1..10}` | :no_good: | tilde | :heavy_check_mark: |
 | parameter/variable `$A ${A}` | :heavy_check_mark: | parameter/variable  (others) | :no_good: | command substitution | :heavy_check_mark: |
-| arithmetic | :no_good: | word splitting | :heavy_check_mark: | path name | :heavy_check_mark: |
+| arithmetic | :construction: | word splitting | :heavy_check_mark: | path name | :heavy_check_mark: |
 
 ### special parameters
 
