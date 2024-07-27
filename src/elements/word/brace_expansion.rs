@@ -186,13 +186,11 @@ fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
 
     let mut sw = subwords[delimiters[0]+1].clone();
 
-    let series = gen_nums(start, end, &mut sw);
-    match series.len() {
-        0 => {},
-        _ => return make_series_words(series, left, &right), 
+    let mut series = gen_nums(start, end, &mut sw);
+    if series.len() == 0 {
+        series = gen_chars(start, end, &mut sw);
     }
 
-    let series = gen_chars(start, end, &mut sw);
     match series.len() {
         0 => return expand_range_brace_failure(subwords),
         _ => return make_series_words(series, left, &right), 
