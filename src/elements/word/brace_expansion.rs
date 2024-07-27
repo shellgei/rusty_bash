@@ -122,13 +122,19 @@ fn gen_nums(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn S
         _ => return vec![],
     };
 
+    let min = std::cmp::min(start_num, end_num);
+    let max = std::cmp::max(start_num, end_num);
+
     let mut gen_subword = |n: i32| { tmp.set_text(&n.to_string()); tmp.clone() };
 
-    if start_num <= end_num {
-        (start_num..(end_num+1)).map(|n| gen_subword(n) ).collect()
-    }else {
-        (end_num..(start_num+1)).rev().map(|n| gen_subword(n) ).collect()
+    let mut ans: Vec<Box<dyn Subword>> = (min..max).map(|n| gen_subword(n) ).collect();
+    ans.push( gen_subword(max) );
+
+    if start_num > end_num {
+        ans.reverse();
     }
+
+    ans
 }
 
 fn gen_chars(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn Subword>> {
@@ -141,16 +147,18 @@ fn gen_chars(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn 
         return vec![];
     }
 
+    let min = std::cmp::min(start_num, end_num);
+    let max = std::cmp::max(start_num, end_num);
+
     let mut gen_subword = |n: char| { tmp.set_text(&n.to_string()); tmp.clone() };
 
-    let mut ans = vec![]; 
-    if start_num <= end_num {
-        ans = (start_num..end_num).map(|n| gen_subword(n) ).collect();
-        ans.push( gen_subword(end_num) );
-    }else {
-        ans = (end_num..start_num).rev().map(|n| gen_subword(n) ).collect();
-        ans.insert(0, gen_subword(start_num) );
+    let mut ans: Vec<Box<dyn Subword>> = (min..max).map(|n| gen_subword(n) ).collect();
+    ans.push( gen_subword(max) );
+
+    if start_num > end_num {
+        ans.reverse();
     }
+
     ans
 }
 
