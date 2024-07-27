@@ -117,25 +117,20 @@ fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
 }
 
 fn gen_nums(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn Subword>> {
-    let start_num = match start.parse::<i32>() {
-        Ok(n) => n,
-        Err(_) => return vec![],
-    };
-    let end_num = match end.parse::<i32>() {
-        Ok(n) => n,
-        Err(_) => return vec![],
-    };
-
-    let range: Vec<i32> = if start_num < end_num {
-        (start_num..(end_num+1)).collect()
-    }else if start_num > end_num {
-        (end_num..(start_num+1)).rev().collect()
-    }else {
-        (start_num..(start_num+1)).collect()
+    let (start_num, end_num) = match (start.parse::<i32>(), end.parse::<i32>() ) {
+        ( Ok(s), Ok(e) ) => (s, e),
+        _ => return vec![],
     };
 
     let mut gen_subword = |n: i32| { tmp.set_text(&n.to_string()); tmp.clone() };
-    range.iter().map(|n| gen_subword(*n) ).collect()
+
+    if start_num < end_num {
+        (start_num..(end_num+1)).map(|n| gen_subword(n) ).collect()
+    }else if start_num > end_num {
+        (end_num..(start_num+1)).rev().map(|n| gen_subword(n) ).collect()
+    }else {
+        (start_num..(start_num+1)).map(|n| gen_subword(n) ).collect()
+    }
 }
 
 fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
