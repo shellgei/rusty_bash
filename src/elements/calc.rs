@@ -24,14 +24,46 @@ pub struct Calc {
 }
 
 impl Calc {
-    pub fn eval(&mut self, _: &mut ShellCore) -> Option<String> {
-        match calculate(&self.elements) {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
+        let es = match self.evaluate_elems(core) {
+            Ok(data)     => data, 
+            Err(err_msg) => {
+                eprintln!("sush: {}", err_msg);
+                return None;
+            },
+        };
+
+        match calculate(&es) {
             Ok(ans)  => Some(ans),
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
             },
         }
+    }
+
+    fn evaluate_elems(&self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
+        let mut ans = vec![];
+
+        for e in &self.elements {
+            if let CalcElement::Name(s) = e {
+                let val = core.data.get_param(s);
+
+                let elem = if val == "" {
+                    CalcElement::Num(0)
+                }else if let Ok(n) = val.parse::<i64>() {
+                    CalcElement::Num(n)
+                }else {
+                    return Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val));
+                };
+
+                ans.push(elem);
+            }else{
+                ans.push(e.clone());
+            }
+        }
+
+        Ok(ans)
     }
 
     pub fn new() -> Calc {
@@ -81,6 +113,7 @@ impl Calc {
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Num(_)) => return false,
+            Some(CalcElement::Name(_)) => return false,
             _ => {},
         }
 
