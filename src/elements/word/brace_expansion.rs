@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::subword::Subword;
-use crate::elements::word::Word;
+use super::Word;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     for i in open_brace_pos(word) {
