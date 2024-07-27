@@ -127,8 +127,7 @@ fn gen_nums(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn S
 
     let mut gen_subword = |n: i32| { tmp.set_text(&n.to_string()); tmp.clone() };
 
-    let mut ans: Vec<Box<dyn Subword>> = (min..max).map(|n| gen_subword(n) ).collect();
-    ans.push( gen_subword(max) );
+    let mut ans: Vec<Box<dyn Subword>> = (min..(max+1)).map(|n| gen_subword(n) ).collect();
 
     if start_num > end_num {
         ans.reverse();
