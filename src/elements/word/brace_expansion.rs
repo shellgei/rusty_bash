@@ -129,7 +129,28 @@ fn gen_nums(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn S
     }else if start_num > end_num {
         (end_num..(start_num+1)).rev().map(|n| gen_subword(n) ).collect()
     }else {
-        (start_num..(start_num+1)).map(|n| gen_subword(n) ).collect()
+        vec![ gen_subword(start_num) ]
+    }
+}
+
+fn gen_chars(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn Subword>> {
+    let (start_num, end_num) = match (start.chars().nth(0), end.chars().nth(0) ) {
+        ( Some(s), Some(e) ) => (s, e),
+        _ => return vec![],
+    };
+
+    let mut gen_subword = |n: char| { tmp.set_text(&n.to_string()); tmp.clone() };
+
+    if start_num < end_num {
+        let mut v: Vec<Box<dyn Subword>> = (start_num..end_num).map(|n| gen_subword(n) ).collect();
+        v.push( gen_subword(end_num) );
+        v
+    }else if start_num > end_num {
+        let mut v: Vec<Box<dyn Subword>> = (end_num..start_num).rev().map(|n| gen_subword(n) ).collect();
+        v.insert(0, gen_subword(start_num) );
+        v
+    }else {
+        vec![ gen_subword(start_num) ]
     }
 }
 
@@ -157,8 +178,14 @@ fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
     let end = subwords[delimiters[len-1]-1].get_text();
 
     let mut sw = subwords[delimiters[0]+1].clone();
-    let series = gen_nums(start, end, &mut sw);
 
+    let series = gen_nums(start, end, &mut sw);
+    match series.len() {
+        0 => {},
+        _ => return make_series_words(series, left, &right), 
+    }
+
+    let series = gen_chars(start, end, &mut sw);
     match series.len() {
         0 => return expand_range_brace_failure(subwords),
         _ => return make_series_words(series, left, &right), 
