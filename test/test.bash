@@ -870,6 +870,11 @@ res=$($com <<< 'echo あ{a,b}{},c}')
 res=$($com <<< 'echo あ{a,b}d{},c}')
 [ "$res" == "あad} あadc あbd} あbdc" ] || err $LINENO
 
+# brace range
+
+res=$($com <<< 'echo {1..3}')
+[ "$res" == "{1..3}" ] || err $LINENO
+
 # escaping
 
 res=$($com <<< "echo a\ \ \ a")
