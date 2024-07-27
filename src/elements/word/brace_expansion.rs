@@ -108,16 +108,14 @@ fn brace_to_subwords(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) 
 }
 
 fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
-    let left = &subwords[..delimiters[0]];
+    let left = subwords[..delimiters[0]].to_vec();
     let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
     invalidate_brace(&mut right);
 
     let mut ans = vec![];
     for sws in brace_to_subwords(subwords, delimiters) {
         let mut w = Word::new();
-        w.subwords.extend(left.to_vec());
-        w.subwords.extend(sws);
-        w.subwords.extend(right.to_vec());
+        w.subwords = [ left.clone(), sws, right.clone() ].concat();
         w.text = w.subwords.iter().map(|s| s.get_text()).collect();
         ans.append(&mut eval(&mut w));
     }
