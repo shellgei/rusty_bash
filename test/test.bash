@@ -875,6 +875,12 @@ res=$($com <<< 'echo あ{a,b}d{},c}')
 res=$($com <<< 'echo a{1..3}b')
 [ "$res" == "a1b a2b a3b" ] || err $LINENO
 
+res=$($com <<< 'echo {1..-1}')
+[ "$res" == "1 0 -1" ] || err $LINENO
+
+res=$($com <<< 'echo {1..1}')
+[ "$res" == "1" ] || err $LINENO
+
 # escaping
 
 res=$($com <<< "echo a\ \ \ a")
