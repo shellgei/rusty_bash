@@ -758,6 +758,9 @@ res=$($com <<< 'echo $(( ( ) ))')
 res=$($com <<< 'A=1; echo $((A ))')
 [ "$res" == "1" ] || err $LINENO
 
+res=$($com <<< 'A=1; echo $(( $A ))')
+[ "$res" == "1" ] || err $LINENO
+
 res=$($com <<< 'echo $((A ))')
 [ "$res" == "0" ] || err $LINENO
 

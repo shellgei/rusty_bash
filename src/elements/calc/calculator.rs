@@ -25,6 +25,7 @@ fn to_string(op: &CalcElement) -> String {
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),
         CalcElement::RightParen => ")".to_string(),
+        CalcElement::Word(w) => w.text.clone(),
     }
 }
 
@@ -38,14 +39,18 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
             CalcElement::Num(n)      => {ans.push(CalcElement::Num(*n)); true},
-            CalcElement::Name(s)     => {ans.push(CalcElement::Name(s.clone())); true},
             CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
             CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
+            _ => panic!("SUSH INTERNAL ERROR: name or word is not removed"),
         };
 
-        if !ok 
-        || (last == Some(CalcElement::LeftParen) && *e == CalcElement::RightParen) {
+        if !ok {
             return Err(e.clone());
+        }
+
+        match (last, e) {
+            ( Some(CalcElement::LeftParen), CalcElement::RightParen ) => return Err(e.clone()),
+            _ => {},
         }
 
         last = Some(e.clone());

@@ -5,13 +5,15 @@ mod calculator;
 
 use crate::{ShellCore, Feeder};
 use self::calculator::calculate;
+use super::word::Word;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Num(i64),
     Name(String),
+    Word(Word),
     LeftParen,
     RightParen,
 }
@@ -46,24 +48,40 @@ impl Calc {
         let mut ans = vec![];
 
         for e in &self.elements {
-            if let CalcElement::Name(s) = e {
-                let val = core.data.get_param(s);
+            match e {
+                CalcElement::Name(s) => {
+                    let val = core.data.get_param(s);
+                    match self.value_to_num(&val) {
+                        Ok(e)        => ans.push(e),
+                        Err(err_msg) => return Err(err_msg), 
+                    }
+                },
+                CalcElement::Word(w) => {
+                    let val = match w.eval_as_value(core) {
+                        Some(v) => v, 
+                        None => return Err(format!("{}: wrong substitution", &self.text)),
+                    };
 
-                let elem = if val == "" {
-                    CalcElement::Num(0)
-                }else if let Ok(n) = val.parse::<i64>() {
-                    CalcElement::Num(n)
-                }else {
-                    return Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val));
-                };
-
-                ans.push(elem);
-            }else{
-                ans.push(e.clone());
+                    match self.value_to_num(&val) {
+                        Ok(e)        => ans.push(e),
+                        Err(err_msg) => return Err(err_msg), 
+                    }
+                },
+                _ => ans.push(e.clone()),
             }
         }
 
         Ok(ans)
+    }
+
+    fn value_to_num(&self, val: &String) -> Result<CalcElement, String> {
+        if val == "" {
+            Ok( CalcElement::Num(0) )
+        }else if let Ok(n) = val.parse::<i64>() {
+            Ok( CalcElement::Num(n) )
+        }else {
+            Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val))
+        }
     }
 
     pub fn new() -> Calc {
@@ -110,10 +128,22 @@ impl Calc {
         true
     }
 
+    fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        match Word::parse(feeder, core) {
+            Some(w) => {
+                ans.text += &w.text;
+                ans.elements.push( CalcElement::Word(w) );
+                true
+            },
+            _ => false,
+        }
+    }
+
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Num(_)) => return false,
             Some(CalcElement::Name(_)) => return false,
+            Some(CalcElement::Word(_)) => return false,
             _ => {},
         }
 
@@ -174,7 +204,8 @@ impl Calc {
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
-            || Self::eat_interger(feeder, &mut ans, core) {
+            || Self::eat_interger(feeder, &mut ans, core) 
+            || Self::eat_word(feeder, &mut ans, core) { 
                 continue;
             }
 
