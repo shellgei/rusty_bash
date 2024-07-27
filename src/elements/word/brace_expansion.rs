@@ -97,7 +97,8 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<(Vec<usize>, BraceTyp
     None
 }
 
-fn brace_to_subwords(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Vec<Box<dyn Subword>>> {
+fn comma_brace_to_subwords(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
+                           -> Vec<Vec<Box<dyn Subword>>> {
     let mut ans = vec![];
     let mut from = delimiters[0] + 1;
     for to in &delimiters[1..] {
@@ -112,7 +113,7 @@ fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
     let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
     invalidate_brace(&mut right);
 
-    let sws = brace_to_subwords(subwords, delimiters);
+    let sws = comma_brace_to_subwords(subwords, delimiters);
     let mut ws = subword_sets_to_words(&sws, &left, &right);
 
     let mut ans = vec![];
