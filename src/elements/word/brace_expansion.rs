@@ -138,26 +138,16 @@ fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
         let mut ans = vec![];
         let mut sw = subwords[delimiters[0]+1].clone();
 
-        let mut w = Word::new();
-        sw.set_text(&start_num.to_string());
-        w.subwords.extend(left.to_vec());
-        w.subwords.push(sw.clone());
-        ans.push(w);
-
-        for n in (start_num+1)..end_num {
+        for n in start_num..(end_num+1) {
             sw.set_text(&n.to_string());
             let mut w = Word::new();
+            w.subwords.extend(left.to_vec());
             w.subwords.push( sw.clone() );
+            w.subwords.extend(right.to_vec());
             w.text = n.to_string();
 
             ans.push(w);
         }
-
-        let mut w = Word::new();
-        sw.set_text(&end_num.to_string());
-        w.subwords.push(sw.clone());
-        w.subwords.extend(right.to_vec());
-        ans.push(w);
 
         return ans;
     }
