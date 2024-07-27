@@ -108,9 +108,13 @@ impl Calc {
             return false;
         }
 
+        let n = match feeder.refer(len).parse::<i64>() {
+            Ok(n)  => n, 
+            Err(_) => return false,
+        };
+
         let s = feeder.consume(len);
         ans.text += &s.clone();
-        let n = s.parse::<i64>().expect("SUSH INTERNAL ERROR: scanner_integer is wrong");
         ans.elements.push( CalcElement::Num(n) );
 
         true

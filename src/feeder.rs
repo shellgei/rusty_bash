@@ -36,6 +36,10 @@ impl Feeder {
         cut
     }
 
+    pub fn refer(&mut self, cutpos: usize) -> &str {
+        &self.remaining[0..cutpos]
+    }
+
     pub fn set_backup(&mut self) {
         self.backup.push(self.remaining.clone());
     }
