@@ -116,10 +116,58 @@ fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
     ans
 }
 
-fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, _: &Vec<usize>) -> Vec<Word> {
+fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
+    let left = &subwords[..delimiters[0]];
+    let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
+    invalidate_brace(&mut right);
+
+    let len = delimiters.len();
+    let start = &subwords[delimiters[0]+1].get_text();
+    let end = &subwords[delimiters[len-1]-1].get_text();
+
+    let start_num = match start.parse::<i32>() {
+        Ok(n) => n,
+        Err(_) => return expand_range_brace_failure(subwords),
+    };
+    let end_num = match end.parse::<i32>() {
+        Ok(n) => n,
+        Err(_) => return expand_range_brace_failure(subwords),
+    };
+
+    if start_num <= end_num {
+        let mut ans = vec![];
+        let mut sw = subwords[delimiters[0]+1].clone();
+
+        let mut w = Word::new();
+        sw.set_text(&start_num.to_string());
+        w.subwords.extend(left.to_vec());
+        w.subwords.push(sw.clone());
+        ans.push(w);
+
+        for n in (start_num+1)..end_num {
+            sw.set_text(&n.to_string());
+            let mut w = Word::new();
+            w.subwords.push( sw.clone() );
+            w.text = n.to_string();
+
+            ans.push(w);
+        }
+
+        let mut w = Word::new();
+        sw.set_text(&end_num.to_string());
+        w.subwords.push(sw.clone());
+        w.subwords.extend(right.to_vec());
+        ans.push(w);
+
+        return ans;
+    }
+
+    expand_range_brace_failure(subwords)
+}
+
+fn expand_range_brace_failure(subwords: &Vec<Box<dyn Subword>>) -> Vec<Word> {
     let mut w = Word::new();
     w.subwords = subwords.to_vec();
     w.text = w.subwords.iter().map(|s| s.get_text()).collect();
-
     vec![w]
 }

@@ -872,8 +872,8 @@ res=$($com <<< 'echo あ{a,b}d{},c}')
 
 # brace range
 
-res=$($com <<< 'echo {1..3}')
-[ "$res" == "{1..3}" ] || err $LINENO
+res=$($com <<< 'echo a{1..3}b')
+[ "$res" == "a1 2 3b" ] || err $LINENO
 
 # escaping
 
