@@ -15,9 +15,15 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self) -> Option<Vec<String>> {
-        let ws = brace_expansion::eval(self);
+        let mut ws = brace_expansion::eval(self);
+        Some( Self::make_args(&mut ws) )
+    }
 
-        Some(ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect())
+    fn make_args(words: &mut Vec<Word>) -> Vec<String> {
+        words.iter()
+              .map(|w| w.text.clone())
+              .filter(|w| w.len() > 0)
+              .collect()
     }
 
     pub fn new() -> Word {
