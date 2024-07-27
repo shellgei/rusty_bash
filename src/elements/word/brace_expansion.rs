@@ -125,12 +125,8 @@ fn gen_nums(start_num: i32, end_num: i32, tmp: &mut Box<dyn Subword>) -> Vec<Box
         (start_num..(start_num+1)).collect()
     };
 
-    let mut ans = vec![];
-    for n in range {
-        tmp.set_text(&n.to_string());
-        ans.push(tmp.clone());
-    }
-    ans
+    let mut gen_subword = |n: i32| { tmp.set_text(&n.to_string()); tmp.clone() };
+    range.iter().map(|n| gen_subword(*n) ).collect()
 }
 
 fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
