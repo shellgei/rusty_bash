@@ -124,12 +124,10 @@ fn gen_nums(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn S
 
     let mut gen_subword = |n: i32| { tmp.set_text(&n.to_string()); tmp.clone() };
 
-    if start_num < end_num {
+    if start_num <= end_num {
         (start_num..(end_num+1)).map(|n| gen_subword(n) ).collect()
-    }else if start_num > end_num {
-        (end_num..(start_num+1)).rev().map(|n| gen_subword(n) ).collect()
     }else {
-        vec![ gen_subword(start_num) ]
+        (end_num..(start_num+1)).rev().map(|n| gen_subword(n) ).collect()
     }
 }
 
@@ -145,17 +143,15 @@ fn gen_chars(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn 
 
     let mut gen_subword = |n: char| { tmp.set_text(&n.to_string()); tmp.clone() };
 
-    if start_num < end_num {
-        let mut v: Vec<Box<dyn Subword>> = (start_num..end_num).map(|n| gen_subword(n) ).collect();
-        v.push( gen_subword(end_num) );
-        v
-    }else if start_num > end_num {
-        let mut v: Vec<Box<dyn Subword>> = (end_num..start_num).rev().map(|n| gen_subword(n) ).collect();
-        v.insert(0, gen_subword(start_num) );
-        v
+    let mut ans = vec![]; 
+    if start_num <= end_num {
+        ans = (start_num..end_num).map(|n| gen_subword(n) ).collect();
+        ans.push( gen_subword(end_num) );
     }else {
-        vec![ gen_subword(start_num) ]
+        ans = (end_num..start_num).rev().map(|n| gen_subword(n) ).collect();
+        ans.insert(0, gen_subword(start_num) );
     }
+    ans
 }
 
 fn make_series_words(series: Vec<Box<dyn Subword>>,
