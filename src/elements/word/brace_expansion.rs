@@ -160,9 +160,22 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
         _ => return subwords_to_word(subwords),
     };
 
-    let mut series = gen_nums(&start, &end);
+    let mut skip_num = match operand_num {
+        2 => 1,
+        3 => {
+            let skip = subwords[delimiters[4]+1].get_text();
+            match skip.parse::<i32>() {
+                Ok(n) => n.abs() as usize,
+                _ => return subwords_to_word(subwords),
+            }
+        },
+        _ => return subwords_to_word(subwords),
+    };
+    skip_num = std::cmp::max(skip_num, 1);
+
+    let mut series = gen_nums(&start, &end, skip_num);
     if series.len() == 0 {
-        series = gen_chars(&start, &end);
+        series = gen_chars(&start, &end, skip_num);
     }
     if series.len() == 0 {
         return subwords_to_word(subwords);
@@ -179,7 +192,7 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
     subword_sets_to_words(&series2, left, &right)
 }
 
-fn gen_nums(start: &str, end: &str) -> Vec<Box<dyn Subword>> {
+fn gen_nums(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
     let (start_num, end_num) = match (start.parse::<i32>(), end.parse::<i32>() ) {
         ( Ok(s), Ok(e) ) => (s, e),
         _ => return vec![],
@@ -192,10 +205,10 @@ fn gen_nums(start: &str, end: &str) -> Vec<Box<dyn Subword>> {
     if start_num > end_num {
         ans.reverse();
     }
-    ans
+    ans.into_iter().enumerate().filter(|e| e.0%skip == 0).map(|e| e.1).collect() 
 }
 
-fn gen_chars(start: &str, end: &str) -> Vec<Box<dyn Subword>> {
+fn gen_chars(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
     let (start_num, end_num) = match (start.chars().nth(0), end.chars().nth(0) ) {
         ( Some(s), Some(e) ) => (s, e),
         _ => return vec![],
@@ -213,7 +226,7 @@ fn gen_chars(start: &str, end: &str) -> Vec<Box<dyn Subword>> {
     if start_num > end_num {
         ans.reverse();
     }
-    ans
+    ans.into_iter().enumerate().filter(|e| e.0%skip == 0).map(|e| e.1).collect() 
 }
 
 fn subword_sets_to_words(series: &Vec<Vec<Box<dyn Subword>>>,
