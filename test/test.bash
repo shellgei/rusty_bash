@@ -905,6 +905,9 @@ res=$($com <<< 'echo {0..10..-4}')
 res=$($com <<< 'echo {0..3..0}')
 [ "$res" == "0 1 2 3" ] || err $LINENO
 
+res=$($com <<< 'echo {0..3.0}')
+[ "$res" == "{0..3.0}" ] || err $LINENO
+
 # escaping
 
 res=$($com <<< "echo a\ \ \ a")
