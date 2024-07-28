@@ -32,7 +32,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 
             return match d.1 {
                 BraceType::Comma => expand_comma_brace(&word.subwords, &shift_d),
-                BraceType::Range => expand_range_brace(&word.subwords, &shift_d),
+                BraceType::Range => expand_range_brace(&mut word.subwords, &shift_d),
             }
         }
     }
@@ -123,15 +123,20 @@ fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
     ans
 }
 
-fn expand_range_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
-    let start = subwords[delimiters[0]+1].get_text(); // right of {
-    let end = subwords[delimiters[delimiters.len()-1]-1].get_text(); // left of }
+fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
+    let start_wrap = subwords[delimiters[0]+1].make_unquoted_string(); // right of {
+    let end_wrap = subwords[delimiters[delimiters.len()-1]-1].make_unquoted_string(); // left of }
+    
+    let (start, end) = match (start_wrap, end_wrap) {
+        ( Some(s), Some(e) ) => (s, e),
+        _ => return subwords_to_word(subwords),
+    };
 
     let mut sw = subwords[delimiters[0]+1].clone(); // used as a template
 
-    let mut series = gen_nums(start, end, &mut sw);
+    let mut series = gen_nums(&start, &end, &mut sw);
     if series.len() == 0 {
-        series = gen_chars(start, end, &mut sw);
+        series = gen_chars(&start, &end, &mut sw);
     }
     if series.len() == 0 {
         return subwords_to_word(subwords);

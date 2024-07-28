@@ -890,6 +890,12 @@ res=$($com <<< 'echo {あ..お}')
 res=$($com <<< 'echo {お..あ}')
 [ "$res" == "お ぉ え ぇ う ぅ い ぃ あ" ] || err $LINENO
 
+res=$($com <<< 'echo {0..\,}')
+[ "$res" == "0 / . - ," ] || err $LINENO
+
+res=$($com <<< 'echo {0..,}')
+[ "$res" == "0.." ] || err $LINENO
+
 # escaping
 
 res=$($com <<< "echo a\ \ \ a")
