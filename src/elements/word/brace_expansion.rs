@@ -142,13 +142,7 @@ fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
     invalidate_brace(&mut right);
 
     let sws = comma_brace_to_subwords(subwords, delimiters);
-    let mut ws = subword_sets_to_words(&sws, &left, &right);
-
-    let mut ans = vec![];
-    for w in ws.iter_mut() {
-        ans.append(&mut eval(w));
-    }
-    ans
+    subword_sets_to_words(&sws, &left, &right)
 }
 
 fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usize>, operand_num: usize) -> Vec<Word> {
@@ -231,12 +225,17 @@ fn gen_chars(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
 
 fn subword_sets_to_words(series: &Vec<Vec<Box<dyn Subword>>>,
                      left: &[Box<dyn Subword>], right: &[Box<dyn Subword>]) -> Vec<Word> {
-    let mut ans = vec![];
+    let mut ws = vec![];
     for sws in series {
         let mut w = Word::new();
         w.subwords = [ left, sws, right ].concat();
         w.text = w.subwords.iter().map(|s| s.get_text()).collect();
-        ans.push(w);
+        ws.push(w);
+    }
+
+    let mut ans = vec![];
+    for w in ws.iter_mut() {
+        ans.append(&mut eval(w));
     }
     ans
 }
