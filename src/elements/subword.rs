@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod simple;
-mod single_quoted;
+pub mod single_quoted;
 mod braced_param;
 mod command;
 mod escaped_char;

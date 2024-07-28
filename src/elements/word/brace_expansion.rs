@@ -3,6 +3,7 @@
 
 use crate::elements::subword::Subword;
 use crate::elements::word::Word;
+use crate::elements::subword::single_quoted::SingleQuoted;
 
 enum BraceType {
     Comma,
@@ -11,6 +12,23 @@ enum BraceType {
 
 fn after_dollar(s: &str) -> bool {
     s == "$" || s == "$$"
+}
+
+fn num_to_subword(n: i32) -> Box<dyn Subword> {
+    Box::new( SingleQuoted { text: format!("'{}'", n)  } )
+}
+
+fn ascii_to_subword(c: char) -> Box<dyn Subword> {
+    let table = vec!["^?", "\\M-^@", "\\M-^A", "\\M-^B", "\\M-^C", "\\M-^D", "\\M-^E", "\\M-^F", "\\M-^G", "\\M-^H", "\\M-\t", "\\M-\n", "\\M-^K", "\\M-^L", "\\M-^M", "\\M-^N", "\\M-^O", "\\M-^P", "\\M-^Q", "\\M-^R", "\\M-^S", "\\M-^T", "\\M-^U", "\\M-^V", "\\M-^W", "\\M-^X", "\\M-^Y", "\\M-^Z", "\\M-^[", "\\M-^\\", "\\M-^]", "\\M-^^", "\\M-^_", " ", "¡"];
+
+    let n = c as usize;
+    let text = if n >= 127 && n < 127 + table.len() {
+        table[n-127].to_string()
+    }else{
+        c.to_string()
+    };
+
+    Box::new( SingleQuoted { text: format!("'{}'", text)  } )
 }
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
@@ -132,11 +150,9 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
         _ => return subwords_to_word(subwords),
     };
 
-    let mut sw = subwords[delimiters[0]+1].clone(); // used as a template
-
-    let mut series = gen_nums(&start, &end, &mut sw);
+    let mut series = gen_nums(&start, &end);
     if series.len() == 0 {
-        series = gen_chars(&start, &end, &mut sw);
+        series = gen_chars(&start, &end);
     }
     if series.len() == 0 {
         return subwords_to_word(subwords);
@@ -153,7 +169,7 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
     subword_sets_to_words(&series2, left, &right)
 }
 
-fn gen_nums(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn Subword>> {
+fn gen_nums(start: &str, end: &str) -> Vec<Box<dyn Subword>> {
     let (start_num, end_num) = match (start.parse::<i32>(), end.parse::<i32>() ) {
         ( Ok(s), Ok(e) ) => (s, e),
         _ => return vec![],
@@ -162,15 +178,14 @@ fn gen_nums(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn S
     let min = std::cmp::min(start_num, end_num);
     let max = std::cmp::max(start_num, end_num);
 
-    let mut gen_subword = |n: i32| { tmp.set_text(&n.to_string()); tmp.clone() };
-    let mut ans: Vec<Box<dyn Subword>> = (min..(max+1)).map(|n| gen_subword(n) ).collect();
+    let mut ans: Vec<Box<dyn Subword>> = (min..(max+1)).map(|n| num_to_subword(n) ).collect();
     if start_num > end_num {
         ans.reverse();
     }
     ans
 }
 
-fn gen_chars(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn Subword>> {
+fn gen_chars(start: &str, end: &str) -> Vec<Box<dyn Subword>> {
     let (start_num, end_num) = match (start.chars().nth(0), end.chars().nth(0) ) {
         ( Some(s), Some(e) ) => (s, e),
         _ => return vec![],
@@ -183,9 +198,8 @@ fn gen_chars(start: &str, end: &str, tmp: &mut Box<dyn Subword>) -> Vec<Box<dyn 
     let min = std::cmp::min(start_num, end_num);
     let max = std::cmp::max(start_num, end_num);
 
-    let mut gen_subword = |n: char| { tmp.set_text(&n.to_string()); tmp.clone() };
-    let mut ans: Vec<Box<dyn Subword>> = (min..max).map(|n| gen_subword(n) ).collect();
-    ans.push( gen_subword(max) );
+    let mut ans: Vec<Box<dyn Subword>> = (min..max).map(|n| ascii_to_subword(n) ).collect();
+    ans.push( ascii_to_subword(max) );
     if start_num > end_num {
         ans.reverse();
     }

@@ -6,7 +6,7 @@ use super::Subword;
 
 #[derive(Debug, Clone)]
 pub struct SingleQuoted {
-    text: String,
+    pub text: String,
 }
 
 impl Subword for SingleQuoted {
