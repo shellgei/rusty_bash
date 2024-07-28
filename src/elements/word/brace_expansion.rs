@@ -7,7 +7,7 @@ use crate::elements::subword::single_quoted::SingleQuoted;
 
 enum BraceType {
     Comma,
-    Range,
+    Range(usize),
 }
 
 fn after_dollar(s: &str) -> bool {
@@ -50,7 +50,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 
             return match d.1 {
                 BraceType::Comma => expand_comma_brace(&word.subwords, &shift_d),
-                BraceType::Range => expand_range_brace(&mut word.subwords, &shift_d),
+                BraceType::Range(n) => expand_range_brace(&mut word.subwords, &shift_d, n),
             }
         }
     }
@@ -106,12 +106,22 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<(Vec<usize>, BraceTyp
         return Some( (comma_pos, BraceType::Comma) );
     }
 
-    if period_pos.len() > 1 && period_pos[0] == period_pos[1] + 1 {
+    if period_pos.len() == 2 && period_pos[0] == period_pos[1] + 1 {
         period_pos.reverse();
         period_pos.insert(0, 0);
         period_pos.push(stack.len()-1);
-        return Some( (period_pos, BraceType::Range) );
+        return Some( (period_pos, BraceType::Range(2)) );
     }
+
+    if period_pos.len() == 4 
+    && period_pos[0] == period_pos[1] + 1 
+    && period_pos[2] == period_pos[3] + 1 {
+        period_pos.reverse();
+        period_pos.insert(0, 0);
+        period_pos.push(stack.len()-1);
+        return Some( (period_pos, BraceType::Range(3)) );
+    }
+
     None
 }
 
@@ -141,9 +151,9 @@ fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>)
     ans
 }
 
-fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
+fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usize>, operand_num: usize) -> Vec<Word> {
     let start_wrap = subwords[delimiters[0]+1].make_unquoted_string(); // right of {
-    let end_wrap = subwords[delimiters[delimiters.len()-1]-1].make_unquoted_string(); // left of }
+    let end_wrap = subwords[delimiters[2]+1].make_unquoted_string(); // left of }
     
     let (start, end) = match (start_wrap, end_wrap) {
         ( Some(s), Some(e) ) => (s, e),
