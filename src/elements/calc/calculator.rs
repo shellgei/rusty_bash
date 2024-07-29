@@ -115,15 +115,21 @@ fn pop_operands(num: usize, stack: &mut Vec<CalcElement>) -> Vec<i64> {
 fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     let operands = pop_operands(2, stack);
     if operands.len() != 2 {
-        return Err("operand expected".to_string());
+        let err_msg = format!("syntax error: operand expected (error token is \"{}\")", op);
+        return Err(err_msg);
     }
 
     match op {
         "+" => stack.push( CalcElement::Num(operands[1] + operands[0]) ),
         "-" => stack.push( CalcElement::Num(operands[1] - operands[0]) ),
         "*" => stack.push( CalcElement::Num(operands[1] * operands[0]) ),
-        "/" => stack.push( CalcElement::Num(operands[1] / operands[0]) ),
-        _   => return Err("unexpected operator".to_string()),
+        "/" => {
+            if operands[0] == 0 {
+                return Err("divided by 0".to_string());
+            }
+            stack.push( CalcElement::Num(operands[1] / operands[0]) )
+        },
+        _ => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
     }
 
     Ok(())
@@ -132,13 +138,16 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
 fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     let num = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
-        _ => return Err("operand expected".to_string()),
+        _ => {
+            let err_msg = format!("syntax error: operand expected (error token is \"{}\")", op);
+            return Err(err_msg);
+        },
     };
 
     match op {
         "+" => stack.push( CalcElement::Num(num) ),
         "-" => stack.push( CalcElement::Num(-num) ),
-        _ => return Err("unexpected operator".to_string()),
+        _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 
     Ok(())
@@ -154,8 +163,7 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
         Ok(ans) => ans,
         Err(e)  => {
             return Err(
-                format!("syntax error: operand expected (error token is \"{}\")",
-                        to_string(&e))
+                format!("syntax error: operand expected (error token is \"{}\")", to_string(&e))
             );
         },
     };
@@ -174,10 +182,7 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
         };
 
         if let Err(err_msg) = result {
-            return Err(
-                format!("syntax error: {} (error token is \"{}\")",
-                        err_msg, to_string(&e))
-            );
+            return Err(err_msg);
         }
     }
 
