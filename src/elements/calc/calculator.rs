@@ -8,6 +8,7 @@ fn op_order(op: &CalcElement) -> u8 {
         CalcElement::UnaryOp(_) => 8,
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
+                "**"            => 6, 
                 "*" | "/" | "%" => 5, 
                 "+" | "-"       => 4, 
                 _ => 0,
@@ -119,16 +120,24 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     }
 
     match op {
-        "+" => stack.push( CalcElement::Num(operands[1] + operands[0]) ),
-        "-" => stack.push( CalcElement::Num(operands[1] - operands[0]) ),
-        "*" => stack.push( CalcElement::Num(operands[1] * operands[0]) ),
-        "/" => {
+        "+"  => stack.push( CalcElement::Num(operands[1] + operands[0]) ),
+        "-"  => stack.push( CalcElement::Num(operands[1] - operands[0]) ),
+        "*"  => stack.push( CalcElement::Num(operands[1] * operands[0]) ),
+        "/"  => {
             if operands[0] == 0 {
                 return Err("divided by 0".to_string());
             }
             stack.push( CalcElement::Num(operands[1] / operands[0]) )
         },
-        _ => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
+        "**" => {
+            if operands[0] >= 0 {
+                stack.push( CalcElement::Num(operands[1].pow(operands[0].try_into().unwrap())) )
+            }else{
+                let err_msg = format!("exponent less than 0 (error token is \"{}\")", operands[0]);
+                return Err(err_msg);
+            }
+        },
+        _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
     }
 
     Ok(())
@@ -177,7 +186,11 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
             },
             CalcElement::BinaryOp(ref op) => bin_operation(&op, &mut stack),
             CalcElement::UnaryOp(ref op)  => unary_operation(&op, &mut stack),
-            _                             => Err( format!("operand expected") ),
+            _ => {
+                let err_msg = format!("syntax error: operand expected (error token is \"{}\")",
+                                      to_string(&e));
+                Err( err_msg )
+            },
         };
 
         if let Err(err_msg) = result {

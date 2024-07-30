@@ -786,6 +786,16 @@ res=$(echo "echo \$(( 1 '+' 1 ))" | $com)
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$(echo "echo \$(( 2 ** 10 ))" | $com)
+[ "$res" == "1024" ] || err $LINENO
+
+res=$(echo "echo \$(( 10000 ** 0 ))" | $com)
+[ "$res" == "1" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 1 ** -1  ))')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
