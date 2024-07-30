@@ -13,8 +13,7 @@ enum CalcElement {
     BinaryOp(String),
     Num(i64),
     Name(String),
-    NamePlusPlus(String),
-    NameMinusMinus(String),
+    NameIncDec(String, i32),
     Word(Word),
     LeftParen,
     RightParen,
@@ -58,23 +57,14 @@ impl Calc {
                         Err(err_msg) => return Err(err_msg), 
                     }
                 },
-                CalcElement::NamePlusPlus(s) => {
+                CalcElement::NameIncDec(s, i) => {
                     let val = core.data.get_param(s);
-                    match self.value_to_num(&val, "", 1) {
+                    match self.value_to_num(&val, "", *i) {
                         Ok(e)        => ans.push(e),
                         Err(err_msg) => return Err(err_msg), 
                     }
 
-                    core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) + 1).to_string());
-                },
-                CalcElement::NameMinusMinus(s) => {
-                    let val = core.data.get_param(s);
-                    match self.value_to_num(&val, "", -1) {
-                        Ok(e)        => ans.push(e),
-                        Err(err_msg) => return Err(err_msg), 
-                    }
-
-                    core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) - 1).to_string());
+                    core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) + i).to_string());
                 },
                 CalcElement::Word(w) => {
                     let val = match w.eval_as_value(core) {
@@ -155,10 +145,10 @@ impl Calc {
         Self::eat_blank(feeder, ans, core);
 
         if feeder.starts_with("++") {
-            ans.elements.push( CalcElement::NamePlusPlus(s.clone()) );
+            ans.elements.push( CalcElement::NameIncDec(s.clone(), 1) );
             ans.text += &feeder.consume(2);
         } else if feeder.starts_with("--") {
-            ans.elements.push( CalcElement::NameMinusMinus(s.clone()) );
+            ans.elements.push( CalcElement::NameIncDec(s.clone(), -1) );
             ans.text += &feeder.consume(2);
         } else{
             ans.elements.push( CalcElement::Name(s.clone()) );
