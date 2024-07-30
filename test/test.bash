@@ -774,6 +774,10 @@ res=$($com <<< 'A=X; echo $((A ))')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$(echo "echo \$(( '' ))" | $com)
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
