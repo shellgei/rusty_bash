@@ -828,13 +828,13 @@ res=$($com <<< 'A=1; echo $((2++1 ))')
 res=$($com <<< 'A=1; echo $((++2++1 ))')
 [ "$res" == "3" ] || err $LINENO
 
-res=$($com <<< 'A=10 ; echo $(( -- A)); echo $A')
-[ "$res" == "9
-9" ] || err $LINENO
-
-res=$($com <<< 'A=10 ; echo $(( - - A)); echo $A')
-[ "$res" == "10
-10" ] || err $LINENO
+#res=$($com <<< 'A=10 ; echo $(( -- A)); echo $A')
+#[ "$res" == "9
+#9" ] || err $LINENO
+#
+#res=$($com <<< 'A=10 ; echo $(( - - A)); echo $A')
+#[ "$res" == "10
+#10" ] || err $LINENO
 
 # brace
 

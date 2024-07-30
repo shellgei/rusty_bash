@@ -5,7 +5,12 @@ use super::CalcElement;
 
 fn op_order(op: &CalcElement) -> u8 {
     match op {
-        CalcElement::UnaryOp(_) => 8,
+        CalcElement::UnaryOp(s) => {
+            match s.as_str() {
+                "++" | "--" => 9,
+                _           => 8,
+            }
+        },
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
                 "**"            => 6, 
@@ -21,18 +26,11 @@ fn op_order(op: &CalcElement) -> u8 {
 fn to_string(op: &CalcElement) -> String {
     match op {
         CalcElement::Num(n) => n.to_string(),
-        CalcElement::Name(s) => s.clone(),
-        CalcElement::NameIncDec(n, i) => {
+        CalcElement::Name(s, _) => s.clone(),
+        CalcElement::Name(n, i) => {
             match i {
                 -1 => n.to_string() + "--",
                 1  => n.to_string() + "++",
-                _  => panic!("SUSH INTERNAL ERROR: unknown increment"),
-            }
-        },
-        CalcElement::IncDecName(n, i) => {
-            match i {
-                -1 => "--".to_owned() + &n.to_string(),
-                1  => "++".to_owned() + &n.to_string(),
                 _  => panic!("SUSH INTERNAL ERROR: unknown increment"),
             }
         },
@@ -158,7 +156,7 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
 }
 
 fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
-    let num = match stack.pop() {
+    let mut num = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
         _ => {
             let err_msg = format!("syntax error: operand expected (error token is \"{}\")", op);
@@ -167,8 +165,12 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String>
     };
 
     match op {
-        "+" => stack.push( CalcElement::Num(num) ),
-        "-" => stack.push( CalcElement::Num(-num) ),
+        "+"  => stack.push( CalcElement::Num(num) ),
+        "-"  => stack.push( CalcElement::Num(-num) ),
+        /*
+        "++" => stack.push( CalcElement::Num({num +=1 ; num}) ),
+        "--" => stack.push( CalcElement::Num({num -=1 ; num}) ),
+        */
         _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 

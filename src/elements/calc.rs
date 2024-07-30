@@ -12,9 +12,8 @@ enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Num(i64),
-    Name(String),
-    NameIncDec(String, i32),
-    IncDecName(String, i32),
+//    Name(String),
+    Name(String, i32),
     Word(Word),
     LeftParen,
     RightParen,
@@ -51,14 +50,15 @@ impl Calc {
 
         for e in &self.elements {
             match e {
+                /*
                 CalcElement::Name(s) => {
                     let val = core.data.get_param(s);
                     match self.value_to_num(&val, "", 0) {
                         Ok(e)        => ans.push(e),
                         Err(err_msg) => return Err(err_msg), 
                     }
-                },
-                CalcElement::NameIncDec(s, i) => {
+                },*/
+                CalcElement::Name(s, i) => {
                     let val = core.data.get_param(s);
                     match self.value_to_num(&val, "", *i) {
                         Ok(e)        => ans.push(e),
@@ -87,7 +87,7 @@ impl Calc {
 
     fn value_to_num(&self, val: &String, text: &str, inc: i32) -> Result<CalcElement, String> {
         if text.find('\'').is_some() {
-            Ok( CalcElement::Name("\'".to_owned() + val + "\'") )
+            Ok( CalcElement::Name("\'".to_owned() + val + "\'", 0) )
         }else if val == "" {
             Ok( CalcElement::Num(0) )
         }else if let Ok(n) = val.parse::<i64>() {
@@ -112,7 +112,7 @@ impl Calc {
         ans.text += &feeder.consume(len);
     }
 
-    fn eat_interger(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_integer(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Num(_)) => return false,
             _ => {},
@@ -128,10 +128,10 @@ impl Calc {
             Err(_) => return false,
         };
 
+        ans.inc_dec_to_unarys();
         let s = feeder.consume(len);
         ans.text += &s.clone();
         ans.elements.push( CalcElement::Num(n) );
-
         true
     }
 
@@ -146,16 +146,51 @@ impl Calc {
         Self::eat_blank(feeder, ans, core);
 
         if feeder.starts_with("++") {
-            ans.elements.push( CalcElement::NameIncDec(s.clone(), 1) );
+            ans.elements.push( CalcElement::Name(s.clone(), 1) );
             ans.text += &feeder.consume(2);
         } else if feeder.starts_with("--") {
-            ans.elements.push( CalcElement::NameIncDec(s.clone(), -1) );
+            ans.elements.push( CalcElement::Name(s.clone(), -1) );
             ans.text += &feeder.consume(2);
         } else{
-            ans.elements.push( CalcElement::Name(s.clone()) );
+            ans.elements.push( CalcElement::Name(s.clone(), 0) );
         }
 
         true
+    }
+
+    fn eat_incdec(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if feeder.starts_with("++") {
+            ans.text += &feeder.consume(2);
+            ans.elements.push( CalcElement::UnaryOp("++".to_string()) );
+        }else if feeder.starts_with("--") {
+            ans.text += &feeder.consume(2);
+            ans.elements.push( CalcElement::UnaryOp("--".to_string()) );
+        }else {
+            return false;
+        };
+        true
+    }
+
+    fn inc_dec_to_unarys(&mut self) {
+        if let Some(CalcElement::UnaryOp(op)) = self.elements.last() {
+            let pm = match op.as_str() {
+                "++" => "+",
+                "--" => "-",
+                _    => return, 
+            }.to_string();
+
+            self.elements.pop();
+
+            match self.elements.last() {
+                None |
+                Some(CalcElement::UnaryOp(_)) |
+                Some(CalcElement::BinaryOp(_)) |
+                Some(CalcElement::LeftParen) 
+                   => self.elements.push(CalcElement::UnaryOp(pm.clone())),
+                _  => self.elements.push(CalcElement::BinaryOp(pm.clone())),
+            }
+            self.elements.push(CalcElement::UnaryOp(pm));
+        }
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -172,7 +207,7 @@ impl Calc {
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Num(_)) => return false,
-            Some(CalcElement::Name(_)) => return false,
+            Some(CalcElement::Name(_, _)) => return false,
             Some(CalcElement::Word(_)) => return false,
             _ => {},
         }
@@ -188,6 +223,7 @@ impl Calc {
             return false
         };
 
+        ans.inc_dec_to_unarys();
         ans.text += &s.clone();
         ans.elements.push( CalcElement::UnaryOp(s) );
         true
@@ -195,6 +231,7 @@ impl Calc {
 
     fn eat_paren(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("(") {
+            ans.inc_dec_to_unarys();
             ans.paren_stack.push( '(' );
             ans.elements.push( CalcElement::LeftParen );
             ans.text += &feeder.consume(1);
@@ -203,6 +240,7 @@ impl Calc {
 
         if feeder.starts_with(")") {
             if let Some('(') = ans.paren_stack.last() {
+                ans.inc_dec_to_unarys();
                 ans.paren_stack.pop();
                 ans.elements.push( CalcElement::RightParen );
                 ans.text += &feeder.consume(1);
@@ -219,6 +257,7 @@ impl Calc {
             return false;
         }
 
+        ans.inc_dec_to_unarys();
         let s = feeder.consume(len);
         ans.text += &s.clone();
         ans.elements.push( CalcElement::BinaryOp(s) );
@@ -231,10 +270,11 @@ impl Calc {
         loop {
             Self::eat_blank(feeder, &mut ans, core);
             if Self::eat_name(feeder, &mut ans, core) 
+            || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
-            || Self::eat_interger(feeder, &mut ans, core) 
+            || Self::eat_integer(feeder, &mut ans, core) 
             || Self::eat_word(feeder, &mut ans, core) { 
                 continue;
             }
