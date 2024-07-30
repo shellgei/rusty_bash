@@ -38,11 +38,9 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
         let ok = match e {
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-          //  CalcElement::Num(n)      => {ans.push(CalcElement::Num(*n)); true},
             CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
             CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
             e                        => {ans.push(e.clone()); true},
-         //   _ => return Err(e.clone()),
         };
 
         if !ok {
@@ -170,11 +168,8 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
                 Ok(())
             },
             CalcElement::BinaryOp(ref op) => bin_operation(&op, &mut stack),
-            CalcElement::UnaryOp(ref op) => unary_operation(&op, &mut stack),
-            CalcElement::Name(_) => {
-                Err( format!("operand expected") )
-            },
-            _ => panic!("SUSH INTERNAL ERROR: illegal element in reverse polish"),
+            CalcElement::UnaryOp(ref op)  => unary_operation(&op, &mut stack),
+            _                             => Err( format!("operand expected") ),
         };
 
         if let Err(err_msg) = result {
