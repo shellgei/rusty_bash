@@ -26,19 +26,24 @@ fn op_order(op: &CalcElement) -> u8 {
 fn to_string(op: &CalcElement) -> String {
     match op {
         CalcElement::Num(n) => n.to_string(),
-        CalcElement::Name(s, _) => s.clone(),
-        CalcElement::Name(n, i) => {
+        CalcElement::Name(p, n, i) => {
+            match p {
+                -1 => return "--".to_owned() + &n.to_string(),
+                1  => return "++".to_owned() + &n.to_string(),
+                _  => {},
+            }
+
             match i {
                 -1 => n.to_string() + "--",
                 1  => n.to_string() + "++",
-                _  => panic!("SUSH INTERNAL ERROR: unknown increment"),
+                _  => n.to_string(),
             }
         },
         CalcElement::UnaryOp(s) => s.clone(),
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),
         CalcElement::RightParen => ")".to_string(),
-        CalcElement::Word(w, _) => w.text.clone(),
+        CalcElement::Word(_, w, _) => w.text.clone(),
     }
 }
 
@@ -51,7 +56,12 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
         let ok = match e {
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-            CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
+            CalcElement::UnaryOp(op)  => {
+                match op.as_str() {
+                    "++" | "--" => true,
+                    _ => rev_polish_op(&e, &mut stack, &mut ans),
+                }
+            },
             CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
             e                        => {ans.push(e.clone()); true},
         };
@@ -167,10 +177,8 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String>
     match op {
         "+"  => stack.push( CalcElement::Num(num) ),
         "-"  => stack.push( CalcElement::Num(-num) ),
-        /*
-        "++" => stack.push( CalcElement::Num({num +=1 ; num}) ),
-        "--" => stack.push( CalcElement::Num({num -=1 ; num}) ),
-        */
+        "++" => {},
+        "--" => {},
         _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 
