@@ -53,10 +53,28 @@ impl Calc {
             match e {
                 CalcElement::Name(s) => {
                     let val = core.data.get_param(s);
-                    match self.value_to_num(&val, "") {
+                    match self.value_to_num(&val, "", 0) {
                         Ok(e)        => ans.push(e),
                         Err(err_msg) => return Err(err_msg), 
                     }
+                },
+                CalcElement::NamePlusPlus(s) => {
+                    let val = core.data.get_param(s);
+                    match self.value_to_num(&val, "", 1) {
+                        Ok(e)        => ans.push(e),
+                        Err(err_msg) => return Err(err_msg), 
+                    }
+
+                    core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) + 1).to_string());
+                },
+                CalcElement::NameMinusMinus(s) => {
+                    let val = core.data.get_param(s);
+                    match self.value_to_num(&val, "", -1) {
+                        Ok(e)        => ans.push(e),
+                        Err(err_msg) => return Err(err_msg), 
+                    }
+
+                    core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) - 1).to_string());
                 },
                 CalcElement::Word(w) => {
                     let val = match w.eval_as_value(core) {
@@ -64,7 +82,7 @@ impl Calc {
                         None => return Err(format!("{}: wrong substitution", &self.text)),
                     };
 
-                    match self.value_to_num(&val, &w.text) {
+                    match self.value_to_num(&val, &w.text, 0) {
                         Ok(e)        => ans.push(e),
                         Err(err_msg) => return Err(err_msg), 
                     }
@@ -76,13 +94,15 @@ impl Calc {
         Ok(ans)
     }
 
-    fn value_to_num(&self, val: &String, text: &str) -> Result<CalcElement, String> {
+    fn value_to_num(&self, val: &String, text: &str, inc: i32) -> Result<CalcElement, String> {
         if text.find('\'').is_some() {
             Ok( CalcElement::Name("\'".to_owned() + val + "\'") )
         }else if val == "" {
             Ok( CalcElement::Num(0) )
         }else if let Ok(n) = val.parse::<i64>() {
             Ok( CalcElement::Num(n) )
+        }else if inc != 0 {
+            Ok( CalcElement::Num(0) )
         }else {
             Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val))
         }
