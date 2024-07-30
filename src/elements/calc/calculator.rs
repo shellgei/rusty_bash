@@ -38,10 +38,9 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
         let ok = match e {
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-            CalcElement::Num(n)      => {ans.push(CalcElement::Num(*n)); true},
             CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
             CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
-            _ => panic!("SUSH INTERNAL ERROR: name or word is not removed"),
+            e                        => {ans.push(e.clone()); true},
         };
 
         if !ok {
@@ -177,8 +176,8 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
                 Ok(())
             },
             CalcElement::BinaryOp(ref op) => bin_operation(&op, &mut stack),
-            CalcElement::UnaryOp(ref op) => unary_operation(&op, &mut stack),
-            _ => Err("unknown operator".to_string()),
+            CalcElement::UnaryOp(ref op)  => unary_operation(&op, &mut stack),
+            _                             => Err( format!("operand expected") ),
         };
 
         if let Err(err_msg) = result {

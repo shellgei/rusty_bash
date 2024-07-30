@@ -51,7 +51,7 @@ impl Calc {
             match e {
                 CalcElement::Name(s) => {
                     let val = core.data.get_param(s);
-                    match self.value_to_num(&val) {
+                    match self.value_to_num(&val, "") {
                         Ok(e)        => ans.push(e),
                         Err(err_msg) => return Err(err_msg), 
                     }
@@ -62,7 +62,7 @@ impl Calc {
                         None => return Err(format!("{}: wrong substitution", &self.text)),
                     };
 
-                    match self.value_to_num(&val) {
+                    match self.value_to_num(&val, &w.text) {
                         Ok(e)        => ans.push(e),
                         Err(err_msg) => return Err(err_msg), 
                     }
@@ -74,8 +74,10 @@ impl Calc {
         Ok(ans)
     }
 
-    fn value_to_num(&self, val: &String) -> Result<CalcElement, String> {
-        if val == "" {
+    fn value_to_num(&self, val: &String, text: &str) -> Result<CalcElement, String> {
+        if text.find('\'').is_some() {
+            Ok( CalcElement::Name("\'".to_owned() + val + "\'") )
+        }else if val == "" {
             Ok( CalcElement::Num(0) )
         }else if let Ok(n) = val.parse::<i64>() {
             Ok( CalcElement::Num(n) )
