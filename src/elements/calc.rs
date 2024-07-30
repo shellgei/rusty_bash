@@ -12,9 +12,8 @@ enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Num(i64),
-//    Name(String),
     Name(String, i32),
-    Word(Word),
+    Word(Word, i32),
     LeftParen,
     RightParen,
 }
@@ -50,32 +49,34 @@ impl Calc {
 
         for e in &self.elements {
             match e {
-                /*
-                CalcElement::Name(s) => {
+                CalcElement::Name(s, inc) => {
                     let val = core.data.get_param(s);
-                    match self.value_to_num(&val, "", 0) {
-                        Ok(e)        => ans.push(e),
-                        Err(err_msg) => return Err(err_msg), 
-                    }
-                },*/
-                CalcElement::Name(s, i) => {
-                    let val = core.data.get_param(s);
-                    match self.value_to_num(&val, "", *i) {
-                        Ok(e)        => ans.push(e),
+                    match self.value_to_num(&val, "", *inc) {
+                        Ok(n)        => ans.push(CalcElement::Num(n)),
                         Err(err_msg) => return Err(err_msg), 
                     }
 
-                    core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) + i).to_string());
+                    core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) + inc).to_string());
                 },
-                CalcElement::Word(w) => {
-                    let val = match w.eval_as_value(core) {
+                CalcElement::Word(w, inc) => {
+                    let mut val = match w.eval_as_value(core) {
                         Some(v) => v, 
                         None => return Err(format!("{}: wrong substitution", &self.text)),
                     };
 
-                    match self.value_to_num(&val, &w.text, 0) {
-                        Ok(e)        => ans.push(e),
-                        Err(err_msg) => return Err(err_msg), 
+                    let mut f = Feeder::new(&val);
+                    if f.scanner_name(core) == val.len() {
+                        let num = core.data.get_param(&val);
+                        let num = match self.value_to_num(&num, &w.text, *inc) {
+                            Ok(n)        => {ans.push(CalcElement::Num(n)); n},
+                            Err(err_msg) => return Err(err_msg), 
+                        };
+                        core.data.set_param(&val, &(num + *inc as i64).to_string());
+                    }else{
+                        let num = match self.value_to_num(&val, &w.text, *inc) {
+                            Ok(n)        => {ans.push(CalcElement::Num(n)); n},
+                            Err(err_msg) => return Err(err_msg), 
+                        };
                     }
                 },
                 _ => ans.push(e.clone()),
@@ -85,17 +86,20 @@ impl Calc {
         Ok(ans)
     }
 
-    fn value_to_num(&self, val: &String, text: &str, inc: i32) -> Result<CalcElement, String> {
+    fn value_to_num(&self, val: &String, text: &str, inc: i32) -> Result<i64, String> {
         if text.find('\'').is_some() {
-            Ok( CalcElement::Name("\'".to_owned() + val + "\'", 0) )
-        }else if val == "" {
-            Ok( CalcElement::Num(0) )
-        }else if let Ok(n) = val.parse::<i64>() {
-            Ok( CalcElement::Num(n) )
-        }else if inc != 0 {
-            Ok( CalcElement::Num(0) )
-        }else {
             Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val))
+        }else if val == "" {
+            Ok( 0 )
+        }else if let Ok(n) = val.parse::<i64>() {
+            Ok( n )
+                /*
+        }else if inc != 0 {
+            Ok( 0 )
+                */
+        }else {
+            //Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val))
+            Ok( 0 )
         }
     }
 
@@ -194,21 +198,46 @@ impl Calc {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        match Word::parse(feeder, core) {
+        let mut word = match Word::parse(feeder, core) {
             Some(w) => {
                 ans.text += &w.text;
-                ans.elements.push( CalcElement::Word(w) );
-                true
+                w
             },
-            _ => false,
+            _ => return false,
+        };
+
+        let size = word.subwords.len();
+        if size > 2 {
+            if (word.subwords[size-1].get_text() == "+" && word.subwords[size-2].get_text() == "+" )
+            || (word.subwords[size-1].get_text() == "-" && word.subwords[size-2].get_text() == "-" ) {
+                word.subwords.pop();
+                word.subwords.pop();
+                word.text.pop();
+                word.text.pop();
+                ans.elements.push( CalcElement::Word(word, 1) );
+                return true;
+            }
         }
+
+        Self::eat_blank(feeder, ans, core);
+
+        if feeder.starts_with("++") {
+            ans.elements.push( CalcElement::Word(word, 1) );
+            ans.text += &feeder.consume(2);
+        } else if feeder.starts_with("--") {
+            ans.elements.push( CalcElement::Word(word, -1) );
+            ans.text += &feeder.consume(2);
+        } else{
+            ans.elements.push( CalcElement::Word(word, 0) );
+        }
+        true
     }
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Num(_)) => return false,
             Some(CalcElement::Name(_, _)) => return false,
-            Some(CalcElement::Word(_)) => return false,
+            Some(CalcElement::Word(_, _)) => return false,
             _ => {},
         }
 

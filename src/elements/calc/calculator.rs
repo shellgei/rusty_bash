@@ -38,7 +38,7 @@ fn to_string(op: &CalcElement) -> String {
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),
         CalcElement::RightParen => ")".to_string(),
-        CalcElement::Word(w) => w.text.clone(),
+        CalcElement::Word(w, _) => w.text.clone(),
     }
 }
 
