@@ -22,6 +22,8 @@ fn to_string(op: &CalcElement) -> String {
     match op {
         CalcElement::Num(n) => n.to_string(),
         CalcElement::Name(s) => s.clone(),
+        CalcElement::NamePlusPlus(n) => n.to_string() + "++",
+        CalcElement::NameMinusMinus(n) => n.to_string() + "--",
         CalcElement::UnaryOp(s) => s.clone(),
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),

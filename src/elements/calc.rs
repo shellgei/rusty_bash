@@ -13,6 +13,8 @@ enum CalcElement {
     BinaryOp(String),
     Num(i64),
     Name(String),
+    NamePlusPlus(String),
+    NameMinusMinus(String),
     Word(Word),
     LeftParen,
     RightParen,
@@ -129,8 +131,19 @@ impl Calc {
         }
 
         let s = feeder.consume(len);
-        ans.elements.push( CalcElement::Name(s.clone()) );
         ans.text += &s;
+        Self::eat_blank(feeder, ans, core);
+
+        if feeder.starts_with("++") {
+            ans.elements.push( CalcElement::NamePlusPlus(s.clone()) );
+            ans.text += &feeder.consume(2);
+        } else if feeder.starts_with("--") {
+            ans.elements.push( CalcElement::NameMinusMinus(s.clone()) );
+            ans.text += &feeder.consume(2);
+        } else{
+            ans.elements.push( CalcElement::Name(s.clone()) );
+        }
+
         true
     }
 

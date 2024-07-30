@@ -796,6 +796,30 @@ res=$($com <<< 'echo $(( 1 ** -1  ))')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'A=1; echo $((A++ )); echo $A')
+[ "$res" == "1
+2" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $((A++1 ))')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $((A ++1 ))')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $((A + +1 ))')
+[ "$res" == "2" ] || err $LINENO
+
+res=$($com <<< 'A=2; echo $((A+-1 ))')
+[ "$res" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $((2++1 ))')
+[ "$res" == "3" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $((++2++1 ))')
+[ "$res" == "3" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
