@@ -29,6 +29,13 @@ fn to_string(op: &CalcElement) -> String {
                 _  => panic!("SUSH INTERNAL ERROR: unknown increment"),
             }
         },
+        CalcElement::IncDecName(n, i) => {
+            match i {
+                -1 => "--".to_owned() + &n.to_string(),
+                1  => "++".to_owned() + &n.to_string(),
+                _  => panic!("SUSH INTERNAL ERROR: unknown increment"),
+            }
+        },
         CalcElement::UnaryOp(s) => s.clone(),
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),

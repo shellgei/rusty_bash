@@ -14,6 +14,7 @@ enum CalcElement {
     Num(i64),
     Name(String),
     NameIncDec(String, i32),
+    IncDecName(String, i32),
     Word(Word),
     LeftParen,
     RightParen,
