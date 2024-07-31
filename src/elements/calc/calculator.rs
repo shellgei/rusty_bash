@@ -26,13 +26,7 @@ fn op_order(op: &CalcElement) -> u8 {
 fn to_string(op: &CalcElement) -> String {
     match op {
         CalcElement::Num(n) => n.to_string(),
-        CalcElement::Name(p, n, i) => {
-            match p {
-                -1 => return "--".to_owned() + &n.to_string(),
-                1  => return "++".to_owned() + &n.to_string(),
-                _  => {},
-            }
-
+        CalcElement::Name(n, i) => {
             match i {
                 -1 => n.to_string() + "--",
                 1  => n.to_string() + "++",
@@ -43,7 +37,7 @@ fn to_string(op: &CalcElement) -> String {
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),
         CalcElement::RightParen => ")".to_string(),
-        CalcElement::Word(_, w, _) => w.text.clone(),
+        CalcElement::Word(w, _) => w.text.clone(),
     }
 }
 
@@ -166,7 +160,7 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
 }
 
 fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
-    let mut num = match stack.pop() {
+    let num = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
         _ => {
             let err_msg = format!("syntax error: operand expected (error token is \"{}\")", op);

@@ -12,8 +12,8 @@ enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Num(i64),
-    Name(i32, String, i32),
-    Word(i32, Word, i32),
+    Name(String, i32),
+    Word(Word, i32),
     LeftParen,
     RightParen,
 }
@@ -48,19 +48,19 @@ impl Calc {
         let mut ans = vec![];
         let mut next_inc: i32 = 0;
 
-        for (i, e) in self.elements.iter().enumerate() {
+        for e in self.elements.iter() {
             match e {
-                CalcElement::Name(pinc, s, inc) => {
+                CalcElement::Name(s, inc) => {
                     let val = core.data.get_param(s);
-                    match self.value_to_num(&val, "", *inc) {
+                    match self.value_to_num(&val, "") {
                         Ok(n)        => ans.push(CalcElement::Num(n+next_inc as i64)),
                         Err(err_msg) => return Err(err_msg), 
                     }
 
                     core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) + next_inc + inc).to_string());
                 },
-                CalcElement::Word(pinc, w, inc) => {
-                    let mut val = match w.eval_as_value(core) {
+                CalcElement::Word(w, inc) => {
+                    let val = match w.eval_as_value(core) {
                         Some(v) => v, 
                         None => return Err(format!("{}: wrong substitution", &self.text)),
                     };
@@ -68,23 +68,23 @@ impl Calc {
                     let mut f = Feeder::new(&val);
                     if f.scanner_name(core) == val.len() {
                         let num = core.data.get_param(&val);
-                        let num = match self.value_to_num(&num, &w.text, *inc) {
+                        let num = match self.value_to_num(&num, &w.text) {
                             Ok(n)        => {ans.push(CalcElement::Num(n+next_inc as i64)); n},
                             Err(err_msg) => return Err(err_msg), 
                         };
                         core.data.set_param(&val, &(num + (next_inc + *inc) as i64).to_string());
                     }else{
-                        let num = match self.value_to_num(&val, &w.text, *inc) {
-                            Ok(n)        => {ans.push(CalcElement::Num(n)); n},
+                        match self.value_to_num(&val, &w.text) {
+                            Ok(n)        => ans.push(CalcElement::Num(n)),
                             Err(err_msg) => return Err(err_msg), 
-                        };
+                        }
                     }
                 },
                 _ => ans.push(e.clone()),
             }
 
             match e {
-                CalcElement::UnaryOp(op) | CalcElement::UnaryOp(op) => {
+                CalcElement::UnaryOp(op) => {
                     match op.as_str() {
                         "++" => next_inc = 1,
                         "--" => next_inc = -1,
@@ -98,19 +98,12 @@ impl Calc {
         Ok(ans)
     }
 
-    fn value_to_num(&self, val: &String, text: &str, inc: i32) -> Result<i64, String> {
+    fn value_to_num(&self, val: &String, text: &str) -> Result<i64, String> {
         if text.find('\'').is_some() {
             Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val))
-        }else if val == "" {
-            Ok( 0 )
         }else if let Ok(n) = val.parse::<i64>() {
             Ok( n )
-                /*
-        }else if inc != 0 {
-            Ok( 0 )
-                */
         }else {
-            //Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val))
             Ok( 0 )
         }
     }
@@ -162,13 +155,13 @@ impl Calc {
         Self::eat_blank(feeder, ans, core);
 
         if feeder.starts_with("++") {
-            ans.elements.push( CalcElement::Name(0, s.clone(), 1) );
+            ans.elements.push( CalcElement::Name(s.clone(), 1) );
             ans.text += &feeder.consume(2);
         } else if feeder.starts_with("--") {
-            ans.elements.push( CalcElement::Name(0, s.clone(), -1) );
+            ans.elements.push( CalcElement::Name(s.clone(), -1) );
             ans.text += &feeder.consume(2);
         } else{
-            ans.elements.push( CalcElement::Name(0, s.clone(), 0) );
+            ans.elements.push( CalcElement::Name(s.clone(), 0) );
         }
 
         true
@@ -226,7 +219,7 @@ impl Calc {
                 word.subwords.pop();
                 word.text.pop();
                 word.text.pop();
-                ans.elements.push( CalcElement::Word(0, word, 1) );
+                ans.elements.push( CalcElement::Word(word, 1) );
                 return true;
             }
         }
@@ -234,13 +227,13 @@ impl Calc {
         Self::eat_blank(feeder, ans, core);
 
         if feeder.starts_with("++") {
-            ans.elements.push( CalcElement::Word(0, word, 1) );
+            ans.elements.push( CalcElement::Word(word, 1) );
             ans.text += &feeder.consume(2);
         } else if feeder.starts_with("--") {
-            ans.elements.push( CalcElement::Word(0, word, -1) );
+            ans.elements.push( CalcElement::Word(word, -1) );
             ans.text += &feeder.consume(2);
         } else{
-            ans.elements.push( CalcElement::Word(0, word, 0) );
+            ans.elements.push( CalcElement::Word(word, 0) );
         }
         true
     }
@@ -248,8 +241,8 @@ impl Calc {
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Num(_)) => return false,
-            Some(CalcElement::Name(_, _, _)) => return false,
-            Some(CalcElement::Word(_, _, _)) => return false,
+            Some(CalcElement::Name(_, _)) => return false,
+            Some(CalcElement::Word(_, _)) => return false,
             _ => {},
         }
 
