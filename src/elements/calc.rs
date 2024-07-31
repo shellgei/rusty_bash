@@ -28,6 +28,10 @@ pub struct Calc {
     paren_stack: Vec<char>,
 }
 
+fn syntax_error_msg(token: &str) -> String {
+    format!("{0}: syntax error: operand expected (error token is \"{0}\")", token)
+}
+
 impl Calc {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
         let es = match self.evaluate_elems(core) {
@@ -83,7 +87,7 @@ impl Calc {
                 },
                 CalcElement::Word(w, inc) => {
                     if w.text.find('\'').is_some() {
-                        return Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &w.text));
+                        return Err(syntax_error_msg(&w.text));
                     }
 
                     let val = match w.eval_as_value(core) {
@@ -128,7 +132,7 @@ impl Calc {
         }else if converted_name.find('\'').is_none() {
             Ok( 0 )
         }else{
-            Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", name))
+            Err(syntax_error_msg(name))
         }
     }
 
