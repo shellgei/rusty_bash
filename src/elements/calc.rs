@@ -16,6 +16,8 @@ enum CalcElement {
     Word(Word, i32),
     LeftParen,
     RightParen,
+    PlusPlus,
+    MinusMinus,
 }
 
 #[derive(Debug, Clone)]
@@ -83,16 +85,11 @@ impl Calc {
                 _ => ans.push(e.clone()),
             }
 
-            match e {
-                CalcElement::UnaryOp(op) => {
-                    match op.as_str() {
-                        "++" => next_inc = 1,
-                        "--" => next_inc = -1,
-                        _    => next_inc = 0,
-                    };
-                },
-                _ => next_inc = 0,
-            }
+            next_inc = match e {
+                CalcElement::PlusPlus => 1,
+                CalcElement::MinusMinus => -1,
+                _ => 0, 
+            };
         }
 
         Ok(ans)
@@ -170,10 +167,10 @@ impl Calc {
     fn eat_incdec(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( CalcElement::UnaryOp("++".to_string()) );
+            ans.elements.push( CalcElement::PlusPlus );
         }else if feeder.starts_with("--") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( CalcElement::UnaryOp("--".to_string()) );
+            ans.elements.push( CalcElement::MinusMinus );
         }else {
             return false;
         };
@@ -181,25 +178,23 @@ impl Calc {
     }
 
     fn inc_dec_to_unarys(&mut self) {
-        if let Some(CalcElement::UnaryOp(op)) = self.elements.last() {
-            let pm = match op.as_str() {
-                "++" => "+",
-                "--" => "-",
-                _    => return, 
-            }.to_string();
+        let pm = match self.elements.last() {
+            Some(CalcElement::PlusPlus) => "+",
+            Some(CalcElement::MinusMinus) => "-",
+            _ => return,
+        }.to_string();
 
-            self.elements.pop();
+        self.elements.pop();
 
-            match self.elements.last() {
-                None |
-                Some(CalcElement::UnaryOp(_)) |
-                Some(CalcElement::BinaryOp(_)) |
-                Some(CalcElement::LeftParen) 
-                   => self.elements.push(CalcElement::UnaryOp(pm.clone())),
-                _  => self.elements.push(CalcElement::BinaryOp(pm.clone())),
-            }
-            self.elements.push(CalcElement::UnaryOp(pm));
+        match self.elements.last() {
+            None |
+            Some(CalcElement::UnaryOp(_)) |
+            Some(CalcElement::BinaryOp(_)) |
+            Some(CalcElement::LeftParen) 
+               => self.elements.push(CalcElement::UnaryOp(pm.clone())),
+            _  => self.elements.push(CalcElement::BinaryOp(pm.clone())),
         }
+        self.elements.push(CalcElement::UnaryOp(pm));
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

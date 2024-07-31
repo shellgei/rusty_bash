@@ -5,12 +5,9 @@ use super::CalcElement;
 
 fn op_order(op: &CalcElement) -> u8 {
     match op {
-        CalcElement::UnaryOp(s) => {
-            match s.as_str() {
-                "++" | "--" => 9,
-                _           => 8,
-            }
-        },
+        CalcElement::PlusPlus => 9,
+        CalcElement::MinusMinus => 9,
+        CalcElement::UnaryOp(_) => 8,
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
                 "**"            => 6, 
@@ -38,6 +35,8 @@ fn to_string(op: &CalcElement) -> String {
         CalcElement::LeftParen => "(".to_string(),
         CalcElement::RightParen => ")".to_string(),
         CalcElement::Word(w, _) => w.text.clone(),
+        CalcElement::PlusPlus => "++".to_string(),
+        CalcElement::MinusMinus => "--".to_string(),
     }
 }
 
@@ -50,6 +49,8 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
         let ok = match e {
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
+            CalcElement::PlusPlus => true,
+            CalcElement::MinusMinus => true,
             CalcElement::UnaryOp(op)  => {
                 match op.as_str() {
                     "++" | "--" => true,
