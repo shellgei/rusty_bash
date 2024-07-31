@@ -32,6 +32,10 @@ fn syntax_error_msg(token: &str) -> String {
     format!("{0}: syntax error: operand expected (error token is \"{0}\")", token)
 }
 
+fn recursion_error(token: &str) -> String {
+    format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token)
+}
+
 impl Calc {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
         let es = match self.evaluate_elems(core) {
@@ -116,12 +120,18 @@ impl Calc {
     fn value_to_num(name: &str, core: &mut ShellCore) -> Result<i64, String> {
         let mut converted_name = name.to_string();
 
-        loop {
+        const RESOLVE_LIMIT: i32 = 10000;
+
+        for i in 0..RESOLVE_LIMIT {
             let mut f = Feeder::new(&converted_name);
             if converted_name.len() > 0 && f.scanner_name(core) == converted_name.len() {
                 converted_name = core.data.get_param(&converted_name);
             }else{
                 break;
+            }
+
+            if i == RESOLVE_LIMIT - 1 {
+                return Err(recursion_error(name));
             }
         }
 
