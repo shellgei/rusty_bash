@@ -106,10 +106,11 @@ impl Calc {
                         Err(msg) => return Err(msg),
                     }
                 },
+                CalcElement::PlusPlus => next_inc = 1,
+                CalcElement::MinusMinus => next_inc = -1,
                 _ => ans.push(e.clone()),
             }
 
-            next_inc = Self::element_to_inc(&e);
         }
 
         Ok(ans)
