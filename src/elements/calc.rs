@@ -12,12 +12,13 @@ enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Num(i64),
-    Name(String, i32),
-    Word(Word, i32),
+    Name(String, Box<CalcElement>), //CalcElement: PlusPlus or MinusMinus
+    Word(Word, Box<CalcElement>),
     LeftParen,
     RightParen,
     PlusPlus,
     MinusMinus,
+    Noop,
 }
 
 #[derive(Debug, Clone)]
@@ -53,13 +54,20 @@ impl Calc {
         for e in self.elements.iter() {
             match e {
                 CalcElement::Name(s, inc) => {
-                    let val = core.data.get_param(s);
-                    match self.value_to_num(&val, "") {
+                    let name = core.data.get_param(s);
+                    match self.value_to_num(&name, "") {
                         Ok(n)        => ans.push(CalcElement::Num(n+next_inc as i64)),
                         Err(err_msg) => return Err(err_msg), 
                     }
 
-                    core.data.set_param(&s, &(val.parse::<i32>().unwrap_or(0) + next_inc + inc).to_string());
+                    let mut num = name.parse::<i32>().unwrap_or(0) + next_inc;
+                    match **inc {
+                        CalcElement::PlusPlus   => num += 1,
+                        CalcElement::MinusMinus => num -= 1,
+                        _ => {},
+                    }
+
+                    core.data.set_param(&s, &num.to_string());
                 },
                 CalcElement::Word(w, inc) => {
                     let val = match w.eval_as_value(core) {
@@ -70,11 +78,17 @@ impl Calc {
                     let mut f = Feeder::new(&val);
                     if f.scanner_name(core) == val.len() {
                         let num = core.data.get_param(&val);
-                        let num = match self.value_to_num(&num, &w.text) {
+                        let mut num = match self.value_to_num(&num, &w.text) {
                             Ok(n)        => {ans.push(CalcElement::Num(n+next_inc as i64)); n},
                             Err(err_msg) => return Err(err_msg), 
                         };
-                        core.data.set_param(&val, &(num + (next_inc + *inc) as i64).to_string());
+
+                        match **inc {
+                            CalcElement::PlusPlus   => num += 1,
+                            CalcElement::MinusMinus => num -= 1,
+                            _ => {},
+                        }
+                        core.data.set_param(&val, &(num + next_inc as i64).to_string());
                     }else{
                         match self.value_to_num(&val, &w.text) {
                             Ok(n)        => ans.push(CalcElement::Num(n)),
@@ -151,15 +165,16 @@ impl Calc {
         ans.text += &s;
         Self::eat_blank(feeder, ans, core);
 
-        if feeder.starts_with("++") {
-            ans.elements.push( CalcElement::Name(s.clone(), 1) );
+        let suffix = if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
+            Box::new(CalcElement::PlusPlus)
         } else if feeder.starts_with("--") {
-            ans.elements.push( CalcElement::Name(s.clone(), -1) );
             ans.text += &feeder.consume(2);
+            Box::new(CalcElement::MinusMinus)
         } else{
-            ans.elements.push( CalcElement::Name(s.clone(), 0) );
-        }
+            Box::new(CalcElement::Noop)
+        };
+        ans.elements.push( CalcElement::Name(s.clone(), suffix) );
 
         true
     }
@@ -213,23 +228,27 @@ impl Calc {
                 word.subwords.pop();
                 word.subwords.pop();
                 word.text.pop();
-                word.text.pop();
-                ans.elements.push( CalcElement::Word(word, 1) );
+                match word.text.pop() {
+                    Some('+') => ans.elements.push( CalcElement::Word(word, Box::new(CalcElement::PlusPlus)) ),
+                    Some('-') => ans.elements.push( CalcElement::Word(word, Box::new(CalcElement::MinusMinus)) ),
+                    _ => {},
+                }
                 return true;
             }
         }
 
         Self::eat_blank(feeder, ans, core);
 
-        if feeder.starts_with("++") {
-            ans.elements.push( CalcElement::Word(word, 1) );
+        let suffix = if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
+            Box::new(CalcElement::PlusPlus)
         } else if feeder.starts_with("--") {
-            ans.elements.push( CalcElement::Word(word, -1) );
             ans.text += &feeder.consume(2);
+            Box::new(CalcElement::MinusMinus)
         } else{
-            ans.elements.push( CalcElement::Word(word, 0) );
-        }
+            Box::new(CalcElement::Noop)
+        };
+        ans.elements.push( CalcElement::Word(word, suffix) );
         true
     }
 

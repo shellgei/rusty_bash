@@ -23,11 +23,11 @@ fn op_order(op: &CalcElement) -> u8 {
 fn to_string(op: &CalcElement) -> String {
     match op {
         CalcElement::Num(n) => n.to_string(),
-        CalcElement::Name(n, i) => {
-            match i {
-                -1 => n.to_string() + "--",
-                1  => n.to_string() + "++",
-                _  => n.to_string(),
+        CalcElement::Name(n, e) => {
+            match **e {
+                CalcElement::PlusPlus => n.to_string() + "++",
+                CalcElement::MinusMinus  => n.to_string() + "--",
+                _ => panic!("SUSH INTERNAL ERROR: wrong suffix"),
             }
         },
         CalcElement::UnaryOp(s) => s.clone(),
@@ -37,6 +37,7 @@ fn to_string(op: &CalcElement) -> String {
         CalcElement::Word(w, _) => w.text.clone(),
         CalcElement::PlusPlus => "++".to_string(),
         CalcElement::MinusMinus => "--".to_string(),
+        CalcElement::Noop => "".to_string(),
     }
 }
 
