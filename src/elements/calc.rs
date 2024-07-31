@@ -47,27 +47,36 @@ impl Calc {
         }
     }
 
-    fn evaluate_elems(&self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
+    fn evaluate_name(name: &str, prev_inc: i32, after_inc: CalcElement, core: &mut ShellCore)
+                                                      -> Result<CalcElement, String> {
+        let val = core.data.get_param(name);
+        let ans = match Self::value_to_num(&val, "") {
+            Ok(n)        => CalcElement::Num(n+prev_inc as i64),
+            Err(err_msg) => return Err(err_msg), 
+        };
+
+        let mut num = val.parse::<i32>().unwrap_or(0) + prev_inc;
+        match after_inc {
+            CalcElement::PlusPlus   => num += 1,
+            CalcElement::MinusMinus => num -= 1,
+            _ => {},
+        }
+
+        core.data.set_param(&name, &num.to_string());
+        Ok(ans)
+    }
+
+    fn evaluate_elems(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
         let mut next_inc: i32 = 0;
 
-        for e in self.elements.iter() {
+        for e in &self.elements {
             match e {
                 CalcElement::Name(s, inc) => {
-                    let name = core.data.get_param(s);
-                    match self.value_to_num(&name, "") {
-                        Ok(n)        => ans.push(CalcElement::Num(n+next_inc as i64)),
-                        Err(err_msg) => return Err(err_msg), 
+                    match Self::evaluate_name(s, next_inc, *inc.clone(), core) {
+                        Ok(e)    => ans.push(e),
+                        Err(msg) => return Err(msg),
                     }
-
-                    let mut num = name.parse::<i32>().unwrap_or(0) + next_inc;
-                    match **inc {
-                        CalcElement::PlusPlus   => num += 1,
-                        CalcElement::MinusMinus => num -= 1,
-                        _ => {},
-                    }
-
-                    core.data.set_param(&s, &num.to_string());
                 },
                 CalcElement::Word(w, inc) => {
                     let val = match w.eval_as_value(core) {
@@ -78,7 +87,7 @@ impl Calc {
                     let mut f = Feeder::new(&val);
                     if f.scanner_name(core) == val.len() {
                         let num = core.data.get_param(&val);
-                        let mut num = match self.value_to_num(&num, &w.text) {
+                        let mut num = match Self::value_to_num(&num, &w.text) {
                             Ok(n)        => {ans.push(CalcElement::Num(n+next_inc as i64)); n},
                             Err(err_msg) => return Err(err_msg), 
                         };
@@ -90,7 +99,7 @@ impl Calc {
                         }
                         core.data.set_param(&val, &(num + next_inc as i64).to_string());
                     }else{
-                        match self.value_to_num(&val, &w.text) {
+                        match Self::value_to_num(&val, &w.text) {
                             Ok(n)        => ans.push(CalcElement::Num(n)),
                             Err(err_msg) => return Err(err_msg), 
                         }
@@ -109,7 +118,7 @@ impl Calc {
         Ok(ans)
     }
 
-    fn value_to_num(&self, val: &String, text: &str) -> Result<i64, String> {
+    fn value_to_num(val: &String, text: &str) -> Result<i64, String> {
         if text.find('\'').is_some() {
             Err(format!("{0}: syntax error: operand expected (error token is \"{0}\")", &val))
         }else if let Ok(n) = val.parse::<i64>() {
