@@ -55,6 +55,14 @@ impl Calc {
         }
     }
 
+    fn element_to_inc(e: &CalcElement) -> i64 {
+        match e {
+            CalcElement::PlusPlus   => 1,
+            CalcElement::MinusMinus => -1,
+            _ => 0,
+        }
+    }
+
     fn evaluate_name(name: &str, prev_inc: i64, after_inc: CalcElement, core: &mut ShellCore)
                                                       -> Result<CalcElement, String> {
         let mut num;
@@ -66,13 +74,7 @@ impl Calc {
             Err(err_msg) => return Err(err_msg), 
         };
 
-        num += prev_inc;
-        match after_inc {
-            CalcElement::PlusPlus   => num += 1,
-            CalcElement::MinusMinus => num -= 1,
-            _ => {},
-        }
-
+        num += prev_inc + Self::element_to_inc(&after_inc);
         core.data.set_param(&name, &num.to_string());
         Ok(ans)
     }
@@ -107,11 +109,7 @@ impl Calc {
                 _ => ans.push(e.clone()),
             }
 
-            next_inc = match e {
-                CalcElement::PlusPlus => 1,
-                CalcElement::MinusMinus => -1,
-                _ => 0, 
-            };
+            next_inc = Self::element_to_inc(&e);
         }
 
         Ok(ans)

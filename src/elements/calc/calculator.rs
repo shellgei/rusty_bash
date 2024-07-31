@@ -2,11 +2,16 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::CalcElement;
+use super::syntax_error_msg;
+
+fn exponent_error_msg(num: i64) -> String {
+    format!("exponent less than 0 (error token is \"{}\")", num)
+}
 
 fn op_order(op: &CalcElement) -> u8 {
     match op {
-        CalcElement::PlusPlus => 9,
-        CalcElement::MinusMinus => 9,
+  //      CalcElement::PlusPlus => 9,
+  //      CalcElement::MinusMinus => 9,
         CalcElement::UnaryOp(_) => 8,
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
@@ -128,8 +133,7 @@ fn pop_operands(num: usize, stack: &mut Vec<CalcElement>) -> Vec<i64> {
 fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     let operands = pop_operands(2, stack);
     if operands.len() != 2 {
-        let err_msg = format!("syntax error: operand expected (error token is \"{}\")", op);
-        return Err(err_msg);
+        return Err( syntax_error_msg(op) );
     }
 
     match op {
@@ -146,8 +150,7 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
             if operands[0] >= 0 {
                 stack.push( CalcElement::Num(operands[1].pow(operands[0].try_into().unwrap())) )
             }else{
-                let err_msg = format!("exponent less than 0 (error token is \"{}\")", operands[0]);
-                return Err(err_msg);
+                return Err( exponent_error_msg(operands[0]) );
             }
         },
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
@@ -159,17 +162,12 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
 fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     let num = match stack.pop() {
         Some(CalcElement::Num(s)) => s,
-        _ => {
-            let err_msg = format!("syntax error: operand expected (error token is \"{}\")", op);
-            return Err(err_msg);
-        },
+        _ => return Err( syntax_error_msg(op) ),
     };
 
     match op {
         "+"  => stack.push( CalcElement::Num(num) ),
         "-"  => stack.push( CalcElement::Num(-num) ),
-        "++" => {},
-        "--" => {},
         _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 
@@ -184,11 +182,7 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
 
     let rev_pol = match rev_polish(&elements) {
         Ok(ans) => ans,
-        Err(e)  => {
-            return Err(
-                format!("syntax error: operand expected (error token is \"{}\")", to_string(&e))
-            );
-        },
+        Err(e)  => return Err( syntax_error_msg(&to_string(&e)) ),
     };
 
     let mut stack = vec![];
@@ -201,11 +195,7 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
             },
             CalcElement::BinaryOp(ref op) => bin_operation(&op, &mut stack),
             CalcElement::UnaryOp(ref op)  => unary_operation(&op, &mut stack),
-            _ => {
-                let err_msg = format!("syntax error: operand expected (error token is \"{}\")",
-                                      to_string(&e));
-                Err( err_msg )
-            },
+            _ => Err( syntax_error_msg(&to_string(&e)) ),
         };
 
         if let Err(err_msg) = result {
