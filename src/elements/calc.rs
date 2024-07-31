@@ -47,18 +47,18 @@ impl Calc {
         }
     }
 
-    fn evaluate_name(name: &str, prev_inc: i32, after_inc: CalcElement, core: &mut ShellCore)
+    fn evaluate_name(name: &str, prev_inc: i64, after_inc: CalcElement, core: &mut ShellCore)
                                                       -> Result<CalcElement, String> {
         let mut num;
         let ans = match Self::value_to_num(name, core) {
-            Ok(n)        => {
+            Ok(n) => {
                 num = n;
-                CalcElement::Num(n+prev_inc as i64)
+                CalcElement::Num(n+prev_inc)
             },
             Err(err_msg) => return Err(err_msg), 
         };
 
-        num += prev_inc as i64;
+        num += prev_inc;
         match after_inc {
             CalcElement::PlusPlus   => num += 1,
             CalcElement::MinusMinus => num -= 1,
@@ -71,7 +71,7 @@ impl Calc {
 
     fn evaluate_elems(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
-        let mut next_inc: i32 = 0;
+        let mut next_inc: i64 = 0;
 
         for e in &self.elements {
             match e {
