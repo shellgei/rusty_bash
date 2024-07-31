@@ -49,14 +49,9 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
         let ok = match e {
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-            CalcElement::PlusPlus => true,
-            CalcElement::MinusMinus => true,
-            CalcElement::UnaryOp(op)  => {
-                match op.as_str() {
-                    "++" | "--" => true,
-                    _ => rev_polish_op(&e, &mut stack, &mut ans),
-                }
-            },
+            CalcElement::PlusPlus    => true,
+            CalcElement::MinusMinus  => true,
+            CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
             CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
             e                        => {ans.push(e.clone()); true},
         };
