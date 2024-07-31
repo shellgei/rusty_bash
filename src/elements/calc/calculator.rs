@@ -10,8 +10,6 @@ fn exponent_error_msg(num: i64) -> String {
 
 fn op_order(op: &CalcElement) -> u8 {
     match op {
-  //      CalcElement::PlusPlus => 9,
-  //      CalcElement::MinusMinus => 9,
         CalcElement::UnaryOp(_) => 8,
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
@@ -28,21 +26,13 @@ fn op_order(op: &CalcElement) -> u8 {
 fn to_string(op: &CalcElement) -> String {
     match op {
         CalcElement::Num(n) => n.to_string(),
-        CalcElement::Name(n, e) => {
-            match **e {
-                CalcElement::PlusPlus => n.to_string() + "++",
-                CalcElement::MinusMinus  => n.to_string() + "--",
-                _ => panic!("SUSH INTERNAL ERROR: wrong suffix"),
-            }
-        },
         CalcElement::UnaryOp(s) => s.clone(),
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),
         CalcElement::RightParen => ")".to_string(),
-        CalcElement::Word(w, _) => w.text.clone(),
         CalcElement::PlusPlus => "++".to_string(),
         CalcElement::MinusMinus => "--".to_string(),
-        CalcElement::Noop => "".to_string(),
+        _ => "".to_string(),
     }
 }
 
@@ -55,8 +45,6 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
         let ok = match e {
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-            CalcElement::PlusPlus    => true,
-            CalcElement::MinusMinus  => true,
             CalcElement::UnaryOp(_)  => rev_polish_op(&e, &mut stack, &mut ans),
             CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
             e                        => {ans.push(e.clone()); true},
