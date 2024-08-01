@@ -181,6 +181,18 @@ impl Calc {
         true
     }
 
+    fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> Box<CalcElement> {
+        if feeder.starts_with("++") {
+            ans.text += &feeder.consume(2);
+            Box::new(CalcElement::PlusPlus)
+        } else if feeder.starts_with("--") {
+            ans.text += &feeder.consume(2);
+            Box::new(CalcElement::MinusMinus)
+        } else{
+            Box::new(CalcElement::Noop)
+        }
+    }
+
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
         if len == 0 {
@@ -191,15 +203,7 @@ impl Calc {
         ans.text += &s;
         Self::eat_blank(feeder, ans, core);
 
-        let suffix = if feeder.starts_with("++") {
-            ans.text += &feeder.consume(2);
-            Box::new(CalcElement::PlusPlus)
-        } else if feeder.starts_with("--") {
-            ans.text += &feeder.consume(2);
-            Box::new(CalcElement::MinusMinus)
-        } else{
-            Box::new(CalcElement::Noop)
-        };
+        let suffix = Self::eat_suffix(feeder, ans);
         ans.elements.push( CalcElement::Name(s.clone(), suffix) );
 
         true
@@ -265,15 +269,7 @@ impl Calc {
 
         Self::eat_blank(feeder, ans, core);
 
-        let suffix = if feeder.starts_with("++") {
-            ans.text += &feeder.consume(2);
-            Box::new(CalcElement::PlusPlus)
-        } else if feeder.starts_with("--") {
-            ans.text += &feeder.consume(2);
-            Box::new(CalcElement::MinusMinus)
-        } else{
-            Box::new(CalcElement::Noop)
-        };
+        let suffix = Self::eat_suffix(feeder, ans);
         ans.elements.push( CalcElement::Word(word, suffix) );
         true
     }
