@@ -275,21 +275,17 @@ impl Calc {
             _ => return false,
         };
 
-        let size = word.subwords.len();
-        if size > 2 {
-            if word.text.ends_with("++")
-            || word.text.ends_with("--") {
-                word.subwords.pop();
-                word.subwords.pop();
-                word.text.pop();
-                let elem = match word.text.pop() {
-                    Some('+') => Box::new(CalcElement::PlusPlus),
-                    Some('-') => Box::new(CalcElement::MinusMinus),
-                    _ => panic!("SUSH INTERNAL ERROR: strange word"),
-                };
-                ans.elements.push( CalcElement::Word(word, elem) );
-                return true;
-            }
+        if word.text.ends_with("++") || word.text.ends_with("--") {
+            word.subwords.pop();
+            word.subwords.pop();
+            word.text.pop();
+            let elem = match word.text.pop() {
+                Some('+') => Box::new(CalcElement::PlusPlus),
+                Some('-') => Box::new(CalcElement::MinusMinus),
+                _ => panic!("SUSH INTERNAL ERROR: strange word"),
+            };
+            ans.elements.push( CalcElement::Word(word, elem) );
+            return true;
         }
 
         Self::eat_blank(feeder, ans, core);
