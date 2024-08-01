@@ -291,10 +291,9 @@ impl Calc {
             return false;
         }
 
-        let s = if feeder.starts_with("+") || feeder.starts_with("-") {
-            feeder.consume(1)
-        }else{
-            return false
+        let s = match feeder.starts_with("+") || feeder.starts_with("-") {
+            true  => feeder.consume(1),
+            false => return false,
         };
 
         ans.inc_dec_to_unarys();
