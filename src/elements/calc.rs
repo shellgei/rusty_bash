@@ -78,21 +78,51 @@ impl Calc {
         Ok(ans)
     }
 
+    fn inc_dec_to_unarys2(&mut self, ans: &mut Vec<CalcElement>, pos: usize, inc: i64) -> i64 {
+        let pm = match inc {
+            1  => "+",
+            -1 => "-",
+            _ => return 0,
+        }.to_string();
+    
+        match (&ans.last(), &self.elements.iter().nth(pos+1)) {
+            (_, None) => {
+                return inc;
+            },
+            (_, Some(&CalcElement::Word(_, _))) => {
+                return inc;
+            },
+            (Some(&CalcElement::Operand(_)), Some(&CalcElement::Operand(_))) 
+               => ans.push(CalcElement::BinaryOp(pm.clone())),
+            _  => ans.push(CalcElement::UnaryOp(pm.clone())),
+        }
+        ans.push(CalcElement::UnaryOp(pm));
+        0
+    }
+
     fn words_to_operands(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
         let mut pre_increment = 0;
 
-        for e in &self.elements {
+        let len = self.elements.len();
+        for i in 0..len {
+            let e = self.elements[i].clone();
             match e {
-                CalcElement::Word(w, post_increment) =>
-                    match Self::word_to_operand(&w, pre_increment, *post_increment, core) {
-                        Ok(e)    => ans.push(e),
+                CalcElement::Word(w, post_increment) => {
+                    match Self::word_to_operand(&w, pre_increment, post_increment, core) {
+                        Ok(n)    => ans.push(n),
                         Err(msg) => return Err(msg),
-                    },
-                CalcElement::Increment(n) => pre_increment = *n,
-                _ => ans.push(e.clone()),
+                    }
+                    pre_increment = 0;
+                },
+                CalcElement::Increment(n) => {
+                    pre_increment = self.inc_dec_to_unarys2(&mut ans, i, n);
+                },
+                _ => {
+                    ans.push(self.elements[i].clone());
+                    pre_increment = 0;
+                },
             }
-
         }
 
         Ok(ans)
@@ -166,6 +196,7 @@ impl Calc {
     }
 
     fn inc_dec_to_unarys(&mut self) {
+        /*
         let pm = match self.elements.last() {
             Some(CalcElement::Increment(1)) => "+",
             Some(CalcElement::Increment(-1)) => "-",
@@ -183,6 +214,7 @@ impl Calc {
             _  => self.elements.push(CalcElement::BinaryOp(pm.clone())),
         }
         self.elements.push(CalcElement::UnaryOp(pm));
+        */
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -283,6 +315,7 @@ impl Calc {
             }
         }
 
+                    dbg!("{:?}", &ans);
         match feeder.starts_with("))") {
             true  => Some(ans),
             false => None,
