@@ -33,6 +33,11 @@ fn recursion_error(token: &str) -> String {
     format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token)
 }
 
+fn is_name(s: &str, core: &mut ShellCore) -> bool {
+    let mut f = Feeder::new(s);
+    s.len() > 0 && f.scanner_name(core) == s.len()
+}
+
 impl Calc {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
         let es = match self.words_to_operands(core) {
@@ -155,7 +160,8 @@ impl Calc {
             Ok( n )
         }else if converted_name == "" {
             Ok( 0 )
-        }else if converted_name.find('\'').is_none() {
+        //}else if converted_name.find('\'').is_none() {
+        }else if is_name(&converted_name, core) {
             Ok( 0 )
         }else{
             Err(syntax_error_msg(name))

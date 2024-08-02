@@ -818,9 +818,11 @@ res=$($com <<< 'A=1; echo $(("A"\
 --1 ))')
 [ "$?" == "1" ] || err $LINENO
 
-res=$($com <<< 'A=あああ; echo $((A++ )); echo $A')
-[ "$res" == "0
-1" ] || err $LINENO
+res=$($com <<< 'A=あああ; echo $((A++ ))')
+[ "$?" == "1" ] || err $LINENO
+
+#res=$($com <<< 'A=あああ; echo $((A++ )); echo $A')
+#[ "$res" == "" ] || err $LINENO
 
 res=$($com <<< 'A=5; echo $((A-- )); echo $A')
 [ "$res" == "5
@@ -885,6 +887,10 @@ res=$($com <<< 'A=10 ; echo $(( - - A)); echo $A')
 10" ] || err $LINENO
 
 res=$($com <<< 'A=10 ; echo $(( ++A++))')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $(( === ))')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
