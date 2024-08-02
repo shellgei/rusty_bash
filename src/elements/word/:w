@@ -63,8 +63,6 @@ fn connect_minus(subwords: &mut Vec<Box<dyn Subword>>) {
             subwords[i+1] = Box::new( SimpleSubword { text: m_str } );
         }
     }
-
-    subwords.retain(|e| e.get_text().len() != 0);
 }
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
