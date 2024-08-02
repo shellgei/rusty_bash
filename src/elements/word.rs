@@ -53,6 +53,22 @@ impl Word {
         }
     }
 
+    pub fn eval_as_operand_number(&mut self) -> Option<i64> {
+        if self.text.find('\'').is_some() {
+            return None;
+        }
+
+        match self.make_unquoted_word() {
+            Some(sw) => {
+                match (sw.chars().all(|ch| ch >= '0' && ch <= '9'), sw.parse::<i64>()) {
+                    (true, Ok(n)) => Some(n), 
+                    _ => None,
+                }
+            }
+            None => Some(0),
+        }
+    }
+
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Option<Word> {
         let mut w = self.clone();
         tilde_expansion::eval(&mut w, core);

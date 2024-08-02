@@ -159,7 +159,7 @@ impl Redirect {
     }
 
     fn eat_left(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_nonnegative_integer(core);
+        let len = feeder.scanner_uint(core);
         if len == 0 {
             return true; //左側なし（文法上OK）
         }

@@ -195,21 +195,10 @@ impl Calc {
             _ => return false,
         };
 
-        if word.text.find('\'').is_none() {
-            match word.make_unquoted_word() {
-                None => {
-                    ans.inc_dec_to_unarys();
-                    ans.elements.push( CalcElement::Operand(0) );
-                    return true;
-                },
-                Some(sw) => {
-                    if sw.chars().all(|ch| ch >= '0' && ch <= '9') {
-                        ans.inc_dec_to_unarys();
-                        ans.elements.push( CalcElement::Operand(sw.parse::<i64>().unwrap()) );
-                        return true;
-                    }
-                }
-            }
+        if let Some(n) = word.eval_as_operand_number() {
+            ans.inc_dec_to_unarys();
+            ans.elements.push( CalcElement::Operand(n) );
+            return true;
         }
 
         Self::eat_blank(feeder, ans, core);

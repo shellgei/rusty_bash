@@ -165,7 +165,7 @@ impl Feeder {
         self.scanner_one_of(&["**", "+", "-", "/", "*"])
     }
 
-    pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
+    pub fn scanner_uint(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| '0' <= ch && ch <= '9';
         self.scanner_chars(judge, core, 0)
     }
