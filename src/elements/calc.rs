@@ -107,22 +107,23 @@ impl Calc {
         let len = self.elements.len();
         for i in 0..len {
             let e = self.elements[i].clone();
-            match e {
+            pre_increment = match e {
                 CalcElement::Word(w, post_increment) => {
                     match Self::word_to_operand(&w, pre_increment, post_increment, core) {
                         Ok(n)    => ans.push(n),
                         Err(msg) => return Err(msg),
                     }
-                    pre_increment = 0;
+                    //pre_increment = 0;
+                    0
                 },
                 CalcElement::Increment(n) => {
-                    pre_increment = self.inc_dec_to_unarys2(&mut ans, i, n);
+                    self.inc_dec_to_unarys2(&mut ans, i, n)
                 },
                 _ => {
                     ans.push(self.elements[i].clone());
-                    pre_increment = 0;
+                    0
                 },
-            }
+            };
         }
 
         Ok(ans)
