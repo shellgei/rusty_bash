@@ -53,7 +53,7 @@ impl Word {
         }
     }
 
-    pub fn eval_as_operand_number(&mut self) -> Option<i64> {
+    pub fn eval_as_operand_literal(&mut self) -> Option<i64> {
         if self.text.find('\'').is_some() {
             return None;
         }

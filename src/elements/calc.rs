@@ -195,7 +195,7 @@ impl Calc {
             _ => return false,
         };
 
-        if let Some(n) = word.eval_as_operand_number() {
+        if let Some(n) = word.eval_as_operand_literal() {
             ans.inc_dec_to_unarys();
             ans.elements.push( CalcElement::Operand(n) );
             return true;
