@@ -36,6 +36,7 @@ fn recursion_error(token: &str) -> String {
 
 impl Calc {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
+        dbg!("{:?}", &self.elements);
         let es = match self.evaluate_elems(core) {
             Ok(data)     => data, 
             Err(err_msg) => {
@@ -211,13 +212,30 @@ impl Calc {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let word = match Word::parse(feeder, core, true) {
+        let mut word = match Word::parse(feeder, core, true) {
             Some(w) => {
                 ans.text += &w.text;
                 w
             },
             _ => return false,
         };
+
+        if word.text.find('\'').is_none() {
+            match word.make_unquoted_word() {
+                None => {
+                    ans.inc_dec_to_unarys();
+                    ans.elements.push( CalcElement::Operand(0) );
+                    return true;
+                },
+                Some(sw) => {
+                    if sw.chars().all(|ch| ch >= '0' && ch <= '9') {
+                        ans.inc_dec_to_unarys();
+                        ans.elements.push( CalcElement::Operand(sw.parse::<i64>().unwrap()) );
+                        return true;
+                    }
+                }
+            }
+        }
 
         Self::eat_blank(feeder, ans, core);
 
@@ -293,7 +311,7 @@ impl Calc {
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
-            || Self::eat_integer(feeder, &mut ans, core) 
+//            || Self::eat_integer(feeder, &mut ans, core) 
             || Self::eat_word(feeder, &mut ans, core) { 
                 continue;
             }
