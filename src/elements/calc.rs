@@ -78,7 +78,7 @@ impl Calc {
         Ok(ans)
     }
 
-    fn inc_dec_to_unarys2(&mut self, ans: &mut Vec<CalcElement>, pos: usize, inc: i64) -> i64 {
+    fn inc_dec_to_unarys(&mut self, ans: &mut Vec<CalcElement>, pos: usize, inc: i64) -> i64 {
         let pm = match inc {
             1  => "+",
             -1 => "-",
@@ -86,12 +86,10 @@ impl Calc {
         }.to_string();
     
         match (&ans.last(), &self.elements.iter().nth(pos+1)) {
-            (_, None) => {
-                return inc;
-            },
+            (_, None)                           => return inc,
             (Some(&CalcElement::Operand(_)), _) => ans.push(CalcElement::BinaryOp(pm.clone())),
             (_, Some(&CalcElement::Word(_, _))) => return inc,
-            _  => ans.push(CalcElement::UnaryOp(pm.clone())),
+            _                                   => ans.push(CalcElement::UnaryOp(pm.clone())),
         }
         ans.push(CalcElement::UnaryOp(pm));
         0
@@ -112,7 +110,7 @@ impl Calc {
                     }
                     0
                 },
-                CalcElement::Increment(n) => self.inc_dec_to_unarys2(&mut ans, i, n),
+                CalcElement::Increment(n) => self.inc_dec_to_unarys(&mut ans, i, n),
                 _ => {
                     ans.push(self.elements[i].clone());
                     0
@@ -120,7 +118,11 @@ impl Calc {
             };
         }
 
-        Ok(ans)
+        match pre_increment {
+            1  => Err(syntax_error_msg("++")),
+            -1 => Err(syntax_error_msg("--")),
+            _  => Ok(ans),
+        }
     }
 
     fn value_to_num(name: &str, core: &mut ShellCore) -> Result<i64, String> {
@@ -190,28 +192,6 @@ impl Calc {
         true
     }
 
-    fn inc_dec_to_unarys(&mut self) {
-        /*
-        let pm = match self.elements.last() {
-            Some(CalcElement::Increment(1)) => "+",
-            Some(CalcElement::Increment(-1)) => "-",
-            _ => return,
-        }.to_string();
-
-        self.elements.pop();
-
-        match self.elements.last() {
-            None |
-            Some(CalcElement::UnaryOp(_)) |
-            Some(CalcElement::BinaryOp(_)) |
-            Some(CalcElement::LeftParen) 
-               => self.elements.push(CalcElement::UnaryOp(pm.clone())),
-            _  => self.elements.push(CalcElement::BinaryOp(pm.clone())),
-        }
-        self.elements.push(CalcElement::UnaryOp(pm));
-        */
-    }
-
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut word = match Word::parse(feeder, core, true) {
             Some(w) => {
@@ -222,7 +202,6 @@ impl Calc {
         };
 
         if let Some(n) = word.eval_as_operand_literal() {
-            ans.inc_dec_to_unarys();
             ans.elements.push( CalcElement::Operand(n) );
             return true;
         }
@@ -251,7 +230,6 @@ impl Calc {
             false => return false,
         };
 
-        ans.inc_dec_to_unarys();
         ans.text += &s.clone();
         ans.elements.push( CalcElement::UnaryOp(s) );
         true
@@ -259,7 +237,6 @@ impl Calc {
 
     fn eat_paren(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("(") {
-            ans.inc_dec_to_unarys();
             ans.paren_stack.push( '(' );
             ans.elements.push( CalcElement::LeftParen );
             ans.text += &feeder.consume(1);
@@ -268,7 +245,6 @@ impl Calc {
 
         if feeder.starts_with(")") {
             if let Some('(') = ans.paren_stack.last() {
-                ans.inc_dec_to_unarys();
                 ans.paren_stack.pop();
                 ans.elements.push( CalcElement::RightParen );
                 ans.text += &feeder.consume(1);
@@ -285,7 +261,6 @@ impl Calc {
             return false;
         }
 
-        ans.inc_dec_to_unarys();
         let s = feeder.consume(len);
         ans.text += &s.clone();
         ans.elements.push( CalcElement::BinaryOp(s) );
@@ -310,7 +285,6 @@ impl Calc {
             }
         }
 
-                    dbg!("{:?}", &ans);
         match feeder.starts_with("))") {
             true  => Some(ans),
             false => None,
