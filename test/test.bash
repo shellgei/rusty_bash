@@ -803,6 +803,10 @@ res=$($com <<< 'A=1; echo $(("A"++ )); echo $A')
 [ "$res" == "1
 2" ] || err $LINENO
 
+res=$($com <<< 'A=1; echo $((++"A" )); echo $A')
+[ "$res" == "2
+2" ] || err $LINENO
+
 res=$($com <<< 'A=1; echo $(("A"-- )); echo $A')
 [ "$res" == "1
 0" ] || err $LINENO
