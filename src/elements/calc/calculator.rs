@@ -25,7 +25,7 @@ fn op_order(op: &CalcElement) -> u8 {
 
 fn to_string(op: &CalcElement) -> String {
     match op {
-        CalcElement::Num(n) => n.to_string(),
+        CalcElement::Operand(n) => n.to_string(),
         CalcElement::UnaryOp(s) => s.clone(),
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),
@@ -109,7 +109,7 @@ fn pop_operands(num: usize, stack: &mut Vec<CalcElement>) -> Vec<i64> {
 
     for _ in 0..num {
         let n = match stack.pop() {
-            Some(CalcElement::Num(s)) => s,
+            Some(CalcElement::Operand(s)) => s,
             _ => return vec![],
         };
         ans.push(n);
@@ -125,18 +125,18 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     }
 
     match op {
-        "+"  => stack.push( CalcElement::Num(operands[1] + operands[0]) ),
-        "-"  => stack.push( CalcElement::Num(operands[1] - operands[0]) ),
-        "*"  => stack.push( CalcElement::Num(operands[1] * operands[0]) ),
+        "+"  => stack.push( CalcElement::Operand(operands[1] + operands[0]) ),
+        "-"  => stack.push( CalcElement::Operand(operands[1] - operands[0]) ),
+        "*"  => stack.push( CalcElement::Operand(operands[1] * operands[0]) ),
         "/"  => {
             if operands[0] == 0 {
                 return Err("divided by 0".to_string());
             }
-            stack.push( CalcElement::Num(operands[1] / operands[0]) )
+            stack.push( CalcElement::Operand(operands[1] / operands[0]) )
         },
         "**" => {
             if operands[0] >= 0 {
-                stack.push( CalcElement::Num(operands[1].pow(operands[0].try_into().unwrap())) )
+                stack.push( CalcElement::Operand(operands[1].pow(operands[0].try_into().unwrap())) )
             }else{
                 return Err( exponent_error_msg(operands[0]) );
             }
@@ -149,13 +149,13 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
 
 fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     let num = match stack.pop() {
-        Some(CalcElement::Num(s)) => s,
+        Some(CalcElement::Operand(s)) => s,
         _ => return Err( syntax_error_msg(op) ),
     };
 
     match op {
-        "+"  => stack.push( CalcElement::Num(num) ),
-        "-"  => stack.push( CalcElement::Num(-num) ),
+        "+"  => stack.push( CalcElement::Operand(num) ),
+        "-"  => stack.push( CalcElement::Operand(-num) ),
         _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 
@@ -177,7 +177,7 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
 
     for e in rev_pol {
         let result = match e {
-            CalcElement::Num(_) => {
+            CalcElement::Operand(_) => {
                 stack.push(e.clone());
                 Ok(())
             },
@@ -196,7 +196,7 @@ pub fn calculate(elements: &Vec<CalcElement>) -> Result<String, String> {
     }
 
     match stack.pop() {
-        Some(CalcElement::Num(n)) => Ok(n.to_string()),
+        Some(CalcElement::Operand(n)) => Ok(n.to_string()),
         _ => Err( format!("unknown syntax error",) ),
     }
 }

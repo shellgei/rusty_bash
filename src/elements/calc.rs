@@ -11,13 +11,12 @@ use super::word::Word;
 enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
-    Num(i64),
-    Word(Word, Box<CalcElement>),//CalcElement: PlusPlus or MinusMinus
+    Operand(i64),
+    Word(Word, i64), //i64: ++:1 --:-1
     LeftParen,
     RightParen,
     PlusPlus,
     MinusMinus,
-    Noop,
 }
 
 #[derive(Debug, Clone)]
@@ -54,44 +53,29 @@ impl Calc {
         }
     }
 
-    fn element_to_inc(e: &CalcElement) -> i64 {
-        match e {
-            CalcElement::PlusPlus   => 1,
-            CalcElement::MinusMinus => -1,
-            _ => 0,
-        }
-    }
-
-    fn evaluate_name(name: &str, prev_inc: i64, after_inc: CalcElement, core: &mut ShellCore)
+    fn evaluate_name(name: &str, prefix_inc: i64, suffix_inc: i64, core: &mut ShellCore)
                                                       -> Result<CalcElement, String> {
         let mut num;
         let ans = match Self::value_to_num(name, core) {
             Ok(n) => {
                 num = n;
-                CalcElement::Num(n+prev_inc)
+                CalcElement::Operand(n+prefix_inc)
             },
             Err(err_msg) => return Err(err_msg), 
         };
 
-        num += prev_inc + Self::element_to_inc(&after_inc);
+        num += prefix_inc + suffix_inc;
         core.data.set_param(&name, &num.to_string());
         Ok(ans)
     }
 
     fn evaluate_elems(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
-        let mut next_inc: i64 = 0;
+        let mut prefix_inc: i64 = 0;
 
         for e in &self.elements {
             match e {
-                /*
-                CalcElement::Name(s, inc) => {
-                    match Self::evaluate_name(s, next_inc, *inc.clone(), core) {
-                        Ok(e)    => ans.push(e),
-                        Err(msg) => return Err(msg),
-                    }
-                },*/
-                CalcElement::Word(w, inc) => {
+                CalcElement::Word(w, suffix_inc) => {
                     if w.text.find('\'').is_some() {
                         return Err(syntax_error_msg(&w.text));
                     }
@@ -101,13 +85,13 @@ impl Calc {
                         None => return Err(format!("{}: wrong substitution", &self.text)),
                     };
 
-                    match Self::evaluate_name(&val, next_inc, *inc.clone(), core) {
+                    match Self::evaluate_name(&val, prefix_inc, *suffix_inc, core) {
                         Ok(e)    => ans.push(e),
                         Err(msg) => return Err(msg),
                     }
                 },
-                CalcElement::PlusPlus => next_inc = 1,
-                CalcElement::MinusMinus => next_inc = -1,
+                CalcElement::PlusPlus => prefix_inc = 1,
+                CalcElement::MinusMinus => prefix_inc = -1,
                 _ => ans.push(e.clone()),
             }
 
@@ -160,7 +144,7 @@ impl Calc {
 
     fn eat_integer(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
-            Some(CalcElement::Num(_)) => return false,
+            Some(CalcElement::Operand(_)) => return false,
             _ => {},
         }
 
@@ -177,19 +161,19 @@ impl Calc {
         ans.inc_dec_to_unarys();
         let s = feeder.consume(len);
         ans.text += &s.clone();
-        ans.elements.push( CalcElement::Num(n) );
+        ans.elements.push( CalcElement::Operand(n) );
         true
     }
 
-    fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> Box<CalcElement> {
+    fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> i64 {
         if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
-            Box::new(CalcElement::PlusPlus)
+            1
         } else if feeder.starts_with("--") {
             ans.text += &feeder.consume(2);
-            Box::new(CalcElement::MinusMinus)
+            -1
         } else{
-            Box::new(CalcElement::Noop)
+            0
         }
     }
 
@@ -244,8 +228,7 @@ impl Calc {
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
-            Some(CalcElement::Num(_)) => return false,
-           // Some(CalcElement::Name(_, _)) => return false,
+            Some(CalcElement::Operand(_)) => return false,
             Some(CalcElement::Word(_, _)) => return false,
             _ => {},
         }
