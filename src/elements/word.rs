@@ -128,7 +128,7 @@ impl Word {
         while let Some(sw) = subword::parse(feeder, core) {
             ans.push(&sw);
 
-            if as_operand && feeder.scanner_math_symbol() != 0 {
+            if as_operand && feeder.scanner_math_symbol(core) != 0 {
                 break;
             }
         }

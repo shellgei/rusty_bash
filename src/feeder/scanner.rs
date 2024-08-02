@@ -49,7 +49,8 @@ impl Feeder {
         self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?", "@", "!", "+", "-", "."])
     }
 
-    pub fn scanner_math_symbol(&self) -> usize {
+    pub fn scanner_math_symbol(&mut self, core: &mut ShellCore) -> usize {
+        self.backslash_check_and_feed(vec![""], core);
         self.scanner_one_of(&["/", "*", "?", ":", "+", "-"])
     }
 
