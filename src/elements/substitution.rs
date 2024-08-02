@@ -62,7 +62,7 @@ impl Substitution {
             ans.text += &a.text;
             ans.value = Value::Array(a);
             Some(ans)
-        }else if let Some(w) = Word::parse(feeder, core) {
+        }else if let Some(w) = Word::parse(feeder, core, false) {
             ans.text += &w.text;
             ans.value = Value::Single(w);
             Some(ans)

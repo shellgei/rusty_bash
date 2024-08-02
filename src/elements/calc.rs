@@ -242,32 +242,8 @@ impl Calc {
         self.elements.push(CalcElement::UnaryOp(pm));
     }
 
-    /*
-    fn inc_dec_to_inc_dec(word: &mut Word, ans: &mut Self) -> bool {
-        let size = word.subwords.len();
-        if size < 2 {
-            return false;
-        }
-
-
-        if size > 2 {
-            if (word.subwords[size-1].get_text() == "+" && word.subwords[size-2].get_text() == "+" )
-            || (word.subwords[size-1].get_text() == "-" && word.subwords[size-2].get_text() == "-" ) {
-                word.subwords.pop();
-                word.subwords.pop();
-                word.text.pop();
-                match word.text.pop() {
-                    Some('+') => ans.elements.push( CalcElement::Word(word, Box::new(CalcElement::PlusPlus)) ),
-                    Some('-') => ans.elements.push( CalcElement::Word(word, Box::new(CalcElement::MinusMinus)) ),
-                    _ => {},
-                }
-                return true;
-            }
-        }
-    }*/
-
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let mut word = match Word::parse(feeder, core) {
+        let mut word = match Word::parse(feeder, core, true) {
             Some(w) => {
                 ans.text += &w.text;
                 w

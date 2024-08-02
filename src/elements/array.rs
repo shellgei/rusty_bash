@@ -37,7 +37,7 @@ impl Array {
             return false;
         }
 
-        let w = match Word::parse(feeder, core) {
+        let w = match Word::parse(feeder, core, false) {
             Some(w) => w,
             _       => return false,
         };

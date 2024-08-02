@@ -119,7 +119,7 @@ impl Word {
         self.subwords.push(subword.clone());
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, as_operand: bool) -> Option<Word> {
         if feeder.starts_with("#") {
             return None;
         }
@@ -127,6 +127,10 @@ impl Word {
         let mut ans = Word::new();
         while let Some(sw) = subword::parse(feeder, core) {
             ans.push(&sw);
+
+            if as_operand && feeder.scanner_math_symbol() != 0 {
+                break;
+            }
         }
 
         match ans.subwords.len() {

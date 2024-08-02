@@ -72,7 +72,7 @@ impl CaseCommand {
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
-        let w = match Word::parse(feeder, core) {
+        let w = match Word::parse(feeder, core, false) {
             Some(w) => w,
             _       => return false,
         };
@@ -85,7 +85,7 @@ impl CaseCommand {
 
     fn eat_patterns(feeder: &mut Feeder, ans: &mut Vec<Word>, text: &mut String, core: &mut ShellCore) -> bool {
         loop {
-            match Word::parse(feeder, core) {
+            match Word::parse(feeder, core, false) {
                 Some(w) => {
                     *text += &w.text;
                     ans.push(w)

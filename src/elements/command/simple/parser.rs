@@ -36,7 +36,7 @@ impl SimpleCommand {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
-        let w = match Word::parse(feeder, core) {
+        let w = match Word::parse(feeder, core, false) {
             Some(w) => w,
             _       => {
                 return false;
@@ -69,7 +69,7 @@ impl SimpleCommand {
 
         let mut feeder_local = Feeder::new(&mut w);
         loop {
-            match Word::parse(&mut feeder_local, core) {
+            match Word::parse(&mut feeder_local, core, false) {
                 Some(w) => {
                     text.push_str(&w.text);
                     words.push(w);

@@ -49,6 +49,10 @@ impl Feeder {
         self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?", "@", "!", "+", "-", "."])
     }
 
+    pub fn scanner_math_symbol(&self) -> usize {
+        self.scanner_one_of(&["/", "*", "?", ":", "+", "-"])
+    }
+
     pub fn scanner_extglob_head(&self) -> usize {
         self.scanner_one_of(&["?(", "*(", "+(", "@(", "!("])
     }
