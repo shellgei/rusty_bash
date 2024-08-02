@@ -15,8 +15,7 @@ enum CalcElement {
     Word(Word, i64), //i64: ++:1 --:-1
     LeftParen,
     RightParen,
-    PlusPlus,
-    MinusMinus,
+    Increment(i64),
 }
 
 #[derive(Debug, Clone)]
@@ -54,29 +53,29 @@ impl Calc {
         }
     }
 
-    fn evaluate_name(name: &str, pre_incdec: i64, post_incdec: i64, core: &mut ShellCore)
+    fn evaluate_name(name: &str, pre_increment: i64, post_increment: i64, core: &mut ShellCore)
                                                       -> Result<CalcElement, String> {
         let mut num;
         let ans = match Self::value_to_num(name, core) {
             Ok(n) => {
                 num = n;
-                CalcElement::Operand(n+pre_incdec)
+                CalcElement::Operand(n+pre_increment)
             },
             Err(err_msg) => return Err(err_msg), 
         };
 
-        num += pre_incdec + post_incdec;
+        num += pre_increment + post_increment;
         core.data.set_param(&name, &num.to_string());
         Ok(ans)
     }
 
     fn evaluate_elems(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
-        let mut pre_incdec: i64 = 0;
+        let mut pre_increment: i64 = 0;
 
         for e in &self.elements {
             match e {
-                CalcElement::Word(w, post_incdec) => {
+                CalcElement::Word(w, post_increment) => {
                     if w.text.find('\'').is_some() {
                         return Err(syntax_error_msg(&w.text));
                     }
@@ -86,13 +85,12 @@ impl Calc {
                         None => return Err(format!("{}: wrong substitution", &self.text)),
                     };
 
-                    match Self::evaluate_name(&val, pre_incdec, *post_incdec, core) {
+                    match Self::evaluate_name(&val, pre_increment, *post_increment, core) {
                         Ok(e)    => ans.push(e),
                         Err(msg) => return Err(msg),
                     }
                 },
-                CalcElement::PlusPlus => pre_incdec = 1,
-                CalcElement::MinusMinus => pre_incdec = -1,
+                CalcElement::Increment(n) => pre_increment = *n,
                 _ => ans.push(e.clone()),
             }
 
@@ -158,10 +156,10 @@ impl Calc {
     fn eat_incdec(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( CalcElement::PlusPlus );
+            ans.elements.push( CalcElement::Increment(1) );
         }else if feeder.starts_with("--") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( CalcElement::MinusMinus );
+            ans.elements.push( CalcElement::Increment(-1) );
         }else {
             return false;
         };
@@ -170,8 +168,8 @@ impl Calc {
 
     fn inc_dec_to_unarys(&mut self) {
         let pm = match self.elements.last() {
-            Some(CalcElement::PlusPlus) => "+",
-            Some(CalcElement::MinusMinus) => "-",
+            Some(CalcElement::Increment(1)) => "+",
+            Some(CalcElement::Increment(-1)) => "-",
             _ => return,
         }.to_string();
 

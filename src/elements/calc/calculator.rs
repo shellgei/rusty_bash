@@ -30,8 +30,8 @@ fn to_string(op: &CalcElement) -> String {
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),
         CalcElement::RightParen => ")".to_string(),
-        CalcElement::PlusPlus => "++".to_string(),
-        CalcElement::MinusMinus => "--".to_string(),
+        CalcElement::Increment(1) => "++".to_string(),
+        CalcElement::Increment(-1) => "--".to_string(),
         _ => "".to_string(),
     }
 }
