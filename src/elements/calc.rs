@@ -35,8 +35,7 @@ fn recursion_error(token: &str) -> String {
 
 impl Calc {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
-        dbg!("{:?}", &self.elements);
-        let es = match self.evaluate_elems(core) {
+        let es = match self.words_to_operands(core) {
             Ok(data)     => data, 
             Err(err_msg) => {
                 eprintln!("sush: {}", err_msg);
@@ -53,10 +52,20 @@ impl Calc {
         }
     }
 
-    fn evaluate_name(name: &str, pre_increment: i64, post_increment: i64, core: &mut ShellCore)
-                                                      -> Result<CalcElement, String> {
+    fn word_to_operand(w: &Word, pre_increment: i64, post_increment: i64,
+                       core: &mut ShellCore) -> Result<CalcElement, String> {
+        if w.text.find('\'').is_some() {
+            return Err(syntax_error_msg(&w.text));
+        }
+
+
+        let name = match w.eval_as_value(core) {
+            Some(v) => v, 
+            None => return Err(format!("{}: wrong substitution", &w.text)),
+        };
+
         let mut num;
-        let ans = match Self::value_to_num(name, core) {
+        let ans = match Self::value_to_num(&name, core) {
             Ok(n) => {
                 num = n;
                 CalcElement::Operand(n+pre_increment)
@@ -69,23 +78,14 @@ impl Calc {
         Ok(ans)
     }
 
-    fn evaluate_elems(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
+    fn words_to_operands(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
         let mut pre_increment = 0;
 
         for e in &self.elements {
             match e {
                 CalcElement::Word(w, post_increment) => {
-                    if w.text.find('\'').is_some() {
-                        return Err(syntax_error_msg(&w.text));
-                    }
-
-                    let val = match w.eval_as_value(core) {
-                        Some(v) => v, 
-                        None => return Err(format!("{}: wrong substitution", &self.text)),
-                    };
-
-                    match Self::evaluate_name(&val, pre_increment, *post_increment, core) {
+                    match Self::word_to_operand(&w, pre_increment, *post_increment, core) {
                         Ok(e)    => ans.push(e),
                         Err(msg) => return Err(msg),
                     }
