@@ -54,29 +54,29 @@ impl Calc {
         }
     }
 
-    fn evaluate_name(name: &str, prefix_inc: i64, suffix_inc: i64, core: &mut ShellCore)
+    fn evaluate_name(name: &str, pre_incdec: i64, post_incdec: i64, core: &mut ShellCore)
                                                       -> Result<CalcElement, String> {
         let mut num;
         let ans = match Self::value_to_num(name, core) {
             Ok(n) => {
                 num = n;
-                CalcElement::Operand(n+prefix_inc)
+                CalcElement::Operand(n+pre_incdec)
             },
             Err(err_msg) => return Err(err_msg), 
         };
 
-        num += prefix_inc + suffix_inc;
+        num += pre_incdec + post_incdec;
         core.data.set_param(&name, &num.to_string());
         Ok(ans)
     }
 
     fn evaluate_elems(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
-        let mut prefix_inc: i64 = 0;
+        let mut pre_incdec: i64 = 0;
 
         for e in &self.elements {
             match e {
-                CalcElement::Word(w, suffix_inc) => {
+                CalcElement::Word(w, post_incdec) => {
                     if w.text.find('\'').is_some() {
                         return Err(syntax_error_msg(&w.text));
                     }
@@ -86,13 +86,13 @@ impl Calc {
                         None => return Err(format!("{}: wrong substitution", &self.text)),
                     };
 
-                    match Self::evaluate_name(&val, prefix_inc, *suffix_inc, core) {
+                    match Self::evaluate_name(&val, pre_incdec, *post_incdec, core) {
                         Ok(e)    => ans.push(e),
                         Err(msg) => return Err(msg),
                     }
                 },
-                CalcElement::PlusPlus => prefix_inc = 1,
-                CalcElement::MinusMinus => prefix_inc = -1,
+                CalcElement::PlusPlus => pre_incdec = 1,
+                CalcElement::MinusMinus => pre_incdec = -1,
                 _ => ans.push(e.clone()),
             }
 
@@ -141,29 +141,6 @@ impl Calc {
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
         let len = feeder.scanner_multiline_blank(core);
         ans.text += &feeder.consume(len);
-    }
-
-    fn eat_integer(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        match &ans.elements.last() {
-            Some(CalcElement::Operand(_)) => return false,
-            _ => {},
-        }
-
-        let len = feeder.scanner_nonnegative_integer(core);
-        if len == 0 {
-            return false;
-        }
-
-        let n = match feeder.refer(len).parse::<i64>() {
-            Ok(n)  => n, 
-            Err(_) => return false,
-        };
-
-        ans.inc_dec_to_unarys();
-        let s = feeder.consume(len);
-        ans.text += &s.clone();
-        ans.elements.push( CalcElement::Operand(n) );
-        true
     }
 
     fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> i64 {
@@ -311,7 +288,6 @@ impl Calc {
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
-//            || Self::eat_integer(feeder, &mut ans, core) 
             || Self::eat_word(feeder, &mut ans, core) { 
                 continue;
             }
