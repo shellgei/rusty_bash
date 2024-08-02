@@ -108,6 +108,10 @@ impl Calc {
                         return Err(syntax_error_msg(&w.text));
                     }
 
+                    if pre_increment != 0 && post_increment != 0 {
+                        return Err(syntax_error_msg(&w.text));
+                    }
+
                     match Self::word_to_operand(&w, pre_increment, post_increment, core) {
                         Ok(n)    => ans.push(n),
                         Err(msg) => return Err(msg),

@@ -884,9 +884,9 @@ res=$($com <<< 'A=10 ; echo $(( - - A)); echo $A')
 [ "$res" == "10
 10" ] || err $LINENO
 
-#res=$($com <<< 'A=10 ; echo $(( ++A++))')
-#[ "$?" == "1" ] || err $LINENO
-#[ "$res" == "" ] || err $LINENO
+res=$($com <<< 'A=10 ; echo $(( ++A++))')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
 
 # brace
 
