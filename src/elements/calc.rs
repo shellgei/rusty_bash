@@ -87,8 +87,8 @@ impl Calc {
     
         match (&ans.last(), &self.elements.iter().nth(pos+1)) {
             (_, None)                           => return inc,
-            (Some(&CalcElement::Operand(_)), _) => ans.push(CalcElement::BinaryOp(pm.clone())),
             (_, Some(&CalcElement::Word(_, _))) => return inc,
+            (Some(&CalcElement::Operand(_)), _) => ans.push(CalcElement::BinaryOp(pm.clone())),
             _                                   => ans.push(CalcElement::UnaryOp(pm.clone())),
         }
         ans.push(CalcElement::UnaryOp(pm));
@@ -104,6 +104,10 @@ impl Calc {
             let e = self.elements[i].clone();
             pre_increment = match e {
                 CalcElement::Word(w, post_increment) => {
+                    if let Some(CalcElement::Operand(_)) = ans.last() {
+                        return Err(syntax_error_msg(&w.text));
+                    }
+
                     match Self::word_to_operand(&w, pre_increment, post_increment, core) {
                         Ok(n)    => ans.push(n),
                         Err(msg) => return Err(msg),

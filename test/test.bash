@@ -846,8 +846,14 @@ res=$($com <<< 'A=1; echo $((2++1 ))')
 res=$($com <<< 'A=1; echo $((2--1 ))')
 [ "$res" == "3" ] || err $LINENO
 
-res=$($com <<< 'A=1; echo $(( -- ))')
+res=$($com <<< 'echo $(( -- ))')
 [ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $(( 1 ++ A ))')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $(( 1 ++ A )); echo $A')
+[ "$res" == "1" ] || err $LINENO
 
 res=$($com <<< 'A=1; echo $(("2""1"++1 ))')
 [ "$res" == "22" ] || err $LINENO
