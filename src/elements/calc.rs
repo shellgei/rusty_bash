@@ -12,8 +12,7 @@ enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Num(i64),
-    Name(String, Box<CalcElement>), //CalcElement: PlusPlus or MinusMinus
-    Word(Word, Box<CalcElement>),
+    Word(Word, Box<CalcElement>),//CalcElement: PlusPlus or MinusMinus
     LeftParen,
     RightParen,
     PlusPlus,
@@ -85,12 +84,13 @@ impl Calc {
 
         for e in &self.elements {
             match e {
+                /*
                 CalcElement::Name(s, inc) => {
                     match Self::evaluate_name(s, next_inc, *inc.clone(), core) {
                         Ok(e)    => ans.push(e),
                         Err(msg) => return Err(msg),
                     }
-                },
+                },*/
                 CalcElement::Word(w, inc) => {
                     if w.text.find('\'').is_some() {
                         return Err(syntax_error_msg(&w.text));
@@ -193,22 +193,6 @@ impl Calc {
         }
     }
 
-    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_name(core);
-        if len == 0 {
-            return false;
-        }
-
-        let s = feeder.consume(len);
-        ans.text += &s;
-        Self::eat_blank(feeder, ans, core);
-
-        let suffix = Self::eat_suffix(feeder, ans);
-        ans.elements.push( CalcElement::Name(s.clone(), suffix) );
-
-        true
-    }
-
     fn eat_incdec(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
@@ -261,7 +245,7 @@ impl Calc {
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Num(_)) => return false,
-            Some(CalcElement::Name(_, _)) => return false,
+           // Some(CalcElement::Name(_, _)) => return false,
             Some(CalcElement::Word(_, _)) => return false,
             _ => {},
         }
@@ -322,8 +306,7 @@ impl Calc {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
-            if Self::eat_name(feeder, &mut ans, core) 
-            || Self::eat_incdec(feeder, &mut ans) 
+            if Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
