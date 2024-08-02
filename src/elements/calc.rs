@@ -71,7 +71,7 @@ impl Calc {
 
     fn evaluate_elems(&mut self, core: &mut ShellCore) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
-        let mut pre_increment: i64 = 0;
+        let mut pre_increment = 0;
 
         for e in &self.elements {
             match e {
