@@ -89,11 +89,8 @@ impl Calc {
             (_, None) => {
                 return inc;
             },
-            (_, Some(&CalcElement::Word(_, _))) => {
-                return inc;
-            },
-            (Some(&CalcElement::Operand(_)), Some(&CalcElement::Operand(_))) 
-               => ans.push(CalcElement::BinaryOp(pm.clone())),
+            (Some(&CalcElement::Operand(_)), _) => ans.push(CalcElement::BinaryOp(pm.clone())),
+            (_, Some(&CalcElement::Word(_, _))) => return inc,
             _  => ans.push(CalcElement::UnaryOp(pm.clone())),
         }
         ans.push(CalcElement::UnaryOp(pm));
@@ -113,12 +110,9 @@ impl Calc {
                         Ok(n)    => ans.push(n),
                         Err(msg) => return Err(msg),
                     }
-                    //pre_increment = 0;
                     0
                 },
-                CalcElement::Increment(n) => {
-                    self.inc_dec_to_unarys2(&mut ans, i, n)
-                },
+                CalcElement::Increment(n) => self.inc_dec_to_unarys2(&mut ans, i, n),
                 _ => {
                     ans.push(self.elements[i].clone());
                     0
