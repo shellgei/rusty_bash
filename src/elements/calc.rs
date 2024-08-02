@@ -243,26 +243,13 @@ impl Calc {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let mut word = match Word::parse(feeder, core, true) {
+        let word = match Word::parse(feeder, core, true) {
             Some(w) => {
                 ans.text += &w.text;
                 w
             },
             _ => return false,
         };
-
-        if word.text.ends_with("++") || word.text.ends_with("--") {
-            word.subwords.pop();
-            word.subwords.pop();
-            word.text.pop();
-            let elem = match word.text.pop() {
-                Some('+') => Box::new(CalcElement::PlusPlus),
-                Some('-') => Box::new(CalcElement::MinusMinus),
-                _ => panic!("SUSH INTERNAL ERROR: strange word"),
-            };
-            ans.elements.push( CalcElement::Word(word, elem) );
-            return true;
-        }
 
         Self::eat_blank(feeder, ans, core);
 
