@@ -84,12 +84,11 @@ impl Calc {
 
         for e in &self.elements {
             match e {
-                CalcElement::Word(w, post_increment) => {
+                CalcElement::Word(w, post_increment) =>
                     match Self::word_to_operand(&w, pre_increment, *post_increment, core) {
                         Ok(e)    => ans.push(e),
                         Err(msg) => return Err(msg),
-                    }
-                },
+                    },
                 CalcElement::Increment(n) => pre_increment = *n,
                 _ => ans.push(e.clone()),
             }
