@@ -56,13 +56,10 @@ fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word
     let right = &subwords[(delimiters.last().unwrap()+1)..];
 
     let mut ans = vec![];
-    let mut from = delimiters[0] + 1;
-    for to in &delimiters[1..] {
-        let mut w = Word::new();
-        w.subwords = [ left, &subwords[from..*to], right ].concat();
-        w.text = w.subwords.iter().map(|s| s.get_text()).collect();
+    for i in 0..(delimiters.len()-1) {
+        let center = &subwords[ (delimiters[i]+1)..delimiters[i+1] ];
+        let mut w = Word::from_subwords([ left, &center, right ].concat() );
         ans.append(&mut eval(&mut w));
-        from = *to + 1;
     }
     ans
 }

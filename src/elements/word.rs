@@ -33,6 +33,13 @@ impl Word {
         }
     }
 
+    pub fn from_subwords(subwords: Vec<Box::<dyn Subword>>) -> Word {
+        Word {
+            text: subwords.iter().map(|s| s.get_text()).collect(),
+            subwords: subwords,
+        }
+    }
+
     fn push(&mut self, subword: &Box<dyn Subword>) {
         self.text += &subword.get_text().to_string();
         self.subwords.push(subword.clone());
