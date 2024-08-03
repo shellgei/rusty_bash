@@ -63,10 +63,15 @@ impl Calc {
             return Err(syntax_error_msg(&w.text));
         }
 
-
         let name = match w.eval_as_value(core) {
             Some(v) => v, 
             None => return Err(format!("{}: wrong substitution", &w.text)),
+        };
+
+        let is_name = is_name(&name, core);
+        let pre_increment = match is_name {
+            true  => pre_increment,
+            false => 0,
         };
 
         let mut num;
@@ -79,8 +84,13 @@ impl Calc {
         };
 
         num += pre_increment + post_increment;
-        core.data.set_param(&name, &num.to_string());
-        Ok(ans)
+
+        if is_name || post_increment == 0 {
+            core.data.set_param(&name, &num.to_string());
+            Ok(ans)
+        }else{
+            Err(syntax_error_msg(&name))
+        }
     }
 
     fn inc_dec_to_unarys(&mut self, ans: &mut Vec<CalcElement>, pos: usize, inc: i64) -> i64 {
@@ -160,7 +170,6 @@ impl Calc {
             Ok( n )
         }else if converted_name == "" {
             Ok( 0 )
-        //}else if converted_name.find('\'').is_none() {
         }else if is_name(&converted_name, core) {
             Ok( 0 )
         }else{
