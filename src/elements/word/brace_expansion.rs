@@ -22,7 +22,7 @@ fn open_brace_pos(w: &Word) -> Vec<usize> {
         .collect()
 }
 
-pub fn parse(subwords: &[Box<dyn Subword>], start: usize) -> Vec<usize> {
+fn parse(subwords: &[Box<dyn Subword>], start: usize) -> Vec<usize> {
     let mut stack = vec![];
     for sw in subwords {
         stack.push(sw.get_text());
@@ -51,7 +51,7 @@ fn get_delimiters(stack: &mut Vec<&str>, start: usize) -> Vec<usize> {
     delimiter_pos
 }
 
-pub fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
+fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
     let left = &subwords[..delimiters[0]];
     let right = &subwords[(delimiters.last().unwrap()+1)..];
 
