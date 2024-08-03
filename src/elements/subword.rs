@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod simple;
+pub mod simple;
 
 use crate::{ShellCore, Feeder};
 use std::fmt;
