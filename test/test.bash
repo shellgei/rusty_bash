@@ -862,7 +862,8 @@ res=$($com <<< 'A=1; echo $(( 1 ++ A ))')
 [ "$?" == "1" ] || err $LINENO
 
 res=$($com <<< 'A=1; echo $(( 1 ++ A )); echo $A')
-[ "$res" == "1" ] || err $LINENO
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
 
 res=$($com <<< 'A=1; echo $(("2""1"++1 ))')
 [ "$res" == "22" ] || err $LINENO

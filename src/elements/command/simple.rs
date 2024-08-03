@@ -44,6 +44,7 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
         if ! words.iter_mut().all(|w| self.set_arg(w, core)){
+            core.word_eval_error = true;
             return None;
         }
 

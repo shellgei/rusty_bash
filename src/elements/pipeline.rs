@@ -45,6 +45,7 @@ impl Pipeline {
                 pgid = pids[0].expect("SUSHI INTERNAL ERROR (unforked in pipeline)");
             }
             prev = p.recv;
+            core.word_eval_error = false;
         }
 
         pids.push(

@@ -23,10 +23,9 @@ impl Job {
             Pid::from_raw(0)
         };
 
-        if bg {
-            self.exec_bg(core, pgid);
-        }else{
-            self.exec_fg(core, pgid);
+        match bg {
+            true  => self.exec_bg(core, pgid),
+            false => self.exec_fg(core, pgid),
         }
     }
 
@@ -34,6 +33,10 @@ impl Job {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
+            if core.word_eval_error {
+                return;
+            }
+
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
 
             if do_next {
