@@ -22,5 +22,5 @@ fn open_brace_pos(w: &Word) -> Vec<usize> {
         .collect()
 }
 
-fn parse(_: &[Box<dyn Subword>], start: usize) -> Vec<usize> { vec![] }
+fn parse(_: &[Box<dyn Subword>], _: usize) -> Vec<usize> { vec![] }
 fn expand(_: &Vec<Box<dyn Subword>>, _: &Vec<usize>) -> Vec<Word> { vec![] }
