@@ -7,7 +7,6 @@ use super::Word;
 pub fn eval(word: &mut Word) -> Vec<Word> {
     for i in open_brace_pos(word) {
         if let Some(d) = parse(&word.subwords[i..], i) {
-            //let shift_d = d.iter().map(|e| e+i).collect();
             return expand(&word.subwords, &d);
         }
     }
