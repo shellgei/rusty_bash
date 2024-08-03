@@ -894,6 +894,9 @@ res=$($com <<< 'A=1; echo $(( === ))')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'echo $(($$ / $$ ))')
+[ "$res" == "1" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
