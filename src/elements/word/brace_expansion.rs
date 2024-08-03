@@ -36,19 +36,19 @@ pub fn parse(subwords: &[Box<dyn Subword>], start: usize) -> Option<Vec<usize>> 
 }
 
 fn get_delimiters(stack: &mut Vec<Option<&str>>, start: usize) -> Option<Vec<usize>> {
-    let mut comma_pos = vec![start, stack.len()-1+start];
+    let mut delimiter_pos = vec![start, stack.len()-1+start];
     for i in (1..stack.len()-1).rev() {
         if stack[i] == Some(",") {
-            comma_pos.insert(1, start+i);
-        }else if stack[i] == Some("{") { // find an inner brace expcomma_posion
+            delimiter_pos.insert(1, start+i);
+        }else if stack[i] == Some("{") { // find an inner brace expdelimiter_posion
             stack[i..].iter_mut().for_each(|e| *e = None);
             return None;
         }
     }
 
-    match comma_pos.len() {
+    match delimiter_pos.len() {
         2 => None,
-        _ => Some(comma_pos),
+        _ => Some(delimiter_pos),
     }
 }
 
