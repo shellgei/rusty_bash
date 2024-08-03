@@ -40,7 +40,7 @@ fn get_delimiters(stack: &mut Vec<&str>, start: usize) -> Vec<usize> {
     let mut delimiter_pos = vec![start, stack.len()-1+start];
     for i in (1..stack.len()-1).rev() {
         if stack[i] == "," {
-            delimiter_pos.push(i);
+            delimiter_pos.insert(1, start+i);
         }else if stack[i] == "{" { // find an inner brace expcomma_posion
             stack[i..].iter_mut().for_each(|e| *e = "");
             return vec![];
