@@ -49,21 +49,6 @@ fn get_delimiters(stack: &mut Vec<&str>, start: usize) -> Vec<usize> {
     delimiter_pos
 }
 
-fn get_delimiters(stack: &mut Vec<&str>, start: usize) -> Vec<usize> {
-    let mut delimiter_pos = vec![start, stack.len()-1+start];
-    for i in (1..stack.len()-1).rev() {
-        match stack[i] {
-            "," => delimiter_pos.insert(1, start+i),
-            "{" => { // find an inner brace expdelimiter_posion
-                stack[i..].iter_mut().for_each(|e| *e = "");
-                return vec![];
-            },
-            _   => {},
-        }
-    }
-    delimiter_pos
-}
-
 fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
     let left = &subwords[..delimiters[0]];
     let right = &subwords[(delimiters.last().unwrap()+1)..];
@@ -71,7 +56,7 @@ fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word
     let mut ans = vec![];
     for i in 0..(delimiters.len()-1) {
         let center = &subwords[ (delimiters[i]+1)..delimiters[i+1] ];
-        let mut w = Word::from_subwords([ left, &center, right ].concat() );
+        let mut w = Word::new([ left, &center, right ].concat() );
         ans.append(&mut eval(&mut w));
     }
     ans
