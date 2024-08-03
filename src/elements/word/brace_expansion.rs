@@ -6,12 +6,11 @@ use super::Word;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     for i in open_brace_pos(word) {
-        if let Some(d) = parse(&word.subwords[i..]) {
-            let shift_d = d.iter().map(|e| e+i).collect();
-            return expand(&word.subwords, &shift_d);
+        let d = parse(&word.subwords[i..], i);
+        if d.len() > 2 {
+            return expand(&word.subwords, &d);
         }
     }
-
     vec![word.clone()]
 }
 
@@ -23,5 +22,5 @@ fn open_brace_pos(w: &Word) -> Vec<usize> {
         .collect()
 }
 
-fn parse(_: &[Box<dyn Subword>]) -> Option<Vec<usize>> { None }
+fn parse(_: &[Box<dyn Subword>], start: usize) -> Vec<usize> { vec![] }
 fn expand(_: &Vec<Box<dyn Subword>>, _: &Vec<usize>) -> Vec<Word> { vec![] }
