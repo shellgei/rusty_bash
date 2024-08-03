@@ -16,16 +16,11 @@ impl Word {
         Some(vec![self.text.clone()])
     }
 
-    pub fn new() -> Word {
+    pub fn new(subwords: Vec<Box::<dyn Subword>>) -> Word {
         Word {
-            text: String::new(),
-            subwords: vec![],
+            text: subwords.iter().map(|s| s.get_text()).collect(),
+            subwords: subwords,
         }
-    }
-
-    fn push(&mut self, subword: &Box<dyn Subword>) {
-        self.text += &subword.get_text().to_string();
-        self.subwords.push(subword.clone());
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
@@ -33,15 +28,15 @@ impl Word {
             return None;
         }
 
-        let mut ans = Word::new();
+        let mut subwords = vec![];
         while let Some(sw) = subword::parse(feeder, core) {
-            ans.push(&sw);
+            subwords.push(sw);
         }
 
-        if ans.text.len() == 0 {
-            None
-        }else{
-            Some(ans)
+        let ans = Word::new(subwords);
+        match ans.text.len() {
+            0 => None,
+            _ => Some(ans),
         }
     }
 }
