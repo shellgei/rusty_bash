@@ -10,7 +10,6 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
             return expand(&word.subwords, &d);
         }
     }
-
     vec![word.clone()]
 }
 
