@@ -24,7 +24,7 @@ fn open_brace_pos(w: &Word) -> Vec<usize> {
 pub fn parse(subwords: &[Box<dyn Subword>], start: usize) -> Option<Vec<usize>> {
     let mut stack = vec![];
     for sw in subwords {
-        stack.push(Some(sw.get_text()));
+        stack.push(sw.get_text());
         if sw.get_text() == "}" {
             match get_delimiters(&mut stack, start) {
                 Some(ds) => return Some(ds),
@@ -35,14 +35,16 @@ pub fn parse(subwords: &[Box<dyn Subword>], start: usize) -> Option<Vec<usize>> 
     None
 }
 
-fn get_delimiters(stack: &mut Vec<Option<&str>>, start: usize) -> Option<Vec<usize>> {
+fn get_delimiters(stack: &mut Vec<&str>, start: usize) -> Option<Vec<usize>> {
     let mut delimiter_pos = vec![start, stack.len()-1+start];
     for i in (1..stack.len()-1).rev() {
-        if stack[i] == Some(",") {
-            delimiter_pos.insert(1, start+i);
-        }else if stack[i] == Some("{") { // find an inner brace expdelimiter_posion
-            stack[i..].iter_mut().for_each(|e| *e = None);
-            return None;
+        match stack[i] {
+            "," => delimiter_pos.insert(1, start+i),
+            "{" => { // find an inner brace expdelimiter_posion
+                stack[i..].iter_mut().for_each(|e| *e = "");
+                return None;
+            },
+            _   => {},
         }
     }
 
