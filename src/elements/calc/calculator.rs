@@ -129,27 +129,29 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     if operands.len() != 2 {
         return Err( syntax_error_msg(op) );
     }
+    let (left, right) = (operands[1], operands[0]);
 
     match op {
-        "+"  => stack.push( CalcElement::Operand(operands[1] + operands[0]) ),
-        "-"  => stack.push( CalcElement::Operand(operands[1] - operands[0]) ),
-        "*"  => stack.push( CalcElement::Operand(operands[1] * operands[0]) ),
-        "<<"  => stack.push( CalcElement::Operand(operands[1] << operands[0]) ),
-        ">>"  => stack.push( CalcElement::Operand(operands[1] >> operands[0]) ),
+        "+"  => stack.push( CalcElement::Operand(left + right) ),
+        "-"  => stack.push( CalcElement::Operand(left - right) ),
+        "*"  => stack.push( CalcElement::Operand(left * right) ),
+        "<<"  => stack.push( CalcElement::Operand(if right < 0 {0} else {left << right}) ),
+        ">>"  => stack.push( CalcElement::Operand(if right < 0 {0} else {left >> right}) ),
         "%" | "/" => {
-            if operands[0] == 0 {
+            if right == 0 {
                 return Err("divided by 0".to_string());
             }
             match op {
-                "%" => stack.push( CalcElement::Operand(operands[1] % operands[0]) ),
-                _   => stack.push( CalcElement::Operand(operands[1] / operands[0]) ),
+                "%" => stack.push( CalcElement::Operand(left % right) ),
+                _   => stack.push( CalcElement::Operand(left / right) ),
             }
         },
         "**" => {
-            if operands[0] >= 0 {
-                stack.push( CalcElement::Operand(operands[1].pow(operands[0].try_into().unwrap())) )
+            if right >= 0 {
+                let r = right.try_into().unwrap();
+                stack.push( CalcElement::Operand(left.pow(r)) )
             }else{
-                return Err( exponent_error_msg(operands[0]) );
+                return Err( exponent_error_msg(right) );
             }
         },
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
