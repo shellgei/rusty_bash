@@ -59,10 +59,10 @@ impl Calc {
 
     fn increment_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<i64, String> {
         if ! is_name(name, core) {
-            if inc != 0 && ! pre {
-                return Err(syntax_error_msg(name));
+            return match inc != 0 && ! pre {
+                true  => Err(syntax_error_msg(name)),
+                false => Self::solve_recursion(&name, core),
             }
-            return Self::solve_recursion(&name, core);
         }
 
         let num_i64 = match Self::solve_recursion(&name, core) {
