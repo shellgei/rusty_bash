@@ -84,18 +84,3 @@ fn word_to_i64(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<
     }
 }
 
-pub fn inc(inc: i64, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
-    match stack.pop() {
-        Some(CalcElement::Word(w, inc_post)) => {
-            match word_to_operand(&w, inc, inc_post, core) {
-                Ok(op) => {
-                    stack.push(op);
-                    Ok(())
-                },
-                Err(e) => Err(e),
-            //    _      => Err("unknown word parse error".to_string()),
-            }
-        },
-        _ => Err("invalid increment".to_string()),
-    }
-}

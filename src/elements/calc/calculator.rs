@@ -12,8 +12,7 @@ fn exponent_error_msg(num: i64) -> String {
 
 fn op_order(op: &CalcElement) -> u8 {
     match op {
-        CalcElement::PlusPlus => 14,
-        CalcElement::MinusMinus => 14,
+        CalcElement::PlusPlus | CalcElement::MinusMinus => 14,
         CalcElement::UnaryOp(s) => {
             match s.as_str() {
                 "-" | "+" => 13,
@@ -126,7 +125,8 @@ fn rev_polish_op(elem: &CalcElement,
     true
 }
 
-fn pop_operands(num: usize, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Vec<i64> {
+fn pop_operands(num: usize, stack: &mut Vec<CalcElement>,
+                core: &mut ShellCore) -> Result<Vec<i64>, String> {
     let mut ans = vec![];
 
     for _ in 0..num {
@@ -135,23 +135,27 @@ fn pop_operands(num: usize, stack: &mut Vec<CalcElement>, core: &mut ShellCore) 
             Some(CalcElement::Word(w, inc)) => {
                 match variable::word_to_operand(&w, 0, inc, core) {
                     Ok(CalcElement::Operand(n)) => n,
-                    _ => return vec![],
+                    Err(e)                      => return Err(e),
+                    _ => panic!("SUSH INTERNAL ERROR: word_to_operand"),
                 }
             },
-            _ => return vec![],
+            _ => return Ok(vec![]),
         };
         ans.push(n);
     }
-
-    ans
+    Ok(ans)
 }
 
 fn bin_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
-    let operands = pop_operands(2, stack, core);
-    if operands.len() != 2 {
-        return Err( syntax_error_msg(op) );
-    }
-    let (left, right) = (operands[1], operands[0]);
+    let (left, right) = match pop_operands(2, stack, core) {
+        Ok(v) => {
+            match v.len() == 2 {
+                true  => (v[1], v[0]), 
+                false => return Err( syntax_error_msg(op) ),
+            }
+        },
+        Err(e)  => return Err(e),
+    };
 
     let bool_to_01 = |b| { if b { 1 } else { 0 } };
 
@@ -196,11 +200,23 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -
 }
 
 fn unary_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+    let num = match pop_operands(1, stack, core) {
+        Ok(v) => {
+            match v.len() == 1 {
+                true  => v[0],
+                false => return Err( syntax_error_msg(op) ),
+            }
+        },
+        Err(e)  => return Err(e),
+    };
+
+    /*
     let operands = pop_operands(1, stack, core);
     if operands.len() != 1 {
         return Err( syntax_error_msg(op) );
     }
     let num = operands[0];
+    */
 
     match op {
         "+"  => stack.push( CalcElement::Operand(num) ),
@@ -233,8 +249,8 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<St
             },
             CalcElement::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
             CalcElement::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
-            CalcElement::PlusPlus         => variable::inc(1, &mut stack, core),
-            CalcElement::MinusMinus       => variable::inc(-1, &mut stack, core),
+            CalcElement::PlusPlus         => inc(1, &mut stack, core),
+            CalcElement::MinusMinus       => inc(-1, &mut stack, core),
             _ => Err( syntax_error_msg(&to_string(&e)) ),
         };
 
@@ -257,5 +273,20 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<St
             }
         },
         _ => Err( format!("unknown syntax error",) ),
+    }
+}
+
+fn inc(inc: i64, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+    match stack.pop() {
+        Some(CalcElement::Word(w, inc_post)) => {
+            match variable::word_to_operand(&w, inc, inc_post, core) {
+                Ok(op) => {
+                    stack.push(op);
+                    Ok(())
+                },
+                Err(e) => Err(e),
+            }
+        },
+        _ => Err("invalid increment".to_string()),
     }
 }
