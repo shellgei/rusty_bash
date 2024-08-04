@@ -915,6 +915,9 @@ res=$($com <<< 'echo $(($$ / $$ ))')
 res=$($com <<< 'echo $(( ! 123 )) $(( ! 0 ))')
 [ "$res" == "0 1" ] || err $LINENO
 
+res=$($com <<< 'echo $(( ~ 0 )) $(( ~ 1 )) $(( ~ -1 ))')
+[ "$res" == "-1 -2 0" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')

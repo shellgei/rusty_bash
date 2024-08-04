@@ -162,6 +162,7 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String>
         "+"  => stack.push( CalcElement::Operand(num) ),
         "-"  => stack.push( CalcElement::Operand(-num) ),
         "!"  => stack.push( CalcElement::Operand(if num == 0 { 1 } else { 0 }) ),
+        "~"  => stack.push( CalcElement::Operand( !num ) ),
         _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 
