@@ -22,6 +22,8 @@ fn op_order(op: &CalcElement) -> u8 {
                 "*" | "/" | "%" => 7, 
                 "+" | "-"       => 6, 
                 "<<" | ">>"     => 5, 
+                "<=" | ">=" | ">" | "<" => 4, 
+                "==" | "!="     => 3, 
                 _ => 0,
             }
         },
@@ -137,6 +139,10 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
         "*"  => stack.push( CalcElement::Operand(left * right) ),
         "<<"  => stack.push( CalcElement::Operand(if right < 0 {0} else {left << right}) ),
         ">>"  => stack.push( CalcElement::Operand(if right < 0 {0} else {left >> right}) ),
+        "<="  => stack.push( CalcElement::Operand(if left <= right {1} else {0}) ),
+        ">="  => stack.push( CalcElement::Operand(if left >= right {1} else {0}) ),
+        "<"  => stack.push( CalcElement::Operand(if left < right {1} else {0}) ),
+        ">"  => stack.push( CalcElement::Operand(if left > right {1} else {0}) ),
         "%" | "/" => {
             if right == 0 {
                 return Err("divided by 0".to_string());
