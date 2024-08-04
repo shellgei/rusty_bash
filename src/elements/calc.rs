@@ -242,6 +242,11 @@ impl Calc {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
+
+            if feeder.starts_with(":") {
+                break;
+            }
+
             if Self::eat_conditional_op(feeder, &mut ans, core) 
             || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans)
@@ -257,9 +262,11 @@ impl Calc {
         }
 
         dbg!("{:?}", &ans);
-        match feeder.starts_with("))") {
-            true  => Some(ans),
-            false => None,
+        if feeder.starts_with("))") 
+        || feeder.starts_with(":") {
+            return Some(ans);
         }
+
+        None
     }
 }

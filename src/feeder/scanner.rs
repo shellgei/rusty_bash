@@ -46,7 +46,7 @@ impl Feeder {
     }
 
     pub fn scanner_subword_symbol(&self) -> usize {
-        self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?", "@", "!", "+", "-", "."])
+        self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?", "@", "!", "+", "-", ".", ":"])
     }
 
     pub fn scanner_math_symbol(&mut self, core: &mut ShellCore) -> usize {
@@ -106,7 +106,7 @@ impl Feeder {
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},\\'$/~\"*+-?@!.".find(ch) != None {
+            if " \t\n;&|()<>{},\\'$/~\"*+-?@!.:".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();
