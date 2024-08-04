@@ -12,18 +12,20 @@ fn op_order(op: &CalcElement) -> u8 {
     match op {
         CalcElement::UnaryOp(s) => {
             match s.as_str() {
-                "-" | "+" => 10,
-                _         => 9,
+                "-" | "+" => 13,
+                _         => 12,
             }
         },
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
-                "**"            => 8, 
-                "*" | "/" | "%" => 7, 
-                "+" | "-"       => 6, 
-                "<<" | ">>"     => 5, 
-                "<=" | ">=" | ">" | "<" => 4, 
-                "==" | "!="     => 3, 
+                "**"            => 11, 
+                "*" | "/" | "%" => 10, 
+                "+" | "-"       => 9, 
+                "<<" | ">>"     => 8, 
+                "<=" | ">=" | ">" | "<" => 7, 
+                "==" | "!="     => 6, 
+                "&"             => 5, 
+                "^"             => 4, 
                 _ => 0,
             }
         },
@@ -133,38 +135,39 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     }
     let (left, right) = (operands[1], operands[0]);
 
-    match op {
-        "+"  => stack.push( CalcElement::Operand(left + right) ),
-        "-"  => stack.push( CalcElement::Operand(left - right) ),
-        "*"  => stack.push( CalcElement::Operand(left * right) ),
-        "<<"  => stack.push( CalcElement::Operand(if right < 0 {0} else {left << right}) ),
-        ">>"  => stack.push( CalcElement::Operand(if right < 0 {0} else {left >> right}) ),
-        "<="  => stack.push( CalcElement::Operand(if left <= right {1} else {0}) ),
-        ">="  => stack.push( CalcElement::Operand(if left >= right {1} else {0}) ),
-        "<"  => stack.push( CalcElement::Operand(if left < right {1} else {0}) ),
-        ">"  => stack.push( CalcElement::Operand(if left > right {1} else {0}) ),
-        "=="  => stack.push( CalcElement::Operand(if left == right {1} else {0}) ),
-        "!="  => stack.push( CalcElement::Operand(if left != right {1} else {0}) ),
+    let ans = match op {
+        "+"  => left + right,
+        "-"  => left - right,
+        "*"  => left * right,
+        "<<"  => if right < 0 {0} else {left << right},
+        ">>"  => if right < 0 {0} else {left >> right},
+        "<="  => if left <= right {1} else {0},
+        ">="  => if left >= right {1} else {0},
+        "<"  => if left < right {1} else {0},
+        ">"  => if left > right {1} else {0},
+        "=="  => if left == right {1} else {0},
+        "!="  => if left != right {1} else {0},
         "%" | "/" => {
             if right == 0 {
                 return Err("divided by 0".to_string());
             }
             match op {
-                "%" => stack.push( CalcElement::Operand(left % right) ),
-                _   => stack.push( CalcElement::Operand(left / right) ),
+                "%" => left % right,
+                _   => left / right,
             }
         },
         "**" => {
             if right >= 0 {
                 let r = right.try_into().unwrap();
-                stack.push( CalcElement::Operand(left.pow(r)) )
+                left.pow(r)
             }else{
                 return Err( exponent_error_msg(right) );
             }
         },
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
-    }
+    };
 
+    stack.push(CalcElement::Operand(ans));
     Ok(())
 }
 
