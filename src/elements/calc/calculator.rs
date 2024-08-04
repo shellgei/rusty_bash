@@ -40,7 +40,13 @@ fn op_order(op: &CalcElement) -> u8 {
 fn to_string(op: &CalcElement) -> String {
     match op {
         CalcElement::Operand(n) => n.to_string(),
-        CalcElement::Word(w, r_) => w.text.clone(),
+        CalcElement::Word(w, inc) => {
+            match inc {
+                1  => w.text.clone() + "++",
+                -1 => w.text.clone() + "--",
+                _  => w.text.clone(),
+            }
+        },
         CalcElement::UnaryOp(s) => s.clone(),
         CalcElement::BinaryOp(s) => s.clone(),
         CalcElement::LeftParen => "(".to_string(),

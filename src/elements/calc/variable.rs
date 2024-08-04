@@ -93,7 +93,7 @@ pub fn inc(inc: i64, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Resu
                     Ok(())
                 },
                 Err(e) => Err(e),
-                _      => Err("unknown word parse error".to_string()),
+            //    _      => Err("unknown word parse error".to_string()),
             }
         },
         _ => Err("invalid increment".to_string()),
