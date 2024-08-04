@@ -58,9 +58,6 @@ impl Calc {
     }
 
     fn increment_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<i64, String> {
-        if name.len() == 0 {
-            return Ok(0);
-        }
         if ! is_name(name, core) {
             if inc != 0 && ! pre {
                 return Err(syntax_error_msg(name));
