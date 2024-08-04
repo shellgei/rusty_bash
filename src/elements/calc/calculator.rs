@@ -32,6 +32,7 @@ fn op_order(op: &CalcElement) -> u8 {
                 _ => 0,
             }
         },
+        CalcElement::ConditionalOp(_, _) => 3,
         _ => 0, 
     }
 }
@@ -251,6 +252,7 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<St
             CalcElement::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             CalcElement::PlusPlus         => inc(1, &mut stack, core),
             CalcElement::MinusMinus       => inc(-1, &mut stack, core),
+            CalcElement::ConditionalOp(_, _) => Ok(()),
             _ => Err( syntax_error_msg(&to_string(&e)) ),
         };
 
