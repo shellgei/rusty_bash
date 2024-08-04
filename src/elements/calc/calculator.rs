@@ -143,6 +143,8 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
         ">="  => stack.push( CalcElement::Operand(if left >= right {1} else {0}) ),
         "<"  => stack.push( CalcElement::Operand(if left < right {1} else {0}) ),
         ">"  => stack.push( CalcElement::Operand(if left > right {1} else {0}) ),
+        "=="  => stack.push( CalcElement::Operand(if left == right {1} else {0}) ),
+        "!="  => stack.push( CalcElement::Operand(if left != right {1} else {0}) ),
         "%" | "/" => {
             if right == 0 {
                 return Err("divided by 0".to_string());
