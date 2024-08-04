@@ -773,6 +773,13 @@ res=$($com <<< 'echo $((A + 3 ))')
 res=$($com <<< 'A=X; echo $((A ))')
 [ "$res" == "0" ] || err $LINENO
 
+res=$($com <<< 'A=X; echo $(( ++A ))')
+[ "$res" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=X; X=3 ; echo $(( ++A )); echo $A')
+[ "$res" == "4
+4" ] || err $LINENO
+
 res=$(echo "echo \$(( '' ))" | $com)
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO

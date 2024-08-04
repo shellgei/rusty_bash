@@ -57,6 +57,30 @@ impl Calc {
         }
     }
 
+    fn increment_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<i64, String> {
+        if name.len() == 0 {
+            return Ok(0);
+        }
+        if ! is_name(name, core) {
+            if inc != 0 && ! pre {
+                return Err(syntax_error_msg(name));
+            }
+            return Self::value_to_num(&name, core);
+        }
+
+        let num_i64 = match Self::value_to_num(&name, core) {
+            Ok(n)        => n,
+            Err(err_msg) => return Err(err_msg), 
+        };
+        
+        core.data.set_param(name, &(num_i64 + inc).to_string());
+
+        match pre {
+            true  => Ok(num_i64+inc),
+            false => Ok(num_i64),
+        }
+    }
+
     fn word_to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                        core: &mut ShellCore) -> Result<CalcElement, String> {
         if w.text.find('\'').is_some() {
@@ -68,28 +92,14 @@ impl Calc {
             None => return Err(format!("{}: wrong substitution", &w.text)),
         };
 
-        let is_name = is_name(&name, core);
-        let pre_increment = match is_name {
-            true  => pre_increment,
-            false => 0,
+        let res = match pre_increment {
+            0 => Self::increment_variable(&name, core, post_increment, false),
+            _ => Self::increment_variable(&name, core, pre_increment, true),
         };
 
-        let mut num;
-        let ans = match Self::value_to_num(&name, core) {
-            Ok(n) => {
-                num = n;
-                CalcElement::Operand(n+pre_increment)
-            },
-            Err(err_msg) => return Err(err_msg), 
-        };
-
-        num += pre_increment + post_increment;
-
-        if is_name || post_increment == 0 {
-            core.data.set_param(&name, &num.to_string());
-            Ok(ans)
-        }else{
-            Err(syntax_error_msg(&name))
+        match res {
+            Ok(n)  => return Ok(CalcElement::Operand(n)),
+            Err(e) => return Err(e),
         }
     }
 
