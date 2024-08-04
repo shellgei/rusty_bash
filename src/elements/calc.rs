@@ -83,7 +83,9 @@ impl Calc {
 
     fn word_to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                        core: &mut ShellCore) -> Result<CalcElement, String> {
-        if w.text.find('\'').is_some() {
+
+        if pre_increment != 0 && post_increment != 0 
+        || w.text.find('\'').is_some() {
             return Err(syntax_error_msg(&w.text));
         }
 
@@ -130,10 +132,6 @@ impl Calc {
             pre_increment = match e {
                 CalcElement::Word(w, post_increment) => {
                     if let Some(CalcElement::Operand(_)) = ans.last() {
-                        return Err(syntax_error_msg(&w.text));
-                    }
-
-                    if pre_increment != 0 && post_increment != 0 {
                         return Err(syntax_error_msg(&w.text));
                     }
 
