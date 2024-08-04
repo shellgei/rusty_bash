@@ -135,20 +135,24 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
     }
     let (left, right) = (operands[1], operands[0]);
 
+    let bool_to_01 = |b| { if b { 1 } else { 0 } };
+
     let ans = match op {
         "+"  => left + right,
         "-"  => left - right,
         "*"  => left * right,
         "&"  => left & right,
         "^"  => left ^ right,
+        "&&"  => bool_to_01( left != 0 && right != 0 ),
+        "||"  => bool_to_01( left != 0 || right != 0 ),
         "<<"  => if right < 0 {0} else {left << right},
         ">>"  => if right < 0 {0} else {left >> right},
-        "<="  => if left <= right {1} else {0},
-        ">="  => if left >= right {1} else {0},
-        "<"  => if left < right {1} else {0},
-        ">"  => if left > right {1} else {0},
-        "=="  => if left == right {1} else {0},
-        "!="  => if left != right {1} else {0},
+        "<="  => bool_to_01( left <= right ),
+        ">="  => bool_to_01( left >= right ),
+        "<"  => bool_to_01( left < right ),
+        ">"  => bool_to_01( left > right ),
+        "=="  => bool_to_01( left == right ),
+        "!="  => bool_to_01( left != right ),
         "%" | "/" => {
             if right == 0 {
                 return Err("divided by 0".to_string());
