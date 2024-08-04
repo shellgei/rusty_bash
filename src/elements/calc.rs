@@ -13,6 +13,7 @@ enum CalcElement {
     UnaryOp(String),
     BinaryOp(String),
     Operand(i64),
+    ConditionalOp(Box<Option<Calc>>, Box<Option<Calc>>),
     Word(Word, i64), //i64: ++:1 --:-1
     LeftParen,
     RightParen,
@@ -139,6 +140,33 @@ impl Calc {
         true
     }
 
+    fn eat_conditional_op(feeder: &mut Feeder,
+        ans: &mut Self, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with("?") {
+            return false;
+        }
+
+        ans.text += &feeder.consume(1);
+        let left = Self::parse(feeder, core);
+        if left.is_some() {
+            ans.text += &left.as_ref().unwrap().text;
+        }
+
+        if ! feeder.starts_with(":") {
+            ans.elements.push(CalcElement::ConditionalOp(Box::new(left), Box::new(None)));
+            return true;
+        }
+
+        ans.text += &feeder.consume(1);
+        let right = Self::parse(feeder, core);
+        if right.is_some() {
+            ans.text += &right.as_ref().unwrap().text;
+        }
+
+        ans.elements.push(CalcElement::ConditionalOp(Box::new(left), Box::new(right)));
+        true
+    }
+
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut word = match Word::parse(feeder, core, true) {
             Some(w) => {
@@ -214,7 +242,8 @@ impl Calc {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
-            if Self::eat_incdec(feeder, &mut ans) 
+            if Self::eat_conditional_op(feeder, &mut ans, core) 
+            || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
@@ -227,6 +256,7 @@ impl Calc {
             }
         }
 
+        dbg!("{:?}", &ans);
         match feeder.starts_with("))") {
             true  => Some(ans),
             false => None,
