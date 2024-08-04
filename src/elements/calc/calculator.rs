@@ -10,7 +10,12 @@ fn exponent_error_msg(num: i64) -> String {
 
 fn op_order(op: &CalcElement) -> u8 {
     match op {
-        CalcElement::UnaryOp(_) => 8,
+        CalcElement::UnaryOp(s) => {
+            match s.as_str() {
+                "-" | "+" => 8,
+                _         => 7,
+            }
+        },
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
                 "**"            => 6, 
@@ -156,7 +161,7 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String>
     match op {
         "+"  => stack.push( CalcElement::Operand(num) ),
         "-"  => stack.push( CalcElement::Operand(-num) ),
-        "!"  => stack.push( CalcElement::Operand(if num != 0 { 0 } else { 1 }) ),
+        "!"  => stack.push( CalcElement::Operand(if num == 0 { 1 } else { 0 }) ),
         _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 
