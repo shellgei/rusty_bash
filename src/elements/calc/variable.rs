@@ -53,8 +53,8 @@ pub fn word_to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     };
 
     let res = match pre_increment {
-        0 => word_to_i64(&name, core, post_increment, false),
-        _ => word_to_i64(&name, core, pre_increment, true),
+        0 => change_variable(&name, core, post_increment, false),
+        _ => change_variable(&name, core, pre_increment, true),
     };
 
     match res {
@@ -63,7 +63,7 @@ pub fn word_to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     }
 }
 
-fn word_to_i64(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<i64, String> {
+fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<i64, String> {
     if ! is_name(name, core) {
         return match inc != 0 && ! pre {
             true  => Err(syntax_error_msg(name)),

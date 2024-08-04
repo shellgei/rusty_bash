@@ -34,7 +34,7 @@ fn syntax_error_msg(token: &str) -> String {
 
 impl Calc {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
-        let es = match self.words_to_operands() {
+        let es = match self.decompose_increments() {
             Ok(data)     => data, 
             Err(err_msg) => {
                 eprintln!("sush: {}", err_msg);
@@ -68,7 +68,7 @@ impl Calc {
         0
     }
 
-    fn words_to_operands(&mut self) -> Result<Vec<CalcElement>, String> {
+    fn decompose_increments(&mut self) -> Result<Vec<CalcElement>, String> {
         let mut ans = vec![];
         let mut pre_increment = 0;
 
