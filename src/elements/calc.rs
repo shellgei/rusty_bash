@@ -57,15 +57,15 @@ impl Calc {
         }
     }
 
-    fn increment_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<i64, String> {
+    fn word_to_i64(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<i64, String> {
         if ! is_name(name, core) {
             return match inc != 0 && ! pre {
                 true  => Err(syntax_error_msg(name)),
-                false => Self::solve_recursion(&name, core),
+                false => Self::str_to_num(&name, core),
             }
         }
 
-        let num_i64 = match Self::solve_recursion(&name, core) {
+        let num_i64 = match Self::str_to_num(&name, core) {
             Ok(n)        => n,
             Err(err_msg) => return Err(err_msg), 
         };
@@ -80,7 +80,6 @@ impl Calc {
 
     fn word_to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                        core: &mut ShellCore) -> Result<CalcElement, String> {
-
         if pre_increment != 0 && post_increment != 0 
         || w.text.find('\'').is_some() {
             return Err(syntax_error_msg(&w.text));
@@ -92,8 +91,8 @@ impl Calc {
         };
 
         let res = match pre_increment {
-            0 => Self::increment_variable(&name, core, post_increment, false),
-            _ => Self::increment_variable(&name, core, pre_increment, true),
+            0 => Self::word_to_i64(&name, core, post_increment, false),
+            _ => Self::word_to_i64(&name, core, pre_increment, true),
         };
 
         match res {
@@ -153,7 +152,7 @@ impl Calc {
         }
     }
 
-    fn solve_recursion(name: &str, core: &mut ShellCore) -> Result<i64, String> {
+    fn str_to_num(name: &str, core: &mut ShellCore) -> Result<i64, String> {
         let mut name = name.to_string();
 
         const RESOLVE_LIMIT: i32 = 10000;
