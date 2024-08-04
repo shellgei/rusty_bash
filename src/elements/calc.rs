@@ -236,21 +236,16 @@ impl Calc {
         true
     }
 
-    fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Operand(_)) => return false,
             Some(CalcElement::Word(_, _)) => return false,
             _ => {},
         }
 
-        let len = feeder.scanner_calc_operator(core);
-        if len == 0 {
-            return false;
-        }
-
-        let s = match feeder.starts_with("+") || feeder.starts_with("-") {
-            true  => feeder.consume(1),
-            false => return false,
+        let s = match feeder.scanner_unary_operator() {
+            0   => return false,
+            len => feeder.consume(len),
         };
 
         ans.text += &s.clone();
@@ -296,7 +291,7 @@ impl Calc {
         loop {
             Self::eat_blank(feeder, &mut ans, core);
             if Self::eat_incdec(feeder, &mut ans) 
-            || Self::eat_unary_operator(feeder, &mut ans, core)
+            || Self::eat_unary_operator(feeder, &mut ans)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
             || Self::eat_word(feeder, &mut ans, core) { 

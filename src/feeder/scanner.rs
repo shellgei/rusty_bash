@@ -54,6 +54,10 @@ impl Feeder {
         self.scanner_one_of(&["/", "*", "?", ":", "+", "-"])
     }
 
+    pub fn scanner_unary_operator(&mut self) -> usize {
+        self.scanner_one_of(&["+", "-", "!", "~"])
+    }
+
     pub fn scanner_extglob_head(&self) -> usize {
         self.scanner_one_of(&["?(", "*(", "+(", "@(", "!("])
     }
