@@ -65,10 +65,10 @@ impl Calc {
             if inc != 0 && ! pre {
                 return Err(syntax_error_msg(name));
             }
-            return Self::value_to_num(&name, core);
+            return Self::solve_recursion(&name, core);
         }
 
-        let num_i64 = match Self::value_to_num(&name, core) {
+        let num_i64 = match Self::solve_recursion(&name, core) {
             Ok(n)        => n,
             Err(err_msg) => return Err(err_msg), 
         };
@@ -156,17 +156,15 @@ impl Calc {
         }
     }
 
-    fn value_to_num(name: &str, core: &mut ShellCore) -> Result<i64, String> {
+    fn solve_recursion(name: &str, core: &mut ShellCore) -> Result<i64, String> {
         let mut converted_name = name.to_string();
 
         const RESOLVE_LIMIT: i32 = 10000;
 
         for i in 0..RESOLVE_LIMIT {
-            let mut f = Feeder::new(&converted_name);
-            if converted_name.len() > 0 && f.scanner_name(core) == converted_name.len() {
-                converted_name = core.data.get_param(&converted_name);
-            }else{
-                break;
+            match is_name(&converted_name, core) {
+                true  => converted_name = core.data.get_param(&converted_name),
+                false => break,
             }
 
             if i == RESOLVE_LIMIT - 1 {
@@ -176,9 +174,7 @@ impl Calc {
 
         if let Ok(n) = converted_name.parse::<i64>() {
             Ok( n )
-        }else if converted_name == "" {
-            Ok( 0 )
-        }else if is_name(&converted_name, core) {
+        }else if converted_name == "" || is_name(&converted_name, core) {
             Ok( 0 )
         }else{
             Err(syntax_error_msg(name))
