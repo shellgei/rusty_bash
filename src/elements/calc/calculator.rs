@@ -139,6 +139,8 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
         "+"  => left + right,
         "-"  => left - right,
         "*"  => left * right,
+        "&"  => left & right,
+        "^"  => left ^ right,
         "<<"  => if right < 0 {0} else {left << right},
         ">>"  => if right < 0 {0} else {left >> right},
         "<="  => if left <= right {1} else {0},
