@@ -157,27 +157,27 @@ impl Calc {
     }
 
     fn solve_recursion(name: &str, core: &mut ShellCore) -> Result<i64, String> {
-        let mut converted_name = name.to_string();
+        let mut name = name.to_string();
 
         const RESOLVE_LIMIT: i32 = 10000;
 
         for i in 0..RESOLVE_LIMIT {
-            match is_name(&converted_name, core) {
-                true  => converted_name = core.data.get_param(&converted_name),
+            match is_name(&name, core) {
+                true  => name = core.data.get_param(&name),
                 false => break,
             }
 
             if i == RESOLVE_LIMIT - 1 {
-                return Err(recursion_error(name));
+                return Err(recursion_error(&name));
             }
         }
 
-        if let Ok(n) = converted_name.parse::<i64>() {
+        if let Ok(n) = name.parse::<i64>() {
             Ok( n )
-        }else if converted_name == "" || is_name(&converted_name, core) {
+        }else if name == "" || is_name(&name, core) {
             Ok( 0 )
         }else{
-            Err(syntax_error_msg(name))
+            Err(syntax_error_msg(&name))
         }
     }
 
