@@ -15,6 +15,8 @@ enum CalcElement {
     Word(Word, i64), //i64: ++:1 --:-1
     LeftParen,
     RightParen,
+    PlusPlus,
+    MinusMinus,
     Increment(i64),
 }
 
@@ -48,7 +50,7 @@ impl Calc {
             },
         };
 
-        match calculate(&es) {
+        match calculate(&es, core) {
             Ok(ans)  => Some(ans),
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
@@ -126,7 +128,17 @@ impl Calc {
         for i in 0..len {
             let e = self.elements[i].clone();
             pre_increment = match e {
-                CalcElement::Word(w, post_increment) => {
+                //CalcElement::Word(w, post_increment) => {
+                CalcElement::Word(_, _) => {
+                    match pre_increment {
+                        1  => ans.push(CalcElement::PlusPlus),
+                        -1 => ans.push(CalcElement::MinusMinus),
+                        _  => {},
+                    }
+
+                    ans.push(e);
+
+                    /*
                     if let Some(CalcElement::Operand(_)) = ans.last() {
                         return Err(syntax_error_msg(&w.text));
                     }
@@ -135,6 +147,7 @@ impl Calc {
                         Ok(n)    => ans.push(n),
                         Err(msg) => return Err(msg),
                     }
+                    */
                     0
                 },
                 CalcElement::Increment(n) => self.inc_dec_to_unarys(&mut ans, i, n),
