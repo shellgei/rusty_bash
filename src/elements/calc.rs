@@ -274,7 +274,7 @@ impl Calc {
     }
 
     fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_calc_operator(core);
+        let len = feeder.scanner_binary_operator(core);
         if len == 0 {
             return false;
         }

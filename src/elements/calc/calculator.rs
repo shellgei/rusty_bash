@@ -133,11 +133,14 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
         "+"  => stack.push( CalcElement::Operand(operands[1] + operands[0]) ),
         "-"  => stack.push( CalcElement::Operand(operands[1] - operands[0]) ),
         "*"  => stack.push( CalcElement::Operand(operands[1] * operands[0]) ),
-        "/"  => {
+        "%" | "/" => {
             if operands[0] == 0 {
                 return Err("divided by 0".to_string());
             }
-            stack.push( CalcElement::Operand(operands[1] / operands[0]) )
+            match op {
+                "%" => stack.push( CalcElement::Operand(operands[1] % operands[0]) ),
+                _   => stack.push( CalcElement::Operand(operands[1] / operands[0]) ),
+            }
         },
         "**" => {
             if operands[0] >= 0 {

@@ -918,6 +918,13 @@ res=$($com <<< 'echo $(( ! 123 )) $(( ! 0 ))')
 res=$($com <<< 'echo $(( ~ 0 )) $(( ~ 1 )) $(( ~ -1 ))')
 [ "$res" == "-1 -2 0" ] || err $LINENO
 
+res=$($com <<< 'echo $(( 10 %3 )) $(( 10 %-3 )) $(( $$ % 1 ))')
+[ "$res" == "1 1 0" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 10 % 0 ))')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
