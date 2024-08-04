@@ -12,15 +12,16 @@ fn op_order(op: &CalcElement) -> u8 {
     match op {
         CalcElement::UnaryOp(s) => {
             match s.as_str() {
-                "-" | "+" => 8,
-                _         => 7,
+                "-" | "+" => 10,
+                _         => 9,
             }
         },
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
-                "**"            => 6, 
-                "*" | "/" | "%" => 5, 
-                "+" | "-"       => 4, 
+                "**"            => 8, 
+                "*" | "/" | "%" => 7, 
+                "+" | "-"       => 6, 
+                "<<" | ">>"     => 5, 
                 _ => 0,
             }
         },
@@ -133,6 +134,8 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>) -> Result<(), String> {
         "+"  => stack.push( CalcElement::Operand(operands[1] + operands[0]) ),
         "-"  => stack.push( CalcElement::Operand(operands[1] - operands[0]) ),
         "*"  => stack.push( CalcElement::Operand(operands[1] * operands[0]) ),
+        "<<"  => stack.push( CalcElement::Operand(operands[1] << operands[0]) ),
+        ">>"  => stack.push( CalcElement::Operand(operands[1] >> operands[0]) ),
         "%" | "/" => {
             if operands[0] == 0 {
                 return Err("divided by 0".to_string());

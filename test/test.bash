@@ -925,6 +925,9 @@ res=$($com <<< 'echo $(( 10 % 0 ))')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'echo $(( 1 << 1 )) $(( 1 << 10 )) $(( 1024 >> 2 ))')
+[ "$res" == "2 1024 256" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
