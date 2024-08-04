@@ -66,12 +66,9 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
         let ok = match e {
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-            CalcElement::UnaryOp(_) 
-            | CalcElement::BinaryOp(_)
-            | CalcElement::PlusPlus
-            | CalcElement::MinusMinus
-                => rev_polish_op(&e, &mut stack, &mut ans),
-            //CalcElement::BinaryOp(_) => rev_polish_op(&e, &mut stack, &mut ans),
+            CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) 
+            | CalcElement::PlusPlus | CalcElement::MinusMinus
+                                     => rev_polish_op(&e, &mut stack, &mut ans),
             e                        => {ans.push(e.clone()); true},
         };
 
@@ -107,18 +104,18 @@ fn rev_polish_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) ->
     }
 }
 
-fn rev_polish_op(cur_elem: &CalcElement,
-                  stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) -> bool {
+fn rev_polish_op(elem: &CalcElement,
+                 stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) -> bool {
     loop {
         match stack.last() {
             None | Some(CalcElement::LeftParen) => {
-                stack.push(cur_elem.clone());
+                stack.push(elem.clone());
                 break;
             },
             Some(_) => {
                 let last = stack.last().unwrap();
-                if op_order(last) <= op_order(cur_elem) {
-                    stack.push(cur_elem.clone());
+                if op_order(last) <= op_order(elem) {
+                    stack.push(elem.clone());
                     break;
                 }
                 ans.push(stack.pop().unwrap());
@@ -136,10 +133,8 @@ fn pop_operands(num: usize, stack: &mut Vec<CalcElement>, core: &mut ShellCore) 
         let n = match stack.pop() {
             Some(CalcElement::Operand(s)) => s,
             Some(CalcElement::Word(w, inc)) => {
-                dbg!("here");
                 match variable::word_to_operand(&w, 0, inc, core) {
                     Ok(CalcElement::Operand(n)) => n,
-                    //Err(e) => return vec![],
                     _ => return vec![],
                 }
             },
@@ -217,23 +212,6 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)
 
     Ok(())
 }
-
-/*
-fn inc(inc: i64, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
-    match stack.pop() {
-        Some(CalcElement::Word(w, inc_post)) => {
-            match variable::word_to_operand(&w, inc, inc_post, core) {
-                Ok(op) => {
-                    stack.push(op);
-                    Ok(())
-                },
-                Err(e) => Err(e),
-                _      => Err("unknown word parse error".to_string()),
-            }
-        },
-        _ => Err("invalid increment".to_string()),
-    }
-}*/
 
 pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<String, String> {
     if elements.len() == 0 {
