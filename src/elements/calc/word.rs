@@ -6,6 +6,30 @@ use super::CalcElement;
 use super::syntax_error_msg;
 use crate::elements::calc::Word;
 
+pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
+                   core: &mut ShellCore) -> Result<CalcElement, String> {
+    if pre_increment != 0 && post_increment != 0 
+    || w.text.find('\'').is_some() {
+        return Err(syntax_error_msg(&w.text));
+    }
+
+    let name = match w.eval_as_value(core) {
+        Some(v) => v, 
+        None => return Err(format!("{}: wrong substitution", &w.text)),
+    };
+
+    let res = match pre_increment {
+        0 => change_variable(&name, core, post_increment, false),
+        _ => change_variable(&name, core, pre_increment, true),
+    };
+
+    match res {
+        Ok(n)  => return Ok(CalcElement::Operand(n)),
+        Err(e) => return Err(e),
+    }
+}
+
+
 fn is_name(s: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(s);
     s.len() > 0 && f.scanner_name(core) == s.len()
@@ -37,29 +61,6 @@ fn str_to_num(name: &str, core: &mut ShellCore) -> Result<i64, String> {
         Ok( 0 )
     }else{
         Err(syntax_error_msg(&name))
-    }
-}
-
-pub fn word_to_operand(w: &Word, pre_increment: i64, post_increment: i64,
-                   core: &mut ShellCore) -> Result<CalcElement, String> {
-    if pre_increment != 0 && post_increment != 0 
-    || w.text.find('\'').is_some() {
-        return Err(syntax_error_msg(&w.text));
-    }
-
-    let name = match w.eval_as_value(core) {
-        Some(v) => v, 
-        None => return Err(format!("{}: wrong substitution", &w.text)),
-    };
-
-    let res = match pre_increment {
-        0 => change_variable(&name, core, post_increment, false),
-        _ => change_variable(&name, core, pre_increment, true),
-    };
-
-    match res {
-        Ok(n)  => return Ok(CalcElement::Operand(n)),
-        Err(e) => return Err(e),
     }
 }
 

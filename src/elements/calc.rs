@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod calculator;
-mod variable;
+mod word;
 
 use crate::{ShellCore, Feeder};
 use self::calculator::calculate;
