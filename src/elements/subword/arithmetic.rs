@@ -42,11 +42,15 @@ impl Arithmetic {
         ans.text = feeder.consume(3);
 
         if let Some(c) = Calc::parse(feeder, core) {
+            if ! feeder.starts_with("))") {
+                feeder.rewind();
+                return None;
+            }
+
             ans.text += &c.text;
             ans.text += &feeder.consume(2);
             ans.calc = c;
             feeder.pop_backup();
-//            dbg!("{:?}", &ans);
             return Some(ans);
         }
     

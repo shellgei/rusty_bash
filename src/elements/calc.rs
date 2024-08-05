@@ -14,7 +14,7 @@ enum CalcElement {
     BinaryOp(String),
     Operand(i64),
     ConditionalOp(Box<Option<Calc>>, Box<Option<Calc>>),
-    Word(Word, i64), //i64: ++:1 --:-1
+    Word(Word, i64), // Word[++, --]
     LeftParen,
     RightParen,
     PlusPlus,
@@ -202,8 +202,9 @@ impl Calc {
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self) -> bool {
         match &ans.elements.last() {
-            Some(CalcElement::Operand(_)) => return false,
-            Some(CalcElement::Word(_, _)) => return false,
+            Some(CalcElement::Operand(_)) 
+            | Some(CalcElement::Word(_, _)) 
+            | Some(CalcElement::RightParen) => return false,
             _ => {},
         }
 
@@ -273,12 +274,6 @@ impl Calc {
             }
         }
 
-//        dbg!("{:?}", &ans);
-        if feeder.starts_with("))") 
-        || feeder.starts_with(":") {
-            return Some(ans);
-        }
-
-        None
+        return Some(ans);
     }
 }
