@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use super::{Calc, CalcElement};
 use super::syntax_error_msg;
-use super::word;
+use super::word_manip;
 
 fn exponent_error_msg(num: i64) -> String {
     format!("exponent less than 0 (error token is \"{}\")", num)
@@ -136,7 +136,7 @@ fn pop_operands(num: usize, stack: &mut Vec<CalcElement>,
         let n = match stack.pop() {
             Some(CalcElement::Operand(s)) => s,
             Some(CalcElement::Word(w, inc)) => {
-                match word::to_operand(&w, 0, inc, core) {
+                match word_manip::to_operand(&w, 0, inc, core) {
                     Ok(CalcElement::Operand(n)) => n,
                     Err(e)                      => return Err(e),
                     _ => panic!("SUSH INTERNAL ERROR: word_to_operand"),
@@ -172,11 +172,11 @@ fn substitution(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)-> 
 
     let left = match stack.pop() {
         Some(CalcElement::Word(w, 0)) => w,
-        Some(CalcElement::Word(w, _)) => return Err( assignment_error_msg(op) ),
+        Some(CalcElement::Word(_, _)) => return Err( assignment_error_msg(op) ),
         _ => return Err( assignment_error_msg(op) ),
     };
 
-    match word::substitute(&left, right, core) {
+    match word_manip::substitute(op, &left, right, core) {
         Ok(elem) => stack.push(elem),
         Err(msg) => return Err(msg),
     }
@@ -336,7 +336,7 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<i6
     match stack.pop() {
         Some(CalcElement::Operand(n)) => Ok(n),
         Some(CalcElement::Word(w, inc)) => {
-            match word::to_operand(&w, 0, inc, core) {
+            match word_manip::to_operand(&w, 0, inc, core) {
                 Ok(CalcElement::Operand(n)) => Ok(n),
                 Err(e) => Err(e),
                 _      => Err("unknown word parse error".to_string()),
@@ -349,7 +349,7 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<i6
 fn inc(inc: i64, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
     match stack.pop() {
         Some(CalcElement::Word(w, inc_post)) => {
-            match word::to_operand(&w, inc, inc_post, core) {
+            match word_manip::to_operand(&w, inc, inc_post, core) {
                 Ok(op) => {
                     stack.push(op);
                     Ok(())

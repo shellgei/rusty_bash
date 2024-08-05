@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod calculator;
-mod word;
+mod word_manip;
 
 use crate::{ShellCore, Feeder};
 use self::calculator::calculate;
@@ -200,7 +200,7 @@ impl Calc {
         true
     }
 
-    fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self) -> bool {
+    fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(CalcElement::Operand(_)) 
             | Some(CalcElement::Word(_, _)) 
@@ -208,7 +208,7 @@ impl Calc {
             _ => {},
         }
 
-        let s = match feeder.scanner_unary_operator() {
+        let s = match feeder.scanner_unary_operator(core) {
             0   => return false,
             len => feeder.consume(len),
         };
@@ -262,7 +262,7 @@ impl Calc {
 
             if Self::eat_conditional_op(feeder, &mut ans, core) 
             || Self::eat_incdec(feeder, &mut ans) 
-            || Self::eat_unary_operator(feeder, &mut ans)
+            || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
             || Self::eat_word(feeder, &mut ans, core) { 

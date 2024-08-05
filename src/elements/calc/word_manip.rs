@@ -29,7 +29,20 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     }
 }
 
-pub fn substitute(w: &Word, new_value: i64, core: &mut ShellCore)
+fn to_num(w: &Word, core: &mut ShellCore) -> Result<i64, String> {
+    if w.text.find('\'').is_some() {
+        return Err(syntax_error_msg(&w.text));
+    }
+
+    let name = match w.eval_as_value(core) {
+        Some(v) => v, 
+        None => return Err(format!("{}: wrong substitution", &w.text)),
+    };
+
+    str_to_num(&name, core)
+}
+
+pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
                                       -> Result<CalcElement, String> {
     if w.text.find('\'').is_some() {
         return Err(syntax_error_msg(&w.text));
@@ -40,8 +53,27 @@ pub fn substitute(w: &Word, new_value: i64, core: &mut ShellCore)
         None => return Err(format!("{}: wrong substitution", &w.text)),
     };
 
-    core.data.set_param(&name, &new_value.to_string());
+    match op {
+        "=" => {
+            core.data.set_param(&name, &right_value.to_string());
+            return Ok(CalcElement::Operand(right_value));
+        },
+        _   => {},
+    }
 
+    let current_num = match to_num(w, core) {
+        Ok(n)  => n,
+        Err(e) => return Err(e),
+    };
+
+    let new_value = match op {
+        "+=" => {
+            current_num + right_value
+        },
+        _   => 0,
+    };
+
+    core.data.set_param(&name, &new_value.to_string());
     Ok(CalcElement::Operand(new_value))
 }
 
