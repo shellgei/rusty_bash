@@ -44,11 +44,23 @@ impl Calc {
         };
 
         match calculate(&es, core) {
-            Ok(ans)  => Some(ans),
+            Ok(ans)  => Some(ans.to_string()),
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
             },
+        }
+    }
+
+    pub fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<i64, String> {
+        let es = match self.decompose_increments() {
+            Ok(data)     => data, 
+            Err(err_msg) => return Err(err_msg),
+        };
+
+        match calculate(&es, core) {
+            Ok(ans)      => Ok(ans),
+            Err(err_msg) => return Err(err_msg),
         }
     }
 

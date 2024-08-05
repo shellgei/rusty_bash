@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::CalcElement;
+use super::{Calc, CalcElement};
 use super::syntax_error_msg;
 use super::word;
 
@@ -211,14 +211,6 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)
         Err(e)  => return Err(e),
     };
 
-    /*
-    let operands = pop_operands(1, stack, core);
-    if operands.len() != 1 {
-        return Err( syntax_error_msg(op) );
-    }
-    let num = operands[0];
-    */
-
     match op {
         "+"  => stack.push( CalcElement::Operand(num) ),
         "-"  => stack.push( CalcElement::Operand(-num) ),
@@ -230,9 +222,49 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)
     Ok(())
 }
 
-pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<String, String> {
+fn cond_operation(left: &Option<Calc>, right: &Option<Calc>,
+    stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+    let num = match pop_operands(1, stack, core) {
+        Ok(v) => {
+            match v.len() == 1 {
+                true  => v[0],
+                false => return Err( syntax_error_msg("?") ),
+            }
+        },
+        Err(e)  => return Err(e),
+    };
+
+    let mut left = match left {
+        Some(c) => c.clone(),
+        None    => return Err("expr not found".to_string()),
+    };
+    let mut right = match right {
+        Some(c) => c.clone(),
+        None    => return Err("expr not found".to_string()),
+    };
+
+    let ans = match num {
+        0 => {
+            match right.eval_in_cond(core) {
+                Ok(num) => num,
+                Err(e)  => return Err(e),
+            }
+        },
+        _ => {
+            match left.eval_in_cond(core) {
+                Ok(num) => num,
+                Err(e)  => return Err(e),
+            }
+        },
+    };
+
+    stack.push( CalcElement::Operand( ans ) );
+    Ok(())
+}
+
+pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<i64, String> {
     if elements.len() == 0 {
-        return Ok("0".to_string());
+        return Ok(0);
     }
 
     let rev_pol = match rev_polish(&elements) {
@@ -252,7 +284,7 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<St
             CalcElement::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             CalcElement::PlusPlus         => inc(1, &mut stack, core),
             CalcElement::MinusMinus       => inc(-1, &mut stack, core),
-            CalcElement::ConditionalOp(_, _) => Ok(()),
+            CalcElement::ConditionalOp(left, right) => cond_operation(&left, &right, &mut stack, core),
             _ => Err( syntax_error_msg(&to_string(&e)) ),
         };
 
@@ -266,10 +298,10 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<St
     }
 
     match stack.pop() {
-        Some(CalcElement::Operand(n)) => Ok(n.to_string()),
+        Some(CalcElement::Operand(n)) => Ok(n),
         Some(CalcElement::Word(w, inc)) => {
             match word::to_operand(&w, 0, inc, core) {
-                Ok(CalcElement::Operand(n)) => Ok(n.to_string()),
+                Ok(CalcElement::Operand(n)) => Ok(n),
                 Err(e) => Err(e),
                 _      => Err("unknown word parse error".to_string()),
             }
