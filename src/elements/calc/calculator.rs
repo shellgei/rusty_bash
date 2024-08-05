@@ -64,12 +64,10 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
 
     for e in elements {
         let ok = match e {
+            CalcElement::Operand(_) | CalcElement::Word(_, _) => {ans.push(e.clone()); true},
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-            CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) 
-            | CalcElement::PlusPlus | CalcElement::MinusMinus | CalcElement::ConditionalOp(_, _)
-                                     => rev_polish_op(&e, &mut stack, &mut ans),
-            e                        => {ans.push(e.clone()); true},
+            op                       => rev_polish_op(&op, &mut stack, &mut ans),
         };
 
         if !ok {
