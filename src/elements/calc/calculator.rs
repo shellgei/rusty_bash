@@ -10,6 +10,10 @@ fn exponent_error_msg(num: i64) -> String {
     format!("exponent less than 0 (error token is \"{}\")", num)
 }
 
+fn assignment_error_msg(right: &str) -> String {
+    format!("attempted assignment to non-variable (error token is \"{}\")", right)
+}
+
 fn op_order(op: &CalcElement) -> u8 {
     match op {
         CalcElement::PlusPlus | CalcElement::MinusMinus => 14,
@@ -29,10 +33,10 @@ fn op_order(op: &CalcElement) -> u8 {
                 "==" | "!="     => 6, 
                 "&"             => 5, 
                 "^"             => 4, 
-                _ => 0,
+                _               => 3,
             }
         },
-        CalcElement::ConditionalOp(_, _) => 3,
+        CalcElement::ConditionalOp(_, _) => 2,
         _ => 0, 
     }
 }
@@ -146,6 +150,40 @@ fn pop_operands(num: usize, stack: &mut Vec<CalcElement>,
 }
 
 fn bin_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+    match op {
+    "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" 
+          => substitution(op, stack, core),
+        _ => bin_calc_operation(op, stack, core),
+    }
+
+
+}
+
+fn substitution(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)-> Result<(), String> {
+    let right = match pop_operands(1, stack, core) {
+        Ok(v) => {
+            match v.len() == 1 {
+                true  => v[0],
+                false => return Err( syntax_error_msg(op) ),
+            }
+        },
+        Err(e)  => return Err(e),
+    };
+
+    let left = match stack.pop() {
+        Some(CalcElement::Word(w, 0)) => w,
+        Some(CalcElement::Word(w, _)) => return Err( assignment_error_msg(op) ),
+        _ => return Err( assignment_error_msg(op) ),
+    };
+
+    match word::substitute(&left, right, core) {
+        Ok(elem) => stack.push(elem),
+        Err(msg) => return Err(msg),
+    }
+    Ok(())
+}
+
+fn bin_calc_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
     let (left, right) = match pop_operands(2, stack, core) {
         Ok(v) => {
             match v.len() == 2 {

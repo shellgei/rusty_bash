@@ -29,6 +29,22 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     }
 }
 
+pub fn substitute(w: &Word, new_value: i64, core: &mut ShellCore)
+                                      -> Result<CalcElement, String> {
+    if w.text.find('\'').is_some() {
+        return Err(syntax_error_msg(&w.text));
+    }
+
+    let name = match w.eval_as_value(core) {
+        Some(v) => v, 
+        None => return Err(format!("{}: wrong substitution", &w.text)),
+    };
+
+    core.data.set_param(&name, &new_value.to_string());
+
+    Ok(CalcElement::Operand(new_value))
+}
+
 
 fn is_name(s: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(s);

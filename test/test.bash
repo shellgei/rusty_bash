@@ -961,6 +961,12 @@ res=$($com <<< 'echo $(( (1? 20 : 30 ) + 3 )) $(( -5 + ( 5 ? 100 :  200)))')
 res=$($com <<< 'echo $(( -(0? 20 : 30 ) * 3 )) $(( -5 + ( 5 ? 100 :  200)/5 ))')
 [ "$res" == "-90 15" ] || err $LINENO
 
+res=$($com <<< 'echo $(( A= 10 ))')
+[ "$res" == "10" ] || err $LINENO
+
+res=$($com <<< 'A=1 ; echo $(( A += 10 ))')
+[ "$res" == "11" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
