@@ -67,7 +67,7 @@ fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcEleme
             CalcElement::LeftParen   => {stack.push(e.clone()); true},
             CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
             CalcElement::UnaryOp(_) | CalcElement::BinaryOp(_) 
-            | CalcElement::PlusPlus | CalcElement::MinusMinus
+            | CalcElement::PlusPlus | CalcElement::MinusMinus | CalcElement::ConditionalOp(_, _)
                                      => rev_polish_op(&e, &mut stack, &mut ans),
             e                        => {ans.push(e.clone()); true},
         };
