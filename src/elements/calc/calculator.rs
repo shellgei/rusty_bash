@@ -34,7 +34,6 @@ fn op_order(op: &CalcElement) -> u8 {
                 "&"             => 6, 
                 "^"             => 5, 
                 "|"             => 4, 
-                ","             => 3,
                 _               => 2,
                 //_ => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
             }
@@ -233,7 +232,6 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCo
                 return Err( exponent_error_msg(right) );
             }
         },
-        ","  => right,
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
     };
 
@@ -319,9 +317,8 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<i6
     let mut left = 0;
     for i in 0..comma_pos.len() {
         let right = comma_pos[i];
-        match calculate_sub(&elements[left..right], core) {
-            Ok(_)  => {},
-            Err(e) => return Err(e),
+        if let Err(e) = calculate_sub(&elements[left..right], core) {
+            return Err(e);
         }
         left = right + 1;
     }
