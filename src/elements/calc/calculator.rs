@@ -33,10 +33,11 @@ fn op_order(op: &CalcElement) -> u8 {
                 "==" | "!="     => 6, 
                 "&"             => 5, 
                 "^"             => 4, 
-                _               => 3,
+                "|"             => 3, 
+                _               => 2,
             }
         },
-        CalcElement::ConditionalOp(_, _) => 2,
+        CalcElement::ConditionalOp(_, _) => 1,
         _ => 0, 
     }
 }
@@ -202,6 +203,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCo
         "*"  => left * right,
         "&"  => left & right,
         "^"  => left ^ right,
+        "|"  => left | right,
         "&&"  => bool_to_01( left != 0 && right != 0 ),
         "||"  => bool_to_01( left != 0 || right != 0 ),
         "<<"  => if right < 0 {0} else {left << right},

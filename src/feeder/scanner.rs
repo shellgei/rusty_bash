@@ -47,12 +47,12 @@ impl Feeder {
 
     pub fn scanner_subword_symbol(&self) -> usize {
         self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?",
-                              "@", "!", "+", "-", ".", ":", "="])
+                              "@", "!", "+", "-", ".", ":", "=", "^"])
     }
 
     pub fn scanner_math_symbol(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec![""], core);
-        self.scanner_one_of(&["/", "*", "?", ":", "+", "-", "="])
+        self.scanner_one_of(&["/", "*", "?", ":", "+", "-", "=", "^"])
     }
 
     pub fn scanner_unary_operator(&mut self, core: &mut ShellCore) -> usize {
@@ -112,7 +112,7 @@ impl Feeder {
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},\\'$/~\"*+-?@!.:=".find(ch) != None {
+            if " \t\n;&|()<>{},\\'$/~\"*+-?@!.:=^".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();
@@ -175,7 +175,7 @@ impl Feeder {
                                            ">", "=", "&", "|", "^", "/", "%"], core);
         self.scanner_one_of(&["<<=", ">>=",
             "&&", "||", "**", "==", "!=", "*=", "/=", "%=", "+=", "-=", "&=", "^=", "|=",
-            ">>", "<<", "<=", ">=", "&", "^", "=", "+", "-", "/", "*", "%", "<", ">"])
+            ">>", "<<", "<=", ">=", "&", "^", "=", "+", "-", "/", "*", "%", "<", ">", "|", "^"])
     }
 
     pub fn scanner_uint(&mut self, core: &mut ShellCore) -> usize {
