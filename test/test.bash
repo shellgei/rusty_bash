@@ -967,6 +967,22 @@ res=$($com <<< 'echo $(( A= 10 ))')
 res=$($com <<< 'A=1 ; echo $(( A += 10 ))')
 [ "$res" == "11" ] || err $LINENO
 
+res=$($com <<< 'A=1 ; echo $(( A -= 10 ))')
+[ "$res" == "-9" ] || err $LINENO
+
+res=$($com <<< 'A=1 ; echo $(( A -= 10 + 2 ))')
+[ "$res" == "-11" ] || err $LINENO
+
+res=$($com <<< 'A=2 ; echo $(( A *= 10 + 2 ))')
+[ "$res" == "24" ] || err $LINENO
+
+res=$($com <<< 'A=-100 ; echo $(( A /= 10 + 2 ))')
+[ "$res" == "-8" ] || err $LINENO
+
+res=$($com <<< 'A=-100 ; echo $(( A %= 10 + 2 ))')
+[ "$res" == "-4" ] || err $LINENO
+
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
