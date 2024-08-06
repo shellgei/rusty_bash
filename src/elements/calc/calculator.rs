@@ -19,22 +19,24 @@ fn op_order(op: &CalcElement) -> u8 {
         CalcElement::PlusPlus | CalcElement::MinusMinus => 14,
         CalcElement::UnaryOp(s) => {
             match s.as_str() {
-                "-" | "+" => 13,
-                _         => 12,
+                "-" | "+" => 14,
+                _         => 13,
             }
         },
         CalcElement::BinaryOp(s) => {
             match s.as_str() {
-                "**"            => 11, 
-                "*" | "/" | "%" => 10, 
-                "+" | "-"       => 9, 
-                "<<" | ">>"     => 8, 
-                "<=" | ">=" | ">" | "<" => 7, 
-                "==" | "!="     => 6, 
-                "&"             => 5, 
-                "^"             => 4, 
-                "|"             => 3, 
+                "**"            => 12, 
+                "*" | "/" | "%" => 11, 
+                "+" | "-"       => 10, 
+                "<<" | ">>"     => 9, 
+                "<=" | ">=" | ">" | "<" => 8, 
+                "==" | "!="     => 7, 
+                "&"             => 6, 
+                "^"             => 5, 
+                "|"             => 4, 
+                ","             => 3,
                 _               => 2,
+                //_ => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
             }
         },
         CalcElement::ConditionalOp(_, _) => 1,
@@ -62,7 +64,7 @@ fn to_string(op: &CalcElement) -> String {
     }
 }
 
-fn rev_polish(elements: &Vec<CalcElement>) -> Result<Vec<CalcElement>, CalcElement> {
+fn rev_polish(elements: &[CalcElement]) -> Result<Vec<CalcElement>, CalcElement> {
     let mut ans = vec![];
     let mut stack = vec![];
     let mut last = None;
@@ -231,6 +233,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCo
                 return Err( exponent_error_msg(right) );
             }
         },
+        ","  => right,
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
     };
 
@@ -301,11 +304,37 @@ fn cond_operation(left: &Option<Calc>, right: &Option<Calc>,
 }
 
 pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<i64, String> {
+    let mut comma_pos = vec![];
+    for (i, e) in elements.iter().enumerate() {
+        match e {
+            CalcElement::BinaryOp(c) => {
+                if c == "," {
+                    comma_pos.push(i);
+                }
+            },
+            _ => {},
+        }
+    }
+
+    let mut left = 0;
+    for i in 0..comma_pos.len() {
+        let right = comma_pos[i];
+        match calculate_sub(&elements[left..right], core) {
+            Ok(_)  => {},
+            Err(e) => return Err(e),
+        }
+        left = right + 1;
+    }
+
+    calculate_sub(&elements[left..], core)
+}
+
+fn calculate_sub(elements: &[CalcElement], core: &mut ShellCore) -> Result<i64, String> {
     if elements.len() == 0 {
         return Ok(0);
     }
 
-    let rev_pol = match rev_polish(&elements) {
+    let rev_pol = match rev_polish(elements) {
         Ok(ans) => ans,
         Err(e)  => return Err( syntax_error_msg(&to_string(&e)) ),
     };
