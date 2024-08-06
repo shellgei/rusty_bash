@@ -982,6 +982,12 @@ res=$($com <<< 'A=-100 ; echo $(( A /= 10 + 2 ))')
 res=$($com <<< 'A=-100 ; echo $(( A %= 10 + 2 ))')
 [ "$res" == "-4" ] || err $LINENO
 
+res=$($com <<< 'A=2 ; echo $(( A <<= 2 )) $(( A <<= -1 ))')
+[ "$res" == "8 0" ] || err $LINENO
+
+res=$($com <<< 'A=-8 ; echo $(( A >>= 2 )) $(( A >>= -1 ))')
+[ "$res" == "-2 0" ] || err $LINENO
+
 
 # brace
 

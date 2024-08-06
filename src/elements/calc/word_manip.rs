@@ -70,6 +70,8 @@ pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
         "+=" => current_num + right_value,
         "-=" => current_num - right_value,
         "*=" => current_num * right_value,
+        "<<="  => if right_value < 0 {0} else {current_num << right_value},
+        ">>="  => if right_value < 0 {0} else {current_num >> right_value},
         "/=" | "%=" => {
             if right_value == 0 {
                 return Err("divided by 0".to_string());
