@@ -955,6 +955,9 @@ res=$($com <<< 'echo $(( 1+1 & -1 )) $(( 1 ^ -2 )) $(( 1 & -2 ))')
 res=$($com <<< 'echo $((123 && -1 )) $(( 0 && 10 )) $(( 0 || -1 || 0 )) $(( 0 || 0  )) $(( 0 && 0))')
 [ "$res" == "1 0 1 0 0" ] || err $LINENO
 
+res=$($com<<<'echo $((123&&-1))$((0&&10))$((0||-1||0))$((0||0))$((0&&0))')
+[ "$res" == "10100" ] || err $LINENO
+
 res=$($com <<< 'echo $(( 1? 20 : 30  )) $(( -5 + 5 ? 100 :  200))')
 [ "$res" == "20 200" ] || err $LINENO
 
@@ -973,23 +976,26 @@ res=$($com <<< 'A=1 ; echo $(( A += 10 ))')
 res=$($com <<< 'A=1 ; echo $(( A -= 10 ))')
 [ "$res" == "-9" ] || err $LINENO
 
-res=$($com <<< 'A=1 ; echo $(( A -= 10 + 2 ))')
-[ "$res" == "-11" ] || err $LINENO
+res=$($com <<< 'A=1 ; echo $(( A -= 10 + 2 )) $((A-=10+2))')
+[ "$res" == "-11 -23" ] || err $LINENO
 
-res=$($com <<< 'A=2 ; echo $(( A *= 10 + 2 ))')
-[ "$res" == "24" ] || err $LINENO
+res=$($com <<< 'A=2 ; echo $(( A *= 10 + 2 )) $((A*=10+2))') 
+[ "$res" == "24 288" ] || err $LINENO
 
-res=$($com <<< 'A=-100 ; echo $(( A /= 10 + 2 ))')
-[ "$res" == "-8" ] || err $LINENO
+res=$($com <<< 'A=-100 ; echo $(( A /= 10 + 2 )) $((A/=10+2))')
+[ "$res" == "-8 0" ] || err $LINENO
 
-res=$($com <<< 'A=-100 ; echo $(( A %= 10 + 2 ))')
-[ "$res" == "-4" ] || err $LINENO
+res=$($com <<< 'A=-100 ; echo $(( A %= 10 + 2 )) $((A%=10+2))')
+[ "$res" == "-4 -4" ] || err $LINENO
 
-res=$($com <<< 'A=2 ; echo $(( A <<= 2 )) $(( A <<= -1 ))')
-[ "$res" == "8 0" ] || err $LINENO
+res=$($com <<< 'A=2 ; echo $(( A <<= 2 )) $((A<<=2)) $(( A <<= -1 ))')
+[ "$res" == "8 32 0" ] || err $LINENO
 
-res=$($com <<< 'A=-8 ; echo $(( A >>= 2 )) $(( A >>= -1 ))')
-[ "$res" == "-2 0" ] || err $LINENO
+res=$($com <<< 'A=-8 ; echo $(( A >>= 2 )) $((A>>=1)) $(( A >>= -1 ))')
+[ "$res" == "-2 -1 0" ] || err $LINENO
+
+res=$($com <<< 'A=-8 ; echo $((A^=2)) $((A&=1)) $((A|=-1))')
+[ "$res" == "-6 0 -1" ] || err $LINENO
 
 
 # brace
