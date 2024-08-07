@@ -1016,6 +1016,9 @@ res=$($com <<< 'A=0x11; echo $(( A ))')
 res=$($com <<< 'echo $(( -"011" )) $(( - "- 011" ))')
 [ "$res" == "-9 9" ] || err $LINENO
 
+res=$($com <<< 'echo $(( -"2#011" )) $(( - "- 2#0111101" ))')
+[ "$res" == "-3 61" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
