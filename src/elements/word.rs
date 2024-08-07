@@ -53,16 +53,46 @@ impl Word {
         }
     }
 
-    pub fn eval_as_operand_literal(&mut self) -> Option<i64> {
+    fn get_sign(s: &mut String) -> String {
+        *s = s.trim().to_string();
+        match s.starts_with("+") || s.starts_with("-") {
+            true  => {
+                let c = s.remove(0).to_string();
+                *s = s.trim().to_string();
+                c
+            },
+            false => "+".to_string(),
+        }
+    }
+
+    pub fn eval_as_i64(&mut self) -> Option<i64> {
         if self.text.find('\'').is_some() {
             return None;
         }
 
         match self.make_unquoted_word() {
-            Some(sw) => {
-                match (sw.chars().all(|ch| ch >= '0' && ch <= '9'), sw.parse::<i64>()) {
-                    (true, Ok(n)) => Some(n), 
-                    _ => None,
+            Some(mut sw) => {
+                /*
+                sw = sw.trim().to_string();
+                let sign = match sw.starts_with("+") || sw.starts_with("-") {
+                    true  => {
+                        let c = sw.remove(0).to_string();
+                        sw = sw.trim().to_string();
+                        c
+                    },
+                    false => "+".to_string(),
+                };*/
+
+                let sign = Self::get_sign(&mut sw);
+
+                if ! sw.chars().all(|ch| ch >= '0' && ch <= '9') {
+                    return None;
+                }
+
+                match (sw.parse::<i64>(), sign.as_str()) {
+                    (Ok(n), "+") => Some(n), 
+                    (Ok(n), "-") => Some(-n), 
+                    _     => None,
                 }
             }
             None => Some(0),

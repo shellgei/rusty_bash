@@ -9,11 +9,11 @@ use self::calculator::calculate;
 use super::word::Word;
 
 #[derive(Debug, Clone)]
-enum CalcElement {
+enum Elem {
     UnaryOp(String),
     BinaryOp(String),
     Operand(i64),
-    ConditionalOp(Box<Option<Calc>>, Box<Option<Calc>>),
+    ConditionalOp(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     Word(Word, i64), // Word[++, --]
     LeftParen,
     RightParen,
@@ -23,9 +23,9 @@ enum CalcElement {
 }
 
 #[derive(Debug, Clone)]
-pub struct Calc {
+pub struct ArithmeticExpr {
     pub text: String,
-    elements: Vec<CalcElement>,
+    elements: Vec<Elem>,
     paren_stack: Vec<char>,
 }
 
@@ -33,7 +33,7 @@ fn syntax_error_msg(token: &str) -> String {
     format!("{0}: syntax error: operand expected (error token is \"{0}\")", token)
 }
 
-impl Calc {
+impl ArithmeticExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
         let es = match self.decompose_increments() {
             Ok(data)     => data, 
@@ -64,7 +64,7 @@ impl Calc {
         }
     }
 
-    fn inc_dec_to_unarys(&mut self, ans: &mut Vec<CalcElement>, pos: usize, inc: i64) -> i64 {
+    fn inc_dec_to_unarys(&mut self, ans: &mut Vec<Elem>, pos: usize, inc: i64) -> i64 {
         let pm = match inc {
             1  => "+",
             -1 => "-",
@@ -73,15 +73,15 @@ impl Calc {
     
         match (&ans.last(), &self.elements.iter().nth(pos+1)) {
             (_, None)                           => return inc,
-            (_, Some(&CalcElement::Word(_, _))) => return inc,
-            (Some(&CalcElement::Operand(_)), _) => ans.push(CalcElement::BinaryOp(pm.clone())),
-            _                                   => ans.push(CalcElement::UnaryOp(pm.clone())),
+            (_, Some(&Elem::Word(_, _))) => return inc,
+            (Some(&Elem::Operand(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
+            _                                   => ans.push(Elem::UnaryOp(pm.clone())),
         }
-        ans.push(CalcElement::UnaryOp(pm));
+        ans.push(Elem::UnaryOp(pm));
         0
     }
 
-    fn decompose_increments(&mut self) -> Result<Vec<CalcElement>, String> {
+    fn decompose_increments(&mut self) -> Result<Vec<Elem>, String> {
         let mut ans = vec![];
         let mut pre_increment = 0;
 
@@ -89,17 +89,17 @@ impl Calc {
         for i in 0..len {
             let e = self.elements[i].clone();
             pre_increment = match e {
-                CalcElement::Word(_, _) => {
+                Elem::Word(_, _) => {
                     match pre_increment {
-                        1  => ans.push(CalcElement::PlusPlus),
-                        -1 => ans.push(CalcElement::MinusMinus),
+                        1  => ans.push(Elem::PlusPlus),
+                        -1 => ans.push(Elem::MinusMinus),
                         _  => {},
                     }
 
                     ans.push(e);
                     0
                 },
-                CalcElement::Increment(n) => self.inc_dec_to_unarys(&mut ans, i, n),
+                Elem::Increment(n) => self.inc_dec_to_unarys(&mut ans, i, n),
                 _ => {
                     ans.push(self.elements[i].clone());
                     0
@@ -114,8 +114,8 @@ impl Calc {
         }
     }
 
-    pub fn new() -> Calc {
-        Calc {
+    pub fn new() -> ArithmeticExpr {
+        ArithmeticExpr {
             text: String::new(),
             elements: vec![],
             paren_stack: vec![],
@@ -142,10 +142,10 @@ impl Calc {
     fn eat_incdec(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( CalcElement::Increment(1) );
+            ans.elements.push( Elem::Increment(1) );
         }else if feeder.starts_with("--") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( CalcElement::Increment(-1) );
+            ans.elements.push( Elem::Increment(-1) );
         }else {
             return false;
         };
@@ -165,7 +165,7 @@ impl Calc {
         }
 
         if ! feeder.starts_with(":") {
-            ans.elements.push(CalcElement::ConditionalOp(Box::new(left), Box::new(None)));
+            ans.elements.push(Elem::ConditionalOp(Box::new(left), Box::new(None)));
             return true;
         }
 
@@ -175,7 +175,7 @@ impl Calc {
             ans.text += &right.as_ref().unwrap().text;
         }
 
-        ans.elements.push(CalcElement::ConditionalOp(Box::new(left), Box::new(right)));
+        ans.elements.push(Elem::ConditionalOp(Box::new(left), Box::new(right)));
         true
     }
 
@@ -188,23 +188,23 @@ impl Calc {
             _ => return false,
         };
 
-        if let Some(n) = word.eval_as_operand_literal() {
-            ans.elements.push( CalcElement::Operand(n) );
+        if let Some(n) = word.eval_as_i64() {
+            ans.elements.push( Elem::Operand(n) );
             return true;
         }
 
         Self::eat_blank(feeder, ans, core);
 
         let suffix = Self::eat_suffix(feeder, ans);
-        ans.elements.push( CalcElement::Word(word, suffix) );
+        ans.elements.push( Elem::Word(word, suffix) );
         true
     }
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
-            Some(CalcElement::Operand(_)) 
-            | Some(CalcElement::Word(_, _)) 
-            | Some(CalcElement::RightParen) => return false,
+            Some(Elem::Operand(_)) 
+            | Some(Elem::Word(_, _)) 
+            | Some(Elem::RightParen) => return false,
             _ => {},
         }
 
@@ -214,14 +214,14 @@ impl Calc {
         };
 
         ans.text += &s.clone();
-        ans.elements.push( CalcElement::UnaryOp(s) );
+        ans.elements.push( Elem::UnaryOp(s) );
         true
     }
 
     fn eat_paren(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("(") {
             ans.paren_stack.push( '(' );
-            ans.elements.push( CalcElement::LeftParen );
+            ans.elements.push( Elem::LeftParen );
             ans.text += &feeder.consume(1);
             return true;
         }
@@ -229,7 +229,7 @@ impl Calc {
         if feeder.starts_with(")") {
             if let Some('(') = ans.paren_stack.last() {
                 ans.paren_stack.pop();
-                ans.elements.push( CalcElement::RightParen );
+                ans.elements.push( Elem::RightParen );
                 ans.text += &feeder.consume(1);
                 return true;
             }
@@ -246,12 +246,12 @@ impl Calc {
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
-        ans.elements.push( CalcElement::BinaryOp(s) );
+        ans.elements.push( Elem::BinaryOp(s) );
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Calc> {
-        let mut ans = Calc::new();
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ArithmeticExpr> {
+        let mut ans = ArithmeticExpr::new();
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);

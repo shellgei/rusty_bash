@@ -2,13 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::calc::Calc;
+use crate::elements::arithmetic_expression::ArithmeticExpr;
 use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub struct Arithmetic {
     pub text: String,
-    pub calc: Calc,
+    pub arith: ArithmeticExpr,
 }
 
 impl Subword for Arithmetic {
@@ -16,7 +16,7 @@ impl Subword for Arithmetic {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        match self.calc.eval(core) {
+        match self.arith.eval(core) {
             Some(s) => self.text = s,
             None    => return false,
         }
@@ -28,7 +28,7 @@ impl Arithmetic {
     fn new() -> Self {
         Self {
             text: String::new(),
-            calc: Calc::new(),
+            arith: ArithmeticExpr::new(),
         }
     }
 
@@ -41,7 +41,7 @@ impl Arithmetic {
         let mut ans = Self::new();
         ans.text = feeder.consume(3);
 
-        if let Some(c) = Calc::parse(feeder, core) {
+        if let Some(c) = ArithmeticExpr::parse(feeder, core) {
             if ! feeder.starts_with("))") {
                 feeder.rewind();
                 return None;
@@ -49,7 +49,7 @@ impl Arithmetic {
 
             ans.text += &c.text;
             ans.text += &feeder.consume(2);
-            ans.calc = c;
+            ans.arith = c;
             feeder.pop_backup();
             return Some(ans);
         }

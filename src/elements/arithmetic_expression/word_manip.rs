@@ -2,12 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use super::CalcElement;
+use super::Elem;
 use super::syntax_error_msg;
-use crate::elements::calc::Word;
+use crate::elements::arithmetic_expression::Word;
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
-                   core: &mut ShellCore) -> Result<CalcElement, String> {
+                   core: &mut ShellCore) -> Result<Elem, String> {
     if pre_increment != 0 && post_increment != 0 
     || w.text.find('\'').is_some() {
         return Err(syntax_error_msg(&w.text));
@@ -24,7 +24,7 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     };
 
     match res {
-        Ok(n)  => return Ok(CalcElement::Operand(n)),
+        Ok(n)  => return Ok(Elem::Operand(n)),
         Err(e) => return Err(e),
     }
 }
@@ -43,7 +43,7 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<i64, String> {
 }
 
 pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
-                                      -> Result<CalcElement, String> {
+                                      -> Result<Elem, String> {
     if w.text.find('\'').is_some() {
         return Err(syntax_error_msg(&w.text));
     }
@@ -56,7 +56,7 @@ pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
     match op {
         "=" => {
             core.data.set_param(&name, &right_value.to_string());
-            return Ok(CalcElement::Operand(right_value));
+            return Ok(Elem::Operand(right_value));
         },
         _   => {},
     }
@@ -89,7 +89,7 @@ pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
     };
 
     core.data.set_param(&name, &new_value.to_string());
-    Ok(CalcElement::Operand(new_value))
+    Ok(Elem::Operand(new_value))
 }
 
 

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::{Calc, CalcElement};
+use super::{ArithmeticExpr, Elem};
 use super::syntax_error_msg;
 use super::word_manip;
 
@@ -14,16 +14,16 @@ fn assignment_error_msg(right: &str) -> String {
     format!("attempted assignment to non-variable (error token is \"{}\")", right)
 }
 
-fn op_order(op: &CalcElement) -> u8 {
+fn op_order(op: &Elem) -> u8 {
     match op {
-        CalcElement::PlusPlus | CalcElement::MinusMinus => 14,
-        CalcElement::UnaryOp(s) => {
+        Elem::PlusPlus | Elem::MinusMinus => 14,
+        Elem::UnaryOp(s) => {
             match s.as_str() {
                 "-" | "+" => 14,
                 _         => 13,
             }
         },
-        CalcElement::BinaryOp(s) => {
+        Elem::BinaryOp(s) => {
             match s.as_str() {
                 "**"            => 12, 
                 "*" | "/" | "%" => 11, 
@@ -38,41 +38,41 @@ fn op_order(op: &CalcElement) -> u8 {
                 //_ => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
             }
         },
-        CalcElement::ConditionalOp(_, _) => 1,
+        Elem::ConditionalOp(_, _) => 1,
         _ => 0, 
     }
 }
 
-fn to_string(op: &CalcElement) -> String {
+fn to_string(op: &Elem) -> String {
     match op {
-        CalcElement::Operand(n) => n.to_string(),
-        CalcElement::Word(w, inc) => {
+        Elem::Operand(n) => n.to_string(),
+        Elem::Word(w, inc) => {
             match inc {
                 1  => w.text.clone() + "++",
                 -1 => w.text.clone() + "--",
                 _  => w.text.clone(),
             }
         },
-        CalcElement::UnaryOp(s) => s.clone(),
-        CalcElement::BinaryOp(s) => s.clone(),
-        CalcElement::LeftParen => "(".to_string(),
-        CalcElement::RightParen => ")".to_string(),
-        CalcElement::Increment(1) => "++".to_string(),
-        CalcElement::Increment(-1) => "--".to_string(),
+        Elem::UnaryOp(s) => s.clone(),
+        Elem::BinaryOp(s) => s.clone(),
+        Elem::LeftParen => "(".to_string(),
+        Elem::RightParen => ")".to_string(),
+        Elem::Increment(1) => "++".to_string(),
+        Elem::Increment(-1) => "--".to_string(),
         _ => "".to_string(),
     }
 }
 
-fn rev_polish(elements: &[CalcElement]) -> Result<Vec<CalcElement>, CalcElement> {
+fn rev_polish(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
     let mut ans = vec![];
     let mut stack = vec![];
     let mut last = None;
 
     for e in elements {
         let ok = match e {
-            CalcElement::Operand(_) | CalcElement::Word(_, _) => {ans.push(e.clone()); true},
-            CalcElement::LeftParen   => {stack.push(e.clone()); true},
-            CalcElement::RightParen  => rev_polish_paren(&mut stack, &mut ans),
+            Elem::Operand(_) | Elem::Word(_, _) => {ans.push(e.clone()); true},
+            Elem::LeftParen   => {stack.push(e.clone()); true},
+            Elem::RightParen  => rev_polish_paren(&mut stack, &mut ans),
             op                       => rev_polish_op(&op, &mut stack, &mut ans),
         };
 
@@ -81,7 +81,7 @@ fn rev_polish(elements: &[CalcElement]) -> Result<Vec<CalcElement>, CalcElement>
         }
 
         match (last, e) {
-            ( Some(CalcElement::LeftParen), CalcElement::RightParen ) => return Err(e.clone()),
+            ( Some(Elem::LeftParen), Elem::RightParen ) => return Err(e.clone()),
             _ => {},
         }
 
@@ -95,11 +95,11 @@ fn rev_polish(elements: &[CalcElement]) -> Result<Vec<CalcElement>, CalcElement>
     Ok(ans)
 }
 
-fn rev_polish_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) -> bool {
+fn rev_polish_paren(stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
     loop {
         match stack.last() {
             None => return false, 
-            Some(CalcElement::LeftParen) => {
+            Some(Elem::LeftParen) => {
                 stack.pop();
                 return true;
             },
@@ -108,11 +108,11 @@ fn rev_polish_paren(stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) ->
     }
 }
 
-fn rev_polish_op(elem: &CalcElement,
-                 stack: &mut Vec<CalcElement>, ans: &mut Vec<CalcElement>) -> bool {
+fn rev_polish_op(elem: &Elem,
+                 stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
     loop {
         match stack.last() {
-            None | Some(CalcElement::LeftParen) => {
+            None | Some(Elem::LeftParen) => {
                 stack.push(elem.clone());
                 break;
             },
@@ -130,16 +130,16 @@ fn rev_polish_op(elem: &CalcElement,
     true
 }
 
-fn pop_operands(num: usize, stack: &mut Vec<CalcElement>,
+fn pop_operands(num: usize, stack: &mut Vec<Elem>,
                 core: &mut ShellCore) -> Result<Vec<i64>, String> {
     let mut ans = vec![];
 
     for _ in 0..num {
         let n = match stack.pop() {
-            Some(CalcElement::Operand(s)) => s,
-            Some(CalcElement::Word(w, inc)) => {
+            Some(Elem::Operand(s)) => s,
+            Some(Elem::Word(w, inc)) => {
                 match word_manip::to_operand(&w, 0, inc, core) {
-                    Ok(CalcElement::Operand(n)) => n,
+                    Ok(Elem::Operand(n)) => n,
                     Err(e)                      => return Err(e),
                     _ => panic!("SUSH INTERNAL ERROR: word_to_operand"),
                 }
@@ -151,7 +151,7 @@ fn pop_operands(num: usize, stack: &mut Vec<CalcElement>,
     Ok(ans)
 }
 
-fn bin_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     match op {
     "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" 
           => substitution(op, stack, core),
@@ -161,7 +161,7 @@ fn bin_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -
 
 }
 
-fn substitution(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)-> Result<(), String> {
+fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<(), String> {
     let right = match pop_operands(1, stack, core) {
         Ok(v) => {
             match v.len() == 1 {
@@ -173,8 +173,8 @@ fn substitution(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)-> 
     };
 
     let left = match stack.pop() {
-        Some(CalcElement::Word(w, 0)) => w,
-        Some(CalcElement::Word(_, _)) => return Err( assignment_error_msg(op) ),
+        Some(Elem::Word(w, 0)) => w,
+        Some(Elem::Word(_, _)) => return Err( assignment_error_msg(op) ),
         _ => return Err( assignment_error_msg(op) ),
     };
 
@@ -185,7 +185,7 @@ fn substitution(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)-> 
     Ok(())
 }
 
-fn bin_calc_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     let (left, right) = match pop_operands(2, stack, core) {
         Ok(v) => {
             match v.len() == 2 {
@@ -235,11 +235,11 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCo
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
     };
 
-    stack.push(CalcElement::Operand(ans));
+    stack.push(Elem::Operand(ans));
     Ok(())
 }
 
-fn unary_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     let num = match pop_operands(1, stack, core) {
         Ok(v) => {
             match v.len() == 1 {
@@ -251,18 +251,18 @@ fn unary_operation(op: &str, stack: &mut Vec<CalcElement>, core: &mut ShellCore)
     };
 
     match op {
-        "+"  => stack.push( CalcElement::Operand(num) ),
-        "-"  => stack.push( CalcElement::Operand(-num) ),
-        "!"  => stack.push( CalcElement::Operand(if num == 0 { 1 } else { 0 }) ),
-        "~"  => stack.push( CalcElement::Operand( !num ) ),
+        "+"  => stack.push( Elem::Operand(num) ),
+        "-"  => stack.push( Elem::Operand(-num) ),
+        "!"  => stack.push( Elem::Operand(if num == 0 { 1 } else { 0 }) ),
+        "~"  => stack.push( Elem::Operand( !num ) ),
         _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 
     Ok(())
 }
 
-fn cond_operation(left: &Option<Calc>, right: &Option<Calc>,
-    stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+fn cond_operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
+    stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     let num = match pop_operands(1, stack, core) {
         Ok(v) => {
             match v.len() == 1 {
@@ -297,15 +297,15 @@ fn cond_operation(left: &Option<Calc>, right: &Option<Calc>,
         },
     };
 
-    stack.push( CalcElement::Operand( ans ) );
+    stack.push( Elem::Operand( ans ) );
     Ok(())
 }
 
-pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<i64, String> {
+pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<i64, String> {
     let mut comma_pos = vec![];
     for (i, e) in elements.iter().enumerate() {
         match e {
-            CalcElement::BinaryOp(c) => {
+            Elem::BinaryOp(c) => {
                 if c == "," {
                     comma_pos.push(i);
                 }
@@ -326,7 +326,7 @@ pub fn calculate(elements: &Vec<CalcElement>, core: &mut ShellCore) -> Result<i6
     calculate_sub(&elements[left..], core)
 }
 
-fn calculate_sub(elements: &[CalcElement], core: &mut ShellCore) -> Result<i64, String> {
+fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<i64, String> {
     if elements.len() == 0 {
         return Ok(0);
     }
@@ -340,15 +340,15 @@ fn calculate_sub(elements: &[CalcElement], core: &mut ShellCore) -> Result<i64, 
 
     for e in rev_pol {
         let result = match e {
-            CalcElement::Operand(_) | CalcElement::Word(_, _) => {
+            Elem::Operand(_) | Elem::Word(_, _) => {
                 stack.push(e.clone());
                 Ok(())
             },
-            CalcElement::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
-            CalcElement::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
-            CalcElement::PlusPlus         => inc(1, &mut stack, core),
-            CalcElement::MinusMinus       => inc(-1, &mut stack, core),
-            CalcElement::ConditionalOp(left, right) => cond_operation(&left, &right, &mut stack, core),
+            Elem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
+            Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
+            Elem::PlusPlus         => inc(1, &mut stack, core),
+            Elem::MinusMinus       => inc(-1, &mut stack, core),
+            Elem::ConditionalOp(left, right) => cond_operation(&left, &right, &mut stack, core),
             _ => Err( syntax_error_msg(&to_string(&e)) ),
         };
 
@@ -362,10 +362,10 @@ fn calculate_sub(elements: &[CalcElement], core: &mut ShellCore) -> Result<i64, 
     }
 
     match stack.pop() {
-        Some(CalcElement::Operand(n)) => Ok(n),
-        Some(CalcElement::Word(w, inc)) => {
+        Some(Elem::Operand(n)) => Ok(n),
+        Some(Elem::Word(w, inc)) => {
             match word_manip::to_operand(&w, 0, inc, core) {
-                Ok(CalcElement::Operand(n)) => Ok(n),
+                Ok(Elem::Operand(n)) => Ok(n),
                 Err(e) => Err(e),
                 _      => Err("unknown word parse error".to_string()),
             }
@@ -374,9 +374,9 @@ fn calculate_sub(elements: &[CalcElement], core: &mut ShellCore) -> Result<i64, 
     }
 }
 
-fn inc(inc: i64, stack: &mut Vec<CalcElement>, core: &mut ShellCore) -> Result<(), String> {
+fn inc(inc: i64, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     match stack.pop() {
-        Some(CalcElement::Word(w, inc_post)) => {
+        Some(Elem::Word(w, inc_post)) => {
             match word_manip::to_operand(&w, inc, inc_post, core) {
                 Ok(op) => {
                     stack.push(op);
