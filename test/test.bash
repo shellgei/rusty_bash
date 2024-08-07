@@ -1003,13 +1003,16 @@ res=$($com <<< 'echo $((A=-8, A^=2)) $((A=3,A&=1)) $((A=9 ,A|=-1))')
 res=$($com <<< 'echo $(( -" 12" )) $(( - "- 14" ))')
 [ "$res" == "-12 14" ] || err $LINENO
 
-#res=$($com <<< 'echo $(( -"1 2" ))')
-#[ "$?" == "1" ] || err $LINENO
-#[ "$res" == "" ] || err $LINENO
-#
-#res=$($com <<< 'A=0x11; echo $(( 0x11 )) $(( -"0x11" )) $(( - "- 0x11" )) $(( A ))')
-#[ "$res" == "17 -17 17 17" ] || err $LINENO
-#
+res=$($com <<< 'echo $(( -"1 2" ))')
+[ "$?" == "1" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 0x11 )) $(( -"0x11" )) $(( - "- 0x11" ))')
+[ "$res" == "17 -17 17" ] || err $LINENO
+
+res=$($com <<< 'A=0x11; echo $(( A ))')
+[ "$res" == "17" ] || err $LINENO
+
 #res=$($com <<< 'echo $(( -"011" )) $(( - "- 011" ))')
 #[ "$res" == "-9 9" ] || err $LINENO
 

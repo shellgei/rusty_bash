@@ -188,9 +188,13 @@ impl ArithmeticExpr {
             _ => return false,
         };
 
-        if let Some(n) = word.eval_as_i64() {
-            ans.elements.push( Elem::Operand(n) );
-            return true;
+        if let Some(w) = word.make_unquoted_word() {
+            if word.text.find('\'').is_none() {
+                if let Some(n) = word_manip::parse_as_i64(&w) {
+                    ans.elements.push( Elem::Operand(n) );
+                    return true;
+                }
+            }
         }
 
         Self::eat_blank(feeder, ans, core);

@@ -118,9 +118,9 @@ fn str_to_num(name: &str, core: &mut ShellCore) -> Result<i64, String> {
         }
     }
 
-    if let Ok(n) = name.parse::<i64>() {
+    if let Some(n) = parse_as_i64(&name) {
         Ok( n )
-    }else if name == "" || is_name(&name, core) {
+    }else if is_name(&name, core) {
         Ok( 0 )
     }else{
         Err(syntax_error_msg(&name))
@@ -148,3 +148,68 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
     }
 }
 
+fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
+    let mut ans = 0;
+    for ch in s.chars() {
+        ans *= base;
+        let num = if ch >= '0' && ch <= '9' {
+            ch as i64 - '0' as i64
+        }else if ch >= 'A' && ch <= 'Z' {
+            ch as i64 - 'A' as i64 + 10
+        }else if ch >= 'a' && ch <= 'z' {
+            ch as i64 - 'a' as i64 + 10
+        }else{
+            return None;
+        };
+
+        match num < base {
+            true  => ans += num,
+            false => return None,
+        }
+    }
+
+    Some(ans)
+}
+
+fn get_sign(s: &mut String) -> String {
+    *s = s.trim().to_string();
+    match s.starts_with("+") || s.starts_with("-") {
+        true  => {
+            let c = s.remove(0).to_string();
+            *s = s.trim().to_string();
+            c
+        },
+        false => "+".to_string(),
+    }
+}
+
+fn get_base(s: &mut String) -> Option<i64> {
+    if s.starts_with("0x") || s.starts_with("0X") {
+        s.remove(0);
+        s.remove(0);
+        return Some(16);
+    }
+    Some(10)
+}
+
+pub fn parse_as_i64(s: &str) -> Option<i64> {
+    if s.find('\'').is_some() {
+        return None;
+    }
+    if s.len() == 0 {
+        return Some(0);
+    }
+
+    let mut sw = s.to_string();
+    let sign = get_sign(&mut sw);
+    let base = match get_base(&mut sw) {
+        Some(n) => n, 
+        _       => return None,
+    };
+
+    match ( parse_with_base(base, &mut sw), sign.as_str() ) {
+        (Some(n), "-") => Some(-n), 
+        (Some(n), _)   => Some(n), 
+        _              => None,
+    }
+}
