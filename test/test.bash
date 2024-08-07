@@ -1013,8 +1013,8 @@ res=$($com <<< 'echo $(( 0x11 )) $(( -"0x11" )) $(( - "- 0x11" ))')
 res=$($com <<< 'A=0x11; echo $(( A ))')
 [ "$res" == "17" ] || err $LINENO
 
-#res=$($com <<< 'echo $(( -"011" )) $(( - "- 011" ))')
-#[ "$res" == "-9 9" ] || err $LINENO
+res=$($com <<< 'echo $(( -"011" )) $(( - "- 011" ))')
+[ "$res" == "-9 9" ] || err $LINENO
 
 # brace
 

@@ -189,6 +189,11 @@ fn get_base(s: &mut String) -> Option<i64> {
         s.remove(0);
         return Some(16);
     }
+
+    if s.starts_with("0") {
+        s.remove(0);
+        return Some(8);
+    }
     Some(10)
 }
 
