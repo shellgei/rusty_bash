@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod arithmetic;
 pub mod case;
 pub mod simple;
 pub mod paren;
@@ -10,6 +11,7 @@ pub mod r#while;
 pub mod r#if;
 
 use crate::{ShellCore, Feeder, Script};
+use self::arithmetic::ArithmeticCommand;
 use self::case::CaseCommand;
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
@@ -129,6 +131,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Comman
     if let Some(a) = FunctionDefinition::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = ArithmeticCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
     else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
