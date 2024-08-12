@@ -149,7 +149,6 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
 }
 
 fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
-    //dbg!("{:?} {:?}", &base, &s);
     let mut ans = 0;
     for ch in s.chars() {
         ans *= base;
@@ -208,7 +207,13 @@ fn get_base(s: &mut String) -> Option<i64> {
         let base_str = s[..n].to_string();
         *s = s[(n+1)..].to_string();
         return match base_str.parse::<i64>() {
-            Ok(n) => Some(n),
+            Ok(n) => {
+                if n <= 64 {
+                    Some(n)
+                }else{
+                    None
+                }
+            },
             _     => None,
         };
     }

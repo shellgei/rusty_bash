@@ -1037,6 +1037,9 @@ res=$($com <<< 'echo $(( 64#@ )) $(( 64#_ ))')
 res=$($com <<< 'echo $(( 62#@ ))')
 [ "$?" == "1" ] || err $LINENO
 
+res=$($com <<< 'echo $(( 65#0 ))')
+[ "$?" == "1" ] || err $LINENO
+
 # brace
 
 res=$($com <<< 'echo {a,b}c')
