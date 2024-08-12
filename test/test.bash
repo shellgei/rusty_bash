@@ -1664,6 +1664,20 @@ res=$($com <<< 'shopt -u extglob; case baa in @(a|b)aa) echo OK ;; *) echo NG ;;
 res=$($com <<< 'shopt -u extglob; case 山小小小田 in !(山)田) echo マッチ ;; *) echo マッチせず ;; esac')
 [ "$res" = "マッチせず" ] || err $LINENO
 
+### (( )) TEST ###
+
+res=$($com <<< '(( 0 ))')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com <<< '(( 1 ))')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com <<< '(( 0 + 1 + 2-3 ))')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com <<< '(( 0 + 1 + 2+3 ))')
+[ "$?" = "0" ] || err $LINENO
+
 ### BUILTIN COMMANDS ###
 
 # source command
