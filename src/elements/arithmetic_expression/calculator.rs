@@ -5,8 +5,10 @@ use crate::ShellCore;
 use super::{ArithmeticExpr, Elem};
 use super::syntax_error_msg;
 use super::word_manip;
+use super::float_manip;
+use super::int_manip;
 
-fn exponent_error_msg(s: &str) -> String {
+pub fn exponent_error_msg(s: &str) -> String {
     format!("exponent less than 0 (error token is \"{}\")", s)
 }
 
@@ -71,12 +73,11 @@ fn rev_polish(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
 
     for e in elements {
         let ok = match e {
-            Elem::Float(_) 
-            | Elem::Integer(_) 
-            | Elem::Word(_, _) => {ans.push(e.clone()); true},
-            Elem::LeftParen   => {stack.push(e.clone()); true},
-            Elem::RightParen  => rev_polish_paren(&mut stack, &mut ans),
-            op                       => rev_polish_op(&op, &mut stack, &mut ans),
+            Elem::Float(_) | Elem::Integer(_) | Elem::Word(_, _)
+                             => {ans.push(e.clone()); true},
+            Elem::LeftParen  => {stack.push(e.clone()); true},
+            Elem::RightParen => rev_polish_paren(&mut stack, &mut ans),
+            op               => rev_polish_op(&op, &mut stack, &mut ans),
         };
 
         if !ok {
@@ -190,83 +191,6 @@ fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<
     Ok(())
 }
 
-fn bin_calc_operation_float(op: &str, left: f64, right: f64, stack: &mut Vec<Elem>) -> Result<(), String> {
-    let bool_to_01 = |b| { if b { Elem::Integer(1) } else { Elem::Integer(0) } };
-
-    match op {
-        "+"  => stack.push(Elem::Float(left + right)),
-        "-"  => stack.push(Elem::Float(left - right)),
-        "*"  => stack.push(Elem::Float(left * right)),
-        "<="  => stack.push(bool_to_01( left <= right )),
-        ">="  => stack.push(bool_to_01( left >= right )),
-        "<"  => stack.push(bool_to_01( left < right )),
-        ">"  => stack.push(bool_to_01( left > right )),
-        "=="  => stack.push(bool_to_01( left == right )),
-        "!="  => stack.push(bool_to_01( left != right )),
-        "/" => {
-            if right == 0.0 {
-                return Err("divided by 0".to_string());
-            }
-            stack.push(Elem::Float(left / right));
-        },
-        "**" => {
-            if right >= 0.0 {
-                let r = right.try_into().unwrap();
-                stack.push(Elem::Float(left.powf(r)));
-            }else{
-                return Err( exponent_error_msg(&right.to_string()) );
-            }
-        },
-        _    => return Err("not supported operator for float numbers".to_string()),
-    }
-
-    Ok(())
-}
-
-fn bin_calc_operation_int(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
-    let bool_to_01 = |b| { if b { 1 } else { 0 } };
-
-    let ans = match op {
-        "+"  => left + right,
-        "-"  => left - right,
-        "*"  => left * right,
-        "&"  => left & right,
-        "^"  => left ^ right,
-        "|"  => left | right,
-        "&&"  => bool_to_01( left != 0 && right != 0 ),
-        "||"  => bool_to_01( left != 0 || right != 0 ),
-        "<<"  => if right < 0 {0} else {left << right},
-        ">>"  => if right < 0 {0} else {left >> right},
-        "<="  => bool_to_01( left <= right ),
-        ">="  => bool_to_01( left >= right ),
-        "<"  => bool_to_01( left < right ),
-        ">"  => bool_to_01( left > right ),
-        "=="  => bool_to_01( left == right ),
-        "!="  => bool_to_01( left != right ),
-        "%" | "/" => {
-            if right == 0 {
-                return Err("divided by 0".to_string());
-            }
-            match op {
-                "%" => left % right,
-                _   => left / right,
-            }
-        },
-        "**" => {
-            if right >= 0 {
-                let r = right.try_into().unwrap();
-                left.pow(r)
-            }else{
-                return Err( exponent_error_msg(&right.to_string()) );
-            }
-        },
-        _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
-    };
-
-    stack.push(Elem::Integer(ans));
-    Ok(())
-}
-
 fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     let (left, right) = match pop_operands(2, stack, core) {
         Ok(v) => {
@@ -279,10 +203,10 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
     };
 
     return match (left, right) {
-        (Elem::Float(fl), Elem::Float(fr)) => bin_calc_operation_float(op, fl, fr, stack),
-        (Elem::Float(fl), Elem::Integer(nr)) => bin_calc_operation_float(op, fl, nr as f64, stack),
-        (Elem::Integer(nl), Elem::Float(fr)) => bin_calc_operation_float(op, nl as f64, fr, stack),
-        (Elem::Integer(nl), Elem::Integer(nr)) => bin_calc_operation_int(op, nl, nr, stack),
+        (Elem::Float(fl), Elem::Float(fr)) => float_manip::bin_calc(op, fl, fr, stack),
+        (Elem::Float(fl), Elem::Integer(nr)) => float_manip::bin_calc(op, fl, nr as f64, stack),
+        (Elem::Integer(nl), Elem::Float(fr)) => float_manip::bin_calc(op, nl as f64, fr, stack),
+        (Elem::Integer(nl), Elem::Integer(nr)) => int_manip::bin_calc(op, nl, nr, stack),
         _ => panic!("SUSH INTERNAL ERROR: invalid operand"),
     };
 }
