@@ -66,7 +66,7 @@ impl ArithmeticExpr {
         }
     }
 
-    fn pre_inc_to_unarys(&mut self, ans: &mut Vec<Elem>, pos: usize, inc: i64) -> i64 {
+    fn preinc_to_unarys(&mut self, ans: &mut Vec<Elem>, pos: usize, inc: i64) -> i64 {
         let pm = match inc {
             1  => "+",
             -1 => "-",
@@ -99,7 +99,7 @@ impl ArithmeticExpr {
                     ans.push(e);
                     0
                 },
-                Elem::Increment(n) => self.pre_inc_to_unarys(&mut ans, i, n),
+                Elem::Increment(n) => self.preinc_to_unarys(&mut ans, i, n),
                 _ => {
                     ans.push(self.elements[i].clone());
                     0
