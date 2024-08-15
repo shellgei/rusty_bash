@@ -11,15 +11,14 @@ fn pop_operands(num: usize, stack: &mut Vec<Elem>,
 
     for _ in 0..num {
         let n = match stack.pop() {
-            Some(Elem::Integer(s)) => Elem::Integer(s),
-            Some(Elem::Float(f)) => Elem::Float(f),
             Some(Elem::Word(w, inc)) => {
                 match word::to_operand(&w, 0, inc, core) {
                     Ok(op) => op,
                     Err(e) => return Err(e),
                 }
             },
-            _ => return Ok(vec![]),
+            Some(elem) => elem,
+            None       => return Ok(vec![]),
         };
         ans.push(n);
     }
