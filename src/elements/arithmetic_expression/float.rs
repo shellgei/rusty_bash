@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::ShellCore;
 use super::Elem;
 use super::calculator::exponent_error_msg;
 
@@ -36,4 +37,23 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
     }
 
     Ok(())
+}
+
+pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut ShellCore)
+                                      -> Result<Elem, String> {
+    let new_value = match op {
+        "+=" => cur + right,
+        "-=" => cur - right,
+        "*=" => cur * right,
+        "/=" => {
+            match right == 0.0 {
+                true  => return Err("divided by 0".to_string()),
+                false => cur / right,
+            }
+        },
+        _   => return Err("Not supprted operation for float numbers".to_string()),
+    };
+
+    core.data.set_param(&name, &new_value.to_string());
+    Ok(Elem::Float(new_value))
 }

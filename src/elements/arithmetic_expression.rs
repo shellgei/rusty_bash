@@ -3,9 +3,9 @@
 
 mod calculator;
 mod parser;
-mod word_manip;
-mod int_manip;
-mod float_manip;
+mod word;
+mod int;
+mod float;
 
 use crate::ShellCore;
 use self::calculator::calculate;

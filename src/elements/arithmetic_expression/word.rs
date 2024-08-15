@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use super::Elem;
 use super::syntax_error_msg;
 use crate::elements::arithmetic_expression::Word;
+use super::float;
 
 fn assignment_error_msg(right: &str) -> String {
     format!("attempted assignment to non-variable (error token is \"{}\")", right)
@@ -73,6 +74,7 @@ pub fn substitute_int(op: &str, name: &String, cur: i64, right: i64, core: &mut 
     Ok(Elem::Integer(new_value))
 }
 
+/*
 pub fn substitute_float(op: &str, name: &String, cur: f64, right: f64, core: &mut ShellCore)
                                       -> Result<Elem, String> {
     let new_value = match op {
@@ -91,6 +93,7 @@ pub fn substitute_float(op: &str, name: &String, cur: f64, right: f64, core: &mu
     core.data.set_param(&name, &new_value.to_string());
     Ok(Elem::Float(new_value))
 }
+*/
 
 fn is_name(s: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(s);
@@ -313,9 +316,9 @@ fn subs(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
 
     match (current_num, right_value) {
         (Elem::Integer(cur), Elem::Integer(right)) => substitute_int(op, &name, cur, *right, core),
-        (Elem::Float(cur), Elem::Integer(right)) => substitute_float(op, &name, cur, *right as f64, core),
-        (Elem::Float(cur), Elem::Float(right)) => substitute_float(op, &name, cur, *right, core),
-        (Elem::Integer(cur), Elem::Float(right)) => substitute_float(op, &name, cur as f64, *right, core),
+        (Elem::Float(cur), Elem::Integer(right)) => float::substitute(op, &name, cur, *right as f64, core),
+        (Elem::Float(cur), Elem::Float(right)) => float::substitute(op, &name, cur, *right, core),
+        (Elem::Integer(cur), Elem::Float(right)) => float::substitute(op, &name, cur as f64, *right, core),
         _ => Err("support not yet".to_string()),
     }
 

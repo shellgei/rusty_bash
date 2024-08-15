@@ -4,9 +4,9 @@
 use crate::ShellCore;
 use super::{ArithmeticExpr, Elem};
 use super::syntax_error_msg;
-use super::word_manip;
-use super::float_manip;
-use super::int_manip;
+use super::word;
+use super::float;
+use super::int;
 
 pub fn exponent_error_msg(s: &str) -> String {
     format!("exponent less than 0 (error token is \"{}\")", s)
@@ -139,7 +139,7 @@ fn pop_operands(num: usize, stack: &mut Vec<Elem>,
             Some(Elem::Integer(s)) => Elem::Integer(s),
             Some(Elem::Float(f)) => Elem::Float(f),
             Some(Elem::Word(w, inc)) => {
-                match word_manip::to_operand(&w, 0, inc, core) {
+                match word::to_operand(&w, 0, inc, core) {
                     Ok(Elem::Integer(n)) => Elem::Integer(n),
                     Ok(Elem::Float(f))   => Elem::Float(f),
                     Err(e)               => return Err(e),
@@ -156,7 +156,7 @@ fn pop_operands(num: usize, stack: &mut Vec<Elem>,
 fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     match op {
     "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" 
-          => word_manip::substitution(op, stack, core),
+          => word::substitution(op, stack, core),
         _ => bin_calc_operation(op, stack, core),
     }
 
@@ -181,7 +181,7 @@ fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<
         _ => return Err( assignment_error_msg(op) ),
     };
 
-    match word_manip::substitute(op, &left, &right, core) {
+    match word::substitute(op, &left, &right, core) {
         Ok(elem) => stack.push(elem),
         Err(msg) => return Err(msg),
     }
@@ -201,10 +201,10 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
     };
 
     return match (left, right) {
-        (Elem::Float(fl), Elem::Float(fr)) => float_manip::bin_calc(op, fl, fr, stack),
-        (Elem::Float(fl), Elem::Integer(nr)) => float_manip::bin_calc(op, fl, nr as f64, stack),
-        (Elem::Integer(nl), Elem::Float(fr)) => float_manip::bin_calc(op, nl as f64, fr, stack),
-        (Elem::Integer(nl), Elem::Integer(nr)) => int_manip::bin_calc(op, nl, nr, stack),
+        (Elem::Float(fl), Elem::Float(fr)) => float::bin_calc(op, fl, fr, stack),
+        (Elem::Float(fl), Elem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack),
+        (Elem::Integer(nl), Elem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack),
+        (Elem::Integer(nl), Elem::Integer(nr)) => int::bin_calc(op, nl, nr, stack),
         _ => panic!("SUSH INTERNAL ERROR: invalid operand"),
     };
 }
@@ -343,7 +343,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
         Some(Elem::Integer(n)) => Ok(Elem::Integer(n)),
         Some(Elem::Float(f)) => Ok(Elem::Float(f)),
         Some(Elem::Word(w, inc)) => {
-            match word_manip::to_operand(&w, 0, inc, core) {
+            match word::to_operand(&w, 0, inc, core) {
                 Ok(Elem::Integer(n)) => Ok(Elem::Integer(n)),
                 Ok(Elem::Float(f)) => Ok(Elem::Float(f)),
                 Err(e) => Err(e),
@@ -357,7 +357,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
 fn inc(inc: i64, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     match stack.pop() {
         Some(Elem::Word(w, inc_post)) => {
-            match word_manip::to_operand(&w, inc, inc_post, core) {
+            match word::to_operand(&w, inc, inc_post, core) {
                 Ok(op) => {
                     stack.push(op);
                     Ok(())
