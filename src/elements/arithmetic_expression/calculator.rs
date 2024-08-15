@@ -131,15 +131,9 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
     }
 
     match stack.pop() {
-        Some(Elem::Integer(n)) => Ok(Elem::Integer(n)),
-        Some(Elem::Float(f)) => Ok(Elem::Float(f)),
-        Some(Elem::Word(w, inc)) => {
-            match word::to_operand(&w, 0, inc, core) {
-                Ok(elem) => Ok(elem),
-                Err(err) => Err(err),
-            }
-        },
-        _ => Err( format!("unknown syntax error",) ),
+        Some(Elem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
+        Some(elem)               => Ok(elem),
+        None                     => Err( format!("unknown syntax error",) ),
     }
 }
 
