@@ -135,10 +135,8 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
         Some(Elem::Float(f)) => Ok(Elem::Float(f)),
         Some(Elem::Word(w, inc)) => {
             match word::to_operand(&w, 0, inc, core) {
-                Ok(Elem::Integer(n)) => Ok(Elem::Integer(n)),
-                Ok(Elem::Float(f)) => Ok(Elem::Float(f)),
-                Err(e) => Err(e),
-                _      => Err("unknown word parse error".to_string()),
+                Ok(elem) => Ok(elem),
+                Err(err) => Err(err),
             }
         },
         _ => Err( format!("unknown syntax error",) ),
