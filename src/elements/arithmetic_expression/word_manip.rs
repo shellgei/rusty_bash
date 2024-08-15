@@ -97,13 +97,12 @@ pub fn substitute_int(op: &str, name: &String, cur: i64, right: i64, core: &mut 
             if right == 0 {
                 return Err("divided by 0".to_string());
             }
-            if op == "%=" {
-                cur % right
-            }else{
-                cur / right
+            match op == "%=" {
+                true  => cur % right,
+                false => cur / right,
             }
         },
-        _   => 0,
+        _   => return Err("Not supprted operation for integer numbers".to_string()),
     };
 
     core.data.set_param(&name, &new_value.to_string());
@@ -117,10 +116,10 @@ pub fn substitute_float(op: &str, name: &String, cur: f64, right: f64, core: &mu
         "-=" => cur - right,
         "*=" => cur * right,
         "/=" => {
-            if right == 0.0 {
-                return Err("divided by 0".to_string());
+            match right == 0.0 {
+                true  => return Err("divided by 0".to_string()),
+                false => cur / right,
             }
-            cur / right
         },
         _   => return Err("Not supprted operation for float numbers".to_string()),
     };
@@ -253,10 +252,9 @@ fn get_base(s: &mut String) -> Option<i64> {
         *s = s[(n+1)..].to_string();
         return match base_str.parse::<i64>() {
             Ok(n) => {
-                if n <= 64 {
-                    Some(n)
-                }else{
-                    None
+                match n <= 64 {
+                    true  => Some(n),
+                    false => None,
                 }
             },
             _     => None,
@@ -289,7 +287,7 @@ pub fn parse_as_i64(s: &str) -> Option<i64> {
     }
 }
 
-pub fn parse_as_f64(s: &str) -> Option<f64> {
+fn parse_as_f64(s: &str) -> Option<f64> {
     let mut sw = s.to_string();
     let sign = get_sign(&mut sw);
 
