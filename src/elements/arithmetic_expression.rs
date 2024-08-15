@@ -12,7 +12,8 @@ use super::word::Word;
 enum Elem {
     UnaryOp(String),
     BinaryOp(String),
-    Operand(i64),
+    Integer(i64),
+    Float(f64),
     ConditionalOp(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     Word(Word, i64), // Word[++, --]
     LeftParen,
@@ -74,7 +75,7 @@ impl ArithmeticExpr {
         match (&ans.last(), &self.elements.iter().nth(pos+1)) {
             (_, None)                           => return inc,
             (_, Some(&Elem::Word(_, _))) => return inc,
-            (Some(&Elem::Operand(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
+            (Some(&Elem::Integer(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
             _                                   => ans.push(Elem::UnaryOp(pm.clone())),
         }
         ans.push(Elem::UnaryOp(pm));
@@ -190,8 +191,13 @@ impl ArithmeticExpr {
 
         if let Some(w) = word.make_unquoted_word() {
             if word.text.find('\'').is_none() {
+                if let Ok(f) = w.parse::<f64>() {
+                    ans.elements.push( Elem::Float(f) );
+                    return true;
+                }
+
                 if let Some(n) = word_manip::parse_as_i64(&w) {
-                    ans.elements.push( Elem::Operand(n) );
+                    ans.elements.push( Elem::Integer(n) );
                     return true;
                 }
             }
@@ -206,7 +212,7 @@ impl ArithmeticExpr {
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
-            Some(Elem::Operand(_)) 
+            Some(Elem::Integer(_)) 
             | Some(Elem::Word(_, _)) 
             | Some(Elem::RightParen) => return false,
             _ => {},

@@ -24,7 +24,7 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     };
 
     match res {
-        Ok(n)  => return Ok(Elem::Operand(n)),
+        Ok(n)  => return Ok(Elem::Integer(n)),
         Err(e) => return Err(e),
     }
 }
@@ -56,7 +56,7 @@ pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
     match op {
         "=" => {
             core.data.set_param(&name, &right_value.to_string());
-            return Ok(Elem::Operand(right_value));
+            return Ok(Elem::Integer(right_value));
         },
         _   => {},
     }
@@ -89,7 +89,7 @@ pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
     };
 
     core.data.set_param(&name, &new_value.to_string());
-    Ok(Elem::Operand(new_value))
+    Ok(Elem::Integer(new_value))
 }
 
 

@@ -45,7 +45,7 @@ fn op_order(op: &Elem) -> u8 {
 
 fn to_string(op: &Elem) -> String {
     match op {
-        Elem::Operand(n) => n.to_string(),
+        Elem::Integer(n) => n.to_string(),
         Elem::Word(w, inc) => {
             match inc {
                 1  => w.text.clone() + "++",
@@ -70,7 +70,7 @@ fn rev_polish(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
 
     for e in elements {
         let ok = match e {
-            Elem::Operand(_) | Elem::Word(_, _) => {ans.push(e.clone()); true},
+            Elem::Integer(_) | Elem::Word(_, _) => {ans.push(e.clone()); true},
             Elem::LeftParen   => {stack.push(e.clone()); true},
             Elem::RightParen  => rev_polish_paren(&mut stack, &mut ans),
             op                       => rev_polish_op(&op, &mut stack, &mut ans),
@@ -136,10 +136,10 @@ fn pop_operands(num: usize, stack: &mut Vec<Elem>,
 
     for _ in 0..num {
         let n = match stack.pop() {
-            Some(Elem::Operand(s)) => s,
+            Some(Elem::Integer(s)) => s,
             Some(Elem::Word(w, inc)) => {
                 match word_manip::to_operand(&w, 0, inc, core) {
-                    Ok(Elem::Operand(n)) => n,
+                    Ok(Elem::Integer(n)) => n,
                     Err(e)                      => return Err(e),
                     _ => panic!("SUSH INTERNAL ERROR: word_to_operand"),
                 }
@@ -235,7 +235,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
     };
 
-    stack.push(Elem::Operand(ans));
+    stack.push(Elem::Integer(ans));
     Ok(())
 }
 
@@ -251,10 +251,10 @@ fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Res
     };
 
     match op {
-        "+"  => stack.push( Elem::Operand(num) ),
-        "-"  => stack.push( Elem::Operand(-num) ),
-        "!"  => stack.push( Elem::Operand(if num == 0 { 1 } else { 0 }) ),
-        "~"  => stack.push( Elem::Operand( !num ) ),
+        "+"  => stack.push( Elem::Integer(num) ),
+        "-"  => stack.push( Elem::Integer(-num) ),
+        "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
+        "~"  => stack.push( Elem::Integer( !num ) ),
         _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
     }
 
@@ -297,7 +297,7 @@ fn cond_operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
         },
     };
 
-    stack.push( Elem::Operand( ans ) );
+    stack.push( Elem::Integer( ans ) );
     Ok(())
 }
 
@@ -340,7 +340,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<i64, String>
 
     for e in rev_pol {
         let result = match e {
-            Elem::Operand(_) | Elem::Word(_, _) => {
+            Elem::Integer(_) | Elem::Word(_, _) => {
                 stack.push(e.clone());
                 Ok(())
             },
@@ -362,10 +362,10 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<i64, String>
     }
 
     match stack.pop() {
-        Some(Elem::Operand(n)) => Ok(n),
+        Some(Elem::Integer(n)) => Ok(n),
         Some(Elem::Word(w, inc)) => {
             match word_manip::to_operand(&w, 0, inc, core) {
-                Ok(Elem::Operand(n)) => Ok(n),
+                Ok(Elem::Integer(n)) => Ok(n),
                 Err(e) => Err(e),
                 _      => Err("unknown word parse error".to_string()),
             }
