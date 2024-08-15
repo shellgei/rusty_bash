@@ -6,6 +6,10 @@ use super::Elem;
 use super::syntax_error_msg;
 use crate::elements::arithmetic_expression::Word;
 
+fn assignment_error_msg(right: &str) -> String {
+    format!("attempted assignment to non-variable (error token is \"{}\")", right)
+}
+
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<Elem, String> {
     if pre_increment != 0 && post_increment != 0 
@@ -40,46 +44,6 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
     };
 
     str_to_num(&name, core)
-}
-
-pub fn substitute(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
-                                      -> Result<Elem, String> {
-    if w.text.find('\'').is_some() {
-        return Err(syntax_error_msg(&w.text));
-    }
-
-    let name = match w.eval_as_value(core) {
-        Some(v) => v, 
-        None => return Err(format!("{}: wrong substitution", &w.text)),
-    };
-
-    let right_str = match right_value {
-        Elem::Integer(n) => n.to_string(),
-        Elem::Float(f)   => f.to_string(),
-        _ => panic!("SUSH INTERNAL ERROR: not a value"),
-    };
-
-    match op {
-        "=" => {
-            core.data.set_param(&name, &right_str);
-            return Ok(right_value.clone());
-        },
-        _   => {},
-    }
-
-    let current_num = match to_num(w, core) {
-        Ok(n)  => n,
-        Err(e) => return Err(e),
-    };
-
-    match (current_num, right_value) {
-        (Elem::Integer(cur), Elem::Integer(right)) => substitute_int(op, &name, cur, *right, core),
-        (Elem::Float(cur), Elem::Integer(right)) => substitute_float(op, &name, cur, *right as f64, core),
-        (Elem::Float(cur), Elem::Float(right)) => substitute_float(op, &name, cur, *right, core),
-        (Elem::Integer(cur), Elem::Float(right)) => substitute_float(op, &name, cur as f64, *right, core),
-        _ => Err("support not yet".to_string()),
-    }
-
 }
 
 pub fn substitute_int(op: &str, name: &String, cur: i64, right: i64, core: &mut ShellCore)
@@ -296,4 +260,63 @@ fn parse_as_f64(s: &str) -> Option<f64> {
         (Ok(f), _)   => Some(f),
         _            => None,
     }
+}
+
+pub fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<(), String> {
+    let right = match stack.pop() {
+        Some(e) => e,
+        _       => return Err( syntax_error_msg(op) ),
+    };
+
+    let left = match stack.pop() {
+        Some(Elem::Word(w, 0)) => w,
+        Some(Elem::Word(_, _)) => return Err( assignment_error_msg(op) ),
+        _ => return Err( assignment_error_msg(op) ),
+    };
+
+    match subs(op, &left, &right, core) {
+        Ok(elem) => stack.push(elem),
+        Err(msg) => return Err(msg),
+    }
+    Ok(())
+}
+
+fn subs(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
+                                      -> Result<Elem, String> {
+    if w.text.find('\'').is_some() {
+        return Err(syntax_error_msg(&w.text));
+    }
+
+    let name = match w.eval_as_value(core) {
+        Some(v) => v, 
+        None => return Err(format!("{}: wrong substitution", &w.text)),
+    };
+
+    let right_str = match right_value {
+        Elem::Integer(n) => n.to_string(),
+        Elem::Float(f)   => f.to_string(),
+        _ => panic!("SUSH INTERNAL ERROR: not a value"),
+    };
+
+    match op {
+        "=" => {
+            core.data.set_param(&name, &right_str);
+            return Ok(right_value.clone());
+        },
+        _   => {},
+    }
+
+    let current_num = match to_num(w, core) {
+        Ok(n)  => n,
+        Err(e) => return Err(e),
+    };
+
+    match (current_num, right_value) {
+        (Elem::Integer(cur), Elem::Integer(right)) => substitute_int(op, &name, cur, *right, core),
+        (Elem::Float(cur), Elem::Integer(right)) => substitute_float(op, &name, cur, *right as f64, core),
+        (Elem::Float(cur), Elem::Float(right)) => substitute_float(op, &name, cur, *right, core),
+        (Elem::Integer(cur), Elem::Float(right)) => substitute_float(op, &name, cur as f64, *right, core),
+        _ => Err("support not yet".to_string()),
+    }
+
 }

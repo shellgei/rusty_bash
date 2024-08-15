@@ -12,10 +12,6 @@ pub fn exponent_error_msg(s: &str) -> String {
     format!("exponent less than 0 (error token is \"{}\")", s)
 }
 
-fn assignment_error_msg(right: &str) -> String {
-    format!("attempted assignment to non-variable (error token is \"{}\")", right)
-}
-
 fn op_order(op: &Elem) -> u8 {
     match op {
         Elem::Increment(_) => 14,
@@ -160,13 +156,14 @@ fn pop_operands(num: usize, stack: &mut Vec<Elem>,
 fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     match op {
     "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" 
-          => substitution(op, stack, core),
+          => word_manip::substitution(op, stack, core),
         _ => bin_calc_operation(op, stack, core),
     }
 
 
 }
 
+/*
 fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<(), String> {
     let right = match pop_operands(1, stack, core) {
         Ok(v) => {
@@ -190,6 +187,7 @@ fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<
     }
     Ok(())
 }
+*/
 
 fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     let (left, right) = match pop_operands(2, stack, core) {
