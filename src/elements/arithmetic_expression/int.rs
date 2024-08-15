@@ -2,8 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::{Elem, word};
-use super::calculator::exponent_error_msg;
+use super::{Elem, error_msg, word};
 
 pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
     let bool_to_01 = |b| { if b { 1 } else { 0 } };
@@ -39,7 +38,7 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Resul
                 let r = right.try_into().unwrap();
                 left.pow(r)
             }else{
-                return Err( exponent_error_msg(&right.to_string()) );
+                return Err( error_msg::exponent(&right.to_string()) );
             }
         },
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),

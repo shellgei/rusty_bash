@@ -2,8 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::{Elem, word};
-use super::calculator::exponent_error_msg;
+use super::{Elem, error_msg, word};
 
 pub fn bin_calc(op: &str, left: f64, right: f64,
                 stack: &mut Vec<Elem>) -> Result<(), String> {
@@ -30,7 +29,7 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
                 let r = right.try_into().unwrap();
                 stack.push(Elem::Float(left.powf(r)));
             }else{
-                return Err( exponent_error_msg(&right.to_string()) );
+                return Err( error_msg::exponent(&right.to_string()) );
             }
         },
         _    => return Err("not supported operator for float numbers".to_string()),

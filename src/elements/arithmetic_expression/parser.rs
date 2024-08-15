@@ -50,7 +50,7 @@ impl ArithmeticExpr {
         }
 
         if ! feeder.starts_with(":") {
-            ans.elements.push(Elem::ConditionalOp(Box::new(left), Box::new(None)));
+            ans.elements.push(Elem::Ternary(Box::new(left), Box::new(None)));
             return true;
         }
 
@@ -60,7 +60,7 @@ impl ArithmeticExpr {
             ans.text += &right.as_ref().unwrap().text;
         }
 
-        ans.elements.push(Elem::ConditionalOp(Box::new(left), Box::new(right)));
+        ans.elements.push(Elem::Ternary(Box::new(left), Box::new(right)));
         true
     }
 

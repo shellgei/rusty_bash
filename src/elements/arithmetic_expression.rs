@@ -3,6 +3,7 @@
 
 mod calculator;
 mod elem;
+mod error_msg;
 mod parser;
 mod word;
 mod int;
@@ -13,30 +14,11 @@ use self::calculator::calculate;
 use self::elem::Elem;
 use super::word::Word;
 
-/*
-#[derive(Debug, Clone)]
-enum Elem {
-    UnaryOp(String),
-    BinaryOp(String),
-    Integer(i64),
-    Float(f64),
-    ConditionalOp(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
-    Word(Word, i64), // Word + post increment or decrement
-    LeftParen,
-    RightParen,
-    Increment(i64), //pre increment
-}
-*/
-
 #[derive(Debug, Clone)]
 pub struct ArithmeticExpr {
     pub text: String,
     elements: Vec<Elem>,
     paren_stack: Vec<char>,
-}
-
-fn syntax_error_msg(token: &str) -> String {
-    format!("{0}: syntax error: operand expected (error token is \"{0}\")", token)
 }
 
 impl ArithmeticExpr {
@@ -114,8 +96,8 @@ impl ArithmeticExpr {
         }
 
         match pre_increment {
-            1  => Err(syntax_error_msg("++")),
-            -1 => Err(syntax_error_msg("--")),
+            1  => Err(error_msg::syntax("++")),
+            -1 => Err(error_msg::syntax("--")),
             _  => Ok(ans),
         }
     }

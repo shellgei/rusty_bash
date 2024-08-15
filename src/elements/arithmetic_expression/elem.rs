@@ -10,7 +10,7 @@ pub enum Elem {
     BinaryOp(String),
     Integer(i64),
     Float(f64),
-    ConditionalOp(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
+    Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     Word(Word, i64), // Word + post increment or decrement
     LeftParen,
     RightParen,
@@ -40,7 +40,7 @@ pub fn op_order(op: &Elem) -> u8 {
                 _               => 2,
             }
         },
-        Elem::ConditionalOp(_, _) => 1,
+        Elem::Ternary(_, _) => 1,
         _ => 0, 
     }
 }

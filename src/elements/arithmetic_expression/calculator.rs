@@ -3,11 +3,7 @@
 
 use crate::ShellCore;
 use super::{ArithmeticExpr, Elem};
-use super::{elem, syntax_error_msg, float, int, word};
-
-pub fn exponent_error_msg(s: &str) -> String {
-    format!("exponent less than 0 (error token is \"{}\")", s)
-}
+use super::{elem, error_msg, float, int, word};
 
 fn rev_polish(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
     let mut ans = vec![];
@@ -115,7 +111,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
         Ok(v) => {
             match v.len() == 2 {
                 true  => (v[1].clone(), v[0].clone()), 
-                false => return Err( syntax_error_msg(op) ),
+                false => return Err( error_msg::syntax(op) ),
             }
         },
         Err(e)  => return Err(e),
@@ -135,7 +131,7 @@ fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Res
         Ok(v) => {
             match v.len() == 1 {
                 true  => v[0].clone(),
-                false => return Err( syntax_error_msg(op) ),
+                false => return Err( error_msg::syntax(op) ),
             }
         },
         Err(e)  => return Err(e),
@@ -166,7 +162,7 @@ fn cond_operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
         Ok(v) => {
             match v.len() == 1 {
                 true  => v[0].clone(),
-                false => return Err( syntax_error_msg("?") ),
+                false => return Err( error_msg::syntax("?") ),
             }
         },
         Err(e)  => return Err(e),
@@ -233,7 +229,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
 
     let rev_pol = match rev_polish(elements) {
         Ok(ans) => ans,
-        Err(e)  => return Err( syntax_error_msg(&elem::to_string(&e)) ),
+        Err(e)  => return Err( error_msg::syntax(&elem::to_string(&e)) ),
     };
 
     let mut stack = vec![];
@@ -247,8 +243,8 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
             Elem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             Elem::Increment(n)     => inc(n, &mut stack, core),
-            Elem::ConditionalOp(left, right) => cond_operation(&left, &right, &mut stack, core),
-            _ => Err( syntax_error_msg(&elem::to_string(&e)) ),
+            Elem::Ternary(left, right) => cond_operation(&left, &right, &mut stack, core),
+            _ => Err( error_msg::syntax(&elem::to_string(&e)) ),
         };
 
         if let Err(err_msg) = result {
