@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::arithmetic_expression::ArithmeticExpr;
 use crate::elements::word::Word;
-use super::{Elem, word};
+use super::{Elem, int};
 
 impl ArithmeticExpr {
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
@@ -73,7 +73,7 @@ impl ArithmeticExpr {
 
         if let Some(w) = word.make_unquoted_word() {
             if word.text.find('\'').is_none() {
-                if let Some(n) = word::parse_as_i64(&w) {
+                if let Some(n) = int::parse(&w) {
                     ans.elements.push( Elem::Integer(n) );
                     return true;
                 }

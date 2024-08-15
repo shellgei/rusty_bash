@@ -72,11 +72,11 @@ fn str_to_num(name: &str, core: &mut ShellCore) -> Result<Elem, String> {
         }
     }
 
-    if let Some(n) = parse_as_i64(&name) {
+    if let Some(n) = int::parse(&name) {
         Ok( Elem::Integer(n) )
     }else if is_name(&name, core) {
         Ok( Elem::Integer(0) )
-    } else if let Some(f) = parse_as_f64(&name) {
+    } else if let Some(f) = float::parse(&name) {
         Ok( Elem::Float(f) )
     }else{
         Err(syntax_error_msg(&name))
@@ -111,7 +111,7 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
     }
 }
 
-fn get_sign(s: &mut String) -> String {
+pub fn get_sign(s: &mut String) -> String {
     *s = s.trim().to_string();
     match s.starts_with("+") || s.starts_with("-") {
         true  => {
@@ -120,69 +120,6 @@ fn get_sign(s: &mut String) -> String {
             c
         },
         false => "+".to_string(),
-    }
-}
-
-fn get_base(s: &mut String) -> Option<i64> {
-    if s.starts_with("0x") || s.starts_with("0X") {
-        s.remove(0);
-        s.remove(0);
-        return Some(16);
-    }
-
-    if s.starts_with("0") {
-        s.remove(0);
-        return Some(8);
-    }
-
-    if let Some(n) = s.find("#") {
-        let base_str = s[..n].to_string();
-        *s = s[(n+1)..].to_string();
-        return match base_str.parse::<i64>() {
-            Ok(n) => {
-                match n <= 64 {
-                    true  => Some(n),
-                    false => None,
-                }
-            },
-            _     => None,
-        };
-    }
-
-    Some(10)
-}
-
-pub fn parse_as_i64(s: &str) -> Option<i64> {
-    if s.find('\'').is_some() 
-    || s.find('.').is_some() {
-        return None;
-    }
-    if s.len() == 0 {
-        return Some(0);
-    }
-
-    let mut sw = s.to_string();
-    let sign = get_sign(&mut sw);
-    let base = match get_base(&mut sw) {
-        Some(n) => n, 
-        _       => return None,
-    };
-
-    match ( int::parse_with_base(base, &mut sw), sign.as_str() ) {
-        (Some(n), "-") => Some(-n), 
-        (Some(n), _)   => Some(n), 
-        _              => None,
-    }
-}
-
-fn parse_as_f64(s: &str) -> Option<f64> {
-    let mut sw = s.to_string();
-    let sign = get_sign(&mut sw);
-
-    match (sw.parse::<f64>(), sign.as_str()) {
-        (Ok(f), "-") => Some(-f),
-        (Ok(f), _)   => Some(f),
-        _            => None,
     }
 }
 

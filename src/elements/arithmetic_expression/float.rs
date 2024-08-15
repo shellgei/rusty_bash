@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::Elem;
+use super::{Elem, word};
 use super::calculator::exponent_error_msg;
 
 pub fn bin_calc(op: &str, left: f64, right: f64,
@@ -56,4 +56,15 @@ pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut Shel
 
     core.data.set_param(&name, &new_value.to_string());
     Ok(Elem::Float(new_value))
+}
+
+pub fn parse(s: &str) -> Option<f64> {
+    let mut sw = s.to_string();
+    let sign = word::get_sign(&mut sw);
+
+    match (sw.parse::<f64>(), sign.as_str()) {
+        (Ok(f), "-") => Some(-f),
+        (Ok(f), _)   => Some(f),
+        _            => None,
+    }
 }

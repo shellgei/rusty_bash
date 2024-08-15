@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::Elem;
+use super::{Elem, word};
 use super::calculator::exponent_error_msg;
 
 pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
@@ -76,7 +76,7 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
     Ok(Elem::Integer(new_value))
 }
 
-pub fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
+fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
     let mut ans = 0;
     for ch in s.chars() {
         ans *= base;
@@ -105,5 +105,57 @@ pub fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
     }
 
     Some(ans)
+}
+
+fn get_base(s: &mut String) -> Option<i64> {
+    if s.starts_with("0x") || s.starts_with("0X") {
+        s.remove(0);
+        s.remove(0);
+        return Some(16);
+    }
+
+    if s.starts_with("0") {
+        s.remove(0);
+        return Some(8);
+    }
+
+    if let Some(n) = s.find("#") {
+        let base_str = s[..n].to_string();
+        *s = s[(n+1)..].to_string();
+        return match base_str.parse::<i64>() {
+            Ok(n) => {
+                match n <= 64 {
+                    true  => Some(n),
+                    false => None,
+                }
+            },
+            _     => None,
+        };
+    }
+
+    Some(10)
+}
+
+pub fn parse(s: &str) -> Option<i64> {
+    if s.find('\'').is_some() 
+    || s.find('.').is_some() {
+        return None;
+    }
+    if s.len() == 0 {
+        return Some(0);
+    }
+
+    let mut sw = s.to_string();
+    let sign = word::get_sign(&mut sw);
+    let base = match get_base(&mut sw) {
+        Some(n) => n, 
+        _       => return None,
+    };
+
+    match ( parse_with_base(base, &mut sw), sign.as_str() ) {
+        (Some(n), "-") => Some(-n), 
+        (Some(n), _)   => Some(n), 
+        _              => None,
+    }
 }
 
