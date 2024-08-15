@@ -46,6 +46,7 @@ fn op_order(op: &Elem) -> u8 {
 fn to_string(op: &Elem) -> String {
     match op {
         Elem::Integer(n) => n.to_string(),
+        Elem::Float(f) => f.to_string(),
         Elem::Word(w, inc) => {
             match inc {
                 1  => w.text.clone() + "++",
@@ -70,7 +71,9 @@ fn rev_polish(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
 
     for e in elements {
         let ok = match e {
-            Elem::Integer(_) | Elem::Word(_, _) => {ans.push(e.clone()); true},
+            Elem::Float(_) 
+            | Elem::Integer(_) 
+            | Elem::Word(_, _) => {ans.push(e.clone()); true},
             Elem::LeftParen   => {stack.push(e.clone()); true},
             Elem::RightParen  => rev_polish_paren(&mut stack, &mut ans),
             op                       => rev_polish_op(&op, &mut stack, &mut ans),

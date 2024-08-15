@@ -191,13 +191,12 @@ impl ArithmeticExpr {
 
         if let Some(w) = word.make_unquoted_word() {
             if word.text.find('\'').is_none() {
-                if let Ok(f) = w.parse::<f64>() {
-                    ans.elements.push( Elem::Float(f) );
-                    return true;
-                }
-
                 if let Some(n) = word_manip::parse_as_i64(&w) {
                     ans.elements.push( Elem::Integer(n) );
+                    return true;
+                }
+                if let Ok(f) = w.parse::<f64>() {
+                    ans.elements.push( Elem::Float(f) );
                     return true;
                 }
             }
