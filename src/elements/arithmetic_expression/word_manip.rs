@@ -73,37 +73,61 @@ pub fn substitute(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
     };
 
     match (current_num, right_value) {
-        (Elem::Integer(cur), Elem::Integer(right)) => {
-            let new_value = match op {
-                "+=" => cur + right,
-                "-=" => cur - right,
-                "*=" => cur * right,
-                "&="  => cur & right,
-                "^="  => cur ^ right,
-                "|="  => cur | right,
-                "<<="  => if *right < 0 {0} else {cur << right},
-                ">>="  => if *right < 0 {0} else {cur >> right},
-                "/=" | "%=" => {
-                    if *right == 0 {
-                        return Err("divided by 0".to_string());
-                    }
-                    if op == "%=" {
-                        cur % right
-                    }else{
-                        cur / right
-                    }
-                },
-                _   => 0,
-            };
-
-            core.data.set_param(&name, &new_value.to_string());
-            Ok(Elem::Integer(new_value))
-        },
+        (Elem::Integer(cur), Elem::Integer(right)) => substitute_int(op, &name, cur, *right, core),
+        (Elem::Float(cur), Elem::Integer(right)) => substitute_float(op, &name, cur, *right as f64, core),
+        (Elem::Float(cur), Elem::Float(right)) => substitute_float(op, &name, cur, *right, core),
+        (Elem::Integer(cur), Elem::Float(right)) => substitute_float(op, &name, cur as f64, *right, core),
         _ => Err("support not yet".to_string()),
     }
 
 }
 
+pub fn substitute_int(op: &str, name: &String, cur: i64, right: i64, core: &mut ShellCore)
+                                      -> Result<Elem, String> {
+    let new_value = match op {
+        "+=" => cur + right,
+        "-=" => cur - right,
+        "*=" => cur * right,
+        "&="  => cur & right,
+        "^="  => cur ^ right,
+        "|="  => cur | right,
+        "<<="  => if right < 0 {0} else {cur << right},
+        ">>="  => if right < 0 {0} else {cur >> right},
+        "/=" | "%=" => {
+            if right == 0 {
+                return Err("divided by 0".to_string());
+            }
+            if op == "%=" {
+                cur % right
+            }else{
+                cur / right
+            }
+        },
+        _   => 0,
+    };
+
+    core.data.set_param(&name, &new_value.to_string());
+    Ok(Elem::Integer(new_value))
+}
+
+pub fn substitute_float(op: &str, name: &String, cur: f64, right: f64, core: &mut ShellCore)
+                                      -> Result<Elem, String> {
+    let new_value = match op {
+        "+=" => cur + right,
+        "-=" => cur - right,
+        "*=" => cur * right,
+        "/=" => {
+            if right == 0.0 {
+                return Err("divided by 0".to_string());
+            }
+            cur / right
+        },
+        _   => return Err("Not supprted operation for float numbers".to_string()),
+    };
+
+    core.data.set_param(&name, &new_value.to_string());
+    Ok(Elem::Float(new_value))
+}
 
 fn is_name(s: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(s);
@@ -134,7 +158,7 @@ fn str_to_num(name: &str, core: &mut ShellCore) -> Result<Elem, String> {
         Ok( Elem::Integer(n) )
     }else if is_name(&name, core) {
         Ok( Elem::Integer(0) )
-    } else if let Ok(f) = name.parse::<f64>() {
+    } else if let Some(f) = parse_as_f64(&name) {
         Ok( Elem::Float(f) )
     }else{
         Err(syntax_error_msg(&name))
@@ -262,5 +286,16 @@ pub fn parse_as_i64(s: &str) -> Option<i64> {
         (Some(n), "-") => Some(-n), 
         (Some(n), _)   => Some(n), 
         _              => None,
+    }
+}
+
+pub fn parse_as_f64(s: &str) -> Option<f64> {
+    let mut sw = s.to_string();
+    let sign = get_sign(&mut sw);
+
+    match (sw.parse::<f64>(), sign.as_str()) {
+        (Ok(f), "-") => Some(-f),
+        (Ok(f), _)   => Some(f),
+        _            => None,
     }
 }

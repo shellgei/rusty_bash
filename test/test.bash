@@ -1193,49 +1193,36 @@ res=$($com <<< 'echo $(( -(0? 20 : 30.3 ) * 3 )) $(( -5 + ( 5 ? 100.5 :  200)/5 
 res=$($com <<< 'echo $(( A= 10.1 ))')
 [ "$res" == "10.1" ] || err $LINENO
 
-#res=$($com <<< 'A=1.1 ; echo $(( A += 10 ))')
-#[ "$res" == "11.1" ] || err $LINENO
-#
-#res=$($com <<< 'A=1 ; echo $(( A -= 10.1 ))')
-#[ "$res" == "-8.9" ] || err $LINENO
-#
-#res=$($com <<< 'A=1 ; echo $(( A -= 10 + 2 )) $((A-=10+2))')
-#[ "$res" == "-11 -23" ] || err $LINENO
-#
-#res=$($com <<< 'A=2 ; echo $(( A *= 10 + 2 )) $((A*=10+2))') 
-#[ "$res" == "24 288" ] || err $LINENO
-#
-#res=$($com <<< 'A=-100 ; echo $(( A /= 10 + 2 )) $((A/=10+2))')
-#[ "$res" == "-8 0" ] || err $LINENO
-#
-#res=$($com <<< 'A=-100 ; echo $(( A %= 10 + 2 )) $((A%=10+2))')
-#[ "$res" == "-4 -4" ] || err $LINENO
-#
-#res=$($com <<< 'A=2 ; echo $(( A <<= 2 )) $((A<<=2)) $(( A <<= -1 ))')
-#[ "$res" == "8 32 0" ] || err $LINENO
-#
-#res=$($com <<< 'A=-8 ; echo $(( A >>= 2 )) $((A>>=1)) $(( A >>= -1 ))')
-#[ "$res" == "-2 -1 0" ] || err $LINENO
-#
-#res=$($com <<< 'A=-8 ; echo $((A^=2)) $((A&=1)) $((A|=-1))')
-#[ "$res" == "-6 0 -1" ] || err $LINENO
-#
-#res=$($com <<< 'echo $((A=-8, A^=2)) $((A=3,A&=1)) $((A=9 ,A|=-1))')
-#[ "$res" == "-6 1 -1" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( -" 12" )) $(( - "- 14" ))')
-#[ "$res" == "-12 14" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( -"1 2" ))')
-#[ "$?" == "1" ] || err $LINENO
-#[ "$res" == "" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( 0x11 )) $(( -"0x11" )) $(( - "- 0x11" ))')
-#[ "$res" == "17 -17 17" ] || err $LINENO
-#
-#res=$($com <<< 'A=0x11; echo $(( A ))')
-#[ "$res" == "17" ] || err $LINENO
-#
+res=$($com <<< 'A=1.1 ; echo $(( A += 10 ))')
+[ "$res" == "11.1" ] || err $LINENO
+
+res=$($com <<< 'A=1 ; echo $(( A -= 10.1 ))')
+[ "$res" == "-9.1" ] || err $LINENO
+
+res=$($com <<< 'A=1.1 ; echo $(( A -= 10 + 2 )) $((A-=10+2))')
+[ "$res" == "-10.9 -22.9" ] || err $LINENO
+
+res=$($com <<< 'A=2.2 ; echo $(( A *= 10 + 2 )) $((A*=10+2))') 
+[ "$res" == "26.400000000000002 316.8" ] || err $LINENO
+
+res=$($com <<< 'A=-100.2 ; echo $(( A /= 10 + 2 )) $((A/=10+2))')
+[ "$res" == "-8.35 -0.6958333333333333" ] || err $LINENO
+
+res=$($com <<< 'A=-100.2 ; echo $(( A %= 10 + 2 ))')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=2.2 ; echo $(( A <<= 2 ))')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=-8.1 ; echo $((A^=2))')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'echo $(( -" 12.3" )) $(( - "- 14.4" ))')
+[ "$res" == "-12.3 14.4" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 0x11.2 ))')
+[ "$?" == "1" ] || err $LINENO
+
 #res=$($com <<< 'echo $(( -"011" )) $(( - "- 011" ))')
 #[ "$res" == "-9 9" ] || err $LINENO
 #
