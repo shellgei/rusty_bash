@@ -6,6 +6,7 @@ mod elem;
 mod error_msg;
 mod parser;
 mod rev_polish;
+mod trenary;
 mod word;
 mod int;
 mod float;

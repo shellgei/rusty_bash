@@ -2,10 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::{ArithmeticExpr, Elem};
-use super::{elem, error_msg, float, int, rev_polish, word};
+use super::elem::Elem;
+use super::{elem, error_msg, float, int, rev_polish, trenary, word};
 
-fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
+pub fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
     let n = match stack.pop() {
         Some(Elem::Word(w, inc)) => {
             match word::to_operand(&w, 0, inc, core) {
@@ -25,8 +25,6 @@ fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Resul
           => word::substitution(op, stack, core),
         _ => bin_calc_operation(op, stack, core),
     }
-
-
 }
 
 fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
@@ -70,42 +68,6 @@ fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Res
         _ => panic!("SUSH INTERNAL ERROR: unknown operand"),
     }
 
-    Ok(())
-}
-
-fn cond_operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
-    stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
-    let num = match pop_operand(stack, core) {
-        Ok(v)  => v,
-        Err(e) => return Err(e),
-    };
-
-    let mut left = match left {
-        Some(c) => c.clone(),
-        None    => return Err("expr not found".to_string()),
-    };
-    let mut right = match right {
-        Some(c) => c.clone(),
-        None    => return Err("expr not found".to_string()),
-    };
-
-    let ans = match num {
-        Elem::Integer(0) /*| Elem::Float(0.0)*/ => {
-            match right.eval_in_cond(core) {
-                Ok(num) => num,
-                Err(e)  => return Err(e),
-            }
-        },
-        Elem::Float(_) => return Err("float condition is not permitted".to_string()),
-        _ => {
-            match left.eval_in_cond(core) {
-                Ok(num) => num,
-                Err(e)  => return Err(e),
-            }
-        },
-    };
-
-    stack.push( ans );
     Ok(())
 }
 
@@ -155,7 +117,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
             Elem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             Elem::Increment(n)     => inc(n, &mut stack, core),
-            Elem::Ternary(left, right) => cond_operation(&left, &right, &mut stack, core),
+            Elem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
             _ => Err( error_msg::syntax(&elem::to_string(&e)) ),
         };
 
