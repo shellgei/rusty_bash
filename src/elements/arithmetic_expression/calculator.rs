@@ -33,7 +33,6 @@ fn op_order(op: &Elem) -> u8 {
                 "^"             => 5, 
                 "|"             => 4, 
                 _               => 2,
-                //_ => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
             }
         },
         Elem::ConditionalOp(_, _) => 1,
@@ -162,32 +161,6 @@ fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Resul
 
 
 }
-
-/*
-fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<(), String> {
-    let right = match pop_operands(1, stack, core) {
-        Ok(v) => {
-            match v.len() == 1 {
-                true  => v[0].clone(),
-                false => return Err( syntax_error_msg(op) ),
-            }
-        },
-        Err(e)  => return Err(e),
-    };
-
-    let left = match stack.pop() {
-        Some(Elem::Word(w, 0)) => w,
-        Some(Elem::Word(_, _)) => return Err( assignment_error_msg(op) ),
-        _ => return Err( assignment_error_msg(op) ),
-    };
-
-    match word::substitute(op, &left, &right, core) {
-        Ok(elem) => stack.push(elem),
-        Err(msg) => return Err(msg),
-    }
-    Ok(())
-}
-*/
 
 fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
     let (left, right) = match pop_operands(2, stack, core) {
