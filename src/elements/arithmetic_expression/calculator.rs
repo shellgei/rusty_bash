@@ -5,24 +5,18 @@ use crate::ShellCore;
 use super::{ArithmeticExpr, Elem};
 use super::{elem, error_msg, float, int, rev_polish, word};
 
-fn pop_operands(num: usize, stack: &mut Vec<Elem>,
-                core: &mut ShellCore) -> Result<Vec<Elem>, String> {
-    let mut ans = vec![];
-
-    for _ in 0..num {
-        let n = match stack.pop() {
-            Some(Elem::Word(w, inc)) => {
-                match word::to_operand(&w, 0, inc, core) {
-                    Ok(op) => op,
-                    Err(e) => return Err(e),
-                }
-            },
-            Some(elem) => elem,
-            None       => return Ok(vec![]),
-        };
-        ans.push(n);
-    }
-    Ok(ans)
+fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
+    let n = match stack.pop() {
+        Some(Elem::Word(w, inc)) => {
+            match word::to_operand(&w, 0, inc, core) {
+                Ok(op) => op,
+                Err(e) => return Err(e),
+            }
+        },
+        Some(elem) => elem,
+        None       => return Err("no operand".to_string()),
+    };
+    Ok(n)
 }
 
 fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
@@ -36,14 +30,13 @@ fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Resul
 }
 
 fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
-    let (left, right) = match pop_operands(2, stack, core) {
-        Ok(v) => {
-            match v.len() == 2 {
-                true  => (v[1].clone(), v[0].clone()), 
-                false => return Err( error_msg::syntax(op) ),
-            }
-        },
-        Err(e)  => return Err(e),
+    let right = match pop_operand(stack, core) {
+        Ok(v)  => v,
+        Err(e) => return Err(e),
+    };
+    let left = match pop_operand(stack, core) {
+        Ok(v)  => v,
+        Err(e) => return Err(e),
     };
 
     return match (left, right) {
@@ -56,14 +49,9 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
 }
 
 fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
-    let operand = match pop_operands(1, stack, core) {
-        Ok(v) => {
-            match v.len() == 1 {
-                true  => v[0].clone(),
-                false => return Err( error_msg::syntax(op) ),
-            }
-        },
-        Err(e)  => return Err(e),
+    let operand = match pop_operand(stack, core) {
+        Ok(v)  => v,
+        Err(e) => return Err(e),
     };
 
     match operand {
@@ -87,14 +75,9 @@ fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Res
 
 fn cond_operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
-    let num = match pop_operands(1, stack, core) {
-        Ok(v) => {
-            match v.len() == 1 {
-                true  => v[0].clone(),
-                false => return Err( error_msg::syntax("?") ),
-            }
-        },
-        Err(e)  => return Err(e),
+    let num = match pop_operand(stack, core) {
+        Ok(v)  => v,
+        Err(e) => return Err(e),
     };
 
     let mut left = match left {
