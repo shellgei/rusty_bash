@@ -75,11 +75,11 @@ impl ArithmeticExpr {
         }.to_string();
     
         match (&ans.last(), &self.elements.iter().nth(pos+1)) {
-            (_, None)                           => return inc,
-            (_, Some(&Elem::Word(_, _))) => return inc,
-            (Some(&Elem::Integer(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
-            (Some(&Elem::Float(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
-            _                                   => ans.push(Elem::UnaryOp(pm.clone())),
+            (_, None) 
+            | (_, Some(&Elem::Word(_, _))) => return inc,
+            (Some(&Elem::Integer(_)), _)
+            | (Some(&Elem::Float(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
+            _                            => ans.push(Elem::UnaryOp(pm.clone())),
         }
         ans.push(Elem::UnaryOp(pm));
         0
