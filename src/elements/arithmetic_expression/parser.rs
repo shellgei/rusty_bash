@@ -66,12 +66,10 @@ impl ArithmeticExpr {
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut word = match Word::parse(feeder, core, true) {
-            Some(w) => {
-                ans.text += &w.text;
-                w
-            },
-            _ => return false,
+            Some(w) => w,
+            _       => return false,
         };
+        ans.text += &word.text.clone();
 
         if let Some(w) = word.make_unquoted_word() {
             if word.text.find('\'').is_none() {

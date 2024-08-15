@@ -16,8 +16,9 @@ enum Elem {
     Integer(i64),
     Float(f64),
     ConditionalOp(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
-    Word(Word, i64), // Word[++, --]
+    Word(Word, i64), // Word + post increment or decrement
     LeftParen,
+    //PreInc(n), // 1: ++, -1: --
     RightParen,
     PlusPlus,
     MinusMinus,
