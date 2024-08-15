@@ -1223,32 +1223,9 @@ res=$($com <<< 'echo $(( -" 12.3" )) $(( - "- 14.4" ))')
 res=$($com <<< 'echo $(( 0x11.2 ))')
 [ "$?" == "1" ] || err $LINENO
 
-#res=$($com <<< 'echo $(( -"011" )) $(( - "- 011" ))')
-#[ "$res" == "-9 9" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( -"2#011" )) $(( - "- 2#0111101" ))')
-#[ "$res" == "-3 61" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( 64#a )) $(( 64#A ))')
-#[ "$res" == "10 36" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( 0xA )) $(( 0Xa ))')
-#[ "$res" == "10 10" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( 17#A )) $(( 17#a ))')
-#[ "$res" == "10 10" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( 37#A )) $(( 37#a ))')
-#[ "$res" == "36 10" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( 64#@ )) $(( 64#_ ))')
-#[ "$res" == "62 63" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( 62#@ ))')
-#[ "$?" == "1" ] || err $LINENO
-#
-#res=$($com <<< 'echo $(( 65#0 ))')
-#[ "$?" == "1" ] || err $LINENO
+res=$($com <<< 'echo $(( -" .3" )) $(( - "- .4" ))')
+[ "$res" == "-0.3 0.4" ] || err $LINENO
+
 
 # brace
 
