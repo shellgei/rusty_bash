@@ -3,62 +3,10 @@
 
 use crate::ShellCore;
 use super::{ArithmeticExpr, Elem};
-use super::syntax_error_msg;
-use super::word;
-use super::float;
-use super::int;
+use super::{elem, syntax_error_msg, float, int, word};
 
 pub fn exponent_error_msg(s: &str) -> String {
     format!("exponent less than 0 (error token is \"{}\")", s)
-}
-
-fn op_order(op: &Elem) -> u8 {
-    match op {
-        Elem::Increment(_) => 14,
-        Elem::UnaryOp(s) => {
-            match s.as_str() {
-                "-" | "+" => 14,
-                _         => 13,
-            }
-        },
-        Elem::BinaryOp(s) => {
-            match s.as_str() {
-                "**"            => 12, 
-                "*" | "/" | "%" => 11, 
-                "+" | "-"       => 10, 
-                "<<" | ">>"     => 9, 
-                "<=" | ">=" | ">" | "<" => 8, 
-                "==" | "!="     => 7, 
-                "&"             => 6, 
-                "^"             => 5, 
-                "|"             => 4, 
-                _               => 2,
-            }
-        },
-        Elem::ConditionalOp(_, _) => 1,
-        _ => 0, 
-    }
-}
-
-fn to_string(op: &Elem) -> String {
-    match op {
-        Elem::Integer(n) => n.to_string(),
-        Elem::Float(f) => f.to_string(),
-        Elem::Word(w, inc) => {
-            match inc {
-                1  => w.text.clone() + "++",
-                -1 => w.text.clone() + "--",
-                _  => w.text.clone(),
-            }
-        },
-        Elem::UnaryOp(s) => s.clone(),
-        Elem::BinaryOp(s) => s.clone(),
-        Elem::LeftParen => "(".to_string(),
-        Elem::RightParen => ")".to_string(),
-        Elem::Increment(1) => "++".to_string(),
-        Elem::Increment(-1) => "--".to_string(),
-        _ => "".to_string(),
-    }
 }
 
 fn rev_polish(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
@@ -117,7 +65,7 @@ fn rev_polish_op(elem: &Elem,
             },
             Some(_) => {
                 let last = stack.last().unwrap();
-                if op_order(last) <= op_order(elem) {
+                if elem::op_order(last) <= elem::op_order(elem) {
                     stack.push(elem.clone());
                     break;
                 }
@@ -285,7 +233,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
 
     let rev_pol = match rev_polish(elements) {
         Ok(ans) => ans,
-        Err(e)  => return Err( syntax_error_msg(&to_string(&e)) ),
+        Err(e)  => return Err( syntax_error_msg(&elem::to_string(&e)) ),
     };
 
     let mut stack = vec![];
@@ -300,7 +248,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             Elem::Increment(n)     => inc(n, &mut stack, core),
             Elem::ConditionalOp(left, right) => cond_operation(&left, &right, &mut stack, core),
-            _ => Err( syntax_error_msg(&to_string(&e)) ),
+            _ => Err( syntax_error_msg(&elem::to_string(&e)) ),
         };
 
         if let Err(err_msg) = result {

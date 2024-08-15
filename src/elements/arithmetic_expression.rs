@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod calculator;
+mod elem;
 mod parser;
 mod word;
 mod int;
@@ -9,8 +10,10 @@ mod float;
 
 use crate::ShellCore;
 use self::calculator::calculate;
+use self::elem::Elem;
 use super::word::Word;
 
+/*
 #[derive(Debug, Clone)]
 enum Elem {
     UnaryOp(String),
@@ -23,6 +26,7 @@ enum Elem {
     RightParen,
     Increment(i64), //pre increment
 }
+*/
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticExpr {
