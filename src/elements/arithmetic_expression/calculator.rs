@@ -6,8 +6,8 @@ use super::{ArithmeticExpr, Elem};
 use super::syntax_error_msg;
 use super::word_manip;
 
-fn exponent_error_msg(num: i64) -> String {
-    format!("exponent less than 0 (error token is \"{}\")", num)
+fn exponent_error_msg(s: &str) -> String {
+    format!("exponent less than 0 (error token is \"{}\")", s)
 }
 
 fn assignment_error_msg(right: &str) -> String {
@@ -134,16 +134,18 @@ fn rev_polish_op(elem: &Elem,
 }
 
 fn pop_operands(num: usize, stack: &mut Vec<Elem>,
-                core: &mut ShellCore) -> Result<Vec<i64>, String> {
+                core: &mut ShellCore) -> Result<Vec<Elem>, String> {
     let mut ans = vec![];
 
     for _ in 0..num {
         let n = match stack.pop() {
-            Some(Elem::Integer(s)) => s,
+            Some(Elem::Integer(s)) => Elem::Integer(s),
+            Some(Elem::Float(f)) => Elem::Float(f),
             Some(Elem::Word(w, inc)) => {
                 match word_manip::to_operand(&w, 0, inc, core) {
-                    Ok(Elem::Integer(n)) => n,
-                    Err(e)                      => return Err(e),
+                    Ok(Elem::Integer(n)) => Elem::Integer(n),
+                    Ok(Elem::Float(f))   => Elem::Float(f),
+                    Err(e)               => return Err(e),
                     _ => panic!("SUSH INTERNAL ERROR: word_to_operand"),
                 }
             },
@@ -168,7 +170,7 @@ fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<
     let right = match pop_operands(1, stack, core) {
         Ok(v) => {
             match v.len() == 1 {
-                true  => v[0],
+                true  => v[0].clone(),
                 false => return Err( syntax_error_msg(op) ),
             }
         },
@@ -181,24 +183,47 @@ fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<
         _ => return Err( assignment_error_msg(op) ),
     };
 
-    match word_manip::substitute(op, &left, right, core) {
+    match word_manip::substitute(op, &left, &right, core) {
         Ok(elem) => stack.push(elem),
         Err(msg) => return Err(msg),
     }
     Ok(())
 }
 
-fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
-    let (left, right) = match pop_operands(2, stack, core) {
-        Ok(v) => {
-            match v.len() == 2 {
-                true  => (v[1], v[0]), 
-                false => return Err( syntax_error_msg(op) ),
+fn bin_calc_operation_float(op: &str, left: f64, right: f64, stack: &mut Vec<Elem>) -> Result<(), String> {
+    let bool_to_01 = |b| { if b { Elem::Integer(1) } else { Elem::Integer(0) } };
+
+    match op {
+        "+"  => stack.push(Elem::Float(left + right)),
+        "-"  => stack.push(Elem::Float(left - right)),
+        "*"  => stack.push(Elem::Float(left * right)),
+        "<="  => stack.push(bool_to_01( left <= right )),
+        ">="  => stack.push(bool_to_01( left >= right )),
+        "<"  => stack.push(bool_to_01( left < right )),
+        ">"  => stack.push(bool_to_01( left > right )),
+        "=="  => stack.push(bool_to_01( left == right )),
+        "!="  => stack.push(bool_to_01( left != right )),
+        "/" => {
+            if right == 0.0 {
+                return Err("divided by 0".to_string());
+            }
+            stack.push(Elem::Float(left / right));
+        },
+        "**" => {
+            if right >= 0.0 {
+                let r = right.try_into().unwrap();
+                stack.push(Elem::Float(left.powf(r)));
+            }else{
+                return Err( exponent_error_msg(&right.to_string()) );
             }
         },
-        Err(e)  => return Err(e),
-    };
+        _    => return Err("not supported operator for float numbers".to_string()),
+    }
 
+    Ok(())
+}
+
+fn bin_calc_operation_int(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
     let bool_to_01 = |b| { if b { 1 } else { 0 } };
 
     let ans = match op {
@@ -232,7 +257,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
                 let r = right.try_into().unwrap();
                 left.pow(r)
             }else{
-                return Err( exponent_error_msg(right) );
+                return Err( exponent_error_msg(&right.to_string()) );
             }
         },
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
@@ -242,23 +267,51 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
     Ok(())
 }
 
-fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
-    let num = match pop_operands(1, stack, core) {
+fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
+    let (left, right) = match pop_operands(2, stack, core) {
         Ok(v) => {
-            match v.len() == 1 {
-                true  => v[0],
+            match v.len() == 2 {
+                true  => (v[1].clone(), v[0].clone()), 
                 false => return Err( syntax_error_msg(op) ),
             }
         },
         Err(e)  => return Err(e),
     };
 
-    match op {
-        "+"  => stack.push( Elem::Integer(num) ),
-        "-"  => stack.push( Elem::Integer(-num) ),
-        "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
-        "~"  => stack.push( Elem::Integer( !num ) ),
-        _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
+    return match (left, right) {
+        (Elem::Float(fl), Elem::Float(fr)) => bin_calc_operation_float(op, fl, fr, stack),
+        (Elem::Float(fl), Elem::Integer(nr)) => bin_calc_operation_float(op, fl, nr as f64, stack),
+        (Elem::Integer(nl), Elem::Float(fr)) => bin_calc_operation_float(op, nl as f64, fr, stack),
+        (Elem::Integer(nl), Elem::Integer(nr)) => bin_calc_operation_int(op, nl, nr, stack),
+        _ => panic!("SUSH INTERNAL ERROR: invalid operand"),
+    };
+}
+
+fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
+    let operand = match pop_operands(1, stack, core) {
+        Ok(v) => {
+            match v.len() == 1 {
+                true  => v[0].clone(),
+                false => return Err( syntax_error_msg(op) ),
+            }
+        },
+        Err(e)  => return Err(e),
+    };
+
+    match operand {
+        Elem::Float(num) => match op {
+            "+"  => stack.push( Elem::Float(num) ),
+            "-"  => stack.push( Elem::Float(-num) ),
+            _ => return Err("not supported operator for float number".to_string()),
+        }
+        Elem::Integer(num) => match op {
+            "+"  => stack.push( Elem::Integer(num) ),
+            "-"  => stack.push( Elem::Integer(-num) ),
+            "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
+            "~"  => stack.push( Elem::Integer( !num ) ),
+            _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
+        }
+        _ => panic!("SUSH INTERNAL ERROR: unknown operand"),
     }
 
     Ok(())
@@ -269,7 +322,7 @@ fn cond_operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     let num = match pop_operands(1, stack, core) {
         Ok(v) => {
             match v.len() == 1 {
-                true  => v[0],
+                true  => v[0].clone(),
                 false => return Err( syntax_error_msg("?") ),
             }
         },
@@ -286,12 +339,13 @@ fn cond_operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     };
 
     let ans = match num {
-        0 => {
+        Elem::Integer(0) /*| Elem::Float(0.0)*/ => {
             match right.eval_in_cond(core) {
                 Ok(num) => num,
                 Err(e)  => return Err(e),
             }
         },
+        Elem::Float(_) => return Err("float condition is not permitted".to_string()),
         _ => {
             match left.eval_in_cond(core) {
                 Ok(num) => num,
@@ -300,11 +354,11 @@ fn cond_operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
         },
     };
 
-    stack.push( Elem::Integer( ans ) );
+    stack.push( ans );
     Ok(())
 }
 
-pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<i64, String> {
+pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
     let mut comma_pos = vec![];
     for (i, e) in elements.iter().enumerate() {
         match e {
@@ -329,9 +383,9 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<i64, Stri
     calculate_sub(&elements[left..], core)
 }
 
-fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<i64, String> {
+fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String> {
     if elements.len() == 0 {
-        return Ok(0);
+        return Ok(Elem::Integer(0));
     }
 
     let rev_pol = match rev_polish(elements) {
@@ -343,7 +397,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<i64, String>
 
     for e in rev_pol {
         let result = match e {
-            Elem::Integer(_) | Elem::Word(_, _) => {
+            Elem::Integer(_) | Elem::Float(_) | Elem::Word(_, _) => {
                 stack.push(e.clone());
                 Ok(())
             },
@@ -365,10 +419,12 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<i64, String>
     }
 
     match stack.pop() {
-        Some(Elem::Integer(n)) => Ok(n),
+        Some(Elem::Integer(n)) => Ok(Elem::Integer(n)),
+        Some(Elem::Float(f)) => Ok(Elem::Float(f)),
         Some(Elem::Word(w, inc)) => {
             match word_manip::to_operand(&w, 0, inc, core) {
-                Ok(Elem::Integer(n)) => Ok(n),
+                Ok(Elem::Integer(n)) => Ok(Elem::Integer(n)),
+                Ok(Elem::Float(f)) => Ok(Elem::Float(f)),
                 Err(e) => Err(e),
                 _      => Err("unknown word parse error".to_string()),
             }

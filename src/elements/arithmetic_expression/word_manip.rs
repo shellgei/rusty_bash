@@ -24,12 +24,12 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     };
 
     match res {
-        Ok(n)  => return Ok(Elem::Integer(n)),
+        Ok(n)  => return Ok(n),
         Err(e) => return Err(e),
     }
 }
 
-fn to_num(w: &Word, core: &mut ShellCore) -> Result<i64, String> {
+fn to_num(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
     if w.text.find('\'').is_some() {
         return Err(syntax_error_msg(&w.text));
     }
@@ -42,7 +42,7 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<i64, String> {
     str_to_num(&name, core)
 }
 
-pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
+pub fn substitute(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
                                       -> Result<Elem, String> {
     if w.text.find('\'').is_some() {
         return Err(syntax_error_msg(&w.text));
@@ -53,10 +53,16 @@ pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
         None => return Err(format!("{}: wrong substitution", &w.text)),
     };
 
+    let right_str = match right_value {
+        Elem::Integer(n) => n.to_string(),
+        Elem::Float(f)   => f.to_string(),
+        _ => panic!("SUSH INTERNAL ERROR: not a value"),
+    };
+
     match op {
         "=" => {
-            core.data.set_param(&name, &right_value.to_string());
-            return Ok(Elem::Integer(right_value));
+            core.data.set_param(&name, &right_str);
+            return Ok(right_value.clone());
         },
         _   => {},
     }
@@ -66,30 +72,36 @@ pub fn substitute(op: &str, w: &Word, right_value: i64, core: &mut ShellCore)
         Err(e) => return Err(e),
     };
 
-    let new_value = match op {
-        "+=" => current_num + right_value,
-        "-=" => current_num - right_value,
-        "*=" => current_num * right_value,
-        "&="  => current_num & right_value,
-        "^="  => current_num ^ right_value,
-        "|="  => current_num | right_value,
-        "<<="  => if right_value < 0 {0} else {current_num << right_value},
-        ">>="  => if right_value < 0 {0} else {current_num >> right_value},
-        "/=" | "%=" => {
-            if right_value == 0 {
-                return Err("divided by 0".to_string());
-            }
-            if op == "%=" {
-                current_num % right_value
-            }else{
-                current_num / right_value
-            }
-        },
-        _   => 0,
-    };
+    match (current_num, right_value) {
+        (Elem::Integer(cur), Elem::Integer(right)) => {
+            let new_value = match op {
+                "+=" => cur + right,
+                "-=" => cur - right,
+                "*=" => cur * right,
+                "&="  => cur & right,
+                "^="  => cur ^ right,
+                "|="  => cur | right,
+                "<<="  => if *right < 0 {0} else {cur << right},
+                ">>="  => if *right < 0 {0} else {cur >> right},
+                "/=" | "%=" => {
+                    if *right == 0 {
+                        return Err("divided by 0".to_string());
+                    }
+                    if op == "%=" {
+                        cur % right
+                    }else{
+                        cur / right
+                    }
+                },
+                _   => 0,
+            };
 
-    core.data.set_param(&name, &new_value.to_string());
-    Ok(Elem::Integer(new_value))
+            core.data.set_param(&name, &new_value.to_string());
+            Ok(Elem::Integer(new_value))
+        },
+        _ => Err("support not yet".to_string()),
+    }
+
 }
 
 
@@ -102,7 +114,7 @@ fn recursion_error(token: &str) -> String {
     format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token)
 }
 
-fn str_to_num(name: &str, core: &mut ShellCore) -> Result<i64, String> {
+fn str_to_num(name: &str, core: &mut ShellCore) -> Result<Elem, String> {
     let mut name = name.to_string();
 
     const RESOLVE_LIMIT: i32 = 10000;
@@ -119,15 +131,17 @@ fn str_to_num(name: &str, core: &mut ShellCore) -> Result<i64, String> {
     }
 
     if let Some(n) = parse_as_i64(&name) {
-        Ok( n )
+        Ok( Elem::Integer(n) )
     }else if is_name(&name, core) {
-        Ok( 0 )
+        Ok( Elem::Integer(0) )
+    } else if let Ok(f) = name.parse::<f64>() {
+        Ok( Elem::Float(f) )
     }else{
         Err(syntax_error_msg(&name))
     }
 }
 
-fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<i64, String> {
+fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<Elem, String> {
     if ! is_name(name, core) {
         return match inc != 0 && ! pre {
             true  => Err(syntax_error_msg(name)),
@@ -135,16 +149,23 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
         }
     }
 
-    let num_i64 = match str_to_num(&name, core) {
-        Ok(n)        => n,
+    match str_to_num(&name, core) {
+        Ok(Elem::Integer(n))        => {
+            core.data.set_param(name, &(n + inc).to_string());
+            match pre {
+                true  => Ok(Elem::Integer(n+inc)),
+                false => Ok(Elem::Integer(n)),
+            }
+        },
+        Ok(Elem::Float(n))        => {
+            core.data.set_param(name, &(n + inc as f64).to_string());
+            match pre {
+                true  => Ok(Elem::Float(n+inc as f64)),
+                false => Ok(Elem::Float(n)),
+            }
+        },
+        Ok(_) => panic!("SUSH INTERNAL ERROR: unknown element"),
         Err(err_msg) => return Err(err_msg), 
-    };
-    
-    core.data.set_param(name, &(num_i64 + inc).to_string());
-
-    match pre {
-        true  => Ok(num_i64+inc),
-        false => Ok(num_i64),
     }
 }
 
@@ -222,7 +243,8 @@ fn get_base(s: &mut String) -> Option<i64> {
 }
 
 pub fn parse_as_i64(s: &str) -> Option<i64> {
-    if s.find('\'').is_some() {
+    if s.find('\'').is_some() 
+    || s.find('.').is_some() {
         return None;
     }
     if s.len() == 0 {

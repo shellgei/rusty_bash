@@ -45,15 +45,17 @@ impl ArithmeticExpr {
         };
 
         match calculate(&es, core) {
-            Ok(ans)  => Some(ans.to_string()),
+            Ok(Elem::Integer(n))  => Some(n.to_string()),
+            Ok(Elem::Float(f))  => Some(f.to_string()),
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
             },
+            _ => panic!("SUSH INTERNAL ERROR: invalid calculation result"),
         }
     }
 
-    pub fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<i64, String> {
+    fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
         let es = match self.decompose_increments() {
             Ok(data)     => data, 
             Err(err_msg) => return Err(err_msg),
@@ -76,6 +78,7 @@ impl ArithmeticExpr {
             (_, None)                           => return inc,
             (_, Some(&Elem::Word(_, _))) => return inc,
             (Some(&Elem::Integer(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
+            (Some(&Elem::Float(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
             _                                   => ans.push(Elem::UnaryOp(pm.clone())),
         }
         ans.push(Elem::UnaryOp(pm));
@@ -212,6 +215,7 @@ impl ArithmeticExpr {
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(Elem::Integer(_)) 
+            | Some(Elem::Float(_)) 
             | Some(Elem::Word(_, _)) 
             | Some(Elem::RightParen) => return false,
             _ => {},
