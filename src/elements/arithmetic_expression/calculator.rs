@@ -53,22 +53,10 @@ fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Res
     };
 
     match operand {
-        Elem::Float(num) => match op {
-            "+"  => stack.push( Elem::Float(num) ),
-            "-"  => stack.push( Elem::Float(-num) ),
-            _ => return Err("not supported operator for float number".to_string()),
-        }
-        Elem::Integer(num) => match op {
-            "+"  => stack.push( Elem::Integer(num) ),
-            "-"  => stack.push( Elem::Integer(-num) ),
-            "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
-            "~"  => stack.push( Elem::Integer( !num ) ),
-            _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
-        }
+        Elem::Float(num)   => float::unary_calc(op, num, stack),
+        Elem::Integer(num) => int::unary_calc(op, num ,stack),
         _ => panic!("SUSH INTERNAL ERROR: unknown operand"),
     }
-
-    Ok(())
 }
 
 pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {

@@ -4,6 +4,17 @@
 use crate::ShellCore;
 use super::{Elem, error_msg, word};
 
+pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
+    match op {
+        "+"  => stack.push( Elem::Integer(num) ),
+        "-"  => stack.push( Elem::Integer(-num) ),
+        "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
+        "~"  => stack.push( Elem::Integer( !num ) ),
+        _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
+    }
+    Ok(())
+}
+
 pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
     let bool_to_01 = |b| { if b { 1 } else { 0 } };
 

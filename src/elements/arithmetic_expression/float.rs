@@ -4,6 +4,15 @@
 use crate::ShellCore;
 use super::{Elem, error_msg, word};
 
+pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<Elem>) -> Result<(), String> {
+    match op {
+        "+"  => stack.push( Elem::Float(num) ),
+        "-"  => stack.push( Elem::Float(-num) ),
+        _ => return Err("not supported operator for float number".to_string()),
+    }
+    Ok(())
+}
+
 pub fn bin_calc(op: &str, left: f64, right: f64,
                 stack: &mut Vec<Elem>) -> Result<(), String> {
     let bool_to_01 = |b| { if b { Elem::Integer(1) } else { Elem::Integer(0) } };
