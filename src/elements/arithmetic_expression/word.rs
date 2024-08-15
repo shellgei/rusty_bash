@@ -7,6 +7,10 @@ use super::syntax_error_msg;
 use crate::elements::arithmetic_expression::Word;
 use super::{float, int};
 
+fn recursion_error(token: &str) -> String {
+    format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token)
+}
+
 fn assignment_error_msg(right: &str) -> String {
     format!("attempted assignment to non-variable (error token is \"{}\")", right)
 }
@@ -50,10 +54,6 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
 fn is_name(s: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(s);
     s.len() > 0 && f.scanner_name(core) == s.len()
-}
-
-fn recursion_error(token: &str) -> String {
-    format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token)
 }
 
 fn str_to_num(name: &str, core: &mut ShellCore) -> Result<Elem, String> {
@@ -109,37 +109,6 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
         Ok(_) => panic!("SUSH INTERNAL ERROR: unknown element"),
         Err(err_msg) => return Err(err_msg), 
     }
-}
-
-fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
-    let mut ans = 0;
-    for ch in s.chars() {
-        ans *= base;
-        let num = if ch >= '0' && ch <= '9' {
-            ch as i64 - '0' as i64
-        }else if ch >= 'a' && ch <= 'z' {
-            ch as i64 - 'a' as i64 + 10
-        }else if ch >= 'A' && ch <= 'Z' {
-            if base <= 36 {
-                ch as i64 - 'A' as i64 + 10
-            }else{
-                ch as i64 - 'A' as i64 + 36
-            }
-        }else if ch == '@' {
-            62
-        }else if ch == '_' {
-            63
-        }else{
-            return None;
-        };
-
-        match num < base {
-            true  => ans += num,
-            false => return None,
-        }
-    }
-
-    Some(ans)
 }
 
 fn get_sign(s: &mut String) -> String {
@@ -199,7 +168,7 @@ pub fn parse_as_i64(s: &str) -> Option<i64> {
         _       => return None,
     };
 
-    match ( parse_with_base(base, &mut sw), sign.as_str() ) {
+    match ( int::parse_with_base(base, &mut sw), sign.as_str() ) {
         (Some(n), "-") => Some(-n), 
         (Some(n), _)   => Some(n), 
         _              => None,
