@@ -18,11 +18,8 @@ enum Elem {
     ConditionalOp(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     Word(Word, i64), // Word + post increment or decrement
     LeftParen,
-    //PreInc(n), // 1: ++, -1: --
     RightParen,
-    PlusPlus,
-    MinusMinus,
-    Increment(i64),
+    Increment(i64), //pre increment
 }
 
 #[derive(Debug, Clone)]
@@ -69,7 +66,7 @@ impl ArithmeticExpr {
         }
     }
 
-    fn inc_dec_to_unarys(&mut self, ans: &mut Vec<Elem>, pos: usize, inc: i64) -> i64 {
+    fn pre_inc_to_unarys(&mut self, ans: &mut Vec<Elem>, pos: usize, inc: i64) -> i64 {
         let pm = match inc {
             1  => "+",
             -1 => "-",
@@ -80,8 +77,8 @@ impl ArithmeticExpr {
             (_, None) 
             | (_, Some(&Elem::Word(_, _))) => return inc,
             (Some(&Elem::Integer(_)), _)
-            | (Some(&Elem::Float(_)), _) => ans.push(Elem::BinaryOp(pm.clone())),
-            _                            => ans.push(Elem::UnaryOp(pm.clone())),
+            | (Some(&Elem::Float(_)), _)   => ans.push(Elem::BinaryOp(pm.clone())),
+            _                              => ans.push(Elem::UnaryOp(pm.clone())),
         }
         ans.push(Elem::UnaryOp(pm));
         0
@@ -96,16 +93,13 @@ impl ArithmeticExpr {
             let e = self.elements[i].clone();
             pre_increment = match e {
                 Elem::Word(_, _) => {
-                    match pre_increment {
-                        1  => ans.push(Elem::PlusPlus),
-                        -1 => ans.push(Elem::MinusMinus),
-                        _  => {},
+                    if pre_increment != 0 {
+                        ans.push(Elem::Increment(pre_increment));
                     }
-
                     ans.push(e);
                     0
                 },
-                Elem::Increment(n) => self.inc_dec_to_unarys(&mut ans, i, n),
+                Elem::Increment(n) => self.pre_inc_to_unarys(&mut ans, i, n),
                 _ => {
                     ans.push(self.elements[i].clone());
                     0

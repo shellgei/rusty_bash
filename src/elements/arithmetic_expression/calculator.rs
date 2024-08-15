@@ -16,7 +16,7 @@ fn assignment_error_msg(right: &str) -> String {
 
 fn op_order(op: &Elem) -> u8 {
     match op {
-        Elem::PlusPlus | Elem::MinusMinus => 14,
+        Elem::Increment(_) => 14,
         Elem::UnaryOp(s) => {
             match s.as_str() {
                 "-" | "+" => 14,
@@ -403,8 +403,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
             },
             Elem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
-            Elem::PlusPlus         => inc(1, &mut stack, core),
-            Elem::MinusMinus       => inc(-1, &mut stack, core),
+            Elem::Increment(n)     => inc(n, &mut stack, core),
             Elem::ConditionalOp(left, right) => cond_operation(&left, &right, &mut stack, core),
             _ => Err( syntax_error_msg(&to_string(&e)) ),
         };
