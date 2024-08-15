@@ -15,10 +15,8 @@ fn pop_operands(num: usize, stack: &mut Vec<Elem>,
             Some(Elem::Float(f)) => Elem::Float(f),
             Some(Elem::Word(w, inc)) => {
                 match word::to_operand(&w, 0, inc, core) {
-                    Ok(Elem::Integer(n)) => Elem::Integer(n),
-                    Ok(Elem::Float(f))   => Elem::Float(f),
-                    Err(e)               => return Err(e),
-                    _ => panic!("SUSH INTERNAL ERROR: word_to_operand"),
+                    Ok(op) => op,
+                    Err(e) => return Err(e),
                 }
             },
             _ => return Ok(vec![]),
