@@ -22,7 +22,13 @@ impl Command for ForCommand {
         core.loop_level += 1;
 
         let values = match self.has_in {
-            true  => vec![],
+            true  => match self.eval_values(core) {
+                Some(vs) => vs,
+                None     => {
+                    core.data.set_param("?", "1");
+                    return;
+                },
+            },
             false => core.data.get_position_params(),
         };
 
@@ -52,6 +58,18 @@ impl Command for ForCommand {
 }
 
 impl ForCommand {
+    fn eval_values(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
+        let mut ans = vec![];
+        for w in &mut self.values {
+            match w.eval(core) {
+                Some(mut ws) => ans.append(&mut ws),
+                None     => return None,
+            }
+        }
+
+        Some(ans)
+    }
+
     fn new() -> ForCommand {
         ForCommand {
             text: String::new(),
