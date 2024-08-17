@@ -15,20 +15,11 @@ pub struct ForCommand {
 }
 
 impl Command for ForCommand {
-    fn run(&mut self, _: &mut ShellCore, _: bool) {
-        /*
+    fn run(&mut self, core: &mut ShellCore, _: bool) {
         core.loop_level += 1;
-        loop {
-            core.suspend_e_option = true;
-            self.while_script.as_mut()
-                .expect("SUSH INTERNAL ERROR (no script)")
-                .exec(core);
 
-            core.suspend_e_option = false;
-            if core.data.get_param("?") != "0" {
-                core.data.set_param("?", "0");
-                break;
-            }
+        for p in &core.data.get_position_params() {
+            core.data.set_param(&self.name, p);
 
             self.do_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
@@ -43,7 +34,6 @@ impl Command for ForCommand {
         if core.loop_level == 0 {
             core.break_counter = 0;
         }
-        */
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -75,8 +65,17 @@ impl ForCommand {
         ans.name = feeder.consume(len);
         ans.text += &ans.name.clone();
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
-
         true
+    }
+
+    fn eat_end(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if feeder.starts_with(";") || feeder.starts_with("\n") {
+            ans.text += &feeder.consume(1);
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            true
+        }else{
+            false
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
@@ -86,7 +85,12 @@ impl ForCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(3);
 
-        if ! Self::eat_name(feeder, &mut ans, core) {
+        if ! Self::eat_name(feeder, &mut ans, core) 
+        || ! Self::eat_end(feeder, &mut ans, core) {
+            return None;
+        }
+
+        if feeder.len() == 0 && ! feeder.feed_additional_line(core) {
             return None;
         }
 

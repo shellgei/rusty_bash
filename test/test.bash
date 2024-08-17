@@ -1554,6 +1554,19 @@ res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo w
 [ "$res" == "wait
 wait" ] || err $LINENO
 
+### FOR TEST ###
+
+res=$($com <<< 'set a b c ; for x ; do echo $x ; done')
+[ "$res" == "a
+b
+c" ] || err $LINENO
+
+res=$($com <<< 'set a b c ; for x
+do echo $x ; done')
+[ "$res" == "a
+b
+c" ] || err $LINENO
+
 ### IF TEST ###
 res=$($com <<< 'if true ; then ; fi')
 [ "$?" == "2" ] || err $LINENO
