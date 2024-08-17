@@ -1577,6 +1577,12 @@ res=$($com <<< 'for x in a{b,c} d ; do echo $x ; done')
 ac
 d" ] || err $LINENO
 
+res=$($com <<< 'set a b c ; for x in "$*" ; do echo $x ; done; for x in $* ; do echo $x ; done')
+[ "$res" == "a b c
+a
+b
+c" ] || err $LINENO
+
 ### IF TEST ###
 res=$($com <<< 'if true ; then ; fi')
 [ "$?" == "2" ] || err $LINENO
