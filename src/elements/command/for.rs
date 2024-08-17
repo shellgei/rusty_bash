@@ -4,12 +4,14 @@
 use crate::{ShellCore, Feeder, Script};
 use super::{Command, Redirect};
 use crate::elements::command;
+use crate::elements::word::Word;
 
 #[derive(Debug, Clone)]
 pub struct ForCommand {
     text: String,
     name: String,
     has_in: bool,
+    values: Vec<Word>,
     do_script: Option<Script>,
     redirects: Vec<Redirect>,
     force_fork: bool,
@@ -55,6 +57,7 @@ impl ForCommand {
             text: String::new(),
             name: String::new(),
             has_in: false,
+            values: vec![],
             do_script: None,
             redirects: vec![],
             force_fork: false,
@@ -75,6 +78,26 @@ impl ForCommand {
         true
     }
 
+    fn eat_in_part(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+        if ! feeder.starts_with("in") {
+            return;
+        }
+
+        ans.text += &feeder.consume(2);
+        ans.has_in = true;
+
+        loop {
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            match Word::parse(feeder, core, false) {
+                Some(w) => {
+                    ans.text += &w.text.clone();
+                    ans.values.push(w);
+                },
+                None    => return,
+            }
+        }
+    }
+
     fn eat_end(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if feeder.starts_with(";") || feeder.starts_with("\n") {
             ans.text += &feeder.consume(1);
@@ -92,8 +115,13 @@ impl ForCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(3);
 
-        if ! Self::eat_name(feeder, &mut ans, core) 
-        || ! Self::eat_end(feeder, &mut ans, core) {
+        if ! Self::eat_name(feeder, &mut ans, core) {
+            return None;
+        }
+
+        Self::eat_in_part(feeder, &mut ans, core);
+
+        if ! Self::eat_end(feeder, &mut ans, core) {
             return None;
         }
 
