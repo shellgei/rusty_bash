@@ -5,13 +5,16 @@ use crate::{ShellCore, Feeder, Script};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
+use crate::elements::arithmetic_expression::ArithmeticExpr;
 
 #[derive(Debug, Clone)]
 pub struct ForCommand {
     text: String,
     name: String,
     has_in: bool,
+    has_arithmetic: bool,
     values: Vec<Word>,
+    arithmetics: Vec<Option<ArithmeticExpr>>,
     do_script: Option<Script>,
     redirects: Vec<Redirect>,
     force_fork: bool,
@@ -21,29 +24,8 @@ impl Command for ForCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         core.loop_level += 1;
 
-        let values = match self.has_in {
-            true  => match self.eval_values(core) {
-                Some(vs) => vs,
-                None     => {
-                    core.data.set_param("?", "1");
-                    return;
-                },
-            },
-            false => core.data.get_position_params(),
-        };
+        self.run_with_values(core);
 
-        for p in values {
-            core.data.set_param(&self.name, &p);
-
-            self.do_script.as_mut()
-                .expect("SUSH INTERNAL ERROR (no script)")
-                .exec(core);
-
-            if core.break_counter > 0 {
-                core.break_counter -= 1;
-                break;
-            }
-        }
         core.loop_level -= 1;
         if core.loop_level == 0 {
             core.break_counter = 0;
@@ -70,12 +52,40 @@ impl ForCommand {
         Some(ans)
     }
 
+    fn run_with_values(&mut self, core: &mut ShellCore) {
+        let values = match self.has_in && ! self.has_arithmetic {
+            true  => match self.eval_values(core) {
+                Some(vs) => vs,
+                None     => {
+                    core.data.set_param("?", "1");
+                    return;
+                },
+            },
+            false => core.data.get_position_params(),
+        };
+
+        for p in values {
+            core.data.set_param(&self.name, &p);
+
+            self.do_script.as_mut()
+                .expect("SUSH INTERNAL ERROR (no script)")
+                .exec(core);
+
+            if core.break_counter > 0 {
+                core.break_counter -= 1;
+                break;
+            }
+        }
+    }
+
     fn new() -> ForCommand {
         ForCommand {
             text: String::new(),
             name: String::new(),
             has_in: false,
+            has_arithmetic: false,
             values: vec![],
+            arithmetics: vec![],
             do_script: None,
             redirects: vec![],
             force_fork: false,
@@ -94,6 +104,40 @@ impl ForCommand {
         ans.text += &ans.name.clone();
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
         true
+    }
+
+    fn eat_arithmetic(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with("((") {
+            return false;
+        }
+        ans.text += &feeder.consume(2);
+        ans.has_arithmetic = true;
+ 
+        loop {
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            if feeder.len() == 0 {
+                match feeder.feed_additional_line(core) {
+                    true  => continue,
+                    false => return false,
+                }
+            }
+
+            let a = ArithmeticExpr::parse(feeder, core);
+            if a.is_some() {
+                ans.text += &a.as_ref().unwrap().text.clone();
+            }
+            ans.arithmetics.push(a);
+
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            if feeder.starts_with(";") {
+                ans.text += &feeder.consume(1);
+            }else if feeder.starts_with("))") {
+                ans.text += &feeder.consume(2);
+                return true;
+            }else {
+                return false;
+            }
+        }
     }
 
     fn eat_in_part(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
@@ -117,6 +161,7 @@ impl ForCommand {
     }
 
     fn eat_end(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        command::eat_blank_with_comment(feeder, core, &mut ans.text);
         if feeder.starts_with(";") || feeder.starts_with("\n") {
             ans.text += &feeder.consume(1);
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
@@ -133,11 +178,11 @@ impl ForCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(3);
 
-        if ! Self::eat_name(feeder, &mut ans, core) {
+        if Self::eat_name(feeder, &mut ans, core) {
+            Self::eat_in_part(feeder, &mut ans, core);
+        }else if ! Self::eat_arithmetic(feeder, &mut ans, core) {
             return None;
         }
-
-        Self::eat_in_part(feeder, &mut ans, core);
 
         if ! Self::eat_end(feeder, &mut ans, core) {
             return None;
