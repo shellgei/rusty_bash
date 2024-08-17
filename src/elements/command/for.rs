@@ -30,7 +30,7 @@ impl Command for ForCommand {
             false => self.run_with_values(core),
         };
 
-        if ! ok && core.data.get_param("?") != "0" {
+        if ! ok && core.data.get_param("?") == "0" {
             core.data.set_param("?", "1");
         }
 
