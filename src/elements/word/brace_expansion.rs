@@ -22,12 +22,10 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
             continue;
         }
 
-        if i > 0 && after_dollar(word.subwords[i-1].get_text()) {
-            skip_until = *d.last().unwrap();
-            continue;
+        match i > 0 && after_dollar(word.subwords[i-1].get_text()) {
+            true  => skip_until = *d.last().unwrap(),
+            false => return expand(&word.subwords, &d),
         }
-
-        return expand(&word.subwords, &d);
     }
     vec![word.clone()]
 }
