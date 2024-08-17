@@ -10,11 +10,24 @@ fn after_dollar(s: &str) -> bool {
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     invalidate_brace(&mut word.subwords);
+
+    let mut skip_until = 0;
     for i in open_brace_pos(word) {
-        let d = parse(&word.subwords[i..], i);
-        if d.len() > 2 {
-            return expand(&word.subwords, &d);
+        if i < skip_until { //ブレース展開の終わりまで処理をスキップ
+            continue;
         }
+
+        let d = parse(&word.subwords[i..], i);
+        if d.len() <= 2 {
+            continue;
+        }
+
+        if i > 0 && after_dollar(word.subwords[i-1].get_text()) {
+            skip_until = *d.last().unwrap();
+            continue;
+        }
+
+        return expand(&word.subwords, &d);
     }
     vec![word.clone()]
 }
