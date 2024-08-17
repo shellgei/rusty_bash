@@ -7,10 +7,11 @@ use crate::elements::command;
 
 #[derive(Debug, Clone)]
 pub struct ForCommand {
-    pub text: String,
-    pub name: String,
-    pub do_script: Option<Script>,
-    pub redirects: Vec<Redirect>,
+    text: String,
+    name: String,
+    has_in: bool,
+    do_script: Option<Script>,
+    redirects: Vec<Redirect>,
     force_fork: bool,
 }
 
@@ -18,8 +19,13 @@ impl Command for ForCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         core.loop_level += 1;
 
-        for p in &core.data.get_position_params() {
-            core.data.set_param(&self.name, p);
+        let values = match self.has_in {
+            true  => vec![],
+            false => core.data.get_position_params(),
+        };
+
+        for p in values {
+            core.data.set_param(&self.name, &p);
 
             self.do_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
@@ -48,6 +54,7 @@ impl ForCommand {
         ForCommand {
             text: String::new(),
             name: String::new(),
+            has_in: false,
             do_script: None,
             redirects: vec![],
             force_fork: false,
