@@ -24,7 +24,14 @@ impl Command for ForCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         core.loop_level += 1;
 
-        self.run_with_values(core);
+        let ok = match self.has_arithmetic {
+            true  => self.run_with_arithmetic(core),
+            false => self.run_with_values(core),
+        };
+
+        if ! ok {
+            core.data.set_param("?", "1");
+        }
 
         core.loop_level -= 1;
         if core.loop_level == 0 {
@@ -52,14 +59,11 @@ impl ForCommand {
         Some(ans)
     }
 
-    fn run_with_values(&mut self, core: &mut ShellCore) {
-        let values = match self.has_in && ! self.has_arithmetic {
+    fn run_with_values(&mut self, core: &mut ShellCore) -> bool {
+        let values = match self.has_in {
             true  => match self.eval_values(core) {
                 Some(vs) => vs,
-                None     => {
-                    core.data.set_param("?", "1");
-                    return;
-                },
+                None     => return false,
             },
             false => core.data.get_position_params(),
         };
@@ -76,6 +80,47 @@ impl ForCommand {
                 break;
             }
         }
+        true
+    }
+
+    fn eval_arithmetic(a: &mut Option<ArithmeticExpr>, core: &mut ShellCore) -> (bool, String) {
+        if a.is_none() {
+            return (true, "1".to_string());
+        }
+
+        match a.clone().unwrap().eval(core) {
+            Some(n) => return (true, n),
+            None    => return (false, "0".to_string()), 
+        }
+    }
+
+    fn run_with_arithmetic(&mut self, core: &mut ShellCore) -> bool {
+        let (ok, _) = Self::eval_arithmetic(&mut self.arithmetics[0], core);
+        if ! ok {
+            return false;
+        }
+
+        loop {
+            let (ok, val) = Self::eval_arithmetic(&mut self.arithmetics[1], core);
+            if val == "0" {
+                return ok;
+            }
+
+            self.do_script.as_mut()
+                .expect("SUSH INTERNAL ERROR (no script)")
+                .exec(core);
+
+            if core.break_counter > 0 {
+                core.break_counter -= 1;
+                break;
+            }
+
+            let (ok, _) = Self::eval_arithmetic(&mut self.arithmetics[2], core);
+            if ! ok {
+                return false;
+            }
+        }
+        true
     }
 
     fn new() -> ForCommand {
@@ -130,10 +175,16 @@ impl ForCommand {
 
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
             if feeder.starts_with(";") {
+                if ans.arithmetics.len() >= 3 {
+                    return false;
+                }
                 ans.text += &feeder.consume(1);
             }else if feeder.starts_with("))") {
+                if ans.arithmetics.len() != 3 {
+                    return false;
+                }
                 ans.text += &feeder.consume(2);
-                return true;
+                return ans.arithmetics.len() == 3;
             }else {
                 return false;
             }
