@@ -6,6 +6,7 @@ use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
 use crate::elements::arithmetic_expression::ArithmeticExpr;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
 pub struct ForCommand {
@@ -29,7 +30,7 @@ impl Command for ForCommand {
             false => self.run_with_values(core),
         };
 
-        if ! ok {
+        if ! ok && core.data.get_param("?") != "0" {
             core.data.set_param("?", "1");
         }
 
@@ -69,6 +70,10 @@ impl ForCommand {
         };
 
         for p in values {
+            if core.sigint.load(Relaxed) {
+                return false;
+            }
+
             core.data.set_param(&self.name, &p);
 
             self.do_script.as_mut()
@@ -101,6 +106,10 @@ impl ForCommand {
         }
 
         loop {
+            if core.sigint.load(Relaxed) {
+                return false;
+            }
+
             let (ok, val) = Self::eval_arithmetic(&mut self.arithmetics[1], core);
             if val == "0" {
                 return ok;
