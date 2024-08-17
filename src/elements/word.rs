@@ -15,21 +15,22 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self) -> Option<Vec<String>> {
-        let ws = brace_expansion::eval(self);
-
-        Some(ws.iter().map(|w| w.text.clone()).filter(|arg| arg.len() > 0).collect())
+        let mut ws = brace_expansion::eval(self);
+        Some( Self::make_args(&mut ws) )
     }
 
-    pub fn new() -> Word {
+    fn make_args(words: &mut Vec<Word>) -> Vec<String> {
+        words.iter()
+              .map(|w| w.text.clone())
+              .filter(|w| w.len() > 0)
+              .collect()
+    }
+
+    pub fn new(subwords: Vec<Box::<dyn Subword>>) -> Word {
         Word {
-            text: String::new(),
-            subwords: vec![],
+            text: subwords.iter().map(|s| s.get_text()).collect(),
+            subwords: subwords,
         }
-    }
-
-    fn push(&mut self, subword: &Box<dyn Subword>) {
-        self.text += &subword.get_text().to_string();
-        self.subwords.push(subword.clone());
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
@@ -37,15 +38,15 @@ impl Word {
             return None;
         }
 
-        let mut ans = Word::new();
+        let mut subwords = vec![];
         while let Some(sw) = subword::parse(feeder, core) {
-            ans.push(&sw);
+            subwords.push(sw);
         }
 
-        if ans.text.len() == 0 {
-            None
-        }else{
-            Some(ans)
+        let ans = Word::new(subwords);
+        match ans.text.len() {
+            0 => None,
+            _ => Some(ans),
         }
     }
 }
