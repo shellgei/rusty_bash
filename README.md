@@ -69,7 +69,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 |-------------------|----|-------------------|----|-------------------|----|
 | if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: |
 | {} | :heavy_check_mark: | case | :heavy_check_mark: | until | :no_good: | select | :no_good: |
-| for | :no_good: |
+| for | :construction: |
 
 ### control operator
 

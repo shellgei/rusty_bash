@@ -6,6 +6,7 @@ pub mod case;
 pub mod simple;
 pub mod paren;
 pub mod brace;
+pub mod r#for;
 pub mod function_def;
 pub mod r#while;
 pub mod r#if;
@@ -18,6 +19,7 @@ use self::paren::ParenCommand;
 use self::brace::BraceCommand;
 use self::function_def::FunctionDefinition;
 use self::r#while::WhileCommand;
+use self::r#for::ForCommand;
 use self::r#if::IfCommand;
 use std::fmt;
 use std::fmt::Debug;
@@ -84,8 +86,8 @@ pub trait Command {
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
            left: &str, right: Vec<&str>, ans: &mut Option<Script>, permit_empty: bool) -> bool {
-   if ! feeder.starts_with(left) {
-       return false;
+    if ! feeder.starts_with(left) {
+        return false;
     }
     feeder.nest.push( (left.to_string(), right.iter().map(|e| e.to_string()).collect()) );
     feeder.consume(left.len());
@@ -134,6 +136,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Comman
     else if let Some(a) = ArithmeticCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
     else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = ForCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = CaseCommand::parse(feeder, core) { Some(Box::new(a)) }
     else{ None }
