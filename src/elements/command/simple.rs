@@ -49,11 +49,13 @@ impl Command for SimpleCommand {
         }
 
         if self.args.len() == 0 {
+            core.data.set_param("_", "");
             self.option_x_output(core);
             self.exec_set_params(core)
         }else if Self::check_sigint(core) {
             None
         }else{
+            core.data.set_param("_", &self.args.last().unwrap());
             self.option_x_output(core);
             self.exec_command(core, pipe)
         }
@@ -118,12 +120,9 @@ impl SimpleCommand {
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.data.functions.contains_key(&self.args[0]) ) {
-            core.data.set_param("_", self.args.last().unwrap());
             self.fork_exec(core, pipe)
         }else{
-            let backup = self.args.last().unwrap().clone();
             self.nofork_exec(core);
-            core.data.set_param("_", &backup);
             None
         }
     }
