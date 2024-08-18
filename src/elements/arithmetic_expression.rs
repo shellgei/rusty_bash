@@ -34,7 +34,7 @@ impl ArithmeticExpr {
         };
 
         match calculate(&es, core) {
-            Ok(Elem::Integer(n))  => Some(n.to_string()),
+            Ok(Elem::Integer(n))  => Self::ans_to_string(n, core),
             Ok(Elem::Float(f))  => Some(f.to_string()),
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
@@ -42,6 +42,57 @@ impl ArithmeticExpr {
             },
             _ => panic!("SUSH INTERNAL ERROR: invalid calculation result"),
         }
+    }
+
+    fn ans_to_string(n: i64, core: &mut ShellCore) -> Option<String> {
+        let base_str = core.data.get_param("_");
+
+        if base_str == "" {
+            return Some(n.to_string());
+        }
+
+        let base = match base_str.parse::<i64>() {
+            Ok(b) => b,
+            _     => return None,
+        };
+
+        if base < 1 || base > 64 {
+            return None;
+        }
+
+        let mut tmp = n.abs();
+        let mut digits = vec![];
+        while tmp != 0 {
+            digits.insert(0, (tmp % base) as u8);
+            tmp /= base;
+        }
+
+        let mut ans = Self::dec_to_str(&digits, base);
+        ans = base_str + "#" + &ans;
+
+        if n < 0 {
+            ans.insert(0, '-');
+        }
+
+        Some(ans)
+    }
+
+    fn dec_to_str(nums: &Vec<u8>, base: i64) -> String {
+        let shift = if base <= 0 {
+            |n| n + '0' as u8
+        }else if base <= 36 {
+            |n| if n < 10 { n + '0' as u8 }
+                else { n - 10 + 'A' as u8 } 
+        }else{
+            |n| if n < 10 { n + '0' as u8 }
+                else if n < 36 { n - 10 + 'a' as u8 } 
+                else if n < 62 { n - 36 + 'A' as u8 } 
+                else if n == 62 { '@' as u8 } 
+                else { '_' as u8 } 
+        };
+
+        let ascii = nums.iter().map(|n| shift(*n) ).collect::<Vec<u8>>();
+        std::str::from_utf8(&ascii).unwrap().to_string()
     }
 
     fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
