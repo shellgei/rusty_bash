@@ -37,8 +37,8 @@ impl ArithmeticExpr {
         core.data.set_param("_", ""); //_ is used for setting base of number output
         
         let ans = match calculate(&es, core) {
-            Ok(Elem::Integer(n))  => Self::ans_to_string(n, core),
-            Ok(Elem::Float(f))  => Some(f.to_string()),
+            Ok(Elem::Integer(n)) => Self::ans_to_string(n, core),
+            Ok(Elem::Float(f))   => Some(f.to_string()),
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
@@ -59,10 +59,14 @@ impl ArithmeticExpr {
 
         let base = match base_str.parse::<i64>() {
             Ok(b) => b,
-            _     => return None,
+            _     => {
+                eprintln!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
+                return None;
+            },
         };
 
-        if base < 1 || base > 64 {
+        if base <= 1 || base > 64 {
+            eprintln!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
             return None;
         }
 
