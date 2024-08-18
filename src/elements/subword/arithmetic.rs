@@ -16,11 +16,16 @@ impl Subword for Arithmetic {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        match self.arith.eval(core) {
-            Some(s) => self.text = s,
-            None    => return false,
-        }
-        true
+        let backup = core.data.get_param("_");
+        core.data.set_param("_", ""); //_ is used for setting base of number output
+        
+        let result = match self.arith.eval(core) {
+            Some(s) => {self.text = s; true},
+            None    => {false},
+        };
+
+        core.data.set_param("_", &backup);
+        result
     }
 }
 
