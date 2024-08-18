@@ -33,7 +33,10 @@ impl ArithmeticExpr {
             },
         };
 
-        match calculate(&es, core) {
+        let backup = core.data.get_param("_");
+        core.data.set_param("_", ""); //_ is used for setting base of number output
+        
+        let ans = match calculate(&es, core) {
             Ok(Elem::Integer(n))  => Self::ans_to_string(n, core),
             Ok(Elem::Float(f))  => Some(f.to_string()),
             Err(msg) => {
@@ -41,7 +44,10 @@ impl ArithmeticExpr {
                 None
             },
             _ => panic!("SUSH INTERNAL ERROR: invalid calculation result"),
-        }
+        };
+
+        core.data.set_param("_", &backup);
+        ans
     }
 
     fn ans_to_string(n: i64, core: &mut ShellCore) -> Option<String> {
