@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script};
+use crate::{error_message, ShellCore, Feeder, Script};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -77,7 +77,7 @@ impl ForCommand {
             core.data.set_param(&self.name, &p);
 
             self.do_script.as_mut()
-                .expect("SUSH INTERNAL ERROR (no script)")
+                .expect(&error_message::internal_str("no script)"))
                 .exec(core);
 
             if core.break_counter > 0 {
@@ -116,7 +116,7 @@ impl ForCommand {
             }
 
             self.do_script.as_mut()
-                .expect("SUSH INTERNAL ERROR (no script)")
+                .expect(&error_message::internal_str("no script"))
                 .exec(core);
 
             if core.break_counter > 0 {

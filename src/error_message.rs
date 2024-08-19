@@ -1,9 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
-//
+
+pub fn internal_str(s: &str) -> String {
+    format!("SUSH INTERNAL ERROR: {}", s)
+}
+
 pub fn internal(s: &str) -> ! {
-    let msg = format!("SUSH INTERNAL ERROR: {}", s);
-    panic!("{}", msg)
+    panic!("{}", internal_str(s))
 }
 
 pub fn exponent(s: &str) -> String {

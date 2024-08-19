@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script};
+use crate::{error_message, ShellCore, Feeder, Script};
 use super::{Command, Redirect};
 use crate::elements::command;
 
@@ -20,7 +20,7 @@ impl Command for WhileCommand {
         loop {
             core.suspend_e_option = true;
             self.while_script.as_mut()
-                .expect("SUSH INTERNAL ERROR (no script)")
+                .expect(&error_message::internal_str("no script"))
                 .exec(core);
 
             core.suspend_e_option = false;
@@ -30,7 +30,7 @@ impl Command for WhileCommand {
             }
 
             self.do_script.as_mut()
-                .expect("SUSH INTERNAL ERROR (no script)")
+                .expect(&error_message::internal_str("no script"))
                 .exec(core);
 
             if core.break_counter > 0 {

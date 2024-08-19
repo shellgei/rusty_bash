@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{error_message, ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
@@ -63,7 +63,7 @@ impl FunctionDefinition {
 
         core.source_function_level += 1;
         let pid = self.command.clone()
-                        .expect("SUSH INTERNAL ERROR: empty function")
+                        .expect(&error_message::internal_str("empty function"))
                         .exec(core, &mut dummy);
         core.return_flag = false;
         core.source_function_level -= 1;

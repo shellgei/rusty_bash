@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script};
+use crate::{error_message, ShellCore, Feeder, Script};
 use crate::elements::command;
 use crate::elements::word::Word;
 use crate::utils::glob;
@@ -19,7 +19,8 @@ pub struct CaseCommand {
 impl Command for CaseCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         let mut next = false;
-        let word = self.word.clone().expect("SUSH INTERNAL ERROR: no case condition");
+        let word = self.word.clone()
+                   .expect(&error_message::internal_str("no case condition"));
 
         if core.data.flags.contains('x') {
             let ps4 = core.get_ps4();
