@@ -1,6 +1,19 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::ShellCore;
+
+pub fn print(s: &str, core: &mut ShellCore) {
+    match core.read_stdin {
+        true  => {
+            let lineno = core.data.get_param("LINENO");
+            let msg = format!("line {}: {}", &lineno, s);
+            eprintln!("sush: {}", &msg)
+        },
+        false => eprintln!("sush: {}", &s),
+    }
+}
+
 pub fn internal_str(s: &str) -> String {
     format!("SUSH INTERNAL ERROR: {}", s)
 }

@@ -72,7 +72,7 @@ impl Command for SimpleCommand {
             let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
-            self.exec_external_command();
+            self.exec_external_command(core);
         }
 
         core.data.pop_local();
@@ -90,7 +90,7 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(&mut self) -> ! {
+    fn exec_external_command(&mut self, core: &mut ShellCore) -> ! {
         self.set_environment_variables();
         let cargs = Self::to_cargs(&self.args);
 
@@ -104,7 +104,8 @@ impl SimpleCommand {
                 process::exit(126)
             },
             Err(Errno::ENOENT) => {
-                eprintln!("{}: command not found", &self.args[0]);
+                let msg = format!("{}: command not found", &self.args[0]);
+                error_message::print(&msg, core);
                 process::exit(127)
             },
             Err(err) => {
