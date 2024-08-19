@@ -105,14 +105,14 @@ impl SimpleCommand {
             },
             Err(Errno::ENOENT) => {
                 let msg = format!("{}: command not found", &self.args[0]);
-                error_message::print(&msg, core);
+                error_message::print(&msg, core, false);
                 process::exit(127)
             },
             Err(err) => {
                 eprintln!("Failed to execute. {:?}", err);
                 process::exit(127)
             }
-            _ => error_message::internal(" (never come here)")
+            _ => error_message::internal("never come here")
         }
     }
 

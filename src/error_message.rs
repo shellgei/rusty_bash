@@ -3,14 +3,14 @@
 
 use crate::ShellCore;
 
-pub fn print(s: &str, core: &mut ShellCore) {
-    match core.read_stdin {
-        true  => {
+pub fn print(s: &str, core: &mut ShellCore, show_sush: bool) {
+    match (core.read_stdin, show_sush) {
+        (true, _) => {
             let lineno = core.data.get_param("LINENO");
-            let msg = format!("line {}: {}", &lineno, s);
-            eprintln!("sush: {}", &msg)
+            eprintln!("sush: line {}: {}", &lineno, s)
         },
-        false => eprintln!("sush: {}", &s),
+        (false, true)  => eprintln!("sush: {}", &s),
+        (false, false) => eprintln!("{}", &s),
     }
 }
 

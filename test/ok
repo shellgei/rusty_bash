@@ -1,3 +1,3 @@
-./brace.bash
 ./builtins.bash
+./brace.bash
 ./job.bash
