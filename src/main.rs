@@ -4,6 +4,7 @@
 mod core;
 mod feeder;
 mod elements;
+mod error_message;
 mod utils;
 
 use std::{env, process, thread, time};

@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{error_message, ShellCore};
 use super::elem::Elem;
-use super::{elem, error_msg, float, int, rev_polish, trenary, word};
+use super::{elem, float, int, rev_polish, trenary, word};
 
 pub fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
     let n = match stack.pop() {
@@ -91,7 +91,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
 
     let rev_pol = match rev_polish::rearrange(elements) {
         Ok(ans) => ans,
-        Err(e)  => return Err( error_msg::syntax(&elem::to_string(&e)) ),
+        Err(e)  => return Err( error_message::syntax(&elem::to_string(&e)) ),
     };
 
     let mut stack = vec![];
@@ -106,7 +106,7 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             Elem::Increment(n)     => inc(n, &mut stack, core),
             Elem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
-            _ => Err( error_msg::syntax(&elem::to_string(&e)) ),
+            _ => Err( error_message::syntax(&elem::to_string(&e)) ),
         };
 
         if let Err(err_msg) = result {
@@ -115,13 +115,13 @@ fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String
     }
 
     if stack.len() != 1 {
-        return Err( format!("unknown syntax error (stack inconsistency)",) );
+        return Err( format!("unknown syntax error_message (stack inconsistency)",) );
     }
 
     match stack.pop() {
         Some(Elem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
         Some(elem)               => Ok(elem),
-        None                     => Err( format!("unknown syntax error",) ),
+        None                     => Err( format!("unknown syntax error_message",) ),
     }
 }
 

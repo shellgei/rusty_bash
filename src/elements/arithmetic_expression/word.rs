@@ -1,15 +1,15 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
-use super::{Elem, float, int, error_msg};
+use crate::{error_message, ShellCore, Feeder};
+use super::{Elem, float, int};
 use crate::elements::arithmetic_expression::Word;
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<Elem, String> {
     if pre_increment != 0 && post_increment != 0 
     || w.text.find('\'').is_some() {
-        return Err(error_msg::syntax(&w.text));
+        return Err(error_message::syntax(&w.text));
     }
 
     let name = match w.eval_as_value(core) {
@@ -30,7 +30,7 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
 
 fn to_num(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
     if w.text.find('\'').is_some() {
-        return Err(error_msg::syntax(&w.text));
+        return Err(error_message::syntax(&w.text));
     }
 
     let name = match w.eval_as_value(core) {
@@ -58,7 +58,7 @@ fn str_to_num(name: &str, core: &mut ShellCore) -> Result<Elem, String> {
         }
 
         if i == RESOLVE_LIMIT - 1 {
-            return Err(error_msg::recursion(&name));
+            return Err(error_message::recursion(&name));
         }
     }
 
@@ -69,14 +69,14 @@ fn str_to_num(name: &str, core: &mut ShellCore) -> Result<Elem, String> {
     } else if let Some(f) = float::parse(&name) {
         Ok( Elem::Float(f) )
     }else{
-        Err(error_msg::syntax(&name))
+        Err(error_message::syntax(&name))
     }
 }
 
 fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<Elem, String> {
     if ! is_name(name, core) {
         return match inc != 0 && ! pre {
-            true  => Err(error_msg::syntax(name)),
+            true  => Err(error_message::syntax(name)),
             false => str_to_num(&name, core),
         }
     }
@@ -116,13 +116,13 @@ pub fn get_sign(s: &mut String) -> String {
 pub fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<(), String> {
     let right = match stack.pop() {
         Some(e) => e,
-        _       => return Err( error_msg::syntax(op) ),
+        _       => return Err( error_message::syntax(op) ),
     };
 
     let left = match stack.pop() {
         Some(Elem::Word(w, 0)) => w,
-        Some(Elem::Word(_, _)) => return Err( error_msg::assignment(op) ),
-        _ => return Err( error_msg::assignment(op) ),
+        Some(Elem::Word(_, _)) => return Err( error_message::assignment(op) ),
+        _ => return Err( error_message::assignment(op) ),
     };
 
     match subs(op, &left, &right, core) {
@@ -135,7 +135,7 @@ pub fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Res
 fn subs(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
                                       -> Result<Elem, String> {
     if w.text.find('\'').is_some() {
-        return Err(error_msg::syntax(&w.text));
+        return Err(error_message::syntax(&w.text));
     }
 
     let name = match w.eval_as_value(core) {

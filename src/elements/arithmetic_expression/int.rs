@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use super::{Elem, error_msg, word};
+use crate::{error_message, ShellCore};
+use super::{Elem, word};
 
 pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
     match op {
@@ -49,7 +49,7 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Resul
                 let r = right.try_into().unwrap();
                 left.pow(r)
             }else{
-                return Err( error_msg::exponent(&right.to_string()) );
+                return Err( error_message::exponent(&right.to_string()) );
             }
         },
         _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
