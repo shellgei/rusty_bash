@@ -18,6 +18,7 @@ pub struct Feeder {
     remaining: String,
     backup: Vec<String>,
     pub nest: Vec<(String, Vec<String>)>,
+    lineno: usize,
 }
 
 impl Feeder {
@@ -26,6 +27,7 @@ impl Feeder {
             remaining: s.to_string(),
             backup: vec![],
             nest: vec![("".to_string(), vec![])],
+            lineno: 0,
         }
     }
 
@@ -88,7 +90,7 @@ impl Feeder {
 
         match line { 
             Ok(ln) => {
-                self.add_line(ln.clone());
+                self.add_line(ln.clone(), core);
                 self.add_backup(&ln);
                 Ok(())
             },
@@ -123,14 +125,16 @@ impl Feeder {
 
         match line {
             Ok(ln) => {
-                self.add_line(ln);
+                self.add_line(ln, core);
                 Ok(())
             },
             Err(e) => Err(e),
         }
     }
 
-    pub fn add_line(&mut self, line: String) {
+    pub fn add_line(&mut self, line: String, core: &mut ShellCore) {
+        self.lineno += 1;
+        core.data.set_param("LINENO", &self.lineno.to_string());
         match self.remaining.len() {
             0 => self.remaining = line,
             _ => self.remaining += &line,
