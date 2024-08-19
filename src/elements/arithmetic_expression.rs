@@ -42,7 +42,7 @@ impl ArithmeticExpr {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
             },
-            _ => panic!("SUSH INTERNAL ERROR: invalid calculation result"),
+            _ => error_message::internal("invalid calculation result"),
         };
 
         core.data.set_param("_", &backup);

@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{error_message, ShellCore, Feeder};
 use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
 
@@ -145,7 +145,7 @@ impl ExtGlob {
                 ans.text += &feeder.consume(1);
                 ans.subwords.push( Box::new( SimpleSubword {text: "|".to_string() } ) );
             }else if feeder.len() > 0 {
-                panic!("SUSH INTERNAL ERROR: unknown chars in double quoted word");
+                error_message::internal("unknown chars in double quoted word");
             }else if ! feeder.feed_additional_line(core) {
                 return None;
             }

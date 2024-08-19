@@ -96,7 +96,7 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
                 false => Ok(Elem::Float(n)),
             }
         },
-        Ok(_) => panic!("SUSH INTERNAL ERROR: unknown element"),
+        Ok(_) => error_message::internal("unknown element"),
         Err(err_msg) => return Err(err_msg), 
     }
 }
@@ -146,7 +146,7 @@ fn subs(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
     let right_str = match right_value {
         Elem::Integer(n) => n.to_string(),
         Elem::Float(f)   => f.to_string(),
-        _ => panic!("SUSH INTERNAL ERROR: not a value"),
+        _ => error_message::internal("not a value"),
     };
 
     match op {

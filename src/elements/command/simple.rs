@@ -3,7 +3,7 @@
 
 pub mod parser;
 
-use crate::ShellCore;
+use crate::{error_message, ShellCore};
 use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
@@ -111,7 +111,7 @@ impl SimpleCommand {
                 eprintln!("Failed to execute. {:?}", err);
                 process::exit(127)
             }
-            _ => panic!("SUSH INTERNAL ERROR (never come here)")
+            _ => error_message::internal(" (never come here)")
         }
     }
 

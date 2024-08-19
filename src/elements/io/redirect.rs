@@ -6,7 +6,7 @@ use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::elements::io;
 use crate::elements::word::Word;
-use crate::{Feeder, ShellCore};
+use crate::{error_message, Feeder, ShellCore};
 
 #[derive(Debug, Clone)]
 pub struct Redirect {
@@ -39,7 +39,7 @@ impl Redirect {
             ">&" => self.redirect_output_fd(restore),
             ">>" => self.redirect_append(restore),
             "&>" => self.redirect_both_output(restore),
-            _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
+            _ => error_message::internal(" (Unknown redirect symbol)"),
         }
     }
 

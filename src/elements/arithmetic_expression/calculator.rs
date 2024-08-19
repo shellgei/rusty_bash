@@ -42,7 +42,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
         (Elem::Float(fl), Elem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack),
         (Elem::Integer(nl), Elem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack),
         (Elem::Integer(nl), Elem::Integer(nr)) => int::bin_calc(op, nl, nr, stack),
-        _ => panic!("SUSH INTERNAL ERROR: invalid operand"),
+        _ => error_message::internal("invalid operand"),
     };
 }
 
@@ -55,7 +55,7 @@ fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Res
     match operand {
         Elem::Float(num)   => float::unary_calc(op, num, stack),
         Elem::Integer(num) => int::unary_calc(op, num ,stack),
-        _ => panic!("SUSH INTERNAL ERROR: unknown operand"),
+        _ => error_message::internal("unknown operand"),
     }
 }
 

@@ -10,7 +10,7 @@ pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<Elem>) -> Result<(), Strin
         "-"  => stack.push( Elem::Integer(-num) ),
         "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
         "~"  => stack.push( Elem::Integer( !num ) ),
-        _ => panic!("SUSH INTERNAL ERROR: unknown unary operator"),
+        _ => error_message::internal("unknown unary operator"),
     }
     Ok(())
 }
@@ -52,7 +52,7 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Resul
                 return Err( error_message::exponent(&right.to_string()) );
             }
         },
-        _    => panic!("SUSH INTERNAL ERROR: unknown binary operator"),
+        _    => error_message::internal("unknown binary operator"),
     };
 
     stack.push(Elem::Integer(ans));

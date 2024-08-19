@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore, utils};
+use crate::{error_message, Feeder, ShellCore, utils};
 use crate::core::builtins::completion;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
@@ -97,7 +97,7 @@ impl Terminal {
     fn get_cur_pos(core: &mut ShellCore) -> i32 {
         match core.data.get_param("COMP_CWORD").parse::<i32>() {
             Ok(i) => i,
-            _     => panic!("SUSH INTERNAL ERROR: no COMP_CWORD"),
+            _     => error_message::internal("no COMP_CWORD"),
         }
     }
 

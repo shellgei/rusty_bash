@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script};
+use crate::{error_message, ShellCore, Feeder, Script};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use nix::unistd::Pid;
@@ -20,12 +20,12 @@ impl Command for ParenCommand {
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
         if ! fork {
-            panic!("SUSH INTERNAL ERROR (no fork for subshell)");
+            error_message::internal(" (no fork for subshell)");
         }
 
         match self.script {
             Some(ref mut s) => s.exec(core),
-            _ => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
+            _ => error_message::internal(" (ParenCommand::exec)"),
         }
     }
 

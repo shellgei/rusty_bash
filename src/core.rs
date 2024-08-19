@@ -21,6 +21,7 @@ use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
 use nix::unistd::Pid;
+use crate::error_message;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -270,7 +271,7 @@ impl ShellCore {
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
         if args.len() == 0 {
-            panic!("SUSH INTERNAL ERROR (no arg for builtins)");
+            error_message::internal(" (no arg for builtins)");
         }
 
         if self.builtins.contains_key(&args[0]) {

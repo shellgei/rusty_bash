@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script};
+use crate::{error_message, ShellCore, Feeder, Script};
 use super::{Command, Redirect};
 use crate::elements::command;
 
@@ -17,7 +17,7 @@ impl Command for BraceCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         match self.script {
             Some(ref mut s) => s.exec(core),
-            _ => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
+            _ => error_message::internal(" (ParenCommand::exec)"),
         }
     }
 

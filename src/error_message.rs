@@ -1,5 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
+//
+pub fn internal(s: &str) -> ! {
+    let msg = format!("SUSH INTERNAL ERROR: {}", s);
+    panic!("{}", msg)
+}
 
 pub fn exponent(s: &str) -> String {
     format!("exponent less than 0 (error token is \"{}\")", s)

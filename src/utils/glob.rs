@@ -1,6 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::error_message;
+
 #[derive(Debug)]
 enum Wildcard {
     Normal(String),
@@ -81,7 +83,7 @@ fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
         '+' => ext_more_than_zero(cands, patterns),
         '@' => ext_once(cands, patterns),
         '!' => ext_not(cands, patterns),
-        _   => panic!("SUSH INTERNAL ERROR: unknown extglob prefix"),
+        _   => error_message::internal("unknown extglob prefix"),
     }
 }
 
