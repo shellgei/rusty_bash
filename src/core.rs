@@ -159,11 +159,13 @@ impl ShellCore {
                 148
             },
             Ok(unsupported) => {
-                eprintln!("Unsupported: {:?}", unsupported);
+                let msg = format!("Unsupported wait status: {:?}", unsupported);
+                error_message::print(&msg, self, true);
                 1
             },
             Err(err) => {
-                panic!("Error: {:?}", err);
+                let msg = format!("Error: {:?}", err);
+                error_message::internal(&msg);
             },
         };
 
@@ -291,7 +293,8 @@ impl ShellCore {
         let exit_status = match self.data.get_param("?").parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
-                eprintln!("sush: exit: {}: numeric argument required", self.data.get_param("?"));
+                let msg = format!("exit: {}: numeric argument required", self.data.get_param("?"));
+                error_message::print(&msg, self, true);
                 2
             },
         };
