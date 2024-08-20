@@ -94,7 +94,7 @@ impl ShellCore {
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             suspend_e_option: false,
-            script_name: "stdin".to_string(),
+            script_name: "-".to_string(),
         };
 
         core.init_current_directory();

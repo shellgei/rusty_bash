@@ -72,12 +72,12 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn main() {
-    let mut script = "stdin".to_string();
+    let mut script = "-".to_string();
 
     let mut args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
-    }else if args.len() > 1 {
+    }else if args.len() > 1 && ! args[1].starts_with("-") {
         match File::open(args[1].clone()) {
             Ok(file) => {
                 script = args[1].to_string();
