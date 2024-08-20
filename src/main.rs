@@ -72,16 +72,24 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn main() {
-    let mut script = "-".to_string();
     let mut arg_offset = 0;
 
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
-    }else if args.len() > 1 && ! args[1].starts_with("-") {
-        match File::open(args[1].clone()) {
+    }
+
+    let script = if args.len() > 1 && ! args[1].starts_with("-") {
+        args[1].clone()
+    }else if args.len() > 2 && args[1].starts_with("-") {
+        args[2].clone()
+    }else{
+        "-".to_string()
+    };
+
+    if script != "-" {
+        match File::open(&script) {
             Ok(file) => {
-                script = args[1].to_string();
                 arg_offset += 1;
                 let fd = file.into_raw_fd();
                 let result = io::replace(fd, 0);
