@@ -72,16 +72,22 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn main() {
-    let mut arg_offset = 0;
-
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
 
+    let mut options = args.clone();
+    let mut parameters = args.clone();
+
     let script = if args.len() > 1 && ! args[1].starts_with("-") {
+        options.remove(1);
+        parameters.remove(0);
         args[1].clone()
-    }else if args.len() > 2 && args[1].starts_with("-") {
+    }else if args.len() > 2 && args[1].starts_with("-") { //for shebang with option
+        options.remove(2);
+        parameters.remove(0);
+        parameters.remove(0);
         args[2].clone()
     }else{
         "-".to_string()
@@ -90,7 +96,6 @@ fn main() {
     if script != "-" {
         match File::open(&script) {
             Ok(file) => {
-                arg_offset += 1;
                 let fd = file.into_raw_fd();
                 let result = io::replace(fd, 0);
                 if ! result {
@@ -106,7 +111,8 @@ fn main() {
 
     let mut core = ShellCore::new();
     core.script_name = script;
-    builtins::option_commands::set(&mut core, &mut args[arg_offset..].to_vec());
+    builtins::option_commands::set(&mut core, &mut options);
+    builtins::option_commands::set_parameters(&mut core, &mut parameters);
     run_signal_check(&mut core);
     read_rc_file(&mut core);
     main_loop(&mut core);
