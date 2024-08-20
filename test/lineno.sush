@@ -1,4 +1,4 @@
-#!/bin/sush
+#!/bin/sush -xv
 
 echo $0
 echo $1
