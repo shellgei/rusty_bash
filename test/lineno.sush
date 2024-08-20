@@ -1,0 +1,4 @@
+#!/home/ueda/GIT/rusty_bash/target/debug/sush
+
+echo $0
+echo $1

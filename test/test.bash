@@ -1310,10 +1310,10 @@ b
 res=$($com <<< 'echo ${RUSTY_BASH_A}c')
 [ "$res" == "a b c" ] || err $LINENO
 
-res=$($com <<< 'mkdir -p tmp; cd tmp; echo .* | grep -F '. ..'; cd ..; rmdir tmp')
+res=$($com <<< 'mkdir -p tmp; cd tmp; echo .* | grep -F ". .."; cd ..; rmdir tmp')
 [ "$res" == '. ..' ] || err $LINENO
 
-res=$($com <<< 'mkdir tmp; cd tmp; echo .*/ | grep -F '. ..'; cd ..; rmdir tmp')
+res=$($com <<< 'mkdir tmp; cd tmp; echo .*/ | grep -F "../ ./"; cd ..; rmdir tmp')
 [ "$res" == '../ ./' ] || err $LINENO
 
 # command expansion

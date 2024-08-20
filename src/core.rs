@@ -53,6 +53,7 @@ pub struct ShellCore {
     pub options: Options,
     pub shopts: Options,
     pub suspend_e_option: bool,
+    pub script_name: String,
 }
 
 fn ignore_signal(sig: Signal) {
@@ -93,6 +94,7 @@ impl ShellCore {
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             suspend_e_option: false,
+            script_name: "stdin".to_string(),
         };
 
         core.init_current_directory();
@@ -290,10 +292,11 @@ impl ShellCore {
     pub fn exit(&mut self) -> ! {
         self.write_history_to_file();
 
-        let exit_status = match self.data.get_param("?").parse::<i32>() {
+        let es_str = self.data.get_param("?");
+        let exit_status = match es_str.parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
-                let msg = format!("exit: {}: numeric argument required", self.data.get_param("?"));
+                let msg = format!("exit: {}: numeric argument required", es_str);
                 error_message::print(&msg, self, true);
                 2
             },
@@ -332,7 +335,10 @@ impl ShellCore {
     pub fn init_current_directory(&mut self) {
         match env::current_dir() {
             Ok(path) => self.current_dir = Some(path),
-            Err(err) => eprintln!("pwd: error retrieving current directory: {:?}", err),
+            Err(err) => {
+                let msg = format!("pwd: error retrieving current directory: {:?}", err);
+                error_message::print(&msg, self, true);
+            },
         }
     }
 

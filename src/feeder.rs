@@ -4,7 +4,7 @@
 mod terminal;
 mod scanner;
 
-use std::io;
+use std::{io, process};
 use crate::ShellCore;
 use std::sync::atomic::Ordering::Relaxed;
 
@@ -64,12 +64,16 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_line_stdin() -> Result<String, InputError> {
+    fn read_line_stdin(core: &mut ShellCore) -> Result<String, InputError> {
         let mut line = String::new();
 
-        let len = io::stdin()
-            .read_line(&mut line)
-            .expect("SUSHI INTERNAL ERROR: Failed to read line");
+        let len = match io::stdin().read_line(&mut line) {
+            Ok(len)  => len,
+            Err(why) => {
+                eprintln!("sush: {}: {}", &core.script_name, why);
+                process::exit(1)
+            },
+        };
 
         if len == 0 {
             Err(InputError::Eof)
@@ -85,7 +89,7 @@ impl Feeder {
 
         let line = match ! core.read_stdin {
             true  => terminal::read_line(core, "PS2"),
-            false => Self::read_line_stdin(),
+            false => Self::read_line_stdin(core),
         };
 
         match line { 
@@ -120,7 +124,7 @@ impl Feeder {
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = match ! core.read_stdin {
             true  => terminal::read_line(core, "PS1"),
-            false => Self::read_line_stdin(),
+            false => Self::read_line_stdin(core),
         };
 
         match line {

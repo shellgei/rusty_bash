@@ -8,10 +8,13 @@ mod error_message;
 mod utils;
 
 use std::{env, process, thread, time};
+use std::fs::File;
+use std::os::fd::IntoRawFd;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
+use crate::elements::io;
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
 use signal_hook::consts;
@@ -69,12 +72,30 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn main() {
+    let mut script = "stdin".to_string();
+
     let mut args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
+    }else if args.len() > 1 {
+        match File::open(args[1].clone()) {
+            Ok(file) => {
+                script = args[1].to_string();
+                let fd = file.into_raw_fd();
+                let result = io::replace(fd, 0);
+                if ! result {
+                    io::close(fd, &format!("sush(fatal): file does not close"));
+                }
+            },
+            Err(why)  => {
+                eprintln!("sush: {}: {}", &args[1], why);
+                process::exit(1);
+            },
+        }
     }
 
     let mut core = ShellCore::new();
+    core.script_name = script;
     builtins::option_commands::set(&mut core, &mut args);
     run_signal_check(&mut core);
     read_rc_file(&mut core);
