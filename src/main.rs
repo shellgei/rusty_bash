@@ -59,6 +59,10 @@ fn run_signal_check(core: &mut ShellCore) {
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
 fn read_rc_file(core: &mut ShellCore) {
+    if ! core.data.flags.contains("i") {
+        return;
+    }
+
     let dir = match core.data.get_param("CARGO_MANIFEST_DIR").as_str() {
         "" => core.data.get_param("HOME"),
         s  => s.to_string(),

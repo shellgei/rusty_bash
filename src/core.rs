@@ -103,6 +103,8 @@ impl ShellCore {
         ignore_signal(Signal::SIGPIPE);
         ignore_signal(Signal::SIGTSTP);
 
+        core.data.set_param("PS4", "+ ");
+
         if unistd::isatty(0) == Ok(true) {
             const V: &'static str = env!("CARGO_PKG_VERSION");
             eprintln!("Rusty Bash (a.k.a. Sushi shell), version {}", V);

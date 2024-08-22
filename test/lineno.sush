@@ -1,4 +1,4 @@
-#!/bin/sush -xv
+#!../target/release/sush -xv
 
 echo $0
 echo $1

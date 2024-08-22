@@ -2,3 +2,8 @@
 ./test_script.bash
 ./test_script.bash
 ./test_script.bash
+./test_script.bash
+../test/test_script.bash
+../test/test_script.bash
+./test_script.bash
+./test_script.bash
