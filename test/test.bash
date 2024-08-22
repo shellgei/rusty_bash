@@ -15,9 +15,9 @@ com=../target/release/sush
 : > error
 : > ok
 
-./job.bash nobuild &
-./brace.bash nobuild &
-./builtins.bash nobuild &
+./test_job.bash nobuild &
+./test_brace.bash nobuild &
+./test_builtins.bash nobuild &
 
 ### SIMPLE COMMAND TEST ###
 
