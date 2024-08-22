@@ -34,9 +34,6 @@ impl ArithmeticExpr {
             },
         };
 
-        let backup = core.data.get_param("_");
-        core.data.set_param("_", ""); //_ is used for setting base of number output
-        
         let ans = match calculate(&es, core) {
             Ok(Elem::Integer(n)) => self.ans_to_string(n),
             Ok(Elem::Float(f))   => Some(f.to_string()),
@@ -47,7 +44,6 @@ impl ArithmeticExpr {
             _ => error_message::internal("invalid calculation result"),
         };
 
-        core.data.set_param("_", &backup);
         ans
     }
 
