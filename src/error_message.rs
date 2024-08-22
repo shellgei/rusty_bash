@@ -5,7 +5,6 @@ use crate::ShellCore;
 
 pub fn print(s: &str, core: &mut ShellCore, show_sush: bool) {
     let name = core.data.get_param("0");
-
     match (core.read_stdin, show_sush) {
         (true, _) => {
             let lineno = core.data.get_param("LINENO");
