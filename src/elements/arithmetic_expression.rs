@@ -20,6 +20,8 @@ pub struct ArithmeticExpr {
     pub text: String,
     elements: Vec<Elem>,
     paren_stack: Vec<char>,
+    output_base: String,
+    hide_base: bool,
 }
 
 impl ArithmeticExpr {
@@ -36,7 +38,7 @@ impl ArithmeticExpr {
         core.data.set_param("_", ""); //_ is used for setting base of number output
         
         let ans = match calculate(&es, core) {
-            Ok(Elem::Integer(n)) => Self::ans_to_string(n, core),
+            Ok(Elem::Integer(n)) => self.ans_to_string(n),
             Ok(Elem::Float(f))   => Some(f.to_string()),
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
@@ -49,10 +51,10 @@ impl ArithmeticExpr {
         ans
     }
 
-    fn ans_to_string(n: i64, core: &mut ShellCore) -> Option<String> {
-        let base_str = core.data.get_param("_");
+    fn ans_to_string(&self, n: i64) -> Option<String> {
+        let base_str = self.output_base.clone();
 
-        if base_str == "" {
+        if base_str == "10" {
             return Some(n.to_string());
         }
 
@@ -77,7 +79,9 @@ impl ArithmeticExpr {
         }
 
         let mut ans = Self::dec_to_str(&digits, base);
-        ans = base_str + "#" + &ans;
+        if ! self.hide_base {
+            ans = base_str + "#" + &ans;
+        }
 
         if n < 0 {
             ans.insert(0, '-');
@@ -169,6 +173,8 @@ impl ArithmeticExpr {
             text: String::new(),
             elements: vec![],
             paren_stack: vec![],
+            output_base: "10".to_string(),
+            hide_base: false,
         }
     }
 }

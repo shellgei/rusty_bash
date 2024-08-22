@@ -64,6 +64,34 @@ impl Feeder {
         self.scanner_one_of(&["+", "-", "!", "~"])
     }
 
+    pub fn scanner_math_output_format(&mut self, core: &mut ShellCore) -> usize {
+        self.backslash_check_and_feed(vec!["[#", "["], core);
+        if ! self.starts_with("[#") {
+            return 0;
+        }
+
+        let mut ans = 2;
+        let mut ok = false;
+        for (i, ch) in self.remaining[2..].chars().enumerate() {
+            if i == 0 && ch == '#' {
+                ans += 1;
+                continue;
+            }
+            if '0' <= ch && ch <= '9' {
+                ok = true;
+                ans += 1;
+                continue;
+            }
+
+            if ch == ']' && ok {
+                return ans + 1;
+            }
+
+            break;
+        }
+        0
+    }
+
     pub fn scanner_extglob_head(&self) -> usize {
         self.scanner_one_of(&["?(", "*(", "+(", "@(", "!("])
     }

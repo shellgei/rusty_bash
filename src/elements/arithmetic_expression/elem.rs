@@ -15,6 +15,7 @@ pub enum Elem {
     LeftParen,
     RightParen,
     Increment(i64), //pre increment
+//    OutputFormat(String, bool), // ex.: [#8] -> Base("8", false), [##16] -> Base("16", true) 
 }
 
 pub fn op_order(op: &Elem) -> u8 {

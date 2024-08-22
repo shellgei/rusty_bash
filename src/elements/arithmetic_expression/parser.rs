@@ -91,6 +91,20 @@ impl ArithmeticExpr {
         true
     }
 
+    fn eat_output_format(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_math_output_format(core);
+        if len == 0 {
+            return false;
+        }
+
+        let mut s = feeder.consume(len);
+        ans.text += &s.clone();
+        ans.hide_base = s.find("##").is_some();
+        s.retain(|c| '0' <= c && c <= '9');
+        ans.output_base = s;
+        true
+    }
+
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(Elem::Integer(_)) 
@@ -152,7 +166,8 @@ impl ArithmeticExpr {
                 break;
             }
 
-            if Self::eat_conditional_op(feeder, &mut ans, core) 
+            if Self::eat_output_format(feeder, &mut ans, core) 
+            || Self::eat_conditional_op(feeder, &mut ans, core) 
             || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, &mut ans)
