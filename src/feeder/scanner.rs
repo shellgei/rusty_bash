@@ -276,4 +276,16 @@ impl Feeder {
     pub fn scanner_parameter_default_symbol(&mut self) -> usize {
         self.scanner_one_of(&[":-", ":=", ":?", ":+"])
     }
+
+    pub fn scanner_file_check_option(&mut self, core: &mut ShellCore) -> usize {
+        self.backslash_check_and_feed(vec!["-"], core);
+        let ans = self.scanner_one_of(&["-a", "-e"]);
+        let opt = self.remaining[0..ans].to_string();
+        self.backslash_check_and_feed(vec![&opt], core);
+
+        match self.remaining.chars().nth(ans+1) {
+            Some(' ') | Some('\t') => ans,
+            _ => 0,
+        }
+    }
 }

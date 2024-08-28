@@ -1,22 +1,25 @@
-//SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
+use crate::elements::conditional_expr::ConditionalExpr;
 
+#[derive(Debug, Clone)]
 enum Elem {
     RightParen,
     LeftParen,
     Not,  // ! 
     And,  // &&
     Or,  // ||
-    Expression(String),
+    Expression(ConditionalExpr),
 }
 
 #[derive(Debug, Clone)]
 pub struct TestCommand {
     text: String,
+    elements: Vec<Elem>,
     redirects: Vec<Redirect>,
     force_fork: bool,
 }
@@ -37,16 +40,11 @@ impl TestCommand {
     fn new() -> TestCommand {
         TestCommand {
             text: String::new(),
+            elements: vec![],
             redirects: vec![],
             force_fork: false,
         }
     }
-
-    /*
-    fn eat_file_check(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with("-") {
-        }
-    }*/
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("[[") {
@@ -58,10 +56,25 @@ impl TestCommand {
 
         while ! feeder.starts_with("]]") {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            match ConditionalExpr::parse(feeder, core) {
+                Some(c) => {
+                    ans.text += &c.text;
+                    match c.expr {
+                        None => return None,
+                        _ => ans.elements.push(Elem::Expression(c)),
+                    }
+                }
+                None => {},
+            }
         }
     
         ans.text += &feeder.consume(2);
         command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-        None
+
+        dbg!("{:?}", &ans);
+        match ans.elements.len() > 0 {
+            true  => Some(ans),
+            false => None,
+        }
     }
 }
