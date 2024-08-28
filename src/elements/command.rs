@@ -7,6 +7,7 @@ pub mod simple;
 pub mod paren;
 pub mod brace;
 pub mod r#for;
+pub mod test;
 pub mod function_def;
 pub mod r#while;
 pub mod r#if;
@@ -21,6 +22,7 @@ use self::function_def::FunctionDefinition;
 use self::r#while::WhileCommand;
 use self::r#for::ForCommand;
 use self::r#if::IfCommand;
+use self::test::TestCommand;
 use std::fmt;
 use std::fmt::Debug;
 use super::{io, Pipe};
@@ -131,6 +133,7 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) = FunctionDefinition::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Some(a) = TestCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = ArithmeticCommand::parse(feeder, core) { Some(Box::new(a)) }
