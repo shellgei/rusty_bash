@@ -5,6 +5,16 @@ use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
 
+enum Elem {
+    RightParen,
+    LeftParen,
+    Not,  // ! 
+    And,  // &&
+    Or,  // ||
+    Expression(String),
+    //FileCheck(char, String) // ex: -a hogefile => FileCheck(a, hogefile)
+}
+
 #[derive(Debug, Clone)]
 pub struct TestCommand {
     text: String,
@@ -33,6 +43,12 @@ impl TestCommand {
         }
     }
 
+    /*
+    fn eat_file_check(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with("-") {
+        }
+    }*/
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("[[") {
             return None;
@@ -45,6 +61,7 @@ impl TestCommand {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
     
+        ans.text += &feeder.consume(2);
         command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
         None
     }
