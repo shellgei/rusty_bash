@@ -11,6 +11,6 @@ pub mod word;
 pub mod subscript;
 pub mod substitution;
 pub mod subword;
-pub mod arithmetic_expression;
+pub mod arithmetic_expr;
 
 use self::io::pipe::Pipe;

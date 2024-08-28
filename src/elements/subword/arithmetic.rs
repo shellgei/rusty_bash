@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::arithmetic_expression::ArithmeticExpr;
+use crate::elements::arithmetic_expr::ArithmeticExpr;
 use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]

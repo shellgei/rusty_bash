@@ -5,7 +5,7 @@ use crate::{error_message, ShellCore, Feeder, Script};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
-use crate::elements::arithmetic_expression::ArithmeticExpr;
+use crate::elements::arithmetic_expr::ArithmeticExpr;
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
