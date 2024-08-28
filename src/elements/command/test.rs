@@ -12,7 +12,6 @@ enum Elem {
     And,  // &&
     Or,  // ||
     Expression(String),
-    //FileCheck(char, String) // ex: -a hogefile => FileCheck(a, hogefile)
 }
 
 #[derive(Debug, Clone)]
