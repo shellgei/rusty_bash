@@ -1,3 +1,4 @@
-./test_brace.bash
+./test_script.bash
 ./test_builtins.bash
+./test_brace.bash
 ./test_job.bash

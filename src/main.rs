@@ -164,9 +164,10 @@ fn main_loop(core: &mut ShellCore) {
         core.sigint.store(false, Relaxed);
         match Script::parse(&mut feeder, core, false){
             Some(mut s) => {
+                /*
                 if core.data.flags.contains('v') {
                     eprint!("{}", s.get_text());
-                }
+                }*/
                 s.exec(core);
                 set_history(core, &s.get_text());
             },
