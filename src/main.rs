@@ -81,7 +81,6 @@ fn main() {
         show_version();
     }
 
-    //dbg!("{:?}", &args);
     let mut options = args[0..1].to_vec();
     let mut parameters = args.to_vec();
     let mut script = "-".to_string();
@@ -108,7 +107,7 @@ fn main() {
                 }
             },
             Err(why)  => {
-                eprintln!("sush: {}: {}", &args[1], why);
+                eprintln!("sush: {}: {}", &script, why);
                 process::exit(1);
             },
         }
