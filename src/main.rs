@@ -81,21 +81,22 @@ fn main() {
         show_version();
     }
 
-    let mut options = args.clone();
-    let mut parameters = args.clone();
+    //dbg!("{:?}", &args);
+    let mut options = args[0..1].to_vec();
+    let mut parameters = args.to_vec();
+    let mut script = "-".to_string();
 
-    let script = if args.len() > 1 && ! args[1].starts_with("-") {
-        options.remove(1);
-        parameters.remove(0);
-        args[1].clone()
-    }else if args.len() > 2 && args[1].starts_with("-") { //for shebang with option
-        options.remove(2);
-        parameters.remove(0);
-        parameters.remove(0);
-        args[2].clone()
-    }else{
-        "-".to_string()
-    };
+    let len = args.len();
+    for i in 1..len {
+        if args[i].starts_with("-") {
+            parameters.remove(i);
+            options.push(args[i].clone());
+        }else{
+            script = args[i].clone();
+            parameters = args[i..].to_vec();
+            break;
+        }
+    }
 
     if script != "-" {
         match File::open(&script) {
