@@ -1729,6 +1729,14 @@ res=$($com <<< '(( 0 + 1 + 2+3 ))')
 [ "$?" = "0" ] || err $LINENO
 
 ### OPTION TEST ###
+#
+res=$($com -c "echo a")
+[ "$?" == "0" ] || err $LINENO
+[ "$res" == "a" ] || err $LINENO
+
+res=$($com -c "ech a")
+[ "$?" == "127" ] || err $LINENO
+[ "$res" == "" ] || err $LINENO
 
 res=$($com <<< 'set -e ; false ; echo NG')
 [ "$res" != "NG" ] || err $LINENO
