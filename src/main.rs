@@ -90,6 +90,7 @@ fn main() {
     for i in 1..len {
         if args[i] == "-c" {
             c_flag = true;
+            io::close(0, &format!("sush(fatal): cannot close stdin"));
             if i == len-1 {
                 eprintln!("bash: -c: option requires an argument");
                 process::exit(2);
