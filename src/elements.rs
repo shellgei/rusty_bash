@@ -12,6 +12,5 @@ pub mod subscript;
 pub mod substitution;
 pub mod subword;
 pub mod arithmetic_expr;
-pub mod conditional_expr;
 
 use self::io::pipe::Pipe;

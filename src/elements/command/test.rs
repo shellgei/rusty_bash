@@ -4,7 +4,6 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
-use crate::elements::conditional_expr::ConditionalExpr;
 use crate::elements::word::Word;
 
 #[derive(Debug, Clone)]
