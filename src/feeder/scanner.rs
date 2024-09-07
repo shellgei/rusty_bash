@@ -277,15 +277,19 @@ impl Feeder {
         self.scanner_one_of(&[":-", ":=", ":?", ":+"])
     }
 
-    pub fn scanner_file_check_option(&mut self, core: &mut ShellCore) -> usize {
-        self.backslash_check_and_feed(vec!["-"], core);
-        let ans = self.scanner_one_of(&["-a", "-e"]);
-        let opt = self.remaining[0..ans].to_string();
-        self.backslash_check_and_feed(vec![&opt], core);
-
-        match self.remaining.chars().nth(ans+1) {
-            Some(' ') | Some('\t') => ans,
-            _ => 0,
+    pub fn scanner_test_file_check_option(&mut self, core: &mut ShellCore) -> usize {
+        match self.remaining.chars().nth(0) {
+            Some('-') => {},
+            _ => return 0,
         }
+        self.backslash_check_and_feed(vec!["-"], core);
+
+        if let Some(c) = self.remaining.chars().nth(1) {
+            match "abcdefghkprstuwxGLNOS".contains(c) {
+                true  => return 2,
+                false => return 0,
+            }
+        }
+        return 0;
     }
 }

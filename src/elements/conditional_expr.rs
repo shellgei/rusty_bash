@@ -30,6 +30,7 @@ impl ConditionalExpr {
         }
     }
 
+    /*
     fn eat_file_check(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_file_check_option(core);
         if len != 2 {
@@ -55,14 +56,17 @@ impl ConditionalExpr {
         }
         true
     }
+    */
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ConditionalExpr> {
         let mut ans = ConditionalExpr::new();
 
+        /*
         if Self::eat_file_check(feeder, &mut ans, core) {
             Some(ans)
         }else{
             None
-        }
+        }*/
+        None
     }
 }
