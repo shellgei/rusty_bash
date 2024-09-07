@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{error_message, ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -10,11 +10,13 @@ use crate::elements::word::Word;
 enum Elem {
     FileCheckOption(String),
     Word(Word),
+    Operand(String),
     RightParen,
     LeftParen,
     Not,  // ! 
     And,  // &&
     Or,  // ||
+    Result(bool),
 }
 
 pub fn op_order(op: &Elem) -> u8 {
@@ -22,6 +24,27 @@ pub fn op_order(op: &Elem) -> u8 {
         Elem::FileCheckOption(_) => 14,
         _ => 0,
     }
+}
+
+pub fn to_operand(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
+    match w.eval_as_value(core) {
+        Some(v) => Ok(Elem::Operand(v)),
+        None => return Err(format!("{}: wrong substitution", &w.text)),
+    }
+}
+
+pub fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
+    let n = match stack.pop() {
+        Some(Elem::Word(w)) => {
+            match to_operand(&w, core) {
+                Ok(op) => op,
+                Err(e) => return Err(e),
+            }
+        },
+        Some(elem) => elem,
+        None       => return Err("no operand".to_string()),
+    };
+    Ok(n)
 }
 
 #[derive(Debug, Clone)]
@@ -35,13 +58,46 @@ pub struct TestCommand {
 
 impl Command for TestCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
-        match self.rearrange() {
-            Ok(ans) => {
-                dbg!("{:?}", &ans);
+        let rev_pol = match self.rev_polish() {
+            Ok(ans) => ans,
+            _ => {
+                core.data.set_param("?", "2");
+                return;
             },
-            _ => {},
+        };
+
+        let mut stack = vec![];
+
+        for e in rev_pol {
+            let result = match e { 
+                Elem::Word(_) => {
+                    stack.push(e.clone());
+                    Ok(())
+                },
+                Elem::FileCheckOption(ref op)  => Self::unary_operation(&op, &mut stack, core),
+                _ => Err( error_message::syntax("TODO")),
+            };
+    
+            if let Err(err_msg) = result {
+                core.data.set_param("?", "2");
+                return;
+            //    return Err(err_msg);
+            }
         }
-        core.data.set_param("?", "0");
+        if stack.len() != 1 { 
+            eprintln!("unknown syntax error_message (stack inconsistency)");
+            core.data.set_param("?", "2");
+            return;
+        }   
+    
+        match stack.pop() {
+            Some(Elem::Result(true))  => core.data.set_param("?", "0"),
+            Some(Elem::Result(false)) => core.data.set_param("?", "1"),
+            _  => {
+                eprintln!("unknown syntax error_message");
+                core.data.set_param("?", "2");
+            },
+        }  
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -52,7 +108,7 @@ impl Command for TestCommand {
 }
 
 impl TestCommand {
-    pub fn rearrange(&mut self) -> Result<Vec<Elem>, Elem> {
+    pub fn rev_polish(&mut self) -> Result<Vec<Elem>, Elem> {
         let mut ans = vec![];
         let mut stack = vec![];
         let mut last = None;
@@ -82,6 +138,32 @@ impl TestCommand {
         }
     
         Ok(ans)
+    }
+
+    fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
+        let operand = match pop_operand(stack, core) {
+            Ok(v)  => v, 
+            Err(e) => return Err(e),
+        };
+        
+        match operand {
+            Elem::Operand(s)   => Self::unary_calc(op, &s, stack),
+            _ => error_message::internal("unknown operand"), 
+        }
+    }
+
+    fn unary_calc(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
+        match op {
+            "-a"  => stack.push( Elem::Result(true) ),
+            _  => stack.push( Elem::Result(false) ),
+            /*
+            "-"  => stack.push( Elem::Integer(-num) ),
+            "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
+            "~"  => stack.push( Elem::Integer( !num ) ),
+            _ => error_message::internal("unknown unary operator"),
+            */
+        }   
+        Ok(())
     }
 
     fn rev_polish_paren(stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
