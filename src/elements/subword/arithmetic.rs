@@ -8,7 +8,7 @@ use crate::elements::subword::Subword;
 #[derive(Debug, Clone)]
 pub struct Arithmetic {
     pub text: String,
-    pub arith: ArithmeticExpr,
+    pub arith: Vec<ArithmeticExpr>,
 }
 
 impl Subword for Arithmetic {
@@ -16,10 +16,14 @@ impl Subword for Arithmetic {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        match self.arith.eval(core) {
-            Some(s) => {self.text = s; true},
-            None    => false,
+        for a in &mut self.arith {
+            match a.eval(core) {
+                Some(s) => self.text = s,
+                None    => return false,
+            }
         }
+
+        true
     }
 }
 
@@ -27,7 +31,7 @@ impl Arithmetic {
     fn new() -> Self {
         Self {
             text: String::new(),
-            arith: ArithmeticExpr::new(),
+            arith: vec![],
         }
     }
 
@@ -40,19 +44,29 @@ impl Arithmetic {
         let mut ans = Self::new();
         ans.text = feeder.consume(3);
 
-        if let Some(c) = ArithmeticExpr::parse(feeder, core) {
-            if ! feeder.starts_with("))") {
-                feeder.rewind();
-                return None;
-            }
+        loop {
+            if let Some(c) = ArithmeticExpr::parse(feeder, core) {
+                if feeder.starts_with(",") {
+                    ans.text += &c.text;
+                    ans.text += &feeder.consume(1);
+                    ans.arith.push(c);
+                    continue;
+                }
 
-            ans.text += &c.text;
-            ans.text += &feeder.consume(2);
-            ans.arith = c;
-            feeder.pop_backup();
-            return Some(ans);
-        }
+                if feeder.starts_with("))") {
+                    ans.text += &c.text;
+                    ans.text += &feeder.consume(2);
+                    ans.arith.push(c);
+                    feeder.pop_backup();
+                    return Some(ans);
+                }
     
+                break;
+            }else{
+                break;
+            }
+        }
+
         feeder.rewind();
         None
     }

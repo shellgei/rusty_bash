@@ -60,31 +60,6 @@ fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Res
 }
 
 pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
-    let mut comma_pos = vec![];
-    for (i, e) in elements.iter().enumerate() {
-        match e {
-            Elem::BinaryOp(c) => {
-                if c == "," {
-                    comma_pos.push(i);
-                }
-            },
-            _ => {},
-        }
-    }
-
-    let mut left = 0;
-    for i in 0..comma_pos.len() {
-        let right = comma_pos[i];
-        if let Err(e) = calculate_sub(&elements[left..right], core) {
-            return Err(e);
-        }
-        left = right + 1;
-    }
-
-    calculate_sub(&elements[left..], core)
-}
-
-fn calculate_sub(elements: &[Elem], core: &mut ShellCore) -> Result<Elem, String> {
     if elements.len() == 0 {
         return Ok(Elem::Integer(0));
     }

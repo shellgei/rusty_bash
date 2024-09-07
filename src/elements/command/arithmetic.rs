@@ -8,22 +8,24 @@ use crate::elements::arithmetic_expression::ArithmeticExpr;
 #[derive(Debug, Clone)]
 pub struct ArithmeticCommand {
     text: String,
-    arith: Option<ArithmeticExpr>,
+    arith: Vec<ArithmeticExpr>,
     redirects: Vec<Redirect>,
     force_fork: bool,
 }
 
 impl Command for ArithmeticCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
-        if self.arith.is_none() {
-            core.data.set_param("?", "0");
-            return;
-        }
+        let mut ans = true;
 
-        let ans = match self.arith.as_mut().unwrap().eval(core) {
-            Some(s) => s != "0",
-            None    => false,
-        };
+        for a in &mut self.arith {
+            match a.eval(core) {
+                Some(s) => ans = s != "0",
+                None    => {
+                    ans = false;
+                    break;
+                },
+            }
+        }
 
         core.data.set_param("?", if ans {"0"} else {"1"} );
     }
@@ -39,7 +41,7 @@ impl ArithmeticCommand {
     fn new() -> ArithmeticCommand {
         ArithmeticCommand {
             text: String::new(),
-            arith: None,
+            arith: vec![],
             redirects: vec![],
             force_fork: false,
         }
@@ -54,20 +56,29 @@ impl ArithmeticCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
 
-        if let Some(c) = ArithmeticExpr::parse(feeder, core) {
-            if ! feeder.starts_with("))") {
-                feeder.rewind();
-                return None;
-            }
+        loop {
+            if let Some(c) = ArithmeticExpr::parse(feeder, core) {
+                if feeder.starts_with(",") {
+                    ans.text += &c.text;
+                    ans.text += &feeder.consume(1);
+                    ans.arith.push(c);
+                    continue;
+                }
 
-            ans.text += &c.text;
-            ans.text += &feeder.consume(2);
-            ans.arith = Some(c);
-            feeder.pop_backup();
-            return Some(ans);
-        }
+                if feeder.starts_with("))") {
+                    ans.text += &c.text;
+                    ans.text += &feeder.consume(2);
+                    ans.arith.push(c);
+                    feeder.pop_backup();
+                    return Some(ans);
+                }
     
+                break;
+            }else{
+                break;
+            }
+        }
         feeder.rewind();
-        None
+        return None;
     }
 }
