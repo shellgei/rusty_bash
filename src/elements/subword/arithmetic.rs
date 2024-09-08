@@ -16,7 +16,7 @@ impl Subword for Arithmetic {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        if let Some(s) = self.com.eval_as_subword(core) {
+        if let Some(s) = self.com.eval(core) {
             self.text = s;
             return true;
         }

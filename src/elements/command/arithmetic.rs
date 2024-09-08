@@ -8,26 +8,19 @@ use crate::elements::arithmetic_expression::ArithmeticExpr;
 #[derive(Debug, Clone)]
 pub struct ArithmeticCommand {
     pub text: String,
-    arith: Vec<ArithmeticExpr>,
+    expressions: Vec<ArithmeticExpr>,
     redirects: Vec<Redirect>,
     force_fork: bool,
 }
 
 impl Command for ArithmeticCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
-        let mut ans = true;
-
-        for a in &mut self.arith {
-            match a.eval(core) {
-                Some(s) => ans = s != "0",
-                None    => {
-                    ans = false;
-                    break;
-                },
-            }
-        }
-
-        core.data.set_param("?", if ans {"0"} else {"1"} );
+        let exit_status = match self.eval(core).as_deref() {
+            Some("0") => "1",
+            Some(_) => "0",
+            None => "1",
+        };
+        core.data.set_param("?", exit_status );
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -41,15 +34,15 @@ impl ArithmeticCommand {
     fn new() -> ArithmeticCommand {
         ArithmeticCommand {
             text: String::new(),
-            arith: vec![],
+            expressions: vec![],
             redirects: vec![],
             force_fork: false,
         }
     }
 
-    pub fn eval_as_subword(&mut self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
         let mut ans = String::new();
-        for a in &mut self.arith {
+        for a in &mut self.expressions {
             match a.eval(core) {
                 Some(s) => ans = s,
                 None    => return None,
@@ -72,14 +65,14 @@ impl ArithmeticCommand {
                 if feeder.starts_with(",") {
                     ans.text += &c.text;
                     ans.text += &feeder.consume(1);
-                    ans.arith.push(c);
+                    ans.expressions.push(c);
                     continue;
                 }
 
                 if feeder.starts_with("))") {
                     ans.text += &c.text;
                     ans.text += &feeder.consume(2);
-                    ans.arith.push(c);
+                    ans.expressions.push(c);
                     feeder.pop_backup();
                     return Some(ans);
                 }
