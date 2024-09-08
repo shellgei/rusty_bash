@@ -77,9 +77,8 @@ impl ArithmeticCommand {
                     return Some(ans);
                 }
             }
-            break;
+            feeder.rewind();
+            return None;
         }
-        feeder.rewind();
-        return None;
     }
 }
