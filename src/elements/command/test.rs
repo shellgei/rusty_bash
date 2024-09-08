@@ -17,13 +17,28 @@ enum Elem {
     Not,  // ! 
     And,  // &&
     Or,  // ||
-    Result(bool),
+    Ans(bool),
 }
 
 pub fn op_order(op: &Elem) -> u8 {
     match op {
         Elem::FileCheckOption(_) => 14,
         _ => 0,
+    }
+}
+
+pub fn to_string(op: &Elem) -> String {
+    match op {
+        Elem::FileCheckOption(op) => op.to_string(),
+        Elem::Word(w) => w.text.clone(),
+        Elem::Operand(op) => op.to_string(),
+        Elem::LeftParen => "(".to_string(),
+        Elem::RightParen => ")".to_string(),
+        Elem::Not => "!".to_string(),
+        Elem::And => "&&".to_string(),
+        Elem::Or => "||".to_string(),
+        Elem::Ans(true) => "true".to_string(),
+        Elem::Ans(false) => "false".to_string(),
     }
 }
 
@@ -86,14 +101,20 @@ impl Command for TestCommand {
             }
         }
         if stack.len() != 1 { 
-            eprintln!("unknown syntax error_message (stack inconsistency)");
+            let err = format!("syntax error in conditional expression");
+            error_message::print(&err, core, true);
+
+            if stack.len() > 1 {
+                let err = format!("syntax error near `{}'", to_string(&stack[0]));
+                error_message::print(&err, core, true);
+            }
             core.data.set_param("?", "2");
             return;
         }   
     
         match stack.pop() {
-            Some(Elem::Result(true))  => core.data.set_param("?", "0"),
-            Some(Elem::Result(false)) => core.data.set_param("?", "1"),
+            Some(Elem::Ans(true))  => core.data.set_param("?", "0"),
+            Some(Elem::Ans(false)) => core.data.set_param("?", "1"),
             _  => {
                 eprintln!("unknown syntax error_message");
                 core.data.set_param("?", "2");
@@ -157,9 +178,9 @@ impl TestCommand {
         match op {
             "-a"  => {
                 let ans = Path::new(s).is_file();
-                stack.push( Elem::Result(ans) );
+                stack.push( Elem::Ans(ans) );
             },
-            _  => stack.push( Elem::Result(false) ),
+            _  => stack.push( Elem::Ans(false) ),
             /*
             "-"  => stack.push( Elem::Integer(-num) ),
             "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),

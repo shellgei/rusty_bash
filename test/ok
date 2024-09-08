@@ -4,3 +4,7 @@
 ./test_compound.bash
 ./test_others.bash
 ./test_job.bash
+./test_script.bash
+./test_script.bash
+./test_compound.bash
+./test_compound.bash

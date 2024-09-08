@@ -531,4 +531,18 @@ res=$($com <<< '(( 0 + 1 + 2-3 ))')
 res=$($com <<< '(( 0 + 1 + 2+3 ))')
 [ "$?" = "0" ] || err $LINENO
 
+### [[ TEST ###
+#
+res=$($com -c '[[ -a /etc/passwd ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -a /etc/passwdaaa ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ -a ]]')
+[ "$?" = "2" ] || err $LINENO
+
+res=$($com -c '[[ -a /etc/passwd x ]]')
+[ "$?" = "2" ] || err $LINENO
+
 echo $0 >> ./ok
