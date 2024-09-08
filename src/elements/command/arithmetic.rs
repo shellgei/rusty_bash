@@ -76,10 +76,8 @@ impl ArithmeticCommand {
                     feeder.pop_backup();
                     return Some(ans);
                 }
-                break;
-            }else{
-                break;
             }
+            break;
         }
         feeder.rewind();
         return None;
