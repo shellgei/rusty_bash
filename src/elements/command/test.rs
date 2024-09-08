@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error_message, ShellCore, Feeder};
+use std::path::Path;
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -154,7 +155,10 @@ impl TestCommand {
 
     fn unary_calc(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
         match op {
-            "-a"  => stack.push( Elem::Result(true) ),
+            "-a"  => {
+                let ans = Path::new(s).is_file();
+                stack.push( Elem::Result(ans) );
+            },
             _  => stack.push( Elem::Result(false) ),
             /*
             "-"  => stack.push( Elem::Integer(-num) ),

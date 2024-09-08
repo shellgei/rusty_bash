@@ -7,25 +7,20 @@ use crate::elements::arithmetic_expr::ArithmeticExpr;
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticCommand {
-    text: String,
-    arith: Option<ArithmeticExpr>,
+    pub text: String,
+    expressions: Vec<ArithmeticExpr>,
     redirects: Vec<Redirect>,
     force_fork: bool,
 }
 
 impl Command for ArithmeticCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
-        if self.arith.is_none() {
-            core.data.set_param("?", "0");
-            return;
-        }
-
-        let ans = match self.arith.as_mut().unwrap().eval(core) {
-            Some(s) => s != "0",
-            None    => false,
+        let exit_status = match self.eval(core).as_deref() {
+            Some("0") => "1",
+            Some(_) => "0",
+            None => "1",
         };
-
-        core.data.set_param("?", if ans {"0"} else {"1"} );
+        core.data.set_param("?", exit_status );
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -39,10 +34,21 @@ impl ArithmeticCommand {
     fn new() -> ArithmeticCommand {
         ArithmeticCommand {
             text: String::new(),
-            arith: None,
+            expressions: vec![],
             redirects: vec![],
             force_fork: false,
         }
+    }
+
+    pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
+        let mut ans = String::new();
+        for a in &mut self.expressions {
+            match a.eval(core) {
+                Some(s) => ans = s,
+                None    => return None,
+            }
+        }
+        Some(ans)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
@@ -54,20 +60,25 @@ impl ArithmeticCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
 
-        if let Some(c) = ArithmeticExpr::parse(feeder, core) {
-            if ! feeder.starts_with("))") {
-                feeder.rewind();
-                return None;
-            }
+        loop {
+            if let Some(c) = ArithmeticExpr::parse(feeder, core) {
+                if feeder.starts_with(",") {
+                    ans.text += &c.text;
+                    ans.text += &feeder.consume(1);
+                    ans.expressions.push(c);
+                    continue;
+                }
 
-            ans.text += &c.text;
-            ans.text += &feeder.consume(2);
-            ans.arith = Some(c);
-            feeder.pop_backup();
-            return Some(ans);
+                if feeder.starts_with("))") {
+                    ans.text += &c.text;
+                    ans.text += &feeder.consume(2);
+                    ans.expressions.push(c);
+                    feeder.pop_backup();
+                    return Some(ans);
+                }
+            }
+            feeder.rewind();
+            return None;
         }
-    
-        feeder.rewind();
-        None
     }
 }

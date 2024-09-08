@@ -19,6 +19,7 @@ LANG=C ./lineno.bash 2> $tmp-bash
 LANG=C ./lineno.sush 2> $tmp-sush
 
 sed 's/sush/bash/g' $tmp-sush |
+sed 's;../target/release;/bin;' |
 diff $tmp-bash - || err $LINENO
 
 

@@ -81,23 +81,35 @@ fn main() {
         show_version();
     }
 
-    let mut options = args.clone();
-    let mut parameters = args.clone();
+    let mut options = args[0..1].to_vec();
+    let mut parameters = args.to_vec();
+    let mut script = "-".to_string();
+    let mut c_flag = false;
 
-    let script = if args.len() > 1 && ! args[1].starts_with("-") {
-        options.remove(1);
-        parameters.remove(0);
-        args[1].clone()
-    }else if args.len() > 2 && args[1].starts_with("-") { //for shebang with option
-        options.remove(2);
-        parameters.remove(0);
-        parameters.remove(0);
-        args[2].clone()
-    }else{
-        "-".to_string()
-    };
+    let len = args.len();
+    for i in 1..len {
+        if args[i] == "-c" {
+            c_flag = true;
+            io::close(0, &format!("sush(fatal): cannot close stdin"));
+            if i == len-1 {
+                eprintln!("bash: -c: option requires an argument");
+                process::exit(2);
+            }
+            script = args[i+1].to_string();
+            break;
+        }
 
-    if script != "-" {
+        if args[i].starts_with("-") {
+            parameters.remove(i);
+            options.push(args[i].clone());
+        }else{
+            script = args[i].clone();
+            parameters = args[i..].to_vec();
+            break;
+        }
+    }
+
+    if script != "-" && ! c_flag {
         match File::open(&script) {
             Ok(file) => {
                 let fd = file.into_raw_fd();
@@ -107,17 +119,23 @@ fn main() {
                 }
             },
             Err(why)  => {
-                eprintln!("sush: {}: {}", &args[1], why);
+                eprintln!("sush: {}: {}", &script, why);
                 process::exit(1);
             },
         }
     }
 
     let mut core = ShellCore::new();
-    core.script_name = script;
+    core.script_name = script.clone();
     builtins::option_commands::set(&mut core, &mut options);
     builtins::option_commands::set_parameters(&mut core, &mut parameters);
     run_signal_check(&mut core);
+
+    if c_flag {
+        main_c_option(&mut core, &script);
+        core.exit();
+    }
+
     read_rc_file(&mut core);
     main_loop(&mut core);
 }
@@ -164,9 +182,6 @@ fn main_loop(core: &mut ShellCore) {
         core.sigint.store(false, Relaxed);
         match Script::parse(&mut feeder, core, false){
             Some(mut s) => {
-                if core.data.flags.contains('v') {
-                    eprint!("{}", s.get_text());
-                }
                 s.exec(core);
                 set_history(core, &s.get_text());
             },
@@ -175,5 +190,13 @@ fn main_loop(core: &mut ShellCore) {
         core.sigint.store(false, Relaxed);
     }
     core.write_history_to_file();
+    core.exit();
+}
+
+fn main_c_option(core: &mut ShellCore, script: &String) {
+    let mut feeder = Feeder::new(script);
+    if let Some(mut s) = Script::parse(&mut feeder, core, false){
+        s.exec(core);
+    }
     core.exit();
 }

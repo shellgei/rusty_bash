@@ -137,6 +137,10 @@ impl Feeder {
     }
 
     pub fn add_line(&mut self, line: String, core: &mut ShellCore) {
+        if core.data.flags.contains('v') {
+            eprint!("{}", &line);
+        }
+
         self.lineno += 1;
         core.data.set_param("LINENO", &self.lineno.to_string());
         match self.remaining.len() {
