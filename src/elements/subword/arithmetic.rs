@@ -2,13 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::arithmetic_expression::ArithmeticExpr;
+use crate::elements::command::arithmetic::ArithmeticCommand;
 use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub struct Arithmetic {
     pub text: String,
-    pub arith: Vec<ArithmeticExpr>,
+    //pub arith: Vec<ArithmeticExpr>,
+    com: ArithmeticCommand,
 }
 
 impl Subword for Arithmetic {
@@ -16,29 +17,43 @@ impl Subword for Arithmetic {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        for a in &mut self.arith {
-            match a.eval(core) {
-                Some(s) => self.text = s,
-                None    => return false,
-            }
+        if let Some(s) = self.com.eval_as_subword(core) {
+            self.text = s;
+            return true;
         }
-
-        true
+        false
     }
 }
 
 impl Arithmetic {
+    /*
     fn new() -> Self {
         Self {
             text: String::new(),
             arith: vec![],
         }
-    }
+    }*/
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("$((") {
             return None;
         }
+        feeder.set_backup();
+        feeder.consume(1);
+
+        match ArithmeticCommand::parse(feeder, core) {
+            Some(a) => {
+                let ans = Arithmetic{ text: "$".to_owned() + &a.text.clone(), com: a};
+                //Some(Arithmetic{ text: "$".to_owned() + &a.text.clone(), com: a})
+                    feeder.pop_backup();
+                Some(ans)
+            },
+            None => {
+                feeder.rewind();
+                None
+            },
+        }
+        /*
         feeder.set_backup();
 
         let mut ans = Self::new();
@@ -68,6 +83,6 @@ impl Arithmetic {
         }
 
         feeder.rewind();
-        None
+        */
     }
 }

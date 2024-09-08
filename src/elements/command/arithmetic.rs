@@ -7,7 +7,7 @@ use crate::elements::arithmetic_expression::ArithmeticExpr;
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticCommand {
-    text: String,
+    pub text: String,
     arith: Vec<ArithmeticExpr>,
     redirects: Vec<Redirect>,
     force_fork: bool,
@@ -47,6 +47,17 @@ impl ArithmeticCommand {
         }
     }
 
+    pub fn eval_as_subword(&mut self, core: &mut ShellCore) -> Option<String> {
+        let mut ans = String::new();
+        for a in &mut self.arith {
+            match a.eval(core) {
+                Some(s) => ans = s,
+                None    => return None,
+            }
+        }
+        Some(ans)
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("((") {
             return None;
@@ -72,7 +83,6 @@ impl ArithmeticCommand {
                     feeder.pop_backup();
                     return Some(ans);
                 }
-    
                 break;
             }else{
                 break;
