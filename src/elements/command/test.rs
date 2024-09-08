@@ -14,20 +14,22 @@ enum Elem {
     Operand(String),
     RightParen,
     LeftParen,
-    Not,  // ! 
+    Not, // !
     And,  // &&
     Or,  // ||
     Ans(bool),
 }
 
-pub fn op_order(op: &Elem) -> u8 {
+fn op_order(op: &Elem) -> u8 {
     match op {
         Elem::FileCheckOption(_) => 14,
+        Elem::Not => 13,
+        Elem::And | Elem::Or => 12,
         _ => 0,
     }
 }
 
-pub fn to_string(op: &Elem) -> String {
+fn to_string(op: &Elem) -> String {
     match op {
         Elem::FileCheckOption(op) => op.to_string(),
         Elem::Word(w) => w.text.clone(),
@@ -42,14 +44,14 @@ pub fn to_string(op: &Elem) -> String {
     }
 }
 
-pub fn to_operand(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
+fn to_operand(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
     match w.eval_as_value(core) {
         Some(v) => Ok(Elem::Operand(v)),
         None => return Err(format!("{}: wrong substitution", &w.text)),
     }
 }
 
-pub fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
+fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
     let n = match stack.pop() {
         Some(Elem::Word(w)) => {
             match to_operand(&w, core) {
@@ -93,6 +95,13 @@ impl Command for TestCommand {
                 Elem::FileCheckOption(ref op)  => {
                     Self::unary_operation(&op, &mut stack, core)
                 },
+                Elem::Not => match stack.pop() {
+                    Some(Elem::Ans(res)) => {
+                        stack.push(Elem::Ans(!res));
+                        Ok(())
+                    },
+                    _ => Err("no operand to negate".to_string()),
+                },
                 _ => Err( error_message::syntax("TODO")),
             };
     
@@ -132,7 +141,7 @@ impl Command for TestCommand {
 }
 
 impl TestCommand {
-    pub fn rev_polish(&mut self) -> Result<Vec<Elem>, Elem> {
+    fn rev_polish(&mut self) -> Result<Vec<Elem>, Elem> {
         let mut ans = vec![];
         let mut stack = vec![];
         let mut last = None;
@@ -260,6 +269,26 @@ impl TestCommand {
         true
     }
 
+    fn eat_not_and_or(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if feeder.starts_with("!") {
+            ans.text += &feeder.consume(1);
+            ans.elements.push( Elem::Not );
+            return true;
+        }
+        if feeder.starts_with("&&") {
+            ans.text += &feeder.consume(2);
+            ans.elements.push( Elem::And );
+            return true;
+        }
+        if feeder.starts_with("||") {
+            ans.text += &feeder.consume(2);
+            ans.elements.push( Elem::Or );
+            return true;
+        }
+
+        false
+    }
+
     fn eat_paren(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("(") {
             ans.paren_stack.push( '(' );
@@ -313,6 +342,7 @@ impl TestCommand {
             }
 
             if Self::eat_file_check_option(feeder, &mut ans, core)
+            || Self::eat_not_and_or(feeder, &mut ans) 
             || Self::eat_paren(feeder, &mut ans) 
             || Self::eat_word(feeder, &mut ans, core) {
                 continue;
