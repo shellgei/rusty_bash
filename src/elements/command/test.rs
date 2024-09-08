@@ -90,14 +90,16 @@ impl Command for TestCommand {
                     stack.push(e.clone());
                     Ok(())
                 },
-                Elem::FileCheckOption(ref op)  => Self::unary_operation(&op, &mut stack, core),
+                Elem::FileCheckOption(ref op)  => {
+                    Self::unary_operation(&op, &mut stack, core)
+                },
                 _ => Err( error_message::syntax("TODO")),
             };
     
             if let Err(err_msg) = result {
+                error_message::print(&err_msg, core, true);
                 core.data.set_param("?", "2");
                 return;
-            //    return Err(err_msg);
             }
         }
         if stack.len() != 1 { 
@@ -165,11 +167,11 @@ impl TestCommand {
     fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
         let operand = match pop_operand(stack, core) {
             Ok(v)  => v, 
-            Err(e) => return Err(e),
+            Err(e) => return Err(e + " to conditional unary operator"),
         };
         
         match operand {
-            Elem::Operand(s)   => Self::unary_calc(op, &s, stack),
+            Elem::Operand(s) => Self::unary_calc(op, &s, stack),
             _ => error_message::internal("unknown operand"), 
         }
     }
@@ -181,12 +183,6 @@ impl TestCommand {
                 stack.push( Elem::Ans(ans) );
             },
             _  => stack.push( Elem::Ans(false) ),
-            /*
-            "-"  => stack.push( Elem::Integer(-num) ),
-            "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
-            "~"  => stack.push( Elem::Integer( !num ) ),
-            _ => error_message::internal("unknown unary operator"),
-            */
         }   
         Ok(())
     }
@@ -237,6 +233,9 @@ impl TestCommand {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if feeder.starts_with("]]") {
+            return false;
+        }
         match Word::parse(feeder, core, false) {
             Some(w) => {
                 ans.text += &w.text.clone();
