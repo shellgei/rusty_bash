@@ -71,7 +71,9 @@ impl Script {
 
         if let Some(s) = self.job_ends.last() {
             if s == "" && feeder.len() > 0 {
-                return Status::UnexpectedSymbol(feeder.consume(feeder.len()));
+                let remaining = feeder.consume(feeder.len());
+                let first_token = remaining.split(" ").nth(0).unwrap().to_string();
+                return Status::UnexpectedSymbol(first_token);
             }
         }
 
