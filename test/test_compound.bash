@@ -14,6 +14,9 @@ cd $(dirname $0)
 com=../target/release/sush
 
 ### COMPOUND COMMAND TEST ###
+#
+res=$($com -c '(echo a) aaaaaa')
+[ "$?" = "2" ] || err $LINENO
 
 res=$($com <<< '(echo hoge; echo fuge)')
 [ "$res" = "hoge

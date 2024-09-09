@@ -166,6 +166,9 @@ impl Job {
             }
         }
 
+        let com_num = feeder.scanner_comment();
+        ans.text += &feeder.consume(com_num);
+
         if ans.pipelines.len() > 0 {
 //            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
             Some(ans)

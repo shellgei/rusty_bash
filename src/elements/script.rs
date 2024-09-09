@@ -59,14 +59,20 @@ impl Script {
         len != 0
     }
 
-    fn check_nest(feeder: &mut Feeder, jobnum: usize) -> Status {
+    fn check_nest(&self, feeder: &mut Feeder) -> Status {
         let nest = feeder.nest.last()
                    .expect(&error_message::internal_str("empty nest"));
 
-        match ( nest.1.iter().find(|e| feeder.starts_with(e)), jobnum ) {
+        match ( nest.1.iter().find(|e| feeder.starts_with(e)), self.jobs.len() ) {
             ( Some(end), 0 ) => return Status::UnexpectedSymbol(end.to_string()),
             ( Some(_), _)    => return Status::NormalEnd,
             ( None, _)       => {}, 
+        }
+
+        if let Some(s) = self.job_ends.last() {
+            if s == "" && feeder.len() > 0 {
+                return Status::UnexpectedSymbol(feeder.consume(feeder.len()));
+            }
         }
 
         let ng_ends = vec!["[[", "]]", "(", ")", "}", "then", "else", "if", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&", ";", "'"];
@@ -98,7 +104,7 @@ impl Script {
             while Self::eat_job(feeder, core, &mut ans) 
                && Self::eat_job_end(feeder, &mut ans) {}
 
-            match Self::check_nest(feeder, ans.jobs.len()){
+            match ans.check_nest(feeder){
                 Status::NormalEnd => {
                     ans.unalias(core);
                     return Some(ans)
