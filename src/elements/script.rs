@@ -69,19 +69,15 @@ impl Script {
             ( None, _)       => {}, 
         }
 
-        if let Some(s) = self.job_ends.last() {
-            if s == "" && feeder.len() > 0 {
-                let remaining = feeder.consume(feeder.len());
-                let first_token = remaining.split(" ").nth(0).unwrap().to_string();
-                return Status::UnexpectedSymbol(first_token);
-            }
+        if feeder.len() > 0 {
+            let remaining = feeder.consume(feeder.len());
+            let first_token = remaining.split(" ").nth(0).unwrap().to_string();
+            return Status::UnexpectedSymbol(first_token);
         }
 
-        let ng_ends = vec!["[[", "]]", "(", ")", "}", "then", "else", "if", "fi", "elif", "do", "done", "while", "||", "&&", "|", "&", ";", "'"];
-        match ( ng_ends.iter().find(|e| feeder.starts_with(e)), nest.1.len() ) {
-            (Some(end), _) => return Status::UnexpectedSymbol(end.to_string()),
-            (None, 0)      => return Status::NormalEnd,
-            (None, _)      => return Status::NeedMoreLine,
+        match nest.1.len() {
+            0 => return Status::NormalEnd,
+            _ => return Status::NeedMoreLine,
         }
     }
 
