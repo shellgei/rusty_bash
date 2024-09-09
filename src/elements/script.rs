@@ -76,8 +76,8 @@ impl Script {
         }
 
         match nest.1.len() {
-            0 => return Status::NormalEnd,
-            _ => return Status::NeedMoreLine,
+            0 => Status::NormalEnd,
+            _ => Status::NeedMoreLine,
         }
     }
 
