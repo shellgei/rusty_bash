@@ -6,7 +6,7 @@ pub mod directory;
 
 pub fn reserved(w: &str) -> bool {
     match w {
-        "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
+        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
         _ => false,
     }
 }
@@ -68,37 +68,3 @@ pub fn is_wsl() -> bool {
 
     false
 }
-
-/*
-pub fn str_to_i64(s: &str) -> Option<i64> {
-    if s.len() == 0 {
-        return Some(0);
-    }
-
-    let mut body = s.to_string(); 
-    let mut sign = match body.starts_with("-") || body.starts_with("+") {
-        true  => body.remove(0).to_string(),
-        false => "".to_string(),
-    };
-
-    let mut base = 10;
-
-    if s.starts_with("0x") || s.starts_with("0X") {
-        base = 16;
-        body.remove(0);
-        body.remove(0);
-    }else if s.starts_with("0") {
-        base = 8;
-        body.remove(0);
-    }else if s.chars().all(|ch| ch >= '0' && ch <= '9') {
-        let splits = s.split("#");
-    }
-
-
-    if ! s.chars().all(|ch| ch >= '0' && ch <= '9') {
-        return None;
-    }
-
-    Some(0)
-}
-*/
