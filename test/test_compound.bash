@@ -551,4 +551,10 @@ res=$($com -c '[[ ! -a /etc/passwd ]]')
 res=$($com -c '[[ ! -a /etc/passwdaaa ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ -a ( /etc/passwdaaa ) ]]')
+[ "$?" = "2" ] || err $LINENO
+
+res=$($com -c '[[ -a ]]')
+[ "$?" = "2" ] || err $LINENO
+
 echo $0 >> ./ok

@@ -112,10 +112,10 @@ impl Command for TestCommand {
             }
         }
         if stack.len() != 1 { 
-            let err = format!("syntax error in conditional expression");
-            error_message::print(&err, core, true);
 
             if stack.len() > 1 {
+                let err = error_message::syntax_in_cond_expr(&to_string(&stack[0]));
+                error_message::print(&err, core, true);
                 let err = format!("syntax error near `{}'", to_string(&stack[0]));
                 error_message::print(&err, core, true);
             }
@@ -242,9 +242,12 @@ impl TestCommand {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if feeder.starts_with("]]") {
+        if feeder.starts_with("]]")
+        || feeder.starts_with(")")
+        || feeder.starts_with("(") {
             return false;
         }
+
         match Word::parse(feeder, core, false) {
             Some(w) => {
                 ans.text += &w.text.clone();
@@ -290,6 +293,15 @@ impl TestCommand {
     }
 
     fn eat_paren(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if let Some(e) = ans.elements.last() {
+            match e {
+                Elem::FileCheckOption(_) => {
+                    return false
+                },
+                _ => {},
+            }
+        }
+
         if feeder.starts_with("(") {
             ans.paren_stack.push( '(' );
             ans.elements.push( Elem::LeftParen );
@@ -332,13 +344,13 @@ impl TestCommand {
                 return None;
             }
             if feeder.starts_with("]]") {
+                if ans.elements.len() == 0 {
+                    return None;
+                }
+
                 ans.text += &feeder.consume(2);
                 command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-
-                return match ans.elements.len() > 0 {
-                    true  => Some(ans),
-                    false => None,
-                };
+                return Some(ans);
             }
 
             if Self::eat_file_check_option(feeder, &mut ans, core)
@@ -346,6 +358,14 @@ impl TestCommand {
             || Self::eat_paren(feeder, &mut ans) 
             || Self::eat_word(feeder, &mut ans, core) {
                 continue;
+            }
+
+            if feeder.starts_with("(") {
+                let err = error_message::syntax_in_cond_expr("(");
+                error_message::print(&err, core, true);
+            }else {
+                let err = error_message::syntax_in_cond_expr(")");
+                error_message::print(&err, core, true);
             }
 
             break;
