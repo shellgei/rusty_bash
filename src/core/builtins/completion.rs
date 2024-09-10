@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{file_check, ShellCore, Feeder};
 use crate::elements::word::Word;
 use crate::utils;
 use crate::utils::directory;
@@ -138,7 +138,7 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     if args.len() > 2 {
         commands.extend(compgen_f(core, args));
     }
-    commands.retain(|p| Path::new(p).executable() || Path::new(p).is_dir());
+    commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
 
     let mut aliases: Vec<String> = core.data.aliases.clone().into_keys().collect();
     commands.append(&mut aliases);
@@ -158,7 +158,7 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut paths = compgen_f(core, args);
-    paths.retain(|p| Path::new(p).is_dir());
+    paths.retain(|p| file_check::is_dir(&p));
     paths
 }
 

@@ -1,11 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Script, ShellCore, Feeder};
+use crate::{file_check, Script, ShellCore, Feeder};
 use crate::elements::io;
 use std::fs::File;
 use std::os::fd::IntoRawFd;
-use std::path::Path;
 
 pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
@@ -14,7 +13,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 2;
     }
 
-    if Path::new(&args[1]).is_dir() {
+    if file_check::is_dir(&args[1]) {
         eprintln!("bash: source: {}: is a directory", &args[1]);
         return 1;
     }

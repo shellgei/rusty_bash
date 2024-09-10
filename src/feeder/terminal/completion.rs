@@ -1,13 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, Feeder, ShellCore, utils};
+use crate::{error_message, file_check, Feeder, ShellCore, utils};
 use crate::core::builtins::completion;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;
 use crate::feeder::terminal::Terminal;
-use std::path::Path;
 use termion::cursor::DetectCursorPos;
 use unicode_width::UnicodeWidthStr;
 
@@ -45,7 +44,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     let tilde_prefix = "~/".to_string();
     let tilde_path = core.data.get_param("HOME").to_string() + "/";
 
-    Path::new(&s.replace(&tilde_prefix, &tilde_path)).is_dir()
+    file_check::is_dir(&s.replace(&tilde_prefix, &tilde_path))
 }
 
 impl Terminal {
