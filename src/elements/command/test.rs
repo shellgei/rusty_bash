@@ -187,13 +187,15 @@ impl TestCommand {
     }
 
     fn unary_calc(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
-        match op {
-            "-a" | "-e"  => return file_check::exists(s, stack),
-            "-b"  => return file_check::type_check(s, stack, "-b"),
-            "-c"  => return file_check::type_check(s, stack, "-c"),
-            "-d"  => return file_check::is_dir(s, stack),
-            _  => stack.push( Elem::Ans(false) ),
-        }   
+        let result = match op {
+            "-a" | "-e"  => file_check::exists(s),
+            "-b"  => file_check::type_check(s, "-b"),
+            "-c"  => file_check::type_check(s, "-c"),
+            "-d"  => file_check::is_dir(s),
+            _  => return Err("unsupported option".to_string()),
+        };
+
+        stack.push( Elem::Ans(result) );
         Ok(())
     }
 
