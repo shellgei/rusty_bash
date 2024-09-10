@@ -9,7 +9,7 @@ pub fn exists(name: &str) -> bool {
     fs::metadata(name).is_ok()
 }
 
-pub fn is_file(name: &str) -> bool {
+pub fn is_regular_file(name: &str) -> bool {
     Path::new(name).is_file()
 }
 

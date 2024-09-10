@@ -1,9 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod file_check;
-
 use crate::{error_message, ShellCore, Feeder};
+use crate::utils::file_check;
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -192,6 +191,7 @@ impl TestCommand {
             "-b"  => file_check::type_check(s, "-b"),
             "-c"  => file_check::type_check(s, "-c"),
             "-d"  => file_check::is_dir(s),
+            "-f"  => file_check::is_regular_file(s),
             _  => return Err("unsupported option".to_string()),
         };
 
