@@ -569,6 +569,12 @@ res=$($com -c '[[ ! -a /dev/nvme0n1 ]] || [[ ! -c /dev/nvme0n1 ]]')
 res=$($com -c '[[ ! -a /dev/tty0 ]] || [[ -c /dev/tty0 ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ -d /etc/ ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -d /etc/passwd ]]')
+[ "$?" = "1" ] || err $LINENO
+
 res=$($com -c '[[ -a ]]')
 [ "$?" = "2" ] || err $LINENO
 

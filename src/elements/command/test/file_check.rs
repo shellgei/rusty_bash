@@ -12,7 +12,13 @@ pub fn is_file(name: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
     Ok(())
 }
 
-fn file_type_check(name: &String, stack: &mut Vec<Elem>, tp: &str) -> Result<(), String> {
+pub fn is_dir(name: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
+    let ans = Path::new(name).is_dir();
+    stack.push( Elem::Ans(ans) );
+    Ok(())
+}
+
+pub fn type_check(name: &String, stack: &mut Vec<Elem>, tp: &str) -> Result<(), String> {
     let meta = match fs::metadata(name) {
         Ok(m) => m,
         _  => {
@@ -30,35 +36,12 @@ fn file_type_check(name: &String, stack: &mut Vec<Elem>, tp: &str) -> Result<(),
     Ok(())
 }
 
+/*
 pub fn is_block(name: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
     file_type_check(name, stack, "-b")
-        /*
-    let meta = match fs::metadata(name) {
-        Ok(m) => m,
-        _  => {
-            stack.push( Elem::Ans(false) );
-            return Ok(());
-        },
-    };
-    let ans = meta.file_type().is_block_device();
-    stack.push( Elem::Ans(ans) );
-    Ok(())
-        */
 }
 
 pub fn is_char(name: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
     file_type_check(name, stack, "-c")
-    /*
-    let meta = match fs::metadata(name) {
-        Ok(m) => m,
-        _  => {
-            stack.push( Elem::Ans(false) );
-            return Ok(());
-        },
-    };
-    let ans = meta.file_type().is_char_device();
-    stack.push( Elem::Ans(ans) );
-    Ok(())
-    */
 }
-
+*/
