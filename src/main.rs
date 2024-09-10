@@ -47,6 +47,31 @@ fn read_rc_file(core: &mut ShellCore) {
     }
 }
 
+fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec<String>,
+             script: &mut String, c_flag: &mut bool) {
+    for i in 1..args.len() {
+        if args[i] == "-c" {
+            *c_flag = true;
+            io::close(0, &format!("sush(fatal): cannot close stdin"));
+            if i == args.len()-1 {
+                eprintln!("bash: -c: option requires an argument");
+                process::exit(2);
+            }
+            *script = args[i+1].to_string();
+            break;
+        }
+
+        if args[i].starts_with("-") {
+            parameters.remove(i);
+            options.push(args[i].clone());
+        }else{
+            *script = args[i].clone();
+            *parameters = args[i..].to_vec();
+            break;
+        }
+    }
+}
+
 fn set_script_file(script: &str) {
     match File::open(script) {
         Ok(file) => {
@@ -74,27 +99,7 @@ fn main() {
     let mut script = "-".to_string();
     let mut c_flag = false;
 
-    for i in 1..args.len() {
-        if args[i] == "-c" {
-            c_flag = true;
-            io::close(0, &format!("sush(fatal): cannot close stdin"));
-            if i == args.len()-1 {
-                eprintln!("bash: -c: option requires an argument");
-                process::exit(2);
-            }
-            script = args[i+1].to_string();
-            break;
-        }
-
-        if args[i].starts_with("-") {
-            parameters.remove(i);
-            options.push(args[i].clone());
-        }else{
-            script = args[i].clone();
-            parameters = args[i..].to_vec();
-            break;
-        }
-    }
+    configure(&args, &mut options, &mut parameters, &mut script, &mut c_flag);
 
     if script != "-" && ! c_flag {
         set_script_file(&script);
