@@ -15,7 +15,7 @@ com=../target/release/sush
 : > error
 : > ok
 
-if [ ~ = /home/ueda ] then ; do
+if [ ~ = /home/ueda ] ; then
 	./test_others.bash nobuild &
 	./test_compound.bash nobuild &
 	./test_script.bash nobuild &
@@ -29,7 +29,7 @@ else
 	./test_brace.bash nobuild
 	./test_builtins.bash nobuild
 	./test_job.bash nobuild
-done
+fi
 
 wait 
 
