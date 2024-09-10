@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error_message, ShellCore, Feeder};
-use std::path::Path;
+use crate::utils::file_check;
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -186,13 +186,16 @@ impl TestCommand {
     }
 
     fn unary_calc(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
-        match op {
-            "-a"  => {
-                let ans = Path::new(s).is_file();
-                stack.push( Elem::Ans(ans) );
-            },
-            _  => stack.push( Elem::Ans(false) ),
-        }   
+        let result = match op {
+            "-a" | "-e"  => file_check::exists(s),
+            "-b"  => file_check::type_check(s, "-b"),
+            "-c"  => file_check::type_check(s, "-c"),
+            "-d"  => file_check::is_dir(s),
+            "-f"  => file_check::is_regular_file(s),
+            _  => return Err("unsupported option".to_string()),
+        };
+
+        stack.push( Elem::Ans(result) );
         Ok(())
     }
 

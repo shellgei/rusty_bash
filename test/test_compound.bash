@@ -539,7 +539,16 @@ res=$($com <<< '(( 0 + 1 + 2+3 ))')
 res=$($com -c '[[ -a /etc/passwd ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ -e /etc/passwd ]]')
+[ "$?" = "0" ] || err $LINENO
+
 res=$($com -c '[[ -a /etc/passwdaaa ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ -e /etc/passwdaaa ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ ! -e /dev/tty0 ]] || [[ ! -a /dev/tty0 ]]')
 [ "$?" = "1" ] || err $LINENO
 
 res=$($com -c '[[ -a ]]')
@@ -556,6 +565,24 @@ res=$($com -c '[[ ! -a /etc/passwdaaa ]]')
 
 res=$($com -c '[[ -a ( /etc/passwdaaa ) ]]')
 [ "$?" = "2" ] || err $LINENO
+
+res=$($com -c '[[ ! -a /dev/nvme0n1 ]] || [[ -b /dev/nvme0n1 ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ ! -a /dev/tty0 ]] || [[ ! -b /dev/tty0 ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ ! -a /dev/nvme0n1 ]] || [[ ! -c /dev/nvme0n1 ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ ! -a /dev/tty0 ]] || [[ -c /dev/tty0 ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -d /etc/ ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -d /etc/passwd ]]')
+[ "$?" = "1" ] || err $LINENO
 
 res=$($com -c '[[ -a ]]')
 [ "$?" = "2" ] || err $LINENO
