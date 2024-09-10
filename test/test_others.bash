@@ -230,9 +230,9 @@ a
 # 2>, 2>>
 
 res=$($com <<< '
-	ls /aaaa 2> /tmp/rusty_bash
-	ls /bbbb 2>> /tmp/rusty_bash
-	cat /tmp/rusty_bash | grep ls | wc -l
+	ls /aaaa 2> /tmp/rusty_bash_$$
+	ls /bbbb 2>> /tmp/rusty_bash_$$
+	cat /tmp/rusty_bash_$$ | grep ls | wc -l
 	' | tr -dc 0-9)
 [ "$res" = "2" ] || err $LINENO
 
