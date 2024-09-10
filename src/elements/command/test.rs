@@ -201,8 +201,7 @@ impl TestCommand {
                         return Ok(());
                     },
                 };
-                let file_type = meta.file_type();
-                let ans = file_type.is_block_device();
+                let ans = meta.file_type().is_block_device();
                 stack.push( Elem::Ans(ans) );
             },
             _  => stack.push( Elem::Ans(false) ),
