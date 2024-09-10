@@ -5,19 +5,17 @@ mod core;
 mod feeder;
 mod elements;
 mod error_message;
+mod signal;
 mod utils;
 
-use std::{env, process, thread, time};
+use std::{env, process};
 use std::fs::File;
 use std::os::fd::IntoRawFd;
-use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
 use crate::elements::io;
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
-use signal_hook::consts;
-use signal_hook::iterator::Signals;
 use utils::file_check;
 
 fn show_version() {
@@ -31,32 +29,6 @@ and binary forms with or without modification under the license.
 There is no warranty, to the extent permitted by law.", V);
     process::exit(0);
 }
-
-fn run_signal_check(core: &mut ShellCore) {
-    for fd in 3..10 { //use FD 3~9 to prevent signal-hool from using these FDs
-        nix::unistd::dup2(2, fd).expect("sush(fatal): init error");
-    }
-
-    let sigint = Arc::clone(&core.sigint); //追加
- 
-    thread::spawn(move || {
-        let mut signals = Signals::new(vec![consts::SIGINT])
-                          .expect("sush(fatal): cannot prepare signal data");
-
-        for fd in 3..10 { // release FD 3~9
-            nix::unistd::close(fd).expect("sush(fatal): init error");
-        }
-
-        loop {
-            thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
-            for signal in signals.pending() {
-                if signal == consts::SIGINT {
-                    sigint.store(true, Relaxed);
-                }
-            }
-        }
-    });
-} //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
 fn read_rc_file(core: &mut ShellCore) {
     if ! core.data.flags.contains("i") {
@@ -129,7 +101,7 @@ fn main() {
     core.script_name = script.clone();
     builtins::option_commands::set(&mut core, &mut options);
     builtins::option_commands::set_parameters(&mut core, &mut parameters);
-    run_signal_check(&mut core);
+    signal::run_signal_check(&mut core);
 
     if c_flag {
         main_c_option(&mut core, &script);
@@ -152,17 +124,6 @@ fn set_history(core: &mut ShellCore, s: &str) {
     }
 }
 
-fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-    if ! core.sigint.load(Relaxed) { //core.input_interrupt {
-        return false;
-    }
-
-    core.sigint.store(false, Relaxed); //core.input_interrupt = false;
-    core.data.set_param("?", "130");
-    feeder.consume(feeder.len());
-    true
-}
-
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new("");
     loop {
@@ -172,7 +133,7 @@ fn main_loop(core: &mut ShellCore) {
         match feeder.feed_line(core) {
             Ok(()) => {}, 
             Err(InputError::Interrupt) => {
-                input_interrupt_check(&mut feeder, core);
+                signal::input_interrupt_check(&mut feeder, core);
                 continue;
             },
             _ => break,
