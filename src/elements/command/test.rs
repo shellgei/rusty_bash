@@ -204,6 +204,17 @@ impl TestCommand {
                 let ans = meta.file_type().is_block_device();
                 stack.push( Elem::Ans(ans) );
             },
+            "-c"  => {
+                let meta = match fs::metadata(s) {
+                    Ok(m) => m,
+                    _  => {
+                        stack.push( Elem::Ans(false) );
+                        return Ok(());
+                    },
+                };
+                let ans = meta.file_type().is_char_device();
+                stack.push( Elem::Ans(ans) );
+            },
             _  => stack.push( Elem::Ans(false) ),
         }   
         Ok(())
