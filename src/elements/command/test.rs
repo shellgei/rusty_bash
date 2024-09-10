@@ -1,10 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod file_check;
+
 use crate::{error_message, ShellCore, Feeder};
-use std::fs;
-use std::os::unix::fs::FileTypeExt;
-use std::path::Path;
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -189,32 +188,9 @@ impl TestCommand {
 
     fn unary_calc(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
         match op {
-            "-a"  => {
-                let ans = Path::new(s).is_file();
-                stack.push( Elem::Ans(ans) );
-            },
-            "-b"  => {
-                let meta = match fs::metadata(s) {
-                    Ok(m) => m,
-                    _  => {
-                        stack.push( Elem::Ans(false) );
-                        return Ok(());
-                    },
-                };
-                let ans = meta.file_type().is_block_device();
-                stack.push( Elem::Ans(ans) );
-            },
-            "-c"  => {
-                let meta = match fs::metadata(s) {
-                    Ok(m) => m,
-                    _  => {
-                        stack.push( Elem::Ans(false) );
-                        return Ok(());
-                    },
-                };
-                let ans = meta.file_type().is_char_device();
-                stack.push( Elem::Ans(ans) );
-            },
+            "-a"  => return file_check::is_file(s, stack),
+            "-b"  => return file_check::is_block(s, stack),
+            "-c"  => return file_check::is_char(s, stack),
             _  => stack.push( Elem::Ans(false) ),
         }   
         Ok(())
