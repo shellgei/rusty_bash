@@ -5,3 +5,5 @@
 ./test_others.bash
 ./test_job.bash
 ../../../../test/test_compound.bash
+../../../../test/test_compound.bash
+../../../../test/test_compound.bash
