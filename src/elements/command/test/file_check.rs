@@ -6,6 +6,11 @@ use std::os::unix::fs::FileTypeExt;
 use std::path::Path;
 use crate::elements::command::test::Elem;
 
+pub fn exists(name: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
+    stack.push( Elem::Ans( fs::metadata(name).is_ok() ) );
+    Ok(())
+}
+
 pub fn is_file(name: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
     let ans = Path::new(name).is_file();
     stack.push( Elem::Ans(ans) );

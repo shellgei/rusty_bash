@@ -548,6 +548,9 @@ res=$($com -c '[[ -a /etc/passwdaaa ]]')
 res=$($com -c '[[ -e /etc/passwdaaa ]]')
 [ "$?" = "1" ] || err $LINENO
 
+res=$($com -c '[[ ! -e /dev/tty0 ]] || [[ ! -a /dev/tty0 ]]')
+[ "$?" = "1" ] || err $LINENO
+
 res=$($com -c '[[ -a ]]')
 [ "$?" = "2" ] || err $LINENO
 
