@@ -3,7 +3,7 @@
 
 mod completion;
 
-use crate::{InputError, ShellCore};
+use crate::{file_check, InputError, ShellCore};
 use std::io;
 use std::fs::File;
 use std::io::{Write, Stdout};
@@ -109,14 +109,15 @@ impl Terminal {
             let path = dirs.join("/") + "/.git/HEAD";
             dirs.pop();
 
-            let p = Path::new(&path);
-            if p.is_file() {
-                if let Ok(mut f) = File::open(p){
-                    return match f.read_line() {
-                        Ok(Some(s)) => s.replace("ref: refs/heads/","") + "🌵",
-                        _ => "".to_string(),
-                    };
-                }
+            if ! file_check::is_regular_file(&path) {
+                continue;
+            }
+
+            if let Ok(mut f) = File::open(Path::new(&path)){
+                return match f.read_line() {
+                    Ok(Some(s)) => s.replace("ref: refs/heads/","") + "🌵",
+                    _ => "".to_string(),
+                };
             }
         }
 

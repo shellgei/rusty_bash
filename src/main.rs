@@ -10,7 +10,6 @@ mod utils;
 use std::{env, process, thread, time};
 use std::fs::File;
 use std::os::fd::IntoRawFd;
-use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
@@ -19,6 +18,7 @@ use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
 use signal_hook::consts;
 use signal_hook::iterator::Signals;
+use utils::file_check;
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");
@@ -70,7 +70,7 @@ fn read_rc_file(core: &mut ShellCore) {
 
     let rc_file = dir + "/.sushrc";
 
-    if Path::new(&rc_file).is_file() {
+    if file_check::is_regular_file(&rc_file) {
         core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]);
     }
 }
