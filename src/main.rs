@@ -47,6 +47,22 @@ fn read_rc_file(core: &mut ShellCore) {
     }
 }
 
+fn set_script_file(script: &str) {
+    match File::open(script) {
+        Ok(file) => {
+            let fd = file.into_raw_fd();
+            let result = io::replace(fd, 0);
+            if ! result {
+                io::close(fd, &format!("sush(fatal): file does not close"));
+            }
+        },
+        Err(why)  => {
+            eprintln!("sush: {}: {}", script, why);
+            process::exit(1);
+        },
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
@@ -58,12 +74,11 @@ fn main() {
     let mut script = "-".to_string();
     let mut c_flag = false;
 
-    let len = args.len();
-    for i in 1..len {
+    for i in 1..args.len() {
         if args[i] == "-c" {
             c_flag = true;
             io::close(0, &format!("sush(fatal): cannot close stdin"));
-            if i == len-1 {
+            if i == args.len()-1 {
                 eprintln!("bash: -c: option requires an argument");
                 process::exit(2);
             }
@@ -82,19 +97,7 @@ fn main() {
     }
 
     if script != "-" && ! c_flag {
-        match File::open(&script) {
-            Ok(file) => {
-                let fd = file.into_raw_fd();
-                let result = io::replace(fd, 0);
-                if ! result {
-                    io::close(fd, &format!("sush(fatal): file does not close"));
-                }
-            },
-            Err(why)  => {
-                eprintln!("sush: {}: {}", &script, why);
-                process::exit(1);
-            },
-        }
+        set_script_file(&script);
     }
 
     let mut core = ShellCore::new();
