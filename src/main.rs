@@ -8,6 +8,7 @@ mod error_message;
 mod signal;
 mod utils;
 
+use builtins::option_commands;
 use std::{env, process};
 use std::fs::File;
 use std::os::fd::IntoRawFd;
@@ -107,8 +108,8 @@ fn main() {
 
     let mut core = ShellCore::new();
     core.script_name = script.clone();
-    builtins::option_commands::set(&mut core, &mut options);
-    builtins::option_commands::set_parameters(&mut core, &mut parameters);
+    option_commands::set(&mut core, &mut options);
+    option_commands::set_parameters(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
 
     if c_flag {
