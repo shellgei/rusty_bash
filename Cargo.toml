@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 nix = { version = "0.28.0", features = ["fs", "process", "signal", "term", "user", "time", "hostname", "resource"]}
-termion = "3.0.0"
+termion = "4.0.2"
 unicode-width = "0.1.11"
 signal-hook = "0.3.17"
 rev_lines = "0.3.0"
