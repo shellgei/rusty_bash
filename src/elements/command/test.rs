@@ -192,6 +192,7 @@ impl TestCommand {
             "-c"  => file_check::type_check(s, "-c"),
             "-d"  => file_check::is_dir(s),
             "-f"  => file_check::is_regular_file(s),
+            "-g"  => file_check::is_sgid_file(s),
             _  => return Err("unsupported option".to_string()),
         };
 

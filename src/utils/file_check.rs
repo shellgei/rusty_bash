@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::fs;
-use std::os::unix::fs::FileTypeExt;
+use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 use std::path::Path;
 
 pub fn exists(name: &str) -> bool {
@@ -28,4 +28,14 @@ pub fn type_check(name: &str, tp: &str) -> bool {
         "-c" => meta.file_type().is_char_device(),
         _ => false,
     }
+}
+
+pub fn is_sgid_file(name: &str) -> bool {
+    let meta = match fs::metadata(name) {
+        Ok(m) => m,
+        _     => return false,
+    };
+
+    let special_mode = (meta.permissions().mode()/0o1000)%8;
+    (special_mode%4)>>1 == 1
 }
