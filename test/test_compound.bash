@@ -593,8 +593,10 @@ res=$($com -c '[[  ]]')
 $com -c '[[ -f /dev/tty0 ]]'
 [ "$?" = "1" ] || err $LINENO
 
-$com -c 'touch /tmp/$$ ; chmod g+s /tmp/$$; [[ -g /tmp/$$ ]] && rm /tmp/$$'
-[ "$?" = "0" ] || err $LINENO
+if [ "$(uname)" = "Linux" ] ; then
+	$com -c 'touch /tmp/$$ ; chmod g+s /tmp/$$; [[ -g /tmp/$$ ]] && rm /tmp/$$'
+	[ "$?" = "0" ] || err $LINENO
+fi
 
 $com -c '[[ -g /etc/passwd ]]'
 [ "$?" = "1" ] || err $LINENO
