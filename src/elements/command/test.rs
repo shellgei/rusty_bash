@@ -197,6 +197,7 @@ impl TestCommand {
             "-k"  => file_check::type_check(s, "-k"),
             "-p"  => file_check::type_check(s, "-p"),
             "-r"  => file_check::is_readable(s),
+            "-s"  => file_check::type_check(s, "-s"),
             _  => return Err("unsupported option".to_string()),
         };
 

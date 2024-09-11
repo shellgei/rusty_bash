@@ -28,6 +28,7 @@ pub fn type_check(name: &str, tp: &str) -> bool {
         "-b" => return meta.file_type().is_block_device(),
         "-c" => return meta.file_type().is_char_device(),
         "-p" => return meta.file_type().is_fifo(),
+        "-s" => return meta.len() == 0,
         _ => {},
     }
 

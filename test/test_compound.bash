@@ -625,7 +625,14 @@ if [ "$(uname)" = "Linux" ] ; then
 	[ "$?" = "1" ] || err $LINENO
 fi
 
-$com -c '[[ -g /etc/passwd ]]'
+$com -c '[[ -s /etc/passwd ]]'
 [ "$?" = "1" ] || err $LINENO
+
+$com -c '[[ -s /etc/passwdaaaa ]]'
+[ "$?" = "1" ] || err $LINENO
+
+$com -c 'touch /tmp/$$-empty ; [[ -s /tmp/$$-empty ]]'
+[ "$?" = "0" ] || err $LINENO
+
 
 echo $0 >> ./ok
