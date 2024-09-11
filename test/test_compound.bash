@@ -596,6 +596,12 @@ $com -c '[[ -f /dev/tty0 ]]'
 if [ "$(uname)" = "Linux" ] ; then
 	$com -c 'touch /tmp/$$ ; chmod g+s /tmp/$$; [[ -g /tmp/$$ ]] && rm /tmp/$$'
 	[ "$?" = "0" ] || err $LINENO
+
+	$com -c 'ln -s /etc/passwd /tmp/$$ ; [[ -h /tmp/$$ ]] && rm /tmp/$$'
+	[ "$?" = "0" ] || err $LINENO
+
+	$com -c '[[ -h /etc/passwd ]]'
+	[ "$?" = "1" ] || err $LINENO
 fi
 
 $com -c '[[ -g /etc/passwd ]]'

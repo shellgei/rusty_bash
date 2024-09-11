@@ -39,3 +39,7 @@ pub fn is_sgid_file(name: &str) -> bool {
     let special_mode = (meta.permissions().mode()/0o1000)%8;
     (special_mode%4)>>1 == 1
 }
+
+pub fn is_symlink(name: &str) -> bool {
+    Path::new(name).is_symlink()
+}
