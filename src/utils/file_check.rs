@@ -24,12 +24,24 @@ pub fn type_check(name: &str, tp: &str) -> bool {
     };
 
     match tp {
-        "-b" => meta.file_type().is_block_device(),
-        "-c" => meta.file_type().is_char_device(),
+        "-b" => return meta.file_type().is_block_device(),
+        "-c" => return meta.file_type().is_char_device(),
+        _ => {},
+    }
+
+    let special_mode = (meta.permissions().mode()/0o1000)%8;
+    match tp {
+        "-g" => (special_mode%4)>>1 == 1,
+        "-k" => special_mode%2 == 1,
         _ => false,
     }
 }
 
+pub fn is_symlink(name: &str) -> bool {
+    Path::new(name).is_symlink()
+}
+
+/*
 pub fn is_sgid_file(name: &str) -> bool {
     let meta = match fs::metadata(name) {
         Ok(m) => m,
@@ -38,8 +50,5 @@ pub fn is_sgid_file(name: &str) -> bool {
 
     let special_mode = (meta.permissions().mode()/0o1000)%8;
     (special_mode%4)>>1 == 1
-}
+}*/
 
-pub fn is_symlink(name: &str) -> bool {
-    Path::new(name).is_symlink()
-}
