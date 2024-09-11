@@ -617,6 +617,12 @@ if [ "$(uname)" = "Linux" ] ; then
 
 	$com -c '[[ -p /tmp/ ]]'
 	[ "$?" = "1" ] || err $LINENO
+
+	$com -c '[[ -r /etc/passwd ]]'
+	[ "$?" = "0" ] || err $LINENO
+
+	$com -c '[[ -r /etc/shadow ]]'
+	[ "$?" = "1" ] || err $LINENO
 fi
 
 $com -c '[[ -g /etc/passwd ]]'

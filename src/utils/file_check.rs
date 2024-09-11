@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::fs;
+use std::fs::File;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 use std::path::Path;
 
@@ -40,4 +41,8 @@ pub fn type_check(name: &str, tp: &str) -> bool {
 
 pub fn is_symlink(name: &str) -> bool {
     Path::new(name).is_symlink()
+}
+
+pub fn is_readable(name: &str) -> bool {
+    File::open(&name).is_ok()
 }
