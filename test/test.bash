@@ -15,21 +15,12 @@ com=../target/release/sush
 : > error
 : > ok
 
-if [ ~ = /home/ueda ] ; then
-	./test_others.bash nobuild &
-	./test_compound.bash nobuild &
-	./test_script.bash nobuild &
-	./test_job.bash nobuild &
-	./test_brace.bash nobuild &
-	./test_builtins.bash nobuild &
-else
-	./test_others.bash nobuild
-	./test_compound.bash nobuild
-	./test_script.bash nobuild
-	./test_brace.bash nobuild
-	./test_builtins.bash nobuild
-	./test_job.bash nobuild
-fi
+./test_others.bash nobuild &
+./test_compound.bash nobuild &
+./test_script.bash nobuild &
+./test_job.bash nobuild &
+./test_brace.bash nobuild &
+./test_builtins.bash nobuild &
 
 wait 
 

@@ -590,4 +590,13 @@ res=$($com -c '[[ -a ]]')
 res=$($com -c '[[  ]]')
 [ "$?" = "2" ] || err $LINENO
 
+$com -c '[[ -f /dev/tty0 ]]'
+[ "$?" = "1" ] || err $LINENO
+
+$com -c 'touch /tmp/$$ ; chmod g+s /tmp/$$; [[ -g /tmp/$$ ]] && rm /tmp/$$'
+[ "$?" = "0" ] || err $LINENO
+
+$com -c '[[ -g /etc/passwd ]]'
+[ "$?" = "1" ] || err $LINENO
+
 echo $0 >> ./ok
