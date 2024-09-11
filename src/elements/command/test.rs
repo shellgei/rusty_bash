@@ -195,6 +195,7 @@ impl TestCommand {
             "-g"  => file_check::type_check(s, "-g"),
             "-h"  => file_check::is_symlink(s),
             "-k"  => file_check::type_check(s, "-k"),
+            "-p"  => file_check::type_check(s, "-p"),
             _  => return Err("unsupported option".to_string()),
         };
 

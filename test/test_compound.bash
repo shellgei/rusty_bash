@@ -611,6 +611,12 @@ if [ "$(uname)" = "Linux" ] ; then
 
 	$com -c '[[ -k /tmp/ ]]'
 	[ "$?" = "0" ] || err $LINENO
+
+	$com -c 'mkfifo /tmp/$$-fifo ; [[ -p /tmp/$$-fifo ]] && rm /tmp/$$-fifo '
+	[ "$?" = "0" ] || err $LINENO
+
+	$com -c '[[ -p /tmp/ ]]'
+	[ "$?" = "1" ] || err $LINENO
 fi
 
 $com -c '[[ -g /etc/passwd ]]'

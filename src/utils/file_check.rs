@@ -26,6 +26,7 @@ pub fn type_check(name: &str, tp: &str) -> bool {
     match tp {
         "-b" => return meta.file_type().is_block_device(),
         "-c" => return meta.file_type().is_char_device(),
+        "-p" => return meta.file_type().is_fifo(),
         _ => {},
     }
 
@@ -40,15 +41,3 @@ pub fn type_check(name: &str, tp: &str) -> bool {
 pub fn is_symlink(name: &str) -> bool {
     Path::new(name).is_symlink()
 }
-
-/*
-pub fn is_sgid_file(name: &str) -> bool {
-    let meta = match fs::metadata(name) {
-        Ok(m) => m,
-        _     => return false,
-    };
-
-    let special_mode = (meta.permissions().mode()/0o1000)%8;
-    (special_mode%4)>>1 == 1
-}*/
-
