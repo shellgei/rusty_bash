@@ -37,6 +37,7 @@ pub fn type_check(name: &str, tp: &str) -> bool {
     match tp {
         "-g" => (special_mode%4)>>1 == 1,
         "-k" => special_mode%2 == 1,
+        "-u" => special_mode/4 == 1,
         _ => false,
     }
 }

@@ -600,6 +600,12 @@ if [ "$(uname)" = "Linux" ] ; then
 	$com -c '[[ -g /etc/passwd ]]'
 	[ "$?" = "1" ] || err $LINENO
 
+	$com -c '[[ -u /etc/passwd ]]'
+	[ "$?" = "1" ] || err $LINENO
+
+	$com -c 'touch /tmp/$$ ; chmod u+s /tmp/$$; [[ -u /tmp/$$ ]] && rm /tmp/$$'
+	[ "$?" = "0" ] || err $LINENO
+
 	$com -c 'ln -s /etc/passwd /tmp/$$ ; [[ -h /tmp/$$ ]] && rm /tmp/$$'
 	[ "$?" = "0" ] || err $LINENO
 
