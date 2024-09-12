@@ -198,6 +198,7 @@ impl TestCommand {
             "-p"  => file_check::type_check(s, "-p"),
             "-r"  => file_check::is_readable(s),
             "-s"  => file_check::type_check(s, "-s"),
+            "-t"  => file_check::is_tty(s),
             _  => return Err("unsupported option".to_string()),
         };
 

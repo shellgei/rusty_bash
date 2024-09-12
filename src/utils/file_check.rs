@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use nix::unistd;
 use std::fs;
 use std::fs::File;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
@@ -46,4 +47,12 @@ pub fn is_symlink(name: &str) -> bool {
 
 pub fn is_readable(name: &str) -> bool {
     File::open(&name).is_ok()
+}
+
+pub fn is_tty(name: &str) -> bool {
+    let fd = match name.parse::<i32>() {
+        Ok(n) => n,
+        _ => return false,
+    };
+    unistd::isatty(fd) == Ok(true)
 }
