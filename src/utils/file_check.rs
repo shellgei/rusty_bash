@@ -1,9 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use faccess;
+use faccess::PathExt;
 use nix::unistd;
 use std::fs;
-use std::fs::{File, OpenOptions};
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 use std::path::Path;
 
@@ -47,11 +48,15 @@ pub fn is_symlink(name: &str) -> bool {
 }
 
 pub fn is_readable(name: &str) -> bool {
-    File::open(&name).is_ok()
+    Path::new(&name).readable()
+}
+
+pub fn is_executable(name: &str) -> bool {
+    Path::new(name).executable()
 }
 
 pub fn is_writable(name: &str) -> bool {
-    OpenOptions::new().create(false).write(true).open(name).is_ok()
+    Path::new(&name).writable()
 }
 
 pub fn is_tty(name: &str) -> bool {

@@ -201,6 +201,7 @@ impl TestCommand {
             "-t"  => file_check::is_tty(s),
             "-u"  => file_check::type_check(s, "-u"),
             "-w"  => file_check::is_writable(s),
+            "-x"  => file_check::is_executable(s),
             _  => return Err("unsupported option".to_string()),
         };
 
