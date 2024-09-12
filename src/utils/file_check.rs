@@ -6,6 +6,7 @@ use faccess::PathExt;
 use nix::unistd;
 use std::fs;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
+use std::os::linux::fs::MetadataExt;
 use std::path::Path;
 
 pub fn exists(name: &str) -> bool {
@@ -31,6 +32,7 @@ pub fn type_check(name: &str, tp: &str) -> bool {
         "-c" => return meta.file_type().is_char_device(),
         "-p" => return meta.file_type().is_fifo(),
         "-s" => return meta.len() == 0,
+        "-G" => return unistd::getgid() == meta.st_gid().into(),
         _ => {},
     }
 
@@ -66,3 +68,10 @@ pub fn is_tty(name: &str) -> bool {
     };
     unistd::isatty(fd) == Ok(true)
 }
+
+/*
+pub fn is_owned_by_this_group(name: &str) -> bool {
+    let gid = unistd::getgid();
+    true
+}*/
+//            "-G"  => file_check::is_owned_by_this_group(s),
