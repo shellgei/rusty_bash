@@ -3,7 +3,7 @@
 
 use nix::unistd;
 use std::fs;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 use std::path::Path;
 
@@ -48,6 +48,10 @@ pub fn is_symlink(name: &str) -> bool {
 
 pub fn is_readable(name: &str) -> bool {
     File::open(&name).is_ok()
+}
+
+pub fn is_writable(name: &str) -> bool {
+    OpenOptions::new().create(false).write(true).open(name).is_ok()
 }
 
 pub fn is_tty(name: &str) -> bool {

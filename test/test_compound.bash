@@ -649,5 +649,13 @@ $com -c '[[ -t 0 ]]'
 $com -c '[[ -t aaa ]]'
 [ "$?" = "1" ] || err $LINENO
 
+$com -c '[[ -w /etc/shadow ]]'
+[ "$?" = "1" ] || err $LINENO
+
+$com -c '[[ -w /etc ]]'
+[ "$?" = "1" ] || err $LINENO
+
+$com -c 'touch /tmp/$$-file; [[ -w /tmp/$$-file ]]; rm /tmp/$$-file'
+[ "$?" = "0" ] || err $LINENO
 
 echo $0 >> ./ok
