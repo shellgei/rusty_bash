@@ -644,6 +644,12 @@ if [ "$(uname)" = "Linux" ] ; then
 
 	$com -c '[[ -x / ]]'
 	[ "$?" = "0" ] || err $LINENO
+
+	$com -c '[[ -S /bin/bash ]]'
+	[ "$?" = "1" ] || err $LINENO
+
+	$com -c '[[ -S /dev/log ]]'
+	[ "$?" = "0" ] || err $LINENO
 fi
 
 $com -c '[[ -s /etc/passwd ]]'

@@ -195,7 +195,7 @@ impl TestCommand {
             "-t"  => file_check::is_tty(s),
             "-w"  => file_check::is_writable(s),
             "-x"  => file_check::is_executable(s),
-            "-b" | "-c" | "-g" | "-k" | "-p" | "-s" | "-u" | "-G" | "-N" | "-O"
+            "-b" | "-c" | "-g" | "-k" | "-p" | "-s" | "-u" | "-G" | "-N" | "-O" | "-S"
                   => file_check::metadata_check(s, op),
             _  => return Err("unsupported option".to_string()),
         };
