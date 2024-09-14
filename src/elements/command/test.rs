@@ -188,21 +188,15 @@ impl TestCommand {
     fn unary_calc(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
         let result = match op {
             "-a" | "-e"  => file_check::exists(s),
-            "-b" | "-c"  => file_check::metadata_check(s, op),
             "-d"  => file_check::is_dir(s),
             "-f"  => file_check::is_regular_file(s),
-            "-g"  => file_check::metadata_check(s, "-g"),
             "-h" | "-L"  => file_check::is_symlink(s),
-            "-k"  => file_check::metadata_check(s, "-k"),
-            "-p"  => file_check::metadata_check(s, "-p"),
             "-r"  => file_check::is_readable(s),
-            "-s"  => file_check::metadata_check(s, "-s"),
             "-t"  => file_check::is_tty(s),
-            "-u"  => file_check::metadata_check(s, "-u"),
             "-w"  => file_check::is_writable(s),
             "-x"  => file_check::is_executable(s),
-            "-G"  => file_check::metadata_check(s, "-G"),
-            "-N"  => file_check::metadata_check(s, "-N"),
+            "-b" | "-c" | "-g" | "-k" | "-p" | "-s" | "-u" | "-G" | "-N"
+                  => file_check::metadata_check(s, op),
             _  => return Err("unsupported option".to_string()),
         };
 
