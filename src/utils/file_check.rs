@@ -68,10 +68,3 @@ pub fn is_tty(name: &str) -> bool {
     };
     unistd::isatty(fd) == Ok(true)
 }
-
-/*
-pub fn is_owned_by_this_group(name: &str) -> bool {
-    let gid = unistd::getgid();
-    true
-}*/
-//            "-G"  => file_check::is_owned_by_this_group(s),
