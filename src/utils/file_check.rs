@@ -6,7 +6,12 @@ use faccess::PathExt;
 use nix::unistd;
 use std::fs;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
+
+#[cfg(target_os = "linux")]
 use std::os::linux::fs::MetadataExt;
+#[cfg(target_os = "macos")]
+use std::os::macos::fs::MetadataExt;
+
 use std::path::Path;
 
 pub fn exists(name: &str) -> bool {
