@@ -661,8 +661,10 @@ $com -c '[[ -s /etc/passwdaaaa ]]'
 $com -c 'touch /tmp/$$-empty ; [[ -s /tmp/$$-empty ]]'
 [ "$?" = "0" ] || err $LINENO
 
-$com -c '[[ -t 1 ]]'
-[ "$?" = "0" ] || err $LINENO
+if [[ -t 1 ]] ; then
+	$com -c '[[ -t 1 ]]'
+	[ "$?" = "0" ] || err $LINENO
+fi
 
 $com -c '[[ -t 0 ]]'
 [ "$?" = "1" ] || err $LINENO
