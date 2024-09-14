@@ -21,7 +21,7 @@ pub fn is_dir(name: &str) -> bool {
     Path::new(name).is_dir()
 }
 
-pub fn type_check(name: &str, tp: &str) -> bool {
+pub fn metadata_check(name: &str, tp: &str) -> bool {
     let meta = match fs::metadata(name) {
         Ok(m) => m,
         _     => return false,
@@ -33,6 +33,17 @@ pub fn type_check(name: &str, tp: &str) -> bool {
         "-p" => return meta.file_type().is_fifo(),
         "-s" => return meta.len() == 0,
         "-G" => return unistd::getgid() == meta.st_gid().into(),
+        "-N" => {
+            let modified_time = match meta.modified() {
+                Ok(t) => t,
+                _ => return false,
+            };
+            let accessed_time = match meta.accessed() {
+                Ok(t) => t,
+                _ => return false,
+            };
+            return modified_time > accessed_time;
+        },
         _ => {},
     }
 

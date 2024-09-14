@@ -609,7 +609,13 @@ if [ "$(uname)" = "Linux" ] ; then
 	$com -c 'ln -s /etc/passwd /tmp/$$ ; [[ -h /tmp/$$ ]] && rm /tmp/$$'
 	[ "$?" = "0" ] || err $LINENO
 
+	$com -c 'ln -s /etc/passwd /tmp/$$ ; [[ -L /tmp/$$ ]] && rm /tmp/$$'
+	[ "$?" = "0" ] || err $LINENO
+
 	$com -c '[[ -h /etc/passwd ]]'
+	[ "$?" = "1" ] || err $LINENO
+
+	$com -c '[[ -L /etc/passwd ]]'
 	[ "$?" = "1" ] || err $LINENO
 
 	$com -c '[[ -k /etc/passwd ]]'
@@ -677,5 +683,19 @@ if [ "$(whoami)" != root ] ; then
 	$com -c '[[ -G /etc/passwd ]]'
 	[ "$?" = "1" ] || err $LINENO
 fi
+
+res=$($com -c '
+touch /tmp/$$-N
+[[ -N /tmp/$$-N ]] ; echo $?
+echo a >> /tmp/$$-N
+[[ -N /tmp/$$-N ]] ; echo $?
+[[ -N /tmp/$$-N ]] ; echo $?
+cat /tmp/$$-N > /dev/null
+[[ -N /tmp/$$-N ]] ; echo $?
+rm /tmp/$$-N')
+[ "$res" = "1
+0
+0
+1" ] || err $LINENO
 
 echo $0 >> ./ok
