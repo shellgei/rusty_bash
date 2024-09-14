@@ -44,6 +44,7 @@ pub fn metadata_check(name: &str, tp: &str) -> bool {
             };
             return modified_time > accessed_time;
         },
+        "-O" => return unistd::getuid() == meta.st_uid().into(),
         _ => {},
     }
 

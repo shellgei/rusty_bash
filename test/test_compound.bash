@@ -679,8 +679,14 @@ $com -c 'touch /tmp/$$-file; [[ -w /tmp/$$-file ]]; rm /tmp/$$-file'
 $com -c '[[ -G ~ ]]'
 [ "$?" = "0" ] || err $LINENO
 
+$com -c '[[ -O ~ ]]'
+[ "$?" = "0" ] || err $LINENO
+
 if [ "$(whoami)" != root ] ; then
 	$com -c '[[ -G /etc/passwd ]]'
+	[ "$?" = "1" ] || err $LINENO
+
+	$com -c '[[ -O /etc/passwd ]]'
 	[ "$?" = "1" ] || err $LINENO
 fi
 
