@@ -52,17 +52,12 @@ fn to_operand(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
 }
 
 fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
-    let n = match stack.pop() {
-        Some(Elem::Word(w)) => {
-            match to_operand(&w, core) {
-                Ok(op) => op,
-                Err(e) => return Err(e),
-            }
-        },
-        Some(elem) => elem,
-        None       => return Err("no operand".to_string()),
-    };
-    Ok(n)
+    match stack.pop() {
+        Some(Elem::InParen(mut expr)) => expr.eval(core),
+        Some(Elem::Word(w)) => to_operand(&w, core),
+        Some(elem) => Ok(elem),
+        None => return Err("no operand".to_string()),
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -73,20 +68,17 @@ pub struct ConditionalExpr {
 }
 
 impl ConditionalExpr {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Option<Elem> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
         let rev_pol = match self.rev_polish() {
             Ok(ans) => ans,
-            _ => {
-                core.data.set_param("?", "2");
-                return None;
-            },
+            Err(e) => return Err(("syntax error near ".to_owned() + &to_string(&e)).to_string()),
         };
 
         let mut stack = vec![];
 
         for e in rev_pol {
             let result = match e { 
-                Elem::Word(_) => {
+                Elem::Word(_) | Elem::InParen(_) => {
                     stack.push(e.clone());
                     Ok(())
                 },
@@ -104,33 +96,25 @@ impl ConditionalExpr {
             };
     
             if let Err(err_msg) = result {
-                error_message::print(&err_msg, core, true);
+                //error_message::print(&err_msg, core, true);
                 core.data.set_param("?", "2");
-                return None;
+                return Err(err_msg);
             }
         }
         if stack.len() != 1 { 
 
+            let mut err = "syntax error".to_string();
             if stack.len() > 1 {
-                let err = error_message::syntax_in_cond_expr(&to_string(&stack[0]));
+                err = error_message::syntax_in_cond_expr(&to_string(&stack[0]));
                 error_message::print(&err, core, true);
-                let err = format!("syntax error near `{}'", to_string(&stack[0]));
+                err = format!("syntax error near `{}'", to_string(&stack[0]));
                 error_message::print(&err, core, true);
             }
-            core.data.set_param("?", "2");
-            return None;
+            //core.data.set_param("?", "2");
+            return Err(err);
         }   
     
-        stack.pop()
-        /*
-        match stack.pop() {
-            Some(Elem::Ans(true))  => core.data.set_param("?", "0"),
-            Some(Elem::Ans(false)) => core.data.set_param("?", "1"),
-            _  => {
-                eprintln!("unknown syntax error_message");
-                core.data.set_param("?", "2");
-            },
-        } */ 
+        pop_operand(&mut stack, core)
     }
 
     fn rev_polish(&mut self) -> Result<Vec<Elem>, Elem> {
@@ -345,10 +329,13 @@ impl ConditionalExpr {
         let mut ans = Self::new();
 
         loop {
+            Self::eat_blank(feeder, &mut ans, core);
+            /*
             if ! Self::eat_blank(feeder, &mut ans, core) {
                 return None;
-            }
-            if feeder.starts_with("]]") {
+            }*/
+            if feeder.starts_with("]]")
+            || feeder.starts_with(")") {
                 if ans.elements.len() == 0 {
                     return None;
                 }
@@ -363,17 +350,8 @@ impl ConditionalExpr {
                 continue;
             }
 
-            if feeder.starts_with("(") {
-                let err = error_message::syntax_in_cond_expr("(");
-                error_message::print(&err, core, true);
-            }else {
-                let err = error_message::syntax_in_cond_expr(")");
-                error_message::print(&err, core, true);
-            }
-
             break;
         }
-    
         None
     }
 }

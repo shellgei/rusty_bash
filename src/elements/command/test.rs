@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{error_message, ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::conditional::{ConditionalExpr, Elem};
@@ -17,10 +17,14 @@ pub struct TestCommand {
 impl Command for TestCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         match self.cond.clone().unwrap().eval(core) {
-            Some(Elem::Ans(true))  => core.data.set_param("?", "0"),
-            Some(Elem::Ans(false)) => core.data.set_param("?", "1"),
+            Ok(Elem::Ans(true))  => core.data.set_param("?", "0"),
+            Ok(Elem::Ans(false)) => core.data.set_param("?", "1"),
+            Err(err_msg)  => {
+                error_message::print(&err_msg, core, true);
+                core.data.set_param("?", "2");
+            },
             _  => {
-                eprintln!("unknown syntax error_message");
+                error_message::print("unknown error", core, true);
                 core.data.set_param("?", "2");
             },
         } 
