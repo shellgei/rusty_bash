@@ -2,4 +2,5 @@
 ./test_builtins.bash
 ./test_brace.bash
 ./test_compound.bash
+./test_others.bash
 ./test_job.bash
