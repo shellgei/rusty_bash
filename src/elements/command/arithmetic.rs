@@ -60,25 +60,16 @@ impl ArithmeticCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
 
-        loop {
-            if let Some(c) = ArithmeticExpr::parse(feeder, core) {
-                if feeder.starts_with(",") {
-                    ans.text += &c.text;
-                    ans.text += &feeder.consume(1);
-                    ans.expressions.push(c);
-                    continue;
-                }
-
-                if feeder.starts_with("))") {
-                    ans.text += &c.text;
-                    ans.text += &feeder.consume(2);
-                    ans.expressions.push(c);
-                    feeder.pop_backup();
-                    return Some(ans);
-                }
+        if let Some(c) = ArithmeticExpr::parse(feeder, core) {
+            if feeder.starts_with("))") {
+                ans.text += &c.text;
+                ans.text += &feeder.consume(2);
+                ans.expressions.push(c);
+                feeder.pop_backup();
+                return Some(ans);
             }
-            feeder.rewind();
-            return None;
         }
+        feeder.rewind();
+        return None;
     }
 }
