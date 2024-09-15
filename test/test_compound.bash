@@ -712,4 +712,13 @@ rm /tmp/$$-N')
 0
 1" ] || err $LINENO
 
+res=$($com -c '[[ (-a /etc/passwd) ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ ( ! -a /etc/passwd ) ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ ! ( -a /etc/passwd ) ]]')
+[ "$?" = "1" ] || err $LINENO
+
 echo $0 >> ./ok

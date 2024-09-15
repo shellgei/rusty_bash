@@ -2,9 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::arithmetic_expr::ArithmeticExpr;
 use crate::elements::word::Word;
-use super::{Elem, int};
+use super::{ArithmeticExpr, Elem, int};
 
 impl ArithmeticExpr {
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {

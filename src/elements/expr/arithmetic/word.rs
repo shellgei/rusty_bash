@@ -2,8 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error_message, ShellCore, Feeder};
-use super::{Elem, float, int};
-use crate::elements::arithmetic_expr::Word;
+use super::{Elem, float, int, Word};
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<Elem, String> {

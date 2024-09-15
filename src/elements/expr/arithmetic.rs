@@ -13,7 +13,7 @@ mod float;
 use crate::{error_message, ShellCore};
 use self::calculator::calculate;
 use self::elem::Elem;
-use super::word::Word;
+use crate::elements::word::Word;
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticExpr {
