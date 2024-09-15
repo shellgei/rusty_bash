@@ -74,7 +74,7 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
     let mut skip_until = String::new();
 
     for e in rev_pol {
-        if let Elem::BinaryOp(ref op) = e {
+        if let Elem::BinaryOp(ref op) = e { //for short-circuit evaluation
             if op == &skip_until {
                 skip_until = "".to_string();
                 continue;

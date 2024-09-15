@@ -1003,6 +1003,18 @@ res=$($com <<< 'B=3; echo $(( A=1 || (B=1) )); echo $B')
 [ "$res" == "1
 3" ] || err $LINENO
 
+res=$($com <<< 'B=3; echo $(( A=1 && (B=1) )); echo $B')
+[ "$res" == "1
+1" ] || err $LINENO
+
+res=$($com <<< 'B=3; echo $(( A=1 && (B=1) || (B=4) )); echo $B')
+[ "$res" == "1
+1" ] || err $LINENO
+
+res=$($com <<< 'B=3; echo $(( A=1 && (B=1, 0) || (B=4) )); echo $B')
+[ "$res" == "1
+4" ] || err $LINENO
+
 res=$($com <<< 'echo $(( 1.0 ? 20 : 30  ))')
 [ "$?" == "1" ] || err $LINENO
 
