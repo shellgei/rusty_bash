@@ -11,11 +11,7 @@ pub enum Elem {
     Word(Word),
     Operand(String),
     InParen(ConditionalExpr),
-    RightParen,
-    LeftParen,
     Not, // !
-    And,  // &&
-    Or,  // ||
     Ans(bool),
 }
 
@@ -23,7 +19,7 @@ fn op_order(op: &Elem) -> u8 {
     match op {
         Elem::FileCheckOption(_) => 14,
         Elem::Not => 13,
-        Elem::And | Elem::Or => 12,
+        //Elem::And | Elem::Or => 12,
         _ => 0,
     }
 }
@@ -34,11 +30,9 @@ pub fn to_string(op: &Elem) -> String {
         Elem::InParen(expr) => expr.text.clone(),
         Elem::Word(w) => w.text.clone(),
         Elem::Operand(op) => op.to_string(),
-        Elem::LeftParen => "(".to_string(),
-        Elem::RightParen => ")".to_string(),
         Elem::Not => "!".to_string(),
-        Elem::And => "&&".to_string(),
-        Elem::Or => "||".to_string(),
+        //Elem::And => "&&".to_string(),
+        //Elem::Or => "||".to_string(),
         Elem::Ans(true) => "true".to_string(),
         Elem::Ans(false) => "false".to_string(),
     }
@@ -64,7 +58,6 @@ fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Stri
 pub struct ConditionalExpr {
     pub text: String,
     elements: Vec<Elem>,
-    paren_stack: Vec<char>,
 }
 
 impl ConditionalExpr {
@@ -120,26 +113,16 @@ impl ConditionalExpr {
     fn rev_polish(&mut self) -> Result<Vec<Elem>, Elem> {
         let mut ans = vec![];
         let mut stack = vec![];
-        let mut last = None;
     
         for e in &self.elements {
             let ok = match e {
                 Elem::Word(_)    => {ans.push(e.clone()); true},
-                Elem::LeftParen  => {stack.push(e.clone()); true},
-                Elem::RightParen => Self::rev_polish_paren(&mut stack, &mut ans),
                 op               => Self::rev_polish_op(&op, &mut stack, &mut ans),
             };
     
             if !ok {
                 return Err(e.clone());
             }
-    
-            match (last, e) {
-                ( Some(Elem::LeftParen), Elem::RightParen ) => return Err(e.clone()),
-                _ => {},
-            }
-    
-            last = Some(e.clone());
         }
     
         while stack.len() > 0 {
@@ -180,24 +163,11 @@ impl ConditionalExpr {
         Ok(())
     }
 
-    fn rev_polish_paren(stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
-        loop {
-            match stack.last() {
-                None => return false,
-                Some(Elem::LeftParen) => {
-                    stack.pop();
-                    return true;
-                },
-                Some(_) => ans.push(stack.pop().unwrap()),
-            }
-        }
-    }
-    
     fn rev_polish_op(elem: &Elem,
                      stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
         loop {
             match stack.last() {
-                None | Some(Elem::LeftParen) => {
+                None => {
                     stack.push(elem.clone());
                     break;
                 },
@@ -219,7 +189,6 @@ impl ConditionalExpr {
         ConditionalExpr {
             text: String::new(),
             elements: vec![],
-            paren_stack: vec![],
         }
     }
 
