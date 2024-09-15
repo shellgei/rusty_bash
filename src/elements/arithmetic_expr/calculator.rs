@@ -97,7 +97,6 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             Elem::Increment(n)     => inc(n, &mut stack, core),
             Elem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
-            _ => Err( error_message::syntax(&elem::to_string(&e)) ),
         };
 
         if let Err(err_msg) = result {

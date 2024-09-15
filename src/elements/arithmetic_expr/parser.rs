@@ -110,8 +110,7 @@ impl ArithmeticExpr {
             Some(Elem::Integer(_)) 
             | Some(Elem::Float(_)) 
             | Some(Elem::Word(_, _)) 
-            | Some(Elem::InParen(_)) 
-            | Some(Elem::RightParen) => return false,
+            | Some(Elem::InParen(_)) => return false,
             _ => {},
         }
 

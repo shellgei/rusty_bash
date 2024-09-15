@@ -13,8 +13,6 @@ pub enum Elem {
     Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     Word(Word, i64), // Word + post increment or decrement
     InParen(ArithmeticExpr),
-    LeftParen,
-    RightParen,
     Increment(i64), //pre increment
 }
 
@@ -63,8 +61,6 @@ pub fn to_string(op: &Elem) -> String {
         },
         Elem::UnaryOp(s) => s.clone(),
         Elem::BinaryOp(s) => s.clone(),
-        Elem::LeftParen => "(".to_string(),
-        Elem::RightParen => ")".to_string(),
         Elem::Increment(1) => "++".to_string(),
         Elem::Increment(-1) => "--".to_string(),
         _ => "".to_string(),
