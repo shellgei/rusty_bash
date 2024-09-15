@@ -25,15 +25,7 @@ pub struct ArithmeticExpr {
 
 impl ArithmeticExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
-        let es = match self.decompose_increments() {
-            Ok(data)     => data, 
-            Err(err_msg) => {
-                eprintln!("sush: {}", err_msg);
-                return None;
-            },
-        };
-
-        let ans = match calculate(&es, core) {
+        match self.eval_elems(core, true) {
             Ok(Elem::Integer(n)) => self.ans_to_string(n),
             Ok(Elem::Float(f))   => Some(f.to_string()),
             Err(msg) => {
@@ -41,13 +33,11 @@ impl ArithmeticExpr {
                 None
             },
             _ => error_message::internal("invalid calculation result"),
-        };
-
-        ans
+        }
     }
 
-    pub fn eval_elems(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
-        if self.elements.len() == 0 {
+    pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<Elem, String> {
+        if self.elements.len() == 0 && ! permit_empty {
             return Err("operand expexted (error token: \")\")".to_string());
         }
         let es = match self.decompose_increments() {

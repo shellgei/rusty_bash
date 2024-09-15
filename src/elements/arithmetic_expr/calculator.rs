@@ -8,7 +8,7 @@ use super::{elem, float, int, rev_polish, trenary, word};
 pub fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
     match stack.pop() {
         Some(Elem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
-        Some(Elem::InParen(mut a)) => a.eval_elems(core),
+        Some(Elem::InParen(mut a)) => a.eval_elems(core, false),
         Some(elem) => Ok(elem),
         None       => Err("no operand".to_string()),
     }
@@ -71,8 +71,23 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
     };
 
     let mut stack = vec![];
+    let mut skip_until = String::new();
 
     for e in rev_pol {
+        if let Elem::BinaryOp(ref op) = e { //for short-circuit evaluation
+            if op == &skip_until {
+                skip_until = "".to_string();
+                continue;
+            }
+        }else if skip_until != "" {
+                continue;
+        }
+
+        /*
+        dbg!("{:?}", &stack);
+        dbg!("{:?}", &e);
+        */
+
         let result = match e {
             Elem::Integer(_) | Elem::Float(_) | Elem::Word(_, _) | Elem::InParen(_) => {
                 stack.push(e.clone());
@@ -82,6 +97,10 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             Elem::Increment(n)     => inc(n, &mut stack, core),
             Elem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
+            Elem::Delimiter(d) => match check_skip(&d, &mut stack, core) {
+                                    Ok(s) => {skip_until = s; Ok(())},
+                                    Err(e) => Err(e),
+                                  },
         };
 
         if let Err(err_msg) = result {
@@ -93,6 +112,26 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
         return Err( format!("unknown syntax error_message (stack inconsistency)",) );
     }
     pop_operand(&mut stack, core)
+}
+
+fn check_skip(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<String, String> {
+    let last = pop_operand(stack, core);
+    let last_result = match &last {
+        Err(e) => return Err(e.to_string()),
+        Ok(Elem::Integer(0)) => 0,
+        Ok(_) => 1,
+    };
+
+    stack.push(Elem::Integer(last_result));
+
+    if last_result == 1 && op == "||" {
+        return Ok("||".to_string());
+    }
+    if last_result == 0 && op == "&&" {
+        return Ok("&&".to_string());
+    }
+
+    Ok("".to_string())
 }
 
 fn inc(inc: i64, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {

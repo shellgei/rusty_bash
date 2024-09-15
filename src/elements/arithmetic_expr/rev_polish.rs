@@ -9,6 +9,13 @@ pub fn rearrange(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
     let mut stack = vec![];
 
     for e in elements {
+        match e {
+            Elem::BinaryOp(op) => match op.as_str() {
+                "&&" | "||" => ans.push(Elem::Delimiter(op.to_string())),
+                _ => {},
+            },
+            _ => {},
+        }
         let ok = match e {
             Elem::Float(_) | Elem::Integer(_) | Elem::Word(_, _) | Elem::InParen(_)
                              => {ans.push(e.clone()); true},

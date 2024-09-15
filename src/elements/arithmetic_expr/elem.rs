@@ -14,6 +14,7 @@ pub enum Elem {
     Word(Word, i64), // Word + post increment or decrement
     InParen(ArithmeticExpr),
     Increment(i64), //pre increment
+    Delimiter(String), //delimiter dividing left and right of &&, ||, and ','
 }
 
 pub fn op_order(op: &Elem) -> u8 {
