@@ -162,8 +162,7 @@ impl ArithmeticExpr {
         loop {
             Self::eat_blank(feeder, &mut ans, core);
 
-            if feeder.starts_with(":")
-            || feeder.starts_with(",") {
+            if feeder.starts_with(":") {
                 break;
             }
 

@@ -32,10 +32,16 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> 
         Ok(v)  => v,
         Err(e) => return Err(e),
     };
+
     let left = match pop_operand(stack, core) {
         Ok(v)  => v,
         Err(e) => return Err(e),
     };
+
+    if op == "," {
+        stack.push(right);
+        return Ok(());
+    }
 
     return match (left, right) {
         (Elem::Float(fl), Elem::Float(fr)) => float::bin_calc(op, fl, fr, stack),
