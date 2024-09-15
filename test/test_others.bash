@@ -999,6 +999,10 @@ res=$($com <<< 'echo $(( 1+1 & 2.1 ))')
 res=$($com <<< 'echo $((123 && -1.2 ))')
 [ "$?" == "1" ] || err $LINENO
 
+res=$($com <<< 'B=3; echo $(( A=1 || (B=1) )); echo $B')
+[ "$res" == "1
+3" ] || err $LINENO
+
 res=$($com <<< 'echo $(( 1.0 ? 20 : 30  ))')
 [ "$?" == "1" ] || err $LINENO
 

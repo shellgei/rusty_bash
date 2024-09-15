@@ -11,7 +11,7 @@ pub fn rearrange(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
     for e in elements {
         match e {
             Elem::BinaryOp(op) => match op.as_str() {
-                "&&" | "||" | "," => ans.push(Elem::Delimiter),
+                "&&" | "||" => ans.push(Elem::Delimiter(op.to_string())),
                 _ => {},
             },
             _ => {},

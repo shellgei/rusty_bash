@@ -71,8 +71,20 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
     };
 
     let mut stack = vec![];
+    let mut skip_until = String::new();
 
     for e in rev_pol {
+        match (skip_until.as_str(), &e) { //for short-circuit evaluation
+            ("", _) => {},
+            (_ , Elem::BinaryOp(op)) => {
+                if op == &skip_until {
+                    skip_until = "".to_string();
+                }
+                continue;
+            }
+            _ => continue,
+        }
+
         let result = match e {
             Elem::Integer(_) | Elem::Float(_) | Elem::Word(_, _) | Elem::InParen(_) => {
                 stack.push(e.clone());
@@ -82,7 +94,10 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             Elem::Increment(n)     => inc(n, &mut stack, core),
             Elem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
-            Elem::Delimiter => Ok(()),
+            Elem::Delimiter(d) => match check_skip(&d, &mut stack, core) {
+                                    Ok(s) => {skip_until = s; Ok(())},
+                                    Err(e) => Err(e),
+                                  },
         };
 
         if let Err(err_msg) = result {
@@ -94,6 +109,26 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
         return Err( format!("unknown syntax error_message (stack inconsistency)",) );
     }
     pop_operand(&mut stack, core)
+}
+
+fn check_skip(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<String, String> {
+    let last = pop_operand(stack, core);
+    let last_result = match &last {
+        Err(e) => return Err(e.to_string()),
+        Ok(Elem::Integer(0)) => false,
+        Ok(_) => true,
+    };
+
+    stack.push(last.unwrap());
+
+    if last_result && op == "||" {
+        return Ok("||".to_string());
+    }
+    if ! last_result && op == "&&" {
+        return Ok("&&".to_string());
+    }
+
+    Ok("".to_string())
 }
 
 fn inc(inc: i64, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
