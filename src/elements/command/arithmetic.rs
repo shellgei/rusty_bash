@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
-use crate::elements::arithmetic_expr::ArithmeticExpr;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticCommand {
