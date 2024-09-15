@@ -18,7 +18,7 @@ pub enum Elem {
 fn op_order(op: &Elem) -> u8 {
     match op {
         Elem::FileCheckOption(_) => 14,
-        Elem::Not => 13,
+        Elem::Not => 12,
         //Elem::And | Elem::Or => 12,
         _ => 0,
     }
@@ -67,6 +67,7 @@ impl ConditionalExpr {
             Err(e) => return Err(("syntax error near ".to_owned() + &to_string(&e)).to_string()),
         };
 
+        dbg!("{:?}", &rev_pol);
         let mut stack = vec![];
 
         for e in rev_pol {
@@ -78,8 +79,8 @@ impl ConditionalExpr {
                 Elem::FileCheckOption(ref op)  => {
                     Self::unary_operation(&op, &mut stack, core)
                 },
-                Elem::Not => match stack.pop() {
-                    Some(Elem::Ans(res)) => {
+                Elem::Not => match pop_operand(&mut stack, core) {
+                    Ok(Elem::Ans(res)) => {
                         stack.push(Elem::Ans(!res));
                         Ok(())
                     },
@@ -89,7 +90,6 @@ impl ConditionalExpr {
             };
     
             if let Err(err_msg) = result {
-                //error_message::print(&err_msg, core, true);
                 core.data.set_param("?", "2");
                 return Err(err_msg);
             }
@@ -116,7 +116,7 @@ impl ConditionalExpr {
     
         for e in &self.elements {
             let ok = match e {
-                Elem::Word(_)    => {ans.push(e.clone()); true},
+                Elem::Word(_) | Elem::InParen(_) => {ans.push(e.clone()); true},
                 op               => Self::rev_polish_op(&op, &mut stack, &mut ans),
             };
     
@@ -299,10 +299,6 @@ impl ConditionalExpr {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
-            /*
-            if ! Self::eat_blank(feeder, &mut ans, core) {
-                return None;
-            }*/
             if feeder.starts_with("]]")
             || feeder.starts_with(")") {
                 if ans.elements.len() == 0 {
