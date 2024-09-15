@@ -15,33 +15,34 @@ pub enum Elem {
     LeftParen,
     RightParen,
     Increment(i64), //pre increment
-//    OutputFormat(String, bool), // ex.: [#8] -> Base("8", false), [##16] -> Base("16", true) 
 }
 
 pub fn op_order(op: &Elem) -> u8 {
     match op {
-        Elem::Increment(_) => 14,
+        Elem::Increment(_) => 20,
         Elem::UnaryOp(s) => {
             match s.as_str() {
-                "-" | "+" => 14,
-                _         => 13,
+                "-" | "+" => 19,
+                _         => 18,
             }
         },
         Elem::BinaryOp(s) => {
             match s.as_str() {
-                "**"            => 12, 
-                "*" | "/" | "%" => 11, 
-                "+" | "-"       => 10, 
-                "<<" | ">>"     => 9, 
-                "<=" | ">=" | ">" | "<" => 8, 
-                "==" | "!="     => 7, 
-                "&"             => 6, 
-                "^"             => 5, 
-                "|"             => 4, 
+                "**"            => 17, 
+                "*" | "/" | "%" => 16, 
+                "+" | "-"       => 15, 
+                "<<" | ">>"     => 14, 
+                "<=" | ">=" | ">" | "<" => 13, 
+                "==" | "!="     => 12, 
+                "&"             => 11, 
+                "^"             => 10, 
+                "|"             => 9, 
+                "&&"             => 8, 
+                "||"             => 7, 
                 _               => 2,
             }
         },
-        Elem::Ternary(_, _) => 1,
+        Elem::Ternary(_, _) => 3,
         _ => 0, 
     }
 }
