@@ -10,6 +10,7 @@ pub enum Elem {
     FileCheckOption(String),
     Word(Word),
     Operand(String),
+    InParen(ConditionalExpr),
     RightParen,
     LeftParen,
     Not, // !
@@ -30,6 +31,7 @@ fn op_order(op: &Elem) -> u8 {
 pub fn to_string(op: &Elem) -> String {
     match op {
         Elem::FileCheckOption(op) => op.to_string(),
+        Elem::InParen(expr) => expr.text.clone(),
         Elem::Word(w) => w.text.clone(),
         Elem::Operand(op) => op.to_string(),
         Elem::LeftParen => "(".to_string(),
@@ -70,24 +72,13 @@ pub struct ConditionalExpr {
     paren_stack: Vec<char>,
 }
 
-/*
-impl Command for ConditionalExpr {
-
-    fn get_text(&self) -> String { self.text.clone() }
-    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
-    fn set_force_fork(&mut self) { self.force_fork = true; }
-    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
-    fn force_fork(&self) -> bool { self.force_fork }
-}
-*/
-
 impl ConditionalExpr {
-    pub fn eval(&mut self, core: &mut ShellCore) {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Option<Elem> {
         let rev_pol = match self.rev_polish() {
             Ok(ans) => ans,
             _ => {
                 core.data.set_param("?", "2");
-                return;
+                return None;
             },
         };
 
@@ -115,7 +106,7 @@ impl ConditionalExpr {
             if let Err(err_msg) = result {
                 error_message::print(&err_msg, core, true);
                 core.data.set_param("?", "2");
-                return;
+                return None;
             }
         }
         if stack.len() != 1 { 
@@ -127,9 +118,11 @@ impl ConditionalExpr {
                 error_message::print(&err, core, true);
             }
             core.data.set_param("?", "2");
-            return;
+            return None;
         }   
     
+        stack.pop()
+        /*
         match stack.pop() {
             Some(Elem::Ans(true))  => core.data.set_param("?", "0"),
             Some(Elem::Ans(false)) => core.data.set_param("?", "1"),
@@ -137,7 +130,7 @@ impl ConditionalExpr {
                 eprintln!("unknown syntax error_message");
                 core.data.set_param("?", "2");
             },
-        }  
+        } */ 
     }
 
     fn rev_polish(&mut self) -> Result<Vec<Elem>, Elem> {
@@ -277,27 +270,17 @@ impl ConditionalExpr {
         true
     }
 
-    fn eat_not_and_or(feeder: &mut Feeder, ans: &mut Self) -> bool {
+    fn eat_not(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("!") {
             ans.text += &feeder.consume(1);
             ans.elements.push( Elem::Not );
-            return true;
-        }
-        if feeder.starts_with("&&") {
-            ans.text += &feeder.consume(2);
-            ans.elements.push( Elem::And );
-            return true;
-        }
-        if feeder.starts_with("||") {
-            ans.text += &feeder.consume(2);
-            ans.elements.push( Elem::Or );
             return true;
         }
 
         false
     }
 
-    fn eat_paren(feeder: &mut Feeder, ans: &mut Self) -> bool {
+    fn eat_paren(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(e) = ans.elements.last() {
             match e {
                 Elem::FileCheckOption(_) => {
@@ -307,6 +290,27 @@ impl ConditionalExpr {
             }
         }
 
+        if ! feeder.starts_with("(") {
+            return false;
+        }
+
+        ans.text += &feeder.consume(1);
+
+        let expr = match Self::parse(feeder, core) {
+            Some(e) => e,
+            None    => return false,
+        };
+
+        if ! feeder.starts_with(")") {
+            return false;
+        }
+
+        ans.text += &expr.text.clone();
+        ans.elements.push( Elem::InParen(expr) );
+        ans.text += &feeder.consume(1);
+        true
+
+        /*
         if feeder.starts_with("(") {
             ans.paren_stack.push( '(' );
             ans.elements.push( Elem::LeftParen );
@@ -324,6 +328,7 @@ impl ConditionalExpr {
         }
 
         false
+            */
     }
 
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -351,9 +356,9 @@ impl ConditionalExpr {
                 return Some(ans);
             }
 
-            if Self::eat_file_check_option(feeder, &mut ans, core)
-            || Self::eat_not_and_or(feeder, &mut ans) 
-            || Self::eat_paren(feeder, &mut ans) 
+            if Self::eat_paren(feeder, &mut ans, core) 
+            || Self::eat_file_check_option(feeder, &mut ans, core)
+            || Self::eat_not(feeder, &mut ans) 
             || Self::eat_word(feeder, &mut ans, core) {
                 continue;
             }

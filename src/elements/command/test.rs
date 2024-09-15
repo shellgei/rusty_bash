@@ -4,23 +4,26 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
-use crate::elements::expr::conditional::ConditionalExpr;
+use crate::elements::expr::conditional::{ConditionalExpr, Elem};
 
 #[derive(Debug, Clone)]
 pub struct TestCommand {
     text: String,
     cond: Option<ConditionalExpr>,
-    /*
-    elements: Vec<Elem>,
-    paren_stack: Vec<char>,
-    */
     redirects: Vec<Redirect>,
     force_fork: bool,
 }
 
 impl Command for TestCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
-        self.cond.clone().unwrap().eval(core)
+        match self.cond.clone().unwrap().eval(core) {
+            Some(Elem::Ans(true))  => core.data.set_param("?", "0"),
+            Some(Elem::Ans(false)) => core.data.set_param("?", "1"),
+            _  => {
+                eprintln!("unknown syntax error_message");
+                core.data.set_param("?", "2");
+            },
+        } 
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -47,8 +50,6 @@ impl TestCommand {
 
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
-
-        //Self::eat_blank(feeder, &mut ans, core);
 
         match ConditionalExpr::parse(feeder, core) {
             Some(e) => {
