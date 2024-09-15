@@ -772,6 +772,18 @@ res=$($com<<<'echo $((A=1 && (B=1, 0) ))')
 [ "$?" == "0" ] || err $LINENO
 [ "$res" == "0" ] || err $LINENO
 
+res=$($com<<<'echo $((A = 3 || 0 )); echo $A')
+[ "$res" == "1
+1" ] || err $LINENO
+
+res=$($com<<<'echo $((A = 3 && 0 )); echo $A')
+[ "$res" == "0
+0" ] || err $LINENO
+
+res=$($com<<<'echo $((A = 3 && 2 )); echo $A')
+[ "$res" == "1
+1" ] || err $LINENO
+
 res=$($com <<< 'echo $(( 1? 20 : 30  )) $(( -5 + 5 ? 100 :  200))')
 [ "$res" == "20 200" ] || err $LINENO
 

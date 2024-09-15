@@ -83,6 +83,11 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
                 continue;
         }
 
+        /*
+        dbg!("{:?}", &stack);
+        dbg!("{:?}", &e);
+        */
+
         let result = match e {
             Elem::Integer(_) | Elem::Float(_) | Elem::Word(_, _) | Elem::InParen(_) => {
                 stack.push(e.clone());
@@ -113,16 +118,16 @@ fn check_skip(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<S
     let last = pop_operand(stack, core);
     let last_result = match &last {
         Err(e) => return Err(e.to_string()),
-        Ok(Elem::Integer(0)) => false,
-        Ok(_) => true,
+        Ok(Elem::Integer(0)) => 0,
+        Ok(_) => 1,
     };
 
-    stack.push(last.unwrap());
+    stack.push(Elem::Integer(last_result));
 
-    if last_result && op == "||" {
+    if last_result == 1 && op == "||" {
         return Ok("||".to_string());
     }
-    if ! last_result && op == "&&" {
+    if last_result == 0 && op == "&&" {
         return Ok("&&".to_string());
     }
 
