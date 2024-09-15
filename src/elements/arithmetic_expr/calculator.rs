@@ -6,17 +6,12 @@ use super::elem::Elem;
 use super::{elem, float, int, rev_polish, trenary, word};
 
 pub fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
-    let n = match stack.pop() {
-        Some(Elem::Word(w, inc)) => {
-            match word::to_operand(&w, 0, inc, core) {
-                Ok(op) => op,
-                Err(e) => return Err(e),
-            }
-        },
-        Some(elem) => elem,
-        None       => return Err("no operand".to_string()),
-    };
-    Ok(n)
+    match stack.pop() {
+        Some(Elem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
+        Some(Elem::InParen(mut a)) => a.eval_elems(core),
+        Some(elem) => Ok(elem),
+        None       => Err("no operand".to_string()),
+    }
 }
 
 fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
@@ -79,7 +74,7 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
 
     for e in rev_pol {
         let result = match e {
-            Elem::Integer(_) | Elem::Float(_) | Elem::Word(_, _) => {
+            Elem::Integer(_) | Elem::Float(_) | Elem::Word(_, _) | Elem::InParen(_) => {
                 stack.push(e.clone());
                 Ok(())
             },
@@ -87,7 +82,6 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
             Elem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             Elem::Increment(n)     => inc(n, &mut stack, core),
             Elem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
-            _ => Err( error_message::syntax(&elem::to_string(&e)) ),
         };
 
         if let Err(err_msg) = result {
@@ -98,12 +92,7 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
     if stack.len() != 1 {
         return Err( format!("unknown syntax error_message (stack inconsistency)",) );
     }
-
-    match stack.pop() {
-        Some(Elem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
-        Some(elem)               => Ok(elem),
-        None                     => Err( format!("unknown syntax error_message",) ),
-    }
+    pop_operand(&mut stack, core)
 }
 
 fn inc(inc: i64, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {

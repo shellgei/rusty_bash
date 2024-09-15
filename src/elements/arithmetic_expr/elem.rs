@@ -12,8 +12,7 @@ pub enum Elem {
     Float(f64),
     Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     Word(Word, i64), // Word + post increment or decrement
-    LeftParen,
-    RightParen,
+    InParen(ArithmeticExpr),
     Increment(i64), //pre increment
 }
 
@@ -50,6 +49,7 @@ pub fn op_order(op: &Elem) -> u8 {
 
 pub fn to_string(op: &Elem) -> String {
     match op {
+        Elem::InParen(a) => a.text.to_string(),
         Elem::Integer(n) => n.to_string(),
         Elem::Float(f) => f.to_string(),
         Elem::Word(w, inc) => {
@@ -61,8 +61,6 @@ pub fn to_string(op: &Elem) -> String {
         },
         Elem::UnaryOp(s) => s.clone(),
         Elem::BinaryOp(s) => s.clone(),
-        Elem::LeftParen => "(".to_string(),
-        Elem::RightParen => ")".to_string(),
         Elem::Increment(1) => "++".to_string(),
         Elem::Increment(-1) => "--".to_string(),
         _ => "".to_string(),

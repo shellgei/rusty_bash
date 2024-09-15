@@ -7,27 +7,17 @@ use super::elem::Elem;
 pub fn rearrange(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
     let mut ans = vec![];
     let mut stack = vec![];
-    let mut last = None;
 
     for e in elements {
         let ok = match e {
-            Elem::Float(_) | Elem::Integer(_) | Elem::Word(_, _)
+            Elem::Float(_) | Elem::Integer(_) | Elem::Word(_, _) | Elem::InParen(_)
                              => {ans.push(e.clone()); true},
-            Elem::LeftParen  => {stack.push(e.clone()); true},
-            Elem::RightParen => rev_polish_paren(&mut stack, &mut ans),
             op               => rev_polish_op(&op, &mut stack, &mut ans),
         };
 
         if !ok {
             return Err(e.clone());
         }
-
-        match (last, e) {
-            ( Some(Elem::LeftParen), Elem::RightParen ) => return Err(e.clone()),
-            _ => {},
-        }
-
-        last = Some(e.clone());
     }
 
     while stack.len() > 0 {
@@ -37,24 +27,11 @@ pub fn rearrange(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
     Ok(ans)
 }
 
-fn rev_polish_paren(stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
-    loop {
-        match stack.last() {
-            None => return false, 
-            Some(Elem::LeftParen) => {
-                stack.pop();
-                return true;
-            },
-            Some(_) => ans.push(stack.pop().unwrap()),
-        }
-    }
-}
-
 fn rev_polish_op(elem: &Elem,
                  stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
     loop {
         match stack.last() {
-            None | Some(Elem::LeftParen) => {
+            None => {
                 stack.push(elem.clone());
                 break;
             },
