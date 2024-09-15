@@ -110,6 +110,7 @@ impl ArithmeticExpr {
             Some(Elem::Integer(_)) 
             | Some(Elem::Float(_)) 
             | Some(Elem::Word(_, _)) 
+            | Some(Elem::InParen(_)) 
             | Some(Elem::RightParen) => return false,
             _ => {},
         }
@@ -124,7 +125,27 @@ impl ArithmeticExpr {
         true
     }
 
-    fn eat_paren(feeder: &mut Feeder, ans: &mut Self) -> bool {
+    fn eat_paren(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self) -> bool {
+        if ! feeder.starts_with("(") {
+            return false;
+        }
+
+        ans.paren_stack.push( '(' );
+        ans.text += &feeder.consume(1);
+
+        let arith = Self::parse(feeder, core);
+        if arith.is_none() || ! feeder.starts_with(")") {
+            return false;
+        }
+
+        ans.text += &arith.as_ref().unwrap().text;
+        ans.paren_stack.pop();
+        ans.elements.push( Elem::InParen(arith.unwrap()) );
+
+        ans.text += &feeder.consume(1);
+        return true;
+
+        /*
         if feeder.starts_with("(") {
             ans.paren_stack.push( '(' );
             ans.elements.push( Elem::LeftParen );
@@ -141,7 +162,7 @@ impl ArithmeticExpr {
             }
         }
 
-        false
+*/
     }
 
     fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -170,7 +191,7 @@ impl ArithmeticExpr {
             || Self::eat_conditional_op(feeder, &mut ans, core) 
             || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans, core)
-            || Self::eat_paren(feeder, &mut ans)
+            || Self::eat_paren(feeder, core, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
             || Self::eat_word(feeder, &mut ans, core) { 
                 continue;

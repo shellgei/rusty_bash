@@ -47,6 +47,15 @@ impl ArithmeticExpr {
         ans
     }
 
+    pub fn eval_elems(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
+        let es = match self.decompose_increments() {
+            Ok(data)     => data, 
+            Err(err_msg) => return Err(err_msg),
+        };
+
+        calculate(&es, core)
+    }
+
     fn ans_to_string(&self, n: i64) -> Option<String> {
         let base_str = self.output_base.clone();
 

@@ -10,7 +10,17 @@ pub fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, 
         Some(Elem::Word(w, inc)) => {
             match word::to_operand(&w, 0, inc, core) {
                 Ok(op) => op,
-                Err(e) => return Err(e),
+                Err(err) => return Err(err),
+            }
+        },
+        Some(Elem::InParen(mut a)) => {
+            if a.elements.len() == 0 {
+                return Err("operand expected".to_string());
+            }
+
+            match a.eval_elems(core) {
+                Ok(e) => e, 
+                Err(err) => return Err(err),
             }
         },
         Some(elem) => elem,
@@ -79,7 +89,7 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
 
     for e in rev_pol {
         let result = match e {
-            Elem::Integer(_) | Elem::Float(_) | Elem::Word(_, _) => {
+            Elem::Integer(_) | Elem::Float(_) | Elem::Word(_, _) | Elem::InParen(_) => {
                 stack.push(e.clone());
                 Ok(())
             },
@@ -98,12 +108,7 @@ pub fn calculate(elements: &Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Str
     if stack.len() != 1 {
         return Err( format!("unknown syntax error_message (stack inconsistency)",) );
     }
-
-    match stack.pop() {
-        Some(Elem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
-        Some(elem)               => Ok(elem),
-        None                     => Err( format!("unknown syntax error_message",) ),
-    }
+    pop_operand(&mut stack, core)
 }
 
 fn inc(inc: i64, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {

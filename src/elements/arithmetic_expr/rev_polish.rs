@@ -11,7 +11,7 @@ pub fn rearrange(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
 
     for e in elements {
         let ok = match e {
-            Elem::Float(_) | Elem::Integer(_) | Elem::Word(_, _)
+            Elem::Float(_) | Elem::Integer(_) | Elem::Word(_, _) | Elem::InParen(_)
                              => {ans.push(e.clone()); true},
             Elem::LeftParen  => {stack.push(e.clone()); true},
             Elem::RightParen => rev_polish_paren(&mut stack, &mut ans),
