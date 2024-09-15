@@ -19,7 +19,6 @@ use super::word::Word;
 pub struct ArithmeticExpr {
     pub text: String,
     elements: Vec<Elem>,
-    paren_stack: Vec<char>,
     output_base: String,
     hide_base: bool,
 }
@@ -48,6 +47,9 @@ impl ArithmeticExpr {
     }
 
     pub fn eval_elems(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
+        if self.elements.len() == 0 {
+            return Err("operand expexted (error token: \")\")".to_string());
+        }
         let es = match self.decompose_increments() {
             Ok(data)     => data, 
             Err(err_msg) => return Err(err_msg),
@@ -177,7 +179,6 @@ impl ArithmeticExpr {
         ArithmeticExpr {
             text: String::new(),
             elements: vec![],
-            paren_stack: vec![],
             output_base: "10".to_string(),
             hide_base: false,
         }

@@ -8,13 +8,7 @@ use super::{elem, float, int, rev_polish, trenary, word};
 pub fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
     match stack.pop() {
         Some(Elem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
-        Some(Elem::InParen(mut a)) => {
-            if a.elements.len() == 0 {
-                return Err("operand expected".to_string());
-            }
-
-            a.eval_elems(core)
-        },
+        Some(Elem::InParen(mut a)) => a.eval_elems(core),
         Some(elem) => Ok(elem),
         None       => Err("no operand".to_string()),
     }

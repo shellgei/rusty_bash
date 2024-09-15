@@ -129,7 +129,6 @@ impl ArithmeticExpr {
             return false;
         }
 
-        ans.paren_stack.push( '(' );
         ans.text += &feeder.consume(1);
 
         let arith = Self::parse(feeder, core);
@@ -138,30 +137,10 @@ impl ArithmeticExpr {
         }
 
         ans.text += &arith.as_ref().unwrap().text;
-        ans.paren_stack.pop();
         ans.elements.push( Elem::InParen(arith.unwrap()) );
 
         ans.text += &feeder.consume(1);
         return true;
-
-        /*
-        if feeder.starts_with("(") {
-            ans.paren_stack.push( '(' );
-            ans.elements.push( Elem::LeftParen );
-            ans.text += &feeder.consume(1);
-            return true;
-        }
-
-        if feeder.starts_with(")") {
-            if let Some('(') = ans.paren_stack.last() {
-                ans.paren_stack.pop();
-                ans.elements.push( Elem::RightParen );
-                ans.text += &feeder.consume(1);
-                return true;
-            }
-        }
-
-*/
     }
 
     fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
