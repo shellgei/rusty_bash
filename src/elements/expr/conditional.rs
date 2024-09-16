@@ -70,40 +70,26 @@ impl ConditionalExpr {
         };
 
         let mut stack = vec![];
+        /*
+        let mut from = 0;
+        for i in 0..self.elements.len() {
+            match self.elements[i] {
+                Elem::And | Elem::Or => {
+                    stack = match Self::calculate(&rev_pol[from..i], core) {
+                        Ok(s)  => s, 
+                        Err(e) => return Err(e),
+                    };
 
-        for e in rev_pol {
-            let result = match e { 
-                Elem::Word(_) | Elem::InParen(_) => {
-                    stack.push(e.clone());
-                    Ok(())
+                    from = i + 1;
                 },
-                Elem::FileCheckOption(ref op)  => {
-                    Self::unary_operation(&op, &mut stack, core)
-                },
-                Elem::Not => match pop_operand(&mut stack, core) {
-                    Ok(Elem::Ans(res)) => {
-                        stack.push(Elem::Ans(!res));
-                        Ok(())
-                    },
-                    _ => Err("no operand to negate".to_string()),
-                },
-                _ => Err( error_message::syntax("TODO")),
-            };
-    
-            if let Err(err_msg) = result {
-                core.data.set_param("?", "2");
-                return Err(err_msg);
+                _ => {},
             }
         }
-        if stack.len() != 1 { 
-            let mut err = "syntax error".to_string();
-            if stack.len() > 1 {
-                err = error_message::syntax_in_cond_expr(&to_string(&stack[0]));
-                error_message::print(&err, core, true);
-                err = format!("syntax error near `{}'", to_string(&stack[0]));
-            }
-            return Err(err);
-        }   
+        */
+        stack = match Self::calculate(&rev_pol, core) {
+            Ok(s)  => s, 
+            Err(e) => return Err(e),
+        };
     
         pop_operand(&mut stack, core)
     }
@@ -129,6 +115,47 @@ impl ConditionalExpr {
         }
     
         Ok(ans)
+    }
+
+    fn calculate(rev_pol: &[Elem], core: &mut ShellCore) -> Result<Vec<Elem>, String> {
+        let mut stack = vec![];
+
+        for e in rev_pol {
+            let result = match e { 
+                Elem::Word(_) | Elem::InParen(_) => {
+                    stack.push(e.clone());
+                    Ok(())
+                },
+                Elem::FileCheckOption(ref op)  => {
+                    Self::unary_operation(&op, &mut stack, core)
+                },
+                Elem::Not => match pop_operand(&mut stack, core) {
+                    Ok(Elem::Ans(res)) => {
+                        stack.push(Elem::Ans(!res));
+                        Ok(())
+                    },
+                    _ => Err("no operand to negate".to_string()),
+                },
+                _ => Err( error_message::syntax("TODO")),
+            };
+    
+            if let Err(err_msg) = result {
+                core.data.set_param("?", "2");
+                return Err(err_msg);
+            }
+        }
+
+        if stack.len() != 1 { 
+            let mut err = "syntax error".to_string();
+            if stack.len() > 1 {
+                err = error_message::syntax_in_cond_expr(&to_string(&stack[0]));
+                error_message::print(&err, core, true);
+                err = format!("syntax error near `{}'", to_string(&stack[0]));
+            }
+            return Err(err);
+        }   
+
+        Ok(stack)
     }
 
     fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
