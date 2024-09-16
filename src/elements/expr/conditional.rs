@@ -65,32 +65,42 @@ pub struct ConditionalExpr {
 impl ConditionalExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
 
-        let mut stack = vec![];
         let mut from = 0;
+        let mut next = true;
+        let mut last = Elem::Ans(true);
         for i in 0..self.elements.len() {
             match self.elements[i] {
                 Elem::And | Elem::Or => {
-                    let rev_pol = match Self::rev_polish(&self.elements[from..i]) {
-                        Ok(ans) => ans,
-                        Err(e) => return Err(e),
-                    };
-
-                    stack = match Self::calculate(&rev_pol, core) {
-                        Ok(s)  => s, 
-                        Err(e) => return Err(e),
-                    };
-
+                    if next {
+                        last = match Self::calculate(&self.elements[from..i], core) {
+                            Ok(elem) => elem, 
+                            Err(e)   => return Err(e),
+                        };
+                    }
                     from = i + 1;
+                    next = match (&self.elements[i], &last) {
+                        (Elem::And, Elem::Ans(ans)) => *ans,
+                        (Elem::Or, Elem::Ans(ans))  => !ans,
+                        _ => panic!("SUSH INTERNAL ERROR"),
+                    };
                 },
                 _ => {},
             }
         }
 
-        let rev_pol = match Self::rev_polish(&self.elements[from..]) {
+        if next { 
+            Self::calculate(&self.elements[from..], core)
+        }else {
+            Ok(last)
+        }
+    }
+
+    fn calculate(elems: &[Elem], core: &mut ShellCore) -> Result<Elem, String> {
+        let rev_pol = match Self::rev_polish(elems) {
             Ok(ans) => ans,
             Err(e) => return Err(e),
         };
-        stack = match Self::calculate(&rev_pol, core) {
+        let mut stack = match Self::reduce(&rev_pol, core) {
             Ok(s)  => s, 
             Err(e) => return Err(e),
         };
@@ -121,8 +131,7 @@ impl ConditionalExpr {
         Ok(ans)
     }
 
-    fn calculate(rev_pol: &[Elem], core: &mut ShellCore) -> Result<Vec<Elem>, String> {
-        dbg!("{:?}", &rev_pol);
+    fn reduce(rev_pol: &[Elem], core: &mut ShellCore) -> Result<Vec<Elem>, String> {
         let mut stack = vec![];
 
         for e in rev_pol {
