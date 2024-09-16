@@ -64,18 +64,18 @@ pub struct ConditionalExpr {
 
 impl ConditionalExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
-        let rev_pol = match self.rev_polish() {
-            Ok(ans) => ans,
-            Err(e) => return Err(e),
-        };
 
         let mut stack = vec![];
-        /*
         let mut from = 0;
         for i in 0..self.elements.len() {
             match self.elements[i] {
                 Elem::And | Elem::Or => {
-                    stack = match Self::calculate(&rev_pol[from..i], core) {
+                    let rev_pol = match Self::rev_polish(&self.elements[from..i]) {
+                        Ok(ans) => ans,
+                        Err(e) => return Err(e),
+                    };
+
+                    stack = match Self::calculate(&rev_pol, core) {
                         Ok(s)  => s, 
                         Err(e) => return Err(e),
                     };
@@ -85,7 +85,11 @@ impl ConditionalExpr {
                 _ => {},
             }
         }
-        */
+
+        let rev_pol = match Self::rev_polish(&self.elements[from..]) {
+            Ok(ans) => ans,
+            Err(e) => return Err(e),
+        };
         stack = match Self::calculate(&rev_pol, core) {
             Ok(s)  => s, 
             Err(e) => return Err(e),
@@ -94,11 +98,11 @@ impl ConditionalExpr {
         pop_operand(&mut stack, core)
     }
 
-    fn rev_polish(&mut self) -> Result<Vec<Elem>, String> {
+    fn rev_polish(elems: &[Elem]) -> Result<Vec<Elem>, String> {
         let mut ans = vec![];
         let mut stack = vec![];
     
-        for e in &self.elements {
+        for e in elems {
             let ok = match e {
                 Elem::Word(_) | Elem::InParen(_) => {ans.push(e.clone()); true},
                 op               => Self::rev_polish_op(&op, &mut stack, &mut ans),
@@ -118,6 +122,7 @@ impl ConditionalExpr {
     }
 
     fn calculate(rev_pol: &[Elem], core: &mut ShellCore) -> Result<Vec<Elem>, String> {
+        dbg!("{:?}", &rev_pol);
         let mut stack = vec![];
 
         for e in rev_pol {
