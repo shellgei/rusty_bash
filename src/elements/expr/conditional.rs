@@ -12,6 +12,8 @@ pub enum Elem {
     Operand(String),
     InParen(ConditionalExpr),
     Not, // !
+    And, // &&
+    Or, // ||
     Ans(bool),
 }
 
@@ -31,8 +33,8 @@ pub fn to_string(op: &Elem) -> String {
         Elem::Word(w) => w.text.clone(),
         Elem::Operand(op) => op.to_string(),
         Elem::Not => "!".to_string(),
-        //Elem::And => "&&".to_string(),
-        //Elem::Or => "||".to_string(),
+        Elem::And => "&&".to_string(),
+        Elem::Or => "||".to_string(),
         Elem::Ans(true) => "true".to_string(),
         Elem::Ans(false) => "false".to_string(),
     }
@@ -223,10 +225,20 @@ impl ConditionalExpr {
         true
     }
 
-    fn eat_not(feeder: &mut Feeder, ans: &mut Self) -> bool {
+    fn eat_not_and_or(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("!") {
             ans.text += &feeder.consume(1);
             ans.elements.push( Elem::Not );
+            return true;
+        }
+        if feeder.starts_with("&&") {
+            ans.text += &feeder.consume(2);
+            ans.elements.push( Elem::And );
+            return true;
+        }
+        if feeder.starts_with("||") {
+            ans.text += &feeder.consume(2);
+            ans.elements.push( Elem::Or );
             return true;
         }
 
@@ -310,7 +322,7 @@ impl ConditionalExpr {
 
             if Self::eat_paren(feeder, &mut ans, core) 
             || Self::eat_file_check_option(feeder, &mut ans, core)
-            || Self::eat_not(feeder, &mut ans) 
+            || Self::eat_not_and_or(feeder, &mut ans) 
             || Self::eat_word(feeder, &mut ans, core) {
                 continue;
             }
