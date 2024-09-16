@@ -66,10 +66,9 @@ impl ConditionalExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
         let rev_pol = match self.rev_polish() {
             Ok(ans) => ans,
-            Err(e) => return Err(("syntax error near ".to_owned() + &to_string(&e)).to_string()),
+            Err(e) => return Err(e),
         };
 
-        dbg!("{:?}", &rev_pol);
         let mut stack = vec![];
 
         for e in rev_pol {
@@ -97,22 +96,19 @@ impl ConditionalExpr {
             }
         }
         if stack.len() != 1 { 
-
             let mut err = "syntax error".to_string();
             if stack.len() > 1 {
                 err = error_message::syntax_in_cond_expr(&to_string(&stack[0]));
                 error_message::print(&err, core, true);
                 err = format!("syntax error near `{}'", to_string(&stack[0]));
-                error_message::print(&err, core, true);
             }
-            //core.data.set_param("?", "2");
             return Err(err);
         }   
     
         pop_operand(&mut stack, core)
     }
 
-    fn rev_polish(&mut self) -> Result<Vec<Elem>, Elem> {
+    fn rev_polish(&mut self) -> Result<Vec<Elem>, String> {
         let mut ans = vec![];
         let mut stack = vec![];
     
@@ -123,7 +119,8 @@ impl ConditionalExpr {
             };
     
             if !ok {
-                return Err(e.clone());
+                let msg = "syntax error near ".to_owned() + &to_string(e);
+                return Err(msg);
             }
         }
     
