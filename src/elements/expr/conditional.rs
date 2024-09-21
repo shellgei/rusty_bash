@@ -67,7 +67,6 @@ pub struct ConditionalExpr {
 
 impl ConditionalExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
-
         let mut from = 0;
         let mut next = true;
         let mut last = Elem::Ans(true);
@@ -186,7 +185,7 @@ impl ConditionalExpr {
         };
 
         if op == "-o" {
-            let ans = core.options.query(&operand) || core.shopts.query(&operand);
+            let ans = core.options.query(&operand);
             stack.push( Elem::Ans(ans) );
             return Ok(());
         }

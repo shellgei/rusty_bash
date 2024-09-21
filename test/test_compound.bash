@@ -797,4 +797,10 @@ res=$($com -c '[[ -a /etc/passwd && -a /etc/passwdaaa ]]')
 res=$($com -c '[[ -a /etc/passwdaaaa || -a /etc/passwd ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ -o pipefail ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'set -o pipefail ; [[ -o pipefail ]]')
+[ "$?" = "0" ] || err $LINENO
+
 echo $0 >> ./ok
