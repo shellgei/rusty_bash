@@ -82,11 +82,8 @@ impl ConditionalExpr {
                     }
                     from = i + 1;
 
-                    match &last {
-                        Elem::Operand(s) => {
-                            last = Elem::Ans(s.len() > 0);
-                        },
-                        _ => {},
+                    if let Elem::Operand(s) = last {
+                        last = Elem::Ans(s.len() > 0);
                     }
 
                     next = match (&self.elements[i], &last) {
