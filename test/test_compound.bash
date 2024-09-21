@@ -803,4 +803,22 @@ res=$($com -c '[[ -o pipefail ]]')
 res=$($com -c 'set -o pipefail ; [[ -o pipefail ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ -o pipefailaaaaa ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ -v LANG ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -v LANGLANG ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'A= ; [[ -v A ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c 'B=A; A= ; [[ -v $B ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -v "$B" ]]')
+[ "$?" = "1" ] || err $LINENO
+
 echo $0 >> ./ok

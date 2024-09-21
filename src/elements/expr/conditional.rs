@@ -4,6 +4,7 @@
 use crate::{error_message, ShellCore, Feeder};
 use crate::utils::file_check;
 use crate::elements::word::Word;
+use std::env;
 
 #[derive(Debug, Clone)]
 pub enum Elem {
@@ -184,8 +185,12 @@ impl ConditionalExpr {
             Err(e) => return Err(e + " to conditional unary operator"),
         };
 
-        if op == "-o" {
-            let ans = core.options.query(&operand);
+        if op == "-o" || op == "-v" {
+            let ans = match op {
+                "-o" => core.options.query(&operand),
+                _ => core.data.get_value(&operand).is_some() || env::var(&operand).is_ok(),
+            };
+
             stack.push( Elem::Ans(ans) );
             return Ok(());
         }
