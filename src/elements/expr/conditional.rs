@@ -81,6 +81,14 @@ impl ConditionalExpr {
                         };
                     }
                     from = i + 1;
+
+                    match &last {
+                        Elem::Operand(s) => {
+                            last = Elem::Ans(s.len() > 0);
+                        },
+                        _ => {},
+                    }
+
                     next = match (&self.elements[i], &last) {
                         (Elem::And, Elem::Ans(ans)) => *ans,
                         (Elem::Or, Elem::Ans(ans))  => !ans,
@@ -90,12 +98,8 @@ impl ConditionalExpr {
                 _ => {},
             }
         }
-
-        if next { 
-            Self::calculate(&self.elements[from..], core)
-        }else {
-            Ok(last)
-        }
+ 
+        Ok(last)
     }
 
     fn calculate(elems: &[Elem], core: &mut ShellCore) -> Result<Elem, String> {
@@ -382,6 +386,7 @@ impl ConditionalExpr {
                     return None;
                 }
 
+                ans.elements.push(Elem::And);
                 return Some(ans);
             }
 

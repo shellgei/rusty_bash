@@ -836,4 +836,10 @@ res=$($com -c '[[ -z "$BASH_VERSION" ]]')
 res=$($com -c '[[ -z "$aaaa" ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ "aaaa" ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ "" ]]')
+[ "$?" = "1" ] || err $LINENO
+
 echo $0 >> ./ok
