@@ -721,4 +721,15 @@ res=$($com -c '[[ ( ! -a /etc/passwd ) ]]')
 res=$($com -c '[[ ! ( -a /etc/passwd ) ]]')
 [ "$?" = "1" ] || err $LINENO
 
+# and or 
+
+res=$($com -c '[[ -a /etc/passwd && -a /etc/passwd ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -a /etc/passwd && -a /etc/passwdaaa ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ -a /etc/passwdaaaa || -a /etc/passwd ]]')
+[ "$?" = "0" ] || err $LINENO
+
 echo $0 >> ./ok
