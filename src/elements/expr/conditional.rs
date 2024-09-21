@@ -7,8 +7,8 @@ use crate::elements::word::Word;
 
 #[derive(Debug, Clone)]
 pub enum Elem {
-    FileCheckOption(String),
-    FileCompareOption(String),
+    UnaryOp(String),
+    BinaryOp(String),
     Word(Word),
     Operand(String),
     InParen(ConditionalExpr),
@@ -20,8 +20,8 @@ pub enum Elem {
 
 fn op_order(op: &Elem) -> u8 {
     match op {
-        Elem::FileCheckOption(_) => 14,
-        Elem::FileCompareOption(_) => 13,
+        Elem::UnaryOp(_) => 14,
+        Elem::BinaryOp(_) => 13,
         Elem::Not => 12,
         //Elem::And | Elem::Or => 12,
         _ => 0,
@@ -30,8 +30,8 @@ fn op_order(op: &Elem) -> u8 {
 
 pub fn to_string(op: &Elem) -> String {
     match op {
-        Elem::FileCheckOption(op) => op.to_string(),
-        Elem::FileCompareOption(op) => op.to_string(),
+        Elem::UnaryOp(op) => op.to_string(),
+        Elem::BinaryOp(op) => op.to_string(),
         Elem::InParen(expr) => expr.text.clone(),
         Elem::Word(w) => w.text.clone(),
         Elem::Operand(op) => op.to_string(),
@@ -143,10 +143,10 @@ impl ConditionalExpr {
                     stack.push(e.clone());
                     Ok(())
                 },
-                Elem::FileCheckOption(ref op)  => {
+                Elem::UnaryOp(ref op)  => {
                     Self::unary_operation(&op, &mut stack, core)
                 },
-                Elem::FileCompareOption(ref op)  => {
+                Elem::BinaryOp(ref op)  => {
                     Self::bin_operation(&op, &mut stack, core)
                 },
                 Elem::Not => match pop_operand(&mut stack, core) {
@@ -180,14 +180,18 @@ impl ConditionalExpr {
 
     fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
         let operand = match pop_operand(stack, core) {
-            Ok(v)  => v, 
+            Ok(Elem::Operand(v))  => v,
+            Ok(_)  => return Err("unknown operand".to_string()), 
             Err(e) => return Err(e + " to conditional unary operator"),
         };
-        
-        match operand {
-            Elem::Operand(s) => Self::unary_calc(op, &s, stack),
-            _ => error_message::internal("unknown operand"), 
+
+        if op == "-o" {
+            let ans = core.options.query(&operand) || core.shopts.query(&operand);
+            stack.push( Elem::Ans(ans) );
+            return Ok(());
         }
+
+        Self::unary_file_check(op, &operand, stack)
     }
 
     fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
@@ -208,7 +212,7 @@ impl ConditionalExpr {
         Ok(())
     }
 
-    fn unary_calc(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
+    fn unary_file_check(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
         let result = match op {
             "-a" | "-e"  => file_check::exists(s),
             "-d"  => file_check::is_dir(s),
@@ -274,28 +278,28 @@ impl ConditionalExpr {
         }
     }
 
-    fn eat_file_compare_op(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_test_file_compare_op(core);
+    fn eat_compare_op(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_test_compare_op(core);
         if len == 0 {
             return false;
         }
 
         let opt = feeder.consume(len);
         ans.text += &opt.clone();
-        ans.elements.push(Elem::FileCompareOption(opt));
+        ans.elements.push(Elem::BinaryOp(opt));
 
         true
     }
 
     fn eat_file_check_option(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_test_file_check_option(core);
+        let len = feeder.scanner_test_check_option(core);
         if len == 0 {
             return false;
         }
 
         let opt = feeder.consume(len);
         ans.text += &opt.clone();
-        ans.elements.push(Elem::FileCheckOption(opt));
+        ans.elements.push(Elem::UnaryOp(opt));
 
         true
     }
@@ -323,7 +327,7 @@ impl ConditionalExpr {
     fn eat_paren(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(e) = ans.elements.last() {
             match e {
-                Elem::FileCheckOption(_) => {
+                Elem::UnaryOp(_) => {
                     return false
                 },
                 _ => {},
@@ -376,7 +380,7 @@ impl ConditionalExpr {
             }
 
             if Self::eat_paren(feeder, &mut ans, core) 
-            || Self::eat_file_compare_op(feeder, &mut ans, core)
+            || Self::eat_compare_op(feeder, &mut ans, core)
             || Self::eat_file_check_option(feeder, &mut ans, core)
             || Self::eat_not_and_or(feeder, &mut ans) 
             || Self::eat_word(feeder, &mut ans, core) {

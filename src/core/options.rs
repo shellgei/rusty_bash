@@ -109,7 +109,7 @@ impl Options {
     }
 
     pub fn query(&self, opt: &str) -> bool {
-        self.opts[opt]
+        self.opts.contains_key(opt) && self.opts[opt]
     }
 
     pub fn set(&mut self, opt: &str, onoff: bool) -> bool {

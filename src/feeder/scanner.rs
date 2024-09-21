@@ -277,7 +277,7 @@ impl Feeder {
         self.scanner_one_of(&[":-", ":=", ":?", ":+"])
     }
 
-    pub fn scanner_test_file_check_option(&mut self, core: &mut ShellCore) -> usize {
+    pub fn scanner_test_check_option(&mut self, core: &mut ShellCore) -> usize {
         match self.remaining.chars().nth(0) {
             Some('-') => {},
             _ => return 0,
@@ -285,7 +285,7 @@ impl Feeder {
         self.backslash_check_and_feed(vec!["-"], core);
 
         if let Some(c) = self.remaining.chars().nth(1) {
-            match "abcdefghkprstuwxGLNOS".contains(c) {
+            match "abcdefghknoprstuvwxzGLNOS".contains(c) {
                 true  => return 2,
                 false => return 0,
             }
@@ -293,7 +293,7 @@ impl Feeder {
         return 0;
     }
 
-    pub fn scanner_test_file_compare_op(&mut self, core: &mut ShellCore) -> usize {
+    pub fn scanner_test_compare_op(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["-", "-e", "-n", "-o"], core);
         self.scanner_one_of(&["-ef", "-nt", "-ot"])
     }
