@@ -762,6 +762,30 @@ rm -f /tmp/$$*
 res=$($com -c '[[ /etc/passwd -nt /tmp/aaaaaaaaa ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ /etc/aaaaaaaaaa -nt /etc/bbbbbb ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ /tmp/$$x -ot /tmp/$$ ]]')
+[ "$?" = "1" ] || err $LINENO
+rm -f /tmp/$$*
+
+res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ /tmp/$$ -ot /tmp/$$x ]]')
+[ "$?" = "0" ] || err $LINENO
+rm -f /tmp/$$*
+
+res=$($com -c 'touch /tmp/$$ ; [[ /tmp/$$ -ot /tmp/$$ ]]')
+[ "$?" = "1" ] || err $LINENO
+rm -f /tmp/$$*
+
+res=$($com -c '[[ /etc/passwd -ot /tmp/aaaaaaaaa ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ /etc/aaaaaaaaaa -ot /etc/passwd ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ /etc/aaaaaaaaaa -ot /etc/bbbbbb ]]')
+[ "$?" = "1" ] || err $LINENO
+
 # and or 
 
 res=$($com -c '[[ -a /etc/passwd && -a /etc/passwd ]]')

@@ -28,23 +28,20 @@ pub fn is_dir(name: &str) -> bool {
 }
 
 pub fn metadata_comp(left: &str, right: &str, tp: &str) -> bool {
-    let left_meta = match fs::metadata(left) {
-        Ok(m) => m,
-        _     => return false,
-    };
-    let right_meta = match fs::metadata(right) {
-        Ok(m) => m,
-        _     => return tp == "-nt",
+    let (lmeta, rmeta) = match ( fs::metadata(left), fs::metadata(right) ) {
+        ( Ok(lm), Ok(rm) ) => (lm, rm),
+        ( Ok(_), Err(_) )  => return tp == "-nt",
+        ( Err(_), Ok(_) )  => return tp == "-ot",
+        ( Err(_), Err(_) ) => return false,
     };
 
     match tp {
-        "-ef" => (left_meta.dev(), left_meta.ino())
-                 == (right_meta.dev(), right_meta.ino()),
-        "-nt" => {
-            let left_modified = left_meta.modified().unwrap();
-            let right_modified = right_meta.modified().unwrap();
-            left_modified > right_modified
-        },
+        "-ef" => (lmeta.dev(), lmeta.ino())
+                 == (rmeta.dev(), rmeta.ino()),
+        "-nt" => lmeta.modified().unwrap()
+                 > rmeta.modified().unwrap(),
+        "-ot" => lmeta.modified().unwrap()
+                 < rmeta.modified().unwrap(),
         _     => false,
     }
 }
