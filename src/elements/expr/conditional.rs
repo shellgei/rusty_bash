@@ -185,10 +185,12 @@ impl ConditionalExpr {
             Err(e) => return Err(e + " to conditional unary operator"),
         };
 
-        if op == "-o" || op == "-v" {
+        if op == "-o" || op == "-v" || op == "-z" {
             let ans = match op {
                 "-o" => core.options.query(&operand),
-                _ => core.data.get_value(&operand).is_some() || env::var(&operand).is_ok(),
+                "-v" => core.data.get_value(&operand).is_some() || env::var(&operand).is_ok(),
+                "-z" => operand.len() == 0,
+                _    => false,
             };
 
             stack.push( Elem::Ans(ans) );

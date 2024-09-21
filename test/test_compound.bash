@@ -821,4 +821,19 @@ res=$($com -c 'B=A; A= ; [[ -v $B ]]')
 res=$($com -c '[[ -v "$B" ]]')
 [ "$?" = "1" ] || err $LINENO
 
+res=$($com -c '[[ -z "" ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -z ]]')
+[ "$?" = "2" ] || err $LINENO
+
+res=$($com -c '[[ -z a ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ -z "$BASH_VERSION" ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ -z "$aaaa" ]]')
+[ "$?" = "0" ] || err $LINENO
+
 echo $0 >> ./ok
