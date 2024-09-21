@@ -721,6 +721,24 @@ res=$($com -c '[[ ( ! -a /etc/passwd ) ]]')
 res=$($com -c '[[ ! ( -a /etc/passwd ) ]]')
 [ "$?" = "1" ] || err $LINENO
 
+# file compare
+
+rm -f /tmp/$$*
+
+res=$($com -c 'touch /tmp/$$ ; ln /tmp/$$ /tmp/$$x; [[ /tmp/$$ -ef /tmp/$$x ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ /tmp/$$ -ef /tmp/$$x ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ ! /tmp/$$ -ef /tmp/$$x ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ ! ( /tmp/$$ -ef /tmp/$$x ) ]]')
+[ "$?" = "0" ] || err $LINENO
+
+rm -f /tmp/$$*
+
 # and or 
 
 res=$($com -c '[[ -a /etc/passwd && -a /etc/passwd ]]')

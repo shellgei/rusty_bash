@@ -7,6 +7,7 @@ use nix::unistd;
 use std::fs;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 
+use std::os::unix::fs::MetadataExt as UnixMetadataExt;
 #[cfg(target_os = "linux")]
 use std::os::linux::fs::MetadataExt;
 #[cfg(target_os = "macos")]
@@ -24,6 +25,23 @@ pub fn is_regular_file(name: &str) -> bool {
 
 pub fn is_dir(name: &str) -> bool {
     Path::new(name).is_dir()
+}
+
+pub fn metadata_comp(left: &str, right: &str, tp: &str) -> bool {
+    let left_meta = match fs::metadata(left) {
+        Ok(m) => m,
+        _     => return false,
+    };
+    let right_meta = match fs::metadata(right) {
+        Ok(m) => m,
+        _     => return false,
+    };
+
+    match tp {
+        "-ef" => (left_meta.dev(), left_meta.ino())
+                 == (right_meta.dev(), right_meta.ino()),
+        _     => false,
+    }
 }
 
 pub fn metadata_check(name: &str, tp: &str) -> bool {
