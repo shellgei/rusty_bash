@@ -34,12 +34,17 @@ pub fn metadata_comp(left: &str, right: &str, tp: &str) -> bool {
     };
     let right_meta = match fs::metadata(right) {
         Ok(m) => m,
-        _     => return false,
+        _     => return tp == "-nt",
     };
 
     match tp {
         "-ef" => (left_meta.dev(), left_meta.ino())
                  == (right_meta.dev(), right_meta.ino()),
+        "-nt" => {
+            let left_modified = left_meta.modified().unwrap();
+            let right_modified = right_meta.modified().unwrap();
+            left_modified > right_modified
+        },
         _     => false,
     }
 }

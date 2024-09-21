@@ -203,7 +203,7 @@ impl ConditionalExpr {
             Err(e) => return Err(e),
         };
 
-        let result = file_check::metadata_comp(&right, &left, op);
+        let result = file_check::metadata_comp(&left, &right, op);
         stack.push( Elem::Ans(result) );
         Ok(())
     }

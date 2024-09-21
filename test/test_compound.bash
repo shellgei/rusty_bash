@@ -727,17 +727,40 @@ rm -f /tmp/$$*
 
 res=$($com -c 'touch /tmp/$$ ; ln /tmp/$$ /tmp/$$x; [[ /tmp/$$ -ef /tmp/$$x ]]')
 [ "$?" = "0" ] || err $LINENO
+rm -f /tmp/$$*
 
 res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ /tmp/$$ -ef /tmp/$$x ]]')
 [ "$?" = "1" ] || err $LINENO
+rm -f /tmp/$$*
 
 res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ ! /tmp/$$ -ef /tmp/$$x ]]')
 [ "$?" = "0" ] || err $LINENO
+rm -f /tmp/$$*
 
 res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ ! ( /tmp/$$ -ef /tmp/$$x ) ]]')
 [ "$?" = "0" ] || err $LINENO
-
 rm -f /tmp/$$*
+
+res=$($com -c '[[ /etc/passwd -ef /tmp/aaaaa ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ /etc/aaaaaa -ef /etc/passwd ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ /tmp/$$x -nt /tmp/$$ ]]')
+[ "$?" = "0" ] || err $LINENO
+rm -f /tmp/$$*
+
+res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ /tmp/$$ -nt /tmp/$$x ]]')
+[ "$?" = "1" ] || err $LINENO
+rm -f /tmp/$$*
+
+res=$($com -c 'touch /tmp/$$ ; [[ /tmp/$$ -nt /tmp/$$ ]]')
+[ "$?" = "1" ] || err $LINENO
+rm -f /tmp/$$*
+
+res=$($com -c '[[ /etc/passwd -nt /tmp/aaaaaaaaa ]]')
+[ "$?" = "0" ] || err $LINENO
 
 # and or 
 
