@@ -853,7 +853,19 @@ res=$($com -c 'A=あいうえ ; [[ あいう = $A ]]')
 res=$($com -c 'A=あいうえ ; [[ あいう == $A ]]')
 [ "$?" = "1" ] || err $LINENO
 
-res=$($com -c '[[  ==  ]] && [[ = ]]')
+res=$($com -c 'A=あいうえ ; [[ あいう != $A ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c 'A=あいう ; [[ あいう != $A ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'A=あいう ; [[ != $A ]]')
+[ "$?" = "2" ] || err $LINENO
+
+res=$($com -c '[[ aaa != ]]')
+[ "$?" = "2" ] || err $LINENO
+
+res=$($com -c '[[  ==  ]] && [[ = ]] && [[ != ]]')
 [ "$?" = "0" ] || err $LINENO
 
 # and or 
