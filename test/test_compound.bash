@@ -786,15 +786,7 @@ res=$($com -c '[[ /etc/aaaaaaaaaa -ot /etc/passwd ]]')
 res=$($com -c '[[ /etc/aaaaaaaaaa -ot /etc/bbbbbb ]]')
 [ "$?" = "1" ] || err $LINENO
 
-# and or 
-
-res=$($com -c '[[ -a /etc/passwd && -a /etc/passwd ]]')
-[ "$?" = "0" ] || err $LINENO
-
-res=$($com -c '[[ -a /etc/passwd && -a /etc/passwdaaa ]]')
-[ "$?" = "1" ] || err $LINENO
-
-res=$($com -c '[[ -a /etc/passwdaaaa || -a /etc/passwd ]]')
+res=$($com -c '[[ -ot ]]')
 [ "$?" = "0" ] || err $LINENO
 
 res=$($com -c '[[ -o pipefail ]]')
@@ -850,5 +842,29 @@ res=$($com -c '[[ -n "aaaa" ]]')
 
 res=$($com -c '[[ -n "" ]]')
 [ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'A=あいう ; [[ あいう = $A ]]')
+[ "$?" = "0" ] || err $LINENO
+res=$($com -c 'A=あいう ; [[ あいう == $A ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c 'A=あいうえ ; [[ あいう = $A ]]')
+[ "$?" = "1" ] || err $LINENO
+res=$($com -c 'A=あいうえ ; [[ あいう == $A ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[  ==  ]] && [[ = ]]')
+[ "$?" = "0" ] || err $LINENO
+
+# and or 
+
+res=$($com -c '[[ -a /etc/passwd && -a /etc/passwd ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -a /etc/passwd && -a /etc/passwdaaa ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ -a /etc/passwdaaaa || -a /etc/passwd ]]')
+[ "$?" = "0" ] || err $LINENO
 
 echo $0 >> ./ok

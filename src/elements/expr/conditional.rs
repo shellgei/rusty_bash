@@ -106,8 +106,8 @@ impl ConditionalExpr {
         };
     
         match pop_operand(&mut stack, core) {
-            Ok(Elem::Operand(s)) => Ok(Elem::Ans(s.len() > 0)),
-            other_ans            => other_ans,
+            Ok(Elem::Operand(s))  => Ok(Elem::Ans(s.len() > 0)), //for [[ string ]]
+            other_ans             => other_ans,
         }
     }
 
@@ -143,10 +143,11 @@ impl ConditionalExpr {
                     stack.push(e.clone());
                     Ok(())
                 },
-                Elem::UnaryOp(ref op)  => {
-                    Self::unary_operation(&op, &mut stack, core)
-                },
-                Elem::BinaryOp(ref op)  => {
+                Elem::UnaryOp(ref op) => Self::unary_operation(&op, &mut stack, core),
+                Elem::BinaryOp(ref op) => {
+                    if stack.len() == 0 {
+                        return Ok(vec![Elem::Ans(true)]); //for [[ -ot ]] [[ == ]] [[ = ]] ...
+                    }
                     Self::bin_operation(&op, &mut stack, core)
                 },
                 Elem::Not => match pop_operand(&mut stack, core) {
@@ -213,6 +214,16 @@ impl ConditionalExpr {
             Ok(_)  => return Err("Invalid operand".to_string()),
             Err(e) => return Err(e),
         };
+
+        if op == "==" || op == "=" {
+            let ans = match op {
+                "==" | "=" => left == right,
+                _    => false,
+            };
+
+            stack.push( Elem::Ans(ans) );
+            return Ok(());
+        }
 
         let result = file_check::metadata_comp(&left, &right, op);
         stack.push( Elem::Ans(result) );
