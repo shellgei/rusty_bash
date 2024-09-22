@@ -295,6 +295,6 @@ impl Feeder {
 
     pub fn scanner_test_compare_op(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["-", "-e", "-n", "-o", "=", "!"], core);
-        self.scanner_one_of(&["-ef", "-nt", "-ot", "==", "=", "!="])
+        self.scanner_one_of(&["-ef", "-nt", "-ot", "==", "=", "!=", "<", ">"])
     }
 }

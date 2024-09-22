@@ -865,7 +865,10 @@ res=$($com -c 'A=あいう ; [[ != $A ]]')
 res=$($com -c '[[ aaa != ]]')
 [ "$?" = "2" ] || err $LINENO
 
-res=$($com -c '[[  ==  ]] && [[ = ]] && [[ != ]]')
+$com -c '[[  ==  ]] && [[ = ]] && [[ != ]]'
+[ "$?" = "0" ] || err $LINENO
+
+$com -c '[[ abc > aaa ]] && [[ 0100 < 2 ]] && [[ ! abc > abc ]]'
 [ "$?" = "0" ] || err $LINENO
 
 # and or 

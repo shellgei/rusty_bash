@@ -215,10 +215,12 @@ impl ConditionalExpr {
             Err(e) => return Err(e),
         };
 
-        if op == "==" || op == "=" || op == "!=" {
+        if op == "==" || op == "=" || op == "!=" || op == "<" || op == ">" {
             let ans = match op {
                 "==" | "=" => left == right,
                 "!="       => left != right,
+                ">"        => left > right,
+                "<"        => left < right,
                 _    => false,
             };
 
