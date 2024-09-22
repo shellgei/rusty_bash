@@ -803,6 +803,9 @@ res=$($com -c '[[ -o pipefail ]]')
 res=$($com -c 'set -o pipefail ; [[ -o pipefail ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ -o extglob ]]')
+[ "$?" = "1" ] || err $LINENO
+
 res=$($com -c '[[ -o pipefailaaaaa ]]')
 [ "$?" = "1" ] || err $LINENO
 
@@ -840,6 +843,12 @@ res=$($com -c '[[ "aaaa" ]]')
 [ "$?" = "0" ] || err $LINENO
 
 res=$($com -c '[[ "" ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c '[[ -n "aaaa" ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ -n "" ]]')
 [ "$?" = "1" ] || err $LINENO
 
 echo $0 >> ./ok

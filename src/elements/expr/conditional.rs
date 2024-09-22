@@ -82,10 +82,6 @@ impl ConditionalExpr {
                     }
                     from = i + 1;
 
-                    if let Elem::Operand(s) = last {
-                        last = Elem::Ans(s.len() > 0);
-                    }
-
                     next = match (&self.elements[i], &last) {
                         (Elem::And, Elem::Ans(ans)) => *ans,
                         (Elem::Or, Elem::Ans(ans))  => !ans,
@@ -109,7 +105,10 @@ impl ConditionalExpr {
             Err(e) => return Err(e),
         };
     
-        pop_operand(&mut stack, core)
+        match pop_operand(&mut stack, core) {
+            Ok(Elem::Operand(s)) => Ok(Elem::Ans(s.len() > 0)),
+            other_ans            => other_ans,
+        }
     }
 
     fn rev_polish(elems: &[Elem]) -> Result<Vec<Elem>, String> {
@@ -186,11 +185,12 @@ impl ConditionalExpr {
             Err(e) => return Err(e + " to conditional unary operator"),
         };
 
-        if op == "-o" || op == "-v" || op == "-z" {
+        if op == "-o" || op == "-v" || op == "-z" || op == "-n" {
             let ans = match op {
                 "-o" => core.options.query(&operand),
                 "-v" => core.data.get_value(&operand).is_some() || env::var(&operand).is_ok(),
                 "-z" => operand.len() == 0,
+                "-n" => operand.len() > 0,
                 _    => false,
             };
 
