@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::{ArithmeticExpr, Elem};
+use super::{ArithmeticExpr, ArithElem};
 use super::calculator;
 
 pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
-    stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
+    stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), String> {
     let num = match calculator::pop_operand(stack, core) {
         Ok(v)  => v,
         Err(e) => return Err(e),
@@ -22,13 +22,13 @@ pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     };
 
     let ans = match num {
-        Elem::Integer(0) /*| Elem::Float(0.0)*/ => {
+        ArithElem::Integer(0) /*| ArithElem::Float(0.0)*/ => {
             match right.eval_in_cond(core) {
                 Ok(num) => num,
                 Err(e)  => return Err(e),
             }
         },
-        Elem::Float(_) => return Err("float condition is not permitted".to_string()),
+        ArithElem::Float(_) => return Err("float condition is not permitted".to_string()),
         _ => {
             match left.eval_in_cond(core) {
                 Ok(num) => num,

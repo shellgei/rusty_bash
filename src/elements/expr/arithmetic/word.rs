@@ -2,10 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error_message, ShellCore, Feeder};
-use super::{Elem, float, int, Word};
+use super::{ArithElem, float, int, Word};
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
-                   core: &mut ShellCore) -> Result<Elem, String> {
+                   core: &mut ShellCore) -> Result<ArithElem, String> {
     if pre_increment != 0 && post_increment != 0 
     || w.text.find('\'').is_some() {
         return Err(error_message::syntax(&w.text));
@@ -27,7 +27,7 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     }
 }
 
-fn to_num(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
+fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, String> {
     if w.text.find('\'').is_some() {
         return Err(error_message::syntax(&w.text));
     }
@@ -45,7 +45,7 @@ fn is_name(s: &str, core: &mut ShellCore) -> bool {
     s.len() > 0 && f.scanner_name(core) == s.len()
 }
 
-fn str_to_num(name: &str, core: &mut ShellCore) -> Result<Elem, String> {
+pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
     let mut name = name.to_string();
 
     const RESOLVE_LIMIT: i32 = 10000;
@@ -62,17 +62,17 @@ fn str_to_num(name: &str, core: &mut ShellCore) -> Result<Elem, String> {
     }
 
     if let Some(n) = int::parse(&name) {
-        Ok( Elem::Integer(n) )
+        Ok( ArithElem::Integer(n) )
     }else if is_name(&name, core) {
-        Ok( Elem::Integer(0) )
+        Ok( ArithElem::Integer(0) )
     } else if let Some(f) = float::parse(&name) {
-        Ok( Elem::Float(f) )
+        Ok( ArithElem::Float(f) )
     }else{
         Err(error_message::syntax(&name))
     }
 }
 
-fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<Elem, String> {
+fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<ArithElem, String> {
     if ! is_name(name, core) {
         return match inc != 0 && ! pre {
             true  => Err(error_message::syntax(name)),
@@ -81,18 +81,18 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
     }
 
     match str_to_num(&name, core) {
-        Ok(Elem::Integer(n))        => {
+        Ok(ArithElem::Integer(n))        => {
             core.data.set_param(name, &(n + inc).to_string());
             match pre {
-                true  => Ok(Elem::Integer(n+inc)),
-                false => Ok(Elem::Integer(n)),
+                true  => Ok(ArithElem::Integer(n+inc)),
+                false => Ok(ArithElem::Integer(n)),
             }
         },
-        Ok(Elem::Float(n))        => {
+        Ok(ArithElem::Float(n))        => {
             core.data.set_param(name, &(n + inc as f64).to_string());
             match pre {
-                true  => Ok(Elem::Float(n+inc as f64)),
-                false => Ok(Elem::Float(n)),
+                true  => Ok(ArithElem::Float(n+inc as f64)),
+                false => Ok(ArithElem::Float(n)),
             }
         },
         Ok(_) => error_message::internal("unknown element"),
@@ -112,15 +112,15 @@ pub fn get_sign(s: &mut String) -> String {
     }
 }
 
-pub fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Result<(), String> {
+pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-> Result<(), String> {
     let right = match stack.pop() {
         Some(e) => e,
         _       => return Err( error_message::syntax(op) ),
     };
 
     let left = match stack.pop() {
-        Some(Elem::Word(w, 0)) => w,
-        Some(Elem::Word(_, _)) => return Err( error_message::assignment(op) ),
+        Some(ArithElem::Word(w, 0)) => w,
+        Some(ArithElem::Word(_, _)) => return Err( error_message::assignment(op) ),
         _ => return Err( error_message::assignment(op) ),
     };
 
@@ -131,8 +131,8 @@ pub fn substitution(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore)-> Res
     Ok(())
 }
 
-fn subs(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
-                                      -> Result<Elem, String> {
+fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
+                                      -> Result<ArithElem, String> {
     if w.text.find('\'').is_some() {
         return Err(error_message::syntax(&w.text));
     }
@@ -143,8 +143,8 @@ fn subs(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
     };
 
     let right_str = match right_value {
-        Elem::Integer(n) => n.to_string(),
-        Elem::Float(f)   => f.to_string(),
+        ArithElem::Integer(n) => n.to_string(),
+        ArithElem::Float(f)   => f.to_string(),
         _ => error_message::internal("not a value"),
     };
 
@@ -162,10 +162,10 @@ fn subs(op: &str, w: &Word, right_value: &Elem, core: &mut ShellCore)
     };
 
     match (current_num, right_value) {
-        (Elem::Integer(cur), Elem::Integer(right)) => int::substitute(op, &name, cur, *right, core),
-        (Elem::Float(cur), Elem::Integer(right)) => float::substitute(op, &name, cur, *right as f64, core),
-        (Elem::Float(cur), Elem::Float(right)) => float::substitute(op, &name, cur, *right, core),
-        (Elem::Integer(cur), Elem::Float(right)) => float::substitute(op, &name, cur as f64, *right, core),
+        (ArithElem::Integer(cur), ArithElem::Integer(right)) => int::substitute(op, &name, cur, *right, core),
+        (ArithElem::Float(cur), ArithElem::Integer(right)) => float::substitute(op, &name, cur, *right as f64, core),
+        (ArithElem::Float(cur), ArithElem::Float(right)) => float::substitute(op, &name, cur, *right, core),
+        (ArithElem::Integer(cur), ArithElem::Float(right)) => float::substitute(op, &name, cur as f64, *right, core),
         _ => Err("support not yet".to_string()),
     }
 

@@ -2,20 +2,20 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error_message, ShellCore};
-use super::{Elem, word};
+use super::{ArithElem, word};
 
-pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
+pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), String> {
     match op {
-        "+"  => stack.push( Elem::Integer(num) ),
-        "-"  => stack.push( Elem::Integer(-num) ),
-        "!"  => stack.push( Elem::Integer(if num == 0 { 1 } else { 0 }) ),
-        "~"  => stack.push( Elem::Integer( !num ) ),
+        "+"  => stack.push( ArithElem::Integer(num) ),
+        "-"  => stack.push( ArithElem::Integer(-num) ),
+        "!"  => stack.push( ArithElem::Integer(if num == 0 { 1 } else { 0 }) ),
+        "~"  => stack.push( ArithElem::Integer( !num ) ),
         _ => error_message::internal("unknown unary operator"),
     }
     Ok(())
 }
 
-pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Result<(), String> {
+pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> Result<(), String> {
     let bool_to_01 = |b| { if b { 1 } else { 0 } };
 
     let ans = match op {
@@ -55,12 +55,12 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<Elem>) -> Resul
         _    => error_message::internal("unknown binary operator"),
     };
 
-    stack.push(Elem::Integer(ans));
+    stack.push(ArithElem::Integer(ans));
     Ok(())
 }
 
 pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut ShellCore)
-                                      -> Result<Elem, String> {
+                                      -> Result<ArithElem, String> {
     let new_value = match op {
         "+=" => cur + right,
         "-=" => cur - right,
@@ -83,7 +83,7 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
     };
 
     core.data.set_param(&name, &new_value.to_string());
-    Ok(Elem::Integer(new_value))
+    Ok(ArithElem::Integer(new_value))
 }
 
 fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {

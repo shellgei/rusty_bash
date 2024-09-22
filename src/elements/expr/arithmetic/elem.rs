@@ -5,7 +5,7 @@ use super::ArithmeticExpr;
 use super::Word;
 
 #[derive(Debug, Clone)]
-pub enum Elem {
+pub enum ArithElem {
     UnaryOp(String),
     BinaryOp(String),
     Integer(i64),
@@ -17,16 +17,16 @@ pub enum Elem {
     Delimiter(String), //delimiter dividing left and right of &&, ||, and ','
 }
 
-pub fn op_order(op: &Elem) -> u8 {
+pub fn op_order(op: &ArithElem) -> u8 {
     match op {
-        Elem::Increment(_) => 20,
-        Elem::UnaryOp(s) => {
+        ArithElem::Increment(_) => 20,
+        ArithElem::UnaryOp(s) => {
             match s.as_str() {
                 "-" | "+" => 19,
                 _         => 18,
             }
         },
-        Elem::BinaryOp(s) => {
+        ArithElem::BinaryOp(s) => {
             match s.as_str() {
                 "**"            => 17, 
                 "*" | "/" | "%" => 16, 
@@ -43,27 +43,27 @@ pub fn op_order(op: &Elem) -> u8 {
                 _               => 2, //substitution
             }
         },
-        Elem::Ternary(_, _) => 3,
+        ArithElem::Ternary(_, _) => 3,
         _ => 1, 
     }
 }
 
-pub fn to_string(op: &Elem) -> String {
+pub fn to_string(op: &ArithElem) -> String {
     match op {
-        Elem::InParen(a) => a.text.to_string(),
-        Elem::Integer(n) => n.to_string(),
-        Elem::Float(f) => f.to_string(),
-        Elem::Word(w, inc) => {
+        ArithElem::InParen(a) => a.text.to_string(),
+        ArithElem::Integer(n) => n.to_string(),
+        ArithElem::Float(f) => f.to_string(),
+        ArithElem::Word(w, inc) => {
             match inc {
                 1  => w.text.clone() + "++",
                 -1 => w.text.clone() + "--",
                 _  => w.text.clone(),
             }
         },
-        Elem::UnaryOp(s) => s.clone(),
-        Elem::BinaryOp(s) => s.clone(),
-        Elem::Increment(1) => "++".to_string(),
-        Elem::Increment(-1) => "--".to_string(),
+        ArithElem::UnaryOp(s) => s.clone(),
+        ArithElem::BinaryOp(s) => s.clone(),
+        ArithElem::Increment(1) => "++".to_string(),
+        ArithElem::Increment(-1) => "--".to_string(),
         _ => "".to_string(),
     }
 }

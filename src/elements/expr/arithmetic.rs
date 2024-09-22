@@ -2,23 +2,23 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod calculator;
-mod elem;
+pub mod elem;
 mod parser;
 mod rev_polish;
 mod trenary;
-mod word;
+pub mod word;
 mod int;
 mod float;
 
 use crate::{error_message, ShellCore};
 use self::calculator::calculate;
-use self::elem::Elem;
+use self::elem::ArithElem;
 use crate::elements::word::Word;
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticExpr {
     pub text: String,
-    elements: Vec<Elem>,
+    elements: Vec<ArithElem>,
     output_base: String,
     hide_base: bool,
 }
@@ -26,8 +26,8 @@ pub struct ArithmeticExpr {
 impl ArithmeticExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
         match self.eval_elems(core, true) {
-            Ok(Elem::Integer(n)) => self.ans_to_string(n),
-            Ok(Elem::Float(f))   => Some(f.to_string()),
+            Ok(ArithElem::Integer(n)) => self.ans_to_string(n),
+            Ok(ArithElem::Float(f))   => Some(f.to_string()),
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
@@ -36,7 +36,7 @@ impl ArithmeticExpr {
         }
     }
 
-    pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<Elem, String> {
+    pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<ArithElem, String> {
         if self.elements.len() == 0 && ! permit_empty {
             return Err("operand expexted (error token: \")\")".to_string());
         }
@@ -105,7 +105,7 @@ impl ArithmeticExpr {
         std::str::from_utf8(&ascii).unwrap().to_string()
     }
 
-    fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
+    fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<ArithElem, String> {
         let es = match self.decompose_increments() {
             Ok(data)     => data, 
             Err(err_msg) => return Err(err_msg),
@@ -117,7 +117,7 @@ impl ArithmeticExpr {
         }
     }
 
-    fn preinc_to_unarys(&mut self, ans: &mut Vec<Elem>, pos: usize, inc: i64) -> i64 {
+    fn preinc_to_unarys(&mut self, ans: &mut Vec<ArithElem>, pos: usize, inc: i64) -> i64 {
         let pm = match inc {
             1  => "+",
             -1 => "-",
@@ -126,16 +126,16 @@ impl ArithmeticExpr {
     
         match (&ans.last(), &self.elements.iter().nth(pos+1)) {
             (_, None) 
-            | (_, Some(&Elem::Word(_, _))) => return inc,
-            (Some(&Elem::Integer(_)), _)
-            | (Some(&Elem::Float(_)), _)   => ans.push(Elem::BinaryOp(pm.clone())),
-            _                              => ans.push(Elem::UnaryOp(pm.clone())),
+            | (_, Some(&ArithElem::Word(_, _))) => return inc,
+            (Some(&ArithElem::Integer(_)), _)
+            | (Some(&ArithElem::Float(_)), _)   => ans.push(ArithElem::BinaryOp(pm.clone())),
+            _                              => ans.push(ArithElem::UnaryOp(pm.clone())),
         }
-        ans.push(Elem::UnaryOp(pm));
+        ans.push(ArithElem::UnaryOp(pm));
         0
     }
 
-    fn decompose_increments(&mut self) -> Result<Vec<Elem>, String> {
+    fn decompose_increments(&mut self) -> Result<Vec<ArithElem>, String> {
         let mut ans = vec![];
         let mut pre_increment = 0;
 
@@ -143,14 +143,14 @@ impl ArithmeticExpr {
         for i in 0..len {
             let e = self.elements[i].clone();
             pre_increment = match e {
-                Elem::Word(_, _) => {
+                ArithElem::Word(_, _) => {
                     if pre_increment != 0 {
-                        ans.push(Elem::Increment(pre_increment));
+                        ans.push(ArithElem::Increment(pre_increment));
                     }
                     ans.push(e);
                     0
                 },
-                Elem::Increment(n) => self.preinc_to_unarys(&mut ans, i, n),
+                ArithElem::Increment(n) => self.preinc_to_unarys(&mut ans, i, n),
                 _ => {
                     ans.push(self.elements[i].clone());
                     0

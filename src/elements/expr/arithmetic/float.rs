@@ -2,25 +2,25 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error_message, ShellCore};
-use super::{Elem, word};
+use super::{ArithElem, word};
 
-pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<Elem>) -> Result<(), String> {
+pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), String> {
     match op {
-        "+"  => stack.push( Elem::Float(num) ),
-        "-"  => stack.push( Elem::Float(-num) ),
+        "+"  => stack.push( ArithElem::Float(num) ),
+        "-"  => stack.push( ArithElem::Float(-num) ),
         _ => return Err("not supported operator for float number".to_string()),
     }
     Ok(())
 }
 
 pub fn bin_calc(op: &str, left: f64, right: f64,
-                stack: &mut Vec<Elem>) -> Result<(), String> {
-    let bool_to_01 = |b| { if b { Elem::Integer(1) } else { Elem::Integer(0) } };
+                stack: &mut Vec<ArithElem>) -> Result<(), String> {
+    let bool_to_01 = |b| { if b { ArithElem::Integer(1) } else { ArithElem::Integer(0) } };
 
     match op {
-        "+"  => stack.push(Elem::Float(left + right)),
-        "-"  => stack.push(Elem::Float(left - right)),
-        "*"  => stack.push(Elem::Float(left * right)),
+        "+"  => stack.push(ArithElem::Float(left + right)),
+        "-"  => stack.push(ArithElem::Float(left - right)),
+        "*"  => stack.push(ArithElem::Float(left * right)),
         "<="  => stack.push(bool_to_01( left <= right )),
         ">="  => stack.push(bool_to_01( left >= right )),
         "<"  => stack.push(bool_to_01( left < right )),
@@ -31,12 +31,12 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
             if right == 0.0 {
                 return Err("divided by 0".to_string());
             }
-            stack.push(Elem::Float(left / right));
+            stack.push(ArithElem::Float(left / right));
         },
         "**" => {
             if right >= 0.0 {
                 let r = right.try_into().unwrap();
-                stack.push(Elem::Float(left.powf(r)));
+                stack.push(ArithElem::Float(left.powf(r)));
             }else{
                 return Err( error_message::exponent(&right.to_string()) );
             }
@@ -48,7 +48,7 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
 }
 
 pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut ShellCore)
-                                      -> Result<Elem, String> {
+                                      -> Result<ArithElem, String> {
     let new_value = match op {
         "+=" => cur + right,
         "-=" => cur - right,
@@ -63,7 +63,7 @@ pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut Shel
     };
 
     core.data.set_param(&name, &new_value.to_string());
-    Ok(Elem::Float(new_value))
+    Ok(ArithElem::Float(new_value))
 }
 
 pub fn parse(s: &str) -> Option<f64> {

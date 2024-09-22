@@ -4,7 +4,7 @@
 use crate::{error_message, ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
-use crate::elements::expr::conditional::{ConditionalExpr, Elem};
+use crate::elements::expr::conditional::{ConditionalExpr, CondElem};
 
 #[derive(Debug, Clone)]
 pub struct TestCommand {
@@ -17,8 +17,8 @@ pub struct TestCommand {
 impl Command for TestCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         match self.cond.clone().unwrap().eval(core) {
-            Ok(Elem::Ans(true))  => core.data.set_param("?", "0"),
-            Ok(Elem::Ans(false)) => core.data.set_param("?", "1"),
+            Ok(CondElem::Ans(true))  => core.data.set_param("?", "0"),
+            Ok(CondElem::Ans(false)) => core.data.set_param("?", "1"),
             Err(err_msg)  => {
                 error_message::print(&err_msg, core, true);
                 core.data.set_param("?", "2");

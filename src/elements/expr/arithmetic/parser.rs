@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
-use super::{ArithmeticExpr, Elem, int};
+use super::{ArithmeticExpr, ArithElem, int};
 
 impl ArithmeticExpr {
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
@@ -26,10 +26,10 @@ impl ArithmeticExpr {
     fn eat_incdec(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( Elem::Increment(1) );
+            ans.elements.push( ArithElem::Increment(1) );
         }else if feeder.starts_with("--") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( Elem::Increment(-1) );
+            ans.elements.push( ArithElem::Increment(-1) );
         }else {
             return false;
         };
@@ -49,7 +49,7 @@ impl ArithmeticExpr {
         }
 
         if ! feeder.starts_with(":") {
-            ans.elements.push(Elem::Ternary(Box::new(left), Box::new(None)));
+            ans.elements.push(ArithElem::Ternary(Box::new(left), Box::new(None)));
             return true;
         }
 
@@ -59,7 +59,7 @@ impl ArithmeticExpr {
             ans.text += &right.as_ref().unwrap().text;
         }
 
-        ans.elements.push(Elem::Ternary(Box::new(left), Box::new(right)));
+        ans.elements.push(ArithElem::Ternary(Box::new(left), Box::new(right)));
         true
     }
 
@@ -73,11 +73,11 @@ impl ArithmeticExpr {
         if let Some(w) = word.make_unquoted_word() {
             if word.text.find('\'').is_none() {
                 if let Some(n) = int::parse(&w) {
-                    ans.elements.push( Elem::Integer(n) );
+                    ans.elements.push( ArithElem::Integer(n) );
                     return true;
                 }
                 if let Ok(f) = w.parse::<f64>() {
-                    ans.elements.push( Elem::Float(f) );
+                    ans.elements.push( ArithElem::Float(f) );
                     return true;
                 }
             }
@@ -86,7 +86,7 @@ impl ArithmeticExpr {
         Self::eat_blank(feeder, ans, core);
 
         let suffix = Self::eat_suffix(feeder, ans);
-        ans.elements.push( Elem::Word(word, suffix) );
+        ans.elements.push( ArithElem::Word(word, suffix) );
         true
     }
 
@@ -106,10 +106,10 @@ impl ArithmeticExpr {
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
-            Some(Elem::Integer(_)) 
-            | Some(Elem::Float(_)) 
-            | Some(Elem::Word(_, _)) 
-            | Some(Elem::InParen(_)) => return false,
+            Some(ArithElem::Integer(_)) 
+            | Some(ArithElem::Float(_)) 
+            | Some(ArithElem::Word(_, _)) 
+            | Some(ArithElem::InParen(_)) => return false,
             _ => {},
         }
 
@@ -119,7 +119,7 @@ impl ArithmeticExpr {
         };
 
         ans.text += &s.clone();
-        ans.elements.push( Elem::UnaryOp(s) );
+        ans.elements.push( ArithElem::UnaryOp(s) );
         true
     }
 
@@ -136,7 +136,7 @@ impl ArithmeticExpr {
         }
 
         ans.text += &arith.as_ref().unwrap().text;
-        ans.elements.push( Elem::InParen(arith.unwrap()) );
+        ans.elements.push( ArithElem::InParen(arith.unwrap()) );
 
         ans.text += &feeder.consume(1);
         return true;
@@ -150,7 +150,7 @@ impl ArithmeticExpr {
 
         let s = feeder.consume(len);
         ans.text += &s.clone();
-        ans.elements.push( Elem::BinaryOp(s) );
+        ans.elements.push( ArithElem::BinaryOp(s) );
         true
     }
 

@@ -2,22 +2,22 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::elem;
-use super::elem::Elem;
+use super::elem::ArithElem;
 
-pub fn rearrange(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
+pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ArithElem> {
     let mut ans = vec![];
     let mut stack = vec![];
 
     for e in elements {
         match e {
-            Elem::BinaryOp(op) => match op.as_str() {
-                "&&" | "||" => ans.push(Elem::Delimiter(op.to_string())),
+            ArithElem::BinaryOp(op) => match op.as_str() {
+                "&&" | "||" => ans.push(ArithElem::Delimiter(op.to_string())),
                 _ => {},
             },
             _ => {},
         }
         let ok = match e {
-            Elem::Float(_) | Elem::Integer(_) | Elem::Word(_, _) | Elem::InParen(_)
+            ArithElem::Float(_) | ArithElem::Integer(_) | ArithElem::Word(_, _) | ArithElem::InParen(_)
                              => {ans.push(e.clone()); true},
             op               => rev_polish_op(&op, &mut stack, &mut ans),
         };
@@ -34,8 +34,8 @@ pub fn rearrange(elements: &[Elem]) -> Result<Vec<Elem>, Elem> {
     Ok(ans)
 }
 
-fn rev_polish_op(elem: &Elem,
-                 stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
+fn rev_polish_op(elem: &ArithElem,
+                 stack: &mut Vec<ArithElem>, ans: &mut Vec<ArithElem>) -> bool {
     loop {
         match stack.last() {
             None => {

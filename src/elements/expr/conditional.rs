@@ -4,10 +4,12 @@
 use crate::{error_message, ShellCore, Feeder};
 use crate::utils::file_check;
 use crate::elements::word::Word;
+use super::arithmetic::word;
+use super::arithmetic::elem::ArithElem;
 use std::env;
 
 #[derive(Debug, Clone)]
-pub enum Elem {
+pub enum CondElem {
     UnaryOp(String),
     BinaryOp(String),
     Word(Word),
@@ -19,42 +21,42 @@ pub enum Elem {
     Ans(bool),
 }
 
-fn op_order(op: &Elem) -> u8 {
+fn op_order(op: &CondElem) -> u8 {
     match op {
-        Elem::UnaryOp(_) => 14,
-        Elem::BinaryOp(_) => 13,
-        Elem::Not => 12,
-        //Elem::And | Elem::Or => 12,
+        CondElem::UnaryOp(_) => 14,
+        CondElem::BinaryOp(_) => 13,
+        CondElem::Not => 12,
+        //CondElem::And | CondElem::Or => 12,
         _ => 0,
     }
 }
 
-pub fn to_string(op: &Elem) -> String {
+pub fn to_string(op: &CondElem) -> String {
     match op {
-        Elem::UnaryOp(op) => op.to_string(),
-        Elem::BinaryOp(op) => op.to_string(),
-        Elem::InParen(expr) => expr.text.clone(),
-        Elem::Word(w) => w.text.clone(),
-        Elem::Operand(op) => op.to_string(),
-        Elem::Not => "!".to_string(),
-        Elem::And => "&&".to_string(),
-        Elem::Or => "||".to_string(),
-        Elem::Ans(true) => "true".to_string(),
-        Elem::Ans(false) => "false".to_string(),
+        CondElem::UnaryOp(op) => op.to_string(),
+        CondElem::BinaryOp(op) => op.to_string(),
+        CondElem::InParen(expr) => expr.text.clone(),
+        CondElem::Word(w) => w.text.clone(),
+        CondElem::Operand(op) => op.to_string(),
+        CondElem::Not => "!".to_string(),
+        CondElem::And => "&&".to_string(),
+        CondElem::Or => "||".to_string(),
+        CondElem::Ans(true) => "true".to_string(),
+        CondElem::Ans(false) => "false".to_string(),
     }
 }
 
-fn to_operand(w: &Word, core: &mut ShellCore) -> Result<Elem, String> {
+fn to_operand(w: &Word, core: &mut ShellCore) -> Result<CondElem, String> {
     match w.eval_as_value(core) {
-        Some(v) => Ok(Elem::Operand(v)),
+        Some(v) => Ok(CondElem::Operand(v)),
         None => return Err(format!("{}: wrong substitution", &w.text)),
     }
 }
 
-fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, String> {
+fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<CondElem, String> {
     match stack.pop() {
-        Some(Elem::InParen(mut expr)) => expr.eval(core),
-        Some(Elem::Word(w)) => to_operand(&w, core),
+        Some(CondElem::InParen(mut expr)) => expr.eval(core),
+        Some(CondElem::Word(w)) => to_operand(&w, core),
         Some(elem) => Ok(elem),
         None => return Err("no operand".to_string()),
     }
@@ -63,17 +65,17 @@ fn pop_operand(stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<Elem, Stri
 #[derive(Debug, Clone)]
 pub struct ConditionalExpr {
     pub text: String,
-    elements: Vec<Elem>,
+    elements: Vec<CondElem>,
 }
 
 impl ConditionalExpr {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Elem, String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<CondElem, String> {
         let mut from = 0;
         let mut next = true;
-        let mut last = Elem::Ans(true);
+        let mut last = CondElem::Ans(true);
         for i in 0..self.elements.len() {
             match self.elements[i] {
-                Elem::And | Elem::Or => {
+                CondElem::And | CondElem::Or => {
                     if next {
                         last = match Self::calculate(&self.elements[from..i], core) {
                             Ok(elem) => elem, 
@@ -83,8 +85,8 @@ impl ConditionalExpr {
                     from = i + 1;
 
                     next = match (&self.elements[i], &last) {
-                        (Elem::And, Elem::Ans(ans)) => *ans,
-                        (Elem::Or, Elem::Ans(ans))  => !ans,
+                        (CondElem::And, CondElem::Ans(ans)) => *ans,
+                        (CondElem::Or, CondElem::Ans(ans))  => !ans,
                         _ => panic!("SUSH INTERNAL ERROR"),
                     };
                 },
@@ -95,7 +97,7 @@ impl ConditionalExpr {
         Ok(last)
     }
 
-    fn calculate(elems: &[Elem], core: &mut ShellCore) -> Result<Elem, String> {
+    fn calculate(elems: &[CondElem], core: &mut ShellCore) -> Result<CondElem, String> {
         let rev_pol = match Self::rev_polish(elems) {
             Ok(ans) => ans,
             Err(e) => return Err(e),
@@ -106,18 +108,18 @@ impl ConditionalExpr {
         };
     
         match pop_operand(&mut stack, core) {
-            Ok(Elem::Operand(s))  => Ok(Elem::Ans(s.len() > 0)), //for [[ string ]]
+            Ok(CondElem::Operand(s))  => Ok(CondElem::Ans(s.len() > 0)), //for [[ string ]]
             other_ans             => other_ans,
         }
     }
 
-    fn rev_polish(elems: &[Elem]) -> Result<Vec<Elem>, String> {
+    fn rev_polish(elems: &[CondElem]) -> Result<Vec<CondElem>, String> {
         let mut ans = vec![];
         let mut stack = vec![];
     
         for e in elems {
             let ok = match e {
-                Elem::Word(_) | Elem::InParen(_) => {ans.push(e.clone()); true},
+                CondElem::Word(_) | CondElem::InParen(_) => {ans.push(e.clone()); true},
                 op               => Self::rev_polish_op(&op, &mut stack, &mut ans),
             };
     
@@ -134,25 +136,25 @@ impl ConditionalExpr {
         Ok(ans)
     }
 
-    fn reduce(rev_pol: &[Elem], core: &mut ShellCore) -> Result<Vec<Elem>, String> {
+    fn reduce(rev_pol: &[CondElem], core: &mut ShellCore) -> Result<Vec<CondElem>, String> {
         let mut stack = vec![];
 
         for e in rev_pol {
             let result = match e { 
-                Elem::Word(_) | Elem::InParen(_) => {
+                CondElem::Word(_) | CondElem::InParen(_) => {
                     stack.push(e.clone());
                     Ok(())
                 },
-                Elem::UnaryOp(ref op) => Self::unary_operation(&op, &mut stack, core),
-                Elem::BinaryOp(ref op) => {
+                CondElem::UnaryOp(ref op) => Self::unary_operation(&op, &mut stack, core),
+                CondElem::BinaryOp(ref op) => {
                     if stack.len() == 0 {
-                        return Ok(vec![Elem::Ans(true)]); //for [[ -ot ]] [[ == ]] [[ = ]] ...
+                        return Ok(vec![CondElem::Ans(true)]); //for [[ -ot ]] [[ == ]] [[ = ]] ...
                     }
                     Self::bin_operation(&op, &mut stack, core)
                 },
-                Elem::Not => match pop_operand(&mut stack, core) {
-                    Ok(Elem::Ans(res)) => {
-                        stack.push(Elem::Ans(!res));
+                CondElem::Not => match pop_operand(&mut stack, core) {
+                    Ok(CondElem::Ans(res)) => {
+                        stack.push(CondElem::Ans(!res));
                         Ok(())
                     },
                     _ => Err("no operand to negate".to_string()),
@@ -179,9 +181,9 @@ impl ConditionalExpr {
         Ok(stack)
     }
 
-    fn unary_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
+    fn unary_operation(op: &str, stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), String> {
         let operand = match pop_operand(stack, core) {
-            Ok(Elem::Operand(v))  => v,
+            Ok(CondElem::Operand(v))  => v,
             Ok(_)  => return Err("unknown operand".to_string()), 
             Err(e) => return Err(e + " to conditional unary operator"),
         };
@@ -195,22 +197,22 @@ impl ConditionalExpr {
                 _    => false,
             };
 
-            stack.push( Elem::Ans(ans) );
+            stack.push( CondElem::Ans(ans) );
             return Ok(());
         }
 
         Self::unary_file_check(op, &operand, stack)
     }
 
-    fn bin_operation(op: &str, stack: &mut Vec<Elem>, core: &mut ShellCore) -> Result<(), String> {
+    fn bin_operation(op: &str, stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), String> {
         let right = match pop_operand(stack, core) {
-            Ok(Elem::Operand(name)) => name,
+            Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err("Invalid operand".to_string()),
             Err(e) => return Err(e),
         };
     
         let left = match pop_operand(stack, core) {
-            Ok(Elem::Operand(name)) => name,
+            Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err("Invalid operand".to_string()),
             Err(e) => return Err(e),
         };
@@ -224,29 +226,42 @@ impl ConditionalExpr {
                 _    => false,
             };
 
-            stack.push( Elem::Ans(ans) );
+            stack.push( CondElem::Ans(ans) );
             return Ok(());
         }
 
         if op == "-eq" || op == "-ne" || op == "-lt" || op == "-le" || op == "-gt" || op == "-ge" {
+            let lnum = match word::str_to_num(&left, core) {
+                Ok(ArithElem::Integer(n)) => n,
+                Ok(_) => return Err("non integer number is not supported".to_string()),
+                Err(msg) => return Err(msg),
+            };
+            let rnum = match word::str_to_num(&right, core) {
+                Ok(ArithElem::Integer(n)) => n,
+                Ok(_) => return Err("non integer number is not supported".to_string()),
+                Err(msg) => return Err(msg),
+            };
+
             let ans = match op {
-                "==" | "=" => left == right,
-                "!="       => left != right,
-                ">"        => left > right,
-                "<"        => left < right,
+                "-eq" => lnum == rnum,
+                "-ne" => lnum != rnum,
+                "-lt" => lnum < rnum,
+                "-le" => lnum <= rnum,
+                "-gt" => lnum > rnum,
+                "-ge" => lnum >= rnum,
                 _    => false,
             };
 
-            stack.push( Elem::Ans(ans) );
+            stack.push( CondElem::Ans(ans) );
             return Ok(());
         }
 
         let result = file_check::metadata_comp(&left, &right, op);
-        stack.push( Elem::Ans(result) );
+        stack.push( CondElem::Ans(result) );
         Ok(())
     }
 
-    fn unary_file_check(op: &str, s: &String, stack: &mut Vec<Elem>) -> Result<(), String> {
+    fn unary_file_check(op: &str, s: &String, stack: &mut Vec<CondElem>) -> Result<(), String> {
         let result = match op {
             "-a" | "-e"  => file_check::exists(s),
             "-d"  => file_check::is_dir(s),
@@ -261,12 +276,12 @@ impl ConditionalExpr {
             _  => return Err("unsupported option".to_string()),
         };
 
-        stack.push( Elem::Ans(result) );
+        stack.push( CondElem::Ans(result) );
         Ok(())
     }
 
-    fn rev_polish_op(elem: &Elem,
-                     stack: &mut Vec<Elem>, ans: &mut Vec<Elem>) -> bool {
+    fn rev_polish_op(elem: &CondElem,
+                     stack: &mut Vec<CondElem>, ans: &mut Vec<CondElem>) -> bool {
         loop {
             match stack.last() {
                 None => {
@@ -304,7 +319,7 @@ impl ConditionalExpr {
         match Word::parse(feeder, core, false) {
             Some(w) => {
                 ans.text += &w.text.clone();
-                ans.elements.push(Elem::Word(w));
+                ans.elements.push(CondElem::Word(w));
 
                 true
             },
@@ -320,7 +335,7 @@ impl ConditionalExpr {
 
         let opt = feeder.consume(len);
         ans.text += &opt.clone();
-        ans.elements.push(Elem::BinaryOp(opt));
+        ans.elements.push(CondElem::BinaryOp(opt));
 
         true
     }
@@ -333,7 +348,7 @@ impl ConditionalExpr {
 
         let opt = feeder.consume(len);
         ans.text += &opt.clone();
-        ans.elements.push(Elem::UnaryOp(opt));
+        ans.elements.push(CondElem::UnaryOp(opt));
 
         true
     }
@@ -341,17 +356,17 @@ impl ConditionalExpr {
     fn eat_not_and_or(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_with("!") {
             ans.text += &feeder.consume(1);
-            ans.elements.push( Elem::Not );
+            ans.elements.push( CondElem::Not );
             return true;
         }
         if feeder.starts_with("&&") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( Elem::And );
+            ans.elements.push( CondElem::And );
             return true;
         }
         if feeder.starts_with("||") {
             ans.text += &feeder.consume(2);
-            ans.elements.push( Elem::Or );
+            ans.elements.push( CondElem::Or );
             return true;
         }
 
@@ -361,7 +376,7 @@ impl ConditionalExpr {
     fn eat_paren(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(e) = ans.elements.last() {
             match e {
-                Elem::UnaryOp(_) => {
+                CondElem::UnaryOp(_) => {
                     return false
                 },
                 _ => {},
@@ -384,7 +399,7 @@ impl ConditionalExpr {
         }
 
         ans.text += &expr.text.clone();
-        ans.elements.push( Elem::InParen(expr) );
+        ans.elements.push( CondElem::InParen(expr) );
         ans.text += &feeder.consume(1);
         true
     }
@@ -410,7 +425,7 @@ impl ConditionalExpr {
                     return None;
                 }
 
-                ans.elements.push(Elem::And);
+                ans.elements.push(CondElem::And);
                 return Some(ans);
             }
 
