@@ -228,6 +228,19 @@ impl ConditionalExpr {
             return Ok(());
         }
 
+        if op == "-eq" || op == "-ne" || op == "-lt" || op == "-le" || op == "-gt" || op == "-ge" {
+            let ans = match op {
+                "==" | "=" => left == right,
+                "!="       => left != right,
+                ">"        => left > right,
+                "<"        => left < right,
+                _    => false,
+            };
+
+            stack.push( Elem::Ans(ans) );
+            return Ok(());
+        }
+
         let result = file_check::metadata_comp(&left, &right, op);
         stack.push( Elem::Ans(result) );
         Ok(())
