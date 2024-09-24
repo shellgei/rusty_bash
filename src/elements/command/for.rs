@@ -176,7 +176,7 @@ impl ForCommand {
                 }
             }
 
-            let a = ArithmeticExpr::parse(feeder, core);
+            let a = ArithmeticExpr::parse(feeder, core, true);
             if a.is_some() {
                 ans.text += &a.as_ref().unwrap().text.clone();
             }

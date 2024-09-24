@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error_message, ShellCore, Feeder};
-use super::{ArithElem, float, int, Word};
+use super::{ArithElem, ArithmeticExpr, float, int, Word};
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, String> {
@@ -45,6 +45,10 @@ fn is_name(s: &str, core: &mut ShellCore) -> bool {
     s.len() > 0 && f.scanner_name(core) == s.len()
 }
 
+fn is_simple_arithmetic(s: &str) -> bool {
+    s.chars().all(|c| ('0' < c && c < '9') || "+-*/ ".contains(c) )
+}
+
 pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
     let mut name = name.to_string();
 
@@ -65,8 +69,29 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
         Ok( ArithElem::Integer(n) )
     }else if is_name(&name, core) {
         Ok( ArithElem::Integer(0) )
-    } else if let Some(f) = float::parse(&name) {
+    }else if let Some(f) = float::parse(&name) {
         Ok( ArithElem::Float(f) )
+    }else if is_simple_arithmetic(&name) {
+        let mut f = Feeder::new(&name);
+        match ArithmeticExpr::parse(&mut f, core, false) {
+            Some(mut e) => {
+                if f.len() != 0 {
+                    return Err(error_message::syntax(&name));
+                }
+                if let Some(s) = e.eval(core) {
+                    if let Some(n) = int::parse(&s) {
+                        Ok( ArithElem::Integer(n) )
+                    }else if let Some(f) = float::parse(&s) {
+                        Ok( ArithElem::Float(f) )
+                    }else{
+                        Err(error_message::syntax(&name))
+                    }
+                }else{
+                    Err(error_message::syntax(&name))
+                }
+            },
+            None => Err(error_message::syntax(&name)),
+        }
     }else{
         Err(error_message::syntax(&name))
     }

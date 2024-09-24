@@ -43,7 +43,7 @@ impl ArithmeticExpr {
         }
 
         ans.text += &feeder.consume(1);
-        let left = Self::parse(feeder, core);
+        let left = Self::parse(feeder, core, true);
         if left.is_some() {
             ans.text += &left.as_ref().unwrap().text;
         }
@@ -54,7 +54,7 @@ impl ArithmeticExpr {
         }
 
         ans.text += &feeder.consume(1);
-        let right = Self::parse(feeder, core);
+        let right = Self::parse(feeder, core, true);
         if right.is_some() {
             ans.text += &right.as_ref().unwrap().text;
         }
@@ -130,7 +130,7 @@ impl ArithmeticExpr {
 
         ans.text += &feeder.consume(1);
 
-        let arith = Self::parse(feeder, core);
+        let arith = Self::parse(feeder, core, true);
         if arith.is_none() || ! feeder.starts_with(")") {
             return false;
         }
@@ -154,7 +154,7 @@ impl ArithmeticExpr {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ArithmeticExpr> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, addline: bool) -> Option<ArithmeticExpr> {
         let mut ans = ArithmeticExpr::new();
 
         loop {
@@ -174,11 +174,10 @@ impl ArithmeticExpr {
                 continue;
             }
 
-            if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
+            if ! addline || feeder.len() != 0 || ! feeder.feed_additional_line(core) {
                 break;
             }
         }
-
         return Some(ans);
     }
 }

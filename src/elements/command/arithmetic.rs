@@ -60,7 +60,7 @@ impl ArithmeticCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
 
-        if let Some(c) = ArithmeticExpr::parse(feeder, core) {
+        if let Some(c) = ArithmeticExpr::parse(feeder, core, true) {
             if feeder.starts_with("))") {
                 ans.text += &c.text;
                 ans.text += &feeder.consume(2);
