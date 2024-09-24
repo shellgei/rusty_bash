@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error_message, ShellCore, Feeder};
-use super::{ArithElem, ArithmeticExpr, float, int, Word};
+use super::{ArithElem, float, int, Word};
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, String> {
@@ -45,10 +45,6 @@ fn is_name(s: &str, core: &mut ShellCore) -> bool {
     s.len() > 0 && f.scanner_name(core) == s.len()
 }
 
-fn is_simple_arithmetic(s: &str) -> bool {
-    s.chars().all(|c| ('0' < c && c < '9') || "~%<>!^|&?=,+-*/ .".contains(c) )
-}
-
 pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
     let mut name = name.to_string();
 
@@ -63,28 +59,6 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
         if i == RESOLVE_LIMIT - 1 {
             return Err(error_message::recursion(&name));
         }
-    }
-
-    if let Some(n) = int::parse(&name) {
-        return Ok( ArithElem::Integer(n) );
-    }else if let Some(f) = float::parse(&name) {
-        return Ok( ArithElem::Float(f) );
-    }
-
-    if is_simple_arithmetic(&name) {
-        let mut f = Feeder::new(&name);
-        name = match ArithmeticExpr::parse(&mut f, core, false) {
-            Some(mut e) => {
-                if f.len() != 0 {
-                    return Err(error_message::syntax(&name));
-                }
-                match e.eval(core) {
-                    Some(s) => s,
-                    None => return Err(error_message::syntax(&name)),
-                }
-            },
-            None => return Err(error_message::syntax(&name)),
-        };
     }
 
     if let Some(n) = int::parse(&name) {

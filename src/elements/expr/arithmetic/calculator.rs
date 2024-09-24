@@ -83,13 +83,11 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
                 continue;
         }
 
-        /*
-        dbg!("{:?}", &stack);
-        dbg!("{:?}", &e);
-        */
-
         let result = match e {
-            ArithElem::Integer(_) | ArithElem::Float(_) | ArithElem::Word(_, _) | ArithElem::InParen(_) => {
+            ArithElem::Integer(_) 
+            | ArithElem::Float(_) 
+            | ArithElem::Word(_, _) 
+            | ArithElem::InParen(_) => {
                 stack.push(e.clone());
                 Ok(())
             },

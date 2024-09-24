@@ -81,6 +81,15 @@ impl ArithmeticExpr {
                     return true;
                 }
             }
+            if word.text.starts_with("\"") && word.text.ends_with("\"") {
+                let mut f = Feeder::new(&w);
+                if let Some(e) = ArithmeticExpr::parse(&mut f, core, false) {
+                    if e.elements.len() != 1 && f.len() == 0 {
+                        ans.elements.push( ArithElem::InParen(e) );
+                        return true;
+                    }
+                }
+            }
         }
 
         Self::eat_blank(feeder, ans, core);
