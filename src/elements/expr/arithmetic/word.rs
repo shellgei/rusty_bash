@@ -46,7 +46,7 @@ fn is_name(s: &str, core: &mut ShellCore) -> bool {
 }
 
 fn is_simple_arithmetic(s: &str) -> bool {
-    s.chars().all(|c| ('0' < c && c < '9') || "+-*/ ".contains(c) )
+    s.chars().all(|c| ('0' < c && c < '9') || "~%<>!^|&?=,+-*/ .".contains(c) )
 }
 
 pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
@@ -66,32 +66,33 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
     }
 
     if let Some(n) = int::parse(&name) {
+        return Ok( ArithElem::Integer(n) );
+    }else if let Some(f) = float::parse(&name) {
+        return Ok( ArithElem::Float(f) );
+    }
+
+    if is_simple_arithmetic(&name) {
+        let mut f = Feeder::new(&name);
+        name = match ArithmeticExpr::parse(&mut f, core, false) {
+            Some(mut e) => {
+                if f.len() != 0 {
+                    return Err(error_message::syntax(&name));
+                }
+                match e.eval(core) {
+                    Some(s) => s,
+                    None => return Err(error_message::syntax(&name)),
+                }
+            },
+            None => return Err(error_message::syntax(&name)),
+        };
+    }
+
+    if let Some(n) = int::parse(&name) {
         Ok( ArithElem::Integer(n) )
     }else if is_name(&name, core) {
         Ok( ArithElem::Integer(0) )
     }else if let Some(f) = float::parse(&name) {
         Ok( ArithElem::Float(f) )
-    }else if is_simple_arithmetic(&name) {
-        let mut f = Feeder::new(&name);
-        match ArithmeticExpr::parse(&mut f, core, false) {
-            Some(mut e) => {
-                if f.len() != 0 {
-                    return Err(error_message::syntax(&name));
-                }
-                if let Some(s) = e.eval(core) {
-                    if let Some(n) = int::parse(&s) {
-                        Ok( ArithElem::Integer(n) )
-                    }else if let Some(f) = float::parse(&s) {
-                        Ok( ArithElem::Float(f) )
-                    }else{
-                        Err(error_message::syntax(&name))
-                    }
-                }else{
-                    Err(error_message::syntax(&name))
-                }
-            },
-            None => Err(error_message::syntax(&name)),
-        }
     }else{
         Err(error_message::syntax(&name))
     }
