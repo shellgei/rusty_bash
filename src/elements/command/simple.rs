@@ -8,7 +8,6 @@ use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
-use crate::error::{ArgListTooLong, Error};
 use nix::unistd;
 use std::ffi::CString;
 use std::{env, process};
@@ -96,7 +95,7 @@ impl SimpleCommand {
         let cargs = Self::to_cargs(&self.args);
 
         match unistd::execvp(&cargs[0], &cargs) {
-            Err(Errno::E2BIG) => ArgListTooLong::end(&self.args[0], core),
+            Err(Errno::E2BIG) => error_message::arg_list_too_long(&self.args[0], core),
             Err(Errno::EACCES) => {
                 eprintln!("sush: {}: Permission denied", &self.args[0]);
                 process::exit(126)
