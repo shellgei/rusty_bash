@@ -79,7 +79,7 @@ impl Command for SimpleCommand {
         core.data.pop_local();
 
         if fork {
-            core.exit();
+            exit::normal(core);
         }
     }
 

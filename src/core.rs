@@ -21,7 +21,7 @@ use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
 use nix::unistd::Pid;
-use crate::utils::error;
+use crate::utils::{error, exit};
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -221,7 +221,7 @@ impl ShellCore {
         if self.data.get_param("?") != "0" 
         && self.data.flags.contains("e") 
         && ! self.suspend_e_option {
-            self.exit();
+            exit::normal(self);
         }
     }
 
@@ -286,6 +286,7 @@ impl ShellCore {
         false
     }
 
+    /*
     pub fn exit(&mut self) -> ! {
         self.write_history_to_file();
 
@@ -301,6 +302,7 @@ impl ShellCore {
     
         process::exit(exit_status)
     }
+    */
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();

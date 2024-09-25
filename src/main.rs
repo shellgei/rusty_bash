@@ -16,7 +16,7 @@ use crate::core::{builtins, ShellCore};
 use crate::elements::io;
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
-use utils::file_check;
+use utils::{exit, file_check};
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");
@@ -113,7 +113,7 @@ fn main() {
 
     if c_flag {
         main_c_option(&mut core, &script);
-        core.exit();
+        exit::normal(&mut core);
     }
 
     read_rc_file(&mut core);
@@ -159,7 +159,7 @@ fn main_loop(core: &mut ShellCore) {
         core.sigint.store(false, Relaxed);
     }
     core.write_history_to_file();
-    core.exit();
+    exit::normal(core);
 }
 
 fn main_c_option(core: &mut ShellCore, script: &String) {
@@ -168,5 +168,5 @@ fn main_c_option(core: &mut ShellCore, script: &String) {
     if let Some(mut s) = Script::parse(&mut feeder, core, false){
         s.exec(core);
     }
-    core.exit();
+    exit::normal(core)
 }

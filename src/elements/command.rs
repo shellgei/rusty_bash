@@ -13,6 +13,7 @@ pub mod r#while;
 pub mod r#if;
 
 use crate::{ShellCore, Feeder, Script};
+use crate::utils::exit;
 use self::arithmetic::ArithmeticCommand;
 use self::case::CaseCommand;
 use self::simple::SimpleCommand;
@@ -58,7 +59,7 @@ pub trait Command {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
                 self.run(core, true);
-                core.exit()
+                exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
                 core.set_pgid(child, pipe.pgid);

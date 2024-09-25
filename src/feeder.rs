@@ -6,6 +6,7 @@ mod scanner;
 
 use std::{io, process};
 use crate::ShellCore;
+use crate::utils::exit;
 use std::sync::atomic::Ordering::Relaxed;
 
 pub enum InputError {
@@ -111,7 +112,7 @@ impl Feeder {
 
                 match core.data.flags.contains('S') { //S: on source command
                     true  => return false,
-                    false => core.exit(),
+                    false => exit::normal(core),
                 }
             },
             Err(InputError::Interrupt) => {
