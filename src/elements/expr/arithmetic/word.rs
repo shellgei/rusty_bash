@@ -1,7 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{utils::error, ShellCore, Feeder};
+use crate::{ShellCore, Feeder};
+use crate::utils::{error, exit};
 use super::{ArithElem, float, int, Word};
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
@@ -95,7 +96,7 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
                 false => Ok(ArithElem::Float(n)),
             }
         },
-        Ok(_) => error::internal("unknown element"),
+        Ok(_) => exit::internal("unknown element"),
         Err(err_msg) => return Err(err_msg), 
     }
 }
@@ -145,7 +146,7 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
     let right_str = match right_value {
         ArithElem::Integer(n) => n.to_string(),
         ArithElem::Float(f)   => f.to_string(),
-        _ => error::internal("not a value"),
+        _ => exit::internal("not a value"),
     };
 
     match op {

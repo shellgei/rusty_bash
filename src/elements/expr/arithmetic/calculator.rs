@@ -1,7 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{utils::error, ShellCore};
+use crate::ShellCore;
+use crate::utils::{error, exit};
 use super::elem::ArithElem;
 use super::{elem, float, int, rev_polish, trenary, word};
 
@@ -43,7 +44,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
         (ArithElem::Float(fl), ArithElem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack),
         (ArithElem::Integer(nl), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack),
         (ArithElem::Integer(nl), ArithElem::Integer(nr)) => int::bin_calc(op, nl, nr, stack),
-        _ => error::internal("invalid operand"),
+        _ => exit::internal("invalid operand"),
     };
 }
 
@@ -56,7 +57,7 @@ fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -
     match operand {
         ArithElem::Float(num)   => float::unary_calc(op, num, stack),
         ArithElem::Integer(num) => int::unary_calc(op, num ,stack),
-        _ => error::internal("unknown operand"),
+        _ => exit::internal("unknown operand"),
     }
 }
 

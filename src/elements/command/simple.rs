@@ -4,7 +4,7 @@
 pub mod parser;
 
 use crate::ShellCore;
-use crate::utils::{error, exit};
+use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
@@ -103,7 +103,7 @@ impl SimpleCommand {
                 eprintln!("Failed to execute. {:?}", err);
                 process::exit(127)
             }
-            _ => error::internal("never come here")
+            _ => exit::internal("never come here")
         }
     }
 

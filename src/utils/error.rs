@@ -15,13 +15,14 @@ pub fn print(s: &str, core: &mut ShellCore, show_sush: bool) {
     }
 }
 
+/*
 pub fn internal_str(s: &str) -> String {
     format!("SUSH INTERNAL ERROR: {}", s)
 }
 
 pub fn internal(s: &str) -> ! {
     panic!("{}", internal_str(s))
-}
+}*/
 
 pub fn exponent(s: &str) -> String {
     format!("exponent less than 0 (error token is \"{}\")", s)

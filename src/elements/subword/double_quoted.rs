@@ -1,7 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{utils::error, ShellCore, Feeder};
+use crate::{ShellCore, Feeder};
+use crate::utils::exit;
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
@@ -187,7 +188,7 @@ impl DoubleQuoted {
 //                eprintln!("{:?}", &ans);
                 return Some(ans);
             }else if feeder.len() > 0 {
-                error::internal("unknown chars in double quoted word");
+                exit::internal("unknown chars in double quoted word");
             }else if ! feeder.feed_additional_line(core) {
                 return None;
             }

@@ -1,7 +1,8 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{utils::error, ShellCore, Feeder, Script};
+use crate::{ShellCore, Feeder, Script};
+use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use nix::unistd::Pid;
@@ -20,12 +21,12 @@ impl Command for ParenCommand {
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
         if ! fork {
-            error::internal(" (no fork for subshell)");
+            exit::internal(" (no fork for subshell)");
         }
 
         match self.script {
             Some(ref mut s) => s.exec(core),
-            _ => error::internal(" (ParenCommand::exec)"),
+            _ => exit::internal(" (ParenCommand::exec)"),
         }
     }
 

@@ -10,7 +10,8 @@ pub mod word;
 mod int;
 mod float;
 
-use crate::{utils::error, ShellCore};
+use crate::ShellCore;
+use crate::utils::{error, exit};
 use self::calculator::calculate;
 use self::elem::ArithElem;
 use crate::elements::word::Word;
@@ -32,7 +33,7 @@ impl ArithmeticExpr {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
             },
-            _ => error::internal("invalid calculation result"),
+            _ => exit::internal("invalid calculation result"),
         }
     }
 

@@ -38,3 +38,7 @@ pub fn permission_denied(command_name: &str, core: &mut ShellCore) -> ! {
 pub fn not_found(command_name: &str, core: &mut ShellCore) -> ! {
     command_error_exit(command_name, core, "command not found", 127)
 }
+
+pub fn internal(s: &str) -> ! {
+    panic!("SUSH INTERNAL ERROR: {}", s)
+}

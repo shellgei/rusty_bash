@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{utils::error, Feeder, ShellCore};
+use crate::{Feeder, ShellCore};
 use super::command;
 use super::command::Command;
 use super::Pipe;
@@ -43,7 +43,7 @@ impl Pipeline {
             p.set(prev, pgid);
             pids.push(self.commands[i].exec(core, p));
             if i == 0 && pgid.as_raw() == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
-                pgid = pids[0].expect(&error::internal_str("unforked in pipeline"));
+                pgid = pids[0].unwrap();
             }
             prev = p.recv;
             core.word_eval_error = false;

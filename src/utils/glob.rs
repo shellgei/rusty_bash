@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::utils::error;
+use crate::utils::exit;
 
 #[derive(Debug)]
 enum Wildcard {
@@ -83,7 +83,7 @@ fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
         '+' => ext_more_than_zero(cands, patterns),
         '@' => ext_once(cands, patterns),
         '!' => ext_not(cands, patterns),
-        _   => error::internal("unknown extglob prefix"),
+        _   => exit::internal("unknown extglob prefix"),
     }
 }
 

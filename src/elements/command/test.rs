@@ -1,10 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{utils::error, ShellCore, Feeder};
+use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::conditional::{ConditionalExpr, CondElem};
+use crate::utils::error;
 
 #[derive(Debug, Clone)]
 pub struct TestCommand {
