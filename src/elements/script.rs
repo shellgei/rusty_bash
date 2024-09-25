@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::{error, Feeder, ShellCore};
+use crate::{utils::error, Feeder, ShellCore};
 
 enum Status{
     UnexpectedSymbol(String),

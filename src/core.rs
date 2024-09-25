@@ -21,7 +21,7 @@ use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
 use nix::unistd::Pid;
-use crate::error;
+use crate::utils::error;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -133,11 +133,6 @@ impl ShellCore {
         self.data.set_param("?", "0");
         self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
-
-/*
-    pub fn has_flag(&self, flag: char) -> bool {
-        self.data.flags.find(flag) != None 
-    }*/
 
     pub fn wait_process(&mut self, child: Pid) -> WaitStatus {
         let waitflags = match self.is_subshell {

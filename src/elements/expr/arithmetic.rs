@@ -10,7 +10,7 @@ pub mod word;
 mod int;
 mod float;
 
-use crate::{error, ShellCore};
+use crate::{utils::error, ShellCore};
 use self::calculator::calculate;
 use self::elem::ArithElem;
 use crate::elements::word::Word;

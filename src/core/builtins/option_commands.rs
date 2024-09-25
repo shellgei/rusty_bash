@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, ShellCore};
+use crate::{utils::error, ShellCore};
 use crate::core::data::Value;
 
 fn print_data(k: &str, core: &mut ShellCore) {

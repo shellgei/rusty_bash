@@ -3,7 +3,8 @@
 
 pub mod parser;
 
-use crate::{error, ShellCore};
+use crate::ShellCore;
+use crate::utils::{error, exit};
 use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
@@ -95,7 +96,7 @@ impl SimpleCommand {
         let cargs = Self::to_cargs(&self.args);
 
         match unistd::execvp(&cargs[0], &cargs) {
-            Err(Errno::E2BIG) => error::arg_list_too_long(&self.args[0], core),
+            Err(Errno::E2BIG) => exit::arg_list_too_long(&self.args[0], core),
             Err(Errno::EACCES) => {
                 eprintln!("sush: {}: Permission denied", &self.args[0]);
                 process::exit(126)

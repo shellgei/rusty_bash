@@ -4,7 +4,6 @@
 mod core;
 mod feeder;
 mod elements;
-mod error;
 mod signal;
 mod utils;
 

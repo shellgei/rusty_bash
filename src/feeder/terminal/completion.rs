@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, file_check, Feeder, ShellCore, utils};
+use crate::{utils::error, file_check, Feeder, ShellCore, utils};
 use crate::core::builtins::completion;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;

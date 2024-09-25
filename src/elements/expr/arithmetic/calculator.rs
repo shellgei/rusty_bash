@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, ShellCore};
+use crate::{utils::error, ShellCore};
 use super::elem::ArithElem;
 use super::{elem, float, int, rev_polish, trenary, word};
 

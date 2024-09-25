@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, ShellCore, Feeder};
+use crate::{utils::error, ShellCore, Feeder};
 use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
 

@@ -6,7 +6,7 @@ use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::elements::io;
 use crate::elements::word::Word;
-use crate::{error, Feeder, ShellCore};
+use crate::{utils::error, Feeder, ShellCore};
 
 #[derive(Debug, Clone)]
 pub struct Redirect {

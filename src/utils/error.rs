@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use std::process;
 
 pub fn print(s: &str, core: &mut ShellCore, show_sush: bool) {
     let name = core.data.get_param("0");
@@ -42,10 +41,4 @@ pub fn syntax(token: &str) -> String {
 
 pub fn syntax_in_cond_expr(token: &str) -> String {
     format!("syntax error in conditional expression: unexpected token `{}'", token)
-}
-
-pub fn arg_list_too_long(command_name: &str, core: &mut ShellCore) -> ! {
-    let msg = format!("{}: Arg list too long", command_name);
-    print(&msg, core, true);
-    process::exit(126)
 }
