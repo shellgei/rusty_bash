@@ -96,13 +96,7 @@ impl SimpleCommand {
         let cargs = Self::to_cargs(&self.args);
 
         match unistd::execvp(&cargs[0], &cargs) {
-            Err(Errno::E2BIG) => {
-                ArgListTooLong::end(&self.args[0], core)
-                    /*
-                eprintln!("sush: {}: Arg list too long", &self.args[0]);
-                process::exit(126)
-                    */
-            },
+            Err(Errno::E2BIG) => ArgListTooLong::end(&self.args[0], core),
             Err(Errno::EACCES) => {
                 eprintln!("sush: {}: Permission denied", &self.args[0]);
                 process::exit(126)

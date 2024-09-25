@@ -165,6 +165,7 @@ fn main_loop(core: &mut ShellCore) {
 }
 
 fn main_c_option(core: &mut ShellCore, script: &String) {
+    core.data.flags += "c";
     let mut feeder = Feeder::new(script);
     if let Some(mut s) = Script::parse(&mut feeder, core, false){
         s.exec(core);

@@ -8,7 +8,7 @@ use std::process;
 pub trait Error {
     fn print(s: &str, core: &mut ShellCore, show_name: bool) {
         let name = core.data.get_param("0");
-        match (core.read_stdin || core.options.query("c"), show_name) {
+        match (core.read_stdin || core.data.flags.contains('c'), show_name) {
             (true, _) => {
                 let lineno = core.data.get_param("LINENO");
                 eprintln!("{}: line {}: {}", &name, &lineno, s)
@@ -18,7 +18,7 @@ pub trait Error {
         }
     }
 
-    fn end(_: &str, _: &mut ShellCore) -> !;
+    fn end(_: &str, _: &mut ShellCore) -> ! {process::exit(1)}
 }
 
 pub struct ArgListTooLong;
