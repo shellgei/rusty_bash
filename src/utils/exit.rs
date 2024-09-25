@@ -21,6 +21,7 @@ pub fn normal(core: &mut ShellCore) -> ! {
     process::exit(exit_status)
 }
 
+/* error at exec */
 fn command_error_exit(name: &str, core: &mut ShellCore, msg: &str, exit_status: i32) -> ! {
     let msg = format!("{}: {}", name, msg);
     error::print(&msg, core, true);
@@ -42,3 +43,4 @@ pub fn not_found(command_name: &str, core: &mut ShellCore) -> ! {
 pub fn internal(s: &str) -> ! {
     panic!("SUSH INTERNAL ERROR: {}", s)
 }
+

@@ -143,16 +143,8 @@ impl ShellCore {
         let ws = wait::waitpid(child, waitflags);
 
         let exit_status = match ws {
-            Ok(WaitStatus::Exited(_pid, status)) => {
-                status
-            },
-            Ok(WaitStatus::Signaled(pid, signal, coredump)) => {
-                match coredump {
-                    true  => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
-                    false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
-                }
-                128+signal as i32
-            },
+            Ok(WaitStatus::Exited(_pid, status)) => status,
+            Ok(WaitStatus::Signaled(pid, signal, coredump)) => error::signaled(pid, signal, coredump),
             Ok(WaitStatus::Stopped(pid, signal)) => {
                 eprintln!("Stopped Pid: {:?}, Signal: {:?}", pid, signal);
                 148
