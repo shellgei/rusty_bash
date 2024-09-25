@@ -84,10 +84,16 @@ impl ArithmeticExpr {
             if word.text.starts_with("\"") && word.text.ends_with("\"") {
                 let mut f = Feeder::new(&w);
                 if let Some(mut e) = ArithmeticExpr::parse(&mut f, core, false) {
-                    if e.elements.len() != 1 && f.len() == 0 {
-                        //ans.elements.push( ArithElem::InParen(e) );
-                        ans.elements.append( &mut e.elements );
-                        return true;
+                    if f.len() == 0 {
+                        if e.elements.len() != 1 {
+                            ans.elements.append( &mut e.elements );
+                            return true;
+                        }
+
+                        match &e.elements[0] {
+                            ArithElem::Word(w, _) => word = w.clone(),
+                            _ => {},
+                        }
                     }
                 }
             }
