@@ -181,7 +181,7 @@ impl ShellCore {
             _        => return,
         };
         let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
-                   .expect("sush(fatal): cannot get pgid");
+                   .expect(&error::internal("cannot get pgid"));
 
         if unistd::tcgetpgrp(fd) == Ok(pgid) {
             return;
@@ -189,7 +189,7 @@ impl ShellCore {
 
         ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
         unistd::tcsetpgrp(fd, pgid)
-            .expect("sush(fatal): cannot get the terminal");
+            .expect(&error::internal("cannot get the terminal"));
         restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
