@@ -63,35 +63,6 @@ impl ArithmeticExpr {
         true
     }
 
-    fn convert_dobule_quoted_word(word: &mut Word, unquoted: &String,
-                                  ans: &mut Self, core: &mut ShellCore) -> bool {
-        if ! word.text.starts_with("\"") || ! word.text.ends_with("\"") {
-            return false;
-        }
-
-        let mut f = Feeder::new(unquoted);
-        let mut arith = match ArithmeticExpr::parse(&mut f, core, false) {
-            Some(e) => e,
-            None => return false,
-        };
-        if f.len() != 0 {
-            return false;
-        }
-
-        if arith.elements.len() == 1 {
-            match &arith.elements[0] {
-                ArithElem::Word(w, s) => {
-                    *word = w.clone();
-                    return false;
-                },
-                _ => {},
-            }
-        }
-
-        ans.elements.append( &mut arith.elements );
-        true
-    }
-
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut word = match Word::parse(feeder, core, true) {
             Some(w) => w,
@@ -112,15 +83,10 @@ impl ArithmeticExpr {
                 if let Some(n) = int::parse(&w) {
                     ans.elements.push( ArithElem::Integer(n) );
                     return true;
-                }
-                if let Some(f) = float::parse(&w) {
+                }else if let Some(f) = float::parse(&w) {
                     ans.elements.push( ArithElem::Float(f) );
                     return true;
                 }
-            }
-
-            if Self::convert_dobule_quoted_word(&mut word, &w, ans, core) {
-                return true;
             }
         }
 
