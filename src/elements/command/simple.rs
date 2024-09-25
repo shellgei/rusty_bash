@@ -97,15 +97,8 @@ impl SimpleCommand {
 
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => exit::arg_list_too_long(&self.args[0], core),
-            Err(Errno::EACCES) => {
-                eprintln!("sush: {}: Permission denied", &self.args[0]);
-                process::exit(126)
-            },
-            Err(Errno::ENOENT) => {
-                let msg = format!("{}: command not found", &self.args[0]);
-                error::print(&msg, core, false);
-                process::exit(127)
-            },
+            Err(Errno::EACCES) => exit::permission_denied(&self.args[0], core),
+            Err(Errno::ENOENT) => exit::not_found(&self.args[0], core),
             Err(err) => {
                 eprintln!("Failed to execute. {:?}", err);
                 process::exit(127)
