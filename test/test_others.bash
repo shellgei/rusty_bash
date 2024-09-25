@@ -1072,8 +1072,8 @@ res=$($com <<< 'echo $(( -" .3" )) $(( - "- .4" ))')
 res=$($com <<< 'echo $(( "1 + 1" ))')
 [ "$res" == "2" ] || err $LINENO
 
-res=$($com <<< 'A=1; echo $(( "1 + A" ))')
-[ "$res" == "2" ] || err $LINENO
+res=$($com <<< 'A=1; echo $(( "1 + A" * 3 ))')
+[ "$res" == "4" ] || err $LINENO
 
 res=$($com <<< 'echo $(( "1 << 1" ))')
 [ "$res" == "2" ] || err $LINENO
