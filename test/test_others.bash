@@ -1086,6 +1086,12 @@ res=$($com <<< 'A=1; echo $(( "1 + A" * 3 ))')
 res=$($com <<< 'echo $(( "1 << 1" ))')
 [ "$res" == "2" ] || err $LINENO
 
+res=$($com <<< 'echo $(( "1 +" 1 ))')
+[ "$res" == "2" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 1 "+" 1 ))')
+[ "$res" == "2" ] || err $LINENO
+
 # escaping
 
 res=$($com <<< "echo a\ \ \ a")

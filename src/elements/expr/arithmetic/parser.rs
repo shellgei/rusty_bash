@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::word::Word;
-use super::{ArithmeticExpr, ArithElem, int};
+use super::{ArithmeticExpr, ArithElem, int, float};
 
 impl ArithmeticExpr {
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
@@ -63,11 +63,48 @@ impl ArithmeticExpr {
         true
     }
 
+    fn convert_dobule_quoted_word(word: &mut Word, unquoted: &String,
+                                  ans: &mut Self, core: &mut ShellCore) -> bool {
+        if ! word.text.starts_with("\"") || ! word.text.ends_with("\"") {
+            return false;
+        }
+
+        let mut f = Feeder::new(unquoted);
+        let mut arith = match ArithmeticExpr::parse(&mut f, core, false) {
+            Some(e) => e,
+            None => return false,
+        };
+        if f.len() != 0 {
+            return false;
+        }
+
+        if arith.elements.len() == 1 {
+            match &arith.elements[0] {
+                ArithElem::Word(w, s) => {
+                    *word = w.clone();
+                    return false;
+                },
+                _ => {},
+            }
+        }
+
+        ans.elements.append( &mut arith.elements );
+        true
+    }
+
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut word = match Word::parse(feeder, core, true) {
             Some(w) => w,
             _       => return false,
         };
+
+        if word.text.starts_with("\"") 
+        && word.text.ends_with("\"")
+        && word.text.len() >= 2 {
+            feeder.replace(0, &word.text[1..word.text.len()-1]);
+            return true;
+        }
+
         ans.text += &word.text.clone();
 
         if let Some(w) = word.make_unquoted_word() {
@@ -76,31 +113,18 @@ impl ArithmeticExpr {
                     ans.elements.push( ArithElem::Integer(n) );
                     return true;
                 }
-                if let Ok(f) = w.parse::<f64>() {
+                if let Some(f) = float::parse(&w) {
                     ans.elements.push( ArithElem::Float(f) );
                     return true;
                 }
             }
-            if word.text.starts_with("\"") && word.text.ends_with("\"") {
-                let mut f = Feeder::new(&w);
-                if let Some(mut e) = ArithmeticExpr::parse(&mut f, core, false) {
-                    if f.len() == 0 {
-                        if e.elements.len() != 1 {
-                            ans.elements.append( &mut e.elements );
-                            return true;
-                        }
 
-                        match &e.elements[0] {
-                            ArithElem::Word(w, _) => word = w.clone(),
-                            _ => {},
-                        }
-                    }
-                }
+            if Self::convert_dobule_quoted_word(&mut word, &w, ans, core) {
+                return true;
             }
         }
 
         Self::eat_blank(feeder, ans, core);
-
         let suffix = Self::eat_suffix(feeder, ans);
         ans.elements.push( ArithElem::Word(word, suffix) );
         true

@@ -87,6 +87,10 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
 }
 
 fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
+    if s.len() == 0 {
+        return None;
+    }
+
     let mut ans = 0;
     for ch in s.chars() {
         ans *= base;
@@ -124,7 +128,7 @@ fn get_base(s: &mut String) -> Option<i64> {
         return Some(16);
     }
 
-    if s.starts_with("0") {
+    if s.starts_with("0") && s.len() > 1 {
         s.remove(0);
         return Some(8);
     }
