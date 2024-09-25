@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, ShellCore};
+use crate::{error, ShellCore};
 use super::elem::ArithElem;
 use super::{elem, float, int, rev_polish, trenary, word};
 
@@ -43,7 +43,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
         (ArithElem::Float(fl), ArithElem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack),
         (ArithElem::Integer(nl), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack),
         (ArithElem::Integer(nl), ArithElem::Integer(nr)) => int::bin_calc(op, nl, nr, stack),
-        _ => error_message::internal("invalid operand"),
+        _ => error::internal("invalid operand"),
     };
 }
 
@@ -56,7 +56,7 @@ fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -
     match operand {
         ArithElem::Float(num)   => float::unary_calc(op, num, stack),
         ArithElem::Integer(num) => int::unary_calc(op, num ,stack),
-        _ => error_message::internal("unknown operand"),
+        _ => error::internal("unknown operand"),
     }
 }
 
@@ -67,7 +67,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
 
     let rev_pol = match rev_polish::rearrange(elements) {
         Ok(ans) => ans,
-        Err(e)  => return Err( error_message::syntax(&elem::to_string(&e)) ),
+        Err(e)  => return Err( error::syntax(&elem::to_string(&e)) ),
     };
 
     let mut stack = vec![];
@@ -107,7 +107,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
     }
 
     if stack.len() != 1 {
-        return Err( format!("unknown syntax error_message (stack inconsistency)",) );
+        return Err( format!("unknown syntax error (stack inconsistency)",) );
     }
     pop_operand(&mut stack, core)
 }

@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, ShellCore, Feeder};
+use crate::{error, ShellCore, Feeder};
 use crate::utils::file_check;
 use crate::elements::word::Word;
 use super::arithmetic::word;
@@ -159,7 +159,7 @@ impl ConditionalExpr {
                     },
                     _ => Err("no operand to negate".to_string()),
                 },
-                _ => Err( error_message::syntax("TODO")),
+                _ => Err( error::syntax("TODO")),
             };
     
             if let Err(err_msg) = result {
@@ -171,8 +171,8 @@ impl ConditionalExpr {
         if stack.len() != 1 { 
             let mut err = "syntax error".to_string();
             if stack.len() > 1 {
-                err = error_message::syntax_in_cond_expr(&to_string(&stack[0]));
-                error_message::print(&err, core, true);
+                err = error::syntax_in_cond_expr(&to_string(&stack[0]));
+                error::print(&err, core, true);
                 err = format!("syntax error near `{}'", to_string(&stack[0]));
             }
             return Err(err);

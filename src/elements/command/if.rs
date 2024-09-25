@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, ShellCore, Feeder, Script};
+use crate::{error, ShellCore, Feeder, Script};
 use crate::elements::command;
 use super::{Command, Redirect};
 
@@ -55,7 +55,7 @@ impl IfCommand {
             "if" | "elif" => vec!["then"],
             "then" => vec!["fi", "else", "elif"],
             "else" => vec!["fi"],
-            _ => error_message::internal(" (if parse error)"),
+            _ => error::internal(" (if parse error)"),
         }
     }
 
@@ -64,7 +64,7 @@ impl IfCommand {
             "if" | "elif" => ans.if_elif_scripts.push(script.unwrap()),
             "then"        => ans.then_scripts.push(script.unwrap()),
             "else"        => ans.else_script = script,
-            _ => error_message::internal(" (if parse error)"),
+            _ => error::internal(" (if parse error)"),
         };
     }
 

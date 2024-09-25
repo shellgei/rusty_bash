@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, ShellCore, Feeder};
+use crate::{error, ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::conditional::{ConditionalExpr, CondElem};
@@ -20,11 +20,11 @@ impl Command for TestCommand {
             Ok(CondElem::Ans(true))  => core.data.set_param("?", "0"),
             Ok(CondElem::Ans(false)) => core.data.set_param("?", "1"),
             Err(err_msg)  => {
-                error_message::print(&err_msg, core, true);
+                error::print(&err_msg, core, true);
                 core.data.set_param("?", "2");
             },
             _  => {
-                error_message::print("unknown error", core, true);
+                error::print("unknown error", core, true);
                 core.data.set_param("?", "2");
             },
         } 

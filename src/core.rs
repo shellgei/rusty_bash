@@ -21,7 +21,7 @@ use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
 use nix::unistd::Pid;
-use crate::error_message;
+use crate::error;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -164,12 +164,12 @@ impl ShellCore {
             },
             Ok(unsupported) => {
                 let msg = format!("Unsupported wait status: {:?}", unsupported);
-                error_message::print(&msg, self, true);
+                error::print(&msg, self, true);
                 1
             },
             Err(err) => {
                 let msg = format!("Error: {:?}", err);
-                error_message::internal(&msg);
+                error::internal(&msg);
             },
         };
 
@@ -277,7 +277,7 @@ impl ShellCore {
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
         if args.len() == 0 {
-            error_message::internal(" (no arg for builtins)");
+            error::internal(" (no arg for builtins)");
         }
 
         if self.builtins.contains_key(&args[0]) {
@@ -299,7 +299,7 @@ impl ShellCore {
             Ok(n)  => n%256,
             Err(_) => {
                 let msg = format!("exit: {}: numeric argument required", es_str);
-                error_message::print(&msg, self, true);
+                error::print(&msg, self, true);
                 2
             },
         };
@@ -339,7 +339,7 @@ impl ShellCore {
             Ok(path) => self.current_dir = Some(path),
             Err(err) => {
                 let msg = format!("pwd: error retrieving current directory: {:?}", err);
-                error_message::print(&msg, self, true);
+                error::print(&msg, self, true);
             },
         }
     }

@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, ShellCore, Feeder};
+use crate::{error, ShellCore, Feeder};
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
 
@@ -17,7 +17,7 @@ fn set(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
     match sub.eval(core) {
         Value::EvaluatedSingle(s) => core.data.set_layer_param(&sub.key, &s, layer),
         Value::EvaluatedArray(a)  => core.data.set_layer_array(&sub.key, &a, layer),
-        _ => error_message::internal("unsupported substitution"),
+        _ => error::internal("unsupported substitution"),
     }
     true
 }
