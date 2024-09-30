@@ -17,7 +17,7 @@ pub struct Job {
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore, bg: bool) {
         let pgid = match core.is_subshell {
-            true  => unistd::getpgrp(), //自身のPGID
+            true  => unistd::getpgrp(),
             false => Pid::from_raw(0),
         };
 
