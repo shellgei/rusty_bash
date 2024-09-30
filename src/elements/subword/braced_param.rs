@@ -44,9 +44,13 @@ impl Subword for BracedParam {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        if self.name.len() == 0 
-        || ! is_param(&self.name)
-        || ( self.unknown.len() > 0 && ! self.unknown.starts_with("-") ) {
+        if self.name.len() == 0 || ! is_param(&self.name) {
+            eprintln!("sush: {}: bad substitution", &self.text);
+            return false;
+        }
+        if self.unknown.len() > 0 
+        && ! self.unknown.starts_with("-")
+        && ! self.unknown.starts_with(",") {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
         }
@@ -204,10 +208,20 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat_unknown(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_unknown(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
         if feeder.len() == 0 {
             feeder.feed_additional_line(core);
         }
+
+        let unknown = match feeder.starts_with("\\}") {
+            true  => feeder.consume(2),
+            false => feeder.consume(1),
+        };
+
+        ans.unknown += &unknown.clone();
+        ans.text += &unknown;
+        return;
+        /*
 
         let len = feeder.scanner_unknown_in_param_brace();
         if len == 0 {
@@ -218,6 +232,7 @@ impl BracedParam {
         ans.unknown += &unknown.clone();
         ans.text += &unknown;
         true
+        */
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BracedParam> {
