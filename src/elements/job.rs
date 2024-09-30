@@ -17,10 +17,9 @@ pub struct Job {
 
 impl Job {
     pub fn exec(&mut self, core: &mut ShellCore, bg: bool) {
-        let pgid = if core.is_subshell { //17〜21行目を追加
-            unistd::getpgrp() //自身のPGID
-        }else{
-            Pid::from_raw(0)
+        let pgid = match core.is_subshell {
+            true  => unistd::getpgrp(),
+            false => Pid::from_raw(0),
         };
 
         match bg {
