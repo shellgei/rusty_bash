@@ -54,6 +54,7 @@ impl Script {
 
     fn check_nest(&self, feeder: &mut Feeder) -> Status {
         let nest = feeder.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
+
         if nest.0 == "" && feeder.len() == 0 {
             return Status::NormalEnd;
         }
