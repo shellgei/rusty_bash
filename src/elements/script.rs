@@ -63,6 +63,10 @@ impl Script {
         let nest = feeder.nest.last()
                    .expect(&error_message::internal_str("empty nest"));
 
+        if nest.0 == "" && feeder.len() == 0 {
+            return Status::NormalEnd;
+        }
+
         match ( nest.1.iter().find(|e| feeder.starts_with(e)), self.jobs.len() ) {
             ( Some(end), 0 ) => return Status::UnexpectedSymbol(end.to_string()),
             ( Some(_), _)    => return Status::NormalEnd,
@@ -75,10 +79,7 @@ impl Script {
             return Status::UnexpectedSymbol(first_token);
         }
 
-        match nest.1.len() {
-            0 => Status::NormalEnd,
-            _ => Status::NeedMoreLine,
-        }
+        Status::NeedMoreLine
     }
 
     fn unalias(&mut self, core: &mut ShellCore) {
