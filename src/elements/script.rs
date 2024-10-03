@@ -54,6 +54,9 @@ impl Script {
 
     fn check_nest(&self, feeder: &mut Feeder) -> Status {
         let nest = feeder.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
+        if nest.0 == "" && feeder.len() == 0 {
+            return Status::NormalEnd;
+        }
 
         match ( nest.1.iter().find(|e| feeder.starts_with(e)), self.jobs.len() ) {
             ( Some(end), 0 ) => return Status::UnexpectedSymbol(end.to_string()),
@@ -67,10 +70,7 @@ impl Script {
             return Status::UnexpectedSymbol(first_token);
         }
 
-        match nest.1.len() {
-            0 => Status::NormalEnd,
-            _ => Status::NeedMoreLine,
-        }
+        Status::NeedMoreLine
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
