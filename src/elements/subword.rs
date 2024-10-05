@@ -2,14 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod escaped_char;
-mod parameter;
 mod simple;
 mod single_quoted;
 
 use crate::{Feeder, ShellCore};
 use std::fmt;
 use self::escaped_char::EscapedChar;
-use self::parameter::Parameter;
 use self::simple::SimpleSubword;
 use self::single_quoted::SingleQuoted;
 use std::fmt::Debug;
@@ -43,7 +41,6 @@ pub trait Subword {
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
     if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
     else{ None }
 }
