@@ -6,7 +6,8 @@ use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::elements::io;
 use crate::elements::word::Word;
-use crate::{error_message, Feeder, ShellCore};
+use crate::{Feeder, ShellCore};
+use crate::utils::exit;
 
 #[derive(Debug, Clone)]
 pub struct Redirect {
@@ -39,7 +40,7 @@ impl Redirect {
             ">&" => self.redirect_output_fd(restore),
             ">>" => self.redirect_append(restore),
             "&>" => self.redirect_both_output(restore),
-            _ => error_message::internal(" (Unknown redirect symbol)"),
+            _ => exit::internal(" (Unknown redirect symbol)"),
         }
     }
 
@@ -47,8 +48,7 @@ impl Redirect {
         self.left_fd = if self.left.len() == 0 {
             default_fd
         }else{
-            self.left.parse()
-                .expect(&error_message::internal_str("invalid FD"))
+            self.left.parse().unwrap()
         };
     }
 

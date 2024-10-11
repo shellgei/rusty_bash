@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::{error_message, Feeder, ShellCore};
+use crate::{Feeder, ShellCore};
 
 enum Status{
     UnexpectedSymbol(String),
@@ -60,8 +60,7 @@ impl Script {
     }
 
     fn check_nest(&self, feeder: &mut Feeder) -> Status {
-        let nest = feeder.nest.last()
-                   .expect(&error_message::internal_str("empty nest"));
+        let nest = feeder.nest.last().unwrap();
 
         if nest.0 == "" && feeder.len() == 0 {
             return Status::NormalEnd;

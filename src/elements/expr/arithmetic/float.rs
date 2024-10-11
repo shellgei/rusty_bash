@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, ShellCore};
+use crate::{utils::error, ShellCore};
 use super::{ArithElem, word};
 
 pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), String> {
@@ -38,7 +38,7 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
                 let r = right.try_into().unwrap();
                 stack.push(ArithElem::Float(left.powf(r)));
             }else{
-                return Err( error_message::exponent(&right.to_string()) );
+                return Err( error::exponent(&right.to_string()) );
             }
         },
         _    => return Err("not supported operator for float numbers".to_string()),

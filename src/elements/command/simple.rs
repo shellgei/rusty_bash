@@ -3,7 +3,8 @@
 
 pub mod parser;
 
-use crate::{error_message, ShellCore};
+use crate::ShellCore;
+use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
@@ -78,7 +79,7 @@ impl Command for SimpleCommand {
         core.data.pop_local();
 
         if fork {
-            core.exit();
+            exit::normal(core);
         }
     }
 
@@ -95,24 +96,14 @@ impl SimpleCommand {
         let cargs = Self::to_cargs(&self.args);
 
         match unistd::execvp(&cargs[0], &cargs) {
-            Err(Errno::E2BIG) => {
-                eprintln!("sush: {}: Arg list too long", &self.args[0]);
-                process::exit(126)
-            },
-            Err(Errno::EACCES) => {
-                eprintln!("sush: {}: Permission denied", &self.args[0]);
-                process::exit(126)
-            },
-            Err(Errno::ENOENT) => {
-                let msg = format!("{}: command not found", &self.args[0]);
-                error_message::print(&msg, core, false);
-                process::exit(127)
-            },
+            Err(Errno::E2BIG) => exit::arg_list_too_long(&self.args[0], core),
+            Err(Errno::EACCES) => exit::permission_denied(&self.args[0], core),
+            Err(Errno::ENOENT) => exit::not_found(&self.args[0], core),
             Err(err) => {
                 eprintln!("Failed to execute. {:?}", err);
                 process::exit(127)
             }
-            _ => error_message::internal("never come here")
+            _ => exit::internal("never come here")
         }
     }
 

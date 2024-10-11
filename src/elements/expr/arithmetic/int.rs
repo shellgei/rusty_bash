@@ -1,7 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, ShellCore};
+use crate::ShellCore;
+use crate::utils::{error, exit};
 use super::{ArithElem, word};
 
 pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), String> {
@@ -10,7 +11,7 @@ pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), 
         "-"  => stack.push( ArithElem::Integer(-num) ),
         "!"  => stack.push( ArithElem::Integer(if num == 0 { 1 } else { 0 }) ),
         "~"  => stack.push( ArithElem::Integer( !num ) ),
-        _ => error_message::internal("unknown unary operator"),
+        _ => exit::internal("unknown unary operator"),
     }
     Ok(())
 }
@@ -49,10 +50,10 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> 
                 let r = right.try_into().unwrap();
                 left.pow(r)
             }else{
-                return Err( error_message::exponent(&right.to_string()) );
+                return Err( error::exponent(&right.to_string()) );
             }
         },
-        _    => error_message::internal("unknown binary operator"),
+        _    => exit::internal("unknown binary operator"),
     };
 
     stack.push(ArithElem::Integer(ans));

@@ -1,7 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error_message, ShellCore, Feeder};
+use crate::{ShellCore, Feeder};
+use crate::utils::exit;
 use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
@@ -15,7 +16,7 @@ impl Subword for EscapedChar {
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         match self.text.len() {
-            0 => error_message::internal("unescaped escaped char"),
+            0 => exit::internal("unescaped escaped char"),
             1 => None,
             _ => Some(self.text[1..].to_string()),
         }

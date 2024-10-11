@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use nix::sys::signal::Signal;
+use nix::unistd::Pid;
 
 pub fn print(s: &str, core: &mut ShellCore, show_sush: bool) {
     let name = core.data.get_param("0");
@@ -15,12 +17,8 @@ pub fn print(s: &str, core: &mut ShellCore, show_sush: bool) {
     }
 }
 
-pub fn internal_str(s: &str) -> String {
+pub fn internal(s: &str) -> String {
     format!("SUSH INTERNAL ERROR: {}", s)
-}
-
-pub fn internal(s: &str) -> ! {
-    panic!("{}", internal_str(s))
 }
 
 pub fn exponent(s: &str) -> String {
@@ -41,4 +39,13 @@ pub fn syntax(token: &str) -> String {
 
 pub fn syntax_in_cond_expr(token: &str) -> String {
     format!("syntax error in conditional expression: unexpected token `{}'", token)
+}
+
+/* error at wait */
+pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
+    match coredump {
+        true  => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
+        false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
+    }
+    128+signal as i32
 }

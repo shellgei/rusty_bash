@@ -21,7 +21,7 @@ use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
 use nix::unistd::Pid;
-use crate::error_message;
+use crate::utils::{error, exit};
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -134,11 +134,6 @@ impl ShellCore {
         self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
 
-/*
-    pub fn has_flag(&self, flag: char) -> bool {
-        self.data.flags.find(flag) != None 
-    }*/
-
     pub fn wait_process(&mut self, child: Pid) -> WaitStatus {
         let waitflags = match self.is_subshell {
             true  => None,
@@ -148,28 +143,20 @@ impl ShellCore {
         let ws = wait::waitpid(child, waitflags);
 
         let exit_status = match ws {
-            Ok(WaitStatus::Exited(_pid, status)) => {
-                status
-            },
-            Ok(WaitStatus::Signaled(pid, signal, coredump)) => {
-                match coredump {
-                    true  => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
-                    false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
-                }
-                128+signal as i32
-            },
+            Ok(WaitStatus::Exited(_pid, status)) => status,
+            Ok(WaitStatus::Signaled(pid, signal, coredump)) => error::signaled(pid, signal, coredump),
             Ok(WaitStatus::Stopped(pid, signal)) => {
                 eprintln!("Stopped Pid: {:?}, Signal: {:?}", pid, signal);
                 148
             },
             Ok(unsupported) => {
                 let msg = format!("Unsupported wait status: {:?}", unsupported);
-                error_message::print(&msg, self, true);
+                error::print(&msg, self, true);
                 1
             },
             Err(err) => {
                 let msg = format!("Error: {:?}", err);
-                error_message::internal(&msg);
+                exit::internal(&msg);
             },
         };
 
@@ -186,7 +173,7 @@ impl ShellCore {
             _        => return,
         };
         let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
-                   .expect("sush(fatal): cannot get pgid");
+                   .expect(&error::internal("cannot get pgid"));
 
         if unistd::tcgetpgrp(fd) == Ok(pgid) {
             return;
@@ -194,7 +181,7 @@ impl ShellCore {
 
         ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
         unistd::tcsetpgrp(fd, pgid)
-            .expect("sush(fatal): cannot get the terminal");
+            .expect(&error::internal("cannot get the terminal"));
         restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
@@ -226,7 +213,7 @@ impl ShellCore {
         if self.data.get_param("?") != "0" 
         && self.data.flags.contains("e") 
         && ! self.suspend_e_option {
-            self.exit();
+            exit::normal(self);
         }
     }
 
@@ -277,7 +264,7 @@ impl ShellCore {
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
         if args.len() == 0 {
-            error_message::internal(" (no arg for builtins)");
+            exit::internal(" (no arg for builtins)");
         }
 
         if self.builtins.contains_key(&args[0]) {
@@ -289,22 +276,6 @@ impl ShellCore {
         }
 
         false
-    }
-
-    pub fn exit(&mut self) -> ! {
-        self.write_history_to_file();
-
-        let es_str = self.data.get_param("?");
-        let exit_status = match es_str.parse::<i32>() {
-            Ok(n)  => n%256,
-            Err(_) => {
-                let msg = format!("exit: {}: numeric argument required", es_str);
-                error_message::print(&msg, self, true);
-                2
-            },
-        };
-    
-        process::exit(exit_status)
     }
 
     fn set_subshell_parameters(&mut self) {
@@ -339,7 +310,7 @@ impl ShellCore {
             Ok(path) => self.current_dir = Some(path),
             Err(err) => {
                 let msg = format!("pwd: error retrieving current directory: {:?}", err);
-                error_message::print(&msg, self, true);
+                error::print(&msg, self, true);
             },
         }
     }

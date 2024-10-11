@@ -10,7 +10,8 @@ pub mod word;
 mod int;
 mod float;
 
-use crate::{error_message, ShellCore};
+use crate::ShellCore;
+use crate::utils::{error, exit};
 use self::calculator::calculate;
 use self::elem::ArithElem;
 use crate::elements::word::Word;
@@ -32,7 +33,7 @@ impl ArithmeticExpr {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
             },
-            _ => error_message::internal("invalid calculation result"),
+            _ => exit::internal("invalid calculation result"),
         }
     }
 
@@ -58,13 +59,13 @@ impl ArithmeticExpr {
         let base = match base_str.parse::<i64>() {
             Ok(b) => b,
             _     => {
-                eprintln!("sush: {0}: invalid arithmetic base (error_message token is \"{0}\")", base_str);
+                eprintln!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
                 return None;
             },
         };
 
         if base <= 1 || base > 64 {
-            eprintln!("sush: {0}: invalid arithmetic base (error_message token is \"{0}\")", base_str);
+            eprintln!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
             return None;
         }
 
@@ -159,8 +160,8 @@ impl ArithmeticExpr {
         }
 
         match pre_increment {
-            1  => Err(error_message::syntax("++")),
-            -1 => Err(error_message::syntax("--")),
+            1  => Err(error::syntax("++")),
+            -1 => Err(error::syntax("--")),
             _  => Ok(ans),
         }
     }
