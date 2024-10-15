@@ -17,17 +17,12 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
-        let mut ws = brace_expansion::eval(self);
-        for w in ws.iter_mut() {
-            eprint!("parse of {}: ", &w.text);
-            w.subwords.iter_mut().for_each(|sw| {
-                match sw.is_name() {
-                    true  => eprint!("NAME"),
-                    false => eprint!("{}", sw.get_text()),
-                }
-                sw.substitute(core);
-            } );
-            eprintln!("");
+        let mut ws = vec![];
+        for w in brace_expansion::eval(&mut self.clone()) {
+            match w.tilde_and_dollar_expansion(core) {
+                Some(w) => ws.push(w),
+                None    => return None,
+            };
         }
         Some( Self::make_args(&mut ws) )
     }

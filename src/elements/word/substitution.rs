@@ -4,4 +4,6 @@
 use crate::ShellCore;
 use crate::elements::word::Word;
 
-pub fn eval(_: &mut Word, _: &mut ShellCore) -> bool {true}
+pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
+    word.subwords.iter_mut().all(|sw| { sw.substitute(core) } )
+}
