@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
+mod tilde_expansion;
+mod substitution;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword;
@@ -28,6 +30,15 @@ impl Word {
             eprintln!("");
         }
         Some( Self::make_args(&mut ws) )
+    }
+
+    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Option<Word> {
+        let mut w = self.clone();
+        tilde_expansion::eval(&mut w, core);
+        match substitution::eval(&mut w, core) {
+            true  => Some(w),
+            false => None,
+        }
     }
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
