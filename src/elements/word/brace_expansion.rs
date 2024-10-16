@@ -12,7 +12,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     invalidate_brace(&mut word.subwords);
 
     let mut skip_until = 0;
-    for i in open_brace_pos(word) {
+    for i in word.scan_pos("{") {
         if i < skip_until { //ブレース展開の終わりまで処理をスキップ
             continue;
         }
@@ -40,14 +40,6 @@ fn invalidate_brace(subwords: &mut Vec<Box<dyn Subword>>) {
         subwords.remove(1);
         subwords[0].set_text("{}");
     }
-}
-
-fn open_brace_pos(w: &Word) -> Vec<usize> {
-    w.subwords.iter()
-        .enumerate()
-        .filter(|e| e.1.get_text() == "{")
-        .map(|e| e.0)
-        .collect()
 }
 
 fn parse(subwords: &[Box<dyn Subword>], start: usize) -> Vec<usize> {
