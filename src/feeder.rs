@@ -99,11 +99,11 @@ impl Feeder {
             Ok(()) => true,
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
-                core.set_param("?", "2");
+                core.data.set_param("?", "2");
                 core.exit();
             },
             Err(InputError::Interrupt) => {
-                core.set_param("?", "130");
+                core.data.set_param("?", "130");
                 false
             },
         }
