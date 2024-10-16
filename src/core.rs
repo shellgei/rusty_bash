@@ -2,9 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod builtins;
+pub mod data;
 pub mod jobtable;
-pub mod parameter;
 
+use self::data::Data;
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
@@ -19,9 +20,8 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
 pub struct ShellCore {
+    pub data: Data,
     pub history: Vec<String>,
-    pub flags: String,
-    parameters: HashMap<String, String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
@@ -50,9 +50,8 @@ fn restore_signal(sig: Signal) {
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
+            data: Data::new(),
             history: Vec::new(),
-            flags: String::new(),
-            parameters: HashMap::new(),
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
@@ -66,7 +65,7 @@ impl ShellCore {
         core.set_builtins();
 
         if is_interactive() {
-            core.flags += "i";
+            core.data.flags += "i";
             let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
@@ -76,15 +75,15 @@ impl ShellCore {
     }
 
     fn set_initial_parameters(&mut self) {
-        self.set_param("$", &process::id().to_string());
-        self.set_param("BASHPID", &process::id().to_string());
-        self.set_param("BASH_SUBSHELL", "0");
-        self.set_param("?", "0");
-        self.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
+        self.data.set_param("$", &process::id().to_string());
+        self.data.set_param("BASHPID", &process::id().to_string());
+        self.data.set_param("BASH_SUBSHELL", "0");
+        self.data.set_param("?", "0");
+        self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        self.flags.find(flag) != None 
+        self.data.flags.find(flag) != None 
     }
 
     pub fn wait_process(&mut self, child: Pid) {
@@ -108,7 +107,7 @@ impl ShellCore {
         if exit_status == 130 {
             self.sigint.store(true, Relaxed);
         }
-        self.parameters.insert("?".to_string(), exit_status.to_string()); //追加
+        self.data.parameters.insert("?".to_string(), exit_status.to_string()); //追加
     } 
 
     fn set_foreground(&self) {
@@ -151,15 +150,15 @@ impl ShellCore {
 
         let func = self.builtins[&args[0]];
         let status = func(self, args);
-        self.parameters.insert("?".to_string(), status.to_string());
+        self.data.parameters.insert("?".to_string(), status.to_string());
         true
     }
 
     pub fn exit(&self) -> ! {
-        let exit_status = match self.parameters["?"].parse::<i32>() {
+        let exit_status = match self.data.parameters["?"].parse::<i32>() {
             Ok(n)  => n%256,
             Err(_) => {
-                eprintln!("sush: exit: {}: numeric argument required", self.parameters["?"]);
+                eprintln!("sush: exit: {}: numeric argument required", self.data.parameters["?"]);
                 2
             },
         };
@@ -169,10 +168,10 @@ impl ShellCore {
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.parameters.insert("BASHPID".to_string(), pid.to_string());
-        match self.parameters["BASH_SUBSHELL"].parse::<usize>() {
-            Ok(num) => self.parameters.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
-            Err(_) =>  self.parameters.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
+        self.data.parameters.insert("BASHPID".to_string(), pid.to_string());
+        match self.data.parameters["BASH_SUBSHELL"].parse::<usize>() {
+            Ok(num) => self.data.parameters.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
+            Err(_) =>  self.data.parameters.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
     }
 
