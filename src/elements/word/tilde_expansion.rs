@@ -3,6 +3,7 @@
 
 use crate::ShellCore;
 use crate::elements::word::Word;
+use crate::elements::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
     let length = match prefix_length(word) {
@@ -15,7 +16,12 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
                .collect::<Vec<String>>()
                .concat();
 
-    eprintln!("PREFIX: {}", text);
+    let value = get_value(&text, core);
+    if value == "" {
+        return;
+    }
+    word.subwords[0] = Box::new( SimpleSubword{ text: value } );
+    word.subwords[1..length].iter_mut().for_each(|w| w.set_text(""));
 }
 
 fn prefix_length(word: &Word) -> usize {
@@ -27,4 +33,15 @@ fn prefix_length(word: &Word) -> usize {
         None    => word.subwords.len(),
         Some(n) => n,
     }
+}
+
+fn get_value(text: &str, core: &mut ShellCore) -> String {
+    let key = match text {
+        "" => "HOME",
+        "+" => "PWD",
+        "-" => "OLDPWD",
+        _ => return "".to_string(),
+    };
+
+    core.data.get_param(key).to_string()
 }

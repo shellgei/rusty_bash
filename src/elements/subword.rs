@@ -3,7 +3,7 @@
 
 mod escaped_char;
 pub mod parameter;
-mod simple;
+pub mod simple;
 mod single_quoted;
 mod varname;
 
