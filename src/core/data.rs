@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use std::collections::HashMap;
+use std::env;
 
 #[derive(Debug)]
 pub struct Data {
@@ -17,7 +18,13 @@ impl Data {
         }
     }
 
-    pub fn get_param(&self, key: &str) -> String {
+    pub fn get_param(&mut self, key: &str) -> String {
+        if self.parameters.get(key) == None {
+            if let Ok(val) = env::var(key) {
+                self.set_param(key, &val);
+            }
+        }
+
         match self.parameters.get(key) {
             Some(val) => val,
             None      => "",
