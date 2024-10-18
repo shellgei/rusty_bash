@@ -82,6 +82,8 @@ impl ShellCore {
         self.data.set_param("BASHPID", &process::id().to_string());
         self.data.set_param("BASH_SUBSHELL", "0");
         self.data.set_param("?", "0");
+        self.data.set_param("PS1", "\\[\\033[01;36m\\]\\b\\[\\033[00m\\]\\[\\033[01;35m\\]\\w\\[\\033[00m\\](debug)🍣 ");
+        self.data.set_param("PS2", "> ");
         self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
 
