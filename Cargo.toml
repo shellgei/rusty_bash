@@ -1,12 +1,12 @@
 [package]
 name = "sush"
-version = "2025.1.0"
+version = "2025.1.6"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nix = { version = "0.28.0", features = ["fs", "process", "signal", "term"]}
-termion = "3.0.0"
+nix = { version = "0.28.0", features = ["fs", "process", "signal", "term", "user"]}
+termion = "4.0.3"
 unicode-width = "0.1.11"
 signal-hook = "0.3.17"

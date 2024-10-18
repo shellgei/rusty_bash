@@ -3,6 +3,7 @@
 
 use crate::ShellCore;
 use crate::elements::word::Word;
+use nix::unistd::User;
 use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
@@ -40,8 +41,18 @@ fn get_value(text: &str, core: &mut ShellCore) -> String {
         "" => "HOME",
         "+" => "PWD",
         "-" => "OLDPWD",
-        _ => return "".to_string(),
+        _ => return get_home_dir(text),
     };
 
     core.data.get_param(key).to_string()
+}
+
+fn get_home_dir(user: &str) -> String {
+    match User::from_name(user) {
+        Ok(Some(u)) => u.dir
+                        .into_os_string()
+                        .into_string()
+                        .unwrap(),
+        _ => String::new(),
+    }
 }
