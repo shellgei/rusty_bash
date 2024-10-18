@@ -10,3 +10,4 @@ nix = { version = "0.28.0", features = ["fs", "process", "signal", "term", "user
 termion = "4.0.3"
 unicode-width = "0.1.11"
 signal-hook = "0.3.17"
+rev_lines = "0.3.0"
