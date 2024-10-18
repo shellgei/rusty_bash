@@ -3,7 +3,7 @@
 
 use crate::ShellCore;
 use crate::elements::word::Word;
-use crate::elements::subword::simple::SimpleSubword;
+use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
     let length = match prefix_length(word) {
