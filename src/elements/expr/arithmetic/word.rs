@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::utils::{error, exit};
-use super::{ArithElem, float, int, Word};
+use super::{ArithElem, ArithmeticExpr, float, int, Word};
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, String> {
@@ -68,7 +68,14 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
         Ok( ArithElem::Integer(0) )
     }else if let Some(f) = float::parse(&name) {
         Ok( ArithElem::Float(f) )
-    }else{
+    }else {
+        let mut f = Feeder::new(&name);
+        if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false) {
+            if let Some(s) = a.eval(core) {
+                return str_to_num(&s, core);
+            }
+        }
+
         Err(error::syntax(&name))
     }
 }

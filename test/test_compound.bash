@@ -893,4 +893,12 @@ res=$($com -c '[[ $- == *c* ]]')
 res=$($com -c '[[ $- != *c* ]]')
 [ "$?" = "1" ] || err $LINENO
 
+# calculation
+
+res=$($com -c '[[ 3 -eq 1+2 ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ 1+2 -eq 3 ]]')
+[ "$?" = "0" ] || err $LINENO
+
 echo $0 >> ./ok

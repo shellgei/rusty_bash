@@ -221,7 +221,7 @@ impl ConditionalExpr {
         if op == "==" || op == "=" || op == "!=" || op == "<" || op == ">" {
             let ans = match op {
                 "==" | "=" => glob::compare(&left, &right, extglob),
-                "!="       => ! glob::compare(&left, &right, extglob), //left != right,
+                "!="       => ! glob::compare(&left, &right, extglob),
                 ">"        => left > right,
                 "<"        => left < right,
                 _    => false,
