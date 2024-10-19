@@ -882,4 +882,9 @@ res=$($com -c '[[ -a /etc/passwd && -a /etc/passwdaaa ]]')
 res=$($com -c '[[ -a /etc/passwdaaaa || -a /etc/passwd ]]')
 [ "$?" = "0" ] || err $LINENO
 
+# glob
+
+res=$($com -c '[[ $- == c ]]')
+[ "$?" = "0" ] || err $LINENO
+
 echo $0 >> ./ok
