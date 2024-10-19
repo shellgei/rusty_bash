@@ -887,4 +887,10 @@ res=$($com -c '[[ -a /etc/passwdaaaa || -a /etc/passwd ]]')
 res=$($com -c '[[ $- == c ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ $- == *c* ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c '[[ $- != *c* ]]')
+[ "$?" = "1" ] || err $LINENO
+
 echo $0 >> ./ok

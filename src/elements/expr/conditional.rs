@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{utils::error, ShellCore, Feeder};
-use crate::utils::file_check;
+use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
 use super::arithmetic::word;
 use super::arithmetic::elem::ArithElem;
@@ -47,7 +47,7 @@ pub fn to_string(op: &CondElem) -> String {
 }
 
 fn to_operand(w: &Word, core: &mut ShellCore) -> Result<CondElem, String> {
-    match w.eval_as_value(core) {
+    match w.eval_for_case_pattern(core) {
         Some(v) => Ok(CondElem::Operand(v)),
         None => return Err(format!("{}: wrong substitution", &w.text)),
     }
@@ -217,10 +217,11 @@ impl ConditionalExpr {
             Err(e) => return Err(e),
         };
 
+        let extglob = core.shopts.query("extglob");
         if op == "==" || op == "=" || op == "!=" || op == "<" || op == ">" {
             let ans = match op {
-                "==" | "=" => left == right,
-                "!="       => left != right,
+                "==" | "=" => glob::compare(&left, &right, extglob),
+                "!="       => ! glob::compare(&left, &right, extglob), //left != right,
                 ">"        => left > right,
                 "<"        => left < right,
                 _    => false,
