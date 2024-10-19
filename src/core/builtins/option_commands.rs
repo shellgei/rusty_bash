@@ -39,6 +39,7 @@ pub fn set_parameters(core: &mut ShellCore, args: &[String]) -> i32 {
         _    => {},
     }
     core.data.position_parameters.push(args.to_vec());
+    core.data.set_param("#", &(args.len()-1).to_string());
     0
 }
 

@@ -379,6 +379,9 @@ res=$($com <<< 'echo "" a')
 res=$($com <<< 'set a b c; echo a"$@"c')
 [ "$res" == "aa b cc" ] || err $LINENO
 
+res=$($com <<< 'set a b c; echo $#')
+[ "$res" == "3" ] || err $LINENO
+
 res=$($com <<< 'set a b c; A=( A"$@"C ); echo ${A[0]}')
 [ "$res" == "Aa" ] || err $LINENO
 

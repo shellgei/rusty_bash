@@ -116,7 +116,21 @@ impl FunctionDefinition {
             return None;
         }
         ans.text += &feeder.consume(2);
-        command::eat_blank_with_comment(feeder, core, &mut ans.text);
+        loop {
+            if feeder.starts_with("\n") {
+                ans.text += &feeder.consume(1);
+                continue;
+            }
+
+            if feeder.len() == 0 {
+                if ! feeder.feed_additional_line(core) {
+                    return None;
+                }
+            }
+            if ! command::eat_blank_with_comment(feeder, core, &mut ans.text) {
+                break;
+            }
+        }
 
         Self::eat_compound_command(feeder, &mut ans, core);
         command::eat_blank_with_comment(feeder, core, &mut ans.text);

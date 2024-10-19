@@ -101,6 +101,9 @@ res=$($com <<< 'f () { echo a; } ; f')
 res=$($com <<< 'function f () { echo a; } ; f')
 [ "$res" = "a" ] || err $LINENO
 
+res=$($com <<< 'function _f () { echo a; } ; _f')
+[ "$res" = "a" ] || err $LINENO
+
 res=$($com <<< 'function f () { echo $A; } ; A=OK f')
 [ "$res" = "OK" ] || err $LINENO
 
@@ -343,6 +346,19 @@ EOF
 )
 [ "$res" = "a
 a" ] || err $LINENO
+
+res=$($com <<< 'function f () { echo a; if true ; then return ; fi ; echo b; } ; f')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com << 'EOF'
+f()
+{
+	echo a;
+}
+EOF
+)
+[ "$?" = 0 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
 
 
 ### CASE TEST ###
