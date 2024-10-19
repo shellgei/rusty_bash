@@ -280,10 +280,10 @@ b=$(ls aaaaaaaaaaaaaa 2>&1 | wc -l)
 res=$($com <<< 'ls aaaaaaaaaaaaaa 2>&1 | wc -l')
 [ "$b" == "$res" ] || err $LINENO
 
-#res=$($com <<< 'pwd 200>&100')
+#res=$($com <<< 'pwd 200>&100')  <- not passed on macOS of GitHub Actions, 20241019
 #[ "$?" == "1" ] || err $LINENO
 
-#res=$($com <<< 'ls 200>&100')
+#res=$($com <<< 'ls 200>&100')  <- not passed on macOS of GitHub Actions, 20241019
 #[ "$?" == "1" ] || err $LINENO
 
 # with expansion
