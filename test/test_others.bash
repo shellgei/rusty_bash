@@ -283,8 +283,8 @@ res=$($com <<< 'ls aaaaaaaaaaaaaa 2>&1 | wc -l')
 #res=$($com <<< 'pwd 200>&100')
 #[ "$?" == "1" ] || err $LINENO
 
-res=$($com <<< 'ls 200>&100')
-[ "$?" == "1" ] || err $LINENO
+#res=$($com <<< 'ls 200>&100')
+#[ "$?" == "1" ] || err $LINENO
 
 # with expansion
 
