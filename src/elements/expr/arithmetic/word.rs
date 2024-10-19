@@ -63,22 +63,25 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
     }
 
     match single_str_to_num(&name, core) {
-        Some(e) => return Ok(e),
-        None => {},
+        Some(e) => Ok(e),
+        None    => resolve_arithmetic_op(&name, core),
+    }
+}
+
+fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
+    let mut f = Feeder::new(&name);
+    let mut parsed = match ArithmeticExpr::parse(&mut f, core, false) {
+        Some(p) => p,
+        None    => return Err(error::syntax(&name)),
+    };
+
+    if parsed.elements.len() == 1 { // In this case, the element is not changed by the evaluation.
+        return Err(error::syntax(&name));
     }
 
-    /* resolve the case where the name is an arithmetic operation */
-    let mut f = Feeder::new(&name);
-    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false) {
-        if a.elements.len() == 1 { // In this case, the element is not changed by the evaluation.
-            return Err(error::syntax(&name));
-        }
-
-        if let Some(s) = a.eval(core) {
-            match single_str_to_num(&s, core) {
-                Some(e) => return Ok(e),
-                None => {},
-            }
+    if let Some(eval) = parsed.eval(core) {
+        if let Some(e) = single_str_to_num(&eval, core) {
+            return Ok(e);
         }
     }
 
@@ -86,15 +89,10 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
 }
 
 fn single_str_to_num(name: &str, core: &mut ShellCore) -> Option<ArithElem> {
-    if let Some(n) = int::parse(&name) {
-        Some( ArithElem::Integer(n) )
-    }else if is_name(&name, core) {
-        Some( ArithElem::Integer(0) )
-    }else if let Some(f) = float::parse(&name) {
-        Some( ArithElem::Float(f) )
-    }else{
-        None
-    }
+    if let Some(n) = int::parse(&name) {         Some( ArithElem::Integer(n) )
+    }else if is_name(&name, core) {              Some( ArithElem::Integer(0) )
+    }else if let Some(f) = float::parse(&name) { Some( ArithElem::Float(f) )
+    }else{                                       None }
 }
 
 fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<ArithElem, String> {
@@ -193,5 +191,4 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
         (ArithElem::Integer(cur), ArithElem::Float(right)) => float::substitute(op, &name, cur as f64, *right, core),
         _ => Err("support not yet".to_string()),
     }
-
 }
