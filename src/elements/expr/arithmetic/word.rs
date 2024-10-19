@@ -62,35 +62,38 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
         }
     }
 
-    for ch in name.chars() {
-        if ch.len_utf8() > 1 {
+    match single_str_to_num(&name, core) {
+        Some(e) => return Ok(e),
+        None => {},
+    }
+
+    /* resolve the case where the name is an arithmetic operation */
+    let mut f = Feeder::new(&name);
+    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false) {
+        if a.elements.len() == 1 {
             return Err(error::syntax(&name));
+        }
+
+        if let Some(s) = a.eval(core) {
+            match single_str_to_num(&s, core) {
+                Some(e) => return Ok(e),
+                None => {},
+            }
         }
     }
 
+    Err(error::syntax(&name))
+}
+
+fn single_str_to_num(name: &str, core: &mut ShellCore) -> Option<ArithElem> {
     if let Some(n) = int::parse(&name) {
-        Ok( ArithElem::Integer(n) )
+        Some( ArithElem::Integer(n) )
     }else if is_name(&name, core) {
-        Ok( ArithElem::Integer(0) )
+        Some( ArithElem::Integer(0) )
     }else if let Some(f) = float::parse(&name) {
-        Ok( ArithElem::Float(f) )
-    }else {
-        let mut f = Feeder::new(&name);
-        if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false) {
-            if a.elements.len() == 1 {
-                if a.text.contains('#') || a.text.contains('x') || a.text.contains('o') {
-                    return Err(error::syntax(&name));
-                }
-            }
-
-            if let Some(s) = a.eval(core) {
-                if let Some(n) = int::parse(&s) {
-                    return Ok( ArithElem::Integer(n) );
-                }
-            }
-        }
-
-        Err(error::syntax(&name))
+        Some( ArithElem::Float(f) )
+    }else{
+        None
     }
 }
 
