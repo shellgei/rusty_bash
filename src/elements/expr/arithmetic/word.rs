@@ -70,7 +70,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
     /* resolve the case where the name is an arithmetic operation */
     let mut f = Feeder::new(&name);
     if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false) {
-        if a.elements.len() == 1 {
+        if a.elements.len() == 1 { // In this case, the element is not changed by the evaluation.
             return Err(error::syntax(&name));
         }
 
