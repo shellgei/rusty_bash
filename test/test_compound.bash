@@ -904,4 +904,7 @@ res=$($com -c '[[ 1+2 -eq 3 ]]')
 res=$($com -c '[[ "1 + 2" -eq 3 ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ "10#1 + 2" -eq 3 ]]')
+[ "$?" = "0" ] || err $LINENO
+
 echo $0 >> ./ok

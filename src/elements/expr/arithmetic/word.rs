@@ -62,6 +62,12 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
         }
     }
 
+    for ch in name.chars() {
+        if ch.len_utf8() > 1 {
+            return Err(error::syntax(&name));
+        }
+    }
+
     if let Some(n) = int::parse(&name) {
         Ok( ArithElem::Integer(n) )
     }else if is_name(&name, core) {
@@ -71,8 +77,16 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
     }else {
         let mut f = Feeder::new(&name);
         if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false) {
+            if a.elements.len() == 1 {
+                if a.text.contains('#') || a.text.contains('x') || a.text.contains('o') {
+                    return Err(error::syntax(&name));
+                }
+            }
+
             if let Some(s) = a.eval(core) {
-                return str_to_num(&s, core);
+                if let Some(n) = int::parse(&s) {
+                    return Ok( ArithElem::Integer(n) );
+                }
             }
         }
 
