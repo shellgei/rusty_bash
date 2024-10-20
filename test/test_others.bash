@@ -472,6 +472,12 @@ res=$($com <<< 'A=${ }')
 res=$($com <<< 'A=B cd ; echo $A')
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'A=aaa ; A+=bbb ; echo $A')
+[ "$res" == "aaabbb" ] || err $LINENO
+
+res=$($com <<< 'A=(aaa bbb) ; A+=(ccc ddd) ; echo ${A[@]}')
+[ "$res" == "aaa bbb ccc ddd" ] || err $LINENO
+
 # arithmetic calculation
 
 res=$($com <<< 'echo $((12345 ))aaa')

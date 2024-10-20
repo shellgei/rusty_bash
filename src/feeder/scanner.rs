@@ -229,8 +229,10 @@ impl Feeder {
             return 0;
         }
 
-        if self.remaining.chars().nth(name_len).unwrap_or('x') == '=' {
+        if self.remaining[name_len..].starts_with("=") {
             name_len + 1
+        } else if self.remaining[name_len..].starts_with("+=") {
+            name_len + 2
         }else{
             0
         }

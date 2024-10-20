@@ -123,6 +123,13 @@ impl Data {
         }
     }
 
+    pub fn is_array(&mut self, key: &str) -> bool {
+        match self.get_value(key) {
+            Some(Value::EvaluatedArray(_)) => true,
+            _ => false,
+        }
+    }
+
     pub fn get_position_params(&self) -> Vec<String> {
         match self.position_parameters.last() {
             Some(v) => v[1..].to_vec(),
