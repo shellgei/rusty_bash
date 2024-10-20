@@ -1170,6 +1170,14 @@ res=$($com <<< 'echo ${$,$} | grep "[^0-9]"')
 res=$($com <<< 'set a b c;echo $@')
 [ "$res" == "a b c" ] || err $LINENO
 
+res=$($com <<< 'A=あいうえおX; echo ${#A}')
+[ "$res" == "6" ] || err $LINENO
+
+res=$($com <<< 'A=(aaa bbbb); echo ${#A}; echo ${#A[1]}; echo ${#A[@]}')
+[ "$res" == "3
+4
+2" ] || err $LINENO
+
 # tilde
 
 res=$($com <<< 'echo ~ | grep -q /')

@@ -16,6 +16,7 @@ pub struct BracedParam {
     pub subscript: Option<Subscript>,
     pub default_symbol: Option<String>,
     pub default_value: Option<Word>,
+    pub num: bool,
 }
 
 fn is_param(s :&String) -> bool {
@@ -57,11 +58,18 @@ impl Subword for BracedParam {
 
         if let Some(sub) = self.subscript.as_mut() {
             if let Some(s) = sub.eval() {
-                self.text = core.data.get_array(&self.name, &s);
+                self.text = match (self.num, s.as_str()) {
+                    (true, "@") => core.data.get_array_len(&self.name).to_string(),
+                    (true, _)   => core.data.get_array(&self.name, &s).chars().count().to_string(),
+                    (false, _)  => core.data.get_array(&self.name, &s),
+                };
             }
         }else{
             let value = core.data.get_param(&self.name);
-            self.text = value.to_string();
+            self.text = match self.num {
+                true  => value.chars().count().to_string(),
+                false => value.to_string(),
+            };
         }
 
         match self.default_symbol.as_ref() {
@@ -93,6 +101,7 @@ impl BracedParam {
             subscript: None,
             default_symbol: None,
             default_value: None,
+            num: false,
         }
     }
 
@@ -221,18 +230,6 @@ impl BracedParam {
         ans.unknown += &unknown.clone();
         ans.text += &unknown;
         return;
-        /*
-
-        let len = feeder.scanner_unknown_in_param_brace();
-        if len == 0 {
-            return false;
-        }
-
-        let unknown = feeder.consume(len);
-        ans.unknown += &unknown.clone();
-        ans.text += &unknown;
-        true
-        */
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BracedParam> {
@@ -241,6 +238,11 @@ impl BracedParam {
         }
         let mut ans = Self::new();
         ans.text += &feeder.consume(2);
+
+        if feeder.starts_with("#") && ! feeder.starts_with("#}") {
+            ans.num = true;
+            ans.text += &feeder.consume(1);
+        }
 
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core);
