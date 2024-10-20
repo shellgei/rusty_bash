@@ -209,7 +209,7 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
     ans
 }
 
-fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans = vec![];
 
     if let Ok(f) = File::open("/etc/passwd") {
@@ -231,11 +231,10 @@ fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() > 2 && args[1] == "-u" {
         for command in &args[2..] {
-            core.completion_functions.insert(command.clone(), "user".to_string());
+            core.completion_actions.insert(command.clone(), "user".to_string());
         }
+        return 0;
     }
-    //&& (args.len() > 3 && args[1] == "-A" && args[2] == "user") {
-    //}
 
     if args.len() > 3 && args[1] == "-F" {
         core.completion_functions.insert(args[3].clone(), args[2].clone());

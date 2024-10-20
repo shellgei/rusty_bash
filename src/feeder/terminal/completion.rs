@@ -102,25 +102,16 @@ impl Terminal {
     }
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> bool {
-
         let pos = core.data.get_param("COMP_CWORD").to_string();
         let last = core.data.get_array("COMP_WORDS", &pos);
+
+        let com = core.data.get_array("COMP_WORDS", "0");
 
         let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
 
         let mut args = vec!["".to_string(), "".to_string(), last_tilde_expanded.to_string()];
-        let list = match pos == "0" {
-            true  => {
-                if core.data.get_array_len("COMP_WORDS") == 0 {
-                    self.escape_at_completion = false;
-                    completion::compgen_h(core, &mut args).to_vec().into_iter().filter(|h| h.len() > 0).collect()
-                }else{
-                    completion::compgen_c(core, &mut args)
-                }
-            },
-            false => completion::compgen_f(core, &mut args),
-        };
 
+        let list = self.make_default_compreply(core, &mut args, &com, &pos);
         if list.len() == 0 {
             return false;
         }
@@ -128,6 +119,26 @@ impl Terminal {
         let tmp = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
         core.data.set_array("COMPREPLY", &tmp);
         true
+    }
+
+    fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
+                              com: &str, pos: &str) -> Vec<String> {
+        if let Some(action) = core.completion_actions.get(com) {
+            if action == "user" {
+                return completion::compgen_u(core, args);
+            }
+        }
+
+        if pos == "0" {
+            return if core.data.get_array_len("COMP_WORDS") == 0 {
+                self.escape_at_completion = false;
+                completion::compgen_h(core, args).to_vec().into_iter().filter(|h| h.len() > 0).collect()
+            }else{
+                completion::compgen_c(core, args)
+            };
+        }
+
+        completion::compgen_f(core, args)
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) {
