@@ -79,6 +79,12 @@ ok" ] || err $LINENO
 res=$($com <<< 'A=aaa ; echo ${A- - - - -}' )
 [ "$res" = "aaa" ] || err $LINENO
 
+res=$($com <<< 'A=aaa ; echo ${A+- - - - bbb}' )
+[ "$res" = "- - - - bbb" ] || err $LINENO
+
+res=$($com <<< 'A= ; echo ${A+- - - - bbb}' )
+[ "$res" = "- - - - bbb" ] || err $LINENO
+
 res=$($com <<< 'echo ${A:-   abc}' )
 [ "$res" = "abc" ] || err $LINENO
 

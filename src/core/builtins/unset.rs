@@ -19,6 +19,10 @@ fn unset_function(core: &mut ShellCore, name: &str) -> i32 {
 }
 
 pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
+        return 0;
+    }
+
     match args[1].as_ref() {
         "-f" => {
             if args.len() > 2 {

@@ -50,7 +50,6 @@ impl Subword for BracedParam {
             return false;
         }
         if self.unknown.len() > 0 
-        && ! self.unknown.starts_with("-")
         && ! self.unknown.starts_with(",") {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
@@ -72,7 +71,13 @@ impl Subword for BracedParam {
             };
         }
 
-        match self.default_symbol.as_ref() {
+        match self.default_symbol.as_deref() {
+            Some("-") => {
+                self.default_value = None;
+                self.default_symbol = None;
+                return true;
+            },
+            Some("+") => return true,
             Some(s) => if s == ":+" || self.text == "" {
                 return self.replace_to_default(core);
             },

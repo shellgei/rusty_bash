@@ -276,7 +276,7 @@ impl Feeder {
     }
 
     pub fn scanner_parameter_default_symbol(&mut self) -> usize {
-        self.scanner_one_of(&[":-", ":=", ":?", ":+"])
+        self.scanner_one_of(&[":-", ":=", ":?", ":+", "-", "+"])
     }
 
     pub fn scanner_test_check_option(&mut self, core: &mut ShellCore) -> usize {
