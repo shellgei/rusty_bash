@@ -781,11 +781,11 @@ res=$($com -c '[[ /etc/passwd -nt /tmp/aaaaaaaaa ]]')
 res=$($com -c '[[ /etc/aaaaaaaaaa -nt /etc/bbbbbb ]]')
 [ "$?" = "1" ] || err $LINENO
 
-res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ /tmp/$$x -ot /tmp/$$ ]]')
+res=$($com -c 'touch /tmp/$$ ; sleep 0.01; touch /tmp/$$x; [[ /tmp/$$x -ot /tmp/$$ ]]')
 [ "$?" = "1" ] || err $LINENO
 rm -f /tmp/$$*
 
-res=$($com -c 'touch /tmp/$$ ; touch /tmp/$$x; [[ /tmp/$$ -ot /tmp/$$x ]]')
+res=$($com -c 'touch /tmp/$$ ; sleep 0.01; touch /tmp/$$x; [[ /tmp/$$ -ot /tmp/$$x ]]')
 [ "$?" = "0" ] || err $LINENO
 rm -f /tmp/$$*
 
