@@ -41,7 +41,10 @@ impl Options {
             options.opts.insert(opt.to_string(), false);
         }*/
 
-        options.opts.insert("extglob".to_string(), true);
+        let true_list = ["extglob", "progcomp"];
+        for opt in true_list {
+            options.opts.insert(opt.to_string(), true);
+        }
 
         options
     }

@@ -229,11 +229,19 @@ fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 }
 
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() < 4 || args[1] != "-F" {
-        eprintln!("sush: {}: still unsupported", &args[0]);
-        return 1;
+    if args.len() > 2 && args[1] == "-u" {
+        for command in &args[2..] {
+            core.completion_functions.insert(command.clone(), "user".to_string());
+        }
+    }
+    //&& (args.len() > 3 && args[1] == "-A" && args[2] == "user") {
+    //}
+
+    if args.len() > 3 && args[1] == "-F" {
+        core.completion_functions.insert(args[3].clone(), args[2].clone());
+        return 0;
     }
 
-    core.completion_functions.insert(args[3].clone(), args[2].clone());
-    0
+    eprintln!("sush: {} {}: still unsupported", &args[0], &args[1]);
+    1
 }
