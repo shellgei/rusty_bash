@@ -6,6 +6,7 @@ use crate::elements::subword;
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
@@ -17,6 +18,8 @@ pub struct BracedParam {
     pub alternative_symbol: Option<String>,
     pub alternative_value: Option<Word>,
     pub num: bool,
+    has_offset: bool,
+    offset: Option<ArithmeticExpr>,
 }
 
 fn is_param(s :&String) -> bool {
@@ -71,6 +74,30 @@ impl Subword for BracedParam {
             };
         }
 
+        if self.has_offset {
+            match self.offset.clone() {
+                None => {
+                    eprintln!("sush: {}: bad substitution", &self.text);
+                    return false;
+                },
+                Some(mut offset) => {
+                    if offset.text == "" {
+                        eprintln!("sush: {}: bad substitution", &self.text);
+                        return false;
+                    }
+                    match offset.eval(core) {
+                        None => return false,
+                        Some(s) => match s.parse::<usize>() {
+                            Ok(n) => {
+                                self.text = self.text.chars().enumerate().filter(|(i, _)| i >= &n).map(|(_, c)| c).collect();
+                            },
+                            _ => return false,
+                        }
+                    }
+                },
+            }
+        }
+
         match self.alternative_symbol.as_deref() {
             Some("-") => {
                 self.alternative_value = None;
@@ -106,6 +133,8 @@ impl BracedParam {
             alternative_symbol: None,
             alternative_value: None,
             num: false,
+            has_offset: false,
+            offset: None,
         }
     }
 
@@ -173,6 +202,22 @@ impl BracedParam {
         let sw = Box::new(SimpleSubword{ text: blank.clone() });
         word.subwords.push(sw);
         ans.text += &blank.clone();
+    }
+
+    fn eat_offset(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with(":") {
+            return false;
+        }
+        ans.text += &feeder.consume(1);
+        ans.has_offset = true;
+        ans.offset = match ArithmeticExpr::parse(feeder, core, true) {
+            Some(a) => {
+                ans.text += &a.text.clone();
+                Some(a)
+            },
+            None => None,
+        };
+        true
     }
 
     fn eat_alternative_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -258,7 +303,8 @@ impl BracedParam {
 
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core);
-            Self::eat_alternative_value(feeder, &mut ans, core);
+            let _ = Self::eat_alternative_value(feeder, &mut ans, core) 
+                 || Self::eat_offset(feeder, &mut ans, core);
         }
 
         while ! feeder.starts_with("}") {

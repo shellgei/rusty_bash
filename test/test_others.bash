@@ -115,6 +115,24 @@ res=$($com <<< 'A=aaa; echo ${B+$A}' )
 res=$($com <<< 'A=aaa; B=b ; echo ${B+$A}' )
 [ "$res" = "aaa" ] || err $LINENO
 
+# offset
+
+res=$($com <<< 'A=abc; echo ${A:1}' )
+[ "$res" = "bc" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:2}' )
+[ "$res" = "うえお" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:1 + 1 }' )
+[ "$res" = "うえお" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:}' )
+[ "$?" = 1 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:6}' )
+[ "$res" = "" ] || err $LINENO
+
 ### IRREGULAR INPUT TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')

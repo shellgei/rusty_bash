@@ -123,6 +123,9 @@ impl Word {
         if feeder.starts_with("#") {
             return None;
         }
+        if as_operand && feeder.starts_with("}") {
+            return None;
+        }
 
         let mut ans = Word::new();
         while let Some(sw) = subword::parse(feeder, core) {
@@ -134,6 +137,9 @@ impl Word {
                 },
             }
 
+            if as_operand && feeder.starts_with("}") {
+                break;
+            }
             if as_operand && feeder.scanner_math_symbol(core) != 0 {
                 break;
             }
