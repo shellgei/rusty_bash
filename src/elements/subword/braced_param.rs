@@ -75,27 +75,7 @@ impl Subword for BracedParam {
         }
 
         if self.has_offset {
-            match self.offset.clone() {
-                None => {
-                    eprintln!("sush: {}: bad substitution", &self.text);
-                    return false;
-                },
-                Some(mut offset) => {
-                    if offset.text == "" {
-                        eprintln!("sush: {}: bad substitution", &self.text);
-                        return false;
-                    }
-                    match offset.eval(core) {
-                        None => return false,
-                        Some(s) => match s.parse::<usize>() {
-                            Ok(n) => {
-                                self.text = self.text.chars().enumerate().filter(|(i, _)| i >= &n).map(|(_, c)| c).collect();
-                            },
-                            _ => return false,
-                        }
-                    }
-                },
-            }
+            return self.offset(core);
         }
 
         match self.alternative_symbol.as_deref() {
@@ -136,6 +116,32 @@ impl BracedParam {
             has_offset: false,
             offset: None,
         }
+    }
+
+    fn offset(&mut self, core: &mut ShellCore) -> bool {
+        let mut offset = match self.offset.clone() {
+            None => {
+                eprintln!("sush: {}: bad substitution", &self.text);
+                return false;
+            },
+            Some(ofs) => ofs,
+        };
+
+        if offset.text == "" {
+            eprintln!("sush: {}: bad substitution", &self.text);
+            return false;
+        }
+
+        match offset.eval(core) {
+            None => return false,
+            Some(s) => match s.parse::<usize>() {
+                Ok(n) => {
+                    self.text = self.text.chars().enumerate().filter(|(i, _)| i >= &n).map(|(_, c)| c).collect();
+                },
+                _ => return false,
+            }
+        }
+        true
     }
 
     fn replace_to_alternative(&mut self, core: &mut ShellCore) -> bool {
