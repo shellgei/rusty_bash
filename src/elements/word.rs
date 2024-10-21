@@ -129,8 +129,8 @@ impl Word {
             match sw.is_extglob() {
                 false => ans.push(&sw),
                 true  => {
-                    let sws = sw.get_child_subwords();
-                    ans.subwords.append(&mut sws.to_vec());
+                    let mut sws = sw.get_child_subwords();
+                    ans.subwords.append(&mut sws);
                 },
             }
 
