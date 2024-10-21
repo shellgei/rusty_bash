@@ -14,8 +14,8 @@ pub struct BracedParam {
     pub name: String,
     pub unknown: String,
     pub subscript: Option<Subscript>,
-    pub default_symbol: Option<String>,
-    pub default_value: Option<Word>,
+    pub alternative_symbol: Option<String>,
+    pub alternative_value: Option<Word>,
     pub num: bool,
 }
 
@@ -71,14 +71,14 @@ impl Subword for BracedParam {
             };
         }
 
-        match self.default_symbol.as_deref() {
+        match self.alternative_symbol.as_deref() {
             Some("-") => {
-                self.default_value = None;
-                self.default_symbol = None;
+                self.alternative_value = None;
+                self.alternative_symbol = None;
                 return true;
             },
             Some(s) => if s == ":+" || s == "+" || self.text == "" {
-                return self.replace_to_default(core);
+                return self.replace_to_alternative(core);
             },
             _ => {},
         }
@@ -88,8 +88,8 @@ impl Subword for BracedParam {
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
-    fn substitute_replace(&self) -> Vec<Box<dyn Subword>> {
-        match self.default_value.as_ref() {
+    fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {
+        match self.alternative_value.as_ref() {
             Some(w) => w.subwords.to_vec(),
             None    => vec![],
         }
@@ -103,19 +103,19 @@ impl BracedParam {
             name: String::new(),
             unknown: String::new(),
             subscript: None,
-            default_symbol: None,
-            default_value: None,
+            alternative_symbol: None,
+            alternative_value: None,
             num: false,
         }
     }
 
-    fn replace_to_default(&mut self, core: &mut ShellCore) -> bool {
-        let symbol = match self.default_symbol.as_ref() {
+    fn replace_to_alternative(&mut self, core: &mut ShellCore) -> bool {
+        let symbol = match self.alternative_symbol.as_ref() {
             Some(s) => s,
             None    => return true,
         };
 
-        let word = match self.default_value.as_ref() {
+        let word = match self.alternative_value.as_ref() {
             Some(w) => match w.tilde_and_dollar_expansion(core) {
                             Some(w2) => w2,
                             None     => return false,
@@ -127,19 +127,19 @@ impl BracedParam {
 
         if symbol == "+" {
             if ! core.data.has_value(&self.name) {
-                self.default_value = None;
+                self.alternative_value = None;
                 return true;
             }
-            self.default_value = Some(word);
+            self.alternative_value = Some(word);
             return true;
         }
         if symbol == ":-" {
-            self.default_value = Some(word);
+            self.alternative_value = Some(word);
             return true;
         }
         if symbol == ":=" {
             core.data.set_param(&self.name, &value);
-            self.default_value = None;
+            self.alternative_value = None;
             self.text = value;
             return true;
         }
@@ -148,7 +148,7 @@ impl BracedParam {
             return false;
         }
         if symbol == ":+" {
-            self.default_value = match self.text.as_str() {
+            self.alternative_value = match self.text.as_str() {
                 "" => None,
                 _  => Some(word),
             };
@@ -168,20 +168,20 @@ impl BracedParam {
         false
     }
 
-    fn push_default_subword(len: usize, feeder: &mut Feeder, ans: &mut Self, word: &mut Word) {
+    fn push_alternative_subword(len: usize, feeder: &mut Feeder, ans: &mut Self, word: &mut Word) {
         let blank = feeder.consume(len);
         let sw = Box::new(SimpleSubword{ text: blank.clone() });
         word.subwords.push(sw);
         ans.text += &blank.clone();
     }
 
-    fn eat_default_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let num = feeder.scanner_parameter_default_symbol();
+    fn eat_alternative_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let num = feeder.scanner_parameter_alternative_symbol();
         if num == 0 {
             return false;
         }
         let symbol = feeder.consume(num);
-        ans.default_symbol = Some(symbol.clone());
+        ans.alternative_symbol = Some(symbol.clone());
         ans.text += &symbol;
 
         let num = feeder.scanner_blank(core);
@@ -196,17 +196,17 @@ impl BracedParam {
             }
 
             if feeder.starts_with("\n") {
-                Self::push_default_subword(1, feeder, ans, &mut word);
+                Self::push_alternative_subword(1, feeder, ans, &mut word);
                 feeder.feed_additional_line(core);
             }
 
             let num = feeder.scanner_blank(core);
             if num != 0 {
-                Self::push_default_subword(num, feeder, ans, &mut word);
+                Self::push_alternative_subword(num, feeder, ans, &mut word);
             }
         }
 
-        ans.default_value = Some(word);
+        ans.alternative_value = Some(word);
 
         true
     }
@@ -258,7 +258,7 @@ impl BracedParam {
 
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core);
-            Self::eat_default_value(feeder, &mut ans, core);
+            Self::eat_alternative_value(feeder, &mut ans, core);
         }
 
         while ! feeder.starts_with("}") {

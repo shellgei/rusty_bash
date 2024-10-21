@@ -66,7 +66,7 @@ pub trait Subword {
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
-    fn substitute_replace(&self) -> Vec<Box<dyn Subword>> {vec![]}
+    fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {vec![]}
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;

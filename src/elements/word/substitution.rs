@@ -13,14 +13,14 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
     if ! word.subwords.iter_mut().all(|w| w.substitute(core)) {
         return false;
     }
-    substitute_replace(word);
+    alternative_replace(word);
     true
 }
 
-fn substitute_replace(word: &mut Word) {
+fn alternative_replace(word: &mut Word) {
     let mut pos = 0;
     while pos < word.subwords.len() {
-        let sws = word.subwords[pos].substitute_replace();
+        let sws = word.subwords[pos].get_alternative_subwords();
         if sws.len() == 0 {
             pos += 1;
             continue;
