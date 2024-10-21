@@ -15,7 +15,7 @@ pub struct BracedParam {
     pub unknown: String,
     pub subscript: Option<Subscript>,
     pub default_symbol: Option<String>,
-    pub default_value: Option<Word>,
+    pub default_value: Vec<Word>,
     pub num: bool,
 }
 
@@ -73,7 +73,7 @@ impl Subword for BracedParam {
 
         match self.default_symbol.as_deref() {
             Some("-") => {
-                self.default_value = None;
+                self.default_value.clear();
                 self.default_symbol = None;
                 return true;
             },
@@ -90,10 +90,10 @@ impl Subword for BracedParam {
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn substitute_replace(&self) -> Vec<Box<dyn Subword>> {
-        match self.default_value.as_ref() {
-            Some(w) => w.subwords.to_vec(),
-            None    => vec![],
+        if self.default_value.len() == 0 {
+            return vec![];
         }
+        self.default_value[0].subwords.to_vec()
     }
 }
 
@@ -105,7 +105,7 @@ impl BracedParam {
             unknown: String::new(),
             subscript: None,
             default_symbol: None,
-            default_value: None,
+            default_value: vec![],
             num: false,
         }
     }
@@ -116,23 +116,23 @@ impl BracedParam {
             None    => return true,
         };
 
-        let word = match self.default_value.as_ref() {
-            Some(w) => match w.tilde_and_dollar_expansion(core) {
+        let word = match self.default_value.len() {
+            0 => return false,
+            _ => match self.default_value[0].tilde_and_dollar_expansion(core) {
                             Some(w2) => w2,
                             None     => return false,
                         },
-            None    => return false,
         };
 
         let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
 
         if symbol == ":-" {
-            self.default_value = Some(word);
+            self.default_value = vec![word];
             return true;
         }
         if symbol == ":=" {
             core.data.set_param(&self.name, &value);
-            self.default_value = None;
+            self.default_value = vec![];
             self.text = value;
             return true;
         }
@@ -142,8 +142,8 @@ impl BracedParam {
         }
         if symbol == ":+" {
             self.default_value = match self.text.as_str() {
-                "" => None,
-                _  => Some(word),
+                "" => vec![],
+                _  => vec![word],
             };
             return true;
         }
@@ -199,7 +199,7 @@ impl BracedParam {
             }
         }
 
-        ans.default_value = Some(word);
+        ans.default_value.push(word);
 
         true
     }
