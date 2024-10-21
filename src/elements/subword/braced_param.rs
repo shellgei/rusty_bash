@@ -132,14 +132,16 @@ impl BracedParam {
             return false;
         }
 
-        match offset.eval(core) {
+        let num_str = match offset.eval(core) {
             None => return false,
-            Some(s) => match s.parse::<usize>() {
-                Ok(n) => {
-                    self.text = self.text.chars().enumerate().filter(|(i, _)| i >= &n).map(|(_, c)| c).collect();
-                },
-                _ => return false,
-            }
+            Some(s) => s,
+        };
+
+        match num_str.parse::<usize>() {
+            Ok(n) => self.text = self.text.chars().enumerate()
+                                     .filter(|(i, _)| i >= &n)
+                                     .map(|(_, c)| c).collect(),
+            _ => return false,
         }
         true
     }
