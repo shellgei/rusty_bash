@@ -15,7 +15,7 @@ pub struct ExtGlob {
 impl Subword for ExtGlob {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn get_child_subwords(&self) -> Option<&Vec<Box<dyn Subword>>> { Some(&self.subwords) }
+    fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> { self.subwords.clone() }
     fn is_extglob(&self) -> bool {true}
 }
 
