@@ -109,6 +109,16 @@ impl Data {
         None
     }
 
+    pub fn has_value(&mut self, key: &str) -> bool {
+        let num = self.parameters.len();
+        for layer in (0..num).rev()  {
+            if let Some(_) = self.parameters[layer].get(key) {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn get_array_len(&mut self, key: &str) -> usize {
         match self.get_value(key) {
             Some(Value::EvaluatedArray(a)) => a.len(),

@@ -77,8 +77,7 @@ impl Subword for BracedParam {
                 self.default_symbol = None;
                 return true;
             },
-            Some("+") => return true,
-            Some(s) => if s == ":+" || self.text == "" {
+            Some(s) => if s == ":+" || s == "+" || self.text == "" {
                 return self.replace_to_default(core);
             },
             _ => {},
@@ -126,6 +125,14 @@ impl BracedParam {
 
         let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
 
+        if symbol == "+" {
+            if ! core.data.has_value(&self.name) {
+                self.default_value = None;
+                return true;
+            }
+            self.default_value = Some(word);
+            return true;
+        }
         if symbol == ":-" {
             self.default_value = Some(word);
             return true;

@@ -106,11 +106,14 @@ def"}' )
 [ "$res" = "あ
 def" ] || err $LINENO
 
-#res=$($com <<< 'A=aaa; B= ; echo ${B+$A}' )
-#[ "$res" = "" ] || err $LINENO
-#
-#res=$($com <<< 'A=aaa; B=b ; echo ${B+$A}' )
-#[ "$res" = "aaa" ] || err $LINENO
+res=$($com <<< 'A=aaa; B= ; echo ${B+$A}' )
+[ "$res" = "aaa" ] || err $LINENO
+
+res=$($com <<< 'A=aaa; echo ${B+$A}' )
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=aaa; B=b ; echo ${B+$A}' )
+[ "$res" = "aaa" ] || err $LINENO
 
 ### IRREGULAR INPUT TEST ###
 
