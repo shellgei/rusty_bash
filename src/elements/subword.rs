@@ -84,6 +84,7 @@ pub trait Subword {
     }
 
     fn is_name(&self) -> bool {false}
+    fn is_extglob(&self) -> bool {false}
     fn no_split(&self) -> bool {false}
     fn get_child_subwords(&self) -> Option<&Vec<Box<dyn Subword>>> { None }
 }

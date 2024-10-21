@@ -126,7 +126,15 @@ impl Word {
 
         let mut ans = Word::new();
         while let Some(sw) = subword::parse(feeder, core) {
-            ans.push(&sw);
+            match sw.is_extglob() {
+                false => ans.push(&sw),
+                true  => {
+                    match sw.get_child_subwords() {
+                        None      => {},
+                        Some(sws) => ans.subwords.append(&mut sws.to_vec()),
+                    }
+                },
+            }
 
             if as_operand && feeder.scanner_math_symbol(core) != 0 {
                 break;
@@ -135,17 +143,7 @@ impl Word {
 
         match ans.subwords.len() {
             0 => None,
-            _ => {
-                let mut ans2 = Word::new();
-                ans2.text = ans.text;
-                for s in ans.subwords {
-                    match s.get_child_subwords() {
-                        None      => ans2.subwords.push(s),
-                        Some(sws) => ans2.subwords.append(&mut sws.to_vec()),
-                    }
-                }
-                Some(ans2)
-            },
+            _ => Some(ans),
         }
     }
 }

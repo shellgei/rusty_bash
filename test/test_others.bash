@@ -91,6 +91,9 @@ res=$($com <<< 'echo ${A:-   abc}' )
 res=$($com <<< 'echo ${A:-abc def}' )
 [ "$res" = "abc def" ] || err $LINENO
 
+res=$($com <<< 'echo ${A:-abc   def}' )
+[ "$res" = "abc def" ] || err $LINENO
+
 res=$($com <<< 'B=あ ; echo ${A:-$B def}' )
 [ "$res" = "あ def" ] || err $LINENO
 
@@ -102,6 +105,12 @@ res=$($com <<< 'B=あ ; echo ${A:-"$B
 def"}' )
 [ "$res" = "あ
 def" ] || err $LINENO
+
+#res=$($com <<< 'A=aaa; B= ; echo ${B+$A}' )
+#[ "$res" = "" ] || err $LINENO
+#
+#res=$($com <<< 'A=aaa; B=b ; echo ${B+$A}' )
+#[ "$res" = "aaa" ] || err $LINENO
 
 ### IRREGULAR INPUT TEST ###
 
