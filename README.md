@@ -69,7 +69,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 |-------------------|----|-------------------|----|-------------------|----|
 | if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: |
 | {} | :heavy_check_mark: | case | :heavy_check_mark: | until | :no_good: | select | :no_good: |
-| for | :heavy_check_mark: |
+| for | :heavy_check_mark: | [[ ]] | :heavy_check_mark: |
 
 ### control operator
 
@@ -83,9 +83,9 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| brace `{a,b}` | :heavy_check_mark: | brace `{1..10}` | :no_good: | tilde | :heavy_check_mark: |
-| parameter/variable `$A ${A}` | :heavy_check_mark: | parameter/variable  (others) | :no_good: | command substitution | :heavy_check_mark: |
-| arithmetic | :construction: | word splitting | :heavy_check_mark: | path name | :heavy_check_mark: |
+| brace `{a,b}` | :heavy_check_mark: | brace :heavy_check_mark: | :no_good: | tilde | :heavy_check_mark: |
+| arithmetic | :heavy_check_mark: | word splitting | :heavy_check_mark: | path name | :heavy_check_mark: |
+| command substitution | :heavy_check_mark: | parameter/variable `$A ${A}` | :heavy_check_mark: | `${name:offset}, ${name:offset:length}` | :heavy_check_mark: |
 
 ### special parameters
 
