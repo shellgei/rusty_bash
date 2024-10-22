@@ -20,6 +20,8 @@ pub struct BracedParam {
     pub num: bool,
     has_offset: bool,
     offset: Option<ArithmeticExpr>,
+    has_length: bool,
+    length: Option<ArithmeticExpr>,
 }
 
 fn is_param(s :&String) -> bool {
@@ -125,20 +127,34 @@ impl BracedParam {
             return false;
         }
 
-        let num_str = match offset.eval(core) {
+        match offset.eval_as_int(core) {
             None => return false,
-            Some(s) => s,
+            Some(n) => {
+                self.text = self.text.chars().enumerate()
+                                .filter(|(i, _)| (*i as i64) >= n)
+                                .map(|(_, c)| c).collect();
+            },
         };
 
-        match num_str.parse::<usize>() {
-            Ok(n) => {
-                self.text = self.text.chars().enumerate()
-                                .filter(|(i, _)| i >= &n)
-                                .map(|(_, c)| c).collect();
-                true
-            },
-            _ => false,
+        if self.has_length {
+            let mut length = match self.length.clone() {
+                None => {
+                    eprintln!("sush: {}: bad substitution", &self.text);
+                    return false;
+                },
+                Some(ofs) => ofs,
+            };
+            match length.eval_as_int(core) {
+                None => return false,
+                Some(n) => {
+                    self.text = self.text.chars().enumerate()
+                                    .filter(|(i, _)| (*i as i64) < n)
+                                    .map(|(_, c)| c).collect();
+                },
+            };
         }
+
+        true
     }
 
     fn replace_to_alternative(&mut self, core: &mut ShellCore) -> bool {
@@ -201,6 +217,8 @@ impl BracedParam {
             num: false,
             has_offset: false,
             offset: None,
+            has_length: false,
+            length: None,
         }
     }
 
@@ -230,11 +248,27 @@ impl BracedParam {
         ans.offset = match ArithmeticExpr::parse(feeder, core, true) {
             Some(a) => {
                 ans.text += &a.text.clone();
+                Self::eat_length(feeder, ans, core);
                 Some(a)
             },
             None => None,
         };
         true
+    }
+
+    fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+        if ! feeder.starts_with(":") {
+            return;
+        }
+        ans.text += &feeder.consume(1);
+        ans.has_length = true;
+        ans.length = match ArithmeticExpr::parse(feeder, core, true) {
+            Some(a) => {
+                ans.text += &a.text.clone();
+                Some(a)
+            },
+            None => None,
+        };
     }
 
     fn eat_alternative_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

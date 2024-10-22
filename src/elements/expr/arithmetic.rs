@@ -37,6 +37,21 @@ impl ArithmeticExpr {
         }
     }
 
+    pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Option<i64> {
+        match self.eval_elems(core, true) {
+            Ok(ArithElem::Integer(n)) => Some(n),
+            Ok(ArithElem::Float(f))   => {
+                eprintln!("sush: {}: Not integer. {}", &self.text, f);
+                None
+            },
+            Err(msg) => {
+                eprintln!("sush: {}: {}", &self.text, msg);
+                None
+            },
+            _ => exit::internal("invalid calculation result"),
+        }
+    }
+
     pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<ArithElem, String> {
         if self.elements.len() == 0 && ! permit_empty {
             return Err("operand expexted (error token: \")\")".to_string());

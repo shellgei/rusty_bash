@@ -126,6 +126,18 @@ res=$($com <<< 'A=あいうえお; echo ${A:2}' )
 res=$($com <<< 'A=あいうえお; echo ${A:1 + 1 }' )
 [ "$res" = "うえお" ] || err $LINENO
 
+res=$($com <<< 'A=あいうえお; echo ${A:1 + 1:1}' )
+[ "$res" = "う" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:1 + 1:2}' )
+[ "$res" = "うえ" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:1 + 1:9}' )
+[ "$res" = "うえお" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:1 + 1:}' )
+[ "$res" = "" ] || err $LINENO
+
 res=$($com <<< 'A=あいうえお; echo ${A:}' )
 [ "$?" = 1 ] || err $LINENO
 [ "$res" = "" ] || err $LINENO
