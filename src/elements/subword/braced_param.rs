@@ -149,10 +149,10 @@ impl BracedParam {
 
         let word = match self.alternative_value.as_ref() {
             Some(w) => match w.tilde_and_dollar_expansion(core) {
-                            Some(w2) => w2,
-                            None     => return false,
-                        },
-            None    => return false,
+                Some(w2) => w2,
+                None     => return false,
+            },
+            None => return false,
         };
 
         let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
@@ -269,7 +269,6 @@ impl BracedParam {
         }
 
         ans.alternative_value = Some(word);
-
         true
     }
 
