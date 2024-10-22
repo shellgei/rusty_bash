@@ -92,16 +92,16 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
 | $ | :heavy_check_mark: | ? | :heavy_check_mark: | * | :heavy_check_mark: |
-| @ | :heavy_check_mark: | # | :no_good:          | - | :heavy_check_mark: |
+| @ | :heavy_check_mark: | # | :heavy_check_mark: | - | :heavy_check_mark: |
 | ! | :no_good: | _ | :heavy_check_mark: |
 
 ### builtin commands
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :no_good: |
+| cd | :heavy_check_mark: | pwd | :heavy_check_mark: | read | :construction: |
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: |
-| shopt | :no_good: | : | :heavy_check_mark: | . | :no_good: | [ | :no_good: |
+| shopt | :construction: | : | :heavy_check_mark: | . | :heavy_check_mark: | [ | :no_good: |
 | alias | :heavy_check_mark: | bg | :construction: | bind | :no_good: |
 | break | :heavy_check_mark: | builtin | :no_good: | caller | :no_good: |
 | command | :no_good: | compgen | :construction: | complete | :construction: |
