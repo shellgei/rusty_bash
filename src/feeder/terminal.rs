@@ -21,7 +21,7 @@ struct Terminal {
     prompt_row: usize,
     chars: Vec<char>,
     head: usize,
-    hist_ptr: usize,
+    //hist_ptr: usize,
     prompt_width_map: Vec<usize>,
     /* for extended completion */
     completion_candidate: String,
@@ -91,7 +91,7 @@ impl Terminal {
             prompt_row: row as usize,
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
-            hist_ptr: 0,
+            //hist_ptr: 0,
             prompt_width_map: Self::make_width_map(&replaced_prompt),
             completion_candidate: String::new(),
             tab_row: -1,
@@ -317,6 +317,7 @@ impl Terminal {
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 
+    /*
     pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
         let prev = self.hist_ptr;
         let prev_str = self.get_string(self.prompt.chars().count());
@@ -326,7 +327,7 @@ impl Terminal {
         self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str).replace("↵ \0", "\n").chars());
         self.head = self.chars.len();
         self.rewrite(true);
-    }
+    }*/
 
     pub fn cloop(&mut self) {
         print!("\x07");
@@ -334,7 +335,7 @@ impl Terminal {
     }
 }
 
-fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: usize) {
+fn on_arrow_key(term: &mut Terminal, _: &mut ShellCore, key: &event::Key, tab_num: usize) {
     if tab_num > 1 {
         match key {
             event::Key::Down  => term.tab_row += 1,
@@ -346,8 +347,8 @@ fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab
         //term.completion(core, tab_num);
     }else{
         match key {
-            event::Key::Down  => term.call_history(-1, core),
-            event::Key::Up    => term.call_history(1, core),
+            //event::Key::Down  => term.call_history(-1, core),
+            //event::Key::Up    => term.call_history(1, core),
             event::Key::Right => term.shift_cursor(1),
             event::Key::Left  => term.shift_cursor(-1),
             _ => {},
