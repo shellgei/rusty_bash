@@ -143,7 +143,7 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | cmdhist | :no_good: | compat31 | :no_good: | compat32 | :no_good: |
 | compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
 | dotglob | :no_good: | execfail | :no_good: | expand_aliases | :no_good: |
-| extdebug | :no_good: | extglob | :construction: | extquote | :no_good: |
+| extdebug | :no_good: | extglob | :heavy_check_mark: | extquote | :no_good: |
 | failglob | :no_good: | force_fignore | :no_good: | globstar | :no_good: |
 | gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
 | histverify | :no_good: | hostcomplete | :no_good: | huponexit | :no_good: |
