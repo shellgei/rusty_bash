@@ -21,7 +21,6 @@ use std::sync::atomic::Ordering::Relaxed;
 
 pub struct ShellCore {
     pub data: Data,
-    //rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
@@ -52,7 +51,6 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
             data: Data::new(),
-            //rewritten_history: HashMap::new(),
             history: vec![],
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),

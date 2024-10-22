@@ -2,4 +2,3 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod file_check;
-//pub mod directory;
