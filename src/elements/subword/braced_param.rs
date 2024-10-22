@@ -137,24 +137,29 @@ impl BracedParam {
         };
 
         if self.has_length {
-            let mut length = match self.length.clone() {
-                None => {
-                    eprintln!("sush: {}: bad substitution", &self.text);
-                    return false;
-                },
-                Some(ofs) => ofs,
-            };
-            match length.eval_as_int(core) {
-                None => return false,
-                Some(n) => {
-                    self.text = self.text.chars().enumerate()
-                                    .filter(|(i, _)| (*i as i64) < n)
-                                    .map(|(_, c)| c).collect();
-                },
-            };
+            return self.length(core);
         }
-
         true
+    }
+
+    fn length(&mut self, core: &mut ShellCore) -> bool {
+        let mut length = match self.length.clone() {
+            None => {
+                eprintln!("sush: {}: bad substitution", &self.text);
+                return false;
+            },
+            Some(ofs) => ofs,
+        };
+
+        match length.eval_as_int(core) {
+            None => false,
+            Some(n) => {
+                self.text = self.text.chars().enumerate()
+                                .filter(|(i, _)| (*i as i64) < n)
+                                .map(|(_, c)| c).collect();
+                true
+            },
+        }
     }
 
     fn replace_to_alternative(&mut self, core: &mut ShellCore) -> bool {
