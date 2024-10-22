@@ -48,13 +48,7 @@ impl Subword for BracedParam {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        if self.name.len() == 0 || ! is_param(&self.name) {
-            eprintln!("sush: {}: bad substitution", &self.text);
-            return false;
-        }
-        if self.unknown.len() > 0 
-        && ! self.unknown.starts_with(",") {
-            eprintln!("sush: {}: bad substitution", &self.text);
+        if ! self.check() {
             return false;
         }
 
@@ -104,18 +98,17 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn new() -> BracedParam {
-        BracedParam {
-            text: String::new(),
-            name: String::new(),
-            unknown: String::new(),
-            subscript: None,
-            alternative_symbol: None,
-            alternative_value: None,
-            num: false,
-            has_offset: false,
-            offset: None,
+    fn check(&mut self) -> bool {
+        if self.name.len() == 0 || ! is_param(&self.name) {
+            eprintln!("sush: {}: bad substitution", &self.text);
+            return false;
         }
+        if self.unknown.len() > 0 
+        && ! self.unknown.starts_with(",") {
+            eprintln!("sush: {}: bad substitution", &self.text);
+            return false;
+        }
+        true
     }
 
     fn offset(&mut self, core: &mut ShellCore) -> bool {
@@ -195,6 +188,20 @@ impl BracedParam {
         }
 
         return false;
+    }
+
+    fn new() -> BracedParam {
+        BracedParam {
+            text: String::new(),
+            name: String::new(),
+            unknown: String::new(),
+            subscript: None,
+            alternative_symbol: None,
+            alternative_value: None,
+            num: false,
+            has_offset: false,
+            offset: None,
+        }
     }
 
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
