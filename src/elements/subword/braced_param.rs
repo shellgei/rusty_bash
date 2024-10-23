@@ -125,21 +125,41 @@ impl BracedParam {
 
        if self.remove_symbol.starts_with("#") {
            let mut length = 0;
-           let mut max_length = 0;
+           let mut ans_length = 0;
 
            for ch in self.text.chars() {
                length += ch.len_utf8();
                let s = self.text[0..length].to_string();
 
                if glob::compare(&s, &pattern, extglob) {
-                   max_length = length;
+                   ans_length = length;
                    if self.remove_symbol == "#" {
                        break;
                    }
                }
            }
 
-           self.text = self.text[max_length..].to_string();
+           self.text = self.text[ans_length..].to_string();
+           return true;
+       }
+
+       if self.remove_symbol.starts_with("%") {
+           let mut length = self.text.len();
+           let mut ans_length = length;
+
+           for ch in self.text.chars().rev() {
+               length -= ch.len_utf8();
+               let s = self.text[length..].to_string();
+
+               if glob::compare(&s, &pattern, extglob) {
+                   ans_length = length;
+                   if self.remove_symbol == "%" {
+                       break;
+                   }
+               }
+           }
+
+           self.text = self.text[0..ans_length].to_string();
            return true;
        }
 

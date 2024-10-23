@@ -154,6 +154,12 @@ res=$($com <<< 'A=usr/local/bin/bash; echo ${A#*/}' )
 res=$($com <<< 'A=usr/local/bin/bash; echo ${A##*/}' )
 [ "$res" = "bash" ] || err $LINENO
 
+res=$($com <<< 'A=usr/local/bin/bash; echo ${A%/*}' )
+[ "$res" = "usr/local/bin" ] || err $LINENO
+
+res=$($com <<< 'A=usr/local/bin/bash; echo ${A%%/*}' )
+[ "$res" = "usr" ] || err $LINENO
+
 res=$($com <<< 'A="あいう うえお"; echo ${A#*う う}' )
 [ "$res" = "えお" ] || err $LINENO
 
