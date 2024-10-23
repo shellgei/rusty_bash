@@ -113,7 +113,7 @@ impl BracedParam {
     fn remove(&mut self, core: &mut ShellCore) -> bool {
        let pattern = match &self.remove_pattern {
            Some(w) => {
-               match w.eval_as_value(core) {
+               match w.eval_for_case_word(core) {
                    Some(s) => s,
                    None    => return false,
                }
@@ -123,17 +123,24 @@ impl BracedParam {
 
        let extglob = core.shopts.query("extglob");
 
-       if self.remove_symbol == "#" {
+       if self.remove_symbol.starts_with("#") {
            let mut length = 0;
+           let mut max_length = 0;
 
            for ch in self.text.chars() {
                length += ch.len_utf8();
                let s = self.text[0..length].to_string();
+
                if glob::compare(&s, &pattern, extglob) {
-                   self.text = self.text[length..].to_string();
-                   return true;
+                   max_length = length;
+                   if self.remove_symbol == "#" {
+                       break;
+                   }
                }
            }
+
+           self.text = self.text[max_length..].to_string();
+           return true;
        }
 
        true
