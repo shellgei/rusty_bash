@@ -279,6 +279,10 @@ impl Feeder {
         self.scanner_one_of(&[":-", ":=", ":?", ":+", "-", "+"])
     }
 
+    pub fn scanner_parameter_remove_symbol(&mut self) -> usize {
+        self.scanner_one_of(&["##", "#", "%%", "%"])
+    }
+
     pub fn scanner_test_check_option(&mut self, core: &mut ShellCore) -> usize {
         match self.remaining.chars().nth(0) {
             Some('-') => {},

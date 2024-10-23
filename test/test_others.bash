@@ -148,6 +148,12 @@ res=$($com <<< 'A=あ; echo ${A: }' )
 res=$($com <<< 'A=あいうえお; echo ${A:6}' )
 [ "$res" = "" ] || err $LINENO
 
+#res=$($com <<< 'A=あいうえお; echo ${A#*う}' )
+#[ "$res" = "えお" ] || err $LINENO
+
+#res=$($com <<< 'A=あいう うえお; echo ${A#*う う}' )
+#[ "$res" = "えお" ] || err $LINENO
+
 ### IRREGULAR INPUT TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')

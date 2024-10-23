@@ -13,15 +13,19 @@ use super::simple::SimpleSubword;
 pub struct BracedParam {
     pub text: String,
     pub name: String,
-    pub unknown: String,
-    pub subscript: Option<Subscript>,
-    pub alternative_symbol: Option<String>,
-    pub alternative_value: Option<Word>,
-    pub num: bool,
+    unknown: String,
+    subscript: Option<Subscript>,
+    has_alternative: bool,
+    alternative_symbol: Option<String>,
+    alternative_value: Option<Word>,
+    num: bool,
     has_offset: bool,
     offset: Option<ArithmeticExpr>,
     has_length: bool,
     length: Option<ArithmeticExpr>,
+    has_remove_pattern: bool,
+    remove_symbol: String,
+    remove_pattern: Option<Word>,
 }
 
 fn is_param(s :&String) -> bool {
@@ -72,18 +76,8 @@ impl Subword for BracedParam {
 
         if self.has_offset {
             return self.offset(core);
-        }
-
-        match self.alternative_symbol.as_deref() {
-            Some("-") => {
-                self.alternative_value = None;
-                self.alternative_symbol = None;
-                return true;
-            },
-            Some(s) => if s == ":+" || s == "+" || self.text == "" {
-                return self.replace_to_alternative(core);
-            },
-            _ => {},
+        }else if self.has_alternative {
+            return self.replace_to_alternative(core);
         }
 
         true
@@ -163,9 +157,12 @@ impl BracedParam {
     }
 
     fn replace_to_alternative(&mut self, core: &mut ShellCore) -> bool {
-        let symbol = match self.alternative_symbol.as_ref() {
-            Some(s) => s,
-            None    => return true,
+        let symbol = match (self.alternative_symbol.as_deref(), self.text.as_ref()) {
+            (Some(s), "")   => s,
+            (Some("-"), _)  => "-",
+            (Some(":+"), _) => ":+",
+            (Some("+"), _)  => "+",
+            _               => return true,
         };
 
         let word = match self.alternative_value.as_ref() {
@@ -178,6 +175,11 @@ impl BracedParam {
 
         let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
 
+        if symbol == "-" {
+            self.alternative_value = None;
+            self.alternative_symbol = None;
+            return true;
+        }
         if symbol == "+" {
             if ! core.data.has_value(&self.name) {
                 self.alternative_value = None;
@@ -217,6 +219,7 @@ impl BracedParam {
             name: String::new(),
             unknown: String::new(),
             subscript: None,
+            has_alternative: false,
             alternative_symbol: None,
             alternative_value: None,
             num: false,
@@ -224,6 +227,9 @@ impl BracedParam {
             offset: None,
             has_length: false,
             length: None,
+            has_remove_pattern: false,
+            remove_symbol: String::new(),
+            remove_pattern: None,
         }
     }
 
@@ -261,6 +267,26 @@ impl BracedParam {
         true
     }
 
+    fn eat_remove_pattern(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_parameter_remove_symbol();
+        if len == 0 {
+            return false;
+        }
+
+        ans.remove_symbol = feeder.consume(len);
+        ans.text += &ans.remove_symbol.clone();
+        ans.has_remove_pattern = true;
+
+        ans.remove_pattern = match Word::parse(feeder, core, true) {
+            Some(w) => {
+                ans.text += &w.text.clone();
+                Some(w)
+            },
+            None => None,
+        };
+        true
+    }
+
     fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
         if ! feeder.starts_with(":") {
             return;
@@ -281,6 +307,8 @@ impl BracedParam {
         if num == 0 {
             return false;
         }
+
+        ans.has_alternative = true;
         let symbol = feeder.consume(num);
         ans.alternative_symbol = Some(symbol.clone());
         ans.text += &symbol;
@@ -359,7 +387,8 @@ impl BracedParam {
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core);
             let _ = Self::eat_alternative_value(feeder, &mut ans, core) 
-                 || Self::eat_offset(feeder, &mut ans, core);
+                 || Self::eat_offset(feeder, &mut ans, core)
+                 || Self::eat_remove_pattern(feeder, &mut ans, core);
         }
 
         while ! feeder.starts_with("}") {
