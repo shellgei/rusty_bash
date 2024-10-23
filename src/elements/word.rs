@@ -4,6 +4,8 @@
 mod brace_expansion;
 mod tilde_expansion;
 mod substitution;
+mod path_expansion;
+mod split;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword;
@@ -20,7 +22,7 @@ impl Word {
         let mut ws = vec![];
         for w in brace_expansion::eval(&mut self.clone()) {
             match w.tilde_and_dollar_expansion(core) {
-                Some(w) => ws.push(w),
+                Some(w) => ws.append( &mut w.split_and_path_expansion(core) ),
                 None    => return None,
             };
         }
@@ -34,6 +36,14 @@ impl Word {
             true  => Some(w),
             false => None,
         }
+    }
+
+    pub fn split_and_path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
+        let mut ans = vec![];
+        for mut w in split::eval(self, core) {
+            ans.append(&mut path_expansion::eval(&mut w) );
+        }
+        ans
     }
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
