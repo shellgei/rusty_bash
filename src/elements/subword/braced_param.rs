@@ -7,6 +7,7 @@ use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::utils::glob;
 use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
@@ -78,6 +79,8 @@ impl Subword for BracedParam {
             return self.offset(core);
         }else if self.has_alternative {
             return self.replace_to_alternative(core);
+        }else if self.has_remove_pattern {
+            return self.remove(core);
         }
 
         true
@@ -105,6 +108,35 @@ impl BracedParam {
             return false;
         }
         true
+    }
+
+    fn remove(&mut self, core: &mut ShellCore) -> bool {
+       let pattern = match &self.remove_pattern {
+           Some(w) => {
+               match w.eval_as_value(core) {
+                   Some(s) => s,
+                   None    => return false,
+               }
+           },
+           None => return true,
+       };
+
+       let extglob = core.shopts.query("extglob");
+
+       if self.remove_symbol == "#" {
+           let mut length = 0;
+
+           for ch in self.text.chars() {
+               length += ch.len_utf8();
+               let s = self.text[0..length].to_string();
+               if glob::compare(&s, &pattern, extglob) {
+                   self.text = self.text[length..].to_string();
+                   return true;
+               }
+           }
+       }
+
+       true
     }
 
     fn offset(&mut self, core: &mut ShellCore) -> bool {
@@ -243,13 +275,6 @@ impl BracedParam {
         false
     }
 
-    fn push_alternative_subword(len: usize, feeder: &mut Feeder, ans: &mut Self, word: &mut Word) {
-        let blank = feeder.consume(len);
-        let sw = Box::new(SimpleSubword{ text: blank.clone() });
-        word.subwords.push(sw);
-        ans.text += &blank.clone();
-    }
-
     fn eat_offset(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if ! feeder.starts_with(":") {
             return false;
@@ -277,13 +302,7 @@ impl BracedParam {
         ans.text += &ans.remove_symbol.clone();
         ans.has_remove_pattern = true;
 
-        ans.remove_pattern = match Word::parse(feeder, core, true) {
-            Some(w) => {
-                ans.text += &w.text.clone();
-                Some(w)
-            },
-            None => None,
-        };
+        ans.remove_pattern = Some(Self::eat_subwords(feeder, ans, core));
         true
     }
 
@@ -315,8 +334,19 @@ impl BracedParam {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        let mut word = Word::new();
+        ans.alternative_value = Some(Self::eat_subwords(feeder, ans, core));
+        true
+    }
 
+    fn eat_blank(len: usize, feeder: &mut Feeder, ans: &mut Self, word: &mut Word) {
+        let blank = feeder.consume(len);
+        let sw = Box::new(SimpleSubword{ text: blank.clone() });
+        word.subwords.push(sw);
+        ans.text += &blank.clone();
+    }
+
+    fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Word {
+        let mut word = Word::new();
         while ! feeder.starts_with("}") {
             if let Some(sw) = subword::parse(feeder, core) {
                 ans.text += sw.get_text();
@@ -325,18 +355,17 @@ impl BracedParam {
             }
 
             if feeder.starts_with("\n") {
-                Self::push_alternative_subword(1, feeder, ans, &mut word);
+                Self::eat_blank(1, feeder, ans, &mut word);
                 feeder.feed_additional_line(core);
             }
 
             let num = feeder.scanner_blank(core);
             if num != 0 {
-                Self::push_alternative_subword(num, feeder, ans, &mut word);
+                Self::eat_blank(num, feeder, ans, &mut word);
             }
         }
 
-        ans.alternative_value = Some(word);
-        true
+        word
     }
 
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
