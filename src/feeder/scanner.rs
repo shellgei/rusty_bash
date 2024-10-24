@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::Feeder;
-use crate::ShellCore;
+use crate::{ShellCore, utils};
 
 impl Feeder {
     fn feed_and_connect(&mut self, core: &mut ShellCore) {
@@ -301,7 +301,17 @@ impl Feeder {
 
     pub fn scanner_test_compare_op(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["-", "-e", "-n", "-o", "=", "!"], core);
-        self.scanner_one_of(&["-ef", "-nt", "-ot", "==", "=", "!=", "<", ">",
+        self.scanner_one_of(&["-ef", "-nt", "-ot", "==", "=~", "=", "!=", "<", ">",
                               "-eq", "-ne", "-lt", "-le", "-gt", "-ge"])
+    }
+
+    pub fn scanner_regex(&mut self) -> usize {
+        let words = utils::split_words(&self.remaining);
+
+        if words.len() == 0 {
+            return 0;
+        }
+
+        words[0].len()
     }
 }

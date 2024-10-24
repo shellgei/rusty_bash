@@ -13,6 +13,7 @@ pub enum CondElem {
     UnaryOp(String),
     BinaryOp(String),
     Word(Word),
+    Regex(String),
     Operand(String),
     InParen(ConditionalExpr),
     Not, // !
@@ -26,7 +27,6 @@ fn op_order(op: &CondElem) -> u8 {
         CondElem::UnaryOp(_) => 14,
         CondElem::BinaryOp(_) => 13,
         CondElem::Not => 12,
-        //CondElem::And | CondElem::Or => 12,
         _ => 0,
     }
 }
@@ -37,6 +37,7 @@ pub fn to_string(op: &CondElem) -> String {
         CondElem::BinaryOp(op) => op.to_string(),
         CondElem::InParen(expr) => expr.text.clone(),
         CondElem::Word(w) => w.text.clone(),
+        CondElem::Regex(s) => s.clone(),
         CondElem::Operand(op) => op.to_string(),
         CondElem::Not => "!".to_string(),
         CondElem::And => "&&".to_string(),
@@ -328,15 +329,33 @@ impl ConditionalExpr {
         }
     }
 
-    fn eat_compare_op(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_compare_op(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> String {
         let len = feeder.scanner_test_compare_op(core);
         if len == 0 {
-            return false;
+            return "".to_string();
         }
 
         let opt = feeder.consume(len);
         ans.text += &opt.clone();
-        ans.elements.push(CondElem::BinaryOp(opt));
+        ans.elements.push(CondElem::BinaryOp(opt.clone()));
+
+        opt
+    }
+
+    fn eat_regex(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if ! Self::eat_blank(feeder, ans, core) {
+            return false;
+        }
+
+        let len = feeder.scanner_regex();
+        if len == 0 {
+            return false;
+        }
+
+        let regex = feeder.consume(len);
+        //dbg!("{:?}", &regex);
+        ans.text += &regex.clone();
+        ans.elements.push( CondElem::Regex(regex) );
 
         true
     }
@@ -430,9 +449,22 @@ impl ConditionalExpr {
                 return Some(ans);
             }
 
-            if Self::eat_paren(feeder, &mut ans, core) 
-            || Self::eat_compare_op(feeder, &mut ans, core)
-            || Self::eat_file_check_option(feeder, &mut ans, core)
+            if Self::eat_paren(feeder, &mut ans, core) {
+                continue;
+            }
+
+            match Self::eat_compare_op(feeder, &mut ans, core).as_ref() {
+                "" => {},
+                "=~" => {
+                    match Self::eat_regex(feeder, &mut ans, core) {
+                        false => return None,
+                        true  => continue,
+                    }
+                },
+                _ => continue,
+            }
+ 
+            if Self::eat_file_check_option(feeder, &mut ans, core)
             || Self::eat_not_and_or(feeder, &mut ans) 
             || Self::eat_word(feeder, &mut ans, core) {
                 continue;
