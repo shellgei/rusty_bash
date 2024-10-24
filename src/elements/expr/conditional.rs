@@ -3,6 +3,7 @@
 
 use crate::{utils::error, ShellCore, Feeder};
 use crate::utils::{file_check, glob};
+use crate::elements::subword;
 use crate::elements::word::Word;
 use super::arithmetic::word;
 use super::arithmetic::elem::ArithElem;
@@ -13,7 +14,7 @@ pub enum CondElem {
     UnaryOp(String),
     BinaryOp(String),
     Word(Word),
-    Regex(String),
+    Regex(Word),
     Operand(String),
     InParen(ConditionalExpr),
     Not, // !
@@ -37,7 +38,7 @@ pub fn to_string(op: &CondElem) -> String {
         CondElem::BinaryOp(op) => op.to_string(),
         CondElem::InParen(expr) => expr.text.clone(),
         CondElem::Word(w) => w.text.clone(),
-        CondElem::Regex(s) => s.clone(),
+        CondElem::Regex(w) => w.text.clone(),
         CondElem::Operand(op) => op.to_string(),
         CondElem::Not => "!".to_string(),
         CondElem::And => "&&".to_string(),
@@ -342,20 +343,42 @@ impl ConditionalExpr {
         opt
     }
 
+    fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Word {
+        let mut word = Word::new();
+        while ! feeder.starts_with("}") {
+            if let Some(sw) = subword::parse(feeder, core) {
+                ans.text += sw.get_text();
+                word.text += sw.get_text();
+                word.subwords.push(sw);
+            }
+
+            /*
+            if feeder.starts_with("\n") {
+                ans.text += &feeder.consume(1);
+                feeder.feed_additional_line(core);
+            }
+
+            let num = feeder.scanner_blank(core);
+            if num != 0 {
+                Self::eat_blank(num, feeder, ans, &mut word);
+            }*/
+        }
+
+        word
+    }
+
     fn eat_regex(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if ! Self::eat_blank(feeder, ans, core) {
             return false;
         }
 
-        let len = feeder.scanner_regex();
-        if len == 0 {
-            return false;
+        match Word::parse(feeder, core, false){
+            None => return false,
+            Some(w) => {
+                ans.text += &w.text.clone();
+                ans.elements.push( CondElem::Regex(w) );
+            },
         }
-
-        let regex = feeder.consume(len);
-        //dbg!("{:?}", &regex);
-        ans.text += &regex.clone();
-        ans.elements.push( CondElem::Regex(regex) );
 
         true
     }
