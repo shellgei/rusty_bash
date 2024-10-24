@@ -81,9 +81,6 @@ impl Feeder {
         if ! self.starts_with("'") {
             return 0;
         }
-        if self.starts_with("''") {
-            return 2;
-        }
 
         loop {
             if let Some(n) = self.remaining[1..].find("'") {
