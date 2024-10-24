@@ -22,10 +22,7 @@ impl SingleQuoted {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         match feeder.scanner_single_quoted_subword(core) {
             0 => None,
-            n => {
-                let s = feeder.consume(n);
-                Some(SingleQuoted{ text: s })
-            },
+            n => Some(Self{ text: feeder.consume(n) }),
         }
     }
 }
