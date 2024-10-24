@@ -4,6 +4,8 @@
 mod brace_expansion;
 mod tilde_expansion;
 mod substitution;
+mod path_expansion;
+mod split;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword;
