@@ -372,14 +372,9 @@ impl ConditionalExpr {
             return false;
         }
 
-        match Word::parse(feeder, core, false){
-            None => return false,
-            Some(w) => {
-                ans.text += &w.text.clone();
-                ans.elements.push( CondElem::Regex(w) );
-            },
-        }
-
+        let w = Self::eat_subwords(feeder, ans, core);
+        ans.text += &w.text.clone();
+        ans.elements.push( CondElem::Regex(w) );
         true
     }
 
