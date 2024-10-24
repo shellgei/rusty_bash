@@ -892,6 +892,10 @@ $com -c '[[ abc > aaa ]] && [[ 0100 < 2 ]] && [[ ! abc > abc ]]'
 res=$($com -c '[[ -a /etc/passwd && -a /etc/passwd ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c '[[ -a /etc/passwd &&
+-a /etc/passwd ]]')
+[ "$?" = "0" ] || err $LINENO
+
 res=$($com -c '[[ -a /etc/passwd && -a /etc/passwdaaa ]]')
 [ "$?" = "1" ] || err $LINENO
 

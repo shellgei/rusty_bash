@@ -439,6 +439,17 @@ impl ConditionalExpr {
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
+            if feeder.starts_with("\n"){
+                ans.text += &feeder.consume(1);
+                continue;
+            }
+            if feeder.len() == 0 {
+                if ! feeder.feed_additional_line(core) {
+                    return None;
+                }
+                continue;
+            }
+
             if feeder.starts_with("]]")
             || feeder.starts_with(")") {
                 if ans.elements.len() == 0 {
