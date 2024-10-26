@@ -3,7 +3,7 @@
 
 pub mod parser;
 
-use crate::ShellCore;
+use crate::{Feeder, Script, ShellCore};
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
@@ -98,7 +98,17 @@ impl SimpleCommand {
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => exit::arg_list_too_long(&self.args[0], core),
             Err(Errno::EACCES) => exit::permission_denied(&self.args[0], core),
-            Err(Errno::ENOENT) => exit::not_found(&self.args[0], core),
+            Err(Errno::ENOENT) => {
+                if core.data.functions.contains_key("command_not_found_handle") {
+                    let s = "command_not_found_handle ".to_owned() + &self.args[0].clone();
+                    let mut f = Feeder::new(&s);
+                    match Script::parse(&mut f, core, false) {
+                        Some(mut script) => script.exec(core),
+                        _ => {},
+                    }
+                }
+                exit::not_found(&self.args[0], core)
+            },
             Err(err) => {
                 eprintln!("Failed to execute. {:?}", err);
                 process::exit(127)
