@@ -890,6 +890,9 @@ $com -c '[[ abc > aaa ]] && [[ 0100 < 2 ]] && [[ ! abc > abc ]]'
 res=$($com -c 'A=あいう ; [[ $A =~ あ ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c 'A=あいう; RE="あ*" ; [[ $A =~ $RE ]]')
+[ "$?" = "0" ] || err $LINENO
+
 res=$($com -c 'A=あいう ; [[ A =~ あ ]]')
 [ "$?" = "1" ] || err $LINENO
 

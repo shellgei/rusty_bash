@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::Feeder;
-use crate::{ShellCore, utils};
+use crate::ShellCore;
 
 impl Feeder {
     fn feed_and_connect(&mut self, core: &mut ShellCore) {
@@ -301,13 +301,10 @@ impl Feeder {
                               "-eq", "-ne", "-lt", "-le", "-gt", "-ge"])
     }
 
-    pub fn scanner_regex(&mut self) -> usize {
-        let words = utils::split_words(&self.remaining);
-
-        if words.len() == 0 {
-            return 0;
+    pub fn scanner_regex_symbol(&mut self) -> usize {
+        match self.starts_with(" ") {
+            true  => 0,
+            false => 1,
         }
-
-        words[0].len()
     }
 }

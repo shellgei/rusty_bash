@@ -4,6 +4,7 @@
 use crate::{utils::error, ShellCore, Feeder};
 use crate::utils::{file_check, glob};
 use crate::elements::subword;
+use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::word::Word;
 use regex::Regex;
 use super::arithmetic::word;
@@ -15,7 +16,7 @@ pub enum CondElem {
     UnaryOp(String),
     BinaryOp(String),
     Word(Word),
-    Regex(Regex),
+    Regex(Word),
     Operand(String),
     InParen(ConditionalExpr),
     Not, // !
@@ -39,7 +40,7 @@ pub fn to_string(op: &CondElem) -> String {
         CondElem::BinaryOp(op) => op.to_string(),
         CondElem::InParen(expr) => expr.text.clone(),
         CondElem::Word(w) => w.text.clone(),
-        CondElem::Regex(re) => re.as_str().to_string(),
+        CondElem::Regex(w) => w.text.clone(),
         CondElem::Operand(op) => op.to_string(),
         CondElem::Not => "!".to_string(),
         CondElem::And => "&&".to_string(),
@@ -213,10 +214,9 @@ impl ConditionalExpr {
         Self::unary_file_check(op, &operand, stack)
     }
 
-    fn regex_operation(stack: &mut Vec<CondElem>,
-                       core: &mut ShellCore) -> Result<(), String> {
-        let re = match pop_operand(stack, core) {
-            Ok(CondElem::Regex(re)) => re,
+    fn regex_operation(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), String> {
+        let right = match pop_operand(stack, core) {
+            Ok(CondElem::Regex(right)) => right, 
             Ok(_)  => return Err("Invalid operand".to_string()),
             Err(e) => return Err(e),
         };
@@ -225,6 +225,16 @@ impl ConditionalExpr {
             Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err("Invalid operand".to_string()),
             Err(e) => return Err(e),
+        };
+
+        let right_eval = match right.eval_as_value(core) {
+            Some(r) => r,
+            None => return Err("Invalid regex".to_string()),
+        };
+
+        let re = match Regex::new(&right_eval) {
+            Ok(regex) => regex,
+            Err(e) => return Err(e.to_string()),
         };
 
         stack.push( CondElem::Ans(re.is_match(&left)) );
@@ -377,18 +387,17 @@ impl ConditionalExpr {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
                 word.subwords.push(sw);
+                continue;
             }
 
-            /*
-            if feeder.starts_with("\n") {
-                ans.text += &feeder.consume(1);
-                feeder.feed_additional_line(core);
+            let len = feeder.scanner_regex_symbol();
+            if len == 0 {
+                break;
             }
 
-            let num = feeder.scanner_blank(core);
-            if num != 0 {
-                Self::eat_blank(num, feeder, ans, &mut word);
-            }*/
+            let symbol = feeder.consume(len);
+            ans.text += &symbol.clone();
+            word.subwords.push( Box::new( SimpleSubword { text: symbol } ) );
         }
 
         word
@@ -401,8 +410,8 @@ impl ConditionalExpr {
 
         let w = Self::eat_subwords(feeder, ans, core);
         ans.text += &w.text.clone();
-        match Regex::new(&w.text) {
-            Ok(re) => ans.elements.push( CondElem::Regex(re) ),
+        match Regex::new(&w.text) { //test for syntax error
+            Ok(_) => ans.elements.push( CondElem::Regex(w) ),
             _ => return false,
         }
 
