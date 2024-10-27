@@ -5,6 +5,7 @@ use crate::{utils::error, ShellCore, Feeder};
 use crate::utils::{file_check, glob};
 use crate::elements::subword;
 use crate::elements::word::Word;
+use regex::Regex;
 use super::arithmetic::word;
 use super::arithmetic::elem::ArithElem;
 use std::env;
@@ -14,7 +15,7 @@ pub enum CondElem {
     UnaryOp(String),
     BinaryOp(String),
     Word(Word),
-    Regex(Word),
+    Regex(Regex),
     Operand(String),
     InParen(ConditionalExpr),
     Not, // !
@@ -38,7 +39,7 @@ pub fn to_string(op: &CondElem) -> String {
         CondElem::BinaryOp(op) => op.to_string(),
         CondElem::InParen(expr) => expr.text.clone(),
         CondElem::Word(w) => w.text.clone(),
-        CondElem::Regex(w) => w.text.clone(),
+        CondElem::Regex(re) => re.as_str().to_string(),
         CondElem::Operand(op) => op.to_string(),
         CondElem::Not => "!".to_string(),
         CondElem::And => "&&".to_string(),
@@ -121,7 +122,9 @@ impl ConditionalExpr {
     
         for e in elems {
             let ok = match e {
-                CondElem::Word(_) | CondElem::InParen(_) => {ans.push(e.clone()); true},
+                CondElem::Word(_) 
+                | CondElem::InParen(_) 
+                | CondElem::Regex(_) => {ans.push(e.clone()); true},
                 op               => Self::rev_polish_op(&op, &mut stack, &mut ans),
             };
     
@@ -143,7 +146,7 @@ impl ConditionalExpr {
 
         for e in rev_pol {
             let result = match e { 
-                CondElem::Word(_) | CondElem::InParen(_) => {
+                CondElem::Word(_) | CondElem::Regex(_) | CondElem::InParen(_) => {
                     stack.push(e.clone());
                     Ok(())
                 },
@@ -152,7 +155,11 @@ impl ConditionalExpr {
                     if stack.len() == 0 {
                         return Ok(vec![CondElem::Ans(true)]); //for [[ -ot ]] [[ == ]] [[ = ]] ...
                     }
-                    Self::bin_operation(&op, &mut stack, core)
+                    if op == "=~" {
+                        Self::regex_operation(&mut stack, core)
+                    }else{
+                        Self::bin_operation(&op, &mut stack, core)
+                    }
                 },
                 CondElem::Not => match pop_operand(&mut stack, core) {
                     Ok(CondElem::Ans(res)) => {
@@ -206,7 +213,26 @@ impl ConditionalExpr {
         Self::unary_file_check(op, &operand, stack)
     }
 
-    fn bin_operation(op: &str, stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), String> {
+    fn regex_operation(stack: &mut Vec<CondElem>,
+                       core: &mut ShellCore) -> Result<(), String> {
+        let re = match pop_operand(stack, core) {
+            Ok(CondElem::Regex(re)) => re,
+            Ok(_)  => return Err("Invalid operand".to_string()),
+            Err(e) => return Err(e),
+        };
+
+        let left = match pop_operand(stack, core) {
+            Ok(CondElem::Operand(name)) => name,
+            Ok(_)  => return Err("Invalid operand".to_string()),
+            Err(e) => return Err(e),
+        };
+
+        stack.push( CondElem::Ans(re.is_match(&left)) );
+        return Ok(());
+    }
+
+    fn bin_operation(op: &str, stack: &mut Vec<CondElem>,
+                     core: &mut ShellCore) -> Result<(), String> {
         let right = match pop_operand(stack, core) {
             Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err("Invalid operand".to_string()),
@@ -220,9 +246,10 @@ impl ConditionalExpr {
         };
 
         let extglob = core.shopts.query("extglob");
-        if op == "==" || op == "=" || op == "!=" || op == "<" || op == ">" {
+        if op.starts_with("=") || op == "!=" || op == "<" || op == ">" {
             let ans = match op {
                 "==" | "=" => glob::compare(&left, &right, extglob),
+                "=~"       => glob::compare(&left, &right, extglob),
                 "!="       => ! glob::compare(&left, &right, extglob),
                 ">"        => left > right,
                 "<"        => left < right,
@@ -345,7 +372,7 @@ impl ConditionalExpr {
 
     fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Word {
         let mut word = Word::new();
-        while ! feeder.starts_with("}") {
+        while ! feeder.starts_with(" ") {
             if let Some(sw) = subword::parse(feeder, core) {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
@@ -374,7 +401,11 @@ impl ConditionalExpr {
 
         let w = Self::eat_subwords(feeder, ans, core);
         ans.text += &w.text.clone();
-        ans.elements.push( CondElem::Regex(w) );
+        match Regex::new(&w.text) {
+            Ok(re) => ans.elements.push( CondElem::Regex(re) ),
+            _ => return false,
+        }
+
         true
     }
 

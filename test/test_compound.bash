@@ -887,6 +887,15 @@ $com -c '[[  ==  ]] && [[ = ]] && [[ != ]]'
 $com -c '[[ abc > aaa ]] && [[ 0100 < 2 ]] && [[ ! abc > abc ]]'
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c 'A=あいう ; [[ $A =~ あ ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c 'A=あいう ; [[ A =~ あ ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'A=あいう ; [[ $A =~ * ]]')
+[ "$?" = "2" ] || err $LINENO
+
 # and or 
 
 res=$($com -c '[[ -a /etc/passwd && -a /etc/passwd ]]')
