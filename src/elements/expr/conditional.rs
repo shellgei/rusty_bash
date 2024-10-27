@@ -227,7 +227,7 @@ impl ConditionalExpr {
             Err(e) => return Err(e),
         };
 
-        let right_eval = match right.eval_as_value(core) {
+        let right_eval = match right.eval_for_case_pattern(core) {
             Some(r) => r,
             None => return Err("Invalid regex".to_string()),
         };
@@ -409,12 +409,7 @@ impl ConditionalExpr {
         }
 
         let w = Self::eat_subwords(feeder, ans, core);
-        ans.text += &w.text.clone();
-        match Regex::new(&w.text) { //test for syntax error
-            Ok(_) => ans.elements.push( CondElem::Regex(w) ),
-            _ => return false,
-        }
-
+        ans.elements.push( CondElem::Regex(w) );
         true
     }
 

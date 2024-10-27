@@ -893,6 +893,15 @@ res=$($com -c 'A=あいう ; [[ $A =~ あ ]]')
 res=$($com -c 'A=あいう; RE="あ*" ; [[ $A =~ $RE ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com -c 'A=あいう; RE="あ*" ; [[ $A =~ ${RE}う ]]')
+[ "$?" = "0" ] || err $LINENO
+
+res=$($com -c 'A=あいう; RE="あ*" ; [[ $A =~ ${RE}お ]]')
+[ "$?" = "1" ] || err $LINENO
+
+res=$($com -c 'A=あいう ; [[ $A =~ ... ]]')
+[ "$?" = "0" ] || err $LINENO
+
 res=$($com -c 'A=あいう ; [[ A =~ あ ]]')
 [ "$?" = "1" ] || err $LINENO
 
