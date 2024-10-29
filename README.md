@@ -153,6 +153,55 @@ The dev-* branches are deprecated since the main branch is not synchronized to t
 | progcomp | :no_good: | promptvars | :no_good: | restricted_shell | :no_good: |
 | shift_verbose | :no_good: | sourcepath | :no_good: | xpg_echo | :no_good: |
 
+### variables
+
+Born Shell Variables
+
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| CDPATH | :no_good: | HOME | :no_good: | IFS | :no_good: |
+| MAIL | :no_good: | MAILPATH | :no_good: | OPTARG | :no_good: |
+| OPTIND | :no_good: | PATH | :no_good: | PS1 | :no_good: |
+| PS2 | :no_good: | | | | |
+
+Bash Variables
+
+|features | status |features | status |features | status |
+|-------------------|----|-------------------|----|-------------------|----|
+| _ | :no_good: | BASH | :no_good: | BASHOPTS | :no_good: |
+| BASHPID | :no_good: | BASH_ALIASES | :no_good: | BASH_ARGC | :no_good: |
+| BASH_ARGV | :no_good: | BASH_ARGV0 | :no_good: | BASH_CMDS | :no_good: |
+| BASH_COMMAND | :no_good: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
+| BASH_EXECUTION_STRING | :no_good: | BASH_LINENO | :no_good: | BASH_LOADABLES_PATH | :no_good: |
+| BASH_REMATCH | :no_good: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :no_good: |
+| BASH_VERSINFO | :no_good: | BASH_VERSION | :no_good: | BASH_XTRACEFD | :no_good: |
+| CHILD_MAX | :no_good: | COLUMNS | :no_good: | COMP_CWORD | :no_good: |
+| COMP_LINE | :no_good: | COMP_POINT | :no_good: | COMP_TYPE | :no_good: |
+| COMP_KEY | :no_good: | COMP_WORDBREAKS | :no_good: | COMP_WORDS | :no_good: |
+| COMPREPLY | :no_good: | COPROC | :no_good: | DIRSTACK | :no_good: |
+| EMACS | :no_good: | ENV | :no_good: | EPOCHREALTIME | :no_good: |
+| EPOCHSECONDS | :no_good: | EUID | :no_good: | EXECIGNORE | :no_good: |
+| FCEDIT | :no_good: | FIGNORE | :no_good: | FUNCNAME | :no_good: |
+| FUNCNEST | :no_good: | GLOBIGNORE | :no_good: | GROUPS | :no_good: |
+| histchars | :no_good: | HISTCMD | :no_good: | HISTCONTROL | :no_good: |
+| HISTFILE | :no_good: | HISTFILESIZE | :no_good: | HISTIGNORE | :no_good: |
+| HISTSIZE | :no_good: | HISTTIMEFORMAT | :no_good: | HOSTFILE | :no_good: |
+| HOSTNAME | :no_good: | HOSTTYPE | :no_good: | IGNOREEOF | :no_good: |
+| INPUTRC | :no_good: | INSIDE_EMACS | :no_good: | LANG | :no_good: |
+| LC_ALL | :no_good: | LC_COLLATE | :no_good: | LC_CTYPE | :no_good: |
+| LC_MESSAGES | :no_good: | LC_NUMERIC | :no_good: | LC_TIME | :no_good: |
+| LINENO | :no_good: | LINES | :no_good: | MACHTYPE | :no_good: |
+| MAILCHECK | :no_good: | MAPFILE | :no_good: | OLDPWD | :no_good: |
+| OPTERR | :no_good: | OSTYPE | :no_good: | PIPESTATUS | :no_good: |
+| POSIXLY_CORRECT | :no_good: | PPID | :no_good: | PROMPT_COMMAND | :no_good: |
+| PROMPT_DIRTRIM | :no_good: | PS0 | :no_good: | PS3 | :no_good: |
+| PS4 | :no_good: | PWD | :no_good: | RANDOM | :no_good: |
+| READLINE_ARGUMENT | :no_good: | READLINE_LINE | :no_good: | READLINE_MARK | :no_good: |
+| READLINE_POINT | :no_good: | REPLY | :no_good: | SECONDS | :no_good: |
+| SHELL | :no_good: | SHELLOPTS | :no_good: | SHLVL | :no_good: |
+| SRANDOM | :no_good: | TIMEFORMAT | :no_good: | TMOUT | :no_good: |
+| TMPDIR | :no_good: | UID | :no_good: | | |
+
 ### beyond Bash
 
 |features | status |
