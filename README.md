@@ -186,13 +186,13 @@ Bash Variables
 | histchars | :no_good: | HISTCMD | :no_good: | HISTCONTROL | :no_good: |
 | HISTFILE | :heavy_check_mark: | HISTFILESIZE | :heavy_check_mark: | HISTIGNORE | :no_good: |
 | HISTSIZE | :no_good: | HISTTIMEFORMAT | :no_good: | HOSTFILE | :no_good: |
-| HOSTNAME | :no_good: | HOSTTYPE | :no_good: | IGNOREEOF | :no_good: |
+| HOSTNAME | :no_good: | HOSTTYPE | :heavy_check_mark: | IGNOREEOF | :no_good: |
 | INPUTRC | :no_good: | INSIDE_EMACS | :no_good: | LANG | :heavy_check_mark: |
 | LC_ALL | :no_good: | LC_COLLATE | :no_good: | LC_CTYPE | :no_good: |
 | LC_MESSAGES | :no_good: | LC_NUMERIC | :no_good: | LC_TIME | :no_good: |
 | LINENO | :heavy_check_mark: | LINES | :no_good: | MACHTYPE | :heavy_check_mark: |
 | MAILCHECK | :no_good: | MAPFILE | :no_good: | OLDPWD | :heavy_check_mark: |
-| OPTERR | :no_good: | OSTYPE | :no_good: | PIPESTATUS | :heavy_check_mark: |
+| OPTERR | :no_good: | OSTYPE | :heavy_check_mark: | PIPESTATUS | :heavy_check_mark: |
 | POSIXLY_CORRECT | :no_good: | PPID | :no_good: | PROMPT_COMMAND | :no_good: |
 | PROMPT_DIRTRIM | :no_good: | PS0 | :no_good: | PS3 | :no_good: |
 | PS4 | :heavy_check_mark: | PWD | :heavy_check_mark: | RANDOM | :no_good: |
