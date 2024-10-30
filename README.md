@@ -174,7 +174,7 @@ Bash Variables
 | BASH_COMMAND | :no_good: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
 | BASH_EXECUTION_STRING | :no_good: | BASH_LINENO | :no_good: | BASH_LOADABLES_PATH | :no_good: |
 | BASH_REMATCH | :no_good: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
-| BASH_VERSINFO | :no_good: | BASH_VERSION | :heavy_check_mark: | BASH_XTRACEFD | :no_good: |
+| BASH_VERSINFO | :heavy_check_mark: | BASH_VERSION | :heavy_check_mark: | BASH_XTRACEFD | :no_good: |
 | CHILD_MAX | :no_good: | COLUMNS | :no_good: | COMP_CWORD | :no_good: |
 | COMP_LINE | :no_good: | COMP_POINT | :no_good: | COMP_TYPE | :no_good: |
 | COMP_KEY | :no_good: | COMP_WORDBREAKS | :no_good: | COMP_WORDS | :no_good: |
@@ -190,7 +190,7 @@ Bash Variables
 | INPUTRC | :no_good: | INSIDE_EMACS | :no_good: | LANG | :heavy_check_mark: |
 | LC_ALL | :no_good: | LC_COLLATE | :no_good: | LC_CTYPE | :no_good: |
 | LC_MESSAGES | :no_good: | LC_NUMERIC | :no_good: | LC_TIME | :no_good: |
-| LINENO | :heavy_check_mark: | LINES | :no_good: | MACHTYPE | :no_good: |
+| LINENO | :heavy_check_mark: | LINES | :no_good: | MACHTYPE | :heavy_check_mark: |
 | MAILCHECK | :no_good: | MAPFILE | :no_good: | OLDPWD | :heavy_check_mark: |
 | OPTERR | :no_good: | OSTYPE | :no_good: | PIPESTATUS | :heavy_check_mark: |
 | POSIXLY_CORRECT | :no_good: | PPID | :no_good: | PROMPT_COMMAND | :no_good: |
