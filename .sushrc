@@ -7,11 +7,11 @@ case "$TERM" in
     xterm-color|*-256color) color_prompt=yes;;
 esac
 
-
+build_profile=$([[ "$BASH_VERSION" == *-release ]] || echo "(${BASH_VERSION##*-})")
 if [ "$color_prompt" = yes ]; then
-	PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\b\[\033[00m\]\[\033[01;35m\]\w\[\033[00m\](debug)🍣 '
+	PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\b\[\033[00m\]\[\033[01;35m\]\w\[\033[00m\]'$build_profile'🍣 '
 else
-	PS1='\u@\h:\w(debug)🍣 '
+	PS1='\u@\h:\w'$build_profile'🍣 '
 fi 
 
 case "$TERM" in

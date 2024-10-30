@@ -20,13 +20,14 @@ use utils::{exit, file_check};
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");
-    eprintln!("Rusty Bash (a.k.a. Sushi shell), version {}
+    const P: &'static str = env!("CARGO_BUILD_PROFILE");
+    eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}
 © 2024 Ryuichi Ueda
 License: BSD 3-Clause
 
 This is open source software. You can redistirbute and use in source
 and binary forms with or without modification under the license.
-There is no warranty, to the extent permitted by law.", V);
+There is no warranty, to the extent permitted by law.", V, P);
     process::exit(0);
 }
 

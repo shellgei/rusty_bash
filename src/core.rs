@@ -109,7 +109,8 @@ impl ShellCore {
 
         if unistd::isatty(0) == Ok(true) {
             const V: &'static str = env!("CARGO_PKG_VERSION");
-            eprintln!("Rusty Bash (a.k.a. Sushi shell), version {}", V);
+            const P: &'static str = env!("CARGO_BUILD_PROFILE");
+            eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
 
             core.data.flags += "i";
             core.read_stdin = false;
@@ -131,7 +132,7 @@ impl ShellCore {
         self.data.set_param("$", &process::id().to_string());
         self.data.set_param("BASHPID", &process::id().to_string());
         self.data.set_param("BASH_SUBSHELL", "0");
-        self.data.set_param("BASH_VERSION", &(env!("CARGO_PKG_VERSION").to_string() + "-rusty_bash"));
+        self.data.set_param("BASH_VERSION", &format!("{}-rusty_bash-{}", env!("CARGO_PKG_VERSION"), env!("CARGO_BUILD_PROFILE")));
         self.data.set_param("?", "0");
         self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
