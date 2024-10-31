@@ -1,3 +1,6 @@
+//SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
+//SPDX-License-Identifier: BSD-3-Clause
+
 use std::env;
 
 fn main() {

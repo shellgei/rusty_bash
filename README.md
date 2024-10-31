@@ -44,11 +44,7 @@ ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 
 ## For Contributors 
 
-Please give us issues and pull requests in a way you think sensible. We do not have a rigid rule at this stage. 
-
-### memo (20240704)
-
-The dev-* branches are deprecated since the main branch is not synchronized to the articles any more. 
+Please give us issues or pull requests in a way you think sensible. We do not have a rigid rule at this stage. 
 
 ## List of Features
 
