@@ -129,10 +129,25 @@ impl ShellCore {
     }
 
     fn set_initial_parameters(&mut self) {
+        let version = env!("CARGO_PKG_VERSION").to_string();
+        let profile = env!("CARGO_BUILD_PROFILE").to_string();
+        let t_arch = env!("CARGO_CFG_TARGET_ARCH").to_string();
+        let t_vendor = env!("CARGO_CFG_TARGET_VENDOR").to_string();
+        let t_os = env!("CARGO_CFG_TARGET_OS").to_string();
+        let machtype = format!("{}-{}-{}", t_arch, t_vendor, t_os);
+        let symbol = "rusty_bash".to_string();
+        let vparts: Vec<&str> = version.split('.').collect();
+        let versinfo = vec![vparts[0].to_string(), vparts[1].to_string(), vparts[2].to_string(),
+                             symbol.clone(), profile.clone(), machtype.clone()];
+
         self.data.set_param("$", &process::id().to_string());
         self.data.set_param("BASHPID", &process::id().to_string());
         self.data.set_param("BASH_SUBSHELL", "0");
-        self.data.set_param("BASH_VERSION", &format!("{}-rusty_bash-{}", env!("CARGO_PKG_VERSION"), env!("CARGO_BUILD_PROFILE")));
+        self.data.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));
+        self.data.set_param("MACHTYPE", &machtype);
+        self.data.set_param("HOSTTYPE", &t_arch);
+        self.data.set_param("OSTYPE", &t_os);
+        self.data.set_array("BASH_VERSINFO", &versinfo);
         self.data.set_param("?", "0");
         self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
