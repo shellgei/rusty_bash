@@ -219,4 +219,7 @@ Partially in Japanese.
 
 ## Copyright
 
-© 2022-2024 Ryuichi Ueda <@ry@mi.shellgei.org> and @caro@mi.shellgei.org
+© 2022-2024 shellgei group
+
+- Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi0.robotician.jp/@ru), [@ryuichiueda@misskey.io](https://misskey.io/@ryuichiueda)
+- [@caro@mi.shellgei.org](https://mi0.robotician.jp/@caro)
