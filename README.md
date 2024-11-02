@@ -221,5 +221,5 @@ Partially in Japanese.
 
 © 2022-2024 shellgei group
 
-- Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi0.robotician.jp/@ru), [@ryuichiueda@misskey.io](https://misskey.io/@ryuichiueda)
-- [@caro@mi.shellgei.org](https://mi0.robotician.jp/@caro)
+- Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi.shellgei.org/@ru), [@ryuichiueda@misskey.io](https://misskey.io/@ryuichiueda)
+- [@caro@mi.shellgei.org](https://mi.shellgei.org/@caro)
