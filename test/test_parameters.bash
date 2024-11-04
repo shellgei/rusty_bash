@@ -19,5 +19,8 @@ res=$($com -c '[[ "$RANDOM" -ne "$RANDOM" ]]')
 res=$($com -c 'RANDOM=a ; echo "$RANDOM"')
 [ "$res" != "a" ] || err $LINENO
 
+res=$($com -c 'unset RANDOM; RANDOM=a ; echo "$RANDOM"')
+[ "$res" == "a" ] || err $LINENO
+
 
 echo $0 >> ./ok
