@@ -20,7 +20,8 @@ pub enum Value {
 pub struct Variable {
     pub value: Value,
     attributes: String,
-    pub dynamic_fn: Option<fn(&mut Variable) -> Value>,
+    pub dynamic_get: Option<fn(&mut Variable) -> Value>,
+    pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
 }
 
 impl Default for Variable {
@@ -28,7 +29,8 @@ impl Default for Variable {
         Self {
             value: Value::None,
             attributes: "".to_string(),
-            dynamic_fn: None,
+            dynamic_get: None,
+            dynamic_set: None,
         }
     }
 }
@@ -120,7 +122,7 @@ impl Data {
         for layer in (0..num).rev()  {
             match self.parameters[layer].get_mut(key) {
                 Some(v) => { 
-                    if let Some(f) = v.dynamic_fn {
+                    if let Some(f) = v.dynamic_get {
                         return Some(f(v).clone())
                     } else {
                         return Some(v.value.clone())
@@ -191,7 +193,17 @@ impl Data {
         }
 
         self.parameters[layer].entry(key.to_string())
-        .and_modify(|v| {v.value = Value::EvaluatedSingle(val.to_string())})
+        .and_modify(|v| {
+            if v.attributes.contains('r') {
+                // error : "readonly variable"
+            } else {
+                if let Some(f) = v.dynamic_set {
+                    v.value = f(v, val)
+                } else {
+                    v.value = Value::EvaluatedSingle(val.to_string())
+                }
+            }
+        })
         .or_insert(
             Variable {
                 value: Value::EvaluatedSingle(val.to_string()),
@@ -204,12 +216,14 @@ impl Data {
         self.set_layer_param(key, val, 0);
     }
 
-    pub fn set_special_param(&mut self, key: &str, dynamic: fn(&mut Variable)->Value) {
+    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Variable)->Value,
+                             set: Option<fn(&mut Variable, val: &str)->Value>) {
         self.parameters[0].insert(
             key.to_string(),
             Variable {
                 value: Value::None,
-                dynamic_fn: Some(dynamic),
+                dynamic_get: Some(get),
+                dynamic_set: set,
                 ..Default::default()
             }
         );        

@@ -151,8 +151,8 @@ impl ShellCore {
         self.data.set_array("BASH_VERSINFO", &versinfo);
         self.data.set_param("?", "0");
         self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
-        self.data.set_special_param("SRANDOM", random::var_srandom);
-        self.data.set_special_param("RANDOM", random::var_random);
+        self.data.set_special_param("SRANDOM", random::get_srandom, Some(random::set_srandom));
+        self.data.set_special_param("RANDOM", random::get_random, None);
     }
 
     pub fn wait_process(&mut self, child: Pid) -> WaitStatus {
