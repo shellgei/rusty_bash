@@ -21,6 +21,8 @@ com=../target/release/sush
 ./test_job.bash nobuild &
 ./test_brace.bash nobuild &
 ./test_builtins.bash nobuild &
+./test_options.bash nobuild &
+./test_parameters.bash nobuild &
 
 wait 
 
