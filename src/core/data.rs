@@ -16,10 +16,27 @@ pub enum Value {
     EvaluatedArray(Vec<String>),
 }
 
+#[derive(Debug, Clone)]
+pub struct Variable {
+    pub value: Value,
+    attributes: String,
+    pub dynamic_fn: Option<fn(&mut Variable) -> Value>,
+}
+
+impl Default for Variable {
+    fn default() -> Self {
+        Self {
+            value: Value::None,
+            attributes: "".to_string(),
+            dynamic_fn: None,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Data {
     pub flags: String,
-    parameters: Vec<HashMap<String, Value>>,
+    parameters: Vec<HashMap<String, Variable>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -101,8 +118,14 @@ impl Data {
     pub fn get_value(&mut self, key: &str) -> Option<Value> {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {
-            match self.parameters[layer].get(key) {
-                Some(v) => return Some(v.clone()),
+            match self.parameters[layer].get_mut(key) {
+                Some(v) => { 
+                    if let Some(f) = v.dynamic_fn {
+                        return Some(f(v).clone())
+                    } else {
+                        return Some(v.value.clone())
+                    }
+                },
                 _ => {},
             }
         }
@@ -167,11 +190,29 @@ impl Data {
             _     => {},
         }
 
-        self.parameters[layer].insert(key.to_string(), Value::EvaluatedSingle(val.to_string()));
+        self.parameters[layer].entry(key.to_string())
+        .and_modify(|v| {v.value = Value::EvaluatedSingle(val.to_string())})
+        .or_insert(
+            Variable {
+                value: Value::EvaluatedSingle(val.to_string()),
+                ..Default::default()
+            }
+        );
     }
 
     pub fn set_param(&mut self, key: &str, val: &str) {
         self.set_layer_param(key, val, 0);
+    }
+
+    pub fn set_special_param(&mut self, key: &str, dynamic: fn(&mut Variable)->Value) {
+        self.parameters[0].insert(
+            key.to_string(),
+            Variable {
+                value: Value::None,
+                dynamic_fn: Some(dynamic),
+                ..Default::default()
+            }
+        );        
     }
 
     pub fn set_local_param(&mut self, key: &str, val: &str) {
@@ -180,7 +221,13 @@ impl Data {
     }
 
     pub fn set_layer_array(&mut self, key: &str, vals: &Vec<String>, layer: usize) {
-        self.parameters[layer].insert(key.to_string(), Value::EvaluatedArray(vals.to_vec()));
+        self.parameters[layer].insert(
+            key.to_string(),
+            Variable {
+                value: Value::EvaluatedArray(vals.to_vec()),
+                ..Default::default()
+            }
+        );        
     }
 
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) {
