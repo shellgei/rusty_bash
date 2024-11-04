@@ -6,6 +6,7 @@ pub mod exit;
 pub mod file_check;
 pub mod glob;
 pub mod directory;
+pub mod random;
 
 pub fn reserved(w: &str) -> bool {
     match w {
