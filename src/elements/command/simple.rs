@@ -142,8 +142,8 @@ impl SimpleCommand {
             match &s.1 {
                 Value::EvaluatedSingle(v) => core.data.set_param(&s.0, &v),
                 Value::EvaluatedArray(a) => core.data.set_array(&s.0, &a),
-                _ => {},
-            }
+                _ => true,
+            };
         }
         None
     }

@@ -20,7 +20,6 @@ fn set(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
         Value::EvaluatedArray(a)  => core.data.set_layer_array(&sub.key, &a, layer),
         _ => exit::internal("unsupported substitution"),
     }
-    true
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

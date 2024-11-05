@@ -22,13 +22,13 @@ impl Command for TestCommand {
             Ok(CondElem::Ans(false)) => core.data.set_param("?", "1"),
             Err(err_msg)  => {
                 error::print(&err_msg, core, true);
-                core.data.set_param("?", "2");
+                core.data.set_param("?", "2")
             },
             _  => {
                 error::print("unknown error", core, true);
-                core.data.set_param("?", "2");
+                core.data.set_param("?", "2")
             },
-        } 
+        } ;
     }
 
     fn get_text(&self) -> String { self.text.clone() }

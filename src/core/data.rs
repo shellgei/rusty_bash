@@ -186,7 +186,7 @@ impl Data {
         }
     }
 
-    pub fn set_layer_param(&mut self, key: &str, val: &str, layer: usize) {
+    pub fn set_layer_param(&mut self, key: &str, val: &str, layer: usize) -> bool {
         match env::var(key) {
             Ok(_) => env::set_var(key, val),
             _     => {},
@@ -197,11 +197,16 @@ impl Data {
             if v.attributes.contains('r') {
                 // error : "readonly variable"
             } else {
-                if let Some(f) = v.dynamic_set {
+                v.value = match v.dynamic_set {
+                    Some(f) => f(v, val),
+                    None    => Value::EvaluatedSingle(val.to_string()),
+                };
+                /*if let Some(f) = v.dynamic_set {
+                    
                     v.value = f(v, val)
                 } else {
                     v.value = Value::EvaluatedSingle(val.to_string())
-                }
+                }*/
             }
         })
         .or_insert(
@@ -210,10 +215,11 @@ impl Data {
                 ..Default::default()
             }
         );
+        true
     }
 
-    pub fn set_param(&mut self, key: &str, val: &str) {
-        self.set_layer_param(key, val, 0);
+    pub fn set_param(&mut self, key: &str, val: &str) -> bool {
+        self.set_layer_param(key, val, 0)
     }
 
     pub fn set_special_param(&mut self, key: &str, get: fn(&mut Variable)->Value,
@@ -234,7 +240,7 @@ impl Data {
         self.set_layer_param(key, val, layer-1);
     }
 
-    pub fn set_layer_array(&mut self, key: &str, vals: &Vec<String>, layer: usize) {
+    pub fn set_layer_array(&mut self, key: &str, vals: &Vec<String>, layer: usize) -> bool {
         self.parameters[layer].insert(
             key.to_string(),
             Variable {
@@ -242,10 +248,12 @@ impl Data {
                 ..Default::default()
             }
         );        
+        true
     }
 
-    pub fn set_array(&mut self, key: &str, vals: &Vec<String>) {
+    pub fn set_array(&mut self, key: &str, vals: &Vec<String>) -> bool {
         self.set_layer_array(key, vals, 0);
+        true
     }
 
     pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) {

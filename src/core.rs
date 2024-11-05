@@ -210,7 +210,7 @@ impl ShellCore {
         match self.data.get_param("?").as_ref() {
             "0" => self.data.set_param("?", "1"),
             _   => self.data.set_param("?", "0"),
-        }
+        };
     }
 
     fn show_time(&self) {
