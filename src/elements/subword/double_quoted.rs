@@ -47,6 +47,10 @@ impl Subword for DoubleQuoted {
     }
 
     fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
+        if self.split_points.len() < 2 {
+            return vec![];
+        }
+
         let mut ans = vec![];
 
         let mut points = self.split_points.clone();
@@ -62,8 +66,6 @@ impl Subword for DoubleQuoted {
 
         ans
     }
-
-    fn no_split(&self) -> bool {self.split_points.len() < 2}
 }
 
 impl DoubleQuoted {
