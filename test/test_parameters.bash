@@ -13,6 +13,8 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+### RANDOM ###
+
 res=$($com -c '[[ "$RANDOM" -ne "$RANDOM" ]]')
 [ "$?" == "0" ] || err $LINENO
 
@@ -21,6 +23,5 @@ res=$($com -c 'RANDOM=a ; echo "$RANDOM"')
 
 res=$($com -c 'unset RANDOM; RANDOM=a ; echo "$RANDOM"')
 [ "$res" == "a" ] || err $LINENO
-
 
 echo $0 >> ./ok

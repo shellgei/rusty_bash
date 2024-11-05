@@ -7,7 +7,7 @@ use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     for (i, sw) in word.subwords.iter().enumerate() {
-        let split = sw.split(core);
+        let split = sw.split();
         if split.len() <= 1 {
             continue;
         }
@@ -40,6 +40,5 @@ fn rearrange(word: &Word, subwords: Vec<Box<dyn Subword>>, pos: usize) -> Vec<Wo
     right.subwords = vec![subwords[split_len-1].clone()];
     right.subwords.append(&mut word.subwords[pos+1..].to_vec());
     ans.push(right);
-
     ans
 }

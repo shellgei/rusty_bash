@@ -46,7 +46,7 @@ impl Subword for DoubleQuoted {
             .concat() )
     }
 
-    fn split(&self, _core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
+    fn split(&self) -> Vec<Box<dyn Subword>>{
         if self.split_points.len() < 2 {
             return vec![];
         }

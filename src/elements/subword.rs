@@ -38,12 +38,11 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
-fn split_by_ifs(s: &str, core: &mut ShellCore) -> Vec<String> {
+fn split_str(s: &str) -> Vec<String> {
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
     let mut ans = vec![];
-    let ifs = core.data.get_param("IFS");
 
     for c in s.chars() {
         pos += c.len_utf8();
@@ -52,7 +51,7 @@ fn split_by_ifs(s: &str, core: &mut ShellCore) -> Vec<String> {
             continue;
         }
 
-        if ifs.contains(c) {
+        if " \t\n".contains(c) {
             ans.push(s[from..pos-c.len_utf8()].to_string());
             from = pos;
         }
@@ -69,9 +68,9 @@ pub trait Subword {
     fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
     fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {vec![]}
 
-    fn split(&self, core: &mut ShellCore) -> Vec<Box<dyn Subword>>{
+    fn split(&self) -> Vec<Box<dyn Subword>>{
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
-        split_by_ifs(self.get_text(), core).iter().map(|s| f(s.to_string())).collect()
+        split_str(self.get_text()).iter().map(|s| f(s.to_string())).collect()
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}

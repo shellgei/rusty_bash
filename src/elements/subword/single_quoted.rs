@@ -25,7 +25,7 @@ impl Subword for SingleQuoted {
             .replace("]", "\\]")
     }
 
-    fn split(&self, _: &mut ShellCore) -> Vec<Box<dyn Subword>>{ vec![] }
+    fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
 impl SingleQuoted {
