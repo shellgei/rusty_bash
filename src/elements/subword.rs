@@ -28,7 +28,7 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
-fn split_str(s: &str) -> Vec<String> {
+fn split_str(s: &str) -> Vec<&str> {
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
@@ -43,12 +43,12 @@ fn split_str(s: &str) -> Vec<String> {
         }
 
         if " \t\n".contains(c) {
-            ans.push(s[from..pos-c_len].to_string());
+            ans.push(&s[from..pos-c_len]);
             from = pos;
         }
     }
 
-    ans.push(s[from..].to_string());
+    ans.push(&s[from..]);
     ans
 }
 
