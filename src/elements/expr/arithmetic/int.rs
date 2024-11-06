@@ -83,8 +83,10 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
         _   => return Err("Not supprted operation for integer numbers".to_string()),
     };
 
-    core.data.set_param(&name, &new_value.to_string());
-    Ok(ArithElem::Integer(new_value))
+    match core.data.set_param(&name, &new_value.to_string()) {
+        true  => Ok(ArithElem::Integer(new_value)),
+        false => Err(error::readonly(&name)),
+    }
 }
 
 fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
