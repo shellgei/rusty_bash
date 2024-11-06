@@ -28,11 +28,40 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
+fn split_str(s: &str) -> Vec<String> {
+    let mut esc = false;
+    let mut from = 0;
+    let mut pos = 0;
+    let mut ans = vec![];
+
+    for c in s.chars() {
+        let c_len = c.len_utf8();
+        pos += c_len;
+        if esc || c == '\\' {
+            esc = ! esc;
+            continue;
+        }
+
+        if " \t\n".contains(c) {
+            ans.push(s[from..pos-c_len].to_string());
+            from = pos;
+        }
+    }
+
+    ans.push(s[from..].to_string());
+    ans
+}
+
 pub trait Subword {
     fn get_text(&self) -> &str;
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn substitute(&mut self, _: &mut ShellCore) -> bool {true}
+
+    fn split(&self) -> Vec<Box<dyn Subword>>{
+        let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
+        split_str(self.get_text()).iter().map(|s| f(s.to_string())).collect()
+    }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         match self.get_text() {
