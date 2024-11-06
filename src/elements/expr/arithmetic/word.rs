@@ -105,14 +105,18 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
 
     match str_to_num(&name, core) {
         Ok(ArithElem::Integer(n))        => {
-            core.data.set_param(name, &(n + inc).to_string());
+            if ! core.data.set_param(name, &(n + inc).to_string()) {
+                return Err(error::readonly(&name));
+            }
             match pre {
                 true  => Ok(ArithElem::Integer(n+inc)),
                 false => Ok(ArithElem::Integer(n)),
             }
         },
         Ok(ArithElem::Float(n))        => {
-            core.data.set_param(name, &(n + inc as f64).to_string());
+            if ! core.data.set_param(name, &(n + inc as f64).to_string()) {
+                return Err(error::readonly(&name));
+            }
             match pre {
                 true  => Ok(ArithElem::Float(n+inc as f64)),
                 false => Ok(ArithElem::Float(n)),
@@ -173,7 +177,9 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
 
     match op {
         "=" => {
-            core.data.set_param(&name, &right_str);
+            if ! core.data.set_param(&name, &right_str) {
+                return Err(error::readonly(&name));
+            }
             return Ok(right_value.clone());
         },
         _   => {},
