@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::utils::error;
 
 fn is_varname(s :&String) -> bool {
     if s.len() == 0 {
@@ -29,7 +30,11 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             eprintln!("bash: read: `{}': not a valid identifier", &a);
             return 1;
         }else{
-            core.data.set_param(&a, "");
+            if ! core.data.set_param(&a, "") {
+                let msg = error::readonly(&a);
+                error::print(&msg, core, true);
+                return 1;
+            }
         }
     }
 
@@ -42,14 +47,22 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut overflow = String::new();
     for w in line.trim_end().split(' ') {
         if pos < args.len()-1 {
-            core.data.set_param(&args[pos], &w);
+            if ! core.data.set_param(&args[pos], &w) {
+                let msg = error::readonly(&args[pos]);
+                error::print(&msg, core, true);
+                return 1;
+            }
             pos += 1;
         }else{
             if overflow.len() != 0 {
                 overflow += " ";
             }
             overflow += &w;
-            core.data.set_param(&args[pos], &overflow);
+            if ! core.data.set_param(&args[pos], &overflow) {
+                let msg = error::readonly(&args[pos]);
+                error::print(&msg, core, true);
+                return 1;
+            }
         }
     }
 

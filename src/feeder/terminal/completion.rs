@@ -318,6 +318,7 @@ impl Terminal {
             },
             _ => {},
         }
+
         core.data.set_param("COMP_CWORD", &num.to_string());
     }
 }
