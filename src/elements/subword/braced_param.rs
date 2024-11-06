@@ -252,10 +252,12 @@ impl BracedParam {
             return true;
         }
         if symbol == ":=" {
-            core.data.set_param(&self.name, &value);
+            if ! core.data.set_param(&self.name, &value) {
+                return false;
+            }
             self.alternative_value = None;
             self.text = value;
-            return true;
+            return true
         }
         if symbol == ":?" {
             eprintln!("sush: {}: {}", &self.name, &value);

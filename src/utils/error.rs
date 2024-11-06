@@ -41,6 +41,10 @@ pub fn syntax_in_cond_expr(token: &str) -> String {
     format!("syntax error in conditional expression: unexpected token `{}'", token)
 }
 
+pub fn readonly(token: &str) -> String {
+    format!("{0}: readonly variable", token)
+}
+
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
     match coredump {

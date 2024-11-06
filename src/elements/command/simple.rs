@@ -4,7 +4,7 @@
 pub mod parser;
 
 use crate::{Feeder, Script, ShellCore};
-use crate::utils::exit;
+use crate::utils::{error, exit};
 use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
@@ -52,7 +52,8 @@ impl Command for SimpleCommand {
         if self.args.len() == 0 {
             core.data.set_param("_", "");
             self.option_x_output(core);
-            self.exec_set_params(core)
+            self.exec_set_params(core);
+            None
         }else if Self::check_sigint(core) {
             None
         }else{
@@ -137,15 +138,20 @@ impl SimpleCommand {
         false
     }
 
-    fn exec_set_params(&mut self, core: &mut ShellCore) -> Option<Pid> {
+    fn exec_set_params(&mut self, core: &mut ShellCore) {
         for s in &self.evaluated_subs {
-            match &s.1 {
+            let result = match &s.1 {
                 Value::EvaluatedSingle(v) => core.data.set_param(&s.0, &v),
                 Value::EvaluatedArray(a) => core.data.set_array(&s.0, &a),
-                _ => true,
+                _ => exit::internal("Unknown variable"),
             };
+
+            if ! result {
+                core.data.set_param("?", "1");
+                let msg = error::readonly(&s.0);
+                error::print(&msg, core, true);
+            }
         }
-        None
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
