@@ -6,6 +6,7 @@ use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::utils::error;
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
@@ -74,7 +75,14 @@ impl ForCommand {
                 return false;
             }
 
-            core.data.set_param(&self.name, &p);
+            match core.data.set_param(&self.name, &p) {
+                true => {},
+                false => {
+                    core.data.set_param("?", "1");
+                    let msg = error::readonly(&self.name);
+                    error::print(&msg, core, true);
+                },
+            }
 
             self.do_script.as_mut().unwrap().exec(core);
 
