@@ -11,19 +11,18 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
             continue;
         }
 
-        let gen_word = |sws| Word{ text: "".to_string(), subwords: sws};
-
-        let mut ans = vec![];
-        for sw in &split[1..split.len()-1] {
-            ans.push(gen_word(vec![sw.clone()]));
-        }
+        let gen_word = |sws| Word{ text: String::new(), subwords: sws};
 
         let mut left = gen_word(word.subwords[..i].to_vec());
-        left.push(&split[0].clone());
-        ans.insert(0, left);
+        left.subwords.push(split.remove(0));
 
-        let mut right = gen_word(vec![split.pop().unwrap()]);
-        right.subwords.append(&mut word.subwords[i+1..].to_vec());
+        let mut ans = vec![left];
+        while split.len() >= 2 {
+            ans.push(gen_word(vec![split.remove(0)]));
+        }
+
+        let mut right = gen_word(word.subwords[i+1..].to_vec());
+        right.subwords.insert(0, split.remove(0));
 
         ans.append(&mut eval(&right, core));
         return ans;
