@@ -16,6 +16,8 @@ impl Subword for SingleQuoted {
     fn make_unquoted_string(&mut self) -> Option<String> {
         Some( self.text[1..self.text.len()-1].to_string() )
     }
+
+    fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
 impl SingleQuoted {
