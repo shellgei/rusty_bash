@@ -615,4 +615,12 @@ EOF
 [ "$res" = "a
 a" ] || err $LINENO
 
+### word split
+
+export SUSH_TEST="ab
+cd
+ef"
+res=$($com <<< 'echo @$SUSH_TEST@')
+[ "$res" = "@ab cd ef@" ] || err $LINENO
+
 echo OK $0

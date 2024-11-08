@@ -6,21 +6,34 @@ use crate::elements::word::Word;
 use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
-    for (i, sw) in word.subwords.iter().enumerate() {
-        let split = sw.split();
-        if split.len() <= 1 {
-            continue;
-        }
-
-        let mut ans = rearrange(word, split, i);
-        let last = ans.pop().unwrap();
-        ans.append(&mut eval(&last, core));
-        return ans;
+    let (pos, mut split) = find_pos(word);
+    if split.len() == 0 {
+        return vec![word.clone()];
     }
 
-    vec![word.clone()]
+    let gen_word = |sws| Word{ text: String::new(), subwords: sws};
+
+    let mut left = gen_word(word.subwords[..pos].to_vec());
+    left.subwords.push(split.remove(0));
+
+    let mut ans = vec![left];
+    while split.len() >= 2 {
+        ans.push(gen_word(vec![split.remove(0)]));
+    }
+
+    let mut right = gen_word(word.subwords[pos+1..].to_vec());
+    right.subwords.insert(0, split.remove(0));
+
+    [ ans, eval(&right, core) ].concat()
 }
 
-fn rearrange(word: &Word, _: Vec<Box<dyn Subword>>, _: usize) -> Vec<Word> {
-    vec![word.clone()]
+pub fn find_pos(word: &Word) -> (usize, Vec<Box<dyn Subword>>) {
+    for (i, sw) in word.subwords.iter().enumerate() {
+        let split = sw.split();
+        if split.len() >= 2 {
+            return (i, split);
+        }
+    }
+    (0, vec![])
 }
+
