@@ -10,10 +10,9 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    words[0].subwords = vec![
-                            word.subwords[..pos].to_vec(),
-                            words[0].subwords.clone()
-                        ].concat();
+    let left_last = words[0].subwords.pop().unwrap();
+    words[0].subwords = word.subwords[..pos].to_vec();
+    words[0].subwords.push(left_last);
 
     let mut right = words.pop().unwrap();
     right.subwords.append(&mut word.subwords[pos+1..].to_vec());
