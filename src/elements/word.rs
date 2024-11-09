@@ -15,20 +15,20 @@ pub struct Word {
     pub subwords: Vec<Box<dyn Subword>>,
 }
 
-impl From<Vec<Box::<dyn Subword>>> for Word {
-    fn from(subwords: Vec<Box::<dyn Subword>>) -> Self {
-        Self {
-            text: subwords.iter().map(|s| s.get_text()).collect(),
-            subwords: subwords,
-        }
-    }
-}
-
 impl From<Box::<dyn Subword>> for Word {
     fn from(subword: Box::<dyn Subword>) -> Self {
         Self {
             text: subword.get_text().to_string(),
             subwords: vec![subword],
+        }
+    }
+}
+
+impl From<Vec<Box::<dyn Subword>>> for Word {
+    fn from(subwords: Vec<Box::<dyn Subword>>) -> Self {
+        Self {
+            text: subwords.iter().map(|s| s.get_text()).collect(),
+            subwords: subwords,
         }
     }
 }
