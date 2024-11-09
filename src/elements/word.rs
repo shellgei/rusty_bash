@@ -65,10 +65,11 @@ impl Word {
             .collect()
     }
 
-    pub fn new(subwords: Vec<Box::<dyn Subword>>) -> Word {
+    pub fn new(subwords: &[&[Box::<dyn Subword>]]) -> Word {
+        let sws = subwords.concat();
         Word {
-            text: subwords.iter().map(|s| s.get_text()).collect(),
-            subwords: subwords,
+            text: sws.iter().map(|s| s.get_text()).collect(),
+            subwords: sws,
         }
     }
 
@@ -82,7 +83,7 @@ impl Word {
             subwords.push(sw);
         }
 
-        let ans = Word::new(subwords);
+        let ans = Word::new(&[&subwords]);
         match ans.text.len() {
             0 => None,
             _ => Some(ans),
