@@ -7,7 +7,7 @@ use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use nix::unistd::Pid;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ParenCommand {
     text: String,
     script: Option<Script>,
@@ -38,16 +38,8 @@ impl Command for ParenCommand {
 }
 
 impl ParenCommand {
-    fn new() -> ParenCommand {
-        ParenCommand {
-            text: String::new(),
-            script: None,
-            redirects: vec![],
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<Self> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, substitution) {
             ans.text.push_str("(");
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
