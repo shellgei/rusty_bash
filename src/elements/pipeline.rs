@@ -11,7 +11,7 @@ use nix::time::ClockId;
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub pipes: Vec<Pipe>,
@@ -67,16 +67,6 @@ impl Pipeline {
         core.measured_time.user = self_usage.user_time() + children_usage.user_time();
         core.measured_time.sys = self_usage.system_time() + children_usage.system_time();
         core.measured_time.real = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
-    }
-
-    pub fn new() -> Pipeline {
-        Pipeline {
-            text: String::new(),
-            commands: vec![],
-            pipes: vec![],
-            exclamation: false,
-            time: false,
-        }
     }
 
     fn eat_exclamation(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -139,7 +129,7 @@ impl Pipeline {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
-        let mut ans = Pipeline::new();
+        let mut ans = Pipeline::default();
 
         while Self::eat_exclamation(feeder, &mut ans, core) 
         || Self::eat_time(feeder, &mut ans, core) { }
