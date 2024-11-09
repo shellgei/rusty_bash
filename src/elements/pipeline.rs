@@ -64,9 +64,9 @@ impl Pipeline {
         let self_usage = resource::getrusage(resource::UsageWho::RUSAGE_SELF).unwrap();
         let children_usage = resource::getrusage(resource::UsageWho::RUSAGE_CHILDREN).unwrap();
 
-        core.user_time = self_usage.user_time() + children_usage.user_time();
-        core.sys_time = self_usage.system_time() + children_usage.system_time();
-        core.real_time = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
+        core.measured_time.user = self_usage.user_time() + children_usage.user_time();
+        core.measured_time.sys = self_usage.system_time() + children_usage.system_time();
+        core.measured_time.real = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
     }
 
     pub fn new() -> Pipeline {

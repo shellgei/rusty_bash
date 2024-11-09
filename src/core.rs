@@ -28,6 +28,22 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
+pub struct MeasuredTime {
+    pub real: TimeSpec, 
+    pub user: TimeVal, 
+    pub sys: TimeVal, 
+}
+
+impl Default for MeasuredTime {
+    fn default() -> Self {
+        Self {
+            real: TimeSpec::new(0,0),
+            user: TimeVal::new(0,0),
+            sys: TimeVal::new(0,0),
+        }
+    }
+}
+
 pub struct ShellCore {
     pub data: Data,
     rewritten_history: HashMap<usize, String>,
@@ -49,9 +65,12 @@ pub struct ShellCore {
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
     pub completion_actions: HashMap<String, String>,
+    /*
     pub real_time: TimeSpec, 
     pub user_time: TimeVal, 
     pub sys_time: TimeVal, 
+    */
+    pub measured_time: MeasuredTime,
     pub options: Options,
     pub shopts: Options,
     pub suspend_e_option: bool,
@@ -91,9 +110,12 @@ impl ShellCore {
             current_dir: None,
             completion_functions: HashMap::new(),
             completion_actions: HashMap::new(),
+            measured_time: Default::default(),
+            /*
             real_time: TimeSpec::new(0, 0),
             user_time: TimeVal::new(0, 0),
             sys_time: TimeVal::new(0, 0),
+            */
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             suspend_e_option: false,
@@ -219,13 +241,13 @@ impl ShellCore {
             let self_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
             let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
 
-            let real_diff = real_end_time - self.real_time;
+            let real_diff = real_end_time - self.measured_time.real;
             eprintln!("\nreal\t{}m{}.{:06}s", real_diff.tv_sec()/60,
                       real_diff.tv_sec()%60, real_diff.tv_nsec()/1000);
-            let user_diff = self_usage.user_time() + children_usage.user_time() - self.user_time;
+            let user_diff = self_usage.user_time() + children_usage.user_time() - self.measured_time.user;
             eprintln!("user\t{}m{}.{:06}s", user_diff.tv_sec()/60,
                       user_diff.tv_sec()%60, user_diff.tv_usec());
-            let sys_diff = self_usage.system_time() + children_usage.system_time() - self.sys_time;
+            let sys_diff = self_usage.system_time() + children_usage.system_time() - self.measured_time.sys;
             eprintln!("sys \t{}m{}.{:06}s", sys_diff.tv_sec()/60,
                       sys_diff.tv_sec()%60, sys_diff.tv_usec());
     }
