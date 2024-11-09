@@ -6,7 +6,7 @@ use crate::elements::word::Word;
 use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
-    let (left_sws, mut center_sws, right_sws) = match split(word) {
+    let (left_sws, mut center_sws, right_sws) = match find_and_split(word) {
         (Some(i), sws) => (&word.subwords[..i], sws, &word.subwords[i+1..]),
         (None, _)      => return vec![word.clone()],
     };
@@ -18,7 +18,7 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     [ vec![left], centers, eval(&right, core) ].concat()
 }
 
-pub fn split(word: &Word) -> (Option<usize>, Vec<Box::<dyn Subword>>) {
+pub fn find_and_split(word: &Word) -> (Option<usize>, Vec<Box::<dyn Subword>>) {
     for (i, sw) in word.subwords.iter().enumerate() {
         let subwords = sw.split();
         if subwords.len() >= 2 {
