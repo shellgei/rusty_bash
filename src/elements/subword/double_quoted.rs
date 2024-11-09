@@ -7,7 +7,7 @@ use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
     text: String,
     subwords: Vec<Box<dyn Subword>>,
@@ -58,7 +58,7 @@ impl Subword for DoubleQuoted {
 
         let mut last = 0;
         for p in points {
-            let mut tmp = Self::new();
+            let mut tmp = Self::default();
             tmp.subwords = self.subwords[last..p].to_vec();
             ans.push(Box::new(tmp) as Box<dyn Subword>);
             last = p;
@@ -69,14 +69,6 @@ impl Subword for DoubleQuoted {
 }
 
 impl DoubleQuoted {
-    pub fn new() -> DoubleQuoted {
-        DoubleQuoted {
-            text: String::new(),
-            subwords: vec![],
-            split_points: vec![],
-        }
-    }
-
     fn replace_position_params(&mut self, core: &mut ShellCore) -> Vec<Box<dyn Subword>> {
         let mut ans = vec![];
 
@@ -173,7 +165,7 @@ impl DoubleQuoted {
         if ! feeder.starts_with("\"") {
             return None;
         }
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         ans.text = feeder.consume(1);
 
         loop {
@@ -187,7 +179,6 @@ impl DoubleQuoted {
 
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
-//                eprintln!("{:?}", &ans);
                 return Some(ans);
             }else if feeder.len() > 0 {
                 exit::internal("unknown chars in double quoted word");
