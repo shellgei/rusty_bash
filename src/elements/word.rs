@@ -75,10 +75,10 @@ impl Word {
             .collect()
     }
 
-    pub fn new(subwords: &[Box::<dyn Subword>]) -> Word {
+    pub fn new(subwords: Vec<Box::<dyn Subword>>) -> Word {
         Word {
             text: subwords.iter().map(|s| s.get_text()).collect(),
-            subwords: subwords.to_vec(),
+            subwords: subwords,
         }
     }
 
@@ -100,7 +100,7 @@ impl Word {
             subwords.push(sw);
         }
 
-        let ans = Word::new(&subwords);
+        let ans = Word::new(subwords);
         match ans.text.len() {
             0 => None,
             _ => Some(ans),
