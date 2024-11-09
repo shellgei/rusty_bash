@@ -7,8 +7,9 @@ use crate::elements::command::function_def::FunctionDefinition;
 use std::env;
 use std::collections::{HashMap, HashSet};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum Value {
+    #[default]
     None,
     Single(Word),
     EvaluatedSingle(String),
@@ -16,7 +17,7 @@ pub enum Value {
     EvaluatedArray(Vec<String>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Variable {
     pub value: Value,
     attributes: String,
@@ -24,18 +25,7 @@ pub struct Variable {
     pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
 }
 
-impl Default for Variable {
-    fn default() -> Self {
-        Self {
-            value: Value::None,
-            attributes: "".to_string(),
-            dynamic_get: None,
-            dynamic_set: None,
-        }
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Data {
     pub flags: String,
     parameters: Vec<HashMap<String, Variable>>,
@@ -48,12 +38,9 @@ pub struct Data {
 impl Data {
     pub fn new() -> Data {
         Data {
-            flags: String::new(),
             parameters: vec![HashMap::new()],
             position_parameters: vec![vec![]],
-            aliases: HashMap::new(),
-            functions: HashMap::new(),
-            alias_memo: vec![],
+            ..Default::default()
         }
     }
 
