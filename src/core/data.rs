@@ -201,12 +201,6 @@ impl Data {
                     Some(f) => f(v, val),
                     None    => Value::EvaluatedSingle(val.to_string()),
                 };
-                /*if let Some(f) = v.dynamic_set {
-                    
-                    v.value = f(v, val)
-                } else {
-                    v.value = Value::EvaluatedSingle(val.to_string())
-                }*/
             }
         })
         .or_insert(

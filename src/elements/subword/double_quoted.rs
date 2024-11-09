@@ -19,7 +19,7 @@ impl Subword for DoubleQuoted {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        let mut word = Word::new();
+        let mut word = Word::default();
         word.subwords = self.replace_position_params(core);
         if ! substitution::eval(&mut word, core) {
             return false;

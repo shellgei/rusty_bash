@@ -264,7 +264,7 @@ fn subword_sets_to_words(series: &Vec<Vec<Box<dyn Subword>>>,
                      left: &[Box<dyn Subword>], right: &[Box<dyn Subword>]) -> Vec<Word> {
     let mut ws = vec![];
     for sws in series {
-        let mut w = Word::new();
+        let mut w = Word::default();
         w.subwords = [ left, sws, right ].concat();
         w.text = w.subwords.iter().map(|s| s.get_text()).collect();
         ws.push(w);
@@ -278,7 +278,7 @@ fn subword_sets_to_words(series: &Vec<Vec<Box<dyn Subword>>>,
 }
 
 fn subwords_to_word(subwords: &Vec<Box<dyn Subword>>) -> Vec<Word> {
-    let mut w = Word::new();
+    let mut w = Word::default();
     w.subwords = subwords.to_vec();
     w.text = w.subwords.iter().map(|s| s.get_text()).collect();
     vec![w]

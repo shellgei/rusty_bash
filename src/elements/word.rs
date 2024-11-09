@@ -11,7 +11,7 @@ use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use super::subword::Subword;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,
@@ -107,13 +107,6 @@ impl Word {
             .collect()
     }
 
-    pub fn new() -> Word {
-        Word {
-            text: String::new(),
-            subwords: vec![],
-        }
-    }
-
     fn push(&mut self, subword: &Box<dyn Subword>) {
         self.text += &subword.get_text().to_string();
         self.subwords.push(subword.clone());
@@ -127,7 +120,7 @@ impl Word {
             return None;
         }
 
-        let mut ans = Word::new();
+        let mut ans = Word::default();
         while let Some(sw) = subword::parse(feeder, core) {
             match sw.is_extglob() {
                 false => ans.push(&sw),
