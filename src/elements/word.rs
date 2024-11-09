@@ -17,6 +17,24 @@ pub struct Word {
     pub subwords: Vec<Box<dyn Subword>>,
 }
 
+impl From<Vec<Box::<dyn Subword>>> for Word {
+    fn from(subwords: Vec<Box::<dyn Subword>>) -> Self {
+        Word {
+            text: subwords.iter().map(|s| s.get_text()).collect(),
+            subwords: subwords,
+        }
+    }
+}
+
+impl From<Box::<dyn Subword>> for Word {
+    fn from(subword: Box::<dyn Subword>) -> Self {
+        Word {
+            text: subword.get_text().to_string(),
+            subwords: vec![subword],
+        }
+    }
+}
+
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
         let mut ws = vec![];
@@ -75,13 +93,6 @@ impl Word {
             .collect()
     }
 
-    pub fn new(subwords: Vec<Box::<dyn Subword>>) -> Word {
-        Word {
-            text: subwords.iter().map(|s| s.get_text()).collect(),
-            subwords: subwords,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         if feeder.starts_with("#") {
             return None;
@@ -92,7 +103,7 @@ impl Word {
             subwords.push(sw);
         }
 
-        let ans = Word::new(subwords);
+        let ans = Word::from(subwords);
         match ans.text.len() {
             0 => None,
             _ => Some(ans),
