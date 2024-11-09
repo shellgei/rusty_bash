@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::elements::expr::conditional::{ConditionalExpr, CondElem};
 use crate::utils::error;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct TestCommand {
     text: String,
     cond: Option<ConditionalExpr>,
@@ -39,21 +39,12 @@ impl Command for TestCommand {
 }
 
 impl TestCommand {
-    fn new() -> TestCommand {
-        TestCommand {
-            text: String::new(),
-            cond: None,
-            redirects: vec![],
-            force_fork: false,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("[[") {
             return None;
         }
 
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         ans.text = feeder.consume(2);
 
         match ConditionalExpr::parse(feeder, core) {

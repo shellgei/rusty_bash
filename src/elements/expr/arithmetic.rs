@@ -16,7 +16,7 @@ use self::calculator::calculate;
 use self::elem::ArithElem;
 use crate::elements::word::Word;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ArithmeticExpr {
     pub text: String,
     elements: Vec<ArithElem>,
@@ -183,10 +183,8 @@ impl ArithmeticExpr {
 
     pub fn new() -> ArithmeticExpr {
         ArithmeticExpr {
-            text: String::new(),
-            elements: vec![],
             output_base: "10".to_string(),
-            hide_base: false,
+            ..Default::default()
         }
     }
 }

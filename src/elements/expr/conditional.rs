@@ -66,7 +66,7 @@ fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<CondEl
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ConditionalExpr {
     pub text: String,
     elements: Vec<CondElem>,
@@ -342,13 +342,6 @@ impl ConditionalExpr {
         true
     }
 
-    fn new() -> ConditionalExpr {
-        ConditionalExpr {
-            text: String::new(),
-            elements: vec![],
-        }
-    }
-
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if feeder.starts_with("]]")
         || feeder.starts_with(")")
@@ -488,7 +481,7 @@ impl ConditionalExpr {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);

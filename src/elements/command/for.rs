@@ -9,7 +9,7 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::utils::error;
 use std::sync::atomic::Ordering::Relaxed;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ForCommand {
     text: String,
     name: String,
@@ -136,20 +136,6 @@ impl ForCommand {
         true
     }
 
-    fn new() -> ForCommand {
-        ForCommand {
-            text: String::new(),
-            name: String::new(),
-            has_in: false,
-            has_arithmetic: false,
-            values: vec![],
-            arithmetics: vec![],
-            do_script: None,
-            redirects: vec![],
-            force_fork: false,
-        }
-    }
-
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
@@ -239,7 +225,7 @@ impl ForCommand {
         if ! feeder.starts_with("for") {
             return None;
         }
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         ans.text = feeder.consume(3);
 
         if Self::eat_name(feeder, &mut ans, core) {
