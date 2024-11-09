@@ -44,6 +44,7 @@ impl Default for MeasuredTime {
     }
 }
 
+#[derive(Default)]
 pub struct ShellCore {
     pub data: Data,
     rewritten_history: HashMap<usize, String>,
@@ -65,11 +66,6 @@ pub struct ShellCore {
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
     pub completion_actions: HashMap<String, String>,
-    /*
-    pub real_time: TimeSpec, 
-    pub user_time: TimeVal, 
-    pub sys_time: TimeVal, 
-    */
     pub measured_time: MeasuredTime,
     pub options: Options,
     pub shopts: Options,
@@ -91,35 +87,16 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
             data: Data::new(),
-            rewritten_history: HashMap::new(),
-            history: vec![],
-            builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             word_eval_error: false,
             read_stdin: true,
             is_subshell: false,
-            source_function_level: 0,
-            source_level: 0,
-            eval_level: 0,
-            loop_level: 0,
-            break_counter: 0,
             return_flag: false,
-            tty_fd: None,
-            job_table: vec![],
-            job_table_priority: vec![],
-            current_dir: None,
-            completion_functions: HashMap::new(),
-            completion_actions: HashMap::new(),
-            measured_time: Default::default(),
-            /*
-            real_time: TimeSpec::new(0, 0),
-            user_time: TimeVal::new(0, 0),
-            sys_time: TimeVal::new(0, 0),
-            */
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             suspend_e_option: false,
             script_name: "-".to_string(),
+            ..Default::default()
         };
 
         core.init_current_directory();
