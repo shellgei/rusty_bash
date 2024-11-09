@@ -17,7 +17,7 @@ use std::sync::atomic::Ordering::Relaxed;
 use nix::unistd::Pid;
 use nix::errno::Errno;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct SimpleCommand {
     text: String,
     substitutions: Vec<Substitution>,

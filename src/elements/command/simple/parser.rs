@@ -8,20 +8,6 @@ use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 
 impl SimpleCommand {
-    fn new() -> SimpleCommand {
-        SimpleCommand {
-            text: String::new(),
-            substitutions: vec![],
-            evaluated_subs: vec![],
-            words: vec![],
-            args: vec![],
-            redirects: vec![],
-            force_fork: false,
-            substitutions_as_args: vec![],
-            permit_substitution_arg: false,
-        }
-    }
-
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(s) = Substitution::parse(feeder, core) {
             ans.text += &s.text;
@@ -88,7 +74,7 @@ impl SimpleCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         feeder.set_backup();
 
         while Self::eat_substitution(feeder, &mut ans, core) {
