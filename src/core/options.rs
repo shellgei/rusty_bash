@@ -3,27 +3,20 @@
 
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Options {
     opts: HashMap<String, bool>,
 }
 
 impl Options {
     pub fn new_as_basic_opts() -> Options {
-        let mut options = Options {
-            opts: HashMap::new(),
-        };
-
+        let mut options = Options::default();
         options.opts.insert("pipefail".to_string(), false);
-
         options
     }
 
     pub fn new_as_shopts() -> Options {
-        let mut options = Options {
-            opts: HashMap::new(),
-        };
-
+        let mut options = Options::default();
         /*
         let opt_strs = vec!["autocd", "cdable_vars", "cdspell", "checkhash",
                    "checkjobs", "checkwinsize", "cmdhist", "compat31",
