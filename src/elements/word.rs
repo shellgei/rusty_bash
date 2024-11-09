@@ -11,10 +11,28 @@ use crate::{Feeder, ShellCore};
 use crate::elements::subword;
 use super::subword::Subword;
 
-#[derive(Debug, Clone)] //Cloneも指定しておく
+#[derive(Debug, Clone)]
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,
+}
+
+impl From<Box::<dyn Subword>> for Word {
+    fn from(subword: Box::<dyn Subword>) -> Self {
+        Self {
+            text: subword.get_text().to_string(),
+            subwords: vec![subword],
+        }
+    }
+}
+
+impl From<Vec<Box::<dyn Subword>>> for Word {
+    fn from(subwords: Vec<Box::<dyn Subword>>) -> Self {
+        Self {
+            text: subwords.iter().map(|s| s.get_text()).collect(),
+            subwords: subwords,
+        }
+    }
 }
 
 impl Word {
@@ -75,13 +93,6 @@ impl Word {
             .collect()
     }
 
-    pub fn new(subwords: Vec<Box::<dyn Subword>>) -> Word {
-        Word {
-            text: subwords.iter().map(|s| s.get_text()).collect(),
-            subwords: subwords,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         if feeder.starts_with("#") {
             return None;
@@ -92,7 +103,7 @@ impl Word {
             subwords.push(sw);
         }
 
-        let ans = Word::new(subwords);
+        let ans = Word::from(subwords);
         match ans.text.len() {
             0 => None,
             _ => Some(ans),

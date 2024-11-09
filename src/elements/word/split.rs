@@ -3,33 +3,27 @@
 
 use crate::ShellCore;
 use crate::elements::word::Word;
+use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
-    let (pos, mut words) = split(word);
-    if words.len() == 0 {
-        return vec![word.clone()];
-    }
+    let (left_sws, mut center_sws, right_sws) = match find_and_split(word) {
+        (Some(i), sws) => (&word.subwords[..i], sws, &word.subwords[i+1..]),
+        (None, _)      => return vec![word.clone()],
+    };
 
-    let left_last = words[0].subwords.pop().unwrap();
-    words[0].subwords = word.subwords[..pos].to_vec();
-    words[0].subwords.push(left_last);
+    let left = Word::from([ left_sws, &[center_sws.remove(0)] ].concat());
+    let right = Word::from([ &[center_sws.pop().unwrap()], right_sws].concat());
+    let centers = center_sws.iter().map(|s| Word::from(s.clone())).collect();
 
-    let mut right = words.pop().unwrap();
-    right.subwords.append(&mut word.subwords[pos+1..].to_vec());
-    
-    [ words, eval(&right, core) ].concat()
+    [ vec![left], centers, eval(&right, core) ].concat()
 }
 
-pub fn split(word: &Word) -> (usize, Vec<Word>) {
+pub fn find_and_split(word: &Word) -> (Option<usize>, Vec<Box::<dyn Subword>>) {
     for (i, sw) in word.subwords.iter().enumerate() {
         let subwords = sw.split();
         if subwords.len() >= 2 {
-            let words = subwords.iter()
-                        .map(|s| Word::new(vec![s.clone()]))
-                        .collect();
-            return (i, words);
+            return (Some(i), subwords);
         }
     }
-    (0, vec![])
+    (None, vec![])
 }
-
