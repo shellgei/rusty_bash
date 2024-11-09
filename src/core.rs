@@ -88,13 +88,9 @@ impl ShellCore {
         let mut core = ShellCore{
             data: Data::new(),
             sigint: Arc::new(AtomicBool::new(false)),
-            word_eval_error: false,
             read_stdin: true,
-            is_subshell: false,
-            return_flag: false,
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
-            suspend_e_option: false,
             script_name: "-".to_string(),
             ..Default::default()
         };
