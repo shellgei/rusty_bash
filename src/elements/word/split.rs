@@ -11,12 +11,12 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    let left = Word::concat_new(&[ &word.subwords[..pos], &[subws.remove(0)] ]);
+    let left = Word::new([ &word.subwords[..pos], &[subws.remove(0)] ].concat());
     let mut words = vec![left];
     while subws.len() > 1 {
         words.push(Word::new(vec![subws.remove(0)]));
     }
-    let right = Word::concat_new(&[ &[subws.remove(0)], &word.subwords[pos+1..]]);
+    let right = Word::new([ &[subws.remove(0)], &word.subwords[pos+1..]].concat());
 
     [ words, eval(&right, core) ].concat()
 }

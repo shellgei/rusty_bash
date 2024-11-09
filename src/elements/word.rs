@@ -82,14 +82,6 @@ impl Word {
         }
     }
 
-    pub fn concat_new(subwords: &[&[Box::<dyn Subword>]]) -> Word {
-        let sws = subwords.concat();
-        Word {
-            text: sws.iter().map(|s| s.get_text()).collect(),
-            subwords: sws,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
         if feeder.starts_with("#") {
             return None;
