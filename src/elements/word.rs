@@ -11,7 +11,7 @@ use crate::{Feeder, ShellCore};
 use crate::elements::subword;
 use super::subword::Subword;
 
-#[derive(Debug, Clone)] //Cloneも指定しておく
+#[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,

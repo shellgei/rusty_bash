@@ -114,7 +114,7 @@ impl Redirect {
         Redirect {
             text: String::new(),
             symbol: String::new(),
-            right: Word::from(vec![]),
+            right: Word::default(),
             left: String::new(),
             left_fd: -1,
             left_backup: -1,
