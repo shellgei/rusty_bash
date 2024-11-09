@@ -51,7 +51,7 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
             data: Data::new(),
-            history: vec![],
+            history: Vec::new(),
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             is_subshell: false,
