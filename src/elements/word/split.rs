@@ -10,15 +10,13 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     if subws.len() == 0 {
         return vec![word.clone()];
     }
+    let (lsubws, rsubws) = (&word.subwords[..pos], &word.subwords[pos+1..]);
 
-    let left = Word::from([ &word.subwords[..pos], &[subws.remove(0)] ].concat());
-    let mut words = vec![left];
-    while subws.len() > 1 {
-        words.push(Word::from(subws.remove(0)));
-    }
-    let right = Word::from([ &[subws.remove(0)], &word.subwords[pos+1..]].concat());
+    let left = Word::from([ lsubws, &[subws.remove(0)] ].concat());
+    let right = Word::from([ &[subws.pop().unwrap()], rsubws].concat());
+    let centers = subws.iter().map(|s| Word::from(s.clone())).collect();
 
-    [ words, eval(&right, core) ].concat()
+    [ vec![left], centers, eval(&right, core) ].concat()
 }
 
 pub fn split(word: &Word) -> (usize, Vec<Box::<dyn Subword>>) {
