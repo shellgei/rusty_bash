@@ -62,21 +62,15 @@ impl Subword for BracedParam {
             return false;
         }
 
-        if let Some(sub) = self.subscript.as_mut() {
-            if let Some(s) = sub.eval() {
-                self.text = match (self.num, s.as_str()) {
-                    (true, "@") => core.data.get_array_len(&self.name).to_string(),
-                    (true, _)   => core.data.get_array(&self.name, &s).chars().count().to_string(),
-                    (false, _)  => core.data.get_array(&self.name, &s),
-                };
-            }
-        }else{
-            let value = core.data.get_param(&self.name);
-            self.text = match self.num {
-                true  => value.chars().count().to_string(),
-                false => value.to_string(),
-            };
+        if self.subscript.is_some() {
+            return self.subscript_operation(core);
         }
+
+        let value = core.data.get_param(&self.name);
+        self.text = match self.num {
+            true  => value.chars().count().to_string(),
+            false => value.to_string(),
+        };
 
         self.optional_operation(core)
     }
@@ -103,6 +97,20 @@ impl BracedParam {
             return false;
         }
         true
+    }
+
+    fn subscript_operation(&mut self, core: &mut ShellCore) -> bool {
+        let index = match self.subscript.clone().unwrap().eval() {
+            Some(s) => s,
+            None => return false,
+        };
+
+        self.text = match (self.num, index.as_str()) {
+            (true, "@") => core.data.get_array_len(&self.name).to_string(),
+            (true, _)   => core.data.get_array(&self.name, &index).chars().count().to_string(),
+            (false, _)  => core.data.get_array(&self.name, &index),
+        };
+        self.optional_operation(core)
     }
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> bool {
