@@ -38,6 +38,21 @@ pub fn longest_match_length(word: &String, pattern: &str, extglob: bool) -> usiz
     org_length - candidates.iter().map(|c| c.len()).min().unwrap()
 }
 
+pub fn shortest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
+    let org_length = word.len();
+    let mut candidates = vec![word.to_string()];
+
+    for w in parse(pattern, extglob) {
+        compare_internal(&mut candidates, &w);
+    }
+
+    if candidates.len() == 0 {
+        return 0;
+    }
+
+    org_length - candidates.iter().map(|c| c.len()).max().unwrap()
+}
+
 fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
     match w {
         Wildcard::Normal(s) => compare_normal(candidates, &s),
