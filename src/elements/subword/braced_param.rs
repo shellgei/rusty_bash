@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod offset;
+mod alternative;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
@@ -171,6 +172,7 @@ impl BracedParam {
        true
     }
 
+    /*
     fn replace_to_alternative(&mut self, core: &mut ShellCore) -> bool {
         let symbol = match (self.alternative_symbol.as_deref(), self.text.as_ref()) {
             (Some(s), "")   => s,
@@ -229,6 +231,7 @@ impl BracedParam {
 
         return false;
     }
+    */
 
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(s) = Subscript::parse(feeder, core) {
