@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod offset;
 mod alternative;
+mod offset;
+mod remove;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
@@ -10,7 +11,6 @@ use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::utils::glob;
 use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone, Default)]
@@ -115,123 +115,6 @@ impl BracedParam {
         }
         true
     }
-
-    fn remove(&mut self, core: &mut ShellCore) -> bool {
-       let pattern = match &self.remove_pattern {
-           Some(w) => {
-               match w.eval_for_case_word(core) {
-                   Some(s) => s,
-                   None    => return false,
-               }
-           },
-           None => return true,
-       };
-
-       let extglob = core.shopts.query("extglob");
-
-       if self.remove_symbol.starts_with("#") {
-           let mut length = 0;
-           let mut ans_length = 0;
-
-           for ch in self.text.chars() {
-               length += ch.len_utf8();
-               let s = self.text[0..length].to_string();
-
-               if glob::compare(&s, &pattern, extglob) {
-                   ans_length = length;
-                   if self.remove_symbol == "#" {
-                       break;
-                   }
-               }
-           }
-
-           self.text = self.text[ans_length..].to_string();
-           return true;
-       }
-
-       if self.remove_symbol.starts_with("%") {
-           let mut length = self.text.len();
-           let mut ans_length = length;
-
-           for ch in self.text.chars().rev() {
-               length -= ch.len_utf8();
-               let s = self.text[length..].to_string();
-
-               if glob::compare(&s, &pattern, extglob) {
-                   ans_length = length;
-                   if self.remove_symbol == "%" {
-                       break;
-                   }
-               }
-           }
-
-           self.text = self.text[0..ans_length].to_string();
-           return true;
-       }
-
-       true
-    }
-
-    /*
-    fn replace_to_alternative(&mut self, core: &mut ShellCore) -> bool {
-        let symbol = match (self.alternative_symbol.as_deref(), self.text.as_ref()) {
-            (Some(s), "")   => s,
-            (Some("-"), _)  => "-",
-            (Some(":+"), _) => ":+",
-            (Some("+"), _)  => "+",
-            _               => return true,
-        };
-
-        let word = match self.alternative_value.as_ref() {
-            Some(w) => match w.tilde_and_dollar_expansion(core) {
-                Some(w2) => w2,
-                None     => return false,
-            },
-            None => return false,
-        };
-
-        let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-
-        if symbol == "-" {
-            self.alternative_value = None;
-            self.alternative_symbol = None;
-            return true;
-        }
-        if symbol == "+" {
-            if ! core.data.has_value(&self.name) {
-                self.alternative_value = None;
-                return true;
-            }
-            self.alternative_value = Some(word);
-            return true;
-        }
-        if symbol == ":-" {
-            self.alternative_value = Some(word);
-            return true;
-        }
-        if symbol == ":=" {
-            if ! core.data.set_param(&self.name, &value) {
-                return false;
-            }
-            self.alternative_value = None;
-            self.text = value;
-            return true
-        }
-        if symbol == ":?" {
-            eprintln!("sush: {}: {}", &self.name, &value);
-            return false;
-        }
-        if symbol == ":+" {
-            self.alternative_value = match self.text.as_str() {
-                "" => None,
-                _  => Some(word),
-            };
-            return true;
-        }
-
-        return false;
-    }
-    */
 
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(s) = Subscript::parse(feeder, core) {
