@@ -212,6 +212,9 @@ res=$($com <<< 'set a b c ; for x in "@$@x" ; do echo $x ; done')
 b
 cx" ] || err $LINENO
 
+res=$($com <<< 'set a; for x in "@$@x" ; do echo $x ; done')
+[ "$res" == "@ax" ] || err $LINENO
+
 res=$($com <<< 'for ((${ } ; ; )) ; do echo ; done')
 [ "$?" == "1" ] || err $LINENO
 
