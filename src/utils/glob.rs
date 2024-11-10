@@ -14,19 +14,8 @@ enum Wildcard {
 }
 
 pub fn compare(word: &String, pattern: &str, extglob: bool) -> bool {
-    let mut candidates = vec![word.to_string()];
-
-    for w in parse(pattern, extglob) {
-        compare_internal(&mut candidates, &w);
-    }
-
-    candidates.iter().any(|c| c == "")
+    get_shaved_candidates(word, pattern, extglob).iter().any(|c| c == "")
 }
-
-/*
-pub fn compare(word: &String, pattern: &str, extglob: bool) -> bool {
-    longest_match_length(word, pattern, extglob) == word.len()
-}*/
 
 pub fn longest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
     let candidates = get_shaved_candidates(word, pattern, extglob);
