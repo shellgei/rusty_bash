@@ -22,6 +22,8 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         hash(obj, &pattern, extglob);
     }else if obj.remove_symbol.starts_with("%") {
         percent(obj, &pattern, extglob);
+    }else {
+        return false;
     }
     true
 }
