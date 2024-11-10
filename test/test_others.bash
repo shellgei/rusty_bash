@@ -195,6 +195,9 @@ res=$($com -c 'A="あいう いうえお"; echo ${A/%えお/えええeee}' )
 res=$($com -c 'A="あいうえお いうえお"; echo ${A/%えお/えええeee}' )
 [ "$res" = "あいうえお いうえええeee" ] || err $LINENO
 
+res=$($com -c 'A="あいうえお"; echo ${A/%あ/えええeee}' )
+[ "$res" = "あいうえお" ] || err $LINENO
+
 ### IRREGULAR INPUT TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')

@@ -49,6 +49,10 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
             if len == obj.text[start..].len() {
                 obj.text = [&obj.text[..start], &string_to[0..] ].concat();
                 return true;
+            }else{
+                ans += &ch.to_string();
+                start += ch.len_utf8();
+                continue;
             }
         } else if len != 0 && ! obj.all_replace {
             obj.text = [&obj.text[..start], &string_to[0..], &obj.text[start+len..] ].concat();
