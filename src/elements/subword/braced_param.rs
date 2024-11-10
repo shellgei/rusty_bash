@@ -10,7 +10,7 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::utils::glob;
 use super::simple::SimpleSubword;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     pub text: String,
     pub name: String,
@@ -274,26 +274,6 @@ impl BracedParam {
         return false;
     }
 
-    fn new() -> BracedParam {
-        BracedParam {
-            text: String::new(),
-            name: String::new(),
-            unknown: String::new(),
-            subscript: None,
-            has_alternative: false,
-            alternative_symbol: None,
-            alternative_value: None,
-            num: false,
-            has_offset: false,
-            offset: None,
-            has_length: false,
-            length: None,
-            has_remove_pattern: false,
-            remove_symbol: String::new(),
-            remove_pattern: None,
-        }
-    }
-
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(s) = Subscript::parse(feeder, core) {
             ans.text += &s.text;
@@ -434,7 +414,7 @@ impl BracedParam {
         if ! feeder.starts_with("${") {
             return None;
         }
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         ans.text += &feeder.consume(2);
 
         if feeder.starts_with("#") && ! feeder.starts_with("#}") {
