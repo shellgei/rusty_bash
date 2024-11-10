@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Subscript {
     pub text: String,
 }
@@ -24,18 +24,13 @@ impl Subscript {
         None
     }
 
-    pub fn new() -> Subscript {
-        Subscript {
-            text: String::new(),
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("[") {
             return None;
         }
 
-        let mut ans = Self::new();
+        let mut ans = Self::default();
+        ans.text += &feeder.consume(1);
 
         while ! feeder.starts_with("]") {
             let len = feeder.scanner_inner_subscript(core);

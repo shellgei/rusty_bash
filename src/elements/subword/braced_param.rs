@@ -19,6 +19,7 @@ pub struct BracedParam {
     pub text: String,
     pub name: String,
     unknown: String,
+    is_array: bool,
     subscript: Option<Subscript>,
     has_alternative: bool,
     alternative_symbol: Option<String>,
@@ -38,6 +39,7 @@ pub struct BracedParam {
     all_replace: bool,
     head_only_replace: bool,
     tail_only_replace: bool,
+    array: Vec<String>,
 }
 
 fn is_param(s :&String) -> bool {
@@ -91,6 +93,9 @@ impl Subword for BracedParam {
             None    => vec![],
         }
     }
+
+    fn is_array(&self) -> bool {self.is_array}
+    fn get_array(&self) -> Vec<String> {self.array.clone()}
 }
 
 impl BracedParam {
@@ -112,6 +117,10 @@ impl BracedParam {
             Some(s) => s,
             None => return false,
         };
+
+        if index.as_str() == "@" {
+            self.array = core.data.get_array_all(&self.name);
+        }
 
         self.text = match (self.num, index.as_str()) {
             (true, "@") => core.data.get_array_len(&self.name).to_string(),
@@ -138,6 +147,9 @@ impl BracedParam {
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(s) = Subscript::parse(feeder, core) {
             ans.text += &s.text;
+            if s.text.contains('@') {
+                ans.is_array = true;
+            }
             ans.subscript = Some(s);
             return true;
         }

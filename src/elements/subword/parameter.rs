@@ -18,6 +18,8 @@ impl Subword for Parameter {
         self.text = value.to_string();
         true
     }
+
+    fn is_array(&self) -> bool {self.text == "$@"}
 }
 
 impl Parameter {

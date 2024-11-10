@@ -20,7 +20,7 @@ impl Subword for DoubleQuoted {
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
         let mut word = Word::default();
-        word.subwords = self.replace_position_params(core);
+        word.subwords = self.replace_array(core);
         if ! substitution::eval(&mut word, core) {
             return false;
         }
@@ -68,12 +68,20 @@ impl Subword for DoubleQuoted {
 }
 
 impl DoubleQuoted {
-    fn replace_position_params(&mut self, core: &mut ShellCore) -> Vec<Box<dyn Subword>> {
+    fn replace_array(&mut self, core: &mut ShellCore) -> Vec<Box<dyn Subword>> {
         let mut ans = vec![];
 
-        for sw in &self.subwords {
-            if sw.get_text() == "$@" {
-                for pp in core.data.get_position_params() {
+        for sw in &mut self.subwords {
+            if sw.is_array() || sw.get_text() == "${@}" {
+                let array = match sw.get_text() {
+                    "$@" | "${@}" => core.data.get_position_params(),
+                    _ => {
+                        sw.substitute(core);
+                        sw.get_array()
+                    },
+                };
+
+                for pp in array {
                     ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
                     self.split_points.push(ans.len());
                 }
