@@ -36,6 +36,8 @@ pub struct BracedParam {
     has_replace_to: bool,
     replace_to: Option<Word>,
     all_replace: bool,
+    head_only_replace: bool,
+    tail_only_replace: bool,
 }
 
 fn is_param(s :&String) -> bool {
@@ -184,6 +186,12 @@ impl BracedParam {
         if feeder.starts_with("/") {
             ans.text += &feeder.consume(1);
             ans.all_replace = true;
+        }else if feeder.starts_with("#") {
+            ans.text += &feeder.consume(1);
+            ans.head_only_replace = true;
+        }else if feeder.starts_with("%") {
+            ans.text += &feeder.consume(1);
+            ans.tail_only_replace = true;
         }
 
         ans.replace_from = Some(Self::eat_subwords(feeder, ans, vec!["}", "/"], core));

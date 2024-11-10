@@ -183,6 +183,18 @@ res=$($com -c 'A="あいう うえお"; echo ${A//う/えええeee}' )
 res=$($com -c 'A="あいう いうえお"; echo ${A//いう/えええeee}' )
 [ "$res" = "あえええeee えええeeeえお" ] || err $LINENO
 
+res=$($com -c 'A="あいう いうえお"; echo ${A/#いう/えええeee}' )
+[ "$res" = "あいう いうえお" ] || err $LINENO
+
+res=$($com -c 'A="あいう いうえお"; echo ${A/#あいう/えええeee}' )
+[ "$res" = "えええeee いうえお" ] || err $LINENO
+
+res=$($com -c 'A="あいう いうえお"; echo ${A/%えお/えええeee}' )
+[ "$res" = "あいう いうえええeee" ] || err $LINENO
+
+res=$($com -c 'A="あいうえお いうえお"; echo ${A/%えお/えええeee}' )
+[ "$res" = "あいうえお いうえええeee" ] || err $LINENO
+
 ### IRREGULAR INPUT TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')
