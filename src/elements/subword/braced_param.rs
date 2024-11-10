@@ -20,6 +20,7 @@ pub struct BracedParam {
     pub name: String,
     unknown: String,
     is_array: bool,
+    is_special: bool,
     subscript: Option<Subscript>,
     has_alternative: bool,
     alternative_symbol: Option<String>,
@@ -73,6 +74,10 @@ impl Subword for BracedParam {
         }
 
         if self.subscript.is_some() {
+            if self.is_special {
+                eprintln!("sush: {}: bad substitution", &self.text);
+                return false;
+            }
             return self.subscript_operation(core);
         }
 
@@ -292,6 +297,7 @@ impl BracedParam {
         if len != 0 {
             ans.name = feeder.consume(len);
             ans.is_array = ans.name == "@";
+            ans.is_special = true;
             ans.text += &ans.name;
             return true;
         }
