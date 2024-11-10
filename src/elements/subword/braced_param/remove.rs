@@ -5,60 +5,62 @@ use crate::ShellCore;
 use crate::elements::subword::BracedParam;
 use crate::utils::glob;
 
-impl BracedParam {
-    pub fn remove(&mut self, core: &mut ShellCore) -> bool {
-       let pattern = match &self.remove_pattern {
-           Some(w) => {
-               match w.eval_for_case_word(core) {
-                   Some(s) => s,
-                   None    => return false,
-               }
-           },
-           None => return true,
-       };
-
-       let extglob = core.shopts.query("extglob");
-
-       if self.remove_symbol.starts_with("#") {
-           let mut length = 0;
-           let mut ans_length = 0;
-
-           for ch in self.text.chars() {
-               length += ch.len_utf8();
-               let s = self.text[0..length].to_string();
-
-               if glob::compare(&s, &pattern, extglob) {
-                   ans_length = length;
-                   if self.remove_symbol == "#" {
-                       break;
-                   }
-               }
-           }
-
-           self.text = self.text[ans_length..].to_string();
-           return true;
-       }
-
-       if self.remove_symbol.starts_with("%") {
-           let mut length = self.text.len();
-           let mut ans_length = length;
-
-           for ch in self.text.chars().rev() {
-               length -= ch.len_utf8();
-               let s = self.text[length..].to_string();
-
-               if glob::compare(&s, &pattern, extglob) {
-                   ans_length = length;
-                   if self.remove_symbol == "%" {
-                       break;
-                   }
-               }
-           }
-
-           self.text = self.text[0..ans_length].to_string();
-           return true;
-       }
-
-       true
+pub fn get(obj: &BracedParam, core: &mut ShellCore) -> Option<String> {
+    let pattern = match &obj.remove_pattern {
+        None => return Some(obj.text.clone()),
+        Some(w) => {
+            match w.eval_for_case_word(core) {
+                Some(s) => s,
+                None    => return None,
+            }
+        },
+    };
+ 
+    let extglob = core.shopts.query("extglob");
+ 
+    if obj.remove_symbol.starts_with("#") {
+        hash(obj, &pattern, extglob)
+    }else if obj.remove_symbol.starts_with("%") {
+        percent(obj, &pattern, extglob)
+    }else {
+        Some(obj.text.clone())
     }
+}
+
+pub fn hash(obj: &BracedParam, pattern: &String, extglob: bool) -> Option<String> {
+    let mut length = 0;
+    let mut ans_length = 0;
+ 
+    for ch in obj.text.chars() {
+        length += ch.len_utf8();
+        let s = obj.text[0..length].to_string();
+ 
+        if glob::compare(&s, &pattern, extglob) {
+            ans_length = length;
+            if obj.remove_symbol == "#" {
+                break;
+            }
+        }
+    }
+ 
+    Some( obj.text[ans_length..].to_string() )
+}
+
+pub fn percent(obj: &BracedParam, pattern: &String, extglob: bool) -> Option<String> {
+    let mut length = obj.text.len();
+    let mut ans_length = length;
+ 
+    for ch in obj.text.chars().rev() {
+        length -= ch.len_utf8();
+        let s = obj.text[length..].to_string();
+ 
+        if glob::compare(&s, &pattern, extglob) {
+            ans_length = length;
+            if obj.remove_symbol == "%" {
+                break;
+            }
+        }
+    }
+ 
+    Some( obj.text[0..ans_length].to_string() )
 }
