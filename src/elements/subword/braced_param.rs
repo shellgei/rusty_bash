@@ -78,7 +78,8 @@ impl Subword for BracedParam {
         }
 
         if self.has_offset {
-            return self.offset(core);
+            //return self.offset(core);
+            return offset::offset(self, core);
         }else if self.has_alternative {
             return self.replace_to_alternative(core);
         }else if self.has_remove_pattern {
