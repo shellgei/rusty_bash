@@ -30,8 +30,9 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
 
     let mut start = 0;
     for ch in obj.text.chars() {
-        if let Some(s) = replace(&obj.text[start..], &pattern, &string_to, extglob) {
-            obj.text = (obj.text[..start].to_string() + &s).to_string();
+        let len = glob::longest_match_length(&obj.text[start..].to_string(), &pattern, extglob);
+        if len != 0 {
+            obj.text = obj.text[..start].to_string() + &string_to + &obj.text[start+len..].to_string();
             return true;
         }
         start += ch.len_utf8();
@@ -39,6 +40,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     true
 }
 
+/*
 pub fn replace(text: &str, pattern: &String,
                string_to: &String, extglob: bool) -> Option<String> {
     let mut length = 0;
@@ -49,6 +51,7 @@ pub fn replace(text: &str, pattern: &String,
         let s = text[0..length].to_string();
  
         if glob::compare(&s, &pattern, extglob) {
+            dbg!("{:?}", glob::longest_match_length(&s, &pattern, extglob));
             ans_length = length;
         }
     }
@@ -57,4 +60,4 @@ pub fn replace(text: &str, pattern: &String,
         true => Some(string_to.to_owned() + &text[ans_length..].to_string()),
         false => None,
     }
-}
+}*/
