@@ -163,6 +163,14 @@ res=$($com <<< 'A=usr/local/bin/bash; echo ${A%%/*}' )
 res=$($com <<< 'A="あいう うえお"; echo ${A#*う う}' )
 [ "$res" = "えお" ] || err $LINENO
 
+# replace
+
+res=$($com -c 'A="あいう うえお"; echo ${A/あ/}' )
+[ "$res" = "いう うえお" ] || err $LINENO
+
+res=$($com -c 'A="あいう うえお"; echo ${A/あ//}' )
+[ "$res" = "/いう うえお" ] || err $LINENO
+
 ### IRREGULAR INPUT TEST ###
 
 res=$($com <<< 'eeeeeecho hoge')
@@ -1362,39 +1370,5 @@ res=$($com <<< 'A=( a b ); echo ${A[@]}')
 
 res=$($com <<< 'echo ]')
 [ "$res" == "]" ] || err $LINENO
-
-#### OPTION TEST ###
-#
-#res=$($com -c "echo a")
-#[ "$?" == "0" ] || err $LINENO
-#[ "$res" == "a" ] || err $LINENO
-#
-#res=$($com -c "ech a")
-#[ "$?" == "127" ] || err $LINENO
-#[ "$res" == "" ] || err $LINENO
-#
-#res=$($com <<< 'set -e ; false ; echo NG')
-#[ "$res" != "NG" ] || err $LINENO
-#
-#res=$($com <<< 'set -e ; false | true ; echo OK')
-#[ "$res" == "OK" ] || err $LINENO
-#
-#res=$($com <<< 'set -e ; ( false ) ; echo NG')
-#[ "$res" != "NG" ] || err $LINENO
-#
-#res=$($com <<< 'set -e ; false || echo OK')
-#[ "$res" == "OK" ] || err $LINENO
-#
-#res=$($com <<< 'set -e ; false || false ; echo NG')
-#[ "$res" == "" ] || err $LINENO
-#
-#res=$($com <<< 'set -e ; while false ; do echo NG ; done ; echo OK')
-#[ "$res" == "OK" ] || err $LINENO
-#
-#res=$($com <<< 'set -o pipefail; ls aaaa | false | true')
-#[ "$?" == "1" ] || err $LINENO
-#
-#res=$($com <<< 'set -o pipefail; set -e; false | true ; echo NG')
-#[ "$res" == "" ] || err $LINENO
 
 echo $0 >> ./ok

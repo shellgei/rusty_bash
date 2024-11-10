@@ -187,7 +187,7 @@ impl BracedParam {
         }
         ans.text += &feeder.consume(1);
         ans.has_replace_to = true;
-        ans.replace_to = Some(Self::eat_subwords(feeder, ans, vec!["}", "/"], core));
+        ans.replace_to = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
 
         true
     }
