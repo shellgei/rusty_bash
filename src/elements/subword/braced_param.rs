@@ -35,6 +35,7 @@ pub struct BracedParam {
     replace_from: Option<Word>,
     has_replace_to: bool,
     replace_to: Option<Word>,
+    all_replace: bool,
 }
 
 fn is_param(s :&String) -> bool {
@@ -180,6 +181,11 @@ impl BracedParam {
 
         ans.text += &feeder.consume(1);
         ans.has_replace = true;
+        if feeder.starts_with("/") {
+            ans.text += &feeder.consume(1);
+            ans.all_replace = true;
+        }
+
         ans.replace_from = Some(Self::eat_subwords(feeder, ans, vec!["}", "/"], core));
 
         if ! feeder.starts_with("/") {
