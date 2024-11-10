@@ -31,6 +31,9 @@ pub struct BracedParam {
     remove_symbol: String,
     remove_pattern: Option<Word>,
     has_replace: bool,
+    replace_from: Option<Word>,
+    has_replace_to: bool,
+    replace_to: Option<Word>,
 }
 
 fn is_param(s :&String) -> bool {
@@ -169,7 +172,7 @@ impl BracedParam {
         ans.text += &ans.remove_symbol.clone();
         ans.has_remove_pattern = true;
 
-        ans.remove_pattern = Some(Self::eat_subwords(feeder, ans, core));
+        ans.remove_pattern = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
         true
     }
 
@@ -180,6 +183,14 @@ impl BracedParam {
 
         ans.text += &feeder.consume(1);
         ans.has_replace = true;
+        ans.replace_from = Some(Self::eat_subwords(feeder, ans, vec!["}", "/"], core));
+
+        if ! feeder.starts_with("/") {
+            return true;
+        }
+        ans.text += &feeder.consume(1);
+        ans.has_replace_to = true;
+        ans.replace_to = Some(Self::eat_subwords(feeder, ans, vec!["}", "/"], core));
 
         true
     }
@@ -212,7 +223,7 @@ impl BracedParam {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        ans.alternative_value = Some(Self::eat_subwords(feeder, ans, core));
+        ans.alternative_value = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
         true
     }
 
@@ -223,9 +234,9 @@ impl BracedParam {
         ans.text += &blank.clone();
     }
 
-    fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Word {
+    fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore) -> Word {
         let mut word = Word::default();
-        while ! feeder.starts_with("}") {
+        while ! ends.iter().any(|e| feeder.starts_with(e)) {
             if let Some(sw) = subword::parse(feeder, core) {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
