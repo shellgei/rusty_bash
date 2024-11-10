@@ -27,27 +27,34 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     };
 
     let extglob = core.shopts.query("extglob");
-    replace(obj, &pattern, &string_to, extglob);
+
+    let mut start = 0;
+    for ch in obj.text.chars() {
+        if let Some(s) = replace(&obj.text[start..], &pattern, &string_to, extglob) {
+            obj.text = (obj.text[..start].to_string() + &s).to_string();
+            return true;
+        }
+        start += ch.len_utf8();
+    }
     true
 }
 
-pub fn replace(obj: &mut BracedParam, pattern: &String,
-               string_to: &String, extglob: bool) {
+pub fn replace(text: &str, pattern: &String,
+               string_to: &String, extglob: bool) -> Option<String> {
     let mut length = 0;
     let mut ans_length = 0;
  
-    for ch in obj.text.chars() {
+    for ch in text.chars() {
         length += ch.len_utf8();
-        let s = obj.text[0..length].to_string();
+        let s = text[0..length].to_string();
  
         if glob::compare(&s, &pattern, extglob) {
             ans_length = length;
-            /*
-            if obj.remove_symbol == "#" {
-                break;
-            }*/
         }
     }
 
-    obj.text = string_to.to_owned() + &obj.text[ans_length..].to_string();
+    match ans_length != 0 {
+        true => Some(string_to.to_owned() + &text[ans_length..].to_string()),
+        false => None,
+    }
 }
