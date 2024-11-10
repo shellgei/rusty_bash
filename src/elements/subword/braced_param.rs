@@ -291,6 +291,7 @@ impl BracedParam {
         let len = feeder.scanner_special_and_positional_param();
         if len != 0 {
             ans.name = feeder.consume(len);
+            ans.is_array = ans.name == "@";
             ans.text += &ans.name;
             return true;
         }

@@ -72,7 +72,7 @@ impl DoubleQuoted {
         let mut ans = vec![];
 
         for sw in &mut self.subwords {
-            if sw.is_array() || sw.get_text() == "${@}" {
+            if sw.is_array() {
                 let array = match sw.get_text() {
                     "$@" | "${@}" => core.data.get_position_params(),
                     _ => {
