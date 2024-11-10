@@ -18,7 +18,7 @@ pub fn compare(word: &String, pattern: &str, extglob: bool) -> bool {
 }
 
 pub fn longest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
-    let candidates = get_candidates(word, pattern, extglob);
+    let candidates = get_shaved_candidates(word, pattern, extglob);
     match candidates.len() > 0 {
         true => word.len() - candidates.iter().map(|c| c.len()).min().unwrap(),
         false => 0,
@@ -26,14 +26,14 @@ pub fn longest_match_length(word: &String, pattern: &str, extglob: bool) -> usiz
 }
 
 pub fn shortest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
-    let candidates = get_candidates(word, pattern, extglob);
+    let candidates = get_shaved_candidates(word, pattern, extglob);
     match candidates.len() > 0 {
         true => word.len() - candidates.iter().map(|c| c.len()).max().unwrap(),
         false => 0,
     }
 }
 
-fn get_candidates(word: &String, pattern: &str, extglob: bool) -> Vec<String> {
+fn get_shaved_candidates(word: &String, pattern: &str, extglob: bool) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
 
     for w in parse(pattern, extglob) {
