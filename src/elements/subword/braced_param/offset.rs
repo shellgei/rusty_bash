@@ -1,54 +1,60 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::subword::BracedParam;
 use crate::ShellCore;
 
-pub fn offset(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
+pub fn get(obj: &mut BracedParam, core: &mut ShellCore) -> Option<String> {
     let mut offset = match obj.offset.clone() {
         None => {
             eprintln!("sush: {}: bad substitution", &obj.text);
-            return false;
+            return None;
         },
         Some(ofs) => ofs,
     };
 
     if offset.text == "" {
         eprintln!("sush: {}: bad substitution", &obj.text);
-        return false;
+        return None;
     }
 
+    let mut ans;
     match offset.eval_as_int(core) {
-        None => return false,
+        None => return None,
         Some(n) => {
-            obj.text = obj.text.chars().enumerate()
-                            .filter(|(i, _)| (*i as i64) >= n)
-                            .map(|(_, c)| c).collect();
+            ans = obj.text.chars().enumerate()
+                      .filter(|(i, _)| (*i as i64) >= n)
+                      .map(|(_, c)| c).collect();
         },
     };
 
     if obj.has_length {
-        return length(obj, core);
+        match length(&ans, &obj.length, core) {
+            Some(text) => ans = text,
+            None => return None,
+        }
     }
-    true
+    Some(ans)
 }
 
-fn length(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-    let mut length = match obj.length.clone() {
+fn length(value: &String, length: &Option<ArithmeticExpr>,
+                          core: &mut ShellCore) -> Option<String> {
+    let mut length = match length.clone() {
         None => {
-            eprintln!("sush: {}: bad substitution", &obj.text);
-            return false;
+            eprintln!("sush: {}: bad substitution", &value);
+            return None;
         },
         Some(ofs) => ofs,
     };
 
     match length.eval_as_int(core) {
-        None => false,
+        None => None,
         Some(n) => {
-            obj.text = obj.text.chars().enumerate()
-                            .filter(|(i, _)| (*i as i64) < n)
-                            .map(|(_, c)| c).collect();
-            true
+            Some(value.chars().enumerate()
+                    .filter(|(i, _)| (*i as i64) < n)
+                    .map(|(_, c)| c).collect()
+                )
         },
     }
 }
