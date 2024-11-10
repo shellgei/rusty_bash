@@ -119,20 +119,14 @@ impl BracedParam {
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> bool {
         if self.has_offset {
-            match offset::get(self, core) {
-                Some(text) => self.text = text,
-                None => return false,
-            }
+            offset::set(self, core)
         }else if self.has_alternative {
-            return alternative::set(self, core);
+            alternative::set(self, core)
         }else if self.has_remove_pattern {
-            match remove::get(self, core) {
-                Some(text) => self.text = text,
-                None => return false,
-            }
+            remove::set(self, core)
+        }else {
+            true
         }
-
-        true
     }
 
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

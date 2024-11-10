@@ -5,23 +5,23 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::subword::BracedParam;
 use crate::ShellCore;
 
-pub fn get(obj: &BracedParam, core: &mut ShellCore) -> Option<String> {
+pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     let mut offset = match obj.offset.clone() {
         None => {
             eprintln!("sush: {}: bad substitution", &obj.text);
-            return None;
+            return false;
         },
         Some(ofs) => ofs,
     };
 
     if offset.text == "" {
         eprintln!("sush: {}: bad substitution", &obj.text);
-        return None;
+        return false;
     }
 
     let mut ans;
     match offset.eval_as_int(core) {
-        None => return None,
+        None => return false,
         Some(n) => {
             ans = obj.text.chars().enumerate()
                       .filter(|(i, _)| (*i as i64) >= n)
@@ -32,10 +32,12 @@ pub fn get(obj: &BracedParam, core: &mut ShellCore) -> Option<String> {
     if obj.has_length {
         match length(&ans, &obj.length, core) {
             Some(text) => ans = text,
-            None => return None,
+            None => return false,
         }
     }
-    Some(ans)
+
+    obj.text = ans;
+    true
 }
 
 fn length(text: &String, length: &Option<ArithmeticExpr>,

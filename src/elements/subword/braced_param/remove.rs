@@ -5,13 +5,13 @@ use crate::ShellCore;
 use crate::elements::subword::BracedParam;
 use crate::utils::glob;
 
-pub fn get(obj: &BracedParam, core: &mut ShellCore) -> Option<String> {
+pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     let pattern = match &obj.remove_pattern {
-        None => return Some(obj.text.clone()),
+        None => return true,
         Some(w) => {
             match w.eval_for_case_word(core) {
                 Some(s) => s,
-                None    => return None,
+                None    => return false,
             }
         },
     };
@@ -19,15 +19,14 @@ pub fn get(obj: &BracedParam, core: &mut ShellCore) -> Option<String> {
     let extglob = core.shopts.query("extglob");
  
     if obj.remove_symbol.starts_with("#") {
-        hash(obj, &pattern, extglob)
+        hash(obj, &pattern, extglob);
     }else if obj.remove_symbol.starts_with("%") {
-        percent(obj, &pattern, extglob)
-    }else {
-        Some(obj.text.clone())
+        percent(obj, &pattern, extglob);
     }
+    true
 }
 
-pub fn hash(obj: &BracedParam, pattern: &String, extglob: bool) -> Option<String> {
+pub fn hash(obj: &mut BracedParam, pattern: &String, extglob: bool) {
     let mut length = 0;
     let mut ans_length = 0;
  
@@ -43,10 +42,10 @@ pub fn hash(obj: &BracedParam, pattern: &String, extglob: bool) -> Option<String
         }
     }
  
-    Some( obj.text[ans_length..].to_string() )
+    obj.text = obj.text[ans_length..].to_string();
 }
 
-pub fn percent(obj: &BracedParam, pattern: &String, extglob: bool) -> Option<String> {
+pub fn percent(obj: &mut BracedParam, pattern: &String, extglob: bool) {
     let mut length = obj.text.len();
     let mut ans_length = length;
  
@@ -62,5 +61,5 @@ pub fn percent(obj: &BracedParam, pattern: &String, extglob: bool) -> Option<Str
         }
     }
  
-    Some( obj.text[0..ans_length].to_string() )
+    obj.text = obj.text[0..ans_length].to_string();
 }
