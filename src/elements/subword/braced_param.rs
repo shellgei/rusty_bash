@@ -84,7 +84,7 @@ impl Subword for BracedParam {
                 None => return false,
             }
         }else if self.has_alternative {
-            return self.replace_to_alternative(core);
+            return alternative::get(self, core);
         }else if self.has_remove_pattern {
             match remove::get(self, core) {
                 Some(text) => self.text = text,
