@@ -78,21 +78,7 @@ impl Subword for BracedParam {
             };
         }
 
-        if self.has_offset {
-            match offset::get(self, core) {
-                Some(text) => self.text = text,
-                None => return false,
-            }
-        }else if self.has_alternative {
-            return alternative::get(self, core);
-        }else if self.has_remove_pattern {
-            match remove::get(self, core) {
-                Some(text) => self.text = text,
-                None => return false,
-            }
-        }
-
-        true
+        self.optional_operation(core)
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
@@ -116,6 +102,24 @@ impl BracedParam {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
         }
+        true
+    }
+
+    fn optional_operation(&mut self, core: &mut ShellCore) -> bool {
+        if self.has_offset {
+            match offset::get(self, core) {
+                Some(text) => self.text = text,
+                None => return false,
+            }
+        }else if self.has_alternative {
+            return alternative::set(self, core);
+        }else if self.has_remove_pattern {
+            match remove::get(self, core) {
+                Some(text) => self.text = text,
+                None => return false,
+            }
+        }
+
         true
     }
 

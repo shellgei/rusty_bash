@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::elements::subword::BracedParam;
 
-pub fn get(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
+pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     let symbol = match (obj.alternative_symbol.as_deref(), obj.text.as_ref()) {
         (Some(s), "")   => s,
         (Some("-"), _)  => "-",
@@ -20,8 +20,6 @@ pub fn get(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         },
         None => return false,
     };
-
-    let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
 
     if symbol == "-" {
         obj.alternative_value = None;
@@ -41,6 +39,7 @@ pub fn get(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         return true;
     }
     if symbol == ":=" {
+        let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
         if ! core.data.set_param(&obj.name, &value) {
             return false;
         }
@@ -49,6 +48,7 @@ pub fn get(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         return true
     }
     if symbol == ":?" {
+        let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
         eprintln!("sush: {}: {}", &obj.name, &value);
         return false;
     }
