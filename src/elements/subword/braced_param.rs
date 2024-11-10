@@ -30,6 +30,7 @@ pub struct BracedParam {
     has_remove_pattern: bool,
     remove_symbol: String,
     remove_pattern: Option<Word>,
+    has_replace: bool,
 }
 
 fn is_param(s :&String) -> bool {
@@ -172,6 +173,17 @@ impl BracedParam {
         true
     }
 
+    fn eat_replace(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with("/") {
+            return false;
+        }
+
+        ans.text += &feeder.consume(1);
+        ans.has_replace = true;
+
+        true
+    }
+
     fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
         if ! feeder.starts_with(":") {
             return;
@@ -283,7 +295,8 @@ impl BracedParam {
             Self::eat_subscript(feeder, &mut ans, core);
             let _ = Self::eat_alternative_value(feeder, &mut ans, core) 
                  || Self::eat_offset(feeder, &mut ans, core)
-                 || Self::eat_remove_pattern(feeder, &mut ans, core);
+                 || Self::eat_remove_pattern(feeder, &mut ans, core)
+                 || Self::eat_replace(feeder, &mut ans, core);
         }
 
         while ! feeder.starts_with("}") {
