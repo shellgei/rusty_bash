@@ -4,6 +4,7 @@
 mod alternative;
 mod offset;
 mod remove;
+mod replace;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
@@ -124,6 +125,8 @@ impl BracedParam {
             alternative::set(self, core)
         }else if self.has_remove_pattern {
             remove::set(self, core)
+        }else if self.has_replace {
+            replace::set(self, core)
         }else {
             true
         }
