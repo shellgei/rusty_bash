@@ -47,14 +47,13 @@ impl Subword for DoubleQuoted {
     }
 
     fn split(&self) -> Vec<Box<dyn Subword>>{
-        if self.split_points.len() < 2 {
+        if self.split_points.len() < 1 {
             return vec![];
         }
 
         let mut ans = vec![];
-
         let mut points = self.split_points.clone();
-        points[self.split_points.len()-1] = self.split_points.len();
+        points.push(self.subwords.len());
 
         let mut last = 0;
         for p in points {
@@ -82,6 +81,7 @@ impl DoubleQuoted {
                 ans.push(sw.boxed_clone());
             }
         }
+        self.split_points.pop();
         ans
     }
 

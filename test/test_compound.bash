@@ -197,6 +197,21 @@ a
 b
 c" ] || err $LINENO
 
+res=$($com <<< 'set a b c ; for x in "$@" ; do echo $x ; done')
+[ "$res" == "a
+b
+c" ] || err $LINENO
+
+res=$($com <<< 'set a b c ; for x in "@$@" ; do echo $x ; done')
+[ "$res" == "@a
+b
+c" ] || err $LINENO
+
+res=$($com <<< 'set a b c ; for x in "@$@x" ; do echo $x ; done')
+[ "$res" == "@a
+b
+cx" ] || err $LINENO
+
 res=$($com <<< 'for ((${ } ; ; )) ; do echo ; done')
 [ "$?" == "1" ] || err $LINENO
 
