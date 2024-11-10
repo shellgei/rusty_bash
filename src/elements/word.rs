@@ -40,10 +40,11 @@ impl Word {
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
+        /*
         if self.subwords.len() == 0 {
             return Some("".to_string());
         }
-
+*/
         match self.tilde_and_dollar_expansion(core) {
             Some(mut w) => w.make_unquoted_word(),
             None    => return None,

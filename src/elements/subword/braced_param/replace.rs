@@ -21,7 +21,10 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         Some(w) => {
             match w.eval_for_case_word(core) {
                 Some(s) => s,
-                None => return false,
+                None => match w.subwords.len() {
+                    0 => "".to_string(),
+                    _ => return false,
+                },
             }
         },
     };
