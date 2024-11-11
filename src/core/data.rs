@@ -49,7 +49,8 @@ impl Data {
             return self.flags.clone();
         }
 
-        if key == "@" || key == "*" {
+        if key == "@" || key == "*" { // $@ should return an array in a double quoted
+                                      // subword. Therefore another access method is used there. 
             return match self.position_parameters.last() {
                 Some(a) => a[1..].join(" "),
                 _       => "".to_string(),
@@ -84,7 +85,7 @@ impl Data {
     pub fn get_array(&mut self, key: &str, pos: &str) -> String {
         match self.get_value(key) {
             Some(Value::EvaluatedArray(a)) => {
-                if pos == "@" {
+                if pos == "@" || pos == "*" {
                     return a.join(" ");
                 } else if let Ok(n) = pos.parse::<usize>() {
                     if n < a.len() {

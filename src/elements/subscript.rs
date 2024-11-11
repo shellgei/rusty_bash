@@ -15,7 +15,7 @@ impl Subscript {
 
         if inner.len() == 1 {
             if let Some(ch) = inner.chars().nth(0) {
-                if '0' <= ch && ch <= '9' || ch == '@' {
+                if '0' <= ch && ch <= '9' || ch == '@' || ch == '*' {
                     return Some(inner.to_string());
                 }
             }
