@@ -53,7 +53,7 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
     for i in 1..args.len() {
         if args[i] == "-c" {
             *c_flag = true;
-            io::close(0, &format!("sush(fatal): cannot close stdin"));
+            //io::close(0, &format!("sush(fatal): cannot close stdin"));
             if i == args.len()-1 {
                 eprintln!("bash: -c: option requires an argument");
                 process::exit(2);

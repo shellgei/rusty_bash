@@ -13,8 +13,6 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-### OPTION TEST ###
-
 res=$($com -c "echo a")
 [ "$?" == "0" ] || err $LINENO
 [ "$res" == "a" ] || err $LINENO
@@ -22,6 +20,9 @@ res=$($com -c "echo a")
 res=$($com -c "ech a")
 [ "$?" == "127" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
+
+res=$(echo abc | $com -c "rev")
+[ "$res" == "cba" ] || err $LINENO
 
 res=$($com <<< 'set -e ; false ; echo NG')
 [ "$res" != "NG" ] || err $LINENO
