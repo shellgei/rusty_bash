@@ -5,31 +5,38 @@ mod terminal;
 mod scanner;
 
 use std::{io, process};
+use std::fs::File;
+use std::io::{BufRead, BufReader, Lines};
 use crate::ShellCore;
 use crate::utils::exit;
 use std::sync::atomic::Ordering::Relaxed;
 
+#[derive(Debug)]
 pub enum InputError {
     Interrupt,
     Eof,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Default)]
 pub struct Feeder {
     remaining: String,
     backup: Vec<String>,
     pub nest: Vec<(String, Vec<String>)>,
     lineno: usize,
+    script_lines: Option<Lines<BufReader<File>>>,
 }
 
 impl Feeder {
     pub fn new(s: &str) -> Feeder {
         Feeder {
             remaining: s.to_string(),
-            backup: vec![],
             nest: vec![("".to_string(), vec![])],
-            lineno: 0,
+            ..Default::default()
         }
+    }
+
+    pub fn set_file(&mut self, s: &str) {
+        self.script_lines = Some(BufReader::new(File::open(s).expect("")).lines());
     }
 
     pub fn consume(&mut self, cutpos: usize) -> String {
@@ -65,8 +72,20 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_line_stdin(core: &mut ShellCore) -> Result<String, InputError> {
+    fn read_line_stdin(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
         let mut line = String::new();
+
+        if core.script_name != "-" {
+            match self.script_lines.as_mut() {
+                Some(lines) => {
+                    match lines.next() {
+                        Some(Ok(line)) => return Ok(line),
+                        _ => return Err(InputError::Eof),
+                    }
+                },
+                None => panic!("!!!"),
+            }
+        }
 
         let len = match io::stdin().read_line(&mut line) {
             Ok(len)  => len,
@@ -88,9 +107,9 @@ impl Feeder {
             return Err(InputError::Interrupt);
         }
 
-        let line = match ! core.read_stdin {
+        let line = match ! core.read_stdin && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS2"),
-            false => Self::read_line_stdin(core),
+            false => self.read_line_stdin(core),
         };
 
         match line { 
@@ -123,10 +142,12 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = match ! core.read_stdin {
+        let line = match ! core.read_stdin && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS1"),
-            false => Self::read_line_stdin(core),
+            false => self.read_line_stdin(core),
         };
+
+        dbg!("!!!{:?}", &line);
 
         match line {
             Ok(ln) => {

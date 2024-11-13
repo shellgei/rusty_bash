@@ -53,7 +53,6 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
     for i in 1..args.len() {
         if args[i] == "-c" {
             *c_flag = true;
-            //io::close(0, &format!("sush(fatal): cannot close stdin"));
             if i == args.len()-1 {
                 eprintln!("bash: -c: option requires an argument");
                 process::exit(2);
@@ -73,6 +72,7 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
     }
 }
 
+/*
 fn set_script_file(script: &str) {
     match File::open(script) {
         Ok(file) => {
@@ -87,7 +87,7 @@ fn set_script_file(script: &str) {
             process::exit(1);
         },
     }
-}
+}*/
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -102,12 +102,12 @@ fn main() {
 
     configure(&args, &mut options, &mut parameters, &mut script, &mut c_flag);
 
+    /*
     if script != "-" && ! c_flag {
         set_script_file(&script);
-    }
+    }*/
 
     let mut core = ShellCore::new();
-    core.script_name = script.clone();
     option_commands::set(&mut core, &mut options);
     option_commands::set_parameters(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
@@ -117,7 +117,10 @@ fn main() {
         exit::normal(&mut core);
     }
 
-    read_rc_file(&mut core);
+    if script == "-" {
+        read_rc_file(&mut core);
+    }
+    core.script_name = script.clone();
     main_loop(&mut core);
 }
 
@@ -135,6 +138,12 @@ fn set_history(core: &mut ShellCore, s: &str) {
 
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new("");
+
+    if core.script_name != "-" {
+        //let file = File::open(core.script_name.clone());
+        feeder.set_file(&core.script_name);
+    }
+
     loop {
         core.jobtable_check_status();
         core.jobtable_print_status_change();
