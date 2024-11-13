@@ -137,7 +137,6 @@ fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new("");
 
     if core.script_name != "-" {
-        //let file = File::open(core.script_name.clone());
         feeder.set_file(&core.script_name);
     }
 

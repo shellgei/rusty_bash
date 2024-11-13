@@ -36,7 +36,12 @@ impl Feeder {
     }
 
     pub fn set_file(&mut self, s: &str) {
-        self.script_lines = Some(BufReader::new(File::open(s).expect("")).lines());
+        let file = match File::open(s) {
+            Ok(f) => f,
+            Err(e) => panic!("{:?}", &e),
+        };
+
+        self.script_lines = Some(BufReader::new(file).lines());
     }
 
     pub fn consume(&mut self, cutpos: usize) -> String {
