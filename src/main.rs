@@ -9,11 +9,8 @@ mod utils;
 
 use builtins::option_commands;
 use std::{env, process};
-use std::fs::File;
-use std::os::fd::IntoRawFd;
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
-use crate::elements::io;
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
 use utils::{exit, file_check};

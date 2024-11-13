@@ -1,1 +1,3 @@
 ./test_script.bash
+../test/test_script.bash
+../test/test_script.bash

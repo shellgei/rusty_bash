@@ -147,8 +147,6 @@ impl Feeder {
             false => self.read_line_stdin(core),
         };
 
-        dbg!("!!!{:?}", &line);
-
         match line {
             Ok(ln) => {
                 self.add_line(ln, core);
