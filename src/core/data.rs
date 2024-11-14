@@ -4,7 +4,7 @@
 use crate::elements::array::Array;
 use crate::elements::word::Word;
 use crate::elements::command::function_def::FunctionDefinition;
-use std::env;
+use std::{env, process};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, Default)]
@@ -37,12 +37,17 @@ pub struct Data {
 
 impl Data {
     pub fn new() -> Data {
-        Data {
+        let mut data = Data {
             parameters: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             flags: "B".to_string(),
             ..Default::default()
-        }
+        };
+
+        data.set_param("$", &process::id().to_string());
+        data.set_param("BASHPID", &process::id().to_string());
+
+        data
     }
 
     pub fn get_param(&mut self, key: &str) -> String {

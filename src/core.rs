@@ -12,7 +12,7 @@ use self::data::Data;
 use self::options::Options;
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
-use std::{io, env, path, process};
+use std::{io, env, path};
 use nix::{fcntl, unistd};
 use nix::sys::{resource, signal, wait};
 use nix::sys::resource::UsageWho;
@@ -132,8 +132,6 @@ impl ShellCore {
         let versinfo = vec![vparts[0].to_string(), vparts[1].to_string(), vparts[2].to_string(),
                              symbol.clone(), profile.clone(), machtype.clone()];
 
-        self.data.set_param("$", &process::id().to_string());
-        self.data.set_param("BASHPID", &process::id().to_string());
         self.data.set_param("BASH_SUBSHELL", "0");
         self.data.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));
         self.data.set_param("MACHTYPE", &machtype);
