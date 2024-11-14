@@ -319,4 +319,9 @@ impl Data {
         self.unset_var(key);
         self.unset_function(key);
     }
+
+    pub fn not_set(v: &mut Variable, _var: &str) -> Value {
+        v.value.clone()
+    }
+    
 }
