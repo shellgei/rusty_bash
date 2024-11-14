@@ -40,6 +40,7 @@ impl Data {
         Data {
             parameters: vec![HashMap::new()],
             position_parameters: vec![vec![]],
+            flags: "B".to_string(),
             ..Default::default()
         }
     }

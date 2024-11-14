@@ -19,8 +19,13 @@ pub struct Word {
 
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
+        let ws_after_brace_exp = match core.data.flags.contains('B') {
+            true  => brace_expansion::eval(&mut self.clone()),
+            false => vec![self.clone()],
+        };
+
         let mut ws = vec![];
-        for w in brace_expansion::eval(&mut self.clone()) {
+        for w in ws_after_brace_exp {
             match w.tilde_and_dollar_expansion(core) {
                 Some(w) => ws.append( &mut w.split_and_path_expansion(core) ),
                 None    => return None,
@@ -40,11 +45,6 @@ impl Word {
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
-        /*
-        if self.subwords.len() == 0 {
-            return Some("".to_string());
-        }
-*/
         match self.tilde_and_dollar_expansion(core) {
             Some(mut w) => w.make_unquoted_word(),
             None    => return None,

@@ -713,7 +713,7 @@ if [[ -t 1 ]] ; then
 	[ "$?" = "0" ] || err $LINENO
 fi
 
-$com -c '[[ -t 0 ]]'
+echo | $com -c '[[ -t 0 ]]'
 [ "$?" = "1" ] || err $LINENO
 
 $com -c '[[ -t aaa ]]'
@@ -956,7 +956,7 @@ res=$($com -c '[[ -a /etc/passwdaaaa || -a /etc/passwd ]]')
 
 # glob
 
-res=$($com -c '[[ $- == c ]]')
+res=$($com -c '[[ $- == Bc ]]')
 [ "$?" = "0" ] || err $LINENO
 
 res=$($com -c '[[ $- == *c* ]]')
