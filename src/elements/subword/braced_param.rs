@@ -312,12 +312,14 @@ impl BracedParam {
 
         let unknown = match feeder.starts_with("\\}") {
             true  => feeder.consume(2),
-            false => feeder.consume(1),
+            false => {
+                let len = feeder.nth(0).unwrap().len_utf8();
+                feeder.consume(len)
+            },
         };
 
         ans.unknown += &unknown.clone();
         ans.text += &unknown;
-        return;
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BracedParam> {
