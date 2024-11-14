@@ -175,8 +175,8 @@ Bash Variables
 | COMP_LINE | :no_good: | COMP_POINT | :no_good: | COMP_TYPE | :no_good: |
 | COMP_KEY | :no_good: | COMP_WORDBREAKS | :no_good: | COMP_WORDS | :no_good: |
 | COMPREPLY | :no_good: | COPROC | :no_good: | DIRSTACK | :no_good: |
-| EMACS | :no_good: | ENV | :no_good: | EPOCHREALTIME | :no_good: |
-| EPOCHSECONDS | :no_good: | EUID | :no_good: | EXECIGNORE | :no_good: |
+| EMACS | :no_good: | ENV | :no_good: | EPOCHREALTIME | :heavy_check_mark: |
+| EPOCHSECONDS | :heavy_check_mark: | EUID | :no_good: | EXECIGNORE | :no_good: |
 | FCEDIT | :no_good: | FIGNORE | :no_good: | FUNCNAME | :no_good: |
 | FUNCNEST | :no_good: | GLOBIGNORE | :no_good: | GROUPS | :no_good: |
 | histchars | :no_good: | HISTCMD | :no_good: | HISTCONTROL | :no_good: |
@@ -191,11 +191,11 @@ Bash Variables
 | OPTERR | :no_good: | OSTYPE | :heavy_check_mark: | PIPESTATUS | :heavy_check_mark: |
 | POSIXLY_CORRECT | :no_good: | PPID | :no_good: | PROMPT_COMMAND | :no_good: |
 | PROMPT_DIRTRIM | :no_good: | PS0 | :no_good: | PS3 | :no_good: |
-| PS4 | :heavy_check_mark: | PWD | :heavy_check_mark: | RANDOM | :no_good: |
+| PS4 | :heavy_check_mark: | PWD | :heavy_check_mark: | RANDOM | :heavy_check_mark: |
 | READLINE_ARGUMENT | :no_good: | READLINE_LINE | :no_good: | READLINE_MARK | :no_good: |
-| READLINE_POINT | :no_good: | REPLY | :no_good: | SECONDS | :no_good: |
+| READLINE_POINT | :no_good: | REPLY | :no_good: | SECONDS | :heavy_check_mark: |
 | SHELL | :heavy_check_mark: | SHELLOPTS | :no_good: | SHLVL | :heavy_check_mark: |
-| SRANDOM | :no_good: | TIMEFORMAT | :no_good: | TMOUT | :no_good: |
+| SRANDOM | :heavy_check_mark: | TIMEFORMAT | :no_good: | TMOUT | :no_good: |
 | TMPDIR | :no_good: | UID | :no_good: | | |
 
 ### beyond Bash
