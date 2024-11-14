@@ -112,7 +112,7 @@ impl ShellCore {
             core.read_stdin = false;
             core.data.set_param("PS1", "🍣 ");
             core.data.set_param("PS2", "> ");
-            let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
+            let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
