@@ -22,6 +22,10 @@ impl SimpleCommand {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
+        if ans.lineno == 0 {
+            ans.lineno = feeder.lineno;
+        }
+
         let w = match Word::parse(feeder, core, false) {
             Some(w) => w,
             _       => {

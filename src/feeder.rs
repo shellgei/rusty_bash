@@ -22,7 +22,7 @@ pub struct Feeder {
     remaining: String,
     backup: Vec<String>,
     pub nest: Vec<(String, Vec<String>)>,
-    lineno: usize,
+    pub lineno: usize,
     script_lines: Option<Lines<BufReader<File>>>,
 }
 
@@ -163,7 +163,6 @@ impl Feeder {
         }
 
         self.lineno += 1;
-        core.data.set_param("LINENO", &self.lineno.to_string());
         match self.remaining.len() {
             0 => self.remaining = line,
             _ => self.remaining += &line,

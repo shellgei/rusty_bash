@@ -28,11 +28,13 @@ pub struct SimpleCommand {
     force_fork: bool, 
     substitutions_as_args: Vec<Substitution>,
     permit_substitution_arg: bool,
+    lineno: usize,
 }
 
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        core.data.set_param("LINENO", &self.lineno.to_string());
         if core.return_flag || core.break_counter > 0 {
             return None;
         }

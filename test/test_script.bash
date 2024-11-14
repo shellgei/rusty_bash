@@ -22,5 +22,17 @@ sed 's/sush/bash/g' $tmp-sush |
 sed 's;../target/release;/bin;' |
 diff $tmp-bash - || err $LINENO
 
+cat << EOF > $tmp-script
+#!../target/release/sush -xv
+
+(
+	echo a
+	eeeee
+)
+EOF
+
+chmod +x $tmp-script
+$tmp-script |& grep 5:
+[ $? -eq 0 ]
 
 echo $0 >> ./ok
