@@ -69,23 +69,6 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
     }
 }
 
-/*
-fn set_script_file(script: &str) {
-    match File::open(script) {
-        Ok(file) => {
-            let fd = file.into_raw_fd();
-            let result = io::replace(fd, 0);
-            if ! result {
-                io::close(fd, &format!("sush(fatal): file does not close"));
-            }
-        },
-        Err(why)  => {
-            eprintln!("sush: {}: {}", script, why);
-            process::exit(1);
-        },
-    }
-}*/
-
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
@@ -138,9 +121,9 @@ fn main_loop(core: &mut ShellCore) {
     }
 
     if core.data.flags.contains('i') {
-            const V: &'static str = env!("CARGO_PKG_VERSION");
-            const P: &'static str = env!("CARGO_BUILD_PROFILE");
-            eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
+        const V: &'static str = env!("CARGO_PKG_VERSION");
+        const P: &'static str = env!("CARGO_BUILD_PROFILE");
+        eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
     }
 
     loop {
