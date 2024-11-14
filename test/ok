@@ -6,15 +6,3 @@
 ./test_compound.bash
 ./test_others.bash
 ./test_job.bash
-../test/test_options.bash
-../test/test_options.bash
-../test/test_script.bash
-../test/test_script.bash
-../test/test_script.bash
-../test/test_script.bash
-./test/test_script.bash
-./test/test_script.bash
-./test/test_script.bash
-./test/test_script.bash
-./test/test_script.bash
-./test/test_options.bash
