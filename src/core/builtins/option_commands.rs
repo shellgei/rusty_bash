@@ -60,7 +60,7 @@ fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
         }
         let pm = a.chars().nth(0).unwrap();
         for ch in a[1..].chars() {
-            if "xve".find(ch).is_none() {
+            if "xveB".find(ch).is_none() {
                 eprintln!("sush: set: {}{}: invalid option", &pm, &ch);
                 return 2;
             }

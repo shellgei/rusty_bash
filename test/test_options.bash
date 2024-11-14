@@ -48,4 +48,11 @@ res=$($com <<< 'set -o pipefail; ls aaaa | false | true')
 res=$($com <<< 'set -o pipefail; set -e; false | true ; echo NG')
 [ "$res" == "" ] || err $LINENO
 
+### -B
+
+res=$($com <<< 'set +B; echo {a,b}')
+[ "$res" == "{a,b}" ] || err $LINENO
+
+
+
 echo $0 >> ./ok
