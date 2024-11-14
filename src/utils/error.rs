@@ -7,7 +7,11 @@ use nix::unistd::Pid;
 
 pub fn print(s: &str, core: &mut ShellCore, show_sush: bool) {
     let name = core.data.get_param("0");
-    match (core.read_stdin || core.script_name != "-", show_sush) {
+    let lineno_condition = core.read_stdin 
+                         || core.script_name != "-" 
+                         || core.data.flags.contains('c');
+
+    match (lineno_condition, show_sush) {
         (true, _) => {
             let lineno = core.data.get_param("LINENO");
             eprintln!("{}: line {}: {}", &name, &lineno, s)
