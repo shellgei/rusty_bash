@@ -77,7 +77,7 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_line_stdin(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
+    fn read_script(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
         let mut line = String::new();
 
         if core.script_name != "-" {
@@ -114,7 +114,7 @@ impl Feeder {
 
         let line = match ! core.read_stdin && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS2"),
-            false => self.read_line_stdin(core),
+            false => self.read_script(core),
         };
 
         match line { 
@@ -149,7 +149,7 @@ impl Feeder {
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = match ! core.read_stdin && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS1"),
-            false => self.read_line_stdin(core),
+            false => self.read_script(core),
         };
 
         match line {
