@@ -25,8 +25,14 @@ res=$($com -c 'unset RANDOM; RANDOM=a ; echo "$RANDOM"')
 [ "$res" == "a" ] || err $LINENO
 
 ### TIME ###
-#
+
 res=$($com -c '[[ 0 -eq $SECONDS ]] && sleep 1 && [[ 1 -eq $SECONDS ]]')
 [[ "$?" -eq 0 ]] || err $LINENO
+
+res=$($com -c '[[ $(date +%s) -eq $EPOCHSECONDS ]]')
+[[ "$?" -eq 0 ]] || err $LINENO
+
+res=$($com -c 'echo $(( $EPOCHREALTIME - $(date +%s) )) | awk -F. "{print $1}"')
+[[ "$res" -eq 0 ]] || err $LINENO
 
 echo $0 >> ./ok
