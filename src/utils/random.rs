@@ -18,10 +18,6 @@ fn gen_chacha20_u32(v: &mut Variable) -> u32 {
     ChaCha20Rng::seed_from_u64(seed).next_u32()
 }
 
-pub fn set_srandom(v: &mut Variable, _var: &str) -> Value {
-    v.value.clone()
-}
-
 pub fn get_srandom(v: &mut Variable) -> Value {
     let rand = gen_chacha20_u32(v);
     v.value = Value::EvaluatedSingle(rand.to_string());
