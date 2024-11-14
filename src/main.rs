@@ -137,7 +137,14 @@ fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new("");
 
     if core.script_name != "-" {
+        core.data.flags.retain(|f| f != 'i');
         feeder.set_file(&core.script_name);
+    }
+
+    if core.data.flags.contains('i') {
+            const V: &'static str = env!("CARGO_PKG_VERSION");
+            const P: &'static str = env!("CARGO_BUILD_PROFILE");
+            eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
     }
 
     loop {

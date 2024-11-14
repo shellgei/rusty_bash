@@ -104,9 +104,11 @@ impl ShellCore {
         core.data.set_param("PS4", "+ ");
 
         if unistd::isatty(0) == Ok(true) {
+            /*
             const V: &'static str = env!("CARGO_PKG_VERSION");
             const P: &'static str = env!("CARGO_BUILD_PROFILE");
             eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
+            */
 
             core.data.flags += "i";
             core.read_stdin = false;
