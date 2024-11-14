@@ -3,6 +3,7 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
+use crate::utils::error;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -100,7 +101,9 @@ impl Script {
                     return Some(ans)
                 },
                 Status::UnexpectedSymbol(s) => {
-                    eprintln!("Unexpected token: {}", s);
+                    core.data.set_param("LINENO", &feeder.lineno.to_string());
+                    let s = format!("Unexpected token: {}", s);
+                    error::print(&s, core, true);
                     core.data.set_param("?", "2");
                     break;
                 },

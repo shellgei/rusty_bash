@@ -33,6 +33,18 @@ EOF
 
 chmod +x $tmp-script
 $tmp-script |& grep 5:
-[ $? -eq 0 ]
+[ $? -eq 0 ] || err $LINENO
+
+cat << EOF > $tmp-script
+#!../target/release/sush -xv
+
+(
+
+)
+EOF
+
+chmod +x $tmp-script
+$tmp-script |& grep 5:
+[ $? -eq 0 ] || err $LINENO
 
 echo $0 >> ./ok

@@ -9,6 +9,7 @@ impl Feeder {
         self.remaining.pop();
         self.remaining.pop();
         self.lineno += 1;
+        core.data.set_param("LINENO", &self.lineno.to_string());
         let _ = self.feed_additional_line_core(core);
     }
 
