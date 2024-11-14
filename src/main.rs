@@ -99,17 +99,13 @@ fn main() {
 
     configure(&args, &mut options, &mut parameters, &mut script, &mut c_flag);
 
-    /*
-    if script != "-" && ! c_flag {
-        set_script_file(&script);
-    }*/
-
     let mut core = ShellCore::new();
     option_commands::set(&mut core, &mut options);
     option_commands::set_parameters(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
 
     if c_flag {
+        core.data.flags.retain(|f| f != 'i');
         main_c_option(&mut core, &script);
         exit::normal(&mut core);
     }
