@@ -31,6 +31,7 @@ impl Feeder {
         Feeder {
             remaining: s.to_string(),
             nest: vec![("".to_string(), vec![])],
+            lineno: 1,
             ..Default::default()
         }
     }
@@ -47,6 +48,8 @@ impl Feeder {
     pub fn consume(&mut self, cutpos: usize) -> String {
         let cut = self.remaining[0..cutpos].to_string();
         self.remaining = self.remaining[cutpos..].to_string();
+
+        self.lineno += cut.chars().filter(|c| *c == '\n').count();
 
         cut
     }
@@ -162,7 +165,7 @@ impl Feeder {
             eprint!("{}", &line);
         }
 
-        self.lineno += 1;
+        //self.lineno += 1;
         match self.remaining.len() {
             0 => self.remaining = line,
             _ => self.remaining += &line,

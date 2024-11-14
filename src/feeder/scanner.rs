@@ -8,6 +8,7 @@ impl Feeder {
     fn feed_and_connect(&mut self, core: &mut ShellCore) {
         self.remaining.pop();
         self.remaining.pop();
+        self.lineno += 1;
         let _ = self.feed_additional_line_core(core);
     }
 
