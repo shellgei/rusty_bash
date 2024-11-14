@@ -191,11 +191,11 @@ Bash Variables
 | OPTERR | :no_good: | OSTYPE | :heavy_check_mark: | PIPESTATUS | :heavy_check_mark: |
 | POSIXLY_CORRECT | :no_good: | PPID | :no_good: | PROMPT_COMMAND | :no_good: |
 | PROMPT_DIRTRIM | :no_good: | PS0 | :no_good: | PS3 | :no_good: |
-| PS4 | :heavy_check_mark: | PWD | :heavy_check_mark: | RANDOM | :no_good: |
+| PS4 | :heavy_check_mark: | PWD | :heavy_check_mark: | RANDOM | :heavy_check_mark: |
 | READLINE_ARGUMENT | :no_good: | READLINE_LINE | :no_good: | READLINE_MARK | :no_good: |
 | READLINE_POINT | :no_good: | REPLY | :no_good: | SECONDS | :heavy_check_mark: |
 | SHELL | :heavy_check_mark: | SHELLOPTS | :no_good: | SHLVL | :heavy_check_mark: |
-| SRANDOM | :no_good: | TIMEFORMAT | :no_good: | TMOUT | :no_good: |
+| SRANDOM | :heavy_check_mark: | TIMEFORMAT | :no_good: | TMOUT | :no_good: |
 | TMPDIR | :no_good: | UID | :no_good: | | |
 
 ### beyond Bash
