@@ -188,6 +188,7 @@ impl ShellCore {
             Some(fd) => fd,
             _        => return,
         };
+
         let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
                    .expect(&error::internal("cannot get pgid"));
 

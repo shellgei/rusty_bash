@@ -1,4 +1,5 @@
 ./test_parameters.bash
+./test_script.bash
 ./test_options.bash
 ./test_builtins.bash
 ./test_brace.bash
