@@ -46,6 +46,9 @@ impl Data {
 
         data.set_param("$", &process::id().to_string());
         data.set_param("BASHPID", &process::id().to_string());
+        data.set_param("BASH_SUBSHELL", "0");
+        data.set_param("?", "0");
+        data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
 
         data
     }

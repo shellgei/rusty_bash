@@ -132,19 +132,17 @@ impl ShellCore {
         let versinfo = vec![vparts[0].to_string(), vparts[1].to_string(), vparts[2].to_string(),
                              symbol.clone(), profile.clone(), machtype.clone()];
 
-        self.data.set_param("BASH_SUBSHELL", "0");
         self.data.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));
         self.data.set_param("MACHTYPE", &machtype);
         self.data.set_param("HOSTTYPE", &t_arch);
         self.data.set_param("OSTYPE", &t_os);
         self.data.set_array("BASH_VERSINFO", &versinfo);
-        self.data.set_param("?", "0");
-        self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
         self.data.set_special_param("SRANDOM", random::get_srandom, Some(Data::not_set));
         self.data.set_special_param("RANDOM", random::get_random, None);
         self.data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, Some(Data::not_set));
         self.data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, Some(Data::not_set));
         self.data.set_special_param("SECONDS", clock::get_seconds, Some(clock::set_seconds));
+
         self.data.set_param("SECONDS", "0");
     }
 
