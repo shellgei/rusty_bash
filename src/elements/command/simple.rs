@@ -151,7 +151,7 @@ impl SimpleCommand {
             if ! result {
                 core.data.set_param("?", "1");
                 let msg = error::readonly(&s.0);
-                error::print(&msg, core, true);
+                error::print(&msg, core);
             }
         }
     }

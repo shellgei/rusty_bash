@@ -80,7 +80,7 @@ impl ForCommand {
                 false => {
                     core.data.set_param("?", "1");
                     let msg = error::readonly(&self.name);
-                    error::print(&msg, core, true);
+                    error::print(&msg, core);
                 },
             }
 

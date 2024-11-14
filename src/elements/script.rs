@@ -103,7 +103,7 @@ impl Script {
                 Status::UnexpectedSymbol(s) => {
                     core.data.set_param("LINENO", &feeder.lineno.to_string());
                     let s = format!("Unexpected token: {}", s);
-                    error::print(&s, core, true);
+                    error::print(&s, core);
                     core.data.set_param("?", "2");
                     break;
                 },

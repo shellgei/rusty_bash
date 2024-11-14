@@ -32,7 +32,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }else{
             if ! core.data.set_param(&a, "") {
                 let msg = error::readonly(&a);
-                error::print(&msg, core, true);
+                error::print(&msg, core);
                 return 1;
             }
         }
@@ -49,7 +49,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if pos < args.len()-1 {
             if ! core.data.set_param(&args[pos], &w) {
                 let msg = error::readonly(&args[pos]);
-                error::print(&msg, core, true);
+                error::print(&msg, core);
                 return 1;
             }
             pos += 1;
@@ -60,7 +60,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             overflow += &w;
             if ! core.data.set_param(&args[pos], &overflow) {
                 let msg = error::readonly(&args[pos]);
-                error::print(&msg, core, true);
+                error::print(&msg, core);
                 return 1;
             }
         }

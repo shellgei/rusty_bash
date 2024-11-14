@@ -182,7 +182,7 @@ impl ConditionalExpr {
             let mut err = "syntax error".to_string();
             if stack.len() > 1 {
                 err = error::syntax_in_cond_expr(&to_string(&stack[0]));
-                error::print(&err, core, true);
+                error::print(&err, core);
                 err = format!("syntax error near `{}'", to_string(&stack[0]));
             }
             return Err(err);

@@ -163,7 +163,7 @@ impl ShellCore {
             },
             Ok(unsupported) => {
                 let msg = format!("Unsupported wait status: {:?}", unsupported);
-                error::print(&msg, self, true);
+                error::print(&msg, self);
                 1
             },
             Err(err) => {
@@ -323,7 +323,7 @@ impl ShellCore {
             Ok(path) => self.current_dir = Some(path),
             Err(err) => {
                 let msg = format!("pwd: error retrieving current directory: {:?}", err);
-                error::print(&msg, self, true);
+                error::print(&msg, self);
             },
         }
     }

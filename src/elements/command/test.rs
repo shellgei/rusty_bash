@@ -21,11 +21,11 @@ impl Command for TestCommand {
             Ok(CondElem::Ans(true))  => core.data.set_param("?", "0"),
             Ok(CondElem::Ans(false)) => core.data.set_param("?", "1"),
             Err(err_msg)  => {
-                error::print(&err_msg, core, true);
+                error::print(&err_msg, core);
                 core.data.set_param("?", "2")
             },
             _  => {
-                error::print("unknown error", core, true);
+                error::print("unknown error", core);
                 core.data.set_param("?", "2")
             },
         } ;

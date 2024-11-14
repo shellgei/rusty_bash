@@ -13,7 +13,7 @@ pub fn normal(core: &mut ShellCore) -> ! {
         Ok(n)  => n%256,
         Err(_) => {
             let msg = format!("exit: {}: numeric argument required", es_str);
-            error::print(&msg, core, true);
+            error::print(&msg, core);
             2
         },
     };
@@ -24,7 +24,7 @@ pub fn normal(core: &mut ShellCore) -> ! {
 /* error at exec */
 fn command_error_exit(name: &str, core: &mut ShellCore, msg: &str, exit_status: i32) -> ! {
     let msg = format!("{}: {}", name, msg);
-    error::print(&msg, core, true);
+    error::print(&msg, core);
     process::exit(exit_status)
 }
 
