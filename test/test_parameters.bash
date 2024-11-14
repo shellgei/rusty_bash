@@ -24,4 +24,9 @@ res=$($com -c 'RANDOM=a ; echo "$RANDOM"')
 res=$($com -c 'unset RANDOM; RANDOM=a ; echo "$RANDOM"')
 [ "$res" == "a" ] || err $LINENO
 
+### TIME ###
+#
+res=$($com -c '[[ 0 -eq $SECONDS ]] && sleep 1 && [[ 1 -eq $SECONDS ]]')
+[[ "$?" -eq 0 ]] || err $LINENO
+
 echo $0 >> ./ok
