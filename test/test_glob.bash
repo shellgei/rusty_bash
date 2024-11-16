@@ -52,4 +52,7 @@ res=$($com <<< 'echo /"*"' | grep -F '*')
 res=$($com <<< 'echo @(あ|{い,う,})')
 [ "$res" == "@(あ|い) @(あ|う) @(あ|)" ] || err $LINENO
 
+res=$($com <<< 'echo \/e\tc/* | grep -F "*"')
+[ $? -eq 1 ] || err $LINENO
+
 echo $0 >> ./ok
