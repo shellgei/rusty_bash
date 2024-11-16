@@ -3,6 +3,7 @@
 
 pub mod builtins;
 pub mod data;
+pub mod history;
 pub mod jobtable;
 
 use self::data::Data;
@@ -21,6 +22,7 @@ use std::sync::atomic::Ordering::Relaxed;
 
 pub struct ShellCore {
     pub data: Data,
+    rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
@@ -51,6 +53,7 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
             data: Data::new(),
+            rewritten_history: HashMap::new(),
             history: Vec::new(),
             builtins: HashMap::new(),
             sigint: Arc::new(AtomicBool::new(false)),
@@ -70,6 +73,10 @@ impl ShellCore {
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
+
+        let home = core.data.get_param("HOME").to_string();
+        core.data.set_param("HISTFILE", &(home + "/.sush_history"));
+        core.data.set_param("HISTFILESIZE", "2000");
 
         core
     }

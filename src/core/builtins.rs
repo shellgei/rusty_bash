@@ -7,6 +7,7 @@ mod pwd;
 mod utils;
 
 use crate::ShellCore;
+use crate::utils::exit;
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -24,7 +25,7 @@ pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() > 1 {
         core.data.parameters.insert("?".to_string(), args[1].clone());
     }
-    core.exit()
+    exit::normal(core)
 }
 
 pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
