@@ -23,6 +23,7 @@ com=../target/release/sush
 ./test_builtins.bash nobuild &
 ./test_options.bash nobuild &
 ./test_parameters.bash nobuild &
+./test_glob.bash nobuild &
 
 wait 
 
