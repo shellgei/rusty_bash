@@ -163,18 +163,6 @@ impl ShellCore {
         true
     }
 
-    pub fn exit(&self) -> ! {
-        let exit_status = match self.data.parameters["?"].parse::<i32>() {
-            Ok(n)  => n%256,
-            Err(_) => {
-                eprintln!("sush: exit: {}: numeric argument required", self.data.parameters["?"]);
-                2
-            },
-        };
-    
-        process::exit(exit_status)
-    }
-
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
         self.data.parameters.insert("BASHPID".to_string(), pid.to_string());

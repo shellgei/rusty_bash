@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
+use crate::utils::exit;
 use nix::unistd;
 use std::ffi::CString;
 use std::process;
@@ -58,7 +59,7 @@ impl Command for SimpleCommand {
         }
 
         if core.run_builtin(&mut self.args) {
-            core.exit()
+            exit::normal(core)
         }else{
             Self::exec_external_command(&mut self.args)
         }
