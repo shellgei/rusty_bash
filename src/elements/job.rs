@@ -4,6 +4,7 @@
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
+use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
 
@@ -66,7 +67,7 @@ impl Job {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pgid);
                 self.exec(core, false);
-                core.exit()
+                exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
                 core.set_pgid(child, pgid);

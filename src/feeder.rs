@@ -6,6 +6,7 @@ mod scanner;
 
 use std::io;
 use crate::ShellCore;
+use crate::utils::exit;
 use std::sync::atomic::Ordering::Relaxed;
 
 pub enum InputError {
@@ -99,7 +100,7 @@ impl Feeder {
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
                 core.data.set_param("?", "2");
-                core.exit();
+                exit::normal(core);
             },
             Err(InputError::Interrupt) => {
                 core.data.set_param("?", "130");

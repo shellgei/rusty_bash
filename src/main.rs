@@ -10,6 +10,7 @@ use std::{env, process, thread, time};
 use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::ShellCore;
+use crate::utils::exit;
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
 use signal_hook::consts;
@@ -96,5 +97,6 @@ fn main_loop(core: &mut ShellCore) {
         }
         core.sigint.store(false, Relaxed);
     }
-    core.exit();
+
+    exit::normal(core)
 }
