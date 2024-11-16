@@ -17,6 +17,14 @@ impl Subword for SingleQuoted {
         Some( self.text[1..self.text.len()-1].to_string() )
     }
 
+    fn make_glob_string(&mut self) -> String {
+        self.text[1..self.text.len()-1].replace("\\", "\\\\")
+            .replace("*", "\\*")
+            .replace("?", "\\?")
+            .replace("[", "\\[")
+            .replace("]", "\\]")
+    }
+
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
