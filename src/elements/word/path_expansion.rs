@@ -19,12 +19,7 @@ pub fn eval(word: &mut Word, extglob: bool) -> Vec<Word> {
 }
 
 fn expand(globstr: &str, extglob: bool) -> Vec<String> {
-    if globstr.find("*") == None 
-    && globstr.find("?") == None
-    && globstr.find("@") == None
-    && globstr.find("+") == None
-    && globstr.find("!") == None
-    && globstr.find("[") == None {
+    if "*?@+![".chars().all(|c| ! globstr.contains(c)) {
         return vec![];
     }
         
