@@ -85,6 +85,13 @@ impl Word {
         Some(sw.into_iter().map(|s| s.unwrap()).collect::<String>())
     }
 
+    fn make_glob_string(&mut self) -> String {
+        self.subwords.iter_mut()
+            .map(|s| s.make_glob_string())
+            .collect::<Vec<String>>()
+            .concat()
+    }
+
     fn scan_pos(&self, s: &str) -> Vec<usize> {
         self.subwords.iter()
             .enumerate()
