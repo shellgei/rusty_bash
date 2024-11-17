@@ -7,15 +7,12 @@ use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word, extglob: bool) -> Vec<Word> {
     let paths = expand(&word.make_glob_string(), extglob);
-
-    if paths.len() > 0 {
-        let mut tmp = word.clone();
-        paths.iter()
-             .map(|p| rewrite(&mut tmp, &p))
-             .collect()
-    }else{
-        vec![word.clone()]
+    if paths.len() == 0 {
+        return vec![word.clone()];
     }
+
+    let mut tmp = word.clone();
+    paths.iter().map(|p| rewrite(&mut tmp, &p)).collect()
 }
 
 fn expand(globstr: &str, extglob: bool) -> Vec<String> {
