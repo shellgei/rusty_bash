@@ -3,7 +3,6 @@
 
 use std::fs::DirEntry;
 use std::path::Path;
-use super::glob;
 
 pub fn files(dir: &str) -> Vec<String> {
     let readdir = match dir {
@@ -19,19 +18,6 @@ pub fn files(dir: &str) -> Vec<String> {
     }
 }
 
-pub fn glob(dir: &str, glob: &str) -> Vec<String> {
-    let make_path = |file| dir.to_owned() + file + "/";
-
-    /*
-    if glob == "" || glob == "." || glob == ".." {
-        return vec![make_path(glob)];
-    }*/
-
-    let mut fs = files(dir);
-    //fs.append( &mut vec![".".to_string(), "..".to_string()] );
-
-    //let compare = |file: &String| ( ! file.starts_with(".") || glob.starts_with(".") )
-     //                       && glob::compare(file, glob, extglob);
-
-    fs.iter().filter(|f| glob::compare(f, glob) ).map(|f| make_path(f) ).collect()
+pub fn glob(dir: &str, _: &str) -> Vec<String> {
+    files(dir)
 }
