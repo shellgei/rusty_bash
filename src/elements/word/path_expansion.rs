@@ -22,5 +22,7 @@ fn expand(globstr: &str) -> Vec<String> {
         return vec![];
     }
 
-    directory::glob("", &globstr)
+    let div = globstr.split("/");
+    let last = div.last().unwrap();
+    directory::files(&globstr[0..globstr.len()-last.len()])
 }

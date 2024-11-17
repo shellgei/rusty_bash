@@ -17,7 +17,3 @@ pub fn files(dir: &str) -> Vec<String> {
         _      => vec![],
     }
 }
-
-pub fn glob(dir: &str, _: &str) -> Vec<String> {
-    files(dir)
-}
