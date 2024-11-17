@@ -24,12 +24,11 @@ fn expand(globstr: &str, extglob: bool) -> Vec<String> {
         
     let mut ans_cands = vec!["".to_string()];
 
-    for glob_elem in globstr.split("/") {
-        let mut tmp = vec![];
-        for cand in ans_cands {
-            tmp.append( &mut directory::glob(&cand, &glob_elem, extglob) );
-        }
-        ans_cands = tmp;
+    for dir_glob in globstr.split("/") {
+        ans_cands = ans_cands.iter()
+                    .map(|c| directory::glob(&c, &dir_glob, extglob) )
+                    .collect::<Vec<Vec<String>>>()
+                    .concat();
     }
 
     ans_cands.iter_mut().for_each(|e| {e.pop();} );
