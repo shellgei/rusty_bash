@@ -20,6 +20,15 @@ impl Subword for EscapedChar {
             _ => Some(self.text[1..].to_string()),
         }
     }
+
+    fn make_glob_string(&mut self) -> String {
+        if let Some(c) = self.text.chars().nth(1) {
+            if ! "*?[]^!".contains(c) {
+                return c.to_string();
+            }
+        }
+        self.text.clone()
+    }
 }
 
 impl EscapedChar {
