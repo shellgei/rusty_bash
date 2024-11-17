@@ -4,6 +4,7 @@
 mod completion;
 
 use crate::{file_check, InputError, ShellCore};
+use crate::utils::file;
 use std::io;
 use std::fs::File;
 use std::io::{Write, Stdout};
@@ -131,17 +132,16 @@ impl Terminal {
             _ => "".to_string(),
         };
         let hostname = match unistd::gethostname() {
-            Ok(h) => h.to_string_lossy().to_string(),
+            Ok(h) => file::oss_to_name(&h),
             _ => "".to_string(),
         };
 
         let homedir = match User::from_uid(uid) {
-            Ok(Some(u)) => u.dir.to_string_lossy().to_string(),
+            Ok(Some(u)) => file::buf_to_name(&u.dir),
             _ => "".to_string(),
         };
         let mut cwd = match unistd::getcwd() {
-            Ok(p) => p.to_string_lossy()
-                      .to_string(),
+            Ok(p) => file::buf_to_name(&p),
             _ => "".to_string(),
         };
         let branch = Self::get_branch(&cwd);

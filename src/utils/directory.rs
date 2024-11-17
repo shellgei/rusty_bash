@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::fs::DirEntry;
+use crate::utils::file;
 use std::path::Path;
 use super::glob;
 
@@ -11,12 +11,13 @@ pub fn files(dir: &str) -> Vec<String> {
         d  => Path::new(d).read_dir(),
     };
 
-    let to_str = |p: DirEntry| p.file_name().to_string_lossy().to_string();
-
-    match readdir {
-        Ok(rd) => rd.map(|e| to_str(e.unwrap()) ).collect(),
-        _      => vec![],
+    if ! readdir.is_ok() {
+        return vec![];
     }
+
+    readdir.unwrap()
+        .map(|e| file::oss_to_name(&e.unwrap().file_name()) )
+        .collect()
 }
 
 pub fn glob(dir: &str, glob: &str, extglob: bool) -> Vec<String> {
