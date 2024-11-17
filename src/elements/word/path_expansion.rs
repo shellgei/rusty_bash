@@ -4,6 +4,7 @@
 use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 use super::subword::simple::SimpleSubword;
+use crate::utils::directory;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     let paths = expand(&word.make_glob_string());
@@ -21,5 +22,5 @@ fn expand(globstr: &str) -> Vec<String> {
         return vec![];
     }
 
-    directory::glob("", &globstr, extglob)
+    directory::glob("", &globstr)
 }
