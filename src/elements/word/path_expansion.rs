@@ -22,16 +22,16 @@ fn expand(globstr: &str, extglob: bool) -> Vec<String> {
         return vec![];
     }
         
-    let mut ans_cands = vec!["".to_string()];
+    let mut paths = vec!["".to_string()];
 
     for dir_glob in globstr.split("/") {
-        ans_cands = ans_cands.iter()
-                    .map(|c| directory::glob(&c, &dir_glob, extglob) )
-                    .collect::<Vec<Vec<String>>>()
-                    .concat();
+        paths = paths.iter()
+                .map(|c| directory::glob(&c, &dir_glob, extglob) )
+                .collect::<Vec<Vec<String>>>()
+                .concat();
     }
 
-    ans_cands.iter_mut().for_each(|e| {e.pop();} );
-    ans_cands.sort();
-    ans_cands
+    paths.iter_mut().for_each(|e| {e.pop();} );
+    paths.sort();
+    paths
 }
