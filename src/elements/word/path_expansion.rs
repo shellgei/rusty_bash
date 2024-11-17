@@ -9,6 +9,6 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 }
 
 fn expand(globstr: &str) -> Vec<String> {
-    dbg!("{:?}", &globstr);
+    eprintln!("glob: {:?}", &globstr);
     vec![]
 }
