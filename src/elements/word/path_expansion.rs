@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 use crate::utils::directory;
 use super::subword::simple::SimpleSubword;
@@ -11,8 +12,9 @@ pub fn eval(word: &mut Word, extglob: bool) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    let mut tmp = word.clone();
-    paths.iter().map(|p| rewrite(&mut tmp, &p)).collect()
+    let subwd = |path| Box::new(SimpleSubword{ text: path });
+    let wd = |path| Word::from( subwd(path) as Box::<dyn Subword>);
+    paths.iter().map(|p| wd(p.to_string())).collect()
 }
 
 fn expand(globstr: &str, extglob: bool) -> Vec<String> {
@@ -21,25 +23,16 @@ fn expand(globstr: &str, extglob: bool) -> Vec<String> {
     }
         
     let mut ans_cands = vec!["".to_string()];
-    let mut tmp_ans_cands = vec![];
 
     for glob_elem in globstr.split("/") {
+        let mut tmp = vec![];
         for cand in ans_cands {
-            tmp_ans_cands.extend( directory::glob(&cand, &glob_elem, extglob) );
+            tmp.append( &mut directory::glob(&cand, &glob_elem, extglob) );
         }
-        ans_cands = tmp_ans_cands.clone();
-        tmp_ans_cands.clear();
+        ans_cands = tmp;
     }
 
     ans_cands.iter_mut().for_each(|e| {e.pop();} );
     ans_cands.sort();
     ans_cands
-}
-
-fn rewrite(word: &mut Word, path: &str) -> Word {
-    word.subwords[0] = Box::new( SimpleSubword{ text: path.to_string() } );
-    while word.subwords.len() > 1 {
-        word.subwords.pop();
-    }
-    word.clone()
 }
