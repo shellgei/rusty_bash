@@ -20,18 +20,18 @@ pub fn files(dir: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn glob(dir: &str, glob: &str, extglob: bool) -> Vec<String> {
+pub fn glob(dir: &str, pattern: &str, extglob: bool) -> Vec<String> {
     let make_path = |file| dir.to_owned() + file + "/";
 
-    if glob == "" || glob == "." || glob == ".." {
-        return vec![make_path(glob)];
+    if ["", ".", ".."].contains(&pattern) {
+        return vec![make_path(pattern)];
     }
 
     let mut fs = files(dir);
     fs.append( &mut vec![".".to_string(), "..".to_string()] );
 
-    let compare = |file: &String| ( ! file.starts_with(".") || glob.starts_with(".") )
-                            && glob::compare(file, glob, extglob);
+    let compare = |file: &String| ( ! file.starts_with(".") || pattern.starts_with(".") )
+                            && glob::compare(file, pattern, extglob);
 
     fs.iter().filter(|f| compare(f) ).map(|f| make_path(f) ).collect()
 }
