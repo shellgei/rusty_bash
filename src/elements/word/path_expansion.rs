@@ -8,7 +8,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     vec![word.clone()]
 }
 
-fn expand(globstr: &str) -> Vec<String> {
-    eprintln!("glob: {:?}", &globstr);
+fn expand(pattern: &str) -> Vec<String> {
+    eprintln!("glob: {:?}", &pattern);
     vec![]
 }
