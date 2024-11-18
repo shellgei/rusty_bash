@@ -21,5 +21,5 @@ fn expand(pattern: &str) -> Vec<String> {
     let div = pattern.split("/");
     let last = div.last().unwrap();
     let dir = &pattern[0..pattern.len()-last.len()];
-    directory::files(dir)
+    directory::glob(dir, pattern)
 }
