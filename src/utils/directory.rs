@@ -5,10 +5,8 @@ use std::fs::DirEntry;
 use std::path::Path;
 
 pub fn files(dir: &str) -> Vec<String> {
-    let readdir = match dir {
-        "" => Path::new(".").read_dir(),
-        d  => Path::new(d).read_dir(),
-    };
+    let d = if dir == "" {"."}else{dir};
+    let readdir = Path::new(d).read_dir();
 
     let entries = match readdir {
         Ok(es) => es,
