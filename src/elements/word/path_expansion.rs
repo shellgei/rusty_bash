@@ -17,14 +17,14 @@ pub fn eval(word: &mut Word, extglob: bool) -> Vec<Word> {
     paths.iter().map(|p| wd(p.to_string())).collect()
 }
 
-fn expand(globstr: &str, extglob: bool) -> Vec<String> {
-    if "*?@+![".chars().all(|c| ! globstr.contains(c)) {
+fn expand(pattern: &str, extglob: bool) -> Vec<String> {
+    if "*?@+![".chars().all(|c| ! pattern.contains(c)) {
         return vec![];
     }
         
     let mut paths = vec!["".to_string()];
 
-    for dir_glob in globstr.split("/") {
+    for dir_glob in pattern.split("/") {
         paths = paths.iter()
                 .map(|c| directory::glob(&c, &dir_glob, extglob) )
                 .collect::<Vec<Vec<String>>>()
