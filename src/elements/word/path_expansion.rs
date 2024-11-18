@@ -14,7 +14,7 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 }
 
 fn expand(globstr: &str) -> Vec<String> {
-    if "*?@+![".chars().all(|c| ! globstr.contains(c)) {
+    if "*?+![".chars().all(|c| ! globstr.contains(c)) {
         return vec![];
     }
 
