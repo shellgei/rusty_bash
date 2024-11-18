@@ -18,6 +18,6 @@ pub fn files(dir: &str) -> Vec<String> {
     entries.map(|e| f(e.unwrap()) ).collect()
 }
 
-pub fn glob(dir: &str, _: &str) -> Vec<String> {
+pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
     files(dir)
 }
