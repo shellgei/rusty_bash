@@ -13,12 +13,12 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
     paths.iter().map(|p| Word::from(p.as_str())).collect()
 }
 
-fn expand(globstr: &str) -> Vec<String> {
-    if "*?+![".chars().all(|c| ! globstr.contains(c)) {
+fn expand(pattern: &str) -> Vec<String> {
+    if "*?+![".chars().all(|c| ! pattern.contains(c)) {
         return vec![];
     }
 
-    let div = globstr.split("/");
+    let div = pattern.split("/");
     let last = div.last().unwrap();
-    directory::files(&globstr[0..globstr.len()-last.len()])
+    directory::files(&pattern[0..pattern.len()-last.len()])
 }
