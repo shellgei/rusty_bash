@@ -8,13 +8,24 @@ mod path_expansion;
 mod split;
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword;
+use super::subword;
 use super::subword::Subword;
+use super::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,
+}
+
+impl From<&str> for Word {
+    fn from(text: &str) -> Self {
+        Self::from(
+            Box::new(
+                SimpleSubword{ text: text.to_string() }
+            ) as Box::<dyn Subword>
+       )
+    }
 }
 
 impl From<Box::<dyn Subword>> for Word {
