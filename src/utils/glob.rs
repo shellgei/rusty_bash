@@ -335,6 +335,10 @@ fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
         }
 
         if hyphen {
+            if ans.len() > 0 {
+                ans.pop();
+            }
+
             let mut expand = expand_range(&from, c);
             ans.append(&mut expand);
             hyphen = false;
@@ -357,7 +361,7 @@ fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
     let mut ans = vec![];
 
     if '0' <= from && from <= '9' {
-        let mut ch = (from as u8 + 1) as char;
+        let mut ch = from;
         while ch <= *to {
             ans.push(ch);
             ch = (ch as u8 + 1) as char;

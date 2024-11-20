@@ -58,4 +58,10 @@ res=$($com <<< 'echo \/e\tc/* | grep -F "*"')
 res=$($com <<< 'touch /tmp/2 ; echo /tmp/[1-5]' | grep 2)
 [ "$?" == "0" ] || err $LINENO
 
+res=$($com <<< 'touch /tmp/1 ; echo /tmp/[5-1]' | grep -- -)
+[ "$?" == "0" ] || err $LINENO
+
+res=$($com <<< 'touch /tmp/5 ; echo /tmp/[5-1]' | grep -- -)
+[ "$?" == "0" ] || err $LINENO
+
 echo $0 >> ./ok
