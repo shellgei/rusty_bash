@@ -310,9 +310,10 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
         }
 
         if c == ']' {
+            let expand_chars = expand_range_representation(&chars);
             match not {
-                false => return (len, Wildcard::OneOf(chars) ),
-                true  => return (len, Wildcard::NotOneOf(chars) ),
+                false => return (len, Wildcard::OneOf(expand_chars) ),
+                true  => return (len, Wildcard::NotOneOf(expand_chars) ),
             }
         }
 
@@ -320,6 +321,10 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
     }
 
     (0, Wildcard::OneOf(vec![]) )
+}
+
+fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
+    chars.clone()
 }
 
 fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
