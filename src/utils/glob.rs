@@ -19,17 +19,17 @@ pub fn compare(word: &String, pattern: &str, extglob: bool) -> bool {
 
 pub fn longest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
     let candidates = get_shaved_candidates(word, pattern, extglob);
-    match candidates.len() > 0 {
-        true => word.len() - candidates.iter().map(|c| c.len()).min().unwrap(),
-        false => 0,
+    match candidates.len() {
+        0 => 0,
+        _ => word.len() - candidates.iter().map(|c| c.len()).min().unwrap(),
     }
 }
 
 pub fn shortest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
     let candidates = get_shaved_candidates(word, pattern, extglob);
-    match candidates.len() > 0 {
-        true => word.len() - candidates.iter().map(|c| c.len()).max().unwrap(),
-        false => 0,
+    match candidates.len() {
+        0 => 0,
+        _ => word.len() - candidates.iter().map(|c| c.len()).max().unwrap(),
     }
 }
 
