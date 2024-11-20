@@ -79,4 +79,13 @@ res=$($com <<< 'touch /tmp/{1..9} ; echo /tmp/[1-37-9]')
 res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-37-9] | grep "/tmp/[1-9]" | xargs')
 [ "$res" == "/tmp/4 /tmp/5 /tmp/6" ] || err $LINENO
 
+res=$($com <<< 'touch /tmp/{1..9} ; echo /tmp/[1-]')
+[ "$res" == "/tmp/1" ] || err $LINENO
+
+res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-] | grep ^/tmp/1$')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-] | grep ^/tmp/5$')
+[ "$?" == "0" ] || err $LINENO
+
 echo $0 >> ./ok
