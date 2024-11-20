@@ -55,37 +55,39 @@ res=$($com <<< 'echo @(あ|{い,う,})')
 res=$($com <<< 'echo \/e\tc/* | grep -F "*"')
 [ $? -eq 1 ] || err $LINENO
 
-res=$($com <<< 'touch /tmp/2 ; echo /tmp/[1-5]' | grep 2)
-[ "$?" == "0" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/1 ; echo /tmp/[5-1]' | grep -- -)
-[ "$?" == "0" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/5 ; echo /tmp/[5-1]' | grep -- -)
-[ "$?" == "0" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/C ; echo /tmp/[A-D]' | grep C)
-[ "$?" == "0" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/c ; echo /tmp/[a-d]' | grep c)
-[ "$?" == "0" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/9 ; echo /tmp/[1-59]' | grep 9)
-[ "$?" == "0" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/{1..9} ; echo /tmp/[1-37-9]')
-[ "$res" == "/tmp/1 /tmp/2 /tmp/3 /tmp/7 /tmp/8 /tmp/9" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-37-9] | grep "/tmp/[1-9]" | xargs')
-[ "$res" == "/tmp/4 /tmp/5 /tmp/6" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/{1..9} ; echo /tmp/[1-]')
-[ "$res" == "/tmp/1" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-] | grep ^/tmp/1$')
-[ "$?" == "1" ] || err $LINENO
-
-res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-] | grep ^/tmp/5$')
-[ "$?" == "0" ] || err $LINENO
+if [ "$(uname)" = Linux ] ; then
+	res=$($com <<< 'touch /tmp/2 ; echo /tmp/[1-5]' | grep 2)
+	[ "$?" == "0" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/1 ; echo /tmp/[5-1]' | grep -- -)
+	[ "$?" == "0" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/5 ; echo /tmp/[5-1]' | grep -- -)
+	[ "$?" == "0" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/C ; echo /tmp/[A-D]' | grep C)
+	[ "$?" == "0" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/c ; echo /tmp/[a-d]' | grep c)
+	[ "$?" == "0" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/9 ; echo /tmp/[1-59]' | grep 9)
+	[ "$?" == "0" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/{1..9} ; echo /tmp/[1-37-9]')
+	[ "$res" == "/tmp/1 /tmp/2 /tmp/3 /tmp/7 /tmp/8 /tmp/9" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-37-9] | grep "/tmp/[1-9]" | xargs')
+	[ "$res" == "/tmp/4 /tmp/5 /tmp/6" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/{1..9} ; echo /tmp/[1-]')
+	[ "$res" == "/tmp/1" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-] | grep ^/tmp/1$')
+	[ "$?" == "1" ] || err $LINENO
+	
+	res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-] | grep ^/tmp/5$')
+	[ "$?" == "0" ] || err $LINENO
+fi 
 
 echo $0 >> ./ok
