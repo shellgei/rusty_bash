@@ -360,7 +360,9 @@ fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
 
     let mut ans = vec![];
 
-    if '0' <= from && from <= '9' {
+    if '0' <= from && from <= '9' 
+    || 'a' <= from && from <= 'z'
+    || 'A' <= from && from <= 'Z' {
         let mut ch = from;
         while ch <= *to {
             ans.push(ch);
