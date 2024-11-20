@@ -70,4 +70,10 @@ res=$($com <<< 'touch /tmp/C ; echo /tmp/[A-D]' | grep C)
 res=$($com <<< 'touch /tmp/c ; echo /tmp/[a-d]' | grep c)
 [ "$?" == "0" ] || err $LINENO
 
+res=$($com <<< 'touch /tmp/9 ; echo /tmp/[1-59]' | grep 9)
+[ "$?" == "0" ] || err $LINENO
+
+res=$($com <<< 'touch /tmp/{1..9} ; echo /tmp/[1-37-9]')
+[ "$res" == "/tmp/1 /tmp/2 /tmp/3 /tmp/7 /tmp/8 /tmp/9" ] || err $LINENO
+
 echo $0 >> ./ok
