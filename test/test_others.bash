@@ -1295,46 +1295,6 @@ res=$($com <<< 'cd /; cd /etc; echo ~+; echo ~-')
 [ "$res" == "/etc
 /" ] || err $LINENO
 
-## wildcard
-#
-#res=$($com <<< 'echo /bin/?' | grep -F '/bin/[')
-#[ "$?" == "0" ] || err $LINENO
-#
-#res=$($com <<< 'echo /*' | grep '/etc')
-#[ "$?" == 0 ] || err $LINENO
-#
-#res=$($com <<< 'echo ~+/*' | grep '*')
-#[ "$?" == 1 ] || err $LINENO
-#
-#res=$($com <<< 'echo ~/*' | grep -F '/.')
-#[ "$?" == 1 ] || err $LINENO
-#
-#res=$($com <<< 'echo ~/.*' | grep -F '/.')
-#[ "$?" == 0 ] || err $LINENO
-#
-#res=$($com <<< 'echo /etc*/' | grep -F '/etc/')
-#[ "$?" == 0 ] || err $LINENO
-#
-#res=$($com <<< 'echo .*' | grep -F './.')
-#[ "$?" == 1 ] || err $LINENO
-#
-#res=$($com <<< 'echo ./*' | grep -F './')
-#[ "$?" == "0" ] || err $LINENO
-#
-#res=$($com <<< 'echo *"$PATH"')
-#[ "$?" == "0" ] || err $LINENO
-#
-#res=$($com <<< 'echo /*"b"*' | grep -F '*')
-#[ "$?" == "1" ] || err $LINENO
-#
-#res=$($com <<< "echo /*'b'*" | grep -F '*')
-#[ "$?" == "1" ] || err $LINENO
-#
-#res=$($com <<< 'echo /"*"' | grep -F '*')
-#[ "$?" == "0" ] || err $LINENO
-#
-#res=$($com <<< 'echo @(あ|{い,う,})')
-#[ "$res" == "@(あ|い) @(あ|う) @(あ|)" ] || err $LINENO
 
 # split
 

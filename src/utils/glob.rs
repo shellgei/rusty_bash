@@ -348,7 +348,24 @@ fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
 }
 
 fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
-    vec![*to]
+    if from.is_none() {
+        return vec![*to];
+    }
+
+    let from = from.unwrap();
+
+    let mut ans = vec![];
+
+    if '0' <= from && from <= '9' {
+        let mut ch = (from as u8 + 1) as char;
+        while ch <= *to {
+            ans.push(ch);
+            ch = (ch as u8 + 1) as char;
+        }
+
+    }
+
+    ans
 }
 
 fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {

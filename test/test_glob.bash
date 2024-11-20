@@ -55,4 +55,7 @@ res=$($com <<< 'echo @(あ|{い,う,})')
 res=$($com <<< 'echo \/e\tc/* | grep -F "*"')
 [ $? -eq 1 ] || err $LINENO
 
+res=$($com <<< 'touch /tmp/2 ; echo /tmp/[1-5]' | grep 2)
+[ "$?" == "0" ] || err $LINENO
+
 echo $0 >> ./ok
