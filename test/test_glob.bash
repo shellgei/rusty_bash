@@ -76,4 +76,7 @@ res=$($com <<< 'touch /tmp/9 ; echo /tmp/[1-59]' | grep 9)
 res=$($com <<< 'touch /tmp/{1..9} ; echo /tmp/[1-37-9]')
 [ "$res" == "/tmp/1 /tmp/2 /tmp/3 /tmp/7 /tmp/8 /tmp/9" ] || err $LINENO
 
+res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-37-9] | grep "/tmp/[1-9]" | xargs')
+[ "$res" == "/tmp/4 /tmp/5 /tmp/6" ] || err $LINENO
+
 echo $0 >> ./ok
