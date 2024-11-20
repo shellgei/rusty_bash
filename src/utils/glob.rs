@@ -324,7 +324,31 @@ fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
 }
 
 fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
-    chars.clone()
+    let mut ans = vec![];
+    let mut from = None;
+    let mut hyphen = false;
+
+    for c in chars {
+        if *c == '-' {
+            hyphen = true;
+            continue;
+        }
+
+        if hyphen {
+            let mut expand = expand_range(&from, c);
+            ans.append(&mut expand);
+            hyphen = false;
+            continue;
+        }else {
+            ans.push(*c);
+            from = Some(*c);
+        }
+    }
+    ans
+}
+
+fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
+    vec![*to]
 }
 
 fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
