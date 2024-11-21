@@ -2,37 +2,38 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::exit;
-use super::{parse, eat, Wildcard};
+use super::Wildcard;
+use super::parser;
 
-pub fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
+pub fn shave(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
     match prefix {
-        '?' => ext_question(cands, patterns),
-        '*' => ext_zero_or_more(cands, patterns),
-        '+' => ext_more_than_zero(cands, patterns),
-        '@' => ext_once(cands, patterns),
-        '!' => ext_not(cands, patterns),
+        '?' => question(cands, patterns),
+        '*' => zero_or_more(cands, patterns),
+        '+' => more_than_zero(cands, patterns),
+        '@' => once(cands, patterns),
+        '!' => not(cands, patterns),
         _   => exit::internal("unknown extglob prefix"),
     }
 }
 
-fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn question(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = cands.clone();
     for p in patterns {
         let mut tmp = cands.clone();
-        parse(p, true).iter().for_each(|w| eat(&mut tmp, &w));
+        parser::parse(p, true).iter().for_each(|w| super::shave(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
 }
 
-fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     let mut tmp = cands.clone();
     let mut len = tmp.len();
 
     while len > 0 {
         ans.extend(tmp.clone());
-        ext_once(&mut tmp, patterns);
+        once(&mut tmp, patterns);
         for a in &ans {
             tmp.retain(|t| a.as_str() != t.as_str());
         }
@@ -42,13 +43,13 @@ fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn ext_more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
+fn more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
     let mut ans: Vec<String> = vec![];
     let mut tmp: Vec<String> = cands.clone();
     let mut len = tmp.len();
 
     while len > 0  {
-        ext_once(&mut tmp, patterns);
+        once(&mut tmp, patterns);
 
         for a in &ans {
             tmp.retain(|t| a.as_str() != t.as_str());
@@ -59,21 +60,21 @@ fn ext_more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: 
     *cands = ans;
 }
 
-fn ext_once(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
-        parse(p, true).iter().for_each(|w| eat(&mut tmp, &w));
+        parser::parse(p, true).iter().for_each(|w| super::shave(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
 }
 
-fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for cand in cands.iter_mut() {
         for prefix in make_prefix_strings(cand)  {
-            if ! ext_once_exact_match(&prefix, patterns) {
+            if ! once_exact_match(&prefix, patterns) {
                 ans.push(cand[prefix.len()..].to_string());
             }
         }
@@ -81,9 +82,9 @@ fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn ext_once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
+fn once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
     let mut tmp = vec![cand.clone()];
-    ext_once(&mut tmp, patterns);
+    once(&mut tmp, patterns);
     tmp.iter().any(|t| t == "")
 }
 
