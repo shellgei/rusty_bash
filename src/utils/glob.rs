@@ -78,12 +78,9 @@ fn asterisk(cands: &mut Vec<String>) {
 fn question(cands: &mut Vec<String>) {
     let mut ans = vec![];
     for cand in cands.into_iter() {
-        match cand.chars().nth(0) {
-            Some(c) => {
-                let len = c.len_utf8();
-                ans.push(cand[len..].to_string());
-            },
-            _ => {},
+        if let Some(c) = cand.chars().nth(0) {
+            let len = c.len_utf8();
+            ans.push(cand[len..].to_string());
         }
     }
     *cands = ans;
