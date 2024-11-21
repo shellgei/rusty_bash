@@ -197,22 +197,17 @@ fn scan_bracket(remaining: &str) -> (usize, Wildcard) {
         if escaped {
             chars.push(c); 
             escaped = false;
-            continue;
-        }
-        if c == '\\' {
+        }else if c == '\\' {
             escaped = true;
-            continue;
-        }
-
-        if c == ']' {
+        }else if c == ']' {
             let expand_chars = expand_range_representation(&chars);
             match not {
                 false => return (len, Wildcard::OneOf(expand_chars) ),
                 true  => return (len, Wildcard::NotOneOf(expand_chars) ),
             }
+        }else{
+            chars.push(c);
         }
-
-        chars.push(c);
     }
 
     (0, Wildcard::OneOf(vec![]) )
