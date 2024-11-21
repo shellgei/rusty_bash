@@ -201,10 +201,10 @@ fn scan_bracket(remaining: &str) -> (usize, Wildcard) {
             escaped = true;
         }else if c == ']' {
             let expand_chars = expand_range_representation(&chars);
-            match not {
-                false => return (len, Wildcard::OneOf(expand_chars) ),
-                true  => return (len, Wildcard::NotOneOf(expand_chars) ),
-            }
+            return match not {
+                false => (len, Wildcard::OneOf(expand_chars) ),
+                true  => (len, Wildcard::NotOneOf(expand_chars) ),
+            };
         }else{
             chars.push(c);
         }
@@ -250,9 +250,9 @@ fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
 
     let mut ans = vec![];
 
-    if '0' <= from && from <= '9' 
-    || 'a' <= from && from <= 'z'
-    || 'A' <= from && from <= 'Z' {
+    if '0' <= from && from <= '9' && *to <= '9' 
+    || 'a' <= from && from <= 'z' && *to <= 'z'
+    || 'A' <= from && from <= 'Z' && *to <= 'Z' {
         let mut ch = from;
         while ch <= *to {
             ans.push(ch);
