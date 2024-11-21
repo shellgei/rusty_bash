@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::exit;
-use super::{parse, compare_one, make_prefix_strings, Wildcard};
+use super::{parse, compare_one, Wildcard};
 
 pub fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
     match prefix {
@@ -144,4 +144,16 @@ pub fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
     }
 
     (0, None)
+}
+
+fn make_prefix_strings(s: &String) -> Vec<String> {
+    let mut ans = vec![];
+    let mut prefix = s.clone();
+
+    ans.push(prefix.clone());
+    while prefix.len() > 0 {
+        prefix.pop();
+        ans.push(prefix.clone());
+    }
+    ans
 }

@@ -95,18 +95,6 @@ fn question(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
-fn make_prefix_strings(s: &String) -> Vec<String> {
-    let mut ans = vec![];
-    let mut prefix = s.clone();
-
-    ans.push(prefix.clone());
-    while prefix.len() > 0 {
-        prefix.pop();
-        ans.push(prefix.clone());
-    }
-    ans
-}
-
 fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
     let mut ans = vec![];
     for cand in cands.into_iter() {
