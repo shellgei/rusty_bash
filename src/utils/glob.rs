@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod extglob;
-pub mod parser;
+mod parser;
 
 #[derive(Debug)]
 pub enum Wildcard {
@@ -31,6 +31,10 @@ pub fn longest_match_length(word: &String, pattern: &Vec<Wildcard>) -> usize {
 pub fn shortest_match_length(word: &String, pattern: &Vec<Wildcard>) -> usize {
     word.len() - get_shaved_candidates(word, pattern).iter()
                  .map(|c| c.len()).max().unwrap_or(word.len())
+}
+
+pub fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard> {
+    parser::parse(pattern, extglob)
 }
 
 fn get_shaved_candidates(word: &String, pattern: &Vec<Wildcard>) -> Vec<String> {

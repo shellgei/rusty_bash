@@ -19,11 +19,11 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     let extglob = core.shopts.query("extglob");
  
     if obj.remove_symbol.starts_with("##") {
-        let pat = glob::parser::parse(&pattern, extglob);
+        let pat = glob::parse(&pattern, extglob);
         let len = glob::longest_match_length(&obj.text, &pat);
         obj.text = obj.text[len..].to_string();
     } else if obj.remove_symbol.starts_with("#") {
-        let pat = glob::parser::parse(&pattern, extglob);
+        let pat = glob::parse(&pattern, extglob);
         let len = glob::shortest_match_length(&obj.text, &pat);
         obj.text = obj.text[len..].to_string();
     }else if obj.remove_symbol.starts_with("%") {

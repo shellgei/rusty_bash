@@ -30,7 +30,7 @@ pub fn glob(dir: &str, pattern: &str, extglob: bool) -> Vec<String> {
     let mut fs = files(dir);
     fs.append( &mut vec![".".to_string(), "..".to_string()] );
 
-    let pat = glob::parser::parse(pattern, extglob);
+    let pat = glob::parse(pattern, extglob);
     let compare = |file: &String| ( ! file.starts_with(".") || pattern.starts_with(".") )
                             && glob::compare(file, &pat);
 
