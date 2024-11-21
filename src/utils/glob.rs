@@ -17,7 +17,7 @@ pub enum Wildcard {
 
 pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
     let pat = parser::parse(pattern, extglob);
-    comparator::shave_candidates(word, &pat).iter().any(|c| c == "")
+    compare(word, &pat)
 }
 
 pub fn compare(word: &String, pattern: &Vec<Wildcard>) -> bool {
