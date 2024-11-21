@@ -44,7 +44,8 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
             continue;
         }
 
-        let len = glob::longest_match_length(&obj.text[start..].to_string(), &pattern, extglob);
+        let pat = glob::parser::parse(&pattern, extglob);
+        let len = glob::longest_match_length(&obj.text[start..].to_string(), &pat);
         if len != 0 && obj.tail_only_replace {
             if len == obj.text[start..].len() {
                 obj.text = [&obj.text[..start], &string_to[0..] ].concat();

@@ -2,10 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod extglob;
-mod parser;
+pub mod parser;
 
 #[derive(Debug)]
-enum Wildcard {
+pub enum Wildcard {
     Normal(String),
     Asterisk,
     Question,
@@ -14,23 +14,29 @@ enum Wildcard {
     ExtGlob(char, Vec<String>),
 }
 
-pub fn compare(word: &String, pattern: &str, extglob: bool) -> bool {
-    get_shaved_candidates(word, pattern, extglob).iter().any(|c| c == "")
+pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
+    let pat = parser::parse(pattern, extglob);
+    get_shaved_candidates(word, &pat).iter().any(|c| c == "")
 }
 
-pub fn longest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
-    word.len() - get_shaved_candidates(word, pattern, extglob).iter()
+pub fn compare(word: &String, pattern: &Vec<Wildcard>) -> bool {
+    get_shaved_candidates(word, pattern).iter().any(|c| c == "")
+}
+
+pub fn longest_match_length(word: &String, pattern: &Vec<Wildcard>) -> usize {
+    word.len() - get_shaved_candidates(word, pattern).iter()
                  .map(|c| c.len()).min().unwrap_or(word.len())
 }
 
-pub fn shortest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
-    word.len() - get_shaved_candidates(word, pattern, extglob).iter()
+pub fn shortest_match_length(word: &String, pattern: &Vec<Wildcard>) -> usize {
+    word.len() - get_shaved_candidates(word, pattern).iter()
                  .map(|c| c.len()).max().unwrap_or(word.len())
 }
 
-fn get_shaved_candidates(word: &String, pattern: &str, extglob: bool) -> Vec<String> {
+fn get_shaved_candidates(word: &String, pattern: &Vec<Wildcard>) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
-    parser::parse(pattern, extglob).iter()
+    //parser::parse(pattern, extglob).iter()
+    pattern.iter()
         .for_each(|w| shave(&mut candidates, &w) );
 
     candidates

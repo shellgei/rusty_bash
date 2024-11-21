@@ -40,7 +40,7 @@ impl Command for CaseCommand {
                     _       => continue,
                 };
 
-                if glob::compare(&w, &p, extglob) || next {
+                if glob::parse_and_compare(&w, &p, extglob) || next {
                     e.1.exec(core);
 
                     if e.2 == ";;" {

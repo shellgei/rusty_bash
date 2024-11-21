@@ -4,7 +4,7 @@
 use super::Wildcard;
 use super::extglob;
 
-pub fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
+pub fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard> {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
 
