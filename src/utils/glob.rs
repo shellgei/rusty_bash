@@ -14,11 +14,11 @@ enum Wildcard {
 }
 
 pub fn compare(word: &String, pattern: &str, extglob: bool) -> bool {
-    get_shaved_candidates(word, pattern, extglob).iter().any(|c| c == "")
+    get_eaten_candidates(word, pattern, extglob).iter().any(|c| c == "")
 }
 
 pub fn longest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
-    let candidates = get_shaved_candidates(word, pattern, extglob);
+    let candidates = get_eaten_candidates(word, pattern, extglob);
     match candidates.len() {
         0 => 0,
         _ => word.len() - candidates.iter().map(|c| c.len()).min().unwrap(),
@@ -26,23 +26,23 @@ pub fn longest_match_length(word: &String, pattern: &str, extglob: bool) -> usiz
 }
 
 pub fn shortest_match_length(word: &String, pattern: &str, extglob: bool) -> usize {
-    let candidates = get_shaved_candidates(word, pattern, extglob);
+    let candidates = get_eaten_candidates(word, pattern, extglob);
     match candidates.len() {
         0 => 0,
         _ => word.len() - candidates.iter().map(|c| c.len()).max().unwrap(),
     }
 }
 
-fn get_shaved_candidates(word: &String, pattern: &str, extglob: bool) -> Vec<String> {
+fn get_eaten_candidates(word: &String, pattern: &str, extglob: bool) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
 
     for w in parse(pattern, extglob) {
-        compare_one(&mut candidates, &w);
+        eat(&mut candidates, &w);
     }
     candidates
 }
 
-fn compare_one(candidates: &mut Vec<String>, w: &Wildcard) {
+fn eat(candidates: &mut Vec<String>, w: &Wildcard) {
     match w {
         Wildcard::Normal(s) => nonspecial(candidates, &s),
         Wildcard::Asterisk  => asterisk(candidates),
@@ -180,7 +180,6 @@ fn scan_chars(remaining: &str) -> usize {
         if "@!+*?[\\".find(c) != None {
             return ans;
         }
-
         ans += c.len_utf8();
     }
     ans
@@ -275,7 +274,6 @@ fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
         }
 
     }
-
     ans
 }
 
