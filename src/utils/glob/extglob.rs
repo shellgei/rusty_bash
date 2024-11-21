@@ -3,6 +3,7 @@
 
 use crate::exit;
 use super::Wildcard;
+use super::comparator;
 use super::parser;
 
 pub fn shave(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
@@ -20,7 +21,7 @@ fn question(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = cands.clone();
     for p in patterns {
         let mut tmp = cands.clone();
-        parser::parse(p, true).iter().for_each(|w| super::shave(&mut tmp, &w));
+        parser::parse(p, true).iter().for_each(|w| comparator::shave(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -64,7 +65,7 @@ fn once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
-        parser::parse(p, true).iter().for_each(|w| super::shave(&mut tmp, &w));
+        parser::parse(p, true).iter().for_each(|w| comparator::shave(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;

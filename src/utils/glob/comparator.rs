@@ -1,51 +1,16 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod comparator;
-mod extglob;
-mod parser;
+use super::extglob;
+use super::Wildcard;
 
-#[derive(Debug)]
-pub enum Wildcard {
-    Normal(String),
-    Asterisk,
-    Question,
-    OneOf(Vec<char>),
-    NotOneOf(Vec<char>),
-    ExtGlob(char, Vec<String>),
-}
-
-pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
-    let pat = parser::parse(pattern, extglob);
-    comparator::get_shaved_candidates(word, &pat).iter().any(|c| c == "")
-}
-
-pub fn compare(word: &String, pattern: &Vec<Wildcard>) -> bool {
-    comparator::get_shaved_candidates(word, pattern).iter().any(|c| c == "")
-}
-
-pub fn longest_match_length(word: &String, pattern: &Vec<Wildcard>) -> usize {
-    word.len() - comparator::get_shaved_candidates(word, pattern).iter()
-                 .map(|c| c.len()).min().unwrap_or(word.len())
-}
-
-pub fn shortest_match_length(word: &String, pattern: &Vec<Wildcard>) -> usize {
-    word.len() - comparator::get_shaved_candidates(word, pattern).iter()
-                 .map(|c| c.len()).max().unwrap_or(word.len())
-}
-
-pub fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard> {
-    parser::parse(pattern, extglob)
-}
-
-/*
-fn get_shaved_candidates(word: &String, pattern: &Vec<Wildcard>) -> Vec<String> {
+pub fn get_shaved_candidates(word: &String, pattern: &Vec<Wildcard>) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
     pattern.iter().for_each(|w| shave(&mut candidates, &w) );
     candidates
 }
 
-fn shave(candidates: &mut Vec<String>, w: &Wildcard) {
+pub fn shave(candidates: &mut Vec<String>, w: &Wildcard) {
     match w {
         Wildcard::Normal(s) => nonspecial(candidates, &s),
         Wildcard::Asterisk  => asterisk(candidates),
@@ -105,4 +70,3 @@ fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
     }
     *cands = ans;
 }
-*/
