@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::utils::exit;
+mod extglob;
 
 #[derive(Debug)]
 enum Wildcard {
@@ -37,23 +37,23 @@ fn get_shaved_candidates(word: &String, pattern: &str, extglob: bool) -> Vec<Str
     let mut candidates = vec![word.to_string()];
 
     for w in parse(pattern, extglob) {
-        compare_internal(&mut candidates, &w);
+        compare_one(&mut candidates, &w);
     }
     candidates
 }
 
-fn compare_internal(candidates: &mut Vec<String>, w: &Wildcard) {
+fn compare_one(candidates: &mut Vec<String>, w: &Wildcard) {
     match w {
-        Wildcard::Normal(s) => compare_normal(candidates, &s),
+        Wildcard::Normal(s) => nonspecial(candidates, &s),
         Wildcard::Asterisk  => asterisk(candidates),
         Wildcard::Question  => question(candidates),
         Wildcard::OneOf(cs) => one_of(candidates, &cs, false),
         Wildcard::NotOneOf(cs) => one_of(candidates, &cs, true),
-        Wildcard::ExtGlob(prefix, ps) => ext_paren(candidates, *prefix, &ps),
+        Wildcard::ExtGlob(prefix, ps) => extglob::ext_paren(candidates, *prefix, &ps),
     }
 }
 
-fn compare_normal(cands: &mut Vec<String>, s: &String) {
+fn nonspecial(cands: &mut Vec<String>, s: &String) {
     let mut ans = vec![];
 
     for c in cands.into_iter() {
@@ -95,6 +95,7 @@ fn question(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
+/*
 fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
     match prefix {
         '?' => ext_question(cands, patterns),
@@ -110,13 +111,13 @@ fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = cands.clone();
     for p in patterns {
         let mut tmp = cands.clone();
-        parse(p, true).iter().for_each(|w| compare_internal(&mut tmp, &w));
+        parse(p, true).iter().for_each(|w| compare_one(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
 }
 
-fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
+fn ext_zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     let mut tmp = cands.clone();
     let mut len = tmp.len();
@@ -154,7 +155,7 @@ fn ext_once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
-        parse(p, true).iter().for_each(|w| compare_internal(&mut tmp, &w));
+        parse(p, true).iter().for_each(|w| compare_one(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -165,6 +166,7 @@ fn ext_once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
     ext_once(&mut tmp, patterns);
     tmp.iter().any(|t| t == "")
 }
+*/
 
 fn make_prefix_strings(s: &String) -> Vec<String> {
     let mut ans = vec![];
@@ -178,6 +180,7 @@ fn make_prefix_strings(s: &String) -> Vec<String> {
     ans
 }
 
+/*
 fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for cand in cands.iter_mut() {
@@ -189,6 +192,7 @@ fn ext_not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     }
     *cands = ans;
 }
+*/
 
 fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
     let mut ans = vec![];
@@ -219,7 +223,7 @@ fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
         }
 
         if extglob {
-            let (len, extparen) = scanner_ext_paren(&remaining);
+            let (len, extparen) = extglob::scanner_ext_paren(&remaining);
             if len > 0 {
                 consume(&mut remaining, len);
                 ans.push(extparen.unwrap());
@@ -374,6 +378,7 @@ fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
     ans
 }
 
+/*
 fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
     let prefix = match remaining.chars().nth(0) {
         Some(c) => c, 
@@ -432,6 +437,7 @@ fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
 
     (0, None)
 }
+*/
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
     let cut = remaining[0..cutpos].to_string();
