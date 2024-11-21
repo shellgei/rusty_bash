@@ -21,16 +21,16 @@ pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
 }
 
 pub fn compare(word: &String, pattern: &Vec<Wildcard>) -> bool {
-    comparator::shave_candidates(word, pattern).iter().any(|c| c == "")
+    comparator::shave_word(word, pattern).iter().any(|c| c == "")
 }
 
 pub fn longest_match_length(word: &String, pattern: &Vec<Wildcard>) -> usize {
-    word.len() - comparator::shave_candidates(word, pattern).iter()
+    word.len() - comparator::shave_word(word, pattern).iter()
                  .map(|c| c.len()).min().unwrap_or(word.len())
 }
 
 pub fn shortest_match_length(word: &String, pattern: &Vec<Wildcard>) -> usize {
-    word.len() - comparator::shave_candidates(word, pattern).iter()
+    word.len() - comparator::shave_word(word, pattern).iter()
                  .map(|c| c.len()).max().unwrap_or(word.len())
 }
 

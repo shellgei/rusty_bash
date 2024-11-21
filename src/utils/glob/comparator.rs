@@ -4,7 +4,7 @@
 use super::extglob;
 use super::Wildcard;
 
-pub fn shave_candidates(word: &String, pattern: &Vec<Wildcard>) -> Vec<String> {
+pub fn shave_word(word: &String, pattern: &Vec<Wildcard>) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
     pattern.iter().for_each(|w| shave(&mut candidates, &w) );
     candidates
