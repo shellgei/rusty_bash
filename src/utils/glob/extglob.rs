@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::exit;
-use super::{parse, compare_one, Wildcard};
+use super::{parse, eat, Wildcard};
 
 pub fn ext_paren(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
     match prefix {
@@ -19,7 +19,7 @@ fn ext_question(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = cands.clone();
     for p in patterns {
         let mut tmp = cands.clone();
-        parse(p, true).iter().for_each(|w| compare_one(&mut tmp, &w));
+        parse(p, true).iter().for_each(|w| eat(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -63,7 +63,7 @@ fn ext_once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
-        parse(p, true).iter().for_each(|w| compare_one(&mut tmp, &w));
+        parse(p, true).iter().for_each(|w| eat(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
