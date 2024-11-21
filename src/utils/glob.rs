@@ -104,14 +104,12 @@ fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
     let mut ans = vec![];
 
     while remaining.len() > 0 {
-        match scan_escaped_char(&remaining) {
-            0 => {}, 
-            len => {
-                let mut s = consume(&mut remaining, len);
-                s.remove(0);
-                ans.push( Wildcard::Normal(s) );
-                continue;
-            },
+        let len =  scan_escaped_char(&remaining);
+        if len > 0 {
+            let mut s = consume(&mut remaining, len);
+            s.remove(0);
+            ans.push( Wildcard::Normal(s) );
+            continue;
         }
 
         if extglob {
