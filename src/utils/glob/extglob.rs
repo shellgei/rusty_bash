@@ -87,7 +87,7 @@ fn ext_once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
     tmp.iter().any(|t| t == "")
 }
 
-pub fn scanner_ext_paren(remaining: &str) -> (usize, Option<Wildcard>) {
+pub fn scan(remaining: &str) -> (usize, Option<Wildcard>) {
     let prefix = match remaining.chars().nth(0) {
         Some(c) => c, 
         None => return (0, None),

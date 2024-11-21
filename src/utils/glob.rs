@@ -113,7 +113,7 @@ fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
     let mut ans = vec![];
 
     while remaining.len() > 0 {
-        match scanner_escaped_char(&remaining) {
+        match scan_escaped_char(&remaining) {
             0 => {}, 
             len => {
                 let mut s = consume(&mut remaining, len);
@@ -124,7 +124,7 @@ fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
         }
 
         if extglob {
-            let (len, extparen) = extglob::scanner_ext_paren(&remaining);
+            let (len, extparen) = extglob::scan(&remaining);
             if len > 0 {
                 consume(&mut remaining, len);
                 ans.push(extparen.unwrap());
@@ -132,7 +132,7 @@ fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
             }
         }
 
-        let (len, wc) = scanner_bracket(&remaining);
+        let (len, wc) = scan_bracket(&remaining);
         if len > 0 {
             consume(&mut remaining, len);
             ans.push(wc);
@@ -149,7 +149,7 @@ fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
             continue;
         }
 
-        let len = scanner_chars(&remaining);
+        let len = scan_chars(&remaining);
         if len > 0 {
             let s = consume(&mut remaining, len);
             ans.push( Wildcard::Normal(s) );
@@ -163,7 +163,7 @@ fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard > {
     ans
 }
 
-fn scanner_escaped_char(remaining: &str) -> usize {
+fn scan_escaped_char(remaining: &str) -> usize {
     if ! remaining.starts_with("\\") {
         return 0;
     }
@@ -174,7 +174,7 @@ fn scanner_escaped_char(remaining: &str) -> usize {
     }
 }
 
-fn scanner_chars(remaining: &str) -> usize {
+fn scan_chars(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
         if "@!+*?[\\".find(c) != None {
@@ -186,7 +186,7 @@ fn scanner_chars(remaining: &str) -> usize {
     ans
 }
 
-fn scanner_bracket(remaining: &str) -> (usize, Wildcard) {
+fn scan_bracket(remaining: &str) -> (usize, Wildcard) {
     if ! remaining.starts_with("[") {
         return (0, Wildcard::OneOf(vec![]) );
     }
