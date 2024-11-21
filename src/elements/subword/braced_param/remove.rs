@@ -19,10 +19,12 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     let extglob = core.shopts.query("extglob");
  
     if obj.remove_symbol.starts_with("##") {
-        let len = glob::longest_match_length(&obj.text, &pattern, extglob);
+        let pat = glob::parse(&pattern, extglob);
+        let len = glob::longest_match_length(&obj.text, &pat);
         obj.text = obj.text[len..].to_string();
     } else if obj.remove_symbol.starts_with("#") {
-        let len = glob::shortest_match_length(&obj.text, &pattern, extglob);
+        let pat = glob::parse(&pattern, extglob);
+        let len = glob::shortest_match_length(&obj.text, &pat);
         obj.text = obj.text[len..].to_string();
     }else if obj.remove_symbol.starts_with("%") {
         percent(obj, &pattern, extglob);
@@ -40,7 +42,7 @@ pub fn percent(obj: &mut BracedParam, pattern: &String, extglob: bool) {
         length -= ch.len_utf8();
         let s = obj.text[length..].to_string();
  
-        if glob::compare(&s, &pattern, extglob) {
+        if glob::parse_and_compare(&s, &pattern, extglob) {
             ans_length = length;
             if obj.remove_symbol == "%" {
                 break;

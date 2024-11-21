@@ -258,9 +258,9 @@ impl ConditionalExpr {
         let extglob = core.shopts.query("extglob");
         if op.starts_with("=") || op == "!=" || op == "<" || op == ">" {
             let ans = match op {
-                "==" | "=" => glob::compare(&left, &right, extglob),
-                "=~"       => glob::compare(&left, &right, extglob),
-                "!="       => ! glob::compare(&left, &right, extglob),
+                "==" | "=" => glob::parse_and_compare(&left, &right, extglob),
+                "=~"       => glob::parse_and_compare(&left, &right, extglob),
+                "!="       => ! glob::parse_and_compare(&left, &right, extglob),
                 ">"        => left > right,
                 "<"        => left < right,
                 _    => false,
