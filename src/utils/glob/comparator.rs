@@ -2,22 +2,22 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::extglob;
-use super::Wildcard;
+use super::GlobElem;
 
-pub fn shave_word(word: &String, pattern: &Vec<Wildcard>) -> Vec<String> {
+pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
     pattern.iter().for_each(|w| shave(&mut candidates, &w) );
     candidates
 }
 
-pub fn shave(candidates: &mut Vec<String>, w: &Wildcard) {
+pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     match w {
-        Wildcard::Normal(s) => nonspecial(candidates, &s),
-        Wildcard::Asterisk  => asterisk(candidates),
-        Wildcard::Question  => question(candidates),
-        Wildcard::OneOf(cs) => one_of(candidates, &cs, false),
-        Wildcard::NotOneOf(cs) => one_of(candidates, &cs, true),
-        Wildcard::ExtGlob(prefix, ps) => extglob::shave(candidates, *prefix, &ps),
+        GlobElem::Normal(s) => nonspecial(candidates, &s),
+        GlobElem::Asterisk  => asterisk(candidates),
+        GlobElem::Question  => question(candidates),
+        GlobElem::OneOf(cs) => one_of(candidates, &cs, false),
+        GlobElem::NotOneOf(cs) => one_of(candidates, &cs, true),
+        GlobElem::ExtGlob(prefix, ps) => extglob::shave(candidates, *prefix, &ps),
     }
 }
 

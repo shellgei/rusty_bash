@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::exit;
-use super::Wildcard;
+use super::GlobElem;
 use super::comparator;
 use super::parser;
 
@@ -89,7 +89,7 @@ fn once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
     tmp.iter().any(|t| t == "")
 }
 
-pub fn scan(remaining: &str) -> (usize, Option<Wildcard>) {
+pub fn scan(remaining: &str) -> (usize, Option<GlobElem>) {
     let prefix = match remaining.chars().nth(0) {
         Some(c) => c, 
         None => return (0, None),
@@ -136,7 +136,7 @@ pub fn scan(remaining: &str) -> (usize, Option<Wildcard>) {
             match nest {
                 0 => return {
                     patterns.push(chars.iter().collect());
-                    (len, Some(Wildcard::ExtGlob(prefix, patterns)) )
+                    (len, Some(GlobElem::ExtGlob(prefix, patterns)) )
                 },
                 _ => nest -= 1,
             }

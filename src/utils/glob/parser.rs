@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::Wildcard;
+use super::GlobElem;
 use super::extglob;
 
-pub fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard> {
+pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
 
@@ -15,7 +15,7 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard> {
         if len > 0 {
             let mut s = consume(&mut remaining, len);
             s.remove(0);
-            ans.push( Wildcard::Normal(s) );
+            ans.push( GlobElem::Normal(s) );
             continue;
         }
 
@@ -37,23 +37,23 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<Wildcard> {
 
         if remaining.starts_with("*") {
             consume(&mut remaining, 1);
-            ans.push( Wildcard::Asterisk );
+            ans.push( GlobElem::Asterisk );
             continue;
         }else if remaining.starts_with("?") {
             consume(&mut remaining, 1);
-            ans.push( Wildcard::Question );
+            ans.push( GlobElem::Question );
             continue;
         }
 
         let len = scan_chars(&remaining);
         if len > 0 {
             let s = consume(&mut remaining, len);
-            ans.push( Wildcard::Normal(s) );
+            ans.push( GlobElem::Normal(s) );
             continue;
         }
 
         let s = consume(&mut remaining, 1);
-        ans.push( Wildcard::Normal(s) );
+        ans.push( GlobElem::Normal(s) );
     }
 
     ans
@@ -81,9 +81,9 @@ fn scan_chars(remaining: &str) -> usize {
     ans
 }
 
-fn scan_bracket(remaining: &str) -> (usize, Wildcard) {
+fn scan_bracket(remaining: &str) -> (usize, GlobElem) {
     if ! remaining.starts_with("[") {
-        return (0, Wildcard::OneOf(vec![]) );
+        return (0, GlobElem::OneOf(vec![]) );
     }
     
     let mut chars = vec![];
@@ -107,15 +107,15 @@ fn scan_bracket(remaining: &str) -> (usize, Wildcard) {
         }else if c == ']' {
             let expand_chars = expand_range_representation(&chars);
             return match not {
-                false => (len, Wildcard::OneOf(expand_chars) ),
-                true  => (len, Wildcard::NotOneOf(expand_chars) ),
+                false => (len, GlobElem::OneOf(expand_chars) ),
+                true  => (len, GlobElem::NotOneOf(expand_chars) ),
             };
         }else{
             chars.push(c);
         }
     }
 
-    (0, Wildcard::OneOf(vec![]) )
+    (0, GlobElem::OneOf(vec![]) )
 }
 
 fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
