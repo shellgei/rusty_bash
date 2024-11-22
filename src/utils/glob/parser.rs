@@ -143,6 +143,11 @@ fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
             from = Some(*c);
         }
     }
+
+    if hyphen {
+        ans.push('-');
+    }
+
     ans
 }
 
