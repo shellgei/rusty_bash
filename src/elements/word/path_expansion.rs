@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::word::Word;
+use crate::utils::glob;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     let paths = expand(&word.make_glob_string());
@@ -10,5 +11,6 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 
 fn expand(pattern: &str) -> Vec<String> {
     eprintln!("glob: {:?}", &pattern);
+    eprintln!("glob: {:?}", &glob::parse(pattern));
     vec![]
 }

@@ -10,7 +10,7 @@ pub enum GlobElem {
     NotOneOf(Vec<char>),
 }
 
-pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
+pub fn parse(pattern: &str) -> Vec<GlobElem> {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
     let mut ans = vec![];
@@ -35,7 +35,7 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
     let cut = remaining[0..cutpos].to_string();
-    *remaining = remaining[cutpos..].to_string();
+    *remaining = remaining.split_off(cutpos);
 
     cut
 }
