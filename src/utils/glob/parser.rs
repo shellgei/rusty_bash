@@ -31,9 +31,7 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
         return false;
     }
     
-    let mut chars = vec![];
     let mut len = 1;
-    let mut escaped = false;
     let mut not = false;
 
     if pattern.starts_with("[^") || pattern.starts_with("[!") {
@@ -41,24 +39,27 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
         len = 2;
     }
 
+    let mut escaped = false;
+    let mut inner = vec![];
+
     for c in pattern[len..].chars() {
         len += c.len_utf8();
 
         if escaped {
-            chars.push(c); 
+            inner.push(c); 
             escaped = false;
         }else if c == '\\' {
             escaped = true;
         }else if c == ']' {
-            let expand_chars = expand_range_representation(&chars);
+            let expand_inner = expand_range_representation(&inner);
             match not {
-                false => ans.push( GlobElem::OneOf(expand_chars) ),
-                true  => ans.push( GlobElem::NotOneOf(expand_chars) ),
+                false => ans.push( GlobElem::OneOf(expand_inner) ),
+                true  => ans.push( GlobElem::NotOneOf(expand_inner) ),
             }
             consume(pattern, len);
             return true;
         }else{
-            chars.push(c);
+            inner.push(c);
         }
     }
 
