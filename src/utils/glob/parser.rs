@@ -32,10 +32,7 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     }
     
     let not = pattern.starts_with("[^") || pattern.starts_with("[!");
-    let mut len = match not {
-        true  => 2,
-        false => 1,
-    };
+    let mut len = if not {2} else {1};
 
     let mut escaped = false;
     let mut inner = vec![];
