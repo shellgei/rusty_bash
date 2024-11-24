@@ -5,13 +5,8 @@ use super::GlobElem;
 use super::extglob;
 
 fn eat_one_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
-    if pattern.starts_with("*") {
-        pattern.remove(0); 
-        ans.push( GlobElem::Asterisk );
-        return true;
-    }else if pattern.starts_with("?") {
-        pattern.remove(0); 
-        ans.push( GlobElem::Question );
+    if pattern.starts_with("*") || pattern.starts_with("?") {
+        ans.push( GlobElem::Symbol(pattern.remove(0))  );
         return true;
     }
     false
