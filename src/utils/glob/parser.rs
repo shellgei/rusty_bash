@@ -76,12 +76,13 @@ fn eat_chars(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
         len += c.len_utf8();
     }
 
-    if len > 0 {
-        let s = consume(pattern, len);
-        ans.push( GlobElem::Normal(s) );
-        return true;
+    if len == 0 {
+        return false;
     }
-    false
+
+    let s = consume(pattern, len);
+    ans.push( GlobElem::Normal(s) );
+    true
 }
 
 pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
