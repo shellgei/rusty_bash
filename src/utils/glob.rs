@@ -9,3 +9,33 @@ pub enum GlobElem {
     OneOf(Vec<char>),
     NotOneOf(Vec<char>),
 }
+
+pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
+    let pattern = pattern.to_string();
+    let mut remaining = pattern.to_string();
+    let mut ans = vec![];
+
+    while remaining.len() > 0 {
+        if remaining.starts_with("*") {
+            consume(&mut remaining, 1); 
+            ans.push( GlobElem::Asterisk );
+            continue;
+        }else if remaining.starts_with("?") {
+            consume(&mut remaining, 1); 
+            ans.push( GlobElem::Question );
+            continue;
+        }
+
+        let s = consume(&mut remaining, 1);
+        ans.push( GlobElem::Normal(s) );
+    }
+
+    ans
+}
+
+fn consume(remaining: &mut String, cutpos: usize) -> String {
+    let cut = remaining[0..cutpos].to_string();
+    *remaining = remaining[cutpos..].to_string();
+
+    cut
+}
