@@ -54,7 +54,7 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
                 false => ans.push( GlobElem::OneOf(expand_inner) ),
                 true  => ans.push( GlobElem::NotOneOf(expand_inner) ),
             }
-            consume(pattern, len);
+            *pattern = pattern.split_off(len);
             return true;
         }else{
             inner.push(c);
