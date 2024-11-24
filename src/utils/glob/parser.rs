@@ -175,7 +175,7 @@ fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
     let cut = remaining[0..cutpos].to_string();
-    *remaining = remaining[cutpos..].to_string();
+    *remaining = remaining.split_off(cutpos);
 
     cut
 }
