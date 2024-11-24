@@ -17,6 +17,21 @@ fn eat_one_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     false
 }
 
+fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
+    if ! pattern.starts_with("\\") {
+        return false;
+    }
+
+    if pattern.len() == 1 {
+        ans.push( GlobElem::Normal(pattern.remove(0).to_string()) );
+        return true;
+    }
+
+    let len = pattern.chars().nth(0).unwrap().len_utf8();
+    ans.push( GlobElem::Normal( consume(pattern, len) ) );
+    true
+}
+
 pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
@@ -24,14 +39,6 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     let mut ans = vec![];
 
     while remaining.len() > 0 {
-        let len =  scan_escaped_char(&remaining);
-        if len > 0 {
-            let mut s = consume(&mut remaining, len);
-            s.remove(0);
-            ans.push( GlobElem::Normal(s) );
-            continue;
-        }
-
         if extglob {
             let (len, extparen) = extglob::scan(&remaining);
             if len > 0 {
@@ -48,20 +55,10 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
             continue;
         }
 
-        if eat_one_char(&mut remaining, &mut ans) {
+        if eat_one_char(&mut remaining, &mut ans) 
+        || eat_escaped_char(&mut remaining, &mut ans) {
             continue;
         }
-
-        /*
-        if remaining.starts_with("*") {
-            consume(&mut remaining, 1);
-            ans.push( GlobElem::Asterisk );
-            continue;
-        }else if remaining.starts_with("?") {
-            consume(&mut remaining, 1);
-            ans.push( GlobElem::Question );
-            continue;
-        }*/
 
         let len = scan_chars(&remaining);
         if len > 0 {
@@ -75,17 +72,6 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     }
 
     ans
-}
-
-fn scan_escaped_char(remaining: &str) -> usize {
-    if ! remaining.starts_with("\\") {
-        return 0;
-    }
-
-    match remaining.chars().nth(1) {
-        None    => 1,
-        Some(c) => 1 + c.len_utf8(),
-    }
 }
 
 fn scan_chars(remaining: &str) -> usize {
