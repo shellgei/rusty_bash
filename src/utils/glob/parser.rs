@@ -68,7 +68,14 @@ fn eat_extglob(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
 }
 
 fn eat_chars(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
-    let len = scan_chars(&pattern);
+    let mut len = 0;
+    for c in pattern.chars() {
+        if "@!+*?[\\".find(c) != None {
+            break;
+        }
+        len += c.len_utf8();
+    }
+
     if len > 0 {
         let s = consume(pattern, len);
         ans.push( GlobElem::Normal(s) );
@@ -95,17 +102,6 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
         ans.push( GlobElem::Normal(s) );
     }
 
-    ans
-}
-
-fn scan_chars(remaining: &str) -> usize {
-    let mut ans = 0;
-    for c in remaining.chars() {
-        if "@!+*?[\\".find(c) != None {
-            return ans;
-        }
-        ans += c.len_utf8();
-    }
     ans
 }
 
