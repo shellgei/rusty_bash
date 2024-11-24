@@ -4,6 +4,19 @@
 use super::GlobElem;
 use super::extglob;
 
+fn eat_one_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
+    if pattern.starts_with("*") {
+        pattern.remove(0); 
+        ans.push( GlobElem::Asterisk );
+        return true;
+    }else if pattern.starts_with("?") {
+        pattern.remove(0); 
+        ans.push( GlobElem::Question );
+        return true;
+    }
+    false
+}
+
 pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
@@ -35,6 +48,11 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
             continue;
         }
 
+        if eat_one_char(&mut remaining, &mut ans) {
+            continue;
+        }
+
+        /*
         if remaining.starts_with("*") {
             consume(&mut remaining, 1);
             ans.push( GlobElem::Asterisk );
@@ -43,7 +61,7 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
             consume(&mut remaining, 1);
             ans.push( GlobElem::Question );
             continue;
-        }
+        }*/
 
         let len = scan_chars(&remaining);
         if len > 0 {
