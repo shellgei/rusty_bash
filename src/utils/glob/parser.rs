@@ -1,8 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::GlobElem;
-use super::extglob;
+use super::{GlobElem, extglob};
 
 fn eat_one_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     if pattern.starts_with("*") || pattern.starts_with("?") {
@@ -27,10 +26,48 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     true
 }
 
+fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
+    if ! pattern.starts_with("[") {
+        return false;
+    }
+    
+    let mut chars = vec![];
+    let mut len = 1;
+    let mut escaped = false;
+    let mut not = false;
+
+    if pattern.starts_with("[^") || pattern.starts_with("[!") {
+        not = true;
+        len = 2;
+    }
+
+    for c in pattern[len..].chars() {
+        len += c.len_utf8();
+
+        if escaped {
+            chars.push(c); 
+            escaped = false;
+        }else if c == '\\' {
+            escaped = true;
+        }else if c == ']' {
+            let expand_chars = expand_range_representation(&chars);
+            match not {
+                false => ans.push( GlobElem::OneOf(expand_chars) ),
+                true  => ans.push( GlobElem::NotOneOf(expand_chars) ),
+            }
+            consume(pattern, len);
+            return true;
+        }else{
+            chars.push(c);
+        }
+    }
+
+    false
+}
+
 pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
-
     let mut ans = vec![];
 
     while remaining.len() > 0 {
@@ -43,14 +80,8 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
             }
         }
 
-        let (len, wc) = scan_bracket(&remaining);
-        if len > 0 {
-            consume(&mut remaining, len);
-            ans.push(wc);
-            continue;
-        }
-
-        if eat_one_char(&mut remaining, &mut ans) 
+        if eat_bracket(&mut remaining, &mut ans) 
+        || eat_one_char(&mut remaining, &mut ans) 
         || eat_escaped_char(&mut remaining, &mut ans) {
             continue;
         }
@@ -78,43 +109,6 @@ fn scan_chars(remaining: &str) -> usize {
         ans += c.len_utf8();
     }
     ans
-}
-
-fn scan_bracket(remaining: &str) -> (usize, GlobElem) {
-    if ! remaining.starts_with("[") {
-        return (0, GlobElem::OneOf(vec![]) );
-    }
-    
-    let mut chars = vec![];
-    let mut len = 1;
-    let mut escaped = false;
-    let mut not = false;
-
-    if remaining.starts_with("[^") || remaining.starts_with("[!") {
-        not = true;
-        len = 2;
-    }
-
-    for c in remaining[len..].chars() {
-        len += c.len_utf8();
-
-        if escaped {
-            chars.push(c); 
-            escaped = false;
-        }else if c == '\\' {
-            escaped = true;
-        }else if c == ']' {
-            let expand_chars = expand_range_representation(&chars);
-            return match not {
-                false => (len, GlobElem::OneOf(expand_chars) ),
-                true  => (len, GlobElem::NotOneOf(expand_chars) ),
-            };
-        }else{
-            chars.push(c);
-        }
-    }
-
-    (0, GlobElem::OneOf(vec![]) )
 }
 
 fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
