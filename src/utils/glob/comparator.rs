@@ -16,8 +16,7 @@ pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
         GlobElem::Normal(s) => nonspecial(candidates, &s),
         GlobElem::Symbol('*') => asterisk(candidates),
         GlobElem::Symbol('?') => question(candidates),
-        GlobElem::OneOf(cs) => one_of(candidates, &cs, false),
-        GlobElem::NotOneOf(cs) => one_of(candidates, &cs, true),
+        GlobElem::OneOf(not, cs) => one_of(candidates, &cs, *not),
         GlobElem::ExtGlob(prefix, ps) => extglob::shave(candidates, *prefix, &ps),
         GlobElem::Symbol(_) => exit::internal("Unknown glob symbol"),
     }

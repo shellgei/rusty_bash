@@ -9,12 +9,7 @@ mod parser;
 pub enum GlobElem {
     Normal(String),
     Symbol(char),
-    /*
-    Asterisk,
-    Question,
-    */
-    OneOf(Vec<char>),
-    NotOneOf(Vec<char>),
+    OneOf(bool, Vec<char>),
     ExtGlob(char, Vec<String>),
 }
 

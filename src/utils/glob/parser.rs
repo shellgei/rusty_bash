@@ -46,10 +46,13 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
             escaped = true;
         }else if c == ']' {
             let expand_inner = expand_range_representation(&inner);
+            ans.push( GlobElem::OneOf(not, expand_inner) );
+            /*
             match not {
                 false => ans.push( GlobElem::OneOf(expand_inner) ),
                 true  => ans.push( GlobElem::NotOneOf(expand_inner) ),
             }
+            */
             *pattern = pattern.split_off(len);
             return true;
         }else{
