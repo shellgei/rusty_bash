@@ -89,7 +89,7 @@ fn once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
     tmp.iter().any(|t| t == "")
 }
 
-pub fn scan(remaining: &str) -> (usize, Option<GlobElem>) {
+pub fn scan(remaining: &mut String) -> (usize, Option<GlobElem>) {
     let prefix = match remaining.chars().nth(0) {
         Some(c) => c, 
         None => return (0, None),

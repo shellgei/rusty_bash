@@ -31,13 +31,11 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
         return false;
     }
     
-    let mut len = 1;
-    let mut not = false;
-
-    if pattern.starts_with("[^") || pattern.starts_with("[!") {
-        not = true;
-        len = 2;
-    }
+    let not = pattern.starts_with("[^") || pattern.starts_with("[!");
+    let mut len = match not {
+        true  => 2,
+        false => 1,
+    };
 
     let mut escaped = false;
     let mut inner = vec![];
@@ -66,22 +64,24 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     false
 }
 
+fn eat_extglob(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
+    let (len, extparen) = extglob::scan(pattern);
+    if len > 0 {
+        consume(pattern, len);
+        ans.push(extparen.unwrap());
+        return true;
+    }
+    false
+}
+
 pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
     let mut ans = vec![];
 
     while remaining.len() > 0 {
-        if extglob {
-            let (len, extparen) = extglob::scan(&remaining);
-            if len > 0 {
-                consume(&mut remaining, len);
-                ans.push(extparen.unwrap());
-                continue;
-            }
-        }
-
-        if eat_bracket(&mut remaining, &mut ans) 
+        if (extglob && eat_extglob(&mut remaining, &mut ans) )
+        || eat_bracket(&mut remaining, &mut ans) 
         || eat_one_char(&mut remaining, &mut ans) 
         || eat_escaped_char(&mut remaining, &mut ans) {
             continue;
