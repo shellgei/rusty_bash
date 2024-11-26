@@ -6,15 +6,11 @@ use crate::utils::glob;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     let paths = expand(&word.make_glob_string());
-    if paths.len() == 0 {
-        return vec![word.clone()];
-    }
-
-    paths.iter().map(|p| Word::from(p.as_str())).collect()
+    vec![word.clone()]
 }
 
 fn expand(pattern: &str) -> Vec<String> {
     eprintln!("glob: {:?}", &pattern);
-    eprintln!("glob: {:?}", &glob::parse(pattern));
+//    eprintln!("glob: {:?}", &glob::parse(pattern));
     vec![]
 }

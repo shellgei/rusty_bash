@@ -3,13 +3,12 @@
 
 #[derive(Debug)]
 pub enum GlobElem {
+    Symbol(char),
+    OneOf(bool, Vec<char>), //bool: false if ! or ^ exist
     Normal(String),
-    Asterisk,
-    Question,
-    OneOf(Vec<char>),
-    NotOneOf(Vec<char>),
 }
 
+/*
 pub fn parse(pattern: &str) -> Vec<GlobElem> {
     let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
@@ -39,3 +38,4 @@ fn consume(remaining: &mut String, cutpos: usize) -> String {
 
     cut
 }
+*/
