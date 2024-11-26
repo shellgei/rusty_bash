@@ -19,7 +19,7 @@ pub fn parse(pattern: &str) -> Vec<GlobElem> {
             continue;
         }
 
-        ans.push( GlobElem::Normal( consume(&mut remaining, 1) ) );
+        ans.push( GlobElem::Normal( remaining.remove(0).to_string() ) );
     }
 
     ans
