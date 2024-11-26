@@ -14,8 +14,8 @@ pub fn parse(pattern: &str) -> Vec<GlobElem> {
 
     while remaining.len() > 0 {
         if eat_asterisk_or_question(&mut remaining, &mut ans)
-        || eat_escaped_char(&mut remaining, &mut ans) /*{
-        || eat_string(&mut remaining, &mut ans)*/ {
+        || eat_escaped_char(&mut remaining, &mut ans)
+        || eat_string(&mut remaining, &mut ans) {
             continue;
         }
 
@@ -46,6 +46,23 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
 
     let len = pattern.chars().nth(0).unwrap().len_utf8();
     ans.push( GlobElem::Normal( consume(pattern, len) ) );
+    true
+}
+
+fn eat_string(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
+    let mut len = 0;
+    for c in pattern.chars() {
+        if "@!+*?[\\".find(c) != None {
+            break;
+        }
+        len += c.len_utf8();
+    }
+
+    if len == 0 {
+        return false;
+    }
+
+    ans.push( GlobElem::Normal( consume(pattern, len) ));
     true
 }
 
