@@ -8,28 +8,45 @@ pub enum GlobElem {
     Normal(String),
 }
 
-/*
 pub fn parse(pattern: &str) -> Vec<GlobElem> {
-    let pattern = pattern.to_string();
     let mut remaining = pattern.to_string();
     let mut ans = vec![];
 
     while remaining.len() > 0 {
-        if remaining.starts_with("*") {
-            consume(&mut remaining, 1); 
-            ans.push( GlobElem::Asterisk );
-            continue;
-        }else if remaining.starts_with("?") {
-            consume(&mut remaining, 1); 
-            ans.push( GlobElem::Question );
+        if eat_asterisk_or_question(&mut remaining, &mut ans)
+        || eat_escaped_char(&mut remaining, &mut ans) /*{
+        || eat_string(&mut remaining, &mut ans)*/ {
             continue;
         }
 
-        let s = consume(&mut remaining, 1);
-        ans.push( GlobElem::Normal(s) );
+        ans.push( GlobElem::Normal( consume(&mut remaining, 1) ) );
     }
 
     ans
+}
+
+fn eat_asterisk_or_question(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
+    if pattern.starts_with("*") || pattern.starts_with("?") {
+        ans.push( GlobElem::Symbol( pattern.remove(0) ) );
+        return true;
+    }
+    false
+}
+
+fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
+    if ! pattern.starts_with("\\") {
+        return false;
+    }
+
+    if pattern.len() == 1 {
+        ans.push( GlobElem::Normal( consume(pattern, 1) ) );
+        return true;
+    }
+    pattern.remove(0);
+
+    let len = pattern.chars().nth(0).unwrap().len_utf8();
+    ans.push( GlobElem::Normal( consume(pattern, len) ) );
+    true
 }
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
@@ -38,4 +55,3 @@ fn consume(remaining: &mut String, cutpos: usize) -> String {
 
     cut
 }
-*/

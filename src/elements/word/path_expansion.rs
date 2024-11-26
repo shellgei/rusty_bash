@@ -11,6 +11,6 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 
 fn expand(pattern: &str) -> Vec<String> {
     eprintln!("glob: {:?}", &pattern);
-//    eprintln!("glob: {:?}", &glob::parse(pattern));
+    eprintln!("glob: {:?}", &glob::parse(pattern));
     vec![]
 }
