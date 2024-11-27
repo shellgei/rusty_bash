@@ -163,6 +163,9 @@ res=$($com <<< 'A=usr/local/bin/bash; echo ${A%%/*}' )
 res=$($com <<< 'A="あいう うえお"; echo ${A#*う う}' )
 [ "$res" = "えお" ] || err $LINENO
 
+res=$($com <<< 'A="[["; echo ${A%%[[(]}' )
+[ "$res" = "[" ] || err $LINENO
+
 # replace
 
 res=$($com -c 'A="あいう うえお"; echo ${A/あ/}' )
