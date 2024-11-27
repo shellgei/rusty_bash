@@ -255,12 +255,13 @@ impl BracedParam {
         true
     }
 
+    /*
     fn eat_blank(len: usize, feeder: &mut Feeder, ans: &mut Self, word: &mut Word) {
         let blank = feeder.consume(len);
         let sw = Box::new(SimpleSubword{ text: blank.clone() });
         word.subwords.push(sw);
         ans.text += &blank.clone();
-    }
+    }*/
 
     fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore) -> Word {
         let mut word = Word::default();
@@ -269,16 +270,17 @@ impl BracedParam {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
                 word.subwords.push(sw);
+            }else{
+                let c = feeder.consume(1);
+                ans.text += &c;
+                word.text += &c;
+                word.subwords.push(Box::new(SimpleSubword{text: c}) );
             }
 
-            if feeder.starts_with("\n") {
-                Self::eat_blank(1, feeder, ans, &mut word);
-                feeder.feed_additional_line(core);
-            }
-
-            let num = feeder.scanner_blank(core);
-            if num != 0 {
-                Self::eat_blank(num, feeder, ans, &mut word);
+            if feeder.len() == 0 {
+                if ! feeder.feed_additional_line(core) {
+                    return word;
+                }
             }
         }
 
