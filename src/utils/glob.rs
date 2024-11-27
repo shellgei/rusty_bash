@@ -8,10 +8,8 @@ mod parser;
 #[derive(Debug)]
 pub enum GlobElem {
     Normal(String),
-    Asterisk,
-    Question,
-    OneOf(Vec<char>),
-    NotOneOf(Vec<char>),
+    Symbol(char),
+    OneOf(bool, Vec<char>),
     ExtGlob(char, Vec<String>),
 }
 

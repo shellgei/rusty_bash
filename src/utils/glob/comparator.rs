@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::exit;
 use super::extglob;
 use super::GlobElem;
 
@@ -13,11 +14,11 @@ pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
 pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     match w {
         GlobElem::Normal(s) => nonspecial(candidates, &s),
-        GlobElem::Asterisk  => asterisk(candidates),
-        GlobElem::Question  => question(candidates),
-        GlobElem::OneOf(cs) => one_of(candidates, &cs, false),
-        GlobElem::NotOneOf(cs) => one_of(candidates, &cs, true),
+        GlobElem::Symbol('*') => asterisk(candidates),
+        GlobElem::Symbol('?') => question(candidates),
+        GlobElem::OneOf(not, cs) => one_of(candidates, &cs, *not),
         GlobElem::ExtGlob(prefix, ps) => extglob::shave(candidates, *prefix, &ps),
+        GlobElem::Symbol(_) => exit::internal("Unknown glob symbol"),
     }
 }
 
