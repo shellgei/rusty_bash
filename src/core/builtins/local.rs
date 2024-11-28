@@ -7,7 +7,13 @@ use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
 
 fn set(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
-    let mut sub = match Substitution::parse(&mut Feeder::new(arg), core) {
+    let mut feeder = Feeder::new(arg);
+    if feeder.scanner_name(core) == feeder.len() { // name only
+        let name = feeder.consume(feeder.len());
+        return core.data.set_layer_param(&name, "", layer);
+    }
+
+    let mut sub = match Substitution::parse(&mut feeder, core) {
         Some(s) => s,
         _ => {
             eprintln!("sush: local: `{}': not a valid identifier", arg);
