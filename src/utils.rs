@@ -74,3 +74,15 @@ pub fn is_wsl() -> bool {
 
     false
 }
+
+pub fn pick_next_arg(prev_opt: &str, args: &Vec<String>) -> String {
+    match args.iter().position(|a| a == prev_opt) {
+        Some(pos) => {
+            match pos+1 >= args.len() {
+                true  => "",
+                false => &args[pos+1],
+            }
+        },
+        None => "",
+    }.to_string()
+}
