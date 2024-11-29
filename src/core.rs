@@ -65,7 +65,8 @@ pub struct ShellCore {
     pub job_table_priority: Vec<usize>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
-    pub completion_actions: HashMap<String, String>,
+    pub completion_actions: HashMap<String, (String, Vec<(String, String)>)>, //command, action,
+                                                                            //options for compgen
     pub measured_time: MeasuredTime,
     pub options: Options,
     pub shopts: Options,

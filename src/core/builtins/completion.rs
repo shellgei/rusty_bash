@@ -231,7 +231,7 @@ pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() > 2 && args[1] == "-u" {
         for command in &args[2..] {
-            core.completion_actions.insert(command.clone(), "user".to_string());
+            core.completion_actions.insert(command.clone(), ("user".to_string(), vec![]));
         }
         return 0;
     }

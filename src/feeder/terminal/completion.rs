@@ -123,7 +123,7 @@ impl Terminal {
 
     fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
                               com: &str, pos: &str) -> Vec<String> {
-        if let Some(action) = core.completion_actions.get(com) {
+        if let Some((action, options)) = core.completion_actions.get(com) {
             if action == "user" {
                 return completion::compgen_u(core, args);
             }
