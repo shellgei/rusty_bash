@@ -254,10 +254,6 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
         dbg!("{:?} {:?} {:?}", &prefix, &suffix, &commands);
 
-        for job in &core.job_table {
-            dbg!("{:?}", &job);
-        }
-
         return 0;
     }
 
