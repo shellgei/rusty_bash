@@ -91,6 +91,8 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
+    dbg!("{:?}", &args);
+
     replace_args(args);
 
     let ans = match args[1].as_str() {

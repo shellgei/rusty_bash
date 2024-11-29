@@ -124,12 +124,14 @@ impl Terminal {
     fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
                               com: &str, pos: &str) -> Vec<String> {
         if let Some((action, options)) = core.completion_actions.get(com) {
+            /*
             for opt in options {
                 args.insert(0, opt.1.clone());
                 args.insert(0, opt.0.clone());
-            }
+            }*/
 
             if action == "user" {
+                //この結果に-Pと-Sをつける？
                 return completion::compgen_u(core, args);
             }
         }
