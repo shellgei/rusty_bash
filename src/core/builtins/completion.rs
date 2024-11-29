@@ -245,7 +245,14 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         let prefix = utils::pick_next_arg("-P", args);
         let suffix = utils::pick_next_arg("-S", args);
 
-        dbg!("{:?} {:?}", &prefix, &suffix);
+        let mut commands = vec![];
+        for a in &args[3..] {
+            if ! ["-P", "-S", &prefix, &suffix ].contains(&a.as_str()) {
+                commands.push(a.to_string());
+            }
+        }
+
+        dbg!("{:?} {:?} {:?}", &prefix, &suffix, &commands);
 
         for job in &core.job_table {
             dbg!("{:?}", &job);
