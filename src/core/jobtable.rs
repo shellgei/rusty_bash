@@ -207,3 +207,9 @@ impl ShellCore {
         }
     }
 }
+
+impl ShellCore {
+    pub fn get_stopped_job_commands(&self) -> Vec<String> {
+        self.job_table.iter().map(|j| j.text.split(' ').nth(0).unwrap().to_string()).collect()
+    }
+}

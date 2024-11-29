@@ -241,6 +241,36 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
+    if args.len() > 2 && args[1] == "-A" && args[2] == "stopped" {
+        let prefix = match args.iter().position(|a| a == "-P") {
+            Some(pos) => {
+                match pos+1 >= args.len() {
+                    true  => "",
+                    false => &args[pos+1],
+                }
+            },
+            None => "",
+        }.to_string();
+
+        let suffix = match args.iter().position(|a| a == "-S") {
+            Some(pos) => {
+                match pos+1 >= args.len() {
+                    true  => "",
+                    false => &args[pos+1],
+                }
+            },
+            None => "",
+        }.to_string();
+
+        dbg!("{:?} {:?}", &prefix, &suffix);
+
+        for job in &core.job_table {
+            dbg!("{:?}", &job);
+        }
+
+        return 0;
+    }
+
     eprintln!("sush: {} {}: still unsupported", &args[0], &args[1]);
     1
 }
