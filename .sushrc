@@ -57,6 +57,7 @@ _colcon_comp () {
 } && complete -F _colcon_comp colcon
 
 complete -u groups w
+complete -j -P '"%' -S '"' disown fg jobs
 complete -A stopped -P '"%' -S '"' bg
 
 command_not_found_handle() {

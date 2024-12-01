@@ -38,14 +38,12 @@ fn arg_to_id(s: &str, priority: &Vec<usize>, table: &Vec<JobEntry>) -> Result<us
     let word = &s[1..];
     let mut ans = 0;
     for job in table {
-        if job.display_status == "Stopped" {
-            let jobname = job.text.split(" ").nth(0).unwrap();
-            if jobname == word {
-                if ans != 0 {
-                    return Err((s.to_owned() + ": ambiguous job spec").to_string());
-                }
-                ans = job.id;
+        let jobname = job.text.split(" ").nth(0).unwrap();
+        if jobname == word {
+            if ans != 0 {
+                return Err((s.to_owned() + ": ambiguous job spec").to_string());
             }
+            ans = job.id;
         }
     }
 

@@ -128,6 +128,7 @@ impl Terminal {
             let mut cands = match action.as_ref() {
                 "user" => completion::compgen_u(core, args),
                 "stopped" => completion::compgen_stopped(core, args),
+                "job" => completion::compgen_j(core, args),
                 _ => vec![],
             };
 

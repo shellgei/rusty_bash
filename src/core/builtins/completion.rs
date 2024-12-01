@@ -279,6 +279,13 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
+    if args.len() > 1 && args[1] == "-j" {
+        for command in &args[2..] {
+            core.completion_actions.insert(command.clone(), ("job".to_string(), options.clone()));
+        }
+        return 0;
+    }
+
     if args.len() > 3 && args[1] == "-F" {
         core.completion_functions.insert(args[3].clone(), args[2].clone());
         return 0;
