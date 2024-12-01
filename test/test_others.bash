@@ -1360,6 +1360,9 @@ res=$($com <<< 'A=( a b ); echo ${A[1]}')
 res=$($com <<< 'A=( a b ); echo ${A[5 -4 ]}')
 [ "$res" == "b" ] || err $LINENO
 
+res=$($com <<< 'A=( a b ); B=1; echo ${A[$B]}')
+[ "$res" == "b" ] || err $LINENO
+
 res=$($com <<< 'A=( a b ); echo ${A[@]}')
 [ "$res" == "a b" ] || err $LINENO
 

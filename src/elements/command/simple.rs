@@ -21,7 +21,7 @@ use nix::errno::Errno;
 pub struct SimpleCommand {
     text: String,
     substitutions: Vec<Substitution>,
-    evaluated_subs: Vec<(String, Value)>,
+//    evaluated_subs: Vec<(String, Value)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -141,35 +141,35 @@ impl SimpleCommand {
     }
 
     fn exec_set_params(&mut self, core: &mut ShellCore) {
-        for s in &self.evaluated_subs {
-            let result = match &s.1 {
-                Value::EvaluatedSingle(v) => core.data.set_param(&s.0, &v),
-                Value::EvaluatedArray(a) => core.data.set_array(&s.0, &a),
+        for s in &self.substitutions {
+            let result = match &s.evaluated_value {
+                Value::EvaluatedSingle(v) => core.data.set_param(&s.key, &v),
+                Value::EvaluatedArray(a) => core.data.set_array(&s.key, &a),
                 _ => exit::internal("Unknown variable"),
             };
 
             if ! result {
                 core.data.set_param("?", "1");
-                let msg = error::readonly(&s.0);
+                let msg = error::readonly(&s.key);
                 error::print(&msg, core);
             }
         }
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
-        for s in &self.evaluated_subs {
-            match &s.1 {
-                Value::EvaluatedSingle(v) => core.data.set_local_param(&s.0, &v),
-                Value::EvaluatedArray(a) => core.data.set_local_array(&s.0, &a),
+        for s in &self.substitutions {
+            match &s.evaluated_value {
+                Value::EvaluatedSingle(v) => core.data.set_local_param(&s.key, &v),
+                Value::EvaluatedArray(a) => core.data.set_local_array(&s.key, &a),
                 _ => {},
             }
         }
     }
 
     fn set_environment_variables(&mut self) {
-        for s in &self.evaluated_subs {
-            match &s.1 {
-                Value::EvaluatedSingle(v) => env::set_var(&s.0, &v),
+        for s in &self.substitutions {
+            match &s.evaluated_value {
+                Value::EvaluatedSingle(v) => env::set_var(&s.key, &v),
                 _ => {},
             }
         }
@@ -182,11 +182,9 @@ impl SimpleCommand {
     }
 
     fn eval_substitutions(&mut self, core: &mut ShellCore) -> bool {
-        self.evaluated_subs.clear();
         for s in &mut self.substitutions {
-            match s.eval(core) {
-                Value::None => return false,
-                a           => self.evaluated_subs.push( (s.key.clone(), a) ),
+            if ! s.eval(core) {
+                return false;
             }
         }
         true

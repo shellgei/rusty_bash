@@ -4,23 +4,31 @@
 use crate::{ShellCore, Feeder};
 use crate::core::data::Value;
 use super::array::Array;
+use super::subscript::Subscript;
 use super::word::Word;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
     pub key: String,
+    pub subscript: Option<Subscript>,
     pub value: Value,
+    pub evaluated_value: Value,
     pub append: bool,
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Value {
-        match self.value.clone() {
+    pub fn eval(&mut self, core: &mut ShellCore) -> bool {
+        self.evaluated_value = match self.value.clone() {
             Value::None      => Value::EvaluatedSingle("".to_string()),
             Value::Single(v) => self.eval_as_value(&v, core),
             Value::Array(a)  => self.eval_as_array(&mut a.clone(), core),
-            _                => Value::None,
+            _                => return false,
+        };
+
+        match self.evaluated_value {
+            Value::None => false,
+            _ => true,
         }
     }
 
@@ -48,27 +56,23 @@ impl Substitution {
         }
     }
 
-    pub fn new() -> Substitution {
-        Substitution {
-            text: String::new(),
-            key: String::new(),
-            value: Value::None,
-            append: false,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         let len = feeder.scanner_name(core);
         if len == 0 {
             return None;
         }
 
-        let mut ans = Self::new();
+        let mut ans = Self::default();
 
         feeder.set_backup();
         let name = feeder.consume(len);
         ans.key = name.clone();
         ans.text += &name;
+
+        if let Some(s) = Subscript::parse(feeder, core) {
+            ans.text += &s.text.clone();
+            ans.subscript = Some(s);
+        };
 
         if feeder.starts_with("+=") {
             ans.append = true;
