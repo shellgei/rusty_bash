@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{file_check, ShellCore, Feeder};
+use crate::core::HashMap;
 use crate::elements::word::Word;
 use crate::utils;
 use crate::utils::directory;
@@ -229,9 +230,19 @@ pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 }
 
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut options = HashMap::new();
+    let prefix = utils::consume_with_next_arg("-P", args);
+    if prefix != "" {
+        options.insert("-P".to_string(), prefix.clone());
+    }
+    let suffix = utils::consume_with_next_arg("-S", args);
+    if suffix != "" {
+        options.insert("-S".to_string(), suffix.clone());
+    }
+
     if args.len() > 2 && args[1] == "-u" {
         for command in &args[2..] {
-            core.completion_actions.insert(command.clone(), ("user".to_string(), vec![]));
+            core.completion_actions.insert(command.clone(), ("user".to_string(), options.clone()));
         }
         return 0;
     }
@@ -242,8 +253,6 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() > 2 && args[1] == "-A" && args[2] == "stopped" {
-        let prefix = utils::pick_next_arg("-P", args);
-        let suffix = utils::pick_next_arg("-S", args);
 
         let mut commands = vec![];
         for a in &args[3..] {
