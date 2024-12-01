@@ -32,6 +32,13 @@ impl Substitution {
         }
     }
 
+    pub fn get_subscript(&mut self, core: &mut ShellCore) -> Option<String> {
+        match self.subscript.clone() {
+            Some(mut s) => s.eval(core),
+            _ => None,
+        }
+    }
+
     fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> Value {
         let prev = match self.append {
             true  => core.data.get_param(&self.key),

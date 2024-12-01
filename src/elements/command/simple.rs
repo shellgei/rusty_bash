@@ -21,7 +21,6 @@ use nix::errno::Errno;
 pub struct SimpleCommand {
     text: String,
     substitutions: Vec<Substitution>,
-//    evaluated_subs: Vec<(String, Value)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -157,10 +156,20 @@ impl SimpleCommand {
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
-        for s in &self.substitutions {
-            match &s.evaluated_value {
-                Value::EvaluatedSingle(v) => core.data.set_local_param(&s.key, &v),
-                Value::EvaluatedArray(a) => core.data.set_local_array(&s.key, &a),
+        for s in &mut self.substitutions {
+            let sub = match s.get_subscript(core) {
+                Some(s) => {
+                    match s.parse::<usize>() {
+                        Ok(n) => Some(n),
+                        _ => None,
+                    }
+                },
+                None => None,
+            };
+
+            match (&s.evaluated_value, sub) {
+                (Value::EvaluatedSingle(v), _) => core.data.set_local_param(&s.key, &v),
+                (Value::EvaluatedArray(a), _) => core.data.set_local_array(&s.key, &a),
                 _ => {},
             }
         }
