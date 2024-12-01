@@ -153,6 +153,7 @@ impl SimpleCommand {
 
             let result = match (&s.evaluated_value, sub) {
                 (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&s.key, v, n),
+                (_, Some(_)) => false,
                 (Value::EvaluatedSingle(v), _) => core.data.set_param(&s.key, &v),
                 (Value::EvaluatedArray(a), _) => core.data.set_array(&s.key, &a),
                 _ => exit::internal("Unknown variable"),
