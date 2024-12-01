@@ -59,13 +59,14 @@ pub struct ShellCore {
     pub eval_level: i32,
     pub loop_level: i32,
     pub break_counter: i32,
+    pub continue_counter: i32,
     pub return_flag: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     pub job_table_priority: Vec<usize>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion_functions: HashMap<String, String>,
-    pub completion_actions: HashMap<String, (String, Vec<(String, String)>)>, //command, action,
+    pub completion_actions: HashMap<String, (String, HashMap<String, String>)>, //command, action,
                                                                             //options for compgen
     pub measured_time: MeasuredTime,
     pub options: Options,

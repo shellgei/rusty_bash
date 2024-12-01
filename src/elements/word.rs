@@ -153,6 +153,9 @@ impl Word {
                 },
             }
 
+            if as_operand && feeder.starts_with("]") {
+                break;
+            }
             if as_operand && feeder.starts_with("}") {
                 break;
             }

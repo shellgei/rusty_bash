@@ -22,6 +22,11 @@ fn set(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
     };
 
     match sub.eval(core) {
+        true => {},
+        false => exit::internal("unsupported substitution"),
+    }
+
+    match sub.evaluated_value {
         Value::EvaluatedSingle(s) => core.data.set_layer_param(&sub.key, &s, layer),
         Value::EvaluatedArray(a)  => core.data.set_layer_array(&sub.key, &a, layer),
         _ => exit::internal("unsupported substitution"),

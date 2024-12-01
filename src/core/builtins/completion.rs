@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{file_check, ShellCore, Feeder};
+use crate::core::HashMap;
 use crate::elements::word::Word;
 use crate::utils;
 use crate::utils::directory;
@@ -55,6 +56,8 @@ fn replace_args(args: &mut Vec<String>) -> bool {
         "directory" => "-d",
         "file" => "-f",
         "user" => "-u",
+        "stopped" => "-A stopped",
+        "job" => "-j",
         a => a,
     };
 
@@ -91,8 +94,6 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
-    dbg!("{:?}", &args);
-
     replace_args(args);
 
     let ans = match args[1].as_str() {
@@ -100,7 +101,9 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-d" => compgen_d(core, args),
         "-f" => compgen_f(core, args),
         "-h" => compgen_h(core, args), //history (sush original)
+        "-j" => compgen_j(core, args),
         "-u" => compgen_u(core, args),
+        "-A stopped" => compgen_stopped(core, args),
         "-W" => {
             if args.len() < 2 {
                 eprintln!("sush: compgen: -W: option requires an argument");
@@ -230,10 +233,55 @@ pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     ans
 }
 
+pub fn compgen_stopped(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut ans = vec![];
+
+    for job in &core.job_table {
+        if job.display_status == "Stopped" {
+            ans.push(job.text.split(" ").nth(0).unwrap().to_string());
+        }
+    }
+
+    drop_unmatch(args, 2, &mut ans);
+    ans
+}
+
+pub fn compgen_j(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut ans = vec![];
+
+    for job in &core.job_table {
+        ans.push(job.text.split(" ").nth(0).unwrap().to_string());
+    }
+
+    drop_unmatch(args, 2, &mut ans);
+    ans
+}
+
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() > 2 && args[1] == "-u" {
+    if args.len() == 1 {
+        return 0;
+    }
+
+    let mut options = HashMap::new();
+    let prefix = utils::consume_with_next_arg("-P", args);
+    if prefix != "" {
+        options.insert("-P".to_string(), prefix.clone());
+    }
+    let suffix = utils::consume_with_next_arg("-S", args);
+    if suffix != "" {
+        options.insert("-S".to_string(), suffix.clone());
+    }
+
+    if args.len() > 1 && args[1] == "-u" {
         for command in &args[2..] {
-            core.completion_actions.insert(command.clone(), ("user".to_string(), vec![]));
+            core.completion_actions.insert(command.clone(), ("user".to_string(), options.clone()));
+        }
+        return 0;
+    }
+
+    if args.len() > 1 && args[1] == "-j" {
+        for command in &args[2..] {
+            core.completion_actions.insert(command.clone(), ("job".to_string(), options.clone()));
         }
         return 0;
     }
@@ -243,18 +291,10 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    if args.len() > 2 && args[1] == "-A" && args[2] == "stopped" {
-        let prefix = utils::pick_next_arg("-P", args);
-        let suffix = utils::pick_next_arg("-S", args);
-
-        let mut commands = vec![];
+    if args.len() > 2 && args[1] == "-A" {
         for a in &args[3..] {
-            if ! ["-P", "-S", &prefix, &suffix ].contains(&a.as_str()) {
-                commands.push(a.to_string());
-            }
+            core.completion_actions.insert(a.clone(), (args[2].to_string(), options.clone()));
         }
-
-        dbg!("{:?} {:?} {:?}", &prefix, &suffix, &commands);
 
         return 0;
     }

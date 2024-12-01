@@ -4,23 +4,38 @@
 use crate::{ShellCore, Feeder};
 use crate::core::data::Value;
 use super::array::Array;
+use super::subscript::Subscript;
 use super::word::Word;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
     pub key: String,
+    pub subscript: Option<Subscript>,
     pub value: Value,
+    pub evaluated_value: Value,
     pub append: bool,
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Value {
-        match self.value.clone() {
+    pub fn eval(&mut self, core: &mut ShellCore) -> bool {
+        self.evaluated_value = match self.value.clone() {
             Value::None      => Value::EvaluatedSingle("".to_string()),
             Value::Single(v) => self.eval_as_value(&v, core),
             Value::Array(a)  => self.eval_as_array(&mut a.clone(), core),
-            _                => Value::None,
+            _                => return false,
+        };
+
+        match self.evaluated_value {
+            Value::None => false,
+            _ => true,
+        }
+    }
+
+    pub fn get_subscript(&mut self, core: &mut ShellCore) -> Option<String> {
+        match self.subscript.clone() {
+            Some(mut s) => s.eval(core),
+            _ => None,
         }
     }
 
@@ -48,33 +63,34 @@ impl Substitution {
         }
     }
 
-    pub fn new() -> Substitution {
-        Substitution {
-            text: String::new(),
-            key: String::new(),
-            value: Value::None,
-            append: false,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
-        let len = feeder.scanner_name_and_equal(core);
+        let len = feeder.scanner_name(core);
         if len == 0 {
             return None;
         }
 
-        let mut ans = Self::new();
+        let mut ans = Self::default();
 
-        let mut name_eq = feeder.consume(len);
-        ans.text += &name_eq;
+        feeder.set_backup();
+        let name = feeder.consume(len);
+        ans.key = name.clone();
+        ans.text += &name;
 
-        name_eq.pop();
-        if name_eq.ends_with("+") {
+        if let Some(s) = Subscript::parse(feeder, core) {
+            ans.text += &s.text.clone();
+            ans.subscript = Some(s);
+        };
+
+        if feeder.starts_with("+=") {
             ans.append = true;
-            name_eq.pop();
+            ans.text += &feeder.consume(2);
+        }else if feeder.starts_with("=") {
+            ans.text += &feeder.consume(1);
+        }else {
+            feeder.rewind();
+            return None;
         }
-
-        ans.key = name_eq.clone();
+        feeder.pop_backup();
 
         if let Some(a) = Array::parse(feeder, core) {
             ans.text += &a.text;

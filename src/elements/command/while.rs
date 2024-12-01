@@ -27,6 +27,11 @@ impl Command for WhileCommand {
                 break;
             }
 
+            if core.continue_counter > 0 {
+                core.continue_counter -= 1;
+                continue;
+            }
+
             self.do_script.as_mut().unwrap().exec(core);
 
             if core.break_counter > 0 {

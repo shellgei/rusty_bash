@@ -1357,8 +1357,20 @@ res=$($com <<< 'echo $(date) | grep "  "')
 res=$($com <<< 'A=( a b ); echo ${A[1]}')
 [ "$res" == "b" ] || err $LINENO
 
+res=$($com <<< 'A=( a b ); echo ${A[5 -4 ]}')
+[ "$res" == "b" ] || err $LINENO
+
+res=$($com <<< 'A=( a b ); B=1; echo ${A[$B]}')
+[ "$res" == "b" ] || err $LINENO
+
 res=$($com <<< 'A=( a b ); echo ${A[@]}')
 [ "$res" == "a b" ] || err $LINENO
+
+res=$($com <<< 'A=( a b ); A[0]=c ; echo ${A[@]}')
+[ "$res" == "c b" ] || err $LINENO
+
+res=$($com <<< 'A=( a b ); A[0]=( 1 2 )')
+[ "$?" == 1 ] || err $LINENO
 
 # symbol
 

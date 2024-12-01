@@ -75,14 +75,20 @@ pub fn is_wsl() -> bool {
     false
 }
 
-pub fn pick_next_arg(prev_opt: &str, args: &Vec<String>) -> String {
+pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> String {
     match args.iter().position(|a| a == prev_opt) {
         Some(pos) => {
             match pos+1 >= args.len() {
-                true  => "",
-                false => &args[pos+1],
+                true  => {
+                    args.remove(pos);
+                    "".to_string()
+                },
+                false => {
+                    args.remove(pos);
+                    args.remove(pos)
+                },
             }
         },
-        None => "",
-    }.to_string()
+        None => "".to_string(),
+    }
 }

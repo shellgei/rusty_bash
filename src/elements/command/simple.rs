@@ -21,7 +21,6 @@ use nix::errno::Errno;
 pub struct SimpleCommand {
     text: String,
     substitutions: Vec<Substitution>,
-    evaluated_subs: Vec<(String, Value)>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -35,7 +34,7 @@ pub struct SimpleCommand {
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         core.data.set_param("LINENO", &self.lineno.to_string());
-        if core.return_flag || core.break_counter > 0 {
+        if core.return_flag || core.break_counter > 0 || core.continue_counter > 0 {
             return None;
         }
 
@@ -141,35 +140,57 @@ impl SimpleCommand {
     }
 
     fn exec_set_params(&mut self, core: &mut ShellCore) {
-        for s in &self.evaluated_subs {
-            let result = match &s.1 {
-                Value::EvaluatedSingle(v) => core.data.set_param(&s.0, &v),
-                Value::EvaluatedArray(a) => core.data.set_array(&s.0, &a),
+        for s in &mut self.substitutions {
+            let sub = match s.get_subscript(core) {
+                Some(s) => {
+                    match s.parse::<usize>() {
+                        Ok(n) => Some(n),
+                        _ => None,
+                    }
+                },
+                None => None,
+            };
+
+            let result = match (&s.evaluated_value, sub) {
+                (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&s.key, v, n),
+                (_, Some(_)) => false,
+                (Value::EvaluatedSingle(v), _) => core.data.set_param(&s.key, &v),
+                (Value::EvaluatedArray(a), _) => core.data.set_array(&s.key, &a),
                 _ => exit::internal("Unknown variable"),
             };
 
             if ! result {
                 core.data.set_param("?", "1");
-                let msg = error::readonly(&s.0);
+                let msg = error::readonly(&s.key);
                 error::print(&msg, core);
             }
         }
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
-        for s in &self.evaluated_subs {
-            match &s.1 {
-                Value::EvaluatedSingle(v) => core.data.set_local_param(&s.0, &v),
-                Value::EvaluatedArray(a) => core.data.set_local_array(&s.0, &a),
+        for s in &mut self.substitutions {
+            let sub = match s.get_subscript(core) {
+                Some(s) => {
+                    match s.parse::<usize>() {
+                        Ok(n) => Some(n),
+                        _ => None,
+                    }
+                },
+                None => None,
+            };
+
+            match (&s.evaluated_value, sub) {
+                (Value::EvaluatedSingle(v), _) => core.data.set_local_param(&s.key, &v),
+                (Value::EvaluatedArray(a), _) => core.data.set_local_array(&s.key, &a),
                 _ => {},
             }
         }
     }
 
     fn set_environment_variables(&mut self) {
-        for s in &self.evaluated_subs {
-            match &s.1 {
-                Value::EvaluatedSingle(v) => env::set_var(&s.0, &v),
+        for s in &self.substitutions {
+            match &s.evaluated_value {
+                Value::EvaluatedSingle(v) => env::set_var(&s.key, &v),
                 _ => {},
             }
         }
@@ -182,11 +203,9 @@ impl SimpleCommand {
     }
 
     fn eval_substitutions(&mut self, core: &mut ShellCore) -> bool {
-        self.evaluated_subs.clear();
         for s in &mut self.substitutions {
-            match s.eval(core) {
-                Value::None => return false,
-                a           => self.evaluated_subs.push( (s.key.clone(), a) ),
+            if ! s.eval(core) {
+                return false;
             }
         }
         true

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::exit;
+use crate::utils::{error, exit};
 use crate::core::data::Value;
 
 fn print_data(k: &str, core: &mut ShellCore) {
@@ -71,6 +71,7 @@ fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
 }
 
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    args[0] = core.data.get_param("0");
     match args.len() {
         0 => panic!("never come here"),
         1 => {
@@ -115,6 +116,47 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
         },
     }
+}
+
+pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() == 1 {
+        let mut last = core.data.position_parameters.pop().unwrap();
+        if last.len() > 1 {
+            last.remove(1);
+        }
+        core.data.position_parameters.push(last);
+        return 0;
+    }
+
+    if args.len() == 2 {
+        let n = match args[1].parse::<i32>() {
+            Ok(n) => n,
+            Err(_) => {
+                let err = format!("shift: {}: numeric argument required", &args[1]);
+                error::print(&err, core);
+                return 1;
+            },
+        };
+
+        if n < 0 {
+            let err = format!("shift: {}: shift count out of range", &args[1]);
+            error::print(&err, core);
+            return 1;
+        }
+
+        let mut last = core.data.position_parameters.pop().unwrap();
+        for _ in 0..n {
+            if last.len() == 1 {
+                break;
+            }
+            last.remove(1);
+        }
+        core.data.position_parameters.push(last);
+        return 0;
+    }
+
+    error::print("shift: too many arguments", core);
+    1
 }
 
 pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i32 {
