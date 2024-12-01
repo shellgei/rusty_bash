@@ -101,7 +101,7 @@ Please give us issues or pull requests in a way you think sensible. We do not ha
 | alias | :heavy_check_mark: | bg | :construction: | bind | :no_good: |
 | break | :heavy_check_mark: | builtin | :no_good: | caller | :no_good: |
 | command | :no_good: | compgen | :construction: | complete | :construction: |
-| compopt | :no_good: | continue | :no_good: | declare | :no_good: |
+| compopt | :no_good: | continue | :heavy_check_mark: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
 | fc | :no_good: | fg | :construction: | getopts | :no_good: |
