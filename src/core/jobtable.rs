@@ -12,7 +12,7 @@ pub struct JobEntry {
     pub id: usize,
     pids: Vec<Pid>,
     proc_statuses: Vec<WaitStatus>,
-    display_status: String,
+    pub display_status: String,
     pub text: String,
     change: bool,
 }

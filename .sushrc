@@ -57,6 +57,7 @@ _colcon_comp () {
 } && complete -F _colcon_comp colcon
 
 complete -u groups w
+complete -A stopped -P '"%' -S '"' bg
 
 command_not_found_handle() {
 	/usr/lib/command-not-found -- "$1"
