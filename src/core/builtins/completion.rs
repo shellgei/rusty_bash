@@ -57,6 +57,7 @@ fn replace_args(args: &mut Vec<String>) -> bool {
         "file" => "-f",
         "user" => "-u",
         "stopped" => "-A stopped",
+        "job" => "-j",
         a => a,
     };
 
@@ -100,6 +101,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-d" => compgen_d(core, args),
         "-f" => compgen_f(core, args),
         "-h" => compgen_h(core, args), //history (sush original)
+        "-j" => compgen_j(core, args),
         "-u" => compgen_u(core, args),
         "-A stopped" => compgen_stopped(core, args),
         "-W" => {
@@ -238,6 +240,17 @@ pub fn compgen_stopped(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<Stri
         if job.display_status == "Stopped" {
             ans.push(job.text.split(" ").nth(0).unwrap().to_string());
         }
+    }
+
+    drop_unmatch(args, 2, &mut ans);
+    ans
+}
+
+pub fn compgen_j(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut ans = vec![];
+
+    for job in &core.job_table {
+        ans.push(job.text.split(" ").nth(0).unwrap().to_string());
     }
 
     drop_unmatch(args, 2, &mut ans);
