@@ -38,6 +38,7 @@ impl ShellCore {
         self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), return_break::return_);
         self.builtins.insert("set".to_string(), option_commands::set);
+        self.builtins.insert("shift".to_string(), option_commands::shift);
         self.builtins.insert("shopt".to_string(), option_commands::shopt);
         self.builtins.insert("unset".to_string(), unset::unset);
         self.builtins.insert("source".to_string(), source::source);
