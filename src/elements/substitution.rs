@@ -58,23 +58,28 @@ impl Substitution {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
-        let len = feeder.scanner_name_and_equal(core);
+        let len = feeder.scanner_name(core);
         if len == 0 {
             return None;
         }
 
         let mut ans = Self::new();
 
-        let mut name_eq = feeder.consume(len);
-        ans.text += &name_eq;
+        feeder.set_backup();
+        let name = feeder.consume(len);
+        ans.key = name.clone();
+        ans.text += &name;
 
-        name_eq.pop();
-        if name_eq.ends_with("+") {
+        if feeder.starts_with("+=") {
             ans.append = true;
-            name_eq.pop();
+            ans.text += &feeder.consume(2);
+        }else if feeder.starts_with("=") {
+            ans.text += &feeder.consume(1);
+        }else {
+            feeder.rewind();
+            return None;
         }
-
-        ans.key = name_eq.clone();
+        feeder.pop_backup();
 
         if let Some(a) = Array::parse(feeder, core) {
             ans.text += &a.text;
