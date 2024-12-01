@@ -73,7 +73,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         match arg_to_id(&args[1], &core.job_table_priority, &core.job_table) {
             Ok(n) => n,
             Err(s) => {
-                error::print(&s, core);
+                error::print(&("bg: ".to_owned() + &s), core);
                 return 1;
             },
         }
@@ -156,7 +156,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let id = match arg_to_id(&args[1], &core.job_table_priority, &core.job_table) {
         Ok(n)  => n,
         Err(s) => {
-            error::print(&s, core);
+            error::print(&("wait: ".to_owned() + &s), core);
             return 1;
         },
     };
