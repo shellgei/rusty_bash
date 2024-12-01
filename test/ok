@@ -7,3 +7,11 @@
 ./test_compound.bash
 ./test_others.bash
 ./test_job.bash
+../../../test/test_builtins.bash
+../../../test/test_builtins.bash
+../../../test/test_builtins.bash
+../../test/test_builtins.bash
+../../test/test_builtins.bash
+../../test/test_builtins.bash
+../../test/test_builtins.bash
+../../test/test_builtins.bash

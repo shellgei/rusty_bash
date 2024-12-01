@@ -11,7 +11,7 @@ pub mod option_commands;
 mod pwd;
 mod read;
 mod source;
-mod return_break;
+mod loop_control;
 mod unset;
 mod utils;
 
@@ -23,10 +23,11 @@ impl ShellCore {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias);
         self.builtins.insert("bg".to_string(), job_commands::bg);
-        self.builtins.insert("break".to_string(), return_break::break_);
+        self.builtins.insert("break".to_string(), loop_control::break_);
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
+        self.builtins.insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
@@ -36,7 +37,7 @@ impl ShellCore {
         self.builtins.insert("local".to_string(), local::local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
-        self.builtins.insert("return".to_string(), return_break::return_);
+        self.builtins.insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option_commands::set);
         self.builtins.insert("shift".to_string(), option_commands::shift);
         self.builtins.insert("shopt".to_string(), option_commands::shopt);

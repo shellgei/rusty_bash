@@ -59,6 +59,7 @@ pub struct ShellCore {
     pub eval_level: i32,
     pub loop_level: i32,
     pub break_counter: i32,
+    pub continue_counter: i32,
     pub return_flag: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,

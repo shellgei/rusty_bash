@@ -105,6 +105,16 @@ res=$($com <<< 'while true ; do while true ; do break 2 ; done ; echo NG ; done 
 res=$($com <<< 'while true ; do while true ; do break 10 ; done ; echo NG ; done ; echo OK')
 [ "$res" == "OK" ] || err $LINENO
 
+# continue command
+
+res=$($com <<< 'seq 2 | while read d ; do echo x; continue; echo NG ; done')
+[ "$res" == "x
+x" ] || err $LINENO
+
+res=$($com <<< 'seq 2 | while read d ; do for a in a b ; do echo x; continue 2 ; done ; echo NG ; done')
+[ "$res" == "x
+x" ] || err $LINENO
+
 # read
 
 res=$($com <<< 'seq 2 | while read a ; do echo $a ; done ; echo $a ; echo A')
