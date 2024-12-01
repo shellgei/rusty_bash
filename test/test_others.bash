@@ -1357,6 +1357,9 @@ res=$($com <<< 'echo $(date) | grep "  "')
 res=$($com <<< 'A=( a b ); echo ${A[1]}')
 [ "$res" == "b" ] || err $LINENO
 
+res=$($com <<< 'A=( a b ); echo ${A[5 -4 ]}')
+[ "$res" == "b" ] || err $LINENO
+
 res=$($com <<< 'A=( a b ); echo ${A[@]}')
 [ "$res" == "a b" ] || err $LINENO
 

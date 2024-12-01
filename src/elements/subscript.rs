@@ -2,23 +2,23 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use super::expr::arithmetic::ArithmeticExpr;
 
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
     pub text: String,
+    pub inner: Option<ArithmeticExpr>,
+    pub inner_special: String,
 }
 
 impl Subscript {
-    pub fn eval(&mut self) -> Option<String> {
-        let len = self.text.len();
-        let inner = &self.text[1..len-1];
+    pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
+        if self.inner_special != "" {
+            return Some(self.inner_special.clone());
+        }
 
-        if inner.len() == 1 {
-            if let Some(ch) = inner.chars().nth(0) {
-                if '0' <= ch && ch <= '9' || ch == '@' || ch == '*' {
-                    return Some(inner.to_string());
-                }
-            }
+        if let Some(a) = self.inner.as_mut() {
+            return a.eval(core);
         }
 
         None
@@ -32,9 +32,19 @@ impl Subscript {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        while ! feeder.starts_with("]") {
-            let len = feeder.scanner_inner_subscript(core);
-            ans.text += &feeder.consume(len);
+        if feeder.starts_with("@") {
+            ans.text += "@";
+            ans.inner_special = feeder.consume(1);
+        }else if feeder.starts_with("*") {
+            ans.text += "*";
+            ans.inner_special = feeder.consume(1);
+        }else if let Some(a) = ArithmeticExpr::parse(feeder, core, true) {
+            ans.text += &a.text.clone();
+            ans.inner = Some(a);
+        }
+
+        if ! feeder.starts_with("]") {
+            return None;
         }
 
         ans.text += &feeder.consume(1);
