@@ -242,9 +242,29 @@ impl Data {
         true
     }
 
+    pub fn set_layer_array_elem(&mut self, key: &str, val: &String, layer: usize, pos: usize) -> bool {
+        let value = match self.parameters[layer].get_mut(key) {
+            Some(v) => v, 
+            _ => return false,
+        };
+        let array = match &mut value.value {
+            Value::EvaluatedArray(a) => a, 
+            _ => return false,
+        };
+
+        if array.len() > pos {
+            array[pos] = val.clone();
+        }
+        true
+    }
+
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) -> bool {
         self.set_layer_array(key, vals, 0);
         true
+    }
+
+    pub fn set_array_elem(&mut self, key: &str, val: &String, pos: usize) -> bool {
+        self.set_layer_array_elem(key, val, 0, pos)
     }
 
     pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) {

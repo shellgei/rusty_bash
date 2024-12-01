@@ -140,10 +140,21 @@ impl SimpleCommand {
     }
 
     fn exec_set_params(&mut self, core: &mut ShellCore) {
-        for s in &self.substitutions {
-            let result = match &s.evaluated_value {
-                Value::EvaluatedSingle(v) => core.data.set_param(&s.key, &v),
-                Value::EvaluatedArray(a) => core.data.set_array(&s.key, &a),
+        for s in &mut self.substitutions {
+            let sub = match s.get_subscript(core) {
+                Some(s) => {
+                    match s.parse::<usize>() {
+                        Ok(n) => Some(n),
+                        _ => None,
+                    }
+                },
+                None => None,
+            };
+
+            let result = match (&s.evaluated_value, sub) {
+                (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&s.key, v, n),
+                (Value::EvaluatedSingle(v), _) => core.data.set_param(&s.key, &v),
+                (Value::EvaluatedArray(a), _) => core.data.set_array(&s.key, &a),
                 _ => exit::internal("Unknown variable"),
             };
 
