@@ -4,6 +4,7 @@
 use crate::ShellCore;
 use crate::core::JobEntry;
 use crate::core::{ignore_signal, restore_signal};
+//use crate::utils::error;
 use nix::sys::signal::Signal;
 use nix::unistd;
 use nix::unistd::Pid;
@@ -18,7 +19,7 @@ fn id_to_job(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
     None
 }
 
-fn arg_to_id(s: &str, priority: &Vec<usize>) -> usize {
+fn arg_to_id(s: &str, priority: &Vec<usize>, table: &Vec<JobEntry>) -> usize {
     if s == "%+" {
         return match priority.len() {
             0 => 0, 
@@ -34,8 +35,26 @@ fn arg_to_id(s: &str, priority: &Vec<usize>) -> usize {
         };
     }
 
+    let word = &s[1..];
+    let mut ans = 0;
+    for job in table {
+        if job.display_status == "Stopped" {
+            let jobname = job.text.split(" ").nth(0).unwrap();
+            if jobname == word {
+                if ans != 0 {
+                    return 0;
+                }
+                ans = job.id;
+            }
+        }
+    }
+
+    if ans != 0 {
+        return ans;
+    }
+
     if s.starts_with("%") {
-        return s[1..].parse::<usize>().unwrap_or(0);
+        return word.parse::<usize>().unwrap_or(0);
     }
 
     0
@@ -48,7 +67,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         core.job_table_priority[0]
     }else if args.len() == 2 {
-        arg_to_id(&args[1], &core.job_table_priority)
+        arg_to_id(&args[1], &core.job_table_priority, &core.job_table)
     }else{
         return 1;
     };
@@ -72,7 +91,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         core.job_table_priority[0]
     }else if args.len() == 2 {
-        arg_to_id(&args[1], &core.job_table_priority)
+        arg_to_id(&args[1], &core.job_table_priority, &core.job_table)
     }else{
         return 1;
     };
@@ -119,7 +138,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    let id = arg_to_id(&args[1], &core.job_table_priority);
+    let id = arg_to_id(&args[1], &core.job_table_priority, &core.job_table);
     match id_to_job(id, &mut core.job_table) {
         Some(job) => {job.update_status(true);},
         _ => return 1, 
