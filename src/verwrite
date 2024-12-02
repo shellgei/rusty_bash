@@ -1,4 +1,0 @@
-/fn set_history/, /^}/ {
-	print "//", $0
-}
-

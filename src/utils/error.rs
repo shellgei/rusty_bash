@@ -43,6 +43,10 @@ pub fn readonly(token: &str) -> String {
     format!("{0}: readonly variable", token)
 }
 
+pub fn bad_array_subscript(token: &str) -> String {
+    format!("{0}: bad_array_subscript", token)
+}
+
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
     match coredump {

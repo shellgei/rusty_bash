@@ -11,7 +11,7 @@ use super::word::Word;
 pub struct Substitution {
     pub text: String,
     pub key: String,
-    pub subscript: Option<Subscript>,
+    pub index: Option<Subscript>,
     pub value: Value,
     pub evaluated_value: Value,
     pub append: bool,
@@ -32,9 +32,14 @@ impl Substitution {
         }
     }
 
-    pub fn get_subscript(&mut self, core: &mut ShellCore) -> Option<String> {
-        match self.subscript.clone() {
-            Some(mut s) => s.eval(core),
+    pub fn get_index(&mut self, core: &mut ShellCore) -> Option<String> {
+        match self.index.clone() {
+            Some(mut s) => {
+                if s.text.chars().all(|c| " \n\t[]".contains(c)) {
+                    return Some("".to_string());
+                }
+                s.eval(core)
+            },
             _ => None,
         }
     }
@@ -78,7 +83,7 @@ impl Substitution {
 
         if let Some(s) = Subscript::parse(feeder, core) {
             ans.text += &s.text.clone();
-            ans.subscript = Some(s);
+            ans.index = Some(s);
         };
 
         if feeder.starts_with("+=") {

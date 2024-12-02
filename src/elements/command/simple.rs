@@ -140,28 +140,33 @@ impl SimpleCommand {
     }
 
     fn exec_set_params(&mut self, core: &mut ShellCore) {
-        for s in &mut self.substitutions {
-            let sub = match s.get_subscript(core) {
+        for subs in &mut self.substitutions {
+            let index = match subs.get_index(core) {
                 Some(s) => {
                     match s.parse::<usize>() {
                         Ok(n) => Some(n),
-                        _ => None,
+                        _ => {
+                            core.data.set_param("?", "1");
+                            let msg = error::bad_array_subscript(&subs.text);
+                            error::print(&msg, core);
+                            return;
+                        },
                     }
                 },
                 None => None,
             };
 
-            let result = match (&s.evaluated_value, sub) {
-                (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&s.key, v, n),
+            let result = match (&subs.evaluated_value, index) {
+                (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&subs.key, v, n),
                 (_, Some(_)) => false,
-                (Value::EvaluatedSingle(v), _) => core.data.set_param(&s.key, &v),
-                (Value::EvaluatedArray(a), _) => core.data.set_array(&s.key, &a),
+                (Value::EvaluatedSingle(v), _) => core.data.set_param(&subs.key, &v),
+                (Value::EvaluatedArray(a), _) => core.data.set_array(&subs.key, &a),
                 _ => exit::internal("Unknown variable"),
             };
 
             if ! result {
                 core.data.set_param("?", "1");
-                let msg = error::readonly(&s.key);
+                let msg = error::readonly(&subs.key);
                 error::print(&msg, core);
             }
         }
@@ -169,7 +174,7 @@ impl SimpleCommand {
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
         for s in &mut self.substitutions {
-            let sub = match s.get_subscript(core) {
+            let index = match s.get_index(core) {
                 Some(s) => {
                     match s.parse::<usize>() {
                         Ok(n) => Some(n),
@@ -179,7 +184,7 @@ impl SimpleCommand {
                 None => None,
             };
 
-            match (&s.evaluated_value, sub) {
+            match (&s.evaluated_value, index) {
                 (Value::EvaluatedSingle(v), _) => core.data.set_local_param(&s.key, &v),
                 (Value::EvaluatedArray(a), _) => core.data.set_local_array(&s.key, &a),
                 _ => {},

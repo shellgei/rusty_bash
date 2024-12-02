@@ -18,6 +18,9 @@ impl Subscript {
         }
 
         if let Some(a) = self.inner.as_mut() {
+            if a.text.chars().all(|c| " \t\n".contains(c)) {
+                return None;
+            }
             return a.eval(core);
         }
 
