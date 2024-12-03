@@ -46,20 +46,10 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec<String>,
-             script: &mut String, c_flag: &mut bool) {
+             script: &mut String) {
     let mut pop = 0;
 
     for i in 1..args.len() {
-        if args[i] == "-c" {
-            *c_flag = true;
-            if i == args.len()-1 {
-                eprintln!("bash: -c: option requires an argument");
-                process::exit(2);
-            }
-            *script = args[i+1].to_string();
-            break;
-        }
-
         if args[i].starts_with("-") {
             parameters.remove(i - pop);
             options.push(args[i].clone());
@@ -73,17 +63,28 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
 }
 
 fn main() {
-    let args: Vec<String> = option::dissolve_options(&env::args().collect());
+    let mut args: Vec<String> = option::dissolve_options(&env::args().collect());
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
 
-    let mut options = args[0..1].to_vec();
+    let mut options = vec![args[0].clone()];
     let mut parameters = args.to_vec();
-    let mut script = "-".to_string();
+    let mut script = "-".to_string(); // stdin, filename, or program after -c option
     let mut c_flag = false;
 
-    configure(&args, &mut options, &mut parameters, &mut script, &mut c_flag);
+    if args.contains(&"-c".to_string()) {
+        script = match option::consume_with_next_arg("-c", &mut args) {
+            Some(s) => s,
+            None => {
+                println!("{}: -c: option requires an argument", &args[0]);
+                process::exit(2);                
+            }
+        };
+        c_flag = true;
+    }
+
+    configure(&args, &mut options, &mut parameters, &mut script);
 
     let mut core = ShellCore::new();
     option_commands::set(&mut core, &mut options);

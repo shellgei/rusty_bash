@@ -264,12 +264,12 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut options = HashMap::new();
     let prefix = option::consume_with_next_arg("-P", args);
-    if prefix != "" {
-        options.insert("-P".to_string(), prefix.clone());
+    if prefix != None {
+        options.insert("-P".to_string(), prefix.unwrap().clone());
     }
     let suffix = option::consume_with_next_arg("-S", args);
-    if suffix != "" {
-        options.insert("-S".to_string(), suffix.clone());
+    if suffix != None {
+        options.insert("-S".to_string(), suffix.unwrap().clone());
     }
 
     if args.len() > 1 && args[1] == "-u" {

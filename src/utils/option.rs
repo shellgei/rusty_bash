@@ -1,21 +1,18 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> String {
+pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> Option<String> {
     match args.iter().position(|a| a == prev_opt) {
         Some(pos) => {
             match pos+1 >= args.len() {
-                true  => {
-                    args.remove(pos);
-                    "".to_string()
-                },
+                true  => None,
                 false => {
                     args.remove(pos);
-                    args.remove(pos)
+                    Some(args.remove(pos))
                 },
             }
         },
-        None => "".to_string(),
+        None => None,
     }
 }
 
