@@ -4,34 +4,7 @@
 use crate::ShellCore;
 use crate::utils::{error, exit};
 use crate::core::data::Value;
-
-fn print_data(k: &str, core: &mut ShellCore) {
-    match core.data.get_value(k) {
-        Some(Value::EvaluatedSingle(s)) => {
-            println!("{}={}", k.to_string(), s.to_string()); 
-        },
-        Some(Value::EvaluatedArray(a)) => {
-            let mut formatted = String::new();
-            formatted += "(";
-            for (i, v) in a.iter().enumerate() {
-                formatted += &format!("[{}]=\"{}\" ", i, v).clone();
-            }
-            if formatted.ends_with(" ") {
-                formatted.pop();
-            }
-            formatted += ")";
-            println!("{}={}", k.to_string(), formatted); 
-        },
-        _ => {},
-    }
-}
-
-fn print(core: &mut ShellCore) -> i32 {
-    core.data.get_keys()
-        .into_iter()
-        .for_each(|k| print_data(&k, core));
-    0
-}
+use super::parameter;
 
 pub fn set_parameters(core: &mut ShellCore, args: &[String]) -> i32 {
     match core.data.position_parameters.pop() {
@@ -76,7 +49,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         0 => panic!("never come here"),
         1 => {
             match args[0] == "set" {
-                true  => print(core),
+                true  => parameter::print_all(core),
                 false => set_parameters(core, args),
             }
         },

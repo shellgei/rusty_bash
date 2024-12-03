@@ -6,7 +6,35 @@ use crate::utils::exit;
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
 
-fn set(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
+fn print_data(k: &str, core: &mut ShellCore) {
+    match core.data.get_value(k) {
+        Some(Value::EvaluatedSingle(s)) => {
+            println!("{}={}", k.to_string(), s.to_string()); 
+        },
+        Some(Value::EvaluatedArray(a)) => {
+            let mut formatted = String::new();
+            formatted += "(";
+            for (i, v) in a.iter().enumerate() {
+                formatted += &format!("[{}]=\"{}\" ", i, v).clone();
+            }
+            if formatted.ends_with(" ") {
+                formatted.pop();
+            }
+            formatted += ")";
+            println!("{}={}", k.to_string(), formatted); 
+        },
+        _ => {},
+    }
+}
+
+pub fn print_all(core: &mut ShellCore) -> i32 {
+    core.data.get_keys()
+        .into_iter()
+        .for_each(|k| print_data(&k, core));
+    0
+}
+
+fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
     let mut feeder = Feeder::new(arg);
     if feeder.scanner_name(core) == feeder.len() { // name only
         let name = feeder.consume(feeder.len());
@@ -41,8 +69,20 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    match args[1..].iter().all(|a| set(a, core, layer)) {
+    match args[1..].iter().all(|a| set_local(a, core, layer)) {
         true  => 0,
         false => 1,
     }
+}
+
+pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() == 1 {
+        return declare_print(core, args);
+    }
+
+    0
+}
+
+pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    print_all(core)
 }

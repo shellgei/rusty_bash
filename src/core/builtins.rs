@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
@@ -6,7 +6,7 @@ mod cd;
 pub mod completion;
 mod history;
 mod job_commands;
-mod local;
+mod parameter;
 pub mod option_commands;
 mod pwd;
 mod read;
@@ -34,7 +34,7 @@ impl ShellCore {
         self.builtins.insert("fg".to_string(), job_commands::fg);
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
-        self.builtins.insert("local".to_string(), local::local);
+        self.builtins.insert("local".to_string(), parameter::local);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), loop_control::return_);
