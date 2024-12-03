@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::utils::exit;
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
+use super::utils;
 
 fn print_data(k: &str, core: &mut ShellCore) {
     match core.data.get_value(k) {
@@ -76,8 +77,12 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() == 1 {
+    if args.len() <= 1 {
         return print_all(core);
+    }
+
+    for arg in &args[1..] {
+        dbg!("{:?}", utils::dissolve_option(arg));
     }
 
     0
