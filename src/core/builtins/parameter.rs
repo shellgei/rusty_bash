@@ -77,12 +77,8 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 {
-        return declare_print(core, args);
+        return print_all(core);
     }
 
     0
-}
-
-pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    print_all(core)
 }

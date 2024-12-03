@@ -3,7 +3,6 @@
 
 use crate::ShellCore;
 use crate::utils::{error, exit};
-use crate::core::data::Value;
 use super::parameter;
 
 pub fn set_parameters(core: &mut ShellCore, args: &[String]) -> i32 {
