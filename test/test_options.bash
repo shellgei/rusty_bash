@@ -26,8 +26,8 @@ res=$($com -c "ech a")
 res=$(echo abc | $com -c "rev")
 [ "$res" == "cba" ] || err $LINENO
 
-res=$($com -c "-" 2>&1 | grep "line 1:")
-[[ "$?" -eq 0 ]] || err $LINENO
+res=$($com -c -)
+[[ "$?" -eq 2 ]] || err $LINENO
 
 ### -e
 

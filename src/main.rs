@@ -13,7 +13,7 @@ use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
-use utils::{exit, file_check};
+use utils::{exit, file_check, option};
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");
@@ -47,6 +47,8 @@ fn read_rc_file(core: &mut ShellCore) {
 
 fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec<String>,
              script: &mut String, c_flag: &mut bool) {
+    let mut pop = 0;
+
     for i in 1..args.len() {
         if args[i] == "-c" {
             *c_flag = true;
@@ -59,8 +61,9 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
         }
 
         if args[i].starts_with("-") {
-            parameters.remove(i);
+            parameters.remove(i - pop);
             options.push(args[i].clone());
+            pop += 1;
         }else{
             *script = args[i].clone();
             *parameters = args[i..].to_vec();
@@ -70,7 +73,7 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = option::dissolve_options(&env::args().collect());
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
