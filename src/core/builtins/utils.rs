@@ -47,10 +47,3 @@ pub fn make_canonical_path(core: &mut ShellCore, path_str: &str) -> PathBuf {
     canonical
 }
 
-pub fn dissolve_option(opt: &str) -> Vec<String> {
-    if opt.starts_with("--") || ! opt.starts_with("-") {
-        return vec![opt.to_string()];
-    }
-
-    opt[1..].chars().map(|c| ("-".to_owned() + &c.to_string()).to_string()).collect()
-}

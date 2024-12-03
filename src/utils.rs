@@ -1,14 +1,15 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod directory;
+pub mod clock;
 pub mod error;
 pub mod exit;
 pub mod file;
 pub mod file_check;
 pub mod glob;
-pub mod directory;
+pub mod option;
 pub mod random;
-pub mod clock;
 
 pub fn reserved(w: &str) -> bool {
     match w {
@@ -75,6 +76,7 @@ pub fn is_wsl() -> bool {
     false
 }
 
+/*
 pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> String {
     match args.iter().position(|a| a == prev_opt) {
         Some(pos) => {
@@ -92,3 +94,4 @@ pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> String {
         None => "".to_string(),
     }
 }
+*/
