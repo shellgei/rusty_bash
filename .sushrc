@@ -61,5 +61,7 @@ complete -j -P '"%' -S '"' disown fg jobs
 complete -A stopped -P '"%' -S '"' bg
 
 command_not_found_handle() {
-	/usr/lib/command-not-found -- "$1"
+	if [ -e /usr/lib/command-not-found ] ; then
+		/usr/lib/command-not-found -- "$1"
+	fi
 }

@@ -28,6 +28,7 @@ impl ShellCore {
         self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
         self.builtins.insert("continue".to_string(), loop_control::continue_);
+        self.builtins.insert("declare".to_string(), parameter::declare);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
