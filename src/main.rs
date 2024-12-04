@@ -68,28 +68,17 @@ fn main() {
         show_version();
     }
 
-    let mut core = ShellCore::new();
-    let mut options = vec![args[0].clone()];
-    let mut parameters = args.to_vec();
-    let mut script = "-".to_string(); // stdin, filename, or program after -c option
-
-
     let c_parts = option::consume_with_subsequents("-c", &mut args);
     match c_parts.len() {
         0 => {
-            configure(&args, &mut options, &mut parameters, &mut script);
-            options.remove(0);
-            option_commands::set_options(&mut core, &mut options);
-            option_commands::set_parameters(&mut core, &mut parameters);
-            signal::run_signal_check(&mut core);
         },
         1 => {
             println!("{}: -c: option requires an argument", &args[0]);
             process::exit(2);                
         },
         _ => {
-            script = c_parts[1].clone();
-            parameters = if c_parts.len() > 2 {
+            let mut core = ShellCore::new();
+            let mut parameters = if c_parts.len() > 2 {
                 c_parts[2..].to_vec()
             }else{
                 vec![args[0].clone()]
@@ -98,10 +87,20 @@ fn main() {
             option_commands::set_parameters(&mut core, &mut parameters);
             signal::run_signal_check(&mut core);
             core.data.flags.retain(|f| f != 'i');
-            main_c_option(&mut core, &script);
+            main_c_option(&mut core, &c_parts[1]);
             exit::normal(&mut core);
         },
     }
+
+    let mut core = ShellCore::new();
+    let mut script = "-".to_string(); // stdin, filename, or program after -c option
+    let mut parameters = args.to_vec();
+    let mut options = vec![args[0].clone()];
+    configure(&args, &mut options, &mut parameters, &mut script);
+    options.remove(0);
+    option_commands::set_options(&mut core, &mut options);
+    option_commands::set_parameters(&mut core, &mut parameters);
+    signal::run_signal_check(&mut core);
 
     if script == "-" {
         read_rc_file(&mut core);
