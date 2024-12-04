@@ -97,6 +97,12 @@ fn set_history(core: &mut ShellCore, s: &str) {
     }
 }
 
+fn show_message() {
+    const V: &'static str = env!("CARGO_PKG_VERSION");
+    const P: &'static str = env!("CARGO_BUILD_PROFILE");
+    eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
+}
+
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new("");
 
@@ -106,9 +112,7 @@ fn main_loop(core: &mut ShellCore) {
     }
 
     if core.data.flags.contains('i') {
-        const V: &'static str = env!("CARGO_PKG_VERSION");
-        const P: &'static str = env!("CARGO_BUILD_PROFILE");
-        eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
+        show_message();
     }
 
     loop {
