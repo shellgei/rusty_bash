@@ -160,18 +160,14 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     option_commands::set_parameters(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
     core.data.flags.retain(|f| f != 'i');
-    main_c_option(&mut core, &c_parts[1]);
-    exit::normal(&mut core);
-}
 
-fn main_c_option(core: &mut ShellCore, script: &String) {
     core.data.flags += "c";
     if core.data.flags.contains('v') {
-        eprintln!("{}", &script);
+        eprintln!("{}", &c_parts[1]);
     }
-    let mut feeder = Feeder::new(script);
-    if let Some(mut s) = Script::parse(&mut feeder, core, false){
-        s.exec(core);
+    let mut feeder = Feeder::new(&c_parts[1]);
+    if let Some(mut s) = Script::parse(&mut feeder, &mut core, false){
+        s.exec(&mut core);
     }
-    exit::normal(core)
+    exit::normal(&mut core)
 }
