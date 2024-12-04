@@ -84,7 +84,11 @@ fn main() {
         _ => {
             script = c_parts[1].clone();
             c_flag = true;
-            parameters = c_parts[2..].to_vec();
+            parameters = if c_parts.len() > 2 {
+                c_parts[2..].to_vec()
+            }else{
+                vec![args[0].clone()]
+            };
         },
     }
 
