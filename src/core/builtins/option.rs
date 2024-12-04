@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::error;
+use crate::utils::{arg, error};
 use super::parameter;
 
 fn set_option(core: &mut ShellCore, opt: char, pm: char) {
@@ -17,35 +17,47 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) {
 
 pub fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
     for a in args {
-        if a.starts_with("--") {
+        if ! a.starts_with("-") && ! a.starts_with("+") {
+            error::internal("not an option");
+            return 1;
+        }
+        if a.len() != 2 {
+            error::internal("invalid option");
+            return 1;
+        }
+
+        let pm = a.chars().nth(0).unwrap();
+        let ch = a.chars().nth(1).unwrap();
+
+        if ch == '-' {
             return 0;
         }
-        let pm = a.chars().nth(0).unwrap();
-        for ch in a[1..].chars() {
+
+
             if "xveB".find(ch).is_none() {
                 eprintln!("sush: set: {}{}: invalid option", &pm, &ch);
                 return 2;
             }
             set_option(core, ch, pm);
-        }
     }
     0
 }
 
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
     args[0] = core.data.get_param("0");
     match args.len() {
         0 => panic!("never come here"),
         1 => {
             match args[0] == "set" {
                 true  => parameter::print_all(core),
-                false => parameter::set_positions(core, args),
+                false => parameter::set_positions(core, &args),
             }
         },
         _ => {
             if args[1].starts_with("--") {
                 args.remove(0);
-                return parameter::set_positions(core, args)
+                return parameter::set_positions(core, &args)
             }
 
             if args[1] == "-o" {
@@ -74,7 +86,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             match args[1].starts_with("-") || args[1].starts_with("+") {
                 true  => set_options(core, &args[1..]),
-                false => parameter::set_positions(core, args),
+                false => parameter::set_positions(core, &args),
             }
         },
     }
