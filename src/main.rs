@@ -45,10 +45,12 @@ fn read_rc_file(core: &mut ShellCore) {
     }
 }
 
-fn configure(args: &Vec<String>, script: &mut String, core: &mut ShellCore) {
+fn configure(args: &Vec<String>) -> ShellCore {
+    let mut core = ShellCore::new();
     let mut pop = 0;
     let mut parameters = args.to_vec();
     let mut options = vec![];
+    let mut script = "-".to_string();
 
     for i in 1..args.len() {
         if args[i].starts_with("-") {
@@ -56,14 +58,16 @@ fn configure(args: &Vec<String>, script: &mut String, core: &mut ShellCore) {
             options.push(args[i].clone());
             pop += 1;
         }else{
-            *script = args[i].clone();
+            script = args[i].clone();
             parameters = args[i..].to_vec();
             break;
         }
     }
 
-    option_commands::set_options(core, &options);
-    option_commands::set_parameters(core, &parameters);
+    core.script_name = script.clone();
+    option_commands::set_options(&mut core, &options);
+    option_commands::set_parameters(&mut core, &parameters);
+    core
 }
 
 fn main() {
@@ -77,16 +81,12 @@ fn main() {
         run_and_exit_c_option(&args, &c_parts);
     }
 
-    let mut core = ShellCore::new();
-    let mut script = "-".to_string(); // stdin or filename
-
-    configure(&args, &mut script, &mut core);
+    let mut core = configure(&args);
     signal::run_signal_check(&mut core);
 
-    if script == "-" {
+    if core.script_name == "-" {
         read_rc_file(&mut core);
     }
-    core.script_name = script.clone();
     main_loop(&mut core);
 }
 
