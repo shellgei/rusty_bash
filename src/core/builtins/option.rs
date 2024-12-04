@@ -17,10 +17,6 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) {
 
 pub fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
     for a in args {
-        if ! a.starts_with("-") && ! a.starts_with("+") {
-            error::internal("not an option");
-            return 1;
-        }
         if a.len() != 2 {
             error::internal("invalid option");
             return 1;
@@ -29,16 +25,15 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
         let pm = a.chars().nth(0).unwrap();
         let ch = a.chars().nth(1).unwrap();
 
-        if ch == '-' {
-            return 0;
+        if pm != '-' && pm != '+' {
+            error::internal("not an option");
+            return 1;
+        }else if "xveB".find(ch).is_none() {
+            eprintln!("sush: set: {}: invalid option", &a);
+            return 2;
         }
 
-
-            if "xveB".find(ch).is_none() {
-                eprintln!("sush: set: {}{}: invalid option", &pm, &ch);
-                return 2;
-            }
-            set_option(core, ch, pm);
+        set_option(core, ch, pm);
     }
     0
 }
