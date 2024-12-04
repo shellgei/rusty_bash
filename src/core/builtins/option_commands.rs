@@ -25,7 +25,7 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     }
 }
 
-fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
+pub fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
     for a in args {
         if a.starts_with("--") {
             return 0;

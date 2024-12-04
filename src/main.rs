@@ -93,7 +93,9 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
-    option_commands::set(&mut core, &mut options);
+    //option_commands::set(&mut core, &mut options);
+    options.remove(0);
+    option_commands::set_options(&mut core, &mut options);
     option_commands::set_parameters(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
 
