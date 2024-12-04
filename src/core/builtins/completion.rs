@@ -5,7 +5,7 @@ use crate::{file_check, ShellCore, Feeder};
 use crate::core::HashMap;
 use crate::elements::word::Word;
 use crate::utils;
-use crate::utils::{directory, option};
+use crate::utils::{arg, directory};
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
@@ -263,11 +263,11 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let mut options = HashMap::new();
-    let prefix = option::consume_with_next_arg("-P", args);
+    let prefix = arg::consume_with_next_arg("-P", args);
     if prefix != None {
         options.insert("-P".to_string(), prefix.unwrap().clone());
     }
-    let suffix = option::consume_with_next_arg("-S", args);
+    let suffix = arg::consume_with_next_arg("-S", args);
     if suffix != None {
         options.insert("-S".to_string(), suffix.unwrap().clone());
     }

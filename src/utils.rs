@@ -8,7 +8,7 @@ pub mod exit;
 pub mod file;
 pub mod file_check;
 pub mod glob;
-pub mod option;
+pub mod arg;
 pub mod random;
 
 pub fn reserved(w: &str) -> bool {

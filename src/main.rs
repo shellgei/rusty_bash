@@ -7,13 +7,13 @@ mod elements;
 mod signal;
 mod utils;
 
-use builtins::{option_commands, parameter};
+use builtins::{option, parameter};
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
-use utils::{exit, file_check, option};
+use utils::{exit, file_check, arg};
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");
@@ -60,18 +60,18 @@ fn configure(args: &Vec<String>) -> ShellCore {
         }
     }
 
-    option_commands::set_options(&mut core, &options);
+    option::set_options(&mut core, &options);
     parameter::set_positions(&mut core, &parameters);
     core
 }
 
 fn main() {
-    let mut args = option::dissolve_options(&env::args().collect());
+    let mut args = arg::dissolve_options(&env::args().collect());
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
 
-    let c_parts = option::consume_with_subsequents("-c", &mut args);
+    let c_parts = arg::consume_with_subsequents("-c", &mut args);
     if c_parts.len() != 0 {
         run_and_exit_c_option(&args, &c_parts);
     }
@@ -156,7 +156,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
         vec![args[0].clone()]
     };
 
-    option_commands::set_options(&mut core, &mut args[1..].to_vec());
+    option::set_options(&mut core, &mut args[1..].to_vec());
     parameter::set_positions(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
     core.data.flags.retain(|f| f != 'i');

@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::utils::exit;
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
-use crate::utils::option;
+use crate::utils::arg;
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
     match core.data.position_parameters.pop() {
@@ -91,7 +91,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return print_all(core);
     }
 
-    let args = option::dissolve_options(args);
+    let args = arg::dissolve_options(args);
     dbg!("{:?}", &args);
 
     0
