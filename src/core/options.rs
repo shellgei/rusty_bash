@@ -76,18 +76,14 @@ impl Options {
         }
     }
 
-    pub fn print_all(&self) {
-        let mut list = self.opts.iter()
-                       .map(|opt| Self::format(opt.0, *opt.1))
-                       .collect::<Vec<String>>();
+    pub fn print_all(&self, positive: bool) {
+        let f = match positive {
+            true => Self::format,
+            false => Self::format2,
+        };
 
-        list.sort();
-        list.iter().for_each(|e| println!("{}", e));
-    }
-
-    pub fn print_all2(&self) {
         let mut list = self.opts.iter()
-                       .map(|opt| Self::format2(opt.0, *opt.1))
+                       .map(|opt| f(opt.0, *opt.1))
                        .collect::<Vec<String>>();
 
         list.sort();

@@ -43,13 +43,8 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() == 0 {
         panic!("never come here");
-    }
-
-    if args.len() == 1 {
-        return match args[0] == "set" {
-            true  => parameter::print_all(core),
-            false => parameter::set_positions(core, &args),
-        }
+    }else if args.len() == 1 {
+        return parameter::print_all(core);
     }
 
     if args[1].starts_with("--") {
@@ -57,27 +52,17 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return parameter::set_positions(core, &args)
     }
 
-    if args[1] == "-o" {
-        if args.len() == 2 {
-            core.options.print_all();
-            return 0;
-        }else{
-            match core.options.set(&args[2], true) {
-                true  => return 0,
-                false => return 2,
-            }
-        }
-    }
+    if args[1] == "-o" || args[1] == "+o" {
+        let positive = args[1] == "-o";
 
-    if args[1] == "+o" {
         if args.len() == 2 {
-            core.options.print_all2();
+            core.options.print_all(positive);
             return 0;
         }else{
-            match core.options.set(&args[2], false) {
-                true  => return 0,
-                false => return 2,
-            }
+            return match core.options.set(&args[2], positive) {
+                true  => 0,
+                false => 2,
+            };
         }
     }
 
@@ -130,7 +115,7 @@ pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i32 {
     if all {
-        core.shopts.print_all();
+        core.shopts.print_all(true);
         return 0;
     }
 
