@@ -89,11 +89,11 @@ fn main() {
             }else{
                 vec![args[0].clone()]
             };
+            options = args[0..].to_vec();
         },
     }
 
     let mut core = ShellCore::new();
-    //option_commands::set(&mut core, &mut options);
     options.remove(0);
     option_commands::set_options(&mut core, &mut options);
     option_commands::set_parameters(&mut core, &mut parameters);
@@ -168,6 +168,9 @@ fn main_loop(core: &mut ShellCore) {
 
 fn main_c_option(core: &mut ShellCore, script: &String) {
     core.data.flags += "c";
+    if core.data.flags.contains('v') {
+        eprintln!("{}", &script);
+    }
     let mut feeder = Feeder::new(script);
     if let Some(mut s) = Script::parse(&mut feeder, core, false){
         s.exec(core);
