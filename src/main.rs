@@ -45,9 +45,10 @@ fn read_rc_file(core: &mut ShellCore) {
     }
 }
 
-fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec<String>,
-             script: &mut String, core: &mut ShellCore) {
+fn configure(args: &Vec<String>, script: &mut String, core: &mut ShellCore) {
     let mut pop = 0;
+    let mut parameters = args.to_vec();
+    let mut options = vec![];
 
     for i in 1..args.len() {
         if args[i].starts_with("-") {
@@ -56,13 +57,13 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
             pop += 1;
         }else{
             *script = args[i].clone();
-            *parameters = args[i..].to_vec();
+            parameters = args[i..].to_vec();
             break;
         }
     }
 
-    option_commands::set_options(core, options);
-    option_commands::set_parameters(core, parameters);
+    option_commands::set_options(core, &options);
+    option_commands::set_parameters(core, &parameters);
 }
 
 fn main() {
@@ -78,10 +79,8 @@ fn main() {
 
     let mut core = ShellCore::new();
     let mut script = "-".to_string(); // stdin or filename
-    let mut parameters = args.to_vec();
-    let mut options = vec![];
 
-    configure(&args, &mut options, &mut parameters, &mut script, &mut core);
+    configure(&args, &mut script, &mut core);
     signal::run_signal_check(&mut core);
 
     if script == "-" {
