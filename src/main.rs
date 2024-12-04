@@ -47,12 +47,11 @@ fn read_rc_file(core: &mut ShellCore) {
 
 fn configure(args: &Vec<String>) -> ShellCore {
     let mut core = ShellCore::new();
-    let mut parameters = args.to_vec();
+    let mut parameters = vec![args[0].clone()];
     let mut options = vec![];
 
     for i in 1..args.len() {
         if args[i].starts_with("-") {
-            parameters.remove(1);
             options.push(args[i].clone());
         }else{
             core.script_name = args[i].clone();
