@@ -76,7 +76,7 @@ fn main() {
 
     let c_parts = option::consume_with_subsequents("-c", &mut args);
     match c_parts.len() {
-        0 => {},
+        0 => configure(&args, &mut options, &mut parameters, &mut script),
         1 => {
             println!("{}: -c: option requires an argument", &args[0]);
             process::exit(2);                
@@ -84,25 +84,18 @@ fn main() {
         _ => {
             script = c_parts[1].clone();
             c_flag = true;
+            parameters = if c_parts.len() > 2 {
+                c_parts[2..].to_vec()
+            }else{
+                vec![args[0].clone()]
+            };
+            options = args[0..].to_vec();
         },
     }
 
-    /*
-    if args.contains(&"-c".to_string()) {
-        script = match option::consume_with_next_arg("-c", &mut args) {
-            Some(s) => s,
-            None => {
-                println!("{}: -c: option requires an argument", &args[0]);
-                process::exit(2);                
-            }
-        };
-        c_flag = true;
-    }*/
-
-    configure(&args, &mut options, &mut parameters, &mut script);
-
     let mut core = ShellCore::new();
-    option_commands::set(&mut core, &mut options);
+    options.remove(0);
+    option_commands::set_options(&mut core, &mut options);
     option_commands::set_parameters(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
 
@@ -175,6 +168,9 @@ fn main_loop(core: &mut ShellCore) {
 
 fn main_c_option(core: &mut ShellCore, script: &String) {
     core.data.flags += "c";
+    if core.data.flags.contains('v') {
+        eprintln!("{}", &script);
+    }
     let mut feeder = Feeder::new(script);
     if let Some(mut s) = Script::parse(&mut feeder, core, false){
         s.exec(core);

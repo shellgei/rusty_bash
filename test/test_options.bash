@@ -29,6 +29,12 @@ res=$(echo abc | $com -c "rev")
 res=$($com -c -)
 [[ "$?" -eq 2 ]] || err $LINENO
 
+res=$($com -c 'echo $@' a b c)
+[ "$res" == "b c" ] || err $LINENO
+
+res=$($com -c 'echo $0' a b c)
+[ "$res" == "a" ] || err $LINENO
+
 ### -e
 
 res=$($com <<< 'set -e ; false ; echo NG')
