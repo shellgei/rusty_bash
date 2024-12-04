@@ -76,7 +76,7 @@ fn main() {
 
     let c_parts = option::consume_with_subsequents("-c", &mut args);
     match c_parts.len() {
-        0 => {},
+        0 => configure(&args, &mut options, &mut parameters, &mut script),
         1 => {
             println!("{}: -c: option requires an argument", &args[0]);
             process::exit(2);                
@@ -84,22 +84,9 @@ fn main() {
         _ => {
             script = c_parts[1].clone();
             c_flag = true;
+            parameters = c_parts[2..].to_vec();
         },
     }
-
-    /*
-    if args.contains(&"-c".to_string()) {
-        script = match option::consume_with_next_arg("-c", &mut args) {
-            Some(s) => s,
-            None => {
-                println!("{}: -c: option requires an argument", &args[0]);
-                process::exit(2);                
-            }
-        };
-        c_flag = true;
-    }*/
-
-    configure(&args, &mut options, &mut parameters, &mut script);
 
     let mut core = ShellCore::new();
     option_commands::set(&mut core, &mut options);
