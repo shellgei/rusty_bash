@@ -16,6 +16,17 @@ pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> Option<S
     }
 }
 
+pub fn consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<String> {
+    match args.iter().position(|a| a == prev_opt) {
+        Some(pos) => {
+            let ans = args[pos..].to_vec();
+            *args = args[..pos].to_vec();
+            ans
+        },
+        None => vec![],
+    }
+}
+
 fn dissolve_option(opt: &str) -> Vec<String> {
     if opt.starts_with("--") || ! opt.starts_with("-") {
         return vec![opt.to_string()];

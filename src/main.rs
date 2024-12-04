@@ -73,6 +73,21 @@ fn main() {
     let mut script = "-".to_string(); // stdin, filename, or program after -c option
     let mut c_flag = false;
 
+
+    let c_parts = option::consume_with_subsequents("-c", &mut args);
+    match c_parts.len() {
+        0 => {},
+        1 => {
+            println!("{}: -c: option requires an argument", &args[0]);
+            process::exit(2);                
+        },
+        _ => {
+            script = c_parts[1].clone();
+            c_flag = true;
+        },
+    }
+
+    /*
     if args.contains(&"-c".to_string()) {
         script = match option::consume_with_next_arg("-c", &mut args) {
             Some(s) => s,
@@ -82,7 +97,7 @@ fn main() {
             }
         };
         c_flag = true;
-    }
+    }*/
 
     configure(&args, &mut options, &mut parameters, &mut script);
 
