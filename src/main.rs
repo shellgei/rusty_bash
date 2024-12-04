@@ -7,7 +7,7 @@ mod elements;
 mod signal;
 mod utils;
 
-use builtins::option_commands;
+use builtins::{option_commands, parameter};
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
@@ -61,7 +61,7 @@ fn configure(args: &Vec<String>) -> ShellCore {
     }
 
     option_commands::set_options(&mut core, &options);
-    option_commands::set_parameters(&mut core, &parameters);
+    parameter::set_positions(&mut core, &parameters);
     core
 }
 
@@ -157,7 +157,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     };
 
     option_commands::set_options(&mut core, &mut args[1..].to_vec());
-    option_commands::set_parameters(&mut core, &mut parameters);
+    parameter::set_positions(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
     core.data.flags.retain(|f| f != 'i');
 

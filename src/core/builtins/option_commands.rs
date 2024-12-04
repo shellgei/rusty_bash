@@ -2,18 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::{error, exit};
+use crate::utils::error;
 use super::parameter;
-
-pub fn set_parameters(core: &mut ShellCore, args: &[String]) -> i32 {
-    match core.data.position_parameters.pop() {
-        None => exit::internal("empty param stack"),
-        _    => {},
-    }
-    core.data.position_parameters.push(args.to_vec());
-    core.data.set_param("#", &(args.len()-1).to_string());
-    0
-}
 
 fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     if pm == '+' {
@@ -49,13 +39,13 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         1 => {
             match args[0] == "set" {
                 true  => parameter::print_all(core),
-                false => set_parameters(core, args),
+                false => parameter::set_positions(core, args),
             }
         },
         _ => {
             if args[1].starts_with("--") {
                 args.remove(0);
-                return set_parameters(core, args)
+                return parameter::set_positions(core, args)
             }
 
             if args[1] == "-o" {
@@ -84,7 +74,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             match args[1].starts_with("-") || args[1].starts_with("+") {
                 true  => set_options(core, &args[1..]),
-                false => set_parameters(core, args),
+                false => parameter::set_positions(core, args),
             }
         },
     }

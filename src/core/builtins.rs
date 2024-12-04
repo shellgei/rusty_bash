@@ -6,7 +6,7 @@ mod cd;
 pub mod completion;
 mod history;
 mod job_commands;
-mod parameter;
+pub mod parameter;
 pub mod option_commands;
 mod pwd;
 mod read;

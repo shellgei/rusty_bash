@@ -7,6 +7,16 @@ use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
 use crate::utils::option;
 
+pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
+    match core.data.position_parameters.pop() {
+        None => exit::internal("empty param stack"),
+        _    => {},
+    }
+    core.data.position_parameters.push(args.to_vec());
+    core.data.set_param("#", &(args.len()-1).to_string());
+    0
+}
+
 fn print_data(k: &str, core: &mut ShellCore) {
     match core.data.get_value(k) {
         Some(Value::EvaluatedSingle(s)) => {
