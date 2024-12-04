@@ -66,7 +66,7 @@ fn configure(args: &Vec<String>) -> ShellCore {
 }
 
 fn main() {
-    let mut args: Vec<String> = option::dissolve_options(&env::args().collect());
+    let mut args = option::dissolve_options(&env::args().collect());
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
