@@ -46,7 +46,7 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec<String>,
-             script: &mut String) {
+             script: &mut String, core: &mut ShellCore) {
     let mut pop = 0;
 
     for i in 1..args.len() {
@@ -60,6 +60,9 @@ fn configure(args: &Vec<String>, options: &mut Vec<String>, parameters: &mut Vec
             break;
         }
     }
+
+    option_commands::set_options(core, options);
+    option_commands::set_parameters(core, parameters);
 }
 
 fn main() {
@@ -78,9 +81,7 @@ fn main() {
     let mut parameters = args.to_vec();
     let mut options = vec![];
 
-    configure(&args, &mut options, &mut parameters, &mut script);
-    option_commands::set_options(&mut core, &mut options);
-    option_commands::set_parameters(&mut core, &mut parameters);
+    configure(&args, &mut options, &mut parameters, &mut script, &mut core);
     signal::run_signal_check(&mut core);
 
     if script == "-" {
@@ -156,6 +157,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     }else{
         vec![args[0].clone()]
     };
+
     option_commands::set_options(&mut core, &mut args[1..].to_vec());
     option_commands::set_parameters(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
@@ -165,6 +167,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     if core.data.flags.contains('v') {
         eprintln!("{}", &c_parts[1]);
     }
+
     let mut feeder = Feeder::new(&c_parts[1]);
     if let Some(mut s) = Script::parse(&mut feeder, &mut core, false){
         s.exec(&mut core);
