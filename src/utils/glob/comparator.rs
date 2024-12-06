@@ -29,27 +29,24 @@ fn nonspecial(cands: &mut Vec<String>, s: &String) {
 
 fn asterisk(cands: &mut Vec<String>) {
     let mut ans = vec![];
-    for cand in cands.into_iter() {
-        let mut s = String::new();
-        ans.push(s.clone());
-        for c in cand.chars().rev() {
-            s = c.to_string() + &s.clone();
-            ans.push(s.clone());
+    for cand in cands.iter_mut() {
+        let mut len = 0;
+        for c in cand.chars() {
+            ans.push(cand.clone().split_off(len));
+            len += c.len_utf8();
         }
+    }
+    if cands.len() != 0 {
+        ans.push("".to_string());
     }
 
     *cands = ans;
 }
 
 fn question(cands: &mut Vec<String>) {
-    let mut ans = vec![];
-    for cand in cands.into_iter() {
-        if let Some(c) = cand.chars().nth(0) {
-            let len = c.len_utf8();
-            ans.push(cand[len..].to_string());
-        }
-    }
-    *cands = ans;
+    cands.retain(|c| c.len() != 0 );
+    let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
+    cands.iter_mut().for_each(|c| {*c = c.split_off(len(c));});
 }
 
 fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
