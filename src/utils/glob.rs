@@ -8,6 +8,10 @@ pub enum GlobElem {
     Normal(String),
 }
 
+pub fn compare(word: &String, pattern: &Vec<GlobElem>) -> bool {
+    true
+}
+
 pub fn parse(pattern: &str) -> Vec<GlobElem> {
     let mut remaining = pattern.to_string();
     let mut ans = vec![];

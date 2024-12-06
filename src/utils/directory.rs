@@ -1,5 +1,6 @@
 use std::fs::DirEntry;
 use std::path::Path;
+use super::glob;
 
 pub fn files(dir: &str) -> Vec<String> {
     let dir = if dir == "" {"."}else{dir};
@@ -16,6 +17,9 @@ pub fn files(dir: &str) -> Vec<String> {
 }
 
 pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
-    files(dir)
+    let pat = glob::parse(pattern);
+    files(dir).iter()
+              .map(|f| f.clone())
+              .filter(|f| glob::compare(f, &pat) )
+              .collect()
 }
-
