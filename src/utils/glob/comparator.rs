@@ -49,10 +49,10 @@ fn asterisk(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
-fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
+fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, not_inv: bool) {
     let mut ans = vec![];
     for cand in cands.into_iter() {
-        if cs.iter().any(|c| cand.starts_with(*c)) ^ inverse {
+        if cs.iter().any(|c| cand.starts_with(*c)) == not_inv {
             let h = cand.chars().nth(0).unwrap();
             ans.push(cand[h.len_utf8()..].to_string());
         }
