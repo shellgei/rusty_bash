@@ -50,12 +50,7 @@ fn asterisk(cands: &mut Vec<String>) {
 }
 
 fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, not_inv: bool) {
-    let mut ans = vec![];
-    for cand in cands.into_iter() {
-        if cs.iter().any(|c| cand.starts_with(*c)) == not_inv {
-            let h = cand.chars().nth(0).unwrap();
-            ans.push(cand[h.len_utf8()..].to_string());
-        }
-    }
-    *cands = ans;
+    cands.retain(|cand| cs.iter().any(|c| cand.starts_with(*c)) == not_inv );
+    let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
+    cands.iter_mut().for_each(|c| {*c = c.split_off(len(c));});
 }
