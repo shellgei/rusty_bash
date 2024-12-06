@@ -1,6 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod comparator;
+
 #[derive(Debug)]
 pub enum GlobElem {
     Symbol(char),
@@ -9,7 +11,7 @@ pub enum GlobElem {
 }
 
 pub fn compare(word: &String, pattern: &Vec<GlobElem>) -> bool {
-    true
+    comparator::shave_word(word, pattern).iter().any(|c| c == "")
 }
 
 pub fn parse(pattern: &str) -> Vec<GlobElem> {
