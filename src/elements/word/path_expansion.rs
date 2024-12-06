@@ -10,7 +10,9 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
 }
 
 fn expand(pattern: &str) -> Vec<String> {
-    eprintln!("glob: {:?}", &pattern);
-    eprintln!("glob: {:?}", &glob::parse(pattern));
-    vec![]
+    if "*?@+![".chars().all(|c| ! pattern.contains(c)) {
+        return vec![];
+    }
+
+    directory::glob("", patttern)
 }
