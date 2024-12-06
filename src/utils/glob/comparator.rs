@@ -14,8 +14,8 @@ pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
 pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     match w {
         GlobElem::Normal(s) => nonspecial(candidates, &s),
-        GlobElem::Symbol('*') => asterisk(candidates),
         GlobElem::Symbol('?') => question(candidates),
+        GlobElem::Symbol('*') => asterisk(candidates),
         GlobElem::OneOf(not, cs) => one_of(candidates, &cs, *not),
         GlobElem::ExtGlob(prefix, ps) => extglob::shave(candidates, *prefix, &ps),
         GlobElem::Symbol(_) => exit::internal("Unknown glob symbol"),
@@ -27,8 +27,18 @@ fn nonspecial(cands: &mut Vec<String>, s: &String) {
     cands.iter_mut().for_each(|c| {*c = c.split_off(s.len());});
 }
 
+fn question(cands: &mut Vec<String>) {
+    cands.retain(|c| c.len() != 0 );
+    let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
+    cands.iter_mut().for_each(|c| {*c = c.split_off(len(c));});
+}
+
 fn asterisk(cands: &mut Vec<String>) {
-    let mut ans = vec![];
+    if cands.len() == 0 {
+        return;
+    }
+
+    let mut ans = vec!["".to_string()];
     for cand in cands.iter_mut() {
         let mut len = 0;
         for c in cand.chars() {
@@ -36,17 +46,7 @@ fn asterisk(cands: &mut Vec<String>) {
             len += c.len_utf8();
         }
     }
-    if cands.len() != 0 {
-        ans.push("".to_string());
-    }
-
     *cands = ans;
-}
-
-fn question(cands: &mut Vec<String>) {
-    cands.retain(|c| c.len() != 0 );
-    let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
-    cands.iter_mut().for_each(|c| {*c = c.split_off(len(c));});
 }
 
 fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, inverse: bool) {
