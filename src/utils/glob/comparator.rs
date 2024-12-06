@@ -11,33 +11,19 @@ pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
 
 pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     match w {
-        GlobElem::Normal(s) => nonspecial(candidates, &s),
+        GlobElem::Normal(s) => string(candidates, &s),
         GlobElem::Symbol('?') => question(candidates),
         _ => panic!("Unknown glob symbol"),
     }
 }
 
-fn nonspecial(cands: &mut Vec<String>, s: &String) {
-    let mut ans = vec![];
-
-    for c in cands.into_iter() {
-        if ! c.starts_with(s) {
-            continue;
-        }
-
-        ans.push(c[s.len()..].to_string());
-    }
-
-    *cands = ans;
+fn string(cands: &mut Vec<String>, s: &String) {
+    cands.retain(|c| c.starts_with(s) );
+    cands.iter_mut().for_each(|c| {*c = c.split_off(s.len());});
 }
 
 fn question(cands: &mut Vec<String>) {
-    let mut ans = vec![];
-    for cand in cands.into_iter() {
-        if let Some(c) = cand.chars().nth(0) {
-            let len = c.len_utf8();
-            ans.push(cand[len..].to_string());
-        }
-     }
-    *cands = ans;
+    cands.retain(|c| c.len() != 0 );
+    let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
+    cands.iter_mut().for_each(|c| {*c = c.split_off(len(c));});
 }
