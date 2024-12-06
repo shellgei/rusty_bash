@@ -23,17 +23,8 @@ pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
 }
 
 fn nonspecial(cands: &mut Vec<String>, s: &String) {
-    let mut ans = vec![];
-
-    for c in cands.into_iter() {
-        if ! c.starts_with(s) {
-            continue;
-        }
-        
-        ans.push(c[s.len()..].to_string());
-    }
-
-    *cands = ans;
+    cands.retain(|c| c.starts_with(s) );
+    cands.iter_mut().for_each(|c| {*c = c.split_off(s.len());});
 }
 
 fn asterisk(cands: &mut Vec<String>) {
