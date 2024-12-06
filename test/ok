@@ -3,7 +3,7 @@
 ./test_glob.bash
 ./test_builtins.bash
 ./test_brace.bash
+./test_parameters.bash
 ./test_compound.bash
 ./test_others.bash
-./test_parameters.bash
 ./test_job.bash

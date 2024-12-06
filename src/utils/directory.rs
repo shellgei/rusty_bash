@@ -1,23 +1,22 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::utils::file;
+use std::fs::DirEntry;
 use std::path::Path;
 use super::glob;
 
 pub fn files(dir: &str) -> Vec<String> {
-    let readdir = match dir {
-        "" => Path::new(".").read_dir(),
-        d  => Path::new(d).read_dir(),
+    let dir = if dir == "" {"."}else{dir};
+
+    let entries = match Path::new(dir).read_dir() {
+        Ok(es) => es,
+        Err(_) => return vec![],
     };
 
-    if ! readdir.is_ok() {
-        return vec![];
-    }
+    let f = |e: DirEntry| e.file_name()
+               .to_string_lossy().to_string();
 
-    readdir.unwrap()
-        .map(|e| file::oss_to_name(&e.unwrap().file_name()) )
-        .collect()
+    entries.map(|e| f(e.unwrap()) ).collect()
 }
 
 pub fn glob(dir: &str, pattern: &str, extglob: bool) -> Vec<String> {
