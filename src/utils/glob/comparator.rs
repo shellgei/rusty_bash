@@ -13,7 +13,7 @@ pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
 
 pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     match w {
-        GlobElem::Normal(s) => nonspecial(candidates, &s),
+        GlobElem::Normal(s) => normal(candidates, &s),
         GlobElem::Symbol('?') => question(candidates),
         GlobElem::Symbol('*') => asterisk(candidates),
         GlobElem::OneOf(not, cs) => one_of(candidates, &cs, *not),
@@ -22,7 +22,7 @@ pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     }
 }
 
-fn nonspecial(cands: &mut Vec<String>, s: &String) {
+fn normal(cands: &mut Vec<String>, s: &String) {
     cands.retain(|c| c.starts_with(s) );
     cands.iter_mut().for_each(|c| {*c = c.split_off(s.len());});
 }
