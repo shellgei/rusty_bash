@@ -13,6 +13,7 @@ pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     match w {
         GlobElem::Normal(s) => normal(candidates, &s),
         GlobElem::Symbol('?') => question(candidates),
+        GlobElem::Symbol('*') => asterisk(candidates),
         _ => panic!("Unknown glob symbol"),
     }
 }
@@ -26,4 +27,20 @@ fn question(cands: &mut Vec<String>) {
     cands.retain(|c| c.len() != 0 );
     let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
     cands.iter_mut().for_each(|c| {*c = c.split_off(len(c));});
+}
+
+fn asterisk(cands: &mut Vec<String>) {
+    if cands.len() == 0 {
+        return;
+    }
+
+    let mut ans = vec!["".to_string()];
+    for cand in cands.iter_mut() {
+        let mut len = 0;
+        for c in cand.chars() {
+            ans.push(cand.clone().split_off(len));
+            len += c.len_utf8();
+        }
+    }
+    *cands = ans;
 }
