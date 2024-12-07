@@ -18,9 +18,14 @@ fn expand(pattern: &str) -> Vec<String> {
         return vec![];
     }
 
-    let div = pattern.split("/");
-    let last = div.last().unwrap();
-    let dir = &pattern[0..pattern.len()-last.len()];
-    directory::glob(dir, pattern.split("/").last().unwrap())
-}
+    let mut paths = vec!["".to_string()];
+ 
+    for dir_pat in pattern.split("/") {
+        paths = paths.iter()
+                .map(|c| directory::glob(&c, &dir_pat) )
+                .collect::<Vec<Vec<String>>>()
+                .concat();
+    }
 
+    paths
+}
