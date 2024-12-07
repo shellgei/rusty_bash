@@ -17,9 +17,9 @@ pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     }
 }
 
-fn string(cands: &mut Vec<String>, s: &String) {
-    cands.retain(|c| c.starts_with(s) );
-    cands.iter_mut().for_each(|c| {*c = c.split_off(s.len());});
+fn string(cands: &mut Vec<String>, pat: &String) {
+    cands.retain(|c| c.starts_with(pat) );
+    cands.iter_mut().for_each(|c| {*c = c.split_off(pat.len());});
 }
 
 fn question(cands: &mut Vec<String>) {
