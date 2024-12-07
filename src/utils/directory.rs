@@ -17,11 +17,13 @@ pub fn files(dir: &str) -> Vec<String> {
 }
 
 pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
-    let make_path = |file| dir.to_owned() + file + "/";
+    let make_path = |f: &str| dir.to_owned() + f + "/";
 
-    let mut fs = files(dir);
     let pat = glob::parse(pattern);
-    fs.retain(|f| glob::compare(f, &pat));
+    files(dir).iter()
+              .map(|f| f.clone())
+              .filter(|f| glob::compare(f, &pat) )
+              .map(|f| make_path(&f) )
+              .collect()
 
-    fs.iter().map(|f| make_path(&f) ).collect()
 }
