@@ -26,6 +26,5 @@ fn expand(pattern: &str) -> Vec<String> {
                 .collect::<Vec<Vec<String>>>()
                 .concat();
     }
-
     paths
 }
