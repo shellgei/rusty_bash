@@ -25,5 +25,4 @@ pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
               .filter(|f| glob::compare(f, &pat) )
               .map(|f| make_path(&f) )
               .collect()
-
 }

@@ -26,5 +26,8 @@ fn expand(pattern: &str) -> Vec<String> {
                 .collect::<Vec<Vec<String>>>()
                 .concat();
     }
+
+    paths.iter_mut().for_each(|e| {e.pop();} );
+    paths.sort();
     paths
 }
