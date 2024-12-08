@@ -33,9 +33,10 @@ pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
 
     let show_hidden = pattern.starts_with(".");
     let pat = glob::parse(pattern);
-    files(dir).iter()
-              .filter(|f| show_hidden || !f.starts_with(".") )
-              .filter(|f| glob::compare(f, &pat) )
-              .map(|f| make_path(&f) )
-              .collect()
+    [files(dir), vec![".".to_string(), "..".to_string()] ]
+        .concat().iter()
+        .filter(|f| show_hidden || !f.starts_with(".") )
+        .filter(|f| glob::compare(f, &pat) )
+        .map(|f| make_path(&f) )
+        .collect()
 }
