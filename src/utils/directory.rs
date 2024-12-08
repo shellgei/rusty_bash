@@ -4,6 +4,7 @@
 use std::fs::DirEntry;
 use std::path::Path;
 use super::glob;
+use super::file_check;
 
 pub fn files(dir: &str) -> Vec<String> {
     let dir = if dir == "" {"."}else{dir};
@@ -23,7 +24,11 @@ pub fn glob(dir: &str, pattern: &str, extglob: bool) -> Vec<String> {
     let make_path = |file| dir.to_owned() + file + "/";
 
     if ["", ".", ".."].contains(&pattern) {
-        return vec![make_path(pattern)];
+        let path = make_path(pattern);
+        match file_check::exists(&path) {
+            true  => return vec![path],
+            false => return vec![],
+        }
     }
 
     let mut fs = files(dir);

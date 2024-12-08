@@ -49,6 +49,9 @@ res=$($com <<< "echo /*'b'*" | grep -F '*')
 res=$($com <<< 'echo /"*"' | grep -F '*')
 [ "$?" == "0" ] || err $LINENO
 
+res=$($com <<< 'cd /etc ; echo *.conf/' | grep -F '*')
+[ "$?" == "0" ] || err $LINENO
+
 res=$($com <<< 'echo @(あ|{い,う,})')
 [ "$res" == "@(あ|い) @(あ|う) @(あ|)" ] || err $LINENO
 
