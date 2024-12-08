@@ -31,12 +31,11 @@ pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
         }
     }
 
-    let hidden_check = |f: &str| ! f.starts_with(".") || pattern.starts_with(".");
-
+    let show_hidden = pattern.starts_with(".");
     let pat = glob::parse(pattern);
     files(dir).iter()
               .map(|f| f.clone())
-              .filter(|f| hidden_check(&f) )
+              .filter(|f| show_hidden || !f.starts_with(".") )
               .filter(|f| glob::compare(f, &pat) )
               .map(|f| make_path(&f) )
               .collect()
