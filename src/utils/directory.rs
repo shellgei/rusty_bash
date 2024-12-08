@@ -1,3 +1,7 @@
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-License-Identifier: BSD-3-Clause
+
+use std::fs;
 use std::fs::DirEntry;
 use std::path::Path;
 use super::glob;
@@ -18,6 +22,14 @@ pub fn files(dir: &str) -> Vec<String> {
 
 pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
     let make_path = |f: &str| dir.to_owned() + f + "/";
+
+    if ["", ".", ".."].contains(&pattern) {
+        let path = make_path(pattern);
+        match fs::metadata(&path).is_ok() {
+            true  => return vec![path],
+            false => return vec![],
+        }
+    }
 
     let pat = glob::parse(pattern);
     files(dir).iter()
