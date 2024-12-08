@@ -21,7 +21,7 @@ pub fn files(dir: &str) -> Vec<String> {
 }
 
 pub fn glob(dir: &str, pattern: &str, extglob: bool) -> Vec<String> {
-    let make_path = |file| dir.to_owned() + file + "/";
+    let make_path = |f: &str| dir.to_owned() + f + "/";
 
     if ["", ".", ".."].contains(&pattern) {
         let path = make_path(pattern);
@@ -31,12 +31,12 @@ pub fn glob(dir: &str, pattern: &str, extglob: bool) -> Vec<String> {
         }
     }
 
-    let mut fs = files(dir);
-    fs.append( &mut vec![".".to_string(), "..".to_string()] );
-
+    let show_hidden = pattern.starts_with(".");
     let pat = glob::parse(pattern, extglob);
-    let compare = |file: &String| ( ! file.starts_with(".") || pattern.starts_with(".") )
-                            && glob::compare(file, &pat);
-
-    fs.iter().filter(|f| compare(f) ).map(|f| make_path(f) ).collect()
+    [files(dir), vec![".".to_string(), "..".to_string()] ].concat()
+              .iter()
+              .filter(|f| show_hidden || !f.starts_with(".") )
+              .filter(|f| glob::compare(f, &pat) )
+              .map(|f| make_path(&f) )
+              .collect()
 }
