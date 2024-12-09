@@ -23,7 +23,7 @@ pub fn files(dir: &str) -> Vec<String> {
 pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
     let make_path = |f: &str| dir.to_owned() + f + "/";
 
-    if ["", ".", ".."].contains(&pattern) {
+    if pattern == "" {
         let path = make_path(pattern);
         match fs::metadata(&path).is_ok() {
             true  => return vec![path],
