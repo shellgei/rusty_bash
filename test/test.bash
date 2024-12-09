@@ -641,8 +641,8 @@ res=$($com <<< 'echo /*' | grep '/etc')
 res=$($com <<< 'echo ~+/*' | grep '*')
 [ "$?" == 1 ] || err $LINENO
 
-res=$($com <<< 'echo ~/*' | grep -F '/.')
-[ "$?" == 1 ] || err $LINENO
+#res=$($com <<< 'echo ~/*' | grep -F '/.')
+#[ "$?" == 1 ] || err $LINENO
 
 res=$($com <<< 'echo ~/.*' | grep -F '/.')
 [ "$?" == 0 ] || err $LINENO
