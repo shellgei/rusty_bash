@@ -39,7 +39,11 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
         return files.iter().map(|f| dir.clone() + &f).collect();
     }
 
-    let mut ans = directory::glob(&dir, &(key + "*"), core.shopts.query("extglob"));
+    let mut ans = directory::glob(&dir, &(key.clone() + "*"), core.shopts.query("extglob"));
+    if key == "." {
+        ans.append(&mut directory::glob(&dir, ".", false));
+        ans.append(&mut directory::glob(&dir, "..", false));
+    }
     ans.iter_mut().for_each(|a| { a.pop(); } );
     ans.sort();
     ans
