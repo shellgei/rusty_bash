@@ -4,7 +4,7 @@
 pub mod parser;
 
 use crate::{Feeder, Script, ShellCore};
-use crate::utils::{error, exit};
+use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
@@ -16,18 +16,6 @@ use std::sync::atomic::Ordering::Relaxed;
 
 use nix::unistd::Pid;
 use nix::errno::Errno;
-
-fn readonly_error(name: &str, core: &mut ShellCore) {
-    core.data.set_param("?", "1");
-    let msg = error::readonly(name);
-    error::print(&msg, core);
-}
-
-fn bad_subscript_error(sub: &str, core: &mut ShellCore) {
-    core.data.set_param("?", "1");
-    let msg = error::bad_array_subscript(&sub);
-    error::print(&msg, core);
-}
 
 #[derive(Debug, Clone, Default)]
 pub struct SimpleCommand {
