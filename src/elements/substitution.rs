@@ -85,16 +85,8 @@ impl Substitution {
         }
         true
     }
-
-    pub fn set(&mut self, core: &mut ShellCore) -> bool {
-        if core.data.is_assoc(&self.key) {
-            return self.set_assoc(core);
-        }
-
-        if core.data.is_array(&self.key) {
-            return self.set_array(core);
-        }
-
+ 
+    fn set_param(&mut self, core: &mut ShellCore) -> bool {
         let result = match &self.evaluated_value {
             Value::EvaluatedSingle(v) => core.data.set_param(&self.key, &v),
             Value::EvaluatedArray(a) => core.data.set_array(&self.key, &a),
@@ -105,6 +97,16 @@ impl Substitution {
             readonly_error(&self.key, core);
         }
         true
+    }
+
+    pub fn set(&mut self, core: &mut ShellCore) -> bool {
+        if core.data.is_assoc(&self.key) {
+            self.set_assoc(core)
+        }else if core.data.is_array(&self.key) {
+            self.set_array(core)
+        }else {
+            self.set_param(core)
+        }
     }
 
     pub fn get_index(&mut self, core: &mut ShellCore) -> Option<String> {
