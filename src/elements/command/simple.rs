@@ -51,9 +51,7 @@ impl Command for SimpleCommand {
         }
 
         if self.args.len() == 0 {
-            core.data.set_param("_", "");
-            self.option_x_output(core);
-            self.exec_set_params(core);
+            self.exec_set_param(core);
             None
         }else if Self::check_sigint(core) {
             None
@@ -142,47 +140,12 @@ impl SimpleCommand {
         false
     }
 
-    fn exec_set_params(&mut self, core: &mut ShellCore) {
-        for subs in &mut self.substitutions {
-            subs.set(core);
-            /*
-            if core.data.is_assoc(&subs.key) {
-                let index = subs.get_index(core);
-                let result = match (&subs.evaluated_value, index) {
-                    (Value::EvaluatedSingle(v), Some(k)) 
-                      => core.data.set_assoc_elem(&subs.key, v, &k),
-                    _ => return bad_subscript_error(&subs.text, core),
-                };
-                if ! result {
-                    readonly_error(&subs.key, core);
-                }
-            }
-
-            let index = match subs.get_index(core) {
-                Some(s) => {
-                    match s.parse::<usize>() {
-                        Ok(n) => Some(n),
-                        _ => return bad_subscript_error(&subs.text, core),
-                    }
-                },
-                None => None,
-            };
-
-            let result = match (&subs.evaluated_value, index) {
-                (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&subs.key, v, n),
-                (_, Some(_)) => false,
-                (Value::EvaluatedSingle(v), _) => core.data.set_param(&subs.key, &v),
-                (Value::EvaluatedArray(a), _) => core.data.set_array(&subs.key, &a),
-                _ => exit::internal("Unknown variable"),
-            };
-
-            if ! result {
-                readonly_error(&subs.key, core);
-            }
-            */
-        }
+    fn exec_set_param(&mut self, core: &mut ShellCore) {
+        core.data.set_param("_", "");
+        self.option_x_output(core);
+        self.substitutions.iter_mut().for_each(|s| {s.set(core);});
     }
-    
+
     fn set_local_params(&mut self, core: &mut ShellCore) {
         for s in &mut self.substitutions {
             let index = match s.get_index(core) {
