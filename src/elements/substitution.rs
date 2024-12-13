@@ -3,6 +3,8 @@
 
 use crate::{ShellCore, Feeder};
 use crate::core::data::Value;
+use crate::utils::error;
+use crate::utils::exit;
 use super::array::Array;
 use super::subscript::Subscript;
 use super::word::Word;
@@ -15,6 +17,20 @@ pub struct Substitution {
     pub value: Value,
     pub evaluated_value: Value,
     pub append: bool,
+}
+
+fn readonly_error(name: &str, core: &mut ShellCore) -> bool {
+    core.data.set_param("?", "1");
+    let msg = error::readonly(name);
+    error::print(&msg, core);
+    false
+}
+
+fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
+    core.data.set_param("?", "1");
+    let msg = error::bad_array_subscript(&sub);
+    error::print(&msg, core);
+    false
 }
 
 impl Substitution {
@@ -30,6 +46,43 @@ impl Substitution {
             Value::None => false,
             _ => true,
         }
+    }
+
+    pub fn set(&mut self, core: &mut ShellCore) -> bool {
+        if core.data.is_assoc(&self.key) {
+            let index = self.get_index(core);
+            let result = match (&self.evaluated_value, index) {
+                (Value::EvaluatedSingle(v), Some(k)) 
+                  => core.data.set_assoc_elem(&self.key, v, &k),
+                _ => return bad_subscript_error(&self.text, core),
+            };
+            if ! result {
+                readonly_error(&self.key, core);
+            }
+        }
+
+        let index = match self.get_index(core) {
+            Some(s) => {
+                match s.parse::<usize>() {
+                    Ok(n) => Some(n),
+                    _ => return bad_subscript_error(&self.text, core),
+                }
+            },
+            None => None,
+        };
+
+        let result = match (&self.evaluated_value, index) {
+            (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&self.key, v, n),
+            (_, Some(_)) => false,
+            (Value::EvaluatedSingle(v), _) => core.data.set_param(&self.key, &v),
+            (Value::EvaluatedArray(a), _) => core.data.set_array(&self.key, &a),
+            _ => exit::internal("Unknown variable"),
+        };
+
+        if ! result {
+            readonly_error(&self.key, core);
+        }
+        true
     }
 
     pub fn get_index(&mut self, core: &mut ShellCore) -> Option<String> {
