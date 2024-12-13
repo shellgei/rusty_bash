@@ -53,8 +53,6 @@ impl Command for SimpleCommand {
         if self.args.len() == 0 {
             self.exec_set_param(core);
             None
-        }else if Self::check_sigint(core) {
-            None
         }else{
             self.exec_command(core, pipe)
         }
@@ -119,6 +117,10 @@ impl SimpleCommand {
     }
 
     fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        if Self::check_sigint(core) {
+            return None;
+        }
+
         core.data.set_param("_", &self.args.last().unwrap());
         self.option_x_output(core);
 
