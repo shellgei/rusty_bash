@@ -72,7 +72,8 @@ impl Command for SimpleCommand {
             let mut f = core.data.functions[&self.args[0]].clone();
             f.run_as_command(&mut self.args, core);
         } else if core.builtins.contains_key(&self.args[0]) {
-            let mut special_args = self.substitutions_as_args.iter().map(|a| a.text.clone()).collect();
+            let mut special_args = self.substitutions_as_args.iter()
+                                       .map(|a| a.text.clone()).collect();
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
             self.exec_external_command(core);
@@ -100,23 +101,25 @@ impl SimpleCommand {
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::E2BIG) => exit::arg_list_too_long(&self.args[0], core),
             Err(Errno::EACCES) => exit::permission_denied(&self.args[0], core),
-            Err(Errno::ENOENT) => {
-                if core.data.functions.contains_key("command_not_found_handle") {
-                    let s = "command_not_found_handle ".to_owned() + &self.args[0].clone();
-                    let mut f = Feeder::new(&s);
-                    match Script::parse(&mut f, core, false) {
-                        Some(mut script) => script.exec(core),
-                        _ => {},
-                    }
-                }
-                exit::not_found(&self.args[0], core)
-            },
+            Err(Errno::ENOENT) => self.run_command_not_found(core),
             Err(err) => {
                 eprintln!("Failed to execute. {:?}", err);
                 process::exit(127)
             }
             _ => exit::internal("never come here")
         }
+    }
+
+    fn run_command_not_found(&mut self, core: &mut ShellCore) -> ! {
+        if core.data.functions.contains_key("command_not_found_handle") {
+            let s = "command_not_found_handle ".to_owned() + &self.args[0].clone();
+            let mut f = Feeder::new(&s);
+            match Script::parse(&mut f, core, false) {
+                Some(mut script) => script.exec(core),
+                _ => {},
+            }
+        }
+        exit::not_found(&self.args[0], core)
     }
 
     fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
