@@ -38,7 +38,7 @@ impl Substitution {
                 if s.text.chars().all(|c| " \n\t[]".contains(c)) {
                     return Some("".to_string());
                 }
-                s.eval(core)
+                s.eval(core, &self.key)
             },
             _ => None,
         }

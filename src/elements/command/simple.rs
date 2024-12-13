@@ -141,6 +141,28 @@ impl SimpleCommand {
 
     fn exec_set_params(&mut self, core: &mut ShellCore) {
         for subs in &mut self.substitutions {
+            if core.data.is_assoc(&subs.key) {
+                let index = subs.get_index(core);
+                let result = match (&subs.evaluated_value, index) {
+                    (Value::EvaluatedSingle(v), Some(k)) => {
+                        core.data.set_assoc_elem(&subs.key, v, &k)
+                    },
+                    _ => {
+                        core.data.set_param("?", "1");
+                        let msg = error::bad_array_subscript(&subs.text);
+                        error::print(&msg, core);
+                        return;
+                    },
+                };
+                if ! result {
+                    core.data.set_param("?", "1");
+                    let msg = error::readonly(&subs.key);
+                    error::print(&msg, core);
+                }else{
+                    return;
+                }
+            }
+
             let index = match subs.get_index(core) {
                 Some(s) => {
                     match s.parse::<usize>() {

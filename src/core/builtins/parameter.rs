@@ -114,7 +114,6 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1; //TODO: error message
         }
     }
-    dbg!("{:?}", &args);
 
     0
 }

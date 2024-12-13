@@ -118,7 +118,7 @@ impl BracedParam {
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> bool {
-        let index = match self.subscript.clone().unwrap().eval(core) {
+        let index = match self.subscript.clone().unwrap().eval(core, &self.name) {
             Some(s) => s,
             None => return false,
         };

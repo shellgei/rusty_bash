@@ -12,7 +12,7 @@ pub struct Subscript {
 }
 
 impl Subscript {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str) -> Option<String> {
         if self.inner_special != "" {
             return Some(self.inner_special.clone());
         }
@@ -21,7 +21,10 @@ impl Subscript {
             if a.text.chars().all(|c| " \t\n".contains(c)) {
                 return None;
             }
-            return a.eval(core);
+            return match core.data.is_assoc(param_name) {
+                true  => Some(a.text.clone()),
+                false => a.eval(core),
+            };
         }
 
         None

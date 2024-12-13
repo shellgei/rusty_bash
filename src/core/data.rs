@@ -163,6 +163,13 @@ impl Data {
         }
     }
 
+    pub fn is_assoc(&mut self, key: &str) -> bool {
+        match self.get_value(key) {
+            Some(Value::AssocArray(_)) => true,
+            _ => false,
+        }
+    }
+
     pub fn get_position_params(&self) -> Vec<String> {
         match self.position_parameters.last() {
             Some(v) => v[1..].to_vec(),
@@ -270,6 +277,20 @@ impl Data {
         true
     }
 
+    pub fn set_layer_assoc_elem(&mut self, key: &str, val: &String, layer: usize, pos: &String) -> bool {
+        let value = match self.parameters[layer].get_mut(key) {
+            Some(v) => v, 
+            _ => return false,
+        };
+        let array = match &mut value.value {
+            Value::AssocArray(a) => a, 
+            _ => return false,
+        };
+
+        array.insert(pos.to_string(), val.to_string());
+        true
+    }
+
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) -> bool {
         self.set_layer_array(key, vals, 0);
         true
@@ -282,6 +303,10 @@ impl Data {
 
     pub fn set_array_elem(&mut self, key: &str, val: &String, pos: usize) -> bool {
         self.set_layer_array_elem(key, val, 0, pos)
+    }
+
+    pub fn set_assoc_elem(&mut self, key: &str, val: &String, pos: &String) -> bool {
+        self.set_layer_assoc_elem(key, val, 0, pos)
     }
 
     pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) {
