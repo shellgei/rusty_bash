@@ -123,7 +123,10 @@ impl BracedParam {
             None => return false,
         };
 
-        dbg!("{:?}", &index);
+        if core.data.is_assoc(&self.name) {
+            return self.subscript_operation_assoc(core, &index);
+        }
+
         if index.as_str() == "@" {
             self.array = core.data.get_array_all(&self.name);
         }
@@ -134,6 +137,11 @@ impl BracedParam {
             (false, _)  => core.data.get_array(&self.name, &index),
         };
         self.optional_operation(core)
+    }
+
+    fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
+        self.text = core.data.get_assoc(&self.name, index);
+        true
     }
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> bool {

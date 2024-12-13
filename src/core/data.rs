@@ -115,6 +115,24 @@ impl Data {
         "".to_string()
     }
 
+    pub fn get_assoc(&mut self, key: &str, pos: &str) -> String {
+        match self.get_value(key) {
+            Some(Value::AssocArray(a)) => {
+                /*
+                if pos == "@" || pos == "*" {
+                    return a.join(" ");
+                }*/
+
+                return match a.get(pos) {
+                    Some(v) => v,
+                    _ => "",
+                }.to_string();
+            },
+            _ => {},
+        }
+        "".to_string()
+    }
+
     pub fn get_value(&mut self, key: &str) -> Option<Value> {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {

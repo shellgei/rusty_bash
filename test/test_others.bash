@@ -1375,6 +1375,11 @@ res=$($com <<< 'A=( a b ); A[0]=( 1 2 )')
 res=$($com <<< 'A=( a b ); A[]=1')
 [ "$?" == 1 ] || err $LINENO
 
+# associated array
+#
+res=$($com <<< 'declare -A A; A[aaa]=bbb; echo ${A[aaa]}')
+[ "$res" == "bbb" ] || err $LINENO
+
 # symbol
 
 res=$($com <<< 'echo ]')
