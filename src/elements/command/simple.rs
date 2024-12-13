@@ -56,8 +56,6 @@ impl Command for SimpleCommand {
         }else if Self::check_sigint(core) {
             None
         }else{
-            core.data.set_param("_", &self.args.last().unwrap());
-            self.option_x_output(core);
             self.exec_command(core, pipe)
         }
     }
@@ -121,6 +119,9 @@ impl SimpleCommand {
     }
 
     fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+        core.data.set_param("_", &self.args.last().unwrap());
+        self.option_x_output(core);
+
         if self.force_fork 
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
