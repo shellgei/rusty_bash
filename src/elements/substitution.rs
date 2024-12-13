@@ -48,19 +48,21 @@ impl Substitution {
         }
     }
 
-    pub fn set(&mut self, core: &mut ShellCore) -> bool {
-        if core.data.is_assoc(&self.key) {
-            let index = self.get_index(core);
-            let result = match (&self.evaluated_value, index) {
-                (Value::EvaluatedSingle(v), Some(k)) 
-                  => core.data.set_assoc_elem(&self.key, v, &k),
-                _ => return bad_subscript_error(&self.text, core),
-            };
-            if ! result {
-                readonly_error(&self.key, core);
-            }
+    fn set_assoc(&mut self, core: &mut ShellCore) -> bool {
+        let index = self.get_index(core);
+        let result = match (&self.evaluated_value, index) {
+            (Value::EvaluatedSingle(v), Some(k)) 
+              => core.data.set_assoc_elem(&self.key, v, &k),
+            _ => return bad_subscript_error(&self.text, core),
+        };
+        if ! result {
+            readonly_error(&self.key, core);
+            return false;
         }
+        true
+    }
 
+    fn set_array(&mut self, core: &mut ShellCore) -> bool {
         let index = match self.get_index(core) {
             Some(s) => {
                 match s.parse::<usize>() {
@@ -74,8 +76,28 @@ impl Substitution {
         let result = match (&self.evaluated_value, index) {
             (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&self.key, v, n),
             (_, Some(_)) => false,
-            (Value::EvaluatedSingle(v), _) => core.data.set_param(&self.key, &v),
-            (Value::EvaluatedArray(a), _) => core.data.set_array(&self.key, &a),
+            (Value::EvaluatedArray(a), None) => core.data.set_array(&self.key, &a),
+            _ => exit::internal("Unknown variable"),
+        };
+
+        if ! result {
+            readonly_error(&self.key, core);
+        }
+        true
+    }
+
+    pub fn set(&mut self, core: &mut ShellCore) -> bool {
+        if core.data.is_assoc(&self.key) {
+            return self.set_assoc(core);
+        }
+
+        if core.data.is_array(&self.key) {
+            return self.set_array(core);
+        }
+
+        let result = match &self.evaluated_value {
+            Value::EvaluatedSingle(v) => core.data.set_param(&self.key, &v),
+            Value::EvaluatedArray(a) => core.data.set_array(&self.key, &a),
             _ => exit::internal("Unknown variable"),
         };
 
