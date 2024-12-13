@@ -16,16 +16,9 @@ use std::os::macos::fs::MetadataExt;
 use std::path::Path;
 
 pub fn exists(name: &str) -> bool {
-    if name.ends_with("/") {
+    if name.ends_with("/") { //for macOS
         return is_dir(name);
     }
-    /*
-    if name.ends_with("/") && is_symlink(name) { //for macOS
-        match fs::read_link(name) {
-            Ok(path) => return is_dir(&file::buf_to_name(&path)),
-            _ => return false,
-        }
-    }*/
 
     fs::metadata(name).is_ok()
 }
