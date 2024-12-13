@@ -123,6 +123,7 @@ impl BracedParam {
             None => return false,
         };
 
+        dbg!("{:?}", &index);
         if index.as_str() == "@" {
             self.array = core.data.get_array_all(&self.name);
         }
