@@ -16,6 +16,7 @@ use std::os::macos::fs::MetadataExt;
 use std::path::Path;
 
 pub fn exists(name: &str) -> bool {
+    dbg!("{:?} {:?}", &name, fs::metadata(name).is_ok());
     fs::metadata(name).is_ok()
 }
 
