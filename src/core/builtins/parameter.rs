@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::utils;
 use crate::utils::exit;
 use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
@@ -26,6 +27,18 @@ fn print_data(k: &str, core: &mut ShellCore) {
             let mut formatted = String::new();
             formatted += "(";
             for (i, v) in a.iter().enumerate() {
+                formatted += &format!("[{}]=\"{}\" ", i, v).clone();
+            }
+            if formatted.ends_with(" ") {
+                formatted.pop();
+            }
+            formatted += ")";
+            println!("{}={}", k.to_string(), formatted); 
+        },
+        Some(Value::AssocArray(a)) => {
+            let mut formatted = String::new();
+            formatted += "(";
+            for (i, v) in a.iter() {
                 formatted += &format!("[{}]=\"{}\" ", i, v).clone();
             }
             if formatted.ends_with(" ") {
@@ -91,7 +104,16 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return print_all(core);
     }
 
-    let args = arg::dissolve_options(args);
+    let mut args = arg::dissolve_options(args);
+    if args.contains(&"-A".to_string()) {
+        let name = args.pop().unwrap();
+        if ! utils::is_name(&name, core) {
+            return 1; //TODO: error message
+        }
+        if ! core.data.set_assoc(&name) {
+            return 1; //TODO: error message
+        }
+    }
     dbg!("{:?}", &args);
 
     0

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::utils;
 use crate::utils::{error, exit};
 use super::{ArithElem, ArithmeticExpr, float, int, Word};
 
@@ -41,18 +42,13 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, String> {
     str_to_num(&name, core)
 }
 
-fn is_name(s: &str, core: &mut ShellCore) -> bool {
-    let mut f = Feeder::new(s);
-    s.len() > 0 && f.scanner_name(core) == s.len()
-}
-
 pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
     let mut name = name.to_string();
 
     const RESOLVE_LIMIT: i32 = 10000;
 
     for i in 0..RESOLVE_LIMIT {
-        match is_name(&name, core) {
+        match utils::is_name(&name, core) {
             true  => name = core.data.get_param(&name),
             false => break,
         }
@@ -90,13 +86,13 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
 
 fn single_str_to_num(name: &str, core: &mut ShellCore) -> Option<ArithElem> {
     if let Some(n) = int::parse(&name) {         Some( ArithElem::Integer(n) )
-    }else if is_name(&name, core) {              Some( ArithElem::Integer(0) )
+    }else if utils::is_name(&name, core) {       Some( ArithElem::Integer(0) )
     }else if let Some(f) = float::parse(&name) { Some( ArithElem::Float(f) )
     }else{                                       None }
 }
 
 fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<ArithElem, String> {
-    if ! is_name(name, core) {
+    if ! utils::is_name(name, core) {
         return match inc != 0 && ! pre {
             true  => Err(error::syntax(name)),
             false => str_to_num(&name, core),

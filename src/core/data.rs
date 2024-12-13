@@ -14,6 +14,7 @@ pub enum Value {
     Single(Word),
     EvaluatedSingle(String),
     Array(Array),
+    AssocArray(HashMap::<String, String>),
     EvaluatedArray(Vec<String>),
 }
 
@@ -242,6 +243,17 @@ impl Data {
         true
     }
 
+    pub fn set_layer_assoc(&mut self, key: &str, layer: usize) -> bool {
+        self.parameters[layer].insert(
+            key.to_string(),
+            Variable {
+                value: Value::AssocArray(HashMap::new()),
+                ..Default::default()
+            }
+        );        
+        true
+    }
+
     pub fn set_layer_array_elem(&mut self, key: &str, val: &String, layer: usize, pos: usize) -> bool {
         let value = match self.parameters[layer].get_mut(key) {
             Some(v) => v, 
@@ -260,6 +272,11 @@ impl Data {
 
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) -> bool {
         self.set_layer_array(key, vals, 0);
+        true
+    }
+
+    pub fn set_assoc(&mut self, key: &str) -> bool {
+        self.set_layer_assoc(key, 0);
         true
     }
 

@@ -11,6 +11,8 @@ pub mod glob;
 pub mod arg;
 pub mod random;
 
+use crate::{Feeder, ShellCore};
+
 pub fn reserved(w: &str) -> bool {
     match w {
         "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
@@ -76,22 +78,7 @@ pub fn is_wsl() -> bool {
     false
 }
 
-/*
-pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> String {
-    match args.iter().position(|a| a == prev_opt) {
-        Some(pos) => {
-            match pos+1 >= args.len() {
-                true  => {
-                    args.remove(pos);
-                    "".to_string()
-                },
-                false => {
-                    args.remove(pos);
-                    args.remove(pos)
-                },
-            }
-        },
-        None => "".to_string(),
-    }
+pub fn is_name(s: &str, core: &mut ShellCore) -> bool {
+    let mut f = Feeder::new(s);
+    s.len() > 0 && f.scanner_name(core) == s.len()
 }
-*/
