@@ -144,28 +144,16 @@ impl SimpleCommand {
     fn exec_set_param(&mut self, core: &mut ShellCore) -> Option<Pid> {
         core.data.set_param("_", "");
         self.option_x_output(core);
-        self.substitutions.iter_mut().for_each(|s| {s.set(core);});
+        self.substitutions.iter_mut().for_each(|s| {s.set_to_shell(core);});
         None
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
+        self.substitutions.iter_mut().for_each(|s| {s.set_local_param(core);});
+        /*
         for s in &mut self.substitutions {
-            let index = match s.get_index(core) {
-                Some(s) => {
-                    match s.parse::<usize>() {
-                        Ok(n) => Some(n),
-                        _ => None,
-                    }
-                },
-                None => None,
-            };
-
-            match (&s.evaluated_value, index) {
-                (Value::EvaluatedSingle(v), _) => core.data.set_local_param(&s.key, &v),
-                (Value::EvaluatedArray(a), _) => core.data.set_local_array(&s.key, &a),
-                _ => {},
-            }
-        }
+            s.set_local_param(core);
+        }*/
     }
 
     fn set_environment_variables(&mut self) {

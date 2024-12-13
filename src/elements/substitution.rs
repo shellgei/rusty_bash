@@ -99,7 +99,26 @@ impl Substitution {
         true
     }
 
-    pub fn set(&mut self, core: &mut ShellCore) -> bool {
+    pub fn set_local_param(&mut self, core: &mut ShellCore) -> bool {
+        let index = match self.get_index(core) {
+            Some(s) => {
+                match s.parse::<usize>() {
+                    Ok(n) => Some(n),
+                    _ => None,
+                }
+            },
+            None => None,
+        };
+
+        match (&self.evaluated_value, index) {
+            (Value::EvaluatedSingle(v), _) => core.data.set_local_param(&self.key, &v),
+            (Value::EvaluatedArray(a), _) => core.data.set_local_array(&self.key, &a),
+            _ => {},
+        }
+        true
+    }
+
+    pub fn set_to_shell(&mut self, core: &mut ShellCore) -> bool {
         if core.data.is_assoc(&self.key) {
             self.set_assoc(core)
         }else if core.data.is_array(&self.key) {
