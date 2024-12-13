@@ -17,6 +17,18 @@ use std::sync::atomic::Ordering::Relaxed;
 use nix::unistd::Pid;
 use nix::errno::Errno;
 
+fn readonly_error(name: &str, core: &mut ShellCore) {
+    core.data.set_param("?", "1");
+    let msg = error::readonly(name);
+    error::print(&msg, core);
+}
+
+fn bad_subscript_error(sub: &str, core: &mut ShellCore) {
+    core.data.set_param("?", "1");
+    let msg = error::bad_array_subscript(&sub);
+    error::print(&msg, core);
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct SimpleCommand {
     text: String,
@@ -147,22 +159,12 @@ impl SimpleCommand {
             if core.data.is_assoc(&subs.key) {
                 let index = subs.get_index(core);
                 let result = match (&subs.evaluated_value, index) {
-                    (Value::EvaluatedSingle(v), Some(k)) => {
-                        core.data.set_assoc_elem(&subs.key, v, &k)
-                    },
-                    _ => {
-                        core.data.set_param("?", "1");
-                        let msg = error::bad_array_subscript(&subs.text);
-                        error::print(&msg, core);
-                        return;
-                    },
+                    (Value::EvaluatedSingle(v), Some(k)) 
+                      => core.data.set_assoc_elem(&subs.key, v, &k),
+                    _ => return bad_subscript_error(&subs.text, core),
                 };
                 if ! result {
-                    core.data.set_param("?", "1");
-                    let msg = error::readonly(&subs.key);
-                    error::print(&msg, core);
-                }else{
-                    return;
+                    readonly_error(&subs.key, core);
                 }
             }
 
@@ -190,13 +192,11 @@ impl SimpleCommand {
             };
 
             if ! result {
-                core.data.set_param("?", "1");
-                let msg = error::readonly(&subs.key);
-                error::print(&msg, core);
+                readonly_error(&subs.key, core);
             }
         }
     }
-
+    
     fn set_local_params(&mut self, core: &mut ShellCore) {
         for s in &mut self.substitutions {
             let index = match s.get_index(core) {
