@@ -50,11 +50,9 @@ impl Command for SimpleCommand {
             return None;
         }
 
-        if self.args.len() == 0 {
-            self.exec_set_param(core);
-            None
-        }else{
-            self.exec_command(core, pipe)
+        match self.args.len() {
+            0 => self.exec_set_param(core),
+            _ => self.exec_command(core, pipe),
         }
     }
 
@@ -143,10 +141,11 @@ impl SimpleCommand {
         false
     }
 
-    fn exec_set_param(&mut self, core: &mut ShellCore) {
+    fn exec_set_param(&mut self, core: &mut ShellCore) -> Option<Pid> {
         core.data.set_param("_", "");
         self.option_x_output(core);
         self.substitutions.iter_mut().for_each(|s| {s.set(core);});
+        None
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
