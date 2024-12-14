@@ -93,10 +93,10 @@ impl Substitution {
             _ => exit::internal("Unknown variable"),
         };
 
-        if ! result {
-            readonly_error(&self.key, core);
+        match result {
+            true  => true,
+            false => readonly_error(&self.key, core),
         }
-        true
     }
 
     pub fn set_local_param(&mut self, core: &mut ShellCore) -> bool {
