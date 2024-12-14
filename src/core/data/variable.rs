@@ -24,11 +24,27 @@ pub struct Variable {
     pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
 }
 
+impl From<&str> for Variable {
+    fn from(s: &str) -> Self {
+        Variable {
+            value: Value::EvaluatedSingle(s.to_string()),
+            ..Default::default()
+        }
+    }
+}
+
 impl Variable {
     pub fn get_value(&mut self) -> Value {
         match self.dynamic_get {
             Some(f) => f(self).clone(),
             None    => self.value.clone(),
+        }
+    }
+
+    pub fn new_assoc() -> Self {
+        Variable {
+            value: Value::AssocArray(HashMap::new()),
+            ..Default::default()
         }
     }
 }

@@ -177,20 +177,19 @@ impl Data {
 
         let n = key.parse::<usize>().unwrap();
         let layer = self.position_parameters.len();
-        if n < self.position_parameters[layer-1].len() {
-            Some(n)
-        }else{
-            None
+        match n < self.position_parameters[layer-1].len() {
+            true  => Some(n),
+            false => None,
         }
     }
 
-    pub fn set_layer_param(&mut self, key: &str, val: &str, layer: usize) -> bool {
-        match env::var(key) {
-            Ok(_) => env::set_var(key, val),
+    pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> bool {
+        match env::var(name) {
+            Ok(_) => env::set_var(name, val),
             _     => {},
         }
 
-        self.parameters[layer].entry(key.to_string())
+        self.parameters[layer].entry(name.to_string())
         .and_modify(|v| {
             if v.attributes.contains('r') {
                 // error : "readonly variable"
@@ -202,10 +201,7 @@ impl Data {
             }
         })
         .or_insert(
-            Variable {
-                value: Value::EvaluatedSingle(val.to_string()),
-                ..Default::default()
-            }
+            Variable::from(val)
         );
         true
     }
@@ -243,14 +239,9 @@ impl Data {
         true
     }
 
-    pub fn set_layer_assoc(&mut self, key: &str, layer: usize) -> bool {
-        self.parameters[layer].insert(
-            key.to_string(),
-            Variable {
-                value: Value::AssocArray(HashMap::new()),
-                ..Default::default()
-            }
-        );        
+    pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
+        self.parameters[layer]
+            .insert(name.to_string(), Variable::new_assoc());        
         true
     }
 
