@@ -59,6 +59,10 @@ impl Variable {
         }
     }
 
+    pub fn not_set(v: &mut Variable, _var: &str) -> Value {
+        v.value.clone()
+    }
+
     /*
     pub fn new_assoc() -> Self {
         Variable {
