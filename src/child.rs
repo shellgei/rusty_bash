@@ -3,7 +3,7 @@
 
 use crate::{exit, ShellCore};
 use crate::utils::error;
-use nix::sys::{resource, signal, wait};
+use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;

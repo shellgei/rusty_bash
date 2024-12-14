@@ -8,7 +8,6 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 
-use crate::child;
 use self::data::Data;
 use self::data::variable::Variable;
 use self::options::Options;
@@ -16,10 +15,9 @@ use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path};
 use nix::{fcntl, unistd};
-use nix::sys::{resource, signal, wait};
+use nix::sys::{resource, signal};
 use nix::sys::resource::UsageWho;
 use nix::sys::signal::{Signal, SigHandler};
-use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
@@ -28,7 +26,6 @@ use crate::utils::{error, exit, random, clock};
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::Relaxed;
 
 pub struct MeasuredTime {
     pub real: TimeSpec, 
@@ -150,40 +147,6 @@ impl ShellCore {
         self.data.set_param("SECONDS", "0");
     }
 
-    /*
-    pub fn wait_process(&mut self, child: Pid) -> WaitStatus {
-        let waitflags = match self.is_subshell {
-            true  => None,
-            false => Some(WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED)
-        };
-
-        let ws = wait::waitpid(child, waitflags);
-
-        let exit_status = match ws {
-            Ok(WaitStatus::Exited(_pid, status)) => status,
-            Ok(WaitStatus::Signaled(pid, signal, coredump)) => error::signaled(pid, signal, coredump),
-            Ok(WaitStatus::Stopped(pid, signal)) => {
-                eprintln!("Stopped Pid: {:?}, Signal: {:?}", pid, signal);
-                148
-            },
-            Ok(unsupported) => {
-                let msg = format!("Unsupported wait status: {:?}", unsupported);
-                error::print(&msg, self);
-                1
-            },
-            Err(err) => {
-                let msg = format!("Error: {:?}", err);
-                exit::internal(&msg);
-            },
-        };
-
-        if exit_status == 130 {
-            self.sigint.store(true, Relaxed);
-        }
-        self.data.set_layer_param("?", &exit_status.to_string(), 0); //追加
-        ws.expect("SUSH INTERNAL ERROR: no wait status")
-    }*/
-
     pub fn set_foreground(&self) {
         let fd = match self.tty_fd.as_ref() {
             Some(fd) => fd,
@@ -234,52 +197,6 @@ impl ShellCore {
             exit::normal(self);
         }
     }
-
-    /*
-    pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>,
-                         exclamation: bool, time: bool) -> Vec<WaitStatus> {
-        if pids.len() == 1 && pids[0] == None {
-            if time {
-                self.show_time();
-            }
-            if exclamation {
-                self.flip_exit_status();
-            }
-            self.check_e_option();
-            return vec![];
-        }
-
-        let mut pipestatus = vec![];
-        let mut ans = vec![];
-        for pid in &pids {
-            let ws = child::wait_process(self, pid.expect("SUSHI INTERNAL ERROR (no pid)"));
-            ans.push(ws);
-
-            pipestatus.push(self.data.get_param("?"));
-        }
-
-        if time {
-            self.show_time();
-        }
-        self.set_foreground();
-        self.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
-
-        if self.options.query("pipefail") {
-            pipestatus.retain(|e| e != "0");
-
-            if pipestatus.len() != 0 {
-                self.data.set_param("?", &pipestatus.last().unwrap());
-            }
-        }
-
-        if exclamation {
-            self.flip_exit_status();
-        }
-
-        self.check_e_option();
-
-        ans
-    }*/
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
         if args.len() == 0 {
