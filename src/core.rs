@@ -150,6 +150,7 @@ impl ShellCore {
         self.data.set_param("SECONDS", "0");
     }
 
+    /*
     pub fn wait_process(&mut self, child: Pid) -> WaitStatus {
         let waitflags = match self.is_subshell {
             true  => None,
@@ -181,7 +182,7 @@ impl ShellCore {
         }
         self.data.set_layer_param("?", &exit_status.to_string(), 0); //追加
         ws.expect("SUSH INTERNAL ERROR: no wait status")
-    }
+    }*/
 
     pub fn set_foreground(&self) {
         let fd = match self.tty_fd.as_ref() {

@@ -24,7 +24,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
     let mut pipestatus = vec![];
     let mut ans = vec![];
     for pid in &pids {
-        let ws = core.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
+        let ws = wait_process(core, pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         ans.push(ws);
 
         pipestatus.push(core.data.get_param("?"));
@@ -53,7 +53,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
     ans
 }
 
-pub fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
+fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     let waitflags = match core.is_subshell {
         true  => None,
         false => Some(WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED)
