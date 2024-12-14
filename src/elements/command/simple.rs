@@ -153,9 +153,8 @@ impl SimpleCommand {
     }
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) {
-        for s in &mut self.substitutions {
-            s.eval(core, false, true);
-        }
+        self.substitutions.iter_mut()
+            .for_each(|s| {s.eval(core, false, true);} );
     }
 
     fn to_cargs(args: &Vec<String>) -> Vec<CString> {
