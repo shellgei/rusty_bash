@@ -16,12 +16,8 @@ use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path};
 use nix::{fcntl, unistd};
-use nix::sys::resource;
-use nix::sys::resource::UsageWho;
 use nix::sys::signal::Signal;
 use nix::sys::time::{TimeSpec, TimeVal};
-use nix::time;
-use nix::time::ClockId;
 use nix::unistd::Pid;
 use crate::utils::{error, exit, random, clock};
 use crate::core::jobtable::JobEntry;
@@ -154,23 +150,6 @@ impl ShellCore {
             "0" => self.data.set_param("?", "1"),
             _   => self.data.set_param("?", "0"),
         };
-    }
-
-    pub fn show_time(&self) {
-            let real_end_time = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
-
-            let self_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
-            let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
-
-            let real_diff = real_end_time - self.measured_time.real;
-            eprintln!("\nreal\t{}m{}.{:06}s", real_diff.tv_sec()/60,
-                      real_diff.tv_sec()%60, real_diff.tv_nsec()/1000);
-            let user_diff = self_usage.user_time() + children_usage.user_time() - self.measured_time.user;
-            eprintln!("user\t{}m{}.{:06}s", user_diff.tv_sec()/60,
-                      user_diff.tv_sec()%60, user_diff.tv_usec());
-            let sys_diff = self_usage.system_time() + children_usage.system_time() - self.measured_time.sys;
-            eprintln!("sys \t{}m{}.{:06}s", sys_diff.tv_sec()/60,
-                      sys_diff.tv_sec()%60, sys_diff.tv_usec());
     }
 
     pub fn check_e_option(&mut self) {

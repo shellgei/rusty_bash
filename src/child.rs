@@ -4,9 +4,11 @@
 use crate::{exit, ShellCore, signal};
 use crate::utils::error;
 use nix::unistd;
-use nix::sys::wait;
+use nix::sys::{resource, wait};
+use nix::sys::resource::UsageWho;
 use nix::sys::signal::Signal;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
+use nix::time::{clock_gettime, ClockId};
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
 
@@ -14,7 +16,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
                      exclamation: bool, time: bool) -> Vec<WaitStatus> {
     if pids.len() == 1 && pids[0] == None {
         if time {
-            core.show_time();
+            show_time(core);
         }
         if exclamation {
             core.flip_exit_status();
@@ -33,7 +35,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
     }
 
     if time {
-        core.show_time();
+        show_time(core);
     }
     set_foreground(core);
     core.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
@@ -112,5 +114,22 @@ pub fn set_pgid(core :&ShellCore, pid: Pid, pgid: Pid) {
     if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
         set_foreground(core);
     }
+}
+
+fn show_time(core: &ShellCore) {
+     let real_end_time = clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
+
+     let core_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
+     let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
+
+     let real_diff = real_end_time - core.measured_time.real;
+     eprintln!("\nreal\t{}m{}.{:06}s", real_diff.tv_sec()/60,
+               real_diff.tv_sec()%60, real_diff.tv_nsec()/1000);
+     let user_diff = core_usage.user_time() + children_usage.user_time() - core.measured_time.user;
+     eprintln!("user\t{}m{}.{:06}s", user_diff.tv_sec()/60,
+               user_diff.tv_sec()%60, user_diff.tv_usec());
+     let sys_diff = core_usage.system_time() + children_usage.system_time() - core.measured_time.sys;
+     eprintln!("sys \t{}m{}.{:06}s", sys_diff.tv_sec()/60,
+               sys_diff.tv_sec()%60, sys_diff.tv_usec());
 }
 
