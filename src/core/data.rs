@@ -295,8 +295,8 @@ impl Data {
         true
     }
 
-    pub fn set_layer_assoc_elem(&mut self, key: &str, val: &String, layer: usize, pos: &String) -> bool {
-        let value = match self.parameters[layer].get_mut(key) {
+    pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> bool {
+        let value = match self.parameters[layer].get_mut(name) {
             Some(v) => v, 
             _ => return false,
         };
@@ -305,7 +305,7 @@ impl Data {
             _ => return false,
         };
 
-        array.insert(pos.to_string(), val.to_string());
+        array.insert(key.to_string(), val.to_string());
         true
     }
 
@@ -314,17 +314,22 @@ impl Data {
         true
     }
 
-    pub fn set_assoc(&mut self, key: &str) -> bool {
-        self.set_layer_assoc(key, 0);
+    pub fn set_assoc(&mut self, name: &str) -> bool {
+        self.set_layer_assoc(name, 0);
         true
     }
 
-    pub fn set_array_elem(&mut self, key: &str, val: &String, pos: usize) -> bool {
-        self.set_layer_array_elem(key, val, 0, pos)
+    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {
+        self.set_layer_array_elem(name, val, 0, pos)
     }
 
-    pub fn set_assoc_elem(&mut self, key: &str, val: &String, pos: &String) -> bool {
-        self.set_layer_assoc_elem(key, val, 0, pos)
+    pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> bool {
+        self.set_layer_assoc_elem(name, key, val, 0)
+    }
+
+    pub fn set_local_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> bool {
+        let layer = self.parameters.len();
+        self.set_layer_assoc_elem(name, key, val, layer-1)
     }
 
     pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) -> bool {

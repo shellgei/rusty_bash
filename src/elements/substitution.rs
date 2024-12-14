@@ -12,7 +12,7 @@ use super::word::Word;
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
-    pub key: String,
+    pub name: String,
     pub index: Option<Subscript>,
     pub value: Value,
     pub evaluated_value: Value,
@@ -48,15 +48,17 @@ impl Substitution {
         }
     }
 
-    fn set_assoc(&mut self, core: &mut ShellCore) -> bool {
+    fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let index = self.get_index(core);
-        let result = match (&self.evaluated_value, index) {
-            (Value::EvaluatedSingle(v), Some(k)) 
-              => core.data.set_assoc_elem(&self.key, v, &k),
+        let result = match (&self.evaluated_value, index, local) {
+            (Value::EvaluatedSingle(v), Some(k), false) 
+              => core.data.set_assoc_elem(&self.name, &k, v),
+            (Value::EvaluatedSingle(v), Some(k), true) 
+              => core.data.set_local_assoc_elem(&self.name, &k, v),
             _ => return bad_subscript_error(&self.text, core),
         };
         if ! result {
-            readonly_error(&self.key, core);
+            readonly_error(&self.name, core);
             return false;
         }
         true
@@ -75,67 +77,47 @@ impl Substitution {
 
         let result = match (&self.evaluated_value, index, local) {
             (Value::EvaluatedSingle(v), Some(n), true) 
-                => core.data.set_local_array_elem(&self.key, v, n),
+                => core.data.set_local_array_elem(&self.name, v, n),
             (Value::EvaluatedSingle(v), Some(n), false) 
-                => core.data.set_array_elem(&self.key, v, n),
+                => core.data.set_array_elem(&self.name, v, n),
             (_, Some(_), _) 
                 => false,
             (Value::EvaluatedArray(a), None, true) 
-                => core.data.set_local_array(&self.key, &a),
+                => core.data.set_local_array(&self.name, &a),
             (Value::EvaluatedArray(a), None, false) 
-                => core.data.set_array(&self.key, &a),
+                => core.data.set_array(&self.name, &a),
             _ => exit::internal("Unknown variable"),
         };
 
         match result {
             true  => true,
-            false => readonly_error(&self.key, core),
+            false => readonly_error(&self.name, core),
         }
     }
  
     fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let result = match (&self.evaluated_value, local) {
             (Value::EvaluatedSingle(v), true)
-                => core.data.set_local_param(&self.key, &v),
+                => core.data.set_local_param(&self.name, &v),
             (Value::EvaluatedSingle(v), false)
-                => core.data.set_param(&self.key, &v),
+                => core.data.set_param(&self.name, &v),
             (Value::EvaluatedArray(a), true) 
-                => core.data.set_local_array(&self.key, &a),
+                => core.data.set_local_array(&self.name, &a),
             (Value::EvaluatedArray(a), false) 
-                => core.data.set_array(&self.key, &a),
+                => core.data.set_array(&self.name, &a),
             _ => exit::internal("Unknown variable"),
         };
 
         match result {
             true  => true,
-            false => readonly_error(&self.key, core),
+            false => readonly_error(&self.name, core),
         }
     }
 
-    /*
-    pub fn set_to_local(&mut self, core: &mut ShellCore) -> bool {
-        let index = match self.get_index(core) {
-            Some(s) => {
-                match s.parse::<usize>() {
-                    Ok(n) => Some(n),
-                    _ => None,
-                }
-            },
-            None => None,
-        };
-
-        match (&self.evaluated_value, index) {
-            (Value::EvaluatedSingle(v), _) => core.data.set_local_param(&self.key, &v),
-            (Value::EvaluatedArray(a), _) => core.data.set_local_array(&self.key, &a),
-            _ => {},
-        }
-        true
-    }*/
-
     pub fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
-        if core.data.is_assoc(&self.key) {
-            self.set_assoc(core)
-        }else if core.data.is_array(&self.key) {
+        if core.data.is_assoc(&self.name) {
+            self.set_assoc(core, local)
+        }else if core.data.is_array(&self.name) {
             self.set_array(core, local)
         }else {
             self.set_param(core, local)
@@ -148,7 +130,7 @@ impl Substitution {
                 if s.text.chars().all(|c| " \n\t[]".contains(c)) {
                     return Some("".to_string());
                 }
-                s.eval(core, &self.key)
+                s.eval(core, &self.name)
             },
             _ => None,
         }
@@ -156,7 +138,7 @@ impl Substitution {
 
     fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> Value {
         let prev = match self.append {
-            true  => core.data.get_param(&self.key),
+            true  => core.data.get_param(&self.name),
             false => "".to_string(),
         };
 
@@ -168,7 +150,7 @@ impl Substitution {
 
     fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> Value {
         let prev = match self.append {
-            true  => core.data.get_array_all(&self.key),
+            true  => core.data.get_array_all(&self.name),
             false => vec![],
         };
 
@@ -188,7 +170,7 @@ impl Substitution {
 
         feeder.set_backup();
         let name = feeder.consume(len);
-        ans.key = name.clone();
+        ans.name = name.clone();
         ans.text += &name;
 
         if let Some(s) = Subscript::parse(feeder, core) {

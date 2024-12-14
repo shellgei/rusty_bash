@@ -157,7 +157,7 @@ impl SimpleCommand {
     fn set_environment_variables(&mut self) {
         for s in &self.substitutions {
             match &s.evaluated_value {
-                Value::EvaluatedSingle(v) => env::set_var(&s.key, &v),
+                Value::EvaluatedSingle(v) => env::set_var(&s.name, &v),
                 _ => {},
             }
         }

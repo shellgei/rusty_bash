@@ -79,8 +79,8 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
     }
 
     match sub.evaluated_value {
-        Value::EvaluatedSingle(s) => core.data.set_layer_param(&sub.key, &s, layer),
-        Value::EvaluatedArray(a)  => core.data.set_layer_array(&sub.key, &a, layer),
+        Value::EvaluatedSingle(s) => core.data.set_layer_param(&sub.name, &s, layer),
+        Value::EvaluatedArray(a)  => core.data.set_layer_array(&sub.name, &a, layer),
         _ => exit::internal("unsupported substitution"),
     }
 }
