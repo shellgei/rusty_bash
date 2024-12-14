@@ -1,24 +1,14 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{exit, ShellCore};
+use crate::{exit, ShellCore, signal};
 use crate::utils::error;
 use nix::unistd;
-use nix::sys::{signal, wait};
-use nix::sys::signal::{Signal, SigHandler};
+use nix::sys::wait;
+use nix::sys::signal::Signal;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
-
-fn ignore_signal(sig: Signal) {
-    unsafe { signal::signal(sig, SigHandler::SigIgn) }
-        .expect("sush(fatal): cannot ignore signal");
-}
-
-fn restore_signal(sig: Signal) {
-    unsafe { signal::signal(sig, SigHandler::SigDfl) }
-        .expect("sush(fatal): cannot restore signal");
-}
 
 pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
                      exclamation: bool, time: bool) -> Vec<WaitStatus> {
@@ -111,10 +101,10 @@ pub fn set_foreground(core: &ShellCore) {
         return;
     }
 
-    ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
+    signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視
     unistd::tcsetpgrp(fd, pgid)
         .expect(&error::internal("cannot get the terminal"));
-    restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
+    signal::restore(Signal::SIGTTOU); //SIGTTOUを受け付け
 }
 
 pub fn set_pgid(core :&ShellCore, pid: Pid, pgid: Pid) {
