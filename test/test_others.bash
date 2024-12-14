@@ -1386,6 +1386,9 @@ res=$($com <<< 'declare -A A; A[aaa]=bbb; echo ${A[aaa]}')
 res=$($com <<< 'declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[@]}')
 [ "$res" == "ddd bbb" -o "$res" == "bbb ddd" ] || err $LINENO
 
+res=$($com <<< 'B=ccc; declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[$B]}')
+[ "$res" == "ddd" ] || err $LINENO
+
 # symbol
 
 res=$($com <<< 'echo ]')

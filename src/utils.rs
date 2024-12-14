@@ -82,3 +82,24 @@ pub fn is_name(s: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(s);
     s.len() > 0 && f.scanner_name(core) == s.len()
 }
+
+pub fn is_param(s :&String) -> bool {
+    if s.len() == 0 {
+        return false;
+    }
+
+    let first_ch = s.chars().nth(0).unwrap();
+    if s.len() == 1 { //special or position param
+        if "$?*@#-!_0123456789".find(first_ch) != None {
+            return true;
+        }
+    }
+    /* variable */
+    if '0' <= first_ch && first_ch <= '9' {
+        return s.chars().position(|c| c < '0' || '9' < c) == None;
+    }
+
+    let name_c = |c| ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+                     || ('0' <= c && c <= '9') || '_' == c;
+    s.chars().position(|c| !name_c(c)) == None
+}

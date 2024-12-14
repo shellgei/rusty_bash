@@ -37,6 +37,31 @@ impl ArithmeticExpr {
         }
     }
 
+    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore) -> Option<String> {
+        let mut ans = String::new();
+
+        for e in &self.elements {
+            match e {
+                ArithElem::Word(w, i) => {
+                    match w.eval_as_value(core) {
+                        Some(s) => {
+                            ans += &s;
+                            if *i > 0 {
+                                ans += "++";
+                            }else if *i < 0 {
+                                ans += "--";
+                            }
+                        },
+                        None => return None,
+                    }
+                },
+                _ => ans += &elem::to_string(e),
+            }
+        }
+
+        Some(ans)
+    }
+
     pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Option<i64> {
         match self.eval_elems(core, true) {
             Ok(ArithElem::Integer(n)) => Some(n),
