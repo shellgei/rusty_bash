@@ -3,7 +3,7 @@
 
 use crate::ShellCore;
 use crate::core::JobEntry;
-use crate::core::{ignore_signal, restore_signal};
+use crate::signal;
 use crate::utils::error;
 use nix::sys::signal::Signal;
 use nix::unistd;
@@ -119,7 +119,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
-    ignore_signal(Signal::SIGTTOU);
+    signal::ignore(Signal::SIGTTOU);
 
     let mut exit_status = 1;
     if let Ok(_) =  unistd::tcsetpgrp(fd, pgid) {
@@ -132,7 +132,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    restore_signal(Signal::SIGTTOU);
+    signal::restore(Signal::SIGTTOU);
     exit_status
 }
 

@@ -100,7 +100,7 @@ impl Job {
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, pgid);
+                child::set_pgid(core, child, pgid);
                 Some(child) 
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),

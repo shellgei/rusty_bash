@@ -8,6 +8,7 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 
+use crate::{child, signal};
 use self::data::Data;
 use self::data::variable::Variable;
 use self::options::Options;
@@ -15,9 +16,9 @@ use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path};
 use nix::{fcntl, unistd};
-use nix::sys::{resource, signal};
+use nix::sys::resource;
 use nix::sys::resource::UsageWho;
-use nix::sys::signal::{Signal, SigHandler};
+use nix::sys::signal::Signal;
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::time;
 use nix::time::ClockId;
@@ -74,15 +75,16 @@ pub struct ShellCore {
     pub script_name: String,
 }
 
-fn ignore_signal(sig: Signal) {
+/*
+fn signal::ignore(sig: Signal) {
     unsafe { signal::signal(sig, SigHandler::SigIgn) }
         .expect("sush(fatal): cannot ignore signal");
 }
 
-fn restore_signal(sig: Signal) {
+fn signal::restore(sig: Signal) {
     unsafe { signal::signal(sig, SigHandler::SigDfl) }
         .expect("sush(fatal): cannot restore signal");
-}
+}*/
 
 impl ShellCore {
     pub fn new() -> ShellCore {
@@ -99,8 +101,8 @@ impl ShellCore {
         core.init_current_directory();
         core.set_initial_parameters();
         core.set_builtins();
-        ignore_signal(Signal::SIGPIPE);
-        ignore_signal(Signal::SIGTSTP);
+        signal::ignore(Signal::SIGPIPE);
+        signal::ignore(Signal::SIGTSTP);
 
         core.data.set_param("PS4", "+ ");
 
@@ -145,25 +147,6 @@ impl ShellCore {
         self.data.set_special_param("SECONDS", clock::get_seconds, Some(clock::set_seconds));
 
         self.data.set_param("SECONDS", "0");
-    }
-
-    pub fn set_foreground(&self) {
-        let fd = match self.tty_fd.as_ref() {
-            Some(fd) => fd,
-            _        => return,
-        };
-
-        let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
-                   .expect(&error::internal("cannot get pgid"));
-
-        if unistd::tcgetpgrp(fd) == Ok(pgid) {
-            return;
-        }
-
-        ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
-        unistd::tcsetpgrp(fd, pgid)
-            .expect(&error::internal("cannot get the terminal"));
-        restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
     pub fn flip_exit_status(&mut self) {
@@ -223,20 +206,13 @@ impl ShellCore {
         };
     }
 
-    pub fn set_pgid(&self, pid: Pid, pgid: Pid) {
-        let _ = unistd::setpgid(pid, pgid);
-        if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
-            self.set_foreground();
-        }
-    }
-
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
-        restore_signal(Signal::SIGINT);
-        restore_signal(Signal::SIGTSTP);
-        restore_signal(Signal::SIGPIPE);
+        signal::restore(Signal::SIGINT);
+        signal::restore(Signal::SIGTSTP);
+        signal::restore(Signal::SIGPIPE);
 
         self.is_subshell = true;
-        self.set_pgid(pid, pgid);
+        child::set_pgid(self, pid, pgid);
         self.set_subshell_parameters();
         self.job_table.clear();
     }

@@ -3,10 +3,22 @@
 
 use crate::{exit, ShellCore};
 use crate::utils::error;
-use nix::sys::wait;
+use nix::unistd;
+use nix::sys::{signal, wait};
+use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
+
+fn ignore_signal(sig: Signal) {
+    unsafe { signal::signal(sig, SigHandler::SigIgn) }
+        .expect("sush(fatal): cannot ignore signal");
+}
+
+fn restore_signal(sig: Signal) {
+    unsafe { signal::signal(sig, SigHandler::SigDfl) }
+        .expect("sush(fatal): cannot restore signal");
+}
 
 pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
                      exclamation: bool, time: bool) -> Vec<WaitStatus> {
@@ -33,7 +45,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
     if time {
         core.show_time();
     }
-    core.set_foreground();
+    set_foreground(core);
     core.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
 
     if core.options.query("pipefail") {
@@ -85,3 +97,30 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     core.data.set_layer_param("?", &exit_status.to_string(), 0); //追加
     ws.expect("SUSH INTERNAL ERROR: no wait status")
 }
+
+pub fn set_foreground(core: &ShellCore) {
+    let fd = match core.tty_fd.as_ref() {
+        Some(fd) => fd,
+        _        => return,
+    };
+
+    let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
+               .expect(&error::internal("cannot get pgid"));
+
+    if unistd::tcgetpgrp(fd) == Ok(pgid) {
+        return;
+    }
+
+    ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
+    unistd::tcsetpgrp(fd, pgid)
+        .expect(&error::internal("cannot get the terminal"));
+    restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
+}
+
+pub fn set_pgid(core :&ShellCore, pid: Pid, pgid: Pid) {
+    let _ = unistd::setpgid(pid, pgid);
+    if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
+        set_foreground(core);
+    }
+}
+
