@@ -21,7 +21,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         if exclamation {
             core.flip_exit_status();
         }
-        core.check_e_option();
+        exit::check_e_option(core);
         return vec![];
     }
 
@@ -52,7 +52,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         core.flip_exit_status();
     }
 
-    core.check_e_option();
+    exit::check_e_option(core);
 
     ans
 }
@@ -132,4 +132,3 @@ fn show_time(core: &ShellCore) {
      eprintln!("sys \t{}m{}.{:06}s", sys_diff.tv_sec()/60,
                sys_diff.tv_sec()%60, sys_diff.tv_usec());
 }
-

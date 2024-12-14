@@ -44,3 +44,11 @@ pub fn internal(s: &str) -> ! {
     panic!("SUSH INTERNAL ERROR: {}", s)
 }
 
+pub fn check_e_option(core: &mut ShellCore) {
+    if core.data.get_param("?") != "0" 
+    && core.data.flags.contains("e") 
+    && ! core.suspend_e_option {
+        normal(core);
+    }
+}
+

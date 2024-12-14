@@ -71,17 +71,6 @@ pub struct ShellCore {
     pub script_name: String,
 }
 
-/*
-fn signal::ignore(sig: Signal) {
-    unsafe { signal::signal(sig, SigHandler::SigIgn) }
-        .expect("sush(fatal): cannot ignore signal");
-}
-
-fn signal::restore(sig: Signal) {
-    unsafe { signal::signal(sig, SigHandler::SigDfl) }
-        .expect("sush(fatal): cannot restore signal");
-}*/
-
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
@@ -150,14 +139,6 @@ impl ShellCore {
             "0" => self.data.set_param("?", "1"),
             _   => self.data.set_param("?", "0"),
         };
-    }
-
-    pub fn check_e_option(&mut self) {
-        if self.data.get_param("?") != "0" 
-        && self.data.flags.contains("e") 
-        && ! self.suspend_e_option {
-            exit::normal(self);
-        }
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
