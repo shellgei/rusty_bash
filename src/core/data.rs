@@ -252,9 +252,9 @@ impl Data {
         );        
     }
 
-    pub fn set_local_param(&mut self, key: &str, val: &str) {
+    pub fn set_local_param(&mut self, key: &str, val: &str) -> bool {
         let layer = self.parameters.len();
-        self.set_layer_param(key, val, layer-1);
+        self.set_layer_param(key, val, layer-1)
     }
 
     pub fn set_layer_array(&mut self, key: &str, vals: &Vec<String>, layer: usize) -> bool {
@@ -327,9 +327,14 @@ impl Data {
         self.set_layer_assoc_elem(key, val, 0, pos)
     }
 
-    pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) {
+    pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) -> bool {
         let layer = self.parameters.len();
-        self.set_layer_array(key, vals, layer-1);
+        self.set_layer_array(key, vals, layer-1)
+    }
+
+    pub fn set_local_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {
+        let layer = self.parameters.len();
+        self.set_layer_array_elem(name, val, layer-1, pos)
     }
 
     pub fn push_local(&mut self) {

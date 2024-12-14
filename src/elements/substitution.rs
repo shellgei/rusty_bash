@@ -62,7 +62,7 @@ impl Substitution {
         true
     }
 
-    fn set_array(&mut self, core: &mut ShellCore) -> bool {
+    fn set_array(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let index = match self.get_index(core) {
             Some(s) => {
                 match s.parse::<usize>() {
@@ -73,23 +73,36 @@ impl Substitution {
             None => None,
         };
 
-        let result = match (&self.evaluated_value, index) {
-            (Value::EvaluatedSingle(v), Some(n)) => core.data.set_array_elem(&self.key, v, n),
-            (_, Some(_)) => false,
-            (Value::EvaluatedArray(a), None) => core.data.set_array(&self.key, &a),
+        let result = match (&self.evaluated_value, index, local) {
+            (Value::EvaluatedSingle(v), Some(n), true) 
+                => core.data.set_local_array_elem(&self.key, v, n),
+            (Value::EvaluatedSingle(v), Some(n), false) 
+                => core.data.set_array_elem(&self.key, v, n),
+            (_, Some(_), _) 
+                => false,
+            (Value::EvaluatedArray(a), None, true) 
+                => core.data.set_local_array(&self.key, &a),
+            (Value::EvaluatedArray(a), None, false) 
+                => core.data.set_array(&self.key, &a),
             _ => exit::internal("Unknown variable"),
         };
 
-        if ! result {
-            readonly_error(&self.key, core);
+        match result {
+            true  => true,
+            false => readonly_error(&self.key, core),
         }
-        true
     }
  
-    fn set_param(&mut self, core: &mut ShellCore) -> bool {
-        let result = match &self.evaluated_value {
-            Value::EvaluatedSingle(v) => core.data.set_param(&self.key, &v),
-            Value::EvaluatedArray(a) => core.data.set_array(&self.key, &a),
+    fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
+        let result = match (&self.evaluated_value, local) {
+            (Value::EvaluatedSingle(v), true)
+                => core.data.set_local_param(&self.key, &v),
+            (Value::EvaluatedSingle(v), false)
+                => core.data.set_param(&self.key, &v),
+            (Value::EvaluatedArray(a), true) 
+                => core.data.set_local_array(&self.key, &a),
+            (Value::EvaluatedArray(a), false) 
+                => core.data.set_array(&self.key, &a),
             _ => exit::internal("Unknown variable"),
         };
 
@@ -99,7 +112,8 @@ impl Substitution {
         }
     }
 
-    pub fn set_local_param(&mut self, core: &mut ShellCore) -> bool {
+    /*
+    pub fn set_to_local(&mut self, core: &mut ShellCore) -> bool {
         let index = match self.get_index(core) {
             Some(s) => {
                 match s.parse::<usize>() {
@@ -116,15 +130,15 @@ impl Substitution {
             _ => {},
         }
         true
-    }
+    }*/
 
-    pub fn set_to_shell(&mut self, core: &mut ShellCore) -> bool {
+    pub fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
         if core.data.is_assoc(&self.key) {
             self.set_assoc(core)
         }else if core.data.is_array(&self.key) {
-            self.set_array(core)
+            self.set_array(core, local)
         }else {
-            self.set_param(core)
+            self.set_param(core, local)
         }
     }
 

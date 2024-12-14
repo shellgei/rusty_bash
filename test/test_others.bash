@@ -580,6 +580,9 @@ res=$($com <<< 'A=${ }')
 res=$($com <<< 'A=B cd ; echo $A')
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'A=(a b) cd ; echo ${A[0]}')
+[ "$res" == "" ] || err $LINENO
+
 res=$($com <<< 'A=aaa ; A+=bbb ; echo $A')
 [ "$res" == "aaabbb" ] || err $LINENO
 
