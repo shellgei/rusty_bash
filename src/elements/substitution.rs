@@ -13,11 +13,11 @@ use super::word::Word;
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
-    pub name: String,
-    pub index: Option<Subscript>,
-    pub value: Value,
-    pub evaluated_value: Value,
-    pub append: bool,
+    name: String,
+    index: Option<Subscript>,
+    value: Value,
+    evaluated_value: Value,
+    append: bool,
 }
 
 fn readonly_error(name: &str, core: &mut ShellCore) -> bool {
