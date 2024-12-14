@@ -24,3 +24,11 @@ pub struct Variable {
     pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
 }
 
+impl Variable {
+    pub fn get_value(&mut self) -> Value {
+        match self.dynamic_get {
+            Some(f) => f(self).clone(),
+            None    => self.value.clone(),
+        }
+    }
+}

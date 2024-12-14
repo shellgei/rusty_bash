@@ -118,15 +118,8 @@ impl Data {
     pub fn get_value(&mut self, key: &str) -> Option<Value> {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {
-            match self.parameters[layer].get_mut(key) {
-                Some(v) => { 
-                    if let Some(f) = v.dynamic_get {
-                        return Some(f(v).clone())
-                    } else {
-                        return Some(v.value.clone())
-                    }
-                },
-                _ => {},
+            if let Some(v) = self.parameters[layer].get_mut(key) {
+                return Some(v.get_value());
             }
         }
         None
