@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::core::data::Value;
+use crate::core::data::variable::Value;
 use crate::utils::error;
 use crate::utils::exit;
 use std::env;

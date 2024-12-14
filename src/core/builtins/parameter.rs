@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::utils;
 use crate::utils::exit;
-use crate::core::data::Value;
+use crate::core::data::variable::Value;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
 

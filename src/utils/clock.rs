@@ -5,7 +5,7 @@ use std::str::FromStr;
 use ::time::Duration;
 use nix::time;
 use nix::time::ClockId;
-use crate::core::data::{Variable, Value};
+use crate::core::data::variable::{Variable, Value};
 
 fn monotonic_time() -> Duration {
     let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
