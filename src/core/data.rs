@@ -118,10 +118,10 @@ impl Data {
     pub fn get_assoc(&mut self, key: &str, pos: &str) -> String {
         match self.get_value(key) {
             Some(Value::AssocArray(a)) => {
-                /*
                 if pos == "@" || pos == "*" {
-                    return a.join(" ");
-                }*/
+                    let values: Vec<String> = a.iter().map(|e| e.1.clone()).collect();
+                    return values.join(" ");
+                }
 
                 return match a.get(pos) {
                     Some(v) => v,
