@@ -78,7 +78,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
         true => sub.set_to_shell(core, false),
         false => exit::internal("unsupported substitution"),
     }*/
-    sub.eval(core, false)
+    sub.eval(core, false, false)
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

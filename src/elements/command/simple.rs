@@ -6,12 +6,11 @@ pub mod parser;
 use crate::{Feeder, Script, ShellCore};
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
-use crate::core::data::Value;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use nix::unistd;
 use std::ffi::CString;
-use std::{env, process};
+use std::process;
 use std::sync::atomic::Ordering::Relaxed;
 
 use nix::unistd::Pid;
@@ -82,7 +81,7 @@ impl Command for SimpleCommand {
 
 impl SimpleCommand {
     fn exec_external_command(&mut self, core: &mut ShellCore) -> ! {
-        self.set_environment_variables();
+        self.set_environment_variables(core);
         let cargs = Self::to_cargs(&self.args);
 
         match unistd::execvp(&cargs[0], &cargs) {
@@ -144,21 +143,18 @@ impl SimpleCommand {
         core.data.set_param("_", "");
         self.option_x_output(core);
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, false);});
+            .for_each(|s| {s.eval(core, false, false);});
         None
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, true);});
+            .for_each(|s| {s.eval(core, true, false);});
     }
 
-    fn set_environment_variables(&mut self) {
-        for s in &self.substitutions {
-            match &s.evaluated_value {
-                Value::EvaluatedSingle(v) => env::set_var(&s.name, &v),
-                _ => {},
-            }
+    fn set_environment_variables(&mut self, core: &mut ShellCore) {
+        for s in &mut self.substitutions {
+            s.eval(core, false, true);
         }
     }
 

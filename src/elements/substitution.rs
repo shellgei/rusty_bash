@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::core::data::Value;
 use crate::utils::error;
 use crate::utils::exit;
+use std::env;
 use super::array::Array;
 use super::subscript::Subscript;
 use super::word::Word;
@@ -34,7 +35,8 @@ fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    pub fn eval(&mut self, core: &mut ShellCore,
+                local: bool, env: bool) -> bool {
         self.evaluated_value = match self.value.clone() {
             Value::None      => Value::EvaluatedSingle("".to_string()),
             Value::Single(v) => self.eval_as_value(&v, core),
@@ -42,7 +44,10 @@ impl Substitution {
             _                => return false,
         };
 
-        self.set_to_shell(core, local)
+        match env {
+            false => self.set_to_shell(core, local),
+            true  => self.set_to_env(),
+        }
     }
 
     fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
@@ -127,6 +132,14 @@ impl Substitution {
         }else {
             self.set_param(core, local)
         }
+    }
+
+    pub fn set_to_env(&mut self) -> bool {
+        match &self.evaluated_value {
+            Value::EvaluatedSingle(v) => env::set_var(&self.name, &v),
+            _ => return false,
+        }
+        true
     }
 
     pub fn get_index(&mut self, core: &mut ShellCore) -> Option<String> {
