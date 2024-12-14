@@ -43,11 +43,6 @@ impl Substitution {
         };
 
         self.set_to_shell(core, local)
-            /*
-        match self.evaluated_value {
-            Value::None => false,
-            _ => true,
-        }*/
     }
 
     fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
