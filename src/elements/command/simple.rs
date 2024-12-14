@@ -34,7 +34,7 @@ pub struct SimpleCommand {
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         core.data.set_param("LINENO", &self.lineno.to_string());
-        if core.return_flag || core.break_counter > 0 || core.continue_counter > 0 {
+        if Self::break_continue_or_return(core) {
             return None;
         }
 
@@ -95,6 +95,10 @@ impl SimpleCommand {
             }
             _ => exit::internal("never come here")
         }
+    }
+
+    fn break_continue_or_return(core: &mut ShellCore) -> bool {
+        core.return_flag || core.break_counter > 0 || core.continue_counter > 0 
     }
 
     fn run_command_not_found(&mut self, core: &mut ShellCore) -> ! {
