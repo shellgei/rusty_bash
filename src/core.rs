@@ -8,6 +8,7 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 
+use crate::child;
 use self::data::Data;
 use self::data::variable::Variable;
 use self::options::Options;
@@ -182,7 +183,7 @@ impl ShellCore {
         ws.expect("SUSH INTERNAL ERROR: no wait status")
     }
 
-    fn set_foreground(&self) {
+    pub fn set_foreground(&self) {
         let fd = match self.tty_fd.as_ref() {
             Some(fd) => fd,
             _        => return,
@@ -201,14 +202,14 @@ impl ShellCore {
         restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
-    fn flip_exit_status(&mut self) {
+    pub fn flip_exit_status(&mut self) {
         match self.data.get_param("?").as_ref() {
             "0" => self.data.set_param("?", "1"),
             _   => self.data.set_param("?", "0"),
         };
     }
 
-    fn show_time(&self) {
+    pub fn show_time(&self) {
             let real_end_time = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
 
             let self_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
@@ -225,7 +226,7 @@ impl ShellCore {
                       sys_diff.tv_sec()%60, sys_diff.tv_usec());
     }
 
-    fn check_e_option(&mut self) {
+    pub fn check_e_option(&mut self) {
         if self.data.get_param("?") != "0" 
         && self.data.flags.contains("e") 
         && ! self.suspend_e_option {
@@ -249,7 +250,7 @@ impl ShellCore {
         let mut pipestatus = vec![];
         let mut ans = vec![];
         for pid in &pids {
-            let ws = self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
+            let ws = child::wait_process(self, pid.expect("SUSHI INTERNAL ERROR (no pid)"));
             ans.push(ws);
 
             pipestatus.push(self.data.get_param("?"));
