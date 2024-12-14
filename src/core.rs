@@ -234,6 +234,7 @@ impl ShellCore {
         }
     }
 
+    /*
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>,
                          exclamation: bool, time: bool) -> Vec<WaitStatus> {
         if pids.len() == 1 && pids[0] == None {
@@ -277,7 +278,7 @@ impl ShellCore {
         self.check_e_option();
 
         ans
-    }
+    }*/
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
         if args.len() == 0 {
