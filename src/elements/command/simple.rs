@@ -38,10 +38,11 @@ impl Command for SimpleCommand {
             return None;
         }
 
+        /*
         if ! self.eval_substitutions(core){
             core.data.set_param("?", "1");
             return None;
-        }
+        }*/
 
         self.args.clear();
         let mut words = self.words.to_vec();
@@ -145,13 +146,13 @@ impl SimpleCommand {
         core.data.set_param("_", "");
         self.option_x_output(core);
         self.substitutions.iter_mut()
-            .for_each(|s| {s.set_to_shell(core, false);});
+            .for_each(|s| {s.eval(core, false);});
         None
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) {
         self.substitutions.iter_mut()
-            .for_each(|s| {s.set_to_shell(core, true);});
+            .for_each(|s| {s.eval(core, true);});
     }
 
     fn set_environment_variables(&mut self) {
@@ -169,6 +170,7 @@ impl SimpleCommand {
             .collect()
     }
 
+    /*
     fn eval_substitutions(&mut self, core: &mut ShellCore) -> bool {
         for s in &mut self.substitutions {
             if ! s.eval(core) {
@@ -176,7 +178,7 @@ impl SimpleCommand {
             }
         }
         true
-    }
+    }*/
 
     fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
         match word.eval(core) {

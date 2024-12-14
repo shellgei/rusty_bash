@@ -34,7 +34,7 @@ fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore) -> bool {
+    pub fn eval(&mut self, core: &mut ShellCore, local: bool) -> bool {
         self.evaluated_value = match self.value.clone() {
             Value::None      => Value::EvaluatedSingle("".to_string()),
             Value::Single(v) => self.eval_as_value(&v, core),
@@ -42,10 +42,12 @@ impl Substitution {
             _                => return false,
         };
 
+        self.set_to_shell(core, local)
+            /*
         match self.evaluated_value {
             Value::None => false,
             _ => true,
-        }
+        }*/
     }
 
     fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
@@ -114,7 +116,15 @@ impl Substitution {
         }
     }
 
-    pub fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
+        match &self.evaluated_value {
+            Value::None => {
+                core.data.set_param("?", "1");
+                return false;
+            },
+            _ => {},
+        }
+
         if core.data.is_assoc(&self.name) {
             self.set_assoc(core, local)
         }else if core.data.is_array(&self.name) {
