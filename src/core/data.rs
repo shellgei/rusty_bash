@@ -228,20 +228,16 @@ impl Data {
         self.set_layer_param(key, val, layer-1)
     }
 
-    pub fn set_layer_array(&mut self, key: &str, vals: &Vec<String>, layer: usize) -> bool {
-        self.parameters[layer].insert(
-            key.to_string(),
-            Variable {
-                value: Value::EvaluatedArray(vals.to_vec()),
-                ..Default::default()
-            }
-        );        
+    pub fn set_layer_array(&mut self, name: &str, vals: &Vec<String>,
+                           layer: usize) -> bool {
+        self.parameters[layer]
+            .insert( name.to_string(), Variable::from(vals.to_vec()));        
         true
     }
 
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
         self.parameters[layer]
-            .insert(name.to_string(), Variable::new_assoc());        
+            .insert(name.to_string(), Variable::from(HashMap::new()));        
         true
     }
 
@@ -308,26 +304,16 @@ impl Data {
         self.set_layer_array_elem(name, val, layer-1, pos)
     }
 
-    pub fn push_local(&mut self) {
-        self.parameters.push(HashMap::new());
-    }
-
-    pub fn pop_local(&mut self) {
-        self.parameters.pop();
-    }
-
-    pub fn get_layer_num(&mut self) -> usize {
-        self.parameters.len()
-    }
+    pub fn push_local(&mut self) { self.parameters.push(HashMap::new()); }
+    pub fn pop_local(&mut self) { self.parameters.pop(); }
+    pub fn get_layer_num(&mut self) -> usize { self.parameters.len() }
 
     pub fn get_keys(&mut self) -> Vec<String> {
-        let mut output = HashSet::new();
+        let mut keys = HashSet::new();
         for layer in &self.parameters {
-            for k in layer.keys() {
-                output.insert(k);
-            }
+            layer.keys().for_each(|k| {keys.insert(k);} );
         }
-        let mut ans: Vec<String> = output.iter().map(|c| c.to_string()).collect();
+        let mut ans: Vec<String> = keys.iter().map(|c| c.to_string()).collect();
         ans.sort();
         ans
     }
@@ -344,7 +330,7 @@ impl Data {
     }
 
     fn replace_alias_core(&self, word: &mut String) -> bool {
-        if self.flags.find('i') == None {
+        if ! self.flags.contains('i') {
             return false;
         }
 
@@ -387,5 +373,4 @@ impl Data {
     pub fn not_set(v: &mut Variable, _var: &str) -> Value {
         v.value.clone()
     }
-    
 }

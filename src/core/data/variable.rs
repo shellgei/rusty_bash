@@ -33,6 +33,24 @@ impl From<&str> for Variable {
     }
 }
 
+impl From<HashMap<String, String>> for Variable {
+    fn from(hm: HashMap<String, String>) -> Self {
+        Variable {
+            value: Value::AssocArray(hm),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<Vec<String>> for Variable {
+    fn from(vals: Vec<String>) -> Self {
+        Variable {
+            value: Value::EvaluatedArray(vals),
+            ..Default::default()
+        }
+    }
+}
+
 impl Variable {
     pub fn get_value(&mut self) -> Value {
         match self.dynamic_get {
@@ -41,10 +59,11 @@ impl Variable {
         }
     }
 
+    /*
     pub fn new_assoc() -> Self {
         Variable {
             value: Value::AssocArray(HashMap::new()),
             ..Default::default()
         }
-    }
+    }*/
 }
