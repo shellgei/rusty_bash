@@ -4,7 +4,6 @@
 use rand_chacha::ChaCha20Rng;
 use rand::{RngCore, SeedableRng};
 use crate::core::data::variable::{Variable, Value};
-use crate::core::data::variable::single::SingleData;
 
 fn gen_chacha20_u32(v: &mut Variable) -> u32 {
     let seed = match &v.value {
@@ -21,12 +20,14 @@ fn gen_chacha20_u32(v: &mut Variable) -> u32 {
 
 pub fn get_srandom(v: &mut Variable) -> Value {
     let rand = gen_chacha20_u32(v);
-    v.value = Value::Single(SingleData::from(rand.to_string()));
+    v.set_data(rand.to_string());
+    //v.value = Value::Single(SingleData::from(rand.to_string()));
     v.value.clone()
 }
 
 pub fn get_random(v: &mut Variable) -> Value {
     let rand = gen_chacha20_u32(v) & 0x7FFF;
-    v.value = Value::Single(SingleData::from(rand.to_string()));
+    v.set_data(rand.to_string());
+    //v.value = Value::Single(SingleData::from(rand.to_string()));
     v.value.clone()
 }

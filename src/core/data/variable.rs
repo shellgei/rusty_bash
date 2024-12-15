@@ -2,14 +2,17 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 pub mod single;
+pub mod special;
 
 use crate::core::HashMap;
 use self::single::SingleData;
+use self::special::SpecialData;
 
 #[derive(Debug, Clone, Default)]
 pub enum Value {
     #[default]
     None,
+    Special(SpecialData),
     Single(SingleData),
     AssocArray(HashMap::<String, String>),
     Array(Vec<String>),
@@ -19,7 +22,7 @@ pub enum Value {
 pub struct Variable {
     pub value: Value,
     pub attributes: String,
-    pub dynamic_get: Option<fn(&mut Variable) -> Value>,
+//    pub dynamic_get: Option<fn(&mut Variable) -> Value>,
     pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
 }
 
@@ -51,11 +54,32 @@ impl From<Vec<String>> for Variable {
 }
 
 impl Variable {
+    pub fn set_data(&mut self, data: String) {
+        match &mut self.value {
+            Value::Single(s) => s.data = data,
+            Value::Special(s) => s.data = data,
+            _ => {},
+        }
+    }
+
     pub fn get_value(&mut self) -> Value {
+        match &self.value {
+            Value::Special(d) => {
+                (d.dynamic_get)(self).clone()
+                /*
+                match d.dynamic_get {
+                    Some(f) => f(self).clone(),
+                    None    => self.value.clone(),
+                }*/
+            },
+            _ => self.value.clone(),
+        }
+
+        /*
         match self.dynamic_get {
             Some(f) => f(self).clone(),
             None    => self.value.clone(),
-        }
+        }*/
     }
 
     pub fn not_set(v: &mut Variable, _var: &str) -> Value {

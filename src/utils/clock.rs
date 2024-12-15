@@ -13,15 +13,17 @@ fn monotonic_time() -> Duration {
     Duration::new(now.tv_sec(), now.tv_nsec() as i32)
 }
 
-pub fn set_seconds(_v: &mut Variable, var: &str) -> Value {
+pub fn set_seconds(v: &mut Variable, var: &str) -> Value {
     let offset = Duration::seconds(i64::from_str(var).unwrap_or(0));
     let adjusted = monotonic_time() - offset;
     let text = format!("{}.{}", adjusted.whole_seconds(), adjusted.subsec_nanoseconds());
-    Value::Single(SingleData::from(&text))
+    v.set_data(text);
+    //Value::Single(SingleData::from(&text))
+    v.value.clone()
 }
 
 pub fn get_seconds(v: &mut Variable) -> Value {
-    if let Value::Single(ref s) = v.value {
+    if let Value::Special(ref s) = v.value {
         let part: Vec<&str> = s.data.split('.').collect();
         let sec = i64::from_str(part[0]).unwrap();
         let nano = i32::from_str(part[1]).unwrap();

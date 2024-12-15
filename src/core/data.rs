@@ -4,6 +4,7 @@
 pub mod variable;
 
 use crate::core::data::variable::single::SingleData;
+use crate::core::data::variable::special::SpecialData;
 use crate::elements::command::function_def::FunctionDefinition;
 use self::variable::{Value, Variable};
 use std::{env, process};
@@ -37,12 +38,12 @@ impl Data {
         data
     }
 
-    pub fn get_param(&mut self, key: &str) -> String {
-        if key == "-" {
+    pub fn get_param(&mut self, name: &str) -> String {
+        if name == "-" {
             return self.flags.clone();
         }
 
-        if key == "@" || key == "*" { // $@ should return an array in a double quoted
+        if name == "@" || name == "*" { // $@ should return an array in a double quoted
                                       // subword. Therefore another access method is used there. 
             return match self.position_parameters.last() {
                 Some(a) => a[1..].join(" "),
@@ -50,12 +51,13 @@ impl Data {
             };
         }
 
-        if let Some(n) = self.get_position_param_pos(key) {
+        if let Some(n) = self.get_position_param_pos(name) {
             let layer = self.position_parameters.len();
             return self.position_parameters[layer-1][n].to_string();
         }
 
-        match self.get_value(key) {
+        match self.get_value(name) {
+            Some(Value::Special(v)) => return v.data.to_string(),
             Some(Value::Single(v)) => return v.data.to_string(),
             Some(Value::Array(a)) => {
                 match a.len() {
@@ -66,9 +68,9 @@ impl Data {
             _  => {},
         }
 
-        match env::var(key) {
+        match env::var(name) {
             Ok(v) => {
-                self.set_layer_param(key, &v, 0);
+                self.set_layer_param(name, &v, 0);
                 v
             },
             _ => "".to_string()
@@ -216,8 +218,11 @@ impl Data {
         self.parameters[0].insert(
             key.to_string(),
             Variable {
-                value: Value::None,
-                dynamic_get: Some(get),
+                value: Value::Special( SpecialData {
+                    data: "".to_string(),
+                    attributes: "".to_string(),
+                    dynamic_get: get,
+                }),
                 dynamic_set: set,
                 ..Default::default()
             }
