@@ -192,20 +192,25 @@ impl Data {
             _     => {},
         }
 
-        self.parameters[layer].entry(name.to_string())
-        .and_modify(|v| {
-            if v.attributes.contains('r') {
-                // error : "readonly variable"
-            } else {
-                v.value = match v.dynamic_set {
-                    Some(f) => f(v, val),
+        match self.parameters[layer].get(name) {
+            None => {
+                self.parameters[layer].insert(name.to_string(), Variable::from(val));
+            },
+            Some(v) => {
+                if v.attributes.contains('r') {
+                    return false;
+                }
+
+                let mut new_v = v.clone();
+                new_v.value = match v.dynamic_set {
+                    Some(f) => f(&mut new_v, val),
                     None    => Value::Single(SingleData::from(val)),
                 };
-            }
-        })
-        .or_insert(
-            Variable::from(val)
-        );
+
+                self.parameters[layer].insert(name.to_string(), new_v);
+            },
+        }
+
         true
     }
 
