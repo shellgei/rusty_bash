@@ -202,7 +202,7 @@ impl Data {
         self.set_layer_param(key, val, 0)
     }
 
-    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Variable)->Value, init: &str) {
+    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Variable)-> String, init: &str) {
         self.parameters[0].insert(
             key.to_string(),
             Variable {

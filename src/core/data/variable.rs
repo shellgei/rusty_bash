@@ -55,6 +55,12 @@ impl From<HashMap<String, String>> for Variable {
     }
 }
 
+impl From<String> for Value {
+    fn from(s: String) -> Self {
+        Value::Single(SingleData::from(s))
+    }
+}
+
 impl From<Vec<String>> for Value {
     fn from(vals: Vec<String>) -> Self {
         Value::Array(ArrayData::from(vals))
@@ -94,7 +100,11 @@ impl Variable {
 
     pub fn get_value(&mut self) -> Value {
         match &self.value {
-            Value::Special(d) => (d.dynamic_get)(self).clone(),
+            Value::Special(d) => {
+                let ans = (d.dynamic_get)(self);
+                Value::from(ans)
+                //self.value.clone()
+            },
             _ => self.value.clone(),
         }
     }
