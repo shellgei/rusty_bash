@@ -10,7 +10,6 @@ use self::single::SingleData;
 pub enum Value {
     #[default]
     None,
-    //Single(String),
     Single(SingleData),
     AssocArray(HashMap::<String, String>),
     Array(Vec<String>),
