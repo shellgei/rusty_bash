@@ -216,7 +216,6 @@ impl Data {
                     data: init,
                     attributes: "".to_string(),
                     dynamic_get: get,
-                    dynamic_set: None,
                 }),
                 ..Default::default()
             }
@@ -227,14 +226,6 @@ impl Data {
         let layer = self.parameters.len();
         self.set_layer_param(key, val, layer-1)
     }
-
-    /*
-    pub fn set_layer_array(&mut self, name: &str, vals: &Vec<String>,
-                           layer: usize) -> bool {
-        self.parameters[layer]
-            .insert( name.to_string(), Variable::from(vals.to_vec()));        
-        true
-    }*/
 
     pub fn set_layer(&mut self, name: &str, v: Value, layer: usize) -> bool {
         self.parameters[layer].insert( name.to_string(), Variable::from(v));

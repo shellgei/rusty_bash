@@ -99,9 +99,10 @@ impl Variable {
         }
     }
 
+    /*
     pub fn not_set(v: &mut Variable, _var: &str) -> String {
         "".to_string()
-    }
+    }*/
 
     pub fn set_assoc_elem(&mut self, key: &String, val: &String) -> bool {
         match &mut self.value {
