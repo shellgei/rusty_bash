@@ -345,21 +345,6 @@ impl Data {
             },
             Some(Value::Array(a)) => a.print(k),
             Some(Value::AssocArray(a)) => a.print(k),
-            /*
-            Some(Value::AssocArray(a)) => {
-                let mut formatted = String::new();
-                formatted += "(";
-                for k in a.keys() {
-                    let v = a.get(&k).unwrap_or("".to_string());
-                    formatted += &format!("[{}]=\"{}\" ", k, v);
-                }
-                if formatted.ends_with(" ") {
-                    formatted.pop();
-                }
-                formatted += ")";
-                println!("{}={}", k.to_string(), formatted); 
-            },
-            */
             _ => {},
         }
     }
