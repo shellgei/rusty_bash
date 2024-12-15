@@ -125,11 +125,12 @@ impl ShellCore {
         self.data.set_param("HOSTTYPE", &t_arch);
         self.data.set_param("OSTYPE", &t_os);
         self.data.set("BASH_VERSINFO", Value::from(&versinfo));
-        self.data.set_special_param("SRANDOM", random::get_srandom, None);
-        self.data.set_special_param("RANDOM", random::get_random, None);
-        self.data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, None);
-        self.data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, None);
-        self.data.set_special_param("SECONDS", clock::get_seconds, Some(clock::set_seconds));
+        self.data.set_special_param("SRANDOM", random::get_srandom, "");
+        self.data.set_special_param("RANDOM", random::get_random, "");
+        self.data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");
+        self.data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, "");
+        let sec = clock::set_seconds(&mut Variable::from(""), "");
+        self.data.set_special_param("SECONDS", clock::get_seconds, &sec);
     }
 
     pub fn flip_exit_status(&mut self) {

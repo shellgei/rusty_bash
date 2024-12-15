@@ -202,18 +202,18 @@ impl Data {
         self.set_layer_param(key, val, 0)
     }
 
-    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Variable)->Value,
-                             set: Option<fn(&mut Variable, val: &str) -> String>) {
+    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Variable)->Value, init: &str) {
+        /*
         let init = match set {
             Some(f) => f(&mut Variable::from(""), ""),
             None => "".to_string(),
-        };
+        };*/
 
         self.parameters[0].insert(
             key.to_string(),
             Variable {
                 value: Value::Special( SpecialData {
-                    data: init,
+                    data: init.to_string(),
                     attributes: "".to_string(),
                     dynamic_get: get,
                 }),
