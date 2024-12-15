@@ -34,3 +34,14 @@ impl From<Vec<String>> for ArrayData {
         }
     }
 }
+
+impl ArrayData {
+    pub fn set(&mut self, pos: usize, val: &String) -> bool {
+        if self.data.len() > pos {
+            self.data[pos] = val.clone();
+            true
+        }else{
+            false
+        }
+    }
+}

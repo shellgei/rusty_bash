@@ -10,10 +10,7 @@ pub struct AssocData {
 
 impl From<HashMap<String, String>> for AssocData {
     fn from(hm: HashMap<String, String>) -> Self {
-        Self {
-            data: hm,
-            ..Default::default()
-        }
+        Self { data: hm }
     }
 }
 

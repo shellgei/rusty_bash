@@ -254,6 +254,11 @@ impl Data {
     }
 
     pub fn set_layer_array_elem(&mut self, key: &str, val: &String, layer: usize, pos: usize) -> bool {
+        match self.parameters[layer].get_mut(key) {
+            Some(v) => v.set_array_elem(pos, val), 
+            _ => return false,
+        }
+        /*
         let value = match self.parameters[layer].get_mut(key) {
             Some(v) => v, 
             _ => return false,
@@ -267,20 +272,14 @@ impl Data {
             array.data[pos] = val.clone();
         }
         true
+        */
     }
 
     pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> bool {
-        let value = match self.parameters[layer].get_mut(name) {
-            Some(v) => v, 
-            _ => return false,
-        };
-        let array = match &mut value.value {
-            Value::AssocArray(a) => a, 
-            _ => return false,
-        };
-
-        array.set(key.to_string(), val.to_string());
-        true
+        match self.parameters[layer].get_mut(name) {
+            Some(v) => v.set_assoc_elem(key, val), 
+            _ => false,
+        }
     }
 
     pub fn set_array(&mut self, key: &str, vals: &Vec<String>) -> bool {

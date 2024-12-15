@@ -74,4 +74,21 @@ impl Variable {
     pub fn not_set(v: &mut Variable, _var: &str) -> Value {
         v.value.clone()
     }
+
+    pub fn set_assoc_elem(&mut self, key: &String, val: &String) -> bool {
+        let array = match &mut self.value {
+            Value::AssocArray(a) => a, 
+            _ => return false,
+        };
+
+        array.set(key.to_string(), val.to_string());
+        true
+    }
+
+    pub fn set_array_elem(&mut self, pos: usize, val: &String) -> bool {
+        match &mut self.value {
+            Value::Array(a) => a.set(pos, val), 
+            _ => return false,
+        }
+    }
 }
