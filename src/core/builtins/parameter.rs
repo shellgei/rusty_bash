@@ -38,9 +38,14 @@ fn print_data(k: &str, core: &mut ShellCore) {
         Some(Value::AssocArray(a)) => {
             let mut formatted = String::new();
             formatted += "(";
+            for k in a.keys() {
+                let v = a.get(&k).unwrap_or("".to_string());
+                formatted += &format!("[{}]=\"{}\" ", k, v);
+            }
+            /*
             for (i, v) in a.data.iter() {
                 formatted += &format!("[{}]=\"{}\" ", i, v).clone();
-            }
+            }*/
             if formatted.ends_with(" ") {
                 formatted.pop();
             }
