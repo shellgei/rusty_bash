@@ -1,9 +1,11 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::core::HashMap;
+
 #[derive(Debug, Clone, Default)]
-pub struct ArrayData {
-    pub data: Vec<String>,
+pub struct AssocData {
+    pub data: HashMap<String, String>,
 }
 
 /*
@@ -26,10 +28,10 @@ impl From<&String> for SingleData {
 }
 */
 
-impl From<Vec<String>> for ArrayData {
-    fn from(v: Vec<String>) -> Self {
+impl From<HashMap<String, String>> for AssocData {
+    fn from(hm: HashMap<String, String>) -> Self {
         Self {
-            data: v,
+            data: hm,
             ..Default::default()
         }
     }

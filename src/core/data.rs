@@ -104,11 +104,11 @@ impl Data {
         match self.get_value(key) {
             Some(Value::AssocArray(a)) => {
                 if pos == "@" || pos == "*" {
-                    let values: Vec<String> = a.iter().map(|e| e.1.clone()).collect();
+                    let values: Vec<String> = a.data.iter().map(|e| e.1.clone()).collect();
                     return values.join(" ");
                 }
 
-                return match a.get(pos) {
+                return match a.data.get(pos) {
                     Some(v) => v,
                     _ => "",
                 }.to_string();
@@ -275,7 +275,7 @@ impl Data {
             _ => return false,
         };
 
-        array.insert(key.to_string(), val.to_string());
+        array.data.insert(key.to_string(), val.to_string());
         true
     }
 

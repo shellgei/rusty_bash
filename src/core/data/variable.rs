@@ -2,11 +2,13 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 pub mod array;
+pub mod assoc;
 pub mod single;
 pub mod special;
 
 use crate::core::HashMap;
 use self::array::ArrayData;
+use self::assoc::AssocData;
 use self::single::SingleData;
 use self::special::SpecialData;
 
@@ -16,7 +18,7 @@ pub enum Value {
     None,
     Special(SpecialData),
     Single(SingleData),
-    AssocArray(HashMap::<String, String>),
+    AssocArray(AssocData),
     Array(ArrayData),
 }
 
@@ -38,7 +40,7 @@ impl From<&str> for Variable {
 impl From<HashMap<String, String>> for Variable {
     fn from(hm: HashMap<String, String>) -> Self {
         Variable {
-            value: Value::AssocArray(hm),
+            value: Value::AssocArray(AssocData::from(hm)),
             ..Default::default()
         }
     }
