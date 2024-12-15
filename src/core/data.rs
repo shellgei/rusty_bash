@@ -84,11 +84,14 @@ impl Data {
                     return a.join(" ");
                 } else if let Ok(n) = pos.parse::<usize>() {
                     return a.get(n).unwrap_or("".to_string());
-                    /*
-                    if n < a.len() {
-                        return a.data[n].clone();
-                    }*/
                 }
+            },
+            Some(Value::AssocArray(a)) => {
+                if pos == "@" || pos == "*" {
+                    let values = a.values();
+                    return values.join(" ");
+                }
+                return a.get(pos).unwrap_or("".to_string());
             },
             Some(Value::Single(v)) => {
                 match pos.parse::<usize>() {
@@ -96,28 +99,6 @@ impl Data {
                     Ok(_) => return "".to_string(),
                     _ => return v.data.to_string(), 
                 }
-            },
-            _ => {},
-        }
-        "".to_string()
-    }
-
-    pub fn get_assoc(&mut self, key: &str, pos: &str) -> String {
-        match self.get_value(key) {
-            Some(Value::AssocArray(a)) => {
-                if pos == "@" || pos == "*" {
-                    
-                   // let values: Vec<String> = a.data.iter().map(|e| e.1.clone()).collect();
-                    let values = a.values();
-                    return values.join(" ");
-                }
-
-                return a.get(pos).unwrap_or("".to_string());
-                /*
-                    Some(v) => v,
-                    _ => "",
-                }.to_string();
-                */
             },
             _ => {},
         }
@@ -319,11 +300,6 @@ impl Data {
     pub fn set_local(&mut self, name: &str, v: Value) -> bool {
         let layer = self.parameters.len();
         self.set_layer(name, v, layer-1)
-    }
-
-    pub fn set_local_array(&mut self, name: &str, vals: &Vec<String>) -> bool {
-        let layer = self.parameters.len();
-        self.set_layer_array(name, vals, layer-1)
     }
 
     pub fn set_local_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {

@@ -120,7 +120,7 @@ impl BracedParam {
     }
 
     fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
-        self.text = core.data.get_assoc(&self.name, index);
+        self.text = core.data.get_array(&self.name, index);
         true
     }
 
