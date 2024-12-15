@@ -191,25 +191,23 @@ impl Data {
             Ok(_) => env::set_var(name, val),
             _     => {},
         }
-
-        match self.parameters[layer].get(name) {
-            None => {
-                self.parameters[layer].insert(name.to_string(), Variable::from(val));
-            },
-            Some(v) => {
-                if v.attributes.contains('r') {
-                    return false;
-                }
-
-                let mut new_v = v.clone();
-                new_v.value = match v.dynamic_set {
-                    Some(f) => f(&mut new_v, val),
-                    None    => Value::Single(SingleData::from(val)),
-                };
-
-                self.parameters[layer].insert(name.to_string(), new_v);
-            },
+        if self.parameters[layer].get(name).is_none() {
+            self.parameters[layer].insert(name.to_string(), Variable::from(val));
+            return true;
         }
+
+        let v = self.parameters[layer].get(name).unwrap();
+        if v.attributes.contains('r') {
+            return false;
+        }
+
+        let mut new_v = v.clone();
+        new_v.value = match v.dynamic_set {
+            Some(f) => f(&mut new_v, val),
+            None    => Value::Single(SingleData::from(val)),
+        };
+
+        self.parameters[layer].insert(name.to_string(), new_v);
 
         true
     }
