@@ -74,8 +74,8 @@ impl Data {
         }
     }
 
-    pub fn get_array(&mut self, key: &str, pos: &str) -> String {
-        match self.get_value(key) {
+    pub fn get_array(&mut self, name: &str, pos: &str) -> String {
+        match self.get_value(name) {
             Some(Value::EvaluatedArray(a)) => {
                 if pos == "@" || pos == "*" {
                     return a.join(" ");

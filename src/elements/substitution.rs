@@ -11,11 +11,22 @@ use super::subscript::Subscript;
 use super::word::Word;
 
 #[derive(Debug, Clone, Default)]
+pub enum ParsedValue {
+    #[default]
+    None,
+    Single(Word),
+//    EvaluatedSingle(String),
+    Array(Array),
+//    AssocArray(HashMap::<String, String>),
+//    EvaluatedArray(Vec<String>),
+}
+
+#[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
     name: String,
     index: Option<Subscript>,
-    value: Value,
+    value: ParsedValue,
     evaluated_value: Value,
     append: bool,
 }
@@ -38,10 +49,9 @@ impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 local: bool, env: bool) -> bool {
         self.evaluated_value = match self.value.clone() {
-            Value::None      => Value::EvaluatedSingle("".to_string()),
-            Value::Single(v) => self.eval_as_value(&v, core),
-            Value::Array(a)  => self.eval_as_array(&mut a.clone(), core),
-            _                => return false,
+            ParsedValue::None      => Value::EvaluatedSingle("".to_string()),
+            ParsedValue::Single(v) => self.eval_as_value(&v, core),
+            ParsedValue::Array(a)  => self.eval_as_array(&mut a.clone(), core),
         };
 
         match env {
@@ -209,11 +219,11 @@ impl Substitution {
 
         if let Some(a) = Array::parse(feeder, core) {
             ans.text += &a.text;
-            ans.value = Value::Array(a);
+            ans.value = ParsedValue::Array(a);
             Some(ans)
         }else if let Some(w) = Word::parse(feeder, core, false) {
             ans.text += &w.text;
-            ans.value = Value::Single(w);
+            ans.value = ParsedValue::Single(w);
             Some(ans)
         }else {
             Some(ans)

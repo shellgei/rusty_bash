@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::elements::command;
 use super::word::Word;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Array {
     pub text: String,
     pub words: Vec<Word>,
@@ -23,13 +23,6 @@ impl Array {
         }
 
         Some(ans)
-    }
-
-    pub fn new() -> Array {
-        Array {
-            text: String::new(),
-            words: vec![],
-        }
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -51,7 +44,7 @@ impl Array {
             return None;
         }
 
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         ans.text = feeder.consume(1);
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
