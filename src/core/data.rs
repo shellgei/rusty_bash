@@ -125,7 +125,7 @@ impl Data {
         false
     }
 
-    pub fn get_array_len(&mut self, key: &str) -> usize {
+    pub fn len(&mut self, key: &str) -> usize {
         match self.get_value(key) {
             Some(Value::Array(a)) => a.len(),
             _ => 0,

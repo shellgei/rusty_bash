@@ -112,7 +112,7 @@ impl BracedParam {
         }
 
         self.text = match (self.num, index.as_str()) {
-            (true, "@") => core.data.get_array_len(&self.name).to_string(),
+            (true, "@") => core.data.len(&self.name).to_string(),
             (true, _)   => core.data.get_array(&self.name, &index).chars().count().to_string(),
             (false, _)  => core.data.get_array(&self.name, &index),
         };

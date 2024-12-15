@@ -69,7 +69,7 @@ impl Terminal {
     fn set_custom_compreply(core: &mut ShellCore) -> bool {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
-        let word_num = core.data.get_array_len("COMP_WORDS") as i32;
+        let word_num = core.data.len("COMP_WORDS") as i32;
 
         if prev_pos < 0 || prev_pos >= word_num {
             return false;
@@ -88,7 +88,7 @@ impl Terminal {
                     let mut dummy = Pipe::new("".to_string());
                     a.exec(core, &mut dummy);
                 }
-                core.data.get_array_len("COMPREPLY") != 0
+                core.data.len("COMPREPLY") != 0
             },
             _ => false
         }
@@ -144,7 +144,7 @@ impl Terminal {
         }
 
         if pos == "0" {
-            return if core.data.get_array_len("COMP_WORDS") == 0 {
+            return if core.data.len("COMP_WORDS") == 0 {
                 self.escape_at_completion = false;
                 completion::compgen_h(core, args).to_vec().into_iter().filter(|h| h.len() > 0).collect()
             }else{
@@ -159,7 +159,7 @@ impl Terminal {
         let pos = core.data.get_param("COMP_CWORD").to_string();
         let target = core.data.get_array("COMP_WORDS", &pos);
 
-        if core.data.get_array_len("COMPREPLY") == 1 {
+        if core.data.len("COMPREPLY") == 1 {
             let output = core.data.get_array("COMPREPLY", "0");
             let tail = match is_dir(&output, core) {
                 true  => "/",
