@@ -1,13 +1,17 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+pub mod single;
+
 use crate::core::HashMap;
+use self::single::SingleData;
 
 #[derive(Debug, Clone, Default)]
 pub enum Value {
     #[default]
     None,
-    Single(String),
+    //Single(String),
+    Single(SingleData),
     AssocArray(HashMap::<String, String>),
     Array(Vec<String>),
 }
@@ -23,7 +27,7 @@ pub struct Variable {
 impl From<&str> for Variable {
     fn from(s: &str) -> Self {
         Variable {
-            value: Value::Single(s.to_string()),
+            value: Value::Single(SingleData::from(s)),
             ..Default::default()
         }
     }
@@ -58,12 +62,4 @@ impl Variable {
     pub fn not_set(v: &mut Variable, _var: &str) -> Value {
         v.value.clone()
     }
-
-    /*
-    pub fn new_assoc() -> Self {
-        Variable {
-            value: Value::AssocArray(HashMap::new()),
-            ..Default::default()
-        }
-    }*/
 }

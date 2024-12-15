@@ -21,7 +21,7 @@ pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
 fn print_data(k: &str, core: &mut ShellCore) {
     match core.data.get_value(k) {
         Some(Value::Single(s)) => {
-            println!("{}={}", k.to_string(), s.to_string()); 
+            println!("{}={}", k.to_string(), s.data.to_string()); 
         },
         Some(Value::Array(a)) => {
             let mut formatted = String::new();

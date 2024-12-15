@@ -3,6 +3,7 @@
 
 pub mod variable;
 
+use crate::core::data::variable::single::SingleData;
 use crate::elements::command::function_def::FunctionDefinition;
 use self::variable::{Value, Variable};
 use std::{env, process};
@@ -55,7 +56,7 @@ impl Data {
         }
 
         match self.get_value(key) {
-            Some(Value::Single(v)) => return v.to_string(),
+            Some(Value::Single(v)) => return v.data.to_string(),
             Some(Value::Array(a)) => {
                 match a.len() {
                     0 => return "".to_string(),
@@ -87,9 +88,9 @@ impl Data {
             },
             Some(Value::Single(v)) => {
                 match pos.parse::<usize>() {
-                    Ok(0) => return v.to_string(),
+                    Ok(0) => return v.data.to_string(),
                     Ok(_) => return "".to_string(),
-                    _ => return v.to_string(), 
+                    _ => return v.data.to_string(), 
                 }
             },
             _ => {},
@@ -196,7 +197,7 @@ impl Data {
             } else {
                 v.value = match v.dynamic_set {
                     Some(f) => f(v, val),
-                    None    => Value::Single(val.to_string()),
+                    None    => Value::Single(SingleData::from(val)),
                 };
             }
         })

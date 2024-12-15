@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::core::data::variable::Value;
+use crate::core::data::variable::single::SingleData;
 use crate::utils::error;
 use crate::utils::exit;
 use std::env;
@@ -46,7 +47,7 @@ impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 local: bool, env: bool) -> bool {
         self.evaluated_value = match self.value.clone() {
-            ParsedValue::None      => Value::Single("".to_string()),
+            ParsedValue::None      => Value::Single(SingleData::default()),
             ParsedValue::Single(v) => self.eval_as_value(&v, core),
             ParsedValue::Array(a)  => self.eval_as_array(&mut a.clone(), core),
         };
@@ -61,9 +62,9 @@ impl Substitution {
         let index = self.get_index(core);
         let result = match (&self.evaluated_value, index, local) {
             (Value::Single(v), Some(k), false) 
-              => core.data.set_assoc_elem(&self.name, &k, v),
+              => core.data.set_assoc_elem(&self.name, &k, &v.data),
             (Value::Single(v), Some(k), true) 
-              => core.data.set_local_assoc_elem(&self.name, &k, v),
+              => core.data.set_local_assoc_elem(&self.name, &k, &v.data),
             _ => return bad_subscript_error(&self.text, core),
         };
         if ! result {
@@ -86,9 +87,9 @@ impl Substitution {
 
         let result = match (&self.evaluated_value, index, local) {
             (Value::Single(v), Some(n), true) 
-                => core.data.set_local_array_elem(&self.name, v, n),
+                => core.data.set_local_array_elem(&self.name, &v.data, n),
             (Value::Single(v), Some(n), false) 
-                => core.data.set_array_elem(&self.name, v, n),
+                => core.data.set_array_elem(&self.name, &v.data, n),
             (_, Some(_), _) 
                 => false,
             (Value::Array(a), None, true) 
@@ -107,9 +108,9 @@ impl Substitution {
     fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let result = match (&self.evaluated_value, local) {
             (Value::Single(v), true)
-                => core.data.set_local_param(&self.name, &v),
+                => core.data.set_local_param(&self.name, &v.data),
             (Value::Single(v), false)
-                => core.data.set_param(&self.name, &v),
+                => core.data.set_param(&self.name, &v.data),
             (Value::Array(a), true) 
                 => core.data.set_local_array(&self.name, &a),
             (Value::Array(a), false) 
@@ -143,7 +144,7 @@ impl Substitution {
 
     pub fn set_to_env(&mut self) -> bool {
         match &self.evaluated_value {
-            Value::Single(v) => env::set_var(&self.name, &v),
+            Value::Single(v) => env::set_var(&self.name, &v.data),
             _ => return false,
         }
         true
@@ -168,7 +169,7 @@ impl Substitution {
         };
 
         match w.eval_as_value(core) {
-            Some(s) => Value::Single(prev + &s),
+            Some(s) => Value::Single(SingleData::from(prev + &s)),
             None    => Value::None,
         }
     }

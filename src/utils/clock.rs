@@ -6,6 +6,7 @@ use ::time::Duration;
 use nix::time;
 use nix::time::ClockId;
 use crate::core::data::variable::{Variable, Value};
+use crate::core::data::variable::single::SingleData;
 
 fn monotonic_time() -> Duration {
     let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
@@ -15,17 +16,18 @@ fn monotonic_time() -> Duration {
 pub fn set_seconds(_v: &mut Variable, var: &str) -> Value {
     let offset = Duration::seconds(i64::from_str(var).unwrap_or(0));
     let adjusted = monotonic_time() - offset;
-    Value::Single(format!("{}.{}", adjusted.whole_seconds(), adjusted.subsec_nanoseconds()))
+    let text = format!("{}.{}", adjusted.whole_seconds(), adjusted.subsec_nanoseconds());
+    Value::Single(SingleData::from(&text))
 }
 
 pub fn get_seconds(v: &mut Variable) -> Value {
     if let Value::Single(ref s) = v.value {
-        let part: Vec<&str> = s.split('.').collect();
+        let part: Vec<&str> = s.data.split('.').collect();
         let sec = i64::from_str(part[0]).unwrap();
         let nano = i32::from_str(part[1]).unwrap();
         let offset = Duration::new(sec, nano);
         let elapsed = monotonic_time() - offset;
-        return Value::Single(elapsed.whole_seconds().to_string());
+        return Value::Single(SingleData::from(elapsed.whole_seconds().to_string()));
     }
     Value::None
 }
@@ -33,11 +35,11 @@ pub fn get_seconds(v: &mut Variable) -> Value {
 pub fn get_epochseconds(_v: &mut Variable) -> Value {
     let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
     let epoch_seconds = real.tv_sec();
-    Value::Single(epoch_seconds.to_string())
+    Value::Single(SingleData::from(epoch_seconds.to_string()))
 }
 
 pub fn get_epochrealtime(_v: &mut Variable) -> Value {
     let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
     let epoch_realtime = format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000);
-    Value::Single(epoch_realtime.to_string())
+    Value::Single(SingleData::from(epoch_realtime))
 }
