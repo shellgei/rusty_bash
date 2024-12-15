@@ -22,7 +22,6 @@ pub enum Value {
 pub struct Variable {
     pub value: Value,
     pub attributes: String,
-//    pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
 }
 
 impl From<&str> for Variable {
@@ -63,9 +62,7 @@ impl Variable {
 
     pub fn get_value(&mut self) -> Value {
         match &self.value {
-            Value::Special(d) => {
-                (d.dynamic_get)(self).clone()
-            },
+            Value::Special(d) => (d.dynamic_get)(self).clone(),
             _ => self.value.clone(),
         }
     }

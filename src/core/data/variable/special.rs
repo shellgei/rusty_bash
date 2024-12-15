@@ -3,6 +3,7 @@
 
 use crate::core::data::Value;
 use crate::core::Variable;
+use super::single::SingleData;
 
 #[derive(Debug, Clone)]
 pub struct SpecialData {
@@ -15,5 +16,12 @@ pub struct SpecialData {
 impl SpecialData {
     pub fn not_set(v: &mut SpecialData, _var: &str) -> Value {
         Value::Special(v.clone())
+    }
+
+    pub fn get_data(&self, v: &mut Variable, val: &str) -> Value {
+        match self.dynamic_set {
+            Some(f) => f(v, val),
+            None    => Value::Single(SingleData::from(val)),
+        }
     }
 }

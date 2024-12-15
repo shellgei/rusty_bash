@@ -202,20 +202,9 @@ impl Data {
         }
 
         v.value = match &v.value {
-            Value::Special(sp) => {
-                match sp.dynamic_set {
-                    Some(f) => f(&mut v, val),
-                    None    => Value::Single(SingleData::from(val)),
-                }
-            },
+            Value::Special(sp) => sp.get_data(&mut v.clone(), val),
             _ => Value::Single(SingleData::from(val)),
         };
-
-        /*
-        v.value = match v.dynamic_set {
-            Some(f) => f(&mut v, val),
-            None    => Value::Single(SingleData::from(val)),
-        };*/
 
         self.parameters[layer].insert(name.to_string(), v);
 
