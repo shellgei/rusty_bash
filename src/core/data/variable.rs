@@ -22,8 +22,7 @@ pub enum Value {
 pub struct Variable {
     pub value: Value,
     pub attributes: String,
-//    pub dynamic_get: Option<fn(&mut Variable) -> Value>,
-    pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
+//    pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
 }
 
 impl From<&str> for Variable {
@@ -66,20 +65,9 @@ impl Variable {
         match &self.value {
             Value::Special(d) => {
                 (d.dynamic_get)(self).clone()
-                /*
-                match d.dynamic_get {
-                    Some(f) => f(self).clone(),
-                    None    => self.value.clone(),
-                }*/
             },
             _ => self.value.clone(),
         }
-
-        /*
-        match self.dynamic_get {
-            Some(f) => f(self).clone(),
-            None    => self.value.clone(),
-        }*/
     }
 
     pub fn not_set(v: &mut Variable, _var: &str) -> Value {

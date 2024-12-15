@@ -9,7 +9,7 @@ pub struct SpecialData {
     pub attributes: String,
     pub data: String,
     pub dynamic_get: fn(&mut Variable) -> Value,
-    //pub dynamic_set: Option<fn(&mut Self, &str) -> Value>,
+    pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
 }
 
 impl SpecialData {

@@ -201,11 +201,21 @@ impl Data {
             return false;
         }
 
-        //let mut new_v = v.clone();
+        v.value = match &v.value {
+            Value::Special(sp) => {
+                match sp.dynamic_set {
+                    Some(f) => f(&mut v, val),
+                    None    => Value::Single(SingleData::from(val)),
+                }
+            },
+            _ => Value::Single(SingleData::from(val)),
+        };
+
+        /*
         v.value = match v.dynamic_set {
             Some(f) => f(&mut v, val),
             None    => Value::Single(SingleData::from(val)),
-        };
+        };*/
 
         self.parameters[layer].insert(name.to_string(), v);
 
@@ -225,8 +235,8 @@ impl Data {
                     data: "".to_string(),
                     attributes: "".to_string(),
                     dynamic_get: get,
+                    dynamic_set: set,
                 }),
-                dynamic_set: set,
                 ..Default::default()
             }
         );        
