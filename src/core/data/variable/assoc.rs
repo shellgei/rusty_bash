@@ -32,4 +32,17 @@ impl AssocData {
         true
     }
 
+    pub fn print(&self, k: &str) {
+        let mut formatted = String::new();
+        formatted += "(";
+        for k in self.keys() {
+            let v = self.get(&k).unwrap_or("".to_string());
+            formatted += &format!("[{}]=\"{}\" ", k, v);
+        }
+        if formatted.ends_with(" ") {
+            formatted.pop();
+        }
+        formatted += ")";
+        println!("{}={}", k.to_string(), formatted); 
+    }
 }
