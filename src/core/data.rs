@@ -196,18 +196,18 @@ impl Data {
             return true;
         }
 
-        let v = self.parameters[layer].get(name).unwrap();
+        let mut v = self.parameters[layer].get(name).unwrap().clone();
         if v.attributes.contains('r') {
             return false;
         }
 
-        let mut new_v = v.clone();
-        new_v.value = match v.dynamic_set {
-            Some(f) => f(&mut new_v, val),
+        //let mut new_v = v.clone();
+        v.value = match v.dynamic_set {
+            Some(f) => f(&mut v, val),
             None    => Value::Single(SingleData::from(val)),
         };
 
-        self.parameters[layer].insert(name.to_string(), new_v);
+        self.parameters[layer].insert(name.to_string(), v);
 
         true
     }
