@@ -15,10 +15,7 @@ pub enum ParsedValue {
     #[default]
     None,
     Single(Word),
-//    EvaluatedSingle(String),
     Array(Array),
-//    AssocArray(HashMap::<String, String>),
-//    EvaluatedArray(Vec<String>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -49,7 +46,7 @@ impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 local: bool, env: bool) -> bool {
         self.evaluated_value = match self.value.clone() {
-            ParsedValue::None      => Value::EvaluatedSingle("".to_string()),
+            ParsedValue::None      => Value::Single("".to_string()),
             ParsedValue::Single(v) => self.eval_as_value(&v, core),
             ParsedValue::Array(a)  => self.eval_as_array(&mut a.clone(), core),
         };
@@ -63,9 +60,9 @@ impl Substitution {
     fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let index = self.get_index(core);
         let result = match (&self.evaluated_value, index, local) {
-            (Value::EvaluatedSingle(v), Some(k), false) 
+            (Value::Single(v), Some(k), false) 
               => core.data.set_assoc_elem(&self.name, &k, v),
-            (Value::EvaluatedSingle(v), Some(k), true) 
+            (Value::Single(v), Some(k), true) 
               => core.data.set_local_assoc_elem(&self.name, &k, v),
             _ => return bad_subscript_error(&self.text, core),
         };
@@ -88,15 +85,15 @@ impl Substitution {
         };
 
         let result = match (&self.evaluated_value, index, local) {
-            (Value::EvaluatedSingle(v), Some(n), true) 
+            (Value::Single(v), Some(n), true) 
                 => core.data.set_local_array_elem(&self.name, v, n),
-            (Value::EvaluatedSingle(v), Some(n), false) 
+            (Value::Single(v), Some(n), false) 
                 => core.data.set_array_elem(&self.name, v, n),
             (_, Some(_), _) 
                 => false,
-            (Value::EvaluatedArray(a), None, true) 
+            (Value::Array(a), None, true) 
                 => core.data.set_local_array(&self.name, &a),
-            (Value::EvaluatedArray(a), None, false) 
+            (Value::Array(a), None, false) 
                 => core.data.set_array(&self.name, &a),
             _ => exit::internal("Unknown variable"),
         };
@@ -109,13 +106,13 @@ impl Substitution {
  
     fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let result = match (&self.evaluated_value, local) {
-            (Value::EvaluatedSingle(v), true)
+            (Value::Single(v), true)
                 => core.data.set_local_param(&self.name, &v),
-            (Value::EvaluatedSingle(v), false)
+            (Value::Single(v), false)
                 => core.data.set_param(&self.name, &v),
-            (Value::EvaluatedArray(a), true) 
+            (Value::Array(a), true) 
                 => core.data.set_local_array(&self.name, &a),
-            (Value::EvaluatedArray(a), false) 
+            (Value::Array(a), false) 
                 => core.data.set_array(&self.name, &a),
             _ => exit::internal("Unknown variable"),
         };
@@ -146,7 +143,7 @@ impl Substitution {
 
     pub fn set_to_env(&mut self) -> bool {
         match &self.evaluated_value {
-            Value::EvaluatedSingle(v) => env::set_var(&self.name, &v),
+            Value::Single(v) => env::set_var(&self.name, &v),
             _ => return false,
         }
         true
@@ -171,7 +168,7 @@ impl Substitution {
         };
 
         match w.eval_as_value(core) {
-            Some(s) => Value::EvaluatedSingle(prev + &s),
+            Some(s) => Value::Single(prev + &s),
             None    => Value::None,
         }
     }
@@ -183,7 +180,7 @@ impl Substitution {
         };
 
         match a.eval(core) {
-            Some(values) => Value::EvaluatedArray([prev, values].concat()),
+            Some(values) => Value::Array([prev, values].concat()),
             None         => Value::None,
         }
     }

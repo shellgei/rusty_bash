@@ -55,8 +55,8 @@ impl Data {
         }
 
         match self.get_value(key) {
-            Some(Value::EvaluatedSingle(v)) => return v.to_string(),
-            Some(Value::EvaluatedArray(a)) => {
+            Some(Value::Single(v)) => return v.to_string(),
+            Some(Value::Array(a)) => {
                 match a.len() {
                     0 => return "".to_string(),
                     _ => return a[0].to_string(),
@@ -76,7 +76,7 @@ impl Data {
 
     pub fn get_array(&mut self, name: &str, pos: &str) -> String {
         match self.get_value(name) {
-            Some(Value::EvaluatedArray(a)) => {
+            Some(Value::Array(a)) => {
                 if pos == "@" || pos == "*" {
                     return a.join(" ");
                 } else if let Ok(n) = pos.parse::<usize>() {
@@ -85,7 +85,7 @@ impl Data {
                     }
                 }
             },
-            Some(Value::EvaluatedSingle(v)) => {
+            Some(Value::Single(v)) => {
                 match pos.parse::<usize>() {
                     Ok(0) => return v.to_string(),
                     Ok(_) => return "".to_string(),
@@ -137,21 +137,21 @@ impl Data {
 
     pub fn get_array_len(&mut self, key: &str) -> usize {
         match self.get_value(key) {
-            Some(Value::EvaluatedArray(a)) => a.len(),
+            Some(Value::Array(a)) => a.len(),
             _ => 0,
         }
     }
 
     pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
         match self.get_value(key) {
-            Some(Value::EvaluatedArray(a)) => a.clone(),
+            Some(Value::Array(a)) => a.clone(),
             _ => vec![],
         }
     }
 
     pub fn is_array(&mut self, key: &str) -> bool {
         match self.get_value(key) {
-            Some(Value::EvaluatedArray(_)) => true,
+            Some(Value::Array(_)) => true,
             _ => false,
         }
     }
@@ -196,7 +196,7 @@ impl Data {
             } else {
                 v.value = match v.dynamic_set {
                     Some(f) => f(v, val),
-                    None    => Value::EvaluatedSingle(val.to_string()),
+                    None    => Value::Single(val.to_string()),
                 };
             }
         })
@@ -247,7 +247,7 @@ impl Data {
             _ => return false,
         };
         let array = match &mut value.value {
-            Value::EvaluatedArray(a) => a, 
+            Value::Array(a) => a, 
             _ => return false,
         };
 

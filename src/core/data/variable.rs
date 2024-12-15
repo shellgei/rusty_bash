@@ -2,18 +2,14 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::HashMap;
-use crate::elements::array::Array;
-use crate::elements::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub enum Value {
     #[default]
     None,
-    Single(Word),
-    EvaluatedSingle(String),
-    Array(Array),
+    Single(String),
     AssocArray(HashMap::<String, String>),
-    EvaluatedArray(Vec<String>),
+    Array(Vec<String>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -27,7 +23,7 @@ pub struct Variable {
 impl From<&str> for Variable {
     fn from(s: &str) -> Self {
         Variable {
-            value: Value::EvaluatedSingle(s.to_string()),
+            value: Value::Single(s.to_string()),
             ..Default::default()
         }
     }
@@ -45,7 +41,7 @@ impl From<HashMap<String, String>> for Variable {
 impl From<Vec<String>> for Variable {
     fn from(vals: Vec<String>) -> Self {
         Variable {
-            value: Value::EvaluatedArray(vals),
+            value: Value::Array(vals),
             ..Default::default()
         }
     }

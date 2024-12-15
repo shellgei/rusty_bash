@@ -20,10 +20,10 @@ pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
 
 fn print_data(k: &str, core: &mut ShellCore) {
     match core.data.get_value(k) {
-        Some(Value::EvaluatedSingle(s)) => {
+        Some(Value::Single(s)) => {
             println!("{}={}", k.to_string(), s.to_string()); 
         },
-        Some(Value::EvaluatedArray(a)) => {
+        Some(Value::Array(a)) => {
             let mut formatted = String::new();
             formatted += "(";
             for (i, v) in a.iter().enumerate() {
