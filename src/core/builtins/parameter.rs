@@ -19,43 +19,8 @@ pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
     0
 }
 
-fn print_data(k: &str, core: &mut ShellCore) {
-    match core.data.get_value(k) {
-        Some(Value::Single(s)) => {
-            println!("{}={}", k.to_string(), s.data.to_string()); 
-        },
-        Some(Value::Array(a)) => {
-            let mut formatted = String::new();
-            formatted += "(";
-            for i in 0..a.len() {
-                let val = a.get(i).unwrap_or("".to_string());
-                formatted += &format!("[{}]=\"{}\" ", i, val).clone();
-            };
-            if formatted.ends_with(" ") {
-                formatted.pop();
-            }
-            formatted += ")";
-            println!("{}={}", k.to_string(), formatted); 
-        },
-        Some(Value::AssocArray(a)) => {
-            let mut formatted = String::new();
-            formatted += "(";
-            for k in a.keys() {
-                let v = a.get(&k).unwrap_or("".to_string());
-                formatted += &format!("[{}]=\"{}\" ", k, v);
-            }
-            /*
-            for (i, v) in a.data.iter() {
-                formatted += &format!("[{}]=\"{}\" ", i, v).clone();
-            }*/
-            if formatted.ends_with(" ") {
-                formatted.pop();
-            }
-            formatted += ")";
-            println!("{}={}", k.to_string(), formatted); 
-        },
-        _ => {},
-    }
+fn print_data(name: &str, core: &mut ShellCore) {
+    core.data.print(name);
 }
 
 pub fn print_all(core: &mut ShellCore) -> i32 {

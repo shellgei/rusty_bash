@@ -105,7 +105,7 @@ impl Data {
         "".to_string()
     }
 
-    pub fn get_value(&mut self, key: &str) -> Option<Value> {
+    fn get_value(&mut self, key: &str) -> Option<Value> {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {
             if let Some(v) = self.parameters[layer].get_mut(key) {
@@ -115,10 +115,10 @@ impl Data {
         None
     }
 
-    pub fn has_value(&mut self, key: &str) -> bool {
+    pub fn has_value(&mut self, name: &str) -> bool {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {
-            if let Some(_) = self.parameters[layer].get(key) {
+            if let Some(_) = self.parameters[layer].get(name) {
                 return true;
             }
         }
@@ -336,5 +336,40 @@ impl Data {
     pub fn unset(&mut self, key: &str) {
         self.unset_var(key);
         self.unset_function(key);
+    }
+
+    pub fn print(&mut self, k: &str) {
+        match self.get_value(k) {
+            Some(Value::Single(s)) => {
+                println!("{}={}", k.to_string(), s.data.to_string()); 
+            },
+            Some(Value::Array(a)) => {
+                let mut formatted = String::new();
+                formatted += "(";
+                for i in 0..a.len() {
+                    let val = a.get(i).unwrap_or("".to_string());
+                    formatted += &format!("[{}]=\"{}\" ", i, val).clone();
+                };
+                if formatted.ends_with(" ") {
+                    formatted.pop();
+                }
+                formatted += ")";
+                println!("{}={}", k.to_string(), formatted); 
+            },
+            Some(Value::AssocArray(a)) => {
+                let mut formatted = String::new();
+                formatted += "(";
+                for k in a.keys() {
+                    let v = a.get(&k).unwrap_or("".to_string());
+                    formatted += &format!("[{}]=\"{}\" ", k, v);
+                }
+                if formatted.ends_with(" ") {
+                    formatted.pop();
+                }
+                formatted += ")";
+                println!("{}={}", k.to_string(), formatted); 
+            },
+            _ => {},
+        }
     }
 }

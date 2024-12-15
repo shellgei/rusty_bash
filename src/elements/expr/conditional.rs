@@ -201,7 +201,8 @@ impl ConditionalExpr {
         if op == "-o" || op == "-v" || op == "-z" || op == "-n" {
             let ans = match op {
                 "-o" => core.options.query(&operand),
-                "-v" => core.data.get_value(&operand).is_some() || env::var(&operand).is_ok(),
+                //"-v" => core.data.get_value(&operand).is_some() || env::var(&operand).is_ok(),
+                "-v" => core.data.has_value(&operand) || env::var(&operand).is_ok(),
                 "-z" => operand.len() == 0,
                 "-n" => operand.len() > 0,
                 _    => false,
