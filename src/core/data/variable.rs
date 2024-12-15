@@ -1,10 +1,12 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+pub mod array;
 pub mod single;
 pub mod special;
 
 use crate::core::HashMap;
+use self::array::ArrayData;
 use self::single::SingleData;
 use self::special::SpecialData;
 
@@ -15,7 +17,7 @@ pub enum Value {
     Special(SpecialData),
     Single(SingleData),
     AssocArray(HashMap::<String, String>),
-    Array(Vec<String>),
+    Array(ArrayData),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -45,7 +47,7 @@ impl From<HashMap<String, String>> for Variable {
 impl From<Vec<String>> for Variable {
     fn from(vals: Vec<String>) -> Self {
         Variable {
-            value: Value::Array(vals),
+            value: Value::Array(ArrayData::from(vals)),
             ..Default::default()
         }
     }

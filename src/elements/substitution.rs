@@ -10,6 +10,7 @@ use std::env;
 use super::array::Array;
 use super::subscript::Subscript;
 use super::word::Word;
+use crate::core::data::variable::array::ArrayData;
 
 #[derive(Debug, Clone, Default)]
 pub enum ParsedValue {
@@ -93,9 +94,9 @@ impl Substitution {
             (_, Some(_), _) 
                 => false,
             (Value::Array(a), None, true) 
-                => core.data.set_local_array(&self.name, &a),
+                => core.data.set_local_array(&self.name, &a.data),
             (Value::Array(a), None, false) 
-                => core.data.set_array(&self.name, &a),
+                => core.data.set_array(&self.name, &a.data),
             _ => exit::internal("Unknown variable"),
         };
 
@@ -112,9 +113,9 @@ impl Substitution {
             (Value::Single(v), false)
                 => core.data.set_param(&self.name, &v.data),
             (Value::Array(a), true) 
-                => core.data.set_local_array(&self.name, &a),
+                => core.data.set_local_array(&self.name, &a.data),
             (Value::Array(a), false) 
-                => core.data.set_array(&self.name, &a),
+                => core.data.set_array(&self.name, &a.data),
             _ => exit::internal("Unknown variable"),
         };
 
@@ -181,7 +182,7 @@ impl Substitution {
         };
 
         match a.eval(core) {
-            Some(values) => Value::Array([prev, values].concat()),
+            Some(values) => Value::Array(ArrayData::from([prev, values].concat())),
             None         => Value::None,
         }
     }

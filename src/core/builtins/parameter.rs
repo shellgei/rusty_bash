@@ -26,7 +26,7 @@ fn print_data(k: &str, core: &mut ShellCore) {
         Some(Value::Array(a)) => {
             let mut formatted = String::new();
             formatted += "(";
-            for (i, v) in a.iter().enumerate() {
+            for (i, v) in a.data.iter().enumerate() {
                 formatted += &format!("[{}]=\"{}\" ", i, v).clone();
             }
             if formatted.ends_with(" ") {

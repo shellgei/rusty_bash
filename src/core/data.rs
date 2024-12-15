@@ -60,9 +60,9 @@ impl Data {
             Some(Value::Special(v)) => return v.data.to_string(),
             Some(Value::Single(v)) => return v.data.to_string(),
             Some(Value::Array(a)) => {
-                match a.len() {
+                match a.data.len() {
                     0 => return "".to_string(),
-                    _ => return a[0].to_string(),
+                    _ => return a.data[0].to_string(),
                 }
             },
             _  => {},
@@ -81,10 +81,10 @@ impl Data {
         match self.get_value(name) {
             Some(Value::Array(a)) => {
                 if pos == "@" || pos == "*" {
-                    return a.join(" ");
+                    return a.data.join(" ");
                 } else if let Ok(n) = pos.parse::<usize>() {
-                    if n < a.len() {
-                        return a[n].clone();
+                    if n < a.data.len() {
+                        return a.data[n].clone();
                     }
                 }
             },
@@ -140,14 +140,14 @@ impl Data {
 
     pub fn get_array_len(&mut self, key: &str) -> usize {
         match self.get_value(key) {
-            Some(Value::Array(a)) => a.len(),
+            Some(Value::Array(a)) => a.data.len(),
             _ => 0,
         }
     }
 
     pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
         match self.get_value(key) {
-            Some(Value::Array(a)) => a.clone(),
+            Some(Value::Array(a)) => a.data.clone(),
             _ => vec![],
         }
     }
@@ -259,8 +259,8 @@ impl Data {
             _ => return false,
         };
 
-        if array.len() > pos {
-            array[pos] = val.clone();
+        if array.data.len() > pos {
+            array.data[pos] = val.clone();
         }
         true
     }
