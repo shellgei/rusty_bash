@@ -189,7 +189,7 @@ impl Data {
         }
 
         v.value = match &v.value {
-            Value::Special(sp) => sp.get_data(&mut v.clone(), val),
+            Value::Special(sp) => {sp.get_data(&mut v.clone(), val); return true;},
             _ => Value::Single(SingleData::from(val)),
         };
 
@@ -203,15 +203,20 @@ impl Data {
     }
 
     pub fn set_special_param(&mut self, key: &str, get: fn(&mut Variable)->Value,
-                             set: Option<fn(&mut Variable, val: &str)->Value>) {
+                             set: Option<fn(&mut Variable, val: &str) -> String>) {
+        let init = match set {
+            Some(f) => f(&mut Variable::from(""), ""),
+            None => "".to_string(),
+        };
+
         self.parameters[0].insert(
             key.to_string(),
             Variable {
                 value: Value::Special( SpecialData {
-                    data: "".to_string(),
+                    data: init,
                     attributes: "".to_string(),
                     dynamic_get: get,
-                    dynamic_set: set,
+                    dynamic_set: None,
                 }),
                 ..Default::default()
             }
@@ -223,12 +228,13 @@ impl Data {
         self.set_layer_param(key, val, layer-1)
     }
 
+    /*
     pub fn set_layer_array(&mut self, name: &str, vals: &Vec<String>,
                            layer: usize) -> bool {
         self.parameters[layer]
             .insert( name.to_string(), Variable::from(vals.to_vec()));        
         true
-    }
+    }*/
 
     pub fn set_layer(&mut self, name: &str, v: Value, layer: usize) -> bool {
         self.parameters[layer].insert( name.to_string(), Variable::from(v));
@@ -246,21 +252,6 @@ impl Data {
             Some(v) => v.set_array_elem(pos, val), 
             _ => return false,
         }
-        /*
-        let value = match self.parameters[layer].get_mut(key) {
-            Some(v) => v, 
-            _ => return false,
-        };
-        let array = match &mut value.value {
-            Value::Array(a) => a, 
-            _ => return false,
-        };
-
-        if array.data.len() > pos {
-            array.data[pos] = val.clone();
-        }
-        true
-        */
     }
 
     pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> bool {
@@ -268,16 +259,6 @@ impl Data {
             Some(v) => v.set_assoc_elem(key, val), 
             _ => false,
         }
-    }
-
-    pub fn set_array(&mut self, key: &str, vals: &Vec<String>) -> bool {
-        self.set_layer_array(key, vals, 0);
-        true
-    }
-
-    pub fn set_assoc(&mut self, name: &str) -> bool {
-        self.set_layer_assoc(name, 0);
-        true
     }
 
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {

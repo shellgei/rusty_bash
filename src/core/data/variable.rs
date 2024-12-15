@@ -55,6 +55,25 @@ impl From<HashMap<String, String>> for Variable {
     }
 }
 
+impl From<Vec<String>> for Value {
+    fn from(vals: Vec<String>) -> Self {
+        Value::Array(ArrayData::from(vals))
+    }
+}
+
+impl From<&Vec<String>> for Value {
+    fn from(vals: &Vec<String>) -> Self {
+        Value::Array(ArrayData::from(vals.clone()))
+    }
+}
+
+impl From<HashMap<String, String>> for Value {
+    fn from(hm: HashMap<String, String>) -> Self {
+        Value::AssocArray(AssocData::from(hm))
+    }
+}
+
+
 impl From<Vec<String>> for Variable {
     fn from(vals: Vec<String>) -> Self {
         Variable {
@@ -80,8 +99,8 @@ impl Variable {
         }
     }
 
-    pub fn not_set(v: &mut Variable, _var: &str) -> Value {
-        v.value.clone()
+    pub fn not_set(v: &mut Variable, _var: &str) -> String {
+        "".to_string()
     }
 
     pub fn set_assoc_elem(&mut self, key: &String, val: &String) -> bool {

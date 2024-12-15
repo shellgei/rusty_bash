@@ -10,7 +10,7 @@ pub struct SpecialData {
     pub attributes: String,
     pub data: String,
     pub dynamic_get: fn(&mut Variable) -> Value,
-    pub dynamic_set: Option<fn(&mut Variable, &str) -> Value>,
+    pub dynamic_set: Option<fn(&mut Variable, &str)>,
 }
 
 impl SpecialData {
@@ -18,10 +18,10 @@ impl SpecialData {
         Value::Special(v.clone())
     }
 
-    pub fn get_data(&self, v: &mut Variable, val: &str) -> Value {
+    pub fn get_data(&self, v: &mut Variable, val: &str) {
         match self.dynamic_set {
             Some(f) => f(v, val),
-            None    => Value::Single(SingleData::from(val)),
+            None    => {},
         }
     }
 }

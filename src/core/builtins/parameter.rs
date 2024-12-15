@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::utils;
 use crate::utils::exit;
+use crate::core::HashMap;
 use crate::core::data::variable::Value;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
@@ -30,10 +31,6 @@ fn print_data(k: &str, core: &mut ShellCore) {
                 let val = a.get(i).unwrap_or("".to_string());
                 formatted += &format!("[{}]=\"{}\" ", i, val).clone();
             };
-            /*
-            for (i, v) in a.data.iter().enumerate() {
-                formatted += &format!("[{}]=\"{}\" ", i, v).clone();
-            }*/
             if formatted.ends_with(" ") {
                 formatted.pop();
             }
@@ -116,7 +113,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
-        if ! core.data.set_assoc(&name) {
+        if ! core.data.set(&name, Value::from(HashMap::new())) {
             return 1; //TODO: error message
         }
     }
