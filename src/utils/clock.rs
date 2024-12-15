@@ -13,12 +13,10 @@ fn monotonic_time() -> Duration {
     Duration::new(now.tv_sec(), now.tv_nsec() as i32)
 }
 
-pub fn set_seconds(v: &mut Variable, var: &str) -> String {
-    let offset = Duration::seconds(i64::from_str(var).unwrap_or(0));
+pub fn set_seconds() -> String {
+    let offset = Duration::seconds(0);
     let adjusted = monotonic_time() - offset;
-    let text = format!("{}.{}", adjusted.whole_seconds(), adjusted.subsec_nanoseconds());
-//    v.set_data(text);
-    text
+    format!("{}.{}", adjusted.whole_seconds(), adjusted.subsec_nanoseconds())
 }
 
 pub fn get_seconds(v: &mut Variable) -> Value {

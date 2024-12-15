@@ -129,8 +129,8 @@ impl ShellCore {
         self.data.set_special_param("RANDOM", random::get_random, "");
         self.data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");
         self.data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, "");
-        let sec = clock::set_seconds(&mut Variable::from(""), "");
-        self.data.set_special_param("SECONDS", clock::get_seconds, &sec);
+        //let sec = clock::set_seconds();
+        self.data.set_special_param("SECONDS", clock::get_seconds, &clock::set_seconds());
     }
 
     pub fn flip_exit_status(&mut self) {
