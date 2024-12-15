@@ -60,9 +60,9 @@ impl Data {
             Some(Value::Special(v)) => return v.data.to_string(),
             Some(Value::Single(v)) => return v.data.to_string(),
             Some(Value::Array(a)) => {
-                match a.data.len() {
+                match a.len() {
                     0 => return "".to_string(),
-                    _ => return a.data[0].to_string(),
+                    _ => return a.get(0).unwrap_or("".to_string()),
                 }
             },
             _  => {},
@@ -81,11 +81,13 @@ impl Data {
         match self.get_value(name) {
             Some(Value::Array(a)) => {
                 if pos == "@" || pos == "*" {
-                    return a.data.join(" ");
+                    return a.join(" ");
                 } else if let Ok(n) = pos.parse::<usize>() {
-                    if n < a.data.len() {
+                    return a.get(n).unwrap_or("".to_string());
+                    /*
+                    if n < a.len() {
                         return a.data[n].clone();
-                    }
+                    }*/
                 }
             },
             Some(Value::Single(v)) => {
@@ -144,14 +146,14 @@ impl Data {
 
     pub fn get_array_len(&mut self, key: &str) -> usize {
         match self.get_value(key) {
-            Some(Value::Array(a)) => a.data.len(),
+            Some(Value::Array(a)) => a.len(),
             _ => 0,
         }
     }
 
     pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
         match self.get_value(key) {
-            Some(Value::Array(a)) => a.data.clone(),
+            Some(Value::Array(a)) => a.get_all(),
             _ => vec![],
         }
     }
@@ -247,6 +249,11 @@ impl Data {
         true
     }
 
+    pub fn set_layer(&mut self, name: &str, v: Value, layer: usize) -> bool {
+        self.parameters[layer].insert( name.to_string(), Variable::from(v));
+        true
+    }
+
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
         self.parameters[layer]
             .insert(name.to_string(), Variable::from(HashMap::new()));        
@@ -305,9 +312,18 @@ impl Data {
         self.set_layer_assoc_elem(name, key, val, layer-1)
     }
 
-    pub fn set_local_array(&mut self, key: &str, vals: &Vec<String>) -> bool {
+    pub fn set(&mut self, name: &str, v: Value) -> bool {
+        self.set_layer(name, v, 0)
+    }
+
+    pub fn set_local(&mut self, name: &str, v: Value) -> bool {
         let layer = self.parameters.len();
-        self.set_layer_array(key, vals, layer-1)
+        self.set_layer(name, v, layer-1)
+    }
+
+    pub fn set_local_array(&mut self, name: &str, vals: &Vec<String>) -> bool {
+        let layer = self.parameters.len();
+        self.set_layer_array(name, vals, layer-1)
     }
 
     pub fn set_local_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {

@@ -27,8 +27,9 @@ impl AssocData {
         self.data.iter().map(|e| e.1.clone()).collect()
     }
 
-    pub fn set(&mut self, key: String, val: String) {
+    pub fn set(&mut self, key: String, val: String) -> bool {
         self.data.insert(key, val);
+        true
     }
 
 }

@@ -28,6 +28,15 @@ pub struct Variable {
     pub attributes: String,
 }
 
+impl From<Value> for Variable {
+    fn from(v: Value) -> Self {
+        Variable {
+            value: v,
+            ..Default::default()
+        }
+    }
+}
+
 impl From<&str> for Variable {
     fn from(s: &str) -> Self {
         Variable {
@@ -76,13 +85,10 @@ impl Variable {
     }
 
     pub fn set_assoc_elem(&mut self, key: &String, val: &String) -> bool {
-        let array = match &mut self.value {
-            Value::AssocArray(a) => a, 
+        match &mut self.value {
+            Value::AssocArray(a) => a.set(key.to_string(), val.to_string()),
             _ => return false,
-        };
-
-        array.set(key.to_string(), val.to_string());
-        true
+        }
     }
 
     pub fn set_array_elem(&mut self, pos: usize, val: &String) -> bool {

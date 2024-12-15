@@ -3,28 +3,8 @@
 
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData {
-    pub data: Vec<String>,
+    data: Vec<String>,
 }
-
-/*
-impl From<&str> for SingleData {
-    fn from(s: &str) -> Self {
-        Self {
-            data: s.to_string(),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<&String> for SingleData {
-    fn from(s: &String) -> Self {
-        Self {
-            data: s.clone(),
-            ..Default::default()
-        }
-    }
-}
-*/
 
 impl From<Vec<String>> for ArrayData {
     fn from(v: Vec<String>) -> Self {
@@ -43,5 +23,24 @@ impl ArrayData {
         }else{
             false
         }
+    }
+
+    pub fn get(&self, pos: usize) -> Option<String> {
+        match pos < self.data.len() {
+            true  => Some(self.data[pos].clone()),
+            false => None,
+        }
+    }
+
+    pub fn get_all(&self) -> Vec<String> {
+        self.data.clone()
+    }
+
+    pub fn join(&self, space: &str) -> String {
+        self.data.join(space)
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
     }
 }

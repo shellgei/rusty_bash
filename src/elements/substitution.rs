@@ -5,7 +5,6 @@ use crate::{ShellCore, Feeder};
 use crate::core::data::variable::Value;
 use crate::core::data::variable::single::SingleData;
 use crate::utils::error;
-use crate::utils::exit;
 use std::env;
 use super::array::Array;
 use super::subscript::Subscript;
@@ -91,13 +90,11 @@ impl Substitution {
                 => core.data.set_local_array_elem(&self.name, &v.data, n),
             (Value::Single(v), Some(n), false) 
                 => core.data.set_array_elem(&self.name, &v.data, n),
-            (_, Some(_), _) 
-                => false,
-            (Value::Array(a), None, true) 
-                => core.data.set_local_array(&self.name, &a.data),
-            (Value::Array(a), None, false) 
-                => core.data.set_array(&self.name, &a.data),
-            _ => exit::internal("Unknown variable"),
+            (_, Some(_), _) => false,
+            (data, None, true) 
+                => core.data.set_local(&self.name, data.clone()),
+            (data, None, false) 
+                => core.data.set(&self.name, data.clone()),
         };
 
         match result {
@@ -108,15 +105,8 @@ impl Substitution {
  
     fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let result = match (&self.evaluated_value, local) {
-            (Value::Single(v), true)
-                => core.data.set_local_param(&self.name, &v.data),
-            (Value::Single(v), false)
-                => core.data.set_param(&self.name, &v.data),
-            (Value::Array(a), true) 
-                => core.data.set_local_array(&self.name, &a.data),
-            (Value::Array(a), false) 
-                => core.data.set_array(&self.name, &a.data),
-            _ => exit::internal("Unknown variable"),
+            (data, true) => core.data.set_local(&self.name, data.clone()),
+            (data, false) => core.data.set(&self.name, data.clone()),
         };
 
         match result {
