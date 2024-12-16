@@ -29,7 +29,6 @@ pub fn get_random(v: &mut Vec<String>) -> String {
         v.push("0".to_string());
     }
     let rand = gen_chacha20_u32(v) & 0x7FFF;
-    v.clear();
     v[0] = rand.to_string();
     rand.to_string()
 }

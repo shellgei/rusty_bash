@@ -90,20 +90,14 @@ impl From<Vec<String>> for Data {
 }
 
 impl Data {
-    /*
-    pub fn set_data(&mut self, data: String) {
-        match &mut self.value {
-            DataType::Single(s) => s.data = data,
-            //DataType::Special(s) => s.data = data,
-            _ => {},
-        }
-    }*/
-
     pub fn get_value(&mut self) -> DataType {
         match &mut self.value {
             DataType::Special(d) => {
+                d.update()
+                /*
                 let ans = (d.dynamic_get)(&mut d.internal_data);
                 DataType::from(ans)
+                */
             },
             _ => self.value.clone(),
         }
