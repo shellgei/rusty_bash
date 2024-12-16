@@ -99,7 +99,7 @@ impl Data {
 
     pub fn set_assoc_elem(&mut self, key: &String, val: &String) -> bool {
         match &mut self.value {
-            DataType::AssocArray(a) => a.set(key.to_string(), val.to_string()),
+            DataType::AssocArray(a) => a.set(key, val),
             _ => return false,
         }
     }
