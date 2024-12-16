@@ -6,12 +6,12 @@ use crate::data::DataType;
 #[derive(Debug, Clone)]
 pub struct SpecialData {
     pub internal_data: Vec<String>,
-    pub dynamic_get: fn(&mut Vec<String>) -> String,
+    pub function: fn(&mut Vec<String>) -> String,
 }
 
 impl SpecialData {
     pub fn update(&mut self) -> DataType {
-        let ans = (self.dynamic_get)(&mut self.internal_data);
+        let ans = (self.function)(&mut self.internal_data);
         DataType::from(ans)
     }
 }

@@ -213,7 +213,7 @@ impl DataBase {
             Data {
                 value: DataType::Special( SpecialData {
                     internal_data: vec![init.to_string()],
-                    dynamic_get: get,
+                    function: get,
                 }),
                 ..Default::default()
             }
