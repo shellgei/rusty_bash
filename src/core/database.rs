@@ -62,7 +62,7 @@ impl DataBase {
         }
 
         match self.get_value(name) {
-            Some(DataType::Special(v)) => return v.data.to_string(),
+            Some(DataType::Special(v)) => return "".to_string(),//v.data.to_string(),
             Some(DataType::Single(v)) => return v.data.to_string(),
             Some(DataType::Array(a)) => {
                 match a.len() {
@@ -207,12 +207,12 @@ impl DataBase {
         self.set_layer_param(key, val, 0)
     }
 
-    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Data)-> String, init: &str) {
+    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Vec<String>)-> String, init: &str) {
         self.parameters[0].insert(
             key.to_string(),
             Data {
                 value: DataType::Special( SpecialData {
-                    data: init.to_string(),
+                    internal_data: vec![init.to_string()],
                     dynamic_get: get,
                 }),
                 ..Default::default()

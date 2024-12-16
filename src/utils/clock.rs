@@ -5,7 +5,6 @@ use std::str::FromStr;
 use ::time::Duration;
 use nix::time;
 use nix::time::ClockId;
-use crate::data::{Data, DataType};
 
 fn monotonic_time() -> Duration {
     let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
@@ -18,40 +17,34 @@ pub fn set_seconds() -> String {
     format!("{}.{}", adjusted.whole_seconds(), adjusted.subsec_nanoseconds())
 }
 
-pub fn get_seconds(v: &mut Data) -> String {
-    if let DataType::Special(ref mut s) = v.value {
-        let part: Vec<&str> = s.data.split('.').collect();
-        let sec = i64::from_str(part[0]).unwrap();
-        let nano = i32::from_str(part[1]).unwrap();
-        let offset = Duration::new(sec, nano);
-        let elapsed = monotonic_time() - offset;
-        let ans = elapsed.whole_seconds().to_string();
-        s.data = format!("{}.{}", sec, nano);
-        //return DataType::Single(SingleData::from(elapsed.whole_seconds().to_string()));
-        return ans;
+pub fn get_seconds(v: &mut Vec<String>) -> String {
+    if v.len() == 0 {
+        v.push("0.0".to_string());
     }
-    //DataType::None
-    "".to_string()
+
+    let part: Vec<&str> = v[0].split('.').collect();
+    let sec = i64::from_str(part[0]).unwrap();
+    let nano = i32::from_str(part[1]).unwrap();
+    let offset = Duration::new(sec, nano);
+    let elapsed = monotonic_time() - offset;
+    let ans = elapsed.whole_seconds().to_string();
+    v[0] = format!("{}.{}", sec, nano);
+    //return DataType::Single(SingleData::from(elapsed.whole_seconds().to_string()));
+    return ans;
 }
 
-pub fn get_epochseconds(v: &mut Data) -> String {
-    if let DataType::Special(ref mut s) = v.value {
-        let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
-        let epoch_seconds = real.tv_sec().to_string();
-       // DataType::Single(SingleData::from(epoch_seconds.to_string()))
-        s.data = epoch_seconds.clone();
-        return epoch_seconds;
-    }
-    "".to_string()
+pub fn get_epochseconds(v: &mut Vec<String>) -> String {
+    let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+    let epoch_seconds = real.tv_sec().to_string();
+   // DataType::Single(SingleData::from(epoch_seconds.to_string()))
+    //s.data = epoch_seconds.clone();
+    return epoch_seconds;
 }
 
-pub fn get_epochrealtime(v: &mut Data) -> String {
-    if let DataType::Special(ref mut s) = v.value {
-        let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
-        let epoch_realtime = format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string();
-        //DataType::Single(SingleData::from(epoch_realtime))
-        s.data = epoch_realtime.clone();
-        return epoch_realtime;
-    }
-    "".to_string()
+pub fn get_epochrealtime(v: &mut Vec<String>) -> String {
+    let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+    let epoch_realtime = format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string();
+    //DataType::Single(SingleData::from(epoch_realtime))
+    //s.data = epoch_realtime.clone();
+    epoch_realtime
 }
