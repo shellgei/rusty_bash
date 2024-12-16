@@ -11,7 +11,7 @@ use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::time::{clock_gettime, ClockId};
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
-use crate::core::data::variable::Value;
+use crate::core::data::variable::DataType;
 
 pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
                      exclamation: bool, time: bool) -> Vec<WaitStatus> {
@@ -40,7 +40,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
     }
     set_foreground(core);
     //core.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
-    core.data.set_layer("PIPESTATUS", Value::from(pipestatus.clone()), 0);
+    core.data.set_layer("PIPESTATUS", DataType::from(pipestatus.clone()), 0);
 
     if core.options.query("pipefail") {
         pipestatus.retain(|e| e != "0");

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::core::data::variable::Value;
+use crate::core::data::variable::DataType;
 use crate::core::data::variable::single::SingleData;
 use crate::utils::error;
 use std::env;
@@ -12,7 +12,7 @@ use super::word::Word;
 use crate::core::data::variable::array::ArrayData;
 
 #[derive(Debug, Clone, Default)]
-pub enum ParsedValue {
+pub enum ParsedDataType {
     #[default]
     None,
     Single(Word),
@@ -24,8 +24,8 @@ pub struct Substitution {
     pub text: String,
     name: String,
     index: Option<Subscript>,
-    value: ParsedValue,
-    evaluated_value: Value,
+    value: ParsedDataType,
+    evaluated_value: DataType,
     append: bool,
 }
 
@@ -47,9 +47,9 @@ impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 local: bool, env: bool) -> bool {
         self.evaluated_value = match self.value.clone() {
-            ParsedValue::None      => Value::Single(SingleData::default()),
-            ParsedValue::Single(v) => self.eval_as_value(&v, core),
-            ParsedValue::Array(a)  => self.eval_as_array(&mut a.clone(), core),
+            ParsedDataType::None      => DataType::Single(SingleData::default()),
+            ParsedDataType::Single(v) => self.eval_as_value(&v, core),
+            ParsedDataType::Array(a)  => self.eval_as_array(&mut a.clone(), core),
         };
 
         match env {
@@ -61,9 +61,9 @@ impl Substitution {
     fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let index = self.get_index(core);
         let result = match (&self.evaluated_value, index, local) {
-            (Value::Single(v), Some(k), false) 
+            (DataType::Single(v), Some(k), false) 
               => core.data.set_assoc_elem(&self.name, &k, &v.data),
-            (Value::Single(v), Some(k), true) 
+            (DataType::Single(v), Some(k), true) 
               => core.data.set_local_assoc_elem(&self.name, &k, &v.data),
             _ => return bad_subscript_error(&self.text, core),
         };
@@ -86,9 +86,9 @@ impl Substitution {
         };
 
         let result = match (&self.evaluated_value, index, local) {
-            (Value::Single(v), Some(n), true) 
+            (DataType::Single(v), Some(n), true) 
                 => core.data.set_local_array_elem(&self.name, &v.data, n),
-            (Value::Single(v), Some(n), false) 
+            (DataType::Single(v), Some(n), false) 
                 => core.data.set_array_elem(&self.name, &v.data, n),
             (_, Some(_), _) => false,
             (data, None, true) 
@@ -117,7 +117,7 @@ impl Substitution {
 
     fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
         match &self.evaluated_value {
-            Value::None => {
+            DataType::None => {
                 core.data.set_param("?", "1");
                 return false;
             },
@@ -135,7 +135,7 @@ impl Substitution {
 
     pub fn set_to_env(&mut self) -> bool {
         match &self.evaluated_value {
-            Value::Single(v) => env::set_var(&self.name, &v.data),
+            DataType::Single(v) => env::set_var(&self.name, &v.data),
             _ => return false,
         }
         true
@@ -153,27 +153,27 @@ impl Substitution {
         }
     }
 
-    fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> Value {
+    fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> DataType {
         let prev = match self.append {
             true  => core.data.get_param(&self.name),
             false => "".to_string(),
         };
 
         match w.eval_as_value(core) {
-            Some(s) => Value::Single(SingleData::from(prev + &s)),
-            None    => Value::None,
+            Some(s) => DataType::Single(SingleData::from(prev + &s)),
+            None    => DataType::None,
         }
     }
 
-    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> Value {
+    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> DataType {
         let prev = match self.append {
             true  => core.data.get_array_all(&self.name),
             false => vec![],
         };
 
         match a.eval(core) {
-            Some(values) => Value::Array(ArrayData::from([prev, values].concat())),
-            None         => Value::None,
+            Some(values) => DataType::Array(ArrayData::from([prev, values].concat())),
+            None         => DataType::None,
         }
     }
 
@@ -208,11 +208,11 @@ impl Substitution {
 
         if let Some(a) = Array::parse(feeder, core) {
             ans.text += &a.text;
-            ans.value = ParsedValue::Array(a);
+            ans.value = ParsedDataType::Array(a);
             Some(ans)
         }else if let Some(w) = Word::parse(feeder, core, false) {
             ans.text += &w.text;
-            ans.value = ParsedValue::Single(w);
+            ans.value = ParsedDataType::Single(w);
             Some(ans)
         }else {
             Some(ans)

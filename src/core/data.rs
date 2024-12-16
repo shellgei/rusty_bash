@@ -6,7 +6,7 @@ pub mod variable;
 use crate::core::data::variable::single::SingleData;
 use crate::core::data::variable::special::SpecialData;
 use crate::elements::command::function_def::FunctionDefinition;
-use self::variable::{Value, Variable};
+use self::variable::{DataType, Variable};
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
 
@@ -57,9 +57,9 @@ impl Data {
         }
 
         match self.get_value(name) {
-            Some(Value::Special(v)) => return v.data.to_string(),
-            Some(Value::Single(v)) => return v.data.to_string(),
-            Some(Value::Array(a)) => {
+            Some(DataType::Special(v)) => return v.data.to_string(),
+            Some(DataType::Single(v)) => return v.data.to_string(),
+            Some(DataType::Array(a)) => {
                 match a.len() {
                     0 => return "".to_string(),
                     _ => return a.get(0).unwrap_or("".to_string()),
@@ -79,21 +79,21 @@ impl Data {
 
     pub fn get_array(&mut self, name: &str, pos: &str) -> String {
         match self.get_value(name) {
-            Some(Value::Array(a)) => {
+            Some(DataType::Array(a)) => {
                 if pos == "@" || pos == "*" {
                     return a.join(" ");
                 } else if let Ok(n) = pos.parse::<usize>() {
                     return a.get(n).unwrap_or("".to_string());
                 }
             },
-            Some(Value::AssocArray(a)) => {
+            Some(DataType::AssocArray(a)) => {
                 if pos == "@" || pos == "*" {
                     let values = a.values();
                     return values.join(" ");
                 }
                 return a.get(pos).unwrap_or("".to_string());
             },
-            Some(Value::Single(v)) => {
+            Some(DataType::Single(v)) => {
                 match pos.parse::<usize>() {
                     Ok(0) => return v.data.to_string(),
                     Ok(_) => return "".to_string(),
@@ -105,7 +105,7 @@ impl Data {
         "".to_string()
     }
 
-    fn get_value(&mut self, key: &str) -> Option<Value> {
+    fn get_value(&mut self, key: &str) -> Option<DataType> {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {
             if let Some(v) = self.parameters[layer].get_mut(key) {
@@ -127,28 +127,28 @@ impl Data {
 
     pub fn len(&mut self, key: &str) -> usize {
         match self.get_value(key) {
-            Some(Value::Array(a)) => a.len(),
+            Some(DataType::Array(a)) => a.len(),
             _ => 0,
         }
     }
 
     pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
         match self.get_value(key) {
-            Some(Value::Array(a)) => a.get_all(),
+            Some(DataType::Array(a)) => a.get_all(),
             _ => vec![],
         }
     }
 
     pub fn is_array(&mut self, key: &str) -> bool {
         match self.get_value(key) {
-            Some(Value::Array(_)) => true,
+            Some(DataType::Array(_)) => true,
             _ => false,
         }
     }
 
     pub fn is_assoc(&mut self, key: &str) -> bool {
         match self.get_value(key) {
-            Some(Value::AssocArray(_)) => true,
+            Some(DataType::AssocArray(_)) => true,
             _ => false,
         }
     }
@@ -189,8 +189,8 @@ impl Data {
         }
 
         v.value = match &v.value {
-            Value::Special(_) => {return true;},
-            _ => Value::Single(SingleData::from(val)),
+            DataType::Special(_) => {return true;},
+            _ => DataType::Single(SingleData::from(val)),
         };
 
         self.parameters[layer].insert(name.to_string(), v);
@@ -206,7 +206,7 @@ impl Data {
         self.parameters[0].insert(
             key.to_string(),
             Variable {
-                value: Value::Special( SpecialData {
+                value: DataType::Special( SpecialData {
                     data: init.to_string(),
                     dynamic_get: get,
                 }),
@@ -220,7 +220,7 @@ impl Data {
         self.set_layer_param(key, val, layer-1)
     }
 
-    pub fn set_layer(&mut self, name: &str, v: Value, layer: usize) -> bool {
+    pub fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
         self.parameters[layer].insert( name.to_string(), Variable::from(v));
         true
     }
@@ -258,11 +258,11 @@ impl Data {
         self.set_layer_assoc_elem(name, key, val, layer-1)
     }
 
-    pub fn set(&mut self, name: &str, v: Value) -> bool {
+    pub fn set(&mut self, name: &str, v: DataType) -> bool {
         self.set_layer(name, v, 0)
     }
 
-    pub fn set_local(&mut self, name: &str, v: Value) -> bool {
+    pub fn set_local(&mut self, name: &str, v: DataType) -> bool {
         let layer = self.parameters.len();
         self.set_layer(name, v, layer-1)
     }
@@ -340,11 +340,11 @@ impl Data {
 
     pub fn print(&mut self, k: &str) {
         match self.get_value(k) {
-            Some(Value::Single(s)) => {
+            Some(DataType::Single(s)) => {
                 println!("{}={}", k.to_string(), s.data.to_string()); 
             },
-            Some(Value::Array(a)) => a.print(k),
-            Some(Value::AssocArray(a)) => a.print(k),
+            Some(DataType::Array(a)) => a.print(k),
+            Some(DataType::AssocArray(a)) => a.print(k),
             _ => {},
         }
     }

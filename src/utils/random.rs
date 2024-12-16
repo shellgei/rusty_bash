@@ -3,11 +3,11 @@
 
 use rand_chacha::ChaCha20Rng;
 use rand::{RngCore, SeedableRng};
-use crate::core::data::variable::{Variable, Value};
+use crate::core::data::variable::{Variable, DataType};
 
 fn gen_chacha20_u32(v: &mut Variable) -> u32 {
     let seed = match &v.value {
-        Value::Single(s) => u64::from_str_radix(&s.data, 10).unwrap_or_else(|_| {
+        DataType::Single(s) => u64::from_str_radix(&s.data, 10).unwrap_or_else(|_| {
             ChaCha20Rng::from_entropy().next_u64()
         }),
         _ => {
@@ -21,7 +21,7 @@ fn gen_chacha20_u32(v: &mut Variable) -> u32 {
 pub fn get_srandom(v: &mut Variable) -> String {
     let rand = gen_chacha20_u32(v);
     v.set_data(rand.to_string());
-    //v.value = Value::Single(SingleData::from(rand.to_string()));
+    //v.value = DataType::Single(SingleData::from(rand.to_string()));
     //v.value.clone()
     rand.to_string()
 }
@@ -29,7 +29,7 @@ pub fn get_srandom(v: &mut Variable) -> String {
 pub fn get_random(v: &mut Variable) -> String {
     let rand = gen_chacha20_u32(v) & 0x7FFF;
     v.set_data(rand.to_string());
-    //v.value = Value::Single(SingleData::from(rand.to_string()));
+    //v.value = DataType::Single(SingleData::from(rand.to_string()));
     //v.value.clone()
     rand.to_string()
 }

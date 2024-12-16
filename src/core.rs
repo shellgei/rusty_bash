@@ -10,7 +10,7 @@ pub mod options;
 
 use crate::{child, signal};
 use self::data::Data;
-use self::data::variable::{Value, Variable};
+use self::data::variable::{DataType, Variable};
 use self::options::Options;
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
@@ -124,7 +124,7 @@ impl ShellCore {
         self.data.set_param("MACHTYPE", &machtype);
         self.data.set_param("HOSTTYPE", &t_arch);
         self.data.set_param("OSTYPE", &t_os);
-        self.data.set("BASH_VERSINFO", Value::from(&versinfo));
+        self.data.set("BASH_VERSINFO", DataType::from(&versinfo));
         self.data.set_special_param("SRANDOM", random::get_srandom, "");
         self.data.set_special_param("RANDOM", random::get_random, "");
         self.data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");

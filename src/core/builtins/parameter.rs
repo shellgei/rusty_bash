@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::utils;
 use crate::utils::exit;
 use crate::core::HashMap;
-use crate::core::data::variable::Value;
+use crate::core::data::variable::DataType;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
 
@@ -78,7 +78,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
-        if ! core.data.set(&name, Value::from(HashMap::new())) {
+        if ! core.data.set(&name, DataType::from(HashMap::new())) {
             return 1; //TODO: error message
         }
     }

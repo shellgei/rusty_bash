@@ -13,7 +13,7 @@ use self::single::SingleData;
 use self::special::SpecialData;
 
 #[derive(Debug, Clone, Default)]
-pub enum Value {
+pub enum DataType {
     #[default]
     None,
     Special(SpecialData),
@@ -24,12 +24,12 @@ pub enum Value {
 
 #[derive(Debug, Clone, Default)]
 pub struct Variable {
-    pub value: Value,
+    pub value: DataType,
     pub attributes: String,
 }
 
-impl From<Value> for Variable {
-    fn from(v: Value) -> Self {
+impl From<DataType> for Variable {
+    fn from(v: DataType) -> Self {
         Variable {
             value: v,
             ..Default::default()
@@ -40,7 +40,7 @@ impl From<Value> for Variable {
 impl From<&str> for Variable {
     fn from(s: &str) -> Self {
         Variable {
-            value: Value::Single(SingleData::from(s)),
+            value: DataType::Single(SingleData::from(s)),
             ..Default::default()
         }
     }
@@ -49,33 +49,33 @@ impl From<&str> for Variable {
 impl From<HashMap<String, String>> for Variable {
     fn from(hm: HashMap<String, String>) -> Self {
         Variable {
-            value: Value::AssocArray(AssocData::from(hm)),
+            value: DataType::AssocArray(AssocData::from(hm)),
             ..Default::default()
         }
     }
 }
 
-impl From<String> for Value {
+impl From<String> for DataType {
     fn from(s: String) -> Self {
-        Value::Single(SingleData::from(s))
+        DataType::Single(SingleData::from(s))
     }
 }
 
-impl From<Vec<String>> for Value {
+impl From<Vec<String>> for DataType {
     fn from(vals: Vec<String>) -> Self {
-        Value::Array(ArrayData::from(vals))
+        DataType::Array(ArrayData::from(vals))
     }
 }
 
-impl From<&Vec<String>> for Value {
+impl From<&Vec<String>> for DataType {
     fn from(vals: &Vec<String>) -> Self {
-        Value::Array(ArrayData::from(vals.clone()))
+        DataType::Array(ArrayData::from(vals.clone()))
     }
 }
 
-impl From<HashMap<String, String>> for Value {
+impl From<HashMap<String, String>> for DataType {
     fn from(hm: HashMap<String, String>) -> Self {
-        Value::AssocArray(AssocData::from(hm))
+        DataType::AssocArray(AssocData::from(hm))
     }
 }
 
@@ -83,7 +83,7 @@ impl From<HashMap<String, String>> for Value {
 impl From<Vec<String>> for Variable {
     fn from(vals: Vec<String>) -> Self {
         Variable {
-            value: Value::Array(ArrayData::from(vals)),
+            value: DataType::Array(ArrayData::from(vals)),
             ..Default::default()
         }
     }
@@ -92,17 +92,17 @@ impl From<Vec<String>> for Variable {
 impl Variable {
     pub fn set_data(&mut self, data: String) {
         match &mut self.value {
-            Value::Single(s) => s.data = data,
-            Value::Special(s) => s.data = data,
+            DataType::Single(s) => s.data = data,
+            DataType::Special(s) => s.data = data,
             _ => {},
         }
     }
 
-    pub fn get_value(&mut self) -> Value {
+    pub fn get_value(&mut self) -> DataType {
         match &self.value {
-            Value::Special(d) => {
+            DataType::Special(d) => {
                 let ans = (d.dynamic_get)(self);
-                Value::from(ans)
+                DataType::from(ans)
             },
             _ => self.value.clone(),
         }
@@ -110,14 +110,14 @@ impl Variable {
 
     pub fn set_assoc_elem(&mut self, key: &String, val: &String) -> bool {
         match &mut self.value {
-            Value::AssocArray(a) => a.set(key.to_string(), val.to_string()),
+            DataType::AssocArray(a) => a.set(key.to_string(), val.to_string()),
             _ => return false,
         }
     }
 
     pub fn set_array_elem(&mut self, pos: usize, val: &String) -> bool {
         match &mut self.value {
-            Value::Array(a) => a.set(pos, val), 
+            DataType::Array(a) => a.set(pos, val), 
             _ => return false,
         }
     }
@@ -125,10 +125,10 @@ impl Variable {
     /*
     fn print_data(&self, k: &str, core: &mut ShellCore) {
         match self.get_value(k) {
-            Some(Value::Single(s)) => {
+            Some(DataType::Single(s)) => {
                 println!("{}={}", k.to_string(), s.data.to_string()); 
             },
-            Some(Value::Array(a)) => {
+            Some(DataType::Array(a)) => {
                 let mut formatted = String::new();
                 formatted += "(";
                 for i in 0..a.len() {
@@ -141,7 +141,7 @@ impl Variable {
                 formatted += ")";
                 println!("{}={}", k.to_string(), formatted); 
             },
-            Some(Value::AssocArray(a)) => {
+            Some(DataType::AssocArray(a)) => {
                 let mut formatted = String::new();
                 formatted += "(";
                 for k in a.keys() {
