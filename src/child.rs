@@ -11,7 +11,7 @@ use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::time::{clock_gettime, ClockId};
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
-use crate::core::data::variable::DataType;
+use crate::core::database::variable::DataType;
 
 pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
                      exclamation: bool, time: bool) -> Vec<WaitStatus> {

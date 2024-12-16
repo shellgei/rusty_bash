@@ -3,14 +3,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod builtins;
-pub mod data;
+pub mod database;
 pub mod history;
 pub mod jobtable;
 pub mod options;
 
 use crate::{child, signal};
-use self::data::DataBase;
-use self::data::variable::{DataType, Variable};
+use self::database::DataBase;
+use self::database::variable::{DataType, Variable};
 use self::options::Options;
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};

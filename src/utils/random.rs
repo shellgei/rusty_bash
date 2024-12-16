@@ -3,7 +3,7 @@
 
 use rand_chacha::ChaCha20Rng;
 use rand::{RngCore, SeedableRng};
-use crate::core::data::variable::{Variable, DataType};
+use crate::core::database::variable::{Variable, DataType};
 
 fn gen_chacha20_u32(v: &mut Variable) -> u32 {
     let seed = match &v.value {

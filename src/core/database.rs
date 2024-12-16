@@ -3,8 +3,8 @@
 
 pub mod variable;
 
-use crate::core::data::variable::single::SingleData;
-use crate::core::data::variable::special::SpecialData;
+use crate::core::database::variable::single::SingleData;
+use crate::core::database::variable::special::SpecialData;
 use crate::elements::command::function_def::FunctionDefinition;
 use self::variable::{DataType, Variable};
 use std::{env, process};
