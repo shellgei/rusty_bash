@@ -38,7 +38,8 @@ impl DataBase {
         data.set_special_param("RANDOM", random::get_random, "");
         data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");
         data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, "");
-        data.set_special_param("SECONDS", clock::get_seconds, &clock::set_seconds());
+        //data.set_special_param("SECONDS", clock::get_seconds, &clock::set_seconds());
+        data.set_special_param("SECONDS", clock::get_seconds, "");
 
         data
     }
@@ -62,7 +63,6 @@ impl DataBase {
         }
 
         match self.get_value(name) {
-            //Some(DataType::Special(_)) => return "".to_string(),//v.data.to_string(),
             Some(DataType::Single(v)) => return v.data.to_string(),
             Some(DataType::Array(a)) => {
                 match a.len() {
@@ -212,7 +212,7 @@ impl DataBase {
             key.to_string(),
             Data {
                 value: DataType::Special( SpecialData {
-                    internal_data: vec![init.to_string()],
+                    internal_data: vec![],
                     function: get,
                 }),
                 ..Default::default()

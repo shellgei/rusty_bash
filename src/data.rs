@@ -55,6 +55,16 @@ impl From<HashMap<String, String>> for Data {
     }
 }
 
+impl From<(fn(&mut Vec<String>)-> String, &str)> for DataType {
+    fn from(init: (fn(&mut Vec<String>)-> String, &str)) -> DataType {
+        DataType::Special( SpecialData {
+            internal_data: vec![init.1.to_string()],
+            function: init.0,
+        })
+    }
+}
+
+
 impl From<String> for DataType {
     fn from(s: String) -> Self {
         DataType::Single(SingleData::from(s))

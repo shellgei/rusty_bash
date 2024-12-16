@@ -19,7 +19,7 @@ pub fn set_seconds() -> String {
 
 pub fn get_seconds(v: &mut Vec<String>) -> String {
     if v.len() == 0 {
-        v.push("0.0".to_string());
+        v.push(set_seconds());
     }
 
     let part: Vec<&str> = v[0].split('.').collect();
