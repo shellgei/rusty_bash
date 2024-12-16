@@ -2,7 +2,6 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::data::single::SingleData;
-use crate::data::special::SpecialData;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::data::{DataType, Data};
 use std::{env, process};
@@ -206,17 +205,8 @@ impl DataBase {
         self.set_layer_param(key, val, 0)
     }
 
-    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Vec<String>)-> String) {
-        self.parameters[0].insert(
-            key.to_string(),
-            Data {
-                value: DataType::Special( SpecialData {
-                    internal_data: vec![],
-                    function: get,
-                }),
-                ..Default::default()
-            }
-        );        
+    pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
+        self.parameters[0].insert( key.to_string(), Data::from(f) );        
     }
 
     pub fn set_local_param(&mut self, key: &str, val: &str) -> bool {

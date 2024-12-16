@@ -9,6 +9,15 @@ pub struct SpecialData {
     pub function: fn(&mut Vec<String>) -> String,
 }
 
+impl From<fn(&mut Vec<String>)-> String> for SpecialData {
+    fn from(f: fn(&mut Vec<String>)-> String) -> SpecialData {
+        SpecialData {
+            internal_data: vec![],
+            function: f,
+        }
+    }
+}
+
 impl SpecialData {
     pub fn update(&mut self) -> DataType {
         let ans = (self.function)(&mut self.internal_data);

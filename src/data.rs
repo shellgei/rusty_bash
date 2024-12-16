@@ -55,15 +55,14 @@ impl From<HashMap<String, String>> for Data {
     }
 }
 
-impl From<(fn(&mut Vec<String>)-> String, &str)> for DataType {
-    fn from(init: (fn(&mut Vec<String>)-> String, &str)) -> DataType {
-        DataType::Special( SpecialData {
-            internal_data: vec![init.1.to_string()],
-            function: init.0,
-        })
+impl From<fn(&mut Vec<String>)-> String> for Data {
+    fn from(f: fn(&mut Vec<String>)-> String) -> Data {
+        Data {
+            value: DataType::Special(SpecialData::from(f)),
+            ..Default::default()
+        }
     }
 }
-
 
 impl From<String> for DataType {
     fn from(s: String) -> Self {
