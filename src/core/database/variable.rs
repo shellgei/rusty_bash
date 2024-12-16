@@ -23,32 +23,32 @@ pub enum DataType {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Variable {
+pub struct Data {
     pub value: DataType,
     pub attributes: String,
 }
 
-impl From<DataType> for Variable {
+impl From<DataType> for Data {
     fn from(v: DataType) -> Self {
-        Variable {
+        Data {
             value: v,
             ..Default::default()
         }
     }
 }
 
-impl From<&str> for Variable {
+impl From<&str> for Data {
     fn from(s: &str) -> Self {
-        Variable {
+        Data {
             value: DataType::Single(SingleData::from(s)),
             ..Default::default()
         }
     }
 }
 
-impl From<HashMap<String, String>> for Variable {
+impl From<HashMap<String, String>> for Data {
     fn from(hm: HashMap<String, String>) -> Self {
-        Variable {
+        Data {
             value: DataType::AssocArray(AssocData::from(hm)),
             ..Default::default()
         }
@@ -80,16 +80,16 @@ impl From<HashMap<String, String>> for DataType {
 }
 
 
-impl From<Vec<String>> for Variable {
+impl From<Vec<String>> for Data {
     fn from(vals: Vec<String>) -> Self {
-        Variable {
+        Data {
             value: DataType::Array(ArrayData::from(vals)),
             ..Default::default()
         }
     }
 }
 
-impl Variable {
+impl Data {
     pub fn set_data(&mut self, data: String) {
         match &mut self.value {
             DataType::Single(s) => s.data = data,

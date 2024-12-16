@@ -5,7 +5,7 @@ use std::str::FromStr;
 use ::time::Duration;
 use nix::time;
 use nix::time::ClockId;
-use crate::core::database::variable::{Variable, DataType};
+use crate::core::database::variable::{Data, DataType};
 
 fn monotonic_time() -> Duration {
     let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
@@ -18,7 +18,7 @@ pub fn set_seconds() -> String {
     format!("{}.{}", adjusted.whole_seconds(), adjusted.subsec_nanoseconds())
 }
 
-pub fn get_seconds(v: &mut Variable) -> String {
+pub fn get_seconds(v: &mut Data) -> String {
     if let DataType::Special(ref mut s) = v.value {
         let part: Vec<&str> = s.data.split('.').collect();
         let sec = i64::from_str(part[0]).unwrap();
@@ -34,7 +34,7 @@ pub fn get_seconds(v: &mut Variable) -> String {
     "".to_string()
 }
 
-pub fn get_epochseconds(v: &mut Variable) -> String {
+pub fn get_epochseconds(v: &mut Data) -> String {
     if let DataType::Special(ref mut s) = v.value {
         let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
         let epoch_seconds = real.tv_sec().to_string();
@@ -45,7 +45,7 @@ pub fn get_epochseconds(v: &mut Variable) -> String {
     "".to_string()
 }
 
-pub fn get_epochrealtime(v: &mut Variable) -> String {
+pub fn get_epochrealtime(v: &mut Data) -> String {
     if let DataType::Special(ref mut s) = v.value {
         let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
         let epoch_realtime = format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string();

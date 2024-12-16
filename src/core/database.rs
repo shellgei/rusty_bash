@@ -6,14 +6,14 @@ pub mod variable;
 use crate::core::database::variable::single::SingleData;
 use crate::core::database::variable::special::SpecialData;
 use crate::elements::command::function_def::FunctionDefinition;
-use self::variable::{DataType, Variable};
+use self::variable::{DataType, Data};
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
-    parameters: Vec<HashMap<String, Variable>>,
+    parameters: Vec<HashMap<String, Data>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -179,7 +179,7 @@ impl DataBase {
             _     => {},
         }
         if self.parameters[layer].get(name).is_none() {
-            self.parameters[layer].insert(name.to_string(), Variable::from(val));
+            self.parameters[layer].insert(name.to_string(), Data::from(val));
             return true;
         }
 
@@ -202,10 +202,10 @@ impl DataBase {
         self.set_layer_param(key, val, 0)
     }
 
-    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Variable)-> String, init: &str) {
+    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Data)-> String, init: &str) {
         self.parameters[0].insert(
             key.to_string(),
-            Variable {
+            Data {
                 value: DataType::Special( SpecialData {
                     data: init.to_string(),
                     dynamic_get: get,
@@ -221,13 +221,13 @@ impl DataBase {
     }
 
     pub fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
-        self.parameters[layer].insert( name.to_string(), Variable::from(v));
+        self.parameters[layer].insert( name.to_string(), Data::from(v));
         true
     }
 
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
         self.parameters[layer]
-            .insert(name.to_string(), Variable::from(HashMap::new()));        
+            .insert(name.to_string(), Data::from(HashMap::new()));        
         true
     }
 
