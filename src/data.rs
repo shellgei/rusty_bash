@@ -24,14 +24,14 @@ pub enum DataType {
 
 #[derive(Debug, Clone, Default)]
 pub struct Data {
-    pub value: DataType,
+    pub body: DataType,
     pub attributes: String,
 }
 
 impl From<DataType> for Data {
     fn from(v: DataType) -> Self {
         Data {
-            value: v,
+            body: v,
             ..Default::default()
         }
     }
@@ -40,7 +40,7 @@ impl From<DataType> for Data {
 impl From<&str> for Data {
     fn from(s: &str) -> Self {
         Data {
-            value: DataType::Single(SingleData::from(s)),
+            body: DataType::Single(SingleData::from(s)),
             ..Default::default()
         }
     }
@@ -49,7 +49,7 @@ impl From<&str> for Data {
 impl From<HashMap<String, String>> for Data {
     fn from(hm: HashMap<String, String>) -> Self {
         Data {
-            value: DataType::AssocArray(AssocData::from(hm)),
+            body: DataType::AssocArray(AssocData::from(hm)),
             ..Default::default()
         }
     }
@@ -58,7 +58,7 @@ impl From<HashMap<String, String>> for Data {
 impl From<fn(&mut Vec<String>)-> String> for Data {
     fn from(f: fn(&mut Vec<String>)-> String) -> Data {
         Data {
-            value: DataType::Special(SpecialData::from(f)),
+            body: DataType::Special(SpecialData::from(f)),
             ..Default::default()
         }
     }
@@ -92,29 +92,29 @@ impl From<HashMap<String, String>> for DataType {
 impl From<Vec<String>> for Data {
     fn from(vals: Vec<String>) -> Self {
         Data {
-            value: DataType::Array(ArrayData::from(vals)),
+            body: DataType::Array(ArrayData::from(vals)),
             ..Default::default()
         }
     }
 }
 
 impl Data {
-    pub fn get_value(&mut self) -> DataType {
-        match &mut self.value {
+    pub fn get_body(&mut self) -> DataType {
+        match &mut self.body {
             DataType::Special(d) => d.update(),
-            _ => self.value.clone(),
+            _ => self.body.clone(),
         }
     }
 
     pub fn set_assoc_elem(&mut self, key: &String, val: &String) -> bool {
-        match &mut self.value {
+        match &mut self.body {
             DataType::AssocArray(a) => a.set(key, val),
             _ => return false,
         }
     }
 
     pub fn set_array_elem(&mut self, pos: usize, val: &String) -> bool {
-        match &mut self.value {
+        match &mut self.body {
             DataType::Array(a) => a.set(pos, val), 
             _ => return false,
         }

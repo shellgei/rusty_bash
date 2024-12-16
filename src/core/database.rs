@@ -112,7 +112,7 @@ impl DataBase {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {
             if let Some(v) = self.parameters[layer].get_mut(key) {
-                return Some(v.get_value());
+                return Some(v.get_body());
             }
         }
         None
@@ -191,7 +191,7 @@ impl DataBase {
             return false;
         }
 
-        v.value = match &v.value {
+        v.body = match &v.body {
             DataType::Special(_) => {return true;},
             _ => DataType::Single(SingleData::from(val)),
         };
