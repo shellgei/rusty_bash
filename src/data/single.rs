@@ -4,7 +4,6 @@
 #[derive(Debug, Clone, Default)]
 pub struct SingleData {
     pub data: String,
-    pub attributes: String,
 }
 
 impl From<&str> for SingleData {

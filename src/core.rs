@@ -9,8 +9,8 @@ pub mod jobtable;
 pub mod options;
 
 use crate::{child, signal};
+use crate::data::DataType;
 use self::database::DataBase;
-use self::database::data::{DataType, Data};
 use self::options::Options;
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};

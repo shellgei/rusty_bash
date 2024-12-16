@@ -1,12 +1,10 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-pub mod data;
-
-use crate::core::database::data::single::SingleData;
-use crate::core::database::data::special::SpecialData;
+use crate::data::single::SingleData;
+use crate::data::special::SpecialData;
 use crate::elements::command::function_def::FunctionDefinition;
-use self::data::{DataType, Data};
+use crate::data::{DataType, Data};
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock};

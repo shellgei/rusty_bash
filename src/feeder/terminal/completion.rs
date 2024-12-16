@@ -4,7 +4,7 @@
 use crate::{file_check, Feeder, ShellCore, utils};
 use crate::utils::exit;
 use crate::core::builtins::completion;
-use crate::core::database::data::DataType;
+use crate::data::DataType;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;

@@ -6,7 +6,7 @@ pub mod assoc;
 pub mod single;
 pub mod special;
 
-use crate::core::HashMap;
+use std::collections::HashMap;
 use self::array::ArrayData;
 use self::assoc::AssocData;
 use self::single::SingleData;

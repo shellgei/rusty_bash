@@ -2,14 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::core::database::data::DataType;
-use crate::core::database::data::single::SingleData;
+use crate::data::DataType;
+use crate::data::single::SingleData;
 use crate::utils::error;
 use std::env;
 use super::array::Array;
 use super::subscript::Subscript;
 use super::word::Word;
-use crate::core::database::data::array::ArrayData;
+use crate::data::array::ArrayData;
 
 #[derive(Debug, Clone, Default)]
 pub enum ParsedDataType {

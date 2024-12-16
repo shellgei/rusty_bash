@@ -3,6 +3,7 @@
 
 mod child;
 mod core;
+mod data;
 mod feeder;
 mod elements;
 mod signal;
