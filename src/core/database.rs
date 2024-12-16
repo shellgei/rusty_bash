@@ -34,12 +34,11 @@ impl DataBase {
         data.set_param("?", "0");
         data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
 
-        data.set_special_param("SRANDOM", random::get_srandom, "");
-        data.set_special_param("RANDOM", random::get_random, "");
-        data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");
-        data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, "");
-        //data.set_special_param("SECONDS", clock::get_seconds, &clock::set_seconds());
-        data.set_special_param("SECONDS", clock::get_seconds, "");
+        data.set_special_param("SRANDOM", random::get_srandom);
+        data.set_special_param("RANDOM", random::get_random);
+        data.set_special_param("EPOCHSECONDS", clock::get_epochseconds);
+        data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime);
+        data.set_special_param("SECONDS", clock::get_seconds);
 
         data
     }
@@ -207,7 +206,7 @@ impl DataBase {
         self.set_layer_param(key, val, 0)
     }
 
-    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Vec<String>)-> String, init: &str) {
+    pub fn set_special_param(&mut self, key: &str, get: fn(&mut Vec<String>)-> String) {
         self.parameters[0].insert(
             key.to_string(),
             Data {
