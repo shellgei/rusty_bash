@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::utils;
 use crate::utils::exit;
 use crate::core::HashMap;
-use crate::core::database::variable::DataType;
+use crate::core::database::data::DataType;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
 

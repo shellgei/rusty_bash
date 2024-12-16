@@ -121,41 +121,4 @@ impl Data {
             _ => return false,
         }
     }
-
-    /*
-    fn print_data(&self, k: &str, core: &mut ShellCore) {
-        match self.get_value(k) {
-            Some(DataType::Single(s)) => {
-                println!("{}={}", k.to_string(), s.data.to_string()); 
-            },
-            Some(DataType::Array(a)) => {
-                let mut formatted = String::new();
-                formatted += "(";
-                for i in 0..a.len() {
-                    let val = a.get(i).unwrap_or("".to_string());
-                    formatted += &format!("[{}]=\"{}\" ", i, val).clone();
-                };
-                if formatted.ends_with(" ") {
-                    formatted.pop();
-                }
-                formatted += ")";
-                println!("{}={}", k.to_string(), formatted); 
-            },
-            Some(DataType::AssocArray(a)) => {
-                let mut formatted = String::new();
-                formatted += "(";
-                for k in a.keys() {
-                    let v = a.get(&k).unwrap_or("".to_string());
-                    formatted += &format!("[{}]=\"{}\" ", k, v);
-                }
-                if formatted.ends_with(" ") {
-                    formatted.pop();
-                }
-                formatted += ")";
-                println!("{}={}", k.to_string(), formatted); 
-            },
-            _ => {},
-        }
-    }
-    */
 }
