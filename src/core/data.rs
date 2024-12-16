@@ -11,7 +11,7 @@ use std::{env, process};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default)]
-pub struct Data {
+pub struct DataBase {
     pub flags: String,
     parameters: Vec<HashMap<String, Variable>>,
     pub position_parameters: Vec<Vec<String>>,
@@ -20,9 +20,9 @@ pub struct Data {
     pub alias_memo: Vec<(String, String)>,
 }
 
-impl Data {
-    pub fn new() -> Data {
-        let mut data = Data {
+impl DataBase {
+    pub fn new() -> DataBase {
+        let mut data = DataBase {
             parameters: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             flags: "B".to_string(),

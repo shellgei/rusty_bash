@@ -9,7 +9,7 @@ pub mod jobtable;
 pub mod options;
 
 use crate::{child, signal};
-use self::data::Data;
+use self::data::DataBase;
 use self::data::variable::{DataType, Variable};
 use self::options::Options;
 use std::collections::HashMap;
@@ -42,7 +42,7 @@ impl Default for MeasuredTime {
 
 #[derive(Default)]
 pub struct ShellCore {
-    pub data: Data,
+    pub data: DataBase,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
@@ -74,7 +74,7 @@ pub struct ShellCore {
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
-            data: Data::new(),
+            data: DataBase::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             read_stdin: true,
             options: Options::new_as_basic_opts(),
