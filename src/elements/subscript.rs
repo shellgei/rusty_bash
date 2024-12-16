@@ -21,7 +21,7 @@ impl Subscript {
             if a.text.chars().all(|c| " \t\n".contains(c)) {
                 return None;
             }
-            return match core.data.is_assoc(param_name) {
+            return match core.db.is_assoc(param_name) {
                 //true  => Some(a.text.clone()),
                 true  => {
                     match self.inner.as_mut() {

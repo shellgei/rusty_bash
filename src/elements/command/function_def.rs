@@ -29,7 +29,7 @@ impl Command for FunctionDefinition {
             return None;
         }
 
-        core.data.functions.insert(self.name.to_string(), self.clone());
+        core.db.functions.insert(self.name.to_string(), self.clone());
         None
     }
 
@@ -55,9 +55,9 @@ impl FunctionDefinition {
     pub fn run_as_command(&mut self, args: &mut Vec<String>,
                           core: &mut ShellCore,
                           /*local_params: Vec<(&str, &str)>*/) -> Option<Pid> {
-        let len = core.data.position_parameters.len();
-        args[0] = core.data.position_parameters[len-1][0].clone();
-        core.data.position_parameters.push(args.to_vec());
+        let len = core.db.position_parameters.len();
+        args[0] = core.db.position_parameters[len-1][0].clone();
+        core.db.position_parameters.push(args.to_vec());
 
         let mut dummy = Pipe::new("|".to_string());
 
@@ -68,7 +68,7 @@ impl FunctionDefinition {
         core.return_flag = false;
         core.source_function_level -= 1;
 
-        core.data.position_parameters.pop();
+        core.db.position_parameters.pop();
 
         return pid;
     }

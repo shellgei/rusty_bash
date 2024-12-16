@@ -31,8 +31,8 @@ impl Command for ForCommand {
             false => self.run_with_values(core),
         };
 
-        if ! ok && core.data.get_param("?") == "0" {
-            core.data.set_param("?", "1");
+        if ! ok && core.db.get_param("?") == "0" {
+            core.db.set_param("?", "1");
         }
 
         core.loop_level -= 1;
@@ -67,7 +67,7 @@ impl ForCommand {
                 Some(vs) => vs,
                 None     => return false,
             },
-            false => core.data.get_position_params(),
+            false => core.db.get_position_params(),
         };
 
         for p in values {
@@ -75,10 +75,10 @@ impl ForCommand {
                 return false;
             }
 
-            match core.data.set_param(&self.name, &p) {
+            match core.db.set_param(&self.name, &p) {
                 true => {},
                 false => {
-                    core.data.set_param("?", "1");
+                    core.db.set_param("?", "1");
                     let msg = error::readonly(&self.name);
                     error::print(&msg, core);
                 },

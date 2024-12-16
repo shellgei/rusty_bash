@@ -7,10 +7,10 @@ use super::parameter;
 
 fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     if pm == '+' {
-        core.data.flags.retain(|e| e != opt);
+        core.db.flags.retain(|e| e != opt);
     }else{
-        if ! core.data.flags.contains(opt) {
-            core.data.flags.push(opt);
+        if ! core.db.flags.contains(opt) {
+            core.db.flags.push(opt);
         }
     }
 }
@@ -74,11 +74,11 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 {
-        let mut last = core.data.position_parameters.pop().unwrap();
+        let mut last = core.db.position_parameters.pop().unwrap();
         if last.len() > 1 {
             last.remove(1);
         }
-        core.data.position_parameters.push(last);
+        core.db.position_parameters.push(last);
         return 0;
     }
 
@@ -98,14 +98,14 @@ pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1;
         }
 
-        let mut last = core.data.position_parameters.pop().unwrap();
+        let mut last = core.db.position_parameters.pop().unwrap();
         for _ in 0..n {
             if last.len() == 1 {
                 break;
             }
             last.remove(1);
         }
-        core.data.position_parameters.push(last);
+        core.db.position_parameters.push(last);
         return 0;
     }
 

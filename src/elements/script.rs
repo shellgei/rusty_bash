@@ -75,11 +75,11 @@ impl Script {
     }
 
     fn unalias(&mut self, core: &mut ShellCore) {
-        for a in core.data.alias_memo.iter().rev() {
+        for a in core.db.alias_memo.iter().rev() {
             self.text = self.text.replace(&a.1, &a.0);
         }
 
-        core.data.alias_memo.clear();
+        core.db.alias_memo.clear();
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
@@ -101,10 +101,10 @@ impl Script {
                     return Some(ans)
                 },
                 Status::UnexpectedSymbol(s) => {
-                    core.data.set_param("LINENO", &feeder.lineno.to_string());
+                    core.db.set_param("LINENO", &feeder.lineno.to_string());
                     let s = format!("Unexpected token: {}", s);
                     error::print(&s, core);
-                    core.data.set_param("?", "2");
+                    core.db.set_param("?", "2");
                     break;
                 },
                 Status::NeedMoreLine => {
@@ -116,7 +116,7 @@ impl Script {
         }
 
         feeder.consume(feeder.len());
-        core.data.alias_memo.clear();
+        core.db.alias_memo.clear();
         return None;
     }
 }

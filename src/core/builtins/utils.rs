@@ -14,7 +14,7 @@ pub fn make_absolute_path(core: &mut ShellCore, path_str: &str) -> PathBuf {
     }
 
     if path.starts_with("~") { // tilde -> $HOME
-        let home_dir = core.data.get_param("HOME");
+        let home_dir = core.db.get_param("HOME");
         if home_dir != "" {
             absolute.push(PathBuf::from(home_dir));
             let num = match path_str.len() > 1 && path_str.starts_with("~/") {

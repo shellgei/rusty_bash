@@ -44,7 +44,7 @@ fn common_string(paths: &Vec<String>) -> String {
 
 fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     let tilde_prefix = "~/".to_string();
-    let tilde_path = core.data.get_param("HOME").to_string() + "/";
+    let tilde_path = core.db.get_param("HOME").to_string() + "/";
 
     file_check::is_dir(&s.replace(&tilde_prefix, &tilde_path))
 }
@@ -52,7 +52,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, tab_num: usize) {
         self.escape_at_completion = true;
-        core.data.set("COMPREPLY", DataType::from(vec![]));
+        core.db.set("COMPREPLY", DataType::from(vec![]));
         self.set_completion_info(core);
 
         if ! Self::set_custom_compreply(core)
@@ -63,22 +63,22 @@ impl Terminal {
 
         match tab_num  {
             1 => self.try_completion(core),
-            _ => self.show_list(&core.data.get_array_all("COMPREPLY"), tab_num),
+            _ => self.show_list(&core.db.get_array_all("COMPREPLY"), tab_num),
         }
     }
 
     fn set_custom_compreply(core: &mut ShellCore) -> bool {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
-        let word_num = core.data.len("COMP_WORDS") as i32;
+        let word_num = core.db.len("COMP_WORDS") as i32;
 
         if prev_pos < 0 || prev_pos >= word_num {
             return false;
         }
 
-        let org_word = core.data.get_array("COMP_WORDS", "0");
-        let prev_word = core.data.get_array("COMP_WORDS", &prev_pos.to_string());
-        let cur_word = core.data.get_array("COMP_WORDS", &cur_pos.to_string());
+        let org_word = core.db.get_array("COMP_WORDS", "0");
+        let prev_word = core.db.get_array("COMP_WORDS", &prev_pos.to_string());
+        let cur_word = core.db.get_array("COMP_WORDS", &cur_pos.to_string());
 
         match core.completion_functions.get(&org_word) {
             Some(value) => {
@@ -89,24 +89,24 @@ impl Terminal {
                     let mut dummy = Pipe::new("".to_string());
                     a.exec(core, &mut dummy);
                 }
-                core.data.len("COMPREPLY") != 0
+                core.db.len("COMPREPLY") != 0
             },
             _ => false
         }
     }
 
     fn get_cur_pos(core: &mut ShellCore) -> i32 {
-        match core.data.get_param("COMP_CWORD").parse::<i32>() {
+        match core.db.get_param("COMP_CWORD").parse::<i32>() {
             Ok(i) => i,
             _     => exit::internal("no COMP_CWORD"),
         }
     }
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> bool {
-        let pos = core.data.get_param("COMP_CWORD").to_string();
-        let last = core.data.get_array("COMP_WORDS", &pos);
+        let pos = core.db.get_param("COMP_CWORD").to_string();
+        let last = core.db.get_array("COMP_WORDS", &pos);
 
-        let com = core.data.get_array("COMP_WORDS", "0");
+        let com = core.db.get_array("COMP_WORDS", "0");
 
         let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
 
@@ -118,7 +118,7 @@ impl Terminal {
         }
 
         let tmp: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
-        core.data.set("COMPREPLY", DataType::from(tmp));
+        core.db.set("COMPREPLY", DataType::from(tmp));
         true
     }
 
@@ -145,7 +145,7 @@ impl Terminal {
         }
 
         if pos == "0" {
-            return if core.data.len("COMP_WORDS") == 0 {
+            return if core.db.len("COMP_WORDS") == 0 {
                 self.escape_at_completion = false;
                 completion::compgen_h(core, args).to_vec().into_iter().filter(|h| h.len() > 0).collect()
             }else{
@@ -157,11 +157,11 @@ impl Terminal {
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) {
-        let pos = core.data.get_param("COMP_CWORD").to_string();
-        let target = core.data.get_array("COMP_WORDS", &pos);
+        let pos = core.db.get_param("COMP_CWORD").to_string();
+        let target = core.db.get_array("COMP_WORDS", &pos);
 
-        if core.data.len("COMPREPLY") == 1 {
-            let output = core.data.get_array("COMPREPLY", "0");
+        if core.db.len("COMPREPLY") == 1 {
+            let output = core.db.get_array("COMPREPLY", "0");
             let tail = match is_dir(&output, core) {
                 true  => "/",
                 false => " ",
@@ -170,7 +170,7 @@ impl Terminal {
             return;
         }
 
-        let common = common_string(&core.data.get_array_all("COMPREPLY"));
+        let common = common_string(&core.db.get_array_all("COMPREPLY"));
         if common.len() != target.len() {
             self.replace_input(&common);
             return;
@@ -297,7 +297,7 @@ impl Terminal {
 
         if last.starts_with("~/") {
             tilde_prefix = "~/".to_string();
-            tilde_path = core.data.get_param("HOME").to_string() + "/";
+            tilde_path = core.db.get_param("HOME").to_string() + "/";
             last_tilde_expanded = last.replacen(&tilde_prefix, &tilde_path, 1);
         }else{
             tilde_prefix = String::new();
@@ -321,8 +321,8 @@ impl Terminal {
 
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
-        //core.data.set_array("COMP_WORDS", &words_all);
-        core.data.set("COMP_WORDS", DataType::from(words_all));
+        //core.db.set_array("COMP_WORDS", &words_all);
+        core.db.set("COMP_WORDS", DataType::from(words_all));
 
         let mut num = words_left.len();
         match left_string.chars().last() {
@@ -335,7 +335,7 @@ impl Terminal {
             _ => {},
         }
 
-        core.data.set_param("COMP_CWORD", &num.to_string());
+        core.db.set_param("COMP_CWORD", &num.to_string());
     }
 }
 

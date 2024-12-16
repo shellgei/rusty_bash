@@ -21,7 +21,7 @@ impl Command for CaseCommand {
         let mut next = false;
         let word = self.word.clone().unwrap();
 
-        if core.data.flags.contains('x') {
+        if core.db.flags.contains('x') {
             let ps4 = core.get_ps4();
             eprintln!("{} case {} in", ps4, word.text);
         }

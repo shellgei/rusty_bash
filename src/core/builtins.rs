@@ -52,7 +52,7 @@ impl ShellCore {
 
 pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 {
-        for (k, v) in &core.data.aliases {
+        for (k, v) in &core.db.aliases {
             println!("alias {}='{}'", k, v);
         }
         return 0;
@@ -60,7 +60,7 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() == 2 && args[1].find("=") != None {
         let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
-        core.data.aliases.insert(kv[0].clone(), kv[1..].join("="));
+        core.db.aliases.insert(kv[0].clone(), kv[1..].join("="));
     }
 
     0
@@ -76,7 +76,7 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     core.eval_level -= 1;
-    match core.data.get_param("?").parse::<i32>() {
+    match core.db.get_param("?").parse::<i32>() {
         Ok(es) => es,
         _      => 1,
     }
@@ -85,7 +85,7 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
-        core.data.set_layer_param("?", &args[1], 0);
+        core.db.set_layer_param("?", &args[1], 0);
     }
     exit::normal(core)
 }

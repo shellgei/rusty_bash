@@ -10,21 +10,21 @@ use crate::elements::substitution::Substitution;
 use crate::utils::arg;
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
-    match core.data.position_parameters.pop() {
+    match core.db.position_parameters.pop() {
         None => exit::internal("empty param stack"),
         _    => {},
     }
-    core.data.position_parameters.push(args.to_vec());
-    core.data.set_param("#", &(args.len()-1).to_string());
+    core.db.position_parameters.push(args.to_vec());
+    core.db.set_param("#", &(args.len()-1).to_string());
     0
 }
 
 fn print_data(name: &str, core: &mut ShellCore) {
-    core.data.print(name);
+    core.db.print(name);
 }
 
 pub fn print_all(core: &mut ShellCore) -> i32 {
-    core.data.get_keys()
+    core.db.get_keys()
         .into_iter()
         .for_each(|k| print_data(&k, core));
     0
@@ -34,7 +34,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
     let mut feeder = Feeder::new(arg);
     if feeder.scanner_name(core) == feeder.len() { // name only
         let name = feeder.consume(feeder.len());
-        return core.data.set_layer_param(&name, "", layer);
+        return core.db.set_layer_param(&name, "", layer);
     }
 
     let mut sub = match Substitution::parse(&mut feeder, core) {
@@ -54,8 +54,8 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let layer = if core.data.get_layer_num() > 2 {
-        core.data.get_layer_num() - 2 //The last element of data.parameters is for local itself.
+    let layer = if core.db.get_layer_num() > 2 {
+        core.db.get_layer_num() - 2 //The last element of data.parameters is for local itself.
     }else{
         eprintln!("sush: local: can only be used in a function");
         return 1;
@@ -78,7 +78,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
-        if ! core.data.set(&name, DataType::from(HashMap::new())) {
+        if ! core.db.set(&name, DataType::from(HashMap::new())) {
             return 1; //TODO: error message
         }
     }

@@ -62,7 +62,7 @@ pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut Shel
         _   => return Err("Not supprted operation for float numbers".to_string()),
     };
 
-    match core.data.set_param(&name, &new_value.to_string()) {
+    match core.db.set_param(&name, &new_value.to_string()) {
         true  => Ok(ArithElem::Float(new_value)),
         false => Err(error::readonly(&name)),
     }

@@ -74,7 +74,7 @@ impl DoubleQuoted {
         for sw in &mut self.subwords {
             if sw.is_array() {
                 let array = match sw.get_text() {
-                    "$@" | "${@}" => core.data.get_position_params(),
+                    "$@" | "${@}" => core.db.get_position_params(),
                     _ => {
                         sw.substitute(core);
                         sw.get_array()

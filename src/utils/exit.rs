@@ -8,7 +8,7 @@ use std::process;
 pub fn normal(core: &mut ShellCore) -> ! {
     core.write_history_to_file();
 
-    let es_str = core.data.get_param("?");
+    let es_str = core.db.get_param("?");
     let exit_status = match es_str.parse::<i32>() {
         Ok(n)  => n%256,
         Err(_) => {
@@ -45,8 +45,8 @@ pub fn internal(s: &str) -> ! {
 }
 
 pub fn check_e_option(core: &mut ShellCore) {
-    if core.data.get_param("?") != "0" 
-    && core.data.flags.contains("e") 
+    if core.db.get_param("?") != "0" 
+    && core.db.flags.contains("e") 
     && ! core.suspend_e_option {
         normal(core);
     }

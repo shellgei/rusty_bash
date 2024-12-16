@@ -131,15 +131,15 @@ impl Feeder {
             Ok(()) => true,
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
-                core.data.set_param("?", "2");
+                core.db.set_param("?", "2");
 
-                match core.data.flags.contains('S') { //S: on source command
+                match core.db.flags.contains('S') { //S: on source command
                     true  => return false,
                     false => exit::normal(core),
                 }
             },
             Err(InputError::Interrupt) => {
-                core.data.set_param("?", "130");
+                core.db.set_param("?", "130");
                 false
             },
         }
@@ -161,7 +161,7 @@ impl Feeder {
     }
 
     pub fn add_line(&mut self, line: String, core: &mut ShellCore) {
-        if core.data.flags.contains('v') {
+        if core.db.flags.contains('v') {
             eprint!("{}", &line);
         }
 

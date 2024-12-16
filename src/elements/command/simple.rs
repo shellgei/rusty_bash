@@ -32,7 +32,7 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        core.data.set_param("LINENO", &self.lineno.to_string());
+        core.db.set_param("LINENO", &self.lineno.to_string());
         if Self::break_continue_or_return(core) {
             return None;
         }
@@ -51,11 +51,11 @@ impl Command for SimpleCommand {
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
-        core.data.push_local();
+        core.db.push_local();
         self.set_local_params(core);
 
-        if core.data.functions.contains_key(&self.args[0]) {
-            let mut f = core.data.functions[&self.args[0]].clone();
+        if core.db.functions.contains_key(&self.args[0]) {
+            let mut f = core.db.functions[&self.args[0]].clone();
             f.run_as_command(&mut self.args, core);
         } else if core.builtins.contains_key(&self.args[0]) {
             let mut special_args = self.substitutions_as_args.iter()
@@ -65,7 +65,7 @@ impl Command for SimpleCommand {
             self.exec_external_command(core);
         }
 
-        core.data.pop_local();
+        core.db.pop_local();
 
         if fork {
             exit::normal(core);
@@ -101,7 +101,7 @@ impl SimpleCommand {
     }
 
     fn run_command_not_found(&mut self, core: &mut ShellCore) -> ! {
-        if core.data.functions.contains_key("command_not_found_handle") {
+        if core.db.functions.contains_key("command_not_found_handle") {
             let s = "command_not_found_handle ".to_owned() + &self.args[0].clone();
             let mut f = Feeder::new(&s);
             match Script::parse(&mut f, core, false) {
@@ -117,13 +117,13 @@ impl SimpleCommand {
             return None;
         }
 
-        core.data.set_param("_", &self.args.last().unwrap());
+        core.db.set_param("_", &self.args.last().unwrap());
         self.option_x_output(core);
 
         if self.force_fork 
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
-           && ! core.data.functions.contains_key(&self.args[0]) ) {
+           && ! core.db.functions.contains_key(&self.args[0]) ) {
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core);
@@ -133,14 +133,14 @@ impl SimpleCommand {
 
     fn check_sigint(core: &mut ShellCore) -> bool {
         if core.sigint.load(Relaxed) {
-            core.data.set_param("?", "130");
+            core.db.set_param("?", "130");
             return true;
         }
         false
     }
 
     fn exec_set_param(&mut self, core: &mut ShellCore) -> Option<Pid> {
-        core.data.set_param("_", "");
+        core.db.set_param("_", "");
         self.option_x_output(core);
         self.substitutions.iter_mut()
             .for_each(|s| {s.eval(core, false, false);});
@@ -181,7 +181,7 @@ impl SimpleCommand {
             },
             None => {
                 if ! core.sigint.load(Relaxed) {
-                    core.data.set_param("?", "1");
+                    core.db.set_param("?", "1");
                 }
                 false
             },
@@ -189,7 +189,7 @@ impl SimpleCommand {
     }
 
     fn option_x_output(&self, core: &mut ShellCore) {
-        if ! core.data.flags.contains('x') {
+        if ! core.db.flags.contains('x') {
             return;
         }
 

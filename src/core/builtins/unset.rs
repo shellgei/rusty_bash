@@ -4,17 +4,17 @@
 use crate::ShellCore;
 
 fn unset_all(core: &mut ShellCore, name: &str) -> i32 {
-    core.data.unset(name);
+    core.db.unset(name);
     0
 }
 
 fn unset_var(core: &mut ShellCore, name: &str) -> i32 {
-    core.data.unset_var(name);
+    core.db.unset_var(name);
     0
 }
 
 fn unset_function(core: &mut ShellCore, name: &str) -> i32 {
-    core.data.unset_function(name);
+    core.db.unset_function(name);
     0
 }
 

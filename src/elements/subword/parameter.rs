@@ -14,7 +14,7 @@ impl Subword for Parameter {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> bool {
-        let value = core.data.get_param(&self.text[1..]);
+        let value = core.db.get_param(&self.text[1..]);
         self.text = value.to_string();
         true
     }

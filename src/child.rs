@@ -32,21 +32,21 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         let ws = wait_process(core, pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         ans.push(ws);
 
-        pipestatus.push(core.data.get_param("?"));
+        pipestatus.push(core.db.get_param("?"));
     }
 
     if time {
         show_time(core);
     }
     set_foreground(core);
-    //core.data.set_layer_array("PIPESTATUS", &pipestatus, 0);
-    core.data.set_layer("PIPESTATUS", DataType::from(pipestatus.clone()), 0);
+    //core.db.set_layer_array("PIPESTATUS", &pipestatus, 0);
+    core.db.set_layer("PIPESTATUS", DataType::from(pipestatus.clone()), 0);
 
     if core.options.query("pipefail") {
         pipestatus.retain(|e| e != "0");
 
         if pipestatus.len() != 0 {
-            core.data.set_param("?", &pipestatus.last().unwrap());
+            core.db.set_param("?", &pipestatus.last().unwrap());
         }
     }
 
@@ -88,7 +88,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     if exit_status == 130 {
         core.sigint.store(true, Relaxed);
     }
-    core.data.set_layer_param("?", &exit_status.to_string(), 0); //追加
+    core.db.set_layer_param("?", &exit_status.to_string(), 0); //追加
     ws.expect("SUSH INTERNAL ERROR: no wait status")
 }
 

@@ -49,7 +49,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
 
     for i in 0..RESOLVE_LIMIT {
         match utils::is_name(&name, core) {
-            true  => name = core.data.get_param(&name),
+            true  => name = core.db.get_param(&name),
             false => break,
         }
 
@@ -101,7 +101,7 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
 
     match str_to_num(&name, core) {
         Ok(ArithElem::Integer(n))        => {
-            if ! core.data.set_param(name, &(n + inc).to_string()) {
+            if ! core.db.set_param(name, &(n + inc).to_string()) {
                 return Err(error::readonly(&name));
             }
             match pre {
@@ -110,7 +110,7 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
             }
         },
         Ok(ArithElem::Float(n))        => {
-            if ! core.data.set_param(name, &(n + inc as f64).to_string()) {
+            if ! core.db.set_param(name, &(n + inc as f64).to_string()) {
                 return Err(error::readonly(&name));
             }
             match pre {
@@ -173,7 +173,7 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
 
     match op {
         "=" => {
-            if ! core.data.set_param(&name, &right_str) {
+            if ! core.db.set_param(&name, &right_str) {
                 return Err(error::readonly(&name));
             }
             return Ok(right_value.clone());

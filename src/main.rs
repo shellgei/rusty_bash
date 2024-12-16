@@ -30,12 +30,12 @@ There is no warranty, to the extent permitted by law.", V, P);
 }
 
 fn read_rc_file(core: &mut ShellCore) {
-    if ! core.data.flags.contains("i") {
+    if ! core.db.flags.contains("i") {
         return;
     }
 
-    let dir = match core.data.get_param("CARGO_MANIFEST_DIR").as_str() {
-        "" => core.data.get_param("HOME"),
+    let dir = match core.db.get_param("CARGO_MANIFEST_DIR").as_str() {
+        "" => core.db.get_param("HOME"),
         s  => s.to_string(),
     };
 
@@ -108,11 +108,11 @@ fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new("");
 
     if core.script_name != "-" {
-        core.data.flags.retain(|f| f != 'i');
+        core.db.flags.retain(|f| f != 'i');
         feeder.set_file(&core.script_name);
     }
 
-    if core.data.flags.contains('i') {
+    if core.db.flags.contains('i') {
         show_message();
     }
 
@@ -160,10 +160,10 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     option::set_options(&mut core, &mut args[1..].to_vec());
     parameter::set_positions(&mut core, &mut parameters);
     signal::run_signal_check(&mut core);
-    core.data.flags.retain(|f| f != 'i');
+    core.db.flags.retain(|f| f != 'i');
 
-    core.data.flags += "c";
-    if core.data.flags.contains('v') {
+    core.db.flags += "c";
+    if core.db.flags.contains('v') {
         eprintln!("{}", &c_parts[1]);
     }
 

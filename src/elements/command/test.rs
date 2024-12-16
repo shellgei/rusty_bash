@@ -18,15 +18,15 @@ pub struct TestCommand {
 impl Command for TestCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         match self.cond.clone().unwrap().eval(core) {
-            Ok(CondElem::Ans(true))  => core.data.set_param("?", "0"),
-            Ok(CondElem::Ans(false)) => core.data.set_param("?", "1"),
+            Ok(CondElem::Ans(true))  => core.db.set_param("?", "0"),
+            Ok(CondElem::Ans(false)) => core.db.set_param("?", "1"),
             Err(err_msg)  => {
                 error::print(&err_msg, core);
-                core.data.set_param("?", "2")
+                core.db.set_param("?", "2")
             },
             _  => {
                 error::print("unknown error", core);
-                core.data.set_param("?", "2")
+                core.db.set_param("?", "2")
             },
         } ;
     }

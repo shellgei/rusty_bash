@@ -42,7 +42,7 @@ impl Default for MeasuredTime {
 
 #[derive(Default)]
 pub struct ShellCore {
-    pub data: DataBase,
+    pub db: DataBase,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
@@ -74,7 +74,7 @@ pub struct ShellCore {
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore{
-            data: DataBase::new(),
+            db: DataBase::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             read_stdin: true,
             options: Options::new_as_basic_opts(),
@@ -89,21 +89,21 @@ impl ShellCore {
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
 
-        core.data.set_param("PS4", "+ ");
+        core.db.set_param("PS4", "+ ");
 
         if unistd::isatty(0) == Ok(true) {
-            core.data.flags += "i";
+            core.db.flags += "i";
             core.read_stdin = false;
-            core.data.set_param("PS1", "🍣 ");
-            core.data.set_param("PS2", "> ");
+            core.db.set_param("PS1", "🍣 ");
+            core.db.set_param("PS2", "> ");
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
-        let home = core.data.get_param("HOME").to_string();
-        core.data.set_param("HISTFILE", &(home + "/.sush_history"));
-        core.data.set_param("HISTFILESIZE", "2000");
+        let home = core.db.get_param("HOME").to_string();
+        core.db.set_param("HISTFILE", &(home + "/.sush_history"));
+        core.db.set_param("HISTFILESIZE", "2000");
 
         core
     }
@@ -120,23 +120,23 @@ impl ShellCore {
         let versinfo = vec![vparts, vec![symbol, profile, &machtype]].concat()
                        .iter().map(|e| e.to_string()).collect();
 
-        self.data.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));
-        self.data.set_param("MACHTYPE", &machtype);
-        self.data.set_param("HOSTTYPE", &t_arch);
-        self.data.set_param("OSTYPE", &t_os);
-        self.data.set("BASH_VERSINFO", DataType::from(&versinfo));
-        self.data.set_special_param("SRANDOM", random::get_srandom, "");
-        self.data.set_special_param("RANDOM", random::get_random, "");
-        self.data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");
-        self.data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, "");
+        self.db.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));
+        self.db.set_param("MACHTYPE", &machtype);
+        self.db.set_param("HOSTTYPE", &t_arch);
+        self.db.set_param("OSTYPE", &t_os);
+        self.db.set("BASH_VERSINFO", DataType::from(&versinfo));
+        self.db.set_special_param("SRANDOM", random::get_srandom, "");
+        self.db.set_special_param("RANDOM", random::get_random, "");
+        self.db.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");
+        self.db.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, "");
         //let sec = clock::set_seconds();
-        self.data.set_special_param("SECONDS", clock::get_seconds, &clock::set_seconds());
+        self.db.set_special_param("SECONDS", clock::get_seconds, &clock::set_seconds());
     }
 
     pub fn flip_exit_status(&mut self) {
-        match self.data.get_param("?").as_ref() {
-            "0" => self.data.set_param("?", "1"),
-            _   => self.data.set_param("?", "0"),
+        match self.db.get_param("?").as_ref() {
+            "0" => self.db.set_param("?", "1"),
+            _   => self.db.set_param("?", "0"),
         };
     }
 
@@ -149,7 +149,7 @@ impl ShellCore {
             let func = self.builtins[&args[0]];
             args.append(special_args);
             let status = func(self, args);
-            self.data.set_layer_param("?", &status.to_string(), 0);
+            self.db.set_layer_param("?", &status.to_string(), 0);
             return true;
         }
 
@@ -158,10 +158,10 @@ impl ShellCore {
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.data.set_layer_param("BASHPID", &pid.to_string(), 0);
-        match self.data.get_param("BASH_SUBSHELL").parse::<usize>() {
-            Ok(num) => self.data.set_layer_param("BASH_SUBSHELL", &(num+1).to_string(), 0),
-            Err(_) =>  self.data.set_layer_param("BASH_SUBSHELL", "0", 0),
+        self.db.set_layer_param("BASHPID", &pid.to_string(), 0);
+        match self.db.get_param("BASH_SUBSHELL").parse::<usize>() {
+            Ok(num) => self.db.set_layer_param("BASH_SUBSHELL", &(num+1).to_string(), 0),
+            Err(_) =>  self.db.set_layer_param("BASH_SUBSHELL", "0", 0),
         };
     }
 
@@ -203,7 +203,7 @@ impl ShellCore {
     }
 
     pub fn get_ps4(&mut self) -> String {
-        let ps4 = self.data.get_param("PS4").trim_end().to_string();
+        let ps4 = self.db.get_param("PS4").trim_end().to_string();
         let mut multi_ps4 = ps4.to_string();
         for _ in 0..(self.source_level + self.eval_level) {
             multi_ps4 += &ps4;

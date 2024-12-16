@@ -78,7 +78,7 @@ fn oct_to_hex_in_str(from: &str) -> String {
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
-        let raw_prompt = core.data.get_param(ps);
+        let raw_prompt = core.db.get_param(ps);
         let ansi_on_prompt = oct_to_hex_in_str(&raw_prompt);
 
         let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);

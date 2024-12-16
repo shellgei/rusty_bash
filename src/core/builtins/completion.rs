@@ -72,7 +72,7 @@ fn replace_args(args: &mut Vec<String>) -> bool {
 fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
 
     let mut comlist = HashSet::new();
-    for path in core.data.get_param("PATH").to_string().split(":") {
+    for path in core.db.get_param("PATH").to_string().split(":") {
         if utils::is_wsl() && path.starts_with("/mnt") {
             continue;
         }
@@ -149,11 +149,11 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     }
     commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
 
-    let mut aliases: Vec<String> = core.data.aliases.clone().into_keys().collect();
+    let mut aliases: Vec<String> = core.db.aliases.clone().into_keys().collect();
     commands.append(&mut aliases);
     let mut builtins: Vec<String> = core.builtins.clone().into_keys().collect();
     commands.append(&mut builtins);
-    let mut functions: Vec<String> = core.data.functions.clone().into_keys().collect();
+    let mut functions: Vec<String> = core.db.functions.clone().into_keys().collect();
     commands.append(&mut functions);
 
     let head = get_head(args, 2);
@@ -179,7 +179,7 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
 
     let mut ans = core.history.to_vec();
 
-    if let Ok(hist_file) = File::open(core.data.get_param("HISTFILE")){
+    if let Ok(hist_file) = File::open(core.db.get_param("HISTFILE")){
         for h in RevLines::new(BufReader::new(hist_file)) {
             match h {
                 Ok(s) => ans.push(s),

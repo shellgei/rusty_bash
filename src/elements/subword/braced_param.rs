@@ -61,7 +61,7 @@ impl Subword for BracedParam {
             return self.subscript_operation(core);
         }
 
-        let value = core.data.get_param(&self.name);
+        let value = core.db.get_param(&self.name);
         self.text = match self.num {
             true  => value.chars().count().to_string(),
             false => value.to_string(),
@@ -103,24 +103,24 @@ impl BracedParam {
             None => return false,
         };
 
-        if core.data.is_assoc(&self.name) {
+        if core.db.is_assoc(&self.name) {
             return self.subscript_operation_assoc(core, &index);
         }
 
         if index.as_str() == "@" {
-            self.array = core.data.get_array_all(&self.name);
+            self.array = core.db.get_array_all(&self.name);
         }
 
         self.text = match (self.num, index.as_str()) {
-            (true, "@") => core.data.len(&self.name).to_string(),
-            (true, _)   => core.data.get_array(&self.name, &index).chars().count().to_string(),
-            (false, _)  => core.data.get_array(&self.name, &index),
+            (true, "@") => core.db.len(&self.name).to_string(),
+            (true, _)   => core.db.get_array(&self.name, &index).chars().count().to_string(),
+            (false, _)  => core.db.get_array(&self.name, &index),
         };
         self.optional_operation(core)
     }
 
     fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
-        self.text = core.data.get_array(&self.name, index);
+        self.text = core.db.get_array(&self.name, index);
         true
     }
 
