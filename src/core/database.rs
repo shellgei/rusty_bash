@@ -62,7 +62,7 @@ impl DataBase {
         }
 
         match self.get_value(name) {
-            Some(DataType::Special(v)) => return "".to_string(),//v.data.to_string(),
+            //Some(DataType::Special(_)) => return "".to_string(),//v.data.to_string(),
             Some(DataType::Single(v)) => return v.data.to_string(),
             Some(DataType::Array(a)) => {
                 match a.len() {

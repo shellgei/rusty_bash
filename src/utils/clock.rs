@@ -29,22 +29,17 @@ pub fn get_seconds(v: &mut Vec<String>) -> String {
     let elapsed = monotonic_time() - offset;
     let ans = elapsed.whole_seconds().to_string();
     v[0] = format!("{}.{}", sec, nano);
-    //return DataType::Single(SingleData::from(elapsed.whole_seconds().to_string()));
-    return ans;
+    ans
 }
 
-pub fn get_epochseconds(v: &mut Vec<String>) -> String {
+pub fn get_epochseconds(_: &mut Vec<String>) -> String {
     let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
     let epoch_seconds = real.tv_sec().to_string();
-   // DataType::Single(SingleData::from(epoch_seconds.to_string()))
-    //s.data = epoch_seconds.clone();
-    return epoch_seconds;
+    epoch_seconds
 }
 
-pub fn get_epochrealtime(v: &mut Vec<String>) -> String {
+pub fn get_epochrealtime(_: &mut Vec<String>) -> String {
     let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
     let epoch_realtime = format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string();
-    //DataType::Single(SingleData::from(epoch_realtime))
-    //s.data = epoch_realtime.clone();
     epoch_realtime
 }

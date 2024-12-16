@@ -21,16 +21,15 @@ pub fn get_srandom(v: &mut Vec<String>) -> String {
     }
     let rand = gen_chacha20_u32(v);
     v[0] = rand.to_string();
-    //v.value = DataType::Single(SingleData::from(rand.to_string()));
-    //v.value.clone()
     rand.to_string()
 }
 
 pub fn get_random(v: &mut Vec<String>) -> String {
+    if v.len() == 0 {
+        v.push("0".to_string());
+    }
     let rand = gen_chacha20_u32(v) & 0x7FFF;
     v.clear();
-    v.push(rand.to_string());
-    //v.value = DataType::Single(SingleData::from(rand.to_string()));
-    //v.value.clone()
+    v[0] = rand.to_string();
     rand.to_string()
 }
