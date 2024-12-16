@@ -19,7 +19,7 @@ use nix::{fcntl, unistd};
 use nix::sys::signal::Signal;
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::unistd::Pid;
-use crate::utils::{error, exit, random, clock};
+use crate::utils::{error, exit};
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -125,12 +125,6 @@ impl ShellCore {
         self.db.set_param("HOSTTYPE", &t_arch);
         self.db.set_param("OSTYPE", &t_os);
         self.db.set("BASH_VERSINFO", DataType::from(&versinfo));
-        self.db.set_special_param("SRANDOM", random::get_srandom, "");
-        self.db.set_special_param("RANDOM", random::get_random, "");
-        self.db.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");
-        self.db.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, "");
-        //let sec = clock::set_seconds();
-        self.db.set_special_param("SECONDS", clock::get_seconds, &clock::set_seconds());
     }
 
     pub fn flip_exit_status(&mut self) {

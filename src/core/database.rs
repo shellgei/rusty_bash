@@ -9,6 +9,7 @@ use crate::elements::command::function_def::FunctionDefinition;
 use self::data::{DataType, Data};
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
+use crate::utils::{random, clock};
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -34,6 +35,12 @@ impl DataBase {
         data.set_param("BASH_SUBSHELL", "0");
         data.set_param("?", "0");
         data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
+
+        data.set_special_param("SRANDOM", random::get_srandom, "");
+        data.set_special_param("RANDOM", random::get_random, "");
+        data.set_special_param("EPOCHSECONDS", clock::get_epochseconds, "");
+        data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime, "");
+        data.set_special_param("SECONDS", clock::get_seconds, &clock::set_seconds());
 
         data
     }
