@@ -10,6 +10,8 @@ use std::{env, process};
 use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock};
 use self::data2::Data2;
+use self::data2::assoc::AssocData2;
+use crate::data::assoc::AssocData;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -25,6 +27,7 @@ pub struct DataBase {
 impl DataBase {
     pub fn new() -> DataBase {
         let mut data = DataBase {
+            params: vec![HashMap::new()],
             parameters: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             flags: "B".to_string(),
@@ -85,6 +88,17 @@ impl DataBase {
     }
 
     pub fn get_array(&mut self, name: &str, pos: &str) -> String {
+        match self.get_value2(name).as_mut() {
+            Some(d) => {
+                if d.is_assoc() {
+                    if let Some(ans) = d.get_as_assoc(pos) {
+                        return ans;
+                    }
+                }
+            },
+            None => {},
+        }
+
         match self.get_value(name) {
             Some(DataType::Array(a)) => {
                 if pos == "@" || pos == "*" {
@@ -122,6 +136,16 @@ impl DataBase {
         None
     }
 
+    fn get_value2(&mut self, name: &str) -> Option<Box<dyn Data2>> {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(v) = self.params[layer].get_mut(name) {
+                return Some(v.boxed_clone());
+            }
+        }
+        None
+    }
+
     pub fn has_value(&mut self, name: &str) -> bool {
         let num = self.parameters.len();
         for layer in (0..num).rev()  {
@@ -154,10 +178,16 @@ impl DataBase {
     }
 
     pub fn is_assoc(&mut self, key: &str) -> bool {
+        match self.get_value2(key) {
+            Some(d) => d.is_assoc(),
+            None => false,
+        }
+        
+        /*
         match self.get_value(key) {
             Some(DataType::AssocArray(_)) => true,
             _ => false,
-        }
+        }*/
     }
 
     pub fn get_position_params(&self) -> Vec<String> {
@@ -219,13 +249,23 @@ impl DataBase {
     }
 
     pub fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
+        match v.clone() {
+            DataType::AssocArray(AssocData{ data: a }) 
+                => {
+                    self.params[layer].insert( name.to_string(), Box::new(AssocData2::from(a)));
+                    return true;
+                },
+            _ => {},
+        }
+
         self.parameters[layer].insert( name.to_string(), Data::from(v));
         true
     }
 
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
-        self.parameters[layer]
-            .insert(name.to_string(), Data::from(HashMap::new()));        
+        self.params[layer].insert(name.to_string(), Box::new(AssocData2::default()));
+
+//        self.parameters[layer].insert(name.to_string(), Data::from(HashMap::new()));        
         true
     }
 
@@ -237,10 +277,16 @@ impl DataBase {
     }
 
     pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> bool {
+        match self.params[layer].get_mut(name) {
+            Some(v) => v.set_as_assoc(key, val), 
+            _ => false,
+        }
+
+        /*
         match self.parameters[layer].get_mut(name) {
             Some(v) => v.set_assoc_elem(key, val), 
             _ => false,
-        }
+        }*/
     }
 
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {

@@ -6,12 +6,12 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
 pub struct AssocData2 {
-    data: HashMap<String, String>,
+    body: HashMap<String, String>,
 }
 
 impl From<HashMap<String, String>> for AssocData2 {
     fn from(hm: HashMap<String, String>) -> Self {
-        Self { data: hm }
+        Self { body: hm }
     }
 }
 
@@ -20,7 +20,7 @@ impl Data2 for AssocData2 {
         Box::new(self.clone())
     }
 
-    fn print_data(&self) -> String {
+    fn print_body(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
@@ -33,23 +33,41 @@ impl Data2 for AssocData2 {
         formatted += ")";
         formatted
     }
+
+    fn set_as_assoc(&mut self, key: &str, value: &str) -> bool {
+        self.body.insert(key.to_string(), value.to_string());
+        true
+    }
+
+    fn get_as_assoc(&mut self, key: &str) -> Option<String> {
+        if key == "@" || key == "*" {
+            return Some(self.values().join(" "));
+        }
+
+        match self.body.get(key) {
+            Some(s) => Some(s.to_string()),
+            None => None,
+        }
+    }
+
+    fn is_assoc(&self) -> bool {true}
 }
 
 impl AssocData2 {
     pub fn get(&self, key: &str) -> Option<String> {
-        self.data.get(key).cloned()
+        self.body.get(key).cloned()
     }
 
     pub fn keys(&self) -> Vec<String> {
-        self.data.iter().map(|e| e.0.clone()).collect()
+        self.body.iter().map(|e| e.0.clone()).collect()
     }
 
     pub fn values(&self) -> Vec<String> {
-        self.data.iter().map(|e| e.1.clone()).collect()
+        self.body.iter().map(|e| e.1.clone()).collect()
     }
 
     pub fn set(&mut self, key: &String, val: &String) -> bool {
-        self.data.insert(key.to_string(), val.to_string());
+        self.body.insert(key.to_string(), val.to_string());
         true
     }
 

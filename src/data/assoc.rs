@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
 pub struct AssocData {
-    data: HashMap<String, String>,
+    pub data: HashMap<String, String>,
 }
 
 impl From<HashMap<String, String>> for AssocData {
