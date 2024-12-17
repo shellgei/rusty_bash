@@ -1,12 +1,11 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-pub mod array;
-//pub mod assoc;
+//pub mod array;
 pub mod single;
 pub mod special;
 
-use self::array::ArrayData;
+//use self::array::ArrayData;
 use self::single::SingleData;
 use self::special::SpecialData;
 
@@ -17,7 +16,7 @@ pub enum DataType {
     Special(SpecialData),
     Single(SingleData),
     //AssocArray(AssocData),
-    Array(ArrayData),
+//    Array(ArrayData),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -69,6 +68,7 @@ impl From<String> for DataType {
     }
 }
 
+/*
 impl From<Vec<String>> for DataType {
     fn from(vals: Vec<String>) -> Self {
         DataType::Array(ArrayData::from(vals))
@@ -80,13 +80,14 @@ impl From<&Vec<String>> for DataType {
         DataType::Array(ArrayData::from(vals.clone()))
     }
 }
+*/
 
 /*
 impl From<HashMap<String, String>> for DataType {
     fn from(hm: HashMap<String, String>) -> Self {
         DataType::AssocArray(AssocData::from(hm))
     }
-}*/
+}
 
 
 impl From<Vec<String>> for Data {
@@ -97,6 +98,7 @@ impl From<Vec<String>> for Data {
         }
     }
 }
+*/
 
 impl Data {
     pub fn get_body(&mut self) -> DataType {
@@ -106,10 +108,11 @@ impl Data {
         }
     }
 
+    /*
     pub fn set_array_elem(&mut self, pos: usize, val: &String) -> bool {
         match &mut self.body {
             DataType::Array(a) => a.set(pos, val), 
             _ => return false,
         }
-    }
+    }*/
 }

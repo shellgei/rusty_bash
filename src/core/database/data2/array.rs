@@ -2,7 +2,6 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::Data2;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData2 {

@@ -9,7 +9,7 @@ use std::env;
 use super::array::Array;
 use super::subscript::Subscript;
 use super::word::Word;
-use crate::data::array::ArrayData;
+//use crate::data::array::ArrayData;
 
 #[derive(Debug, Clone, Default)]
 pub enum ParsedDataType {
@@ -49,7 +49,13 @@ impl Substitution {
         self.evaluated_value = match self.value.clone() {
             ParsedDataType::None      => DataType::Single(SingleData::default()),
             ParsedDataType::Single(v) => self.eval_as_value(&v, core),
-            ParsedDataType::Array(a)  => self.eval_as_array(&mut a.clone(), core),
+            ParsedDataType::Array(a)  => {
+                //self.eval_as_array(&mut a.clone(), core);
+                return match env {
+                    false => self.set_to_shell2(core, local, a.clone()),
+                    true  => self.set_to_env(),
+                }
+            },
         };
 
         match env {
@@ -91,10 +97,13 @@ impl Substitution {
             (DataType::Single(v), Some(n), false) 
                 => core.db.set_array_elem(&self.name, &v.data, n),
             (_, Some(_), _) => false,
+            /*
             (data, None, true) 
                 => core.db.set_local(&self.name, data.clone()),
             (data, None, false) 
                 => core.db.set(&self.name, data.clone()),
+            */
+            _ => false,
         };
 
         match result {
@@ -104,6 +113,7 @@ impl Substitution {
     }
  
     fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
+        /*
         let result = match (&self.evaluated_value, local) {
             (data, true) => core.db.set_local(&self.name, data.clone()),
             (data, false) => core.db.set(&self.name, data.clone()),
@@ -112,10 +122,29 @@ impl Substitution {
         match result {
             true  => true,
             false => readonly_error(&self.name, core),
-        }
+        }*/
+        false
     }
 
     fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
+        match &self.evaluated_value {
+            DataType::None => {
+                core.db.set_param("?", "1");
+                return false;
+            },
+            _ => {},
+        }
+
+        if core.db.is_assoc(&self.name) {
+            self.set_assoc(core, local)
+        }else if core.db.is_array(&self.name) {
+            self.set_array(core, local)
+        }else {
+            self.set_param(core, local)
+        }
+    }
+
+    fn set_to_shell2(&mut self, core: &mut ShellCore, local: bool, a: Array) -> bool {
         match &self.evaluated_value {
             DataType::None => {
                 core.db.set_param("?", "1");
@@ -171,12 +200,14 @@ impl Substitution {
             false => vec![],
         };
 
+        DataType::None
+        /*
         match a.eval(core) {
             Some(values) => {
                 DataType::Array(ArrayData::from([prev, values].concat()))
             },
             None         => DataType::None,
-        }
+        }*/
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {

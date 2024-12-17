@@ -40,7 +40,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
     }
     set_foreground(core);
     //core.db.set_layer_array("PIPESTATUS", &pipestatus, 0);
-    core.db.set_layer("PIPESTATUS", DataType::from(pipestatus.clone()), 0);
+    core.db.set_layer_array("PIPESTATUS", pipestatus.clone(), 0);
 
     if core.options.query("pipefail") {
         pipestatus.retain(|e| e != "0");
