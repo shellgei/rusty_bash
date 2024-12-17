@@ -2,13 +2,12 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 pub mod array;
-pub mod assoc;
+//pub mod assoc;
 pub mod single;
 pub mod special;
 
 use std::collections::HashMap;
 use self::array::ArrayData;
-use self::assoc::AssocData;
 use self::single::SingleData;
 use self::special::SpecialData;
 
@@ -18,7 +17,7 @@ pub enum DataType {
     None,
     Special(SpecialData),
     Single(SingleData),
-    AssocArray(AssocData),
+    //AssocArray(AssocData),
     Array(ArrayData),
 }
 
@@ -46,6 +45,7 @@ impl From<&str> for Data {
     }
 }
 
+/*
 impl From<HashMap<String, String>> for Data {
     fn from(hm: HashMap<String, String>) -> Self {
         Data {
@@ -53,7 +53,7 @@ impl From<HashMap<String, String>> for Data {
             ..Default::default()
         }
     }
-}
+}*/
 
 impl From<fn(&mut Vec<String>)-> String> for Data {
     fn from(f: fn(&mut Vec<String>)-> String) -> Data {
@@ -82,11 +82,12 @@ impl From<&Vec<String>> for DataType {
     }
 }
 
+/*
 impl From<HashMap<String, String>> for DataType {
     fn from(hm: HashMap<String, String>) -> Self {
         DataType::AssocArray(AssocData::from(hm))
     }
-}
+}*/
 
 
 impl From<Vec<String>> for Data {

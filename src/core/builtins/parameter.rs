@@ -78,7 +78,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
-        if ! core.db.set(&name, DataType::from(HashMap::new())) {
+        if ! core.db.set_assoc(&name) {
             return 1; //TODO: error message
         }
     }

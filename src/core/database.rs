@@ -11,7 +11,6 @@ use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock};
 use self::data2::Data2;
 use self::data2::assoc::AssocData2;
-use crate::data::assoc::AssocData;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -107,13 +106,14 @@ impl DataBase {
                     return a.get(n).unwrap_or("".to_string());
                 }
             },
+            /*
             Some(DataType::AssocArray(a)) => {
                 if pos == "@" || pos == "*" {
                     let values = a.values();
                     return values.join(" ");
                 }
                 return a.get(pos).unwrap_or("".to_string());
-            },
+            },*/
             Some(DataType::Single(v)) => {
                 match pos.parse::<usize>() {
                     Ok(0) => return v.data.to_string(),
@@ -249,6 +249,7 @@ impl DataBase {
     }
 
     pub fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
+        /*
         match v.clone() {
             DataType::AssocArray(AssocData{ data: a }) 
                 => {
@@ -256,7 +257,7 @@ impl DataBase {
                     return true;
                 },
             _ => {},
-        }
+        }*/
 
         self.parameters[layer].insert( name.to_string(), Data::from(v));
         true
@@ -264,8 +265,6 @@ impl DataBase {
 
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
         self.params[layer].insert(name.to_string(), Box::new(AssocData2::default()));
-
-//        self.parameters[layer].insert(name.to_string(), Data::from(HashMap::new()));        
         true
     }
 
@@ -304,6 +303,10 @@ impl DataBase {
 
     pub fn set(&mut self, name: &str, v: DataType) -> bool {
         self.set_layer(name, v, 0)
+    }
+
+    pub fn set_assoc(&mut self, name: &str) -> bool {
+        self.set_layer_assoc(name, 0)
     }
 
     pub fn set_local(&mut self, name: &str, v: DataType) -> bool {
@@ -395,7 +398,7 @@ impl DataBase {
                 println!("{}={}", k.to_string(), s.data.to_string()); 
             },
             Some(DataType::Array(a)) => a.print(k),
-            Some(DataType::AssocArray(a)) => a.print(k),
+            //Some(DataType::AssocArray(a)) => a.print(k),
             _ => {},
         }
     }
