@@ -1,12 +1,14 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+mod assoc;
+
 use std::fmt;
 use std::fmt::Debug;
 
 impl Debug for dyn Data2 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(&self.print()).finish()
+        fmt.debug_struct(&self.print_data()).finish()
     }
 }
 
@@ -18,5 +20,5 @@ impl Clone for Box::<dyn Data2> {
 
 pub trait Data2 {
     fn boxed_clone(&self) -> Box<dyn Data2>;
-    fn print(&self) -> String;
+    fn print_data(&self) -> String;
 }

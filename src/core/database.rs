@@ -270,8 +270,15 @@ impl DataBase {
         self.set_layer_array_elem(name, val, layer-1, pos)
     }
 
-    pub fn push_local(&mut self) { self.parameters.push(HashMap::new()); }
-    pub fn pop_local(&mut self) { self.parameters.pop(); }
+    pub fn push_local(&mut self) {
+        self.params.push(HashMap::new());
+        self.parameters.push(HashMap::new());
+    }
+
+    pub fn pop_local(&mut self) {
+        self.params.pop();
+        self.parameters.pop();
+    }
     pub fn get_layer_num(&mut self) -> usize { self.parameters.len() }
 
     pub fn get_keys(&mut self) -> Vec<String> {
