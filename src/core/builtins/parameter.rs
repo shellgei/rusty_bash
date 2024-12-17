@@ -4,8 +4,6 @@
 use crate::{ShellCore, Feeder};
 use crate::utils;
 use crate::utils::exit;
-use crate::core::HashMap;
-use crate::data::DataType;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
 

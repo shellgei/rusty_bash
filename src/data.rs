@@ -6,7 +6,6 @@ pub mod array;
 pub mod single;
 pub mod special;
 
-use std::collections::HashMap;
 use self::array::ArrayData;
 use self::single::SingleData;
 use self::special::SpecialData;
