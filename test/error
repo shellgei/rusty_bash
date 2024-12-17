@@ -2,4 +2,3 @@
 ./test_others.bash
 ./test_builtins.bash
 ./test_compound.bash
-../../test/test_others.bash

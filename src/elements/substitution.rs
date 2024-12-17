@@ -50,9 +50,9 @@ impl Substitution {
             ParsedDataType::None      => DataType::Single(SingleData::default()),
             ParsedDataType::Single(v) => self.eval_as_value(&v, core),
             ParsedDataType::Array(a)  => {
-                //self.eval_as_array(&mut a.clone(), core);
+                let v = self.eval_as_array(&mut a.clone(), core);
                 return match env {
-                    false => self.set_to_shell2(core, local, a.clone()),
+                    false => self.set_to_shell2(core, local, v),
                     true  => self.set_to_env(),
                 }
             },
@@ -144,21 +144,23 @@ impl Substitution {
         }
     }
 
-    fn set_to_shell2(&mut self, core: &mut ShellCore, local: bool, a: Array) -> bool {
+    fn set_to_shell2(&mut self, core: &mut ShellCore, local: bool, v: Vec<String>) -> bool {
+        /*
         match &self.evaluated_value {
             DataType::None => {
                 core.db.set_param("?", "1");
                 return false;
             },
             _ => {},
-        }
+        }*/
 
-        if core.db.is_assoc(&self.name) {
-            self.set_assoc(core, local)
-        }else if core.db.is_array(&self.name) {
-            self.set_array(core, local)
-        }else {
-            self.set_param(core, local)
+        if core.db.is_array(&self.name) {
+            match local {
+                true  => core.db.set_local_array(&self.name, v),
+                false => core.db.set_array(&self.name, v),
+            }
+        }else{
+            false
         }
     }
 
@@ -194,20 +196,18 @@ impl Substitution {
         }
     }
 
-    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> DataType {
+    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> Vec<String> {
         let prev = match self.append {
             true  => core.db.get_array_all(&self.name),
             false => vec![],
         };
 
-        DataType::None
-        /*
         match a.eval(core) {
             Some(values) => {
-                DataType::Array(ArrayData::from([prev, values].concat()))
+                [prev, values].concat()
             },
-            None         => DataType::None,
-        }*/
+            _ => vec![],
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
