@@ -1,16 +1,20 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+mod data2;
+
 use crate::data::single::SingleData;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::data::{DataType, Data};
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock};
+use self::data2::Data2;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
+    params: Vec<HashMap<String, Box<dyn Data2>>>,
     parameters: Vec<HashMap<String, Data>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
