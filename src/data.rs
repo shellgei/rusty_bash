@@ -106,13 +106,6 @@ impl Data {
         }
     }
 
-    pub fn set_assoc_elem(&mut self, key: &String, val: &String) -> bool {
-        match &mut self.body {
-            DataType::AssocArray(a) => a.set(key, val),
-            _ => return false,
-        }
-    }
-
     pub fn set_array_elem(&mut self, pos: usize, val: &String) -> bool {
         match &mut self.body {
             DataType::Array(a) => a.set(pos, val), 

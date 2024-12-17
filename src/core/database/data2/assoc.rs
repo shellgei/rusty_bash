@@ -66,6 +66,7 @@ impl AssocData2 {
         self.body.iter().map(|e| e.1.clone()).collect()
     }
 
+    /*
     pub fn set(&mut self, key: &String, val: &String) -> bool {
         self.body.insert(key.to_string(), val.to_string());
         true
@@ -84,4 +85,5 @@ impl AssocData2 {
         formatted += ")";
         println!("{}={}", k.to_string(), formatted); 
     }
+    */
 }

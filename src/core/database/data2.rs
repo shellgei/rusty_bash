@@ -5,8 +5,6 @@ pub mod assoc;
 
 use std::fmt;
 use std::fmt::Debug;
-use std::collections::HashMap;
-use self::assoc::AssocData2;
 
 impl Debug for dyn Data2 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -23,7 +21,7 @@ impl Clone for Box::<dyn Data2> {
 pub trait Data2 {
     fn boxed_clone(&self) -> Box<dyn Data2>;
     fn print_body(&self) -> String;
-    fn set_as_assoc(&mut self, key: &str, value: &str) -> bool {false}
-    fn get_as_assoc(&mut self, key: &str) -> Option<String> {None}
+    fn set_as_assoc(&mut self, _: &str, _: &str) -> bool {false}
+    fn get_as_assoc(&mut self, _: &str) -> Option<String> {None}
     fn is_assoc(&self) -> bool {false}
 }
