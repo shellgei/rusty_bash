@@ -91,6 +91,7 @@ impl Substitution {
             None => None,
         };
 
+        dbg!("HERE");
         let result = match (&self.evaluated_value, index, local) {
             (DataType::Single(v), Some(n), true) 
                 => core.db.set_local_array_elem(&self.name, &v.data, n),
