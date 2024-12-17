@@ -51,6 +51,7 @@ impl Data2 for AssocData2 {
     }
 
     fn is_assoc(&self) -> bool {true}
+    fn len(&self) -> usize { self.body.len() }
 }
 
 impl AssocData2 {

@@ -3,7 +3,7 @@
 
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData {
-    data: Vec<String>,
+    pub data: Vec<String>,
 }
 
 impl From<Vec<String>> for ArrayData {

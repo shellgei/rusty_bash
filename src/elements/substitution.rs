@@ -172,7 +172,9 @@ impl Substitution {
         };
 
         match a.eval(core) {
-            Some(values) => DataType::Array(ArrayData::from([prev, values].concat())),
+            Some(values) => {
+                DataType::Array(ArrayData::from([prev, values].concat()))
+            },
             None         => DataType::None,
         }
     }

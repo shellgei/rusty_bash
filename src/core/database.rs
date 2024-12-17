@@ -11,6 +11,8 @@ use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock};
 use self::data2::Data2;
 use self::data2::assoc::AssocData2;
+use self::data2::array::ArrayData2;
+use crate::data::array::ArrayData;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -66,6 +68,18 @@ impl DataBase {
             return self.position_parameters[layer-1][n].to_string();
         }
 
+        match self.get_value2(name).as_mut() {
+            Some(d) => {
+                if d.is_array() {
+                    return match d.get_as_array("0") {
+                        Some(s) => s,
+                        None => "".to_string(),
+                    }
+                }
+            },
+            _ => {},
+        }
+
         match self.get_value(name) {
             Some(DataType::Single(v)) => return v.data.to_string(),
             Some(DataType::Array(a)) => {
@@ -91,6 +105,11 @@ impl DataBase {
             Some(d) => {
                 if d.is_assoc() {
                     if let Some(ans) = d.get_as_assoc(pos) {
+                        return ans;
+                    }
+                }
+                if d.is_array() {
+                    if let Some(ans) = d.get_as_array(pos) {
                         return ans;
                     }
                 }
@@ -157,21 +176,31 @@ impl DataBase {
     }
 
     pub fn len(&mut self, key: &str) -> usize {
-        match self.get_value(key) {
-            Some(DataType::Array(a)) => a.len(),
+        match self.get_value2(key).as_mut() {
+            Some(d) => d.len(),
             _ => 0,
         }
     }
 
     pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
-        match self.get_value(key) {
-            Some(DataType::Array(a)) => a.get_all(),
-            _ => vec![],
+        match self.get_value2(key).as_mut() {
+            Some(d) => {
+                match d.get_all_as_array() {
+                    Some(v) => v,
+                    None => vec![],
+                }
+            },
+            None => vec![],
         }
     }
 
-    pub fn is_array(&mut self, key: &str) -> bool {
-        match self.get_value(key) {
+    pub fn is_array(&mut self, name: &str) -> bool {
+        match self.get_value2(name).as_mut() {
+            Some(d) => return d.is_array(),
+            _ => {},
+        }
+
+        match self.get_value(name) {
             Some(DataType::Array(_)) => true,
             _ => false,
         }
@@ -249,15 +278,14 @@ impl DataBase {
     }
 
     pub fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
-        /*
         match v.clone() {
-            DataType::AssocArray(AssocData{ data: a }) 
+            DataType::Array(ArrayData{ data: a }) 
                 => {
-                    self.params[layer].insert( name.to_string(), Box::new(AssocData2::from(a)));
+                    self.params[layer].insert( name.to_string(), Box::new(ArrayData2::from(a)));
                     return true;
                 },
             _ => {},
-        }*/
+        }
 
         self.parameters[layer].insert( name.to_string(), Data::from(v));
         true
@@ -269,6 +297,11 @@ impl DataBase {
     }
 
     pub fn set_layer_array_elem(&mut self, key: &str, val: &String, layer: usize, pos: usize) -> bool {
+        match self.params[layer].get_mut(key) {
+            Some(d) => return d.set_as_array(&pos.to_string(), val),
+            _ => {},
+        }
+
         match self.parameters[layer].get_mut(key) {
             Some(v) => v.set_array_elem(pos, val), 
             _ => return false,
@@ -280,12 +313,6 @@ impl DataBase {
             Some(v) => v.set_as_assoc(key, val), 
             _ => false,
         }
-
-        /*
-        match self.parameters[layer].get_mut(name) {
-            Some(v) => v.set_assoc_elem(key, val), 
-            _ => false,
-        }*/
     }
 
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {
@@ -398,7 +425,6 @@ impl DataBase {
                 println!("{}={}", k.to_string(), s.data.to_string()); 
             },
             Some(DataType::Array(a)) => a.print(k),
-            //Some(DataType::AssocArray(a)) => a.print(k),
             _ => {},
         }
     }
