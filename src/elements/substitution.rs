@@ -48,7 +48,12 @@ impl Substitution {
                 local: bool, env: bool) -> bool {
         self.evaluated_value = match self.value.clone() {
             ParsedDataType::None      => DataType::Single(SingleData::default()),
-            ParsedDataType::Single(v) => self.eval_as_value(&v, core),
+            ParsedDataType::Single(v) => {
+                match self.eval_as_value2(&v, core) {
+                    Some(e) => DataType::Single(SingleData::from(&e)),
+                    None => DataType::None,
+                }
+            },
             ParsedDataType::Array(a)  => self.eval_as_array(&mut a.clone(), core),
         };
 
@@ -153,15 +158,15 @@ impl Substitution {
         }
     }
 
-    fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> DataType {
+    fn eval_as_value2(&self, w: &Word, core: &mut ShellCore) -> Option<String> {
         let prev = match self.append {
             true  => core.db.get_param(&self.name),
             false => "".to_string(),
         };
 
         match w.eval_as_value(core) {
-            Some(s) => DataType::Single(SingleData::from(prev + &s)),
-            None    => DataType::None,
+            Some(s) => Some((prev + &s).to_string()),
+            None    => None,
         }
     }
 

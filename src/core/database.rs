@@ -3,7 +3,6 @@
 
 mod data2;
 
-use crate::data::single::SingleData;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::data::{DataType, Data};
 use std::{env, process};
