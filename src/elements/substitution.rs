@@ -79,13 +79,13 @@ impl Substitution {
         }
     }
 
-    fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_assoc2(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let index = self.get_index(core);
-        let result = match (&self.evaluated_value, index, local) {
-            (DataType::Single(v), Some(k), false) 
-              => core.db.set_assoc_elem(&self.name, &k, &v.data),
-            (DataType::Single(v), Some(k), true) 
-              => core.db.set_local_assoc_elem(&self.name, &k, &v.data),
+        let result = match (&self.evaluated_string, index, local) {
+            (Some(v), Some(k), false) 
+              => core.db.set_assoc_elem(&self.name, &k, &v),
+            (Some(v), Some(k), true) 
+              => core.db.set_local_assoc_elem(&self.name, &k, &v),
             _ => return bad_subscript_error(&self.text, core),
         };
         if ! result {
@@ -137,16 +137,14 @@ impl Substitution {
     }
 
     fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
-        match &self.evaluated_value {
-            DataType::None => {
-                core.db.set_param2("?", "1");
-                return false;
-            },
-            _ => {},
+        if self.evaluated_string.is_none()
+        && self.evaluated_array.is_none() {
+            core.db.set_param2("?", "1");
+            return false;
         }
 
         if core.db.is_assoc(&self.name) {
-            self.set_assoc(core, local)
+            self.set_assoc2(core, local)
         }else if core.db.is_array(&self.name) {
             self.set_array(core, local)
         }else {
