@@ -93,6 +93,7 @@ impl DataBase {
             _ => {},
         }
 
+        /*
         match self.get_value(name) {
             Some(DataType::Single(v)) => return v.data.to_string(),
             Some(DataType::Array(a)) => {
@@ -102,7 +103,7 @@ impl DataBase {
                 }
             },
             _  => {},
-        }
+        }*/
 
         match env::var(name) {
             Ok(v) => {
@@ -131,13 +132,14 @@ impl DataBase {
         }
 
         match self.get_value(name) {
+            /*
             Some(DataType::Array(a)) => {
                 if pos == "@" || pos == "*" {
                     return a.join(" ");
                 } else if let Ok(n) = pos.parse::<usize>() {
                     return a.get(n).unwrap_or("".to_string());
                 }
-            },
+            },*/
             Some(DataType::Single(v)) => {
                 match pos.parse::<usize>() {
                     Ok(0) => return v.data.to_string(),
@@ -436,7 +438,8 @@ impl DataBase {
         self.unset_function(key);
     }
 
-    pub fn print(&mut self, k: &str) {
+    pub fn print(&mut self, _k: &str) {
+        /*
         match self.get_value(k) {
             Some(DataType::Single(s)) => {
                 println!("{}={}", k.to_string(), s.data.to_string()); 
@@ -444,5 +447,6 @@ impl DataBase {
             Some(DataType::Array(a)) => a.print(k),
             _ => {},
         }
+        */
     }
 }
