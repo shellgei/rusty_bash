@@ -30,14 +30,14 @@ pub struct Substitution {
 }
 
 fn readonly_error(name: &str, core: &mut ShellCore) -> bool {
-    core.db.set_param("?", "1");
+    core.db.set_param2("?", "1");
     let msg = error::readonly(name);
     error::print(&msg, core);
     false
 }
 
 fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
-    core.db.set_param("?", "1");
+    core.db.set_param2("?", "1");
     let msg = error::bad_array_subscript(&sub);
     error::print(&msg, core);
     false
@@ -103,7 +103,7 @@ impl Substitution {
         }
     }
  
-    fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_param2(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let result = match (&self.evaluated_value, local) {
             (data, true) => core.db.set_local(&self.name, data.clone()),
             (data, false) => core.db.set(&self.name, data.clone()),
@@ -118,7 +118,7 @@ impl Substitution {
     fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
         match &self.evaluated_value {
             DataType::None => {
-                core.db.set_param("?", "1");
+                core.db.set_param2("?", "1");
                 return false;
             },
             _ => {},
@@ -129,7 +129,7 @@ impl Substitution {
         }else if core.db.is_array(&self.name) {
             self.set_array(core, local)
         }else {
-            self.set_param(core, local)
+            self.set_param2(core, local)
         }
     }
 

@@ -36,12 +36,11 @@ impl DataBase {
             ..Default::default()
         };
 
-        //data.set_param("$", &process::id().to_string());
         data.set_param2("$", &process::id().to_string());
-        data.set_param("BASHPID", &process::id().to_string());
-        data.set_param("BASH_SUBSHELL", "0");
-        data.set_param("?", "0");
-        data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
+        data.set_param2("BASHPID", &process::id().to_string());
+        data.set_param2("BASH_SUBSHELL", "0");
+        data.set_param2("?", "0");
+        data.set_param2("HOME", &env::var("HOME").unwrap_or("/".to_string()));
 
         data.set_special_param("SRANDOM", random::get_srandom);
         data.set_special_param("RANDOM", random::get_random);
@@ -295,9 +294,10 @@ impl DataBase {
         self.set_layer_param2(key, val, 0)
     }
 
-    pub fn set_param(&mut self, key: &str, val: &str) -> bool {
+    /*
+    pub fn set_param2(&mut self, key: &str, val: &str) -> bool {
         self.set_layer_param(key, val, 0)
-    }
+    }*/
 
     pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
         self.parameters[0].insert( key.to_string(), Data::from(f) );        

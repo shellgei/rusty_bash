@@ -23,7 +23,7 @@ impl Command for WhileCommand {
 
             core.suspend_e_option = false;
             if core.db.get_param("?") != "0" {
-                core.db.set_param("?", "0");
+                core.db.set_param2("?", "0");
                 break;
             }
 

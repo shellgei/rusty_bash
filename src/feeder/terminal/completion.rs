@@ -335,7 +335,7 @@ impl Terminal {
             _ => {},
         }
 
-        core.db.set_param("COMP_CWORD", &num.to_string());
+        core.db.set_param2("COMP_CWORD", &num.to_string());
     }
 }
 

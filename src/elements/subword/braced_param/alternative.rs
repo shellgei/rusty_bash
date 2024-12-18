@@ -40,7 +40,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     }
     if symbol == ":=" {
         let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-        if ! core.db.set_param(&obj.name, &value) {
+        if ! core.db.set_param2(&obj.name, &value) {
             return false;
         }
         obj.alternative_value = None;

@@ -13,7 +13,7 @@ pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
         _    => {},
     }
     core.db.position_parameters.push(args.to_vec());
-    core.db.set_param("#", &(args.len()-1).to_string());
+    core.db.set_param2("#", &(args.len()-1).to_string());
     0
 }
 

@@ -89,21 +89,21 @@ impl ShellCore {
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
 
-        core.db.set_param("PS4", "+ ");
+        core.db.set_param2("PS4", "+ ");
 
         if unistd::isatty(0) == Ok(true) {
             core.db.flags += "i";
             core.read_stdin = false;
-            core.db.set_param("PS1", "🍣 ");
-            core.db.set_param("PS2", "> ");
+            core.db.set_param2("PS1", "🍣 ");
+            core.db.set_param2("PS2", "> ");
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
         let home = core.db.get_param("HOME").to_string();
-        core.db.set_param("HISTFILE", &(home + "/.sush_history"));
-        core.db.set_param("HISTFILESIZE", "2000");
+        core.db.set_param2("HISTFILE", &(home + "/.sush_history"));
+        core.db.set_param2("HISTFILESIZE", "2000");
 
         core
     }
@@ -120,17 +120,17 @@ impl ShellCore {
         let versinfo = vec![vparts, vec![symbol, profile, &machtype]].concat()
                        .iter().map(|e| e.to_string()).collect();
 
-        self.db.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));
-        self.db.set_param("MACHTYPE", &machtype);
-        self.db.set_param("HOSTTYPE", &t_arch);
-        self.db.set_param("OSTYPE", &t_os);
+        self.db.set_param2("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));
+        self.db.set_param2("MACHTYPE", &machtype);
+        self.db.set_param2("HOSTTYPE", &t_arch);
+        self.db.set_param2("OSTYPE", &t_os);
         self.db.set("BASH_VERSINFO", DataType::from(&versinfo));
     }
 
     pub fn flip_exit_status(&mut self) {
         match self.db.get_param("?").as_ref() {
-            "0" => self.db.set_param("?", "1"),
-            _   => self.db.set_param("?", "0"),
+            "0" => self.db.set_param2("?", "1"),
+            _   => self.db.set_param2("?", "0"),
         };
     }
 
@@ -143,7 +143,7 @@ impl ShellCore {
             let func = self.builtins[&args[0]];
             args.append(special_args);
             let status = func(self, args);
-            self.db.set_layer_param("?", &status.to_string(), 0);
+            self.db.set_layer_param2("?", &status.to_string(), 0);
             return true;
         }
 

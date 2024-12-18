@@ -20,7 +20,7 @@ impl Command for ArithmeticCommand {
             Some(_) => "0",
             None => "1",
         };
-        core.db.set_param("?", exit_status );
+        core.db.set_param2("?", exit_status );
     }
 
     fn get_text(&self) -> String { self.text.clone() }

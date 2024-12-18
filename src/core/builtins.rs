@@ -85,7 +85,7 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
-        core.db.set_layer_param("?", &args[1], 0);
+        core.db.set_layer_param2("?", &args[1], 0);
     }
     exit::normal(core)
 }
