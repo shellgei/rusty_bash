@@ -55,6 +55,8 @@ impl Data2 for SpecialData2 {
         let v = (self.function)(&mut self.internal_data);
         v.chars().count()
     }
+
+    fn is_special(&self) -> bool {true}
 }
 /*
 

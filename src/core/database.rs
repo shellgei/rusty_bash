@@ -11,6 +11,7 @@ use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock};
 use self::data2::Data2;
 use self::data2::assoc::AssocData2;
+use self::data2::single::SingleData2;
 use self::data2::array::ArrayData2;
 use crate::data::array::ArrayData;
 
@@ -262,6 +263,29 @@ impl DataBase {
         self.parameters[layer].insert(name.to_string(), v);
 
         true
+    }
+
+    pub fn set_layer_param2(&mut self, name: &str, val: &str, layer: usize) -> bool {
+        match env::var(name) {
+            Ok(_) => env::set_var(name, val),
+            _     => {},
+        }
+        match self.params[layer].get_mut(name) {
+            Some(d) => {
+                if d.is_single() {
+                    return d.set_as_single(val);
+                }
+            },
+            None => {
+                self.params[layer].insert(name.to_string(), Box::new(SingleData2::from(val)));
+                return true;
+            },
+        }
+        true
+    }
+
+    pub fn set_param2(&mut self, key: &str, val: &str) -> bool {
+        self.set_layer_param2(key, val, 0)
     }
 
     pub fn set_param(&mut self, key: &str, val: &str) -> bool {

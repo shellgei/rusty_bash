@@ -8,16 +8,13 @@ pub struct SingleData2 {
     pub body: String
 }
 
-/*
-impl From<fn(&mut Vec<String>)-> String> for SingleData {
-    fn from(f: fn(&mut Vec<String>)-> String) -> SingleData {
-        SingleData {
-            internal_data: vec![],
-            function: f,
-        }
+impl From<&str> for SingleData2 {
+    fn from(s: &str) -> Self {
+        Self { body: s.to_string() }
     }
 }
 
+/*
 impl SingleData {
     pub fn update(&mut self) -> DataType {
         let ans = (self.function)(&mut self.internal_data);
@@ -51,6 +48,8 @@ impl Data2 for SingleData2 {
     fn len(&mut self) -> usize {
         self.body.chars().count()
     }
+
+    fn is_single(&self) -> bool {true}
 }
 /*
 

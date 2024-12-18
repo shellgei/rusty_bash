@@ -31,6 +31,8 @@ pub trait Data2 {
     fn set_as_array(&mut self, _: &str, _: &str) -> bool {false}
     fn get_as_array(&mut self, _: &str) -> Option<String> {None}
     fn get_all_as_array(&mut self) -> Option<Vec<String>> {None}
+    fn is_special(&self) -> bool {false}
+    fn is_single(&self) -> bool {false}
     fn is_assoc(&self) -> bool {false}
     fn is_array(&self) -> bool {false}
     fn len(&mut self) -> usize;
