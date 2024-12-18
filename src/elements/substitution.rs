@@ -145,7 +145,7 @@ impl Substitution {
     fn set_param2(&mut self, core: &mut ShellCore, local: bool) -> bool {
         match (&self.evaluated_string, local) {
             (Some(data), true) => {
-                match core.db.set_local_param(&self.name, &data) {
+                match core.db.set_local_param2(&self.name, &data) {
                     true  => true,
                     false => readonly_error(&self.name, core),
                 }

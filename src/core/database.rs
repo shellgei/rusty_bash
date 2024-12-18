@@ -138,14 +138,6 @@ impl DataBase {
                     return a.get(n).unwrap_or("".to_string());
                 }
             },
-            /*
-            Some(DataType::AssocArray(a)) => {
-                if pos == "@" || pos == "*" {
-                    let values = a.values();
-                    return values.join(" ");
-                }
-                return a.get(pos).unwrap_or("".to_string());
-            },*/
             Some(DataType::Single(v)) => {
                 match pos.parse::<usize>() {
                     Ok(0) => return v.data.to_string(),
@@ -222,11 +214,6 @@ impl DataBase {
     pub fn is_array(&mut self, name: &str) -> bool {
         match self.get_value2(name).as_mut() {
             Some(d) => return d.is_array(),
-            _ => {},
-        }
-
-        match self.get_value(name) {
-            Some(DataType::Array(_)) => true,
             _ => false,
         }
     }
@@ -236,12 +223,6 @@ impl DataBase {
             Some(d) => d.is_assoc(),
             None => false,
         }
-        
-        /*
-        match self.get_value(key) {
-            Some(DataType::AssocArray(_)) => true,
-            _ => false,
-        }*/
     }
 
     pub fn get_position_params(&self) -> Vec<String> {
@@ -263,33 +244,6 @@ impl DataBase {
             false => None,
         }
     }
-
-    /*
-    pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> bool {
-        match env::var(name) {
-            Ok(_) => env::set_var(name, val),
-            _     => {},
-        }
-        if self.parameters[layer].get(name).is_none() {
-            self.parameters[layer].insert(name.to_string(), Data::from(val));
-            return true;
-        }
-
-        let mut v = self.parameters[layer].get(name).unwrap().clone();
-        if v.attributes.contains('r') {
-            return false;
-        }
-
-        v.body = match &v.body {
-            DataType::Special(_) => {return true;},
-            _ => DataType::Single(SingleData::from(val)),
-        };
-
-        self.parameters[layer].insert(name.to_string(), v);
-
-        true
-    }
-    */
 
     pub fn set_layer_param2(&mut self, name: &str, val: &str, layer: usize) -> bool {
         match env::var(name) {
@@ -314,17 +268,12 @@ impl DataBase {
         self.set_layer_param2(key, val, 0)
     }
 
-    /*
-    pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
-        self.parameters[0].insert( key.to_string(), Data::from(f) );        
-    }*/
-
     pub fn set_special_param2(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
         self.params[0].insert( key.to_string(), Box::new(SpecialData2::from(f)) );
     }
 
-    pub fn set_local_param(&mut self, key: &str, val: &str) -> bool {
-        let layer = self.parameters.len();
+    pub fn set_local_param2(&mut self, key: &str, val: &str) -> bool {
+        let layer = self.params.len();
         self.set_layer_param2(key, val, layer-1)
     }
 
