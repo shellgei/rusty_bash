@@ -42,11 +42,6 @@ impl Data2 for SpecialData2 {
         self.internal_data.join(" ")
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> bool { false }
-    fn get_as_array(&mut self, key: &str) -> Option<String> { None }
-    fn get_all_as_array(&mut self) -> Option<Vec<String>> { None }
-
-    fn set_as_single(&mut self, value: &str) -> bool {false}
     fn get_as_single(&mut self) -> Option<String> {
         Some( (self.function)(&mut self.internal_data) )
     }
@@ -58,19 +53,3 @@ impl Data2 for SpecialData2 {
 
     fn is_special(&self) -> bool {true}
 }
-/*
-
-impl ArrayData2 {
-    /*
-    pub fn get(&self, key: usize) -> Option<String> {
-        match key < self.body.len() {
-            true  => Some(self.body[key].clone()),
-            false => None,
-        }
-    }
-
-    pub fn values(&self) -> Vec<String> {
-        self.body.clone()
-    }*/
-}
-*/

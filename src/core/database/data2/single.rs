@@ -38,12 +38,14 @@ impl Data2 for SingleData2 {
         self.body.clone()
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> bool { false }
-    fn get_as_array(&mut self, key: &str) -> Option<String> { None }
-    fn get_all_as_array(&mut self) -> Option<Vec<String>> { None }
+    fn set_as_single(&mut self, value: &str) -> bool {
+        self.body = value.to_string();
+        true
+    }
 
-    fn set_as_single(&mut self, value: &str) -> bool { self.body = value.to_string() ; true }
-    fn get_as_single(&mut self) -> Option<String> { Some(self.body.clone()) }
+    fn get_as_single(&mut self) -> Option<String> {
+        Some(self.body.clone())
+    }
 
     fn len(&mut self) -> usize {
         self.body.chars().count()
