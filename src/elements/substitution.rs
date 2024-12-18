@@ -171,8 +171,8 @@ impl Substitution {
     }
 
     pub fn set_to_env(&mut self) -> bool {
-        match &self.evaluated_value {
-            DataType::Single(v) => env::set_var(&self.name, &v.data),
+        match &self.evaluated_string {
+            Some(v) => env::set_var(&self.name, &v),
             _ => return false,
         }
         true
