@@ -36,7 +36,8 @@ impl DataBase {
             ..Default::default()
         };
 
-        data.set_param("$", &process::id().to_string());
+        //data.set_param("$", &process::id().to_string());
+        data.set_param2("$", &process::id().to_string());
         data.set_param("BASHPID", &process::id().to_string());
         data.set_param("BASH_SUBSHELL", "0");
         data.set_param("?", "0");
@@ -73,6 +74,12 @@ impl DataBase {
             Some(d) => {
                 if d.is_array() {
                     return match d.get_as_array("0") {
+                        Some(s) => s,
+                        None => "".to_string(),
+                    }
+                }
+                if d.is_single() {
+                    return match d.get_as_single() {
                         Some(s) => s,
                         None => "".to_string(),
                     }
