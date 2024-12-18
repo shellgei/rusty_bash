@@ -64,7 +64,7 @@ impl Data2 for ArrayData2 {
     }
 
     fn is_array(&self) -> bool {true}
-    fn len(&self) -> usize { self.body.len() }
+    fn len(&mut self) -> usize { self.body.len() }
 }
 
 impl ArrayData2 {
