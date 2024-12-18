@@ -107,7 +107,7 @@ impl DataBase {
 
         match env::var(name) {
             Ok(v) => {
-                self.set_layer_param(name, &v, 0);
+                self.set_layer_param2(name, &v, 0);
                 v
             },
             _ => "".to_string()
@@ -265,6 +265,7 @@ impl DataBase {
         }
     }
 
+    /*
     pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> bool {
         match env::var(name) {
             Ok(_) => env::set_var(name, val),
@@ -289,6 +290,7 @@ impl DataBase {
 
         true
     }
+    */
 
     pub fn set_layer_param2(&mut self, name: &str, val: &str, layer: usize) -> bool {
         match env::var(name) {
@@ -324,7 +326,7 @@ impl DataBase {
 
     pub fn set_local_param(&mut self, key: &str, val: &str) -> bool {
         let layer = self.parameters.len();
-        self.set_layer_param(key, val, layer-1)
+        self.set_layer_param2(key, val, layer-1)
     }
 
     pub fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
