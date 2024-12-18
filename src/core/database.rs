@@ -13,6 +13,7 @@ use self::data2::Data2;
 use self::data2::assoc::AssocData2;
 use self::data2::single::SingleData2;
 use self::data2::array::ArrayData2;
+use self::data2::special::SpecialData2;
 use crate::data::array::ArrayData;
 
 #[derive(Debug, Default)]
@@ -42,11 +43,11 @@ impl DataBase {
         data.set_param2("?", "0");
         data.set_param2("HOME", &env::var("HOME").unwrap_or("/".to_string()));
 
-        data.set_special_param("SRANDOM", random::get_srandom);
-        data.set_special_param("RANDOM", random::get_random);
-        data.set_special_param("EPOCHSECONDS", clock::get_epochseconds);
-        data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime);
-        data.set_special_param("SECONDS", clock::get_seconds);
+        data.set_special_param2("SRANDOM", random::get_srandom);
+        data.set_special_param2("RANDOM", random::get_random);
+        data.set_special_param2("EPOCHSECONDS", clock::get_epochseconds);
+        data.set_special_param2("EPOCHREALTIME", clock::get_epochrealtime);
+        data.set_special_param2("SECONDS", clock::get_seconds);
 
         data
     }
@@ -67,6 +68,10 @@ impl DataBase {
         if let Some(n) = self.get_position_param_pos(name) {
             let layer = self.position_parameters.len();
             return self.position_parameters[layer-1][n].to_string();
+        }
+
+        if let Some(ans) = self.call_speial(name) {
+            return ans;
         }
 
         match self.get_value2(name).as_mut() {
@@ -162,11 +167,23 @@ impl DataBase {
         None
     }
 
+    fn call_speial(&mut self, name: &str) -> Option<String> {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(v) = self.params[layer].get_mut(name) {
+                if v.is_special() {
+                    return v.get_as_single();
+                }
+            }
+        }
+        None
+    }
+
     fn get_value2(&mut self, name: &str) -> Option<Box<dyn Data2>> {
         let num = self.params.len();
         for layer in (0..num).rev()  {
             if let Some(v) = self.params[layer].get_mut(name) {
-                return Some(v.boxed_clone());
+                return Some(v.clone());
             }
         }
         None
@@ -295,12 +312,12 @@ impl DataBase {
     }
 
     /*
-    pub fn set_param2(&mut self, key: &str, val: &str) -> bool {
-        self.set_layer_param(key, val, 0)
-    }*/
-
     pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
         self.parameters[0].insert( key.to_string(), Data::from(f) );        
+    }*/
+
+    pub fn set_special_param2(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
+        self.params[0].insert( key.to_string(), Box::new(SpecialData2::from(f)) );
     }
 
     pub fn set_local_param(&mut self, key: &str, val: &str) -> bool {
@@ -437,6 +454,9 @@ impl DataBase {
 
     pub fn unset_var(&mut self, key: &str) {
         for layer in &mut self.parameters {
+            layer.remove(key);
+        }
+        for layer in &mut self.params {
             layer.remove(key);
         }
     }
