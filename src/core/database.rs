@@ -93,18 +93,6 @@ impl DataBase {
             _ => {},
         }
 
-        /*
-        match self.get_value(name) {
-            Some(DataType::Single(v)) => return v.data.to_string(),
-            Some(DataType::Array(a)) => {
-                match a.len() {
-                    0 => return "".to_string(),
-                    _ => return a.get(0).unwrap_or("".to_string()),
-                }
-            },
-            _  => {},
-        }*/
-
         match env::var(name) {
             Ok(v) => {
                 self.set_layer_param2(name, &v, 0);
@@ -131,35 +119,7 @@ impl DataBase {
             None => {},
         }
 
-        match self.get_value(name) {
-            /*
-            Some(DataType::Array(a)) => {
-                if pos == "@" || pos == "*" {
-                    return a.join(" ");
-                } else if let Ok(n) = pos.parse::<usize>() {
-                    return a.get(n).unwrap_or("".to_string());
-                }
-            },*/
-            Some(DataType::Single(v)) => {
-                match pos.parse::<usize>() {
-                    Ok(0) => return v.data.to_string(),
-                    Ok(_) => return "".to_string(),
-                    _ => return v.data.to_string(), 
-                }
-            },
-            _ => {},
-        }
         "".to_string()
-    }
-
-    fn get_value(&mut self, key: &str) -> Option<DataType> {
-        let num = self.parameters.len();
-        for layer in (0..num).rev()  {
-            if let Some(v) = self.parameters[layer].get_mut(key) {
-                return Some(v.get_body());
-            }
-        }
-        None
     }
 
     fn call_speial(&mut self, name: &str) -> Option<String> {

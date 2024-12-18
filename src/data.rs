@@ -99,12 +99,13 @@ impl From<Vec<String>> for Data {
 }
 
 impl Data {
+    /*
     pub fn get_body(&mut self) -> DataType {
         match &mut self.body {
             DataType::Special(d) => d.update(),
             _ => self.body.clone(),
         }
-    }
+    }*/
 
     pub fn set_array_elem(&mut self, pos: usize, val: &String) -> bool {
         match &mut self.body {
