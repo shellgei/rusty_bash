@@ -48,27 +48,29 @@ fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 local: bool, env: bool) -> bool {
-        self.evaluated_value = match self.value.clone() {
+        self.evaluated_value = DataType::None;
+
+        match self.value.clone() {
             ParsedDataType::None => {
                 self.evaluated_string = Some("".to_string());
-                DataType::Single(SingleData::default())
+                self.evaluated_value = DataType::Single(SingleData::default());
             },
             ParsedDataType::Single(v) => {
                 match self.eval_as_value2(&v, core) {
                     Some(e) => {
                         self.evaluated_string = Some(e.clone());
-                        DataType::Single(SingleData::from(&e))
+                        self.evaluated_value = DataType::Single(SingleData::from(&e));
                     },
-                    None => DataType::None,
+                    None => {},
                 }
             },
             ParsedDataType::Array(a)  => {
                 match self.eval_as_array2(&mut a.clone(), core) {
                     Some(vec) => {
                         self.evaluated_array = Some(vec.clone());
-                        DataType::Array(ArrayData::from(vec))
+                        self.evaluated_value = DataType::Array(ArrayData::from(vec));
                     },
-                    None => DataType::None,
+                    None => {},
                 }
             },
         };
