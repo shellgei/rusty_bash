@@ -3,6 +3,7 @@
 
 pub mod array;
 pub mod assoc;
+pub mod single;
 pub mod special;
 
 use std::fmt;
