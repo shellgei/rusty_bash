@@ -143,6 +143,38 @@ impl Substitution {
     }
  
     fn set_param2(&mut self, core: &mut ShellCore, local: bool) -> bool {
+        match (&self.evaluated_string, local) {
+            (Some(data), true) => {
+                match core.db.set_local_param(&self.name, &data) {
+                    true  => true,
+                    false => readonly_error(&self.name, core),
+                }
+            },
+            (Some(data), false) => {
+                match core.db.set_param2(&self.name, &data) {
+                    true  => true,
+                    false => readonly_error(&self.name, core),
+                }
+            },
+            _ => false,
+        };
+
+        match (&self.evaluated_array, local) {
+            (Some(data), true) => {
+                return match core.db.set_local_array(&self.name, data.to_vec()) {
+                    true  => true,
+                    false => readonly_error(&self.name, core),
+                }
+            },
+            (Some(data), false) => {
+                return match core.db.set_array(&self.name, data.to_vec()) {
+                    true  => true,
+                    false => readonly_error(&self.name, core),
+                }
+            },
+            _ => {},
+        };
+
         let result = match (&self.evaluated_value, local) {
             (data, true) => core.db.set_local(&self.name, data.clone()),
             (data, false) => core.db.set(&self.name, data.clone()),
