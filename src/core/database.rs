@@ -49,6 +49,8 @@ impl DataBase {
         data.set_special_param2("EPOCHREALTIME", clock::get_epochrealtime);
         data.set_special_param2("SECONDS", clock::get_seconds);
 
+        data.call_speial("SECONDS");
+
         data
     }
 
