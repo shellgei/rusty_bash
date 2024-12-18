@@ -54,7 +54,12 @@ impl Substitution {
                     None => DataType::None,
                 }
             },
-            ParsedDataType::Array(a)  => self.eval_as_array(&mut a.clone(), core),
+            ParsedDataType::Array(a)  => {
+                match self.eval_as_array2(&mut a.clone(), core) {
+                    Some(vec) => DataType::Array(ArrayData::from(vec)),
+                    None => DataType::None,
+                }
+            },
         };
 
         match env {
@@ -170,17 +175,15 @@ impl Substitution {
         }
     }
 
-    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> DataType {
+    fn eval_as_array2(&self, a: &mut Array, core: &mut ShellCore) -> Option<Vec<String>> {
         let prev = match self.append {
             true  => core.db.get_array_all(&self.name),
             false => vec![],
         };
 
         match a.eval(core) {
-            Some(values) => {
-                DataType::Array(ArrayData::from([prev, values].concat()))
-            },
-            None         => DataType::None,
+            Some(values) => Some([prev, values].concat()),
+            None         => None,
         }
     }
 
