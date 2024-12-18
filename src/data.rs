@@ -4,17 +4,17 @@
 pub mod array;
 //pub mod assoc;
 pub mod single;
-pub mod special;
+//pub mod special;
 
 use self::array::ArrayData;
 use self::single::SingleData;
-use self::special::SpecialData;
+//use self::special::SpecialData;
 
 #[derive(Debug, Clone, Default)]
 pub enum DataType {
     #[default]
     None,
-    Special(SpecialData),
+ //   Special(SpecialData),
     Single(SingleData),
     //AssocArray(AssocData),
     Array(ArrayData),
@@ -54,6 +54,7 @@ impl From<HashMap<String, String>> for Data {
     }
 }*/
 
+/*
 impl From<fn(&mut Vec<String>)-> String> for Data {
     fn from(f: fn(&mut Vec<String>)-> String) -> Data {
         Data {
@@ -61,7 +62,7 @@ impl From<fn(&mut Vec<String>)-> String> for Data {
             ..Default::default()
         }
     }
-}
+}*/
 
 impl From<String> for DataType {
     fn from(s: String) -> Self {
