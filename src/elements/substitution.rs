@@ -48,8 +48,6 @@ fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 local: bool, env: bool) -> bool {
-        self.evaluated_value = DataType::None;
-
         match self.value.clone() {
             ParsedDataType::None => {
                 self.evaluated_string = Some("".to_string());
@@ -97,7 +95,7 @@ impl Substitution {
         true
     }
 
-    fn set_array(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_array2(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let index = match self.get_index(core) {
             Some(s) => {
                 match s.parse::<usize>() {
@@ -108,17 +106,35 @@ impl Substitution {
             None => None,
         };
 
-        let result = match (&self.evaluated_value, index, local) {
-            (DataType::Single(v), Some(n), true) 
-                => core.db.set_local_array_elem(&self.name, &v.data, n),
-            (DataType::Single(v), Some(n), false) 
-                => core.db.set_array_elem(&self.name, &v.data, n),
-            (_, Some(_), _) => false,
-            (data, None, true) 
-                => core.db.set_local(&self.name, data.clone()),
-            (data, None, false) 
-                => core.db.set(&self.name, data.clone()),
+        match (&self.evaluated_string, index, local) {
+            (Some(v), Some(n), true) => {
+                return match core.db.set_local_array_elem(&self.name, &v, n) {
+                    true  => true,
+                    false => readonly_error(&self.name, core),
+                }
+            },
+            (Some(v), Some(n), false) => {
+                return match core.db.set_array_elem(&self.name, &v, n) {
+                    true  => true,
+                    false => readonly_error(&self.name, core),
+                }
+            },
+            _ => {},
+        }
+
+        let result = match (&self.evaluated_array, index, local) {
+            (Some(a), None, true) => core.db.set_local_array(&self.name, a.clone()),
+            (Some(a), None, false) => core.db.set_array(&self.name, a.clone()),
+            //(_, Some(_), _) => false,
+            _ => false,
         };
+
+        /*
+        let result = match (&self.evaluated_value, index, local) {
+            (_, Some(_), _) => false,
+            (data, None, true) => core.db.set_local(&self.name, data.clone()),
+            (data, None, false) => core.db.set(&self.name, data.clone()),
+        };*/
 
         match result {
             true  => true,
@@ -148,7 +164,7 @@ impl Substitution {
         if core.db.is_assoc(&self.name) {
             self.set_assoc2(core, local)
         }else if core.db.is_array(&self.name) {
-            self.set_array(core, local)
+            self.set_array2(core, local)
         }else {
             self.set_param2(core, local)
         }

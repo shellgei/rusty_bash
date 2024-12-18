@@ -342,6 +342,11 @@ impl DataBase {
         true
     }
 
+    pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
+        self.params[layer].insert( name.to_string(), Box::new(ArrayData2::from(v)));
+        true
+    }
+
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
         self.params[layer].insert(name.to_string(), Box::new(AssocData2::default()));
         true
@@ -379,6 +384,10 @@ impl DataBase {
         self.set_layer_assoc_elem(name, key, val, layer-1)
     }
 
+    pub fn set_array(&mut self, name: &str, v: Vec<String>) -> bool {
+        self.set_layer_array(name, v, 0)
+    }
+
     pub fn set(&mut self, name: &str, v: DataType) -> bool {
         self.set_layer(name, v, 0)
     }
@@ -390,6 +399,11 @@ impl DataBase {
     pub fn set_local(&mut self, name: &str, v: DataType) -> bool {
         let layer = self.parameters.len();
         self.set_layer(name, v, layer-1)
+    }
+
+    pub fn set_local_array(&mut self, name: &str, v: Vec<String>) -> bool {
+        let layer = self.parameters.len();
+        self.set_layer_array(name, v, layer-1)
     }
 
     pub fn set_local_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {
