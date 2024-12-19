@@ -4,7 +4,6 @@
 use crate::{file_check, Feeder, ShellCore, utils};
 use crate::utils::exit;
 use crate::core::builtins::completion;
-use crate::data::DataType;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;
@@ -52,7 +51,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, tab_num: usize) {
         self.escape_at_completion = true;
-        core.db.set("COMPREPLY", DataType::from(vec![]));
+        core.db.set_array("COMPREPLY", vec![]);
         self.set_completion_info(core);
 
         if ! Self::set_custom_compreply(core)
@@ -118,7 +117,8 @@ impl Terminal {
         }
 
         let tmp: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
-        core.db.set("COMPREPLY", DataType::from(tmp));
+        //core.db.set("COMPREPLY", DataType::from(tmp));
+        core.db.set_array("COMPREPLY", tmp);
         true
     }
 
@@ -321,8 +321,8 @@ impl Terminal {
 
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
-        //core.db.set_array("COMP_WORDS", &words_all);
-        core.db.set("COMP_WORDS", DataType::from(words_all));
+        core.db.set_array("COMP_WORDS", words_all);
+        //core.db.set("COMP_WORDS", DataType::from(words_all));
 
         let mut num = words_left.len();
         match left_string.chars().last() {
