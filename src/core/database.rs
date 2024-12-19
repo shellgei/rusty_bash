@@ -151,14 +151,6 @@ impl DataBase {
                 return true;
             }
         }
-
-        /*
-        let num = self.parameters.len();
-        for layer in (0..num).rev()  {
-            if let Some(_) = self.parameters[layer].get(name) {
-                return true;
-            }
-        }*/
         false
     }
 
@@ -274,12 +266,7 @@ impl DataBase {
     pub fn set_layer_array_elem(&mut self, key: &str, val: &String, layer: usize, pos: usize) -> bool {
         match self.params[layer].get_mut(key) {
             Some(d) => return d.set_as_array(&pos.to_string(), val),
-            _ => {},
-        }
-
-        match self.parameters[layer].get_mut(key) {
-            Some(v) => v.set_array_elem(pos, val), 
-            _ => return false,
+            None    => false,
         }
     }
 
@@ -326,7 +313,7 @@ impl DataBase {
     }
 
     pub fn set_local_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {
-        let layer = self.parameters.len();
+        let layer = self.params.len();
         self.set_layer_array_elem(name, val, layer-1, pos)
     }
 

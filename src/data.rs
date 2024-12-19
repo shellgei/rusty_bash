@@ -82,36 +82,11 @@ impl From<&Vec<String>> for DataType {
     }
 }
 
-/*
-impl From<HashMap<String, String>> for DataType {
-    fn from(hm: HashMap<String, String>) -> Self {
-        DataType::AssocArray(AssocData::from(hm))
-    }
-}*/
-
-
 impl From<Vec<String>> for Data {
     fn from(vals: Vec<String>) -> Self {
         Data {
             body: DataType::Array(ArrayData::from(vals)),
             ..Default::default()
-        }
-    }
-}
-
-impl Data {
-    /*
-    pub fn get_body(&mut self) -> DataType {
-        match &mut self.body {
-            DataType::Special(d) => d.update(),
-            _ => self.body.clone(),
-        }
-    }*/
-
-    pub fn set_array_elem(&mut self, pos: usize, val: &String) -> bool {
-        match &mut self.body {
-            DataType::Array(a) => a.set(pos, val), 
-            _ => return false,
         }
     }
 }
