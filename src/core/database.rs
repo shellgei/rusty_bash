@@ -4,7 +4,6 @@
 mod data2;
 
 use crate::elements::command::function_def::FunctionDefinition;
-use crate::data::DataType;
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock};
@@ -13,7 +12,6 @@ use self::data2::assoc::AssocData2;
 use self::data2::single::SingleData2;
 use self::data2::array::ArrayData2;
 use self::data2::special::SpecialData2;
-use crate::data::array::ArrayData;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -237,6 +235,7 @@ impl DataBase {
         self.set_layer_param2(key, val, layer-1)
     }
 
+    /*
     fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
         match v.clone() {
             DataType::Array(ArrayData{ data: a }) 
@@ -249,7 +248,7 @@ impl DataBase {
 
         false
     }
-
+*/
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
         self.params[layer].insert( name.to_string(), Box::new(ArrayData2::from(v)));
         true
@@ -291,20 +290,9 @@ impl DataBase {
         self.set_layer_array(name, v, 0)
     }
 
-    /*
-    fn set(&mut self, name: &str, v: DataType) -> bool {
-        self.set_layer(name, v, 0)
-    }*/
-
     pub fn set_assoc(&mut self, name: &str) -> bool {
         self.set_layer_assoc(name, 0)
     }
-
-    /*
-    pub fn set_local(&mut self, name: &str, v: DataType) -> bool {
-        let layer = self.params.len();
-        self.set_layer(name, v, layer-1)
-    }*/
 
     pub fn set_local_array(&mut self, name: &str, v: Vec<String>) -> bool {
         let layer = self.params.len();
