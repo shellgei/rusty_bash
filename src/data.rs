@@ -2,67 +2,18 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 pub mod array;
-//pub mod assoc;
 pub mod single;
-//pub mod special;
 
 use self::array::ArrayData;
 use self::single::SingleData;
-//use self::special::SpecialData;
 
 #[derive(Debug, Clone, Default)]
 pub enum DataType {
     #[default]
     None,
- //   Special(SpecialData),
     Single(SingleData),
-    //AssocArray(AssocData),
     Array(ArrayData),
 }
-
-#[derive(Debug, Clone, Default)]
-pub struct Data {
-    pub body: DataType,
-    pub attributes: String,
-}
-
-impl From<DataType> for Data {
-    fn from(v: DataType) -> Self {
-        Data {
-            body: v,
-            ..Default::default()
-        }
-    }
-}
-
-impl From<&str> for Data {
-    fn from(s: &str) -> Self {
-        Data {
-            body: DataType::Single(SingleData::from(s)),
-            ..Default::default()
-        }
-    }
-}
-
-/*
-impl From<HashMap<String, String>> for Data {
-    fn from(hm: HashMap<String, String>) -> Self {
-        Data {
-            body: DataType::AssocArray(AssocData::from(hm)),
-            ..Default::default()
-        }
-    }
-}*/
-
-/*
-impl From<fn(&mut Vec<String>)-> String> for Data {
-    fn from(f: fn(&mut Vec<String>)-> String) -> Data {
-        Data {
-            body: DataType::Special(SpecialData::from(f)),
-            ..Default::default()
-        }
-    }
-}*/
 
 impl From<String> for DataType {
     fn from(s: String) -> Self {
@@ -79,14 +30,5 @@ impl From<Vec<String>> for DataType {
 impl From<&Vec<String>> for DataType {
     fn from(vals: &Vec<String>) -> Self {
         DataType::Array(ArrayData::from(vals.clone()))
-    }
-}
-
-impl From<Vec<String>> for Data {
-    fn from(vals: Vec<String>) -> Self {
-        Data {
-            body: DataType::Array(ArrayData::from(vals)),
-            ..Default::default()
-        }
     }
 }
