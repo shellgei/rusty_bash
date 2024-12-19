@@ -9,7 +9,6 @@ pub mod jobtable;
 pub mod options;
 
 use crate::{child, signal};
-use crate::data::DataType;
 use self::database::DataBase;
 use self::options::Options;
 use std::collections::HashMap;
@@ -124,7 +123,8 @@ impl ShellCore {
         self.db.set_param2("MACHTYPE", &machtype);
         self.db.set_param2("HOSTTYPE", &t_arch);
         self.db.set_param2("OSTYPE", &t_os);
-        self.db.set("BASH_VERSINFO", DataType::from(&versinfo));
+        //self.db.set("BASH_VERSINFO", DataType::from(&versinfo));
+        self.db.set_array("BASH_VERSINFO", versinfo);
     }
 
     pub fn flip_exit_status(&mut self) {
