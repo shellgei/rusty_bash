@@ -125,16 +125,8 @@ impl Substitution {
         let result = match (&self.evaluated_array, index, local) {
             (Some(a), None, true) => core.db.set_local_array(&self.name, a.clone()),
             (Some(a), None, false) => core.db.set_array(&self.name, a.clone()),
-            //(_, Some(_), _) => false,
             _ => false,
         };
-
-        /*
-        let result = match (&self.evaluated_value, index, local) {
-            (_, Some(_), _) => false,
-            (data, None, true) => core.db.set_local(&self.name, data.clone()),
-            (data, None, false) => core.db.set(&self.name, data.clone()),
-        };*/
 
         match result {
             true  => true,
@@ -172,18 +164,8 @@ impl Substitution {
                     false => readonly_error(&self.name, core),
                 }
             },
-            _ => {},
+            _ => return readonly_error(&self.name, core),
         };
-
-        let result = match (&self.evaluated_value, local) {
-            (data, true) => core.db.set_local(&self.name, data.clone()),
-            (data, false) => core.db.set(&self.name, data.clone()),
-        };
-
-        match result {
-            true  => true,
-            false => readonly_error(&self.name, core),
-        }
     }
 
     fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
