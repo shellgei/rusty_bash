@@ -4,7 +4,7 @@
 mod data2;
 
 use crate::elements::command::function_def::FunctionDefinition;
-use crate::data::{DataType, Data};
+use crate::data::DataType;
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock};
@@ -19,7 +19,6 @@ use crate::data::array::ArrayData;
 pub struct DataBase {
     pub flags: String,
     params: Vec<HashMap<String, Box<dyn Data2>>>,
-    parameters: Vec<HashMap<String, Data>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -30,7 +29,6 @@ impl DataBase {
     pub fn new() -> DataBase {
         let mut data = DataBase {
             params: vec![HashMap::new()],
-            parameters: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             flags: "B".to_string(),
             ..Default::default()
