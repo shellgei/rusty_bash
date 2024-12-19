@@ -32,6 +32,11 @@ impl Data2 for ArrayData2 {
         formatted
     }
 
+    /*
+    fn print_with_name(&self, name: &str) {
+        println!("{}={}", name, self.print_body());
+    }*/
+
     fn set_as_array(&mut self, key: &str, value: &str) -> bool {
         if let Ok(n) = key.parse::<usize>() {
             if n < self.body.len() {

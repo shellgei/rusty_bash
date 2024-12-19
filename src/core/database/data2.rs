@@ -24,6 +24,14 @@ impl Clone for Box::<dyn Data2> {
 pub trait Data2 {
     fn boxed_clone(&self) -> Box<dyn Data2>;
     fn print_body(&self) -> String;
+
+    fn print_with_name(&self, name: &str) {
+        if self.is_special() {
+            return;
+        }
+        println!("{}={}", name, self.print_body());
+    }
+
     fn set_as_single(&mut self, _: &str) -> bool {false}
     fn get_as_single(&mut self) -> Option<String> {None}
     fn set_as_assoc(&mut self, _: &str, _: &str) -> bool {false}

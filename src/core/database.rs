@@ -363,10 +363,6 @@ impl DataBase {
     }
 
     pub fn unset_var(&mut self, key: &str) {
-        /*
-        for layer in &mut self.parameters {
-            layer.remove(key);
-        }*/
         for layer in &mut self.params {
             layer.remove(key);
         }
@@ -381,15 +377,16 @@ impl DataBase {
         self.unset_function(key);
     }
 
-    pub fn print(&mut self, _k: &str) {
-        /*
-        match self.get_value(k) {
+    pub fn print(&mut self, name: &str) {
+        match self.get_value2(name) {
+            Some(d) => d.print_with_name(name),
+            /*
             Some(DataType::Single(s)) => {
                 println!("{}={}", k.to_string(), s.data.to_string()); 
             },
             Some(DataType::Array(a)) => a.print(k),
+            */
             _ => {},
         }
-        */
     }
 }

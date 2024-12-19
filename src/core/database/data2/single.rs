@@ -38,6 +38,11 @@ impl Data2 for SingleData2 {
         self.body.clone()
     }
 
+    /*
+    fn print_with_name(&self, name: &str) {
+        println!("{}={}", name, &self.body);
+    }*/
+
     fn set_as_single(&mut self, value: &str) -> bool {
         self.body = value.to_string();
         true
