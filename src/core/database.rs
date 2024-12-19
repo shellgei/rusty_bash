@@ -145,12 +145,20 @@ impl DataBase {
     }
 
     pub fn has_value(&mut self, name: &str) -> bool {
-        let num = self.parameters.len();
+        let num = self.params.len();
         for layer in (0..num).rev()  {
             if let Some(_) = self.parameters[layer].get(name) {
                 return true;
             }
         }
+
+        /*
+        let num = self.parameters.len();
+        for layer in (0..num).rev()  {
+            if let Some(_) = self.parameters[layer].get(name) {
+                return true;
+            }
+        }*/
         false
     }
 
