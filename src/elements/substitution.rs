@@ -46,25 +46,16 @@ impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 local: bool, env: bool) -> bool {
         match self.value.clone() {
-            ParsedDataType::None => {
-                self.evaluated_string = Some("".to_string());
-                //self.evaluated_value = DataType::Single(SingleData::default());
-            },
+            ParsedDataType::None => self.evaluated_string = Some("".to_string()),
             ParsedDataType::Single(v) => {
                 match self.eval_as_value2(&v, core) {
-                    Some(e) => {
-                        self.evaluated_string = Some(e.clone());
-             //           self.evaluated_value = DataType::Single(SingleData::from(&e));
-                    },
+                    Some(e) => { self.evaluated_string = Some(e.clone()); },
                     None => {},
                 }
             },
             ParsedDataType::Array(a)  => {
                 match self.eval_as_array2(&mut a.clone(), core) {
-                    Some(vec) => {
-                        self.evaluated_array = Some(vec.clone());
-                        //self.evaluated_value = DataType::Array(ArrayData::from(vec));
-                    },
+                    Some(vec) => { self.evaluated_array = Some(vec.clone()); },
                     None => {},
                 }
             },
@@ -132,21 +123,18 @@ impl Substitution {
     }
  
     fn set_param2(&mut self, core: &mut ShellCore, local: bool) -> bool {
-        match (&self.evaluated_string, local) {
-            (Some(data), true) => {
-                match core.db.set_local_param2(&self.name, &data) {
-                    true  => true,
-                    false => readonly_error(&self.name, core),
-                }
-            },
-            (Some(data), false) => {
-                match core.db.set_param2(&self.name, &data) {
-                    true  => true,
-                    false => readonly_error(&self.name, core),
-                }
-            },
-            _ => false,
+        let (done, result) = match (&self.evaluated_string, local) {
+            (Some(data), true)  => (true, core.db.set_local_param2(&self.name, &data)),
+            (Some(data), false) => (true, core.db.set_param2(&self.name, &data)),
+            _ => (false, true),
         };
+
+        if ! result {
+            return readonly_error(&self.name, core);
+        }
+        if done {
+            return result;
+        }
 
         match (&self.evaluated_array, local) {
             (Some(data), true) => {
