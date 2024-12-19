@@ -136,21 +136,16 @@ impl Substitution {
             return result;
         }
 
-        match (&self.evaluated_array, local) {
-            (Some(data), true) => {
-                return match core.db.set_local_array(&self.name, data.to_vec()) {
-                    true  => true,
-                    false => readonly_error(&self.name, core),
-                }
-            },
-            (Some(data), false) => {
-                return match core.db.set_array(&self.name, data.to_vec()) {
-                    true  => true,
-                    false => readonly_error(&self.name, core),
-                }
-            },
-            _ => return readonly_error(&self.name, core),
+        let result = match (&self.evaluated_array, local) {
+            (Some(data), true)  => core.db.set_local_array(&self.name, data.to_vec()), 
+            (Some(data), false) => core.db.set_array(&self.name, data.to_vec()),
+            _ => false,
         };
+
+        if ! result {
+            return readonly_error(&self.name, core);
+        }
+        result
     }
 
     fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
