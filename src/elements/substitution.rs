@@ -25,7 +25,7 @@ pub struct Substitution {
     name: String,
     index: Option<Subscript>,
     value: ParsedDataType,
-    evaluated_value: DataType,
+    //evaluated_value: DataType,
     evaluated_string: Option<String>,
     evaluated_array: Option<Vec<String>>,
     append: bool,
@@ -51,13 +51,13 @@ impl Substitution {
         match self.value.clone() {
             ParsedDataType::None => {
                 self.evaluated_string = Some("".to_string());
-                self.evaluated_value = DataType::Single(SingleData::default());
+                //self.evaluated_value = DataType::Single(SingleData::default());
             },
             ParsedDataType::Single(v) => {
                 match self.eval_as_value2(&v, core) {
                     Some(e) => {
                         self.evaluated_string = Some(e.clone());
-                        self.evaluated_value = DataType::Single(SingleData::from(&e));
+             //           self.evaluated_value = DataType::Single(SingleData::from(&e));
                     },
                     None => {},
                 }
@@ -66,7 +66,7 @@ impl Substitution {
                 match self.eval_as_array2(&mut a.clone(), core) {
                     Some(vec) => {
                         self.evaluated_array = Some(vec.clone());
-                        self.evaluated_value = DataType::Array(ArrayData::from(vec));
+                        //self.evaluated_value = DataType::Array(ArrayData::from(vec));
                     },
                     None => {},
                 }
