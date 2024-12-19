@@ -7,11 +7,12 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Default)]
 pub struct AssocData2 {
     body: HashMap<String, String>,
+    readonly: bool,
 }
 
 impl From<HashMap<String, String>> for AssocData2 {
     fn from(hm: HashMap<String, String>) -> Self {
-        Self { body: hm }
+        Self { body: hm, readonly: false }
     }
 }
 
@@ -33,6 +34,13 @@ impl Data2 for AssocData2 {
         formatted += ")";
         formatted
     }
+
+    fn set_readonly(&mut self) -> bool {
+        self.readonly = true;
+        true
+    }
+
+    fn is_readonly(&mut self) -> bool {self.readonly}
 
     fn set_as_assoc(&mut self, key: &str, value: &str) -> bool {
         self.body.insert(key.to_string(), value.to_string());

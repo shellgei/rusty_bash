@@ -7,6 +7,7 @@ use super::Data2;
 pub struct SpecialData2 {
     pub internal_data: Vec<String>,
     pub function: fn(&mut Vec<String>) -> String,
+    readonly: bool,
 }
 
 impl From<fn(&mut Vec<String>)-> String> for SpecialData2 {
@@ -14,6 +15,7 @@ impl From<fn(&mut Vec<String>)-> String> for SpecialData2 {
         Self {
             internal_data: vec![],
             function: f,
+            readonly: false,
         }
     }
 }
@@ -40,6 +42,13 @@ impl Data2 for SpecialData2 {
     fn print_body(&self) -> String {
         self.internal_data.join(" ")
     }
+
+    fn set_readonly(&mut self) -> bool {
+        self.readonly = true;
+        true
+    }
+
+    fn is_readonly(&mut self) -> bool {self.readonly}
 
     fn get_as_single(&mut self) -> Option<String> {
         Some( (self.function)(&mut self.internal_data) )

@@ -32,6 +32,9 @@ pub trait Data2 {
         println!("{}={}", name, self.print_body());
     }
 
+    fn set_readonly(&mut self) -> bool {false}
+    fn is_readonly(&mut self) -> bool {false}
+
     fn set_as_single(&mut self, _: &str) -> bool {false}
     fn get_as_single(&mut self) -> Option<String> {None}
     fn set_as_assoc(&mut self, _: &str, _: &str) -> bool {false}

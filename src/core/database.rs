@@ -6,7 +6,7 @@ mod data2;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
-use crate::utils::{random, clock};
+use crate::utils::{random, clock, error};
 use self::data2::Data2;
 use self::data2::assoc::AssocData2;
 use self::data2::single::SingleData2;
@@ -71,7 +71,7 @@ impl DataBase {
             return ans;
         }
 
-        match self.get_value2(name).as_mut() {
+        match self.get_clone(name).as_mut() {
             Some(d) => {
                 if d.is_array() {
                     return match d.get_as_array("0") {
@@ -99,7 +99,7 @@ impl DataBase {
     }
 
     pub fn get_array(&mut self, name: &str, pos: &str) -> String {
-        match self.get_value2(name).as_mut() {
+        match self.get_clone(name).as_mut() {
             Some(d) => {
                 if d.is_assoc() {
                     if let Some(ans) = d.get_as_assoc(pos) {
@@ -130,7 +130,17 @@ impl DataBase {
         None
     }
 
-    fn get_value2(&mut self, name: &str) -> Option<Box<dyn Data2>> {
+    fn set_readonly2(&mut self, name: &str) -> bool {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(v) = self.params[layer].get_mut(name) {
+                return v.set_readonly();
+            }
+        }
+        false
+    }
+
+    fn get_clone(&mut self, name: &str) -> Option<Box<dyn Data2>> {
         let num = self.params.len();
         for layer in (0..num).rev()  {
             if let Some(v) = self.params[layer].get_mut(name) {
@@ -151,14 +161,14 @@ impl DataBase {
     }
 
     pub fn len(&mut self, key: &str) -> usize {
-        match self.get_value2(key).as_mut() {
+        match self.get_clone(key).as_mut() {
             Some(d) => d.len(),
             _ => 0,
         }
     }
 
     pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
-        match self.get_value2(key).as_mut() {
+        match self.get_clone(key).as_mut() {
             Some(d) => {
                 match d.get_all_as_array() {
                     Some(v) => v,
@@ -170,14 +180,14 @@ impl DataBase {
     }
 
     pub fn is_array(&mut self, name: &str) -> bool {
-        match self.get_value2(name).as_mut() {
+        match self.get_clone(name).as_mut() {
             Some(d) => return d.is_array(),
             _ => false,
         }
     }
 
     pub fn is_assoc(&mut self, key: &str) -> bool {
-        match self.get_value2(key) {
+        match self.get_clone(key) {
             Some(d) => d.is_assoc(),
             None => false,
         }
@@ -203,7 +213,24 @@ impl DataBase {
         }
     }
 
+    fn is_readonly(&mut self, name: &str, layer: usize) -> bool {
+        match self.params[layer].get_mut(name) {
+            Some(d) => {
+                d.is_readonly()
+            },
+            None => false, 
+        }
+    }
+
     pub fn set_layer_param2(&mut self, name: &str, val: &str, layer: usize) -> bool {
+        if self.is_readonly(name, layer) {
+            self.set_param2("?", "1");
+            let msg = error::readonly(name);
+            eprintln!("{}", &msg);
+            //error::print(&msg, core);
+            return false;
+        }
+
         match env::var(name) {
             Ok(_) => env::set_var(name, val),
             _     => {},
@@ -222,8 +249,8 @@ impl DataBase {
         true
     }
 
-    pub fn set_param2(&mut self, key: &str, val: &str) -> bool {
-        self.set_layer_param2(key, val, 0)
+    pub fn set_param2(&mut self, name: &str, val: &str) -> bool {
+        self.set_layer_param2(name, val, 0)
     }
 
     pub fn set_special_param2(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
@@ -235,20 +262,6 @@ impl DataBase {
         self.set_layer_param2(key, val, layer-1)
     }
 
-    /*
-    fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
-        match v.clone() {
-            DataType::Array(ArrayData{ data: a }) 
-                => {
-                    self.params[layer].insert( name.to_string(), Box::new(ArrayData2::from(a)));
-                    return true;
-                },
-            _ => {},
-        }
-
-        false
-    }
-*/
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
         self.params[layer].insert( name.to_string(), Box::new(ArrayData2::from(v)));
         true
@@ -362,30 +375,40 @@ impl DataBase {
         }
     }
 
-    pub fn unset_var(&mut self, key: &str) {
+    pub fn unset_var(&mut self, name: &str) {
         for layer in &mut self.params {
-            layer.remove(key);
+            layer.remove(name);
         }
     }
 
-    pub fn unset_function(&mut self, key: &str) {
-        self.functions.remove(key);
+    pub fn unset_function(&mut self, name: &str) {
+        self.functions.remove(name);
     }
 
-    pub fn unset(&mut self, key: &str) {
-        self.unset_var(key);
-        self.unset_function(key);
+    pub fn unset(&mut self, name: &str) {
+        self.unset_var(name);
+        self.unset_function(name);
+    }
+
+    pub fn set_readonly(&mut self, name: &str, tp: &str) -> bool {
+        match self.get_clone(name).as_mut() {
+            Some(d) => {
+                self.set_readonly2(name)
+            },
+            None => {
+                match tp {
+                    "-A" => self.set_assoc(name),
+                    "-a" => self.set_array(name, vec![]),
+                    _ => self.set_param2(name, ""),
+                };
+                self.set_readonly(name, "")
+            },
+        }
     }
 
     pub fn print(&mut self, name: &str) {
-        match self.get_value2(name) {
+        match self.get_clone(name) {
             Some(d) => d.print_with_name(name),
-            /*
-            Some(DataType::Single(s)) => {
-                println!("{}={}", k.to_string(), s.data.to_string()); 
-            },
-            Some(DataType::Array(a)) => a.print(k),
-            */
             _ => {},
         }
     }

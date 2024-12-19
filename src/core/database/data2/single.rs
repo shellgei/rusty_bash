@@ -5,29 +5,18 @@ use super::Data2;
 
 #[derive(Debug, Clone)]
 pub struct SingleData2 {
-    pub body: String
+    body: String,
+    readonly: bool,
 }
 
 impl From<&str> for SingleData2 {
     fn from(s: &str) -> Self {
-        Self { body: s.to_string() }
+        Self {
+            body: s.to_string(),
+            readonly: false,
+        }
     }
 }
-
-/*
-impl SingleData {
-    pub fn update(&mut self) -> DataType {
-        let ans = (self.function)(&mut self.internal_data);
-        DataType::from(ans)
-    }
-}
-
-impl From<Vec<String>> for ArrayData2 {
-    fn from(v: Vec<String>) -> Self {
-        Self { body: v }
-    }
-}
-*/
 
 impl Data2 for SingleData2 {
     fn boxed_clone(&self) -> Box<dyn Data2> {
@@ -35,13 +24,15 @@ impl Data2 for SingleData2 {
     }
 
     fn print_body(&self) -> String {
-        self.body.clone()
+        format!("{} {}", &self.body, self.readonly)
     }
 
-    /*
-    fn print_with_name(&self, name: &str) {
-        println!("{}={}", name, &self.body);
-    }*/
+    fn set_readonly(&mut self) -> bool {
+        self.readonly = true;
+        true
+    }
+
+    fn is_readonly(&mut self) -> bool {self.readonly}
 
     fn set_as_single(&mut self, value: &str) -> bool {
         self.body = value.to_string();
