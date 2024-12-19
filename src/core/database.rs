@@ -147,7 +147,7 @@ impl DataBase {
     pub fn has_value(&mut self, name: &str) -> bool {
         let num = self.params.len();
         for layer in (0..num).rev()  {
-            if let Some(_) = self.parameters[layer].get(name) {
+            if let Some(_) = self.params[layer].get(name) {
                 return true;
             }
         }
@@ -249,8 +249,9 @@ impl DataBase {
             _ => {},
         }
 
-        self.parameters[layer].insert( name.to_string(), Data::from(v));
-        true
+        //self.parameters[layer].insert( name.to_string(), Data::from(v));
+        //true
+        false
     }
 
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
@@ -286,7 +287,7 @@ impl DataBase {
     }
 
     pub fn set_local_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> bool {
-        let layer = self.parameters.len();
+        let layer = self.params.len();
         self.set_layer_assoc_elem(name, key, val, layer-1)
     }
 
@@ -303,12 +304,12 @@ impl DataBase {
     }
 
     pub fn set_local(&mut self, name: &str, v: DataType) -> bool {
-        let layer = self.parameters.len();
+        let layer = self.params.len();
         self.set_layer(name, v, layer-1)
     }
 
     pub fn set_local_array(&mut self, name: &str, v: Vec<String>) -> bool {
-        let layer = self.parameters.len();
+        let layer = self.params.len();
         self.set_layer_array(name, v, layer-1)
     }
 
@@ -319,18 +320,18 @@ impl DataBase {
 
     pub fn push_local(&mut self) {
         self.params.push(HashMap::new());
-        self.parameters.push(HashMap::new());
+        //self.parameters.push(HashMap::new());
     }
 
     pub fn pop_local(&mut self) {
         self.params.pop();
-        self.parameters.pop();
+        //self.parameters.pop();
     }
-    pub fn get_layer_num(&mut self) -> usize { self.parameters.len() }
+    pub fn get_layer_num(&mut self) -> usize { self.params.len() }
 
     pub fn get_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();
-        for layer in &self.parameters {
+        for layer in &self.params {
             layer.keys().for_each(|k| {keys.insert(k);} );
         }
         let mut ans: Vec<String> = keys.iter().map(|c| c.to_string()).collect();
@@ -376,9 +377,10 @@ impl DataBase {
     }
 
     pub fn unset_var(&mut self, key: &str) {
+        /*
         for layer in &mut self.parameters {
             layer.remove(key);
-        }
+        }*/
         for layer in &mut self.params {
             layer.remove(key);
         }
