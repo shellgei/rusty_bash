@@ -239,7 +239,7 @@ impl DataBase {
         self.set_layer_param2(key, val, layer-1)
     }
 
-    pub fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
+    fn set_layer(&mut self, name: &str, v: DataType, layer: usize) -> bool {
         match v.clone() {
             DataType::Array(ArrayData{ data: a }) 
                 => {
