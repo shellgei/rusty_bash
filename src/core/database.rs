@@ -247,8 +247,6 @@ impl DataBase {
             _ => {},
         }
 
-        //self.parameters[layer].insert( name.to_string(), Data::from(v));
-        //true
         false
     }
 
@@ -293,18 +291,20 @@ impl DataBase {
         self.set_layer_array(name, v, 0)
     }
 
-    pub fn set(&mut self, name: &str, v: DataType) -> bool {
+    /*
+    fn set(&mut self, name: &str, v: DataType) -> bool {
         self.set_layer(name, v, 0)
-    }
+    }*/
 
     pub fn set_assoc(&mut self, name: &str) -> bool {
         self.set_layer_assoc(name, 0)
     }
 
+    /*
     pub fn set_local(&mut self, name: &str, v: DataType) -> bool {
         let layer = self.params.len();
         self.set_layer(name, v, layer-1)
-    }
+    }*/
 
     pub fn set_local_array(&mut self, name: &str, v: Vec<String>) -> bool {
         let layer = self.params.len();
