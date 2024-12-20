@@ -396,13 +396,13 @@ impl DataBase {
         self.unset_function(name);
     }
 
-    pub fn set_readonly(&mut self, name: &str, tp: &str) -> bool {
+    pub fn set_flag(&mut self, name: &str, flag: char) -> bool {
         let layer = self.position_parameters.len();
         match self.param_options[layer-1].get_mut(name) {
             None => {
                 self.param_options[layer-1].insert(name.to_string(), "r".to_string());
             },
-            Some(e) => *e += "r",
+            Some(e) => {e.push(flag);},
         }
         true
 

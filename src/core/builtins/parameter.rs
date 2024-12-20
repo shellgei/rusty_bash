@@ -69,11 +69,18 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         return print_all(core);
     }
-    let readonly = args.contains(&"-r".to_string());
 
     let mut args = arg::dissolve_options(args);
+
+    let name = args.pop().unwrap();
+    if args.contains(&"-r".to_string()) {
+        return match core.db.set_flag(&name, 'r') {
+            true  => 0,
+            false => 1, 
+        }
+    }
+
     if args.contains(&"-A".to_string()) {
-        let name = args.pop().unwrap();
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
@@ -81,21 +88,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1; //TODO: error message
         }
 
-        if readonly {
-            return match core.db.set_readonly(&name, "-A") {
-                true  => 0,
-                false => 1, 
-            }
-        }
         return 0;
-    }
-
-    let name = args.pop().unwrap();
-    if readonly {
-        return match core.db.set_readonly(&name, "") {
-            true  => 0,
-            false => 1, 
-        }
     }
 
     0
