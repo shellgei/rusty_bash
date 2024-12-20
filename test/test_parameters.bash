@@ -35,4 +35,15 @@ res=$($com -c '[[ $(date +%s) -eq $EPOCHSECONDS ]]')
 res=$($com -c 'echo $(( $EPOCHREALTIME - $(date +%s) )) | awk -F. "{print \$1}"')
 [[ "$res" -eq 0 ]] || err $LINENO
 
+### READONLY ###
+#
+res=$($com -c 'A=1 ; f () { local A ; declare -r A ; A=123 ; } ; f')
+[[ "$?" -eq 1 ]] || err $LINENO
+
+res=$($com -c 'f () { local A ; declare -r A ; A=123 ; } ; f; A=3 ; echo $A')
+[[ "$res" -eq 3 ]] || err $LINENO
+
+res=$($com -c 'A=1 ; declare -r A ; f () { local A ; A=123 ; } ; f')
+[[ "$?" -eq 1 ]] || err $LINENO
+
 echo $0 >> ./ok

@@ -3,6 +3,7 @@
 
 mod data2;
 
+use crate::exit;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
@@ -17,6 +18,7 @@ use self::data2::special::SpecialData2;
 pub struct DataBase {
     pub flags: String,
     params: Vec<HashMap<String, Box<dyn Data2>>>,
+    param_options: Vec<HashMap<String, String>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -27,6 +29,7 @@ impl DataBase {
     pub fn new() -> DataBase {
         let mut data = DataBase {
             params: vec![HashMap::new()],
+            param_options: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             flags: "B".to_string(),
             ..Default::default()
@@ -50,6 +53,7 @@ impl DataBase {
     }
 
     pub fn get_param(&mut self, name: &str) -> String {
+
         if name == "-" {
             return self.flags.clone();
         }
@@ -130,6 +134,7 @@ impl DataBase {
         None
     }
 
+    /*
     fn set_readonly2(&mut self, name: &str) -> bool {
         let num = self.params.len();
         for layer in (0..num).rev()  {
@@ -138,7 +143,7 @@ impl DataBase {
             }
         }
         false
-    }
+    }*/
 
     fn get_clone(&mut self, name: &str) -> Option<Box<dyn Data2>> {
         let num = self.params.len();
@@ -213,17 +218,24 @@ impl DataBase {
         }
     }
 
-    fn is_readonly(&mut self, name: &str, layer: usize) -> bool {
+    fn is_readonly(&mut self, name: &str) -> bool {
+        let layer = self.param_options.len() - 1;
+        match self.param_options[layer].get(name) {
+            None => false,
+            Some(e) => e.contains("r"),
+        }
+
+        /*
         match self.params[layer].get_mut(name) {
             Some(d) => {
                 d.is_readonly()
             },
             None => false, 
-        }
+        }*/
     }
 
     pub fn set_layer_param2(&mut self, name: &str, val: &str, layer: usize) -> bool {
-        if self.is_readonly(name, layer) {
+        if self.is_readonly(name) {
             self.set_param("?", "1");
             let msg = error::readonly(name);
             eprintln!("{}", &msg);
@@ -319,12 +331,15 @@ impl DataBase {
 
     pub fn push_local(&mut self) {
         self.params.push(HashMap::new());
-        //self.parameters.push(HashMap::new());
+        match self.param_options.last() {
+            Some(e) => self.param_options.push(e.clone()),
+            None => exit::internal("error: DataBase::push_local"),
+        }
     }
 
     pub fn pop_local(&mut self) {
         self.params.pop();
-        //self.parameters.pop();
+        self.param_options.pop();
     }
     pub fn get_layer_num(&mut self) -> usize { self.params.len() }
 
@@ -391,6 +406,16 @@ impl DataBase {
     }
 
     pub fn set_readonly(&mut self, name: &str, tp: &str) -> bool {
+        let layer = self.position_parameters.len();
+        match self.param_options[layer-1].get_mut(name) {
+            None => {
+                self.param_options[layer-1].insert(name.to_string(), "r".to_string());
+            },
+            Some(e) => *e += "r",
+        }
+        true
+
+        /*
         match self.get_clone(name).as_mut() {
             Some(d) => {
                 self.set_readonly2(name)
@@ -403,7 +428,7 @@ impl DataBase {
                 };
                 self.set_readonly(name, "")
             },
-        }
+        }*/
     }
 
     pub fn print(&mut self, name: &str) {
