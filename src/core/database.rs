@@ -405,21 +405,6 @@ impl DataBase {
             Some(e) => {e.push(flag);},
         }
         true
-
-        /*
-        match self.get_clone(name).as_mut() {
-            Some(d) => {
-                self.set_readonly2(name)
-            },
-            None => {
-                match tp {
-                    "-A" => self.set_assoc(name),
-                    "-a" => self.set_array(name, vec![]),
-                    _ => self.set_param(name, ""),
-                };
-                self.set_readonly(name, "")
-            },
-        }*/
     }
 
     pub fn print(&mut self, name: &str) {

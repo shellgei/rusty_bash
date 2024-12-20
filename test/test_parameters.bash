@@ -18,8 +18,8 @@ com=../target/release/sush
 res=$($com -c '[[ "$RANDOM" -ne "$RANDOM" ]]')
 [ "$?" == "0" ] || err $LINENO
 
-#res=$($com -c 'RANDOM=a ; echo "$RANDOM"')
-#[ "$res" != "a" ] || err $LINENO
+res=$($com -c 'RANDOM=a ; echo "$RANDOM"')
+[ "$res" != "a" ] || err $LINENO
 
 res=$($com -c 'unset RANDOM; RANDOM=a ; echo "$RANDOM"')
 [ "$res" == "a" ] || err $LINENO
