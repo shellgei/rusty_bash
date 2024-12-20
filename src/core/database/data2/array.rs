@@ -1,21 +1,21 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data2;
+use super::Data;
 
 #[derive(Debug, Clone, Default)]
-pub struct ArrayData2 {
+pub struct ArrayData {
     body: Vec<String>,
 }
 
-impl From<Vec<String>> for ArrayData2 {
+impl From<Vec<String>> for ArrayData {
     fn from(v: Vec<String>) -> Self {
         Self { body: v }
     }
 }
 
-impl Data2 for ArrayData2 {
-    fn boxed_clone(&self) -> Box<dyn Data2> {
+impl Data for ArrayData {
+    fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
 
@@ -66,7 +66,7 @@ impl Data2 for ArrayData2 {
     fn len(&mut self) -> usize { self.body.len() }
 }
 
-impl ArrayData2 {
+impl ArrayData {
     /*
     pub fn get(&self, key: usize) -> Option<String> {
         match key < self.body.len() {

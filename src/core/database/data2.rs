@@ -9,20 +9,20 @@ pub mod special;
 use std::fmt;
 use std::fmt::Debug;
 
-impl Debug for dyn Data2 {
+impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.print_body()).finish()
     }
 }
 
-impl Clone for Box::<dyn Data2> {
-    fn clone(&self) -> Box<dyn Data2> {
+impl Clone for Box::<dyn Data> {
+    fn clone(&self) -> Box<dyn Data> {
         self.boxed_clone()
     }
 }
 
-pub trait Data2 {
-    fn boxed_clone(&self) -> Box<dyn Data2>;
+pub trait Data {
+    fn boxed_clone(&self) -> Box<dyn Data>;
     fn print_body(&self) -> String;
 
     fn print_with_name(&self, name: &str) {

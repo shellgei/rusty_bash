@@ -8,16 +8,16 @@ use crate::elements::command::function_def::FunctionDefinition;
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock, error};
-use self::data2::Data2;
-use self::data2::assoc::AssocData2;
-use self::data2::single::SingleData2;
-use self::data2::array::ArrayData2;
-use self::data2::special::SpecialData2;
+use self::data2::Data;
+use self::data2::assoc::AssocData;
+use self::data2::single::SingleData;
+use self::data2::array::ArrayData;
+use self::data2::special::SpecialData;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
-    params: Vec<HashMap<String, Box<dyn Data2>>>,
+    params: Vec<HashMap<String, Box<dyn Data>>>,
     param_options: Vec<HashMap<String, String>>,
     pub position_parameters: Vec<Vec<String>>,
     pub aliases: HashMap<String, String>,
@@ -145,7 +145,7 @@ impl DataBase {
         false
     }*/
 
-    fn get_clone(&mut self, name: &str) -> Option<Box<dyn Data2>> {
+    fn get_clone(&mut self, name: &str) -> Option<Box<dyn Data>> {
         let num = self.params.len();
         for layer in (0..num).rev()  {
             if let Some(v) = self.params[layer].get_mut(name) {
@@ -245,7 +245,7 @@ impl DataBase {
                 }
             },
             None => {
-                self.params[layer].insert(name.to_string(), Box::new(SingleData2::from(val)));
+                self.params[layer].insert(name.to_string(), Box::new(SingleData::from(val)));
                 return true;
             },
         }
@@ -257,7 +257,7 @@ impl DataBase {
     }
 
     pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
-        self.params[0].insert( key.to_string(), Box::new(SpecialData2::from(f)) );
+        self.params[0].insert( key.to_string(), Box::new(SpecialData::from(f)) );
     }
 
     pub fn set_local_param(&mut self, key: &str, val: &str) -> bool {
@@ -266,12 +266,12 @@ impl DataBase {
     }
 
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
-        self.params[layer].insert( name.to_string(), Box::new(ArrayData2::from(v)));
+        self.params[layer].insert( name.to_string(), Box::new(ArrayData::from(v)));
         true
     }
 
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
-        self.params[layer].insert(name.to_string(), Box::new(AssocData2::default()));
+        self.params[layer].insert(name.to_string(), Box::new(AssocData::default()));
         true
     }
 

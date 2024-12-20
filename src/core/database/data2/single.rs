@@ -1,14 +1,14 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data2;
+use super::Data;
 
 #[derive(Debug, Clone)]
-pub struct SingleData2 {
+pub struct SingleData {
     body: String,
 }
 
-impl From<&str> for SingleData2 {
+impl From<&str> for SingleData {
     fn from(s: &str) -> Self {
         Self {
             body: s.to_string(),
@@ -16,8 +16,8 @@ impl From<&str> for SingleData2 {
     }
 }
 
-impl Data2 for SingleData2 {
-    fn boxed_clone(&self) -> Box<dyn Data2> {
+impl Data for SingleData {
+    fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
 
@@ -42,7 +42,7 @@ impl Data2 for SingleData2 {
 }
 /*
 
-impl ArrayData2 {
+impl ArrayData {
     /*
     pub fn get(&self, key: usize) -> Option<String> {
         match key < self.body.len() {

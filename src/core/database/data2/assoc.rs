@@ -1,22 +1,22 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data2;
+use super::Data;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
-pub struct AssocData2 {
+pub struct AssocData {
     body: HashMap<String, String>,
 }
 
-impl From<HashMap<String, String>> for AssocData2 {
+impl From<HashMap<String, String>> for AssocData {
     fn from(hm: HashMap<String, String>) -> Self {
         Self { body: hm }
     }
 }
 
-impl Data2 for AssocData2 {
-    fn boxed_clone(&self) -> Box<dyn Data2> {
+impl Data for AssocData {
+    fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
 
@@ -54,7 +54,7 @@ impl Data2 for AssocData2 {
     fn len(&mut self) -> usize { self.body.len() }
 }
 
-impl AssocData2 {
+impl AssocData {
     pub fn get(&self, key: &str) -> Option<String> {
         self.body.get(key).cloned()
     }

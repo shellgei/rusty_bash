@@ -1,15 +1,15 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data2;
+use super::Data;
 
 #[derive(Debug, Clone)]
-pub struct SpecialData2 {
+pub struct SpecialData {
     pub internal_data: Vec<String>,
     pub function: fn(&mut Vec<String>) -> String,
 }
 
-impl From<fn(&mut Vec<String>)-> String> for SpecialData2 {
+impl From<fn(&mut Vec<String>)-> String> for SpecialData {
     fn from(f: fn(&mut Vec<String>)-> String) -> Self {
         Self {
             internal_data: vec![],
@@ -18,8 +18,8 @@ impl From<fn(&mut Vec<String>)-> String> for SpecialData2 {
     }
 }
 
-impl Data2 for SpecialData2 {
-    fn boxed_clone(&self) -> Box<dyn Data2> {
+impl Data for SpecialData {
+    fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
 
