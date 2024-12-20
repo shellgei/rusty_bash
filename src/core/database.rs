@@ -414,6 +414,9 @@ impl DataBase {
         for layer in &mut self.params {
             layer.remove(name);
         }
+        for layer in &mut self.param_options {
+            layer.remove(name);
+        }
     }
 
     pub fn unset_function(&mut self, name: &str) {
