@@ -46,4 +46,7 @@ res=$($com -c 'f () { local A ; declare -r A ; A=123 ; } ; f; A=3 ; echo $A')
 res=$($com -c 'A=1 ; declare -r A ; f () { local A ; A=123 ; } ; f')
 [[ "$?" -eq 1 ]] || err $LINENO
 
+res=$($com -c 'A=1 ; declare -r A ; A=(3 4)')
+[[ "$?" -eq 1 ]] || err $LINENO
+
 echo $0 >> ./ok

@@ -266,23 +266,51 @@ impl DataBase {
     }
 
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
+        if self.has_flag(name, 'r') {
+            self.set_param("?", "1");
+            let msg = error::readonly(name);
+            eprintln!("{}", &msg);
+            return false;
+        }
+
         self.params[layer].insert( name.to_string(), Box::new(ArrayData::from(v)));
         true
     }
 
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
+        if self.has_flag(name, 'r') {
+            self.set_param("?", "1");
+            let msg = error::readonly(name);
+            eprintln!("{}", &msg);
+            return false;
+        }
+
         self.params[layer].insert(name.to_string(), Box::new(AssocData::default()));
         true
     }
 
-    pub fn set_layer_array_elem(&mut self, key: &str, val: &String, layer: usize, pos: usize) -> bool {
-        match self.params[layer].get_mut(key) {
+    pub fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> bool {
+        if self.has_flag(name, 'r') {
+            self.set_param("?", "1");
+            let msg = error::readonly(name);
+            eprintln!("{}", &msg);
+            return false;
+        }
+
+        match self.params[layer].get_mut(name) {
             Some(d) => return d.set_as_array(&pos.to_string(), val),
             None    => false,
         }
     }
 
     pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> bool {
+        if self.has_flag(name, 'r') {
+            self.set_param("?", "1");
+            let msg = error::readonly(name);
+            eprintln!("{}", &msg);
+            return false;
+        }
+
         match self.params[layer].get_mut(name) {
             Some(v) => v.set_as_assoc(key, val), 
             _ => false,
@@ -332,6 +360,7 @@ impl DataBase {
         self.params.pop();
         self.param_options.pop();
     }
+
     pub fn get_layer_num(&mut self) -> usize { self.params.len() }
 
     pub fn get_keys(&mut self) -> Vec<String> {
@@ -396,21 +425,18 @@ impl DataBase {
         self.unset_function(name);
     }
 
-    pub fn set_flag(&mut self, name: &str, flag: char) -> bool {
-        let layer = self.position_parameters.len();
-        match self.param_options[layer-1].get_mut(name) {
-            None => {
-                self.param_options[layer-1].insert(name.to_string(), "r".to_string());
-            },
-            Some(e) => {e.push(flag);},
+    pub fn set_flag(&mut self, name: &str, flag: char) {
+        let layer = self.position_parameters.len() - 1;
+        let rf = &mut self.param_options[layer];
+        match rf.get_mut(name) {
+            Some(d) => d.push(flag),
+            None => {rf.insert(name.to_string(), "r".to_string()); },
         }
-        true
     }
 
     pub fn print(&mut self, name: &str) {
-        match self.get_clone(name) {
-            Some(d) => d.print_with_name(name),
-            _ => {},
+        if let Some(d) = self.get_clone(name) {
+            d.print_with_name(name);
         }
     }
 }

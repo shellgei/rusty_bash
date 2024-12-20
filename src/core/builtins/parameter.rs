@@ -74,10 +74,8 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let name = args.pop().unwrap();
     if args.contains(&"-r".to_string()) {
-        return match core.db.set_flag(&name, 'r') {
-            true  => 0,
-            false => 1, 
-        }
+        core.db.set_flag(&name, 'r');
+        return 0;
     }
 
     if args.contains(&"-A".to_string()) {
