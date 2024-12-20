@@ -22,7 +22,6 @@ pub struct Substitution {
     name: String,
     index: Option<Subscript>,
     value: ParsedDataType,
-    //evaluated_value: DataType,
     evaluated_string: Option<String>,
     evaluated_array: Option<Vec<String>>,
     append: bool,
@@ -46,19 +45,16 @@ impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 local: bool, env: bool) -> bool {
         match self.value.clone() {
-            ParsedDataType::None => self.evaluated_string = Some("".to_string()),
-            ParsedDataType::Single(v) => {
-                match self.eval_as_value2(&v, core) {
-                    Some(e) => { self.evaluated_string = Some(e.clone()); },
-                    None => {},
-                }
-            },
-            ParsedDataType::Array(a)  => {
-                match self.eval_as_array2(&mut a.clone(), core) {
-                    Some(vec) => { self.evaluated_array = Some(vec.clone()); },
-                    None => {},
-                }
-            },
+            ParsedDataType::None 
+            => self.evaluated_string = Some("".to_string()),
+            ParsedDataType::Single(v) 
+            => if let Some(e) = self.eval_as_value(&v, core) {
+                self.evaluated_string = Some(e);
+            }
+            ParsedDataType::Array(mut a) 
+            => if let Some(vec) = self.eval_as_array(&mut a, core) {
+                self.evaluated_array = Some(vec.clone());
+            }
         };
 
         match env {
@@ -67,7 +63,7 @@ impl Substitution {
         }
     }
 
-    fn set_assoc2(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let index = self.get_index(core);
         let result = match (&self.evaluated_string, index, local) {
             (Some(v), Some(k), false) 
@@ -156,7 +152,7 @@ impl Substitution {
         }
 
         if core.db.is_assoc(&self.name) {
-            self.set_assoc2(core, local)
+            self.set_assoc(core, local)
         }else if core.db.is_array(&self.name) {
             self.set_array2(core, local)
         }else {
@@ -184,7 +180,7 @@ impl Substitution {
         }
     }
 
-    fn eval_as_value2(&self, w: &Word, core: &mut ShellCore) -> Option<String> {
+    fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> Option<String> {
         let prev = match self.append {
             true  => core.db.get_param(&self.name),
             false => "".to_string(),
@@ -196,7 +192,7 @@ impl Substitution {
         }
     }
 
-    fn eval_as_array2(&self, a: &mut Array, core: &mut ShellCore) -> Option<Vec<String>> {
+    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> Option<Vec<String>> {
         let prev = match self.append {
             true  => core.db.get_array_all(&self.name),
             false => vec![],
