@@ -32,11 +32,11 @@ impl DataBase {
             ..Default::default()
         };
 
-        data.set_param2("$", &process::id().to_string());
-        data.set_param2("BASHPID", &process::id().to_string());
-        data.set_param2("BASH_SUBSHELL", "0");
-        data.set_param2("?", "0");
-        data.set_param2("HOME", &env::var("HOME").unwrap_or("/".to_string()));
+        data.set_param("$", &process::id().to_string());
+        data.set_param("BASHPID", &process::id().to_string());
+        data.set_param("BASH_SUBSHELL", "0");
+        data.set_param("?", "0");
+        data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
 
         data.set_special_param2("SRANDOM", random::get_srandom);
         data.set_special_param2("RANDOM", random::get_random);
@@ -224,7 +224,7 @@ impl DataBase {
 
     pub fn set_layer_param2(&mut self, name: &str, val: &str, layer: usize) -> bool {
         if self.is_readonly(name, layer) {
-            self.set_param2("?", "1");
+            self.set_param("?", "1");
             let msg = error::readonly(name);
             eprintln!("{}", &msg);
             //error::print(&msg, core);
@@ -249,7 +249,7 @@ impl DataBase {
         true
     }
 
-    pub fn set_param2(&mut self, name: &str, val: &str) -> bool {
+    pub fn set_param(&mut self, name: &str, val: &str) -> bool {
         self.set_layer_param2(name, val, 0)
     }
 
@@ -399,7 +399,7 @@ impl DataBase {
                 match tp {
                     "-A" => self.set_assoc(name),
                     "-a" => self.set_array(name, vec![]),
-                    _ => self.set_param2(name, ""),
+                    _ => self.set_param(name, ""),
                 };
                 self.set_readonly(name, "")
             },

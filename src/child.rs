@@ -45,7 +45,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         pipestatus.retain(|e| e != "0");
 
         if pipestatus.len() != 0 {
-            core.db.set_param2("?", &pipestatus.last().unwrap());
+            core.db.set_param("?", &pipestatus.last().unwrap());
         }
     }
 

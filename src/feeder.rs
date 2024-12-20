@@ -131,7 +131,7 @@ impl Feeder {
             Ok(()) => true,
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
-                core.db.set_param2("?", "2");
+                core.db.set_param("?", "2");
 
                 match core.db.flags.contains('S') { //S: on source command
                     true  => return false,
@@ -139,7 +139,7 @@ impl Feeder {
                 }
             },
             Err(InputError::Interrupt) => {
-                core.db.set_param2("?", "130");
+                core.db.set_param("?", "130");
                 false
             },
         }

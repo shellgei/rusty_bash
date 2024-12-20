@@ -32,7 +32,7 @@ impl Command for ForCommand {
         };
 
         if ! ok && core.db.get_param("?") == "0" {
-            core.db.set_param2("?", "1");
+            core.db.set_param("?", "1");
         }
 
         core.loop_level -= 1;
@@ -75,10 +75,10 @@ impl ForCommand {
                 return false;
             }
 
-            match core.db.set_param2(&self.name, &p) {
+            match core.db.set_param(&self.name, &p) {
                 true => {},
                 false => {
-                    core.db.set_param2("?", "1");
+                    core.db.set_param("?", "1");
                     let msg = error::readonly(&self.name);
                     error::print(&msg, core);
                 },

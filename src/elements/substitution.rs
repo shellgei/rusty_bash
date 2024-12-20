@@ -28,14 +28,14 @@ pub struct Substitution {
 }
 
 fn readonly_error(name: &str, core: &mut ShellCore) -> bool {
-    core.db.set_param2("?", "1");
+    core.db.set_param("?", "1");
     let msg = error::readonly(name);
     error::print(&msg, core);
     false
 }
 
 fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
-    core.db.set_param2("?", "1");
+    core.db.set_param("?", "1");
     let msg = error::bad_array_subscript(&sub);
     error::print(&msg, core);
     false
@@ -67,10 +67,11 @@ impl Substitution {
         let index = self.get_index(core);
         let result = match (&self.evaluated_string, index, local) {
             (Some(v), Some(k), false) 
-              => core.db.set_assoc_elem(&self.name, &k, &v),
+            => core.db.set_assoc_elem(&self.name, &k, &v),
             (Some(v), Some(k), true) 
-              => core.db.set_local_assoc_elem(&self.name, &k, &v),
-            _ => return bad_subscript_error(&self.text, core),
+            => core.db.set_local_assoc_elem(&self.name, &k, &v),
+            _
+            => return bad_subscript_error(&self.text, core),
         };
         if ! result {
             readonly_error(&self.name, core);
@@ -79,7 +80,7 @@ impl Substitution {
         true
     }
 
-    fn set_array2(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_array(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let index = match self.get_index(core) {
             Some(s) => {
                 match s.parse::<usize>() {
@@ -118,10 +119,10 @@ impl Substitution {
         }
     }
  
-    fn set_param2(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let (done, result) = match (&self.evaluated_string, local) {
             (Some(data), true)  => (true, core.db.set_local_param2(&self.name, &data)),
-            (Some(data), false) => (true, core.db.set_param2(&self.name, &data)),
+            (Some(data), false) => (true, core.db.set_param(&self.name, &data)),
             _ => (false, true),
         };
 
@@ -147,16 +148,16 @@ impl Substitution {
     fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
-            core.db.set_param2("?", "1");
+            core.db.set_param("?", "1");
             return false;
         }
 
         if core.db.is_assoc(&self.name) {
             self.set_assoc(core, local)
         }else if core.db.is_array(&self.name) {
-            self.set_array2(core, local)
+            self.set_array(core, local)
         }else {
-            self.set_param2(core, local)
+            self.set_param(core, local)
         }
     }
 

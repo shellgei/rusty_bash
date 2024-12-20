@@ -173,7 +173,7 @@ impl ConditionalExpr {
             };
     
             if let Err(err_msg) = result {
-                core.db.set_param2("?", "2");
+                core.db.set_param("?", "2");
                 return Err(err_msg);
             }
         }

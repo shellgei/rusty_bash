@@ -32,7 +32,7 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        core.db.set_param2("LINENO", &self.lineno.to_string());
+        core.db.set_param("LINENO", &self.lineno.to_string());
         if Self::break_continue_or_return(core) {
             return None;
         }
@@ -45,7 +45,7 @@ impl Command for SimpleCommand {
         }
 
         match self.args.len() {
-            0 => self.exec_set_param2(core),
+            0 => self.exec_set_param(core),
             _ => self.exec_command(core, pipe),
         }
     }
@@ -117,7 +117,7 @@ impl SimpleCommand {
             return None;
         }
 
-        core.db.set_param2("_", &self.args.last().unwrap());
+        core.db.set_param("_", &self.args.last().unwrap());
         self.option_x_output(core);
 
         if self.force_fork 
@@ -133,14 +133,14 @@ impl SimpleCommand {
 
     fn check_sigint(core: &mut ShellCore) -> bool {
         if core.sigint.load(Relaxed) {
-            core.db.set_param2("?", "130");
+            core.db.set_param("?", "130");
             return true;
         }
         false
     }
 
-    fn exec_set_param2(&mut self, core: &mut ShellCore) -> Option<Pid> {
-        core.db.set_param2("_", "");
+    fn exec_set_param(&mut self, core: &mut ShellCore) -> Option<Pid> {
+        core.db.set_param("_", "");
         self.option_x_output(core);
         self.substitutions.iter_mut()
             .for_each(|s| {s.eval(core, false, false);});
@@ -181,7 +181,7 @@ impl SimpleCommand {
             },
             None => {
                 if ! core.sigint.load(Relaxed) {
-                    core.db.set_param2("?", "1");
+                    core.db.set_param("?", "1");
                 }
                 false
             },
