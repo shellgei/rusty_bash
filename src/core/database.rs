@@ -1,18 +1,18 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-mod data2;
+mod data;
 
 use crate::exit;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
 use crate::utils::{random, clock, error};
-use self::data2::Data;
-use self::data2::assoc::AssocData;
-use self::data2::single::SingleData;
-use self::data2::array::ArrayData;
-use self::data2::special::SpecialData;
+use self::data::Data;
+use self::data::assoc::AssocData;
+use self::data::single::SingleData;
+use self::data::array::ArrayData;
+use self::data::special::SpecialData;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
