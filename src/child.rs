@@ -87,7 +87,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     if exit_status == 130 {
         core.sigint.store(true, Relaxed);
     }
-    core.db.set_layer_param2("?", &exit_status.to_string(), 0); //追加
+    core.db.set_layer_param("?", &exit_status.to_string(), 0); //追加
     ws.expect("SUSH INTERNAL ERROR: no wait status")
 }
 

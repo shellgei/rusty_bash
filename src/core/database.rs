@@ -41,11 +41,11 @@ impl DataBase {
         data.set_param("?", "0");
         data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
 
-        data.set_special_param2("SRANDOM", random::get_srandom);
-        data.set_special_param2("RANDOM", random::get_random);
-        data.set_special_param2("EPOCHSECONDS", clock::get_epochseconds);
-        data.set_special_param2("EPOCHREALTIME", clock::get_epochrealtime);
-        data.set_special_param2("SECONDS", clock::get_seconds);
+        data.set_special_param("SRANDOM", random::get_srandom);
+        data.set_special_param("RANDOM", random::get_random);
+        data.set_special_param("EPOCHSECONDS", clock::get_epochseconds);
+        data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime);
+        data.set_special_param("SECONDS", clock::get_seconds);
 
         data.call_speial("SECONDS");
 
@@ -95,7 +95,7 @@ impl DataBase {
 
         match env::var(name) {
             Ok(v) => {
-                self.set_layer_param2(name, &v, 0);
+                self.set_layer_param(name, &v, 0);
                 v
             },
             _ => "".to_string()
@@ -226,12 +226,11 @@ impl DataBase {
         }
     }
 
-    pub fn set_layer_param2(&mut self, name: &str, val: &str, layer: usize) -> bool {
+    pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> bool {
         if self.has_flag(name, 'r') {
             self.set_param("?", "1");
             let msg = error::readonly(name);
             eprintln!("{}", &msg);
-            //error::print(&msg, core);
             return false;
         }
 
@@ -254,16 +253,16 @@ impl DataBase {
     }
 
     pub fn set_param(&mut self, name: &str, val: &str) -> bool {
-        self.set_layer_param2(name, val, 0)
+        self.set_layer_param(name, val, 0)
     }
 
-    pub fn set_special_param2(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
+    pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
         self.params[0].insert( key.to_string(), Box::new(SpecialData2::from(f)) );
     }
 
-    pub fn set_local_param2(&mut self, key: &str, val: &str) -> bool {
+    pub fn set_local_param(&mut self, key: &str, val: &str) -> bool {
         let layer = self.params.len();
-        self.set_layer_param2(key, val, layer-1)
+        self.set_layer_param(key, val, layer-1)
     }
 
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {

@@ -143,7 +143,7 @@ impl ShellCore {
             let func = self.builtins[&args[0]];
             args.append(special_args);
             let status = func(self, args);
-            self.db.set_layer_param2("?", &status.to_string(), 0);
+            self.db.set_layer_param("?", &status.to_string(), 0);
             return true;
         }
 
@@ -152,10 +152,10 @@ impl ShellCore {
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.db.set_layer_param2("BASHPID", &pid.to_string(), 0);
+        self.db.set_layer_param("BASHPID", &pid.to_string(), 0);
         match self.db.get_param("BASH_SUBSHELL").parse::<usize>() {
-            Ok(num) => self.db.set_layer_param2("BASH_SUBSHELL", &(num+1).to_string(), 0),
-            Err(_) =>  self.db.set_layer_param2("BASH_SUBSHELL", "0", 0),
+            Ok(num) => self.db.set_layer_param("BASH_SUBSHELL", &(num+1).to_string(), 0),
+            Err(_) =>  self.db.set_layer_param("BASH_SUBSHELL", "0", 0),
         };
     }
 

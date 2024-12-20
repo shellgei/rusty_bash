@@ -121,7 +121,7 @@ impl Substitution {
  
     fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
         let (done, result) = match (&self.evaluated_string, local) {
-            (Some(data), true)  => (true, core.db.set_local_param2(&self.name, &data)),
+            (Some(data), true)  => (true, core.db.set_local_param(&self.name, &data)),
             (Some(data), false) => (true, core.db.set_param(&self.name, &data)),
             _ => (false, true),
         };
