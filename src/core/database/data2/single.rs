@@ -6,14 +6,12 @@ use super::Data2;
 #[derive(Debug, Clone)]
 pub struct SingleData2 {
     body: String,
-    readonly: bool,
 }
 
 impl From<&str> for SingleData2 {
     fn from(s: &str) -> Self {
         Self {
             body: s.to_string(),
-            readonly: false,
         }
     }
 }
@@ -24,15 +22,8 @@ impl Data2 for SingleData2 {
     }
 
     fn print_body(&self) -> String {
-        format!("{} {}", &self.body, self.readonly)
+        self.body.clone()
     }
-
-    fn set_readonly(&mut self) -> bool {
-        self.readonly = true;
-        true
-    }
-
-    fn is_readonly(&mut self) -> bool {self.readonly}
 
     fn set_as_single(&mut self, value: &str) -> bool {
         self.body = value.to_string();

@@ -218,24 +218,16 @@ impl DataBase {
         }
     }
 
-    fn is_readonly(&mut self, name: &str) -> bool {
+    fn has_flag(&mut self, name: &str, flag: char) -> bool {
         let layer = self.param_options.len() - 1;
         match self.param_options[layer].get(name) {
             None => false,
-            Some(e) => e.contains("r"),
+            Some(e) => e.contains(flag),
         }
-
-        /*
-        match self.params[layer].get_mut(name) {
-            Some(d) => {
-                d.is_readonly()
-            },
-            None => false, 
-        }*/
     }
 
     pub fn set_layer_param2(&mut self, name: &str, val: &str, layer: usize) -> bool {
-        if self.is_readonly(name) {
+        if self.has_flag(name, 'r') {
             self.set_param("?", "1");
             let msg = error::readonly(name);
             eprintln!("{}", &msg);

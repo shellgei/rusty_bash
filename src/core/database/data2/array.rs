@@ -6,12 +6,11 @@ use super::Data2;
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData2 {
     body: Vec<String>,
-    readonly: bool,
 }
 
 impl From<Vec<String>> for ArrayData2 {
     fn from(v: Vec<String>) -> Self {
-        Self { body: v, readonly: false }
+        Self { body: v }
     }
 }
 
@@ -32,13 +31,6 @@ impl Data2 for ArrayData2 {
         formatted += ")";
         formatted
     }
-
-    fn set_readonly(&mut self) -> bool {
-        self.readonly = true;
-        true
-    }
-
-    fn is_readonly(&mut self) -> bool {self.readonly}
 
     fn set_as_array(&mut self, key: &str, value: &str) -> bool {
         if let Ok(n) = key.parse::<usize>() {
