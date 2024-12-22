@@ -53,7 +53,6 @@ impl Substitution {
             ParsedDataType::Array(mut a) 
             => if let Some(vec) = self.eval_as_array(&mut a, core) {
                 self.evaluated_array = Some(vec.clone());
-                //dbg!("{:?}", &self.evaluated_array);
             }
         };
 
@@ -67,11 +66,8 @@ impl Substitution {
         let index = self.get_index(core);
         let result = match (&self.evaluated_string, index) {
             (Some(v), Some(k)) 
-            => core.db.set_layer_assoc_elem(&self.name, &k, &v, layer),
-            //(Some(v), Some(k)) 
-            //=> core.db.set_local_assoc_elem(&self.name, &k, &v),
-            _
-            => return bad_subscript_error(&self.text, core),
+                => core.db.set_layer_assoc_elem(&self.name, &k, &v, layer),
+            _   => return bad_subscript_error(&self.text, core),
         };
         if ! result {
             readonly_error(&self.name, core);
@@ -98,20 +94,11 @@ impl Substitution {
                     false => readonly_error(&self.name, core),
                 }
             },
-            /*
-            (Some(v), Some(n)) => {
-                return match core.db.set_layer_array_elem(&self.name, &v, 0, n) {
-                    true  => true,
-                    false => readonly_error(&self.name, core),
-                }
-            },
-            */
             _ => {},
         }
 
         let result = match (&self.evaluated_array, index) {
             (Some(a), None) => core.db.set_layer_array(&self.name, a.clone(), layer),
-            //(Some(a), None, false) => core.db.set_array(&self.name, a.clone()),
             _ => false,
         };
 
@@ -122,9 +109,7 @@ impl Substitution {
     }
  
     fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> bool {
-        //dbg!("{:?}", &self);
         let (done, result) = match &self.evaluated_string {
-            //(Some(data), true)  => (true, core.db.set_local_param(&self.name, &data)),
             Some(data) => (true, core.db.set_layer_param(&self.name, &data, layer)),
             _ => (false, true),
         };
@@ -137,7 +122,6 @@ impl Substitution {
         }
 
         let result = match &self.evaluated_array {
-            //Some(data)  => core.db.set_local_array(&self.name, data.to_vec()), 
             Some(data) => core.db.set_layer_array(&self.name, data.to_vec(), layer),
             _ => false,
         };

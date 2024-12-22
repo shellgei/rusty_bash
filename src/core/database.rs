@@ -237,8 +237,6 @@ impl DataBase {
             Ok(_) => env::set_var(name, val),
             _     => {},
         }
-        //dbg!("{:?}, {:?}", &name, &layer);
-        //dbg!("{:?}", &self.params);
         match self.params[layer].get_mut(name) {
             Some(d) => {
                 if d.is_single() {
@@ -259,11 +257,6 @@ impl DataBase {
 
     pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
         self.params[0].insert( key.to_string(), Box::new(SpecialData::from(f)) );
-    }
-
-    pub fn set_local_param(&mut self, key: &str, val: &str) -> bool {
-        let layer = self.params.len();
-        self.set_layer_param(key, val, layer-1)
     }
 
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
@@ -329,27 +322,12 @@ impl DataBase {
         self.set_layer_assoc_elem(name, key, val, 0)
     }
 
-    pub fn set_local_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> bool {
-        let layer = self.params.len();
-        self.set_layer_assoc_elem(name, key, val, layer-1)
-    }
-
     pub fn set_array(&mut self, name: &str, v: Vec<String>) -> bool {
         self.set_layer_array(name, v, 0)
     }
 
     pub fn set_assoc(&mut self, name: &str) -> bool {
         self.set_layer_assoc(name, 0)
-    }
-
-    pub fn set_local_array(&mut self, name: &str, v: Vec<String>) -> bool {
-        let layer = self.params.len();
-        self.set_layer_array(name, v, layer-1)
-    }
-
-    pub fn set_local_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {
-        let layer = self.params.len();
-        self.set_layer_array_elem(name, val, layer-1, pos)
     }
 
     pub fn push_local(&mut self) {
