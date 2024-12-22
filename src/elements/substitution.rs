@@ -54,6 +54,7 @@ impl Substitution {
             ParsedDataType::Array(mut a) 
             => if let Some(vec) = self.eval_as_array(&mut a, core) {
                 self.evaluated_array = Some(vec.clone());
+                //dbg!("{:?}", &self.evaluated_array);
             }
         };
 

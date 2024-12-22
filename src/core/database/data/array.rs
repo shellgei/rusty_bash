@@ -1,16 +1,23 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use std::collections::HashMap;
 use super::Data;
 
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData {
-    body: Vec<String>,
+    body: HashMap<usize, String>,
 }
 
 impl From<Vec<String>> for ArrayData {
     fn from(v: Vec<String>) -> Self {
-        Self { body: v }
+        let mut ans = Self { body: HashMap::new() };
+
+        for i in 0..v.len() {
+            ans.body.insert(i, v[i].clone());
+        }
+
+        ans
     }
 }
 
@@ -23,7 +30,7 @@ impl Data for ArrayData {
         let mut formatted = String::new();
         formatted += "(";
         for i in 0..self.body.len() {
-            formatted += &format!("[{}]=\"{}\" ", i, &self.body[i]).clone();
+            formatted += &format!("[{}]=\"{}\" ", i, &self.body[&i]).clone();
         };
         if formatted.ends_with(" ") {
             formatted.pop();
@@ -34,23 +41,21 @@ impl Data for ArrayData {
 
     fn set_as_array(&mut self, key: &str, value: &str) -> bool {
         if let Ok(n) = key.parse::<usize>() {
-            if n < self.body.len() {
-                self.body[n] = value.to_string();
-                return true;
-            }
+            self.body.insert(n, value.to_string());
+            return true;
         }
         false
     }
 
     fn get_as_array(&mut self, key: &str) -> Option<String> {
         if key == "@" || key == "*" {
-            return Some(self.body.join(" "));
+            return Some(self.values().join(" "));
         }
 
         match key.parse::<usize>() {
             Ok(n) => {
                 match n < self.body.len() {
-                    true  => Some(self.body[n].clone()),
+                    true  => Some(self.body[&n].clone()),
                     false => None,
                 }
             },
@@ -59,7 +64,7 @@ impl Data for ArrayData {
     }
 
     fn get_all_as_array(&mut self) -> Option<Vec<String>> {
-        Some(self.body.clone())
+        Some(self.values().clone())
     }
 
     fn is_array(&self) -> bool {true}
@@ -67,15 +72,9 @@ impl Data for ArrayData {
 }
 
 impl ArrayData {
-    /*
-    pub fn get(&self, key: usize) -> Option<String> {
-        match key < self.body.len() {
-            true  => Some(self.body[key].clone()),
-            false => None,
-        }
-    }
-
     pub fn values(&self) -> Vec<String> {
-        self.body.clone()
-    }*/
+        let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
+        keys.sort();
+        keys.iter().map(|i| self.body[i].clone()).collect()
+    }
 }

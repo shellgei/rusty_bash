@@ -78,6 +78,17 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
+    if args.contains(&"-a".to_string()) {
+        if ! utils::is_name(&name, core) {
+            return 1; //TODO: error message
+        }
+        if ! core.db.set_array(&name, vec![]) {
+            return 1; //TODO: error message
+        }
+
+        return 0;
+    }
+
     if args.contains(&"-A".to_string()) {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
