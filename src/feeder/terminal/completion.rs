@@ -128,9 +128,10 @@ impl Terminal {
             let (action, options) = core.completion_actions[com].clone();
             let mut cands = match action.as_ref() {
                 "command" => completion::compgen_c(core, args),
-                "user" => completion::compgen_u(core, args),
-                "stopped" => completion::compgen_stopped(core, args),
                 "job" => completion::compgen_j(core, args),
+                "stopped" => completion::compgen_stopped(core, args),
+                "user" => completion::compgen_u(core, args),
+                "variable" => completion::compgen_v(core, args),
                 _ => vec![],
             };
 

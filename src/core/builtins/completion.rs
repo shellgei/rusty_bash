@@ -108,6 +108,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-h" => compgen_h(core, &mut args), //history (sush original)
         "-j" => compgen_j(core, &mut args),
         "-u" => compgen_u(core, &mut args),
+        "-v" => compgen_v(core, &mut args),
         "-A stopped" => compgen_stopped(core, &mut args),
         "-W" => {
             if args.len() < 2 {
@@ -199,6 +200,25 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
     ans
 }
 
+pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut commands = vec![];
+
+    let mut aliases: Vec<String> = core.db.aliases.clone().into_keys().collect();
+    commands.append(&mut aliases);
+    let mut functions: Vec<String> = core.db.functions.clone().into_keys().collect();
+    commands.append(&mut functions);
+    let mut vars: Vec<String> = core.db.get_keys();
+    commands.append(&mut vars);
+
+    let head = get_head(args, 2);
+    if head != "" {
+        commands.retain(|a| a.starts_with(&head));
+    }
+    let mut command_in_paths = command_list(&head, core);
+    commands.append(&mut command_in_paths);
+    commands
+}
+
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
     let mut feeder = Feeder::new(&args[2]);
@@ -267,6 +287,7 @@ fn opt_to_action(arg: &str) -> String {
         "-c" => "command",
         "-j" => "job",
         "-u" => "user",
+        "-v" => "variable",
         _ => "",
     }.to_string()
 }
@@ -295,21 +316,6 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         return 0;
     }
-
-    /*
-    if args[1] == "-u" {
-        for command in &args[2..] {
-            core.completion_actions.insert(command.clone(), ("user".to_string(), options.clone()));
-        }
-        return 0;
-    }
-
-    if args[1] == "-j" {
-        for command in &args[2..] {
-            core.completion_actions.insert(command.clone(), ("job".to_string(), options.clone()));
-        }
-        return 0;
-    }*/
 
     if args.len() > 3 && args[1] == "-F" {
         core.completion_functions.insert(args[3].clone(), args[2].clone());
