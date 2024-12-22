@@ -36,8 +36,11 @@ impl SimpleCommand {
                 ans.permit_substitution_arg = true;
             }
         }
-        if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder) {
-            return true;
+
+        if ans.words.len() == 0 {
+            if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder) {
+                return true;
+            }
         }
 
         ans.text += &w.text;
