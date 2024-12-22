@@ -78,6 +78,11 @@ res=$($com <<< 'A () { echo aaa ; } ; unset -f A ; A')
 res=$($com <<< 'A () { echo aaa ; } ; unset A ; A')
 [ "$res" = "" ] || err $LINENO
 
+# builtin command
+#
+res=$($com <<< 'builtin cd; pwd')
+[ "$res" = ~ ] || err $LINENO
+
 # source command
 
 res=$($com <<< 'echo $PS1')
