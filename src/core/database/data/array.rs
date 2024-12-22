@@ -33,6 +33,7 @@ impl Data for ArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> bool {
+        dbg!("{:?}", &self);
         if let Ok(n) = key.parse::<usize>() {
             if n < self.body.len() {
                 self.body[n] = value.to_string();

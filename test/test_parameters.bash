@@ -40,6 +40,10 @@ res=$($com -c 'echo $(( $EPOCHREALTIME - $(date +%s) )) | awk -F. "{print \$1}"'
 res=$($com -c 'A=1 ; f () { local A ; declare -r A ; A=123 ; } ; f')
 [[ "$?" -eq 1 ]] || err $LINENO
 
+res=$($com -c 'A=1 ; f () { local -a A ; A[1]=123 ; echo ${A[@]} ; } ; f ; echo $A')
+[[ "$res" -eq '123
+1' ]] || err $LINENO
+
 res=$($com -c 'f () { local A ; declare -r A ; A=123 ; } ; f; A=3 ; echo $A')
 [[ "$res" -eq 3 ]] || err $LINENO
 

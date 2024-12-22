@@ -298,8 +298,11 @@ impl DataBase {
         }
 
         match self.params[layer].get_mut(name) {
-            Some(d) => return d.set_as_array(&pos.to_string(), val),
-            None    => false,
+            Some(d) => d.set_as_array(&pos.to_string(), val),
+            None    => {
+                self.set_layer_array(name, vec![], layer);
+                self.set_layer_array_elem(name, val, layer, pos)
+            },
         }
     }
 

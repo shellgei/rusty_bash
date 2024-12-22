@@ -42,8 +42,7 @@ fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore,
-                local: bool, env: bool) -> bool {
+    pub fn eval(&mut self, core: &mut ShellCore, local: bool, env: bool) -> bool {
         match self.value.clone() {
             ParsedDataType::None 
             => self.evaluated_string = Some("".to_string()),
@@ -150,6 +149,12 @@ impl Substitution {
         && self.evaluated_array.is_none() {
             core.db.set_param("?", "1");
             return false;
+        }
+
+        if ! core.db.has_value(&self.name) {
+            if self.index.is_some() {
+                return self.set_array(core, local);
+            }
         }
 
         if core.db.is_assoc(&self.name) {

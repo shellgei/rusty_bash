@@ -43,11 +43,6 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
         },
     };
 
-    /*
-    match sub.eval(core) {
-        true => sub.set_to_shell(core, false),
-        false => exit::internal("unsupported substitution"),
-    }*/
     sub.eval(core, false, false)
 }
 
@@ -58,6 +53,13 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         eprintln!("sush: local: can only be used in a function");
         return 1;
     };
+
+    if args.len() >= 3 && args[1] == "-a" {
+    return match args[2..].iter().all(|a| core.db.set_layer_array(a, vec![], layer)) {
+            true  => 0,
+            false => 1,
+        }
+    }
 
     match args[1..].iter().all(|a| set_local(a, core, layer)) {
         true  => 0,
