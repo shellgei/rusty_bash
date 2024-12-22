@@ -103,6 +103,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let ans = match args[1].as_str() {
         "-a" => compgen_a(core, &mut args),
+        "-b" => compgen_b(core, &mut args),
         "-c" => compgen_c(core, &mut args),
         "-d" => compgen_d(core, &mut args),
         "-f" => compgen_f(core, &mut args),
@@ -150,6 +151,25 @@ pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
     let mut aliases: Vec<String> = core.db.aliases.clone().into_keys().collect();
     commands.append(&mut aliases);
+
+    let head = get_head(args, 2);
+    if head != "" {
+        commands.retain(|a| a.starts_with(&head));
+    }
+    commands
+}
+
+pub fn compgen_b(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut commands = vec![];
+    /*
+    if args.len() > 2 {
+        commands.extend(compgen_f(core, args));
+    }
+    commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
+    */
+
+    let mut builtins: Vec<String> = core.builtins.clone().into_keys().collect();
+    commands.append(&mut builtins);
 
     let head = get_head(args, 2);
     if head != "" {
@@ -297,6 +317,7 @@ pub fn compgen_j(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 fn opt_to_action(arg: &str) -> String {
     match arg {
         "-a" => "alias",
+        "-b" => "builtin",
         "-c" => "command",
         "-j" => "job",
         "-u" => "user",
