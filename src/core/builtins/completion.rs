@@ -102,6 +102,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     replace_args_compgen(&mut args);
 
     let ans = match args[1].as_str() {
+        "-a" => compgen_a(core, &mut args),
         "-c" => compgen_c(core, &mut args),
         "-d" => compgen_d(core, &mut args),
         "-f" => compgen_f(core, &mut args),
@@ -142,6 +143,19 @@ fn drop_unmatch(args: &mut Vec<String>, pos: usize, list: &mut Vec<String>) {
     if head != "" {
         list.retain(|s| s.starts_with(&head));
     }
+}
+
+pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut commands = vec![];
+
+    let mut aliases: Vec<String> = core.db.aliases.clone().into_keys().collect();
+    commands.append(&mut aliases);
+
+    let head = get_head(args, 2);
+    if head != "" {
+        commands.retain(|a| a.starts_with(&head));
+    }
+    commands
 }
 
 pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
@@ -214,8 +228,6 @@ pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     if head != "" {
         commands.retain(|a| a.starts_with(&head));
     }
-    let mut command_in_paths = command_list(&head, core);
-    commands.append(&mut command_in_paths);
     commands
 }
 
@@ -284,6 +296,7 @@ pub fn compgen_j(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 fn opt_to_action(arg: &str) -> String {
     match arg {
+        "-a" => "alias",
         "-c" => "command",
         "-j" => "job",
         "-u" => "user",

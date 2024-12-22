@@ -127,6 +127,7 @@ impl Terminal {
         if core.completion_actions.contains_key(com) {
             let (action, options) = core.completion_actions[com].clone();
             let mut cands = match action.as_ref() {
+                "alias" => completion::compgen_a(core, args),
                 "command" => completion::compgen_c(core, args),
                 "job" => completion::compgen_j(core, args),
                 "stopped" => completion::compgen_stopped(core, args),
