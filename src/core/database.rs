@@ -53,7 +53,6 @@ impl DataBase {
     }
 
     pub fn get_param(&mut self, name: &str) -> String {
-
         if name == "-" {
             return self.flags.clone();
         }

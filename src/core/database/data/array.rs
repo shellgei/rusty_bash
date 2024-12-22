@@ -29,7 +29,7 @@ impl Data for ArrayData {
     fn print_body(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
-        for i in 0..self.body.len() {
+        for i in self.keys() {
             formatted += &format!("[{}]=\"{}\" ", i, &self.body[&i]).clone();
         };
         if formatted.ends_with(" ") {
@@ -40,7 +40,6 @@ impl Data for ArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> bool {
-        dbg!("{:?}", &self);
         if let Ok(n) = key.parse::<usize>() {
             self.body.insert(n, value.to_string());
             return true;
@@ -77,5 +76,11 @@ impl ArrayData {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
         keys.sort();
         keys.iter().map(|i| self.body[i].clone()).collect()
+    }
+
+    pub fn keys(&self) -> Vec<usize> {
+        let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
+        keys.sort();
+        keys
     }
 }
