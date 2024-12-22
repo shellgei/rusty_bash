@@ -52,7 +52,8 @@ impl Command for SimpleCommand {
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
         core.db.push_local();
-        self.set_local_params(core);
+        let layer = core.db.get_layer_num()-1;
+        self.set_local_params(core, layer);
 
         if core.db.functions.contains_key(&self.args[0]) {
             let mut f = core.db.functions[&self.args[0]].clone();
@@ -143,18 +144,18 @@ impl SimpleCommand {
         core.db.set_param("_", "");
         self.option_x_output(core);
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, false, false);});
+            .for_each(|s| {s.eval(core, 0, false);});
         None
     }
 
-    fn set_local_params(&mut self, core: &mut ShellCore) {
+    fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) {
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, true, false);});
+            .for_each(|s| {s.eval(core, layer, false);});
     }
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) {
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, false, true);} );
+            .for_each(|s| {s.eval(core, 0, true);} );
     }
 
     fn to_cargs(args: &Vec<String>) -> Vec<CString> {

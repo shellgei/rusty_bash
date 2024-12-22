@@ -133,7 +133,7 @@ res=$($com <<< 'set a b c ; function f () { set 1 2 3 ; echo $2 ; } ; f; echo $2
 [ "$res" = "2
 b" ] || err $LINENO
 
-res=$($com <<< 'function f () { local A=BBB ; echo $A; } ; f')
+res=$($com <<< 'function f () { local A=BBB ; echo $A; } ; f ; echo $A')
 [ "$res" = BBB ] || err $LINENO
 
 res=$($com <<< 'function f () { local A=BBB ; echo $A ; } ; echo $A')

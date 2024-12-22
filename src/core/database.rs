@@ -237,6 +237,8 @@ impl DataBase {
             Ok(_) => env::set_var(name, val),
             _     => {},
         }
+        //dbg!("{:?}, {:?}", &name, &layer);
+        //dbg!("{:?}", &self.params);
         match self.params[layer].get_mut(name) {
             Some(d) => {
                 if d.is_single() {

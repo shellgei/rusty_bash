@@ -43,7 +43,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
         },
     };
 
-    sub.eval(core, false, false)
+    sub.eval(core, layer, false)
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -55,9 +55,9 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
 
     if args.len() >= 3 && args[1] == "-a" {
-    return match args[2..].iter().all(|a| core.db.set_layer_array(a, vec![], layer)) {
-            true  => 0,
-            false => 1,
+    match args[2..].iter().all(|a| core.db.set_layer_array(a, vec![], layer)) {
+            true  => return 0,
+            false => return 1,
         }
     }
 

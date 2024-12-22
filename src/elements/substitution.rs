@@ -42,7 +42,7 @@ fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, local: bool, env: bool) -> bool {
+    pub fn eval(&mut self, core: &mut ShellCore, layer: usize, env: bool) -> bool {
         match self.value.clone() {
             ParsedDataType::None 
             => self.evaluated_string = Some("".to_string()),
@@ -58,18 +58,18 @@ impl Substitution {
         };
 
         match env {
-            false => self.set_to_shell(core, local),
+            false => self.set_to_shell(core, layer),
             true  => self.set_to_env(),
         }
     }
 
-    fn set_assoc(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> bool {
         let index = self.get_index(core);
-        let result = match (&self.evaluated_string, index, local) {
-            (Some(v), Some(k), false) 
-            => core.db.set_assoc_elem(&self.name, &k, &v),
-            (Some(v), Some(k), true) 
-            => core.db.set_local_assoc_elem(&self.name, &k, &v),
+        let result = match (&self.evaluated_string, index) {
+            (Some(v), Some(k)) 
+            => core.db.set_layer_assoc_elem(&self.name, &k, &v, layer),
+            //(Some(v), Some(k)) 
+            //=> core.db.set_local_assoc_elem(&self.name, &k, &v),
             _
             => return bad_subscript_error(&self.text, core),
         };
@@ -80,7 +80,7 @@ impl Substitution {
         true
     }
 
-    fn set_array(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> bool {
         let index = match self.get_index(core) {
             Some(s) => {
                 match s.parse::<usize>() {
@@ -91,25 +91,27 @@ impl Substitution {
             None => None,
         };
 
-        match (&self.evaluated_string, index, local) {
-            (Some(v), Some(n), true) => {
-                return match core.db.set_local_array_elem(&self.name, &v, n) {
+        match (&self.evaluated_string, index) {
+            (Some(v), Some(n)) => {
+                return match core.db.set_layer_array_elem(&self.name, &v, layer, n) {
                     true  => true,
                     false => readonly_error(&self.name, core),
                 }
             },
-            (Some(v), Some(n), false) => {
-                return match core.db.set_array_elem(&self.name, &v, n) {
+            /*
+            (Some(v), Some(n)) => {
+                return match core.db.set_layer_array_elem(&self.name, &v, 0, n) {
                     true  => true,
                     false => readonly_error(&self.name, core),
                 }
             },
+            */
             _ => {},
         }
 
-        let result = match (&self.evaluated_array, index, local) {
-            (Some(a), None, true) => core.db.set_local_array(&self.name, a.clone()),
-            (Some(a), None, false) => core.db.set_array(&self.name, a.clone()),
+        let result = match (&self.evaluated_array, index) {
+            (Some(a), None) => core.db.set_layer_array(&self.name, a.clone(), layer),
+            //(Some(a), None, false) => core.db.set_array(&self.name, a.clone()),
             _ => false,
         };
 
@@ -119,10 +121,11 @@ impl Substitution {
         }
     }
  
-    fn set_param(&mut self, core: &mut ShellCore, local: bool) -> bool {
-        let (done, result) = match (&self.evaluated_string, local) {
-            (Some(data), true)  => (true, core.db.set_local_param(&self.name, &data)),
-            (Some(data), false) => (true, core.db.set_param(&self.name, &data)),
+    fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> bool {
+        //dbg!("{:?}", &self);
+        let (done, result) = match &self.evaluated_string {
+            //(Some(data), true)  => (true, core.db.set_local_param(&self.name, &data)),
+            Some(data) => (true, core.db.set_layer_param(&self.name, &data, layer)),
             _ => (false, true),
         };
 
@@ -133,9 +136,9 @@ impl Substitution {
             return result;
         }
 
-        let result = match (&self.evaluated_array, local) {
-            (Some(data), true)  => core.db.set_local_array(&self.name, data.to_vec()), 
-            (Some(data), false) => core.db.set_array(&self.name, data.to_vec()),
+        let result = match &self.evaluated_array {
+            //Some(data)  => core.db.set_local_array(&self.name, data.to_vec()), 
+            Some(data) => core.db.set_layer_array(&self.name, data.to_vec(), layer),
             _ => false,
         };
 
@@ -145,7 +148,7 @@ impl Substitution {
         result
     }
 
-    fn set_to_shell(&mut self, core: &mut ShellCore, local: bool) -> bool {
+    fn set_to_shell(&mut self, core: &mut ShellCore, layer: usize) -> bool {
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
             core.db.set_param("?", "1");
@@ -154,16 +157,16 @@ impl Substitution {
 
         if ! core.db.has_value(&self.name) {
             if self.index.is_some() {
-                return self.set_array(core, local);
+                return self.set_array(core, layer);
             }
         }
 
         if core.db.is_assoc(&self.name) {
-            self.set_assoc(core, local)
+            self.set_assoc(core, layer)
         }else if core.db.is_array(&self.name) {
-            self.set_array(core, local)
+            self.set_array(core, layer)
         }else {
-            self.set_param(core, local)
+            self.set_param(core, layer)
         }
     }
 
