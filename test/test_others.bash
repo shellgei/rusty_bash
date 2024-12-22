@@ -1378,16 +1378,6 @@ res=$($com <<< 'A=( a b ); A[0]=( 1 2 )')
 res=$($com <<< 'A=( a b ); A[]=1')
 [ "$?" == 1 ] || err $LINENO
 
-# associated array
-
-res=$($com <<< 'declare -A A; A[aaa]=bbb; echo ${A[aaa]}')
-[ "$res" == "bbb" ] || err $LINENO
-
-res=$($com <<< 'declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[@]}')
-[ "$res" == "ddd bbb" -o "$res" == "bbb ddd" ] || err $LINENO
-
-res=$($com <<< 'B=ccc; declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[$B]}')
-[ "$res" == "ddd" ] || err $LINENO
 
 # symbol
 

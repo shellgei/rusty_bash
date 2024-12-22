@@ -36,7 +36,7 @@ res=$($com -c 'echo $(( $EPOCHREALTIME - $(date +%s) )) | awk -F. "{print \$1}"'
 [[ "$res" -eq 0 ]] || err $LINENO
 
 ### READONLY ###
-#
+
 res=$($com -c 'A=1 ; f () { local A ; declare -r A ; A=123 ; } ; f')
 [[ "$?" -eq 1 ]] || err $LINENO
 
@@ -52,5 +52,21 @@ res=$($com -c 'A=1 ; declare -r A ; f () { local A ; A=123 ; } ; f')
 
 res=$($com -c 'A=1 ; declare -r A ; A=(3 4)')
 [[ "$?" -eq 1 ]] || err $LINENO
+
+### ARRAY ###
+#
+res=$($com <<< 'declare -a A; A[0]=bbb; echo ${A[aaa]}')
+[ "$res" == "bbb" ] || err $LINENO
+
+### ASSOCIATED ARRAY ###
+
+res=$($com <<< 'declare -A A; A[aaa]=bbb; echo ${A[aaa]}')
+[ "$res" == "bbb" ] || err $LINENO
+
+res=$($com <<< 'declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[@]}')
+[ "$res" == "ddd bbb" -o "$res" == "bbb ddd" ] || err $LINENO
+
+res=$($com <<< 'B=ccc; declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[$B]}')
+[ "$res" == "ddd" ] || err $LINENO
 
 echo $0 >> ./ok
