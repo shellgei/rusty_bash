@@ -29,16 +29,8 @@ pub fn unalias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    for alias in &mut args[1..] {
-        dbg!("{:?}", &alias);
-        core.db.aliases.remove_entry(alias);
-    }
-
-    /*
-    if args.len() == 2 && args[1].find("=") != None {
-        let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
-        core.db.aliases.insert(kv[0].clone(), kv[1..].join("="));
-    }*/
+    args[1..].iter()
+        .for_each(|e| {core.db.aliases.remove_entry(e);} );
 
     0
 }
