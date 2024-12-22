@@ -46,6 +46,24 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
     sub.eval(core, layer, false)
 }
 
+fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
+    let mut feeder = Feeder::new(arg);
+    if feeder.scanner_name(core) == feeder.len() { // name only
+        let name = feeder.consume(feeder.len());
+        return core.db.set_layer_array(&name, vec![], layer);
+    }
+
+    let mut sub = match Substitution::parse(&mut feeder, core) {
+        Some(s) => s,
+        _ => {
+            eprintln!("sush: local: `{}': not a valid identifier", arg);
+            return false;
+        },
+    };
+
+    sub.eval(core, layer, false)
+}
+
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2 //The last element of data.parameters is for local itself.
@@ -55,7 +73,14 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
 
     if args.len() >= 3 && args[1] == "-a" {
-    match args[2..].iter().all(|a| core.db.set_layer_array(a, vec![], layer)) {
+    match args[2..].iter().all(|a| set_local_array(a, core, layer)) {
+            true  => return 0,
+            false => return 1,
+        }
+    }
+
+    if args.len() >= 3 && args[1] == "-A" {
+    match args[2..].iter().all(|a| core.db.set_layer_assoc(a, layer)) {
             true  => return 0,
             false => return 1,
         }
