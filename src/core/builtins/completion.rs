@@ -49,7 +49,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     ans
 }
 
-fn replace_args(args: &mut Vec<String>) -> bool {
+fn replace_args_compgen(args: &mut Vec<String>) -> bool {
     if args.len() < 3 || args[1] != "-A" {
         return true;
     }
@@ -97,23 +97,24 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         eprintln!("sush: {}: still unsupported", &args[0]);
         return 1;
     }
+    let mut args = arg::dissolve_options(args);
 
-    replace_args(args);
+    replace_args_compgen(&mut args);
 
     let ans = match args[1].as_str() {
-        "-c" => compgen_c(core, args),
-        "-d" => compgen_d(core, args),
-        "-f" => compgen_f(core, args),
-        "-h" => compgen_h(core, args), //history (sush original)
-        "-j" => compgen_j(core, args),
-        "-u" => compgen_u(core, args),
-        "-A stopped" => compgen_stopped(core, args),
+        "-c" => compgen_c(core, &mut args),
+        "-d" => compgen_d(core, &mut args),
+        "-f" => compgen_f(core, &mut args),
+        "-h" => compgen_h(core, &mut args), //history (sush original)
+        "-j" => compgen_j(core, &mut args),
+        "-u" => compgen_u(core, &mut args),
+        "-A stopped" => compgen_stopped(core, &mut args),
         "-W" => {
             if args.len() < 2 {
                 eprintln!("sush: compgen: -W: option requires an argument");
                 return 2;
             }
-            compgen_large_w(core, args)
+            compgen_large_w(core, &mut args)
         },
         _ => {
             eprintln!("sush: compgen: {}: invalid option", &args[1]);
@@ -261,34 +262,54 @@ pub fn compgen_j(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     ans
 }
 
+fn opt_to_action(arg: &str) -> String {
+    match arg {
+        "-c" => "command",
+        "-j" => "job",
+        "-u" => "user",
+        _ => "",
+    }.to_string()
+}
+
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() == 1 {
+    if args.len() <= 1 {
         return 0;
     }
 
+    let mut args = arg::dissolve_options(args);
+
     let mut options = HashMap::new();
-    let prefix = arg::consume_with_next_arg("-P", args);
+    let prefix = arg::consume_with_next_arg("-P", &mut args);
     if prefix != None {
         options.insert("-P".to_string(), prefix.unwrap().clone());
     }
-    let suffix = arg::consume_with_next_arg("-S", args);
+    let suffix = arg::consume_with_next_arg("-S", &mut args);
     if suffix != None {
         options.insert("-S".to_string(), suffix.unwrap().clone());
     }
 
-    if args.len() > 1 && args[1] == "-u" {
+    let action = opt_to_action(&args[1]);
+    if action != "" {
+        for command in &args[2..] {
+            core.completion_actions.insert(command.clone(), (action.clone(), options.clone()));
+        }
+        return 0;
+    }
+
+    /*
+    if args[1] == "-u" {
         for command in &args[2..] {
             core.completion_actions.insert(command.clone(), ("user".to_string(), options.clone()));
         }
         return 0;
     }
 
-    if args.len() > 1 && args[1] == "-j" {
+    if args[1] == "-j" {
         for command in &args[2..] {
             core.completion_actions.insert(command.clone(), ("job".to_string(), options.clone()));
         }
         return 0;
-    }
+    }*/
 
     if args.len() > 3 && args[1] == "-F" {
         core.completion_functions.insert(args[3].clone(), args[2].clone());
