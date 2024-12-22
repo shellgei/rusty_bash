@@ -143,8 +143,10 @@ impl SimpleCommand {
     fn exec_set_param(&mut self, core: &mut ShellCore) -> Option<Pid> {
         core.db.set_param("_", "");
         self.option_x_output(core);
+        
         self.substitutions.iter_mut()
             .for_each(|s| {s.eval(core, 0, false);});
+
         None
     }
 

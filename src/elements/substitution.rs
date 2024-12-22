@@ -56,6 +56,14 @@ impl Substitution {
             }
         };
 
+        let layer = match layer {
+            0 => match core.db.get_layer_pos(&self.name) {
+                Some(n) => n,
+                None => 0,
+            },
+            n => n,
+        };
+
         match env {
             false => self.set_to_shell(core, layer),
             true  => self.set_to_env(),

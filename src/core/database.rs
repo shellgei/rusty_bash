@@ -121,6 +121,16 @@ impl DataBase {
         "".to_string()
     }
 
+    pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if self.params[layer].get(name).is_some() {
+                return Some(layer);
+            }
+        }
+        None
+    }
+
     fn call_speial(&mut self, name: &str) -> Option<String> {
         let num = self.params.len();
         for layer in (0..num).rev()  {

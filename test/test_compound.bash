@@ -136,6 +136,10 @@ b" ] || err $LINENO
 res=$($com <<< 'function f () { local A=BBB ; echo $A; } ; f ; echo $A')
 [ "$res" = BBB ] || err $LINENO
 
+res=$($com <<< 'A=3 ; function f () { local A ; A=BBB ; echo $A; } ; f ; echo $A')
+[ "$res" = "BBB
+3" ] || err $LINENO
+
 res=$($com <<< 'function f () { local A=BBB ; echo $A ; } ; echo $A')
 [ "$res" = "" ] || err $LINENO
 
