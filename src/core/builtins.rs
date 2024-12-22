@@ -2,6 +2,7 @@
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod alias;
 mod cd;
 pub mod completion;
 mod history;
@@ -21,7 +22,7 @@ use crate::utils::exit;
 impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
-        self.builtins.insert("alias".to_string(), alias);
+        self.builtins.insert("alias".to_string(), alias::alias);
         self.builtins.insert("bg".to_string(), job_commands::bg);
         self.builtins.insert("break".to_string(), loop_control::break_);
         self.builtins.insert("cd".to_string(), cd::cd);
@@ -42,28 +43,13 @@ impl ShellCore {
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
+        self.builtins.insert("unalias".to_string(), alias::unalias);
         self.builtins.insert("unset".to_string(), unset::unset);
         self.builtins.insert("source".to_string(), source::source);
         self.builtins.insert(".".to_string(), source::source);
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("wait".to_string(), job_commands::wait);
     }
-}
-
-pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() == 1 {
-        for (k, v) in &core.db.aliases {
-            println!("alias {}='{}'", k, v);
-        }
-        return 0;
-    }
-
-    if args.len() == 2 && args[1].find("=") != None {
-        let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
-        core.db.aliases.insert(kv[0].clone(), kv[1..].join("="));
-    }
-
-    0
 }
 
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
