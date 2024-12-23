@@ -40,6 +40,7 @@ impl Redirect {
             ">&" => self.redirect_output_fd(restore),
             ">>" => self.redirect_append(restore),
             "&>" => self.redirect_both_output(restore),
+            "<<<" => self.redirect_herestring(restore),
             _ => exit::internal(" (Unknown redirect symbol)"),
         }
     }
@@ -111,6 +112,13 @@ impl Redirect {
         }
         io::share(1, 2);
         true
+    }
+
+    fn redirect_herestring(&mut self, restore: bool) -> bool {
+        self.set_left_fd(0);
+        dbg!("herestring");
+        true
+        //self.connect_to_file(File::open(&self.right.text), restore)
     }
 
     pub fn restore(&mut self) {
