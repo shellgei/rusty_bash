@@ -157,14 +157,19 @@ impl Redirect {
     }
 
     fn eat_symbol(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        match feeder.scanner_redirect_symbol(core) {
-            0 => false,
-            n => {
-                ans.symbol = feeder.consume(n);
-                ans.text += &ans.symbol.clone();
-                true
-            },
+        let len = feeder.scanner_redirect_symbol(core);
+        if len == 0 {
+            return false;
         }
+
+        ans.symbol = feeder.consume(len);
+        ans.text += &ans.symbol.clone();
+
+        if ans.symbol == "<<<" {
+            ans.set_herepipe();
+        }
+
+        true
     }
 
     fn eat_right(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -196,6 +201,16 @@ impl Redirect {
         }
     }
 
+    pub fn set_herepipe(&mut self) {
+        if self.symbol != "<<<" {
+            return;
+        }
+
+        let mut herepipe = Pipe::new("<<<".to_string());
+        herepipe.set(-1, Pid::from_raw(0));
+        self.herepipe = Some(herepipe);
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
         feeder.set_backup(); //追加
@@ -209,15 +224,5 @@ impl Redirect {
             feeder.rewind(); //追加
             None
         }
-    }
-
-    pub fn set_herepipe(&mut self) {
-        if self.symbol != "<<<" {
-            return;
-        }
-
-        let mut herepipe = Pipe::new("<<<".to_string());
-        herepipe.set(-1, Pid::from_raw(0));
-        self.herepipe = Some(herepipe);
     }
 }
