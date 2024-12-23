@@ -11,7 +11,7 @@ use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Redirect {
     pub text: String,
     pub symbol: String,
@@ -20,6 +20,7 @@ pub struct Redirect {
     left_fd: RawFd,
     left_backup: RawFd,
     extra_left_backup: RawFd, // &>, &>>用
+    pub herepipe: Option<Pipe>,
 }
 
 impl Redirect {
@@ -117,9 +118,11 @@ impl Redirect {
     }
 
     fn redirect_herestring(&mut self, restore: bool) -> bool {
+        /*
         let mut herepipe = Pipe::new("<<<".to_string());
         herepipe.set(-1, Pid::from_raw(0));
-        /*
+
+        self.herepipe = Some(herepipe);
         //self.set_left_fd(0);
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
@@ -146,13 +149,10 @@ impl Redirect {
 
     pub fn new() -> Redirect {
         Redirect {
-            text: String::new(),
-            symbol: String::new(),
-            right: Word::default(),
-            left: String::new(),
             left_fd: -1,
             left_backup: -1,
             extra_left_backup: -1,
+            ..Default::default()
         }
     }
 
@@ -209,5 +209,15 @@ impl Redirect {
             feeder.rewind(); //追加
             None
         }
+    }
+
+    pub fn set_herepipe(&mut self) {
+        if self.symbol != "<<<" {
+            return;
+        }
+
+        let mut herepipe = Pipe::new("<<<".to_string());
+        herepipe.set(-1, Pid::from_raw(0));
+        self.herepipe = Some(herepipe);
     }
 }

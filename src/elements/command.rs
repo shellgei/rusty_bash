@@ -58,12 +58,18 @@ pub trait Command {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
+
+                //dbg!("child: {:?}", &self.get_herepipe());
+
                 self.run(core, true);
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
                 child::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
+
+                //dbg!("parent: {:?}", &self.get_herepipe());
+
                 Some(child)
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
@@ -85,6 +91,17 @@ pub trait Command {
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
     fn force_fork(&self) -> bool;
+
+    /*
+    fn set_herepipe(&mut self) -> (Option<Pipe>, Option<String>) {
+        for re in self.get_redirects() {
+            if re.herepipe.is_some() {
+                return (re.herepipe.clone(), Some(re.right.text.clone()));
+            }
+        }
+
+        (None, None)
+    }*/
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
