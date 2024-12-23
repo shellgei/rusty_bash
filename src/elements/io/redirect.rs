@@ -4,10 +4,12 @@
 use std::fs::{File, OpenOptions};
 use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
-use crate::elements::io;
+use crate::elements::{Pipe, io};
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
 use crate::utils::exit;
+use nix::unistd;
+use nix::unistd::{Pid, ForkResult};
 
 #[derive(Debug, Clone)]
 pub struct Redirect {
@@ -115,10 +117,22 @@ impl Redirect {
     }
 
     fn redirect_herestring(&mut self, restore: bool) -> bool {
-        self.set_left_fd(0);
-        dbg!("herestring");
+        let mut herepipe = Pipe::new("<<<".to_string());
+        herepipe.set(-1, Pid::from_raw(0));
+        /*
+        //self.set_left_fd(0);
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
+    //            println!("{}", &self.right.text);
+                std::process::exit(0);
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                std::process::exit(0);
+            },
+            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
+        }
+        */
         true
-        //self.connect_to_file(File::open(&self.right.text), restore)
     }
 
     pub fn restore(&mut self) {
