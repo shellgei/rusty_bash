@@ -123,6 +123,7 @@ pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i
     match args[1].as_str() {
         "-s" => core.shopts.print_if(true),
         "-u" => core.shopts.print_if(false),
+        "-q" => return 0,
         opt  => res = core.shopts.print_opt(opt),
     }
 
@@ -139,6 +140,19 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let res = match args[1].as_str() {
         "-s" => core.shopts.set(&args[2], true),
+        "-q" => {
+            for arg in &args[2..] {
+                if ! core.shopts.exist(arg) {
+                    let msg = format!("shopt: {}: invalid shell option name", &arg);
+                    error::print(&msg, core);
+                    return 1;
+                }
+                if ! core.shopts.query(arg) {
+                    return 1;
+                }
+            }
+            return 0;
+        },
         "-u" => core.shopts.set(&args[2], false),
         arg  => {
             eprintln!("sush: shopt: {}: invalid shell option name", arg);

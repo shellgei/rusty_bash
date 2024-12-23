@@ -100,8 +100,12 @@ impl Options {
         list.iter().for_each(|e| println!("{}", e));
     }
 
+    pub fn exist(&self, opt: &str) -> bool {
+        self.opts.contains_key(opt)
+    }
+
     pub fn query(&self, opt: &str) -> bool {
-        self.opts.contains_key(opt) && self.opts[opt]
+        self.exist(opt) && self.opts[opt]
     }
 
     pub fn set(&mut self, opt: &str, onoff: bool) -> bool {
