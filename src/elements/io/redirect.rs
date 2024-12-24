@@ -126,30 +126,24 @@ impl Redirect {
     }
 
     fn redirect_herestring(&mut self, core: &mut ShellCore) -> bool {
-        if self.symbol != "<<<" {
-            return true;
-        }
-
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
 
-        self.right.text = match self.right.eval_for_case_word(core) {
-            Some(s) => s,
-            _       => "".to_string(),
-        };
+        self.right.text = self.right.eval_for_case_word(core)
+                              .unwrap_or("".to_string());
 
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                io::close(recv, "herestring close error (parent recv)");
+                io::close(recv, "herestring close error (child recv)");
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}\n", &self.right.text);
                 f.flush().unwrap();
-                io::close(send, "herestring close error (parent send)");
+                io::close(send, "herestring close error (child send)");
                 process::exit(0);
             },
             Ok(ForkResult::Parent { child: _ } ) => {
-                io::close(send, "herestring close error (child send)");
+                io::close(send, "herestring close error (parent send)");
                 io::replace(recv, 0);
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
