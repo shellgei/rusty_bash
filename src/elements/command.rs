@@ -114,13 +114,11 @@ pub trait Command {
         for re in self.get_redirects() {
             if re.herepipe.is_some() {
 
-       //         let text = Arc::clone(&re.right.text); //追加
-             
                 //thread::spawn(move || {
                     io::close(re.herepipe.as_ref().unwrap().recv, "aa");
                 let mut f = unsafe { File::from_raw_fd(re.herepipe.as_ref().unwrap().send) };
                 //    let mut f = unsafe { File::from_raw_fd(3) };
-                    write!(&mut f, "{}", &re.right.text);
+                    write!(&mut f, "{}\n", &re.right.text);
                     f.flush().unwrap();
                     io::close(re.herepipe.as_ref().unwrap().send, "aa");
                 //});
