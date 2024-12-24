@@ -41,6 +41,7 @@ impl Pipeline {
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
+            self.commands[i].get_redirects().iter_mut().for_each(|e| e.set_herepipe());
             pids.push(self.commands[i].exec(core, p));
             if i == 0 && pgid.as_raw() == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
                 pgid = pids[0].unwrap();
@@ -49,6 +50,7 @@ impl Pipeline {
             core.word_eval_error = false;
         }
 
+        self.commands[self.pipes.len()].get_redirects().iter_mut().for_each(|e| e.set_herepipe());
         pids.push(
             self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid))
         );

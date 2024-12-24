@@ -118,23 +118,6 @@ impl Redirect {
     }
 
     fn redirect_herestring(&mut self, restore: bool) -> bool {
-        /*
-        let mut herepipe = Pipe::new("<<<".to_string());
-        herepipe.set(-1, Pid::from_raw(0));
-
-        self.herepipe = Some(herepipe);
-        //self.set_left_fd(0);
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
-    //            println!("{}", &self.right.text);
-                std::process::exit(0);
-            },
-            Ok(ForkResult::Parent { child } ) => {
-                std::process::exit(0);
-            },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
-        }
-        */
         true
     }
 
@@ -165,9 +148,10 @@ impl Redirect {
         ans.symbol = feeder.consume(len);
         ans.text += &ans.symbol.clone();
 
+        /*
         if ans.symbol == "<<<" {
             ans.set_herepipe();
-        }
+        }*/
 
         true
     }
