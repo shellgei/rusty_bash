@@ -36,6 +36,9 @@ use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
 use std::os::fd::FromRawFd;
 
+use std::thread;
+use std::sync::Arc;
+
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct("COMMAND").finish()
@@ -73,7 +76,6 @@ pub trait Command {
                 child::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
 
-                //dbg!("parent: {:?}", &self.get_herepipe());
                 self.send_herepipe();
 
                 Some(child)
@@ -110,9 +112,16 @@ pub trait Command {
     fn send_herepipe(&mut self) {
         for re in self.get_redirects() {
             if re.herepipe.is_some() {
+
+       //         let text = Arc::clone(&re.right.text); //追加
+             
+                //thread::spawn(move || {
                 let mut f = unsafe { File::from_raw_fd(re.herepipe.as_ref().unwrap().send) };
-                dbg!("HERE");
-                write!(&mut f, "{}", &re.right.text);
+                //    let mut f = unsafe { File::from_raw_fd(3) };
+                    write!(&mut f, "{}\n", &re.right.text);
+                    f.flush().unwrap();
+                    //f.close();
+                //});
                 /*
                 let f = unsafe { re.herepipe.as_ref().unwrap().send };
                 let mut f = BufWriter::new(f);
@@ -125,6 +134,7 @@ pub trait Command {
                 */
             }
         }
+        dbg!("END");
     }
     
 }
