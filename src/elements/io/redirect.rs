@@ -27,12 +27,18 @@ pub struct Redirect {
 
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> bool {
-        let args = match self.right.eval(core) {
-            Some(v) => v,
-            None => return false,
+        let args = {
+            if ! self.symbol.starts_with("<<") {
+                match self.right.eval(core) {
+                    Some(v) => v,
+                    None => return false,
+                }
+            }else{
+                vec![String::new()]
+            }
         };
 
-        if args.len() != 1 && ! self.symbol.starts_with("<<") {
+        if args.len() != 1 {
             eprintln!("sush: {}: ambiguous redirect", self.right.text);
             return false;
         }else{
@@ -128,7 +134,10 @@ impl Redirect {
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
 
-        self.right.text = self.right.eval_for_case_word(core).unwrap();
+        self.right.text = match self.right.eval_for_case_word(core) {
+            Some(s) => s,
+            _       => "".to_string(),
+        };
 
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
