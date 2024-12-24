@@ -120,7 +120,7 @@ pub trait Command {
                     io::close(re.herepipe.as_ref().unwrap().recv, "aa");
                 let mut f = unsafe { File::from_raw_fd(re.herepipe.as_ref().unwrap().send) };
                 //    let mut f = unsafe { File::from_raw_fd(3) };
-                    write!(&mut f, "{}\n", &re.right.text);
+                    write!(&mut f, "{}", &re.right.text);
                     f.flush().unwrap();
                     io::close(re.herepipe.as_ref().unwrap().send, "aa");
                 //});
