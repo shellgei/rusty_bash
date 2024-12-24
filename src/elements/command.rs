@@ -103,8 +103,7 @@ pub trait Command {
     fn set_herepipe(&mut self) {
         for re in self.get_redirects() {
             if re.herepipe.is_some() {
-                dbg!("{:?}", &re);
-                    io::close(re.herepipe.as_ref().unwrap().send, "aa");
+                io::close(re.herepipe.as_ref().unwrap().send, "herestring close error (child send)");
                 io::replace(re.herepipe.as_ref().unwrap().recv, 0);
             }
         }
@@ -113,28 +112,13 @@ pub trait Command {
     fn send_herepipe(&mut self) {
         for re in self.get_redirects() {
             if re.herepipe.is_some() {
-
-                //thread::spawn(move || {
-                    io::close(re.herepipe.as_ref().unwrap().recv, "aa");
+                io::close(re.herepipe.as_ref().unwrap().recv, "herestring close error (parent recv)");
                 let mut f = unsafe { File::from_raw_fd(re.herepipe.as_ref().unwrap().send) };
-                //    let mut f = unsafe { File::from_raw_fd(3) };
-                    write!(&mut f, "{}\n", &re.right.text);
-                    f.flush().unwrap();
-                    io::close(re.herepipe.as_ref().unwrap().send, "aa");
-                //});
-                /*
-                let f = unsafe { re.herepipe.as_ref().unwrap().send };
-                let mut f = BufWriter::new(f);
-                */
-                //f.write(re.right.text);
-                /*
-                dbg!("{:?}", &re);
-                io::replace(re.herepipe.as_ref().unwrap().send, 1);
-                print!("{}", &re.right.text);
-                */
+                let _ = write!(&mut f, "{}\n", &re.right.text);
+                f.flush().unwrap();
+                io::close(re.herepipe.as_ref().unwrap().send, "herestring close error (parent send)");
             }
         }
-        dbg!("END");
     }
     
 }
