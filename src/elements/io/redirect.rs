@@ -30,7 +30,7 @@ impl Redirect {
             None => return false,
         };
 
-        if args.len() != 1 {
+        if args.len() != 1 && ! self.symbol.starts_with("<<") {
             eprintln!("sush: {}: ambiguous redirect", self.right.text);
             return false;
         }else{
@@ -147,12 +147,6 @@ impl Redirect {
 
         ans.symbol = feeder.consume(len);
         ans.text += &ans.symbol.clone();
-
-        /*
-        if ans.symbol == "<<<" {
-            ans.set_herepipe();
-        }*/
-
         true
     }
 
@@ -185,7 +179,7 @@ impl Redirect {
         }
     }
 
-    pub fn set_herepipe(&mut self) {
+    pub fn set_herepipe(&mut self, core: &mut ShellCore) {
         if self.symbol != "<<<" {
             return;
         }
@@ -193,6 +187,8 @@ impl Redirect {
         let mut herepipe = Pipe::new("<<<".to_string());
         herepipe.set(-1, Pid::from_raw(0));
         self.herepipe = Some(herepipe);
+        self.right.text = self.right.eval_for_case_word(core).unwrap();
+
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {

@@ -16,6 +16,7 @@ com=../target/release/sush
 : > ok
 
 ./test_others.bash nobuild &
+./test_redirects.bash nobuild &
 ./test_compound.bash nobuild &
 ./test_script.bash nobuild &
 ./test_job.bash nobuild &
