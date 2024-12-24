@@ -38,6 +38,7 @@ use std::os::fd::FromRawFd;
 
 use std::thread;
 use std::sync::Arc;
+use std::process;
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -112,11 +113,23 @@ pub trait Command {
     fn send_herepipe(&mut self) {
         for re in self.get_redirects() {
             if re.herepipe.is_some() {
+
+        match unsafe{unistd::fork()} {
+            Ok(ForkResult::Child) => {
                 io::close(re.herepipe.as_ref().unwrap().recv, "herestring close error (parent recv)");
                 let mut f = unsafe { File::from_raw_fd(re.herepipe.as_ref().unwrap().send) };
                 let _ = write!(&mut f, "{}\n", &re.right.text);
                 f.flush().unwrap();
                 io::close(re.herepipe.as_ref().unwrap().send, "herestring close error (parent send)");
+                process::exit(0);
+            },
+            Ok(ForkResult::Parent { child } ) => {
+                io::close(re.herepipe.as_ref().unwrap().recv, "herestring close error (parent recv)");
+                io::close(re.herepipe.as_ref().unwrap().send, "herestring close error (parent send)");
+            },
+            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
+        }
+
             }
         }
     }
