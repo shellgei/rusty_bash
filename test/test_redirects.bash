@@ -130,5 +130,8 @@ res=$($com <<< 'cat <<< $(seq 3)')
 2
 3" ] || err $LINENO
 
+res=$($com <<< 'cat <<< $(seq 3000) | wc -l')
+[ "$res" == "3000" ] || err $LINENO
+
 
 echo $0 >> ./ok

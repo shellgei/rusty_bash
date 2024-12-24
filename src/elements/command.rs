@@ -68,7 +68,7 @@ pub trait Command {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
 
-                self.set_herepipe();
+                //self.set_herepipe();
 
                 self.run(core, true);
                 exit::normal(core)
@@ -77,7 +77,7 @@ pub trait Command {
                 child::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
 
-                self.send_herepipe();
+                //self.send_herepipe();
 
                 Some(child)
             },
