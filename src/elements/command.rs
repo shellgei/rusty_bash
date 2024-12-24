@@ -58,14 +58,12 @@ pub trait Command {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
-
                 self.run(core, true);
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
                 child::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
-
                 Some(child)
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
