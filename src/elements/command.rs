@@ -26,10 +26,15 @@ use self::r#if::IfCommand;
 use self::test::TestCommand;
 use std::fmt;
 use std::fmt::Debug;
+use std::fs::File;
+use std::io::BufWriter;
+use std::io::Write;
+use std::os::fd::RawFd;
 use super::{io, Pipe};
 use super::io::redirect::Redirect;
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
+use std::os::fd::FromRawFd;
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -59,7 +64,7 @@ pub trait Command {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
 
-                //dbg!("child: {:?}", &self.get_herepipe());
+                self.set_herepipe();
 
                 self.run(core, true);
                 exit::normal(core)
@@ -69,6 +74,7 @@ pub trait Command {
                 pipe.parent_close();
 
                 //dbg!("parent: {:?}", &self.get_herepipe());
+                self.send_herepipe();
 
                 Some(child)
             },
@@ -92,16 +98,35 @@ pub trait Command {
     fn boxed_clone(&self) -> Box<dyn Command>;
     fn force_fork(&self) -> bool;
 
-    /*
-    fn set_herepipe(&mut self) -> (Option<Pipe>, Option<String>) {
+    fn set_herepipe(&mut self) {
         for re in self.get_redirects() {
             if re.herepipe.is_some() {
-                return (re.herepipe.clone(), Some(re.right.text.clone()));
+                dbg!("{:?}", &re);
+                io::replace(re.herepipe.as_ref().unwrap().recv, 0);
             }
         }
+    }
 
-        (None, None)
-    }*/
+    fn send_herepipe(&mut self) {
+        for re in self.get_redirects() {
+            if re.herepipe.is_some() {
+                let mut f = unsafe { File::from_raw_fd(re.herepipe.as_ref().unwrap().send) };
+                dbg!("HERE");
+                write!(&mut f, "{}", &re.right.text);
+                /*
+                let f = unsafe { re.herepipe.as_ref().unwrap().send };
+                let mut f = BufWriter::new(f);
+                */
+                //f.write(re.right.text);
+                /*
+                dbg!("{:?}", &re);
+                io::replace(re.herepipe.as_ref().unwrap().send, 1);
+                print!("{}", &re.right.text);
+                */
+            }
+        }
+    }
+    
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
