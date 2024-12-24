@@ -104,6 +104,7 @@ pub trait Command {
         for re in self.get_redirects() {
             if re.herepipe.is_some() {
                 dbg!("{:?}", &re);
+                    io::close(re.herepipe.as_ref().unwrap().send, "aa");
                 io::replace(re.herepipe.as_ref().unwrap().recv, 0);
             }
         }
@@ -116,11 +117,12 @@ pub trait Command {
        //         let text = Arc::clone(&re.right.text); //追加
              
                 //thread::spawn(move || {
+                    io::close(re.herepipe.as_ref().unwrap().recv, "aa");
                 let mut f = unsafe { File::from_raw_fd(re.herepipe.as_ref().unwrap().send) };
                 //    let mut f = unsafe { File::from_raw_fd(3) };
                     write!(&mut f, "{}\n", &re.right.text);
                     f.flush().unwrap();
-                    //f.close();
+                    io::close(re.herepipe.as_ref().unwrap().send, "aa");
                 //});
                 /*
                 let f = unsafe { re.herepipe.as_ref().unwrap().send };
