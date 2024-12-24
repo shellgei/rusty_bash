@@ -26,19 +26,10 @@ use self::r#if::IfCommand;
 use self::test::TestCommand;
 use std::fmt;
 use std::fmt::Debug;
-use std::fs::File;
-use std::io::BufWriter;
-use std::io::Write;
-use std::os::fd::RawFd;
 use super::{io, Pipe};
 use super::io::redirect::Redirect;
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
-use std::os::fd::FromRawFd;
-
-use std::thread;
-use std::sync::Arc;
-use std::process;
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -68,16 +59,12 @@ pub trait Command {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
 
-                //self.set_herepipe();
-
                 self.run(core, true);
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
                 child::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
-
-                //self.send_herepipe();
 
                 Some(child)
             },
@@ -100,40 +87,6 @@ pub trait Command {
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
     fn force_fork(&self) -> bool;
-
-    fn set_herepipe(&mut self) {
-        for re in self.get_redirects() {
-            if re.herepipe.is_some() {
-                io::close(re.herepipe.as_ref().unwrap().send, "herestring close error (child send)");
-                io::replace(re.herepipe.as_ref().unwrap().recv, 0);
-            }
-        }
-    }
-
-    fn send_herepipe(&mut self) {
-        for re in self.get_redirects() {
-            if re.herepipe.is_some() {
-
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
-                io::close(re.herepipe.as_ref().unwrap().recv, "herestring close error (parent recv)");
-                let mut f = unsafe { File::from_raw_fd(re.herepipe.as_ref().unwrap().send) };
-                let _ = write!(&mut f, "{}\n", &re.right.text);
-                f.flush().unwrap();
-                io::close(re.herepipe.as_ref().unwrap().send, "herestring close error (parent send)");
-                process::exit(0);
-            },
-            Ok(ForkResult::Parent { child } ) => {
-                io::close(re.herepipe.as_ref().unwrap().recv, "herestring close error (parent recv)");
-                io::close(re.herepipe.as_ref().unwrap().send, "herestring close error (parent send)");
-            },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
-        }
-
-            }
-        }
-    }
-    
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,

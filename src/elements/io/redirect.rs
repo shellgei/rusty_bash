@@ -46,7 +46,7 @@ impl Redirect {
             ">&" => self.redirect_output_fd(restore),
             ">>" => self.redirect_append(restore),
             "&>" => self.redirect_both_output(restore),
-            "<<<" => self.redirect_herestring(restore, core),
+            "<<<" => self.redirect_herestring(core),
             _ => exit::internal(" (Unknown redirect symbol)"),
         }
     }
@@ -120,7 +120,7 @@ impl Redirect {
         true
     }
 
-    fn redirect_herestring(&mut self, restore: bool, core: &mut ShellCore) -> bool {
+    fn redirect_herestring(&mut self, core: &mut ShellCore) -> bool {
         if self.symbol != "<<<" {
             return true;
         }
@@ -139,7 +139,7 @@ impl Redirect {
                 io::close(self.herepipe.as_ref().unwrap().send, "herestring close error (parent send)");
                 process::exit(0);
             },
-            Ok(ForkResult::Parent { child } ) => {
+            Ok(ForkResult::Parent { child: _ } ) => {
                 io::close(self.herepipe.as_ref().unwrap().send, "herestring close error (child send)");
                 io::replace(self.herepipe.as_ref().unwrap().recv, 0);
             },
@@ -206,20 +206,6 @@ impl Redirect {
             _     => false,
         }
     }
-
-    /*
-    pub fn set_herepipe(&mut self, core: &mut ShellCore) {
-        if self.symbol != "<<<" {
-            return;
-        }
-
-        let mut herepipe = Pipe::new("<<<".to_string());
-        herepipe.set(-1, Pid::from_raw(0));
-        self.herepipe = Some(herepipe);
-        self.right.text = self.right.eval_for_case_word(core).unwrap();
-
-    }
-    */
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
