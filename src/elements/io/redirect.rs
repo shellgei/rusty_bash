@@ -4,12 +4,12 @@
 use std::fs::{File, OpenOptions};
 use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
-use crate::elements::{Pipe, io};
+use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
 use crate::utils::exit;
 use nix::unistd;
-use nix::unistd::{Pid, ForkResult};
+use nix::unistd::ForkResult;
 use std::os::fd::FromRawFd;
 use std::io::Write;
 use std::process;
@@ -23,7 +23,6 @@ pub struct Redirect {
     left_fd: RawFd,
     left_backup: RawFd,
     extra_left_backup: RawFd, // &>, &>>用
-    pub herepipe: Option<Pipe>,
 }
 
 impl Redirect {
@@ -125,23 +124,24 @@ impl Redirect {
             return true;
         }
 
-        let mut herepipe = Pipe::new("<<<".to_string());
-        herepipe.set(-1, Pid::from_raw(0));
-        self.herepipe = Some(herepipe);
+        let (r, s) = unistd::pipe().expect("Cannot open pipe");
+        let recv = r.into_raw_fd();
+        let send = s.into_raw_fd();
+
         self.right.text = self.right.eval_for_case_word(core).unwrap();
 
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
-                io::close(self.herepipe.as_ref().unwrap().recv, "herestring close error (parent recv)");
-                let mut f = unsafe { File::from_raw_fd(self.herepipe.as_ref().unwrap().send) };
+                io::close(recv, "herestring close error (parent recv)");
+                let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}\n", &self.right.text);
                 f.flush().unwrap();
-                io::close(self.herepipe.as_ref().unwrap().send, "herestring close error (parent send)");
+                io::close(send, "herestring close error (parent send)");
                 process::exit(0);
             },
             Ok(ForkResult::Parent { child: _ } ) => {
-                io::close(self.herepipe.as_ref().unwrap().send, "herestring close error (child send)");
-                io::replace(self.herepipe.as_ref().unwrap().recv, 0);
+                io::close(send, "herestring close error (child send)");
+                io::replace(recv, 0);
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
