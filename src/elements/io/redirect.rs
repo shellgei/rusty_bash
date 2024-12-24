@@ -27,23 +27,21 @@ pub struct Redirect {
 
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> bool {
-        let args = {
-            if ! self.symbol.starts_with("<<") {
-                match self.right.eval(core) {
-                    Some(v) => v,
-                    None => return false,
-                }
-            }else{
-                vec![String::new()]
-            }
+        if self.symbol == "<<<" {
+            return self.redirect_herestring(core);
+        }
+
+        let args = match self.right.eval(core) {
+            Some(v) => v,
+            None => return false,
         };
 
         if args.len() != 1 {
             eprintln!("sush: {}: ambiguous redirect", self.right.text);
             return false;
-        }else{
-            self.right.text = args[0].clone();
         }
+
+        self.right.text = args[0].clone();
 
         match self.symbol.as_str() {
             "<" => self.redirect_simple_input(restore),
@@ -51,17 +49,15 @@ impl Redirect {
             ">&" => self.redirect_output_fd(restore),
             ">>" => self.redirect_append(restore),
             "&>" => self.redirect_both_output(restore),
-            "<<<" => self.redirect_herestring(core),
             _ => exit::internal(" (Unknown redirect symbol)"),
         }
     }
 
     fn set_left_fd(&mut self, default_fd: RawFd) {
-        self.left_fd = if self.left.len() == 0 {
-            default_fd
-        }else{
-            self.left.parse().unwrap()
-        };
+        self.left_fd = match self.left.len() {
+            0 => default_fd,
+            _ => self.left.parse().unwrap(),
+        }
     }
 
     fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> bool {
@@ -130,14 +126,14 @@ impl Redirect {
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
 
-        self.right.text = self.right.eval_for_case_word(core)
-                              .unwrap_or("".to_string());
+        let text = self.right.eval_for_case_word(core)
+                       .unwrap_or("".to_string());
 
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 io::close(recv, "herestring close error (child recv)");
                 let mut f = unsafe { File::from_raw_fd(send) };
-                let _ = write!(&mut f, "{}\n", &self.right.text);
+                let _ = write!(&mut f, "{}\n", &text);
                 f.flush().unwrap();
                 io::close(send, "herestring close error (child send)");
                 process::exit(0);
