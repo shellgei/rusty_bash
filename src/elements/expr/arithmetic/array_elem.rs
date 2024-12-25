@@ -25,6 +25,12 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
     };
 
     if pre_increment != 0 {
+        value_num += pre_increment;
+        match set_pre_increment(name, &key, value_num, core) {
+            Ok(()) => {},
+            Err(e) => return Err(e),
+        }
+    /*
         let res = match key.parse::<i64>() {
             Ok(n) => {
                 if n >= 0 {
@@ -40,18 +46,29 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
         if ! res {
             return Err("readonly array".to_string());
         }
+    */
     }
 
     Ok( ArithElem::Integer(value_num) )
+}
 
+fn set_pre_increment(name: &String, key: &String, new_value: i64,
+                     core: &mut ShellCore) -> Result<(), String> {
+    let res = match key.parse::<i64>() {
+        Ok(n) => {
+            if n >= 0 {
+                core.db.set_array_elem(name, &(new_value.to_string()), n as usize)
+            }else{
+                return Err("negative index".to_string());
+            }
+        },
+        Err(_) => core.db.set_assoc_elem(name, &(new_value.to_string()), key),
+    };
 
-    /*
-    let res = match pre_increment {
-        0 => change_variable(&name, sub, core, post_increment, false),
-        _ => change_variable(&name, sub, core, pre_increment, true),
-    };*/
-
-    //return Err(error::syntax(&name));
+    if ! res {
+        return Err("readonly array".to_string());
+    }
+    Ok(())
 }
 
 /*
