@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use super::{ArithmeticExpr, ArithElem, int, float};
 
@@ -60,6 +61,31 @@ impl ArithmeticExpr {
         }
 
         ans.elements.push(ArithElem::Ternary(Box::new(left), Box::new(right)));
+        true
+    }
+
+    fn eat_array_elem(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name(core);
+        if len == 0 {
+            return false;
+        }
+
+        let name = &feeder.consume(len);
+        ans.text += &name.clone();
+
+        if ! feeder.starts_with("[") {
+            Self::eat_blank(feeder, ans, core);
+            let suffix = Self::eat_suffix(feeder, ans);
+            ans.elements.push( ArithElem::Word(Word::from(name), suffix) );
+            return true;
+        }
+
+        if let Some(s) = Subscript::parse(feeder, core) {
+            ans.text += &s.text.clone();
+        };
+        Self::eat_blank(feeder, ans, core);
+        let suffix = Self::eat_suffix(feeder, ans);
+        ans.elements.push( ArithElem::Word(Word::from(name), suffix) );
         true
     }
 
@@ -177,6 +203,7 @@ impl ArithmeticExpr {
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, core, &mut ans)
             || Self::eat_binary_operator(feeder, &mut ans, core)
+            || Self::eat_array_elem(feeder, &mut ans, core) 
             || Self::eat_word(feeder, &mut ans, core) { 
                 continue;
             }

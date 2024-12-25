@@ -10,11 +10,21 @@ mod split;
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use super::subword::Subword;
+use super::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,
+}
+
+impl From<&String> for Word {
+    fn from(s: &String) -> Self {
+        Self {
+            text: s.to_string(),
+            subwords: vec![Box::new(SimpleSubword{text: s.to_string() })],
+        }
+    }
 }
 
 impl From<Box::<dyn Subword>> for Word {

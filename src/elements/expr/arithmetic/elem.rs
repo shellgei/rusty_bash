@@ -3,6 +3,7 @@
 
 use super::ArithmeticExpr;
 use super::Word;
+use crate::elements::subscript::Subscript;
 
 #[derive(Debug, Clone)]
 pub enum ArithElem {
@@ -11,6 +12,7 @@ pub enum ArithElem {
     Integer(i64),
     Float(f64),
     Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
+    ArrayElem(String, Subscript, i64), // a[1]++
     Word(Word, i64), // Word + post increment or decrement
     InParen(ArithmeticExpr),
     Increment(i64), //pre increment

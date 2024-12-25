@@ -87,6 +87,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
         let result = match e {
             ArithElem::Integer(_) 
             | ArithElem::Float(_) 
+            | ArithElem::ArrayElem(_, _, _) 
             | ArithElem::Word(_, _) 
             | ArithElem::InParen(_) => {
                 stack.push(e.clone());

@@ -22,7 +22,6 @@ impl Subscript {
                 return None;
             }
             return match core.db.is_assoc(param_name) {
-                //true  => Some(a.text.clone()),
                 true  => {
                     match self.inner.as_mut() {
                         Some(sub) => sub.eval_as_assoc_index(core),
