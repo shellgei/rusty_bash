@@ -108,9 +108,9 @@ fn single_str_to_num(name: &str, core: &mut ShellCore) -> Option<ArithElem> {
 }
 */
 
+    /*
 fn change_variable(name: &str, sub: &mut Subscript, core: &mut ShellCore,
                    inc: i64, pre: bool) -> Result<ArithElem, String> {
-    /*
     match str_to_num(&name, sub, core) {
         Ok(ArithElem::Integer(n))        => {
             if ! core.db.set_param(name, &(n + inc).to_string()) {
@@ -133,9 +133,9 @@ fn change_variable(name: &str, sub: &mut Subscript, core: &mut ShellCore,
         Ok(_) => exit::internal("unknown element"),
         Err(err_msg) => return Err(err_msg), 
     }
-    */
     return Err(error::readonly(&name));
 }
+    */
 
 /*
 pub fn get_sign(s: &mut String) -> String {

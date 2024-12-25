@@ -641,6 +641,9 @@ res=$($com <<< 'echo $(( 1 "+" 1 ))')
 res=$($com <<< 'echo $(( A[0] + 2 ))')
 [ "$res" == "2" ] || err $LINENO
 
+res=$($com <<< 'echo $(( A[0] + 2 )); echo ${A[@]}')
+[ "$res" == "2" ] || err $LINENO
+
 res=$($com <<< 'A=(7 8 ) ; echo $(( A[1] + 2 ))')
 [ "$res" == "10" ] || err $LINENO
 
