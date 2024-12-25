@@ -4,10 +4,11 @@
 use crate::ShellCore;
 use crate::utils::{error, exit};
 use super::elem::ArithElem;
-use super::{elem, float, int, rev_polish, trenary, word};
+use super::{elem, float, int, rev_polish, trenary, word, array_elem};
 
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, String> {
     match stack.pop() {
+        Some(ArithElem::ArrayElem(name, sub, inc)) => array_elem::to_operand(&name, &sub, 0, inc, core),
         Some(ArithElem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
         Some(ArithElem::InParen(mut a)) => a.eval_elems(core, false),
         Some(elem) => Ok(elem),
@@ -138,6 +139,15 @@ fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(),
     match stack.pop() {
         Some(ArithElem::Word(w, inc_post)) => {
             match word::to_operand(&w, inc, inc_post, core) {
+                Ok(op) => {
+                    stack.push(op);
+                    Ok(())
+                },
+                Err(e) => Err(e),
+            }
+        },
+        Some(ArithElem::ArrayElem(name, sub, inc_post)) => {
+            match array_elem::to_operand(&name, &sub, inc, inc_post, core) {
                 Ok(op) => {
                     stack.push(op);
                     Ok(())

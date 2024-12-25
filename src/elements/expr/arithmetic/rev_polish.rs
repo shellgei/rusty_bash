@@ -17,7 +17,8 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ArithElem> {
             _ => {},
         }
         let ok = match e {
-            ArithElem::Float(_) | ArithElem::Integer(_) | ArithElem::Word(_, _) | ArithElem::InParen(_)
+            ArithElem::Float(_) | ArithElem::ArrayElem(_, _, _) | ArithElem::Integer(_) |
+            ArithElem::Word(_, _) | ArithElem::InParen(_)
                              => {ans.push(e.clone()); true},
             op               => rev_polish_op(&op, &mut stack, &mut ans),
         };

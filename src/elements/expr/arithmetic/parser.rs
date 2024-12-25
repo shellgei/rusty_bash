@@ -138,6 +138,7 @@ impl ArithmeticExpr {
         match &ans.elements.last() {
             Some(ArithElem::Integer(_)) 
             | Some(ArithElem::Float(_)) 
+            | Some(ArithElem::ArrayElem(_, _, _)) 
             | Some(ArithElem::Word(_, _)) 
             | Some(ArithElem::InParen(_)) => return false,
             _ => {},
