@@ -73,19 +73,17 @@ impl ArithmeticExpr {
         let name = &feeder.consume(len);
         ans.text += &name.clone();
 
-        if ! feeder.starts_with("[") {
+        if let Some(s) = Subscript::parse(feeder, core) {
+            ans.text += &s.text.clone();
+            Self::eat_blank(feeder, ans, core);
+            let suffix = Self::eat_suffix(feeder, ans);
+            ans.elements.push( ArithElem::ArrayElem(name.clone(), s, suffix) );
+        }else{
             Self::eat_blank(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
             ans.elements.push( ArithElem::Word(Word::from(name), suffix) );
-            return true;
-        }
-
-        if let Some(s) = Subscript::parse(feeder, core) {
-            ans.text += &s.text.clone();
         };
-        Self::eat_blank(feeder, ans, core);
-        let suffix = Self::eat_suffix(feeder, ans);
-        ans.elements.push( ArithElem::Word(Word::from(name), suffix) );
+
         true
     }
 
