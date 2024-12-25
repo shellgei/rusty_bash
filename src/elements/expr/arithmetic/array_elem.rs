@@ -14,16 +14,35 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
         None => return Err(format!("{}: wrong substitution", &name)),
     };
 
-    let value = core.db.get_array(name, &key);
-
-    if value == "" {
-        return Ok( ArithElem::Integer(0) );
+    let mut value_str = core.db.get_array(name, &key);
+    if value_str == "" {
+        value_str = "0".to_string();
     }
 
-    match value.parse::<i64>() {
-        Ok(n) => return Ok( ArithElem::Integer(n) ),
+    let mut value_num = match value_str.parse::<i64>() {
+        Ok(n) => n,
         Err(_) => return Err(format!("{}: not an interger", &name)),
+    };
+
+    if pre_increment != 0 {
+        let res = match key.parse::<i64>() {
+            Ok(n) => {
+                if n >= 0 {
+                    value_num += pre_increment; 
+                    core.db.set_array_elem(name, &(value_num.to_string()), n as usize)
+                }else{
+                    return Err("negative index".to_string());
+                }
+            },
+            Err(_) => core.db.set_assoc_elem(name, &(value_num.to_string()), &key),
+        };
+
+        if ! res {
+            return Err("readonly array".to_string());
+        }
     }
+
+    Ok( ArithElem::Integer(value_num) )
 
 
     /*

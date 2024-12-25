@@ -143,17 +143,6 @@ impl DataBase {
         None
     }
 
-    /*
-    fn set_readonly2(&mut self, name: &str) -> bool {
-        let num = self.params.len();
-        for layer in (0..num).rev()  {
-            if let Some(v) = self.params[layer].get_mut(name) {
-                return v.set_readonly();
-            }
-        }
-        false
-    }*/
-
     fn get_clone(&mut self, name: &str) -> Option<Box<dyn Data>> {
         let num = self.params.len();
         for layer in (0..num).rev()  {
