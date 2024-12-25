@@ -9,13 +9,24 @@ use crate::elements::subscript::Subscript;
 
 pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, String> {
+    let value = match sub.eval(core, name) {
+        Some(v) => v, 
+        None => return Err(format!("{}: wrong substitution", &name)),
+    };
 
+    match value.parse::<i64>() {
+        Ok(n) => return Ok( ArithElem::Integer(n) ),
+        Err(_) => return Err(format!("{}: not an interger", &name)),
+    }
+
+
+    /*
     let res = match pre_increment {
         0 => change_variable(&name, sub, core, post_increment, false),
         _ => change_variable(&name, sub, core, pre_increment, true),
-    };
+    };*/
 
-    return Err(error::syntax(&name));
+    //return Err(error::syntax(&name));
 }
 
 /*
