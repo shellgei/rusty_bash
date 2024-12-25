@@ -351,16 +351,22 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    if args.len() > 3 && args[1] == "-F" {
-        core.completion_functions.insert(args[3].clone(), args[2].clone());
-        return 0;
-    }
-
     if args.len() > 2 && args[1] == "-A" {
         for a in &args[3..] {
             core.completion_actions.insert(a.clone(), (args[2].to_string(), options.clone()));
         }
 
+        return 0;
+    }
+
+    // completion functions
+    if args.len() > 3 && args[1] == "-D" && args[2] == "-F" {
+        core.default_completion_functions = args[3].clone();
+        return 0;
+    }
+
+    if args.len() > 3 && args[1] == "-F" {
+        core.completion_functions.insert(args[3].clone(), args[2].clone());
         return 0;
     }
 
