@@ -7,11 +7,17 @@ use crate::utils::{error, exit};
 use super::{ArithElem, ArithmeticExpr, float, int, Word};
 use crate::elements::subscript::Subscript;
 
-pub fn to_operand(name: &String, sub: &Subscript, pre_increment: i64, post_increment: i64,
+pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, String> {
-    dbg!("here");
+
+    let res = match pre_increment {
+        0 => change_variable(&name, sub, core, post_increment, false),
+        _ => change_variable(&name, sub, core, pre_increment, true),
+    };
+
     return Err(error::syntax(&name));
 }
+
 /*
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, String> {
@@ -49,21 +55,7 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, String> {
     str_to_num(&name, core)
 }
 
-pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
-    let mut name = name.to_string();
-
-    const RESOLVE_LIMIT: i32 = 10000;
-
-    for i in 0..RESOLVE_LIMIT {
-        match utils::is_name(&name, core) {
-            true  => name = core.db.get_param(&name),
-            false => break,
-        }
-
-        if i == RESOLVE_LIMIT - 1 {
-            return Err(error::recursion(&name));
-        }
-    }
+pub fn str_to_num(name: &str, sub: &mut Subscript, core: &mut ShellCore) -> Result<ArithElem, String> {
 
     match single_str_to_num(&name, core) {
         Some(e) => Ok(e),
@@ -97,16 +89,12 @@ fn single_str_to_num(name: &str, core: &mut ShellCore) -> Option<ArithElem> {
     }else if let Some(f) = float::parse(&name) { Some( ArithElem::Float(f) )
     }else{                                       None }
 }
+*/
 
-fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<ArithElem, String> {
-    if ! utils::is_name(name, core) {
-        return match inc != 0 && ! pre {
-            true  => Err(error::syntax(name)),
-            false => str_to_num(&name, core),
-        }
-    }
-
-    match str_to_num(&name, core) {
+fn change_variable(name: &str, sub: &mut Subscript, core: &mut ShellCore,
+                   inc: i64, pre: bool) -> Result<ArithElem, String> {
+    /*
+    match str_to_num(&name, sub, core) {
         Ok(ArithElem::Integer(n))        => {
             if ! core.db.set_param(name, &(n + inc).to_string()) {
                 return Err(error::readonly(&name));
@@ -128,8 +116,11 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
         Ok(_) => exit::internal("unknown element"),
         Err(err_msg) => return Err(err_msg), 
     }
+    */
+    return Err(error::readonly(&name));
 }
 
+/*
 pub fn get_sign(s: &mut String) -> String {
     *s = s.trim().to_string();
     match s.starts_with("+") || s.starts_with("-") {
