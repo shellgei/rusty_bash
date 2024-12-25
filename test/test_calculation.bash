@@ -651,4 +651,9 @@ res=$($com <<< 'echo $((++A[0])); echo ${A[@]}')
 [ "$res" == "1
 1" ] || err $LINENO
 
+res=$($com <<< 'echo $((A[0]++)); echo ${A[@]}')
+[ "$res" == "0
+1" ] || err $LINENO
+
+
 echo $0 >> ./ok

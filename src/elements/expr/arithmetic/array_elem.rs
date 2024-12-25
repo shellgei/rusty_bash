@@ -30,26 +30,19 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
             Ok(()) => {},
             Err(e) => return Err(e),
         }
-    /*
-        let res = match key.parse::<i64>() {
-            Ok(n) => {
-                if n >= 0 {
-                    value_num += pre_increment; 
-                    core.db.set_array_elem(name, &(value_num.to_string()), n as usize)
-                }else{
-                    return Err("negative index".to_string());
-                }
-            },
-            Err(_) => core.db.set_assoc_elem(name, &(value_num.to_string()), &key),
-        };
-
-        if ! res {
-            return Err("readonly array".to_string());
-        }
-    */
     }
 
-    Ok( ArithElem::Integer(value_num) )
+    let ans = Ok( ArithElem::Integer(value_num) );
+
+    if post_increment != 0 {
+        value_num += post_increment;
+        match set_pre_increment(name, &key, value_num, core) {
+            Ok(()) => {},
+            Err(e) => return Err(e),
+        }
+    }
+
+    ans
 }
 
 fn set_pre_increment(name: &String, key: &String, new_value: i64,
