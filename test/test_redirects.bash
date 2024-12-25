@@ -133,9 +133,10 @@ res=$($com <<< 'cat <<< $(seq 3)')
 if [ "$(uname)" = "Linux" ] ; then
 	res=$($com <<< 'cat <<< $(seq 3000) | wc -l')
 	[ "$res" == "3000" ] || err $LINENO
+
+	res=$($com <<< 'cat <<< $(aaa) | wc -l')
+	[ "$res" == "1" ] || err $LINENO
 fi
 
-res=$($com <<< 'cat <<< $(aaa) | wc -l')
-[ "$res" == "1" ] || err $LINENO
 
 echo $0 >> ./ok
