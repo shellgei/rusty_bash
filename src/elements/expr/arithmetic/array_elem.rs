@@ -9,10 +9,16 @@ use crate::elements::subscript::Subscript;
 
 pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, String> {
-    let value = match sub.eval(core, name) {
-        Some(v) => v, 
+    let key = match sub.eval(core, name) {
+        Some(s) => s, 
         None => return Err(format!("{}: wrong substitution", &name)),
     };
+
+    let value = core.db.get_array(name, &key);
+
+    if value == "" {
+        return Ok( ArithElem::Integer(0) );
+    }
 
     match value.parse::<i64>() {
         Ok(n) => return Ok( ArithElem::Integer(n) ),
