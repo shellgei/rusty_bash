@@ -6,15 +6,18 @@ use super::elem::ArithElem;
 
 pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ArithElem> {
     let mut ans = vec![];
-    let mut stack = vec![];
+    let mut stack: Vec<ArithElem> = vec![];
 
     for e in elements {
         match e {
             ArithElem::BinaryOp(op) => match op.as_str() {
                 "&&" | "||" => {
                     while stack.len() > 0 {
-                        //TODO: change actions depending on the order
-                        ans.push(stack.pop().unwrap());
+                        let pre_op = stack.pop().unwrap().clone();
+                        match elem::op_order(&pre_op) > elem::op_order(e) {
+                            true  => ans.push(pre_op),
+                            false => {stack.push(pre_op); break},
+                        }
                     }
                     ans.push(ArithElem::Delimiter(op.to_string()))
                 },
