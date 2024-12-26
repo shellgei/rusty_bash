@@ -62,7 +62,7 @@ fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<CondEl
         Some(CondElem::InParen(mut expr)) => expr.eval(core),
         Some(CondElem::Word(w)) => to_operand(&w, core),
         Some(elem) => Ok(elem),
-        None => return Err("no operand".to_string()),
+        None => return Err("no operand 1".to_string()),
     }
 }
 

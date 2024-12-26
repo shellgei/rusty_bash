@@ -39,7 +39,6 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
             Err(e) => return Err(e),
         }
     }
-
     ans
 }
 

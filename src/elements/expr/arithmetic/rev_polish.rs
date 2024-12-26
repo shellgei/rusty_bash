@@ -11,7 +11,13 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ArithElem> {
     for e in elements {
         match e {
             ArithElem::BinaryOp(op) => match op.as_str() {
-                "&&" | "||" => ans.push(ArithElem::Delimiter(op.to_string())),
+                "&&" | "||" => {
+                    while stack.len() > 0 {
+                        //TODO: change actions depending on the order
+                        ans.push(stack.pop().unwrap());
+                    }
+                    ans.push(ArithElem::Delimiter(op.to_string()))
+                },
                 _ => {},
             },
             _ => {},

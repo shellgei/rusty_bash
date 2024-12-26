@@ -655,5 +655,10 @@ res=$($com <<< 'echo $((A[0]++)); echo ${A[@]}')
 [ "$res" == "0
 1" ] || err $LINENO
 
+res=$($com <<< 'if ((0 >= 1 || 1 >= 1 )); then echo a ; else echo b ; fi')
+[ "$res" == "a" ] || err $LINENO
+
+res=$($com <<< 'if ((0 >= 1 && 1 >= 1 )); then echo a ; else echo b ; fi')
+[ "$res" == "b" ] || err $LINENO
 
 echo $0 >> ./ok
