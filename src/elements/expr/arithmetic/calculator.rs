@@ -9,12 +9,7 @@ use super::{elem, float, int, rev_polish, trenary, word, array_elem};
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, String> {
     match stack.pop() {
         Some(ArithElem::ArrayElem(name, mut sub, inc))
-            => {
-                let ans = array_elem::to_operand(&name, &mut sub, 0, inc, core);
-                dbg!("{:?}", &sub);
-                dbg!("{:?}", &ans);
-                ans
-            },
+            => array_elem::to_operand(&name, &mut sub, 0, inc, core),
         Some(ArithElem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
         Some(ArithElem::InParen(mut a)) => a.eval_elems(core, false),
         Some(elem) => Ok(elem),
