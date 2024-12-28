@@ -107,7 +107,7 @@ Please give us issues or pull requests in a way you think sensible. We do not ha
 | shift | :heavy_check_mark: | suspend | :no_good: | test | :no_good: |
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
-| umask | :no_good: | unalias | :no_good: | unset | :construction: |
+| umask | :no_good: | unalias | :heavy_check_mark: | unset | :construction: |
 | wait | :construction: | export | :no_good: |
 
 ### options
