@@ -20,10 +20,6 @@ use crate::{child, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, error, exit, file};
-use nix::unistd;
-use nix::errno::Errno;
-use std::process;
-use std::ffi::CString;
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -138,7 +134,10 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let pid = command.exec_command(core, &mut pipe);
     child::wait_pipeline(core, vec![pid], false, false);
 
-    0
+    match core.db.get_param("?").parse::<i32>() {
+        Ok(es) => es,
+        _      => 1,
+    }
 }
 
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
