@@ -74,19 +74,18 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
-    dbg!("{:?}", &args);
-    let words = arg::consume_after_options(&mut args, 1);
-    dbg!("{:?}", &args);
-    dbg!("{:?}", &words);
-    /*
-    if ! core.builtins.contains_key(&args[1]) {
-        let msg = format!("{}: {}: not a shell builtin", &args[0], &args[1]);
-        error::print(&msg, core);
-        return 1;
+    let mut words = arg::consume_after_options(&mut args, 1);
+
+    if words.len() == 0 {
+        return 0;
     }
 
-    core.builtins[&args[1]](core, &mut args[1..].to_vec())
-    */
+    if args.len() == 1 { // no option
+        if core.builtins.contains_key(&words[0]) {
+            return core.builtins[&words[0]](core, &mut words);
+        }
+    }
+
     0
 }
 
