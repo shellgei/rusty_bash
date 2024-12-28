@@ -7,12 +7,6 @@
 
 [![demo](https://github.com/shellgei/rusty_bash/assets/1232918/13f9ae0b-45b6-4b89-ab5d-b523aadd09bf)](https://www.youtube.com/watch?v=RL8M6PZfDYo)
 
-**IMPORTANT: the main branch is switched to the shell develped for articles on [SoftwareDesign](https://gihyo.jp/magazine/SD).**
-（今までのメインブランチは、連載のものに比べて散らかりすぎなので、連載のものをmainに切り替えました。）
-
-* [old main branch](https://github.com/shellgei/rusty_bash/tree/old_main)
-
-
 ## What's this?
 
 A clone of Bash, which is developed as a hobby of our group and for monthly articles on SoftwareDesign magazine published by Gijutsu-Hyohron Co., Ltd.
@@ -99,8 +93,8 @@ Please give us issues or pull requests in a way you think sensible. We do not ha
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: |
 | shopt | :construction: | : | :heavy_check_mark: | . | :heavy_check_mark: | [ | :no_good: |
 | alias | :heavy_check_mark: | bg | :construction: | bind | :no_good: |
-| break | :heavy_check_mark: | builtin | :no_good: | caller | :no_good: |
-| command | :no_good: | compgen | :construction: | complete | :construction: |
+| break | :heavy_check_mark: | builtin | :heavy_check_mark: | caller | :no_good: |
+| command | :heavy_check_mark: | compgen | :construction: | complete | :construction: |
 | compopt | :no_good: | continue | :heavy_check_mark: | declare | :no_good: |
 | dirs | :no_good: | disown | :no_good: | echo | :no_good: |
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
@@ -110,7 +104,7 @@ Please give us issues or pull requests in a way you think sensible. We do not ha
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | read | :no_good: | readonly | :no_good: | return | :heavy_check_mark: |
-| shift | :no_good: | suspend | :no_good: | test | :no_good: |
+| shift | :heavy_check_mark: | suspend | :no_good: | test | :no_good: |
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
 | umask | :no_good: | unalias | :no_good: | unset | :construction: |
