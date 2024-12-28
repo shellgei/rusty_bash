@@ -16,7 +16,9 @@ mod loop_control;
 mod unset;
 mod utils;
 
-use crate::{Feeder, Script, ShellCore};
+use crate::{child, Feeder, Script, ShellCore};
+use crate::elements::command::simple::SimpleCommand;
+use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, error, exit, file};
 use nix::unistd;
 use nix::errno::Errno;
@@ -130,32 +132,11 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return core.builtins[&words[0]](core, &mut words);
     }
 
-    /*
-    let cargs = words.iter().map(|a| CString::new(a.to_string()).unwrap()).collect();
-
-    match unsafe{unistd::fork()} {
-        Ok(ForkResult::Child) => {
-
-            match unistd::execvp(&cargs[0], &cargs) {
-                Err(Errno::E2BIG) => exit::arg_list_too_long(&words[0], core),
-                Err(Errno::EACCES) => exit::permission_denied(&words[0], core),
-                Err(Errno::ENOENT) => exit::not_found(&words[0], core),
-                Err(err) => {
-                    eprintln!("Failed to execute. {:?}", err);
-                    process::exit(127)
-                }
-                _ => exit::internal("never come here")
-            }
-        },
-        Ok(ForkResult::Parent { child } ) => {
-            child::set_pgid(core, child, pipe.pgid);
-            pipe.parent_close();
-            Some(child)
-        },
-        Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
-
-    }
-    */
+    let mut command = SimpleCommand::default();
+    let mut pipe = Pipe::new("".to_string());
+    command.args = words;
+    let pid = command.exec_command(core, &mut pipe);
+    child::wait_pipeline(core, vec![pid], false, false);
 
     0
 }

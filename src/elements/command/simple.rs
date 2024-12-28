@@ -21,7 +21,7 @@ pub struct SimpleCommand {
     text: String,
     substitutions: Vec<Substitution>,
     words: Vec<Word>,
-    args: Vec<String>,
+    pub args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool, 
     substitutions_as_args: Vec<Substitution>,
@@ -113,7 +113,7 @@ impl SimpleCommand {
         exit::not_found(&self.args[0], core)
     }
 
-    fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
         if Self::check_sigint(core) {
             return None;
         }
