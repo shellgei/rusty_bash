@@ -76,7 +76,12 @@ pub fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -
     let mut return_value = 1;
 
     for com in words.iter() {
-        if core.builtins.contains_key(com) {
+        if core.db.aliases.contains_key(com) {
+            match large_v {
+                true  => println!("{} is aliased to `{}'", &com, core.db.aliases[com]),
+                false => println!("alias {}='{}'", &com, &core.db.aliases[com]),
+            }
+        }else if core.builtins.contains_key(com) {
             return_value = 0;
 
             match large_v {
@@ -89,9 +94,7 @@ pub fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -
                 true  => println!("{} is {}", &com, &path),
                 false => println!("{}", &com),
             }
-        }
-
-        if large_v {
+        }else if large_v {
             let msg = format!("command: {}: not found", com);
             error::print(&msg, core);
         }
