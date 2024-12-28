@@ -17,7 +17,7 @@ mod unset;
 mod utils;
 
 use crate::{Feeder, Script, ShellCore};
-use crate::utils::{error, exit};
+use crate::utils::{arg, error, exit};
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -27,6 +27,7 @@ impl ShellCore {
         self.builtins.insert("break".to_string(), loop_control::break_);
         self.builtins.insert("builtin".to_string(), builtin);
         self.builtins.insert("cd".to_string(), cd::cd);
+        self.builtins.insert("command".to_string(), command);
         self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
         self.builtins.insert("continue".to_string(), loop_control::continue_);
@@ -65,6 +66,28 @@ pub fn builtin(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     core.builtins[&args[1]](core, &mut args[1..].to_vec())
+}
+
+pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() <= 1 {
+        return 0;
+    }
+
+    let mut args = arg::dissolve_options(args);
+    dbg!("{:?}", &args);
+    let words = arg::consume_after_options(&mut args, 1);
+    dbg!("{:?}", &args);
+    dbg!("{:?}", &words);
+    /*
+    if ! core.builtins.contains_key(&args[1]) {
+        let msg = format!("{}: {}: not a shell builtin", &args[0], &args[1]);
+        error::print(&msg, core);
+        return 1;
+    }
+
+    core.builtins[&args[1]](core, &mut args[1..].to_vec())
+    */
+    0
 }
 
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
