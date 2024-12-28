@@ -166,16 +166,6 @@ impl SimpleCommand {
             .collect()
     }
 
-    /*
-    fn eval_substitutions(&mut self, core: &mut ShellCore) -> bool {
-        for s in &mut self.substitutions {
-            if ! s.eval(core) {
-                return false;
-            }
-        }
-        true
-    }*/
-
     fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
         match word.eval(core) {
             Some(ws) => {
