@@ -80,10 +80,16 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    if args.len() == 1 { // no option
-        if core.builtins.contains_key(&words[0]) {
-            return core.builtins[&words[0]](core, &mut words);
+    if core.builtins.contains_key(&words[0]) {
+        if args.last().unwrap() == "-V" {
+            println!("{} is a shell builtin", &words[0]);
+            return 0;
+        }else if args.last().unwrap() == "-v" {
+            println!("{}", &words[0]);
+            return 0;
         }
+
+        return core.builtins[&words[0]](core, &mut words);
     }
 
     0

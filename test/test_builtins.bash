@@ -183,5 +183,10 @@ res=$($com -c 'A=1 ; declare -r A ; f () { local A ; A=123 ; } ; f')
 res=$($com -c 'A=1 ; declare -r A ; A=(3 4)')
 [[ "$?" -eq 1 ]] || err $LINENO
 
+### command ###
+#
+res=$($com -c 'command cd /; pwd')
+[[ "$res" == / ]] || err $LINENO
+
 echo $0 >> ./ok
 
