@@ -17,7 +17,7 @@ mod unset;
 mod utils;
 
 use crate::{Feeder, Script, ShellCore};
-use crate::utils::{arg, error, exit};
+use crate::utils::{arg, error, exit, file};
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -68,6 +68,38 @@ pub fn builtin(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.builtins[&args[1]](core, &mut args[1..].to_vec())
 }
 
+pub fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -> i32 {
+    if words.len() == 0 {
+        return 0;
+    }
+
+    let mut return_value = 1;
+
+    for com in words.iter() {
+        if core.builtins.contains_key(com) {
+            return_value = 0;
+
+            match large_v {
+                true  => println!("{} is a shell builtin", &com),
+                false => println!("{}", &com),
+            }
+        }else if let Some(path) = file::search_command(&com) {
+            return_value = 0;
+            match large_v {
+                true  => println!("{} is {}", &com, &path),
+                false => println!("{}", &com),
+            }
+        }
+
+        if large_v {
+            let msg = format!("command: {}: not found", com);
+            error::print(&msg, core);
+        }
+    }
+
+    return_value
+}
+
 pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         return 0;
@@ -80,15 +112,14 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    if core.builtins.contains_key(&words[0]) {
-        if args.last().unwrap() == "-V" {
-            println!("{} is a shell builtin", &words[0]);
-            return 0;
-        }else if args.last().unwrap() == "-v" {
-            println!("{}", &words[0]);
-            return 0;
-        }
+    let last_option = args.last().unwrap();
+    if last_option == "-V" {
+        return command_v(&mut words, core, true);
+    }else if last_option == "-v" {
+        return command_v(&mut words, core, false);
+    }
 
+    if core.builtins.contains_key(&words[0]) {
         return core.builtins[&words[0]](core, &mut words);
     }
 

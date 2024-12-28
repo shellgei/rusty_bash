@@ -184,7 +184,10 @@ res=$($com -c 'A=1 ; declare -r A ; A=(3 4)')
 [[ "$?" -eq 1 ]] || err $LINENO
 
 ### command ###
-#
+
+res=$($com -c 'command cd /; pwd')
+[[ "$res" == / ]] || err $LINENO
+
 res=$($com -c 'command cd /; pwd')
 [[ "$res" == / ]] || err $LINENO
 
