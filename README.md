@@ -103,12 +103,12 @@ Please give us issues or pull requests in a way you think sensible. We do not ha
 | jobs | :construction: | kill | :no_good: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
-| read | :no_good: | readonly | :no_good: | return | :heavy_check_mark: |
+| readonly | :no_good: | return | :heavy_check_mark: | false | :heavy_check_mark: |
 | shift | :heavy_check_mark: | suspend | :no_good: | test | :no_good: |
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
 | umask | :no_good: | unalias | :no_good: | unset | :construction: |
-| wait | :construction: | export | :no_good: | false | :heavy_check_mark: |
+| wait | :construction: | export | :no_good: |
 
 ### options
 
