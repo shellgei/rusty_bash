@@ -17,7 +17,6 @@ impl Options {
 
     pub fn new_as_shopts() -> Options {
         let mut options = Options::default();
-        /*
         let opt_strs = vec!["autocd", "cdable_vars", "cdspell", "checkhash",
                    "checkjobs", "checkwinsize", "cmdhist", "compat31",
                    "compat32", "compat40", "compat41", "dirspell",
@@ -27,12 +26,12 @@ impl Options {
                    "histverify", "hostcomplete", "huponexit", "interactive_comments",
                    "lastpipe", "lithist", "login_shell", "mailwarn",
                    "no_empty_cmd_completion", "nocaseglob", "nocasematch", "nullglob",
-                   "progcomp", "promptvars", "restricted_shell", "shift_verbose",
+                   "promptvars", "restricted_shell", "shift_verbose",
                    "sourcepath", "xpg_echo"];
 
         for opt in opt_strs {
             options.opts.insert(opt.to_string(), false);
-        }*/
+        }
 
         let true_list = ["extglob", "progcomp"];
         for opt in true_list {

@@ -139,7 +139,15 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let res = match args[1].as_str() {
-        "-s" => core.shopts.set(&args[2], true),
+        "-s" => {
+            if ["extglob", "progcomp"].iter().any(|&e| e == args[2]) {
+                core.shopts.set(&args[2], true)
+            }else{
+                let msg = format!("shopt: {}: not supported yet", &args[2]);
+                error::print(&msg, core);
+                return 1;
+            }
+        },
         "-q" => {
             for arg in &args[2..] {
                 if ! core.shopts.exist(arg) {
