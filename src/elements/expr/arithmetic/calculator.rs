@@ -82,7 +82,9 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
                 skip_until = "".to_string();
                 continue;
             }
-        }else if skip_until != "" {
+        }
+
+        if skip_until != "" {
                 continue;
         }
 
