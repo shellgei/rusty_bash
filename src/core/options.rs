@@ -12,6 +12,7 @@ impl Options {
     pub fn new_as_basic_opts() -> Options {
         let mut options = Options::default();
         options.opts.insert("pipefail".to_string(), false);
+        options.opts.insert("noglob".to_string(), false);
         options
     }
 
