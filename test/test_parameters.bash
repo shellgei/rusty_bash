@@ -52,4 +52,10 @@ res=$($com <<< 'declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[@]}')
 res=$($com <<< 'B=ccc; declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[$B]}')
 [ "$res" == "ddd" ] || err $LINENO
 
+### FUNCNAME ###
+
+res=$($com <<< 'f(){ g () { echo ${FUNCNAME[@]} ;} ; g ;} ; f')
+[ "$res" == "g f" ] || err $LINENO
+
+
 echo $0 >> ./ok

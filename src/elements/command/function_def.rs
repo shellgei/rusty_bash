@@ -53,8 +53,11 @@ impl FunctionDefinition {
     }
 
     pub fn run_as_command(&mut self, args: &mut Vec<String>,
-                          core: &mut ShellCore,
-                          /*local_params: Vec<(&str, &str)>*/) -> Option<Pid> {
+                          core: &mut ShellCore) -> Option<Pid> {
+        let mut array = core.db.get_array_all("FUNCNAME");
+        array.insert(0, args[0].clone());
+        core.db.set_array("FUNCNAME", array);
+
         let len = core.db.position_parameters.len();
         args[0] = core.db.position_parameters[len-1][0].clone();
         core.db.position_parameters.push(args.to_vec());
@@ -70,6 +73,9 @@ impl FunctionDefinition {
 
         core.db.position_parameters.pop();
 
+        let mut array = core.db.get_array_all("FUNCNAME");
+        array.remove(0);
+        core.db.set_array("FUNCNAME", array);
         return pid;
     }
 

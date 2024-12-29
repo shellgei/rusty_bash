@@ -49,6 +49,8 @@ impl DataBase {
 
         data.call_speial("SECONDS");
 
+        data.set_array("FUNCNAME", vec![]);
+
         data
     }
 
