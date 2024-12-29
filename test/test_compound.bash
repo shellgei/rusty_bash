@@ -156,6 +156,9 @@ res=$($com <<< 'function f () { echo ok && return 3; } ; f')
 res=$($com <<< 'f () { g () { return; echo NG; } ; g ; echo OK; } ; f')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'f () { echo $#; } ; f x y z')
+[ "$res" = "3" ] || err $LINENO
+
 ### WHILE TEST ###
 
 res=$($com <<< 'touch /tmp/rusty_bash ; while [ -f /tmp/rusty_bash ] ; do echo wait ; rm /tmp/rusty_bash ; done')
