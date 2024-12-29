@@ -57,6 +57,9 @@ res=$($com <<< 'cd ; compgen -f . | wc -l')
 res=$($com <<< 'eval "echo a" b')
 [ "$res" = "a b" ] || err $LINENO
 
+res=$($com <<< 'eval -- "A=(a b)"; echo ${A[@]}')
+[ "$res" = "a b" ] || err $LINENO
+
 res=$($com <<< 'eval "(" echo abc ")" "|" rev')
 [ "$res" = "cba" ] || err $LINENO
 
