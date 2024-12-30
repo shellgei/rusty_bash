@@ -56,7 +56,7 @@ impl ArithmeticExpr {
                         None => return None,
                     }
                 },
-                _ => ans += &elem::to_string(e),
+                _ => ans += &e.to_string(),
             }
         }
 

@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::elem;
 use super::elem::ArithElem;
 
 pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ArithElem> {
@@ -14,7 +13,7 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ArithElem> {
                 "&&" | "||" => {
                     while stack.len() > 0 {
                         let pre_op = stack.pop().unwrap().clone();
-                        match elem::op_order(&pre_op) > elem::op_order(e) {
+                        match pre_op.order() > e.order() {
                             true  => ans.push(pre_op),
                             false => {stack.push(pre_op); break},
                         }
@@ -54,7 +53,8 @@ fn rev_polish_op(elem: &ArithElem,
             },
             Some(_) => {
                 let last = stack.last().unwrap();
-                if elem::op_order(last) <= elem::op_order(elem) {
+                //if elem::op_order(last) <= elem::op_order(elem) {
+                if last.order() <= elem.order() {
                     stack.push(elem.clone());
                     break;
                 }

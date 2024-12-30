@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::utils::{error, exit};
 use super::elem::ArithElem;
-use super::{elem, float, int, rev_polish, trenary, word, array_elem};
+use super::{float, int, rev_polish, trenary, word, array_elem};
 
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, String> {
     match stack.pop() {
@@ -70,7 +70,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
 
     let rev_pol = match rev_polish::rearrange(elements) {
         Ok(ans) => ans,
-        Err(e)  => return Err( error::syntax(&elem::to_string(&e)) ),
+        Err(e)  => return Err( error::syntax(&e.to_string()) ),
     };
 
     let mut stack = vec![];
