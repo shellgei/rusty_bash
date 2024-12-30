@@ -8,6 +8,7 @@ err () {
 }
 
 cargo build --release || err $LINENO
+cargo --version
 
 cd $(dirname $0)
 com=../target/release/sush
