@@ -37,11 +37,7 @@ impl Feeder {
     }
 
     pub fn set_file(&mut self, s: &str) {
-        let file = match File::open(s) {
-            Ok(f) => f,
-            Err(e) => panic!("{:?}", &e),
-        };
-
+        let file = File::open(s).unwrap();
         self.script_lines = Some(BufReader::new(file).lines());
     }
 
