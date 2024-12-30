@@ -51,7 +51,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore, tab_num: usize) {
         self.escape_at_completion = true;
-        core.db.set_array("COMPREPLY", vec![]);
+        let _ = core.db.set_array("COMPREPLY", vec![]);
         self.set_completion_info(core);
 
         if ! Self::set_custom_compreply(core)
@@ -117,9 +117,7 @@ impl Terminal {
         }
 
         let tmp: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
-        //core.db.set("COMPREPLY", DataType::from(tmp));
-        core.db.set_array("COMPREPLY", tmp);
-        true
+        core.db.set_array("COMPREPLY", tmp).is_ok()
     }
 
     fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
@@ -324,8 +322,7 @@ impl Terminal {
 
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
-        core.db.set_array("COMP_WORDS", words_all);
-        //core.db.set("COMP_WORDS", DataType::from(words_all));
+        let _ = core.db.set_array("COMP_WORDS", words_all);
 
         let mut num = words_left.len();
         match left_string.chars().last() {

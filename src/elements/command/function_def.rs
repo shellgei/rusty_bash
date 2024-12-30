@@ -56,9 +56,7 @@ impl FunctionDefinition {
                           core: &mut ShellCore) -> Option<Pid> {
         let mut array = core.db.get_array_all("FUNCNAME");
         array.insert(0, args[0].clone());
-        core.db.set_array("FUNCNAME", array);
-        //let number = core.db.get_param("#");
-        //core.db.set_param("#", &(args.len()-1).to_string());
+        let _ = core.db.set_array("FUNCNAME", array);
 
         let len = core.db.position_parameters.len();
         args[0] = core.db.position_parameters[len-1][0].clone();
@@ -78,7 +76,7 @@ impl FunctionDefinition {
         //core.db.set_param("#", &number);
         let mut array = core.db.get_array_all("FUNCNAME");
         array.remove(0);
-        core.db.set_array("FUNCNAME", array);
+        let _ = core.db.set_array("FUNCNAME", array);
         return pid;
     }
 

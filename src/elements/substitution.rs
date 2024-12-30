@@ -27,20 +27,6 @@ pub struct Substitution {
     append: bool,
 }
 
-fn readonly_error(name: &str, core: &mut ShellCore) -> bool {
-    core.db.exit_status = 1;
-    let msg = error::readonly(name);
-    error::print(&msg, core);
-    false
-}
-
-fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
-    core.db.exit_status = 1;
-    let msg = error::bad_array_subscript(&sub);
-    error::print(&msg, core);
-    false
-}
-
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore, layer: usize, env: bool) -> bool {
         match self.value.clone() {
