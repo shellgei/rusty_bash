@@ -56,12 +56,14 @@ impl DataBase {
     }
 
     pub fn get_param(&mut self, name: &str) -> String {
-        if name == "-" {
-            return self.flags.clone();
-        }
-
-        if name == "?" {
-            return self.exit_status.to_string();
+        match name {
+            "-" => return self.flags.clone(),
+            "?" => return self.exit_status.to_string(),
+            "#" => {
+                let pos = self.position_parameters.len() - 1;
+                return (self.position_parameters[pos].len() - 1).to_string();
+            },
+            _ => {},
         }
 
         if name == "@" || name == "*" { // $@ should return an array in a double quoted
