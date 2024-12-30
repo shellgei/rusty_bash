@@ -23,6 +23,7 @@ pub struct DataBase {
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
     pub alias_memo: Vec<(String, String)>,
+    pub exit_status: i32,
 }
 
 impl DataBase {
@@ -38,7 +39,7 @@ impl DataBase {
         data.set_param("$", &process::id().to_string());
         data.set_param("BASHPID", &process::id().to_string());
         data.set_param("BASH_SUBSHELL", "0");
-        data.set_param("?", "0");
+        data.exit_status = 0;
         data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
 
         data.set_special_param("SRANDOM", random::get_srandom);
@@ -57,6 +58,10 @@ impl DataBase {
     pub fn get_param(&mut self, name: &str) -> String {
         if name == "-" {
             return self.flags.clone();
+        }
+
+        if name == "?" {
+            return self.exit_status.to_string();
         }
 
         if name == "@" || name == "*" { // $@ should return an array in a double quoted
@@ -228,7 +233,7 @@ impl DataBase {
 
     pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> Result<(), String> {
         if self.has_flag(name, 'r') {
-            self.set_param("?", "1");
+            self.exit_status = 1;
             return Err(error::readonly(name));
         }
 
@@ -260,7 +265,7 @@ impl DataBase {
 
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
         if self.has_flag(name, 'r') {
-            self.set_param("?", "1");
+            self.exit_status = 1;
             let msg = error::readonly(name);
             eprintln!("{}", &msg);
             return false;
@@ -272,7 +277,7 @@ impl DataBase {
 
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
         if self.has_flag(name, 'r') {
-            self.set_param("?", "1");
+            self.exit_status = 1;
             let msg = error::readonly(name);
             eprintln!("{}", &msg);
             return false;
@@ -284,7 +289,7 @@ impl DataBase {
 
     pub fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> bool {
         if self.has_flag(name, 'r') {
-            self.set_param("?", "1");
+            self.exit_status = 1;
             let msg = error::readonly(name);
             eprintln!("{}", &msg);
             return false;
@@ -301,7 +306,7 @@ impl DataBase {
 
     pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> bool {
         if self.has_flag(name, 'r') {
-            self.set_param("?", "1");
+            self.exit_status = 1;
             let msg = error::readonly(name);
             eprintln!("{}", &msg);
             return false;

@@ -128,10 +128,7 @@ impl ShellCore {
     }
 
     pub fn flip_exit_status(&mut self) {
-        match self.db.get_param("?").as_ref() {
-            "0" => self.db.set_param("?", "1"),
-            _   => self.db.set_param("?", "0"),
-        };
+        self.db.exit_status = if self.db.exit_status == 0 { 1 } else { 0 };
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
@@ -142,8 +139,7 @@ impl ShellCore {
         if self.builtins.contains_key(&args[0]) {
             let func = self.builtins[&args[0]];
             args.append(special_args);
-            let status = func(self, args);
-            self.db.set_layer_param("?", &status.to_string(), 0);
+            self.db.exit_status = func(self, args);
             return true;
         }
 

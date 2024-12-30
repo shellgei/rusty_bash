@@ -56,6 +56,5 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.source_level -= 1;
     core.return_flag = false;
     core.read_stdin = read_stdin_backup;
-    core.db.get_param("?").parse::<i32>()
-        .expect("SUSH INTERNAL ERROR: BAD EXIT STATUS")
+    core.db.exit_status
 }

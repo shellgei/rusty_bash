@@ -16,11 +16,11 @@ pub struct ArithmeticCommand {
 impl Command for ArithmeticCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         let exit_status = match self.eval(core).as_deref() {
-            Some("0") => "1",
-            Some(_) => "0",
-            None => "1",
+            Some("0") => 1,
+            Some(_) => 0,
+            None => 1,
         };
-        core.db.set_param("?", exit_status );
+        core.db.exit_status = exit_status;
     }
 
     fn get_text(&self) -> String { self.text.clone() }

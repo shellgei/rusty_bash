@@ -127,7 +127,7 @@ impl ConditionalExpr {
             };
     
             if let Err(err_msg) = result {
-                core.db.set_param("?", "2");
+                core.db.exit_status = 2;
                 return Err(err_msg);
             }
         }

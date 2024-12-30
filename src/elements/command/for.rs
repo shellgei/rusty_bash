@@ -31,8 +31,8 @@ impl Command for ForCommand {
             false => self.run_with_values(core),
         };
 
-        if ! ok && core.db.get_param("?") == "0" {
-            core.db.set_param("?", "1");
+        if ! ok && core.db.exit_status == 0 {
+            core.db.exit_status = 1;
         }
 
         core.loop_level -= 1;
@@ -76,7 +76,7 @@ impl ForCommand {
             }
 
             if let Err(e) = core.db.set_param(&self.name, &p) {
-                core.db.set_param("?", "1");
+                core.db.exit_status = 1;
                 error::print(&e, core);
             }
 

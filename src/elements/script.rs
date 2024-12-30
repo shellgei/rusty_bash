@@ -104,7 +104,7 @@ impl Script {
                     core.db.set_param("LINENO", &feeder.lineno.to_string());
                     let s = format!("Unexpected token: {}", s);
                     error::print(&s, core);
-                    core.db.set_param("?", "2");
+                    core.db.exit_status = 2;
                     break;
                 },
                 Status::NeedMoreLine => {

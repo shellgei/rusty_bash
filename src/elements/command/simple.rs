@@ -134,7 +134,7 @@ impl SimpleCommand {
 
     fn check_sigint(core: &mut ShellCore) -> bool {
         if core.sigint.load(Relaxed) {
-            core.db.set_param("?", "130");
+            core.db.exit_status = 130;
             return true;
         }
         false
@@ -174,7 +174,7 @@ impl SimpleCommand {
             },
             None => {
                 if ! core.sigint.load(Relaxed) {
-                    core.db.set_param("?", "1");
+                    core.db.exit_status = 1;
                 }
                 false
             },

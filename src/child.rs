@@ -45,7 +45,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         pipestatus.retain(|e| e != "0");
 
         if pipestatus.len() != 0 {
-            core.db.set_param("?", &pipestatus.last().unwrap());
+            core.db.exit_status = pipestatus.last().unwrap().parse::<i32>().unwrap();
         }
     }
 
@@ -66,7 +66,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
 
     let ws = wait::waitpid(child, waitflags);
 
-    let exit_status = match ws {
+    core.db.exit_status = match ws {
         Ok(WaitStatus::Exited(_pid, status)) => status,
         Ok(WaitStatus::Signaled(pid, signal, coredump)) => error::signaled(pid, signal, coredump),
         Ok(WaitStatus::Stopped(pid, signal)) => {
@@ -84,10 +84,9 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
         },
     };
 
-    if exit_status == 130 {
+    if core.db.exit_status == 130 {
         core.sigint.store(true, Relaxed);
     }
-    core.db.set_layer_param("?", &exit_status.to_string(), 0); //追加
     ws.expect("SUSH INTERNAL ERROR: no wait status")
 }
 

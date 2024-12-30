@@ -28,14 +28,14 @@ pub struct Substitution {
 }
 
 fn readonly_error(name: &str, core: &mut ShellCore) -> bool {
-    core.db.set_param("?", "1");
+    core.db.exit_status = 1;
     let msg = error::readonly(name);
     error::print(&msg, core);
     false
 }
 
 fn bad_subscript_error(sub: &str, core: &mut ShellCore) -> bool {
-    core.db.set_param("?", "1");
+    core.db.exit_status = 1;
     let msg = error::bad_array_subscript(&sub);
     error::print(&msg, core);
     false
@@ -143,7 +143,7 @@ impl Substitution {
     fn set_to_shell(&mut self, core: &mut ShellCore, layer: usize) -> bool {
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
-            core.db.set_param("?", "1");
+            core.db.exit_status = 1;
             return false;
         }
 

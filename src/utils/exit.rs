@@ -45,7 +45,7 @@ pub fn internal(s: &str) -> ! {
 }
 
 pub fn check_e_option(core: &mut ShellCore) {
-    if core.db.get_param("?") != "0" 
+    if core.db.exit_status != 0 
     && core.db.flags.contains("e") 
     && ! core.suspend_e_option {
         normal(core);

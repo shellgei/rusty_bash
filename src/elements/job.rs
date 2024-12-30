@@ -46,7 +46,7 @@ impl Job {
 
                 Self::check_stop(core, &pipeline.text, &pids, &waitstatuses);
             }
-            do_next = (core.db.get_param("?") == "0") == (end == "&&");
+            do_next = (core.db.exit_status == 0) == (end == "&&");
         }
     }
 

@@ -22,8 +22,8 @@ impl Command for WhileCommand {
             self.while_script.as_mut().unwrap().exec(core);
 
             core.suspend_e_option = false;
-            if core.db.get_param("?") != "0" {
-                core.db.set_param("?", "0");
+            if core.db.exit_status != 0 {
+                core.db.exit_status = 0;
                 break;
             }
 

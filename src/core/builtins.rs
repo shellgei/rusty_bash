@@ -151,16 +151,16 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     core.eval_level -= 1;
-    match core.db.get_param("?").parse::<i32>() {
-        Ok(es) => es,
-        _      => 1,
-    }
+    core.db.exit_status
 }
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
-        core.db.set_layer_param("?", &args[1], 0);
+        match &args[1].parse::<i32>() {
+            Ok(n) => core.db.exit_status = *n,
+            _ => core.db.exit_status = 1,
+        }
     }
     exit::normal(core)
 }
