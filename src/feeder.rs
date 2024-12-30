@@ -77,13 +77,11 @@ impl Feeder {
     }   
 
     fn read_script(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
-        match self.script_lines.as_mut() {
-            Some(lines) =>
-                match lines.next() {
-                    Some(Ok(line)) => return Ok(line + "\n"),
-                    _ => return Err(InputError::Eof),
-                },
-            None => {},
+        if let Some(lines) = self.script_lines.as_mut() {
+            match lines.next() {
+                Some(Ok(line)) => return Ok(line + "\n"),
+                _ => return Err(InputError::Eof),
+            }
         }
 
         let mut line = String::new();
@@ -95,10 +93,9 @@ impl Feeder {
             },
         };
 
-        if len == 0 {
-            Err(InputError::Eof)
-        }else{
-            Ok(line)
+        match len  {
+            0 => Err(InputError::Eof),
+            _ => Ok(line),
         }
     }
 
