@@ -24,6 +24,7 @@ pub struct DataBase {
     pub functions: HashMap<String, FunctionDefinition>,
     pub alias_memo: Vec<(String, String)>,
     pub exit_status: i32,
+    pub last_arg: String,
 }
 
 impl DataBase {
@@ -59,6 +60,7 @@ impl DataBase {
         match name {
             "-" => return self.flags.clone(),
             "?" => return self.exit_status.to_string(),
+            "_" => return self.last_arg.clone(),
             "#" => {
                 let pos = self.position_parameters.len() - 1;
                 return (self.position_parameters[pos].len() - 1).to_string();

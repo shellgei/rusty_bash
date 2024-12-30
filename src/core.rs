@@ -148,7 +148,7 @@ impl ShellCore {
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.db.set_layer_param("BASHPID", &pid.to_string(), 0);
+        let _ = self.db.set_layer_param("BASHPID", &pid.to_string(), 0);
         match self.db.get_param("BASH_SUBSHELL").parse::<usize>() {
             Ok(num) => self.db.set_layer_param("BASH_SUBSHELL", &(num+1).to_string(), 0),
             Err(_) =>  self.db.set_layer_param("BASH_SUBSHELL", "0", 0),

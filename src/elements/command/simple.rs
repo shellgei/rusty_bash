@@ -118,7 +118,7 @@ impl SimpleCommand {
             return None;
         }
 
-        core.db.set_param("_", &self.args.last().unwrap());
+        core.db.last_arg = self.args.last().unwrap().clone();
         self.option_x_output(core);
 
         if self.force_fork 
@@ -141,7 +141,7 @@ impl SimpleCommand {
     }
 
     fn exec_set_param(&mut self, core: &mut ShellCore) -> Option<Pid> {
-        core.db.set_param("_", "");
+        core.db.last_arg = String::new();
         self.option_x_output(core);
         
         self.substitutions.iter_mut()
