@@ -124,7 +124,6 @@ impl ShellCore {
         self.db.set_param("MACHTYPE", &machtype);
         self.db.set_param("HOSTTYPE", &t_arch);
         self.db.set_param("OSTYPE", &t_os);
-        //self.db.set("BASH_VERSINFO", DataType::from(&versinfo));
         self.db.set_array("BASH_VERSINFO", versinfo);
     }
 
