@@ -75,13 +75,9 @@ impl ForCommand {
                 return false;
             }
 
-            match core.db.set_param(&self.name, &p) {
-                true => {},
-                false => {
-                    core.db.set_param("?", "1");
-                    let msg = error::readonly(&self.name);
-                    error::print(&msg, core);
-                },
+            if let Err(e) = core.db.set_param(&self.name, &p) {
+                core.db.set_param("?", "1");
+                error::print(&e, core);
             }
 
             if core.continue_counter > 0 {

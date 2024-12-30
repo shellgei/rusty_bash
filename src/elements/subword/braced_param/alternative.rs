@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::utils::error;
 use crate::elements::subword::BracedParam;
 
 pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
@@ -40,7 +41,8 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     }
     if symbol == ":=" {
         let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-        if ! core.db.set_param(&obj.name, &value) {
+        if let Err(e) = core.db.set_param(&obj.name, &value) {
+            error::print(&e,core);
             return false;
         }
         obj.alternative_value = None;

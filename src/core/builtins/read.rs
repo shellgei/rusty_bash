@@ -30,9 +30,9 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             eprintln!("bash: read: `{}': not a valid identifier", &a);
             return 1;
         }else{
-            if ! core.db.set_param(&a, "") {
-                let msg = error::readonly(&a);
-                error::print(&msg, core);
+            if let Err(e) = core.db.set_param(&a, "") {
+                //let msg = error::readonly(&a);
+                error::print(&e, core);
                 return 1;
             }
         }
@@ -47,9 +47,9 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut overflow = String::new();
     for w in line.trim_end().split(' ') {
         if pos < args.len()-1 {
-            if ! core.db.set_param(&args[pos], &w) {
-                let msg = error::readonly(&args[pos]);
-                error::print(&msg, core);
+            if let Err(e) = core.db.set_param(&args[pos], &w) {
+                //let msg = error::readonly(&args[pos]);
+                error::print(&e, core);
                 return 1;
             }
             pos += 1;
@@ -58,9 +58,9 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 overflow += " ";
             }
             overflow += &w;
-            if ! core.db.set_param(&args[pos], &overflow) {
-                let msg = error::readonly(&args[pos]);
-                error::print(&msg, core);
+            if let Err(e) = core.db.set_param(&args[pos], &overflow) {
+                //let msg = error::readonly(&args[pos]);
+                error::print(&e, core);
                 return 1;
             }
         }

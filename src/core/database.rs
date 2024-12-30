@@ -250,8 +250,8 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn set_param(&mut self, name: &str, val: &str) -> bool {
-        self.set_layer_param(name, val, 0).is_ok() // TODO: return Result<(), String>
+    pub fn set_param(&mut self, name: &str, val: &str) -> Result<(), String> {
+        self.set_layer_param(name, val, 0)
     }
 
     pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {

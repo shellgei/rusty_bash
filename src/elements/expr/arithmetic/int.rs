@@ -83,9 +83,9 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
         _   => return Err("Not supprted operation for integer numbers".to_string()),
     };
 
-    match core.db.set_param(&name, &new_value.to_string()) {
-        true  => Ok(ArithElem::Integer(new_value)),
-        false => Err(error::readonly(&name)),
+    match core.db.set_param(&name, &new_value.to_string()) { //TOOD: simplify
+        Ok(())  => Ok(ArithElem::Integer(new_value)),
+        Err(e) => Err(e),
     }
 }
 
