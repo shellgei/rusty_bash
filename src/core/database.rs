@@ -37,11 +37,12 @@ impl DataBase {
             ..Default::default()
         };
 
-        data.set_param("$", &process::id().to_string());
-        data.set_param("BASHPID", &process::id().to_string());
-        data.set_param("BASH_SUBSHELL", "0");
         data.exit_status = 0;
-        data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
+
+        let _ = data.set_param("$", &process::id().to_string());
+        let _ = data.set_param("BASHPID", &process::id().to_string());
+        let _ = data.set_param("BASH_SUBSHELL", "0");
+        let _ = data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
 
         data.set_special_param("SRANDOM", random::get_srandom);
         data.set_special_param("RANDOM", random::get_random);
@@ -105,7 +106,7 @@ impl DataBase {
 
         match env::var(name) {
             Ok(v) => {
-                self.set_layer_param(name, &v, 0);
+                let _ = self.set_layer_param(name, &v, 0);
                 v
             },
             _ => "".to_string()
