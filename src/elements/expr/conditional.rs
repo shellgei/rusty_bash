@@ -83,10 +83,7 @@ impl ConditionalExpr {
             match self.elements[i] {
                 CondElem::And | CondElem::Or => {
                     if next {
-                        last = match Self::calculate(&self.elements[from..i], core) {
-                            Ok(elem) => elem, 
-                            Err(e)   => return Err(e),
-                        };
+                        last = Self::calculate(&self.elements[from..i], core)?;
                     }
                     from = i + 1;
 
