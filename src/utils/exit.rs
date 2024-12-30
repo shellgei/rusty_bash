@@ -7,18 +7,7 @@ use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {
     core.write_history_to_file();
-
-    let es_str = core.db.get_param("?");
-    let exit_status = match es_str.parse::<i32>() {
-        Ok(n)  => n%256,
-        Err(_) => {
-            let msg = format!("exit: {}: numeric argument required", es_str);
-            error::print(&msg, core);
-            2
-        },
-    };
-
-    process::exit(exit_status)
+    process::exit(core.db.exit_status%256)
 }
 
 /* error at exec */

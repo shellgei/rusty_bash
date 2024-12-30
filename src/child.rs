@@ -31,21 +31,21 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         let ws = wait_process(core, pid.expect("SUSHI INTERNAL ERROR (no pid)"));
         ans.push(ws);
 
-        pipestatus.push(core.db.get_param("?"));
+        pipestatus.push(core.db.exit_status);
     }
 
     if time {
         show_time(core);
     }
     set_foreground(core);
-    core.db.set_layer_array("PIPESTATUS", pipestatus.clone(), 0);
+    core.db.set_layer_array("PIPESTATUS", pipestatus.iter().map(|e|e.to_string()).collect(), 0);
     //core.db.set_layer("PIPESTATUS", DataType::from(pipestatus.clone()), 0);
 
     if core.options.query("pipefail") {
-        pipestatus.retain(|e| e != "0");
+        pipestatus.retain(|e| *e != 0);
 
         if pipestatus.len() != 0 {
-            core.db.exit_status = pipestatus.last().unwrap().parse::<i32>().unwrap();
+            core.db.exit_status = pipestatus[pipestatus.len()-1];
         }
     }
 

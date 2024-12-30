@@ -134,10 +134,7 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let pid = command.exec_command(core, &mut pipe);
     child::wait_pipeline(core, vec![pid], false, false);
 
-    match core.db.get_param("?").parse::<i32>() {
-        Ok(es) => es,
-        _      => 1,
-    }
+    core.db.exit_status
 }
 
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
