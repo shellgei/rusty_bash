@@ -25,28 +25,30 @@ pub enum CondElem {
     Ans(bool),
 }
 
-fn op_order(op: &CondElem) -> u8 {
-    match op {
-        CondElem::UnaryOp(_) => 14,
-        CondElem::BinaryOp(_) => 13,
-        CondElem::Not => 12,
-        _ => 0,
+impl CondElem {
+    fn order(&self) -> u8 {
+        match self {
+            CondElem::UnaryOp(_) => 14,
+            CondElem::BinaryOp(_) => 13,
+            CondElem::Not => 12,
+            _ => 0,
+        }
     }
-}
 
-pub fn to_string(op: &CondElem) -> String {
-    match op {
-        CondElem::UnaryOp(op) => op.to_string(),
-        CondElem::BinaryOp(op) => op.to_string(),
-        CondElem::InParen(expr) => expr.text.clone(),
-        CondElem::Word(w) => w.text.clone(),
-        CondElem::Regex(w) => w.text.clone(),
-        CondElem::Operand(op) => op.to_string(),
-        CondElem::Not => "!".to_string(),
-        CondElem::And => "&&".to_string(),
-        CondElem::Or => "||".to_string(),
-        CondElem::Ans(true) => "true".to_string(),
-        CondElem::Ans(false) => "false".to_string(),
+    fn to_string(&self) -> String {
+        match self {
+            CondElem::UnaryOp(op) => op.to_string(),
+            CondElem::BinaryOp(op) => op.to_string(),
+            CondElem::InParen(expr) => expr.text.clone(),
+            CondElem::Word(w) => w.text.clone(),
+            CondElem::Regex(w) => w.text.clone(),
+            CondElem::Operand(op) => op.to_string(),
+            CondElem::Not => "!".to_string(),
+            CondElem::And => "&&".to_string(),
+            CondElem::Or => "||".to_string(),
+            CondElem::Ans(true) => "true".to_string(),
+            CondElem::Ans(false) => "false".to_string(),
+        }
     }
 }
 
@@ -130,7 +132,7 @@ impl ConditionalExpr {
             };
     
             if !ok {
-                let msg = "syntax error near ".to_owned() + &to_string(e);
+                let msg = "syntax error near ".to_owned() + &e.to_string();
                 return Err(msg);
             }
         }
@@ -181,9 +183,9 @@ impl ConditionalExpr {
         if stack.len() != 1 { 
             let mut err = "syntax error".to_string();
             if stack.len() > 1 {
-                err = error::syntax_in_cond_expr(&to_string(&stack[0]));
+                err = error::syntax_in_cond_expr(&stack[0].to_string());
                 error::print(&err, core);
-                err = format!("syntax error near `{}'", to_string(&stack[0]));
+                err = format!("syntax error near `{}'", &stack[0].to_string());
             }
             return Err(err);
         }   
@@ -331,7 +333,7 @@ impl ConditionalExpr {
                 },
                 Some(_) => {
                     let last = stack.last().unwrap();
-                    if op_order(last) <= op_order(elem) {
+                    if last.order() <= elem.order() {
                         stack.push(elem.clone());
                         break;
                     }
