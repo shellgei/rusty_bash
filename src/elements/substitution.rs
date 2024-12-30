@@ -65,31 +65,33 @@ impl Substitution {
         };
 
         match env {
-            false => self.set_to_shell(core, layer),
+            false => {
+                if let Err(e) = self.set_to_shell(core, layer) {
+                    core.db.exit_status = 1;
+                    error::print(&e, core);
+                    return false;
+                }
+                return true;
+            },
             true  => self.set_to_env(),
         }
     }
 
-    fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> bool {
+    fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
         let index = self.get_index(core);
-        let result = match (&self.evaluated_string, index) {
+        match (&self.evaluated_string, index) {
             (Some(v), Some(k)) 
                 => core.db.set_layer_assoc_elem(&self.name, &k, &v, layer),
-            _   => return bad_subscript_error(&self.text, core),
-        };
-        if ! result {
-            readonly_error(&self.name, core);
-            return false;
+            _   => Err("evaluation error 1".to_string()),
         }
-        true
     }
 
-    fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> bool {
+    fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
         let index = match self.get_index(core) {
             Some(s) => {
                 match s.parse::<usize>() {
                     Ok(n) => Some(n),
-                    _ => return bad_subscript_error(&self.text, core),
+                    Err(e) => return Err(e.to_string()),
                 }
             },
             None => None,
@@ -97,54 +99,55 @@ impl Substitution {
 
         match (&self.evaluated_string, index) {
             (Some(v), Some(n)) => {
-                return match core.db.set_layer_array_elem(&self.name, &v, layer, n) {
-                    true  => true,
-                    false => readonly_error(&self.name, core),
-                }
+                return core.db.set_layer_array_elem(&self.name, &v, layer, n);
             },
             _ => {},
         }
 
-        let result = match (&self.evaluated_array, index) {
+        dbg!("{:?}", &self.evaluated_array);
+        dbg!("{:?}", &index);
+        match (&self.evaluated_array, index) {
             (Some(a), None) => core.db.set_layer_array(&self.name, a.clone(), layer),
-            _ => false,
-        };
-
-        match result {
-            true  => true,
-            false => readonly_error(&self.name, core),
+            _ => Err("evaluation error 2".to_string()),
         }
     }
  
-    fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> bool {
+    fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
         let (done, result) = match &self.evaluated_string {
-            Some(data) => (true, core.db.set_layer_param(&self.name, &data, layer).is_ok()),
-            _ => (false, true),
+            Some(data) => (true, core.db.set_layer_param(&self.name, &data, layer)),
+            _ => (false, Ok(()) ),
         };
 
+        if result.is_err() {
+            return result;
+        }
+
+        /*
         if ! result {
             return readonly_error(&self.name, core);
-        }
+        }*/
         if done {
             return result;
         }
 
-        let result = match &self.evaluated_array {
+        match &self.evaluated_array {
             Some(data) => core.db.set_layer_array(&self.name, data.to_vec(), layer),
-            _ => false,
-        };
+            _ => Err("evaluation error 3".to_string()),
+        }
 
+        /*
         if ! result {
             return readonly_error(&self.name, core);
         }
         result
+        */
     }
 
-    fn set_to_shell(&mut self, core: &mut ShellCore, layer: usize) -> bool {
+    fn set_to_shell(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
             core.db.exit_status = 1;
-            return false;
+            return Err("evaluation error 4".to_string());
         }
 
         if ! core.db.has_value(&self.name) {

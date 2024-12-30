@@ -44,20 +44,13 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
 
 fn set_value(name: &String, key: &String, new_value: i64,
                      core: &mut ShellCore) -> Result<(), String> {
-    let res = match key.parse::<i64>() {
-        Ok(n) => {
-            if n >= 0 {
-                core.db.set_array_elem(name, &(new_value.to_string()), n as usize)
-            }else{
-                return Err("negative index".to_string());
-            }
-        },
-        Err(_) => core.db.set_assoc_elem(name, &(new_value.to_string()), key),
-    };
-
-    if ! res {
-        return Err("readonly array".to_string());
+    if let Ok(n) = key.parse::<i64>() {
+        return match n >= 0 {
+            true  => core.db.set_array_elem(name, &(new_value.to_string()), n as usize),
+            false => Err("negative index".to_string()),
+        };
     }
-    Ok(())
+
+    core.db.set_assoc_elem(name, &(new_value.to_string()), key)
 }
 

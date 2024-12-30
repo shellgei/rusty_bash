@@ -268,36 +268,30 @@ impl DataBase {
         self.params[0].insert( key.to_string(), Box::new(SpecialData::from(f)) );
     }
 
-    pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> bool {
+    pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> Result<(), String> {
         if self.has_flag(name, 'r') {
             self.exit_status = 1;
-            let msg = error::readonly(name);
-            eprintln!("{}", &msg);
-            return false;
+            return Err(error::readonly(name));
         }
 
         self.params[layer].insert( name.to_string(), Box::new(ArrayData::from(v)));
-        true
+        Ok(())
     }
 
-    pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> bool {
+    pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> Result<(), String> {
         if self.has_flag(name, 'r') {
             self.exit_status = 1;
-            let msg = error::readonly(name);
-            eprintln!("{}", &msg);
-            return false;
+            return Err(error::readonly(name));
         }
 
         self.params[layer].insert(name.to_string(), Box::new(AssocData::default()));
-        true
+        Ok(())
     }
 
-    pub fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> bool {
+    pub fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
         if self.has_flag(name, 'r') {
             self.exit_status = 1;
-            let msg = error::readonly(name);
-            eprintln!("{}", &msg);
-            return false;
+            return Err(error::readonly(name));
         }
 
         match self.params[layer].get_mut(name) {
@@ -309,33 +303,31 @@ impl DataBase {
         }
     }
 
-    pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> bool {
+    pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> Result<(), String> {
         if self.has_flag(name, 'r') {
             self.exit_status = 1;
-            let msg = error::readonly(name);
-            eprintln!("{}", &msg);
-            return false;
+            return Err(error::readonly(name));
         }
 
         match self.params[layer].get_mut(name) {
             Some(v) => v.set_as_assoc(key, val), 
-            _ => false,
+            _ => Err("TODO".to_string()),
         }
     }
 
-    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> bool {
+    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> Result<(), String> {
         self.set_layer_array_elem(name, val, 0, pos)
     }
 
-    pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> bool {
+    pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> Result<(), String> {
         self.set_layer_assoc_elem(name, key, val, 0)
     }
 
-    pub fn set_array(&mut self, name: &str, v: Vec<String>) -> bool {
+    pub fn set_array(&mut self, name: &str, v: Vec<String>) -> Result<(), String> {
         self.set_layer_array(name, v, 0)
     }
 
-    pub fn set_assoc(&mut self, name: &str) -> bool {
+    pub fn set_assoc(&mut self, name: &str) -> Result<(), String> {
         self.set_layer_assoc(name, 0)
     }
 

@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::utils;
 use crate::utils::exit;
 use crate::elements::substitution::Substitution;
-use crate::utils::arg;
+use crate::utils::{arg, error};
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
     match core.db.position_parameters.pop() {
@@ -46,7 +46,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), String
     }
 }
 
-fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
+fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), String> {
     let mut feeder = Feeder::new(arg);
     if feeder.scanner_name(core) == feeder.len() { // name only
         let name = feeder.consume(feeder.len());
@@ -56,12 +56,14 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> bool {
     let mut sub = match Substitution::parse(&mut feeder, core) {
         Some(s) => s,
         _ => {
-            eprintln!("sush: local: `{}': not a valid identifier", arg);
-            return false;
+            return Err(format!("local: `{}': not a valid identifier", arg));
         },
     };
 
-    sub.eval(core, layer, false)
+    match sub.eval(core, layer, false) {
+        true  => Ok(()),
+        false => Err(format!("local: `{}': evaluation error", arg)),
+    }
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -73,14 +75,16 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
 
     if args.len() >= 3 && args[1] == "-a" {
-    match args[2..].iter().all(|a| set_local_array(a, core, layer)) {
+    match args[2..].iter().all(|a| set_local_array(a, core, layer).is_ok()) { //TODO: show error
+                                                                              //messages
             true  => return 0,
             false => return 1,
         }
     }
 
     if args.len() >= 3 && args[1] == "-A" {
-    match args[2..].iter().all(|a| core.db.set_layer_assoc(a, layer)) {
+    match args[2..].iter().all(|a| core.db.set_layer_assoc(a, layer).is_ok()) { //TODO: show error
+                                                                                //messages
             true  => return 0,
             false => return 1,
         }
@@ -109,8 +113,9 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
-        if ! core.db.set_array(&name, vec![]) {
-            return 1; //TODO: error message
+        if let Err(e) = core.db.set_array(&name, vec![]) {
+            error::print(&e, core);
+            return 1;
         }
 
         return 0;
@@ -120,8 +125,9 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
-        if ! core.db.set_assoc(&name) {
-            return 1; //TODO: error message
+        if let Err(e) = core.db.set_assoc(&name) {
+            error::print(&e, core);
+            return 1;
         }
 
         return 0;

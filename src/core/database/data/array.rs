@@ -39,12 +39,12 @@ impl Data for ArrayData {
         formatted
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> bool {
+    fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), String> {
         if let Ok(n) = key.parse::<usize>() {
             self.body.insert(n, value.to_string());
-            return true;
+            return Ok(());
         }
-        false
+        Err("invalid index".to_string())
     }
 
     fn get_as_array(&mut self, key: &str) -> Option<String> {

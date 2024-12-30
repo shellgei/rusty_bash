@@ -34,9 +34,9 @@ impl Data for AssocData {
         formatted
     }
 
-    fn set_as_assoc(&mut self, key: &str, value: &str) -> bool {
+    fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), String> {
         self.body.insert(key.to_string(), value.to_string());
-        true
+        Ok(())
     }
 
     fn get_as_assoc(&mut self, key: &str) -> Option<String> {
