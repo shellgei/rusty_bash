@@ -32,7 +32,7 @@ pub trait Data {
         println!("{}={}", name, self.print_body());
     }
 
-    fn set_as_single(&mut self, _: &str) -> bool {false}
+    fn set_as_single(&mut self, _: &str) -> Result<(), String> {Err("Undefined call".to_string())}
     fn get_as_single(&mut self) -> Option<String> {None}
     fn set_as_assoc(&mut self, _: &str, _: &str) -> bool {false}
     fn get_as_assoc(&mut self, _: &str) -> Option<String> {None}

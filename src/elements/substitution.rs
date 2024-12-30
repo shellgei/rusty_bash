@@ -118,7 +118,7 @@ impl Substitution {
  
     fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> bool {
         let (done, result) = match &self.evaluated_string {
-            Some(data) => (true, core.db.set_layer_param(&self.name, &data, layer)),
+            Some(data) => (true, core.db.set_layer_param(&self.name, &data, layer).is_ok()),
             _ => (false, true),
         };
 

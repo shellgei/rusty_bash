@@ -226,12 +226,10 @@ impl DataBase {
         }
     }
 
-    pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> bool {
+    pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> Result<(), String> {
         if self.has_flag(name, 'r') {
             self.set_param("?", "1");
-            let msg = error::readonly(name);
-            eprintln!("{}", &msg);
-            return false;
+            return Err(error::readonly(name));
         }
 
         match env::var(name) {
@@ -246,14 +244,14 @@ impl DataBase {
             },
             None => {
                 self.params[layer].insert(name.to_string(), Box::new(SingleData::from(val)));
-                return true;
+                return Ok(());
             },
         }
-        true
+        Ok(())
     }
 
     pub fn set_param(&mut self, name: &str, val: &str) -> bool {
-        self.set_layer_param(name, val, 0)
+        self.set_layer_param(name, val, 0).is_ok() // TODO: return Result<(), String>
     }
 
     pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
