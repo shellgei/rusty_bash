@@ -112,14 +112,10 @@ impl Feeder {
             false => self.read_script(core),
         };
 
-        match line { 
-            Ok(ln) => {
-                self.add_line(ln.clone(), core);
-                self.add_backup(&ln);
-                Ok(())
-            },
-            Err(e) => Err(e),
-        }
+        line.map(|ln| {
+            self.add_line(ln.clone(), core);
+            self.add_backup(&ln);
+        })
     }
 
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
@@ -147,13 +143,7 @@ impl Feeder {
             false => self.read_script(core),
         };
 
-        match line {
-            Ok(ln) => {
-                self.add_line(ln, core);
-                Ok(())
-            },
-            Err(e) => Err(e),
-        }
+        line.map(|ln| self.add_line(ln, core))
     }
 
     pub fn add_line(&mut self, line: String, core: &mut ShellCore) {
@@ -161,7 +151,6 @@ impl Feeder {
             eprint!("{}", &line);
         }
 
-        //self.lineno += 1;
         match self.remaining.len() {
             0 => self.remaining = line,
             _ => self.remaining += &line,
