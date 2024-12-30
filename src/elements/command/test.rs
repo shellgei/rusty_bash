@@ -4,7 +4,8 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::command;
-use crate::elements::expr::conditional::{ConditionalExpr, CondElem};
+use crate::elements::expr::conditional::ConditionalExpr;
+use crate::elements::expr::conditional::elem::CondElem;
 use crate::utils::error;
 
 #[derive(Debug, Clone, Default)]
