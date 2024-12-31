@@ -117,7 +117,7 @@ impl ShellCore {
         let machtype = format!("{}-{}-{}", t_arch, t_vendor, t_os);
         let symbol = "rusty_bash";
         let vparts = version.split('.').collect();
-        let versinfo = vec![vparts, vec![symbol, profile, &machtype]].concat()
+        let versinfo = [vparts, vec![symbol, profile, &machtype]].concat()
                        .iter().map(|e| e.to_string()).collect();
 
         let _ = self.db.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));

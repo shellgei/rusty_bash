@@ -70,7 +70,7 @@ impl ShellCore {
                 continue;
             }
             let _ = f.write(h.as_bytes());
-            let _ = f.write(&vec![0x0A]);
+            let _ = f.write(&[0x0A]);
         }
         let _ = f.flush();
     }

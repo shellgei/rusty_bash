@@ -158,7 +158,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     };
 
     option::set_options(&mut core, &mut args[1..].to_vec());
-    parameter::set_positions(&mut core, &mut parameters);
+    parameter::set_positions(&mut core, &parameters);
     signal::run_signal_check(&mut core);
     core.db.flags.retain(|f| f != 'i');
 
