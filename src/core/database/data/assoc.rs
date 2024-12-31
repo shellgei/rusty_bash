@@ -7,11 +7,12 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Default)]
 pub struct AssocData {
     body: HashMap<String, String>,
+    last: String,
 }
 
 impl From<HashMap<String, String>> for AssocData {
     fn from(hm: HashMap<String, String>) -> Self {
-        Self { body: hm }
+        Self { body: hm, last: "".to_string(), }
     }
 }
 
@@ -36,6 +37,7 @@ impl Data for AssocData {
 
     fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), String> {
         self.body.insert(key.to_string(), value.to_string());
+        self.last = value.to_string();
         Ok(())
     }
 
@@ -49,6 +51,8 @@ impl Data for AssocData {
             None => None,
         }
     }
+
+    fn get_as_single(&mut self) -> Option<String> { Some(self.last.clone()) }
 
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
