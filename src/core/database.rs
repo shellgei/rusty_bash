@@ -44,11 +44,11 @@ impl DataBase {
         data.set_param("BASH_SUBSHELL", "0").unwrap();
         data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string())).unwrap();
 
-        data.set_special_param("SRANDOM", random::get_srandom);
-        data.set_special_param("RANDOM", random::get_random);
-        data.set_special_param("EPOCHSECONDS", clock::get_epochseconds);
-        data.set_special_param("EPOCHREALTIME", clock::get_epochrealtime);
-        data.set_special_param("SECONDS", clock::get_seconds);
+        data.set_special_variable("SRANDOM", random::get_srandom);
+        data.set_special_variable("RANDOM", random::get_random);
+        data.set_special_variable("EPOCHSECONDS", clock::get_epochseconds);
+        data.set_special_variable("EPOCHREALTIME", clock::get_epochrealtime);
+        data.set_special_variable("SECONDS", clock::get_seconds);
 
         data.call_speial("SECONDS");
 
@@ -57,16 +57,24 @@ impl DataBase {
         data
     }
 
-    pub fn get_param(&mut self, name: &str) -> Result<String, String> {
-        match name {
-            "-" => return Ok(self.flags.clone()),
-            "?" => return Ok(self.exit_status.to_string()),
-            "_" => return Ok(self.last_arg.clone()),
+    fn get_special_param(&self, name: &str) -> Option<String> {
+        let val = match name {
+            "-" => self.flags.clone(),
+            "?" => self.exit_status.to_string(),
+            "_" => self.last_arg.clone(),
             "#" => {
                 let pos = self.position_parameters.len() - 1;
-                return Ok((self.position_parameters[pos].len() - 1).to_string());
+                (self.position_parameters[pos].len() - 1).to_string()
             },
-            _ => {},
+            _ => return None,
+        };
+
+        Some(val)
+    }
+
+    pub fn get_param(&mut self, name: &str) -> Result<String, String> {
+        if let Some(val) = self.get_special_param(name) {
+            return Ok(val);
         }
 
         if name == "@" || name == "*" { // $@ should return an array in a double quoted
@@ -264,7 +272,7 @@ impl DataBase {
         self.set_layer_param(name, val, 0)
     }
 
-    pub fn set_special_param(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
+    pub fn set_special_variable(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
         self.params[0].insert( key.to_string(), Box::new(SpecialData::from(f)) );
     }
 
