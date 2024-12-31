@@ -99,13 +99,12 @@ impl DataBase {
             return Ok(val);
         }
 
-        match env::var(name) {
-            Ok(v) => {
-                let _ = self.set_layer_param(name, &v, 0);
-                Ok(v)
-            },
-            _ => Ok("".to_string())
+        if let Ok(v) = env::var(name) {
+            let _ = self.set_layer_param(name, &v, 0);
+            return Ok(v);
         }
+
+        Ok("".to_string())
     }
 
     pub fn get_array(&mut self, name: &str, pos: &str) -> String {
