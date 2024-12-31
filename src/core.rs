@@ -40,16 +40,6 @@ fn is_interactive() -> bool {
     }
 }
 
-fn ignore_signal(sig: Signal) {
-    unsafe { signal::signal(sig, SigHandler::SigIgn) }
-        .expect("sush(fatal): cannot ignore signal");
-}
-
-fn restore_signal(sig: Signal) {
-    unsafe { signal::signal(sig, SigHandler::SigDfl) }
-        .expect("sush(fatal): cannot restore signal");
-}
-
 impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore::default();
