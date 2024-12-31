@@ -94,12 +94,9 @@ impl DataBase {
             return Ok(ans);
         }
 
-        match self.get_clone(name).as_mut() {
-            Some(d) => {
-                let val = d.get_as_single().unwrap_or(String::new());
-                return Ok(val);
-            },
-            _ => {},
+        if let Some(d) = self.get_clone(name).as_mut() {
+            let val = d.get_as_single().unwrap_or(String::new());
+            return Ok(val);
         }
 
         match env::var(name) {
