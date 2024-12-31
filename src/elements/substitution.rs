@@ -90,8 +90,6 @@ impl Substitution {
             _ => {},
         }
 
-        dbg!("{:?}", &self.evaluated_array);
-        dbg!("{:?}", &index);
         match (&self.evaluated_array, index) {
             (Some(a), None) => core.db.set_layer_array(&self.name, a.clone(), layer),
             _ => Err("evaluation error 2".to_string()),
