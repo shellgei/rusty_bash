@@ -34,10 +34,12 @@ fn read_rc_file(core: &mut ShellCore) {
         return;
     }
 
-    let dir = match core.db.get_param("CARGO_MANIFEST_DIR").as_str() {
+    let dir = core.db.get_param("CARGO_MANIFEST_DIR").unwrap_or(String::new());// {
+        /*
         "" => core.db.get_param("HOME"),
         s  => s.to_string(),
-    };
+        */
+    //};
 
     let rc_file = dir + "/.sushrc";
 

@@ -17,7 +17,7 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
                .collect::<Vec<String>>()
                .concat();
 
-    let value = get_value(&text, core);
+    let value = get_value(&text, core).unwrap_or(String::new());
     if value == "" {
         return;
     }
@@ -36,15 +36,15 @@ fn prefix_length(word: &Word) -> usize {
     }
 }
 
-fn get_value(text: &str, core: &mut ShellCore) -> String {
+fn get_value(text: &str, core: &mut ShellCore) -> Result<String, String> {
     let key = match text {
         "" => "HOME",
         "+" => "PWD",
         "-" => "OLDPWD",
-        _ => return get_home_dir(text),
+        _ => return Ok(get_home_dir(text)),
     };
 
-    core.db.get_param(key).to_string()
+    core.db.get_param(key)
 }
 
 fn get_home_dir(user: &str) -> String {

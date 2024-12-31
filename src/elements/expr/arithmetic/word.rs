@@ -49,7 +49,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
 
     for i in 0..RESOLVE_LIMIT {
         match utils::is_name(&name, core) {
-            true  => name = core.db.get_param(&name),
+            true  => name = core.db.get_param(&name)?,
             false => break,
         }
 

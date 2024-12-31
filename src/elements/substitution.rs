@@ -173,7 +173,7 @@ impl Substitution {
 
     fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> Option<String> {
         let prev = match self.append {
-            true  => core.db.get_param(&self.name),
+            true  => core.db.get_param(&self.name).unwrap_or(String::new()),
             false => "".to_string(),
         };
 

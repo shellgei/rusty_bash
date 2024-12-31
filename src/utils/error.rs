@@ -6,11 +6,11 @@ use nix::sys::signal::Signal;
 use nix::unistd::Pid;
 
 pub fn print(s: &str, core: &mut ShellCore) {
-    let name = core.db.get_param("0");
+    let name = core.db.get_param("0").unwrap();
     if core.db.flags.contains('i') {
         eprintln!("{}: {}", &name, &s);
     }else{
-        let lineno = core.db.get_param("LINENO");
+        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
         eprintln!("{}: line {}: {}", &name, &lineno, s);
     }
 }

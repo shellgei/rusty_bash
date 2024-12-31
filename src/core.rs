@@ -101,7 +101,7 @@ impl ShellCore {
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
-        let home = core.db.get_param("HOME").to_string();
+        let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
         let _ = core.db.set_param("HISTFILE", &(home + "/.sush_history"));
         let _ = core.db.set_param("HISTFILESIZE", "2000");
 
@@ -149,7 +149,7 @@ impl ShellCore {
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
         let _ = self.db.set_layer_param("BASHPID", &pid.to_string(), 0);
-        let _ = match self.db.get_param("BASH_SUBSHELL").parse::<usize>() {
+        let _ = match self.db.get_param("BASH_SUBSHELL").unwrap().parse::<usize>() {
             Ok(num) => self.db.set_layer_param("BASH_SUBSHELL", &(num+1).to_string(), 0),
             Err(_) =>  self.db.set_layer_param("BASH_SUBSHELL", "0", 0),
         };
@@ -193,7 +193,7 @@ impl ShellCore {
     }
 
     pub fn get_ps4(&mut self) -> String {
-        let ps4 = self.db.get_param("PS4").trim_end().to_string();
+        let ps4 = self.db.get_param("PS4").unwrap_or(String::new()).trim_end().to_string();
         let mut multi_ps4 = ps4.to_string();
         for _ in 0..(self.source_level + self.eval_level) {
             multi_ps4 += &ps4;

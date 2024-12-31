@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{file_check, Feeder, ShellCore, utils};
-use crate::utils::exit;
 use crate::core::builtins::completion;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
@@ -43,7 +42,7 @@ fn common_string(paths: &Vec<String>) -> String {
 
 fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     let tilde_prefix = "~/".to_string();
-    let tilde_path = core.db.get_param("HOME").to_string() + "/";
+    let tilde_path = core.db.get_param("HOME").unwrap_or(String::new()) + "/";
 
     file_check::is_dir(&s.replace(&tilde_prefix, &tilde_path))
 }
@@ -95,14 +94,16 @@ impl Terminal {
     }
 
     fn get_cur_pos(core: &mut ShellCore) -> i32 {
-        match core.db.get_param("COMP_CWORD").parse::<i32>() {
+        core.db.get_param("COMP_CWORD").unwrap().parse::<i32>().unwrap()
+            /*
             Ok(i) => i,
             _     => exit::internal("no COMP_CWORD"),
         }
+            */
     }
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> bool {
-        let pos = core.db.get_param("COMP_CWORD").to_string();
+        let pos = core.db.get_param("COMP_CWORD").unwrap();
         let last = core.db.get_array("COMP_WORDS", &pos);
 
         let com = core.db.get_array("COMP_WORDS", "0");
@@ -158,7 +159,7 @@ impl Terminal {
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) {
-        let pos = core.db.get_param("COMP_CWORD").to_string();
+        let pos = core.db.get_param("COMP_CWORD").unwrap();
         let target = core.db.get_array("COMP_WORDS", &pos);
 
         if core.db.len("COMPREPLY") == 1 {
@@ -298,7 +299,7 @@ impl Terminal {
 
         if last.starts_with("~/") {
             tilde_prefix = "~/".to_string();
-            tilde_path = core.db.get_param("HOME").to_string() + "/";
+            tilde_path = core.db.get_param("HOME").unwrap_or(String::new()) + "/";
             last_tilde_expanded = last.replacen(&tilde_prefix, &tilde_path, 1);
         }else{
             tilde_prefix = String::new();

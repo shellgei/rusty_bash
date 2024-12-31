@@ -61,7 +61,7 @@ impl Subword for BracedParam {
             return self.subscript_operation(core);
         }
 
-        let value = core.db.get_param(&self.name);
+        let value = core.db.get_param(&self.name).unwrap_or(String::new());
         self.text = match self.num {
             true  => value.chars().count().to_string(),
             false => value.to_string(),

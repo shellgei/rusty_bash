@@ -8,7 +8,7 @@ use std::io::{BufRead, BufReader};
 pub fn history(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     let mut number = 1;
 
-    let filename = core.db.get_param("HISTFILE");
+    let filename = core.db.get_param("HISTFILE").unwrap_or(String::new());
     if filename == "" {
         return 0;
     }

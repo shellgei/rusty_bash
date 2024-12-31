@@ -39,10 +39,10 @@ impl DataBase {
 
         data.exit_status = 0;
 
-        let _ = data.set_param("$", &process::id().to_string());
-        let _ = data.set_param("BASHPID", &process::id().to_string());
-        let _ = data.set_param("BASH_SUBSHELL", "0");
-        let _ = data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
+        data.set_param("$", &process::id().to_string()).unwrap();
+        data.set_param("BASHPID", &process::id().to_string()).unwrap();
+        data.set_param("BASH_SUBSHELL", "0").unwrap();
+        data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string())).unwrap();
 
         data.set_special_param("SRANDOM", random::get_srandom);
         data.set_special_param("RANDOM", random::get_random);
@@ -52,53 +52,53 @@ impl DataBase {
 
         data.call_speial("SECONDS");
 
-        let _ = data.set_array("FUNCNAME", vec![]);
+        data.set_array("FUNCNAME", vec![]).unwrap();
 
         data
     }
 
-    pub fn get_param(&mut self, name: &str) -> String {
+    pub fn get_param(&mut self, name: &str) -> Result<String, String> {
         match name {
-            "-" => return self.flags.clone(),
-            "?" => return self.exit_status.to_string(),
-            "_" => return self.last_arg.clone(),
+            "-" => return Ok(self.flags.clone()),
+            "?" => return Ok(self.exit_status.to_string()),
+            "_" => return Ok(self.last_arg.clone()),
             "#" => {
                 let pos = self.position_parameters.len() - 1;
-                return (self.position_parameters[pos].len() - 1).to_string();
+                return Ok((self.position_parameters[pos].len() - 1).to_string());
             },
             _ => {},
         }
 
         if name == "@" || name == "*" { // $@ should return an array in a double quoted
                                       // subword. Therefore another access method is used there. 
-            return match self.position_parameters.last() {
-                Some(a) => a[1..].join(" "),
-                _       => "".to_string(),
+            match self.position_parameters.last() {
+                Some(a) => return Ok(a[1..].join(" ")),
+                _       => return Ok("".to_string()),
             };
         }
 
         if let Some(n) = self.get_position_param_pos(name) {
             let layer = self.position_parameters.len();
-            return self.position_parameters[layer-1][n].to_string();
+            return Ok(self.position_parameters[layer-1][n].to_string());
         }
 
         if let Some(ans) = self.call_speial(name) {
-            return ans;
+            return Ok(ans);
         }
 
         match self.get_clone(name).as_mut() {
             Some(d) => {
                 if d.is_array() {
-                    return match d.get_as_array("0") {
-                        Some(s) => s,
-                        None => "".to_string(),
+                    match d.get_as_array("0") {
+                        Some(s) => return Ok(s),
+                        None => return Ok("".to_string()),
                     }
                 }
                 if d.is_single() {
                     return match d.get_as_single() {
-                        Some(s) => s,
-                        None => "".to_string(),
-                    }
+                        Some(s) => Ok(s),
+                        None => Ok("".to_string()),
+                    };
                 }
             },
             _ => {},
@@ -107,9 +107,9 @@ impl DataBase {
         match env::var(name) {
             Ok(v) => {
                 let _ = self.set_layer_param(name, &v, 0);
-                v
+                Ok(v)
             },
-            _ => "".to_string()
+            _ => Ok("".to_string())
         }
     }
 

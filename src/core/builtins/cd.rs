@@ -3,7 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use super::utils;
+use crate::utils::{error, file};
 
 pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() > 2 {
@@ -31,13 +31,15 @@ fn cd_1arg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 fn cd_oldpwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let old = core.db.get_param("OLDPWD");
-    if old != "" {
-        println!("{}", &old);
-        args[1] = old.to_string();
-    }else {
-        eprintln!("sush: cd: OLDPWD not set");
-        return 1;
+    match core.db.get_param("OLDPWD") {
+        Ok(old) => {
+            println!("{}", &old);
+            args[1] = old.to_string();
+        },
+        Err(_) => {
+            error::print("cd: OLDPWD not set", core);
+            return 1;
+        },
     }
 
     set_oldpwd(core);
@@ -51,7 +53,7 @@ fn set_oldpwd(core: &mut ShellCore) {
 }
 
 fn change_directory(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let path = utils::make_canonical_path(core, &args[1]);
+    let path = file::make_canonical_path(core, &args[1]);
     if core.set_current_directory(&path).is_ok() {
         let _ = core.db.set_layer_param("PWD", &path.display().to_string(), 0);
         0

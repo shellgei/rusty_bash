@@ -14,7 +14,6 @@ mod read;
 mod source;
 mod loop_control;
 mod unset;
-mod utils;
 
 use crate::{child, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;

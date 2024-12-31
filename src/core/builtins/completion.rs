@@ -72,7 +72,7 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
 fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
 
     let mut comlist = HashSet::new();
-    for path in core.db.get_param("PATH").to_string().split(":") {
+    for path in core.db.get_param("PATH").unwrap_or(String::new()).to_string().split(":") {
         if utils::is_wsl() && path.starts_with("/mnt") {
             continue;
         }
@@ -215,7 +215,7 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
 
     let mut ans = core.history.to_vec();
 
-    if let Ok(hist_file) = File::open(core.db.get_param("HISTFILE")){
+    if let Ok(hist_file) = File::open(core.db.get_param("HISTFILE").unwrap_or(String::new())){
         for h in RevLines::new(BufReader::new(hist_file)) {
             match h {
                 Ok(s) => ans.push(s),
