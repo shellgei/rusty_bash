@@ -51,7 +51,7 @@ impl Word {
         let mut ws = vec![];
         for w in brace_expansion::eval(&mut self.clone()) {
             match w.tilde_and_dollar_expansion(core) {
-                Some(w) => ws.append( &mut w.split_and_path_expansion(core) ),
+                Some(w) => ws.append( &mut w.split_and_path_expansion() ),
                 None    => return None,
             };
         }
@@ -67,29 +67,25 @@ impl Word {
         }
     }
 
-    pub fn split_and_path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
+    pub fn split_and_path_expansion(&self) -> Vec<Word> {
         let mut ans = vec![];
-        for mut w in split::eval(self, core) {
+        for mut w in split::eval(self) {
             ans.append(&mut path_expansion::eval(&mut w) );
         }
         ans
     }
 
-    fn make_args(words: &mut Vec<Word>) -> Vec<String> {
-        words.iter_mut()
-              .map(|w| w.make_unquoted_word())
-              .filter(|w| *w != None)
-              .map(|w| w.unwrap())
-              .collect()
+    fn make_args(words: &mut [Word]) -> Vec<String> {
+        words.iter_mut().filter_map(|w| w.make_unquoted_word()).collect()
     }
 
     fn make_unquoted_word(&mut self) -> Option<String> {
         let sw: Vec<Option<String>> = self.subwords.iter_mut()
             .map(|s| s.make_unquoted_string()) //""や''はNoneにならずに空文字として残る
-            .filter(|s| *s != None)
+            .filter(|s| s.is_some())
             .collect();
 
-        if sw.len() == 0 {
+        if sw.is_empty() {
             return None;
         }
 

@@ -156,10 +156,7 @@ impl Redirect {
         ans.left = feeder.consume(len);
         ans.text += &ans.left.clone();
 
-        match ans.left.parse::<RawFd>() {
-            Ok(_) => true,
-            _     => false,
-        }
+        ans.left.parse::<RawFd>().is_ok()
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
