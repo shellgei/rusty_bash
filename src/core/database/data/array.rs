@@ -67,6 +67,10 @@ impl Data for ArrayData {
         Some(self.values().clone())
     }
 
+    fn get_as_single(&mut self) -> Option<String> {
+        self.body.get(&0).map(|v| Some(v.clone()))?
+    }
+
     fn is_array(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 }

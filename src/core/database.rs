@@ -96,18 +96,8 @@ impl DataBase {
 
         match self.get_clone(name).as_mut() {
             Some(d) => {
-                if d.is_array() {
-                    let val = d.get_as_array("0").unwrap_or(String::new());
-                    return Ok(val);
-                }
-                if d.is_single() {
-                    let val = d.get_as_single().unwrap_or(String::new());
-                    return Ok(val);
-                }
-                if d.is_assoc() {
-                    let val = d.get_as_single().unwrap_or(String::new());
-                    return Ok(val);
-                }
+                let val = d.get_as_single().unwrap_or(String::new());
+                return Ok(val);
             },
             _ => {},
         }
