@@ -7,7 +7,7 @@ mod elements;
 mod signal;
 mod utils;
 
-use std::{env, process, thread, time};
+use std::{env, process};
 use crate::core::ShellCore;
 use crate::utils::exit;
 use crate::elements::script::Script;

@@ -12,7 +12,7 @@ use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
 use nix::sys::wait;
-use nix::sys::signal::{Signal, SigHandler};
+use nix::sys::signal::Signal;
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use std::{env, process, thread, time};
+use std::{thread, time};
 use nix::sys::signal;
 use nix::sys::signal::{Signal, SigHandler};
 use std::sync::Arc;
