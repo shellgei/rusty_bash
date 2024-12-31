@@ -131,7 +131,7 @@ impl Job {
         let com_num = feeder.scanner_comment();
         ans.text += &feeder.consume(com_num);
     
-        if ans.pipelines.len() > 0 {
+        if ! ans.pipelines.is_empty() {
 //            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
             Some(ans)
         }else{

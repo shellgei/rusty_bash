@@ -34,7 +34,7 @@ fn still(status: &WaitStatus) -> bool {
     match &status {
         WaitStatus::StillAlive    => true,
         WaitStatus::Stopped(_, _) => true,
-        WaitStatus::Continued(__) => true,
+        WaitStatus::Continued(_) => true,
         _ => false,
     }
 }

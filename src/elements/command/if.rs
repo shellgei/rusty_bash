@@ -25,9 +25,8 @@ impl Command for IfCommand {
             }
         }
 
-        match self.else_script.as_mut() {
-            Some(s) => s.exec(core),
-            _ => {},
+        if let Some(s) = self.else_script.as_mut() {
+            s.exec(core);
         }
     }
 
@@ -87,7 +86,7 @@ impl IfCommand {
             if_or_elif = "elif";
         }
 
-        if ans.then_scripts.len() == 0 {
+        if ans.then_scripts.is_empty() {
             return None;
         }
 

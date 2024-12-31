@@ -14,10 +14,7 @@ use nix::unistd::Pid;
 use nix::errno::Errno;
 
 fn reserved(w: &str) -> bool {
-    match w {
-        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" => true,
-        _ => false,
-    }
+    matches!(w, "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi")
 }
 
 #[derive(Debug, Default)]
@@ -38,7 +35,7 @@ impl Command for SimpleCommand {
             self.args.append(&mut w.eval(core).unwrap());
         }
 
-        if self.args.len() == 0 {
+        if self.args.is_empty() {
             return None;
         }
 
@@ -72,7 +69,7 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(args: &mut Vec<String>) -> ! {
+    fn exec_external_command(args: &mut [String]) -> ! {
         let cargs = Self::to_cargs(args);
         match unistd::execvp(&cargs[0], &cargs) {
             Err(Errno::EACCES) => {
@@ -91,7 +88,7 @@ impl SimpleCommand {
         }
     }
 
-    fn to_cargs(args: &mut Vec<String>) -> Vec<CString> {
+    fn to_cargs(args: &mut [String]) -> Vec<CString> {
         args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
@@ -103,7 +100,7 @@ impl SimpleCommand {
             _       => return false,
         };
 
-        if ans.words.len() == 0 && reserved(&w.text) {
+        if ans.words.is_empty() && reserved(&w.text) {
             return false;
         }
         ans.text += &w.text;

@@ -43,7 +43,7 @@ impl Redirect {
     }
 
     fn set_left_fd(&mut self, default_fd: RawFd) {
-        self.left_fd = if self.left.len() == 0 {
+        self.left_fd = if self.left.is_empty() {
             default_fd
         }else{
             self.left.parse().expect("SUSHI INTERNAL ERROR (invalid FD)")
