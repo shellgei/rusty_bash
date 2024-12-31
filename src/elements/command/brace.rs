@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder, Script};
 use super::{Command, Redirect};
 use crate::elements::command;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct BraceCommand {
     text: String,
     script: Option<Script>,
@@ -28,17 +28,8 @@ impl Command for BraceCommand {
 }
 
 impl BraceCommand {
-    fn new() -> BraceCommand {
-        BraceCommand {
-            text: String::new(),
-            script: None,
-            redirects: vec![],
-            force_fork: false,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceCommand> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.script) {
             ans.text.push_str("{");
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());

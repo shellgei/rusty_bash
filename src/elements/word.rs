@@ -12,7 +12,7 @@ use super::subword;
 use super::subword::Subword;
 use super::subword::simple::SimpleSubword;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
     pub subwords: Vec<Box<dyn Subword>>,

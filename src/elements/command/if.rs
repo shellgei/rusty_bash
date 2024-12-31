@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder, Script};
 use crate::elements::command;
 use super::{Command, Redirect};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct IfCommand {
     pub text: String,
     pub if_elif_scripts: Vec<Script>,
@@ -38,17 +38,6 @@ impl Command for IfCommand {
 }
 
 impl IfCommand {
-    fn new() -> IfCommand {
-        IfCommand {
-            text: String::new(),
-            if_elif_scripts: vec![],
-            then_scripts: vec![],
-            else_script: None,
-            redirects: vec![],
-            force_fork: false,
-        }
-    }
-
     fn end_words(word: &str) -> Vec<&str> {
         match word {
             "if" | "elif" => vec!["then"],
@@ -82,7 +71,7 @@ impl IfCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<IfCommand> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
  
         let mut if_or_elif = "if";
         while Self::eat_word_and_script(if_or_elif, feeder, &mut ans, core) 
@@ -103,7 +92,6 @@ impl IfCommand {
         }
 
         command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-//        dbg!("{:?}", &ans);
         Some(ans)
     }
 }

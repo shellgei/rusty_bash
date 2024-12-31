@@ -20,7 +20,7 @@ fn reserved(w: &str) -> bool {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SimpleCommand {
     text: String,
     words: Vec<Word>,
@@ -97,16 +97,6 @@ impl SimpleCommand {
             .collect()
     }
 
-    fn new() -> SimpleCommand {
-        SimpleCommand {
-            text: String::new(),
-            words: vec![],
-            args: vec![],
-            redirects: vec![],
-            force_fork: false,
-        }
-    }
-
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
         let w = match Word::parse(feeder, core) {
             Some(w) => w,
@@ -122,7 +112,7 @@ impl SimpleCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         feeder.set_backup();
 
         loop {

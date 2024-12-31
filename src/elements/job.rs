@@ -8,7 +8,7 @@ use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
     pub pipeline_ends: Vec<String>,
@@ -77,14 +77,6 @@ impl Job {
         }
     }
 
-    fn new() -> Job {
-        Job {
-            text: String::new(),
-            pipeline_ends: vec![],
-            pipelines: vec![],
-        }
-    }
-
     fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
@@ -118,7 +110,7 @@ impl Job {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         while Self::eat_blank_line(feeder, &mut ans, core) {} 
         if ! Self::eat_pipeline(feeder, &mut ans, core) {
             return None;

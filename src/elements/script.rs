@@ -10,7 +10,7 @@ enum Status{
     NormalEnd,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Script {
     pub jobs: Vec<Job>,
     pub job_ends: Vec<String>,
@@ -25,14 +25,6 @@ impl Script {
     }
 
     pub fn get_text(&self) -> String { self.text.clone() }
-
-    pub fn new() -> Script {
-        Script {
-            text: String::new(),
-            jobs: vec![],
-            job_ends: vec![],
-        }
-    }
 
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool {
         if let Some(job) = Job::parse(feeder, core){
@@ -75,7 +67,7 @@ impl Script {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
 
         loop {
             while Self::eat_job(feeder, core, &mut ans) 
