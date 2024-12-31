@@ -21,7 +21,7 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
-type BuiltinFunc = fn(&mut ShellCore, &mut Vec<String>) -> i32;
+type BuiltinFunc = fn(&mut ShellCore, &mut [String]) -> i32;
 
 #[derive(Default)]
 pub struct ShellCore {
@@ -132,7 +132,7 @@ impl ShellCore {
         self.set_foreground();
     }
 
-    pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
+    pub fn run_builtin(&mut self, args: &mut [String]) -> bool {
         if args.is_empty() {
             panic!("SUSH INTERNAL ERROR (no arg for builtins)");
         }
