@@ -40,14 +40,14 @@ impl Script {
         let len = feeder.scanner_job_end();
         let end = &feeder.consume(len);
         ans.job_ends.push(end.clone());
-        ans.text += &end;
+        ans.text += end;
         len != 0
     }
 
     fn check_nest(&self, feeder: &mut Feeder) -> Status {
         let nest = feeder.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
 
-        if nest.0 == "" && feeder.len() == 0 {
+        if nest.0.is_empty() && feeder.len() == 0 {
             return Status::NormalEnd;
         }
 
@@ -89,6 +89,6 @@ impl Script {
         }
 
         feeder.consume(feeder.len());
-        return None;
+        None
     }
 }
