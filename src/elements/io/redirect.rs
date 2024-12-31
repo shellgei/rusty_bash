@@ -60,7 +60,7 @@ impl Redirect {
                 let fd = file.into_raw_fd();
                 let result = io::replace(fd, self.left_fd);
                 if ! result {
-                    io::close(fd, &format!("sush(fatal): file does not close"));
+                    io::close(fd, "sush(fatal): file does not close");
                     self.left_fd = -1;
                 }
                 result
@@ -85,7 +85,7 @@ impl Redirect {
     fn redirect_append(&mut self, restore: bool) -> bool {
         self.set_left_fd(1);
         self.connect_to_file(OpenOptions::new().create(true)
-                .write(true).append(true).open(&self.right.text), restore)
+                .append(true).open(&self.right.text), restore)
     }
 
     fn redirect_both_output(&mut self, restore: bool) -> bool {
