@@ -87,12 +87,12 @@ fn main() {
 }
 
 fn set_history(core: &mut ShellCore, s: &str) {
-    if core.read_stdin || core.history.len() == 0 {
+    if core.read_stdin || core.history.is_empty() {
         return;
     }
 
     core.history[0] = s.trim_end().replace("\n", "↵ \0").to_string();
-    if core.history[0].len() == 0
+    if core.history[0].is_empty()
     || (core.history.len() > 1 && core.history[0] == core.history[1]) {
         core.history.remove(0);
     }

@@ -28,7 +28,7 @@ impl Pipeline {
             return (vec![], false, false);
         }
 
-        if self.commands.len() == 0 { // the case of only '!'
+        if self.commands.is_empty() { // the case of only '!'
             self.set_time(core);
             return (vec![], self.exclamation, self.time);
         }

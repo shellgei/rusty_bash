@@ -5,7 +5,7 @@ use crate::ShellCore;
 use crate::utils::error;
 
 fn is_varname(s :&String) -> bool {
-    if s.len() == 0 {
+    if s.is_empty() {
         return false;
     }
 

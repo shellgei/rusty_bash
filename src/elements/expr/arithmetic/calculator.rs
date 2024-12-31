@@ -64,7 +64,7 @@ fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -
 }
 
 pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, String> {
-    if elements.len() == 0 {
+    if elements.is_empty() {
         return Ok(ArithElem::Integer(0));
     }
 

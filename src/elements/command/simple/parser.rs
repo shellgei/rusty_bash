@@ -29,7 +29,7 @@ impl SimpleCommand {
             },
         };
 
-        if ans.words.len() == 0 {
+        if ans.words.is_empty() {
             if utils::reserved(&w.text) {
                 return false;
             }else if w.text == "local" {
@@ -37,7 +37,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.words.len() == 0 {
+        if ans.words.is_empty() {
             if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder) {
                 return true;
             }
@@ -71,7 +71,7 @@ impl SimpleCommand {
             command::eat_blank_with_comment(&mut feeder_local, core, text);
         }
 
-        if words.len() == 0 {
+        if words.is_empty() {
             panic!("sush: alias: fatal alias");
         }
 

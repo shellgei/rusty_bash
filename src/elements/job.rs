@@ -52,7 +52,7 @@ impl Job {
 
     fn check_stop(core: &mut ShellCore, text: &str,
                   pids: &Vec<Option<Pid>>, waitstatuses: &Vec<WaitStatus>) {
-        if core.is_subshell || pids.len() == 0 || pids[0] == None {
+        if core.is_subshell || pids.is_empty() || pids[0] == None {
             return;
         }
 

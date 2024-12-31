@@ -107,7 +107,7 @@ impl ConditionalExpr {
                 },
                 CondElem::UnaryOp(ref op) => Self::unary_operation(&op, &mut stack, core),
                 CondElem::BinaryOp(ref op) => {
-                    if stack.len() == 0 {
+                    if stack.is_empty() {
                         return Ok(vec![CondElem::Ans(true)]); //for [[ -ot ]] [[ == ]] [[ = ]] ...
                     }
                     if op == "=~" {
@@ -157,7 +157,7 @@ impl ConditionalExpr {
                 "-o" => core.options.query(&operand),
                 //"-v" => core.db.get_value(&operand).is_some() || env::var(&operand).is_ok(),
                 "-v" => core.db.has_value(&operand) || env::var(&operand).is_ok(),
-                "-z" => operand.len() == 0,
+                "-z" => operand.is_empty(),
                 "-n" => operand.len() > 0,
                 _    => false,
             };

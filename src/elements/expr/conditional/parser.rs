@@ -164,7 +164,7 @@ impl ConditionalExpr {
 
             if feeder.starts_with("]]")
             || feeder.starts_with(")") {
-                if ans.elements.len() == 0 {
+                if ans.elements.is_empty() {
                     return None;
                 }
 

@@ -34,7 +34,7 @@ fn question(cands: &mut Vec<String>) {
 }
 
 fn asterisk(cands: &mut Vec<String>) {
-    if cands.len() == 0 {
+    if cands.is_empty() {
         return;
     }
 

@@ -63,7 +63,7 @@ fn arg_to_id(s: &str, priority: &Vec<usize>, table: &Vec<JobEntry>) -> Result<us
 
 pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let id = if args.len() == 1 {
-        if core.job_table_priority.len() == 0 {
+        if core.job_table_priority.is_empty() {
             return 1;
         }
         core.job_table_priority[0]
@@ -93,7 +93,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
 
     let id = if args.len() == 1 {
-        if core.job_table_priority.len() == 0 {
+        if core.job_table_priority.is_empty() {
             return 1;
         }
         core.job_table_priority[0]

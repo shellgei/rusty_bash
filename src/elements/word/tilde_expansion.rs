@@ -26,7 +26,7 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
 }
 
 fn prefix_length(word: &Word) -> usize {
-    if word.subwords.len() == 0 || word.subwords[0].get_text() != "~" {
+    if word.subwords.is_empty() || word.subwords[0].get_text() != "~" {
         return 0;
     }
 

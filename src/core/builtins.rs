@@ -70,7 +70,7 @@ pub fn builtin(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -> i32 {
-    if words.len() == 0 {
+    if words.is_empty() {
         return 0;
     }
 
@@ -112,7 +112,7 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
     let mut words = arg::consume_after_options(&mut args, 1);
 
-    if words.len() == 0 {
+    if words.is_empty() {
         return 0;
     }
 

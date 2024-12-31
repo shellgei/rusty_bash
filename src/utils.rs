@@ -84,7 +84,7 @@ pub fn is_name(s: &str, core: &mut ShellCore) -> bool {
 }
 
 pub fn is_param(s :&String) -> bool {
-    if s.len() == 0 {
+    if s.is_empty() {
         return false;
     }
 

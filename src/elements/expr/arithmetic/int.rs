@@ -90,7 +90,7 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
 }
 
 fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
-    if s.len() == 0 {
+    if s.is_empty() {
         return None;
     }
 
@@ -158,7 +158,7 @@ pub fn parse(s: &str) -> Option<i64> {
     || s.find('.').is_some() {
         return None;
     }
-    if s.len() == 0 {
+    if s.is_empty() {
         return Some(0);
     }
 

@@ -85,7 +85,7 @@ impl Subword for BracedParam {
 
 impl BracedParam {
     fn check(&mut self) -> bool {
-        if self.name.len() == 0 || ! utils::is_param(&self.name) {
+        if self.name.is_empty() || ! utils::is_param(&self.name) {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
         }

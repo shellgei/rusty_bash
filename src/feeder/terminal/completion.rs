@@ -25,7 +25,7 @@ fn common_length(chars: &Vec<char>, s: &String) -> usize {
 }
 
 fn common_string(paths: &Vec<String>) -> String {
-    if paths.len() == 0 {
+    if paths.is_empty() {
         return "".to_string();
     }
 
@@ -113,7 +113,7 @@ impl Terminal {
         let mut args = vec!["".to_string(), "".to_string(), last_tilde_expanded.to_string()];
 
         let list = self.make_default_compreply(core, &mut args, &com, &pos);
-        if list.len() == 0 {
+        if list.is_empty() {
             return false;
         }
 
@@ -187,7 +187,7 @@ impl Terminal {
     }
 
     fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
-        if list.len() == 0 {
+        if list.is_empty() {
             return;
         }
         let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();

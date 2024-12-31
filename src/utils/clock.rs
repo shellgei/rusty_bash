@@ -18,7 +18,7 @@ pub fn set_seconds() -> String {
 }
 
 pub fn get_seconds(v: &mut Vec<String>) -> String {
-    if v.len() == 0 {
+    if v.is_empty() {
         v.push(set_seconds());
     }
 

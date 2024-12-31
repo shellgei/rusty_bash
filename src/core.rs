@@ -132,7 +132,7 @@ impl ShellCore {
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
-        if args.len() == 0 {
+        if args.is_empty() {
             exit::internal(" (no arg for builtins)");
         }
 

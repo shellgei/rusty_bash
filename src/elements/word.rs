@@ -118,7 +118,7 @@ impl Word {
             .filter(|s| *s != None)
             .collect();
 
-        if sw.len() == 0 {
+        if sw.is_empty() {
             return None;
         }
 

@@ -84,7 +84,7 @@ impl FunctionDefinition {
         let len = feeder.scanner_name(core);
         ans.name = feeder.consume(len).to_string();
 
-        if ans.name.len() == 0 && reserved(&ans.name) {
+        if ans.name.is_empty() && reserved(&ans.name) {
             return false;
         }
         ans.text += &ans.name;

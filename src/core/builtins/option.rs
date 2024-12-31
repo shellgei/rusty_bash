@@ -41,7 +41,7 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if args.len() == 0 {
+    if args.is_empty() {
         panic!("never come here");
     }else if args.len() == 1 {
         return parameter::print_all(core);

@@ -8,7 +8,7 @@ use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word, extglob: bool) -> Vec<Word> {
     let paths = expand(&word.make_glob_string(), extglob);
-    if paths.len() == 0 {
+    if paths.is_empty() {
         return vec![word.clone()];
     }
 

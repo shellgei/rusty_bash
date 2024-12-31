@@ -191,7 +191,7 @@ impl SimpleCommand {
             eprintln!("{} {}", &ps4, &s.text);
         }
 
-        if self.args.len() == 0 {
+        if self.args.is_empty() {
             return;
         }
 

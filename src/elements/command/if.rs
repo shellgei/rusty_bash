@@ -89,7 +89,7 @@ impl IfCommand {
             if_or_elif = "elif";
         }
 
-        if ans.then_scripts.len() == 0 {
+        if ans.then_scripts.is_empty() {
             return None;
         }
 

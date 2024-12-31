@@ -7,7 +7,7 @@ use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     let (pos, mut split) = find_pos(word);
-    if split.len() == 0 {
+    if split.is_empty() {
         return vec![word.clone()];
     }
 

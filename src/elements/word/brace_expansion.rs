@@ -205,10 +205,10 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
     skip_num = std::cmp::max(skip_num, 1);
 
     let mut series = gen_nums(&start, &end, skip_num);
-    if series.len() == 0 {
+    if series.is_empty() {
         series = gen_chars(&start, &end, skip_num);
     }
-    if series.len() == 0 {
+    if series.is_empty() {
         return subwords_to_word(subwords);
     }
     let mut series2 = vec![];

@@ -21,7 +21,7 @@ fn alternative_replace(word: &mut Word) {
     let mut pos = 0;
     while pos < word.subwords.len() {
         let sws = word.subwords[pos].get_alternative_subwords();
-        if sws.len() == 0 {
+        if sws.is_empty() {
             pos += 1;
             continue;
         }
