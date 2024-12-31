@@ -21,12 +21,14 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
+type BuiltinFunc = fn(&mut ShellCore, &mut Vec<String>) -> i32;
+
 #[derive(Default)]
 pub struct ShellCore {
     pub data: Data,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
-    pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
+    pub builtins: HashMap<String, BuiltinFunc>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
     pub tty_fd: Option<OwnedFd>,
@@ -74,7 +76,7 @@ impl ShellCore {
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        self.data.flags.find(flag) != None 
+        self.data.flags.find(flag).is_some()
     }
 
     pub fn wait_process(&mut self, child: Pid) {
@@ -120,7 +122,7 @@ impl ShellCore {
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
-        if pids.len() == 1 && pids[0] == None {
+        if pids.len() == 1 && pids[0].is_none() {
             return;
         }
 
@@ -131,7 +133,7 @@ impl ShellCore {
     }
 
     pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
-        if args.len() == 0 {
+        if args.is_empty() {
             panic!("SUSH INTERNAL ERROR (no arg for builtins)");
         }
 

@@ -12,7 +12,7 @@ pub struct Data {
 
 impl Data {
     pub fn get_param(&mut self, key: &str) -> String {
-        if self.parameters.get(key) == None {
+        if ! self.parameters.contains_key(key) {
             if let Ok(val) = env::var(key) {
                 self.set_param(key, &val);
             }

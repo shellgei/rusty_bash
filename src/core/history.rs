@@ -50,13 +50,13 @@ impl ShellCore {
             return;
         }
         let filename = self.data.get_param("HISTFILE");
-        if filename == "" {
+        if filename.is_empty() {
             eprintln!("sush: HISTFILE is not set");
             return;
         }
     
         let file = match OpenOptions::new().create(true)
-                .write(true).append(true).open(&filename) {
+                         .append(true).open(&filename) {
             Ok(f) => f,
             _     => {
                 eprintln!("sush: invalid history file");
@@ -66,7 +66,7 @@ impl ShellCore {
     
         let mut f = BufWriter::new(file);
         for h in self.history.iter().rev() {
-            if h == "" {
+            if h.is_empty() {
                 continue;
             }
             let _ = f.write(h.as_bytes());

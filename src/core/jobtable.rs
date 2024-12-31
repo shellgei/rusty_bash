@@ -31,12 +31,9 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
 }
 
 fn still(status: &WaitStatus) -> bool {
-    match &status {
-        WaitStatus::StillAlive    => true,
-        WaitStatus::Stopped(_, _) => true,
-        WaitStatus::Continued(_) => true,
-        _ => false,
-    }
+    matches!(status, WaitStatus::StillAlive 
+                   | WaitStatus::Stopped(_, _) 
+                   | WaitStatus::Continued(_))
 }
 
 impl JobEntry {

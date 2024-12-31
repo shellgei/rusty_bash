@@ -41,7 +41,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
     fn from(subwords: Vec<Box::<dyn Subword>>) -> Self {
         Self {
             text: subwords.iter().map(|s| s.get_text()).collect(),
-            subwords: subwords,
+            subwords,
         }
     }
 }
