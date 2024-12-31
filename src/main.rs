@@ -4,18 +4,16 @@
 mod core;
 mod feeder;
 mod elements;
+mod signal;
 mod utils;
 
 use std::{env, process, thread, time};
-use std::sync::Arc;
-use std::sync::atomic::Ordering::Relaxed;
 use crate::core::ShellCore;
 use crate::utils::exit;
 use crate::elements::script::Script;
 use crate::feeder::{Feeder, InputError};
-use signal_hook::consts;
-use signal_hook::iterator::Signals;
 use utils::file_check;
+use std::sync::atomic::Ordering::Relaxed;
 
 fn show_version() {
     eprintln!("Sushi Shell 202305_5");
@@ -27,33 +25,6 @@ fn show_version() {
     process::exit(0);
 }
 
-fn run_signal_check(core: &mut ShellCore) {
-    for fd in 3..10 { //use FD 3~9 to prevent signal-hool from using these FDs
-        nix::unistd::dup2(2, fd).expect("sush(fatal): init error");
-    }
-
-    let sigint = Arc::clone(&core.sigint); //追加
- 
-    thread::spawn(move || { //クロージャの処理全体を{}で囲みましょう
-        let mut signals = Signals::new(vec![consts::SIGINT])
-                          .expect("sush(fatal): cannot prepare signal data");
-
-        for fd in 3..10 { // release FD 3~9
-            nix::unistd::close(fd).expect("sush(fatal): init error");
-        }
-
-        loop {
-            thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
-            for signal in signals.pending() {
-                if signal == consts::SIGINT {
-                    sigint.store(true, Relaxed);
-                    //eprint!("COME HERE");
-                }
-            }
-        }
-    });
-} //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
-
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 && args[1] == "--version" {
@@ -61,7 +32,7 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
-    run_signal_check(&mut core);
+    signal::run_signal_check(&mut core);
     main_loop(&mut core);
 }
 

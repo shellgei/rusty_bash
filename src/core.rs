@@ -11,11 +11,12 @@ use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
-use nix::sys::{signal, wait};
+use nix::sys::wait;
 use nix::sys::signal::{Signal, SigHandler};
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
+use crate::signal;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
@@ -112,10 +113,10 @@ impl ShellCore {
             return;
         }
 
-        ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
+        signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視
         unistd::tcsetpgrp(fd, pgid)
             .expect("sush(fatal): cannot get the terminal");
-        restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
+        signal::restore(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
@@ -161,7 +162,7 @@ impl ShellCore {
     }
 
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
-        restore_signal(Signal::SIGINT);
+        signal::restore(Signal::SIGINT);
 
         self.is_subshell = true;
         self.set_pgid(pid, pgid);
