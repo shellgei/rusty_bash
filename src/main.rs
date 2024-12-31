@@ -36,17 +36,6 @@ fn main() {
     main_loop(&mut core);
 }
 
-fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-    if ! core.sigint.load(Relaxed) { //core.input_interrupt {
-        return false;
-    }
-
-    core.sigint.store(false, Relaxed); //core.input_interrupt = false;
-    core.data.set_param("?", "130");
-    feeder.consume(feeder.len());
-    true
-}
-
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new();
     loop {
@@ -56,7 +45,7 @@ fn main_loop(core: &mut ShellCore) {
         match feeder.feed_line(core) {
             Ok(()) => {}, 
             Err(InputError::Interrupt) => {
-                input_interrupt_check(&mut feeder, core);
+                signal::input_interrupt_check(&mut feeder, core);
                 continue;
             },
             _ => break,

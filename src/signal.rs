@@ -1,14 +1,14 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use std::{thread, time};
+use crate::{Feeder, ShellCore};
 use nix::sys::signal;
 use nix::sys::signal::{Signal, SigHandler};
-use std::sync::Arc;
-use std::sync::atomic::Ordering::Relaxed;
 use signal_hook::consts;
 use signal_hook::iterator::Signals;
+use std::{thread, time};
+use std::sync::Arc;
+use std::sync::atomic::Ordering::Relaxed;
 
 pub fn ignore(sig: Signal) {
     unsafe { signal::signal(sig, SigHandler::SigIgn) }
@@ -47,3 +47,13 @@ pub fn run_signal_check(core: &mut ShellCore) {
     });
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
+pub fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+    if ! core.sigint.load(Relaxed) { //core.input_interrupt {
+        return false;
+    }
+
+    core.sigint.store(false, Relaxed); //core.input_interrupt = false;
+    core.data.set_param("?", "130");
+    feeder.consume(feeder.len());
+    true
+}
