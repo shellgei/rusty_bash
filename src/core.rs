@@ -20,6 +20,7 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
+#[derive(Default)]
 pub struct ShellCore {
     pub data: Data,
     rewritten_history: HashMap<usize, String>,
@@ -51,17 +52,7 @@ fn restore_signal(sig: Signal) {
 
 impl ShellCore {
     pub fn new() -> ShellCore {
-        let mut core = ShellCore{
-            data: Data::new(),
-            rewritten_history: HashMap::new(),
-            history: Vec::new(),
-            builtins: HashMap::new(),
-            sigint: Arc::new(AtomicBool::new(false)),
-            is_subshell: false,
-            tty_fd: None,
-            job_table: vec![],
-            tcwd: None,
-        };
+        let mut core = ShellCore::default();
 
         core.init_current_directory();
         core.set_initial_parameters();
