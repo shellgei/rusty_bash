@@ -8,7 +8,7 @@ use super::Pipe;
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub pipes: Vec<Pipe>,
@@ -39,14 +39,6 @@ impl Pipeline {
         );
 
         pids
-    }
-
-    pub fn new() -> Pipeline {
-        Pipeline {
-            text: String::new(),
-            commands: vec![],
-            pipes: vec![],
-        }
     }
 
     fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
@@ -85,7 +77,7 @@ impl Pipeline {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
-        let mut ans = Pipeline::new();
+        let mut ans = Self::default();
 
         if ! Self::eat_command(feeder, &mut ans, core){      //最初のコマンド
             return None;

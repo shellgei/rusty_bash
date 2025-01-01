@@ -10,7 +10,7 @@ pub struct VarName {
 }
 
 impl Subword for VarName {
-    fn get_text(&self) -> &str {&self.text.as_ref()}
+    fn get_text(&self) -> &str {self.text.as_ref()}
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn is_name(&self) -> bool {true}

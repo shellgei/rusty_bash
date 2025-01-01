@@ -50,7 +50,7 @@ fn backup(from: RawFd) -> RawFd {
            .expect("Can't allocate fd for backup")
 }
 
-pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>, core: &mut ShellCore) {
+pub fn connect(pipe: &mut Pipe, rs: &mut [Redirect], core: &mut ShellCore) {
     pipe.connect();
     if ! rs.iter_mut().all(|r| r.connect(false, core)){
         process::exit(1);

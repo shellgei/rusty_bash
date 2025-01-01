@@ -4,22 +4,15 @@
 use std::collections::HashMap;
 use std::env;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Data {
     pub flags: String,
     pub parameters: HashMap<String, String>,
 }
 
 impl Data {
-    pub fn new() -> Data {
-        Data {
-            flags: String::new(),
-            parameters: HashMap::new(),
-        }
-    }
-
     pub fn get_param(&mut self, key: &str) -> String {
-        if self.parameters.get(key) == None {
+        if ! self.parameters.contains_key(key) {
             if let Ok(val) = env::var(key) {
                 self.set_param(key, &val);
             }

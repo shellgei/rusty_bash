@@ -10,7 +10,7 @@ enum Status{
     NormalEnd,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Script {
     pub jobs: Vec<Job>,
     pub job_ends: Vec<String>,
@@ -26,14 +26,6 @@ impl Script {
 
     pub fn get_text(&self) -> String { self.text.clone() }
 
-    pub fn new() -> Script {
-        Script {
-            text: String::new(),
-            jobs: vec![],
-            job_ends: vec![],
-        }
-    }
-
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool {
         if let Some(job) = Job::parse(feeder, core){
             ans.text += &job.text.clone();
@@ -48,14 +40,14 @@ impl Script {
         let len = feeder.scanner_job_end();
         let end = &feeder.consume(len);
         ans.job_ends.push(end.clone());
-        ans.text += &end;
+        ans.text += end;
         len != 0
     }
 
     fn check_nest(&self, feeder: &mut Feeder) -> Status {
         let nest = feeder.nest.last().expect("SUSHI INTERNAL ERROR (empty nest)");
 
-        if nest.0 == "" && feeder.len() == 0 {
+        if nest.0.is_empty() && feeder.len() == 0 {
             return Status::NormalEnd;
         }
 
@@ -75,7 +67,7 @@ impl Script {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
 
         loop {
             while Self::eat_job(feeder, core, &mut ans) 
@@ -97,6 +89,6 @@ impl Script {
         }
 
         feeder.consume(feeder.len());
-        return None;
+        None
     }
 }

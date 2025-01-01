@@ -20,7 +20,7 @@ pub struct Pipe {
 impl Pipe {
     pub fn new(text: String) -> Pipe {
         Pipe {
-            text: text,
+            text,
             recv: -1,
             send: -1,
             prev: -1,
@@ -58,7 +58,7 @@ impl Pipe {
         io::replace(self.send, 1);
         io::replace(self.prev, 0);
 
-        if &self.text == &"|&" {
+        if self.text == "|&" {
             io::share(1, 2);
         }
     }

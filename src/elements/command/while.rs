@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder, Script};
 use super::{Command, Redirect};
 use crate::elements::command;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct WhileCommand {
     pub text: String,
     pub while_script: Option<Script>,
@@ -38,18 +38,8 @@ impl Command for WhileCommand {
 }
 
 impl WhileCommand {
-    fn new() -> WhileCommand {
-        WhileCommand {
-            text: String::new(),
-            while_script: None,
-            do_script: None,
-            redirects: vec![],
-            force_fork: false,
-        }
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<WhileCommand> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         if command::eat_inner_script(feeder, core, "while", vec!["do"], &mut ans.while_script)
         && command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.do_script) {
             ans.text.push_str("while");

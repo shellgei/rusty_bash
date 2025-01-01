@@ -56,7 +56,7 @@ fn parse(subwords: &[Box<dyn Subword>], start: usize) -> Vec<usize> {
     vec![]
 }
 
-fn get_delimiters(stack: &mut Vec<&str>, start: usize) -> Vec<usize> {
+fn get_delimiters(stack: &mut [&str], start: usize) -> Vec<usize> {
     let mut delimiter_pos = vec![start, stack.len()-1+start];
     for i in (1..stack.len()-1).rev() {
         if stack[i] == "," {
@@ -69,7 +69,7 @@ fn get_delimiters(stack: &mut Vec<&str>, start: usize) -> Vec<usize> {
     delimiter_pos
 }
 
-fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
+fn expand(subwords: &[Box<dyn Subword>], delimiters: &[usize]) -> Vec<Word> {
     let left = &subwords[..delimiters[0]];
     let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
     invalidate_brace(&mut right);
@@ -77,7 +77,7 @@ fn expand(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word
     let mut ans = vec![];
     for i in 0..(delimiters.len()-1) {
         let center = &subwords[ (delimiters[i]+1)..delimiters[i+1] ];
-        let mut w = Word::from([ left, &center, &right ].concat() );
+        let mut w = Word::from([ left, center, &right ].concat() );
         ans.append(&mut eval(&mut w));
     }
     ans

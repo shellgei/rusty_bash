@@ -7,7 +7,7 @@ use std::path::Path;
 use super::glob;
 
 pub fn files(dir: &str) -> Vec<String> {
-    let dir = if dir == "" {"."}else{dir};
+    let dir = if dir.is_empty() {"."}else{dir};
 
     let entries = match Path::new(dir).read_dir() {
         Ok(es) => es,
@@ -35,5 +35,6 @@ pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
     files(dir).iter()
         .filter(|f| !f.starts_with(".") || pattern.starts_with(".") )
         .filter(|f| glob::compare(f, &pat) )
-        .map(|f| make_path(&f) ).collect()
+        .map(|f| make_path(f) )
+        .collect()
 }

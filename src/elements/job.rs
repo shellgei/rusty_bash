@@ -8,7 +8,7 @@ use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
     pub pipeline_ends: Vec<String>,
@@ -42,10 +42,7 @@ impl Job {
     }
 
     fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
-        let backup = match core.tty_fd.as_ref() {
-            Some(fd) => Some(fd.try_clone().unwrap()),
-            _ => None,
-        };
+        let backup = core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
         core.tty_fd = None;
 
         let pids = if self.pipelines.len() == 1 {
@@ -74,14 +71,6 @@ impl Job {
                 Some(child) 
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
-        }
-    }
-
-    fn new() -> Job {
-        Job {
-            text: String::new(),
-            pipeline_ends: vec![],
-            pipelines: vec![],
         }
     }
 
@@ -118,7 +107,7 @@ impl Job {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         while Self::eat_blank_line(feeder, &mut ans, core) {} 
         if ! Self::eat_pipeline(feeder, &mut ans, core) {
             return None;
@@ -139,7 +128,7 @@ impl Job {
         let com_num = feeder.scanner_comment();
         ans.text += &feeder.consume(com_num);
     
-        if ans.pipelines.len() > 0 {
+        if ! ans.pipelines.is_empty() {
 //            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
             Some(ans)
         }else{
