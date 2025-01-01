@@ -20,7 +20,7 @@ impl ShellCore {
     }
 }
 
-pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn exit(core: &mut ShellCore, args: &mut [String]) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
         core.data.parameters.insert("?".to_string(), args[1].clone());
@@ -28,10 +28,10 @@ pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     exit::normal(core)
 }
 
-pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+pub fn false_(_: &mut ShellCore, _: &mut [String]) -> i32 {
     1
 }
 
-pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+pub fn true_(_: &mut ShellCore, _: &mut [String]) -> i32 {
     0
 }

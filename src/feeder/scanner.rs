@@ -84,7 +84,7 @@ impl Feeder {
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},\\'$/~".find(ch) != None {
+            if " \t\n;&|()<>{},\\'$/~".find(ch).is_some() {
                 break;
             }
             ans += ch.len_utf8();
@@ -110,29 +110,29 @@ impl Feeder {
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| " \t".find(ch) != None;
+        let judge = |ch| " \t".find(ch).is_some();
         self.scanner_chars(judge, core)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| " \t\n".find(ch) != None;
+        let judge = |ch| " \t\n".find(ch).is_some();
         self.scanner_chars(judge, core)
     }
 
     pub fn scanner_nonnegative_integer(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| '0' <= ch && ch <= '9';
+        let judge = |ch: char| ch.is_ascii_digit();
         self.scanner_chars(judge, core)
     }
 
     pub fn scanner_name(&mut self, core: &mut ShellCore) -> usize {
         let head = self.remaining.chars().nth(0).unwrap_or('0');
-        if '0' <= head && head <= '9' {
+        if head.is_ascii_digit() {
             return 0;
         }
     
-        let judge = |ch| ch == '_' || ('0' <= ch && ch <= '9')
-                         || ('a' <= ch && ch <= 'z')
-                         || ('A' <= ch && ch <= 'Z');
+        let judge = |ch: char| ch == '_' || ch.is_ascii_digit()
+                         || ch.is_ascii_lowercase()
+                         || ch.is_ascii_uppercase();
         self.scanner_chars(judge, core)
     }
 
@@ -160,7 +160,7 @@ impl Feeder {
 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if "\n".find(ch) != None {
+            if "\n".find(ch).is_some() {
                 break;
             }
             ans += ch.len_utf8();

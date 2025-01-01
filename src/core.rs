@@ -11,20 +11,24 @@ use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
-use nix::sys::{signal, wait};
-use nix::sys::signal::{Signal, SigHandler};
+use nix::sys::wait;
+use nix::sys::signal::Signal;
 use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
+use crate::signal;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
+type BuiltinFunc = fn(&mut ShellCore, &mut [String]) -> i32;
+
+#[derive(Default)]
 pub struct ShellCore {
     pub data: Data,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
-    pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
+    pub builtins: HashMap<String, BuiltinFunc>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
     pub tty_fd: Option<OwnedFd>,
@@ -39,29 +43,9 @@ fn is_interactive() -> bool {
     }
 }
 
-fn ignore_signal(sig: Signal) {
-    unsafe { signal::signal(sig, SigHandler::SigIgn) }
-        .expect("sush(fatal): cannot ignore signal");
-}
-
-fn restore_signal(sig: Signal) {
-    unsafe { signal::signal(sig, SigHandler::SigDfl) }
-        .expect("sush(fatal): cannot restore signal");
-}
-
 impl ShellCore {
     pub fn new() -> ShellCore {
-        let mut core = ShellCore{
-            data: Data::new(),
-            rewritten_history: HashMap::new(),
-            history: Vec::new(),
-            builtins: HashMap::new(),
-            sigint: Arc::new(AtomicBool::new(false)),
-            is_subshell: false,
-            tty_fd: None,
-            job_table: vec![],
-            tcwd: None,
-        };
+        let mut core = ShellCore::default();
 
         core.init_current_directory();
         core.set_initial_parameters();
@@ -92,7 +76,7 @@ impl ShellCore {
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        self.data.flags.find(flag) != None 
+        self.data.flags.find(flag).is_some()
     }
 
     pub fn wait_process(&mut self, child: Pid) {
@@ -131,14 +115,14 @@ impl ShellCore {
             return;
         }
 
-        ignore_signal(Signal::SIGTTOU); //SIGTTOUを無視
+        signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視
         unistd::tcsetpgrp(fd, pgid)
             .expect("sush(fatal): cannot get the terminal");
-        restore_signal(Signal::SIGTTOU); //SIGTTOUを受け付け
+        signal::restore(Signal::SIGTTOU); //SIGTTOUを受け付け
     }
 
     pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
-        if pids.len() == 1 && pids[0] == None {
+        if pids.len() == 1 && pids[0].is_none() {
             return;
         }
 
@@ -148,8 +132,8 @@ impl ShellCore {
         self.set_foreground();
     }
 
-    pub fn run_builtin(&mut self, args: &mut Vec<String>) -> bool {
-        if args.len() == 0 {
+    pub fn run_builtin(&mut self, args: &mut [String]) -> bool {
+        if args.is_empty() {
             panic!("SUSH INTERNAL ERROR (no arg for builtins)");
         }
 
@@ -180,7 +164,7 @@ impl ShellCore {
     }
 
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
-        restore_signal(Signal::SIGINT);
+        signal::restore(Signal::SIGINT);
 
         self.is_subshell = true;
         self.set_pgid(pid, pgid);

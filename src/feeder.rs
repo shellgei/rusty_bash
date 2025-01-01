@@ -14,7 +14,7 @@ pub enum InputError {
     Eof,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Feeder {
     remaining: String,
     backup: Vec<String>,
@@ -24,9 +24,8 @@ pub struct Feeder {
 impl Feeder {
     pub fn new() -> Feeder {
         Feeder {
-            remaining: "".to_string(),
-            backup: vec![],
             nest: vec![("".to_string(), vec![])],
+            ..Default::default()
         }
     }
 
@@ -51,7 +50,7 @@ impl Feeder {
                 b.pop();
                 b.pop();
             }
-            *b += &line;
+            *b += line;
         }
     }
 

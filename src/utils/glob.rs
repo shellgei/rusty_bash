@@ -10,15 +10,15 @@ pub enum GlobElem {
     Normal(String),
 }
 
-pub fn compare(word: &String, pattern: &Vec<GlobElem>) -> bool {
-    comparator::shave_word(word, pattern).iter().any(|c| c == "")
+pub fn compare(word: &String, pattern: &[GlobElem]) -> bool {
+    comparator::shave_word(word, pattern).iter().any(|c| c.is_empty())
 }
 
 pub fn parse(pattern: &str) -> Vec<GlobElem> {
     let mut remaining = pattern.to_string();
     let mut ans = vec![];
 
-    while remaining.len() > 0 {
+    while ! remaining.is_empty() {
         if eat_asterisk_or_question(&mut remaining, &mut ans)
         || eat_escaped_char(&mut remaining, &mut ans)
         || eat_string(&mut remaining, &mut ans) {
@@ -50,7 +50,7 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     }
     pattern.remove(0);
 
-    let len = pattern.chars().nth(0).unwrap().len_utf8();
+    let len = pattern.chars().next().unwrap().len_utf8();
     ans.push( GlobElem::Normal( consume(pattern, len) ) );
     true
 }
@@ -58,7 +58,7 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
 fn eat_string(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     let mut len = 0;
     for c in pattern.chars() {
-        if "@!+*?[\\".find(c) != None {
+        if "@!+*?[\\".find(c).is_some() {
             break;
         }
         len += c.len_utf8();

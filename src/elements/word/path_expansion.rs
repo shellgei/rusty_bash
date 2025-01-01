@@ -6,7 +6,7 @@ use crate::utils::directory;
 
 pub fn eval(word: &mut Word) -> Vec<Word> {
     let paths = expand(&word.make_glob_string());
-    if paths.len() == 0 {
+    if paths.is_empty() {
         return vec![word.clone()];
     }
 
@@ -22,7 +22,7 @@ fn expand(pattern: &str) -> Vec<String> {
  
     for dir_pat in pattern.split("/") {
         paths = paths.iter()
-                .map(|c| directory::glob(&c, &dir_pat) )
+                .map(|c| directory::glob(c, dir_pat) )
                 .collect::<Vec<Vec<String>>>()
                 .concat();
     }
