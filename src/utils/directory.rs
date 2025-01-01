@@ -33,7 +33,7 @@ pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
 
     let pat = glob::parse(pattern);
     files(dir).iter()
-              .filter(|f| glob::compare(f, &pat) )
-              .map(|f| make_path(f) )
-              .collect()
+        .filter(|f| glob::compare(f, &pat) )
+        .map(|f| make_path(f) )
+        .collect()
 }
