@@ -212,7 +212,7 @@ Partially in Japanese.
 
 ## Contribution
 
-Because the shell in this repository can be a standard one in the next generation, it may a good idea to leave your name as a contributor. Give us pull requests with what you think as contribution. As our community is not big, rules are not fixed. 
+Because the shell in this repository can be a standard one in the next generation, it may a good idea to leave your name as a contributor. Give us pull requests with what you think as contribution. As our community is not big, rules have not been fixed yet. 
 
 Followings are not difficult but very important tasks.
 
