@@ -166,6 +166,7 @@ impl CaseCommand {
         }
 
         if ans.patterns_script_end.len() > 0 {
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             Some(ans)
         }else{
             None
