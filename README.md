@@ -218,6 +218,9 @@ Followings are not difficult but very important tasks.
 
 * To fix the code based on Clippy. (There are many warnings by Clippy in the current codes. )
 * To develop builtin commands. (Especially `echo` may be easy. )
+* To add test cases.
+* To fix the test methodology, especially for the parts related to human input.
+
 
 ## Copyright
 
