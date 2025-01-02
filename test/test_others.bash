@@ -40,6 +40,9 @@ res=$($com <<< '!' )
 [ "$?" = "1" ] || err $LINENO
 
 ### PARAMETER TEST ###
+#
+res=$($com <<< '_AAA=3 ; echo $_AAA' )
+[ "$res" = "3" ] || err $LINENO
 
 res=$($com <<< 'echo ${A:-abc}' )
 [ "$res" = "abc" ] || err $LINENO
