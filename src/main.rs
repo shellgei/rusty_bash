@@ -151,7 +151,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     }
 
     let mut core = ShellCore::new();
-    let mut parameters = if c_parts.len() > 2 {
+    let parameters = if c_parts.len() > 2 {
         c_parts[2..].to_vec()
     }else{
         vec![args[0].clone()]
