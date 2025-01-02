@@ -210,6 +210,14 @@ Partially in Japanese.
     * [Bashタブ補完自作入門 | Cybouzu Inside Out](https://blog.cybozu.io/entry/2016/09/26/080000)
 
 
+## Contribution
+
+Because the shell in this repository can be a standard one in the next generation, it may a good idea to leave your name as a contributer. Give us pull requests with what you think as contribution. As our community is not big, rules are not fixed. 
+
+Followings are not difficult but very important tasks.
+
+* To fix the code based on Clippy. (There are many warnings by Clippy in the current codes. )
+* To develop builtin commands. (Especially `echo` may be easy. )
 
 ## Copyright
 
