@@ -84,6 +84,10 @@ impl CaseCommand {
     }
 
     fn eat_patterns(feeder: &mut Feeder, ans: &mut Vec<Word>, text: &mut String, core: &mut ShellCore) -> bool {
+        if feeder.starts_with("(") {
+            *text += &feeder.consume(1);
+        }
+
         loop {
             match Word::parse(feeder, core, false) {
                 Some(w) => {
