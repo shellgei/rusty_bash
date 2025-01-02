@@ -411,6 +411,9 @@ EOF
 res=$($com <<< 'case aaa in bbb) echo NG ;; aaa) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'case aaa in (bbb) echo NG ;; (aaa) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 res=$($com <<< 'case aaa in bbb | aaa) echo OK ;; aaa) echo NG ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
