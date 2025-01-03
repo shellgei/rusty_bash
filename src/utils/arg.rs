@@ -27,6 +27,18 @@ pub fn consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<S
     }
 }
 
+/*
+pub fn replace_to_short_opt(opt1: &str, opt2: &str, to: &str, args: &mut Vec<String>) {
+    if let Some(pos) = args.iter().position(|a| a == opt1) {
+        if args.len() > pos+1 && args[pos+1] == opt2 {
+            args.remove(pos);
+            args.remove(pos);
+            args.insert(pos, to.to_string());
+        }
+    }
+}
+*/
+
 fn dissolve_option(opt: &str) -> Vec<String> {
     if opt.starts_with("--") || ! opt.starts_with("-") {
         return vec![opt.to_string()];

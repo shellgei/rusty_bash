@@ -7,6 +7,7 @@ use crate::exit;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::{env, process};
 use std::collections::{HashMap, HashSet};
+use crate::utils;
 use crate::utils::{random, clock, error};
 use self::data::Data;
 use self::data::assoc::AssocData;
@@ -43,6 +44,7 @@ impl DataBase {
         data.set_param("BASHPID", &process::id().to_string()).unwrap();
         data.set_param("BASH_SUBSHELL", "0").unwrap();
         data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string())).unwrap();
+        data.set_param("OPTIND", "1").unwrap();
 
         data.set_special_variable("SRANDOM", random::get_srandom);
         data.set_special_variable("RANDOM", random::get_random);
@@ -247,6 +249,10 @@ impl DataBase {
                 }
             },
             None => {
+                if ! utils::is_param(name) {
+                    let error = format!("`{}': not a valid identifier", name);
+                    return Err(error);
+                }
                 self.params[layer].insert(name.to_string(), Box::new(SingleData::from(val)));
                 return Ok(());
             },

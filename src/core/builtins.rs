@@ -5,6 +5,7 @@
 mod alias;
 mod cd;
 pub mod completion;
+mod getopts;
 mod history;
 mod job_commands;
 pub mod parameter;
@@ -37,6 +38,7 @@ impl ShellCore {
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("fg".to_string(), job_commands::fg);
+        self.builtins.insert("getopts".to_string(), getopts::getopts);
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
         self.builtins.insert("local".to_string(), parameter::local);

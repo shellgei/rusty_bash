@@ -194,5 +194,18 @@ res=$($com -c 'command cd /; pwd')
 res=$($com -c 'command cd /; pwd')
 [[ "$res" == / ]] || err $LINENO
 
+### getopts ###
+
+res=$($com -c '
+getopts xyz opt -x -y
+echo $opt
+getopts xyz opt -x -y
+echo $opt
+')
+
+[[ "$res" == "-x
+-y" ]] || err $LINENO
+
+
 echo $0 >> ./ok
 

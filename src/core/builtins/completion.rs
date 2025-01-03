@@ -332,6 +332,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
+    //arg::replace_to_short_opt("-o", "default", "-D", &mut args);
 
     let mut options = HashMap::new();
     let prefix = arg::consume_with_next_arg("-P", &mut args);
@@ -358,6 +359,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
         return 0;
     }
+    //complete -F _comp_cmd_gpg2 -o default gpg2
 
     // completion functions
     if args.len() > 3 && args[1] == "-D" && args[2] == "-F" {
@@ -366,7 +368,17 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() > 3 && args[1] == "-F" {
-        core.completion_functions.insert(args[3].clone(), args[2].clone());
+        let func_name = args[2].clone();
+
+        if args.len() > 5 && args[3] == "-o" && args[4] == "default" {
+            for a in &mut args[5..] {
+                core.completion_functions.insert(a.clone(), func_name.clone());
+            }
+            return 0;
+        }
+        for a in &mut args[3..] {
+            core.completion_functions.insert(a.clone(), func_name.clone());
+        }
         return 0;
     }
 
