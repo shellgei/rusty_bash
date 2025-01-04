@@ -9,3 +9,5 @@
 ./test_parameters.bash
 ./test_compound.bash
 ./test_job.bash
+../../../test/test_parameters.bash
+../../../test/test_parameters.bash

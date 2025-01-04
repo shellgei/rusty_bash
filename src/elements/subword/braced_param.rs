@@ -27,6 +27,7 @@ pub struct BracedParam {
     alternative_symbol: Option<String>,
     alternative_value: Option<Word>,
     num: bool,
+    indirect: bool,
     has_offset: bool,
     offset: Option<ArithmeticExpr>,
     has_length: bool,
@@ -53,6 +54,16 @@ impl Subword for BracedParam {
             return false;
         }
 
+        if self.indirect {
+            let value = core.db.get_param(&self.name).unwrap_or_default();
+            if utils::is_param(&value) {
+                self.name = value;
+            }else{
+                eprintln!("sush: {}: invalid name", &value);
+                return false;
+            }
+        }
+
         if self.subscript.is_some() {
             if self.is_special {
                 eprintln!("sush: {}: bad substitution", &self.text);
@@ -61,7 +72,7 @@ impl Subword for BracedParam {
             return self.subscript_operation(core);
         }
 
-        let value = core.db.get_param(&self.name).unwrap_or(String::new());
+        let value = core.db.get_param(&self.name).unwrap_or_default();
         self.text = match self.num {
             true  => value.chars().count().to_string(),
             false => value.to_string(),
@@ -322,6 +333,9 @@ impl BracedParam {
 
         if feeder.starts_with("#") && ! feeder.starts_with("#}") {
             ans.num = true;
+            ans.text += &feeder.consume(1);
+        }else if feeder.starts_with("!") {
+            ans.indirect = true;
             ans.text += &feeder.consume(1);
         }
 

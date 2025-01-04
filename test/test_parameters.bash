@@ -57,5 +57,15 @@ res=$($com <<< 'B=ccc; declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[$B]}')
 res=$($com <<< 'f(){ g () { echo ${FUNCNAME[@]} ;} ; g ;} ; f')
 [ "$res" == "g f" ] || err $LINENO
 
+### INDIRECT EXPANSION ###
+
+res=$($com -c 'A=B; B=100; echo ${!A}')
+[[ "$res" == 100 ]] || err $LINENO
+
+res=$($com -c 'set a b ; A=1;echo ${!A}')
+[[ "$res" == a ]] || err $LINENO
+
+res=$($com -c ' A=@@; echo ${!A}')
+[[ "$?" -eq 1 ]] || err $LINENO
 
 echo $0 >> ./ok
