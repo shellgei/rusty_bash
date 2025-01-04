@@ -87,7 +87,7 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    let optarg = match args.len() >= index+1 {
+    let optarg = match args.len() > index+1 {
         true  => args[index+1].clone(),
         false => return 1,
     };
