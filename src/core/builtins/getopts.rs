@@ -4,24 +4,40 @@
 use crate::ShellCore;
 use crate::utils::error;
 
-enum Option {
+enum Opt {
     Single(String),
+    WithArg(String),
 }
 
-impl Option {
-    fn is(&self, opt: &str) -> bool {
+impl Opt {
+    fn is_single(&self, opt: &str) -> bool {
         match self {
             Self::Single(s) => return s == opt,
+            _ => false,
+        }
+    }
+
+    fn is_witharg(&self, opt: &str) -> bool {
+        match self {
+            Self::WithArg(s) => return s == opt,
+            _ => false,
         }
     }
 }
 
-fn parse(optstring: &str) -> Vec<Option> {
+fn parse(optstring: &str) -> Vec<Opt> {
     let mut ans = vec![];
     
     for c in optstring.chars() {
+        if c == ':' {
+            match ans.pop() {
+                Some(Opt::Single(opt)) => ans.push( Opt::WithArg(opt) ),
+                _ => return vec![],
+            }
+        }
+
         let opt = format!("-{}", c);
-        ans.push( Option::Single(opt) );
+        ans.push( Opt::Single(opt) );
     }
 
     ans
@@ -33,8 +49,11 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 2;
     }
 
-
     let targets = parse(&args[1]);
+    if targets.is_empty() {
+        return 1;
+    }
+
     let name = args[2].clone();
     let mut index = 1;
 
@@ -55,10 +74,28 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let arg = args[index].clone();
 
-    if targets.iter().any(|t| t.is(&arg) ) {
-        let result = core.db.set_param(&name, &arg);
+    if targets.iter().any(|t| t.is_single(&arg) ) {
+        let result = core.db.set_param(&name, &arg[1..]);
         let _ = core.db.set_param("OPTIND", &(index+1).to_string());
+        let _ = core.db.set_param("OPTARG", "");
 
+        if let Err(e) = result {
+            let msg = format!("getopts: {}", &e);
+            error::print(&msg, core);
+            return 1;
+        }
+        return 0;
+    }
+
+    let optarg = match args.len() >= index+1 {
+        true  => args[index+1].clone(),
+        false => return 1,
+    };
+
+    if targets.iter().any(|t| t.is_witharg(&arg) ) {
+        let result = core.db.set_param(&name, &arg[1..]);
+        let _ = core.db.set_param("OPTARG", &optarg);
+        let _ = core.db.set_param("OPTIND", &(index+2).to_string());
 
         if let Err(e) = result {
             let msg = format!("getopts: {}", &e);

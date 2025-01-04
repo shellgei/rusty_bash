@@ -203,8 +203,21 @@ getopts xyz opt -x -y
 echo $opt
 ')
 
-[[ "$res" == "-x
--y" ]] || err $LINENO
+[[ "$res" == "x
+y" ]] || err $LINENO
+
+res=$($com -c '
+getopts x:y:z opt -x hoge -y fuge -z
+echo $opt $OPTARG
+getopts x:y:z opt -x hoge -y fuge -z
+echo $opt $OPTARG
+getopts x:y:z opt -x hoge -y fuge -z
+echo $opt $OPTARG
+')
+
+[[ "$res" == 'x hoge
+y fuge
+z' ]] || err $LINENO
 
 
 echo $0 >> ./ok
