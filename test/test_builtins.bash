@@ -223,5 +223,15 @@ y fuge
 z' ]] || err $LINENO
 
 
+res=$($com -c '
+getopts n: opt -n aho boke fuge
+getopts n: opt -n aho boke fuge
+getopts n: opt -n aho boke fuge
+echo $?
+echo $OPTIND
+')
+[[ "$res" == '1
+3' ]] || err $LINENO
+
 echo $0 >> ./ok
 

@@ -4,6 +4,7 @@
 use crate::ShellCore;
 use crate::utils::error;
 
+#[derive(Debug)]
 enum Opt {
     Single(String),
     WithArg(String),
@@ -73,6 +74,11 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let arg = args[index].clone();
+
+    if ! arg.starts_with("-") {
+        let _ = core.db.set_param("OPTARG", "?");
+        return 1;
+    }
 
     if targets.iter().any(|t| t.is_single(&arg) ) {
         let result = core.db.set_param(&name, &arg[1..]);
