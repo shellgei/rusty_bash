@@ -10,6 +10,7 @@ mod history;
 mod job_commands;
 pub mod parameter;
 pub mod option;
+mod printf;
 mod pwd;
 mod read;
 mod source;
@@ -42,6 +43,7 @@ impl ShellCore {
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
         self.builtins.insert("local".to_string(), parameter::local);
+        self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), loop_control::return_);

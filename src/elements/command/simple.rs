@@ -188,7 +188,7 @@ impl SimpleCommand {
 
         let ps4 = core.get_ps4();
         for s in &self.substitutions {
-            eprintln!("{} {}", &ps4, &s.text);
+            eprintln!("\r{} {}\r", &ps4, &s.text);
         }
 
         if self.args.is_empty() {

@@ -23,7 +23,7 @@ impl Command for CaseCommand {
 
         if core.db.flags.contains('x') {
             let ps4 = core.get_ps4();
-            eprintln!("{} case {} in", ps4, word.text);
+            eprintln!("\r{} case {} in\r", ps4, word.text);
         }
 
         let w = match word.eval_for_case_word(core) {
