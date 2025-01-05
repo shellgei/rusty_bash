@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::utils::error;
+use sprintf::PrintfError;
 
 fn split_format(format: &str) -> (Vec<String>, Option<String>) {
     let mut escaped = false;
@@ -37,7 +39,7 @@ fn split_format(format: &str) -> (Vec<String>, Option<String>) {
     }
 }
 
-fn output(pattern: &str, args: &mut Vec<String>) -> String {
+fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> {
     let mut ans = String::new();
     let (parts, tail) = split_format(&pattern);
 
@@ -46,23 +48,40 @@ fn output(pattern: &str, args: &mut Vec<String>) -> String {
     }
 
     for i in 0..parts.len() {
-        ans += &sprintf::sprintf!(&parts[i], args[i]).unwrap();
+        ans += &sprintf::sprintf!(&parts[i], args[i])?;
     }
 
     if let Some(s) = tail {
         ans += &s;
     }
-    ans
+    Ok(ans)
 }
 
 pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() < 2 || args[1] == "--help" {
-        eprintln!("printf: usage: printf [-v var] format [arguments]");
+    if args.len() < 2 || args[1] == "--help"
+    || args[1] == "-v" && args.len() == 3 {
+        let msg = format!("printf: usage: printf [-v var] format [arguments]");
+        error::print(&msg, core);
+        return 2;
+    }
+
+    if args[1] == "-v" && args.len() == 2 {
+        let msg = format!("printf: -v: option requires an argument");
+        error::print(&msg, core);
+        let msg = format!("printf: usage: printf [-v var] format [arguments]");
+        error::print(&msg, core);
         return 2;
     }
 
     if args[1] == "-v" {
-        let s = output(&args[3], &mut args[4..].to_vec());
+        let s = match output(&args[3], &mut args[4..].to_vec()) {
+            Ok(ans) => ans,
+            Err(e) => {
+                let msg = format!("printf: {}", e);
+                error::print(&msg, core);
+                return 1;
+            },
+        };
         if ! core.db.set_param(&args[2], &s).is_ok() {
             return 2;
         }
@@ -70,7 +89,14 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    let s = output(&args[1], &mut args[2..].to_vec());
+    let s = match output(&args[1], &mut args[2..].to_vec()) {
+        Ok(ans) => ans,
+        Err(e) => {
+            let msg = format!("printf: {}", e);
+            error::print(&msg, core);
+            return 1;
+        },
+    };
     print!("{}", &s);
     0
 }
