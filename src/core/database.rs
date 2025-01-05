@@ -260,8 +260,18 @@ impl DataBase {
         Ok(())
     }
 
+    fn solve_layer(&self, name: &str) -> usize {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if self.params[layer].get(name).is_some() {
+                return layer;
+            }
+        }
+        0
+    }
+
     pub fn set_param(&mut self, name: &str, val: &str) -> Result<(), String> {
-        self.set_layer_param(name, val, 0)
+        self.set_layer_param(name, val, self.solve_layer(name))
     }
 
     pub fn set_special_variable(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
@@ -316,19 +326,19 @@ impl DataBase {
     }
 
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> Result<(), String> {
-        self.set_layer_array_elem(name, val, 0, pos)
+        self.set_layer_array_elem(name, val, self.solve_layer(name), pos)
     }
 
     pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> Result<(), String> {
-        self.set_layer_assoc_elem(name, key, val, 0)
+        self.set_layer_assoc_elem(name, key, val, self.solve_layer(name))
     }
 
     pub fn set_array(&mut self, name: &str, v: Vec<String>) -> Result<(), String> {
-        self.set_layer_array(name, v, 0)
+        self.set_layer_array(name, v, self.solve_layer(name))
     }
 
     pub fn set_assoc(&mut self, name: &str) -> Result<(), String> {
-        self.set_layer_assoc(name, 0)
+        self.set_layer_assoc(name, self.solve_layer(name))
     }
 
     pub fn push_local(&mut self) {

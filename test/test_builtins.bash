@@ -172,6 +172,9 @@ res=$($com -c 'A=1 ; f () { local -a A=(2 123) ; echo ${A[@]} ; } ; f ; echo $A'
 [[ "$res" == '2 123
 1' ]] || err $LINENO
 
+res=$($com -c 'A=1 ; f () { local A=5 ; A=4 ; } ; f ; echo $A')
+[[ "$res" == '1' ]] || err $LINENO
+
 ### declare ###
 
 res=$($com -c 'A=1 ; f () { local A ; declare -r A ; A=123 ; } ; f')

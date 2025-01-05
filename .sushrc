@@ -69,3 +69,5 @@ command_not_found_handle() {
 		/usr/lib/command-not-found -- "$1"
 	fi
 }
+
+. /usr/share/bash-completion/bash_completion

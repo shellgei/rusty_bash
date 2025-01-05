@@ -179,11 +179,21 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
     match op {
         "=" => {
             core.db.set_param(&name, &right_str)?;
-            /*
-            if ! core.db.set_param(&name, &right_str) {
-                return Err(error::readonly(&name));
-            }*/
             return Ok(right_value.clone());
+        },
+        "+=" => {
+            let val_str = core.db.get_param(&name)?;
+            if let Ok(left) = val_str.parse::<i64>() {
+                if let ArithElem::Integer(n) = right_value {
+                    core.db.set_param(&name, &(left + n).to_string())?;
+                    return Ok(ArithElem::Integer(left + n));
+                }
+            }else if let Ok(left) = val_str.parse::<f64>() {
+                if let ArithElem::Float(f) = right_value {
+                    core.db.set_param(&name, &(left + f).to_string())?;
+                    return Ok(ArithElem::Float(left + f));
+                }
+            }
         },
         _   => {},
     }
