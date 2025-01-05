@@ -52,15 +52,8 @@ impl Data for ArrayData {
             return Some(self.values().join(" "));
         }
 
-        match key.parse::<usize>() {
-            Ok(n) => {
-                match n < self.body.len() {
-                    true  => Some(self.body[&n].clone()),
-                    false => None,
-                }
-            },
-            _ => None
-        }
+        let n = key.parse::<usize>().ok()?;
+        self.body.get(&n).cloned()
     }
 
     fn get_all_as_array(&mut self) -> Option<Vec<String>> {
