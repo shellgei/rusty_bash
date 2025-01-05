@@ -82,6 +82,23 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 return 1;
             },
         };
+
+        if args[2].contains("[") {
+            let tokens = args[2].split('[').collect::<Vec<&str>>();
+            let name = tokens[0].to_string();
+            let subscript = tokens[1].split(']').nth(0).unwrap().to_string();
+
+            let result = match subscript.parse::<usize>() {
+                Ok(n) => core.db.set_array_elem(&name, &s, n),
+                _ => core.db.set_assoc_elem(&name, &subscript, &s),
+            };
+            if let Err(e) = result {
+                let msg = format!("printf: {}", e);
+                error::print(&msg, core);
+                return 2;
+            }
+            return 0;
+        }
         if ! core.db.set_param(&args[2], &s).is_ok() {
             return 2;
         }
