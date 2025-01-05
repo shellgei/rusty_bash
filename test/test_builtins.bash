@@ -233,5 +233,18 @@ echo $OPTIND
 [[ "$res" == '1
 3' ]] || err $LINENO
 
+### printf ###
+
+res=$($com <<< 'printf -v a %s bbb &> /dev/null; echo $a')
+[ "$res" = "bbb" ] || err $LINENO
+
+res=$($com <<< 'printf -v a %s &> /dev/null; echo $a')
+[ "$?" -eq 0 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'printf -v a bb cc dd &> /dev/null; echo $a')
+[ "$res" = "bb" ] || err $LINENO
+
+
 echo $0 >> ./ok
 

@@ -3,7 +3,7 @@
 
 use crate::ShellCore;
 
-fn split_format(format: &str) -> Vec<String> {
+fn split_format(format: &str) -> (Vec<String>, Option<String>) {
     let mut escaped = false;
     let mut percent = false;
     let mut len = 0;
@@ -31,8 +31,26 @@ fn split_format(format: &str) -> Vec<String> {
         }
     }
 
-    if &format[len_prev..len] != "" {
-        ans.push(format[len_prev..len].to_string());
+    match format[len_prev..len].is_empty() {
+        true  => (ans, None),
+        false => (ans, Some(format[len_prev..len].to_string()) ),
+    }
+}
+
+fn output(pattern: &str, args: &mut Vec<String>) -> String {
+    let mut ans = String::new();
+    let (parts, tail) = split_format(&pattern);
+
+    while parts.len() > args.len() {
+        args.push(String::new());
+    }
+
+    for i in 0..parts.len() {
+        ans += &sprintf::sprintf!(&parts[i], args[i]).unwrap();
+    }
+
+    if let Some(s) = tail {
+        ans += &s;
     }
     ans
 }
@@ -44,20 +62,15 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args[1] == "-v" {
+        let s = output(&args[3], &mut args[4..].to_vec());
+        if ! core.db.set_param(&args[2], &s).is_ok() {
+            return 2;
+        }
+
         return 0;
     }
 
-    let mut ans = String::new();
-    let parts = split_format(&args[1]);
-    let num = std::cmp::min(parts.len(), args.len() - 2);
-
-    for i in 0..num {
-        ans += &sprintf::sprintf!(&parts[i], args[2+i]).unwrap();
-    }
-
-    if parts.len() == num+1 {
-        ans += &parts[num];
-    }
-    print!("{}", &ans);
+    let s = output(&args[1], &mut args[2..].to_vec());
+    print!("{}", &s);
     0
 }
