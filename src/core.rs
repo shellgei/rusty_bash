@@ -185,11 +185,9 @@ impl ShellCore {
 
 
     pub fn set_current_directory(&mut self, path: &path::PathBuf) -> Result<(), io::Error> {
-        let res = env::set_current_dir(path);
-        if res.is_ok() {
-            self.current_dir = Some(path.clone());
-        }
-        res
+        env::set_current_dir(path)?;
+        self.current_dir = Some(path.clone());
+        Ok(())
     }
 
     pub fn get_ps4(&mut self) -> String {
