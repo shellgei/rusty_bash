@@ -361,6 +361,9 @@ impl DataBase {
         for layer in &self.params {
             layer.keys().for_each(|k| {keys.insert(k);} );
         }
+        for f in &self.functions {
+            keys.insert(f.0);
+        }
         let mut ans: Vec<String> = keys.iter().map(|c| c.to_string()).collect();
         ans.sort();
         ans
@@ -433,6 +436,8 @@ impl DataBase {
     pub fn print(&mut self, name: &str) {
         if let Some(d) = self.get_clone(name) {
             d.print_with_name(name);
+        }else if let Some(f) = self.functions.get(name) {
+            println!("{}", &f.text);
         }
     }
 }

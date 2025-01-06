@@ -16,7 +16,7 @@ fn reserved(w: &str) -> bool {
 
 #[derive(Debug, Clone)]
 pub struct FunctionDefinition {
-    text: String,
+    pub text: String,
     name: String,
     command: Option<Box<dyn Command>>,
     redirects: Vec<Redirect>,
