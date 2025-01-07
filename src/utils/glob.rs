@@ -20,6 +20,7 @@ pub fn parse(pattern: &str) -> Vec<GlobElem> {
 
     while ! remaining.is_empty() {
         if eat_asterisk_or_question(&mut remaining, &mut ans)
+        || eat_bracket(&mut remaining, &mut ans)
         || eat_escaped_char(&mut remaining, &mut ans)
         || eat_string(&mut remaining, &mut ans) {
             continue;
@@ -36,6 +37,36 @@ fn eat_asterisk_or_question(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bo
         ans.push( GlobElem::Symbol( pattern.remove(0) ) );
         return true;
     }
+    false
+}
+
+fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
+    if ! pattern.starts_with("[") {
+        return false;
+    }
+
+    let not = pattern.starts_with("[^") || pattern.starts_with("[!");
+    let mut len = if not {2} else {1};
+    let mut escaped = false;
+    let mut inner = vec![];
+
+    for c in pattern[len..].chars() {
+        len += c.len_utf8();
+
+        if escaped {
+            inner.push(c);
+            escaped = false;
+        }else if c == '\\' {
+            escaped = true;
+        }else if c == ']' {
+            ans.push( GlobElem::OneOf(!not, inner) );
+            *pattern = pattern.split_off(len);
+            return true;
+        }else{
+            inner.push(c);
+        }
+    }
+
     false
 }
 
