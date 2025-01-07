@@ -28,7 +28,7 @@ pub fn parse(pattern: &str) -> Vec<GlobElem> {
 
         ans.push( GlobElem::Normal( remaining.remove(0).to_string() ) );
     }
-
+    dbg!("{:?}", &ans);
     ans
 }
 
