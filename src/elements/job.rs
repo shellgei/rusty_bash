@@ -143,7 +143,11 @@ impl Job {
         let mut ans = Self::default();
         while Self::eat_blank_line(feeder, &mut ans, core) {} 
         if ! Self::eat_pipeline(feeder, &mut ans, core) {
-            return None;
+            if ans.text.is_empty() {
+                return None;
+            }else{
+                return Some(ans);
+            }
         }
 
         while Self::eat_and_or(feeder, &mut ans, core) { 

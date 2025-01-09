@@ -52,15 +52,20 @@ impl Script {
         len != 0
     }
 
-    fn check_nest(&self, feeder: &mut Feeder) -> Status {
+    fn check_nest(&self, feeder: &mut Feeder, permit_empty: bool) -> Status {
         let nest = feeder.nest.last().unwrap();
 
         if nest.0 == "" && feeder.len() == 0 {
             return Status::NormalEnd;
         }
 
-        match ( nest.1.iter().find(|e| feeder.starts_with(e)), self.jobs.len() ) {
-            ( Some(end), 0 ) => return Status::UnexpectedSymbol(end.to_string()),
+        match ( nest.1.iter().find(|e| feeder.starts_with(e)), self.pipeline_num() ) {
+            ( Some(end), 0 ) => {
+                if permit_empty {
+                    return Status::NormalEnd;
+                }
+                return Status::UnexpectedSymbol(end.to_string())
+            },
             ( Some(_), _)    => return Status::NormalEnd,
             ( None, _)       => {}, 
         }
@@ -82,20 +87,18 @@ impl Script {
         core.db.alias_memo.clear();
     }
 
+    fn pipeline_num(&self) -> usize {
+        self.jobs.iter().map(|j| j.pipelines.len()).sum()
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
                  permit_empty: bool) -> Option<Script> {
         let mut ans = Self::default();
-        
-        if permit_empty {
-            ans.jobs.push(Job::default());
-            ans.job_ends.push("".to_string());
-        }
-
         loop {
             while Self::eat_job(feeder, core, &mut ans) 
                && Self::eat_job_end(feeder, &mut ans) {}
 
-            match ans.check_nest(feeder){
+            match ans.check_nest(feeder, permit_empty){
                 Status::NormalEnd => {
                     ans.unalias(core);
                     return Some(ans)
