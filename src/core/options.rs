@@ -117,4 +117,8 @@ impl Options {
         self.opts.insert(opt.to_string(), onoff);
         true
     }
+
+    pub fn get_keys(&self) -> Vec<String> {
+        self.opts.clone().into_keys().collect()
+    }
 }

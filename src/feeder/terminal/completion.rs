@@ -129,6 +129,7 @@ impl Terminal {
                 "alias" => completion::compgen_a(core, args),
                 "command" => completion::compgen_c(core, args),
                 "job" => completion::compgen_j(core, args),
+                "setopt" => completion::compgen_o(core, args),
                 "stopped" => completion::compgen_stopped(core, args),
                 "user" => completion::compgen_u(core, args),
                 "variable" => completion::compgen_v(core, args),

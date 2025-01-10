@@ -60,6 +60,7 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
         "directory" => "-d",
         "file" => "-f",
         "user" => "-u",
+        "setopt" => "-o",
         "stopped" => "-A stopped",
         "job" => "-j",
         a => a,
@@ -251,6 +252,19 @@ pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     commands
 }
 
+pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut commands = vec![];
+
+    let mut options: Vec<String> = core.options.get_keys();
+    commands.append(&mut options);
+
+    let head = get_head(args, 2);
+    if head != "" {
+        commands.retain(|a| a.starts_with(&head));
+    }
+    commands
+}
+
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
     let mut feeder = Feeder::new(&args[2]);
@@ -320,6 +334,7 @@ fn opt_to_action(arg: &str) -> String {
         "-b" => "builtin",
         "-c" => "command",
         "-j" => "job",
+        "-o" => "setopt",
         "-u" => "user",
         "-v" => "variable",
         _ => "",
