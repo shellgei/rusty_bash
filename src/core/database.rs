@@ -159,18 +159,6 @@ impl DataBase {
         }
     }
 
-    fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> Result<(), String> {
-        if env::var(name).is_ok() {
-            env::set_var(name, val);
-        }
-
-        if self.params[layer].get(name).is_none() {
-            SingleData::set_new_entry(&mut self.params[layer], name, "")?;
-        }
-
-        self.params[layer].get_mut(name).unwrap().set_as_single(val)
-    }
-
     pub fn get_target_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
         match layer {
             Some(n) => n,
@@ -196,7 +184,7 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
-        self.set_layer_param(name, val, layer)
+        setter::param(&mut self.params[layer], name, val)
     }
 
     fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
