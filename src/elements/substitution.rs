@@ -42,14 +42,6 @@ impl Substitution {
             }
         };
 
-        let layer = match layer {
-            0 => match core.db.get_layer_pos(&self.name) {
-                Some(n) => n,
-                None => 0,
-            },
-            n => n,
-        };
-
         match env {
             false => {
                 if let Err(e) = self.set_to_shell(core, layer) {
@@ -102,15 +94,7 @@ impl Substitution {
             _ => (false, Ok(()) ),
         };
 
-        if result.is_err() {
-            return result;
-        }
-
-        /*
-        if ! result {
-            return readonly_error(&self.name, core);
-        }*/
-        if done {
+        if result.is_err() || done {
             return result;
         }
 
@@ -118,16 +102,17 @@ impl Substitution {
             Some(data) => core.db.set_layer_array(&self.name, data.to_vec(), layer),
             _ => Err("evaluation error 3".to_string()),
         }
-
-        /*
-        if ! result {
-            return readonly_error(&self.name, core);
-        }
-        result
-        */
     }
 
     fn set_to_shell(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
+        let layer = match layer {
+            0 => match core.db.get_layer_pos(&self.name) {
+                Some(n) => n,
+                None => 0,
+            },
+            n => n,
+        };
+
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
             core.db.exit_status = 1;
