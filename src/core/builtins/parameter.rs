@@ -66,34 +66,32 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     }
 }
 
+fn restore_and_return(core: &mut ShellCore, result: bool) -> i32 {
+    core.db.push_local();
+    if result {0} else {1} 
+}
+
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let layer = if core.db.get_layer_num() > 2 {
-        core.db.get_layer_num() - 2 //The last element of data.parameters is for local itself.
+    let _ = core.db.pop_local();
+    let layer = if core.db.get_layer_num() > 1 {
+        core.db.get_layer_num() - 1 //The last element of data.parameters is for local itself.
     }else{
         eprintln!("sush: local: can only be used in a function");
         return 1;
     };
 
     if args.len() >= 3 && args[1] == "-a" {
-    match args[2..].iter().all(|a| set_local_array(a, core, layer).is_ok()) { //TODO: show error
-                                                                              //messages
-            true  => return 0,
-            false => return 1,
-        }
+        let res = args[2..].iter().all(|a| set_local_array(a, core, layer).is_ok());
+        return restore_and_return(core, res);
     }
 
     if args.len() >= 3 && args[1] == "-A" {
-    match args[2..].iter().all(|a| core.db.set_layer_assoc(a, layer).is_ok()) { //TODO: show error
-                                                                                //messages
-            true  => return 0,
-            false => return 1,
-        }
+        let res = args[2..].iter().all(|a| core.db.set_layer_assoc(a, layer).is_ok());
+        return restore_and_return(core, res);
     }
 
-    match args[1..].iter().all(|a| set_local(a, core, layer).is_ok()) { //TOOD: output error msg
-        true  => 0,
-        false => 1,
-    }
+    let res = args[1..].iter().all(|a| set_local(a, core, layer).is_ok());
+    restore_and_return(core, res)
 }
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
