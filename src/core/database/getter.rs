@@ -45,3 +45,22 @@ pub fn special_variable(db: &mut DataBase, name: &str) -> Option<String> {
     None
 }
 
+pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> String {
+    match db.get_clone(name).as_mut() {
+        Some(d) => {
+            if d.is_assoc() {
+                if let Some(ans) = d.get_as_assoc(pos) {
+                    return ans;
+                }
+            }
+            if d.is_array() {
+                if let Some(ans) = d.get_as_array(pos) {
+                    return ans;
+                }
+            }
+        },
+        None => {},
+    }
+
+    "".to_string()
+}

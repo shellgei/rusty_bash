@@ -96,23 +96,7 @@ impl DataBase {
     }
 
     pub fn get_array(&mut self, name: &str, pos: &str) -> String {
-        match self.get_clone(name).as_mut() {
-            Some(d) => {
-                if d.is_assoc() {
-                    if let Some(ans) = d.get_as_assoc(pos) {
-                        return ans;
-                    }
-                }
-                if d.is_array() {
-                    if let Some(ans) = d.get_as_array(pos) {
-                        return ans;
-                    }
-                }
-            },
-            None => {},
-        }
-
-        "".to_string()
+        getter::array_elem(self, name, pos)
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
