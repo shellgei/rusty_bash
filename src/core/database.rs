@@ -3,13 +3,13 @@
 
 mod data;
 mod getter;
+mod setter;
 
-use crate::exit;
+use crate::{env, exit};
 use crate::elements::command::function_def::FunctionDefinition;
-use std::{env, process};
 use std::collections::{HashMap, HashSet};
 use crate::utils;
-use crate::utils::{random, clock, error};
+use crate::utils::error;
 use self::data::Data;
 use self::data::assoc::AssocData;
 use self::data::single::SingleData;
@@ -39,24 +39,7 @@ impl DataBase {
             ..Default::default()
         };
 
-        data.exit_status = 0;
-
-        data.set_param("$", &process::id().to_string()).unwrap();
-        data.set_param("BASHPID", &process::id().to_string()).unwrap();
-        data.set_param("BASH_SUBSHELL", "0").unwrap();
-        data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string())).unwrap();
-        data.set_param("OPTIND", "1").unwrap();
-
-        data.set_special_variable("SRANDOM", random::get_srandom);
-        data.set_special_variable("RANDOM", random::get_random);
-        data.set_special_variable("EPOCHSECONDS", clock::get_epochseconds);
-        data.set_special_variable("EPOCHREALTIME", clock::get_epochrealtime);
-        data.set_special_variable("SECONDS", clock::get_seconds);
-
-        getter::special_variable(&mut data, "SECONDS");
-
-        data.set_array("FUNCNAME", vec![]).unwrap();
-
+        setter::initialize(&mut data);
         data
     }
 
