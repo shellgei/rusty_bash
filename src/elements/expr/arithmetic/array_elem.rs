@@ -12,7 +12,7 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
         None => return Err(format!("{}: wrong substitution", &name)),
     };
 
-    let mut value_str = core.db.get_array(name, &key);
+    let mut value_str = core.db.get_array_elem(name, &key)?;
     if value_str == "" {
         value_str = "0".to_string();
     }

@@ -53,30 +53,30 @@ impl Terminal {
         let _ = core.db.set_array("COMPREPLY", vec![]);
         self.set_completion_info(core);
 
-        if ! Self::set_custom_compreply(core)
-        && ! self.set_default_compreply(core) {
+        if ! Self::set_custom_compreply(core).is_ok()
+        && ! self.set_default_compreply(core).is_ok() {
             self.cloop();
             return;
         }
 
         match tab_num  {
-            1 => self.try_completion(core),
+            1 => self.try_completion(core).unwrap(),
             _ => self.show_list(&core.db.get_array_all("COMPREPLY"), tab_num),
         }
     }
 
-    fn set_custom_compreply(core: &mut ShellCore) -> bool {
+    fn set_custom_compreply(core: &mut ShellCore) -> Result<(), String> {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
         let word_num = core.db.len("COMP_WORDS") as i32;
 
         if prev_pos < 0 || prev_pos >= word_num {
-            return false;
+            return Err("pos error".to_string());
         }
 
-        let org_word = core.db.get_array("COMP_WORDS", "0");
-        let prev_word = core.db.get_array("COMP_WORDS", &prev_pos.to_string());
-        let cur_word = core.db.get_array("COMP_WORDS", &cur_pos.to_string());
+        let org_word = core.db.get_array_elem("COMP_WORDS", "0")?;
+        let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
+        let cur_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
 
         match core.completion_functions.get(&org_word) {
             Some(value) => {
@@ -87,9 +87,12 @@ impl Terminal {
                     let mut dummy = Pipe::new("".to_string());
                     a.exec(core, &mut dummy);
                 }
-                core.db.len("COMPREPLY") != 0
+                match core.db.len("COMPREPLY") {
+                    0 => Err("no completion cand".to_string()),
+                    _ => Ok(()),
+                }
             },
-            _ => false
+            _ => Err("no completion function".to_string())
         }
     }
 
@@ -102,11 +105,11 @@ impl Terminal {
             */
     }
 
-    pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> bool {
-        let pos = core.db.get_param("COMP_CWORD").unwrap();
-        let last = core.db.get_array("COMP_WORDS", &pos);
+    pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> Result<(), String> {
+        let pos = core.db.get_param("COMP_CWORD")?;
+        let last = core.db.get_array_elem("COMP_WORDS", &pos)?;
 
-        let com = core.db.get_array("COMP_WORDS", "0");
+        let com = core.db.get_array_elem("COMP_WORDS", "0")?;
 
         let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
 
@@ -114,11 +117,11 @@ impl Terminal {
 
         let list = self.make_default_compreply(core, &mut args, &com, &pos);
         if list.is_empty() {
-            return false;
+            return Err("empty list".to_string());
         }
 
         let tmp: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
-        core.db.set_array("COMPREPLY", tmp).is_ok()
+        core.db.set_array("COMPREPLY", tmp)
     }
 
     fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
@@ -159,26 +162,27 @@ impl Terminal {
         completion::compgen_f(core, args)
     }
 
-    pub fn try_completion(&mut self, core: &mut ShellCore) {
-        let pos = core.db.get_param("COMP_CWORD").unwrap();
-        let target = core.db.get_array("COMP_WORDS", &pos);
+    pub fn try_completion(&mut self, core: &mut ShellCore) -> Result<(), String> {
+        let pos = core.db.get_param("COMP_CWORD")?;
+        let target = core.db.get_array_elem("COMP_WORDS", &pos)?;
 
         if core.db.len("COMPREPLY") == 1 {
-            let output = core.db.get_array("COMPREPLY", "0");
+            let output = core.db.get_array_elem("COMPREPLY", "0")?;
             let tail = match is_dir(&output, core) {
                 true  => "/",
                 false => " ",
             };
             self.replace_input(&(output + tail));
-            return;
+            return Ok(());
         }
 
         let common = common_string(&core.db.get_array_all("COMPREPLY"));
         if common.len() != target.len() {
             self.replace_input(&common);
-            return;
+            return Ok(());
         }
         self.cloop();
+        Ok(())
     }
 
     fn normalize_tab(&mut self, row_num: i32, col_num: i32) {

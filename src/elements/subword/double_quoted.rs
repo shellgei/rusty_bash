@@ -77,7 +77,7 @@ impl DoubleQuoted {
                     "$@" | "${@}" => core.db.get_position_params(),
                     _ => {
                         sw.substitute(core);
-                        sw.get_array()
+                        sw.get_array_elem()
                     },
                 };
 

@@ -60,11 +60,16 @@ impl DataBase {
         data
     }
 
-    pub fn get_param(&mut self, name: &str) -> Result<String, String> {
+    fn name_check(name: &str) -> Result<(), String> {
         if ! utils::is_param(name) {
             let error = format!("`{}': not a valid identifier", name);
             return Err(error);
         }
+        Ok(())
+    }
+
+    pub fn get_param(&mut self, name: &str) -> Result<String, String> {
+        Self::name_check(name)?;
 
         if let Some(val) = getter::special_param(self, name) {
             return Ok(val);
@@ -95,8 +100,9 @@ impl DataBase {
         Ok("".to_string())
     }
 
-    pub fn get_array(&mut self, name: &str, pos: &str) -> String {
-        getter::array_elem(self, name, pos)
+    pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, String> {
+        Self::name_check(name)?;
+        Ok(getter::array_elem(self, name, pos))
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {

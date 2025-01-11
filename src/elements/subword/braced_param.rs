@@ -91,7 +91,7 @@ impl Subword for BracedParam {
     }
 
     fn is_array(&self) -> bool {self.is_array}
-    fn get_array(&self) -> Vec<String> {self.array.clone()}
+    fn get_array_elem(&self) -> Vec<String> {self.array.clone()}
 }
 
 impl BracedParam {
@@ -124,15 +124,18 @@ impl BracedParam {
 
         self.text = match (self.num, index.as_str()) {
             (true, "@") => core.db.len(&self.name).to_string(),
-            (true, _)   => core.db.get_array(&self.name, &index).chars().count().to_string(),
-            (false, _)  => core.db.get_array(&self.name, &index),
+            (true, _)   => core.db.get_array_elem(&self.name, &index).unwrap().chars().count().to_string(),
+            (false, _)  => core.db.get_array_elem(&self.name, &index).unwrap(),
         };
         self.optional_operation(core)
     }
 
     fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
-        self.text = core.db.get_array(&self.name, index);
-        true
+        if let Ok(s) = core.db.get_array_elem(&self.name, index) {
+            self.text = s;
+            return true;
+        }
+        false
     }
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> bool {
