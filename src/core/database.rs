@@ -174,6 +174,13 @@ impl DataBase {
         self.params[layer].get_mut(name).unwrap().set_as_single(val)
     }
 
+    fn get_target_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
+        match layer {
+            Some(n) => n,
+            None => self.solve_layer(name),
+        }
+    }
+
     fn solve_layer(&mut self, name: &str) -> usize {
         self.get_layer_pos(name).unwrap_or(0)
     }
@@ -235,11 +242,7 @@ impl DataBase {
     }
 
     pub fn set_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), String> {
-        let layer = match layer {
-            Some(n) => n,
-            None => self.solve_layer(name),
-        };
-
+        let layer = self.get_target_layer(name, layer);
         setter::array(self, name, v, layer)
     }
 

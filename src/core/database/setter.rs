@@ -38,6 +38,6 @@ pub fn flag(db: &mut DataBase, name: &str, flag: char) {
 
 pub fn array(db: &mut DataBase, name: &str, v: Vec<String>, layer: usize) -> Result<(), String> {
     db.write_check(name)?;
-    db.params[layer].insert( name.to_string(), Box::new(ArrayData::from(v)));
+    db.params[layer].insert(name.to_string(), Box::new(ArrayData::from(v)));
     Ok(())
 }
