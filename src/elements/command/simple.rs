@@ -145,19 +145,19 @@ impl SimpleCommand {
         self.option_x_output(core);
         
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, 0, false);});
+            .for_each(|s| {s.eval(core, None, false);});
 
         None
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) {
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, layer, false);});
+            .for_each(|s| {s.eval(core, Some(layer), false);});
     }
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) {
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, 0, true);} );
+            .for_each(|s| {s.eval(core, None, true);} );
     }
 
     fn to_cargs(args: &Vec<String>) -> Vec<CString> {

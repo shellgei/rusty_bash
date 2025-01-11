@@ -40,7 +40,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), String
         _ => return Err(format!("local: `{}': not a valid identifier", arg)),
     };
 
-    match sub.eval(core, layer, false) {
+    match sub.eval(core, Some(layer), false) {
         true  => Ok(()),
         false => Err(format!("local: `{}': evaluation error", arg)),
     }
@@ -60,7 +60,7 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
         },
     };
 
-    match sub.eval(core, layer, false) {
+    match sub.eval(core, Some(layer), false) {
         true  => Ok(()),
         false => Err(format!("local: `{}': evaluation error", arg)),
     }

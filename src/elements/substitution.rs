@@ -28,7 +28,7 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: usize, env: bool) -> bool {
+    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, env: bool) -> bool {
         match self.value.clone() {
             ParsedDataType::None 
             => self.evaluated_string = Some("".to_string()),
@@ -104,13 +104,12 @@ impl Substitution {
         }
     }
 
-    fn set_to_shell(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
+    fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>) -> Result<(), String> {
+        let lnum = core.db.get_layer_pos(&self.name).unwrap_or(0);
+
         let layer = match layer {
-            0 => match core.db.get_layer_pos(&self.name) {
-                Some(n) => n,
-                None => 0,
-            },
-            n => n,
+            Some(n) => n,
+            None => lnum,
         };
 
         if self.evaluated_string.is_none()
