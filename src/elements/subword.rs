@@ -75,11 +75,11 @@ pub trait Subword {
     fn is_name(&self) -> bool {false}
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
-    if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = VarName::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
-    else{ None }
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Subword>>, String> {
+    if let Some(a) = SingleQuoted::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = EscapedChar::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = Parameter::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = VarName::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = SimpleSubword::parse(feeder)?{ Ok(Some(Box::new(a))) }
+    else{ Ok(None) }
 }

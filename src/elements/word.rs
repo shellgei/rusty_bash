@@ -107,20 +107,20 @@ impl Word {
             .collect()
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Word> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Word>, String> {
         if feeder.starts_with("#") {
-            return None;
+            return Ok(None);
         }
 
         let mut subwords = vec![];
-        while let Some(sw) = subword::parse(feeder, core) {
+        while let Some(sw) = subword::parse(feeder, core)? {
             subwords.push(sw);
         }
 
         let ans = Word::from(subwords);
         match ans.text.len() {
-            0 => None,
-            _ => Some(ans),
+            0 => Ok(None),
+            _ => Ok(Some(ans)),
         }
     }
 }

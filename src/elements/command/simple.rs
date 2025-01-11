@@ -94,18 +94,18 @@ impl SimpleCommand {
             .collect()
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
-        let w = match Word::parse(feeder, core) {
+    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> Result<bool, String> {
+        let w = match Word::parse(feeder, core)? {
             Some(w) => w,
-            _       => return false,
+            _       => return Ok(false),
         };
 
         if ans.words.is_empty() && reserved(&w.text) {
-            return false;
+            return Ok(false);
         }
         ans.text += &w.text;
         ans.words.push(w);
-        true
+        Ok(true)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
@@ -114,7 +114,7 @@ impl SimpleCommand {
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            if ! Self::eat_word(feeder, &mut ans, core) {
+            if ! Self::eat_word(feeder, &mut ans, core).ok()? {
                 break;
             }
         }

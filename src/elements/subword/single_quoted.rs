@@ -29,12 +29,12 @@ impl Subword for SingleQuoted {
 }
 
 impl SingleQuoted {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, String> {
         match feeder.scanner_single_quoted_subword(core) {
-            0 => None,
+            0 => Ok(None),
             n => {
                 let s = feeder.consume(n);
-                Some(SingleQuoted{ text: s })
+                Ok(Some(SingleQuoted{ text: s }))
             },
         }
     }

@@ -32,10 +32,10 @@ impl Subword for EscapedChar {
 }
 
 impl EscapedChar {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, String> {
         match feeder.scanner_escaped_char(core) {
-            0 => None,
-            n => Some(EscapedChar{ text: feeder.consume(n) }),
+            0 => Ok(None),
+            n => Ok(Some(EscapedChar{ text: feeder.consume(n) })),
         }
     }
 }
