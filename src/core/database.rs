@@ -204,7 +204,7 @@ impl DataBase {
         self.params[0].insert( key.to_string(), Box::new(SpecialData::from(f)) );
     }
 
-    pub fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
+    fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
         self.write_check(name)?;
 
         match self.params[layer].get_mut(name) {
@@ -225,9 +225,9 @@ impl DataBase {
         }
     }
 
-    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> Result<(), String> {
+    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), String> {
         self.write_check(name)?;
-        let layer = self.solve_layer(name);
+        let layer = self.get_target_layer(name, layer);
         self.set_layer_array_elem(name, val, layer, pos)
     }
 

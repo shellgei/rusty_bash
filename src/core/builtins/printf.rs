@@ -95,7 +95,7 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             let subscript = tokens[1].split(']').nth(0).unwrap().to_string();
 
             let result = match subscript.parse::<usize>() {
-                Ok(n) => core.db.set_array_elem(&name, &s, n),
+                Ok(n) => core.db.set_array_elem(&name, &s, n, None),
                 _ => core.db.set_assoc_elem(&name, &subscript, &s),
             };
             if let Err(e) = result {

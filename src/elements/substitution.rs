@@ -66,20 +66,12 @@ impl Substitution {
 
     fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
         let index = match self.get_index(core) {
-            Some(s) => {
-                match s.parse::<usize>() {
-                    Ok(n) => Some(n),
-                    Err(e) => return Err(e.to_string()),
-                }
-            },
+            Some(s) => Some(s.parse::<usize>().map_err(|e| format!("{:?}", e))? ),
             None => None,
         };
 
-        match (&self.evaluated_string, index) {
-            (Some(v), Some(n)) => {
-                return core.db.set_layer_array_elem(&self.name, &v, layer, n);
-            },
-            _ => {},
+        if let (Some(v), Some(n)) = (&self.evaluated_string, index) {
+            return core.db.set_array_elem(&self.name, &v, n, Some(layer));
         }
 
         match (&self.evaluated_array, index) {

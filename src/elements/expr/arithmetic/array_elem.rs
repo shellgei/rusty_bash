@@ -46,7 +46,7 @@ fn set_value(name: &String, key: &String, new_value: i64,
                      core: &mut ShellCore) -> Result<(), String> {
     if let Ok(n) = key.parse::<i64>() {
         return match n >= 0 {
-            true  => core.db.set_array_elem(name, &(new_value.to_string()), n as usize),
+            true  => core.db.set_array_elem(name, &(new_value.to_string()), n as usize, None),
             false => Err("negative index".to_string()),
         };
     }
