@@ -12,19 +12,15 @@ pub struct ArrayData {
 impl From<Vec<String>> for ArrayData {
     fn from(v: Vec<String>) -> Self {
         let mut ans = Self { body: HashMap::new() };
-
-        for i in 0..v.len() {
-            ans.body.insert(i, v[i].clone());
-        }
-
+        v.into_iter()
+         .enumerate()
+         .for_each(|(i, e)| {ans.body.insert(i, e);});
         ans
     }
 }
 
 impl Data for ArrayData {
-    fn boxed_clone(&self) -> Box<dyn Data> {
-        Box::new(self.clone())
-    }
+    fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
 
     fn print_body(&self) -> String {
         let mut formatted = String::new();
@@ -69,6 +65,11 @@ impl Data for ArrayData {
 }
 
 impl ArrayData {
+    pub fn set(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, v: Vec<String>) -> Result<(), String> {
+        db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
+        Ok(())
+    }
+
     pub fn values(&self) -> Vec<String> {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
         keys.sort();

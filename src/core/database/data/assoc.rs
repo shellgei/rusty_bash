@@ -59,6 +59,11 @@ impl Data for AssocData {
 }
 
 impl AssocData {
+    pub fn set(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), String> {
+        db_layer.insert(name.to_string(), Box::new(AssocData::default()));
+        Ok(())
+    }
+
     pub fn get(&self, key: &str) -> Option<String> {
         self.body.get(key).cloned()
     }
@@ -70,25 +75,4 @@ impl AssocData {
     pub fn values(&self) -> Vec<String> {
         self.body.iter().map(|e| e.1.clone()).collect()
     }
-
-    /*
-    pub fn set(&mut self, key: &String, val: &String) -> bool {
-        self.body.insert(key.to_string(), val.to_string());
-        true
-    }
-
-    pub fn print(&self, k: &str) {
-        let mut formatted = String::new();
-        formatted += "(";
-        for k in self.keys() {
-            let v = self.get(&k).unwrap_or("".to_string());
-            formatted += &format!("[{}]=\"{}\" ", k, v);
-        }
-        if formatted.ends_with(" ") {
-            formatted.pop();
-        }
-        formatted += ")";
-        println!("{}={}", k.to_string(), formatted); 
-    }
-    */
 }

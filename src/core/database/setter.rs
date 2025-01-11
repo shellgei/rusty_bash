@@ -2,7 +2,6 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::DataBase;
-use crate::core::database::{ArrayData, AssocData};
 use crate::utils::{random, clock};
 use std::{env, process};
 use super::getter;
@@ -34,17 +33,4 @@ pub fn flag(db: &mut DataBase, name: &str, flag: char) {
         Some(d) => d.push(flag),
         None => {rf.insert(name.to_string(), flag.to_string()); },
     }
-}
-
-pub fn array(db: &mut DataBase, name: &str, v: Vec<String>, layer: usize) -> Result<(), String> {
-    db.write_check(name)?;
-    db.params[layer].insert(name.to_string(), Box::new(ArrayData::from(v)));
-    Ok(())
-}
-
-
-pub fn assoc(db: &mut DataBase, name: &str, layer: usize) -> Result<(), String> {
-    db.write_check(name)?;
-    db.params[layer].insert(name.to_string(), Box::new(AssocData::default()));
-    Ok(())
 }

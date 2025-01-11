@@ -210,7 +210,7 @@ impl DataBase {
         match self.params[layer].get_mut(name) {
             Some(d) => d.set_as_array(&pos.to_string(), val),
             None    => {
-                setter::array(self, name, vec![], layer)?;
+                ArrayData::set(&mut self.params[layer], name, vec![])?;
                 self.set_layer_array_elem(name, val, layer, pos)
             },
         }
@@ -237,13 +237,15 @@ impl DataBase {
     }
 
     pub fn set_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), String> {
+        self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
-        setter::array(self, name, v, layer)
+        ArrayData::set(&mut self.params[layer], name, v)
     }
 
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), String> {
+        self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
-        setter::assoc(self, name, layer)
+        AssocData::set(&mut self.params[layer], name)
     }
 
     pub fn push_local(&mut self) {
