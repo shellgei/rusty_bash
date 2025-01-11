@@ -339,7 +339,7 @@ impl DataBase {
         let rf = &mut self.param_options[layer];
         match rf.get_mut(name) {
             Some(d) => d.push(flag),
-            None => {rf.insert(name.to_string(), "r".to_string()); },
+            None => {rf.insert(name.to_string(), flag.to_string()); },
         }
     }
 
