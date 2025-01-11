@@ -39,7 +39,7 @@ impl DataBase {
             ..Default::default()
         };
 
-        setter::initialize(&mut data);
+        setter::initialize(&mut data).unwrap();
         data
     }
 
@@ -198,10 +198,6 @@ impl DataBase {
     pub fn set_param(&mut self, name: &str, val: &str) -> Result<(), String> {
         let layer = self.solve_layer(name);
         self.set_layer_param(name, val, layer)
-    }
-
-    pub fn set_special_variable(&mut self, key: &str, f: fn(&mut Vec<String>)-> String) {
-        self.params[0].insert( key.to_string(), Box::new(SpecialData::from(f)) );
     }
 
     fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {

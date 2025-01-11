@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::core::HashMap;
 use super::Data;
 
 #[derive(Debug, Clone)]
@@ -37,4 +38,12 @@ impl Data for SpecialData {
     }
 
     fn is_special(&self) -> bool {true}
+}
+
+impl SpecialData {
+    pub fn set(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
+                      f: fn(&mut Vec<String>)-> String)-> Result<(), String> {
+        db_layer.insert( name.to_string(), Box::new(SpecialData::from(f)) );
+        Ok(())
+    }
 }
