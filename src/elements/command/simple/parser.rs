@@ -32,7 +32,7 @@ impl SimpleCommand {
         if ans.words.is_empty() {
             if utils::reserved(&w.text) {
                 return false;
-            }else if w.text == "local" {
+            }else if w.text == "local" || w.text == "eval" {
                 ans.permit_substitution_arg = true;
             }
         }
