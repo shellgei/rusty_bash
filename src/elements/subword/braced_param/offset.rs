@@ -72,18 +72,18 @@ pub fn set_partial_position_params(obj: &mut BracedParam, core: &mut ShellCore) 
         return false;
     }
 
-    let mut ans = core.db.get_array_all("@");
+    obj.array = core.db.get_array_all("@");
     match offset.eval_as_int(core) {
         None => return false,
         Some(n) => {
             let mut start = std::cmp::max(0, n) as usize;
-            start = std::cmp::min(start, ans.len()) as usize;
-            ans = ans.split_off(start);
+            start = std::cmp::min(start, obj.array.len()) as usize;
+            obj.array = obj.array.split_off(start);
         },
     };
 
     if ! obj.has_length {
-        obj.text = ans.join(" ");
+        obj.text = obj.array.join(" ");
         return true;
     }
 
@@ -107,11 +107,11 @@ pub fn set_partial_position_params(obj: &mut BracedParam, core: &mut ShellCore) 
                 eprintln!("{}: substring expression < 0", n);
                 return false;
             }
-            let len = std::cmp::min(n as usize, ans.len());
-            let _ = ans.split_off(len);
+            let len = std::cmp::min(n as usize, obj.array.len());
+            let _ = obj.array.split_off(len);
         },
     };
 
-    obj.text = ans.join(" ");
+    obj.text = obj.array.join(" ");
     true
 }

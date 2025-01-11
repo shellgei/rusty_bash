@@ -77,5 +77,16 @@ res=$($com <<< 'set 1 2 3 4 ; echo ${@:2:2}')
 res=$($com <<< 'set 1 2 3 4 ; echo ${@:1:2}')
 [ "$res" == "1 2" ] || err $LINENO
 
+res=$($com <<< 'B=(1 2 3) ; A=("${B[2]}") ; echo ${A[0]}')
+[ "$res" == "3" ] || err $LINENO
+
+res=$($com <<< 'set a b ; A=("${@}") ; echo ${A[1]}')
+[ "$res" == "b" ] || err $LINENO
+
+res=$($com <<< 'set a b ; A=("${@:1}") ; echo ${A[0]}')
+[ "$res" == "a" ] || err $LINENO
+
+res=$($com <<< 'set a b c ; A=("${@:1:1}") ; echo ${A[0]}')
+[ "$res" == "a" ] || err $LINENO
 
 echo $0 >> ./ok

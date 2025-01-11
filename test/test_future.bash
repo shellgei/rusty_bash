@@ -13,4 +13,5 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+
 echo $0 >> ./ok

@@ -129,8 +129,8 @@ impl BracedParam {
             (true, "@") => core.db.len(&self.name).to_string(),
             (true, _)   => core.db.get_array_elem(&self.name, &index).unwrap().chars().count().to_string(),
             (false, _)  => core.db.get_array_elem(&self.name, &index).unwrap(),
-        };
-        self.optional_operation(core)
+       };
+       self.optional_operation(core)
     }
 
     fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
