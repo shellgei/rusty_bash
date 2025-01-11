@@ -108,23 +108,23 @@ impl SimpleCommand {
         Ok(true)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<SimpleCommand>, String> {
         let mut ans = Self::default();
         feeder.set_backup();
 
         loop {
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            if ! Self::eat_word(feeder, &mut ans, core).ok()? {
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
+            if ! Self::eat_word(feeder, &mut ans, core)? {
                 break;
             }
         }
 
         if ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
-            Some(ans)
+            Ok(Some(ans))
         }else{
             feeder.rewind();
-            None
+            Ok(None)
         }
     }
 }

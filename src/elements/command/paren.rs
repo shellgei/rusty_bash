@@ -36,7 +36,7 @@ impl Command for ParenCommand {
 }
 
 impl ParenCommand {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ParenCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<ParenCommand>, String> {
         let mut ans = Self::default();
         if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script) {
             ans.text.push('(');
