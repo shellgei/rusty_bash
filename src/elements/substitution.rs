@@ -65,19 +65,21 @@ impl Substitution {
     }
 
     fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
-        let index = match self.get_index(core) {
-            Some(s) => Some(s.parse::<usize>().map_err(|e| format!("{:?}", e))? ),
-            None => None,
-        };
-
-        if let (Some(v), Some(n)) = (&self.evaluated_string, index) {
-            return core.db.set_array_elem(&self.name, &v, n, Some(layer));
+        if self.get_index(core).is_none() {
+            return match &self.evaluated_array {
+                Some(a) => core.db.set_array(&self.name, a.clone(), Some(layer)),
+                _ => Err("no array and no index".to_string()),
+            };
         }
 
-        match (&self.evaluated_array, index) {
-            (Some(a), None) => core.db.set_array(&self.name, a.clone(), Some(layer)),
-            _ => Err("evaluation error 2".to_string()),
+        let index = self.get_index(core)
+                        .unwrap()
+                        .parse::<usize>().map_err(|e| format!("{:?}", e))?;
+
+        if let Some(v) = &self.evaluated_string {
+            return core.db.set_array_elem(&self.name, &v, index, Some(layer));
         }
+        Err("indexed to non array variable".to_string())
     }
  
     fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
