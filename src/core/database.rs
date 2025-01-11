@@ -152,6 +152,8 @@ impl DataBase {
     }
 
     pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> Result<(), String> {
+        Self::name_check(name)?;
+
         if self.has_flag(name, 'r') {
             self.exit_status = 1;
             return Err(error::readonly(name));
@@ -161,38 +163,15 @@ impl DataBase {
             env::set_var(name, val);
         }
 
-        match self.params[layer].get_mut(name) {
-            Some(d) => {
-                if d.is_single() {
-                    return d.set_as_single(val);
-                }
-            },
-            None => {
-                if ! utils::is_param(name) {
-                    let error = format!("`{}': not a valid identifier", name);
-                    return Err(error);
-                }
-                self.params[layer].insert(name.to_string(), Box::new(SingleData::from(val)));
-                return Ok(());
-            },
+        if self.params[layer].get(name).is_none() {
+            self.params[layer].insert(name.to_string(), Box::new(SingleData::from("")));
         }
-        Ok(())
+
+        self.params[layer].get_mut(name).unwrap().set_as_single(val)
     }
 
     fn solve_layer(&mut self, name: &str) -> usize {
         self.get_layer_pos(name).unwrap_or(0)
-            /*
-            Some(n) => n,
-            None => 0,
-        }*/
-        /*
-        let num = self.params.len();
-        for layer in (0..num).rev()  {
-            if self.params[layer].get(name).is_some() {
-                return layer;
-            }
-        }
-        0*/
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
