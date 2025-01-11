@@ -48,7 +48,13 @@ fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
     }
 
     for i in 0..parts.len() {
-        ans += &sprintf::sprintf!(&parts[i], args[i])?;
+        if parts[i].contains("%d") {
+            if let Ok(_) = args[i].parse::<i32>() {
+                ans += &parts[i].replace("%d", &args[i]);
+            }
+        }else {
+            ans += &sprintf::sprintf!(&parts[i], args[i])?;
+        }
     }
 
     if let Some(s) = tail {
