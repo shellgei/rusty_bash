@@ -47,13 +47,13 @@ impl Data for ArrayData {
         Err("invalid index".to_string())
     }
 
-    fn get_as_array(&mut self, key: &str) -> Option<String> {
+    fn get_as_array(&mut self, key: &str) -> Result<String, String> {
         if key == "@" || key == "*" {
-            return Some(self.values().join(" "));
+            return Ok(self.values().join(" "));
         }
 
-        let n = key.parse::<usize>().ok()?;
-        self.body.get(&n).cloned()
+        let n = key.parse::<usize>().map_err(|e| e.to_string())?;
+        Ok( self.body.get(&n).unwrap_or(&"".to_string()).clone() )
     }
 
     fn get_all_as_array(&mut self) -> Option<Vec<String>> {

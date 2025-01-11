@@ -102,7 +102,7 @@ impl DataBase {
 
     pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, String> {
         Self::name_check(name)?;
-        Ok(getter::array_elem(self, name, pos))
+        getter::array_elem(self, name, pos)
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {

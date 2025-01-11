@@ -37,7 +37,7 @@ pub trait Data {
     fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), String> {Err("not an associative table".to_string())}
     fn get_as_assoc(&mut self, _: &str) -> Option<String> {None}
     fn set_as_array(&mut self, _: &str, _: &str) -> Result<(), String> {Err("not an array".to_string())}
-    fn get_as_array(&mut self, _: &str) -> Option<String> {None}
+    fn get_as_array(&mut self, _: &str) -> Result<String, String> {Err("not an array".to_string())}
     fn get_all_as_array(&mut self) -> Option<Vec<String>> {None}
     fn is_special(&self) -> bool {false}
     fn is_single(&self) -> bool {false}
