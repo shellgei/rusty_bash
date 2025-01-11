@@ -59,7 +59,7 @@ impl Data for AssocData {
 }
 
 impl AssocData {
-    pub fn set(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), String> {
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), String> {
         db_layer.insert(name.to_string(), Box::new(AssocData::default()));
         Ok(())
     }

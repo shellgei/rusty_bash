@@ -16,11 +16,11 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
     db.set_param("OPTIND", "1", None)?;
 
-    SpecialData::set(&mut db.params[0], "SRANDOM", random::get_srandom)?;
-    SpecialData::set(&mut db.params[0], "RANDOM", random::get_random)?;
-    SpecialData::set(&mut db.params[0], "EPOCHSECONDS", clock::get_epochseconds)?;
-    SpecialData::set(&mut db.params[0], "EPOCHREALTIME", clock::get_epochrealtime)?;
-    SpecialData::set(&mut db.params[0], "SECONDS", clock::get_seconds)?;
+    SpecialData::set_new_entry(&mut db.params[0], "SRANDOM", random::get_srandom)?;
+    SpecialData::set_new_entry(&mut db.params[0], "RANDOM", random::get_random)?;
+    SpecialData::set_new_entry(&mut db.params[0], "EPOCHSECONDS", clock::get_epochseconds)?;
+    SpecialData::set_new_entry(&mut db.params[0], "EPOCHREALTIME", clock::get_epochrealtime)?;
+    SpecialData::set_new_entry(&mut db.params[0], "SECONDS", clock::get_seconds)?;
 
     getter::special_variable(db, "SECONDS");
 

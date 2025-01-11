@@ -41,8 +41,8 @@ impl Data for SpecialData {
 }
 
 impl SpecialData {
-    pub fn set(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
-                      f: fn(&mut Vec<String>)-> String)-> Result<(), String> {
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
+                                f: fn(&mut Vec<String>)-> String)-> Result<(), String> {
         db_layer.insert( name.to_string(), Box::new(SpecialData::from(f)) );
         Ok(())
     }

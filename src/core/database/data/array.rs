@@ -65,7 +65,7 @@ impl Data for ArrayData {
 }
 
 impl ArrayData {
-    pub fn set(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, v: Vec<String>) -> Result<(), String> {
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, v: Vec<String>) -> Result<(), String> {
         db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
         Ok(())
     }

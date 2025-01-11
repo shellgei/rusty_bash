@@ -160,15 +160,12 @@ impl DataBase {
     }
 
     fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> Result<(), String> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-
         if env::var(name).is_ok() {
             env::set_var(name, val);
         }
 
         if self.params[layer].get(name).is_none() {
-            self.params[layer].insert(name.to_string(), Box::new(SingleData::from("")));
+            SingleData::set_new_entry(&mut self.params[layer], name, "")?;
         }
 
         self.params[layer].get_mut(name).unwrap().set_as_single(val)
@@ -206,7 +203,7 @@ impl DataBase {
         match self.params[layer].get_mut(name) {
             Some(d) => d.set_as_array(&pos.to_string(), val),
             None    => {
-                ArrayData::set(&mut self.params[layer], name, vec![])?;
+                ArrayData::set_new_entry(&mut self.params[layer], name, vec![])?;
                 self.set_layer_array_elem(name, val, layer, pos)
             },
         }
@@ -240,14 +237,14 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
-        ArrayData::set(&mut self.params[layer], name, v)
+        ArrayData::set_new_entry(&mut self.params[layer], name, v)
     }
 
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), String> {
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
-        AssocData::set(&mut self.params[layer], name)
+        AssocData::set_new_entry(&mut self.params[layer], name)
     }
 
     pub fn push_local(&mut self) {
