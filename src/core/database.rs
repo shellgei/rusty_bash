@@ -197,12 +197,6 @@ impl DataBase {
         self.params[0].insert( key.to_string(), Box::new(SpecialData::from(f)) );
     }
 
-    pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> Result<(), String> {
-        self.write_check(name)?;
-        self.params[layer].insert( name.to_string(), Box::new(ArrayData::from(v)));
-        Ok(())
-    }
-
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> Result<(), String> {
         self.write_check(name)?;
         self.params[layer].insert(name.to_string(), Box::new(AssocData::default()));
@@ -215,7 +209,7 @@ impl DataBase {
         match self.params[layer].get_mut(name) {
             Some(d) => d.set_as_array(&pos.to_string(), val),
             None    => {
-                self.set_layer_array(name, vec![], layer)?;
+                setter::array(self, name, vec![], layer)?;
                 self.set_layer_array_elem(name, val, layer, pos)
             },
         }
@@ -240,9 +234,13 @@ impl DataBase {
         self.set_layer_assoc_elem(name, key, val, layer)
     }
 
-    pub fn set_array(&mut self, name: &str, v: Vec<String>) -> Result<(), String> {
-        let layer = self.solve_layer(name);
-        self.set_layer_array(name, v, layer)
+    pub fn set_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), String> {
+        let layer = match layer {
+            Some(n) => n,
+            None => self.solve_layer(name),
+        };
+
+        setter::array(self, name, v, layer)
     }
 
     pub fn set_assoc(&mut self, name: &str) -> Result<(), String> {

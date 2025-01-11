@@ -83,7 +83,7 @@ impl Substitution {
         }
 
         match (&self.evaluated_array, index) {
-            (Some(a), None) => core.db.set_layer_array(&self.name, a.clone(), layer),
+            (Some(a), None) => core.db.set_array(&self.name, a.clone(), Some(layer)),
             _ => Err("evaluation error 2".to_string()),
         }
     }
@@ -99,7 +99,7 @@ impl Substitution {
         }
 
         match &self.evaluated_array {
-            Some(data) => core.db.set_layer_array(&self.name, data.to_vec(), layer),
+            Some(data) => core.db.set_array(&self.name, data.to_vec(), Some(layer)),
             _ => Err("evaluation error 3".to_string()),
         }
     }

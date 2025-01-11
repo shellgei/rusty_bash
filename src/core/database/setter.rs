@@ -2,8 +2,9 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::DataBase;
-use std::{env, process};
+use crate::core::database::ArrayData;
 use crate::utils::{random, clock};
+use std::{env, process};
 use super::getter;
 
 pub fn initialize(data: &mut DataBase) {
@@ -23,7 +24,7 @@ pub fn initialize(data: &mut DataBase) {
 
     getter::special_variable(data, "SECONDS");
 
-    data.set_array("FUNCNAME", vec![]).unwrap();
+    data.set_array("FUNCNAME", vec![], None).unwrap();
 }
 
 pub fn flag(db: &mut DataBase, name: &str, flag: char) {
@@ -35,3 +36,8 @@ pub fn flag(db: &mut DataBase, name: &str, flag: char) {
     }
 }
 
+pub fn array(db: &mut DataBase, name: &str, v: Vec<String>, layer: usize) -> Result<(), String> {
+    db.write_check(name)?;
+    db.params[layer].insert( name.to_string(), Box::new(ArrayData::from(v)));
+    Ok(())
+}

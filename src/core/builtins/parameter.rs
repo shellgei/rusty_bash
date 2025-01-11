@@ -50,7 +50,7 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     let mut feeder = Feeder::new(arg);
     if feeder.scanner_name(core) == feeder.len() { // name only
         let name = feeder.consume(feeder.len());
-        return core.db.set_layer_array(&name, vec![], layer);
+        return core.db.set_array(&name, vec![], Some(layer));
     }
 
     let mut sub = match Substitution::parse(&mut feeder, core) {
@@ -111,7 +111,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
-        if let Err(e) = core.db.set_array(&name, vec![]) {
+        if let Err(e) = core.db.set_array(&name, vec![], None) {
             error::print(&e, core);
             return 1;
         }
