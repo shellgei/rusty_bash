@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 mod data;
+mod getter;
 
 use crate::exit;
 use crate::elements::command::function_def::FunctionDefinition;
@@ -59,37 +60,17 @@ impl DataBase {
         data
     }
 
-    fn get_special_param(&self, name: &str) -> Option<String> {
-        let val = match name {
-            "-" => self.flags.clone(),
-            "?" => self.exit_status.to_string(),
-            "_" => self.last_arg.clone(),
-            "#" => {
-                let pos = self.position_parameters.len() - 1;
-                (self.position_parameters[pos].len() - 1).to_string()
-            },
-            _ => return None,
-        };
-
-        Some(val)
-    }
-
     pub fn get_param(&mut self, name: &str) -> Result<String, String> {
-        if let Some(val) = self.get_special_param(name) {
+        if let Some(val) = getter::special_param(self, name) {
             return Ok(val);
         }
 
-        if name == "@" || name == "*" { // $@ should return an array in a double quoted
-                                      // subword. Therefore another access method is used there. 
-            match self.position_parameters.last() {
-                Some(a) => return Ok(a[1..].join(" ")),
-                _       => return Ok("".to_string()),
-            };
-        }
+        if name == "@" || name == "*" {   // $@ should return an array in a double quoted
+            return getter::connected_position_params(self);  // subword. Therefore another 
+        }                                                   //access method should be used there. 
 
-        if let Some(n) = self.get_position_param_pos(name) {
-            let layer = self.position_parameters.len();
-            return Ok(self.position_parameters[layer-1][n].to_string());
+        if let Ok(n) = name.parse::<usize>() {
+            return getter::position_param(self, n);
         }
 
         if let Some(ans) = self.call_speial(name) {
@@ -208,19 +189,6 @@ impl DataBase {
         match self.position_parameters.last() {
             Some(v) => v[1..].to_vec(),
             _       => vec![],
-        }
-    }
-
-    fn get_position_param_pos(&self, key: &str) -> Option<usize> {
-        if ! (key.len() == 1 && "0" <= key && key <= "9") {
-            return None;
-        }
-
-        let n = key.parse::<usize>().unwrap();
-        let layer = self.position_parameters.len();
-        match n < self.position_parameters[layer-1].len() {
-            true  => Some(n),
-            false => None,
         }
     }
 
