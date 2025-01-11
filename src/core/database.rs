@@ -204,12 +204,6 @@ impl DataBase {
         self.params[0].insert( key.to_string(), Box::new(SpecialData::from(f)) );
     }
 
-    pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> Result<(), String> {
-        self.write_check(name)?;
-        self.params[layer].insert(name.to_string(), Box::new(AssocData::default()));
-        Ok(())
-    }
-
     pub fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
         self.write_check(name)?;
 
@@ -247,9 +241,9 @@ impl DataBase {
         setter::array(self, name, v, layer)
     }
 
-    pub fn set_assoc(&mut self, name: &str) -> Result<(), String> {
-        let layer = self.solve_layer(name);
-        self.set_layer_assoc(name, layer)
+    pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), String> {
+        let layer = self.get_target_layer(name, layer);
+        setter::assoc(self, name, layer)
     }
 
     pub fn push_local(&mut self) {

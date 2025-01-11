@@ -86,7 +86,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() >= 3 && args[1] == "-A" {
-        let res = args[2..].iter().all(|a| core.db.set_layer_assoc(a, layer).is_ok());
+        let res = args[2..].iter().all(|a| core.db.set_assoc(a, Some(layer)).is_ok());
         return restore_and_return(core, res);
     }
 
@@ -123,7 +123,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! utils::is_name(&name, core) {
             return 1; //TODO: error message
         }
-        if let Err(e) = core.db.set_assoc(&name) {
+        if let Err(e) = core.db.set_assoc(&name, None) {
             error::print(&e, core);
             return 1;
         }
