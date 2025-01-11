@@ -89,21 +89,21 @@ impl ShellCore {
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
 
-        let _ = core.db.set_param("PS4", "+ ");
+        let _ = core.db.set_param("PS4", "+ ", None);
 
         if unistd::isatty(0) == Ok(true) {
             core.db.flags += "i";
             core.read_stdin = false;
-            let _ = core.db.set_param("PS1", "🍣 ");
-            let _ = core.db.set_param("PS2", "> ");
+            let _ = core.db.set_param("PS1", "🍣 ", None);
+            let _ = core.db.set_param("PS2", "> ", None);
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
         let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
-        let _ = core.db.set_param("HISTFILE", &(home + "/.sush_history"));
-        let _ = core.db.set_param("HISTFILESIZE", "2000");
+        let _ = core.db.set_param("HISTFILE", &(home + "/.sush_history"), None);
+        let _ = core.db.set_param("HISTFILESIZE", "2000", None);
 
         core
     }
@@ -120,10 +120,10 @@ impl ShellCore {
         let versinfo = [vparts, vec![symbol, profile, &machtype]].concat()
                        .iter().map(|e| e.to_string()).collect();
 
-        let _ = self.db.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile));
-        let _ = self.db.set_param("MACHTYPE", &machtype);
-        let _ = self.db.set_param("HOSTTYPE", &t_arch);
-        let _ = self.db.set_param("OSTYPE", &t_os);
+        let _ = self.db.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile), None);
+        let _ = self.db.set_param("MACHTYPE", &machtype, None);
+        let _ = self.db.set_param("HOSTTYPE", &t_arch, None);
+        let _ = self.db.set_param("OSTYPE", &t_os, None);
         let _ = self.db.set_array("BASH_VERSINFO", versinfo, None);
     }
 

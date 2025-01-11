@@ -32,7 +32,7 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
-        let _ = core.db.set_param("LINENO", &self.lineno.to_string());
+        let _ = core.db.set_param("LINENO", &self.lineno.to_string(), None);
         if Self::break_continue_or_return(core) {
             return None;
         }

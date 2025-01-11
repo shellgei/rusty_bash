@@ -76,14 +76,14 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let arg = args[index].clone();
 
     if ! arg.starts_with("-") {
-        let _ = core.db.set_param("OPTARG", "?");
+        let _ = core.db.set_param("OPTARG", "?", None);
         return 1;
     }
 
     if targets.iter().any(|t| t.is_single(&arg) ) {
-        let result = core.db.set_param(&name, &arg[1..]);
-        let _ = core.db.set_param("OPTIND", &(index+1).to_string());
-        let _ = core.db.set_param("OPTARG", "");
+        let result = core.db.set_param(&name, &arg[1..], None);
+        let _ = core.db.set_param("OPTIND", &(index+1).to_string(), None);
+        let _ = core.db.set_param("OPTARG", "", None);
 
         if let Err(e) = result {
             let msg = format!("getopts: {}", &e);
@@ -99,9 +99,9 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
 
     if targets.iter().any(|t| t.is_witharg(&arg) ) {
-        let result = core.db.set_param(&name, &arg[1..]);
-        let _ = core.db.set_param("OPTARG", &optarg);
-        let _ = core.db.set_param("OPTIND", &(index+2).to_string());
+        let result = core.db.set_param(&name, &arg[1..], None);
+        let _ = core.db.set_param("OPTARG", &optarg, None);
+        let _ = core.db.set_param("OPTIND", &(index+2).to_string(), None);
 
         if let Err(e) = result {
             let msg = format!("getopts: {}", &e);

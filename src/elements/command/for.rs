@@ -75,7 +75,7 @@ impl ForCommand {
                 return false;
             }
 
-            if let Err(e) = core.db.set_param(&self.name, &p) {
+            if let Err(e) = core.db.set_param(&self.name, &p, None) {
                 core.db.exit_status = 1;
                 error::print(&e, core);
             }

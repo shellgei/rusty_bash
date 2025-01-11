@@ -104,7 +104,7 @@ impl Script {
                     return Some(ans)
                 },
                 Status::UnexpectedSymbol(s) => {
-                    let _ = core.db.set_param("LINENO", &feeder.lineno.to_string());
+                    let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
                     let s = format!("Unexpected token: {}", s);
                     error::print(&s, core);
                     core.db.exit_status = 2;

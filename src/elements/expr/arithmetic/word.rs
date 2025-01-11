@@ -101,23 +101,14 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
 
     match str_to_num(&name, core) {
         Ok(ArithElem::Integer(n))        => {
-            core.db.set_param(name, &(n + inc).to_string())?;
-
-            /*
-            if ! core.db.set_param(name, &(n + inc).to_string()) {
-                return Err(error::readonly(&name));
-            }*/
+            core.db.set_param(name, &(n + inc).to_string(), None)?;
             match pre {
                 true  => Ok(ArithElem::Integer(n+inc)),
                 false => Ok(ArithElem::Integer(n)),
             }
         },
         Ok(ArithElem::Float(n))        => {
-            core.db.set_param(name, &(n + inc as f64).to_string())?;
-            /*
-            if ! core.db.set_param(name, &(n + inc as f64).to_string()) {
-                return Err(error::readonly(&name));
-            }*/
+            core.db.set_param(name, &(n + inc as f64).to_string(), None)?;
             match pre {
                 true  => Ok(ArithElem::Float(n+inc as f64)),
                 false => Ok(ArithElem::Float(n)),
@@ -178,19 +169,19 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
 
     match op {
         "=" => {
-            core.db.set_param(&name, &right_str)?;
+            core.db.set_param(&name, &right_str, None)?;
             return Ok(right_value.clone());
         },
         "+=" => {
             let val_str = core.db.get_param(&name)?;
             if let Ok(left) = val_str.parse::<i64>() {
                 if let ArithElem::Integer(n) = right_value {
-                    core.db.set_param(&name, &(left + n).to_string())?;
+                    core.db.set_param(&name, &(left + n).to_string(), None)?;
                     return Ok(ArithElem::Integer(left + n));
                 }
             }else if let Ok(left) = val_str.parse::<f64>() {
                 if let ArithElem::Float(f) = right_value {
-                    core.db.set_param(&name, &(left + f).to_string())?;
+                    core.db.set_param(&name, &(left + f).to_string(), None)?;
                     return Ok(ArithElem::Float(left + f));
                 }
             }

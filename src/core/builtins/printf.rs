@@ -105,7 +105,7 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
             return 0;
         }
-        if ! core.db.set_param(&args[2], &s).is_ok() {
+        if ! core.db.set_param(&args[2], &s, None).is_ok() {
             return 2;
         }
 

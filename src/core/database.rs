@@ -195,12 +195,15 @@ impl DataBase {
         None
     }
 
-    pub fn set_param(&mut self, name: &str, val: &str) -> Result<(), String> {
-        let layer = self.solve_layer(name);
+    pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>) -> Result<(), String> {
+        Self::name_check(name)?;
+        self.write_check(name)?;
+        let layer = self.get_target_layer(name, layer);
         self.set_layer_param(name, val, layer)
     }
 
     fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
+        Self::name_check(name)?;
         self.write_check(name)?;
 
         match self.params[layer].get_mut(name) {
@@ -213,6 +216,7 @@ impl DataBase {
     }
 
     pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> Result<(), String> {
+        Self::name_check(name)?;
         self.write_check(name)?;
 
         match self.params[layer].get_mut(name) {
@@ -222,23 +226,28 @@ impl DataBase {
     }
 
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), String> {
+        Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
         self.set_layer_array_elem(name, val, layer, pos)
     }
 
     pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> Result<(), String> {
+        Self::name_check(name)?;
+        self.write_check(name)?;
         let layer = self.solve_layer(name);
         self.set_layer_assoc_elem(name, key, val, layer)
     }
 
     pub fn set_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), String> {
+        Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
         ArrayData::set(&mut self.params[layer], name, v)
     }
 
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), String> {
+        Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
         AssocData::set(&mut self.params[layer], name)

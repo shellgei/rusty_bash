@@ -9,7 +9,7 @@ impl Feeder {
         self.remaining.pop();
         self.remaining.pop();
         self.lineno += 1;
-        let _ = core.db.set_param("LINENO", &self.lineno.to_string());
+        let _ = core.db.set_param("LINENO", &self.lineno.to_string(), None);
         let _ = self.feed_additional_line_core(core);
     }
 

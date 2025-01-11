@@ -73,7 +73,7 @@ impl FunctionDefinition {
 
         core.db.position_parameters.pop();
 
-        //core.db.set_param("#", &number);
+        //core.db.set_param("#", &number);, None, None
         let mut array = core.db.get_array_all("FUNCNAME");
         array.remove(0);
         let _ = core.db.set_array("FUNCNAME", array, None);

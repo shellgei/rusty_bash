@@ -341,7 +341,7 @@ impl Terminal {
             _ => {},
         }
 
-        let _ = core.db.set_param("COMP_CWORD", &num.to_string());
+        let _ = core.db.set_param("COMP_CWORD", &num.to_string(), None);
     }
 }
 
