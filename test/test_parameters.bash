@@ -68,4 +68,14 @@ res=$($com -c 'set a b ; A=1;echo ${!A}')
 res=$($com -c ' A=@@; echo ${!A}')
 [[ "$?" -eq 1 ]] || err $LINENO
 
+
+### PARTIAL POSITION PARAMETER ###
+
+res=$($com <<< 'set 1 2 3 4 ; echo ${@:2:2}')
+[ "$res" == "2 3" ] || err $LINENO
+
+res=$($com <<< 'set 1 2 3 4 ; echo ${@:1:2}')
+[ "$res" == "1 2" ] || err $LINENO
+
+
 echo $0 >> ./ok

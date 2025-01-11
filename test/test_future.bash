@@ -13,10 +13,4 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-res=$($com <<< 'set 1 2 3 4 ; echo ${@:2:2}')
-[ "$res" == "2 3" ] || err $LINENO
-
-res=$($com <<< 'set 1 2 3 4 ; echo ${@:1:2}')
-[ "$res" == "1 2" ] || err $LINENO
-
 echo $0 >> ./ok

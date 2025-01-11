@@ -142,8 +142,13 @@ impl DataBase {
         }
     }
 
-    pub fn get_array_all(&mut self, key: &str) -> Vec<String> {
-        match self.get_clone(key).as_mut() {
+    pub fn get_array_all(&mut self, name: &str) -> Vec<String> {
+        let layer = self.position_parameters.len() - 1;
+        if name == "@" {
+            return self.position_parameters[layer].clone();
+        }
+
+        match self.get_clone(name).as_mut() {
             Some(d) => {
                 match d.get_all_as_array() {
                     Some(v) => v,

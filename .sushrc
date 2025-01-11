@@ -71,5 +71,5 @@ command_not_found_handle() {
 	fi
 }
 
-#. /usr/share/bash-completion/bash_completion
+. /usr/share/bash-completion/bash_completion
 #. ~/GIT/bash-completion/bash_completion
