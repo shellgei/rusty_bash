@@ -70,7 +70,7 @@ impl DataBase {
             return Ok(ans);
         }
 
-        if let Some(d) = self.get_clone(name).as_mut() {
+        if let Some(d) = getter::clone(self, name).as_mut() {
             let val = d.get_as_single().unwrap_or_default();
             return Ok(val);
         }
@@ -98,16 +98,6 @@ impl DataBase {
         None
     }
 
-    fn get_clone(&mut self, name: &str) -> Option<Box<dyn Data>> {
-        let num = self.params.len();
-        for layer in (0..num).rev()  {
-            if let Some(v) = self.params[layer].get_mut(name) {
-                return Some(v.clone());
-            }
-        }
-        None
-    }
-
     pub fn has_value(&mut self, name: &str) -> bool {
         let num = self.params.len();
         for layer in (0..num).rev()  {
@@ -119,7 +109,7 @@ impl DataBase {
     }
 
     pub fn len(&mut self, key: &str) -> usize {
-        match self.get_clone(key).as_mut() {
+        match getter::clone(self, key).as_mut() {
             Some(d) => d.len(),
             _ => 0,
         }
@@ -131,7 +121,7 @@ impl DataBase {
             return self.position_parameters[layer].clone();
         }
 
-        match self.get_clone(name).as_mut() {
+        match getter::clone(self, name).as_mut() {
             Some(d) => {
                 match d.get_all_as_array() {
                     Some(v) => v,
@@ -143,14 +133,14 @@ impl DataBase {
     }
 
     pub fn is_array(&mut self, name: &str) -> bool {
-        match self.get_clone(name).as_mut() {
+        match getter::clone(self, name).as_mut() {
             Some(d) => return d.is_array(),
             _ => false,
         }
     }
 
     pub fn is_assoc(&mut self, key: &str) -> bool {
-        match self.get_clone(key) {
+        match getter::clone(self, key) {
             Some(d) => d.is_assoc(),
             None => false,
         }
@@ -177,10 +167,10 @@ impl DataBase {
             return Err(error::readonly(name));
         }
 
-        match env::var(name) {
-            Ok(_) => env::set_var(name, val),
-            _     => {},
+        if env::var(name).is_ok() {
+            env::set_var(name, val);
         }
+
         match self.params[layer].get_mut(name) {
             Some(d) => {
                 if d.is_single() {
@@ -373,7 +363,7 @@ impl DataBase {
     }
 
     pub fn print(&mut self, name: &str) {
-        if let Some(d) = self.get_clone(name) {
+        if let Some(d) = getter::clone(self, name) {
             d.print_with_name(name);
         }else if let Some(f) = self.functions.get(name) {
             println!("{}", &f.text);
