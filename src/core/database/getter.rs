@@ -25,21 +25,6 @@ pub fn connected_position_params(db :&DataBase) -> Result<String, String> {
     }
 }
 
-/*
-pub fn position_param_pos(&self, key: &str) -> Option<usize> {
-    if ! (key.len() == 1 && "0" <= key && key <= "9") {
-        return None;
-    }
-
-    let n = key.parse::<usize>().unwrap();
-    let layer = self.position_parameters.len();
-    match n < self.position_parameters[layer-1].len() {
-        true  => Some(n),
-        false => None,
-    }
-}
-*/
-
 pub fn position_param(db: &DataBase, pos: usize) -> Result<String, String> {
     let layer = db.position_parameters.len();
     return match db.position_parameters[layer-1].len() > pos {
@@ -47,3 +32,16 @@ pub fn position_param(db: &DataBase, pos: usize) -> Result<String, String> {
         false => Ok(String::new()),
     };
 }
+
+pub fn special_variable(db: &mut DataBase, name: &str) -> Option<String> {
+    let num = db.params.len();
+    for layer in (0..num).rev()  {
+        if let Some(v) = db.params[layer].get_mut(name) {
+            if v.is_special() {
+                return v.get_as_single();
+            }
+        }
+    }
+    None
+}
+

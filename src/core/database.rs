@@ -53,7 +53,7 @@ impl DataBase {
         data.set_special_variable("EPOCHREALTIME", clock::get_epochrealtime);
         data.set_special_variable("SECONDS", clock::get_seconds);
 
-        data.call_speial("SECONDS");
+        getter::special_variable(&mut data, "SECONDS");
 
         data.set_array("FUNCNAME", vec![]).unwrap();
 
@@ -61,6 +61,11 @@ impl DataBase {
     }
 
     pub fn get_param(&mut self, name: &str) -> Result<String, String> {
+        if ! utils::is_param(name) {
+            let error = format!("`{}': not a valid identifier", name);
+            return Err(error);
+        }
+
         if let Some(val) = getter::special_param(self, name) {
             return Ok(val);
         }
@@ -73,12 +78,12 @@ impl DataBase {
             return getter::position_param(self, n);
         }
 
-        if let Some(ans) = self.call_speial(name) {
+        if let Some(ans) = getter::special_variable(self, name) {
             return Ok(ans);
         }
 
         if let Some(d) = self.get_clone(name).as_mut() {
-            let val = d.get_as_single().unwrap_or(String::new());
+            let val = d.get_as_single().unwrap_or_default();
             return Ok(val);
         }
 
@@ -115,18 +120,6 @@ impl DataBase {
         for layer in (0..num).rev()  {
             if self.params[layer].get(name).is_some() {
                 return Some(layer);
-            }
-        }
-        None
-    }
-
-    fn call_speial(&mut self, name: &str) -> Option<String> {
-        let num = self.params.len();
-        for layer in (0..num).rev()  {
-            if let Some(v) = self.params[layer].get_mut(name) {
-                if v.is_special() {
-                    return v.get_as_single();
-                }
             }
         }
         None
