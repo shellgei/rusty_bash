@@ -99,17 +99,12 @@ impl Substitution {
     }
 
     fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>) -> Result<(), String> {
-        let lnum = core.db.get_layer_pos(&self.name).unwrap_or(0);
-
-        let layer = match layer {
-            Some(n) => n,
-            None => lnum,
-        };
+        let layer = core.db.get_target_layer(&self.name, layer);
 
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
             core.db.exit_status = 1;
-            return Err("evaluation error 4".to_string());
+            return Err("no value".to_string());
         }
 
         if ! core.db.has_value(&self.name) {

@@ -174,7 +174,7 @@ impl DataBase {
         self.params[layer].get_mut(name).unwrap().set_as_single(val)
     }
 
-    fn get_target_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
+    pub fn get_target_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
         match layer {
             Some(n) => n,
             None => self.solve_layer(name),
