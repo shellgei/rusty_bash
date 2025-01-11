@@ -335,12 +335,7 @@ impl DataBase {
     }
 
     pub fn set_flag(&mut self, name: &str, flag: char) {
-        let layer = self.position_parameters.len() - 1;
-        let rf = &mut self.param_options[layer];
-        match rf.get_mut(name) {
-            Some(d) => d.push(flag),
-            None => {rf.insert(name.to_string(), flag.to_string()); },
-        }
+        setter::flag(self, name, flag)
     }
 
     pub fn print(&mut self, name: &str) {

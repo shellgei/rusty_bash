@@ -25,3 +25,13 @@ pub fn initialize(data: &mut DataBase) {
 
     data.set_array("FUNCNAME", vec![]).unwrap();
 }
+
+pub fn flag(db: &mut DataBase, name: &str, flag: char) {
+    let layer = db.position_parameters.len() - 1;
+    let rf = &mut db.param_options[layer];
+    match rf.get_mut(name) {
+        Some(d) => d.push(flag),
+        None => {rf.insert(name.to_string(), flag.to_string()); },
+    }
+}
+
