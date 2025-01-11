@@ -84,7 +84,7 @@ impl DataBase {
         }
 
         if let Ok(v) = env::var(name) {
-            let _ = self.set_layer_param(name, &v, 0);
+            let _ = self.set_param(name, &v, Some(0));
             return Ok(v);
         }
 
@@ -159,7 +159,7 @@ impl DataBase {
         }
     }
 
-    pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> Result<(), String> {
+    fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> Result<(), String> {
         Self::name_check(name)?;
         self.write_check(name)?;
 
@@ -203,9 +203,6 @@ impl DataBase {
     }
 
     fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-
         match self.params[layer].get_mut(name) {
             Some(d) => d.set_as_array(&pos.to_string(), val),
             None    => {

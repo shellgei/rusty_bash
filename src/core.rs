@@ -146,13 +146,14 @@ impl ShellCore {
         false
     }
 
-    fn set_subshell_parameters(&mut self) {
+    fn set_subshell_parameters(&mut self) -> Result<(), String> {
         let pid = nix::unistd::getpid();
-        let _ = self.db.set_layer_param("BASHPID", &pid.to_string(), 0);
-        let _ = match self.db.get_param("BASH_SUBSHELL").unwrap().parse::<usize>() {
-            Ok(num) => self.db.set_layer_param("BASH_SUBSHELL", &(num+1).to_string(), 0),
-            Err(_) =>  self.db.set_layer_param("BASH_SUBSHELL", "0", 0),
-        };
+        self.db.set_param("BASHPID", &pid.to_string(), Some(0))?;
+        match self.db.get_param("BASH_SUBSHELL").unwrap().parse::<usize>() {
+            Ok(num) => self.db.set_param("BASH_SUBSHELL", &(num+1).to_string(), Some(0))?,
+            Err(_) =>  self.db.set_param("BASH_SUBSHELL", "0", Some(0))?,
+        }
+        Ok(())
     }
 
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
@@ -162,7 +163,7 @@ impl ShellCore {
 
         self.is_subshell = true;
         child::set_pgid(self, pid, pgid);
-        self.set_subshell_parameters();
+        let _ = self.set_subshell_parameters();
         self.job_table.clear();
     }
 

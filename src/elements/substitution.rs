@@ -84,7 +84,7 @@ impl Substitution {
  
     fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
         let (done, result) = match &self.evaluated_string {
-            Some(data) => (true, core.db.set_layer_param(&self.name, &data, layer)),
+            Some(data) => (true, core.db.set_param(&self.name, &data, Some(layer))),
             _ => (false, Ok(()) ),
         };
 
