@@ -232,6 +232,7 @@ impl DataBase {
     }
 
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize) -> Result<(), String> {
+        self.write_check(name)?;
         let layer = self.solve_layer(name);
         self.set_layer_array_elem(name, val, layer, pos)
     }
