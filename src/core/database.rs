@@ -51,6 +51,14 @@ impl DataBase {
         Ok(())
     }
 
+    fn write_check(&mut self, name: &str) -> Result<(), String> {
+        if self.has_flag(name, 'r') {
+            self.exit_status = 1;
+            return Err(error::readonly(name));
+        }
+        Ok(())
+    }
+
     pub fn get_param(&mut self, name: &str) -> Result<String, String> {
         Self::name_check(name)?;
 
@@ -153,11 +161,7 @@ impl DataBase {
 
     pub fn set_layer_param(&mut self, name: &str, val: &str, layer: usize) -> Result<(), String> {
         Self::name_check(name)?;
-
-        if self.has_flag(name, 'r') {
-            self.exit_status = 1;
-            return Err(error::readonly(name));
-        }
+        self.write_check(name)?;
 
         if env::var(name).is_ok() {
             env::set_var(name, val);
@@ -195,30 +199,19 @@ impl DataBase {
     }
 
     pub fn set_layer_array(&mut self, name: &str, v: Vec<String>, layer: usize) -> Result<(), String> {
-        if self.has_flag(name, 'r') {
-            self.exit_status = 1;
-            return Err(error::readonly(name));
-        }
-
+        self.write_check(name)?;
         self.params[layer].insert( name.to_string(), Box::new(ArrayData::from(v)));
         Ok(())
     }
 
     pub fn set_layer_assoc(&mut self, name: &str, layer: usize) -> Result<(), String> {
-        if self.has_flag(name, 'r') {
-            self.exit_status = 1;
-            return Err(error::readonly(name));
-        }
-
+        self.write_check(name)?;
         self.params[layer].insert(name.to_string(), Box::new(AssocData::default()));
         Ok(())
     }
 
     pub fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
-        if self.has_flag(name, 'r') {
-            self.exit_status = 1;
-            return Err(error::readonly(name));
-        }
+        self.write_check(name)?;
 
         match self.params[layer].get_mut(name) {
             Some(d) => d.set_as_array(&pos.to_string(), val),
@@ -230,10 +223,7 @@ impl DataBase {
     }
 
     pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> Result<(), String> {
-        if self.has_flag(name, 'r') {
-            self.exit_status = 1;
-            return Err(error::readonly(name));
-        }
+        self.write_check(name)?;
 
         match self.params[layer].get_mut(name) {
             Some(v) => v.set_as_assoc(key, val), 
