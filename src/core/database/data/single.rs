@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::HashMap;
+use std::env;
 use super::Data;
 
 #[derive(Debug, Clone)]
@@ -33,5 +34,17 @@ impl SingleData {
     pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, value: &str)-> Result<(), String> {
         db_layer.insert( name.to_string(), Box::new(SingleData::from(value)) );
         Ok(())
+    }
+
+    pub fn set_value(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, val: &str) -> Result<(), String> {
+        if env::var(name).is_ok() {
+            env::set_var(name, val);
+        }
+    
+        if db_layer.get(name).is_none() {
+            SingleData::set_new_entry(db_layer, name, "")?;
+        }
+    
+        db_layer.get_mut(name).unwrap().set_as_single(val)
     }
 }

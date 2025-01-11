@@ -1,8 +1,8 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::core::{DataBase, HashMap};
-use crate::core::database::{SingleData, SpecialData, Data};
+use crate::core::DataBase;
+use crate::core::database::SpecialData;
 use crate::utils::{random, clock};
 use std::{env, process};
 use super::getter;
@@ -36,16 +36,3 @@ pub fn flag(db: &mut DataBase, name: &str, flag: char) {
         None => {rf.insert(name.to_string(), flag.to_string()); },
     }
 }
-
-pub fn param(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, val: &str) -> Result<(), String> {
-    if env::var(name).is_ok() {
-        env::set_var(name, val);
-    }
-
-    if db_layer.get(name).is_none() {
-        SingleData::set_new_entry(db_layer, name, "")?;
-    }
-
-    db_layer.get_mut(name).unwrap().set_as_single(val)
-}
-

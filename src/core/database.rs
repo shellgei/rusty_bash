@@ -184,7 +184,7 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
-        setter::param(&mut self.params[layer], name, val)
+        SingleData::set_value(&mut self.params[layer], name, val)
     }
 
     fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
