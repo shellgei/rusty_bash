@@ -11,42 +11,41 @@ pub struct Substr {
     pub length: Option<ArithmeticExpr>,
 }
 
-pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> Result<(), String> {
-    let info = obj.substr.clone().unwrap();
-    let mut offset = info.offset.clone().unwrap();
-
-    if offset.text == "" {
-        return Err("bad substitution".to_string());
-    }
-
-    let mut ans;
-    match offset.eval_as_int(core) {
-        None => return Err("evaluation error".to_string()),
-        Some(n) => {
-            ans = obj.text.chars().enumerate()
-                      .filter(|(i, _)| (*i as i64) >= n)
-                      .map(|(_, c)| c).collect();
-        },
-    };
-
-    if info.length.is_some() {
-        match length(&ans, &mut info.length.unwrap(), core) {
-            Some(text) => ans = text,
-            None => return Err("length evaluation error".to_string()),
+impl Substr {
+    pub fn get_text(&mut self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+        let mut offset = self.offset.clone().unwrap();
+    
+        if offset.text == "" {
+            return Err("bad substitution".to_string());
         }
+    
+        let mut ans;
+        match offset.eval_as_int(core) {
+            None => return Err("evaluation error".to_string()),
+            Some(n) => {
+                ans = text.chars().enumerate()
+                          .filter(|(i, _)| (*i as i64) >= n)
+                          .map(|(_, c)| c).collect();
+            },
+        };
+    
+        if self.length.is_some() {
+            match self.length(&ans, core) {
+                Some(text) => ans = text,
+                None => return Err("length evaluation error".to_string()),
+            }
+        }
+    
+        Ok(ans)
     }
-
-    obj.text = ans;
-    Ok(())
-}
-
-fn length(text: &String, length: &mut ArithmeticExpr,
-                         core: &mut ShellCore) -> Option<String> {
-    match length.eval_as_int(core) {
-        None    => None,
-        Some(n) => Some(text.chars().enumerate()
-                        .filter(|(i, _)| (*i as i64) < n)
-                        .map(|(_, c)| c).collect())
+    
+    fn length(&mut self, text: &String, core: &mut ShellCore) -> Option<String> {
+        match self.length.as_mut()?.eval_as_int(core) {
+            None    => None,
+            Some(n) => Some(text.chars().enumerate()
+                            .filter(|(i, _)| (*i as i64) < n)
+                            .map(|(_, c)| c).collect())
+        }
     }
 }
 

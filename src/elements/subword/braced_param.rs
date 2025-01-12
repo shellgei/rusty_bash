@@ -141,8 +141,8 @@ impl BracedParam {
     }
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
-        if self.substr.is_some() {
-            substr::set(self, core)?;
+        if let Some(s) = self.substr.as_mut() {
+            self.text = s.get_text(&self.text, core)?;
         }else if self.has_alternative {
             if ! alternative::set(self, core) {
                 return Err("alternative error".to_string());
