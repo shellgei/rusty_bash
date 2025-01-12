@@ -21,8 +21,8 @@ pub struct BracedParam {
 
     /*
     pub name: String,
-    */
     subscript: Option<Subscript>,
+    */
 
     pub name: (String, Option<Subscript>),
 
@@ -69,7 +69,7 @@ impl Subword for BracedParam {
             }
         }
 
-        if self.subscript.is_some() {
+        if self.name.1.is_some() {
             if self.name.0 == "@" {
                 eprintln!("sush: {}: bad substitution", &self.text);
                 return false;
@@ -118,7 +118,7 @@ impl BracedParam {
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> bool {
-        let index = match self.subscript.clone().unwrap().eval(core, &self.name.0) {
+        let index = match self.name.1.clone().unwrap().eval(core, &self.name.0) {
             Some(s) => s,
             None => return false,
         };
@@ -167,7 +167,7 @@ impl BracedParam {
             if s.text.contains('@') {
                 ans.is_array = true;
             }
-            ans.subscript = Some(s);
+            ans.name.1 = Some(s);
             return true;
         }
 
