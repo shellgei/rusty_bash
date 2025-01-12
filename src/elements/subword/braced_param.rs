@@ -150,8 +150,7 @@ impl BracedParam {
                 return Err("alternative error".to_string());
             }
         }else if let Some(r) = self.remove.as_mut() {
-            let r = r.clone();
-            if ! r.set(self, core) {
+            if ! r.set(&mut self.text, core) {
                 return Err("remove error".to_string());
             }
         }else if let Some(r) = &self.replace {

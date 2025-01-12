@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::elements::subword::BracedParam;
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 
@@ -13,7 +12,7 @@ pub struct Remove {
 }
 
 impl Remove {
-    pub fn set(&self, obj: &mut BracedParam, core: &mut ShellCore) -> bool {
+    pub fn set(&self, text: &mut String, core: &mut ShellCore) -> bool {
         let pattern = match &self.remove_pattern {
             None => return true,
             Some(w) => {
@@ -28,36 +27,36 @@ impl Remove {
      
         if self.remove_symbol.starts_with("##") {
             let pat = glob::parse(&pattern, extglob);
-            let len = glob::longest_match_length(&obj.text, &pat);
-            obj.text = obj.text[len..].to_string();
+            let len = glob::longest_match_length(&text, &pat);
+            *text = text[len..].to_string();
         } else if self.remove_symbol.starts_with("#") {
             let pat = glob::parse(&pattern, extglob);
-            let len = glob::shortest_match_length(&obj.text, &pat);
-            obj.text = obj.text[len..].to_string();
+            let len = glob::shortest_match_length(&text, &pat);
+            *text = text[len..].to_string();
         }else if self.remove_symbol.starts_with("%") {
-            Self::percent(obj, &pattern, extglob);
+            self.percent(text, &pattern, extglob);
         }else {
             return false;
         }
         true
     }
     
-    pub fn percent(obj: &mut BracedParam, pattern: &String, extglob: bool) {
-        let mut length = obj.text.len();
+    pub fn percent(&self, text: &mut String, pattern: &String, extglob: bool) {
+        let mut length = text.len();
         let mut ans_length = length;
      
-        for ch in obj.text.chars().rev() {
+        for ch in text.chars().rev() {
             length -= ch.len_utf8();
-            let s = obj.text[length..].to_string();
+            let s = text[length..].to_string();
      
             if glob::parse_and_compare(&s, &pattern, extglob) {
                 ans_length = length;
-                if obj.remove.as_mut().unwrap().remove_symbol == "%" {
+                if self.remove_symbol == "%" {
                     break;
                 }
             }
         }
      
-        obj.text = obj.text[0..ans_length].to_string();
+        *text = text[0..ans_length].to_string();
     }
 }
