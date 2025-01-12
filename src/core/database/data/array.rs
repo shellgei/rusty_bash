@@ -52,12 +52,12 @@ impl Data for ArrayData {
         Ok( self.body.get(&n).unwrap_or(&"".to_string()).clone() )
     }
 
-    fn get_all_as_array(&mut self) -> Option<Vec<String>> {
-        Some(self.values().clone())
+    fn get_all_as_array(&mut self) -> Result<Vec<String>, String> {
+        Ok(self.values().clone())
     }
 
-    fn get_as_single(&mut self) -> Option<String> {
-        self.body.get(&0).map(|v| Some(v.clone()))?
+    fn get_as_single(&mut self) -> Result<String, String> {
+        self.body.get(&0).map(|v| Ok(v.clone())).ok_or("No entry".to_string())?
     }
 
     fn is_array(&self) -> bool {true}

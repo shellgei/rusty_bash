@@ -41,18 +41,18 @@ impl Data for AssocData {
         Ok(())
     }
 
-    fn get_as_assoc(&mut self, key: &str) -> Option<String> {
+    fn get_as_assoc(&mut self, key: &str) -> Result<String, String> {
         if key == "@" || key == "*" {
-            return Some(self.values().join(" "));
+            return Ok(self.values().join(" "));
         }
 
         match self.body.get(key) {
-            Some(s) => Some(s.to_string()),
-            None => None,
+            Some(s) => Ok(s.to_string()),
+            None => Err("no entry".to_string()),
         }
     }
 
-    fn get_as_single(&mut self) -> Option<String> { self.last.clone() }
+    fn get_as_single(&mut self) -> Result<String, String> { self.last.clone().ok_or("No last input".to_string()) }
 
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }

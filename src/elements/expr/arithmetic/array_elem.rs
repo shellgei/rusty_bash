@@ -51,6 +51,6 @@ fn set_value(name: &String, key: &String, new_value: i64,
         };
     }
 
-    core.db.set_assoc_elem(name, &(new_value.to_string()), key)
+    core.db.set_assoc_elem(name, &(new_value.to_string()), key, None)
 }
 

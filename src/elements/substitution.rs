@@ -59,7 +59,7 @@ impl Substitution {
         let index = self.get_index(core);
         match (&self.evaluated_string, index) {
             (Some(v), Some(k)) 
-                => core.db.set_layer_assoc_elem(&self.name, &k, &v, layer),
+                => core.db.set_assoc_elem(&self.name, &k, &v, Some(layer)),
             _   => Err("evaluation error 1".to_string()),
         }
     }

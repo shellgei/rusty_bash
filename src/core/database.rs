@@ -120,8 +120,8 @@ impl DataBase {
         match getter::clone(self, name).as_mut() {
             Some(d) => {
                 match d.get_all_as_array() {
-                    Some(v) => v,
-                    None => vec![],
+                    Ok(v) => v,
+                    _ => vec![],
                 }
             },
             None => vec![],
@@ -135,8 +135,8 @@ impl DataBase {
         }
     }
 
-    pub fn is_assoc(&mut self, key: &str) -> bool {
-        match getter::clone(self, key) {
+    pub fn is_assoc(&mut self, name: &str) -> bool {
+        match getter::clone(self, name) {
             Some(d) => d.is_assoc(),
             None => false,
         }
@@ -195,7 +195,7 @@ impl DataBase {
         }
     }
 
-    pub fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> Result<(), String> {
+    fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> Result<(), String> {
         Self::name_check(name)?;
         self.write_check(name)?;
 
@@ -212,10 +212,10 @@ impl DataBase {
         self.set_layer_array_elem(name, val, layer, pos)
     }
 
-    pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String) -> Result<(), String> {
+    pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), String> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        let layer = self.solve_layer(name);
+        let layer = self.get_target_layer(name, layer);
         self.set_layer_assoc_elem(name, key, val, layer)
     }
 

@@ -96,7 +96,7 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             let result = match subscript.parse::<usize>() {
                 Ok(n) => core.db.set_array_elem(&name, &s, n, None),
-                _ => core.db.set_assoc_elem(&name, &subscript, &s),
+                _ => core.db.set_assoc_elem(&name, &subscript, &s, None),
             };
             if let Err(e) = result {
                 let msg = format!("printf: {}", e);

@@ -25,7 +25,7 @@ impl Data for SingleData {
         Ok(())
     }
 
-    fn get_as_single(&mut self) -> Option<String> { Some(self.body.clone()) }
+    fn get_as_single(&mut self) -> Result<String, String> { Ok(self.body.clone()) }
     fn len(&mut self) -> usize { self.body.chars().count() }
     fn is_single(&self) -> bool {true}
 }

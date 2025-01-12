@@ -40,18 +40,7 @@ pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> Result<String, St
         _ => return Ok("".to_string()),
     };
 
-    if let Some(d) = db.params[layer].get_mut(name) {
-        if d.is_assoc() {
-            if let Some(ans) = d.get_as_assoc(pos) {
-                return Ok(ans);
-            }
-        }
-        if d.is_array() {
-            return d.get_as_array(pos);
-        }
-    }
-
-    Ok("".to_string())
+    db.params[layer].get_mut(name).unwrap().get_as_array_or_assoc(pos)
 }
 
 pub fn clone(db: &mut DataBase, name: &str) -> Option<Box<dyn Data>> {

@@ -28,8 +28,8 @@ impl Data for SpecialData {
         self.internal_data.join(" ")
     }
 
-    fn get_as_single(&mut self) -> Option<String> {
-        Some( (self.function)(&mut self.internal_data) )
+    fn get_as_single(&mut self) -> Result<String, String> {
+        Ok( (self.function)(&mut self.internal_data) )
     }
 
     fn len(&mut self) -> usize {
@@ -52,7 +52,9 @@ impl SpecialData {
         for layer in (0..num).rev()  {
             if let Some(v) = db.params[layer].get_mut(name) {
                 if v.is_special() {
-                    return v.get_as_single();
+                    if let Ok(s) = v.get_as_single() {
+                        return Some(s);
+                    }
                 }
             }
         }
