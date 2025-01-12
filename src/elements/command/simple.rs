@@ -3,18 +3,13 @@
 
 pub mod parser;
 
-use crate::{Feeder, Script, ShellCore};
+use crate::{child, ShellCore};
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
-use nix::unistd;
-use std::ffi::CString;
-use std::process;
 use std::sync::atomic::Ordering::Relaxed;
-
 use nix::unistd::Pid;
-use nix::errno::Errno;
 
 #[derive(Debug, Clone, Default)]
 pub struct SimpleCommand {
@@ -63,7 +58,8 @@ impl Command for SimpleCommand {
                                        .map(|a| a.text.clone()).collect();
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
-            self.exec_external_command(core);
+            self.set_environment_variables(core);
+            child::exec_command(&self.args, core);
         }
 
         core.db.pop_local();
@@ -81,36 +77,8 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(&mut self, core: &mut ShellCore) -> ! {
-        self.set_environment_variables(core);
-        let cargs = Self::to_cargs(&self.args);
-
-        match unistd::execvp(&cargs[0], &cargs) {
-            Err(Errno::E2BIG) => exit::arg_list_too_long(&self.args[0], core),
-            Err(Errno::EACCES) => exit::permission_denied(&self.args[0], core),
-            Err(Errno::ENOENT) => self.run_command_not_found(core),
-            Err(err) => {
-                eprintln!("Failed to execute. {:?}", err);
-                process::exit(127)
-            }
-            _ => exit::internal("never come here")
-        }
-    }
-
     fn break_continue_or_return(core: &mut ShellCore) -> bool {
         core.return_flag || core.break_counter > 0 || core.continue_counter > 0 
-    }
-
-    fn run_command_not_found(&mut self, core: &mut ShellCore) -> ! {
-        if core.db.functions.contains_key("command_not_found_handle") {
-            let s = "command_not_found_handle ".to_owned() + &self.args[0].clone();
-            let mut f = Feeder::new(&s);
-            match Script::parse(&mut f, core, false) {
-                Some(mut script) => script.exec(core),
-                _ => {},
-            }
-        }
-        exit::not_found(&self.args[0], core)
     }
 
     pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
@@ -158,12 +126,6 @@ impl SimpleCommand {
     fn set_environment_variables(&mut self, core: &mut ShellCore) {
         self.substitutions.iter_mut()
             .for_each(|s| {s.eval(core, None, true);} );
-    }
-
-    fn to_cargs(args: &Vec<String>) -> Vec<CString> {
-        args.iter()
-            .map(|a| CString::new(a.to_string()).unwrap())
-            .collect()
     }
 
     fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {

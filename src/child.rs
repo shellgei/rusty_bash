@@ -1,15 +1,18 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{exit, ShellCore, signal};
+use crate::{exit, Feeder, Script, ShellCore, signal};
 use crate::utils::error;
 use nix::unistd;
+use nix::errno::Errno;
 use nix::sys::{resource, wait};
 use nix::sys::resource::UsageWho;
 use nix::sys::signal::Signal;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::time::{clock_gettime, ClockId};
 use nix::unistd::Pid;
+use std::process;
+use std::ffi::CString;
 use std::sync::atomic::Ordering::Relaxed;
 
 pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
@@ -130,4 +133,37 @@ fn show_time(core: &ShellCore) {
      let sys_diff = core_usage.system_time() + children_usage.system_time() - core.measured_time.sys;
      eprintln!("sys \t{}m{}.{:06}s", sys_diff.tv_sec()/60,
                sys_diff.tv_sec()%60, sys_diff.tv_usec());
+}
+
+pub fn exec_command(args: &Vec<String>, core: &mut ShellCore) -> ! {
+    let cargs = to_cargs(args);
+
+    match unistd::execvp(&cargs[0], &cargs) {
+        Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),
+        Err(Errno::EACCES) => exit::permission_denied(&args[0], core),
+        Err(Errno::ENOENT) => run_command_not_found(&args[0], core),
+        Err(err) => {
+            eprintln!("Failed to execute. {:?}", err);
+            process::exit(127)
+        }
+        _ => exit::internal("never come here")
+    }
+}
+
+fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
+    if core.db.functions.contains_key("command_not_found_handle") {
+        let s = "command_not_found_handle ".to_owned() + &arg.clone();
+        let mut f = Feeder::new(&s);
+        match Script::parse(&mut f, core, false) {
+            Some(mut script) => script.exec(core),
+            _ => {},
+        }
+    }
+    exit::not_found(&arg, core)
+}
+
+fn to_cargs(args: &Vec<String>) -> Vec<CString> {
+    args.iter()
+        .map(|a| CString::new(a.to_string()).unwrap())
+        .collect()
 }
