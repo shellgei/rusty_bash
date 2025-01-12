@@ -107,7 +107,7 @@ impl ArithmeticExpr {
                 if let Ok(n) = int::parse(&w) {
                     ans.elements.push( ArithElem::Integer(n) );
                     return true;
-                }else if let Some(f) = float::parse(&w) {
+                }else if let Ok(f) = float::parse(&w) {
                     ans.elements.push( ArithElem::Float(f) );
                     return true;
                 }

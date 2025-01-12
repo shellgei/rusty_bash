@@ -68,13 +68,13 @@ pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut Shel
     }
 }
 
-pub fn parse(s: &str) -> Option<f64> {
+pub fn parse(s: &str) -> Result<f64, String> {
     let mut sw = s.to_string();
     let sign = word::get_sign(&mut sw);
 
     match (sw.parse::<f64>(), sign.as_str()) {
-        (Ok(f), "-") => Some(-f),
-        (Ok(f), _)   => Some(f),
-        _            => None,
+        (Ok(f), "-") => Ok(-f),
+        (Ok(f), _)   => Ok(f),
+        (Err(e), _)  => Err(e.to_string()),
     }
 }
