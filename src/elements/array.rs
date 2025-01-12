@@ -12,17 +12,17 @@ pub struct Array {
 }
 
 impl Array {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, String> {
         let mut ans = vec![];
 
         for w in &mut self.words {
             match w.eval(core) {
-                None     => return None,
+                None     => return Err("evaluation error".to_string()),
                 Some(ws) => ans.extend(ws),
             }
         }
 
-        Some(ans)
+        Ok(ans)
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

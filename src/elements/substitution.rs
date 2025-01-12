@@ -37,7 +37,7 @@ impl Substitution {
                 self.evaluated_string = Some(e);
             }
             ParsedDataType::Array(mut a) 
-            => if let Some(vec) = self.eval_as_array(&mut a, core) {
+            => if let Ok(vec) = self.eval_as_array(&mut a, core) {
                 self.evaluated_array = Some(vec.clone());
             }
         };
@@ -154,16 +154,19 @@ impl Substitution {
         }
     }
 
-    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> Option<Vec<String>> {
+    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> Result<Vec<String>, String> {
         let prev = match self.append {
             true  => core.db.get_array_all(&self.name),
             false => vec![],
         };
 
+        let values = a.eval(core)?;
+        Ok([prev, values].concat())
+        /*
         match a.eval(core) {
             Some(values) => Some([prev, values].concat()),
             None         => None,
-        }
+        }*/
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
