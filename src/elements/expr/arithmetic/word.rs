@@ -59,8 +59,8 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
     }
 
     match single_str_to_num(&name, core) {
-        Some(e) => Ok(e),
-        None    => resolve_arithmetic_op(&name, core),
+        Ok(e)  => Ok(e),
+        Err(_) => resolve_arithmetic_op(&name, core),
     }
 }
 
@@ -76,30 +76,24 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
     }
 
     if let Ok(eval) = parsed.eval(core) {
-        if let Some(e) = single_str_to_num(&eval, core) {
-            return Ok(e);
-        }
+        return single_str_to_num(&eval, core);
     }
 
     Err(error::syntax(&name))
 }
 
-fn single_str_to_num(name: &str, core: &mut ShellCore) -> Option<ArithElem> {
+fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
     if name.contains('.') {
-        return match float::parse(&name) {
-            Ok(f) => Some(ArithElem::Float(f)),
-            _ => None,
-        }
+        let f = float::parse(&name)?;
+        return Ok(ArithElem::Float(f));
     }
 
     if utils::is_name(&name, core) {
-        return Some( ArithElem::Integer(0) );
+        return Ok( ArithElem::Integer(0) );
     }
 
-    match int::parse(&name) {
-        Ok(n)  => Some( ArithElem::Integer(n) ),
-        Err(_) => None,
-    }
+    let n = int::parse(&name)?;
+    Ok( ArithElem::Integer(n) )
 }
 
 fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<ArithElem, String> {
