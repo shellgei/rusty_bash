@@ -13,6 +13,7 @@ use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::utils;
+use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
 use super::simple::SimpleSubword;
@@ -26,9 +27,12 @@ struct Param {
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     text: String,
+    array: Vec<String>,
+
     param: Param,
     replace: Option<Replace>,
     substr: Option<Substr>,
+    remove: Option<Remove>,
 
     unknown: String,
     is_array: bool,
@@ -37,10 +41,6 @@ pub struct BracedParam {
     alternative_value: Option<Word>,
     num: bool,
     indirect: bool,
-    has_remove_pattern: bool,
-    remove_symbol: String,
-    remove_pattern: Option<Word>,
-    array: Vec<String>,
 }
 
 impl Subword for BracedParam {
@@ -70,9 +70,10 @@ impl Subword for BracedParam {
             return self.subscript_operation(core);
         }
 
-        if self.param.name == "@" && self.substr.is_some() {
-            let mut s = self.substr.clone().unwrap();
-            return s.set_partial_position_params(&mut self.array, &mut self.text, core).is_ok();
+        if self.param.name == "@" {
+            if let Some(s) = self.substr.as_mut() {
+                return s.set_partial_position_params(&mut self.array, &mut self.text, core).is_ok();
+            }
         }
 
         let value = core.db.get_param(&self.param.name).unwrap_or_default();
@@ -148,7 +149,7 @@ impl BracedParam {
             if ! alternative::set(self, core) {
                 return Err("alternative error".to_string());
             }
-        }else if self.has_remove_pattern {
+        }else if self.remove.is_some() {
             if ! remove::set(self, core) {
                 return Err("remove error".to_string());
             }
@@ -197,11 +198,13 @@ impl BracedParam {
             return false;
         }
 
-        ans.remove_symbol = feeder.consume(len);
-        ans.text += &ans.remove_symbol.clone();
-        ans.has_remove_pattern = true;
+        let mut info = Remove::default();
 
-        ans.remove_pattern = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
+        info.remove_symbol = feeder.consume(len);
+        ans.text += &info.remove_symbol.clone();
+
+        info.remove_pattern = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
+        ans.remove = Some(info);
         true
     }
 
