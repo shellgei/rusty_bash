@@ -112,6 +112,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
         }
     }
 
+    dbg!("{:?}", &stack);
     if stack.len() != 1 {
         return Err( format!("unknown syntax error (stack inconsistency)",) );
     }

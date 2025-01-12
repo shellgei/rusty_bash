@@ -83,15 +83,15 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
         _   => return Err("Not supprted operation for integer numbers".to_string()),
     };
 
-    match core.db.set_param(&name, &new_value.to_string(), None) { //TOOD: simplify, None, None
+    match core.db.set_param(&name, &new_value.to_string(), None) { //TOOD: simplify
         Ok(())  => Ok(ArithElem::Integer(new_value)),
         Err(e) => Err(e),
     }
 }
 
-fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
+fn parse_with_base(base: i64, s: &mut String) -> Result<i64, String> {
     if s.is_empty() {
-        return None;
+        return Err("empty".to_string());
     }
 
     let mut ans = 0;
@@ -102,26 +102,25 @@ fn parse_with_base(base: i64, s: &mut String) -> Option<i64> {
         }else if ch >= 'a' && ch <= 'z' {
             ch as i64 - 'a' as i64 + 10
         }else if ch >= 'A' && ch <= 'Z' {
-            if base <= 36 {
-                ch as i64 - 'A' as i64 + 10
-            }else{
-                ch as i64 - 'A' as i64 + 36
+            match base <= 36 {
+                true  => ch as i64 - 'A' as i64 + 10,
+                false => ch as i64 - 'A' as i64 + 36,
             }
         }else if ch == '@' {
             62
         }else if ch == '_' {
             63
         }else{
-            return None;
+            return Err("invalid digit".to_string());
         };
 
         match num < base {
             true  => ans += num,
-            false => return None,
+            false => return Err("base error".to_string()),
         }
     }
 
-    Some(ans)
+    Ok(ans)
 }
 
 fn get_base(s: &mut String) -> Option<i64> {
@@ -153,26 +152,26 @@ fn get_base(s: &mut String) -> Option<i64> {
     Some(10)
 }
 
-pub fn parse(s: &str) -> Option<i64> {
+pub fn parse(s: &str) -> Result<i64, String> {
     if s.find('\'').is_some() 
     || s.find('.').is_some() {
-        return None;
+        return Err("invalid number".to_string());
     }
     if s.is_empty() {
-        return Some(0);
+        return Ok(0);
     }
 
     let mut sw = s.to_string();
     let sign = word::get_sign(&mut sw);
     let base = match get_base(&mut sw) {
         Some(n) => n, 
-        _       => return None,
+        _       => return Err("invalid base".to_string()),
     };
 
     match ( parse_with_base(base, &mut sw), sign.as_str() ) {
-        (Some(n), "-") => Some(-n), 
-        (Some(n), _)   => Some(n), 
-        _              => None,
+        (Ok(n), "-") => Ok(-n), 
+        (Ok(n), _)   => Ok(n), 
+        (Err(e), _)  => Err(e),
     }
 }
 

@@ -104,7 +104,7 @@ impl ArithmeticExpr {
 
         if let Some(w) = word.make_unquoted_word() {
             if word.text.find('\'').is_none() {
-                if let Some(n) = int::parse(&w) {
+                if let Ok(n) = int::parse(&w) {
                     ans.elements.push( ArithElem::Integer(n) );
                     return true;
                 }else if let Some(f) = float::parse(&w) {

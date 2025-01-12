@@ -33,9 +33,10 @@ impl Job {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
+            /*
             if core.word_eval_error {
                 return;
-            }
+            }*/
 
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
 

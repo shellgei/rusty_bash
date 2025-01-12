@@ -85,7 +85,7 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
 }
 
 fn single_str_to_num(name: &str, core: &mut ShellCore) -> Option<ArithElem> {
-    if let Some(n) = int::parse(&name) {         Some( ArithElem::Integer(n) )
+    if let Ok(n) = int::parse(&name) {           Some( ArithElem::Integer(n) )
     }else if utils::is_name(&name, core) {       Some( ArithElem::Integer(0) )
     }else if let Some(f) = float::parse(&name) { Some( ArithElem::Float(f) )
     }else{                                       None }
