@@ -5,10 +5,17 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::subword::BracedParam;
 use crate::ShellCore;
 
-pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-    let info = obj.offset.clone().unwrap();
+#[derive(Debug, Clone, Default)]
+pub struct Substr {
+    pub offset: Option<ArithmeticExpr>,
+    pub has_length: bool,
+    pub length: Option<ArithmeticExpr>,
+}
 
-    let mut offset = match obj.offset.clone() {
+pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
+    let info = obj.substr.clone().unwrap();
+
+    let mut offset = match obj.substr.clone() {
         None => {
             eprintln!("sush: {}: bad substitution", &obj.text);
             return false;
@@ -61,9 +68,9 @@ fn length(text: &String, length: &Option<ArithmeticExpr>,
 }
 
 pub fn set_partial_position_params(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-    let info = obj.offset.clone().unwrap();
+    let info = obj.substr.clone().unwrap();
 
-    let mut offset = match obj.offset.clone().unwrap().offset.clone() {
+    let mut offset = match info.offset.clone() {
         None => {
             eprintln!("sush: {}: bad substitution", &obj.text);
             return false;
