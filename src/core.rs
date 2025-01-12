@@ -8,7 +8,7 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 
-use crate::{child, signal};
+use crate::{proc_ctrl, signal};
 use self::database::DataBase;
 use self::options::Options;
 use std::collections::HashMap;
@@ -164,7 +164,7 @@ impl ShellCore {
         signal::restore(Signal::SIGPIPE);
 
         self.is_subshell = true;
-        child::set_pgid(self, pid, pgid);
+        proc_ctrl::set_pgid(self, pid, pgid);
         let _ = self.set_subshell_parameters();
         self.job_table.clear();
     }

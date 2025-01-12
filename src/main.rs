@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod child;
 mod core;
 mod feeder;
 mod elements;
 mod signal;
+mod proc_ctrl;
 mod utils;
 
 use builtins::{option, parameter};

@@ -3,7 +3,7 @@
 
 pub mod parser;
 
-use crate::{child, ShellCore};
+use crate::{proc_ctrl, ShellCore};
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -59,7 +59,7 @@ impl Command for SimpleCommand {
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
             self.set_environment_variables(core);
-            child::exec_command(&self.args, core);
+            proc_ctrl::exec_command(&self.args, core);
         }
 
         core.db.pop_local();

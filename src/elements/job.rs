@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
-use crate::{child, Feeder, ShellCore};
+use crate::{proc_ctrl, Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
 use crate::utils::exit;
 use nix::sys::wait::WaitStatus;
@@ -42,7 +42,7 @@ impl Job {
             if do_next {
                 core.jobtable_check_status();
                 let (pids, exclamation, time) = pipeline.exec(core, pgid);
-                let waitstatuses = child::wait_pipeline(core, pids.clone(), exclamation, time);
+                let waitstatuses = proc_ctrl::wait_pipeline(core, pids.clone(), exclamation, time);
 
                 Self::check_stop(core, &pipeline.text, &pids, &waitstatuses);
             }
@@ -100,7 +100,7 @@ impl Job {
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
-                child::set_pgid(core, child, pgid);
+                proc_ctrl::set_pgid(core, child, pgid);
                 Some(child) 
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),

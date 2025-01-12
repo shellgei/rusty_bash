@@ -12,7 +12,7 @@ pub mod function_def;
 pub mod r#while;
 pub mod r#if;
 
-use crate::{child, ShellCore, Feeder, Script};
+use crate::{proc_ctrl, ShellCore, Feeder, Script};
 use crate::utils::exit;
 use self::arithmetic::ArithmeticCommand;
 use self::case::CaseCommand;
@@ -62,7 +62,7 @@ pub trait Command {
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
-                child::set_pgid(core, child, pipe.pgid);
+                proc_ctrl::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
                 Some(child)
             },

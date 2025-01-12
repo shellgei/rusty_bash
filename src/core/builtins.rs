@@ -17,7 +17,7 @@ mod source;
 mod loop_control;
 mod unset;
 
-use crate::{child, Feeder, Script, ShellCore};
+use crate::{proc_ctrl, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, error, exit, file};
@@ -135,7 +135,7 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut pipe = Pipe::new("".to_string());
     command.args = words;
     let pid = command.exec_command(core, &mut pipe);
-    child::wait_pipeline(core, vec![pid], false, false);
+    proc_ctrl::wait_pipeline(core, vec![pid], false, false);
 
     core.db.exit_status
 }
