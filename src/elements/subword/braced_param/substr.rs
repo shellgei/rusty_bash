@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::subword::BracedParam;
 use crate::ShellCore;
 
 #[derive(Debug, Clone, Default)]
@@ -45,30 +44,26 @@ impl Substr {
         }
     }
 
-    pub fn set_partial_position_params(&self, obj: &mut BracedParam, core: &mut ShellCore) -> Result<(), String> {
-        let mut offset = match self.offset.clone() {
-            None => {
-                return Err("bad substitution".to_string());
-            },
-            Some(ofs) => ofs,
-        };
+    pub fn set_partial_position_params(&mut self, array: &mut Vec<String>,
+                    text: &mut String, core: &mut ShellCore) -> Result<(), String> {
+        let offset = self.offset.as_mut().unwrap();
     
         if offset.text == "" {
             return Err("bad substitution".to_string());
         }
     
-        obj.array = core.db.get_array_all("@");
+        *array = core.db.get_array_all("@");
         match offset.eval_as_int(core) {
             None => return Err("evaluation error".to_string()),
             Some(n) => {
                 let mut start = std::cmp::max(0, n) as usize;
-                start = std::cmp::min(start, obj.array.len()) as usize;
-                obj.array = obj.array.split_off(start);
+                start = std::cmp::min(start, array.len()) as usize;
+                *array = array.split_off(start);
             },
         };
     
         if self.length.is_none() {
-            obj.text = obj.array.join(" ");
+            *text = array.join(" ");
             return Ok(());
         }
     
@@ -87,12 +82,12 @@ impl Substr {
                 if n < 0 {
                     return Err(format!("{}: substring expression < 0", n));
                 }
-                let len = std::cmp::min(n as usize, obj.array.len());
-                let _ = obj.array.split_off(len);
+                let len = std::cmp::min(n as usize, array.len());
+                let _ = array.split_off(len);
             },
         };
     
-        obj.text = obj.array.join(" ");
+        *text = array.join(" ");
         Ok(())
     }
 }
