@@ -29,14 +29,13 @@ struct Replace {
     replace_from: Option<Word>,
     replace_to: Option<Word>,
     has_replace_to: bool,
-    has_replace: bool,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     text: String,
-    //name: (String, Option<Subscript>),
     param: Param,
+    replace: Option<Replace>,
 
     unknown: String,
     is_array: bool,
@@ -52,15 +51,6 @@ pub struct BracedParam {
     has_remove_pattern: bool,
     remove_symbol: String,
     remove_pattern: Option<Word>,
-    replace: Option<Replace>,
-    //has_replace: bool,
-    //replace_from: Option<Word>,
-   // has_replace_to: bool,
-    /*replace_to: Option<Word>,
-    all_replace: bool,
-    head_only_replace: bool,
-    tail_only_replace: bool,
-    */
     array: Vec<String>,
 }
 
@@ -227,7 +217,6 @@ impl BracedParam {
         let mut info = Replace::default();
 
         ans.text += &feeder.consume(1);
-        info.has_replace = true;
         if feeder.starts_with("/") {
             ans.text += &feeder.consume(1);
             info.all_replace = true;
