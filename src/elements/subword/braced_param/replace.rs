@@ -3,7 +3,18 @@
 
 use crate::ShellCore;
 use crate::elements::subword::BracedParam;
+use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
+
+#[derive(Debug, Clone, Default)]
+pub struct Replace {
+    pub head_only_replace: bool,
+    pub tail_only_replace: bool,
+    pub all_replace: bool,
+    pub replace_from: Option<Word>,
+    pub replace_to: Option<Word>,
+    pub has_replace_to: bool,
+}
 
 pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     if obj.replace.is_none() {

@@ -13,22 +13,13 @@ use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::utils;
+use self::replace::Replace;
 use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone, Default)]
 struct Param {
     name: String,
     subscript: Option<Subscript>,
-}
-
-#[derive(Debug, Clone, Default)]
-struct Replace {
-    head_only_replace: bool,
-    tail_only_replace: bool,
-    all_replace: bool,
-    replace_from: Option<Word>,
-    replace_to: Option<Word>,
-    has_replace_to: bool,
 }
 
 #[derive(Debug, Clone, Default)]
