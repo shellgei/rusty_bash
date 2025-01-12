@@ -52,11 +52,6 @@ impl Word {
         for w in brace_expansion::eval(&mut self.clone()) {
             let expanded = w.tilde_and_dollar_expansion(core)?;
             ws.append( &mut expanded.split_and_path_expansion() );
-            /*
-            match w.tilde_and_dollar_expansion(core) {
-                Some(w) => ws.append( &mut w.split_and_path_expansion() ),
-                None    => return None,
-            };*/
         }
         Self::make_args(&mut ws)
     }
@@ -66,11 +61,6 @@ impl Word {
         tilde_expansion::eval(&mut w, core);
         substitution::eval(&mut w, core)?;
         Ok(w)
-            /*
-        match substitution::eval(&mut w, core) {
-            true  => Some(w),
-            false => None,
-        }*/
     }
 
     pub fn split_and_path_expansion(&self) -> Vec<Word> {
