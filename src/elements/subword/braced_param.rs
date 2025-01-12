@@ -45,9 +45,9 @@ impl Subword for BracedParam {
     fn get_text(&self) -> &str { &self.text.as_ref() }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
         if ! self.check() {
-            return false;
+            return Err("invalid brace".to_string());
         }
 
         if self.indirect {
@@ -55,22 +55,20 @@ impl Subword for BracedParam {
             if utils::is_param(&value) {
                 self.param.name = value;
             }else{
-                eprintln!("sush: {}: invalid name", &value);
-                return false;
+                return Err(format!("sush: {}: invalid name", &value));
             }
         }
 
         if self.param.subscript.is_some() {
             if self.param.name == "@" {
-                eprintln!("sush: {}: bad substitution", &self.text);
-                return false;
+                return Err(format!("sush: @: bad substitution"));
             }
             return self.subscript_operation(core);
         }
 
         if self.param.name == "@" {
             if let Some(s) = self.substr.as_mut() {
-                return s.set_partial_position_params(&mut self.array, &mut self.text, core).is_ok();
+                return s.set_partial_position_params(&mut self.array, &mut self.text, core);
             }
         }
 
@@ -80,7 +78,7 @@ impl Subword for BracedParam {
             false => value.to_string(),
         };
 
-        self.optional_operation(core).is_ok()
+        self.optional_operation(core)
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
@@ -115,10 +113,10 @@ impl BracedParam {
         true
     }
 
-    fn subscript_operation(&mut self, core: &mut ShellCore) -> bool {
+    fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
         let index = match self.param.subscript.clone().unwrap().eval(core, &self.param.name) {
             Some(s) => s,
-            None => return false,
+            None => return Err("index evaluation error".to_string()),
         };
 
         if core.db.is_assoc(&self.param.name) {
@@ -134,15 +132,13 @@ impl BracedParam {
             (true, _)   => core.db.get_array_elem(&self.param.name, &index).unwrap().chars().count().to_string(),
             (false, _)  => core.db.get_array_elem(&self.param.name, &index).unwrap(),
        };
-       self.optional_operation(core).is_ok()
+       self.optional_operation(core)
     }
 
-    fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
-        if let Ok(s) = core.db.get_array_elem(&self.param.name, index) {
-            self.text = s;
-            return true;
-        }
-        false
+    fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> Result<(), String> {
+        let s = core.db.get_array_elem(&self.param.name, index)?;
+        self.text = s;
+        Ok(())
     }
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {

@@ -15,12 +15,12 @@ impl Subword for Arithmetic {
     fn get_text(&self) -> &str { &self.text.as_ref() }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
         if let Some(s) = self.com.eval(core) {
             self.text = s;
-            return true;
+            return Ok(());
         }
-        false
+        Err("arithmetic operation failed".to_string())
     }
 }
 

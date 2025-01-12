@@ -18,15 +18,15 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
         let mut word = Word::default();
         word.subwords = self.replace_array(core);
         if ! substitution::eval(&mut word, core) {
-            return false;
+            return Err("substituteion error".to_string());
         }
         self.subwords = word.subwords;
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
-        true
+        Ok(())
     }
 
     fn make_glob_string(&mut self) -> String {
@@ -76,7 +76,7 @@ impl DoubleQuoted {
                 let array = match sw.get_text() {
                     "$@" | "${@}" => core.db.get_position_params(),
                     _ => {
-                        sw.substitute(core);
+                        let _ = sw.substitute(core);
                         sw.get_array_elem()
                     },
                 };

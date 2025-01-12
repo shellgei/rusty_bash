@@ -23,7 +23,7 @@ impl Subword for CommandSubstitution {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
         let pid = self.command.exec(core, &mut pipe);
@@ -55,7 +55,7 @@ impl CommandSubstitution {
         core.sigint.load(Relaxed) 
     }
 
-    fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
+    fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> Result<(), String> {
         let f = unsafe { File::from_raw_fd(fd) };
         let reader = BufReader::new(f);
         self.text.clear();
@@ -64,11 +64,11 @@ impl CommandSubstitution {
                 break;
             }
             if ! self.set_line(line) {
-                return false;
+                return Err("error: set_line".to_string());
             }
         }
         self.text.pop();
-        true
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
