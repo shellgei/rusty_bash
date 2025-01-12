@@ -8,29 +8,21 @@ use crate::ShellCore;
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
     pub offset: Option<ArithmeticExpr>,
-    pub has_length: bool,
     pub length: Option<ArithmeticExpr>,
 }
 
-pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
+pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> Result<(), String> {
     let info = obj.substr.clone().unwrap();
+    let mut offset = info.offset.clone().unwrap();
 
-    let mut offset = match obj.substr.clone() {
-        None => {
-            eprintln!("sush: {}: bad substitution", &obj.text);
-            return false;
-        },
-        Some(ofs) => ofs,
-    };
-
-    if info.offset.clone().unwrap().text == "" {
+    if offset.text == "" {
         eprintln!("sush: {}: bad substitution", &obj.text);
-        return false;
+        return Err("bad substitution".to_string());
     }
 
     let mut ans;
-    match info.offset.unwrap().eval_as_int(core) {
-        None => return false,
+    match offset.eval_as_int(core) {
+        None => return Err("evaluation error".to_string()),
         Some(n) => {
             ans = obj.text.chars().enumerate()
                       .filter(|(i, _)| (*i as i64) >= n)
@@ -38,15 +30,15 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         },
     };
 
-    if info.has_length {
+    if info.length.is_some() {
         match length(&ans, &info.length, core) {
             Some(text) => ans = text,
-            None => return false,
+            None => return Err("length evaluation error".to_string()),
         }
     }
 
     obj.text = ans;
-    true
+    Ok(())
 }
 
 fn length(text: &String, length: &Option<ArithmeticExpr>,
@@ -93,7 +85,7 @@ pub fn set_partial_position_params(obj: &mut BracedParam, core: &mut ShellCore) 
         },
     };
 
-    if ! info.has_length {
+    if info.length.is_none() {
         obj.text = obj.array.join(" ");
         return true;
     }

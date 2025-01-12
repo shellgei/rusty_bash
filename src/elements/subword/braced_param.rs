@@ -142,9 +142,7 @@ impl BracedParam {
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
         if self.substr.is_some() {
-            if ! substr::set(self, core) {
-                return Err("substr error".to_string());
-            }
+            substr::set(self, core)?;
         }else if self.has_alternative {
             if ! alternative::set(self, core) {
                 return Err("alternative error".to_string());
@@ -244,7 +242,6 @@ impl BracedParam {
             return;
         }
         ans.text += &feeder.consume(1);
-        info.has_length = true;
         info.length = match ArithmeticExpr::parse(feeder, core, true) {
             Some(a) => {
                 ans.text += &a.text.clone();
