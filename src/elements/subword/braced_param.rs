@@ -146,19 +146,18 @@ impl BracedParam {
     }
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
-        if let Some(s) = self.substr.as_mut() {
-            self.text = s.get_text(&self.text, core)?;
+        self.text = if let Some(s) = self.substr.as_mut() {
+            s.get_text(&self.text, core)?
         }else if let Some(v) = self.value_check.as_mut() {
-            //let mut v = v.clone();
-            if ! v.set(&self.param.name, &mut self.text, core) {
-                return Err("value_check error".to_string());
-            }
-            //self.value_check = Some(v);
+            v.set(&self.param.name, &self.text, core)?
         }else if let Some(r) = self.remove.as_mut() {
-            self.text = r.set(&mut self.text, core)?;
+            r.set(&mut self.text, core)?
         }else if let Some(r) = &self.replace {
-            self.text = r.get_text(&self.text, core)?;
-        }
+            r.get_text(&self.text, core)?
+        }else{
+            self.text.clone()
+        };
+
         Ok(())
     }
 

@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::utils::error;
 use crate::elements::subword::BracedParam;
 use crate::elements::subword::braced_param::Word;
 
@@ -13,64 +12,63 @@ pub struct ValueCheck {
 }
 
 impl ValueCheck {
-    pub fn set(&mut self, name: &String, text: &mut String, core: &mut ShellCore) -> bool {
+    pub fn set(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, String> {
+        let mut text = text.clone();
         let symbol = match (self.symbol.as_deref(), text.as_ref()) {
             (Some(s), "")   => s,
             (Some("-"), _)  => "-",
             (Some(":+"), _) => ":+",
             (Some("+"), _)  => "+",
-            _               => return true,
+            _               => return Ok(text),
         };
     
         let word = match self.alternative_value.as_ref() {
             Some(w) => match w.tilde_and_dollar_expansion(core) {
                 Some(w2) => w2,
-                None     => return false,
+                None     => return Err("expansion error".to_string()),
             },
-            None => return false,
+            None => return Err("no alternative value".to_string()),
         };
     
         if symbol == "-" {
             self.alternative_value = None;
             self.symbol = None;
-            return true;
+            return Ok(text);
         }
         if symbol == "+" {
             if ! core.db.has_value(&name) {
                 self.alternative_value = None;
-                return true;
+                return Ok(text);
             }
             self.alternative_value = Some(word);
-            return true;
+            return Ok(text);
         }
         if symbol == ":-" {
             self.alternative_value = Some(word);
-            return true;
+            return Ok(text);
         }
         if symbol == ":=" {
             let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-            if let Err(e) = core.db.set_param(&name, &value, None) {
-                error::print(&e,core);
-                return false;
-            }
+            core.db.set_param(&name, &value, None)?;
+
             self.alternative_value = None;
-            *text = value;
-            return true
+            text = value;
+            return Ok(text);
         }
         if symbol == ":?" {
             let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
             eprintln!("sush: {}: {}", &name, &value);
-            return false;
+            return Err("".to_string());
         }
         if symbol == ":+" {
             self.alternative_value = match text.as_str() {
                 "" => None,
                 _  => Some(word),
             };
-            return true;
+            return Ok(text);
         }
     
-        return false;
+        return Err("no operation".to_string());
     }
 
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
