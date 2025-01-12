@@ -1,9 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
+use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
 pub struct Replace {
@@ -72,5 +73,38 @@ impl Replace {
         }
     
         Ok(ans)
+    }
+
+    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with("/") {
+            return false;
+        }
+
+        let mut info = Replace::default();
+
+        ans.text += &feeder.consume(1);
+        if feeder.starts_with("/") {
+            ans.text += &feeder.consume(1);
+            info.all_replace = true;
+        }else if feeder.starts_with("#") {
+            ans.text += &feeder.consume(1);
+            info.head_only_replace = true;
+        }else if feeder.starts_with("%") {
+            ans.text += &feeder.consume(1);
+            info.tail_only_replace = true;
+        }
+
+        info.replace_from = Some(BracedParam::eat_subwords(feeder, ans, vec!["}", "/"], core));
+
+        if ! feeder.starts_with("/") {
+            ans.replace = Some(info);
+            return true;
+        }
+        ans.text += &feeder.consume(1);
+        info.has_replace_to = true;
+        info.replace_to = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core));
+
+        ans.replace = Some(info);
+        true
     }
 }

@@ -169,39 +169,6 @@ impl BracedParam {
         false
     }
 
-    fn eat_replace(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with("/") {
-            return false;
-        }
-
-        let mut info = Replace::default();
-
-        ans.text += &feeder.consume(1);
-        if feeder.starts_with("/") {
-            ans.text += &feeder.consume(1);
-            info.all_replace = true;
-        }else if feeder.starts_with("#") {
-            ans.text += &feeder.consume(1);
-            info.head_only_replace = true;
-        }else if feeder.starts_with("%") {
-            ans.text += &feeder.consume(1);
-            info.tail_only_replace = true;
-        }
-
-        info.replace_from = Some(Self::eat_subwords(feeder, ans, vec!["}", "/"], core));
-
-        if ! feeder.starts_with("/") {
-            ans.replace = Some(info);
-            return true;
-        }
-        ans.text += &feeder.consume(1);
-        info.has_replace_to = true;
-        info.replace_to = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
-
-        ans.replace = Some(info);
-        true
-    }
-
     fn eat_alternative_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let num = feeder.scanner_parameter_alternative_symbol();
         if num == 0 {
@@ -299,7 +266,7 @@ impl BracedParam {
             let _ = Self::eat_alternative_value(feeder, &mut ans, core) 
                  || Substr::eat(feeder, &mut ans, core)
                  || Remove::eat(feeder, &mut ans, core)
-                 || Self::eat_replace(feeder, &mut ans, core);
+                 || Replace::eat(feeder, &mut ans, core);
         }
 
         while ! feeder.starts_with("}") {
