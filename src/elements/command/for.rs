@@ -53,8 +53,11 @@ impl ForCommand {
         let mut ans = vec![];
         for w in &mut self.values {
             match w.eval(core) {
-                Some(mut ws) => ans.append(&mut ws),
-                None     => return None,
+                Ok(mut ws) => ans.append(&mut ws),
+                Err(e)     => {
+                    error::print(&e, core);
+                    return None;
+                },
             }
         }
 

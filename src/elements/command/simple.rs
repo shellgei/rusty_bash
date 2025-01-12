@@ -4,7 +4,7 @@
 pub mod parser;
 
 use crate::{proc_ctrl, ShellCore};
-use crate::utils::exit;
+use crate::utils::{error, exit};
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
@@ -130,11 +130,12 @@ impl SimpleCommand {
 
     fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
         match word.eval(core) {
-            Some(ws) => {
+            Ok(ws) => {
                 self.args.extend(ws);
                 true
             },
-            None => {
+            Err(e) => {
+                error::print(&e, core);
                 if ! core.sigint.load(Relaxed) {
                     core.db.exit_status = 1;
                 }

@@ -47,7 +47,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
 }
 
 impl Word {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, String> {
         let ws_after_brace_exp = match core.db.flags.contains('B') {
             true  => brace_expansion::eval(&mut self.clone()),
             false => vec![self.clone()],
@@ -55,16 +55,11 @@ impl Word {
 
         let mut ws = vec![];
         for w in ws_after_brace_exp {
-            match w.tilde_and_dollar_expansion(core) {
-                Ok(w) => ws.append( &mut w.split_and_path_expansion(core) ),
-                Err(e)    => {
-                    error::print(&e, core);
-                    return None;
-                },
-            };
+            let expanded = w.tilde_and_dollar_expansion(core)?;
+            ws.append( &mut expanded.split_and_path_expansion(core) );
         }
 
-        Some( Self::make_args(&mut ws) )
+        Ok( Self::make_args(&mut ws) )
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {

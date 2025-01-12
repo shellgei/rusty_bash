@@ -16,10 +16,13 @@ impl Array {
         let mut ans = vec![];
 
         for w in &mut self.words {
+            let ws = w.eval(core)?;
+            ans.extend(ws);
+            /*
             match w.eval(core) {
                 None     => return Err("evaluation error".to_string()),
                 Some(ws) => ans.extend(ws),
-            }
+            }*/
         }
 
         Ok(ans)

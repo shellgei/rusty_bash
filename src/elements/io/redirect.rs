@@ -7,7 +7,7 @@ use std::io::Error;
 use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
-use crate::utils::exit;
+use crate::utils::{error, exit};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::os::fd::FromRawFd;
@@ -32,8 +32,11 @@ impl Redirect {
         }
 
         let args = match self.right.eval(core) {
-            Some(v) => v,
-            None => return false,
+            Ok(v) => v,
+            Err(e) => {
+                error::print(&e, core);
+                return false;
+            },
         };
 
         if args.len() != 1 {
