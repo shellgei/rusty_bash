@@ -8,14 +8,14 @@ use crate::elements::subword::braced_param::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
-    pub alternative_symbol: Option<String>,
+    pub symbol: Option<String>,
     pub alternative_value: Option<Word>,
 }
 
 pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     let check = obj.value_check.as_mut().unwrap();
 
-    let symbol = match (check.alternative_symbol.as_deref(), obj.text.as_ref()) {
+    let symbol = match (check.symbol.as_deref(), obj.text.as_ref()) {
         (Some(s), "")   => s,
         (Some("-"), _)  => "-",
         (Some(":+"), _) => ":+",
@@ -33,7 +33,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
 
     if symbol == "-" {
         check.alternative_value = None;
-        check.alternative_symbol = None;
+        check.symbol = None;
         return true;
     }
     if symbol == "+" {

@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod alternative;
+mod value_check;
 mod substr;
 mod remove;
 mod replace;
@@ -15,7 +15,7 @@ use crate::utils;
 use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
-use self::alternative::ValueCheck;
+use self::value_check::ValueCheck;
 use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone, Default)]
@@ -149,8 +149,8 @@ impl BracedParam {
         if let Some(s) = self.substr.as_mut() {
             self.text = s.get_text(&self.text, core)?;
         }else if self.value_check.is_some() {
-            if ! alternative::set(self, core) {
-                return Err("alternative error".to_string());
+            if ! value_check::set(self, core) {
+                return Err("value_check error".to_string());
             }
         }else if let Some(r) = self.remove.as_mut() {
             self.text = r.set(&mut self.text, core)?;
@@ -182,7 +182,7 @@ impl BracedParam {
         let mut info = ValueCheck::default();
 
         let symbol = feeder.consume(num);
-        info.alternative_symbol = Some(symbol.clone());
+        info.symbol = Some(symbol.clone());
         ans.text += &symbol;
 
         let num = feeder.scanner_blank(core);
