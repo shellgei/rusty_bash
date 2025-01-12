@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::{Feeder, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::ShellCore;
+use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
@@ -89,5 +90,39 @@ impl Substr {
     
         *text = array.join(" ");
         Ok(())
+    }
+
+    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with(":") {
+            return false;
+        }
+        ans.text += &feeder.consume(1);
+
+        let mut info = Substr::default();
+        info.offset = match ArithmeticExpr::parse(feeder, core, true) {
+            Some(a) => {
+                ans.text += &a.text.clone();
+                Self::eat_length(feeder, ans, &mut info, core);
+                Some(a)
+            },
+            None => None,
+        };
+
+        ans.substr = Some(info);
+        true
+    }
+
+    fn eat_length(feeder: &mut Feeder, ans: &mut BracedParam, info: &mut Substr, core: &mut ShellCore) {
+        if ! feeder.starts_with(":") {
+            return;
+        }
+        ans.text += &feeder.consume(1);
+        info.length = match ArithmeticExpr::parse(feeder, core, true) {
+            Some(a) => {
+                ans.text += &a.text.clone();
+                Some(a)
+            },
+            None => None,
+        };
     }
 }

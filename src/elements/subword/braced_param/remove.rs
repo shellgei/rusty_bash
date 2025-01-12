@@ -1,9 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
+use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
 pub struct Remove {
@@ -12,18 +13,10 @@ pub struct Remove {
 }
 
 impl Remove {
-    pub fn set(&self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    pub fn set(&mut self, text: &String, core: &mut ShellCore) -> Result<String, String> {
         let mut text = text.clone();
-        let pattern = match &self.remove_pattern {
-            None => return Ok(text),
-            Some(w) => {
-                match w.eval_for_case_word(core) {
-                    Some(s) => s,
-                    None    => return Err("evaluation error".to_string()),
-                }
-            },
-        };
-     
+        let pattern = self.remove_pattern.as_mut().unwrap()
+                            .eval_for_case_word(core).ok_or("evaluation error")?;
         let extglob = core.shopts.query("extglob");
      
         if self.remove_symbol.starts_with("##") {
@@ -60,5 +53,21 @@ impl Remove {
         }
      
         *text = text[0..ans_length].to_string();
+    }
+
+    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_parameter_remove_symbol();
+        if len == 0 {
+            return false;
+        }
+
+        let mut info = Remove::default();
+
+        info.remove_symbol = feeder.consume(len);
+        ans.text += &info.remove_symbol.clone();
+
+        info.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core));
+        ans.remove = Some(info);
+        true
     }
 }

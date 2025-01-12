@@ -11,7 +11,6 @@ use crate::elements::subword;
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
-use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::utils;
 use self::remove::Remove;
 use self::replace::Replace;
@@ -170,42 +169,6 @@ impl BracedParam {
         false
     }
 
-    fn eat_substr(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with(":") {
-            return false;
-        }
-        ans.text += &feeder.consume(1);
-
-        let mut info = Substr::default();
-        info.offset = match ArithmeticExpr::parse(feeder, core, true) {
-            Some(a) => {
-                ans.text += &a.text.clone();
-                Self::eat_length(feeder, ans, &mut info, core);
-                Some(a)
-            },
-            None => None,
-        };
-
-        ans.substr = Some(info);
-        true
-    }
-
-    fn eat_remove_pattern(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_parameter_remove_symbol();
-        if len == 0 {
-            return false;
-        }
-
-        let mut info = Remove::default();
-
-        info.remove_symbol = feeder.consume(len);
-        ans.text += &info.remove_symbol.clone();
-
-        info.remove_pattern = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
-        ans.remove = Some(info);
-        true
-    }
-
     fn eat_replace(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if ! feeder.starts_with("/") {
             return false;
@@ -237,20 +200,6 @@ impl BracedParam {
 
         ans.replace = Some(info);
         true
-    }
-
-    fn eat_length(feeder: &mut Feeder, ans: &mut Self, info: &mut Substr, core: &mut ShellCore) {
-        if ! feeder.starts_with(":") {
-            return;
-        }
-        ans.text += &feeder.consume(1);
-        info.length = match ArithmeticExpr::parse(feeder, core, true) {
-            Some(a) => {
-                ans.text += &a.text.clone();
-                Some(a)
-            },
-            None => None,
-        };
     }
 
     fn eat_alternative_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -348,8 +297,8 @@ impl BracedParam {
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core);
             let _ = Self::eat_alternative_value(feeder, &mut ans, core) 
-                 || Self::eat_substr(feeder, &mut ans, core)
-                 || Self::eat_remove_pattern(feeder, &mut ans, core)
+                 || Substr::eat(feeder, &mut ans, core)
+                 || Remove::eat(feeder, &mut ans, core)
                  || Self::eat_replace(feeder, &mut ans, core);
         }
 
