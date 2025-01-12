@@ -16,30 +16,23 @@ pub struct Replace {
 }
 
 impl Replace {
-    pub fn set(&self, text: &mut String, core: &mut ShellCore) -> bool {
-        let pattern = match &self.replace_from {
-            None => return true,
-            Some(w) => {
-                match w.eval_for_case_word(core) {
-                    Some(s) => s,
-                    None    => return false,
-                }
-            },
-        };
-    
-        let string_to = match &self.replace_to {
-            None => "".to_string(),
-            Some(w) => {
-                match w.eval_for_case_word(core) {
-                    Some(s) => s,
-                    None => match w.subwords.len() {
-                        0 => "".to_string(),
-                        _ => return false,
-                    },
-                }
-            },
-        };
-    
+    fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, String> {
+        if let Some(w) = &w {
+            match w.eval_for_case_word(core) {
+                Some(s) => return Ok(s),
+                None => match w.subwords.len() {
+                    0 => return Ok("".to_string()),
+                    _ => return Err("parse error".to_string()),
+                },
+            }
+        }
+
+        Err("parse error".to_string())
+    }
+
+    pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+        let pattern = self.to_string(&self.replace_from, core)?;
+        let string_to = self.to_string(&self.replace_to, core)?;
         let extglob = core.shopts.query("extglob");
     
         let mut start = 0;
@@ -47,7 +40,7 @@ impl Replace {
         let mut skip = 0;
         for ch in text.chars() {
             if start != 0 && self.head_only_replace {
-                return true;
+                return Ok(text.clone());
             }
             if skip > 0 {
                 skip -= 1;
@@ -59,16 +52,14 @@ impl Replace {
             let len = glob::longest_match_length(&text[start..].to_string(), &pat);
             if len != 0 && self.tail_only_replace {
                 if len == text[start..].len() {
-                    *text = [&text[..start], &string_to[0..] ].concat();
-                    return true;
+                    return Ok([&text[..start], &string_to[0..] ].concat());
                 }else{
                     ans += &ch.to_string();
                     start += ch.len_utf8();
                     continue;
                 }
             } else if len != 0 && ! self.all_replace {
-                *text = [&text[..start], &string_to[0..], &text[start+len..] ].concat();
-                return true;
+                return Ok([&text[..start], &string_to[0..], &text[start+len..] ].concat());
             }
     
             if len != 0 {
@@ -80,7 +71,6 @@ impl Replace {
             start += ch.len_utf8();
         }
     
-        *text = ans;
-        true
+        Ok(ans)
     }
 }

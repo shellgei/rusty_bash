@@ -82,7 +82,7 @@ impl Subword for BracedParam {
             false => value.to_string(),
         };
 
-        self.optional_operation(core)
+        self.optional_operation(core).is_ok()
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
@@ -131,7 +131,7 @@ impl BracedParam {
             (true, _)   => core.db.get_array_elem(&self.param.name, &index).unwrap().chars().count().to_string(),
             (false, _)  => core.db.get_array_elem(&self.param.name, &index).unwrap(),
        };
-       self.optional_operation(core)
+       self.optional_operation(core).is_ok()
     }
 
     fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
@@ -142,18 +142,31 @@ impl BracedParam {
         false
     }
 
-    fn optional_operation(&mut self, core: &mut ShellCore) -> bool {
+    fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
         if self.has_offset {
-            offset::set(self, core)
+            if ! offset::set(self, core) {
+                return Err("offset error".to_string());
+            }
         }else if self.has_alternative {
-            alternative::set(self, core)
+            if ! alternative::set(self, core) {
+                return Err("alternative error".to_string());
+            }
         }else if self.has_remove_pattern {
-            remove::set(self, core)
+            if ! remove::set(self, core) {
+                return Err("remove error".to_string());
+            }
         }else if let Some(r) = &self.replace {
-            r.set(&mut self.text, core)
-        }else {
-            true
+            self.text = r.get_text(&self.text, core)?;
+            /*
+            if let Ok(s) = r.get_text(&self.text, core) {
+                self.text = s;
+                true
+            }else{
+                false
+            }
+            */
         }
+        Ok(())
     }
 
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
