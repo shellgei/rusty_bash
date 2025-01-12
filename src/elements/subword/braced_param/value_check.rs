@@ -13,10 +13,8 @@ pub struct ValueCheck {
 }
 
 impl ValueCheck {
-    pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-        let check = obj.value_check.as_mut().unwrap();
-    
-        let symbol = match (check.symbol.as_deref(), obj.text.as_ref()) {
+    pub fn set(&mut self, obj: &mut BracedParam, core: &mut ShellCore) -> bool {
+        let symbol = match (self.symbol.as_deref(), obj.text.as_ref()) {
             (Some(s), "")   => s,
             (Some("-"), _)  => "-",
             (Some(":+"), _) => ":+",
@@ -24,7 +22,7 @@ impl ValueCheck {
             _               => return true,
         };
     
-        let word = match check.alternative_value.as_ref() {
+        let word = match self.alternative_value.as_ref() {
             Some(w) => match w.tilde_and_dollar_expansion(core) {
                 Some(w2) => w2,
                 None     => return false,
@@ -33,20 +31,20 @@ impl ValueCheck {
         };
     
         if symbol == "-" {
-            check.alternative_value = None;
-            check.symbol = None;
+            self.alternative_value = None;
+            self.symbol = None;
             return true;
         }
         if symbol == "+" {
             if ! core.db.has_value(&obj.param.name) {
-                check.alternative_value = None;
+                self.alternative_value = None;
                 return true;
             }
-            check.alternative_value = Some(word);
+            self.alternative_value = Some(word);
             return true;
         }
         if symbol == ":-" {
-            check.alternative_value = Some(word);
+            self.alternative_value = Some(word);
             return true;
         }
         if symbol == ":=" {
@@ -55,7 +53,7 @@ impl ValueCheck {
                 error::print(&e,core);
                 return false;
             }
-            check.alternative_value = None;
+            self.alternative_value = None;
             obj.text = value;
             return true
         }
@@ -65,7 +63,7 @@ impl ValueCheck {
             return false;
         }
         if symbol == ":+" {
-            check.alternative_value = match obj.text.as_str() {
+            self.alternative_value = match obj.text.as_str() {
                 "" => None,
                 _  => Some(word),
             };
