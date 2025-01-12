@@ -6,6 +6,8 @@ use crate::elements::subword::BracedParam;
 use crate::ShellCore;
 
 pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
+    let info = obj.offset.clone().unwrap();
+
     let mut offset = match obj.offset.clone() {
         None => {
             eprintln!("sush: {}: bad substitution", &obj.text);
@@ -14,13 +16,13 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         Some(ofs) => ofs,
     };
 
-    if offset.text == "" {
+    if info.offset.clone().unwrap().text == "" {
         eprintln!("sush: {}: bad substitution", &obj.text);
         return false;
     }
 
     let mut ans;
-    match offset.eval_as_int(core) {
+    match info.offset.unwrap().eval_as_int(core) {
         None => return false,
         Some(n) => {
             ans = obj.text.chars().enumerate()
@@ -29,8 +31,8 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         },
     };
 
-    if obj.has_length {
-        match length(&ans, &obj.length, core) {
+    if info.has_length {
+        match length(&ans, &info.length, core) {
             Some(text) => ans = text,
             None => return false,
         }
@@ -59,7 +61,9 @@ fn length(text: &String, length: &Option<ArithmeticExpr>,
 }
 
 pub fn set_partial_position_params(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-    let mut offset = match obj.offset.clone() {
+    let info = obj.offset.clone().unwrap();
+
+    let mut offset = match obj.offset.clone().unwrap().offset.clone() {
         None => {
             eprintln!("sush: {}: bad substitution", &obj.text);
             return false;
@@ -82,12 +86,12 @@ pub fn set_partial_position_params(obj: &mut BracedParam, core: &mut ShellCore) 
         },
     };
 
-    if ! obj.has_length {
+    if ! info.has_length {
         obj.text = obj.array.join(" ");
         return true;
     }
 
-    let mut length = match obj.length.clone() {
+    let mut length = match info.length.clone() {
         None => {
             eprintln!("sush: {}: bad substitution", &obj.text);
             return false;

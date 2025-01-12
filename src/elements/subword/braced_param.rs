@@ -23,10 +23,18 @@ struct Param {
 }
 
 #[derive(Debug, Clone, Default)]
+pub struct Offset {
+    offset: Option<ArithmeticExpr>,
+    has_length: bool,
+    length: Option<ArithmeticExpr>,
+}
+
+#[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     text: String,
     param: Param,
     replace: Option<Replace>,
+    offset: Option<Offset>,
 
     unknown: String,
     is_array: bool,
@@ -35,10 +43,6 @@ pub struct BracedParam {
     alternative_value: Option<Word>,
     num: bool,
     indirect: bool,
-    has_offset: bool,
-    offset: Option<ArithmeticExpr>,
-    has_length: bool,
-    length: Option<ArithmeticExpr>,
     has_remove_pattern: bool,
     remove_symbol: String,
     remove_pattern: Option<Word>,
@@ -72,7 +76,7 @@ impl Subword for BracedParam {
             return self.subscript_operation(core);
         }
 
-        if self.param.name == "@" && self.has_offset {
+        if self.param.name == "@" && self.offset.is_some() {
             return offset::set_partial_position_params(self, core);
         }
 
@@ -143,7 +147,7 @@ impl BracedParam {
     }
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
-        if self.has_offset {
+        if self.offset.is_some() {
             if ! offset::set(self, core) {
                 return Err("offset error".to_string());
             }
@@ -157,14 +161,6 @@ impl BracedParam {
             }
         }else if let Some(r) = &self.replace {
             self.text = r.get_text(&self.text, core)?;
-            /*
-            if let Ok(s) = r.get_text(&self.text, core) {
-                self.text = s;
-                true
-            }else{
-                false
-            }
-            */
         }
         Ok(())
     }
@@ -187,15 +183,20 @@ impl BracedParam {
             return false;
         }
         ans.text += &feeder.consume(1);
-        ans.has_offset = true;
-        ans.offset = match ArithmeticExpr::parse(feeder, core, true) {
+       // ans.has_offset = true;
+
+        let mut info = Offset::default();
+
+        info.offset = match ArithmeticExpr::parse(feeder, core, true) {
             Some(a) => {
                 ans.text += &a.text.clone();
-                Self::eat_length(feeder, ans, core);
+                Self::eat_length(feeder, ans, &mut info, core);
                 Some(a)
             },
             None => None,
         };
+
+        ans.offset = Some(info);
         true
     }
 
@@ -246,13 +247,13 @@ impl BracedParam {
         true
     }
 
-    fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+    fn eat_length(feeder: &mut Feeder, ans: &mut Self, info: &mut Offset, core: &mut ShellCore) {
         if ! feeder.starts_with(":") {
             return;
         }
         ans.text += &feeder.consume(1);
-        ans.has_length = true;
-        ans.length = match ArithmeticExpr::parse(feeder, core, true) {
+        info.has_length = true;
+        info.length = match ArithmeticExpr::parse(feeder, core, true) {
             Some(a) => {
                 ans.text += &a.text.clone();
                 Some(a)
