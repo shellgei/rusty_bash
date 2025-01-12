@@ -7,10 +7,12 @@ use crate::elements::subscript::Subscript;
 
 pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, String> {
+    let key = sub.eval(core, name)?;
+    /*
     let key = match sub.eval(core, name) {
         Some(s) => s, 
         None => return Err(format!("{}: wrong substitution", &name)),
-    };
+    };*/
 
     let mut value_str = core.db.get_array_elem(name, &key)?;
     if value_str == "" {

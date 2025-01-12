@@ -58,14 +58,14 @@ impl Substitution {
     fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
         let index = self.get_index(core);
         match (&self.evaluated_string, index) {
-            (Some(v), Some(k)) 
+            (Some(v), Ok(k)) 
                 => core.db.set_assoc_elem(&self.name, &k, &v, Some(layer)),
             _   => Err("evaluation error 1".to_string()),
         }
     }
 
     fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
-        if self.get_index(core).is_none() {
+        if ! self.get_index(core).is_ok() {
             return match &self.evaluated_array {
                 Some(a) => core.db.set_array(&self.name, a.clone(), Some(layer)),
                 _ => Err("no array and no index".to_string()),
@@ -130,15 +130,15 @@ impl Substitution {
         true
     }
 
-    pub fn get_index(&mut self, core: &mut ShellCore) -> Option<String> {
+    pub fn get_index(&mut self, core: &mut ShellCore) -> Result<String, String> {
         match self.index.clone() {
             Some(mut s) => {
                 if s.text.chars().all(|c| " \n\t[]".contains(c)) {
-                    return Some("".to_string());
+                    return Ok("".to_string());
                 }
                 s.eval(core, &self.name)
             },
-            _ => None,
+            _ => Err("no index".to_string()),
         }
     }
 

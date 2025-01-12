@@ -26,19 +26,20 @@ pub struct ArithmeticExpr {
 }
 
 impl ArithmeticExpr {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
-        match self.eval_elems(core, true) {
-            Ok(ArithElem::Integer(n)) => self.ans_to_string(n),
-            Ok(ArithElem::Float(f))   => Some(f.to_string()),
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, String> {
+        match self.eval_elems(core, true)? {
+            ArithElem::Integer(n) => self.ans_to_string(n),
+            ArithElem::Float(f)   => Ok(f.to_string()),
+            /*
             Err(msg) => {
                 eprintln!("sush: {}: {}", &self.text, msg);
                 None
-            },
+            },*/
             _ => exit::internal("invalid calculation result"),
         }
     }
 
-    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore) -> Result<String, String> {
         let mut ans = String::new();
 
         for e in &self.elements {
@@ -53,14 +54,14 @@ impl ArithmeticExpr {
                                 ans += "--";
                             }
                         },
-                        None => return None,
+                        None => return Err("not an assoc index".to_string()),
                     }
                 },
                 _ => ans += &e.to_string(),
             }
         }
 
-        Some(ans)
+        Ok(ans)
     }
 
     pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Option<i64> {
@@ -90,24 +91,26 @@ impl ArithmeticExpr {
         calculate(&es, core)
     }
 
-    fn ans_to_string(&self, n: i64) -> Option<String> {
+    fn ans_to_string(&self, n: i64) -> Result<String, String> {
         let base_str = self.output_base.clone();
 
         if base_str == "10" {
-            return Some(n.to_string());
+            return Ok(n.to_string());
         }
 
         let base = match base_str.parse::<i64>() {
             Ok(b) => b,
             _     => {
-                eprintln!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
-                return None;
+                let msg = format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
+                eprintln!("{}", &msg);
+                return Err(msg);
             },
         };
 
         if base <= 1 || base > 64 {
-            eprintln!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
-            return None;
+            let msg = format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
+            eprintln!("{}", &msg);
+            return Err(msg);
         }
 
         let mut tmp = n.abs();
@@ -126,7 +129,7 @@ impl ArithmeticExpr {
             ans.insert(0, '-');
         }
 
-        Some(ans)
+        Ok(ans)
     }
 
     fn dec_to_str(nums: &Vec<u8>, base: i64) -> String {

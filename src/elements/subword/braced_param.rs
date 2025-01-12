@@ -114,10 +114,12 @@ impl BracedParam {
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
+        let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
+        /*
         let index = match self.param.subscript.clone().unwrap().eval(core, &self.param.name) {
             Some(s) => s,
             None => return Err("index evaluation error".to_string()),
-        };
+        };*/
 
         if core.db.is_assoc(&self.param.name) {
             return self.subscript_operation_assoc(core, &index);

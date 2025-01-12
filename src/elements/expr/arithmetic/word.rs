@@ -75,7 +75,7 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
         return Err(error::syntax(&name));
     }
 
-    if let Some(eval) = parsed.eval(core) {
+    if let Ok(eval) = parsed.eval(core) {
         if let Some(e) = single_str_to_num(&eval, core) {
             return Ok(e);
         }

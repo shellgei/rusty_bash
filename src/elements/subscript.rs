@@ -12,27 +12,27 @@ pub struct Subscript {
 }
 
 impl Subscript {
-    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str) -> Option<String> {
+    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str) -> Result<String, String> {
         if self.inner_special != "" {
-            return Some(self.inner_special.clone());
+            return Ok(self.inner_special.clone());
         }
 
         if let Some(a) = self.inner.as_mut() {
             if a.text.chars().all(|c| " \t\n".contains(c)) {
-                return None;
+                return Err("invalid inner".to_string());
             }
             return match core.db.is_assoc(param_name) {
                 true  => {
                     match self.inner.as_mut() {
                         Some(sub) => sub.eval_as_assoc_index(core),
-                        None => None,
+                        None => Err("no inner".to_string()),
                     }
                 },
                 false => a.eval(core),
             };
         }
 
-        None
+        Err("evaluation failure".to_string())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {

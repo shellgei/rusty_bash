@@ -101,8 +101,8 @@ impl ForCommand {
         }
 
         match a.clone().unwrap().eval(core) {
-            Some(n) => return (true, n),
-            None    => return (false, "0".to_string()), 
+            Ok(n) => return (true, n),
+            _     => return (false, "0".to_string()), 
         }
     }
 

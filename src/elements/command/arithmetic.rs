@@ -44,8 +44,11 @@ impl ArithmeticCommand {
         let mut ans = String::new();
         for a in &mut self.expressions {
             match a.eval(core) {
-                Some(s) => ans = s,
-                None    => return None,
+                Ok(s) => ans = s,
+                Err(e) => {
+                    eprintln!("{}", &e);
+                    return None;
+                },
             }
         }
         Some(ans)
