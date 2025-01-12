@@ -185,38 +185,18 @@ impl DataBase {
         SingleData::set_value(&mut self.params[layer], name, val)
     }
 
-    fn set_layer_array_elem(&mut self, name: &str, val: &String, layer: usize, pos: usize) -> Result<(), String> {
-        match self.params[layer].get_mut(name) {
-            Some(d) => d.set_as_array(&pos.to_string(), val),
-            None    => {
-                ArrayData::set_new_entry(&mut self.params[layer], name, vec![])?;
-                self.set_layer_array_elem(name, val, layer, pos)
-            },
-        }
-    }
-
-    fn set_layer_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: usize) -> Result<(), String> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-
-        match self.params[layer].get_mut(name) {
-            Some(v) => v.set_as_assoc(key, val), 
-            _ => Err("TODO".to_string()),
-        }
-    }
-
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), String> {
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
-        self.set_layer_array_elem(name, val, layer, pos)
+        ArrayData::set_elem(&mut self.params[layer], name, pos, val)
     }
 
     pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), String> {
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
-        self.set_layer_assoc_elem(name, key, val, layer)
+        AssocData::set_elem(&mut self.params[layer], name, key, val)
     }
 
     pub fn set_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), String> {

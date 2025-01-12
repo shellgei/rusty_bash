@@ -70,6 +70,17 @@ impl ArrayData {
         Ok(())
     }
 
+    pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
+                        name: &str, pos: usize, val: &String) -> Result<(), String> {
+        match db_layer.get_mut(name) {
+            Some(d) => d.set_as_array(&pos.to_string(), val),
+            None    => {
+                ArrayData::set_new_entry(db_layer, name, vec![])?;
+                Self::set_elem(db_layer, name, pos, val)
+            },
+        }
+    }
+
     pub fn values(&self) -> Vec<String> {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
         keys.sort();

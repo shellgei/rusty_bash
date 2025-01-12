@@ -64,6 +64,14 @@ impl AssocData {
         Ok(())
     }
 
+    pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
+                     key: &String, val: &String) -> Result<(), String> {
+        match db_layer.get_mut(name) {
+            Some(v) => v.set_as_assoc(key, val), 
+            _ => Err("TODO".to_string()),
+        }
+    }
+
     pub fn get(&self, key: &str) -> Option<String> {
         self.body.get(key).cloned()
     }
