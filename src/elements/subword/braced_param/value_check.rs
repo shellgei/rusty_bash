@@ -13,8 +13,8 @@ pub struct ValueCheck {
 }
 
 impl ValueCheck {
-    pub fn set(&mut self, obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-        let symbol = match (self.symbol.as_deref(), obj.text.as_ref()) {
+    pub fn set(&mut self, name: &String, text: &mut String, core: &mut ShellCore) -> bool {
+        let symbol = match (self.symbol.as_deref(), text.as_ref()) {
             (Some(s), "")   => s,
             (Some("-"), _)  => "-",
             (Some(":+"), _) => ":+",
@@ -36,7 +36,7 @@ impl ValueCheck {
             return true;
         }
         if symbol == "+" {
-            if ! core.db.has_value(&obj.param.name) {
+            if ! core.db.has_value(&name) {
                 self.alternative_value = None;
                 return true;
             }
@@ -49,21 +49,21 @@ impl ValueCheck {
         }
         if symbol == ":=" {
             let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-            if let Err(e) = core.db.set_param(&obj.param.name, &value, None) {
+            if let Err(e) = core.db.set_param(&name, &value, None) {
                 error::print(&e,core);
                 return false;
             }
             self.alternative_value = None;
-            obj.text = value;
+            *text = value;
             return true
         }
         if symbol == ":?" {
             let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-            eprintln!("sush: {}: {}", &obj.param.name, &value);
+            eprintln!("sush: {}: {}", &name, &value);
             return false;
         }
         if symbol == ":+" {
-            self.alternative_value = match obj.text.as_str() {
+            self.alternative_value = match text.as_str() {
                 "" => None,
                 _  => Some(word),
             };
