@@ -149,7 +149,7 @@ impl BracedParam {
         if let Some(s) = self.substr.as_mut() {
             self.text = s.get_text(&self.text, core)?;
         }else if self.value_check.is_some() {
-            if ! value_check::set(self, core) {
+            if ! ValueCheck::set(self, core) {
                 return Err("value_check error".to_string());
             }
         }else if let Some(r) = self.remove.as_mut() {
@@ -171,26 +171,6 @@ impl BracedParam {
         }
 
         false
-    }
-
-    fn eat_alternative_value(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let num = feeder.scanner_parameter_alternative_symbol();
-        if num == 0 {
-            return false;
-        }
-
-        let mut info = ValueCheck::default();
-
-        let symbol = feeder.consume(num);
-        info.symbol = Some(symbol.clone());
-        ans.text += &symbol;
-
-        let num = feeder.scanner_blank(core);
-        ans.text += &feeder.consume(num);
-        info.alternative_value = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
-
-        ans.value_check = Some(info);
-        true
     }
 
     fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore) -> Word {
@@ -270,7 +250,7 @@ impl BracedParam {
 
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core);
-            let _ = Self::eat_alternative_value(feeder, &mut ans, core) 
+            let _ = ValueCheck::eat(feeder, &mut ans, core) 
                  || Substr::eat(feeder, &mut ans, core)
                  || Remove::eat(feeder, &mut ans, core)
                  || Replace::eat(feeder, &mut ans, core);

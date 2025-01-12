@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::utils::error;
 use crate::elements::subword::BracedParam;
 use crate::elements::subword::braced_param::Word;
@@ -12,64 +12,86 @@ pub struct ValueCheck {
     pub alternative_value: Option<Word>,
 }
 
-pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-    let check = obj.value_check.as_mut().unwrap();
-
-    let symbol = match (check.symbol.as_deref(), obj.text.as_ref()) {
-        (Some(s), "")   => s,
-        (Some("-"), _)  => "-",
-        (Some(":+"), _) => ":+",
-        (Some("+"), _)  => "+",
-        _               => return true,
-    };
-
-    let word = match check.alternative_value.as_ref() {
-        Some(w) => match w.tilde_and_dollar_expansion(core) {
-            Some(w2) => w2,
-            None     => return false,
-        },
-        None => return false,
-    };
-
-    if symbol == "-" {
-        check.alternative_value = None;
-        check.symbol = None;
-        return true;
-    }
-    if symbol == "+" {
-        if ! core.db.has_value(&obj.param.name) {
+impl ValueCheck {
+    pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
+        let check = obj.value_check.as_mut().unwrap();
+    
+        let symbol = match (check.symbol.as_deref(), obj.text.as_ref()) {
+            (Some(s), "")   => s,
+            (Some("-"), _)  => "-",
+            (Some(":+"), _) => ":+",
+            (Some("+"), _)  => "+",
+            _               => return true,
+        };
+    
+        let word = match check.alternative_value.as_ref() {
+            Some(w) => match w.tilde_and_dollar_expansion(core) {
+                Some(w2) => w2,
+                None     => return false,
+            },
+            None => return false,
+        };
+    
+        if symbol == "-" {
             check.alternative_value = None;
+            check.symbol = None;
             return true;
         }
-        check.alternative_value = Some(word);
-        return true;
-    }
-    if symbol == ":-" {
-        check.alternative_value = Some(word);
-        return true;
-    }
-    if symbol == ":=" {
-        let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-        if let Err(e) = core.db.set_param(&obj.param.name, &value, None) {
-            error::print(&e,core);
+        if symbol == "+" {
+            if ! core.db.has_value(&obj.param.name) {
+                check.alternative_value = None;
+                return true;
+            }
+            check.alternative_value = Some(word);
+            return true;
+        }
+        if symbol == ":-" {
+            check.alternative_value = Some(word);
+            return true;
+        }
+        if symbol == ":=" {
+            let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
+            if let Err(e) = core.db.set_param(&obj.param.name, &value, None) {
+                error::print(&e,core);
+                return false;
+            }
+            check.alternative_value = None;
+            obj.text = value;
+            return true
+        }
+        if symbol == ":?" {
+            let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
+            eprintln!("sush: {}: {}", &obj.param.name, &value);
             return false;
         }
-        check.alternative_value = None;
-        obj.text = value;
-        return true
-    }
-    if symbol == ":?" {
-        let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-        eprintln!("sush: {}: {}", &obj.param.name, &value);
+        if symbol == ":+" {
+            check.alternative_value = match obj.text.as_str() {
+                "" => None,
+                _  => Some(word),
+            };
+            return true;
+        }
+    
         return false;
     }
-    if symbol == ":+" {
-        check.alternative_value = match obj.text.as_str() {
-            "" => None,
-            _  => Some(word),
-        };
-        return true;
-    }
 
-    return false;
+    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
+        let num = feeder.scanner_parameter_alternative_symbol();
+        if num == 0 {
+            return false;
+        }
+
+        let mut info = ValueCheck::default();
+
+        let symbol = feeder.consume(num);
+        info.symbol = Some(symbol.clone());
+        ans.text += &symbol;
+
+        let num = feeder.scanner_blank(core);
+        ans.text += &feeder.consume(num);
+        info.alternative_value = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core));
+
+        ans.value_check = Some(info);
+        true
+    }
 }
