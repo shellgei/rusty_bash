@@ -47,24 +47,30 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
 }
 
 impl Word {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Option<Vec<String>> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, String> {
         let mut ws = vec![];
         for w in brace_expansion::eval(&mut self.clone()) {
+            let expanded = w.tilde_and_dollar_expansion(core)?;
+            ws.append( &mut expanded.split_and_path_expansion() );
+            /*
             match w.tilde_and_dollar_expansion(core) {
                 Some(w) => ws.append( &mut w.split_and_path_expansion() ),
                 None    => return None,
-            };
+            };*/
         }
-        Some( Self::make_args(&mut ws) )
+        Self::make_args(&mut ws)
     }
 
-    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Option<Word> {
+    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, String> {
         let mut w = self.clone();
         tilde_expansion::eval(&mut w, core);
+        substitution::eval(&mut w, core)?;
+        Ok(w)
+            /*
         match substitution::eval(&mut w, core) {
             true  => Some(w),
             false => None,
-        }
+        }*/
     }
 
     pub fn split_and_path_expansion(&self) -> Vec<Word> {
@@ -75,8 +81,8 @@ impl Word {
         ans
     }
 
-    fn make_args(words: &mut [Word]) -> Vec<String> {
-        words.iter_mut().filter_map(|w| w.make_unquoted_word()).collect()
+    fn make_args(words: &mut [Word]) -> Result<Vec<String>, String> {
+        Ok( words.iter_mut().filter_map(|w| w.make_unquoted_word()).collect() )
     }
 
     fn make_unquoted_word(&mut self) -> Option<String> {

@@ -22,8 +22,11 @@ pub struct Redirect {
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> bool {
         let args = match self.right.eval(core) {
-            Some(v) => v,
-            None => return false,
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{}", e);
+                return false;
+            },
         };
 
         if args.len() != 1 {

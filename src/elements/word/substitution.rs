@@ -6,11 +6,15 @@ use crate::elements::word::Word;
 use crate::elements::subword::Subword;
 use crate::elements::subword::parameter::Parameter;
 
-pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
+pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), String> {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
-    word.subwords.iter_mut().all(|sw| { sw.substitute(core) } )
+    for sw in word.subwords.iter_mut() {
+        sw.substitute(core)?;
+    };
+    //word.subwords.iter_mut().for_each(|sw| { sw.substitute(core)?; } );
+    Ok(())
 }
 
 fn connect_names(subwords: &mut [Box<dyn Subword>]) {

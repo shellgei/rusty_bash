@@ -13,10 +13,10 @@ impl Subword for Parameter {
     fn get_text(&self) -> &str {self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> bool {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
         let value = core.data.get_param(&self.text[1..]);
         self.text = value.to_string();
-        true
+        Ok(())
     }
 }
 
