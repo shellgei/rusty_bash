@@ -149,8 +149,8 @@ impl BracedParam {
             alternative::set(self, core)
         }else if self.has_remove_pattern {
             remove::set(self, core)
-        }else if self.replace.is_some() {
-            replace::set(self, core)
+        }else if let Some(r) = &self.replace {
+            r.set(&mut self.text, core)
         }else {
             true
         }
