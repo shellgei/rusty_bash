@@ -12,13 +12,14 @@ pub struct Remove {
 }
 
 impl Remove {
-    pub fn set(&self, text: &mut String, core: &mut ShellCore) -> bool {
+    pub fn set(&self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+        let mut text = text.clone();
         let pattern = match &self.remove_pattern {
-            None => return true,
+            None => return Ok(text),
             Some(w) => {
                 match w.eval_for_case_word(core) {
                     Some(s) => s,
-                    None    => return false,
+                    None    => return Err("evaluation error".to_string()),
                 }
             },
         };
@@ -28,17 +29,18 @@ impl Remove {
         if self.remove_symbol.starts_with("##") {
             let pat = glob::parse(&pattern, extglob);
             let len = glob::longest_match_length(&text, &pat);
-            *text = text[len..].to_string();
+            text = text[len..].to_string();
         } else if self.remove_symbol.starts_with("#") {
             let pat = glob::parse(&pattern, extglob);
             let len = glob::shortest_match_length(&text, &pat);
-            *text = text[len..].to_string();
+            text = text[len..].to_string();
         }else if self.remove_symbol.starts_with("%") {
-            self.percent(text, &pattern, extglob);
+            self.percent(&mut text, &pattern, extglob);
         }else {
-            return false;
+            return Err("unknown symbol".to_string());
         }
-        true
+
+        Ok(text)
     }
     
     pub fn percent(&self, text: &mut String, pattern: &String, extglob: bool) {
