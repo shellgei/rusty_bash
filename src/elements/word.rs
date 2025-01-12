@@ -9,6 +9,7 @@ mod split;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
+use crate::utils::error;
 use super::subword::Subword;
 use super::subword::simple::SimpleSubword;
 
@@ -55,8 +56,11 @@ impl Word {
         let mut ws = vec![];
         for w in ws_after_brace_exp {
             match w.tilde_and_dollar_expansion(core) {
-                Some(w) => ws.append( &mut w.split_and_path_expansion(core) ),
-                None    => return None,
+                Ok(w) => ws.append( &mut w.split_and_path_expansion(core) ),
+                Err(e)    => {
+                    error::print(&e, core);
+                    return None;
+                },
             };
         }
 
@@ -65,8 +69,11 @@ impl Word {
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
-            Some(w) => w.split_and_path_expansion(core),
-            None    => return None,
+            Ok(w) => w.split_and_path_expansion(core),
+            Err(e)    => {
+                error::print(&e, core);
+                return None;
+            },
         };
 
         Some( Self::make_args(&mut ws).join(" ") )
@@ -74,25 +81,29 @@ impl Word {
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
         match self.tilde_and_dollar_expansion(core) {
-            Some(mut w) => w.make_unquoted_word(),
-            None    => return None,
+            Ok(mut w) => w.make_unquoted_word(),
+            Err(e)    => {
+                error::print(&e, core);
+                return None;
+            },
         }
     }
 
     pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Option<String> {
         match self.tilde_and_dollar_expansion(core) {
-            Some(mut w) => Some(w.make_glob_string()),
-            None    => return None,
+            Ok(mut w) => Some(w.make_glob_string()),
+            Err(e)    => {
+                error::print(&e, core);
+                return None;
+            },
         }
     }
 
-    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Option<Word> {
+    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, String> {
         let mut w = self.clone();
         tilde_expansion::eval(&mut w, core);
-        match substitution::eval(&mut w, core) {
-            true  => Some(w),
-            false => None,
-        }
+        substitution::eval(&mut w, core)?;
+        Ok(w)
     }
 
     pub fn split_and_path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {

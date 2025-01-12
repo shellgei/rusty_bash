@@ -6,18 +6,20 @@ use crate::elements::word::Word;
 use crate::elements::subword::Subword;
 use crate::elements::subword::parameter::Parameter;
 
-pub fn eval(word: &mut Word, core: &mut ShellCore) -> bool {
+pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), String> {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
     for w in word.subwords.iter_mut() {
+        w.substitute(core)?;
+        /*
         if let Err(e) = w.substitute(core) {
             eprintln!("{}", e);
             return false;
-        }
+        }*/
     }
     alternative_replace(word);
-    true
+    Ok(())
 }
 
 fn alternative_replace(word: &mut Word) {

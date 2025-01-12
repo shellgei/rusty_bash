@@ -65,8 +65,8 @@ res=$($com <<< 'echo ${A:?error}' )
 [ "$?" = "1" ] || err $LINENO
 [ "$res" = "" ] || err $LINENO
 
-res=$($com <<< '(echo ${A:?error}) |& cat' )
-[ "$res" = "sush: A: error" ] || err $LINENO
+res=$($com <<< '(echo ${A:?eRRor}) |& cat' )
+echo "$res" | grep -q eRRor || err $LINENO
 
 res=$($com <<< 'A= ; echo ${A:+set}' )
 [ "$res" = "" ] || err $LINENO

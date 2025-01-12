@@ -47,7 +47,7 @@ impl Subword for BracedParam {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
         if ! self.check() {
-            return Err("invalid brace".to_string());
+            return Err(format!("{}: bad substitution", &self.text));
         }
 
         if self.indirect {

@@ -21,9 +21,11 @@ impl Subword for DoubleQuoted {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
         let mut word = Word::default();
         word.subwords = self.replace_array(core);
+        substitution::eval(&mut word, core)?;
+        /*
         if ! substitution::eval(&mut word, core) {
             return Err("substituteion error".to_string());
-        }
+        }*/
         self.subwords = word.subwords;
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
         Ok(())

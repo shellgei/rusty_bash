@@ -23,9 +23,14 @@ impl ValueCheck {
         };
     
         let word = match self.alternative_value.as_ref() {
-            Some(w) => match w.tilde_and_dollar_expansion(core) {
+            Some(w) => {
+                let w2 = w.tilde_and_dollar_expansion(core)?;
+                w2
+                /*
+                match w.tilde_and_dollar_expansion(core) {
                 Some(w2) => w2,
                 None     => return Err("expansion error".to_string()),
+                */
             },
             None => return Err("no alternative value".to_string()),
         };
