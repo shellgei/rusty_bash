@@ -16,15 +16,27 @@ use crate::utils;
 use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone, Default)]
-pub struct BracedParam {
-    pub text: String,
-
-    /*
-    pub name: String,
+struct Param {
+    name: String,
     subscript: Option<Subscript>,
-    */
+}
 
-    pub name: (String, Option<Subscript>),
+#[derive(Debug, Clone, Default)]
+struct Replace {
+    head_only_replace: bool,
+    tail_only_replace: bool,
+    all_replace: bool,
+    replace_from: Option<Word>,
+    replace_to: Option<Word>,
+    has_replace_to: bool,
+    has_replace: bool,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct BracedParam {
+    text: String,
+    //name: (String, Option<Subscript>),
+    param: Param,
 
     unknown: String,
     is_array: bool,
@@ -40,13 +52,15 @@ pub struct BracedParam {
     has_remove_pattern: bool,
     remove_symbol: String,
     remove_pattern: Option<Word>,
-    has_replace: bool,
-    replace_from: Option<Word>,
-    has_replace_to: bool,
-    replace_to: Option<Word>,
+    replace: Option<Replace>,
+    //has_replace: bool,
+    //replace_from: Option<Word>,
+   // has_replace_to: bool,
+    /*replace_to: Option<Word>,
     all_replace: bool,
     head_only_replace: bool,
     tail_only_replace: bool,
+    */
     array: Vec<String>,
 }
 
@@ -60,28 +74,28 @@ impl Subword for BracedParam {
         }
 
         if self.indirect {
-            let value = core.db.get_param(&self.name.0).unwrap_or_default();
+            let value = core.db.get_param(&self.param.name).unwrap_or_default();
             if utils::is_param(&value) {
-                self.name.0 = value;
+                self.param.name = value;
             }else{
                 eprintln!("sush: {}: invalid name", &value);
                 return false;
             }
         }
 
-        if self.name.1.is_some() {
-            if self.name.0 == "@" {
+        if self.param.subscript.is_some() {
+            if self.param.name == "@" {
                 eprintln!("sush: {}: bad substitution", &self.text);
                 return false;
             }
             return self.subscript_operation(core);
         }
 
-        if self.name.0 == "@" && self.has_offset {
+        if self.param.name == "@" && self.has_offset {
             return offset::set_partial_position_params(self, core);
         }
 
-        let value = core.db.get_param(&self.name.0).unwrap_or_default();
+        let value = core.db.get_param(&self.param.name).unwrap_or_default();
         self.text = match self.num {
             true  => value.chars().count().to_string(),
             false => value.to_string(),
@@ -105,7 +119,7 @@ impl Subword for BracedParam {
 
 impl BracedParam {
     fn check(&mut self) -> bool {
-        if self.name.0.is_empty() || ! utils::is_param(&self.name.0) {
+        if self.param.name.is_empty() || ! utils::is_param(&self.param.name) {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
         }
@@ -118,29 +132,29 @@ impl BracedParam {
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> bool {
-        let index = match self.name.1.clone().unwrap().eval(core, &self.name.0) {
+        let index = match self.param.subscript.clone().unwrap().eval(core, &self.param.name) {
             Some(s) => s,
             None => return false,
         };
 
-        if core.db.is_assoc(&self.name.0) {
+        if core.db.is_assoc(&self.param.name) {
             return self.subscript_operation_assoc(core, &index);
         }
 
         if index.as_str() == "@" {
-            self.array = core.db.get_array_all(&self.name.0);
+            self.array = core.db.get_array_all(&self.param.name);
         }
 
         self.text = match (self.num, index.as_str()) {
-            (true, "@") => core.db.len(&self.name.0).to_string(),
-            (true, _)   => core.db.get_array_elem(&self.name.0, &index).unwrap().chars().count().to_string(),
-            (false, _)  => core.db.get_array_elem(&self.name.0, &index).unwrap(),
+            (true, "@") => core.db.len(&self.param.name).to_string(),
+            (true, _)   => core.db.get_array_elem(&self.param.name, &index).unwrap().chars().count().to_string(),
+            (false, _)  => core.db.get_array_elem(&self.param.name, &index).unwrap(),
        };
        self.optional_operation(core)
     }
 
     fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
-        if let Ok(s) = core.db.get_array_elem(&self.name.0, index) {
+        if let Ok(s) = core.db.get_array_elem(&self.param.name, index) {
             self.text = s;
             return true;
         }
@@ -154,7 +168,7 @@ impl BracedParam {
             alternative::set(self, core)
         }else if self.has_remove_pattern {
             remove::set(self, core)
-        }else if self.has_replace {
+        }else if self.replace.is_some() {
             replace::set(self, core)
         }else {
             true
@@ -167,7 +181,7 @@ impl BracedParam {
             if s.text.contains('@') {
                 ans.is_array = true;
             }
-            ans.name.1 = Some(s);
+            ans.param.subscript = Some(s);
             return true;
         }
 
@@ -210,28 +224,32 @@ impl BracedParam {
             return false;
         }
 
+        let mut info = Replace::default();
+
         ans.text += &feeder.consume(1);
-        ans.has_replace = true;
+        info.has_replace = true;
         if feeder.starts_with("/") {
             ans.text += &feeder.consume(1);
-            ans.all_replace = true;
+            info.all_replace = true;
         }else if feeder.starts_with("#") {
             ans.text += &feeder.consume(1);
-            ans.head_only_replace = true;
+            info.head_only_replace = true;
         }else if feeder.starts_with("%") {
             ans.text += &feeder.consume(1);
-            ans.tail_only_replace = true;
+            info.tail_only_replace = true;
         }
 
-        ans.replace_from = Some(Self::eat_subwords(feeder, ans, vec!["}", "/"], core));
+        info.replace_from = Some(Self::eat_subwords(feeder, ans, vec!["}", "/"], core));
 
         if ! feeder.starts_with("/") {
+            ans.replace = Some(info);
             return true;
         }
         ans.text += &feeder.consume(1);
-        ans.has_replace_to = true;
-        ans.replace_to = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
+        info.has_replace_to = true;
+        info.replace_to = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
 
+        ans.replace = Some(info);
         true
     }
 
@@ -294,16 +312,16 @@ impl BracedParam {
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
         if len != 0 {
-            ans.name = (feeder.consume(len), None);
-            ans.text += &ans.name.0;
+            ans.param = Param{ name: feeder.consume(len), subscript: None};
+            ans.text += &ans.param.name;
             return true;
         }
 
         let len = feeder.scanner_special_and_positional_param();
         if len != 0 {
-            ans.name = (feeder.consume(len), None);
-            ans.is_array = ans.name.0 == "@";
-            ans.text += &ans.name.0;
+            ans.param = Param {name: feeder.consume(len), subscript: None};
+            ans.is_array = ans.param.name == "@";
+            ans.text += &ans.param.name;
             return true;
         }
 

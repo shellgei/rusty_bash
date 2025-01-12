@@ -6,7 +6,13 @@ use crate::elements::subword::BracedParam;
 use crate::utils::glob;
 
 pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-    let pattern = match &obj.replace_from {
+    if obj.replace.is_none() {
+        return false;
+    }
+
+    let info = obj.replace.clone().unwrap();
+
+    let pattern = match info.replace_from {
         None => return true,
         Some(w) => {
             match w.eval_for_case_word(core) {
@@ -16,7 +22,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         },
     };
 
-    let string_to = match &obj.replace_to {
+    let string_to = match &info.replace_to {
         None => "".to_string(),
         Some(w) => {
             match w.eval_for_case_word(core) {
@@ -35,7 +41,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     let mut ans = String::new();
     let mut skip = 0;
     for ch in obj.text.chars() {
-        if start != 0 && obj.head_only_replace {
+        if start != 0 && info.head_only_replace {
             return true;
         }
         if skip > 0 {
@@ -46,7 +52,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
 
         let pat = glob::parse(&pattern, extglob);
         let len = glob::longest_match_length(&obj.text[start..].to_string(), &pat);
-        if len != 0 && obj.tail_only_replace {
+        if len != 0 && info.tail_only_replace {
             if len == obj.text[start..].len() {
                 obj.text = [&obj.text[..start], &string_to[0..] ].concat();
                 return true;
@@ -55,7 +61,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
                 start += ch.len_utf8();
                 continue;
             }
-        } else if len != 0 && ! obj.all_replace {
+        } else if len != 0 && ! obj.replace.clone().unwrap().all_replace {
             obj.text = [&obj.text[..start], &string_to[0..], &obj.text[start+len..] ].concat();
             return true;
         }

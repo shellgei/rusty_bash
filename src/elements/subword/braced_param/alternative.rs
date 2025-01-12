@@ -28,7 +28,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         return true;
     }
     if symbol == "+" {
-        if ! core.db.has_value(&obj.name.0) {
+        if ! core.db.has_value(&obj.param.name) {
             obj.alternative_value = None;
             return true;
         }
@@ -41,7 +41,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     }
     if symbol == ":=" {
         let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-        if let Err(e) = core.db.set_param(&obj.name.0, &value, None) {
+        if let Err(e) = core.db.set_param(&obj.param.name, &value, None) {
             error::print(&e,core);
             return false;
         }
@@ -51,7 +51,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     }
     if symbol == ":?" {
         let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-        eprintln!("sush: {}: {}", &obj.name.0, &value);
+        eprintln!("sush: {}: {}", &obj.param.name, &value);
         return false;
     }
     if symbol == ":+" {
