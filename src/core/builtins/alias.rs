@@ -5,7 +5,7 @@ use crate::ShellCore;
 
 pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 {
-        for (k, v) in &core.db.aliases {
+        for (k, v) in &core.aliases {
             println!("alias {}='{}'", k, v);
         }
         return 0;
@@ -13,7 +13,7 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() == 2 && args[1].find("=") != None {
         let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
-        core.db.aliases.insert(kv[0].clone(), kv[1..].join("="));
+        core.aliases.insert(kv[0].clone(), kv[1..].join("="));
     }
 
     0
@@ -25,12 +25,12 @@ pub fn unalias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.contains(&"-a".to_string()) {
-        core.db.aliases.clear();
+        core.aliases.clear();
         return 0;
     }
 
     args[1..].iter()
-        .for_each(|e| {core.db.aliases.remove_entry(e);} );
+        .for_each(|e| {core.aliases.remove_entry(e);} );
 
     0
 }

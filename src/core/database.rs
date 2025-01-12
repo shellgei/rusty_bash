@@ -22,9 +22,7 @@ pub struct DataBase {
     params: Vec<HashMap<String, Box<dyn Data>>>,
     param_options: Vec<HashMap<String, String>>,
     pub position_parameters: Vec<Vec<String>>,
-    pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
-    pub alias_memo: Vec<(String, String)>,
     pub exit_status: i32,
     pub last_arg: String,
 }
@@ -261,43 +259,6 @@ impl DataBase {
         let mut ans: Vec<String> = keys.iter().map(|c| c.to_string()).collect();
         ans.sort();
         ans
-    }
-
-    pub fn replace_alias(&mut self, word: &mut String) -> bool {
-        let before = word.clone();
-        match self.replace_alias_core(word) {
-            true => {
-                self.alias_memo.push( (before, word.clone()) );
-                true
-            },
-            false => false,
-        }
-    }
-
-    fn replace_alias_core(&self, word: &mut String) -> bool {
-        if ! self.flags.contains('i') {
-            return false;
-        }
-
-        let mut ans = false;
-        let mut prev_head = "".to_string();
-
-        loop {
-            let head = match word.replace("\n", " ").split(' ').nth(0) {
-                Some(h) => h.to_string(),
-                _ => return ans,
-            };
-
-            if prev_head == head {
-                return ans;
-            }
-    
-            if let Some(value) = self.aliases.get(&head) {
-                *word = word.replacen(&head, value, 1);
-                ans = true;
-            }
-            prev_head = head;
-        }
     }
 
     pub fn unset_var(&mut self, name: &str) {

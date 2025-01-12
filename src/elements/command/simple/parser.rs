@@ -55,7 +55,7 @@ impl SimpleCommand {
     fn set_alias(word: &Word, words: &mut Vec<Word>, text: &mut String,
                  core: &mut ShellCore, feeder: &mut Feeder) -> bool {
         let mut w = word.text.clone();
-        if ! core.db.replace_alias(&mut w) {
+        if ! core.replace_alias(&mut w) {
             return false;
         }
 

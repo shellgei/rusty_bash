@@ -80,11 +80,11 @@ impl Script {
     }
 
     fn unalias(&mut self, core: &mut ShellCore) {
-        for a in core.db.alias_memo.iter().rev() {
+        for a in core.alias_memo.iter().rev() {
             self.text = self.text.replace(&a.1, &a.0);
         }
 
-        core.db.alias_memo.clear();
+        core.alias_memo.clear();
     }
 
     fn pipeline_num(&self) -> usize {
@@ -119,7 +119,7 @@ impl Script {
         }
 
         feeder.consume(feeder.len());
-        core.db.alias_memo.clear();
+        core.alias_memo.clear();
         return None;
     }
 }

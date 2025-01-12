@@ -42,6 +42,8 @@ impl Default for MeasuredTime {
 #[derive(Default)]
 pub struct ShellCore {
     pub db: DataBase,
+    pub aliases: HashMap<String, String>,
+    pub alias_memo: Vec<(String, String)>,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
@@ -199,5 +201,42 @@ impl ShellCore {
         }
 
         multi_ps4
+    }
+
+    pub fn replace_alias(&mut self, word: &mut String) -> bool {
+        let before = word.clone();
+        match self.replace_alias_core(word) {
+            true => {
+                self.alias_memo.push( (before, word.clone()) );
+                true
+            },
+            false => false,
+        }
+    }
+
+    fn replace_alias_core(&self, word: &mut String) -> bool {
+        if ! self.db.flags.contains('i') {
+            return false;
+        }
+
+        let mut ans = false;
+        let mut prev_head = "".to_string();
+
+        loop {
+            let head = match word.replace("\n", " ").split(' ').nth(0) {
+                Some(h) => h.to_string(),
+                _ => return ans,
+            };
+
+            if prev_head == head {
+                return ans;
+            }
+    
+            if let Some(value) = self.aliases.get(&head) {
+                *word = word.replacen(&head, value, 1);
+                ans = true;
+            }
+            prev_head = head;
+        }
     }
 }

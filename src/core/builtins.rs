@@ -81,10 +81,10 @@ pub fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -
     let mut return_value = 1;
 
     for com in words.iter() {
-        if core.db.aliases.contains_key(com) {
+        if core.aliases.contains_key(com) {
             match large_v {
-                true  => println!("{} is aliased to `{}'", &com, core.db.aliases[com]),
-                false => println!("alias {}='{}'", &com, &core.db.aliases[com]),
+                true  => println!("{} is aliased to `{}'", &com, core.aliases[com]),
+                false => println!("alias {}='{}'", &com, &core.aliases[com]),
             }
         }else if core.builtins.contains_key(com) {
             return_value = 0;
