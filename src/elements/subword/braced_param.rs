@@ -15,7 +15,7 @@ use crate::utils;
 use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
-use self::alternative::Check;
+use self::alternative::ValueCheck;
 use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone, Default)]
@@ -33,7 +33,7 @@ pub struct BracedParam {
     replace: Option<Replace>,
     substr: Option<Substr>,
     remove: Option<Remove>,
-    check: Option<Check>,
+    value_check: Option<ValueCheck>,
 
     unknown: String,
     is_array: bool,
@@ -86,11 +86,11 @@ impl Subword for BracedParam {
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {
-        if self.check.is_none() {
+        if self.value_check.is_none() {
             return vec![];
         }
 
-        let check = self.check.clone().unwrap();
+        let check = self.value_check.clone().unwrap();
         match &check.alternative_value {
             Some(w) => w.subwords.to_vec(),
             None    => vec![],
@@ -148,7 +148,7 @@ impl BracedParam {
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
         if let Some(s) = self.substr.as_mut() {
             self.text = s.get_text(&self.text, core)?;
-        }else if self.check.is_some() {
+        }else if self.value_check.is_some() {
             if ! alternative::set(self, core) {
                 return Err("alternative error".to_string());
             }
@@ -179,7 +179,7 @@ impl BracedParam {
             return false;
         }
 
-        let mut info = Check::default();
+        let mut info = ValueCheck::default();
 
         let symbol = feeder.consume(num);
         info.alternative_symbol = Some(symbol.clone());
@@ -189,7 +189,7 @@ impl BracedParam {
         ans.text += &feeder.consume(num);
         info.alternative_value = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
 
-        ans.check = Some(info);
+        ans.value_check = Some(info);
         true
     }
 
