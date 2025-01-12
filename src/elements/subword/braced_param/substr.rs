@@ -45,25 +45,21 @@ impl Substr {
         }
     }
 
-    pub fn set_partial_position_params(&self, obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-        let info = obj.substr.clone().unwrap();
-    
-        let mut offset = match info.offset.clone() {
+    pub fn set_partial_position_params(&self, obj: &mut BracedParam, core: &mut ShellCore) -> Result<(), String> {
+        let mut offset = match self.offset.clone() {
             None => {
-                eprintln!("sush: {}: bad substitution", &obj.text);
-                return false;
+                return Err("bad substitution".to_string());
             },
             Some(ofs) => ofs,
         };
     
         if offset.text == "" {
-            eprintln!("sush: {}: bad substitution", &obj.text);
-            return false;
+            return Err("bad substitution".to_string());
         }
     
         obj.array = core.db.get_array_all("@");
         match offset.eval_as_int(core) {
-            None => return false,
+            None => return Err("evaluation error".to_string()),
             Some(n) => {
                 let mut start = std::cmp::max(0, n) as usize;
                 start = std::cmp::min(start, obj.array.len()) as usize;
@@ -71,30 +67,25 @@ impl Substr {
             },
         };
     
-        if info.length.is_none() {
+        if self.length.is_none() {
             obj.text = obj.array.join(" ");
-            return true;
+            return Ok(());
         }
     
-        let mut length = match info.length.clone() {
-            None => {
-                eprintln!("sush: {}: bad substitution", &obj.text);
-                return false;
-            },
+        let mut length = match self.length.clone() {
+            None => return Err("bad substitution".to_string()),
             Some(ofs) => ofs,
         };
     
         if length.text == "" {
-            eprintln!("sush: {}: bad substitution", &obj.text);
-            return false;
+            return Err("bad substitution".to_string());
         }
     
         match length.eval_as_int(core) {
-            None => return false,
+            None => return Err("evaluation error".to_string()),
             Some(n) => {
                 if n < 0 {
-                    eprintln!("{}: substring expression < 0", n);
-                    return false;
+                    return Err(format!("{}: substring expression < 0", n));
                 }
                 let len = std::cmp::min(n as usize, obj.array.len());
                 let _ = obj.array.split_off(len);
@@ -102,6 +93,6 @@ impl Substr {
         };
     
         obj.text = obj.array.join(" ");
-        true
+        Ok(())
     }
 }

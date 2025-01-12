@@ -72,7 +72,7 @@ impl Subword for BracedParam {
 
         if self.param.name == "@" && self.substr.is_some() {
             let s = self.substr.clone().unwrap();
-            return s.set_partial_position_params(self, core);
+            return s.set_partial_position_params(self, core).is_ok();
         }
 
         let value = core.db.get_param(&self.param.name).unwrap_or_default();
