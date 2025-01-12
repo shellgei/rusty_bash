@@ -5,7 +5,6 @@ use crate::core::DataBase;
 use crate::core::database::SpecialData;
 use crate::utils::{random, clock};
 use std::{env, process};
-use super::getter;
 
 pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.exit_status = 0;
@@ -22,7 +21,7 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     SpecialData::set_new_entry(&mut db.params[0], "EPOCHREALTIME", clock::get_epochrealtime)?;
     SpecialData::set_new_entry(&mut db.params[0], "SECONDS", clock::get_seconds)?;
 
-    getter::special_variable(db, "SECONDS");
+    SpecialData::get(db, "SECONDS");
 
     db.set_array("FUNCNAME", vec![], None)?;
     Ok(())

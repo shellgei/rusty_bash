@@ -74,7 +74,7 @@ impl DataBase {
             return getter::position_param(self, n);
         }
 
-        if let Some(ans) = getter::special_variable(self, name) {
+        if let Some(ans) = SpecialData::get(self, name) {
             return Ok(ans);
         }
 

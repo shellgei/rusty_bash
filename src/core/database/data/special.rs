@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::core::HashMap;
+use crate::core::{DataBase, HashMap};
 use super::Data;
 
 #[derive(Debug, Clone)]
@@ -45,5 +45,17 @@ impl SpecialData {
                                 f: fn(&mut Vec<String>)-> String)-> Result<(), String> {
         db_layer.insert( name.to_string(), Box::new(SpecialData::from(f)) );
         Ok(())
+    }
+
+    pub fn get(db: &mut DataBase, name: &str) -> Option<String> {
+        let num = db.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(v) = db.params[layer].get_mut(name) {
+                if v.is_special() {
+                    return v.get_as_single();
+                }
+            }
+        }
+        None
     }
 }

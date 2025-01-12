@@ -34,18 +34,6 @@ pub fn position_param(db: &DataBase, pos: usize) -> Result<String, String> {
     };
 }
 
-pub fn special_variable(db: &mut DataBase, name: &str) -> Option<String> {
-    let num = db.params.len();
-    for layer in (0..num).rev()  {
-        if let Some(v) = db.params[layer].get_mut(name) {
-            if v.is_special() {
-                return v.get_as_single();
-            }
-        }
-    }
-    None
-}
-
 pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> Result<String, String> {
     let layer = match db.get_layer_pos(name) {
         Some(n) => n,
