@@ -4,9 +4,18 @@
 use crate::ShellCore;
 use crate::utils::error;
 use crate::elements::subword::BracedParam;
+use crate::elements::subword::braced_param::Word;
+
+#[derive(Debug, Clone, Default)]
+pub struct Check {
+    pub alternative_symbol: Option<String>,
+    pub alternative_value: Option<Word>,
+}
 
 pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
-    let symbol = match (obj.alternative_symbol.as_deref(), obj.text.as_ref()) {
+    let check = obj.check.as_mut().unwrap();
+
+    let symbol = match (check.alternative_symbol.as_deref(), obj.text.as_ref()) {
         (Some(s), "")   => s,
         (Some("-"), _)  => "-",
         (Some(":+"), _) => ":+",
@@ -14,7 +23,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         _               => return true,
     };
 
-    let word = match obj.alternative_value.as_ref() {
+    let word = match check.alternative_value.as_ref() {
         Some(w) => match w.tilde_and_dollar_expansion(core) {
             Some(w2) => w2,
             None     => return false,
@@ -23,20 +32,20 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
     };
 
     if symbol == "-" {
-        obj.alternative_value = None;
-        obj.alternative_symbol = None;
+        check.alternative_value = None;
+        check.alternative_symbol = None;
         return true;
     }
     if symbol == "+" {
         if ! core.db.has_value(&obj.param.name) {
-            obj.alternative_value = None;
+            check.alternative_value = None;
             return true;
         }
-        obj.alternative_value = Some(word);
+        check.alternative_value = Some(word);
         return true;
     }
     if symbol == ":-" {
-        obj.alternative_value = Some(word);
+        check.alternative_value = Some(word);
         return true;
     }
     if symbol == ":=" {
@@ -45,7 +54,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
             error::print(&e,core);
             return false;
         }
-        obj.alternative_value = None;
+        check.alternative_value = None;
         obj.text = value;
         return true
     }
@@ -55,7 +64,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> bool {
         return false;
     }
     if symbol == ":+" {
-        obj.alternative_value = match obj.text.as_str() {
+        check.alternative_value = match obj.text.as_str() {
             "" => None,
             _  => Some(word),
         };

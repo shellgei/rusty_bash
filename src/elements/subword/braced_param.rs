@@ -15,6 +15,7 @@ use crate::utils;
 use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
+use self::alternative::Check;
 use super::simple::SimpleSubword;
 
 #[derive(Debug, Clone, Default)]
@@ -32,12 +33,10 @@ pub struct BracedParam {
     replace: Option<Replace>,
     substr: Option<Substr>,
     remove: Option<Remove>,
+    check: Option<Check>,
 
     unknown: String,
     is_array: bool,
-    has_alternative: bool,
-    alternative_symbol: Option<String>,
-    alternative_value: Option<Word>,
     num: bool,
     indirect: bool,
 }
@@ -87,7 +86,12 @@ impl Subword for BracedParam {
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {
-        match self.alternative_value.as_ref() {
+        if self.check.is_none() {
+            return vec![];
+        }
+
+        let check = self.check.clone().unwrap();
+        match &check.alternative_value {
             Some(w) => w.subwords.to_vec(),
             None    => vec![],
         }
@@ -144,7 +148,7 @@ impl BracedParam {
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
         if let Some(s) = self.substr.as_mut() {
             self.text = s.get_text(&self.text, core)?;
-        }else if self.has_alternative {
+        }else if self.check.is_some() {
             if ! alternative::set(self, core) {
                 return Err("alternative error".to_string());
             }
@@ -175,14 +179,17 @@ impl BracedParam {
             return false;
         }
 
-        ans.has_alternative = true;
+        let mut info = Check::default();
+
         let symbol = feeder.consume(num);
-        ans.alternative_symbol = Some(symbol.clone());
+        info.alternative_symbol = Some(symbol.clone());
         ans.text += &symbol;
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        ans.alternative_value = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
+        info.alternative_value = Some(Self::eat_subwords(feeder, ans, vec!["}"], core));
+
+        ans.check = Some(info);
         true
     }
 
