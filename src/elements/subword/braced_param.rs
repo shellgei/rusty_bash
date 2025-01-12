@@ -18,10 +18,16 @@ use super::simple::SimpleSubword;
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     pub text: String,
+
+    /*
     pub name: String,
+    */
+    subscript: Option<Subscript>,
+
+    pub name: (String, Option<Subscript>),
+
     unknown: String,
     is_array: bool,
-    subscript: Option<Subscript>,
     has_alternative: bool,
     alternative_symbol: Option<String>,
     alternative_value: Option<Word>,
@@ -54,9 +60,9 @@ impl Subword for BracedParam {
         }
 
         if self.indirect {
-            let value = core.db.get_param(&self.name).unwrap_or_default();
+            let value = core.db.get_param(&self.name.0).unwrap_or_default();
             if utils::is_param(&value) {
-                self.name = value;
+                self.name.0 = value;
             }else{
                 eprintln!("sush: {}: invalid name", &value);
                 return false;
@@ -64,18 +70,18 @@ impl Subword for BracedParam {
         }
 
         if self.subscript.is_some() {
-            if self.name == "@" {
+            if self.name.0 == "@" {
                 eprintln!("sush: {}: bad substitution", &self.text);
                 return false;
             }
             return self.subscript_operation(core);
         }
 
-        if self.name == "@" && self.has_offset {
+        if self.name.0 == "@" && self.has_offset {
             return offset::set_partial_position_params(self, core);
         }
 
-        let value = core.db.get_param(&self.name).unwrap_or_default();
+        let value = core.db.get_param(&self.name.0).unwrap_or_default();
         self.text = match self.num {
             true  => value.chars().count().to_string(),
             false => value.to_string(),
@@ -99,7 +105,7 @@ impl Subword for BracedParam {
 
 impl BracedParam {
     fn check(&mut self) -> bool {
-        if self.name.is_empty() || ! utils::is_param(&self.name) {
+        if self.name.0.is_empty() || ! utils::is_param(&self.name.0) {
             eprintln!("sush: {}: bad substitution", &self.text);
             return false;
         }
@@ -112,29 +118,29 @@ impl BracedParam {
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> bool {
-        let index = match self.subscript.clone().unwrap().eval(core, &self.name) {
+        let index = match self.subscript.clone().unwrap().eval(core, &self.name.0) {
             Some(s) => s,
             None => return false,
         };
 
-        if core.db.is_assoc(&self.name) {
+        if core.db.is_assoc(&self.name.0) {
             return self.subscript_operation_assoc(core, &index);
         }
 
         if index.as_str() == "@" {
-            self.array = core.db.get_array_all(&self.name);
+            self.array = core.db.get_array_all(&self.name.0);
         }
 
         self.text = match (self.num, index.as_str()) {
-            (true, "@") => core.db.len(&self.name).to_string(),
-            (true, _)   => core.db.get_array_elem(&self.name, &index).unwrap().chars().count().to_string(),
-            (false, _)  => core.db.get_array_elem(&self.name, &index).unwrap(),
+            (true, "@") => core.db.len(&self.name.0).to_string(),
+            (true, _)   => core.db.get_array_elem(&self.name.0, &index).unwrap().chars().count().to_string(),
+            (false, _)  => core.db.get_array_elem(&self.name.0, &index).unwrap(),
        };
        self.optional_operation(core)
     }
 
     fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> bool {
-        if let Ok(s) = core.db.get_array_elem(&self.name, index) {
+        if let Ok(s) = core.db.get_array_elem(&self.name.0, index) {
             self.text = s;
             return true;
         }
@@ -261,14 +267,6 @@ impl BracedParam {
         true
     }
 
-    /*
-    fn eat_blank(len: usize, feeder: &mut Feeder, ans: &mut Self, word: &mut Word) {
-        let blank = feeder.consume(len);
-        let sw = Box::new(SimpleSubword{ text: blank.clone() });
-        word.subwords.push(sw);
-        ans.text += &blank.clone();
-    }*/
-
     fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore) -> Word {
         let mut word = Word::default();
         while ! ends.iter().any(|e| feeder.starts_with(e)) {
@@ -296,16 +294,16 @@ impl BracedParam {
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
         if len != 0 {
-            ans.name = feeder.consume(len);
-            ans.text += &ans.name;
+            ans.name = (feeder.consume(len), None);
+            ans.text += &ans.name.0;
             return true;
         }
 
         let len = feeder.scanner_special_and_positional_param();
         if len != 0 {
-            ans.name = feeder.consume(len);
-            ans.is_array = ans.name == "@";
-            ans.text += &ans.name;
+            ans.name = (feeder.consume(len), None);
+            ans.is_array = ans.name.0 == "@";
+            ans.text += &ans.name.0;
             return true;
         }
 
