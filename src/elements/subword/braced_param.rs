@@ -149,8 +149,9 @@ impl BracedParam {
             if ! alternative::set(self, core) {
                 return Err("alternative error".to_string());
             }
-        }else if self.remove.is_some() {
-            if ! remove::set(self, core) {
+        }else if let Some(r) = self.remove.as_mut() {
+            let r = r.clone();
+            if ! r.set(self, core) {
                 return Err("remove error".to_string());
             }
         }else if let Some(r) = &self.replace {
