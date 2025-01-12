@@ -16,7 +16,6 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> Result<(), String> {
     let mut offset = info.offset.clone().unwrap();
 
     if offset.text == "" {
-        eprintln!("sush: {}: bad substitution", &obj.text);
         return Err("bad substitution".to_string());
     }
 
@@ -31,7 +30,7 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> Result<(), String> {
     };
 
     if info.length.is_some() {
-        match length(&ans, &info.length, core) {
+        match length(&ans, &mut info.length.unwrap(), core) {
             Some(text) => ans = text,
             None => return Err("length evaluation error".to_string()),
         }
@@ -41,16 +40,8 @@ pub fn set(obj: &mut BracedParam, core: &mut ShellCore) -> Result<(), String> {
     Ok(())
 }
 
-fn length(text: &String, length: &Option<ArithmeticExpr>,
+fn length(text: &String, length: &mut ArithmeticExpr,
                          core: &mut ShellCore) -> Option<String> {
-    let mut length = match length.clone() {
-        None => {
-            eprintln!("sush: {}: bad substitution", &text);
-            return None;
-        },
-        Some(ofs) => ofs,
-    };
-
     match length.eval_as_int(core) {
         None    => None,
         Some(n) => Some(text.chars().enumerate()
