@@ -69,7 +69,7 @@ impl ValueCheck {
             return Ok(text.clone());
         }
         let value = self.set_alter_word(core)?;
-        let msg = format!("sush: {}: {}", &name, &value);
+        let msg = format!("{}: {}", &name, &value);
         Err(msg)
     }
 
