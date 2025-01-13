@@ -13,67 +13,66 @@ pub struct ValueCheck {
 
 impl ValueCheck {
     pub fn set(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, String> {
-        let mut text = text.clone();
-        let symbol = match (self.symbol.as_deref(), text.as_ref()) {
-            (Some(s), "")   => s,
-            (Some("-"), _)  => "-",
-            (Some(":+"), _) => ":+",
-            (Some("+"), _)  => "+",
-            _               => return Ok(text),
-        };
-    
-        let word = match self.alternative_value.as_ref() {
-            Some(w) => {
-                let w2 = w.tilde_and_dollar_expansion(core)?;
-                w2
-                /*
-                match w.tilde_and_dollar_expansion(core) {
-                Some(w2) => w2,
-                None     => return Err("expansion error".to_string()),
-                */
+        match self.symbol.as_deref() {
+            Some(":-")   => {
+                self.set_alter_word(core)?;
+                Ok(text.clone())
             },
+            Some(":?") => self.colon_question(name, core),
+            Some(":=") => self.colon_equal(name, core),
+            Some("-")  => self.minus(text),
+            Some(":+") => self.colon_plus(text, core),
+            Some("+")  => self.plus(name, text, core),
+            _          => Err("no operation".to_string()),
+        }
+    }
+
+    fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, String> {
+        let v = self.alternative_value.clone().ok_or("no alternative value")?;
+        self.alternative_value = Some(v.tilde_and_dollar_expansion(core)? );
+        let value = v.eval_as_value(core).ok_or("parse error")?;
+        Ok(value.clone())
+    }
+
+    fn minus(&mut self, text: &String) -> Result<String, String> {
+        self.alternative_value = None;
+        self.symbol = None;
+        Ok(text.clone())
+    }
+
+    fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, String> {
+        let word = match self.alternative_value.as_ref() {
+            Some(w) => w.tilde_and_dollar_expansion(core)?,
             None => return Err("no alternative value".to_string()),
         };
     
-        if symbol == "-" {
+        if ! core.db.has_value(&name) {
             self.alternative_value = None;
-            self.symbol = None;
-            return Ok(text);
+            return Ok(text.clone());
         }
-        if symbol == "+" {
-            if ! core.db.has_value(&name) {
-                self.alternative_value = None;
-                return Ok(text);
-            }
-            self.alternative_value = Some(word);
-            return Ok(text);
-        }
-        if symbol == ":-" {
-            self.alternative_value = Some(word);
-            return Ok(text);
-        }
-        if symbol == ":=" {
-            let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-            core.db.set_param(&name, &value, None)?;
+        self.alternative_value = Some(word);
+        return Ok(text.clone());
+    }
 
-            self.alternative_value = None;
-            text = value;
-            return Ok(text);
+    fn colon_plus(&mut self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+        match text.is_empty() {
+            true  => self.alternative_value = None,
+            false => {self.set_alter_word(core)?;},
         }
-        if symbol == ":?" {
-            let value: String = word.subwords.iter().map(|s| s.get_text()).collect();
-            eprintln!("sush: {}: {}", &name, &value);
-            return Err("".to_string());
-        }
-        if symbol == ":+" {
-            self.alternative_value = match text.as_str() {
-                "" => None,
-                _  => Some(word),
-            };
-            return Ok(text);
-        }
-    
-        return Err("no operation".to_string());
+        return Ok(text.clone());
+    }
+
+    fn colon_equal(&mut self, name: &String, core: &mut ShellCore) -> Result<String, String> {
+        let value = self.set_alter_word(core)?;
+        core.db.set_param(&name, &value, None)?;
+        self.alternative_value = None;
+        return Ok(value);
+    }
+
+    fn colon_question(&mut self, name: &String, core: &mut ShellCore) -> Result<String, String> {
+        let value = self.set_alter_word(core)?;
+        eprintln!("sush: {}: {}", &name, &value);
+        return Err("".to_string());
     }
 
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {

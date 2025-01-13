@@ -14,6 +14,9 @@ impl Subword for Parameter {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
+        if ! self.text.starts_with("$") {
+            return Ok(());
+        }
         let value = core.db.get_param(&self.text[1..]).unwrap_or(String::new());
         self.text = value.to_string();
         Ok(())
