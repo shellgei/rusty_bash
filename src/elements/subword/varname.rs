@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::utils::error::ParseError;
 use crate::elements::subword::Subword;
 
 #[derive(Debug, Clone)]
@@ -17,10 +18,10 @@ impl Subword for VarName {
 }
 
 impl VarName {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<VarName> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         match feeder.scanner_name(core) {
-            0 => None,
-            n => Some( Self{ text: feeder.consume(n) } ),
+            0 => Ok(None),
+            n => Ok(Some( Self{ text: feeder.consume(n) } )),
         }
     }
 }
