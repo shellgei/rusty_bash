@@ -146,9 +146,9 @@ impl Job {
         while Self::eat_blank_line(feeder, &mut ans, core) {} 
         if ! Self::eat_pipeline(feeder, &mut ans, core) {
             if ans.text.is_empty() {
-                return Ok(None);
+                return None;
             }else{
-                return Ok(Some(ans));
+                return Some(ans);
             }
         }
 
@@ -168,8 +168,8 @@ impl Job {
         ans.text += &feeder.consume(com_num);
 
         match ans.pipelines.len() > 0 {
-            true  => Ok(Some(ans)),
-            false => Ok(None),
+            true  => Some(ans),
+            false => None,
         }
     }
 }
