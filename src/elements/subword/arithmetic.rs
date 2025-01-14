@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::utils::error::ParseError;
 use crate::elements::command::arithmetic::ArithmeticCommand;
 use crate::elements::subword::Subword;
 
@@ -25,18 +26,18 @@ impl Subword for Arithmetic {
 }
 
 impl Arithmetic {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("$((") {
-            return None;
+            return Ok(None);
         }
         feeder.set_backup();
         let dl = feeder.consume(1);
 
         if let Some(a) = ArithmeticCommand::parse(feeder, core) {
             feeder.pop_backup();
-            return Some(Arithmetic{ text: dl + &a.text.clone(), com: a});
+            return Ok(Some(Arithmetic{ text: dl + &a.text.clone(), com: a}));
         }
         feeder.rewind();
-        None
+        Ok(None)
     }
 }
