@@ -9,13 +9,15 @@ use nix::unistd::Pid;
 pub enum ExecError {
     Internal,
     VariableReadOnly(String),
+    VariableInvalid(String),
 }
 
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
-            ExecError::VariableReadOnly(s) => format!("{}: readonly variable", s),
+            ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
+            ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
         }
     }
 }

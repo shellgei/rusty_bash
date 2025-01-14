@@ -41,10 +41,9 @@ impl DataBase {
         data
     }
 
-    fn name_check(name: &str) -> Result<(), String> {
+    fn name_check(name: &str) -> Result<(), ExecError> {
         if ! utils::is_param(name) {
-            let error = format!("`{}': not a valid identifier", name);
-            return Err(error);
+            return Err(ExecError::VariableInvalid(name.to_string()));
         }
         Ok(())
     }
