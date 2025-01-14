@@ -34,7 +34,7 @@ impl Array {
         }
 
         let w = match Word::parse(feeder, core, false) {
-            Some(w) => w,
+            Ok(Some(w)) => w,
             _       => return false,
         };
         ans.text += &w.text;

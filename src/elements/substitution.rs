@@ -202,7 +202,7 @@ impl Substitution {
             ans.text += &a.text;
             ans.value = ParsedDataType::Array(a);
             Some(ans)
-        }else if let Some(w) = Word::parse(feeder, core, false) {
+        }else if let Ok(Some(w)) = Word::parse(feeder, core, false) {
             ans.text += &w.text;
             ans.value = ParsedDataType::Single(w);
             Some(ans)

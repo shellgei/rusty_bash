@@ -16,7 +16,7 @@ impl ConditionalExpr {
         }
 
         match Word::parse(feeder, core, false) {
-            Some(w) => {
+            Ok(Some(w)) => {
                 ans.text += &w.text.clone();
                 ans.elements.push(CondElem::Word(w));
 

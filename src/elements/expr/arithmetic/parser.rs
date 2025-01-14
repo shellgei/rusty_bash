@@ -89,7 +89,7 @@ impl ArithmeticExpr {
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut word = match Word::parse(feeder, core, true) {
-            Some(w) => w,
+            Ok(Some(w)) => w,
             _       => return false,
         };
 

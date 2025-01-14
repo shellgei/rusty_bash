@@ -73,7 +73,7 @@ impl CaseCommand {
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
         let w = match Word::parse(feeder, core, false) {
-            Some(w) => w,
+            Ok(Some(w)) => w,
             _       => return false,
         };
 
@@ -90,7 +90,7 @@ impl CaseCommand {
 
         loop {
             match Word::parse(feeder, core, false) {
-                Some(w) => {
+                Ok(Some(w)) => {
                     *text += &w.text;
                     ans.push(w)
                 },

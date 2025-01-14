@@ -10,6 +10,7 @@ mod split;
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use crate::utils::error;
+use crate::utils::error::ParseError;
 use super::subword::Subword;
 use super::subword::simple::SimpleSubword;
 
@@ -151,16 +152,17 @@ impl Word {
         self.subwords.push(subword.clone());
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, as_operand: bool) -> Option<Word> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, as_operand: bool)
+        -> Result<Option<Word>, ParseError> {
         if feeder.starts_with("#") {
-            return None;
+            return Ok(None);
         }
         if as_operand && feeder.starts_with("}") {
-            return None;
+            return Ok(None);
         }
 
         let mut ans = Word::default();
-        while let Ok(Some(sw)) = subword::parse(feeder, core) {
+        while let Some(sw) = subword::parse(feeder, core)? {
             match sw.is_extglob() {
                 false => ans.push(&sw),
                 true  => {
@@ -181,8 +183,8 @@ impl Word {
         }
 
         match ans.subwords.len() {
-            0 => None,
-            _ => Some(ans),
+            0 => Ok(None),
+            _ => Ok(Some(ans)),
         }
     }
 }

@@ -270,7 +270,7 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
     let mut feeder = Feeder::new(&args[2]);
     while feeder.len() != 0 {
         match Word::parse(&mut feeder, core, false) {
-            Some(mut w) => {
+            Ok(Some(mut w)) => {
                 w.make_unquoted_word();
                 ans.push(w.text)
             },
