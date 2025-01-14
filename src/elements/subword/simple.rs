@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::Feeder;
+use crate::utils::error::ParseError;
 use super::Subword;
 
 #[derive(Debug, Clone)]
@@ -16,17 +17,17 @@ impl Subword for SimpleSubword {
 }
 
 impl SimpleSubword {
-    pub fn parse(feeder: &mut Feeder) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_subword_symbol();
         if len > 0 {
-            return Some( Self{ text :feeder.consume(len) } );
+            return Ok(Some( Self{ text :feeder.consume(len) } ));
         }
 
         let len = feeder.scanner_subword();
         if len > 0 {
-            return Some( Self{ text :feeder.consume(len) } );
+            return Ok(Some( Self{ text :feeder.consume(len) } ));
         }
 
-        None
+        Ok(None)
     }
 }

@@ -5,6 +5,11 @@ use crate::ShellCore;
 use nix::sys::signal::Signal;
 use nix::unistd::Pid;
 
+pub enum ParseError {
+    UnexpectedSymbol(String),
+    UnexpectedEof,
+}
+
 pub fn print(s: &str, core: &mut ShellCore) {
     let name = core.db.get_param("0").unwrap();
     if core.db.flags.contains('i') {
