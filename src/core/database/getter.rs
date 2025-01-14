@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::error::ExecError;
 use crate::core::DataBase;
 use crate::core::database::Data;
 
@@ -19,14 +20,14 @@ pub fn special_param(db :&DataBase, name: &str) -> Option<String> {
     Some(val)
 }
 
-pub fn connected_position_params(db :&DataBase) -> Result<String, String> {
+pub fn connected_position_params(db :&DataBase) -> Result<String, ExecError> {
     match db.position_parameters.last() {
         Some(a) => Ok(a[1..].join(" ")),
         _       => Ok("".to_string()),
     }
 }
 
-pub fn position_param(db: &DataBase, pos: usize) -> Result<String, String> {
+pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
     let layer = db.position_parameters.len();
     return match db.position_parameters[layer-1].len() > pos {
         true  => Ok(db.position_parameters[layer-1][pos].to_string()),

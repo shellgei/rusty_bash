@@ -56,7 +56,7 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn get_param(&mut self, name: &str) -> Result<String, String> {
+    pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
 
         if let Some(val) = getter::special_param(self, name) {

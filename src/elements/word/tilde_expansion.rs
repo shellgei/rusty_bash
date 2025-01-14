@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::ExecError;
 use crate::elements::word::Word;
 use nix::unistd::User;
 use super::subword::simple::SimpleSubword;
@@ -36,7 +37,7 @@ fn prefix_length(word: &Word) -> usize {
     }
 }
 
-fn get_value(text: &str, core: &mut ShellCore) -> Result<String, String> {
+fn get_value(text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
     let key = match text {
         "" => "HOME",
         "+" => "PWD",
