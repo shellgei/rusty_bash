@@ -171,14 +171,12 @@ impl Word {
                 },
             }
 
-            if as_operand && feeder.starts_with("]") {
-                break;
-            }
-            if as_operand && feeder.starts_with("}") {
-                break;
-            }
-            if as_operand && feeder.scanner_math_symbol(core) != 0 {
-                break;
+            if as_operand {
+                if feeder.starts_with("]")
+                || feeder.starts_with("}")
+                || feeder.scanner_math_symbol(core) != 0 {
+                    break;
+                }
             }
         }
 
