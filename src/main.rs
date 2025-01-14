@@ -13,8 +13,9 @@ use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
 use crate::elements::script::Script;
-use crate::feeder::{Feeder, InputError};
+use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
+use utils::error::InputError;
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");

@@ -5,6 +5,13 @@ use crate::ShellCore;
 use nix::sys::signal::Signal;
 use nix::unistd::Pid;
 
+#[derive(Debug)]
+pub enum InputError {
+    Interrupt,
+    Eof,
+}
+
+#[derive(Debug)]
 pub enum ParseError {
     UnexpectedSymbol(String),
     UnexpectedEof,

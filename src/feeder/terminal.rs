@@ -3,8 +3,9 @@
 
 mod completion;
 
-use crate::{file_check, InputError, ShellCore};
+use crate::{file_check, ShellCore};
 use crate::utils::file;
+use crate::utils::error::{InputError};
 use std::io;
 use std::fs::File;
 use std::io::{Write, Stdout};

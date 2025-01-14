@@ -9,14 +9,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use crate::ShellCore;
 use crate::utils::exit;
-use crate::utils::error::ParseError;
+use crate::utils::error::{InputError, ParseError};
 use std::sync::atomic::Ordering::Relaxed;
-
-#[derive(Debug)]
-pub enum InputError {
-    Interrupt,
-    Eof,
-}
 
 #[derive(Debug, Default)]
 pub struct Feeder {
