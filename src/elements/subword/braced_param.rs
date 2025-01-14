@@ -12,6 +12,7 @@ use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::utils;
+use crate::utils::error::ParseError;
 use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
@@ -232,9 +233,9 @@ impl BracedParam {
         ans.text += &unknown;
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BracedParam> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("${") {
-            return None;
+            return Ok(None);
         }
         let mut ans = Self::default();
         ans.text += &feeder.consume(2);
@@ -260,6 +261,6 @@ impl BracedParam {
         }
 
         ans.text += &feeder.consume(1);
-        Some(ans)
+        Ok(Some(ans))
     }
 }

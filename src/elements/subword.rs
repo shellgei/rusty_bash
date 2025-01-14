@@ -120,7 +120,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subwor
         return parse(feeder, core);
     }
 
-    if let Some(a) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
+    if let Ok(Some(a)) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
     else if let Ok(Some(a)) = Arithmetic::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }

@@ -39,7 +39,7 @@ impl ExtGlob {
     }
 
     fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(a) = BracedParam::parse(feeder, core){
+        if let Ok(Some(a)) = BracedParam::parse(feeder, core){
             ans.text += a.get_text();
             ans.subwords.push(Box::new(a));
             true
