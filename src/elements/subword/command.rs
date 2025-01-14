@@ -6,6 +6,7 @@ use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::Subword;
+use crate::utils::error::ParseError;
 use nix::unistd;
 use std::{thread, time};
 use std::fs::File;
@@ -71,17 +72,17 @@ impl CommandSubstitution {
         Ok(())
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("$(") {
-            return None;
+            return Ok(None);
         }
         let mut text = feeder.consume(1);
 
         if let Some(pc) = ParenCommand::parse(feeder, core, true) {
             text += &pc.get_text();
-            Some(CommandSubstitution {text: text, command: pc} )
+            Ok(Some(CommandSubstitution {text: text, command: pc} ))
         }else{
-            None
+            Ok(None)
         }
     }
 }

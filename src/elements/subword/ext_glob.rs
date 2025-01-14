@@ -49,7 +49,7 @@ impl ExtGlob {
     }
 
     fn eat_command_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(a) = CommandSubstitution::parse(feeder, core){
+        if let Ok(Some(a)) = CommandSubstitution::parse(feeder, core){
             ans.text += a.get_text();
             ans.subwords.push(Box::new(a));
             true
