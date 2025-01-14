@@ -35,7 +35,7 @@ pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
     };
 }
 
-pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> Result<String, String> {
+pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> Result<String, ExecError> {
     let layer = match db.get_layer_pos(name) {
         Some(n) => n,
         _ => return Ok("".to_string()),

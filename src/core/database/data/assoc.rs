@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::error::ExecError;
 use super::Data;
 use std::collections::HashMap;
 
@@ -41,14 +42,14 @@ impl Data for AssocData {
         Ok(())
     }
 
-    fn get_as_assoc(&mut self, key: &str) -> Result<String, String> {
+    fn get_as_assoc(&mut self, key: &str) -> Result<String, ExecError> {
         if key == "@" || key == "*" {
             return Ok(self.values().join(" "));
         }
 
         match self.body.get(key) {
             Some(s) => Ok(s.to_string()),
-            None => Err("no entry".to_string()),
+            None => Err(ExecError::ArrayIndexInvalid(key.to_string())),
         }
     }
 

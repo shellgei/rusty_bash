@@ -6,6 +6,7 @@ pub mod assoc;
 pub mod single;
 pub mod special;
 
+use crate::error::ExecError;
 use std::fmt;
 use std::fmt::Debug;
 
@@ -37,17 +38,21 @@ pub trait Data {
     fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), String> {Err("not an associative table".to_string())}
 
     fn get_as_single(&mut self) -> Result<String, String> {Err("not a single variable".to_string())}
-    fn get_as_array(&mut self, _: &str) -> Result<String, String> {Err("not an array".to_string())}
-    fn get_as_assoc(&mut self, _: &str) -> Result<String, String> {Err("not an assoc array".to_string())}
+    fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> {
+        Err(ExecError::OperandExpected(key.to_string()))
+    }
+    fn get_as_assoc(&mut self, key: &str) -> Result<String, ExecError> {
+        Err(ExecError::OperandExpected(key.to_string()))
+    }
 
-    fn get_as_array_or_assoc(&mut self, pos: &str) -> Result<String, String> {
+    fn get_as_array_or_assoc(&mut self, pos: &str) -> Result<String, ExecError> {
         if self.is_assoc() {
             return self.get_as_assoc(pos);
         }
         if self.is_array() {
             return self.get_as_array(pos);
         }
-        Err("No entry".to_string())
+        Err(ExecError::ArrayIndexInvalid(pos.to_string()))
     }
 
     fn get_all_as_array(&mut self) -> Result<Vec<String>, String> {Err("not an array".to_string())}

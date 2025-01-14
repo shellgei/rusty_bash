@@ -10,6 +10,8 @@ pub enum ExecError {
     Internal,
     VariableReadOnly(String),
     VariableInvalid(String),
+    ArrayIndexInvalid(String),
+    OperandExpected(String),
 }
 
 impl From<ExecError> for String {
@@ -18,6 +20,8 @@ impl From<ExecError> for String {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
             ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
+            ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
+            ExecError::OperandExpected(name) => format!("`{}': syntax error: operand expected", name),
         }
     }
 }

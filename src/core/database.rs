@@ -88,7 +88,7 @@ impl DataBase {
         Ok("".to_string())
     }
 
-    pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, String> {
+    pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
         getter::array_elem(self, name, pos)
     }

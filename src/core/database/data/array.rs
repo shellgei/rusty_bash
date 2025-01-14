@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::error::ExecError;
 use std::collections::HashMap;
 use super::Data;
 
@@ -43,12 +44,12 @@ impl Data for ArrayData {
         Err("invalid index".to_string())
     }
 
-    fn get_as_array(&mut self, key: &str) -> Result<String, String> {
+    fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> {
         if key == "@" || key == "*" {
             return Ok(self.values().join(" "));
         }
 
-        let n = key.parse::<usize>().map_err(|e| e.to_string())?;
+        let n = key.parse::<usize>().map_err(|_| ExecError::ArrayIndexInvalid(key.to_string()))?;
         Ok( self.body.get(&n).unwrap_or(&"".to_string()).clone() )
     }
 
