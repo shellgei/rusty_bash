@@ -6,6 +6,7 @@ use super::{SimpleCommand};
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
+use crate::utils::error::ParseError;
 
 impl SimpleCommand {
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -79,7 +80,7 @@ impl SimpleCommand {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         feeder.set_backup();
 
@@ -102,10 +103,10 @@ impl SimpleCommand {
 
         if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
-            Some(ans)
+            Ok(Some(ans))
         }else{
             feeder.rewind();
-            None
+            Ok(None)
         }
     }
 }

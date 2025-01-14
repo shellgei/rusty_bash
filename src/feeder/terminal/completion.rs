@@ -83,7 +83,7 @@ impl Terminal {
                 let command = format!("prev={} cur={} {}", &prev_word, &cur_word, &value);//TODO: cur should be set
                 let mut feeder = Feeder::new(&command);                              // by bash-completion 
 
-                if let Some(mut a) = SimpleCommand::parse(&mut feeder, core) {
+                if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
                     let mut dummy = Pipe::new("".to_string());
                     a.exec(core, &mut dummy);
                 }
@@ -353,7 +353,8 @@ fn completion_from(ws: &Vec<String>, core: &mut ShellCore) -> usize {
 
         let s = ws[i..].join(" ");
         let mut feeder = Feeder::new(&s);
-        if let None = SimpleCommand::parse(&mut feeder, core) {
+        if let Ok(Some(_)) = SimpleCommand::parse(&mut feeder, core) {
+        }else{
             return i+1;
         }
     }

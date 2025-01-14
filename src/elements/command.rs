@@ -134,7 +134,7 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) = FunctionDefinition::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Ok(Some(a)) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = ArithmeticCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
