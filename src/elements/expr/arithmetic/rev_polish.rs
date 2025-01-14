@@ -1,9 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::error::ExecError;
 use super::elem::ArithElem;
 
-pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ArithElem> {
+pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
     let mut ans = vec![];
     let mut stack: Vec<ArithElem> = vec![];
 
@@ -32,7 +33,8 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ArithElem> {
         };
 
         if !ok {
-            return Err(e.clone());
+            return Err(ExecError::OperandExpected(e.to_string()));
+            //return Err(e.clone());
         }
     }
 

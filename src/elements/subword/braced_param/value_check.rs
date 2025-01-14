@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
+use crate::{exit, Feeder, ShellCore};
 use crate::elements::subword::BracedParam;
 use crate::elements::subword::braced_param::Word;
-use crate::error::ParseError;
+use crate::error::{ExecError, ParseError};
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
@@ -13,7 +13,7 @@ pub struct ValueCheck {
 }
 
 impl ValueCheck {
-    pub fn set(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    pub fn set(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         match self.symbol.as_deref() {
             Some(":-")   => {
                 self.set_alter_word(core)?;
@@ -24,24 +24,24 @@ impl ValueCheck {
             Some("-")  => self.minus(text),
             Some(":+") => self.colon_plus(text, core),
             Some("+")  => self.plus(name, text, core),
-            _          => Err("no operation".to_string()),
+            _          => exit::internal("no operation"),
         }
     }
 
-    fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, String> {
-        let v = self.alternative_value.clone().ok_or("no alternative value")?;
+    fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let v = self.alternative_value.clone().ok_or(ExecError::OperandExpected("".to_string()))?;
         self.alternative_value = Some(v.tilde_and_dollar_expansion(core)? );
-        let value = v.eval_as_value(core).ok_or("parse error")?;
+        let value = v.eval_as_value(core).ok_or(ExecError::OperandExpected("".to_string()))?;
         Ok(value.clone())
     }
 
-    fn minus(&mut self, text: &String) -> Result<String, String> {
+    fn minus(&mut self, text: &String) -> Result<String, ExecError> {
         self.alternative_value = None;
         self.symbol = None;
         Ok(text.clone())
     }
 
-    fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         match core.db.has_value(&name) {
             true  => {self.set_alter_word(core)?;},
             false => self.alternative_value = None,
@@ -49,7 +49,7 @@ impl ValueCheck {
         Ok(text.clone())
     }
 
-    fn colon_plus(&mut self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    fn colon_plus(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         match text.is_empty() {
             true  => self.alternative_value = None,
             false => {self.set_alter_word(core)?;},
@@ -57,21 +57,21 @@ impl ValueCheck {
         Ok(text.clone())
     }
 
-    fn colon_equal(&mut self, name: &String, core: &mut ShellCore) -> Result<String, String> {
+    fn colon_equal(&mut self, name: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let value = self.set_alter_word(core)?;
         core.db.set_param(&name, &value, None)?;
         self.alternative_value = None;
         Ok(value)
     }
 
-    fn colon_question(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    fn colon_question(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         if core.db.has_value(&name) {
             self.alternative_value = None;
             return Ok(text.clone());
         }
         let value = self.set_alter_word(core)?;
         let msg = format!("{}: {}", &name, &value);
-        Err(msg)
+        Err(ExecError::Other(msg))
     }
 
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)

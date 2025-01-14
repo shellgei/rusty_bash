@@ -2,13 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, ShellCore};
+use crate::error::ExecError;
 use super::{ArithElem, word};
 
-pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), String> {
+pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
         "+"  => stack.push( ArithElem::Float(num) ),
         "-"  => stack.push( ArithElem::Float(-num) ),
-        _ => return Err("not supported operator for float number".to_string()),
+        _ => return Err(ExecError::Other("not supported operator for float number".to_string())),
     }
     Ok(())
 }
@@ -48,21 +49,21 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
 }
 
 pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut ShellCore)
-                                      -> Result<ArithElem, String> {
+                                      -> Result<ArithElem, ExecError> {
     let new_value = match op {
         "+=" => cur + right,
         "-=" => cur - right,
         "*=" => cur * right,
         "/=" => {
             match right == 0.0 {
-                true  => return Err("divided by 0".to_string()),
+                true  => return Err(ExecError::DivZero),
                 false => cur / right,
             }
         },
-        _   => return Err("Not supprted operation for float numbers".to_string()),
+        _   => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
-    match core.db.set_param(&name, &new_value.to_string(), None) { //TODO: simplify, None, None
+    match core.db.set_param(&name, &new_value.to_string(), None) {
         Ok(()) => Ok(ArithElem::Float(new_value)),
         Err(e) => Err(e),
     }

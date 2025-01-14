@@ -12,7 +12,7 @@ use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::utils;
-use crate::error::ParseError;
+use crate::error::{ExecError, ParseError};
 use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
@@ -46,23 +46,21 @@ impl Subword for BracedParam {
     fn get_text(&self) -> &str { &self.text.as_ref() }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
-        if ! self.check() {
-            return Err(format!("{}: bad substitution", &self.text));
-        }
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        self.check()?;
 
         if self.indirect {
             let value = core.db.get_param(&self.param.name).unwrap_or_default();
             if utils::is_param(&value) {
                 self.param.name = value;
             }else{
-                return Err(format!("sush: {}: invalid name", &value));
+                return Err(ExecError::InvalidName(value));
             }
         }
 
         if self.param.subscript.is_some() {
             if self.param.name == "@" {
-                return Err(format!("sush: @: bad substitution"));
+                return Err(ExecError::BadSubstitution("@".to_string()));
             }
             return self.subscript_operation(core);
         }
@@ -101,26 +99,19 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn check(&mut self) -> bool {
+    fn check(&mut self) -> Result<(), ExecError> {
         if self.param.name.is_empty() || ! utils::is_param(&self.param.name) {
-            eprintln!("sush: {}: bad substitution", &self.text);
-            return false;
+            return Err(ExecError::BadSubstitution(self.text.clone()));
         }
         if self.unknown.len() > 0 
         && ! self.unknown.starts_with(",") {
-            eprintln!("sush: {}: bad substitution", &self.text);
-            return false;
+            return Err(ExecError::BadSubstitution(self.text.clone()));
         }
-        true
+        Ok(())
     }
 
-    fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
+    fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
-        /*
-        let index = match self.param.subscript.clone().unwrap().eval(core, &self.param.name) {
-            Some(s) => s,
-            None => return Err("index evaluation error".to_string()),
-        };*/
 
         if core.db.is_assoc(&self.param.name) {
             return self.subscript_operation_assoc(core, &index);
@@ -138,13 +129,13 @@ impl BracedParam {
        self.optional_operation(core)
     }
 
-    fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> Result<(), String> {
+    fn subscript_operation_assoc(&mut self, core: &mut ShellCore, index: &str) -> Result<(), ExecError> {
         let s = core.db.get_array_elem(&self.param.name, index)?;
         self.text = s;
         Ok(())
     }
 
-    fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), String> {
+    fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.text = if let Some(s) = self.substr.as_mut() {
             s.get_text(&self.text, core)?
         }else if let Some(v) = self.value_check.as_mut() {

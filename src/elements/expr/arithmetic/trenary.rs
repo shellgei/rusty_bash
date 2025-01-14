@@ -2,11 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::ExecError;
 use super::{ArithmeticExpr, ArithElem};
 use super::calculator;
 
 pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
-    stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), String> {
+    stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
     let num = match calculator::pop_operand(stack, core) {
         Ok(v)  => v,
         Err(e) => return Err(e),
@@ -14,11 +15,11 @@ pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
 
     let mut left = match left {
         Some(c) => c.clone(),
-        None    => return Err("expr not found".to_string()),
+        None    => return Err(ExecError::Other("expr not found".to_string())),
     };
     let mut right = match right {
         Some(c) => c.clone(),
-        None    => return Err("expr not found".to_string()),
+        None    => return Err(ExecError::Other("expr not found".to_string())),
     };
 
     let ans = match num {
@@ -28,7 +29,7 @@ pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
                 Err(e)  => return Err(e),
             }
         },
-        ArithElem::Float(_) => return Err("float condition is not permitted".to_string()),
+        ArithElem::Float(_) => return Err(ExecError::Other("float condition is not permitted".to_string())),
         _ => {
             match left.eval_in_cond(core) {
                 Ok(num) => num,

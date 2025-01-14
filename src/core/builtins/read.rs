@@ -31,8 +31,8 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1;
         }else{
             if let Err(e) = core.db.set_param(&a, "", None) {
-                //let msg = error::readonly(&a);
-                error::print(&e, core);
+                let msg = format!("{:?}", &e);
+                error::print(&msg, core);
                 return 1;
             }
         }
@@ -48,8 +48,8 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     for w in line.trim_end().split(' ') {
         if pos < args.len()-1 {
             if let Err(e) = core.db.set_param(&args[pos], &w, None) {
-                //let msg = error::readonly(&args[pos]);
-                error::print(&e, core);
+                let msg = format!("{:?}", &e);
+                error::print(&msg, core);
                 return 1;
             }
             pos += 1;
@@ -59,8 +59,8 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
             overflow += &w;
             if let Err(e) = core.db.set_param(&args[pos], &overflow, None) {
-                //let msg = error::readonly(&args[pos]);
-                error::print(&e, core);
+                let msg = format!("{:?}", &e);
+                error::print(&msg, core);
                 return 1;
             }
         }

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::error::ExecError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use super::BracedParam;
 
@@ -12,16 +13,16 @@ pub struct Substr {
 }
 
 impl Substr {
-    pub fn get_text(&mut self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    pub fn get_text(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let offset = self.offset.as_mut().unwrap();
     
         if offset.text == "" {
-            return Err("bad substitution".to_string());
+            return Err(ExecError::OperandExpected("".to_string()));
         }
     
         let mut ans;
         match offset.eval_as_int(core) {
-            None => return Err("evaluation error".to_string()),
+            None => return Err(ExecError::OperandExpected(offset.text.clone())),
             Some(n) => {
                 ans = text.chars().enumerate()
                           .filter(|(i, _)| (*i as i64) >= n)
@@ -36,26 +37,27 @@ impl Substr {
         Ok(ans)
     }
     
-    fn length(&mut self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    fn length(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         match self.length.as_mut().unwrap().eval_as_int(core) {
             Some(n) => Ok(text.chars().enumerate()
                             .filter(|(i, _)| (*i as i64) < n)
                             .map(|(_, c)| c).collect()),
-            None    => return Err("length evaluation error".to_string()),
+            None => return Err(ExecError::OperandExpected(self.length.clone().unwrap().text.clone())),
         }
     }
 
     pub fn set_partial_position_params(&mut self, array: &mut Vec<String>,
-                    text: &mut String, core: &mut ShellCore) -> Result<(), String> {
+                    text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         let offset = self.offset.as_mut().unwrap();
     
         if offset.text == "" {
-            return Err("bad substitution".to_string());
+            return Err(ExecError::BadSubstitution(String::new()));
         }
     
         *array = core.db.get_array_all("@");
         match offset.eval_as_int(core) {
-            None => return Err("evaluation error".to_string()),
+            //None => return Err("evaluation error".to_string()),
+            None => return Err(ExecError::OperandExpected(offset.text.clone())),
             Some(n) => {
                 let mut start = std::cmp::max(0, n) as usize;
                 start = std::cmp::min(start, array.len()) as usize;
@@ -69,19 +71,19 @@ impl Substr {
         }
     
         let mut length = match self.length.clone() {
-            None => return Err("bad substitution".to_string()),
+            None => return Err(ExecError::BadSubstitution("".to_string())),
             Some(ofs) => ofs,
         };
     
         if length.text == "" {
-            return Err("bad substitution".to_string());
+            return Err(ExecError::BadSubstitution("".to_string()));
         }
     
         match length.eval_as_int(core) {
-            None => return Err("evaluation error".to_string()),
+            None => return Err(ExecError::BadSubstitution(length.text.clone())),
             Some(n) => {
                 if n < 0 {
-                    return Err(format!("{}: substring expression < 0", n));
+                    return Err(ExecError::SubstringMinus(n));
                 }
                 let len = std::cmp::min(n as usize, array.len());
                 let _ = array.split_off(len);

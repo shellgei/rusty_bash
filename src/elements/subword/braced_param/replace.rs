@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::error::ExecError;
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::error::ParseError;
@@ -18,21 +19,21 @@ pub struct Replace {
 }
 
 impl Replace {
-    fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, String> {
+    fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, ExecError> {
         if let Some(w) = &w {
             match w.eval_for_case_word(core) {
                 Some(s) => return Ok(s),
                 None => match w.subwords.len() {
                     0 => return Ok("".to_string()),
-                    _ => return Err("parse error".to_string()),
+                    _ => return Err(ExecError::Other("parse error".to_string())),
                 },
             }
         }
 
-        Err("parse error".to_string())
+        Err(ExecError::Other("parse error".to_string()))
     }
 
-    pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let pattern = self.to_string(&self.replace_from, core)?;
         let string_to = self.to_string(&self.replace_to, core)?;
         let extglob = core.shopts.query("extglob");

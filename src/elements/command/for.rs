@@ -80,7 +80,8 @@ impl ForCommand {
 
             if let Err(e) = core.db.set_param(&self.name, &p, None) {
                 core.db.exit_status = 1;
-                error::print(&e, core);
+                let msg = format!("{:?}", &e);
+                error::print(&msg, core);
             }
 
             if core.continue_counter > 0 {

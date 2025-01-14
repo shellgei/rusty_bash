@@ -2,21 +2,17 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::ExecError;
 use crate::elements::word::Word;
 use crate::elements::subword::Subword;
 use crate::elements::subword::parameter::Parameter;
 
-pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), String> {
+pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
     for w in word.subwords.iter_mut() {
         w.substitute(core)?;
-        /*
-        if let Err(e) = w.substitute(core) {
-            eprintln!("{}", e);
-            return false;
-        }*/
     }
     alternative_replace(word);
     Ok(())

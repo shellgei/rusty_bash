@@ -4,7 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
-use crate::error::ParseError;
+use crate::error::{ExecError, ParseError};
 use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
@@ -14,10 +14,10 @@ pub struct Remove {
 }
 
 impl Remove {
-    pub fn set(&mut self, text: &String, core: &mut ShellCore) -> Result<String, String> {
+    pub fn set(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut text = text.clone();
         let pattern = self.remove_pattern.as_mut().unwrap()
-                            .eval_for_case_word(core).ok_or("evaluation error")?;
+                            .eval_for_case_word(core).ok_or(ExecError::Other("evaluation error".to_string()))?;
         let extglob = core.shopts.query("extglob");
      
         if self.remove_symbol.starts_with("##") {
@@ -31,7 +31,7 @@ impl Remove {
         }else if self.remove_symbol.starts_with("%") {
             self.percent(&mut text, &pattern, extglob);
         }else {
-            return Err("unknown symbol".to_string());
+            return Err(ExecError::Other("unknown symbol".to_string()));
         }
 
         Ok(text)

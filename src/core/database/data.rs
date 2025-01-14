@@ -33,7 +33,7 @@ pub trait Data {
         println!("{}={}", name, self.print_body());
     }
 
-    fn set_as_single(&mut self, _: &str) -> Result<(), String> {Err("Undefined call".to_string())}
+    fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call".to_string()))}
     fn set_as_array(&mut self, _: &str, _: &str) -> Result<(), String> {Err("not an array".to_string())}
     fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), String> {Err("not an associative table".to_string())}
 

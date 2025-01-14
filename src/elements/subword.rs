@@ -13,7 +13,7 @@ mod varname;
 mod arithmetic;
 
 use crate::{ShellCore, Feeder};
-use crate::error::ParseError;
+use crate::error::{ExecError, ParseError};
 use self::arithmetic::Arithmetic;
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
@@ -66,7 +66,7 @@ pub trait Subword {
     fn get_text(&self) -> &str;
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn substitute(&mut self, _: &mut ShellCore) -> Result<(), String> {Ok(())}
+    fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {Ok(())}
     fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {vec![]}
 
     fn split(&self) -> Vec<Box<dyn Subword>>{

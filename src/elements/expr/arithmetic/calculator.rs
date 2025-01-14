@@ -1,39 +1,45 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, ShellCore};
+use crate::ShellCore;
+use crate::error::ExecError;
 use crate::utils::exit;
 use super::elem::ArithElem;
 use super::{float, int, rev_polish, trenary, word, array_elem};
 
-pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, String> {
+pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     match stack.pop() {
         Some(ArithElem::ArrayElem(name, mut sub, inc))
             => array_elem::to_operand(&name, &mut sub, 0, inc, core),
         Some(ArithElem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
         Some(ArithElem::InParen(mut a)) => a.eval_elems(core, false),
         Some(elem) => Ok(elem),
-        None       => Err("no operand 2".to_string()),
+        None       => Err(ExecError::Other("no operand 2".to_string())),
     }
 }
 
-fn bin_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), String> {
-    match op {
+fn bin_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
+    let ans = match op {
     "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" 
           => word::substitution(op, stack, core),
         _ => bin_calc_operation(op, stack, core),
+    };
+
+    match ans {
+        Ok(v) => Ok(v),
+        Err(e) => Err(ExecError::Other(e)),
     }
 }
 
 fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), String> {
     let right = match pop_operand(stack, core) {
         Ok(v)  => v,
-        Err(e) => return Err(e),
+        Err(e) => return Err(format!("{:?}",e)),
     };
 
     let left = match pop_operand(stack, core) {
         Ok(v)  => v,
-        Err(e) => return Err(e),
+        Err(e) => return Err(format!("{:?}",e)),
     };
 
     if op == "," {
@@ -45,12 +51,17 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
         (ArithElem::Float(fl), ArithElem::Float(fr)) => float::bin_calc(op, fl, fr, stack),
         (ArithElem::Float(fl), ArithElem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack),
         (ArithElem::Integer(nl), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack),
-        (ArithElem::Integer(nl), ArithElem::Integer(nr)) => int::bin_calc(op, nl, nr, stack),
+        (ArithElem::Integer(nl), ArithElem::Integer(nr)) => {
+            match int::bin_calc(op, nl, nr, stack) {
+                Ok(i) => Ok(i),
+                Err(e) => Err(format!("{:?}", &e)),
+            }
+        },
         _ => exit::internal("invalid operand"),
     };
 }
 
-fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), String> {
+fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
     let operand = match pop_operand(stack, core) {
         Ok(v)  => v,
         Err(e) => return Err(e),
@@ -63,15 +74,17 @@ fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -
     }
 }
 
-pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, String> {
+pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if elements.is_empty() {
         return Ok(ArithElem::Integer(0));
     }
 
+    let rev_pol = rev_polish::rearrange(elements)?;
+    /*
     let rev_pol = match rev_polish::rearrange(elements) {
         Ok(ans) => ans,
         Err(e)  => return Err( error::syntax(&e.to_string()) ),
-    };
+    };*/
 
     let mut stack = vec![];
     let mut skip_until = String::new();
@@ -113,15 +126,15 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
     }
 
     if stack.len() != 1 {
-        return Err( format!("unknown syntax error (stack inconsistency)",) );
+        return Err( ExecError::Other("unknown syntax error (stack inconsistency)".to_string()) );
     }
     pop_operand(&mut stack, core)
 }
 
-fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<String, String> {
+fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<String, ExecError> {
     let last = pop_operand(stack, core);
-    let last_result = match &last {
-        Err(e) => return Err(e.to_string()),
+    let last_result = match last {
+        Err(e) => return Err(e),
         Ok(ArithElem::Integer(0)) => 0,
         Ok(_) => 1,
     };
@@ -138,7 +151,7 @@ fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Res
     Ok("".to_string())
 }
 
-fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), String> {
+fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
     match stack.pop() {
         Some(ArithElem::Word(w, inc_post)) => {
             match word::to_operand(&w, inc, inc_post, core) {
@@ -158,6 +171,6 @@ fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(),
                 Err(e) => Err(e),
             }
         },
-        _ => Err("invalid increment".to_string()),
+        _ => Err(ExecError::Other("invalid increment".to_string())),
     }
 }

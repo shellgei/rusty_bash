@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::error::ParseError;
+use crate::error::{ExecError, ParseError};
 use crate::elements::command::arithmetic::ArithmeticCommand;
 use crate::elements::subword::Subword;
 
@@ -16,12 +16,12 @@ impl Subword for Arithmetic {
     fn get_text(&self) -> &str { &self.text.as_ref() }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
-        if let Some(s) = self.com.eval(core) {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if let Ok(s) = self.com.eval(core) {
             self.text = s;
             return Ok(());
         }
-        Err("arithmetic operation failed".to_string())
+        Err(ExecError::OperandExpected(self.com.text.clone()))
     }
 }
 

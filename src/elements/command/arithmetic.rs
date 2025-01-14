@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::error::ExecError;
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticCommand {
@@ -16,9 +17,12 @@ pub struct ArithmeticCommand {
 impl Command for ArithmeticCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         let exit_status = match self.eval(core).as_deref() {
-            Some("0") => 1,
-            Some(_) => 0,
-            None => 1,
+            Ok("0") => 1,
+            Ok(_) => 0,
+            Err(e) => {
+                eprintln!("{:?}", e);
+                1
+            },
         };
         core.db.exit_status = exit_status;
     }
@@ -40,18 +44,20 @@ impl ArithmeticCommand {
         }
     }
 
-    pub fn eval(&mut self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ans = String::new();
         for a in &mut self.expressions {
+            ans = a.eval(core)?;
+            /*
             match a.eval(core) {
                 Ok(s) => ans = s,
                 Err(e) => {
                     eprintln!("{}", &e);
                     return None;
                 },
-            }
+            }*/
         }
-        Some(ans)
+        Ok(ans)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {

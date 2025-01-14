@@ -11,7 +11,8 @@ pub mod word;
 mod int;
 mod float;
 
-use crate::{error, ShellCore};
+use crate::ShellCore;
+use crate::error::ExecError;
 use crate::utils::exit;
 use self::calculator::calculate;
 use self::elem::ArithElem;
@@ -26,20 +27,15 @@ pub struct ArithmeticExpr {
 }
 
 impl ArithmeticExpr {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         match self.eval_elems(core, true)? {
             ArithElem::Integer(n) => self.ans_to_string(n),
             ArithElem::Float(f)   => Ok(f.to_string()),
-            /*
-            Err(msg) => {
-                eprintln!("sush: {}: {}", &self.text, msg);
-                None
-            },*/
             _ => exit::internal("invalid calculation result"),
         }
     }
 
-    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore) -> Result<String, String> {
+    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ans = String::new();
 
         for e in &self.elements {
@@ -54,7 +50,7 @@ impl ArithmeticExpr {
                                 ans += "--";
                             }
                         },
-                        None => return Err("not an assoc index".to_string()),
+                        None => return Err(ExecError::ArrayIndexInvalid(w.text.clone())),
                     }
                 },
                 _ => ans += &e.to_string(),
@@ -72,16 +68,17 @@ impl ArithmeticExpr {
                 None
             },
             Err(msg) => {
-                eprintln!("sush: {}: {}", &self.text, msg);
+                eprintln!("sush: {}: {:?}", &self.text, msg);
                 None
             },
             _ => exit::internal("invalid calculation result"),
         }
     }
 
-    pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<ArithElem, String> {
+    pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<ArithElem, ExecError> {
         if self.elements.is_empty() && ! permit_empty {
-            return Err("operand expexted (error token: \")\")".to_string());
+            return Err(ExecError::OperandExpected("\")\"".to_string()));
+            //return Err("operand expexted (error token: \")\")".to_string());
         }
         let es = match self.decompose_increments() {
             Ok(data)     => data, 
@@ -91,7 +88,7 @@ impl ArithmeticExpr {
         calculate(&es, core)
     }
 
-    fn ans_to_string(&self, n: i64) -> Result<String, String> {
+    fn ans_to_string(&self, n: i64) -> Result<String, ExecError> {
         let base_str = self.output_base.clone();
 
         if base_str == "10" {
@@ -101,16 +98,22 @@ impl ArithmeticExpr {
         let base = match base_str.parse::<i64>() {
             Ok(b) => b,
             _     => {
+                return Err(ExecError::InvalidBase(base_str));
+                /*
                 let msg = format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
                 eprintln!("{}", &msg);
                 return Err(msg);
+                */
             },
         };
 
         if base <= 1 || base > 64 {
+            return Err(ExecError::InvalidBase(base_str));
+            /*
             let msg = format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
             eprintln!("{}", &msg);
             return Err(msg);
+            */
         }
 
         let mut tmp = n.abs();
@@ -150,16 +153,16 @@ impl ArithmeticExpr {
         std::str::from_utf8(&ascii).unwrap().to_string()
     }
 
-    fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<ArithElem, String> {
-        let es = match self.decompose_increments() {
-            Ok(data)     => data, 
-            Err(err_msg) => return Err(err_msg),
-        };
+    fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+        let es = self.decompose_increments()?;
 
+        calculate(&es, core)
+            /*
         match calculate(&es, core) {
             Ok(ans)      => Ok(ans),
             Err(err_msg) => return Err(err_msg),
         }
+            */
     }
 
     fn preinc_to_unarys(&mut self, ans: &mut Vec<ArithElem>, pos: usize, inc: i64) -> i64 {
@@ -181,7 +184,7 @@ impl ArithmeticExpr {
         0
     }
 
-    fn decompose_increments(&mut self) -> Result<Vec<ArithElem>, String> {
+    fn decompose_increments(&mut self) -> Result<Vec<ArithElem>, ExecError> {
         let mut ans = vec![];
         let mut pre_increment = 0;
 
@@ -206,8 +209,8 @@ impl ArithmeticExpr {
         }
 
         match pre_increment {
-            1  => Err(error::syntax("++")),
-            -1 => Err(error::syntax("--")),
+            1  => Err(ExecError::OperandExpected("++".to_string())),
+            -1 => Err(ExecError::OperandExpected("--".to_string())),
             _  => Ok(ans),
         }
     }

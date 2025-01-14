@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::error;
+use crate::error::ExecError;
 use std::env;
 use super::array::Array;
 use super::subscript::Subscript;
@@ -89,7 +90,7 @@ impl Substitution {
         };
 
         if result.is_err() || done {
-            return result;
+            return Err(format!("{:?}", result));
         }
 
         match &self.evaluated_array {
@@ -130,7 +131,7 @@ impl Substitution {
         true
     }
 
-    pub fn get_index(&mut self, core: &mut ShellCore) -> Result<String, String> {
+    pub fn get_index(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         match self.index.clone() {
             Some(mut s) => {
                 if s.text.chars().all(|c| " \n\t[]".contains(c)) {
@@ -138,7 +139,7 @@ impl Substitution {
                 }
                 s.eval(core, &self.name)
             },
-            _ => Err("no index".to_string()),
+            _ => Err(ExecError::ArrayIndexInvalid("".to_string())),
         }
     }
 

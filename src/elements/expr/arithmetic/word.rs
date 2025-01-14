@@ -2,20 +2,21 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, ShellCore, Feeder};
+use crate::error::ExecError;
 use crate::utils;
 use crate::utils::exit;
 use super::{ArithElem, ArithmeticExpr, float, int, Word};
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
-                   core: &mut ShellCore) -> Result<ArithElem, String> {
+                   core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if pre_increment != 0 && post_increment != 0 
     || w.text.find('\'').is_some() {
-        return Err(error::syntax(&w.text));
+        return Err(ExecError::Other(error::syntax(&w.text)));
     }
 
     let name = match w.eval_as_value(core) {
         Some(v) => v, 
-        None => return Err(format!("{}: wrong substitution", &w.text)),
+        None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
     };
 
     let res = match pre_increment {
@@ -25,7 +26,7 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
 
     match res {
         Ok(n)  => return Ok(n),
-        Err(e) => return Err(e),
+        Err(e) => return Err(ExecError::Other(e)),
     }
 }
 
@@ -200,10 +201,10 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
     };
 
     match (current_num, right_value) {
-        (ArithElem::Integer(cur), ArithElem::Integer(right)) => int::substitute(op, &name, cur, *right, core),
-        (ArithElem::Float(cur), ArithElem::Integer(right)) => float::substitute(op, &name, cur, *right as f64, core),
-        (ArithElem::Float(cur), ArithElem::Float(right)) => float::substitute(op, &name, cur, *right, core),
-        (ArithElem::Integer(cur), ArithElem::Float(right)) => float::substitute(op, &name, cur as f64, *right, core),
+        (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, cur, *right, core)?),
+        (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, cur, *right as f64, core)?),
+        (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur, *right, core)?),
+        (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur as f64, *right, core)?),
         _ => Err("support not yet".to_string()),
     }
 }

@@ -86,7 +86,7 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         let _ = core.db.set_param("OPTARG", "", None);
 
         if let Err(e) = result {
-            let msg = format!("getopts: {}", &e);
+            let msg = format!("getopts: {:?}", &e);
             error::print(&msg, core);
             return 1;
         }
@@ -104,7 +104,7 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         let _ = core.db.set_param("OPTIND", &(index+2).to_string(), None);
 
         if let Err(e) = result {
-            let msg = format!("getopts: {}", &e);
+            let msg = format!("getopts: {:?}", &e);
             error::print(&msg, core);
             return 1;
         }

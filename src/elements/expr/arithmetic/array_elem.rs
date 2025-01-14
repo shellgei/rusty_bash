@@ -2,11 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::ExecError;
 use super::ArithElem;
 use crate::elements::subscript::Subscript;
 
 pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_increment: i64,
-                   core: &mut ShellCore) -> Result<ArithElem, String> {
+                   core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let key = sub.eval(core, name)?;
     /*
     let key = match sub.eval(core, name) {
@@ -21,14 +22,14 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
 
     let mut value_num = match value_str.parse::<i64>() {
         Ok(n) => n,
-        Err(_) => return Err(format!("{}: not an interger", &name)),
+        Err(_) => return Err(ExecError::Other(format!("{}: not an interger", &name))),
     };
 
     if pre_increment != 0 {
         value_num += pre_increment;
         match set_value(name, &key, value_num, core) {
             Ok(()) => {},
-            Err(e) => return Err(e),
+            Err(e) => return Err(ExecError::Other(e)),
         }
     }
 
@@ -38,7 +39,7 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
         value_num += post_increment;
         match set_value(name, &key, value_num, core) {
             Ok(()) => {},
-            Err(e) => return Err(e),
+            Err(e) => return Err(ExecError::Other(e)),
         }
     }
     ans

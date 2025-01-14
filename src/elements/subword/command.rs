@@ -6,7 +6,7 @@ use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::Subword;
-use crate::error::ParseError;
+use crate::error::{ParseError, ExecError};
 use nix::unistd;
 use std::{thread, time};
 use std::fs::File;
@@ -24,29 +24,27 @@ impl Subword for CommandSubstitution {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
         let pid = self.command.exec(core, &mut pipe);
         let result = self.read(pipe.recv, core);
         proc_ctrl::wait_pipeline(core, vec![pid], false, false);
-        result
+        match result {
+            true  => Ok(()),
+            false => Err(ExecError::Other("command substitution error".to_string())),
+        }
     }
 }
 
 impl CommandSubstitution {
     fn set_line(&mut self, line: Result<String, Error>) -> bool {
-        match line {
-            Ok(ln) => {
-                self.text.push_str(&ln);
-                self.text.push('\n');
-                true
-            },
-            Err(e) => {
-                eprintln!("sush: {}", &e);
-                false
-            },
+        if let Ok(ln) = line {
+            self.text.push_str(&ln);
+            self.text.push('\n');
+            return true;
         }
+        false
     }
 
     fn interrupted(&mut self, count: usize, core: &mut ShellCore) -> bool {
@@ -56,7 +54,7 @@ impl CommandSubstitution {
         core.sigint.load(Relaxed) 
     }
 
-    fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> Result<(), String> {
+    fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
         let f = unsafe { File::from_raw_fd(fd) };
         let reader = BufReader::new(f);
         self.text.clear();
@@ -65,11 +63,11 @@ impl CommandSubstitution {
                 break;
             }
             if ! self.set_line(line) {
-                return Err("error: set_line".to_string());
+                return false;
             }
         }
         self.text.pop();
-        Ok(())
+        true
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

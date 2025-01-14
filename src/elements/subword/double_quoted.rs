@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::utils::exit;
-use crate::error::ParseError;
+use crate::error::{ExecError, ParseError};
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
@@ -19,7 +19,7 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut word = Word::default();
         word.subwords = self.replace_array(core);
         substitution::eval(&mut word, core)?;

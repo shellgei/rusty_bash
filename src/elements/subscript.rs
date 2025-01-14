@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::ExecError;
 use super::expr::arithmetic::ArithmeticExpr;
 
 #[derive(Debug, Clone, Default)]
@@ -12,27 +13,27 @@ pub struct Subscript {
 }
 
 impl Subscript {
-    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str) -> Result<String, String> {
+    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str) -> Result<String, ExecError> {
         if self.inner_special != "" {
             return Ok(self.inner_special.clone());
         }
 
         if let Some(a) = self.inner.as_mut() {
             if a.text.chars().all(|c| " \t\n".contains(c)) {
-                return Err("invalid inner".to_string());
+                return Err(ExecError::ArrayIndexInvalid(a.text.clone()));
             }
             return match core.db.is_assoc(param_name) {
                 true  => {
                     match self.inner.as_mut() {
                         Some(sub) => sub.eval_as_assoc_index(core),
-                        None => Err("no inner".to_string()),
+                        None => Err(ExecError::ArrayIndexInvalid("".to_string())),
                     }
                 },
                 false => a.eval(core),
             };
         }
 
-        Err("evaluation failure".to_string())
+        Err(ExecError::ArrayIndexInvalid("".to_string()))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {

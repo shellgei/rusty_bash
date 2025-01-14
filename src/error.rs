@@ -8,20 +8,34 @@ use nix::unistd::Pid;
 #[derive(Debug)]
 pub enum ExecError {
     Internal,
+    ArrayIndexInvalid(String),
+    BadSubstitution(String),
+    DivZero,
+    Exponent(i64),
+    InvalidBase(String),
+    InvalidName(String),
     VariableReadOnly(String),
     VariableInvalid(String),
-    ArrayIndexInvalid(String),
     OperandExpected(String),
+    SubstringMinus(i64),
+    Other(String),
 }
 
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
+            ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
+            ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
+            ExecError::DivZero => "divided by 0".to_string(),
+            ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
+            ExecError::InvalidName(name) => format!("`{}': invalid name", name),
+            ExecError::InvalidBase(b) => format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", b),
             ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
-            ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
             ExecError::OperandExpected(name) => format!("`{}': syntax error: operand expected", name),
+            ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
+            ExecError::Other(name) => name,
         }
     }
 }

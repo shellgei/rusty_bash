@@ -177,7 +177,7 @@ impl DataBase {
         None
     }
 
-    pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>) -> Result<(), String> {
+    pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);

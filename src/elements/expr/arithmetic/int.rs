@@ -1,11 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, ShellCore};
+use crate::ShellCore;
+use crate::error::ExecError;
 use crate::utils::exit;
 use super::{ArithElem, word};
 
-pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), String> {
+pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
         "+"  => stack.push( ArithElem::Integer(num) ),
         "-"  => stack.push( ArithElem::Integer(-num) ),
@@ -16,7 +17,7 @@ pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), 
     Ok(())
 }
 
-pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> Result<(), String> {
+pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     let bool_to_01 = |b| { if b { 1 } else { 0 } };
 
     let ans = match op {
@@ -38,7 +39,7 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> 
         "!="  => bool_to_01( left != right ),
         "%" | "/" => {
             if right == 0 {
-                return Err("divided by 0".to_string());
+                return Err(ExecError::DivZero);
             }
             match op {
                 "%" => left % right,
@@ -50,7 +51,7 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> 
                 let r = right.try_into().unwrap();
                 left.pow(r)
             }else{
-                return Err( error::exponent(&right.to_string()) );
+                return Err(ExecError::Exponent(right));
             }
         },
         _    => exit::internal("unknown binary operator"),
@@ -61,7 +62,7 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> 
 }
 
 pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut ShellCore)
-                                      -> Result<ArithElem, String> {
+                                      -> Result<ArithElem, ExecError> {
     let new_value = match op {
         "+=" => cur + right,
         "-=" => cur - right,
@@ -73,17 +74,17 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
         ">>="  => if right < 0 {0} else {cur >> right},
         "/=" | "%=" => {
             if right == 0 {
-                return Err("divided by 0".to_string());
+                return Err(ExecError::DivZero);
             }
             match op == "%=" {
                 true  => cur % right,
                 false => cur / right,
             }
         },
-        _   => return Err("Not supprted operation for integer numbers".to_string()),
+        _   => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
-    match core.db.set_param(&name, &new_value.to_string(), None) { //TOOD: simplify
+    match core.db.set_param(&name, &new_value.to_string(), None) {
         Ok(())  => Ok(ArithElem::Integer(new_value)),
         Err(e) => Err(e),
     }

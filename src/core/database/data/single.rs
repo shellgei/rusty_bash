@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::HashMap;
+use crate::error::ExecError;
 use std::env;
 use super::Data;
 
@@ -20,7 +21,7 @@ impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
     fn print_body(&self) -> String { self.body.clone() }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), String> {
+    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body = value.to_string();
         Ok(())
     }
@@ -31,12 +32,12 @@ impl Data for SingleData {
 }
 
 impl SingleData {
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, value: &str)-> Result<(), String> {
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, value: &str)-> Result<(), ExecError> {
         db_layer.insert( name.to_string(), Box::new(SingleData::from(value)) );
         Ok(())
     }
 
-    pub fn set_value(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, val: &str) -> Result<(), String> {
+    pub fn set_value(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, val: &str) -> Result<(), ExecError> {
         if env::var(name).is_ok() {
             env::set_var(name, val);
         }

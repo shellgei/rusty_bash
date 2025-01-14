@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::ExecError;
 use super::Subword;
 
 #[derive(Debug, Clone)]
@@ -13,7 +14,7 @@ impl Subword for Parameter {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), String> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if ! self.text.starts_with("$") {
             return Ok(());
         }

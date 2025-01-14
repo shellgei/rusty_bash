@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, ShellCore, utils, Feeder};
+use crate::error::ExecError;
 use crate::utils::exit;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
@@ -27,7 +28,7 @@ pub fn print_all(core: &mut ShellCore) -> i32 {
     0
 }
 
-fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), String> {
+fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
     let mut feeder = Feeder::new(arg);
     if feeder.scanner_name(core) == feeder.len() { // name only
         let name = feeder.consume(feeder.len());
@@ -36,12 +37,12 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), String
 
     let mut sub = match Substitution::parse(&mut feeder, core) {
         Some(s) => s,
-        _ => return Err(format!("local: `{}': not a valid identifier", arg)),
+        _ => return Err(ExecError::Other(format!("local: `{}': not a valid identifier", arg))),
     };
 
     match sub.eval(core, Some(layer), false) {
         true  => Ok(()),
-        false => Err(format!("local: `{}': evaluation error", arg)),
+        false => Err(ExecError::Other(format!("local: `{}': evaluation error", arg))),
     }
 }
 

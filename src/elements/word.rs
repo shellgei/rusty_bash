@@ -10,7 +10,7 @@ mod split;
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use crate::error;
-use crate::error::ParseError;
+use crate::error::{ExecError, ParseError};
 use super::subword::Subword;
 use super::subword::simple::SimpleSubword;
 
@@ -67,7 +67,8 @@ impl Word {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
             Ok(w) => w.split_and_path_expansion(core),
             Err(e)    => {
-                error::print(&e, core);
+                let msg = format!("{:?}", &e);
+                error::print(&msg, core);
                 return None;
             },
         };
@@ -79,7 +80,8 @@ impl Word {
         match self.tilde_and_dollar_expansion(core) {
             Ok(mut w) => w.make_unquoted_word(),
             Err(e)    => {
-                error::print(&e, core);
+                let msg = format!("{:?}", &e);
+                error::print(&msg, core);
                 return None;
             },
         }
@@ -89,13 +91,14 @@ impl Word {
         match self.tilde_and_dollar_expansion(core) {
             Ok(mut w) => Some(w.make_glob_string()),
             Err(e)    => {
-                error::print(&e, core);
+                let msg = format!("{:?}", &e);
+                error::print(&msg, core);
                 return None;
             },
         }
     }
 
-    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, String> {
+    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
         let mut w = self.clone();
         tilde_expansion::eval(&mut w, core);
         substitution::eval(&mut w, core)?;
