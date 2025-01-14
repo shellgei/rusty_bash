@@ -187,7 +187,7 @@ impl BracedParam {
             }
 
             if feeder.len() == 0 {
-                if ! feeder.feed_additional_line(core) {
+                if ! feeder.feed_additional_line(core).is_ok() {
                     return word;
                 }
             }
@@ -217,7 +217,7 @@ impl BracedParam {
 
     fn eat_unknown(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
         if feeder.len() == 0 {
-            feeder.feed_additional_line(core);
+            let _ = feeder.feed_additional_line(core);
         }
 
         let unknown = match feeder.starts_with("\\}") {

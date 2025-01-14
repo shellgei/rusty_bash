@@ -164,7 +164,7 @@ impl ForCommand {
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
             if feeder.len() == 0 {
-                match feeder.feed_additional_line(core) {
+                match feeder.feed_additional_line(core).is_ok() {
                     true  => continue,
                     false => return false,
                 }
@@ -242,7 +242,7 @@ impl ForCommand {
             return None;
         }
 
-        if feeder.len() == 0 && ! feeder.feed_additional_line(core) {
+        if feeder.len() == 0 && ! feeder.feed_additional_line(core).is_ok() {
             return None;
         }
 

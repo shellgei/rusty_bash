@@ -188,7 +188,7 @@ impl DoubleQuoted {
                 return Some(ans);
             }else if feeder.len() > 0 {
                 exit::internal("unknown chars in double quoted word");
-            }else if ! feeder.feed_additional_line(core) {
+            }else if ! feeder.feed_additional_line(core).is_ok() {
                 return None;
             }
         }

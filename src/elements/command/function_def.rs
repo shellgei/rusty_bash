@@ -130,7 +130,7 @@ impl FunctionDefinition {
             }
 
             if feeder.len() == 0 {
-                if ! feeder.feed_additional_line(core) {
+                if ! feeder.feed_additional_line(core).is_ok() {
                     return None;
                 }
             }

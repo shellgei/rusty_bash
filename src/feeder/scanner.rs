@@ -176,7 +176,7 @@ impl Feeder {
         loop {
             if let Some(n) = self.remaining[1..].find("'") {
                 return n + 2;
-            }else if ! self.feed_additional_line(core) {
+            }else if ! self.feed_additional_line(core).is_ok() {
                 return 0;
             }
         }

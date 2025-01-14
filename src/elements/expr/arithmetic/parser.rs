@@ -207,7 +207,7 @@ impl ArithmeticExpr {
                 continue;
             }
 
-            if ! addline || feeder.len() != 0 || ! feeder.feed_additional_line(core) {
+            if ! addline || feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
                 break;
             }
         }

@@ -138,7 +138,7 @@ impl CaseCommand {
             }
 
             if feeder.len() == 0 {
-                match feeder.feed_additional_line(core) {
+                match feeder.feed_additional_line(core).is_ok() {
                     true  => continue,
                     false => return None,
                 }

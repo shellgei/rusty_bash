@@ -146,7 +146,7 @@ impl Pipeline {
                 if Self::eat_command(feeder, &mut ans, core) {
                     break;
                 }
-                if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
+                if feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
                     return None;
                 }
             }

@@ -8,6 +8,7 @@ use nix::unistd::Pid;
 pub enum ParseError {
     UnexpectedSymbol(String),
     UnexpectedEof,
+    Interrupted,
 }
 
 pub fn print(s: &str, core: &mut ShellCore) {

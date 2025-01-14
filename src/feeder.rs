@@ -9,6 +9,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use crate::ShellCore;
 use crate::utils::exit;
+use crate::utils::error::ParseError;
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug)]
@@ -115,21 +116,21 @@ impl Feeder {
         })
     }
 
-    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> Result<(), ParseError> {
         match self.feed_additional_line_core(core) {
-            Ok(()) => true,
+            Ok(()) => Ok(()),
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
                 core.db.exit_status = 2;
 
                 match core.db.flags.contains('S') { //S: on source command
-                    true  => return false,
+                    true  => return Err(ParseError::UnexpectedEof),
                     false => exit::normal(core),
                 }
             },
             Err(InputError::Interrupt) => {
                 core.db.exit_status = 130;
-                false
+                Err(ParseError::Interrupted)
             },
         }
     }
