@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::utils::error::ParseError;
 use super::Subword;
 
 #[derive(Debug, Clone)]
@@ -27,11 +26,10 @@ impl Subword for Parameter {
 }
 
 impl Parameter {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) 
-           -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         match feeder.scanner_dollar_special_and_positional_param(core) {
-            0 => Ok(None),
-            n => Ok(Some(Self { text: feeder.consume(n) } )),
+            0 => None,
+            n => Some(Self { text: feeder.consume(n) } ),
         }
     }
 }
