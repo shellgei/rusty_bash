@@ -2,8 +2,8 @@
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use crate::utils::{error, file};
+use crate::{error, ShellCore};
+use crate::utils::file;
 
 pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() > 2 {

@@ -9,7 +9,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use crate::ShellCore;
 use crate::utils::exit;
-use crate::utils::error::{InputError, ParseError};
+use crate::error::{InputError, ParseError};
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Default)]

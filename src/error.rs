@@ -6,6 +6,21 @@ use nix::sys::signal::Signal;
 use nix::unistd::Pid;
 
 #[derive(Debug)]
+pub enum ExecError {
+    Internal,
+    VariableReadOnly(String),
+}
+
+impl From<ExecError> for String {
+    fn from(e: ExecError) -> String {
+        match e {
+            ExecError::Internal => "INTERNAL ERROR".to_string(),
+            ExecError::VariableReadOnly(s) => format!("{}: readonly variable", s),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum InputError {
     Interrupt,
     Eof,
@@ -51,16 +66,6 @@ pub fn syntax(token: &str) -> String {
 pub fn syntax_in_cond_expr(token: &str) -> String {
     format!("syntax error in conditional expression: unexpected token `{}'", token)
 }
-
-pub fn readonly(token: &str) -> String {
-    format!("{0}: readonly variable", token)
-}
-
-/*
-pub fn bad_array_subscript(token: &str) -> String {
-    format!("{0}: bad_array_subscript", token)
-}
-*/
 
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {

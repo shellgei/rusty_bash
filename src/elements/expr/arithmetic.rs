@@ -11,8 +11,8 @@ pub mod word;
 mod int;
 mod float;
 
-use crate::ShellCore;
-use crate::utils::{error, exit};
+use crate::{error, ShellCore};
+use crate::utils::exit;
 use self::calculator::calculate;
 use self::elem::ArithElem;
 use crate::elements::word::Word;

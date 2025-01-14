@@ -1,11 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
-use crate::utils;
+use crate::{error, ShellCore, utils, Feeder};
 use crate::utils::exit;
 use crate::elements::substitution::Substitution;
-use crate::utils::{arg, error};
+use crate::utils::arg;
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
     match core.db.position_parameters.pop() {

@@ -4,7 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::BracedParam;
 use crate::elements::subword::braced_param::Word;
-use crate::utils::error::ParseError;
+use crate::error::ParseError;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {

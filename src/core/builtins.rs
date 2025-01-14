@@ -17,10 +17,10 @@ mod source;
 mod loop_control;
 mod unset;
 
-use crate::{proc_ctrl, Feeder, Script, ShellCore};
+use crate::{error, proc_ctrl, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
-use crate::utils::{arg, error, exit, file};
+use crate::utils::{arg, exit, file};
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {

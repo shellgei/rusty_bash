@@ -8,7 +8,7 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 
-use crate::{proc_ctrl, signal};
+use crate::{error, proc_ctrl, signal};
 use self::database::DataBase;
 use self::options::Options;
 use std::collections::HashMap;
@@ -18,7 +18,7 @@ use nix::{fcntl, unistd};
 use nix::sys::signal::Signal;
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::unistd::Pid;
-use crate::utils::{error, exit};
+use crate::utils::exit;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;

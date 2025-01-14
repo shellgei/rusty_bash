@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::error;
+use crate::error;
 use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {

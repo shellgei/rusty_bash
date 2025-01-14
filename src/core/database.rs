@@ -9,7 +9,7 @@ use crate::{env, exit};
 use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::{HashMap, HashSet};
 use crate::utils;
-use crate::utils::error;
+use crate::error::ExecError;
 use self::data::Data;
 use self::data::assoc::AssocData;
 use self::data::single::SingleData;
@@ -49,10 +49,10 @@ impl DataBase {
         Ok(())
     }
 
-    fn write_check(&mut self, name: &str) -> Result<(), String> {
+    fn write_check(&mut self, name: &str) -> Result<(), ExecError> {
         if self.has_flag(name, 'r') {
             self.exit_status = 1;
-            return Err(error::readonly(name));
+            return Err(ExecError::VariableReadOnly(name.to_string()));
         }
         Ok(())
     }

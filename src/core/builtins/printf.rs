@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::error;
+use crate::error;
 use sprintf::PrintfError;
 
 fn split_format(format: &str) -> (Vec<String>, Option<String>) {

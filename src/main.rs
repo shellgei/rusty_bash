@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod core;
+mod error;
 mod feeder;
 mod elements;
 mod signal;
@@ -15,7 +16,7 @@ use crate::core::{builtins, ShellCore};
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
-use utils::error::InputError;
+use error::InputError;
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");

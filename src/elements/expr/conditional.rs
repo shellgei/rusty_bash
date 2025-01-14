@@ -4,7 +4,7 @@
 pub mod elem;
 mod parser;
 
-use crate::{utils::error, ShellCore};
+use crate::{error, ShellCore};
 use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
 use regex::Regex;

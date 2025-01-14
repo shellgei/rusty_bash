@@ -6,7 +6,7 @@ use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::Subword;
-use crate::utils::error::ParseError;
+use crate::error::ParseError;
 use nix::unistd;
 use std::{thread, time};
 use std::fs::File;

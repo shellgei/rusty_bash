@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{exit, Feeder, Script, ShellCore, signal};
-use crate::utils::error;
+use crate::error;
 use nix::unistd;
 use nix::errno::Errno;
 use nix::sys::{resource, wait};

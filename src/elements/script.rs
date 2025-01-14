@@ -3,7 +3,7 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
-use crate::utils::error;
+use crate::error;
 
 enum Status{
     UnexpectedSymbol(String),

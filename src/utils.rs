@@ -3,7 +3,6 @@
 
 pub mod directory;
 pub mod clock;
-pub mod error;
 pub mod exit;
 pub mod file;
 pub mod file_check;

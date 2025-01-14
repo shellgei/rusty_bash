@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use crate::utils::{error, exit};
+use crate::{error, ShellCore};
+use crate::utils::exit;
 use super::{ArithElem, word};
 
 pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), String> {

@@ -6,7 +6,7 @@ use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::utils::error;
+use crate::error;
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]

@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use crate::utils::{arg, error};
+use crate::{error, ShellCore};
+use crate::utils::arg;
 use super::parameter;
 
 fn set_option(core: &mut ShellCore, opt: char, pm: char) {

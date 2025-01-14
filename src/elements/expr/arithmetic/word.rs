@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{error, ShellCore, Feeder};
 use crate::utils;
-use crate::utils::{error, exit};
+use crate::utils::exit;
 use super::{ArithElem, ArithmeticExpr, float, int, Word};
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::utils::error;
+use crate::error;
 use std::env;
 use super::array::Array;
 use super::subscript::Subscript;

@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{utils::error, ShellCore};
+use crate::{error, ShellCore};
 use super::{ArithElem, word};
 
 pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), String> {

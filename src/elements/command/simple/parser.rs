@@ -6,7 +6,7 @@ use super::{SimpleCommand};
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
-use crate::utils::error::ParseError;
+use crate::error::ParseError;
 
 impl SimpleCommand {
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

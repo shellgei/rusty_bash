@@ -3,8 +3,8 @@
 
 pub mod parser;
 
-use crate::{proc_ctrl, ShellCore};
-use crate::utils::{error, exit};
+use crate::{error, proc_ctrl, ShellCore};
+use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;

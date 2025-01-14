@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::utils::error::ParseError;
+use crate::error::ParseError;
 use crate::elements::command::arithmetic::ArithmeticCommand;
 use crate::elements::subword::Subword;
 

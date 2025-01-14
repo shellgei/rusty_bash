@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::utils::error;
+use crate::error;
 
 fn is_varname(s :&String) -> bool {
     if s.is_empty() {

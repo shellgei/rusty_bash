@@ -4,10 +4,11 @@
 use std::fs::{File, OpenOptions};
 use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
+use crate::error;
 use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
-use crate::utils::{error, exit};
+use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::os::fd::FromRawFd;

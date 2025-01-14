@@ -6,7 +6,7 @@ use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::conditional::ConditionalExpr;
 use crate::elements::expr::conditional::elem::CondElem;
-use crate::utils::error;
+use crate::error;
 
 #[derive(Debug, Clone, Default)]
 pub struct TestCommand {

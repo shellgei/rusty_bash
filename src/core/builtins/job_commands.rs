@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::core::JobEntry;
 use crate::signal;
-use crate::utils::error;
+use crate::error;
 use nix::sys::signal::Signal;
 use nix::unistd;
 use nix::unistd::Pid;
