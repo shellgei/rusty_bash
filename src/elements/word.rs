@@ -160,7 +160,7 @@ impl Word {
         }
 
         let mut ans = Word::default();
-        while let Some(sw) = subword::parse(feeder, core) {
+        while let Ok(Some(sw)) = subword::parse(feeder, core) {
             match sw.is_extglob() {
                 false => ans.push(&sw),
                 true  => {

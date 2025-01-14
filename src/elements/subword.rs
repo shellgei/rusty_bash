@@ -13,6 +13,7 @@ mod varname;
 mod arithmetic;
 
 use crate::{ShellCore, Feeder};
+use crate::utils::error::ParseError;
 use self::arithmetic::Arithmetic;
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
@@ -115,20 +116,20 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Subword>>, ParseError> {
     if replace_history_expansion(feeder, core) {
         return parse(feeder, core);
     }
 
-    if let Ok(Some(a)) = BracedParam::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Ok(Some(a)) = Arithmetic::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Ok(Some(a)) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Ok(Some(a)) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = ExtGlob::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = VarName::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = SimpleSubword::parse(feeder){ Some(Box::new(a)) }
-    else{ None }
+    if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = Arithmetic::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = ExtGlob::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
+    else{ Ok(None) }
 }

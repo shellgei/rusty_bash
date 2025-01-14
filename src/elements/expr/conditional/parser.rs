@@ -42,7 +42,7 @@ impl ConditionalExpr {
     fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Word {
         let mut word = Word::default();
         while ! feeder.starts_with(" ") {
-            if let Some(sw) = subword::parse(feeder, core) {
+            if let Ok(Some(sw)) = subword::parse(feeder, core) {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
                 word.subwords.push(sw);

@@ -176,7 +176,7 @@ impl BracedParam {
     fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore) -> Word {
         let mut word = Word::default();
         while ! ends.iter().any(|e| feeder.starts_with(e)) {
-            if let Some(sw) = subword::parse(feeder, core) {
+            if let Ok(Some(sw)) = subword::parse(feeder, core) {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
                 word.subwords.push(sw);
