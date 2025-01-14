@@ -4,6 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
+use crate::utils::error::ParseError;
 use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
@@ -75,9 +76,10 @@ impl Replace {
         Ok(ans)
     }
 
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
+    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
+           -> Result<bool, ParseError> {
         if ! feeder.starts_with("/") {
-            return false;
+            return Ok(false);
         }
 
         let mut info = Replace::default();
@@ -94,17 +96,17 @@ impl Replace {
             info.tail_only_replace = true;
         }
 
-        info.replace_from = Some(BracedParam::eat_subwords(feeder, ans, vec!["}", "/"], core));
+        info.replace_from = Some(BracedParam::eat_subwords(feeder, ans, vec!["}", "/"], core)? );
 
         if ! feeder.starts_with("/") {
             ans.replace = Some(info);
-            return true;
+            return Ok(true);
         }
         ans.text += &feeder.consume(1);
         info.has_replace_to = true;
-        info.replace_to = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core));
+        info.replace_to = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
 
         ans.replace = Some(info);
-        true
+        Ok(true)
     }
 }

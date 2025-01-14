@@ -4,6 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::BracedParam;
 use crate::elements::subword::braced_param::Word;
+use crate::utils::error::ParseError;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
@@ -73,10 +74,11 @@ impl ValueCheck {
         Err(msg)
     }
 
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
+    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
         let num = feeder.scanner_parameter_alternative_symbol();
         if num == 0 {
-            return false;
+            return Ok(false);
         }
 
         let mut info = ValueCheck::default();
@@ -87,9 +89,9 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        info.alternative_value = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core));
+        info.alternative_value = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)?);
 
         ans.value_check = Some(info);
-        true
+        Ok(true)
     }
 }

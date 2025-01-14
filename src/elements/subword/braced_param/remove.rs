@@ -4,6 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
+use crate::utils::error::ParseError;
 use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
@@ -55,10 +56,11 @@ impl Remove {
         *text = text[0..ans_length].to_string();
     }
 
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
+    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
         let len = feeder.scanner_parameter_remove_symbol();
         if len == 0 {
-            return false;
+            return Ok(false);
         }
 
         let mut info = Remove::default();
@@ -66,8 +68,8 @@ impl Remove {
         info.remove_symbol = feeder.consume(len);
         ans.text += &info.remove_symbol.clone();
 
-        info.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core));
+        info.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
         ans.remove = Some(info);
-        true
+        Ok(true)
     }
 }

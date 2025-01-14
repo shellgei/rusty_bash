@@ -173,10 +173,11 @@ impl BracedParam {
         false
     }
 
-    fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore) -> Word {
+    fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore)
+        -> Result<Word, ParseError> {
         let mut word = Word::default();
         while ! ends.iter().any(|e| feeder.starts_with(e)) {
-            if let Ok(Some(sw)) = subword::parse(feeder, core) {
+            if let Some(sw) = subword::parse(feeder, core)? {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
                 word.subwords.push(sw);
@@ -189,12 +190,12 @@ impl BracedParam {
 
             if feeder.len() == 0 {
                 if ! feeder.feed_additional_line(core).is_ok() {
-                    return word;
+                    return Ok(word);
                 }
             }
         }
 
-        word
+        Ok(word)
     }
 
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -250,10 +251,10 @@ impl BracedParam {
 
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core);
-            let _ = ValueCheck::eat(feeder, &mut ans, core) 
+            let _ = ValueCheck::eat(feeder, &mut ans, core)?
                  || Substr::eat(feeder, &mut ans, core)
-                 || Remove::eat(feeder, &mut ans, core)
-                 || Replace::eat(feeder, &mut ans, core);
+                 || Remove::eat(feeder, &mut ans, core)?
+                 || Replace::eat(feeder, &mut ans, core)?;
         }
 
         while ! feeder.starts_with("}") {
