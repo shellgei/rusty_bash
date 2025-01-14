@@ -124,7 +124,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subwor
     else if let Ok(Some(a)) = Arithmetic::parse(feeder, core){ Some(Box::new(a)) }
     else if let Ok(Some(a)) = CommandSubstitution::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
+    else if let Ok(Some(a)) = DoubleQuoted::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = ExtGlob::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Some(Box::new(a)) }
     else if let Some(a) = Parameter::parse(feeder, core){ Some(Box::new(a)) }

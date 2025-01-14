@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::utils::exit;
+use crate::utils::error::ParseError;
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
@@ -167,9 +168,9 @@ impl DoubleQuoted {
         Self::set_simple_subword(feeder, ans, len)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<DoubleQuoted> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("\"") {
-            return None;
+            return Ok(None);
         }
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
@@ -185,11 +186,11 @@ impl DoubleQuoted {
 
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
-                return Some(ans);
+                return Ok(Some(ans));
             }else if feeder.len() > 0 {
                 exit::internal("unknown chars in double quoted word");
-            }else if ! feeder.feed_additional_line(core).is_ok() {
-                return None;
+            }else{
+                feeder.feed_additional_line(core)?;
             }
         }
     }
