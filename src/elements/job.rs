@@ -158,8 +158,8 @@ impl Job {
                 if Self::eat_pipeline(feeder, &mut ans, core) {
                     break;  
                 }
-                if feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
-                    return Ok(None);
+                if feeder.len() == 0 {
+                    feeder.feed_additional_line(core)?;
                 }
             }
         }
