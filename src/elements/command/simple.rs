@@ -4,6 +4,7 @@
 pub mod parser;
 
 use crate::{error, proc_ctrl, ShellCore};
+use crate::error::ExecError;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -48,7 +49,7 @@ impl Command for SimpleCommand {
     fn run(&mut self, core: &mut ShellCore, fork: bool) {
         core.db.push_local();
         let layer = core.db.get_layer_num()-1;
-        self.set_local_params(core, layer);
+        let _ = self.set_local_params(core, layer);
 
         if core.db.functions.contains_key(&self.args[0]) {
             let mut f = core.db.functions[&self.args[0]].clone();
@@ -58,7 +59,7 @@ impl Command for SimpleCommand {
                                        .map(|a| a.text.clone()).collect();
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
-            self.set_environment_variables(core);
+            let _ = self.set_environment_variables(core);
             proc_ctrl::exec_command(&self.args, core);
         }
 
@@ -113,19 +114,23 @@ impl SimpleCommand {
         self.option_x_output(core);
         
         self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, None, false);});
+            .for_each(|s| {let _ = s.eval(core, None, false);});
 
         None
     }
 
-    fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) {
-        self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, Some(layer), false);});
+    fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        for s in self.substitutions.iter_mut() {
+            s.eval(core, Some(layer), false)?;
+        }
+        Ok(())
     }
 
-    fn set_environment_variables(&mut self, core: &mut ShellCore) {
-        self.substitutions.iter_mut()
-            .for_each(|s| {s.eval(core, None, true);} );
+    fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        for s in self.substitutions.iter_mut() {
+            s.eval(core, None, true)?;
+        }
+        Ok(())
     }
 
     fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
