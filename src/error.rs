@@ -22,6 +22,12 @@ pub enum ExecError {
     Other(String),
 }
 
+
+/*
+pub fn syntax_in_cond_expr(token: &str) -> String {
+    format!("syntax error in conditional expression: unexpected token `{}'", token)
+}*/
+
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         match e {
@@ -95,10 +101,6 @@ pub fn assignment(right: &str) -> String {
 
 pub fn syntax(token: &str) -> String {
     format!("{0}: syntax error: operand expected (error token is \"{0}\")", token)
-}
-
-pub fn syntax_in_cond_expr(token: &str) -> String {
-    format!("syntax error in conditional expression: unexpected token `{}'", token)
 }
 
 /* error at wait */

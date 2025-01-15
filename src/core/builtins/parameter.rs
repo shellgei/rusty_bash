@@ -58,7 +58,7 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     sub.eval(core, Some(layer), false)
 }
 
-fn local_proc(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<(), ExecError> {
+fn local_(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<(), ExecError> {
     if args.len() >= 3 && args[1] == "-a" {
         for a in &args[2..] {
             set_local_array(a, core, layer)?;
@@ -80,40 +80,18 @@ fn local_proc(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Res
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let _ = core.db.pop_local(); //The last element of data.parameters is for local itself.
-    let layer = if core.db.get_layer_num() > 1 {
-        core.db.get_layer_num() - 1 
+    let layer = if core.db.get_layer_num() > 2 {
+        core.db.get_layer_num() - 2//The last element of data.parameters is for local itself. 
     }else{
         error::print_e(ExecError::ValidOnlyInFunction("local".to_string()), core);
-        core.db.push_local();
         return 1;
     };
 
-    let res = match local_proc(core, args, layer) {
-        Ok(()) => 0,
-        Err(e) => {
-            error::print_e(e, core);
-            1
-        },
+    if let Err(e) = local_(core, args, layer) {
+         error::print_e(e, core);
+         return 1;
     };
-
-    core.db.push_local();
-    res
-
-    /*
-    if args.len() >= 3 && args[1] == "-a" {
-        let res = args[2..].iter().all(|a| set_local_array(a, core, layer).is_ok());
-        return restore_and_return(core, res);
-    }
-
-    if args.len() >= 3 && args[1] == "-A" {
-        let res = args[2..].iter().all(|a| core.db.set_assoc(a, Some(layer)).is_ok());
-        return restore_and_return(core, res);
-    }
-
-    let res = args[1..].iter().all(|a| set_local(a, core, layer).is_ok());
-    restore_and_return(core, res)
-    */
+    0
 }
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

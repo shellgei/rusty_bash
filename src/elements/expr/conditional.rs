@@ -5,6 +5,7 @@ pub mod elem;
 mod parser;
 
 use crate::{error, ShellCore};
+use crate::error::ExecError;
 use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
 use regex::Regex;
@@ -135,8 +136,8 @@ impl ConditionalExpr {
         if stack.len() != 1 { 
             let mut err = "syntax error".to_string();
             if stack.len() > 1 {
-                err = error::syntax_in_cond_expr(&stack[0].to_string());
-                error::print(&err, core);
+                err = format!("syntax error in conditional expression: unexpected token `{}'", &stack[0].to_string());
+                error::print_e(ExecError::Other(err), core);
                 err = format!("syntax error near `{}'", &stack[0].to_string());
             }
             return Err(err);
