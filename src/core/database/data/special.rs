@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::{DataBase, HashMap};
+use crate::error::ExecError;
 use super::Data;
 
 #[derive(Debug, Clone)]
@@ -28,7 +29,7 @@ impl Data for SpecialData {
         self.internal_data.join(" ")
     }
 
-    fn get_as_single(&mut self) -> Result<String, String> {
+    fn get_as_single(&mut self) -> Result<String, ExecError> {
         Ok( (self.function)(&mut self.internal_data) )
     }
 

@@ -48,14 +48,6 @@ impl ArithmeticCommand {
         let mut ans = String::new();
         for a in &mut self.expressions {
             ans = a.eval(core)?;
-            /*
-            match a.eval(core) {
-                Ok(s) => ans = s,
-                Err(e) => {
-                    eprintln!("{}", &e);
-                    return None;
-                },
-            }*/
         }
         Ok(ans)
     }

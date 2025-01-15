@@ -36,12 +36,12 @@ impl Data for ArrayData {
         formatted
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), String> {
+    fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         if let Ok(n) = key.parse::<usize>() {
             self.body.insert(n, value.to_string());
             return Ok(());
         }
-        Err("invalid index".to_string())
+        Err(ExecError::Other("invalid index".to_string()))
     }
 
     fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> {
@@ -53,12 +53,12 @@ impl Data for ArrayData {
         Ok( self.body.get(&n).unwrap_or(&"".to_string()).clone() )
     }
 
-    fn get_all_as_array(&mut self) -> Result<Vec<String>, String> {
+    fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {
         Ok(self.values().clone())
     }
 
-    fn get_as_single(&mut self) -> Result<String, String> {
-        self.body.get(&0).map(|v| Ok(v.clone())).ok_or("No entry".to_string())?
+    fn get_as_single(&mut self) -> Result<String, ExecError> {
+        self.body.get(&0).map(|v| Ok(v.clone())).ok_or(ExecError::Other("No entry".to_string()))?
     }
 
     fn is_array(&self) -> bool {true}
@@ -66,13 +66,13 @@ impl Data for ArrayData {
 }
 
 impl ArrayData {
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, v: Vec<String>) -> Result<(), String> {
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, v: Vec<String>) -> Result<(), ExecError> {
         db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
         Ok(())
     }
 
     pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
-                        name: &str, pos: usize, val: &String) -> Result<(), String> {
+                        name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
         match db_layer.get_mut(name) {
             Some(d) => d.set_as_array(&pos.to_string(), val),
             None    => {

@@ -99,21 +99,11 @@ impl ArithmeticExpr {
             Ok(b) => b,
             _     => {
                 return Err(ExecError::InvalidBase(base_str));
-                /*
-                let msg = format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
-                eprintln!("{}", &msg);
-                return Err(msg);
-                */
             },
         };
 
         if base <= 1 || base > 64 {
             return Err(ExecError::InvalidBase(base_str));
-            /*
-            let msg = format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", base_str);
-            eprintln!("{}", &msg);
-            return Err(msg);
-            */
         }
 
         let mut tmp = n.abs();

@@ -3,6 +3,7 @@
 
 use crate::{file_check, Feeder, ShellCore, utils};
 use crate::core::builtins::completion;
+use crate::error::ExecError;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;
@@ -105,7 +106,7 @@ impl Terminal {
             */
     }
 
-    pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> Result<(), String> {
+    pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let pos = core.db.get_param("COMP_CWORD")?;
         let last = core.db.get_array_elem("COMP_WORDS", &pos)?;
 
@@ -117,7 +118,7 @@ impl Terminal {
 
         let list = self.make_default_compreply(core, &mut args, &com, &pos);
         if list.is_empty() {
-            return Err("empty list".to_string());
+            return Err(ExecError::Other("empty list".to_string()));
         }
 
         let tmp: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();

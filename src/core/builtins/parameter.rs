@@ -46,7 +46,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
     }
 }
 
-fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), String> {
+fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
     let mut feeder = Feeder::new(arg);
     if feeder.scanner_name(core) == feeder.len() { // name only
         let name = feeder.consume(feeder.len());
@@ -56,13 +56,13 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     let mut sub = match Substitution::parse(&mut feeder, core) {
         Some(s) => s,
         _ => {
-            return Err(format!("local: `{}': not a valid identifier", arg));
+            return Err(ExecError::Other(format!("local: `{}': not a valid identifier", arg)));
         },
     };
 
     match sub.eval(core, Some(layer), false) {
         true  => Ok(()),
-        false => Err(format!("local: `{}': evaluation error", arg)),
+        false => Err(ExecError::Other(format!("local: `{}': evaluation error", arg))),
     }
 }
 
@@ -112,7 +112,8 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1; //TODO: error message
         }
         if let Err(e) = core.db.set_array(&name, vec![], None) {
-            error::print(&e, core);
+            let msg = format!("{:?}", &e);
+            error::print(&msg, core);
             return 1;
         }
 
@@ -124,7 +125,8 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1; //TODO: error message
         }
         if let Err(e) = core.db.set_assoc(&name, None) {
-            error::print(&e, core);
+            let msg = format!("{:?}", &e);
+            error::print(&msg, core);
             return 1;
         }
 

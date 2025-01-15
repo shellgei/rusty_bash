@@ -34,10 +34,10 @@ pub trait Data {
     }
 
     fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call".to_string()))}
-    fn set_as_array(&mut self, _: &str, _: &str) -> Result<(), String> {Err("not an array".to_string())}
-    fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), String> {Err("not an associative table".to_string())}
+    fn set_as_array(&mut self, _: &str, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("not an array".to_string()))}
+    fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("not an associative table".to_string()))}
 
-    fn get_as_single(&mut self) -> Result<String, String> {Err("not a single variable".to_string())}
+    fn get_as_single(&mut self) -> Result<String, ExecError> {Err(ExecError::Other("not a single variable".to_string()))}
     fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> {
         Err(ExecError::OperandExpected(key.to_string()))
     }
@@ -55,7 +55,7 @@ pub trait Data {
         Err(ExecError::ArrayIndexInvalid(pos.to_string()))
     }
 
-    fn get_all_as_array(&mut self) -> Result<Vec<String>, String> {Err("not an array".to_string())}
+    fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {Err(ExecError::Other("not an array".to_string()))}
 
     fn is_special(&self) -> bool {false}
     fn is_single(&self) -> bool {false}

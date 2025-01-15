@@ -36,7 +36,7 @@ impl Data for AssocData {
         formatted
     }
 
-    fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), String> {
+    fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         self.body.insert(key.to_string(), value.to_string());
         self.last = Some(value.to_string());
         Ok(())
@@ -53,23 +53,23 @@ impl Data for AssocData {
         }
     }
 
-    fn get_as_single(&mut self) -> Result<String, String> { self.last.clone().ok_or("No last input".to_string()) }
+    fn get_as_single(&mut self) -> Result<String, ExecError> { self.last.clone().ok_or(ExecError::Other("No last input".to_string())) }
 
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 }
 
 impl AssocData {
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), String> {
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), ExecError> {
         db_layer.insert(name.to_string(), Box::new(AssocData::default()));
         Ok(())
     }
 
     pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
-                     key: &String, val: &String) -> Result<(), String> {
+                     key: &String, val: &String) -> Result<(), ExecError> {
         match db_layer.get_mut(name) {
             Some(v) => v.set_as_assoc(key, val), 
-            _ => Err("TODO".to_string()),
+            _ => Err(ExecError::Other("TODO".to_string())),
         }
     }
 

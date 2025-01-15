@@ -9,11 +9,6 @@ use crate::elements::subscript::Subscript;
 pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let key = sub.eval(core, name)?;
-    /*
-    let key = match sub.eval(core, name) {
-        Some(s) => s, 
-        None => return Err(format!("{}: wrong substitution", &name)),
-    };*/
 
     let mut value_str = core.db.get_array_elem(name, &key)?;
     if value_str == "" {
@@ -27,30 +22,34 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
 
     if pre_increment != 0 {
         value_num += pre_increment;
+        set_value(name, &key, value_num, core)?;
+        /*
         match set_value(name, &key, value_num, core) {
             Ok(()) => {},
             Err(e) => return Err(ExecError::Other(e)),
-        }
+        }*/
     }
 
     let ans = Ok( ArithElem::Integer(value_num) );
 
     if post_increment != 0 {
         value_num += post_increment;
+        set_value(name, &key, value_num, core)?;
+        /*
         match set_value(name, &key, value_num, core) {
             Ok(()) => {},
             Err(e) => return Err(ExecError::Other(e)),
-        }
+        }*/
     }
     ans
 }
 
 fn set_value(name: &String, key: &String, new_value: i64,
-                     core: &mut ShellCore) -> Result<(), String> {
+                     core: &mut ShellCore) -> Result<(), ExecError> {
     if let Ok(n) = key.parse::<i64>() {
         return match n >= 0 {
             true  => core.db.set_array_elem(name, &(new_value.to_string()), n as usize, None),
-            false => Err("negative index".to_string()),
+            false => Err(ExecError::Other("negative index".to_string())),
         };
     }
 

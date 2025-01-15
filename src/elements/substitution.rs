@@ -47,7 +47,8 @@ impl Substitution {
             false => {
                 if let Err(e) = self.set_to_shell(core, layer) {
                     core.db.exit_status = 1;
-                    error::print(&e, core);
+                    let msg = format!("{:?}", &e);
+                    error::print(&msg, core);
                     return false;
                 }
                 return true;
@@ -56,56 +57,56 @@ impl Substitution {
         }
     }
 
-    fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
+    fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         let index = self.get_index(core);
         match (&self.evaluated_string, index) {
             (Some(v), Ok(k)) 
                 => core.db.set_assoc_elem(&self.name, &k, &v, Some(layer)),
-            _   => Err("evaluation error 1".to_string()),
+            _   => Err(ExecError::Other("evaluation error 1".to_string())),
         }
     }
 
-    fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
+    fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         if ! self.get_index(core).is_ok() {
             return match &self.evaluated_array {
                 Some(a) => core.db.set_array(&self.name, a.clone(), Some(layer)),
-                _ => Err("no array and no index".to_string()),
+                _ => Err(ExecError::Other("no array and no index".to_string())),
             };
         }
 
         let index = self.get_index(core)
                         .unwrap()
-                        .parse::<usize>().map_err(|e| format!("{:?}", e))?;
+                        .parse::<usize>().map_err(|e| ExecError::Other(format!("{:?}", e)))?;
 
         if let Some(v) = &self.evaluated_string {
             return core.db.set_array_elem(&self.name, &v, index, Some(layer));
         }
-        Err("indexed to non array variable".to_string())
+        Err(ExecError::Other("indexed to non array variable".to_string()))
     }
  
-    fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), String> {
+    fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         let (done, result) = match &self.evaluated_string {
             Some(data) => (true, core.db.set_param(&self.name, &data, Some(layer))),
             _ => (false, Ok(()) ),
         };
 
         if result.is_err() || done {
-            return Err(format!("{:?}", result));
+            return result;
         }
 
         match &self.evaluated_array {
             Some(data) => core.db.set_array(&self.name, data.to_vec(), Some(layer)),
-            _ => Err("evaluation error 3".to_string()),
+            _ => Err(ExecError::Other("evaluation error 3".to_string())),
         }
     }
 
-    fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>) -> Result<(), String> {
+    fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>) -> Result<(), ExecError> {
         let layer = core.db.get_target_layer(&self.name, layer);
 
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
             core.db.exit_status = 1;
-            return Err("no value".to_string());
+            return Err(ExecError::Other("no value".to_string()));
         }
 
         if ! core.db.has_value(&self.name) {

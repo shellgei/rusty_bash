@@ -83,7 +83,7 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         let s = match output(&args[3], &mut args[4..].to_vec()) {
             Ok(ans) => ans,
             Err(e) => {
-                let msg = format!("printf: {}", e);
+                let msg = format!("printf: {:?}", e);
                 error::print(&msg, core);
                 return 1;
             },
@@ -99,7 +99,7 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 _ => core.db.set_assoc_elem(&name, &subscript, &s, None),
             };
             if let Err(e) = result {
-                let msg = format!("printf: {}", e);
+                let msg = format!("printf: {:?}", e);
                 error::print(&msg, core);
                 return 2;
             }
@@ -115,7 +115,7 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let s = match output(&args[1], &mut args[2..].to_vec()) {
         Ok(ans) => ans,
         Err(e) => {
-            let msg = format!("printf: {}", e);
+            let msg = format!("printf: {:?}", e);
             error::print(&msg, core);
             return 1;
         },
