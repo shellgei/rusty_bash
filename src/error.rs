@@ -22,12 +22,6 @@ pub enum ExecError {
     Other(String),
 }
 
-
-/*
-pub fn syntax_in_cond_expr(token: &str) -> String {
-    format!("syntax error in conditional expression: unexpected token `{}'", token)
-}*/
-
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         match e {
@@ -47,7 +41,6 @@ impl From<ExecError> for String {
         }
     }
 }
-
 
 pub fn print_e(e: ExecError, core: &mut ShellCore) {
     let name = core.db.get_param("0").unwrap();
@@ -71,6 +64,16 @@ pub enum ParseError {
     UnexpectedSymbol(String),
     UnexpectedEof,
     Interrupted,
+}
+
+impl From<ParseError> for ExecError {
+    fn from(e: ParseError) -> ExecError {
+        match e {
+            ParseError::UnexpectedSymbol(s) => ExecError::Other(s),
+            ParseError::UnexpectedEof => ExecError::Other("eof".to_string()),
+            ParseError::Interrupted => ExecError::Other("Interrupted".to_string()),
+        }
+    }
 }
 
 pub fn print(s: &str, core: &mut ShellCore) {

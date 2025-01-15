@@ -34,12 +34,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
         return core.db.set_param(&name, "", Some(layer));
     }
 
-    let mut sub = match Substitution::parse(&mut feeder, core) {
-        Ok(Some(s)) => s,
-        _ => return Err(ExecError::VariableInvalid(arg.to_string())),
-    };
-
-    sub.eval(core, Some(layer), false)
+    Substitution::parse(&mut feeder, core)?.unwrap().eval(core, Some(layer), false)
 }
 
 fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
