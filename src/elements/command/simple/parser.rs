@@ -2,23 +2,23 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, utils};
-use super::{SimpleCommand};
+use super::SimpleCommand;
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use crate::error::ParseError;
 
 impl SimpleCommand {
-    fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(s) = Substitution::parse(feeder, core) {
+    fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+        if let Some(s) = Substitution::parse(feeder, core)? {
             ans.text += &s.text;
             match ans.permit_substitution_arg {
                 true  => ans.substitutions_as_args.push(s),
                 false => ans.substitutions.push(s),
             }
-            true
+            Ok(true)
         }else{
-            false
+            Ok(false)
         }
     }
 
@@ -84,14 +84,14 @@ impl SimpleCommand {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        while Self::eat_substitution(feeder, &mut ans, core) {
+        while Self::eat_substitution(feeder, &mut ans, core)? {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             if ans.permit_substitution_arg 
-            && Self::eat_substitution(feeder, &mut ans, core) {
+            && Self::eat_substitution(feeder, &mut ans, core)? {
                 continue;
             }
 

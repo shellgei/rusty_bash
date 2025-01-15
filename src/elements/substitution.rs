@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::error::ExecError;
+use crate::error::{ExecError, ParseError};
 use std::env;
 use super::array::Array;
 use super::subscript::Subscript;
@@ -161,17 +161,12 @@ impl Substitution {
 
         let values = a.eval(core)?;
         Ok([prev, values].concat())
-        /*
-        match a.eval(core) {
-            Some(values) => Some([prev, values].concat()),
-            None         => None,
-        }*/
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {
-            return None;
+            return Ok(None);
         }
 
         let mut ans = Self::default();
@@ -193,20 +188,17 @@ impl Substitution {
             ans.text += &feeder.consume(1);
         }else {
             feeder.rewind();
-            return None;
+            return Ok(None);
         }
         feeder.pop_backup();
 
         if let Some(a) = Array::parse(feeder, core) {
             ans.text += &a.text;
             ans.value = ParsedDataType::Array(a);
-            Some(ans)
         }else if let Ok(Some(w)) = Word::parse(feeder, core, false) {
             ans.text += &w.text;
             ans.value = ParsedDataType::Single(w);
-            Some(ans)
-        }else {
-            Some(ans)
         }
+        Ok(Some(ans))
     }
 }

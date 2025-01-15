@@ -35,7 +35,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
     }
 
     let mut sub = match Substitution::parse(&mut feeder, core) {
-        Some(s) => s,
+        Ok(Some(s)) => s,
         _ => return Err(ExecError::VariableInvalid(arg.to_string())),
     };
 
@@ -50,7 +50,7 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     }
 
     let mut sub = match Substitution::parse(&mut feeder, core) {
-        Some(s) => s,
+        Ok(Some(s)) => s,
         _ => return Err(ExecError::VariableInvalid(arg.to_string())),
     };
 
