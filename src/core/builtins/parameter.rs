@@ -41,11 +41,6 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
     };
 
     sub.eval(core, Some(layer), false)
-        /*
-    match sub.eval(core, Some(layer), false) {
-        true  => Ok(()),
-        false => Err(ExecError::Other(format!("local: `{}': evaluation error", arg))),
-    }*/
 }
 
 fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
@@ -61,11 +56,6 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     };
 
     sub.eval(core, Some(layer), false)
-    /*
-    match sub.eval(core, Some(layer), false) {
-        true  => Ok(()),
-        false => Err(ExecError::Other(format!("local: `{}': evaluation error", arg))),
-    }*/
 }
 
 fn local_proc(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<(), ExecError> {
@@ -90,11 +80,12 @@ fn local_proc(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Res
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let _ = core.db.pop_local();
+    let _ = core.db.pop_local(); //The last element of data.parameters is for local itself.
     let layer = if core.db.get_layer_num() > 1 {
-        core.db.get_layer_num() - 1 //The last element of data.parameters is for local itself.
+        core.db.get_layer_num() - 1 
     }else{
-        eprintln!("sush: local: can only be used in a function");
+        error::print_e(ExecError::ValidOnlyInFunction("local".to_string()), core);
+        core.db.push_local();
         return 1;
     };
 
