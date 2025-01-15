@@ -23,11 +23,6 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
     if pre_increment != 0 {
         value_num += pre_increment;
         set_value(name, &key, value_num, core)?;
-        /*
-        match set_value(name, &key, value_num, core) {
-            Ok(()) => {},
-            Err(e) => return Err(ExecError::Other(e)),
-        }*/
     }
 
     let ans = Ok( ArithElem::Integer(value_num) );
@@ -35,11 +30,6 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
     if post_increment != 0 {
         value_num += post_increment;
         set_value(name, &key, value_num, core)?;
-        /*
-        match set_value(name, &key, value_num, core) {
-            Ok(()) => {},
-            Err(e) => return Err(ExecError::Other(e)),
-        }*/
     }
     ans
 }
