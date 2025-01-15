@@ -40,6 +40,18 @@ impl From<ExecError> for String {
     }
 }
 
+
+pub fn print_e(e: ExecError, core: &mut ShellCore) {
+    let name = core.db.get_param("0").unwrap();
+    let s: String = From::<ExecError>::from(e);
+    if core.db.flags.contains('i') {
+        eprintln!("{}: {}", &name, &s);
+    }else{
+        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+        eprintln!("{}: line {}: {}", &name, &lineno, s);
+    }
+}
+
 #[derive(Debug)]
 pub enum InputError {
     Interrupt,

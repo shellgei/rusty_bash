@@ -37,7 +37,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
 
     let mut sub = match Substitution::parse(&mut feeder, core) {
         Some(s) => s,
-        _ => return Err(ExecError::Other(format!("local: `{}': not a valid identifier", arg))),
+        _ => return Err(ExecError::VariableInvalid(arg.to_string())),
     };
 
     match sub.eval(core, Some(layer), false) {
@@ -55,9 +55,7 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
 
     let mut sub = match Substitution::parse(&mut feeder, core) {
         Some(s) => s,
-        _ => {
-            return Err(ExecError::Other(format!("local: `{}': not a valid identifier", arg)));
-        },
+        _ => return Err(ExecError::VariableInvalid(arg.to_string())),
     };
 
     match sub.eval(core, Some(layer), false) {
@@ -66,9 +64,25 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     }
 }
 
-fn restore_and_return(core: &mut ShellCore, result: bool) -> i32 {
-    core.db.push_local();
-    if result {0} else {1} 
+fn local_proc(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<(), ExecError> {
+    if args.len() >= 3 && args[1] == "-a" {
+        for a in &args[2..] {
+            set_local_array(a, core, layer)?;
+        }
+        return Ok(());
+    }
+
+    if args.len() >= 3 && args[1] == "-A" {
+        for a in &args[2..] {
+            core.db.set_assoc(a, Some(layer))?;
+        }
+        return Ok(());
+    }
+
+    for a in &args[1..] {
+        set_local(a, core, layer)?;
+    }
+    Ok(())
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -80,6 +94,18 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
+    let res = match local_proc(core, args, layer) {
+        Ok(()) => 0,
+        Err(e) => {
+            error::print_e(e, core);
+            1
+        },
+    };
+
+    core.db.push_local();
+    res
+
+    /*
     if args.len() >= 3 && args[1] == "-a" {
         let res = args[2..].iter().all(|a| set_local_array(a, core, layer).is_ok());
         return restore_and_return(core, res);
@@ -92,6 +118,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let res = args[1..].iter().all(|a| set_local(a, core, layer).is_ok());
     restore_and_return(core, res)
+    */
 }
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
