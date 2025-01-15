@@ -10,7 +10,7 @@ mod split;
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
 use crate::error;
-use crate::error::ParseError;
+use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
 use super::subword::simple::SimpleSubword;

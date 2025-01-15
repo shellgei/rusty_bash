@@ -5,7 +5,7 @@ use super::pipeline::Pipeline;
 use crate::{proc_ctrl, Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
 use crate::utils::exit;
-use crate::error::ParseError;
+use crate::error::parse::ParseError;
 use nix::sys::wait::WaitStatus;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};

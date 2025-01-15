@@ -13,7 +13,7 @@ mod varname;
 mod arithmetic;
 
 use crate::{ShellCore, Feeder};
-use crate::error::{exec::ExecError, ParseError};
+use crate::error::{exec::ExecError, parse::ParseError};
 use self::arithmetic::Arithmetic;
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;

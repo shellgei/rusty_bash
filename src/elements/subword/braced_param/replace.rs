@@ -5,7 +5,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
-use crate::error::ParseError;
+use crate::error::parse::ParseError;
 use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]

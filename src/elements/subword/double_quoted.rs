@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::utils::exit;
-use crate::error::ParseError;
+use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;

@@ -12,7 +12,7 @@ use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::utils;
-use crate::error::ParseError;
+use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use self::remove::Remove;
 use self::replace::Replace;

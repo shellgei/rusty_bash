@@ -2,9 +2,9 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod exec;
+pub mod parse;
 
 use crate::ShellCore;
-use self::exec::ExecError;
 use nix::sys::signal::Signal;
 use nix::unistd::Pid;
 
@@ -64,22 +64,13 @@ pub enum InputError {
     Eof,
 }
 
+/*
 #[derive(Debug)]
 pub enum ParseError {
     UnexpectedSymbol(String),
     UnexpectedEof,
     Interrupted,
-}
-
-impl From<ParseError> for ExecError {
-    fn from(e: ParseError) -> ExecError {
-        match e {
-            ParseError::UnexpectedSymbol(s) => ExecError::Other(s),
-            ParseError::UnexpectedEof => ExecError::Other("eof".to_string()),
-            ParseError::Interrupted => ExecError::Other("Interrupted".to_string()),
-        }
-    }
-}
+}*/
 
 pub fn print(s: &str, core: &mut ShellCore) {
     let name = core.db.get_param("0").unwrap();
