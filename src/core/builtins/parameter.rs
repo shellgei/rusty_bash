@@ -40,10 +40,12 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
         _ => return Err(ExecError::VariableInvalid(arg.to_string())),
     };
 
+    sub.eval(core, Some(layer), false)
+        /*
     match sub.eval(core, Some(layer), false) {
         true  => Ok(()),
         false => Err(ExecError::Other(format!("local: `{}': evaluation error", arg))),
-    }
+    }*/
 }
 
 fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
@@ -58,10 +60,12 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
         _ => return Err(ExecError::VariableInvalid(arg.to_string())),
     };
 
+    sub.eval(core, Some(layer), false)
+    /*
     match sub.eval(core, Some(layer), false) {
         true  => Ok(()),
         false => Err(ExecError::Other(format!("local: `{}': evaluation error", arg))),
-    }
+    }*/
 }
 
 fn local_proc(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<(), ExecError> {

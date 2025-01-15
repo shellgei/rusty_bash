@@ -29,7 +29,7 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, env: bool) -> bool {
+    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, env: bool) -> Result<(), ExecError> {
         match self.value.clone() {
             ParsedDataType::None 
             => self.evaluated_string = Some("".to_string()),
@@ -45,13 +45,11 @@ impl Substitution {
 
         match env {
             false => {
-                if let Err(e) = self.set_to_shell(core, layer) {
+                let ans = self.set_to_shell(core, layer);
+                if ! ans.is_ok() {
                     core.db.exit_status = 1;
-                    let msg = format!("{:?}", &e);
-                    error::print(&msg, core);
-                    return false;
                 }
-                return true;
+                ans
             },
             true  => self.set_to_env(),
         }
@@ -124,12 +122,12 @@ impl Substitution {
         }
     }
 
-    pub fn set_to_env(&mut self) -> bool {
+    pub fn set_to_env(&mut self) -> Result<(), ExecError> {
         match &self.evaluated_string {
             Some(v) => env::set_var(&self.name, &v),
-            _ => return false,
+            _ => return Err(ExecError::Other(format!("{}: invalid environmental variable", &self.name))),
         }
-        true
+        Ok(())
     }
 
     pub fn get_index(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
