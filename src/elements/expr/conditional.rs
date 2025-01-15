@@ -138,7 +138,7 @@ impl ConditionalExpr {
             let mut err = "syntax error".to_string();
             if stack.len() > 1 {
                 err = format!("syntax error in conditional expression: unexpected token `{}'", &stack[0].to_string());
-                exec::print_e(ExecError::Other(err), core);
+                exec::print_error(ExecError::Other(err), core);
                 err = format!("syntax error near `{}'", &stack[0].to_string());
             }
             return Err(err);

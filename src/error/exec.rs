@@ -40,7 +40,7 @@ impl From<ExecError> for String {
     }
 }
 
-pub fn print_e(e: ExecError, core: &mut ShellCore) {
+pub fn print_error(e: ExecError, core: &mut ShellCore) {
     let name = core.db.get_param("0").unwrap();
     let s: String = From::<ExecError>::from(e);
     if core.db.flags.contains('i') {

@@ -78,12 +78,12 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2//The last element of data.parameters is for local itself. 
     }else{
-        exec::print_e(ExecError::ValidOnlyInFunction("local".to_string()), core);
+        exec::print_error(ExecError::ValidOnlyInFunction("local".to_string()), core);
         return 1;
     };
 
     if let Err(e) = local_(core, args, layer) {
-         exec::print_e(e, core);
+         exec::print_error(e, core);
          return 1;
     };
     0
@@ -105,11 +105,11 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.contains(&"-a".to_string()) {
         if ! utils::is_name(&name, core) {
             let e = ExecError::InvalidName(name.to_string());
-            exec::print_e(e, core);
+            exec::print_error(e, core);
             return 1;
         }
         if let Err(e) = core.db.set_array(&name, vec![], None) {
-            exec::print_e(e, core);
+            exec::print_error(e, core);
             return 1;
         }
 
@@ -119,11 +119,11 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.contains(&"-A".to_string()) {
         if ! utils::is_name(&name, core) {
             let e = ExecError::InvalidName(name.to_string());
-            exec::print_e(e, core);
+            exec::print_error(e, core);
             return 1;
         }
         if let Err(e) = core.db.set_assoc(&name, None) {
-            exec::print_e(e, core);
+            exec::print_error(e, core);
             return 1;
         }
 
