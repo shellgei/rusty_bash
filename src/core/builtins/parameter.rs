@@ -13,7 +13,6 @@ pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
         _    => {},
     }
     core.db.position_parameters.push(args.to_vec());
-    //core.db.set_param("#", &(args.len()-1).to_string());
     0
 }
 
@@ -123,11 +122,12 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.contains(&"-A".to_string()) {
         if ! utils::is_name(&name, core) {
-            return 1; //TODO: error message
+            let e = ExecError::InvalidName(name.to_string());
+            error::print_e(e, core);
+            return 1;
         }
         if let Err(e) = core.db.set_assoc(&name, None) {
-            let msg = format!("{:?}", &e);
-            error::print(&msg, core);
+            error::print_e(e, core);
             return 1;
         }
 
