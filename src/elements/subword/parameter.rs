@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use super::Subword;
 
 #[derive(Debug, Clone)]

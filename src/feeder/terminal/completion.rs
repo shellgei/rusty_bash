@@ -3,7 +3,7 @@
 
 use crate::{file_check, Feeder, ShellCore, utils};
 use crate::core::builtins::completion;
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;

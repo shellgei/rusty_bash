@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use super::elem::ArithElem;
 
 pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {

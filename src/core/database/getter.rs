@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use crate::core::DataBase;
 use crate::core::database::Data;
 

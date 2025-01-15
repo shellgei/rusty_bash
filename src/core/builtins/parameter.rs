@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, ShellCore, utils, Feeder};
-use crate::error::ExecError;
+use crate::{ShellCore, utils, Feeder};
+use crate::error::exec;
+use crate::error::exec::ExecError;
 use crate::utils::exit;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
@@ -77,12 +78,12 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2//The last element of data.parameters is for local itself. 
     }else{
-        error::print_e(ExecError::ValidOnlyInFunction("local".to_string()), core);
+        exec::print_e(ExecError::ValidOnlyInFunction("local".to_string()), core);
         return 1;
     };
 
     if let Err(e) = local_(core, args, layer) {
-         error::print_e(e, core);
+         exec::print_e(e, core);
          return 1;
     };
     0
@@ -104,11 +105,11 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.contains(&"-a".to_string()) {
         if ! utils::is_name(&name, core) {
             let e = ExecError::InvalidName(name.to_string());
-            error::print_e(e, core);
+            exec::print_e(e, core);
             return 1;
         }
         if let Err(e) = core.db.set_array(&name, vec![], None) {
-            error::print_e(e, core);
+            exec::print_e(e, core);
             return 1;
         }
 
@@ -118,11 +119,11 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.contains(&"-A".to_string()) {
         if ! utils::is_name(&name, core) {
             let e = ExecError::InvalidName(name.to_string());
-            error::print_e(e, core);
+            exec::print_e(e, core);
             return 1;
         }
         if let Err(e) = core.db.set_assoc(&name, None) {
-            error::print_e(e, core);
+            exec::print_e(e, core);
             return 1;
         }
 

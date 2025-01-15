@@ -2,7 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::{DataBase, HashMap};
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use super::Data;
 
 #[derive(Debug, Clone)]

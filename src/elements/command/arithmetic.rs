@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use super::{Command, Redirect};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticCommand {

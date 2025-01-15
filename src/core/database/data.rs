@@ -6,7 +6,7 @@ pub mod assoc;
 pub mod single;
 pub mod special;
 
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use std::fmt;
 use std::fmt::Debug;
 

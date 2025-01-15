@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, ShellCore, Feeder};
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
 use super::{ArithElem, ArithmeticExpr, float, int, Word};

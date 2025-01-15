@@ -4,7 +4,7 @@
 pub mod parser;
 
 use crate::{error, proc_ctrl, ShellCore};
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;

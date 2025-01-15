@@ -9,7 +9,7 @@ use crate::{env, exit};
 use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::{HashMap, HashSet};
 use crate::utils;
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use self::data::Data;
 use self::data::assoc::AssocData;
 use self::data::single::SingleData;

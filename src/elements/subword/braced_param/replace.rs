@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::error::ParseError;

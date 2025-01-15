@@ -12,7 +12,7 @@ mod int;
 mod float;
 
 use crate::ShellCore;
-use crate::error::ExecError;
+use crate::error::exec::ExecError;
 use crate::utils::exit;
 use self::calculator::calculate;
 use self::elem::ArithElem;

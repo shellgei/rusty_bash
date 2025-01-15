@@ -1,14 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub mod exec;
-
 use crate::ShellCore;
-use self::exec::ExecError;
-use nix::sys::signal::Signal;
-use nix::unistd::Pid;
 
-/*
 #[derive(Debug)]
 pub enum ExecError {
     Internal,
@@ -55,67 +49,4 @@ pub fn print_e(e: ExecError, core: &mut ShellCore) {
         let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
         eprintln!("{}: line {}: {}", &name, &lineno, s);
     }
-}
-*/
-
-#[derive(Debug)]
-pub enum InputError {
-    Interrupt,
-    Eof,
-}
-
-#[derive(Debug)]
-pub enum ParseError {
-    UnexpectedSymbol(String),
-    UnexpectedEof,
-    Interrupted,
-}
-
-impl From<ParseError> for ExecError {
-    fn from(e: ParseError) -> ExecError {
-        match e {
-            ParseError::UnexpectedSymbol(s) => ExecError::Other(s),
-            ParseError::UnexpectedEof => ExecError::Other("eof".to_string()),
-            ParseError::Interrupted => ExecError::Other("Interrupted".to_string()),
-        }
-    }
-}
-
-pub fn print(s: &str, core: &mut ShellCore) {
-    let name = core.db.get_param("0").unwrap();
-    if core.db.flags.contains('i') {
-        eprintln!("{}: {}", &name, &s);
-    }else{
-        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
-        eprintln!("{}: line {}: {}", &name, &lineno, s);
-    }
-}
-
-pub fn internal(s: &str) -> String {
-    format!("SUSH INTERNAL ERROR: {}", s)
-}
-
-pub fn exponent(s: &str) -> String {
-    format!("exponent less than 0 (error token is \"{}\")", s)
-}
-
-pub fn recursion(token: &str) -> String {
-    format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token)
-}
-
-pub fn assignment(right: &str) -> String {
-    format!("attempted assignment to non-variable (error token is \"{}\")", right)
-}
-
-pub fn syntax(token: &str) -> String {
-    format!("{0}: syntax error: operand expected (error token is \"{0}\")", token)
-}
-
-/* error at wait */
-pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
-    match coredump {
-        true  => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
-        false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
-    }
-    128+signal as i32
 }
