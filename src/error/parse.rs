@@ -1,8 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::exec::ExecError;
-
 #[derive(Debug)]
 pub enum ParseError {
     UnexpectedSymbol(String),
@@ -10,12 +8,12 @@ pub enum ParseError {
     Interrupted,
 }
 
-impl From<ParseError> for ExecError {
-    fn from(e: ParseError) -> ExecError {
+impl From<ParseError> for String {
+    fn from(e: ParseError) -> String {
         match e {
-            ParseError::UnexpectedSymbol(s) => ExecError::Other(s),
-            ParseError::UnexpectedEof => ExecError::Other("eof".to_string()),
-            ParseError::Interrupted => ExecError::Other("Interrupted".to_string()),
+            ParseError::UnexpectedSymbol(s) => format!("Unexpected token: {}", s),
+            ParseError::UnexpectedEof => "syntax error: unexpected end of file".to_string(),
+            ParseError::Interrupted => "interrupted".to_string(),
         }
     }
 }

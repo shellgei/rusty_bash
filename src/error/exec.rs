@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::parse::ParseError;
 
 #[derive(Debug)]
 pub enum ExecError {
@@ -18,6 +19,7 @@ pub enum ExecError {
     VariableReadOnly(String),
     VariableInvalid(String),
     OperandExpected(String),
+    ParseError(ParseError),
     Recursion(String),
     SubstringMinus(i64),
     Other(String),
@@ -39,6 +41,7 @@ impl From<ExecError> for String {
             ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
             ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
+            ExecError::ParseError(p) => From::from(p),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
             ExecError::Other(name) => name,
