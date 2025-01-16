@@ -2,8 +2,9 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
+use crate::error::parse;
+use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
-use crate::error;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -105,8 +106,8 @@ impl Script {
                 },
                 Status::UnexpectedSymbol(s) => {
                     let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
-                    let s = format!("Unexpected token: {}", s);
-                    error::print(&s, core);
+                    let e = ParseError::UnexpectedSymbol(s.clone());
+                    parse::print_error(e, core);
                     core.db.exit_status = 2;
                     break;
                 },
