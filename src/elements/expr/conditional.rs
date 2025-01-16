@@ -4,7 +4,7 @@
 pub mod elem;
 mod parser;
 
-use crate::{error, ShellCore};
+use crate::ShellCore;
 use crate::error::exec;
 use crate::error::exec::ExecError;
 use crate::utils::{file_check, glob};
@@ -125,7 +125,8 @@ impl ConditionalExpr {
                     },
                     _ => Err(ExecError::Other("no operand to negate".to_string())),
                 },
-                _ => Err(ExecError::Other( error::syntax("TODO"))),
+               // _ => Err(ExecError::Other( error::syntax("TODO"))),
+                _ => Err(ExecError::OperandExpected("TODO".to_string())),
             };
     
             if let Err(err_msg) = result {

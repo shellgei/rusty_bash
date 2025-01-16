@@ -40,10 +40,6 @@ pub fn assignment(right: &str) -> String {
     format!("attempted assignment to non-variable (error token is \"{}\")", right)
 }
 
-pub fn syntax(token: &str) -> String {
-    format!("{0}: syntax error: operand expected (error token is \"{0}\")", token)
-}
-
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
     match coredump {
