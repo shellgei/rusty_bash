@@ -153,10 +153,10 @@ fn get_base(s: &mut String) -> Option<i64> {
     Some(10)
 }
 
-pub fn parse(s: &str) -> Result<i64, String> {
+pub fn parse(s: &str) -> Result<i64, ExecError> {
     if s.find('\'').is_some() 
     || s.find('.').is_some() {
-        return Err("invalid number".to_string());
+        return Err(ExecError::Other("invalid number".to_string()));
     }
     if s.is_empty() {
         return Ok(0);
@@ -166,13 +166,13 @@ pub fn parse(s: &str) -> Result<i64, String> {
     let sign = word::get_sign(&mut sw);
     let base = match get_base(&mut sw) {
         Some(n) => n, 
-        _       => return Err("invalid base".to_string()),
+        _       => return Err(ExecError::Other("invalid base".to_string())),
     };
 
     match ( parse_with_base(base, &mut sw), sign.as_str() ) {
         (Ok(n), "-") => Ok(-n), 
         (Ok(n), _)   => Ok(n), 
-        (Err(e), _)  => Err(e),
+        (Err(e), _)  => Err(ExecError::Other(format!("{:?}", e))),
     }
 }
 

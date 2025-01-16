@@ -19,19 +19,24 @@ pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<A
 }
 
 fn bin_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
-    let ans = match op {
+   /* let ans = */match op {
     "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" 
           => word::substitution(op, stack, core),
         _ => bin_calc_operation(op, stack, core),
-    };
+    }//;
 
+   /*
     match ans {
         Ok(v) => Ok(v),
         Err(e) => Err(ExecError::Other(e)),
-    }
+    }*/
 }
 
-fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), String> {
+fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
+    -> Result<(), ExecError> {
+    let right = pop_operand(stack, core)?;
+    let left = pop_operand(stack, core)?;
+    /*
     let right = match pop_operand(stack, core) {
         Ok(v)  => v,
         Err(e) => return Err(format!("{:?}",e)),
@@ -40,7 +45,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
     let left = match pop_operand(stack, core) {
         Ok(v)  => v,
         Err(e) => return Err(format!("{:?}",e)),
-    };
+    };*/
 
     if op == "," {
         stack.push(right);
@@ -52,10 +57,12 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
         (ArithElem::Float(fl), ArithElem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack),
         (ArithElem::Integer(nl), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack),
         (ArithElem::Integer(nl), ArithElem::Integer(nr)) => {
+            int::bin_calc(op, nl, nr, stack)
+            /*
             match int::bin_calc(op, nl, nr, stack) {
                 Ok(i) => Ok(i),
                 Err(e) => Err(format!("{:?}", &e)),
-            }
+            }*/
         },
         _ => exit::internal("invalid operand"),
     };

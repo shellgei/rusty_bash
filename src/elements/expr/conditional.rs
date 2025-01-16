@@ -98,7 +98,7 @@ impl ConditionalExpr {
         Ok(ans)
     }
 
-    fn reduce(rev_pol: &[CondElem], core: &mut ShellCore) -> Result<Vec<CondElem>, String> {
+    fn reduce(rev_pol: &[CondElem], core: &mut ShellCore) -> Result<Vec<CondElem>, ExecError> {
         let mut stack = vec![];
 
         for e in rev_pol {
@@ -123,9 +123,9 @@ impl ConditionalExpr {
                         stack.push(CondElem::Ans(!res));
                         Ok(())
                     },
-                    _ => Err("no operand to negate".to_string()),
+                    _ => Err(ExecError::Other("no operand to negate".to_string())),
                 },
-                _ => Err( error::syntax("TODO")),
+                _ => Err(ExecError::Other( error::syntax("TODO"))),
             };
     
             if let Err(err_msg) = result {
@@ -141,17 +141,17 @@ impl ConditionalExpr {
                 exec::print_error(ExecError::Other(err), core);
                 err = format!("syntax error near `{}'", &stack[0].to_string());
             }
-            return Err(err);
+            return Err(ExecError::Other(err));
         }   
 
         Ok(stack)
     }
 
-    fn unary_operation(op: &str, stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), String> {
+    fn unary_operation(op: &str, stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), ExecError> {
         let operand = match pop_operand(stack, core) {
             Ok(CondElem::Operand(v))  => v,
-            Ok(_)  => return Err("unknown operand".to_string()), 
-            Err(e) => return Err(e + " to conditional unary operator"),
+            Ok(_)  => return Err(ExecError::Other("unknown operand".to_string())), 
+            Err(e) => return Err(ExecError::Other(e + " to conditional unary operator")),
         };
 
         if op == "-o" || op == "-v" || op == "-z" || op == "-n" {
@@ -171,27 +171,27 @@ impl ConditionalExpr {
         Self::unary_file_check(op, &operand, stack)
     }
 
-    fn regex_operation(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), String> {
+    fn regex_operation(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), ExecError> {
         let right = match pop_operand(stack, core) {
             Ok(CondElem::Regex(right)) => right, 
-            Ok(_)  => return Err("Invalid operand".to_string()),
-            Err(e) => return Err(e),
+            Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
+            Err(e) => return Err(ExecError::Other(e)),
         };
 
         let left = match pop_operand(stack, core) {
             Ok(CondElem::Operand(name)) => name,
-            Ok(_)  => return Err("Invalid operand".to_string()),
-            Err(e) => return Err(e),
+            Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
+            Err(e) => return Err(ExecError::Other(e)),
         };
 
         let right_eval = match right.eval_for_case_pattern(core) {
             Some(r) => r,
-            None => return Err("Invalid regex".to_string()),
+            None  => return Err(ExecError::Other("Invalid operand".to_string())),
         };
 
         let re = match Regex::new(&right_eval) {
             Ok(regex) => regex,
-            Err(e) => return Err(e.to_string()),
+            Err(e) => return Err(ExecError::Other(e.to_string())),
         };
 
         stack.push( CondElem::Ans(re.is_match(&left)) );
@@ -199,17 +199,17 @@ impl ConditionalExpr {
     }
 
     fn bin_operation(op: &str, stack: &mut Vec<CondElem>,
-                     core: &mut ShellCore) -> Result<(), String> {
+                     core: &mut ShellCore) -> Result<(), ExecError> {
         let right = match pop_operand(stack, core) {
             Ok(CondElem::Operand(name)) => name,
-            Ok(_)  => return Err("Invalid operand".to_string()),
-            Err(e) => return Err(e),
+            Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
+            Err(e) => return Err(ExecError::Other(e)),
         };
     
         let left = match pop_operand(stack, core) {
             Ok(CondElem::Operand(name)) => name,
-            Ok(_)  => return Err("Invalid operand".to_string()),
-            Err(e) => return Err(e),
+            Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
+            Err(e) => return Err(ExecError::Other(e)),
         };
 
         let extglob = core.shopts.query("extglob");
@@ -230,12 +230,12 @@ impl ConditionalExpr {
         if op == "-eq" || op == "-ne" || op == "-lt" || op == "-le" || op == "-gt" || op == "-ge" {
             let lnum = match word::str_to_num(&left, core) {
                 Ok(ArithElem::Integer(n)) => n,
-                Ok(_) => return Err("non integer number is not supported".to_string()),
+                Ok(_) => return Err(ExecError::Other("non integer number is not supported".to_string())),
                 Err(msg) => return Err(msg),
             };
             let rnum = match word::str_to_num(&right, core) {
                 Ok(ArithElem::Integer(n)) => n,
-                Ok(_) => return Err("non integer number is not supported".to_string()),
+                Ok(_) => return Err(ExecError::Other("non integer number is not supported".to_string())),
                 Err(msg) => return Err(msg),
             };
 
@@ -258,7 +258,7 @@ impl ConditionalExpr {
         Ok(())
     }
 
-    fn unary_file_check(op: &str, s: &String, stack: &mut Vec<CondElem>) -> Result<(), String> {
+    fn unary_file_check(op: &str, s: &String, stack: &mut Vec<CondElem>) -> Result<(), ExecError> {
         let result = match op {
             "-a" | "-e"  => file_check::exists(s),
             "-d"  => file_check::is_dir(s),
@@ -270,7 +270,7 @@ impl ConditionalExpr {
             "-x"  => file_check::is_executable(s),
             "-b" | "-c" | "-g" | "-k" | "-p" | "-s" | "-u" | "-G" | "-N" | "-O" | "-S"
                   => file_check::metadata_check(s, op),
-            _  => return Err("unsupported option".to_string()),
+            _  => return Err(ExecError::Other("unsupported option".to_string())),
         };
 
         stack.push( CondElem::Ans(result) );

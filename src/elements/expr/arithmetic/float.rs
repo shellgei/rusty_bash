@@ -15,7 +15,7 @@ pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), 
 }
 
 pub fn bin_calc(op: &str, left: f64, right: f64,
-                stack: &mut Vec<ArithElem>) -> Result<(), String> {
+                stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     let bool_to_01 = |b| { if b { ArithElem::Integer(1) } else { ArithElem::Integer(0) } };
 
     match op {
@@ -30,7 +30,7 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
         "!="  => stack.push(bool_to_01( left != right )),
         "/" => {
             if right == 0.0 {
-                return Err("divided by 0".to_string());
+                return Err(ExecError::Other("divided by 0".to_string()));
             }
             stack.push(ArithElem::Float(left / right));
         },
@@ -39,10 +39,10 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
                 let r = right.try_into().unwrap();
                 stack.push(ArithElem::Float(left.powf(r)));
             }else{
-                return Err( error::exponent(&right.to_string()) );
+                return Err( ExecError::Other(error::exponent(&right.to_string()) ));
             }
         },
-        _    => return Err("not supported operator for float numbers".to_string()),
+        _    => return Err(ExecError::Other("not supported operator for float numbers".to_string())),
     }
 
     Ok(())
@@ -69,13 +69,13 @@ pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut Shel
     }
 }
 
-pub fn parse(s: &str) -> Result<f64, String> {
+pub fn parse(s: &str) -> Result<f64, ExecError> {
     let mut sw = s.to_string();
     let sign = word::get_sign(&mut sw);
 
     match (sw.parse::<f64>(), sign.as_str()) {
         (Ok(f), "-") => Ok(-f),
         (Ok(f), _)   => Ok(f),
-        (Err(e), _)  => Err(e.to_string()),
+        (Err(e), _)  => Err(ExecError::Other(e.to_string())),
     }
 }

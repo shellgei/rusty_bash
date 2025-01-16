@@ -11,7 +11,7 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if pre_increment != 0 && post_increment != 0 
     || w.text.find('\'').is_some() {
-        return Err(ExecError::Other(error::syntax(&w.text)));
+        return Err(ExecError::OperandExpected(w.text.to_string()));
     }
 
     let name = match w.eval_as_value(core) {
@@ -19,31 +19,32 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
         None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
     };
 
-    let res = match pre_increment {
+    /*let res =*/ match pre_increment {
         0 => change_variable(&name, core, post_increment, false),
         _ => change_variable(&name, core, pre_increment, true),
-    };
+    }//;
 
+    /*
     match res {
         Ok(n)  => return Ok(n),
         Err(e) => return Err(ExecError::Other(e)),
-    }
+    }*/
 }
 
-fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, String> {
+fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if w.text.find('\'').is_some() {
-        return Err(error::syntax(&w.text));
+        return Err(ExecError::OperandExpected(w.text.to_string()));
     }
 
     let name = match w.eval_as_value(core) {
         Some(v) => v, 
-        None => return Err(format!("{}: wrong substitution", &w.text)),
+        None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
     };
 
     str_to_num(&name, core)
 }
 
-pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
+pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut name = name.to_string();
 
     const RESOLVE_LIMIT: i32 = 10000;
@@ -55,7 +56,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
         }
 
         if i == RESOLVE_LIMIT - 1 {
-            return Err(error::recursion(&name));
+            return Err(ExecError::Other(error::recursion(&name)));
         }
     }
 
@@ -65,25 +66,25 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String>
     }
 }
 
-fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
+fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse(&mut f, core, false) {
         Some(p) => p,
-        None    => return Err(error::syntax(&name)),
+        None    => return Err(ExecError::OperandExpected(name.to_string())),
     };
 
     if parsed.elements.len() == 1 { // In this case, the element is not changed by the evaluation.
-        return Err(error::syntax(&name));
+        return Err(ExecError::OperandExpected(name.to_string()));
     }
 
     if let Ok(eval) = parsed.eval(core) {
         return single_str_to_num(&eval, core);
     }
 
-    Err(error::syntax(&name))
+    Err(ExecError::OperandExpected(name.to_string()))
 }
 
-fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, String> {
+fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if name.contains('.') {
         let f = float::parse(&name)?;
         return Ok(ArithElem::Float(f));
@@ -97,10 +98,10 @@ fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, Stri
     Ok( ArithElem::Integer(n) )
 }
 
-fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<ArithElem, String> {
+fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<ArithElem, ExecError> {
     if ! utils::is_name(name, core) {
         return match inc != 0 && ! pre {
-            true  => Err(error::syntax(name)),
+            true  => Err(ExecError::OperandExpected(name.to_string())),
             false => str_to_num(&name, core),
         }
     }
@@ -137,16 +138,16 @@ pub fn get_sign(s: &mut String) -> String {
     }
 }
 
-pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-> Result<(), String> {
+pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-> Result<(), ExecError> {
     let right = match stack.pop() {
         Some(e) => e,
-        _       => return Err( error::syntax(op) ),
+        _ => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
     let left = match stack.pop() {
         Some(ArithElem::Word(w, 0)) => w,
-        Some(ArithElem::Word(_, _)) => return Err( error::assignment(op) ),
-        _ => return Err( error::assignment(op) ),
+        Some(ArithElem::Word(_, _)) => return Err(ExecError::Other( error::assignment(op) )),
+        _ => return Err( ExecError::Other(error::assignment(op) )),
     };
 
     match subs(op, &left, &right, core) {
@@ -157,14 +158,14 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-
 }
 
 fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
-                                      -> Result<ArithElem, String> {
+                                      -> Result<ArithElem, ExecError> {
     if w.text.find('\'').is_some() {
-        return Err(error::syntax(&w.text));
+        return Err(ExecError::OperandExpected(w.text.to_string()));
     }
 
     let name = match w.eval_as_value(core) {
         Some(v) => v, 
-        None => return Err(format!("{}: wrong substitution", &w.text)),
+        None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
     };
 
     let right_str = match right_value {
@@ -197,7 +198,7 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
 
     let current_num = match to_num(w, core) {
         Ok(n)  => n,
-        Err(e) => return Err(e),
+        Err(e) => return Err(ExecError::Other(format!("{:?}", e))),
     };
 
     match (current_num, right_value) {
@@ -205,6 +206,6 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
         (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, cur, *right as f64, core)?),
         (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur, *right, core)?),
         (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur as f64, *right, core)?),
-        _ => Err("support not yet".to_string()),
+        _ => Err(ExecError::Other("support not yet".to_string())),
     }
 }

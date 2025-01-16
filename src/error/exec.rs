@@ -33,7 +33,7 @@ impl From<ExecError> for String {
             ExecError::ValidOnlyInFunction(com) => format!("{}: can only be used in a function", &com),
             ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
-            ExecError::OperandExpected(name) => format!("`{}': syntax error: operand expected", name),
+            ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
             ExecError::Other(name) => name,
         }
