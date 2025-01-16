@@ -13,6 +13,7 @@ use builtins::{option, parameter};
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
+use crate::error::exec;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
@@ -63,8 +64,14 @@ fn configure(args: &Vec<String>) -> ShellCore {
         }
     }
 
-    option::set_options(&mut core, &options);
-    parameter::set_positions(&mut core, &parameters);
+    if let Err(e) = option::set_options(&mut core, &options) {
+        exec::print_error(e, &mut core);
+        panic!("");
+    }
+    if let Err(e) = parameter::set_positions(&mut core, &parameters) {
+        exec::print_error(e, &mut core);
+        panic!("");
+    }
     core
 }
 
@@ -159,8 +166,14 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
         vec![args[0].clone()]
     };
 
-    option::set_options(&mut core, &mut args[1..].to_vec());
-    parameter::set_positions(&mut core, &parameters);
+    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
+        exec::print_error(e, &mut core);
+        panic!("");
+    }
+    if let Err(e) = parameter::set_positions(&mut core, &parameters) {
+        exec::print_error(e, &mut core);
+        panic!("");
+    }
     signal::run_signal_check(&mut core);
     core.db.flags.retain(|f| f != 'i');
 

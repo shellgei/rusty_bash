@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, ShellCore};
+use crate::error::exec;
+use crate::error::exec::ExecError;
 use crate::utils::arg;
 use super::parameter;
 
@@ -15,27 +17,36 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     }
 }
 
-pub fn set_options(core: &mut ShellCore, args: &[String]) -> i32 {
+pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
     for a in args {
         if a.len() != 2 {
+            return Err(ExecError::InvalidOption(a.to_string()));
+            /*
             error::internal("invalid option");
             return 1;
+            */
         }
 
         let pm = a.chars().nth(0).unwrap();
         let ch = a.chars().nth(1).unwrap();
 
         if pm != '-' && pm != '+' {
+            return Err(ExecError::InvalidOption(a.to_string()));
+            /*
             error::internal("not an option");
             return 1;
+            */
         }else if "xveB".find(ch).is_none() {
+            return Err(ExecError::InvalidOption(a.to_string()));
+            /*
             eprintln!("sush: set: {}: invalid option", &a);
             return 2;
+            */
         }
 
         set_option(core, ch, pm);
     }
-    0
+    Ok(())
 }
 
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -49,7 +60,13 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args[1].starts_with("--") {
         args.remove(0);
-        return parameter::set_positions(core, &args)
+        return match parameter::set_positions(core, &args) {
+            Ok(()) => 0,
+            Err(e) => {
+                exec::print_error(e, core);
+                return 1;
+            },
+        }
     }
 
     if args[1] == "-o" || args[1] == "+o" {
@@ -71,9 +88,16 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     match args[1].starts_with("-") || args[1].starts_with("+") {
-        true  => set_options(core, &args[1..]),
-        false => parameter::set_positions(core, &args),
+        true  => if let Err(e) = set_options(core, &args[1..]) {
+            exec::print_error(e, core);
+            return 2;
+        },
+        false => if let Err(e) = parameter::set_positions(core, &args) {
+            exec::print_error(e, core);
+            return 2;
+        },
     }
+    0
 }
 
 pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

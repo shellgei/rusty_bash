@@ -4,17 +4,15 @@
 use crate::{ShellCore, utils, Feeder};
 use crate::error::exec;
 use crate::error::exec::ExecError;
-use crate::utils::exit;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
 
-pub fn set_positions(core: &mut ShellCore, args: &[String]) -> i32 {
-    match core.db.position_parameters.pop() {
-        None => exit::internal("empty param stack"),
-        _    => {},
+pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
+    if core.db.position_parameters.pop().is_none() {
+        return Err(ExecError::Other("empty param stack".to_string()));
     }
     core.db.position_parameters.push(args.to_vec());
-    0
+    Ok(())
 }
 
 fn print_data(name: &str, core: &mut ShellCore) {
