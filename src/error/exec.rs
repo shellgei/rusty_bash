@@ -7,6 +7,7 @@ use crate::ShellCore;
 pub enum ExecError {
     Internal,
     ArrayIndexInvalid(String),
+    AssignmentToNonVariable(String),
     BadSubstitution(String),
     DivZero,
     Exponent(i64),
@@ -16,6 +17,7 @@ pub enum ExecError {
     VariableReadOnly(String),
     VariableInvalid(String),
     OperandExpected(String),
+    Recursion(String),
     SubstringMinus(i64),
     Other(String),
 }
@@ -30,10 +32,12 @@ impl From<ExecError> for String {
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
             ExecError::InvalidBase(b) => format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", b),
+            ExecError::AssignmentToNonVariable(right) => format!("attempted assignment to non-variable (error token is \"{}\")", right),
             ExecError::ValidOnlyInFunction(com) => format!("{}: can only be used in a function", &com),
             ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
             ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
+            ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
             ExecError::Other(name) => name,
         }

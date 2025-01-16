@@ -40,4 +40,3 @@ pub fn check_e_option(core: &mut ShellCore) {
         normal(core);
     }
 }
-

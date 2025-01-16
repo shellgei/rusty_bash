@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, ShellCore, Feeder};
+use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
@@ -56,7 +56,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
         }
 
         if i == RESOLVE_LIMIT - 1 {
-            return Err(ExecError::Other(error::recursion(&name)));
+            return Err(ExecError::Recursion(name.clone()));
         }
     }
 
@@ -146,8 +146,8 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-
 
     let left = match stack.pop() {
         Some(ArithElem::Word(w, 0)) => w,
-        Some(ArithElem::Word(_, _)) => return Err(ExecError::Other( error::assignment(op) )),
-        _ => return Err( ExecError::Other(error::assignment(op) )),
+        Some(ArithElem::Word(_, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
+        _ => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
     };
 
     match subs(op, &left, &right, core) {
