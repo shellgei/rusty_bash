@@ -1,5 +1,5 @@
-./test_script.bash
 ./test_options.bash
+./test_script.bash
 ./test_redirects.bash
 ./test_glob.bash
 ./test_brace.bash

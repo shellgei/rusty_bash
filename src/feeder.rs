@@ -119,13 +119,14 @@ impl Feeder {
                 core.db.exit_status = 2;
 
                 match core.db.flags.contains('S') { //S: on source command
-                    true  => return Err(ParseError::UnexpectedEof),
+                    //true  => return Err(ParseError::UnexpectedEof),
+                    true  => return Err(ParseError::Input(InputError::Eof)),
                     false => exit::normal(core),
                 }
             },
             Err(InputError::Interrupt) => {
                 core.db.exit_status = 130;
-                Err(ParseError::Interrupted)
+                Err(ParseError::Input(InputError::Interrupt))
             },
         }
     }
