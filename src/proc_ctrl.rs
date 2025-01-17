@@ -3,6 +3,7 @@
 
 use crate::{exit, Feeder, Script, ShellCore, signal};
 use crate::error;
+use crate::error::parse;
 use nix::unistd;
 use nix::errno::Errno;
 use nix::sys::{resource, wait};
@@ -156,6 +157,7 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
         let mut f = Feeder::new(&s);
         match Script::parse(&mut f, core, false) {
             Ok(Some(mut script)) => script.exec(core),
+            Err(e) => parse::print_error(e, core),
             _ => {},
         }
     }

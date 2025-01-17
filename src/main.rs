@@ -155,14 +155,6 @@ fn main_loop(core: &mut ShellCore) {
                 feeder.nest = vec![("".to_string(), vec![])];
             },
         }
-        /*
-        if let Ok(Some(mut s)) = Script::parse(&mut feeder, core, false){
-            s.exec(core);
-            set_history(core, &s.get_text());
-        }else{
-            feeder.consume(feeder.len());
-            feeder.nest = vec![("".to_string(), vec![])];
-        }*/
         core.sigint.store(false, Relaxed);
     }
     core.write_history_to_file();
@@ -199,8 +191,10 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     }
 
     let mut feeder = Feeder::new(&c_parts[1]);
-    if let Ok(Some(mut s)) = Script::parse(&mut feeder, &mut core, false){
-        s.exec(&mut core);
+    match Script::parse(&mut feeder, &mut core, false){
+        Ok(Some(mut s)) => s.exec(&mut core),
+        Err(e) => parse::print_error(e, &mut core),
+        _ => {},
     }
     exit::normal(&mut core)
 }
