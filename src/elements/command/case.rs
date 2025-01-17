@@ -122,6 +122,7 @@ impl CaseCommand {
         }
 
         let mut ans = Self::new();
+        let mut ok = false;
         ans.text = feeder.consume(4);
 
         if ! Self::eat_word(feeder, &mut ans, core)?
@@ -137,6 +138,7 @@ impl CaseCommand {
             }
 
             if feeder.starts_with("esac") {
+                ok = true;
                 ans.text += &feeder.consume(4);
                 break;
             }
@@ -162,7 +164,7 @@ impl CaseCommand {
             }
         }
 
-        if ans.patterns_script_end.len() > 0 {
+        if ok && ans.patterns_script_end.len() > 0 {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             Ok(Some(ans))
         }else{
