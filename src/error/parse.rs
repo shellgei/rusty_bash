@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use super::input::InputError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ParseError {
     UnexpectedSymbol(String),
     Input(InputError),

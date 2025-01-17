@@ -2,8 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{file_check, Script, ShellCore, Feeder};
-use crate::error::input::InputError;
-use crate::error::parse::ParseError;
 use crate::elements::io;
 use std::fs::File;
 use std::os::fd::IntoRawFd;

@@ -3,9 +3,8 @@
 
 use super::job::Job;
 use crate::error::parse;
-use crate::error::input::InputError;
 use crate::error::parse::ParseError;
-use crate::{exit, Feeder, ShellCore};
+use crate::{Feeder, ShellCore};
 
 enum Status{
     UnexpectedSymbol(String),
@@ -97,22 +96,8 @@ impl Script {
                  permit_empty: bool) -> Result<Option<Script>, ParseError> {
         let mut ans = Self::default();
         loop {
-            loop {
-                match Self::eat_job(feeder, core, &mut ans) {
-                    Ok(true) => if Self::eat_job_end(feeder, &mut ans) {
-                        continue;
-                    },
-                    Err(ParseError::Input(InputError::Eof)) => {
-                        parse::print_error(ParseError::Input(InputError::Eof), core);
-                        match core.source_level > 0 {
-                         true  => return Err(ParseError::Input(InputError::Eof)),
-                         false => exit::normal(core),
-                        }
-                    },
-                    _ => {},
-                }
-                break;
-            }
+            while Self::eat_job(feeder, core, &mut ans)? 
+                  && Self::eat_job_end(feeder, &mut ans) {}
 
             match ans.check_nest(feeder, permit_empty){
                 Status::NormalEnd => {
@@ -124,18 +109,12 @@ impl Script {
                     let e = ParseError::UnexpectedSymbol(s.clone());
                     parse::print_error(e, core);
                     core.db.exit_status = 2;
-                    break;
+                    return Err(ParseError::UnexpectedSymbol(s));
                 },
                 Status::NeedMoreLine => {
-                    if let Err(_) = feeder.feed_additional_line(core) {
-                        break;
-                    }
+                    feeder.feed_additional_line(core)?;
                 },
             }
         }
-
-        feeder.consume(feeder.len());
-        core.alias_memo.clear();
-        return Ok(None);
     }
 }
