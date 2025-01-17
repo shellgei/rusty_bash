@@ -39,23 +39,24 @@ impl ExtGlob {
         true
     }
 
-    fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Ok(Some(a)) = BracedParam::parse(feeder, core){
+    fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+        if let Some(a) = BracedParam::parse(feeder, core)? {
             ans.text += a.get_text();
             ans.subwords.push(Box::new(a));
-            true
+            Ok(true)
         }else{
-            false
+            Ok(false)
         }
     }
 
-    fn eat_command_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Ok(Some(a)) = CommandSubstitution::parse(feeder, core){
+    fn eat_command_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
+        if let Some(a) = CommandSubstitution::parse(feeder, core)? {
             ans.text += a.get_text();
             ans.subwords.push(Box::new(a));
-            true
+            Ok(true)
         }else{
-            false
+            Ok(false)
         }
     }
 
@@ -130,8 +131,8 @@ impl ExtGlob {
         ans.subwords.push( Box::new( SimpleSubword {text: ans.text.clone() } ) );
 
         loop {
-            while Self::eat_braced_param(feeder, &mut ans, core)
-               || Self::eat_command_substitution(feeder, &mut ans, core)
+            while Self::eat_braced_param(feeder, &mut ans, core)?
+               || Self::eat_command_substitution(feeder, &mut ans, core)?
                || Self::eat_extglob(feeder, &mut ans, core)?
                || Self::eat_special_or_positional_param(feeder, &mut ans, core)
                || Self::eat_doller(feeder, &mut ans)
