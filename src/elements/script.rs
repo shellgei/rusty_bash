@@ -97,10 +97,11 @@ impl Script {
         let mut ans = Self::default();
         loop {
             loop {
-                if let Ok(true) = Self::eat_job(feeder, core, &mut ans) {
-                    if Self::eat_job_end(feeder, &mut ans) {
+                match Self::eat_job(feeder, core, &mut ans) {
+                    Ok(true) => if Self::eat_job_end(feeder, &mut ans) {
                         continue;
-                    }
+                    },
+                    _ => {},
                 }
                 break;
             }
