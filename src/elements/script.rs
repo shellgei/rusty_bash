@@ -112,7 +112,7 @@ impl Script {
                     break;
                 },
                 Status::NeedMoreLine => {
-                    if ! feeder.feed_additional_line(core).is_ok() {
+                    if let Err(_) = feeder.feed_additional_line(core) {
                         break;
                     }
                 },

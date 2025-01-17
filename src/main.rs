@@ -140,12 +140,9 @@ fn main_loop(core: &mut ShellCore) {
 
         core.word_eval_error = false;
         core.sigint.store(false, Relaxed);
-        match Script::parse(&mut feeder, core, false){
-            Some(mut s) => {
-                s.exec(core);
-                set_history(core, &s.get_text());
-            },
-            None => {},
+        if let Some(mut s) = Script::parse(&mut feeder, core, false){
+            s.exec(core);
+            set_history(core, &s.get_text());
         }
         core.sigint.store(false, Relaxed);
     }
