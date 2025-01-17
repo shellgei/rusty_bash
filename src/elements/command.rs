@@ -88,8 +88,8 @@ pub trait Command {
     fn force_fork(&self) -> bool;
 }
 
-pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
-           left: &str, right: Vec<&str>, ans: &mut Option<Script>, permit_empty: bool)
+pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, right: Vec<&str>,
+                        ans: &mut Option<Script>, permit_empty: bool)
     -> Result<bool, ParseError> {
     if ! feeder.starts_with(left) {
         return Ok(false);
@@ -97,11 +97,6 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
     feeder.nest.push( (left.to_string(), right.iter().map(|e| e.to_string()).collect()) );
     feeder.consume(left.len());
     *ans = Script::parse(feeder, core, permit_empty)?;
-    /*
-        Ok(s) => *ans = s,
-        Err(_) => *ans = None,
-    }*/
-    //*ans = Script::parse(feeder, core, permit_empty);
     feeder.nest.pop();
     Ok(ans.is_some())
 }
@@ -149,6 +144,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = ForCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = WhileCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = CaseCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else if let Some(a) = TestCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = TestCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }

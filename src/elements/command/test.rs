@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::conditional::ConditionalExpr;
@@ -40,9 +41,9 @@ impl Command for TestCommand {
 }
 
 impl TestCommand {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("[[") {
-            return None;
+            return Ok(None);
         }
 
         let mut ans = Self::default();
@@ -53,15 +54,15 @@ impl TestCommand {
                 ans.text += &e.text.clone();
                 ans.cond = Some(e);
             },
-            None => return None,
+            None => return Ok(None),
         }
 
         if feeder.starts_with("]]") {
             ans.text += &feeder.consume(2);
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            return Some(ans);
+            return Ok(Some(ans));
         }
     
-        None
+        Ok(None)
     }
 }
