@@ -22,17 +22,22 @@ impl SimpleCommand {
         }
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
+    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
         let w = match Word::parse(feeder, core, false) {
             Ok(Some(w)) => w,
+            Err(e) => {
+                feeder.rewind();
+                return Err(e);
+            },
             _       => {
-                return false;
+                return Ok(false);
             },
         };
 
         if ans.words.is_empty() {
             if utils::reserved(&w.text) {
-                return false;
+                return Ok(false);
             }else if w.text == "local" || w.text == "eval" {
                 ans.permit_substitution_arg = true;
             }
@@ -40,7 +45,7 @@ impl SimpleCommand {
 
         if ans.words.is_empty() {
             if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder) {
-                return true;
+                return Ok(true);
             }
         }
 
@@ -50,7 +55,7 @@ impl SimpleCommand {
         if ans.words.len() == 1 {
             ans.lineno = feeder.lineno;
         }
-        true
+        Ok(true)
     }
 
     fn set_alias(word: &Word, words: &mut Vec<Word>, text: &mut String,
@@ -96,7 +101,7 @@ impl SimpleCommand {
             }
 
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if ! Self::eat_word(feeder, &mut ans, core) {
+            if ! Self::eat_word(feeder, &mut ans, core)? {
                 break;
             }
         }

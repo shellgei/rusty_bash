@@ -146,8 +146,8 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     core.eval_level += 1;
     match Script::parse(&mut feeder, core, false){
-        Some(mut s) => s.exec(core),
-        None        => {},
+        Ok(Some(mut s)) => s.exec(core),
+        _        => {},
     }
 
     core.eval_level -= 1;

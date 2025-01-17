@@ -93,7 +93,7 @@ impl Script {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
-                 permit_empty: bool) -> Option<Script> {
+                 permit_empty: bool) -> Result<Option<Script>, ParseError> {
         let mut ans = Self::default();
         loop {
             loop {
@@ -101,6 +101,8 @@ impl Script {
                     Ok(true) => if Self::eat_job_end(feeder, &mut ans) {
                         continue;
                     },
+                    //Err(e) => {
+                    //},
                     _ => {},
                 }
                 break;
@@ -109,7 +111,7 @@ impl Script {
             match ans.check_nest(feeder, permit_empty){
                 Status::NormalEnd => {
                     ans.unalias(core);
-                    return Some(ans)
+                    return Ok(Some(ans))
                 },
                 Status::UnexpectedSymbol(s) => {
                     let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
@@ -128,6 +130,6 @@ impl Script {
 
         feeder.consume(feeder.len());
         core.alias_memo.clear();
-        return None;
+        return Ok(None);
     }
 }

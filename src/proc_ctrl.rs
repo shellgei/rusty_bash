@@ -155,7 +155,7 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
         let s = "command_not_found_handle ".to_owned() + &arg.clone();
         let mut f = Feeder::new(&s);
         match Script::parse(&mut f, core, false) {
-            Some(mut script) => script.exec(core),
+            Ok(Some(mut script)) => script.exec(core),
             _ => {},
         }
     }

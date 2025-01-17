@@ -46,8 +46,8 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
 
         match Script::parse(&mut feeder, core, false){
-            Some(mut s) => s.exec(core),
-            None => {},
+            Ok(Some(mut s)) => s.exec(core),
+            _ => {},
         }
     }
 

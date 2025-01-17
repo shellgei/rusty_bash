@@ -95,9 +95,13 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
     }
     feeder.nest.push( (left.to_string(), right.iter().map(|e| e.to_string()).collect()) );
     feeder.consume(left.len());
-    *ans = Script::parse(feeder, core, permit_empty);
+    match Script::parse(feeder, core, permit_empty) {
+        Ok(s) => *ans = s,
+        Err(_) => *ans = None,
+    }
+    //*ans = Script::parse(feeder, core, permit_empty);
     feeder.nest.pop();
-    ! ans.is_none()
+    ans.is_some()
 }
 
 pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {

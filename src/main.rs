@@ -140,7 +140,7 @@ fn main_loop(core: &mut ShellCore) {
 
         core.word_eval_error = false;
         core.sigint.store(false, Relaxed);
-        if let Some(mut s) = Script::parse(&mut feeder, core, false){
+        if let Ok(Some(mut s)) = Script::parse(&mut feeder, core, false){
             s.exec(core);
             set_history(core, &s.get_text());
         }
@@ -180,7 +180,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     }
 
     let mut feeder = Feeder::new(&c_parts[1]);
-    if let Some(mut s) = Script::parse(&mut feeder, &mut core, false){
+    if let Ok(Some(mut s)) = Script::parse(&mut feeder, &mut core, false){
         s.exec(&mut core);
     }
     exit::normal(&mut core)
