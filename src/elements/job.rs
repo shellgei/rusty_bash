@@ -122,13 +122,14 @@ impl Job {
         }
     }
 
-    fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
-        if let Ok(Some(pipeline)) = Pipeline::parse(feeder, core){
+    fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
+        if let Some(pipeline) = Pipeline::parse(feeder, core)? {
                 ans.text += &pipeline.text.clone();
                 ans.pipelines.push(pipeline);
-                return true;
+                return Ok(true);
         }
-        false
+        Ok(false)
     }
 
     fn eat_and_or(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
@@ -142,7 +143,7 @@ impl Job {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Job>, ParseError> {
         let mut ans = Self::default();
         while Self::eat_blank_line(feeder, &mut ans, core) {} 
-        if ! Self::eat_pipeline(feeder, &mut ans, core) {
+        if ! Self::eat_pipeline(feeder, &mut ans, core)? {
             if ans.text.is_empty() {
                 return Ok(None);
             }else{
@@ -153,7 +154,7 @@ impl Job {
         while Self::eat_and_or(feeder, &mut ans, core) { 
             loop {
                 while Self::eat_blank_line(feeder, &mut ans, core) {} 
-                if Self::eat_pipeline(feeder, &mut ans, core) {
+                if Self::eat_pipeline(feeder, &mut ans, core)? {
                     break;  
                 }
                 if feeder.len() == 0 {
