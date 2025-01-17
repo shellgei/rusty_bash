@@ -245,8 +245,8 @@ impl ForCommand {
             return Ok(None);
         }
 
-        if feeder.len() == 0 && ! feeder.feed_additional_line(core).is_ok() {
-            return Ok(None);
+        if feeder.len() == 0 {
+            feeder.feed_additional_line(core)?;
         }
 
         while command::eat_blank_with_comment(feeder, core, &mut ans.text) {}
