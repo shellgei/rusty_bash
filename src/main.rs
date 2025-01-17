@@ -143,6 +143,9 @@ fn main_loop(core: &mut ShellCore) {
         if let Ok(Some(mut s)) = Script::parse(&mut feeder, core, false){
             s.exec(core);
             set_history(core, &s.get_text());
+        }else{
+            feeder.consume(feeder.len());
+            feeder.nest = vec![("".to_string(), vec![])];
         }
         core.sigint.store(false, Relaxed);
     }
