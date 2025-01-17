@@ -431,6 +431,15 @@ res=$($com <<< 'case aaa in bbb) echo NG ;; aaa) echo OK ;;& aaa) echo OK ;; esa
 [ "$res" = "OK
 OK" ] || err $LINENO
 
+res=$($com <<< 'case aaa in
+bbb) echo NG ;;
+aaa) echo OK ;;&
+aaa) echo OK ;;
+	
+	')
+[ "$res" = "" ] || err $LINENO
+
+
 res=$($com <<< 'case aaa in aaa) echo OK1 ;;& bbb) echo OK2 ;& aaa) echo OK3 ;; esac')
 [ "$res" = "OK1
 OK3" ] || err $LINENO
