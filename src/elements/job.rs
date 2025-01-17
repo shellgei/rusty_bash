@@ -123,14 +123,12 @@ impl Job {
     }
 
     fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
-        match Pipeline::parse(feeder, core){
-            Some(pipeline) => {
+        if let Ok(Some(pipeline)) = Pipeline::parse(feeder, core){
                 ans.text += &pipeline.text.clone();
                 ans.pipelines.push(pipeline);
-                true
-            },
-            None => false,
+                return true;
         }
+        false
     }
 
     fn eat_and_or(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {

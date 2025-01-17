@@ -128,33 +128,31 @@ impl Pipeline {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Pipeline>, ParseError> {
         let mut ans = Pipeline::default();
 
         while Self::eat_exclamation(feeder, &mut ans, core) 
         || Self::eat_time(feeder, &mut ans, core) { }
 
-        if let Ok(true) = Self::eat_command(feeder, &mut ans, core) {
-        }else{
-        //if ! Self::eat_command(feeder, &mut ans, core) {
+        if ! Self::eat_command(feeder, &mut ans, core)? {
             match ans.exclamation || ans.time {
-                true  => return Some(ans),
-                false => return None,
+                true  => return Ok(Some(ans)),
+                false => return Ok(None),
             }
         }
 
         while Self::eat_pipe(feeder, &mut ans, core){
             loop {
                 Self::eat_blank_and_comment(feeder, &mut ans, core);
-                if let Ok(true) = Self::eat_command(feeder, &mut ans, core) {
+                if Self::eat_command(feeder, &mut ans, core)? {
                     break;
                 }
                 if feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
-                    return None;
+                    return Ok(None);
                 }
             }
         }
 
-        Some(ans)
+        Ok(Some(ans))
     }
 }
