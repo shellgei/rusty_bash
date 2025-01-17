@@ -126,7 +126,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else if let Some(a) = ExtGlob::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = ExtGlob::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }

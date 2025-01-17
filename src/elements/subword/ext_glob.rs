@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::parse::ParseError;
 use crate::utils::exit;
 use crate::elements::subword::CommandSubstitution;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
@@ -68,13 +69,13 @@ impl ExtGlob {
         false
     }
 
-    fn eat_extglob(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(a) = Self::parse(feeder, core){
+    fn eat_extglob(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+        if let Some(a) = Self::parse(feeder, core)? {
             ans.text += a.get_text();
             ans.subwords.push(Box::new(a));
-            true
+            Ok(true)
         }else{
-            false
+            Ok(false)
         }
     }
 
@@ -118,10 +119,10 @@ impl ExtGlob {
         Self::set_simple_subword(feeder, ans, len)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<ExtGlob> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! core.shopts.query("extglob") 
         || feeder.scanner_extglob_head() == 0 {
-            return None;
+            return Ok(None);
         }
 
         let mut ans = Self::new();
@@ -131,7 +132,7 @@ impl ExtGlob {
         loop {
             while Self::eat_braced_param(feeder, &mut ans, core)
                || Self::eat_command_substitution(feeder, &mut ans, core)
-               || Self::eat_extglob(feeder, &mut ans, core)
+               || Self::eat_extglob(feeder, &mut ans, core)?
                || Self::eat_special_or_positional_param(feeder, &mut ans, core)
                || Self::eat_doller(feeder, &mut ans)
                || Self::eat_escaped_char(feeder, &mut ans, core)
@@ -142,14 +143,14 @@ impl ExtGlob {
             if feeder.starts_with(")") {
                 ans.text += &feeder.consume(1);
                 ans.subwords.push( Box::new( SimpleSubword {text: ")".to_string() } ) );
-                return Some(ans);
+                return Ok(Some(ans));
             }else if feeder.starts_with("|") {
                 ans.text += &feeder.consume(1);
                 ans.subwords.push( Box::new( SimpleSubword {text: "|".to_string() } ) );
             }else if feeder.len() > 0 {
                 exit::internal("unknown chars in double quoted word");
             }else if ! feeder.feed_additional_line(core).is_ok() {
-                return None;
+                return Ok(None);
             }
         }
     }
