@@ -96,8 +96,9 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, r
     }
     feeder.nest.push( (left.to_string(), right.iter().map(|e| e.to_string()).collect()) );
     feeder.consume(left.len());
-    *ans = Script::parse(feeder, core, permit_empty)?;
+    let result_script = Script::parse(feeder, core, permit_empty);
     feeder.nest.pop();
+    *ans = result_script?;
     Ok(ans.is_some())
 }
 
