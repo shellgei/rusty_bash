@@ -5,7 +5,7 @@ mod completion;
 
 use crate::{file_check, ShellCore};
 use crate::utils::file;
-use crate::error::{InputError};
+use crate::error::input::InputError;
 use std::io;
 use std::fs::File;
 use std::io::{Write, Stdout};

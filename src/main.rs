@@ -17,7 +17,7 @@ use crate::error::exec;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
-use error::InputError;
+use error::input::InputError;
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");
