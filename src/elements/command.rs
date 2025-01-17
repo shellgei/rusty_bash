@@ -13,6 +13,7 @@ pub mod r#while;
 pub mod r#if;
 
 use crate::{proc_ctrl, ShellCore, Feeder, Script};
+use crate::error::parse::ParseError;
 use crate::utils::exit;
 use self::arithmetic::ArithmeticCommand;
 use self::case::CaseCommand;
@@ -132,16 +133,16 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
     }
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) = FunctionDefinition::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Ok(Some(a)) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = ArithmeticCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
-    else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = ForCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = CaseCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = TestCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else{ None }
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Command>>, ParseError> {
+    if let Some(a) = FunctionDefinition::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = SimpleCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = IfCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = ArithmeticCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = ParenCommand::parse(feeder, core, false) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = BraceCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = ForCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = WhileCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = CaseCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = TestCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else{ Ok(None) }
 }
