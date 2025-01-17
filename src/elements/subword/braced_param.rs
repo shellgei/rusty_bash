@@ -181,9 +181,7 @@ impl BracedParam {
             }
 
             if feeder.len() == 0 {
-                if ! feeder.feed_additional_line(core).is_ok() {
-                    return Ok(word);
-                }
+                feeder.feed_additional_line(core)?;
             }
         }
 
