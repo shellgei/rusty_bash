@@ -156,21 +156,15 @@ impl ForCommand {
         true
     }
 
-    fn eat_arithmetic(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_arithmetic(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if ! feeder.starts_with("((") {
-            return false;
+            return Ok(false);
         }
         ans.text += &feeder.consume(2);
         ans.has_arithmetic = true;
  
         loop {
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if feeder.len() == 0 {
-                match feeder.feed_additional_line(core).is_ok() {
-                    true  => continue,
-                    false => return false,
-                }
-            }
+            command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
             let a = ArithmeticExpr::parse(feeder, core, true);
             if a.is_some() {
@@ -181,17 +175,17 @@ impl ForCommand {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
             if feeder.starts_with(";") {
                 if ans.arithmetics.len() >= 3 {
-                    return false;
+                    return Ok(false);
                 }
                 ans.text += &feeder.consume(1);
             }else if feeder.starts_with("))") {
                 if ans.arithmetics.len() != 3 {
-                    return false;
+                    return Ok(false);
                 }
                 ans.text += &feeder.consume(2);
-                return ans.arithmetics.len() == 3;
+                return Ok(ans.arithmetics.len() == 3);
             }else {
-                return false;
+                return Ok(false);
             }
         }
     }
@@ -237,7 +231,7 @@ impl ForCommand {
 
         if Self::eat_name(feeder, &mut ans, core) {
             Self::eat_in_part(feeder, &mut ans, core)?;
-        }else if ! Self::eat_arithmetic(feeder, &mut ans, core) {
+        }else if ! Self::eat_arithmetic(feeder, &mut ans, core)? {
             return Ok(None);
         }
 
@@ -245,11 +239,7 @@ impl ForCommand {
             return Ok(None);
         }
 
-        if feeder.len() == 0 {
-            feeder.feed_additional_line(core)?;
-        }
-
-        while command::eat_blank_with_comment(feeder, core, &mut ans.text) {}
+        command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
         if command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.do_script, false)? {
             ans.text.push_str("do");

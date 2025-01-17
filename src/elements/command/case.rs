@@ -131,15 +131,7 @@ impl CaseCommand {
         ans.text += &feeder.consume(2);
 
         loop {
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if feeder.starts_with("\n") {
-                ans.text += &feeder.consume(1);
-            }
-
-            if feeder.len() == 0 {
-                feeder.feed_additional_line(core)?;
-            }
-
+            command::eat_blank_lines(feeder, core, &mut ans.text)?;
             if feeder.starts_with("esac") {
                 break;
             }
