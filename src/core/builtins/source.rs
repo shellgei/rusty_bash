@@ -14,7 +14,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if file_check::is_dir(&args[1]) {
-        eprintln!("bash: source: {}: is a directory", &args[1]);
+        eprintln!("sush: source: {}: is a directory", &args[1]);
         return 1;
     }
 

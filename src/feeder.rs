@@ -118,8 +118,7 @@ impl Feeder {
                 eprintln!("sush: syntax error: unexpected end of file");
                 core.db.exit_status = 2;
 
-                match core.db.flags.contains('S') { //S: on source command
-                    //true  => return Err(ParseError::UnexpectedEof),
+                match core.source_level > 0 {
                     true  => return Err(ParseError::Input(InputError::Eof)),
                     false => exit::normal(core),
                 }
