@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -226,9 +227,10 @@ impl ForCommand {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+        -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("for") {
-            return None;
+            return Ok(None);
         }
         let mut ans = Self::default();
         ans.text = feeder.consume(3);
@@ -236,15 +238,15 @@ impl ForCommand {
         if Self::eat_name(feeder, &mut ans, core) {
             Self::eat_in_part(feeder, &mut ans, core);
         }else if ! Self::eat_arithmetic(feeder, &mut ans, core) {
-            return None;
+            return Ok(None);
         }
 
         if ! Self::eat_end(feeder, &mut ans, core) {
-            return None;
+            return Ok(None);
         }
 
         if feeder.len() == 0 && ! feeder.feed_additional_line(core).is_ok() {
-            return None;
+            return Ok(None);
         }
 
         while command::eat_blank_with_comment(feeder, core, &mut ans.text) {}
@@ -255,9 +257,9 @@ impl ForCommand {
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            Some(ans)
+            Ok(Some(ans))
         }else{
-            None
+            Ok(None)
         }
     }
 }
