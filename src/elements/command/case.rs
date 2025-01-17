@@ -123,7 +123,6 @@ impl CaseCommand {
 
         let mut ans = Self::new();
         ans.text = feeder.consume(4);
-        let mut esac = false;
 
         if ! Self::eat_word(feeder, &mut ans, core)?
         || ! feeder.starts_with("in") {
@@ -137,19 +136,11 @@ impl CaseCommand {
                 ans.text += &feeder.consume(1);
             }
 
-            if feeder.starts_with("esac") {
-                ans.text += &feeder.consume(4);
-                esac = true;
-                break;
-            }
-
             if feeder.len() == 0 {
                 feeder.feed_additional_line(core)?;
             }
 
             if feeder.starts_with("esac") {
-                ans.text += &feeder.consume(4);
-                esac = true;
                 break;
             }
 
@@ -171,25 +162,14 @@ impl CaseCommand {
             }
         }
 
-        if ! esac {
-            if feeder.len() == 0 {
-                feeder.feed_additional_line(core)?;
-            }
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if feeder.starts_with("\n") {
-                ans.text += &feeder.consume(1);
-            }
-            if feeder.starts_with("esac") {
-                ans.text += &feeder.consume(4);
-                esac = true;
+        if feeder.starts_with("esac") {
+            ans.text += &feeder.consume(4);
+            if ans.patterns_script_end.len() > 0 {
+                command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+                return Ok(Some(ans));
             }
         }
 
-        if esac && ans.patterns_script_end.len() > 0 {
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            Ok(Some(ans))
-        }else{
-            Ok(None)
-        }
+        Ok(None)
     }
 }
