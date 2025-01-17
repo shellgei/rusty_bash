@@ -31,13 +31,13 @@ impl Script {
 
     pub fn get_text(&self) -> String { self.text.clone() }
 
-    fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool {
-        if let Ok(Some(job)) = Job::parse(feeder, core){
+    fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> Result<bool, ParseError> {
+        if let Some(job) = Job::parse(feeder, core)? {
             ans.text += &job.text.clone();
             ans.jobs.push(job);
-            true
+            Ok(true)
         }else{
-            false
+            Ok(false)
         }
     }
 
@@ -96,8 +96,14 @@ impl Script {
                  permit_empty: bool) -> Option<Script> {
         let mut ans = Self::default();
         loop {
-            while Self::eat_job(feeder, core, &mut ans) 
-               && Self::eat_job_end(feeder, &mut ans) {}
+            loop {
+                if let Ok(true) = Self::eat_job(feeder, core, &mut ans) {
+                    if Self::eat_job_end(feeder, &mut ans) {
+                        continue;
+                    }
+                }
+                break;
+            }
 
             match ans.check_nest(feeder, permit_empty){
                 Status::NormalEnd => {
