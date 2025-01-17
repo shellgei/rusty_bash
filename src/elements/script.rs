@@ -103,10 +103,9 @@ impl Script {
                         continue;
                     },
                     Err(ParseError::Input(InputError::Eof)) => {
-                        //eprintln!("sush: syntax error: unexpected end of file");
                         parse::print_error(ParseError::Input(InputError::Eof), core);
                         match core.source_level > 0 {
-                         true  => break,
+                         true  => return Err(ParseError::Input(InputError::Eof)),
                          false => exit::normal(core),
                         }
                     },
