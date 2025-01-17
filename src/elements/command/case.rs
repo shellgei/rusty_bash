@@ -84,19 +84,19 @@ impl CaseCommand {
         true
     }
 
-    fn eat_patterns(feeder: &mut Feeder, ans: &mut Vec<Word>, text: &mut String, core: &mut ShellCore) -> bool {
+    fn eat_patterns(feeder: &mut Feeder, ans: &mut Vec<Word>, text: &mut String, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
         if feeder.starts_with("(") {
             *text += &feeder.consume(1);
         }
 
         loop {
-            match Word::parse(feeder, core, false) {
-                Ok(Some(w)) => {
-                    *text += &w.text;
-                    ans.push(w)
-                },
-                _       => return false,
-            };
+            if let Some(w) = Word::parse(feeder, core, false)? {
+                *text += &w.text;
+                ans.push(w)
+            }else{
+                return Ok(false);
+            }
     
             command::eat_blank_with_comment(feeder, core, text);
 
@@ -110,7 +110,7 @@ impl CaseCommand {
             }
         }
 
-        ans.len() != 0
+        Ok(ans.len() != 0)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
@@ -143,7 +143,7 @@ impl CaseCommand {
                 feeder.feed_additional_line(core)?;
             }
             let mut patterns = vec![];
-            if ! Self::eat_patterns(feeder, &mut patterns, &mut ans.text, core) {
+            if ! Self::eat_patterns(feeder, &mut patterns, &mut ans.text, core)? {
                 return Ok(None);
             }
 
