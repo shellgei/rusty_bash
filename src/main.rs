@@ -13,7 +13,7 @@ use builtins::{option, parameter};
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
-use crate::error::exec;
+use crate::error::{exec, parse};
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
@@ -140,13 +140,29 @@ fn main_loop(core: &mut ShellCore) {
 
         core.word_eval_error = false;
         core.sigint.store(false, Relaxed);
+        match Script::parse(&mut feeder, core, false){
+            Ok(Some(mut s)) => {
+                s.exec(core);
+                set_history(core, &s.get_text());
+            },
+            Err(e) => {
+                parse::print_error(e, core);
+                feeder.consume(feeder.len());
+                feeder.nest = vec![("".to_string(), vec![])];
+            },
+            _ => {
+                feeder.consume(feeder.len());
+                feeder.nest = vec![("".to_string(), vec![])];
+            },
+        }
+        /*
         if let Ok(Some(mut s)) = Script::parse(&mut feeder, core, false){
             s.exec(core);
             set_history(core, &s.get_text());
         }else{
             feeder.consume(feeder.len());
             feeder.nest = vec![("".to_string(), vec![])];
-        }
+        }*/
         core.sigint.store(false, Relaxed);
     }
     core.write_history_to_file();

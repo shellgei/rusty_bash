@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::error::parse;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 
@@ -104,14 +103,12 @@ impl Script {
                     ans.unalias(core);
                     return Ok(Some(ans))
                 },
-                Status::UnexpectedSymbol(s) => {
+                Status::NeedMoreLine => feeder.feed_additional_line(core)?,
+                Status::UnexpectedSymbol(s) => { //unexpected symbol
                     let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
-                    let e = ParseError::UnexpectedSymbol(s.clone());
-                    parse::print_error(e, core);
                     core.db.exit_status = 2;
                     return Err(ParseError::UnexpectedSymbol(s));
                 },
-                Status::NeedMoreLine => feeder.feed_additional_line(core)?,
             }
         }
     }
