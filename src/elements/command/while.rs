@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
 
@@ -53,11 +54,12 @@ impl Command for WhileCommand {
 }
 
 impl WhileCommand {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<WhileCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+        -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         if ! command::eat_inner_script(feeder, core, "while", vec!["do"],
                                        &mut ans.while_script, false){
-            return None;
+            return Ok(None);
         }
         while command::eat_blank_with_comment(feeder, core, &mut ans.text) {}
 
@@ -69,9 +71,9 @@ impl WhileCommand {
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            Some(ans)
+            Ok(Some(ans))
         }else{
-            None
+            Ok(None)
         }
     }
 }

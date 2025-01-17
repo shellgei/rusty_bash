@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::parse::ParseError;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
@@ -93,22 +94,23 @@ impl FunctionDefinition {
         true
     }
 
-    fn eat_compound_command(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_compound_command(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
         ans.command = if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
         else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
         else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
-        else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
+        else if let Some(a) = WhileCommand::parse(feeder, core)? { Some(Box::new(a)) }
         else {None};
 
         if let Some(c) = &ans.command {
             ans.text += &c.get_text();
-            true
+            Ok(true)
         }else{
-            false
+            Ok(false)
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::new();
         feeder.set_backup();
 
@@ -120,7 +122,7 @@ impl FunctionDefinition {
         if ! Self::eat_name(feeder, &mut ans, core) 
         || ! feeder.starts_with("()") {
             feeder.rewind();
-            return None;
+            return Ok(None);
         }
         ans.text += &feeder.consume(2);
         loop {
@@ -131,7 +133,7 @@ impl FunctionDefinition {
 
             if feeder.len() == 0 {
                 if ! feeder.feed_additional_line(core).is_ok() {
-                    return None;
+                    return Ok(None);
                 }
             }
             if ! command::eat_blank_with_comment(feeder, core, &mut ans.text) {
@@ -139,15 +141,15 @@ impl FunctionDefinition {
             }
         }
 
-        Self::eat_compound_command(feeder, &mut ans, core);
+        Self::eat_compound_command(feeder, &mut ans, core)?;
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
         if let Some(_) = &ans.command {
             feeder.pop_backup();
-            Some(ans)
+            Ok(Some(ans))
         }else{
             feeder.rewind();
-            None
+            Ok(None)
         }
     }
 }

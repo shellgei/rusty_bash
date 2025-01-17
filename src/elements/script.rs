@@ -111,9 +111,7 @@ impl Script {
                     core.db.exit_status = 2;
                     return Err(ParseError::UnexpectedSymbol(s));
                 },
-                Status::NeedMoreLine => {
-                    feeder.feed_additional_line(core)?;
-                },
+                Status::NeedMoreLine => feeder.feed_additional_line(core)?,
             }
         }
     }

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::parse::ParseError;
 use crate::elements::command;
 use crate::elements::word::Word;
 use crate::utils::glob;
@@ -112,9 +113,10 @@ impl CaseCommand {
         ans.len() != 0
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<CaseCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+        -> Result<Option<CaseCommand>, ParseError> {
         if ! feeder.starts_with("case") {
-            return None;
+            return Ok(None);
         }
 
         let mut ans = Self::new();
@@ -122,7 +124,7 @@ impl CaseCommand {
 
         if ! Self::eat_word(feeder, &mut ans, core) 
         || ! feeder.starts_with("in") {
-            return None;
+            return Ok(None);
         }
         ans.text += &feeder.consume(2);
 
@@ -140,36 +142,32 @@ impl CaseCommand {
             if feeder.len() == 0 {
                 match feeder.feed_additional_line(core).is_ok() {
                     true  => continue,
-                    false => return None,
+                    false => return Ok(None),
                 }
             }
             let mut patterns = vec![];
             if ! Self::eat_patterns(feeder, &mut patterns, &mut ans.text, core) {
-                return None;
+                return Ok(None);
             }
 
             let mut script = None;
             if command::eat_inner_script(feeder, core, ")", vec![";;&", ";;", ";&"], &mut script, true) {
                 ans.text.push_str(")");
                 ans.text.push_str(&script.as_ref().unwrap().get_text());
-                let end_len = if feeder.starts_with(";;&") {
-                    3
-                }else{
-                    2
-                };
+                let end_len = if feeder.starts_with(";;&") { 3 }else{ 2 };
                 let end = feeder.consume(end_len);
                 ans.text.push_str(&end);
                 ans.patterns_script_end.push( (patterns, script.unwrap(), end ) );
             }else{
-                return None;
+                return Ok(None);
             }
         }
 
         if ans.patterns_script_end.len() > 0 {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            Some(ans)
+            Ok(Some(ans))
         }else{
-            None
+            Ok(None)
         }
     }
 }
