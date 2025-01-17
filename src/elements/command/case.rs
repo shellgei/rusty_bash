@@ -148,7 +148,7 @@ impl CaseCommand {
             }
 
             let mut script = None;
-            if command::eat_inner_script(feeder, core, ")", vec![";;&", ";;", ";&"], &mut script, true) {
+            if command::eat_inner_script(feeder, core, ")", vec![";;&", ";;", ";&"], &mut script, true)? {
                 ans.text.push_str(")");
                 ans.text.push_str(&script.as_ref().unwrap().get_text());
                 let end_len = if feeder.starts_with(";;&") { 3 }else{ 2 };

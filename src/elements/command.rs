@@ -89,19 +89,21 @@ pub trait Command {
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
-           left: &str, right: Vec<&str>, ans: &mut Option<Script>, permit_empty: bool) -> bool {
+           left: &str, right: Vec<&str>, ans: &mut Option<Script>, permit_empty: bool)
+    -> Result<bool, ParseError> {
     if ! feeder.starts_with(left) {
-        return false;
+        return Ok(false);
     }
     feeder.nest.push( (left.to_string(), right.iter().map(|e| e.to_string()).collect()) );
     feeder.consume(left.len());
-    match Script::parse(feeder, core, permit_empty) {
+    *ans = Script::parse(feeder, core, permit_empty)?;
+    /*
         Ok(s) => *ans = s,
         Err(_) => *ans = None,
-    }
+    }*/
     //*ans = Script::parse(feeder, core, permit_empty);
     feeder.nest.pop();
-    ans.is_some()
+    Ok(ans.is_some())
 }
 
 pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {

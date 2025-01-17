@@ -58,12 +58,12 @@ impl WhileCommand {
         -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         if ! command::eat_inner_script(feeder, core, "while", vec!["do"],
-                                       &mut ans.while_script, false){
+                                       &mut ans.while_script, false)?{
             return Ok(None);
         }
         while command::eat_blank_with_comment(feeder, core, &mut ans.text) {}
 
-        if command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.do_script, false) {
+        if command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.do_script, false)? {
             ans.text.push_str("while");
             ans.text.push_str(&ans.while_script.as_mut().unwrap().get_text());
             ans.text.push_str("do");

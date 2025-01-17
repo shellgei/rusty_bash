@@ -251,7 +251,7 @@ impl ForCommand {
 
         while command::eat_blank_with_comment(feeder, core, &mut ans.text) {}
 
-        if command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.do_script, false) {
+        if command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.do_script, false)? {
             ans.text.push_str("do");
             ans.text.push_str(&ans.do_script.as_mut().unwrap().get_text());
             ans.text.push_str(&feeder.consume(4)); //done
