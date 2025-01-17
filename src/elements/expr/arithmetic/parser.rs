@@ -65,16 +65,16 @@ impl ArithmeticExpr {
         Ok(true)
     }
 
-    fn eat_array_elem(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_array_elem(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {
-            return false;
+            return Ok(false);
         }
 
         let name = &feeder.consume(len);
         ans.text += &name.clone();
 
-        if let Some(s) = Subscript::parse(feeder, core) {
+        if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text.clone();
             Self::eat_blank(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
@@ -85,7 +85,7 @@ impl ArithmeticExpr {
             ans.elements.push( ArithElem::Word(Word::from(name), suffix) );
         };
 
-        true
+        Ok(true)
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -204,7 +204,7 @@ impl ArithmeticExpr {
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, core, &mut ans)?
             || Self::eat_binary_operator(feeder, &mut ans, core)
-            || Self::eat_array_elem(feeder, &mut ans, core) 
+            || Self::eat_array_elem(feeder, &mut ans, core)?
             || Self::eat_word(feeder, &mut ans, core) { 
                 continue;
             }

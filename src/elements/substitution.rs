@@ -177,7 +177,7 @@ impl Substitution {
         ans.name = name.clone();
         ans.text += &name;
 
-        if let Some(s) = Subscript::parse(feeder, core) {
+        if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text.clone();
             ans.index = Some(s);
         };

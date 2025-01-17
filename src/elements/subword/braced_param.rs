@@ -152,17 +152,17 @@ impl BracedParam {
         Ok(())
     }
 
-    fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(s) = Subscript::parse(feeder, core) {
+    fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+        if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text;
             if s.text.contains('@') {
                 ans.is_array = true;
             }
             ans.param.subscript = Some(s);
-            return true;
+            return Ok(true);
         }
 
-        false
+        Ok(false)
     }
 
     fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore)
@@ -241,7 +241,7 @@ impl BracedParam {
         }
 
         if Self::eat_param(feeder, &mut ans, core) {
-            Self::eat_subscript(feeder, &mut ans, core);
+            Self::eat_subscript(feeder, &mut ans, core)?;
             let _ = ValueCheck::eat(feeder, &mut ans, core)?
                  || Substr::eat(feeder, &mut ans, core)
                  || Remove::eat(feeder, &mut ans, core)?

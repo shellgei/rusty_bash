@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
 use super::expr::arithmetic::ArithmeticExpr;
 
 #[derive(Debug, Clone, Default)]
@@ -36,9 +37,9 @@ impl Subscript {
         Err(ExecError::ArrayIndexInvalid("".to_string()))
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("[") {
-            return None;
+            return Ok(None);
         }
 
         let mut ans = Self::default();
@@ -50,16 +51,16 @@ impl Subscript {
         }else if feeder.starts_with("*") {
             ans.text += "*";
             ans.inner_special = feeder.consume(1);
-        }else if let Ok(Some(a)) = ArithmeticExpr::parse(feeder, core, true) {
+        }else if let Some(a) = ArithmeticExpr::parse(feeder, core, true)? {
             ans.text += &a.text.clone();
             ans.inner = Some(a);
         }
 
         if ! feeder.starts_with("]") {
-            return None;
+            return Ok(None);
         }
 
         ans.text += &feeder.consume(1);
-        Some(ans)
+        Ok(Some(ans))
     }
 }
