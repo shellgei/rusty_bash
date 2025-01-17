@@ -91,6 +91,7 @@ impl CaseCommand {
             *text += &feeder.consume(1);
         }
 
+        command::eat_blank_with_comment(feeder, core, text);
         loop {
             if let Some(w) = Word::parse(feeder, core, false)? {
                 *text += &w.text;
@@ -145,7 +146,7 @@ impl CaseCommand {
             }
             let mut patterns = vec![];
             if ! Self::eat_patterns(feeder, &mut patterns, &mut ans.text, core)? {
-                return Ok(None);
+                break;
             }
 
             let mut script = None;

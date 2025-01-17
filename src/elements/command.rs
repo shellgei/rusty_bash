@@ -89,8 +89,7 @@ pub trait Command {
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, right: Vec<&str>,
-                        ans: &mut Option<Script>, permit_empty: bool)
-    -> Result<bool, ParseError> {
+                        ans: &mut Option<Script>, permit_empty: bool) -> Result<bool, ParseError> {
     if ! feeder.starts_with(left) {
         return Ok(false);
     }
