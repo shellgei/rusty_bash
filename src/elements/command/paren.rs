@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::parse::ParseError;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
@@ -38,7 +39,8 @@ impl Command for ParenCommand {
 }
 
 impl ParenCommand {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, substitution: bool) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, substitution: bool)
+        -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, substitution) {
             ans.text.push_str("(");
@@ -48,9 +50,9 @@ impl ParenCommand {
             if ! substitution {
                 command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
             }
-            Some(ans)
+            Ok(Some(ans))
         }else{
-            None
+            Ok(None)
         }
     }
 }
