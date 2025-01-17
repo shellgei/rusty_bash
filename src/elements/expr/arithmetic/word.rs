@@ -69,8 +69,8 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
 fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse(&mut f, core, false) {
-        Some(p) => p,
-        None    => return Err(ExecError::OperandExpected(name.to_string())),
+        Ok(Some(p)) => p,
+        _    => return Err(ExecError::OperandExpected(name.to_string())),
     };
 
     if parsed.elements.len() == 1 { // In this case, the element is not changed by the evaluation.

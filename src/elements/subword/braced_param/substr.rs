@@ -102,12 +102,12 @@ impl Substr {
 
         let mut info = Substr::default();
         info.offset = match ArithmeticExpr::parse(feeder, core, true) {
-            Some(a) => {
+            Ok(Some(a)) => {
                 ans.text += &a.text.clone();
                 Self::eat_length(feeder, ans, &mut info, core);
                 Some(a)
             },
-            None => None,
+            _ => None,
         };
 
         ans.substr = Some(info);
@@ -120,11 +120,11 @@ impl Substr {
         }
         ans.text += &feeder.consume(1);
         info.length = match ArithmeticExpr::parse(feeder, core, true) {
-            Some(a) => {
+            Ok(Some(a)) => {
                 ans.text += &a.text.clone();
                 Some(a)
             },
-            None => None,
+            _ => None,
         };
     }
 }

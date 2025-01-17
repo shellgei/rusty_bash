@@ -166,7 +166,7 @@ impl ForCommand {
         loop {
             command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
-            let a = ArithmeticExpr::parse(feeder, core, true);
+            let a = ArithmeticExpr::parse(feeder, core, true)?;
             if a.is_some() {
                 ans.text += &a.as_ref().unwrap().text.clone();
             }

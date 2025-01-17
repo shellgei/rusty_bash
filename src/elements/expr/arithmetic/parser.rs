@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::parse::ParseError;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use super::{ArithmeticExpr, ArithElem, int, float};
@@ -38,30 +39,30 @@ impl ArithmeticExpr {
     }
 
     fn eat_conditional_op(feeder: &mut Feeder,
-        ans: &mut Self, core: &mut ShellCore) -> bool {
+        ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if ! feeder.starts_with("?") {
-            return false;
+            return Ok(false);
         }
 
         ans.text += &feeder.consume(1);
-        let left = Self::parse(feeder, core, true);
+        let left = Self::parse(feeder, core, true)?;
         if left.is_some() {
             ans.text += &left.as_ref().unwrap().text;
         }
 
         if ! feeder.starts_with(":") {
             ans.elements.push(ArithElem::Ternary(Box::new(left), Box::new(None)));
-            return true;
+            return Ok(true);
         }
 
         ans.text += &feeder.consume(1);
-        let right = Self::parse(feeder, core, true);
+        let right = Self::parse(feeder, core, true)?;
         if right.is_some() {
             ans.text += &right.as_ref().unwrap().text;
         }
 
         ans.elements.push(ArithElem::Ternary(Box::new(left), Box::new(right)));
-        true
+        Ok(true)
     }
 
     fn eat_array_elem(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -154,23 +155,23 @@ impl ArithmeticExpr {
         true
     }
 
-    fn eat_paren(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self) -> bool {
+    fn eat_paren(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self) -> Result<bool, ParseError> {
         if ! feeder.starts_with("(") {
-            return false;
+            return Ok(false);
         }
 
         ans.text += &feeder.consume(1);
 
-        let arith = Self::parse(feeder, core, true);
+        let arith = Self::parse(feeder, core, true)?;
         if arith.is_none() || ! feeder.starts_with(")") {
-            return false;
+            return Ok(false);
         }
 
         ans.text += &arith.as_ref().unwrap().text;
         ans.elements.push( ArithElem::InParen(arith.unwrap()) );
 
         ans.text += &feeder.consume(1);
-        return true;
+        return Ok(true);
     }
 
     fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -185,7 +186,8 @@ impl ArithmeticExpr {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, addline: bool) -> Option<ArithmeticExpr> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, addline: bool)
+        -> Result<Option<Self>, ParseError> {
         let mut ans = ArithmeticExpr::new();
 
         loop {
@@ -197,10 +199,10 @@ impl ArithmeticExpr {
             }
 
             if Self::eat_output_format(feeder, &mut ans, core) 
-            || Self::eat_conditional_op(feeder, &mut ans, core) 
+            || Self::eat_conditional_op(feeder, &mut ans, core)?
             || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans, core)
-            || Self::eat_paren(feeder, core, &mut ans)
+            || Self::eat_paren(feeder, core, &mut ans)?
             || Self::eat_binary_operator(feeder, &mut ans, core)
             || Self::eat_array_elem(feeder, &mut ans, core) 
             || Self::eat_word(feeder, &mut ans, core) { 
@@ -211,6 +213,6 @@ impl ArithmeticExpr {
                 break;
             }
         }
-        return Some(ans);
+        return Ok(Some(ans));
     }
 }
