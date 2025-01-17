@@ -146,6 +146,13 @@ impl CaseCommand {
             if feeder.len() == 0 {
                 feeder.feed_additional_line(core)?;
             }
+
+            if feeder.starts_with("esac") {
+                ans.text += &feeder.consume(4);
+                esac = true;
+                break;
+            }
+
             let mut patterns = vec![];
             if ! Self::eat_patterns(feeder, &mut patterns, &mut ans.text, core)? {
                 break;

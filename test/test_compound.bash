@@ -439,6 +439,16 @@ aaa) echo OK ;;
 	')
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< '
+case xterm-color in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+echo $color_prompt
+'
+)
+[ "$res" = "yes" ] || err $LINENO
+
+
 
 res=$($com <<< 'case aaa in aaa) echo OK1 ;;& bbb) echo OK2 ;& aaa) echo OK3 ;; esac')
 [ "$res" = "OK1
