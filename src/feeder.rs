@@ -114,7 +114,6 @@ impl Feeder {
         match self.feed_additional_line_core(core) {
             Ok(()) => Ok(()),
             Err(InputError::Eof) => {
-                eprintln!("sush: syntax error: unexpected end of file");
                 core.db.exit_status = 2;
                 return Err(ParseError::Input(InputError::Eof));
             },

@@ -102,7 +102,9 @@ impl Script {
                     Ok(true) => if Self::eat_job_end(feeder, &mut ans) {
                         continue;
                     },
-                    Err(ParseError::Input(InputError::Interrupt)) => {
+                    Err(ParseError::Input(InputError::Eof)) => {
+                        //eprintln!("sush: syntax error: unexpected end of file");
+                        parse::print_error(ParseError::Input(InputError::Eof), core);
                         match core.source_level > 0 {
                          true  => break,
                          false => exit::normal(core),
