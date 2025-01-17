@@ -96,7 +96,7 @@ impl FunctionDefinition {
 
     fn eat_compound_command(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
         -> Result<bool, ParseError> {
-        ans.command = if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
+        ans.command = if let Some(a) = IfCommand::parse(feeder, core)? { Some(Box::new(a)) }
         else if let Some(a) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
         else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
         else if let Some(a) = WhileCommand::parse(feeder, core)? { Some(Box::new(a)) }
@@ -132,9 +132,7 @@ impl FunctionDefinition {
             }
 
             if feeder.len() == 0 {
-                if ! feeder.feed_additional_line(core).is_ok() {
-                    return Ok(None);
-                }
+                feeder.feed_additional_line(core)?;
             }
             if ! command::eat_blank_with_comment(feeder, core, &mut ans.text) {
                 break;

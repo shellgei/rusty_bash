@@ -140,8 +140,8 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Command>>, ParseError> {
     if let Some(a) = FunctionDefinition::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else if let Some(a) = IfCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
-    else if let Some(a) = ArithmeticCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
+    else if let Some(a) = IfCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = ArithmeticCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = ParenCommand::parse(feeder, core, false) { Ok(Some(Box::new(a))) }
     else if let Some(a) = BraceCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }
     else if let Some(a) = ForCommand::parse(feeder, core) { Ok(Some(Box::new(a))) }

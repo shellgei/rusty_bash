@@ -34,7 +34,7 @@ impl Arithmetic {
         feeder.set_backup();
         let dl = feeder.consume(1);
 
-        if let Some(a) = ArithmeticCommand::parse(feeder, core) {
+        if let Some(a) = ArithmeticCommand::parse(feeder, core)? {
             feeder.pop_backup();
             return Ok(Some(Arithmetic{ text: dl + &a.text.clone(), com: a}));
         }

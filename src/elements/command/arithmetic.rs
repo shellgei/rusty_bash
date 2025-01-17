@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
@@ -52,9 +53,10 @@ impl ArithmeticCommand {
         Ok(ans)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+        -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("((") {
-            return None;
+            return Ok(None);
         }
         feeder.set_backup();
 
@@ -67,10 +69,10 @@ impl ArithmeticCommand {
                 ans.text += &feeder.consume(2);
                 ans.expressions.push(c);
                 feeder.pop_backup();
-                return Some(ans);
+                return Ok(Some(ans));
             }
         }
         feeder.rewind();
-        return None;
+        return Ok(None);
     }
 }

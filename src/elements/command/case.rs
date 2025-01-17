@@ -140,10 +140,7 @@ impl CaseCommand {
             }
 
             if feeder.len() == 0 {
-                match feeder.feed_additional_line(core).is_ok() {
-                    true  => continue,
-                    false => return Ok(None),
-                }
+                feeder.feed_additional_line(core)?;
             }
             let mut patterns = vec![];
             if ! Self::eat_patterns(feeder, &mut patterns, &mut ans.text, core) {

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::parse::ParseError;
 use crate::elements::command;
 use crate::utils::exit;
 use super::{Command, Redirect};
@@ -72,7 +73,7 @@ impl IfCommand {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<IfCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
  
         let mut if_or_elif = "if";
@@ -90,10 +91,10 @@ impl IfCommand {
         }
 
         if ans.then_scripts.is_empty() {
-            return None;
+            return Ok(None);
         }
 
         command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-        Some(ans)
+        Ok(Some(ans))
     }
 }
