@@ -8,7 +8,6 @@ use std::{io, process};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use crate::ShellCore;
-use crate::utils::exit;
 use crate::error::input::InputError;
 use crate::error::parse::ParseError;
 use std::sync::atomic::Ordering::Relaxed;
@@ -117,11 +116,7 @@ impl Feeder {
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
                 core.db.exit_status = 2;
-
-                match core.source_level > 0 {
-                    true  => return Err(ParseError::Input(InputError::Eof)),
-                    false => exit::normal(core),
-                }
+                return Err(ParseError::Input(InputError::Eof));
             },
             Err(InputError::Interrupt) => {
                 core.db.exit_status = 130;

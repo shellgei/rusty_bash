@@ -3,8 +3,9 @@
 
 use super::job::Job;
 use crate::error::parse;
+use crate::error::input::InputError;
 use crate::error::parse::ParseError;
-use crate::{Feeder, ShellCore};
+use crate::{exit, Feeder, ShellCore};
 
 enum Status{
     UnexpectedSymbol(String),
@@ -101,8 +102,12 @@ impl Script {
                     Ok(true) => if Self::eat_job_end(feeder, &mut ans) {
                         continue;
                     },
-                    //Err(e) => {
-                    //},
+                    Err(ParseError::Input(InputError::Interrupt)) => {
+                        match core.source_level > 0 {
+                         true  => break,
+                         false => exit::normal(core),
+                        }
+                    },
                     _ => {},
                 }
                 break;
