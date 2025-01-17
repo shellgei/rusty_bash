@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::error::parse::ParseError;
 use super::command;
 use super::command::Command;
 use super::Pipe;
@@ -92,17 +93,17 @@ impl Pipeline {
         true
     }
 
-    fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
-        if let Ok(Some(command)) = command::parse(feeder, core){
+    fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore)
+                   -> Result<bool, ParseError> {
+        if let Some(command) = command::parse(feeder, core)? {
             ans.text += &command.get_text();
             ans.commands.push(command);
 
             let blank_len = feeder.scanner_blank(core);
             ans.text += &feeder.consume(blank_len);
-            true
-        }else{
-            false
+            return Ok(true);
         }
+        Ok(false)
     }
 
     fn eat_pipe(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
@@ -133,7 +134,9 @@ impl Pipeline {
         while Self::eat_exclamation(feeder, &mut ans, core) 
         || Self::eat_time(feeder, &mut ans, core) { }
 
-        if ! Self::eat_command(feeder, &mut ans, core){
+        if let Ok(true) = Self::eat_command(feeder, &mut ans, core) {
+        }else{
+        //if ! Self::eat_command(feeder, &mut ans, core) {
             match ans.exclamation || ans.time {
                 true  => return Some(ans),
                 false => return None,
@@ -143,7 +146,7 @@ impl Pipeline {
         while Self::eat_pipe(feeder, &mut ans, core){
             loop {
                 Self::eat_blank_and_comment(feeder, &mut ans, core);
-                if Self::eat_command(feeder, &mut ans, core) {
+                if let Ok(true) = Self::eat_command(feeder, &mut ans, core) {
                     break;
                 }
                 if feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
