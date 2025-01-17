@@ -196,9 +196,9 @@ impl ForCommand {
         }
     }
 
-    fn eat_in_part(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+    fn eat_in_part(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<(), ParseError> {
         if ! feeder.starts_with("in") {
-            return;
+            return Ok(());
         }
 
         ans.text += &feeder.consume(2);
@@ -206,12 +206,12 @@ impl ForCommand {
 
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            match Word::parse(feeder, core, false) {
-                Ok(Some(w)) => {
+            match Word::parse(feeder, core, false)? {
+                Some(w) => {
                     ans.text += &w.text.clone();
                     ans.values.push(w);
                 },
-                _    => return,
+                _    => return Ok(()),
             }
         }
     }
@@ -236,7 +236,7 @@ impl ForCommand {
         ans.text = feeder.consume(3);
 
         if Self::eat_name(feeder, &mut ans, core) {
-            Self::eat_in_part(feeder, &mut ans, core);
+            Self::eat_in_part(feeder, &mut ans, core)?;
         }else if ! Self::eat_arithmetic(feeder, &mut ans, core) {
             return Ok(None);
         }
