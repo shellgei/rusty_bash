@@ -228,7 +228,7 @@ res=$($com <<< 'A=1; echo $(( 1 ++ A )); echo $A')
 
 res=$($com <<< 'A=1; echo $(( 1 ++ A ))
 echo $A')
-[ "$res" == "2" ] || err $LINENO #BUG: IT SHOULD BE 1
+[ "$res" == "1" ] || err
 
 res=$($com <<< 'A=1; echo $(("2""1"++1 ))')
 [ "$res" == "22" ] || err $LINENO

@@ -8,10 +8,7 @@ use super::calculator;
 
 pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
-    let num = match calculator::pop_operand(stack, core) {
-        Ok(v)  => v,
-        Err(e) => return Err(e),
-    };
+    let num = calculator::pop_operand(stack, core)?;
 
     let mut left = match left {
         Some(c) => c.clone(),
@@ -23,12 +20,7 @@ pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     };
 
     let ans = match num {
-        ArithElem::Integer(0) /*| ArithElem::Float(0.0)*/ => {
-            match right.eval_in_cond(core) {
-                Ok(num) => num,
-                Err(e)  => return Err(e),
-            }
-        },
+        ArithElem::Integer(0) => right.eval_in_cond(core)?,
         ArithElem::Float(_) => return Err(ExecError::Other("float condition is not permitted".to_string())),
         _ => {
             match left.eval_in_cond(core) {
