@@ -150,11 +150,9 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
 }
 
 fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<String, ExecError> {
-    let last = pop_operand(stack, core);
-    let last_result = match last {
-        Err(e) => return Err(e),
-        Ok(ArithElem::Integer(0)) => 0,
-        Ok(_) => 1,
+    let last_result = match pop_operand(stack, core)? {
+        ArithElem::Integer(0) => 0,
+        _ => 1,
     };
 
     stack.push(ArithElem::Integer(last_result));
@@ -172,13 +170,9 @@ fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Res
 fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
     match stack.pop() {
         Some(ArithElem::Word(w, inc_post)) => {
-            match word::to_operand(&w, inc, inc_post, core) {
-                Ok(op) => {
-                    stack.push(op);
-                    Ok(())
-                },
-                Err(e) => Err(e),
-            }
+            let op = word::to_operand(&w, inc, inc_post, core)?;
+            stack.push(op);
+            Ok(())
         },
         Some(ArithElem::ArrayElem(name, mut sub, inc_post)) => {
             let op = array_elem::to_operand(&name, &mut sub, inc, inc_post, core)?;
