@@ -97,28 +97,29 @@ fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &
 }
 
 fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
-                     ans: &mut Vec<Redirect>, ans_text: &mut String) -> bool {
-    if let Some(r) = Redirect::parse(feeder, core) {
+                     ans: &mut Vec<Redirect>, ans_text: &mut String) -> Result<bool, ParseError> {
+    if let Some(r) = Redirect::parse(feeder, core)? {
         *ans_text += &r.text.clone();
         ans.push(r);
-        true
+        Ok(true)
     }else{
-        false
+        Ok(false)
     }
 }
 
 pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
-                     ans_redirects: &mut Vec<Redirect>, ans_text: &mut String) {
+                     ans_redirects: &mut Vec<Redirect>, ans_text: &mut String) -> Result<(), ParseError> {
     loop {
         eat_blank_with_comment(feeder, core, ans_text);
-        if ! eat_redirect(feeder, core, ans_redirects, ans_text){
+        if ! eat_redirect(feeder, core, ans_redirects, ans_text)?{
             break;
         }
     }
+    Ok(())
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
+    if let Ok(Some(a)) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Ok(Some(a)) = ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Ok(Some(a)) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Ok(Some(a)) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }

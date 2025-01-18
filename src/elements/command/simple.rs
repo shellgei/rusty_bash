@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::parse::ParseError;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -94,37 +95,39 @@ impl SimpleCommand {
             .collect()
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore) -> bool {
-        let w = match Word::parse(feeder, core) {
+    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
+        let w = match Word::parse(feeder, core)? {
             Some(w) => w,
-            _       => return false,
+            _       => return Ok(false),
         };
 
         if ans.words.is_empty() && reserved(&w.text) {
-            return false;
+            return Ok(false);
         }
         ans.text += &w.text;
         ans.words.push(w);
-        true
+        Ok(true)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<SimpleCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+        -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         feeder.set_backup();
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            if ! Self::eat_word(feeder, &mut ans, core) {
+            if ! Self::eat_word(feeder, &mut ans, core)? {
                 break;
             }
         }
 
         if ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
-            Some(ans)
+            Ok(Some(ans))
         }else{
             feeder.rewind();
-            None
+            Ok(None)
         }
     }
 }

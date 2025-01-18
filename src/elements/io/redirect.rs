@@ -7,6 +7,7 @@ use std::io::Error;
 use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
+use crate::error::parse::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct Redirect {
@@ -136,18 +137,23 @@ impl Redirect {
         }
     }
 
-    fn eat_right(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_right(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
         let blank_len = feeder.scanner_blank(core);
         ans.text += &feeder.consume(blank_len);
 
         let w = match Word::parse(feeder, core) {
-            Some(w) => w,
-            _       => return false,
+            Ok(Some(w)) => w,
+            Ok(None)    => return Ok(false),
+            Err(e)      => {
+                feeder.rewind();
+                return Err(e);
+            },
         };
 
         ans.text += &w.text.clone();
         ans.right = w;
-        true
+        Ok(true)
     }
 
     fn eat_left(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -162,18 +168,19 @@ impl Redirect {
         ans.left.parse::<RawFd>().is_ok()
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+        -> Result<Option<Self>, ParseError> {
         let mut ans = Self::new();
         feeder.set_backup(); //追加
 
         if Self::eat_left(feeder, &mut ans, core) &&
            Self::eat_symbol(feeder, &mut ans, core) &&
-           Self::eat_right(feeder, &mut ans, core) {
+           Self::eat_right(feeder, &mut ans, core)? {
             feeder.pop_backup();
-            Some(ans)
+            Ok(Some(ans))
         }else{
             feeder.rewind(); //追加
-            None
+            Ok(None)
         }
     }
 }
