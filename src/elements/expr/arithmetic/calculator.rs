@@ -50,14 +50,7 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
         (ArithElem::Float(fl), ArithElem::Float(fr)) => float::bin_calc(op, fl, fr, stack),
         (ArithElem::Float(fl), ArithElem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack),
         (ArithElem::Integer(nl), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack),
-        (ArithElem::Integer(nl), ArithElem::Integer(nr)) => {
-            int::bin_calc(op, nl, nr, stack)
-            /*
-            match int::bin_calc(op, nl, nr, stack) {
-                Ok(i) => Ok(i),
-                Err(e) => Err(format!("{:?}", &e)),
-            }*/
-        },
+        (ArithElem::Integer(nl), ArithElem::Integer(nr)) => int::bin_calc(op, nl, nr, stack),
         _ => exit::internal("invalid operand"),
     };
 }
@@ -168,17 +161,14 @@ fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Res
 }
 
 fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
-    match stack.pop() {
-        Some(ArithElem::Word(w, inc_post)) => {
-            let op = word::to_operand(&w, inc, inc_post, core)?;
-            stack.push(op);
-            Ok(())
-        },
+    let op = match stack.pop() {
+        Some(ArithElem::Word(w, inc_post)) => word::to_operand(&w, inc, inc_post, core)?,
         Some(ArithElem::ArrayElem(name, mut sub, inc_post)) => {
-            let op = array_elem::to_operand(&name, &mut sub, inc, inc_post, core)?;
-            stack.push(op);
-            Ok(())
+            array_elem::to_operand(&name, &mut sub, inc, inc_post, core)?
         },
-        _ => Err(ExecError::Other("invalid increment".to_string())),
-    }
+        Some(e) => return Err(ExecError::OperandExpected(e.to_string())),
+        None => return Err(ExecError::OperandExpected("".to_string())),
+    };
+    stack.push(op);
+    Ok(())
 }
