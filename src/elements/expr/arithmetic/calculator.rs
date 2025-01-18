@@ -122,20 +122,20 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
 
     for e in rev_pol {
         match e {
-            ArithElem::BinaryOp(op) => {
-                if stack.len() < 2 {
-                    return Err(ExecError::OperandExpected(op.to_string()));
-                }
+            ArithElem::BinaryOp(_) => {
                 stack.pop();
-            },
-            ArithElem::UnaryOp(op)  => {
-                if stack.len() < 1 {
-                    return Err(ExecError::OperandExpected(op.to_string()));
+                if stack.is_empty() {
+                    return Err( ExecError::OperandExpected(e.to_string()));
                 }
             },
-            ArithElem::Increment(_)
-            | ArithElem::Ternary(_, _)
-            | ArithElem::Delimiter(_) => {},
+            ArithElem::UnaryOp(_) 
+            | ArithElem::Increment(_)
+            | ArithElem::Ternary(_, _) => {
+                if stack.is_empty() {
+                    return Err( ExecError::OperandExpected(e.to_string()));
+                }
+            },
+            ArithElem::Delimiter(_) => {},
             _ => { stack.push(e.clone()) },
         }
     }
