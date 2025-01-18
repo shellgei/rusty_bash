@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
 
@@ -28,17 +29,17 @@ impl Command for BraceCommand {
 }
 
 impl BraceCommand {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<BraceCommand> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
-        if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.script) {
+        if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.script)? {
             ans.text.push('{');
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
-            Some(ans)
+            Ok(Some(ans))
         }else{
-            None
+            Ok(None)
         }
     }
 }

@@ -7,6 +7,7 @@ mod scanner;
 use std::io;
 use crate::ShellCore;
 use crate::error::input::InputError;
+use crate::error::parse::ParseError;
 use crate::utils::exit;
 use std::sync::atomic::Ordering::Relaxed;
 
@@ -95,20 +96,21 @@ impl Feeder {
         }
     }
 
-    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> bool {
+    pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> Result<(), ParseError> {
         match self.feed_additional_line_core(core) {
-            Ok(()) => true,
+            Ok(()) => Ok(()),
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
                 core.db.set_param("?", "2");
                 exit::normal(core);
+                //return Err(ParseError::Input(InputError::Eof));
             },
             Err(InputError::Interrupt) => {
                 core.db.set_param("?", "130");
-                false
+                Err(ParseError::Input(InputError::Interrupt))
             },
             Err(e) => {
-                false
+                Err(ParseError::Input(InputError::History))
             },
         }
     }

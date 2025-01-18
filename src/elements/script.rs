@@ -3,6 +3,7 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
+use crate::error::parse::ParseError;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -26,13 +27,13 @@ impl Script {
 
     pub fn get_text(&self) -> String { self.text.clone() }
 
-    fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> bool {
-        if let Some(job) = Job::parse(feeder, core){
+    fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> Result<bool, ParseError> {
+        if let Some(job) = Job::parse(feeder, core)? {
             ans.text += &job.text.clone();
             ans.jobs.push(job);
-            true
+            Ok(true)
         }else{
-            false
+            Ok(false)
         }
     }
 
@@ -66,22 +67,23 @@ impl Script {
         Status::NeedMoreLine
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Script> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+        -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 
         loop {
-            while Self::eat_job(feeder, core, &mut ans) 
+            while Self::eat_job(feeder, core, &mut ans)? 
                && Self::eat_job_end(feeder, &mut ans) {}
     
             match ans.check_nest(feeder){
-                Status::NormalEnd => return Some(ans),
+                Status::NormalEnd => return Ok(Some(ans)),
                 Status::UnexpectedSymbol(s) => {
                     eprintln!("Unexpected token: {}", s);
                     core.db.set_param("?", "2");
                     break;
                 },
                 Status::NeedMoreLine => {
-                    if ! feeder.feed_additional_line(core) {
+                    if ! feeder.feed_additional_line(core).is_ok() {
                         break;
                     }
                 },
@@ -89,6 +91,6 @@ impl Script {
         }
 
         feeder.consume(feeder.len());
-        None
+        Ok(None)
     }
 }

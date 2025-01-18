@@ -4,6 +4,7 @@
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
+use crate::error::parse::ParseError;
 use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
@@ -87,14 +88,15 @@ impl Job {
         }
     }
 
-    fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {
-        match Pipeline::parse(feeder, core){
+    fn eat_pipeline(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
+        match Pipeline::parse(feeder, core)? {
             Some(pipeline) => {
                 ans.text += &pipeline.text.clone();
                 ans.pipelines.push(pipeline);
-                true
+                Ok(true)
             },
-            None => false,
+            None => Ok(false),
         }
     }
 
@@ -106,21 +108,21 @@ impl Job {
         num != 0 //記号なしの場合にfalseが返る
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Job> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Job>, ParseError> {
         let mut ans = Self::default();
         while Self::eat_blank_line(feeder, &mut ans, core) {} 
-        if ! Self::eat_pipeline(feeder, &mut ans, core) {
-            return None;
+        if ! Self::eat_pipeline(feeder, &mut ans, core)? {
+            return Ok(None);
         }
 
         while Self::eat_and_or(feeder, &mut ans, core) { 
             loop {
                 while Self::eat_blank_line(feeder, &mut ans, core) {} 
-                if Self::eat_pipeline(feeder, &mut ans, core) {
+                if Self::eat_pipeline(feeder, &mut ans, core)? {
                     break;  
                 }
-                if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
-                    return None;
+                if feeder.len() == 0 {
+                    feeder.feed_additional_line(core)?;
                 }
             }
         }
@@ -128,11 +130,9 @@ impl Job {
         let com_num = feeder.scanner_comment();
         ans.text += &feeder.consume(com_num);
     
-        if ! ans.pipelines.is_empty() {
-//            dbg!("{:?}", &ans); // デバッグ用にansの内容を出力
-            Some(ans)
-        }else{
-            None
+        match ans.pipelines.is_empty() {
+            false => Ok(Some(ans)),
+            true  => Ok(None),
         }
     }
 }

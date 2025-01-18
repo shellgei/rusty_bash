@@ -8,6 +8,7 @@ pub mod r#while;
 pub mod r#if;
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::parse::ParseError;
 use crate::utils::exit;
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
@@ -71,15 +72,16 @@ pub trait Command {
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore,
-           left: &str, right: Vec<&str>, ans: &mut Option<Script>) -> bool {
+           left: &str, right: Vec<&str>, ans: &mut Option<Script>) -> Result<bool, ParseError> {
    if ! feeder.starts_with(left) {
-       return false;
+       return Ok(false);
     }
     feeder.nest.push( (left.to_string(), right.iter().map(|e| e.to_string()).collect()) );
     feeder.consume(left.len());
-    *ans = Script::parse(feeder, core);
+    let result_script = Script::parse(feeder, core);
     feeder.nest.pop();
-    ! ans.is_none()
+    *ans = result_script?;
+    Ok(ans.is_some())
 }
 
 fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {
@@ -117,9 +119,9 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
     if let Some(a) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Some(a) = ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Some(a) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Ok(Some(a)) = ParenCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Ok(Some(a)) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Ok(Some(a)) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
+    else if let Ok(Some(a)) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
     else{ None }
 }

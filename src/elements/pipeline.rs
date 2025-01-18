@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::error::parse::ParseError;
 use super::command;
 use super::command::Command;
 use super::Pipe;
@@ -41,16 +42,17 @@ impl Pipeline {
         pids
     }
 
-    fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore) -> bool {
-        if let Some(command) = command::parse(feeder, core){
+    fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
+        if let Some(command) = command::parse(feeder, core) {
             ans.text += &command.get_text();
             ans.commands.push(command);
 
             let blank_len = feeder.scanner_blank(core);
             ans.text += &feeder.consume(blank_len);
-            true
+            Ok(true)
         }else{
-            false
+            Ok(false)
         }
     }
 
@@ -76,12 +78,29 @@ impl Pipeline {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipeline> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+        -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 
-        if ! Self::eat_command(feeder, &mut ans, core){      //最初のコマンド
-            return None;
+        if ! Self::eat_command(feeder, &mut ans, core)? {      //最初のコマンド
+            return Ok(None);
         }
+
+        while Self::eat_pipe(feeder, &mut ans, core){
+            loop {
+                Self::eat_blank_and_comment(feeder, &mut ans, core);
+                if Self::eat_command(feeder, &mut ans, core)? {
+                    break;
+                }   
+                if feeder.len() != 0 { 
+                    return Ok(None);
+                }   
+                feeder.feed_additional_line(core)?;
+            }
+        }   
+
+        Ok(Some(ans))
+/*
 
         while Self::eat_pipe(feeder, &mut ans, core){
             loop {
@@ -89,12 +108,12 @@ impl Pipeline {
                 if Self::eat_command(feeder, &mut ans, core) {
                     break; //コマンドがあれば73行目のloopを抜けてパイプを探す
                 }
-                if feeder.len() != 0 || ! feeder.feed_additional_line(core) {
-                    return None;
+                if feeder.len() == 0 {
+                    feeder.feed_additional_line(core)?;
                 }
             }
         }
-
-        Some(ans)
+        Ok(Some(ans))
+*/
     }
 }
