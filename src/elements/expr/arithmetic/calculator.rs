@@ -104,20 +104,16 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
         }
 
         let result = match e {
-            ArithElem::Integer(_) 
-            | ArithElem::Float(_) 
-            | ArithElem::ArrayElem(_, _, _) 
-            | ArithElem::Word(_, _) 
-            | ArithElem::InParen(_) => {
-                stack.push(e.clone());
-                Ok(())
-            },
             ArithElem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
             ArithElem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             ArithElem::Increment(n)     => inc(n, &mut stack, core),
             ArithElem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
             ArithElem::Delimiter(d) => {
                 skip_until = check_skip(&d, &mut stack, core)?;
+                Ok(())
+            },
+            _ => {
+                stack.push(e.clone());
                 Ok(())
             },
         };
