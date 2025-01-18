@@ -13,6 +13,7 @@ pub mod r#while;
 pub mod r#if;
 
 use crate::{proc_ctrl, ShellCore, Feeder, Script};
+use crate::error::exec;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
@@ -59,7 +60,9 @@ pub trait Command {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
-                let _ = self.run(core, true);
+                if let Err(e) = self.run(core, true) {
+                    exec::print_error(e, core);
+                }
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
