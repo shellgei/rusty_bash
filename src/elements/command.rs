@@ -59,7 +59,7 @@ pub trait Command {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
-                self.run(core, true);
+                let _ = self.run(core, true);
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
@@ -73,7 +73,7 @@ pub trait Command {
 
     fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
         if self.get_redirects().iter_mut().all(|r| r.connect(true, core)){
-            self.run(core, false);
+            let _ = self.run(core, false);
         }else{
             core.db.exit_status = 1;
         }

@@ -86,7 +86,7 @@ impl Terminal {
 
                 if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
                     let mut dummy = Pipe::new("".to_string());
-                    a.exec(core, &mut dummy);
+                    let _ = a.exec(core, &mut dummy);
                 }
                 match core.db.len("COMPREPLY") {
                     0 => Err("no completion cand".to_string()),
