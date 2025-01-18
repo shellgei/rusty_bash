@@ -89,14 +89,13 @@ impl Script {
                     return Err(e);
                 },
                 Status::NeedMoreLine => {
-                    if ! feeder.feed_additional_line(core).is_ok() {
-                        break;
+                    let res = feeder.feed_additional_line(core);
+                    if let Err(e) = res {
+                        feeder.consume(feeder.len());
+                        return Err(e);
                     }
                 },
             }
         }
-
-        feeder.consume(feeder.len());
-        Ok(None)
     }
 }
