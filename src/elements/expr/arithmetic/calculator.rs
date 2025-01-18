@@ -87,11 +87,6 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
     }
 
     let rev_pol = rev_polish::rearrange(elements)?;
-    /*
-    let rev_pol = match rev_polish::rearrange(elements) {
-        Ok(ans) => ans,
-        Err(e)  => return Err( error::syntax(&e.to_string()) ),
-    };*/
 
     let mut stack = vec![];
     let mut skip_until = String::new();
@@ -127,9 +122,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
                                   },
         };
 
-        if let Err(err_msg) = result {
-            return Err(err_msg);
-        }
+        result?
     }
 
     if stack.len() != 1 {
@@ -170,13 +163,9 @@ fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(),
             }
         },
         Some(ArithElem::ArrayElem(name, mut sub, inc_post)) => {
-            match array_elem::to_operand(&name, &mut sub, inc, inc_post, core) {
-                Ok(op) => {
-                    stack.push(op);
-                    Ok(())
-                },
-                Err(e) => Err(e),
-            }
+            let op = array_elem::to_operand(&name, &mut sub, inc, inc_post, core)?;
+            stack.push(op);
+            Ok(())
         },
         _ => Err(ExecError::Other("invalid increment".to_string())),
     }
