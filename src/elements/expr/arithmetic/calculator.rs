@@ -30,16 +30,6 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
     -> Result<(), ExecError> {
     let right = pop_operand(stack, core)?;
     let left = pop_operand(stack, core)?;
-    /*
-    let right = match pop_operand(stack, core) {
-        Ok(v)  => v,
-        Err(e) => return Err(format!("{:?}",e)),
-    };
-
-    let left = match pop_operand(stack, core) {
-        Ok(v)  => v,
-        Err(e) => return Err(format!("{:?}",e)),
-    };*/
 
     if op == "," {
         stack.push(right);
