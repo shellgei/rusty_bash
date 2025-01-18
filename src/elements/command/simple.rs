@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
@@ -28,7 +29,7 @@ pub struct SimpleCommand {
 }
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         self.args.clear();
         let mut words = self.words.to_vec();
 
@@ -37,7 +38,7 @@ impl Command for SimpleCommand {
         }
 
         if self.args.is_empty() {
-            return None;
+            return Ok(None);
         }
 
         if self.force_fork 
@@ -45,15 +46,14 @@ impl Command for SimpleCommand {
         || ! core.builtins.contains_key(&self.args[0]) {
             self.fork_exec(core, pipe)
         }else{
-            self.nofork_exec(core);
-            None
+            self.nofork_exec(core)
         }
     }
 
-    fn run(&mut self, core: &mut ShellCore, fork: bool) {
+    fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
         if ! fork {
             core.run_builtin(&mut self.args);
-            return;
+            return Ok(());
         }
 
         if core.run_builtin(&mut self.args) {

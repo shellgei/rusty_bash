@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::command;
 use super::command::Command;
@@ -17,10 +18,10 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> Vec<Option<Pid>> {
+    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> (Vec<Option<Pid>>, Option<ExecError>) {
         if core.sigint.load(Relaxed) { //以下4行追加
             core.db.set_param("?", "130").unwrap();
-            return vec![];
+            return (vec![], Some(ExecError::Interrupted));
         }
 
         let mut prev = -1;
@@ -28,18 +29,23 @@ impl Pipeline {
         let mut pgid = pgid;
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
-            pids.push(self.commands[i].exec(core, p));
+            match self.commands[i].exec(core, p) {
+                Ok(pid) => pids.push(pid),
+                Err(e)  => return (pids, Some(e)),
+            } 
+
             if i == 0 && pgid.as_raw() == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
-                pgid = pids[0].expect("SUSHI INTERNAL ERROR (unforked in pipeline)");
+                pgid = pids[0].unwrap();
             }
             prev = p.recv;
         }
 
-        pids.push(
-            self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid))
-        );
+        match self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid)) {
+            Ok(pid) => pids.push(pid),
+            Err(e) => return (pids, Some(e)),
+        }
 
-        pids
+        (pids, None)
     }
 
     fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore)

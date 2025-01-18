@@ -4,6 +4,7 @@
 use super::job::Job;
 use crate::{Feeder, ShellCore};
 use crate::error::parse;
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 
 enum Status{
@@ -20,10 +21,11 @@ pub struct Script {
 }
 
 impl Script {
-    pub fn exec(&mut self, core: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
             job.exec(core, end == "&");
         }
+        Ok(())
     }
 
     pub fn get_text(&self) -> String { self.text.clone() }

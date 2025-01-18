@@ -4,6 +4,7 @@
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
 use nix::unistd;
@@ -17,7 +18,7 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn exec(&mut self, core: &mut ShellCore, bg: bool) {
+    pub fn exec(&mut self, core: &mut ShellCore, bg: bool) -> Result<(), ExecError> {
         let pgid = match core.is_subshell {
             true  => unistd::getpgrp(),
             false => Pid::from_raw(0),
@@ -29,20 +30,25 @@ impl Job {
         }
     }
 
-    fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) {
+    fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<(), ExecError> {
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
             if do_next {
                 core.jobtable_check_status();
-                let pids = pipeline.exec(core, pgid);
+                let (pids, err) = pipeline.exec(core, pgid);
                 core.wait_pipeline(pids);
+
+                if err.is_some() {
+                    return Err(err.unwrap());
+                }
             }
             do_next = (core.db.get_param("?").unwrap() == "0") == (end == "&&");
         }
+        Ok(())
     }
 
-    fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
+    fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<(), ExecError> {
         let backup = core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
         core.tty_fd = None;
 
@@ -50,7 +56,7 @@ impl Job {
             if self.pipelines[0].commands.len() == 1 {
                 self.pipelines[0].commands[0].set_force_fork();
             }
-            self.pipelines[0].exec(core, pgid)
+            self.pipelines[0].exec(core, pgid).0
         }else{
             vec![self.exec_fork_bg(core, pgid)]
         };
@@ -58,6 +64,7 @@ impl Job {
         core.job_table.push(JobEntry::new(pids, &self.text));
 
         core.tty_fd = backup;
+        Ok(())
     }
 
     fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Option<Pid> {

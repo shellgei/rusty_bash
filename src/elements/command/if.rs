@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::elements::command;
 use super::{Command, Redirect};
@@ -17,18 +18,19 @@ pub struct IfCommand {
 }
 
 impl Command for IfCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         for i in 0..self.if_elif_scripts.len() {
             self.if_elif_scripts[i].exec(core);
             if core.db.get_param("?").unwrap() == "0" {
-                self.then_scripts[i].exec(core);
-                return;
+                self.then_scripts[i].exec(core)?;
+                return Ok(());
             }
         }
 
         if let Some(s) = self.else_script.as_mut() {
-            s.exec(core);
+            s.exec(core)?;
         }
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }

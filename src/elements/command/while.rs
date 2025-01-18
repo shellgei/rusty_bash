@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
@@ -16,7 +17,7 @@ pub struct WhileCommand {
 }
 
 impl Command for WhileCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         loop {
             self.while_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
@@ -30,6 +31,7 @@ impl Command for WhileCommand {
                 .expect("SUSH INTERNAL ERROR (no script)")
                 .exec(core);
         }
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }

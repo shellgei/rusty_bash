@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
@@ -15,7 +16,7 @@ pub struct BraceCommand {
 }
 
 impl Command for BraceCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         match self.script {
             Some(ref mut s) => s.exec(core),
             _ => panic!("SUSH INTERNAL ERROR (ParenCommand::exec)"),
