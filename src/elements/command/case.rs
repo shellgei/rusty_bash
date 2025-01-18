@@ -42,7 +42,7 @@ impl Command for CaseCommand {
                 };
 
                 if glob::parse_and_compare(&w, &p, extglob) || next {
-                    e.1.exec(core);
+                    let _ = e.1.exec(core);
 
                     if e.2 == ";;" {
                         return;

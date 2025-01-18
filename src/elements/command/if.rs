@@ -20,15 +20,15 @@ pub struct IfCommand {
 impl Command for IfCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         for i in 0..self.if_elif_scripts.len() {
-            self.if_elif_scripts[i].exec(core);
+            let _ = self.if_elif_scripts[i].exec(core);
             if core.db.exit_status == 0 {
-                self.then_scripts[i].exec(core);
+                let _ = self.then_scripts[i].exec(core);
                 return;
             }
         }
 
         match self.else_script.as_mut() {
-            Some(s) => s.exec(core),
+            Some(s) => {let _ = s.exec(core); },
             _ => {},
         }
     }

@@ -142,7 +142,7 @@ fn main_loop(core: &mut ShellCore) {
         core.sigint.store(false, Relaxed);
         match Script::parse(&mut feeder, core, false){
             Ok(Some(mut s)) => {
-                s.exec(core);
+                let _ = s.exec(core);
                 set_history(core, &s.get_text());
             },
             Err(e) => {
@@ -192,7 +192,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
 
     let mut feeder = Feeder::new(&c_parts[1]);
     match Script::parse(&mut feeder, &mut core, false){
-        Ok(Some(mut s)) => s.exec(&mut core),
+        Ok(Some(mut s)) => {let _ = s.exec(&mut core);},
         Err(e) => parse::print_error(e, &mut core),
         _ => {},
     }

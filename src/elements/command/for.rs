@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::exec;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
@@ -56,7 +57,7 @@ impl ForCommand {
             match w.eval(core) {
                 Ok(mut ws) => ans.append(&mut ws),
                 Err(e)     => {
-                    error::print(&e, core);
+                    exec::print_error(e, core);
                     return None;
                 },
             }
@@ -90,7 +91,7 @@ impl ForCommand {
                 continue;
             }
 
-            self.do_script.as_mut().unwrap().exec(core);
+            let _ = self.do_script.as_mut().unwrap().exec(core);
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;
@@ -127,7 +128,7 @@ impl ForCommand {
                 return ok;
             }
 
-            self.do_script.as_mut().unwrap().exec(core);
+            let _ = self.do_script.as_mut().unwrap().exec(core);
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;

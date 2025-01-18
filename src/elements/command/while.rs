@@ -20,7 +20,7 @@ impl Command for WhileCommand {
         core.loop_level += 1;
         loop {
             core.suspend_e_option = true;
-            self.while_script.as_mut().unwrap().exec(core);
+            let _ = self.while_script.as_mut().unwrap().exec(core);
 
             core.suspend_e_option = false;
             if core.db.exit_status != 0 {
@@ -33,7 +33,7 @@ impl Command for WhileCommand {
                 continue;
             }
 
-            self.do_script.as_mut().unwrap().exec(core);
+            let _ = self.do_script.as_mut().unwrap().exec(core);
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;

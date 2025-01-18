@@ -5,6 +5,7 @@ use super::pipeline::Pipeline;
 use crate::{proc_ctrl, Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
 use crate::utils::exit;
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use nix::sys::wait::WaitStatus;
 use nix::unistd;
@@ -18,7 +19,7 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn exec(&mut self, core: &mut ShellCore, bg: bool) {
+    pub fn exec(&mut self, core: &mut ShellCore, bg: bool) -> Result<(), ExecError> {
         let pgid = match core.is_subshell {
             true  => unistd::getpgrp(),
             false => Pid::from_raw(0),
@@ -26,18 +27,18 @@ impl Job {
 
         match bg {
             true  => self.exec_bg(core, pgid),
-            false => self.exec_fg(core, pgid),
+            false => self.exec_fg(core, pgid)?,
         }
+        Ok(())
     }
 
-    fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) {
+    fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<(), ExecError> {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
-            /*
             if core.word_eval_error {
-                return;
-            }*/
+                return Err(ExecError::Other("word evaluation error".to_string()));
+            }
 
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
 
@@ -50,6 +51,7 @@ impl Job {
             }
             do_next = (core.db.exit_status == 0) == (end == "&&");
         }
+        Ok(())
     }
 
     fn check_stop(core: &mut ShellCore, text: &str,
@@ -98,7 +100,7 @@ impl Job {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pgid);
-                self.exec(core, false);
+                let _ = self.exec(core, false);
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {

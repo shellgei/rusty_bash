@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::error::parse::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ExecError {
     Internal,
     ArrayIndexInvalid(String),

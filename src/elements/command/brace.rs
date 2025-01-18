@@ -18,7 +18,7 @@ pub struct BraceCommand {
 impl Command for BraceCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         match self.script {
-            Some(ref mut s) => s.exec(core),
+            Some(ref mut s) => {let _ = s.exec(core); },
             _ => exit::internal(" (ParenCommand::exec)"),
         }
     }

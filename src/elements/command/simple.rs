@@ -3,7 +3,8 @@
 
 pub mod parser;
 
-use crate::{error, proc_ctrl, ShellCore};
+use crate::{proc_ctrl, ShellCore};
+use crate::error::exec;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
@@ -35,7 +36,7 @@ impl Command for SimpleCommand {
 
         self.args.clear();
         let mut words = self.words.to_vec();
-        if ! words.iter_mut().all(|w| self.set_arg(w, core)){
+        if ! words.iter_mut().all(|w| self.set_arg(w, core).is_ok()){
             core.word_eval_error = true;
             return None;
         }
@@ -133,18 +134,18 @@ impl SimpleCommand {
         Ok(())
     }
 
-    fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> bool {
+    fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
         match word.eval(core) {
             Ok(ws) => {
                 self.args.extend(ws);
-                true
+                Ok(())
             },
             Err(e) => {
-                error::print(&e, core);
+                exec::print_error(e.clone(), core);
                 if ! core.sigint.load(Relaxed) {
                     core.db.exit_status = 1;
                 }
-                false
+                Err(e)
             },
         }
     }

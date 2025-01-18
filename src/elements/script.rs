@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 
@@ -19,13 +20,15 @@ pub struct Script {
 }
 
 impl Script {
-    pub fn exec(&mut self, core: &mut ShellCore) {
+    pub fn exec(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
+            /*
             if core.word_eval_error {
                 return;
-            }
-            job.exec(core, end == "&");
+            }*/
+            job.exec(core, end == "&")?;
         }
+        Ok(())
     }
 
     pub fn get_text(&self) -> String { self.text.clone() }

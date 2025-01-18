@@ -26,7 +26,7 @@ impl Command for ParenCommand {
         }
 
         match self.script {
-            Some(ref mut s) => s.exec(core),
+            Some(ref mut s) => {let _ = s.exec(core); },
             _ => exit::internal(" (ParenCommand::exec)"),
         }
     }
