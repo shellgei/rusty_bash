@@ -116,7 +116,7 @@ impl SimpleCommand {
         feeder.set_backup();
 
         loop {
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             if ! Self::eat_word(feeder, &mut ans, core)? {
                 break;
             }

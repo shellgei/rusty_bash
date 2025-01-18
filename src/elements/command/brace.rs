@@ -36,7 +36,7 @@ impl BraceCommand {
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
 
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             Ok(Some(ans))
         }else{
             Ok(None)

@@ -391,7 +391,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             event::Key::Right |
             event::Key::Up => match on_arrow_key(&mut term, core, c.as_ref().unwrap(), 0) {
                 Ok(()) => {},
-                Err(e) => return Err(InputError::History),
+                Err(_) => return Err(InputError::History),
             },
             event::Key::Backspace => term.backspace(),
             event::Key::Delete => term.delete(),

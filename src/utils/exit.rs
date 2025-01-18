@@ -5,7 +5,7 @@ use crate::ShellCore;
 use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {
-    core.write_history_to_file();
+    let _ = core.write_history_to_file();
 
     let es_str = core.db.get_param("?").unwrap();
     let exit_status = match es_str.parse::<i32>() {

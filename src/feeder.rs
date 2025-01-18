@@ -101,15 +101,15 @@ impl Feeder {
             Ok(()) => Ok(()),
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
-                core.db.set_param("?", "2");
+                core.db.set_param("?", "2").unwrap();
                 exit::normal(core);
                 //return Err(ParseError::Input(InputError::Eof));
             },
             Err(InputError::Interrupt) => {
-                core.db.set_param("?", "130");
+                core.db.set_param("?", "130").unwrap();
                 Err(ParseError::Input(InputError::Interrupt))
             },
-            Err(e) => {
+            Err(_) => {
                 Err(ParseError::Input(InputError::History))
             },
         }

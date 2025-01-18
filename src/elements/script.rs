@@ -3,6 +3,7 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
+use crate::error::parse;
 use crate::error::parse::ParseError;
 
 enum Status{
@@ -79,8 +80,11 @@ impl Script {
                 Status::NormalEnd => return Ok(Some(ans)),
                 Status::UnexpectedSymbol(s) => {
                     eprintln!("Unexpected token: {}", s);
-                    core.db.set_param("?", "2");
-                    break;
+                    let e = ParseError::UnexpectedSymbol(s.clone());
+                    parse::print_error(e.clone(), core);
+                    core.db.set_param("?", "2").unwrap();
+                    feeder.consume(feeder.len());
+                    return Err(e);
                 },
                 Status::NeedMoreLine => {
                     if ! feeder.feed_additional_line(core).is_ok() {

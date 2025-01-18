@@ -91,7 +91,7 @@ impl IfCommand {
             return Ok(None);
         }
 
-        command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+        command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
         Ok(Some(ans))
     }
 }
