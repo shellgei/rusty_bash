@@ -4,6 +4,7 @@
 use super::pipeline::Pipeline;
 use crate::{Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
+use crate::error::exec;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
@@ -71,7 +72,9 @@ impl Job {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pgid);
-                self.exec(core, false);
+                if let Err(e) = self.exec(core, false) {
+                    exec::print_error(e, core);
+                }
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {

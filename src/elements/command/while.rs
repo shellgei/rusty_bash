@@ -21,7 +21,7 @@ impl Command for WhileCommand {
         loop {
             self.while_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
-                .exec(core);
+                .exec(core)?;
 
             if core.db.get_param("?").unwrap() != "0" {
                 break;
@@ -29,7 +29,7 @@ impl Command for WhileCommand {
 
             self.do_script.as_mut()
                 .expect("SUSH INTERNAL ERROR (no script)")
-                .exec(core);
+                .exec(core)?;
         }
         Ok(())
     }

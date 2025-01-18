@@ -20,7 +20,7 @@ pub struct IfCommand {
 impl Command for IfCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         for i in 0..self.if_elif_scripts.len() {
-            self.if_elif_scripts[i].exec(core);
+            self.if_elif_scripts[i].exec(core)?;
             if core.db.get_param("?").unwrap() == "0" {
                 self.then_scripts[i].exec(core)?;
                 return Ok(());

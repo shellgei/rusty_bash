@@ -23,7 +23,7 @@ pub struct Script {
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
-            job.exec(core, end == "&");
+            job.exec(core, end == "&")?;
         }
         Ok(())
     }

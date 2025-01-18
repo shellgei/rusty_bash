@@ -5,6 +5,7 @@ pub mod exec;
 pub mod input;
 pub mod parse;
 
+/*
 use crate::ShellCore;
 use nix::sys::signal::Signal;
 use nix::unistd::Pid;
@@ -35,3 +36,4 @@ pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
     }
     128+signal as i32
 }
+*/

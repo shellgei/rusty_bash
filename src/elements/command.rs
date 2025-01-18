@@ -8,6 +8,7 @@ pub mod r#while;
 pub mod r#if;
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::exec;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
@@ -43,7 +44,9 @@ pub trait Command {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
-                self.run(core, true);
+                if let Err(e) = self.run(core, true) {
+                    exec::print_error(e, core);
+                }
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
@@ -56,12 +59,15 @@ pub trait Command {
     }
 
     fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
+        let mut result = Ok(());
         if self.get_redirects().iter_mut().all(|r| r.connect(true, core)){
-            self.run(core, false);
+            result = self.run(core, false);
         }else{
             core.db.set_param("?", "1").unwrap();
         }
         self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
+
+        result?;
         Ok(None)
     }
 
