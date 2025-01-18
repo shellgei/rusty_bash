@@ -103,26 +103,18 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
                 continue;
         }
 
-        let result = match e {
+        match e {
             ArithElem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
             ArithElem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             ArithElem::Increment(n)     => inc(n, &mut stack, core),
             ArithElem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
-            ArithElem::Delimiter(d) => {
-                skip_until = check_skip(&d, &mut stack, core)?;
-                Ok(())
-            },
-            _ => {
-                stack.push(e.clone());
-                Ok(())
-            },
-        };
-
-        result?
+            ArithElem::Delimiter(d) => { skip_until = check_skip(&d, &mut stack, core)?; Ok(()) },
+            _ => { stack.push(e.clone()); Ok(()) },
+        }?
     }
 
     if stack.len() != 1 {
-        return Err( ExecError::Other("unknown syntax error (stack inconsistency)".to_string()) );
+        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
     }
     pop_operand(&mut stack, core)
 }
