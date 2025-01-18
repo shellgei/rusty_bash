@@ -104,7 +104,35 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
         }
 
         match e {
-            ArithElem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core),
+            ArithElem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core)?,
+            ArithElem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core)?,
+            ArithElem::Increment(n)     => inc(n, &mut stack, core)?,
+            ArithElem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core)?,
+            ArithElem::Delimiter(d) => skip_until = check_skip(&d, &mut stack, core)?,
+            _ => stack.push(e.clone()),
+        }
+    }
+
+    if stack.len() != 1 {
+        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
+    }
+    pop_operand(&mut stack, core)
+}
+
+/*
+fn dry_run(rev_pol: &Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
+    let mut stack = vec![];
+    let mut skip_until = String::new();
+
+    for e in rev_pol {
+        match e {
+            ArithElem::BinaryOp(ref op) => {
+                if stack.len() < 2 {
+                    return Err(ExecError::OperandExpected(op.to_string()));
+                }
+                stack.pop();
+                stack.pop();
+            },
             ArithElem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             ArithElem::Increment(n)     => inc(n, &mut stack, core),
             ArithElem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
@@ -117,7 +145,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
         return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
     }
     pop_operand(&mut stack, core)
-}
+}*/
 
 fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<String, ExecError> {
     let last = pop_operand(stack, core);
