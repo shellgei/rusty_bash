@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::command;
 use super::command::Command;
@@ -23,15 +24,15 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid)
-           -> (Vec<Option<Pid>>, bool, bool) {
+        -> (Vec<Option<Pid>>, bool, bool, Option<ExecError>) {
         if core.sigint.load(Relaxed) { //以下4行追加
             core.db.exit_status = 130;
-            return (vec![], false, false);
+            return (vec![], false, false, Some(ExecError::Interrupted));
         }
 
         if self.commands.is_empty() { // the case of only '!'
             self.set_time(core);
-            return (vec![], self.exclamation, self.time);
+            return (vec![], self.exclamation, self.time, None);
         }
 
         let mut prev = -1;
@@ -42,26 +43,24 @@ impl Pipeline {
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
-            if let Ok(pid) = self.commands[i].exec(core, p) {
-                pids.push(pid);
-            }else{
-                pids.push(None);
+            match self.commands[i].exec(core, p) {
+                Ok(pid) => pids.push(pid),
+                Err(e)  => return (pids, self.exclamation, self.time, Some(e)),
             }
-            //pids.push(self.commands[i].exec(core, p));
+
             if i == 0 && pgid.as_raw() == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
                 pgid = pids[0].unwrap();
             }
             prev = p.recv;
-            core.word_eval_error = false;
+//            core.word_eval_error = false;
         }
 
-        if let Ok(pid) = self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid)) {
-            pids.push(pid);
-        }else{
-            pids.push(None);
+        match self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid)) {
+            Ok(pid) => pids.push(pid),
+            Err(e) => return (pids, self.exclamation, self.time, Some(e)),
         }
 
-        (pids, self.exclamation, self.time)
+        (pids, self.exclamation, self.time, None)
     }
 
     fn set_time(&mut self, core: &mut ShellCore) {

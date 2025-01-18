@@ -36,19 +36,20 @@ impl Job {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
-            if core.word_eval_error {
-                return Err(ExecError::Other("word evaluation error".to_string()));
-            }
 
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
-
             if do_next {
                 core.jobtable_check_status();
-                let (pids, exclamation, time) = pipeline.exec(core, pgid);
+                let (pids, exclamation, time, err) = pipeline.exec(core, pgid);
                 let waitstatuses = proc_ctrl::wait_pipeline(core, pids.clone(), exclamation, time);
 
                 Self::check_stop(core, &pipeline.text, &pids, &waitstatuses);
+
+                if err.is_some() {
+                    return Err(err.unwrap());
+                }
             }
+
             do_next = (core.db.exit_status == 0) == (end == "&&");
         }
         Ok(())

@@ -49,7 +49,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub read_stdin: bool,
-    pub word_eval_error: bool,
+    //pub word_eval_error: bool,
     pub is_subshell: bool,
     pub source_function_level: i32,
     pub source_level: i32,

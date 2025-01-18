@@ -37,7 +37,7 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
         if ! words.iter_mut().all(|w| self.set_arg(w, core).is_ok()){
-            core.word_eval_error = true;
+//            core.word_eval_error = true;
             return Err(ExecError::Other("word evaluation error".to_string()));
         }
 
