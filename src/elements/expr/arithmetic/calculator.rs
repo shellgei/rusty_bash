@@ -116,10 +116,10 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
             ArithElem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core),
             ArithElem::Increment(n)     => inc(n, &mut stack, core),
             ArithElem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core),
-            ArithElem::Delimiter(d) => match check_skip(&d, &mut stack, core) {
-                                    Ok(s) => {skip_until = s; Ok(())},
-                                    Err(e) => Err(e),
-                                  },
+            ArithElem::Delimiter(d) => {
+                skip_until = check_skip(&d, &mut stack, core)?;
+                Ok(())
+            },
         };
 
         result?
