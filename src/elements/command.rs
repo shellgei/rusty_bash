@@ -72,12 +72,15 @@ pub trait Command {
     }
 
     fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
+        let mut result = Ok(());
         if self.get_redirects().iter_mut().all(|r| r.connect(true, core)){
-            let _ = self.run(core, false);
+            result = self.run(core, false);
         }else{
             core.db.exit_status = 1;
         }
         self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
+
+        result?;
         Ok(None)
     }
 
