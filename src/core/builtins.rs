@@ -135,8 +135,9 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut command = SimpleCommand::default();
     let mut pipe = Pipe::new("".to_string());
     command.args = words;
-    let pid = command.exec_command(core, &mut pipe);
-    proc_ctrl::wait_pipeline(core, vec![pid], false, false);
+    if let Ok(pid) = command.exec_command(core, &mut pipe) {
+        proc_ctrl::wait_pipeline(core, vec![pid], false, false);
+    }
 
     core.db.exit_status
 }

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
@@ -25,16 +26,16 @@ pub struct FunctionDefinition {
 }
 
 impl Command for FunctionDefinition {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         if self.force_fork || pipe.is_connected() {
-            return None;
+            return Ok(None);
         }
 
         core.db.functions.insert(self.name.to_string(), self.clone());
-        None
+        Ok(None)
     }
 
-    fn run(&mut self, _: &mut ShellCore, _: bool) { }
+    fn run(&mut self, _: &mut ShellCore, _: bool) -> Result<(), ExecError> {Ok(())}
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
@@ -53,8 +54,8 @@ impl FunctionDefinition {
         }
     }
 
-    pub fn run_as_command(&mut self, args: &mut Vec<String>,
-                          core: &mut ShellCore) -> Option<Pid> {
+    pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore)
+        -> Result<Option<Pid>, ExecError> {
         let mut array = core.db.get_array_all("FUNCNAME");
         array.insert(0, args[0].clone());
         let _ = core.db.set_array("FUNCNAME", array, None);
@@ -78,7 +79,7 @@ impl FunctionDefinition {
         let mut array = core.db.get_array_all("FUNCNAME");
         array.remove(0);
         let _ = core.db.set_array("FUNCNAME", array, None);
-        return pid;
+        pid
     }
 
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

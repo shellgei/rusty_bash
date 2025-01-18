@@ -28,7 +28,7 @@ impl Subword for CommandSubstitution {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let pid = self.command.exec(core, &mut pipe);
+        let pid = self.command.exec(core, &mut pipe)?;
         let result = self.read(pipe.recv, core);
         proc_ctrl::wait_pipeline(core, vec![pid], false, false);
         match result {

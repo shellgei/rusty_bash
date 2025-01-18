@@ -28,17 +28,17 @@ pub struct SimpleCommand {
 
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         let _ = core.db.set_param("LINENO", &self.lineno.to_string(), None);
         if Self::break_continue_or_return(core) {
-            return None;
+            return Ok(None);
         }
 
         self.args.clear();
         let mut words = self.words.to_vec();
         if ! words.iter_mut().all(|w| self.set_arg(w, core).is_ok()){
             core.word_eval_error = true;
-            return None;
+            return Err(ExecError::Other("word evaluation error".to_string()));
         }
 
         match self.args.len() {
@@ -47,7 +47,7 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn run(&mut self, core: &mut ShellCore, fork: bool) {
+    fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
         core.db.push_local();
         let layer = core.db.get_layer_num()-1;
         let _ = self.set_local_params(core, layer);
@@ -69,6 +69,7 @@ impl Command for SimpleCommand {
         if fork {
             exit::normal(core);
         }
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -83,9 +84,9 @@ impl SimpleCommand {
         core.return_flag || core.break_counter > 0 || core.continue_counter > 0 
     }
 
-    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         if Self::check_sigint(core) {
-            return None;
+            return Ok(None);
         }
 
         core.db.last_arg = self.args.last().unwrap().clone();
@@ -97,8 +98,7 @@ impl SimpleCommand {
            && ! core.db.functions.contains_key(&self.args[0]) ) {
             self.fork_exec(core, pipe)
         }else{
-            self.nofork_exec(core);
-            None
+            self.nofork_exec(core)
         }
     }
 
@@ -110,14 +110,14 @@ impl SimpleCommand {
         false
     }
 
-    fn exec_set_param(&mut self, core: &mut ShellCore) -> Option<Pid> {
+    fn exec_set_param(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
         core.db.last_arg = String::new();
         self.option_x_output(core);
         
         self.substitutions.iter_mut()
             .for_each(|s| {let _ = s.eval(core, None, false);});
 
-        None
+        Ok(None)
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {

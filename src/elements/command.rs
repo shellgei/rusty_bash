@@ -13,6 +13,7 @@ pub mod r#while;
 pub mod r#if;
 
 use crate::{proc_ctrl, ShellCore, Feeder, Script};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
 use self::arithmetic::ArithmeticCommand;
@@ -45,16 +46,15 @@ impl Clone for Box::<dyn Command> {
 }
 
 pub trait Command {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         if self.force_fork() || pipe.is_connected() {
             self.fork_exec(core, pipe)
         }else{
-            self.nofork_exec(core);
-            None
+            self.nofork_exec(core)
         }
     }
 
-    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
@@ -65,22 +65,23 @@ pub trait Command {
             Ok(ForkResult::Parent { child } ) => {
                 proc_ctrl::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
-                Some(child)
+                Ok(Some(child))
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
 
-    fn nofork_exec(&mut self, core: &mut ShellCore) {
+    fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
         if self.get_redirects().iter_mut().all(|r| r.connect(true, core)){
             self.run(core, false);
         }else{
             core.db.exit_status = 1;
         }
         self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
+        Ok(None)
     }
 
-    fn run(&mut self, _: &mut ShellCore, fork: bool);
+    fn run(&mut self, _: &mut ShellCore, fork: bool) -> Result<(), ExecError>;
     fn get_text(&self) -> String;
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
     fn set_force_fork(&mut self);

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
@@ -18,7 +19,7 @@ pub struct TestCommand {
 }
 
 impl Command for TestCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         match self.cond.clone().unwrap().eval(core) {
             Ok(CondElem::Ans(true))  => core.db.exit_status = 0,
             Ok(CondElem::Ans(false)) => core.db.exit_status = 1,
@@ -31,6 +32,7 @@ impl Command for TestCommand {
                 core.db.exit_status = 2
             },
         } ;
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }

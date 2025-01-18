@@ -16,7 +16,7 @@ pub struct ArithmeticCommand {
 }
 
 impl Command for ArithmeticCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         let exit_status = match self.eval(core).as_deref() {
             Ok("0") => 1,
             Ok(_) => 0,
@@ -26,6 +26,7 @@ impl Command for ArithmeticCommand {
             },
         };
         core.db.exit_status = exit_status;
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }

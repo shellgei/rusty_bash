@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder, Script};
 use crate::error::exec;
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
@@ -25,7 +26,7 @@ pub struct ForCommand {
 }
 
 impl Command for ForCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         core.loop_level += 1;
 
         let ok = match self.has_arithmetic {
@@ -41,6 +42,7 @@ impl Command for ForCommand {
         if core.loop_level == 0 {
             core.break_counter = 0;
         }
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }

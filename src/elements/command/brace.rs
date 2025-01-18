@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
 use super::{Command, Redirect};
@@ -16,11 +17,12 @@ pub struct BraceCommand {
 }
 
 impl Command for BraceCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         match self.script {
-            Some(ref mut s) => {let _ = s.exec(core); },
+            Some(ref mut s) => s.exec(core)?,
             _ => exit::internal(" (ParenCommand::exec)"),
         }
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }

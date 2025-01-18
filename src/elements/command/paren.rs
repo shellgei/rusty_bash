@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
@@ -16,19 +17,20 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Option<Pid> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         self.fork_exec(core, pipe)
     }
 
-    fn run(&mut self, core: &mut ShellCore, fork: bool) {
+    fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
         if ! fork {
             exit::internal(" (no fork for subshell)");
         }
 
         match self.script {
-            Some(ref mut s) => {let _ = s.exec(core); },
+            Some(ref mut s) => s.exec(core)?,
             _ => exit::internal(" (ParenCommand::exec)"),
         }
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }

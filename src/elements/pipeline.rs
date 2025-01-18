@@ -42,7 +42,12 @@ impl Pipeline {
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
-            pids.push(self.commands[i].exec(core, p));
+            if let Ok(pid) = self.commands[i].exec(core, p) {
+                pids.push(pid);
+            }else{
+                pids.push(None);
+            }
+            //pids.push(self.commands[i].exec(core, p));
             if i == 0 && pgid.as_raw() == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
                 pgid = pids[0].unwrap();
             }
@@ -50,8 +55,11 @@ impl Pipeline {
             core.word_eval_error = false;
         }
 
-        let pid = self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid));
-        pids.push(pid);
+        if let Ok(pid) = self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid)) {
+            pids.push(pid);
+        }else{
+            pids.push(None);
+        }
 
         (pids, self.exclamation, self.time)
     }

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::elements::command;
 use crate::elements::word::Word;
@@ -18,7 +19,7 @@ pub struct CaseCommand {
 }
 
 impl Command for CaseCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) {
+    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         let mut next = false;
         let word = self.word.clone().unwrap();
 
@@ -45,12 +46,13 @@ impl Command for CaseCommand {
                     let _ = e.1.exec(core);
 
                     if e.2 == ";;" {
-                        return;
+                        return Ok(());
                     }
                     next = e.2 == ";&";
                 }
             }
         }
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }
