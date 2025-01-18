@@ -6,13 +6,15 @@ mod scanner;
 
 use std::io;
 use crate::ShellCore;
+use crate::error::input::InputError;
 use crate::utils::exit;
 use std::sync::atomic::Ordering::Relaxed;
 
+/*
 pub enum InputError {
     Interrupt,
     Eof,
-}
+}*/
 
 #[derive(Clone, Debug, Default)]
 pub struct Feeder {
@@ -98,11 +100,14 @@ impl Feeder {
             Ok(()) => true,
             Err(InputError::Eof) => {
                 eprintln!("sush: syntax error: unexpected end of file");
-                core.data.set_param("?", "2");
+                core.db.set_param("?", "2");
                 exit::normal(core);
             },
             Err(InputError::Interrupt) => {
-                core.data.set_param("?", "130");
+                core.db.set_param("?", "130");
+                false
+            },
+            Err(e) => {
                 false
             },
         }

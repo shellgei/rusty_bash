@@ -1,7 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{file_check, InputError, ShellCore};
+use crate::{file_check, ShellCore};
+use crate::error::exec::ExecError;
+use crate::error::input::InputError;
 use std::io;
 use std::fs::File;
 use std::io::{Write, Stdout};
@@ -74,7 +76,7 @@ fn oct_to_hex_in_str(from: &str) -> String {
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
-        let raw_prompt = core.data.get_param(ps);
+        let raw_prompt = core.db.get_param(ps).unwrap_or(String::new());
         let ansi_on_prompt = oct_to_hex_in_str(&raw_prompt);
 
         let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
@@ -317,15 +319,16 @@ impl Terminal {
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 
-    pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
+    pub fn call_history(&mut self, inc: i32, core: &mut ShellCore) -> Result<(), ExecError> {
         let prev = self.hist_ptr;
         let prev_str = self.get_string(self.prompt.chars().count());
         Self::shift_in_range(&mut self.hist_ptr, inc, 0, isize::MAX as usize);
 
         self.chars = self.prompt.chars().collect();
-        self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str).replace("↵ \0", "\n").chars());
+        self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str)?.replace("↵ \0", "\n").chars());
         self.head = self.chars.len();
         self.rewrite(true);
+        Ok(())
     }
 
     pub fn cloop(&mut self) {
@@ -334,7 +337,7 @@ impl Terminal {
     }
 }
 
-fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: usize) {
+fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: usize) -> Result<(), ExecError> {
     if tab_num > 1 {
         match key {
             event::Key::Down  => term.tab_row += 1,
@@ -346,13 +349,14 @@ fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab
         //term.completion(core, tab_num);
     }else{
         match key {
-            event::Key::Down  => term.call_history(-1, core),
-            event::Key::Up    => term.call_history(1, core),
+            event::Key::Down  => term.call_history(-1, core)?,
+            event::Key::Up    => term.call_history(1, core)?,
             event::Key::Right => term.shift_cursor(1),
             event::Key::Left  => term.shift_cursor(-1),
             _ => {},
         }
     }
+    Ok(())
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
@@ -385,7 +389,10 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             event::Key::Down |
             event::Key::Left |
             event::Key::Right |
-            event::Key::Up => on_arrow_key(&mut term, core, c.as_ref().unwrap(), 0),
+            event::Key::Up => match on_arrow_key(&mut term, core, c.as_ref().unwrap(), 0) {
+                Ok(()) => {},
+                Err(e) => return Err(InputError::History),
+            },
             event::Key::Backspace => term.backspace(),
             event::Key::Delete => term.delete(),
             event::Key::Char('\n') => {

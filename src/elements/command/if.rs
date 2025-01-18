@@ -19,7 +19,7 @@ impl Command for IfCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) {
         for i in 0..self.if_elif_scripts.len() {
             self.if_elif_scripts[i].exec(core);
-            if core.data.get_param("?") == "0" {
+            if core.db.get_param("?").unwrap() == "0" {
                 self.then_scripts[i].exec(core);
                 return;
             }

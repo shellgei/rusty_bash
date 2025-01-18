@@ -25,7 +25,8 @@ type BuiltinFunc = fn(&mut ShellCore, &mut [String]) -> i32;
 
 #[derive(Default)]
 pub struct ShellCore {
-    pub data: Data,
+    pub flags: String,
+    pub db: Data,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, BuiltinFunc>,
@@ -52,31 +53,31 @@ impl ShellCore {
         core.set_builtins();
 
         if is_interactive() {
-            core.data.flags += "i";
+            core.flags += "i";
             let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
-        let home = core.data.get_param("HOME").to_string();
-        core.data.set_param("HISTFILE", &(home + "/.sush_history"));
-        core.data.set_param("HISTFILESIZE", "2000");
+        let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
+        core.db.set_param("HISTFILE", &(home + "/.sush_history"));
+        core.db.set_param("HISTFILESIZE", "2000");
 
         core
     }
 
     fn set_initial_parameters(&mut self) {
-        self.data.set_param("$", &process::id().to_string());
-        self.data.set_param("BASHPID", &process::id().to_string());
-        self.data.set_param("BASH_SUBSHELL", "0");
-        self.data.set_param("?", "0");
-        self.data.set_param("PS1", "\\[\\033[01;36m\\]\\b\\[\\033[00m\\]\\[\\033[01;35m\\]\\w\\[\\033[00m\\](debug)🍣 ");
-        self.data.set_param("PS2", "> ");
-        self.data.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
+        self.db.set_param("$", &process::id().to_string());
+        self.db.set_param("BASHPID", &process::id().to_string());
+        self.db.set_param("BASH_SUBSHELL", "0");
+        self.db.set_param("?", "0");
+        self.db.set_param("PS1", "\\[\\033[01;36m\\]\\b\\[\\033[00m\\]\\[\\033[01;35m\\]\\w\\[\\033[00m\\](debug)🍣 ");
+        self.db.set_param("PS2", "> ");
+        self.db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()));
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        self.data.flags.find(flag).is_some()
+        self.flags.find(flag).is_some()
     }
 
     pub fn wait_process(&mut self, child: Pid) {
@@ -100,7 +101,7 @@ impl ShellCore {
         if exit_status == 130 {
             self.sigint.store(true, Relaxed);
         }
-        self.data.parameters.insert("?".to_string(), exit_status.to_string()); //追加
+        self.db.parameters.insert("?".to_string(), exit_status.to_string()); //追加
     } 
 
     fn set_foreground(&self) {
@@ -143,16 +144,16 @@ impl ShellCore {
 
         let func = self.builtins[&args[0]];
         let status = func(self, args);
-        self.data.parameters.insert("?".to_string(), status.to_string());
+        self.db.parameters.insert("?".to_string(), status.to_string());
         true
     }
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.data.parameters.insert("BASHPID".to_string(), pid.to_string());
-        match self.data.parameters["BASH_SUBSHELL"].parse::<usize>() {
-            Ok(num) => self.data.parameters.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
-            Err(_) =>  self.data.parameters.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
+        self.db.parameters.insert("BASHPID".to_string(), pid.to_string());
+        match self.db.parameters["BASH_SUBSHELL"].parse::<usize>() {
+            Ok(num) => self.db.parameters.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
+            Err(_) =>  self.db.parameters.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
         };
     }
 

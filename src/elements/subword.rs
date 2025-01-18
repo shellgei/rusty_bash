@@ -8,6 +8,7 @@ mod single_quoted;
 mod varname;
 
 use crate::{Feeder, ShellCore};
+use crate::error::exec::ExecError;
 use std::fmt;
 use self::escaped_char::EscapedChar;
 use self::parameter::Parameter;
@@ -56,7 +57,7 @@ pub trait Subword {
     fn get_text(&self) -> &str;
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn substitute(&mut self, _: &mut ShellCore) -> Result<(), String> {Ok(())}
+    fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {Ok(())}
 
     fn split(&self) -> Vec<Box<dyn Subword>>{
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;

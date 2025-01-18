@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod core;
+mod error;
 mod feeder;
 mod elements;
 mod signal;
@@ -11,7 +12,8 @@ use std::{env, process};
 use crate::core::ShellCore;
 use crate::utils::exit;
 use crate::elements::script::Script;
-use crate::feeder::{Feeder, InputError};
+use crate::error::input::InputError;
+use crate::feeder::Feeder;
 use utils::file_check;
 use std::sync::atomic::Ordering::Relaxed;
 

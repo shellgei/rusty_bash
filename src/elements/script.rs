@@ -77,7 +77,7 @@ impl Script {
                 Status::NormalEnd => return Some(ans),
                 Status::UnexpectedSymbol(s) => {
                     eprintln!("Unexpected token: {}", s);
-                    core.data.set_param("?", "2");
+                    core.db.set_param("?", "2");
                     break;
                 },
                 Status::NeedMoreLine => {

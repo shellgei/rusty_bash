@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::exec::ExecError;
 use crate::elements::word::Word;
 use nix::unistd::User;
 use super::subword::simple::SimpleSubword;
@@ -17,8 +18,8 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
                .collect::<Vec<String>>()
                .concat();
 
-    let value = get_value(&text, core);
-    if value.is_empty() {
+    let value = get_value(&text, core).unwrap_or(String::new());
+    if value == "" {
         return;
     }
     word.subwords[0] = Box::new( SimpleSubword{ text: value } );
@@ -36,15 +37,15 @@ fn prefix_length(word: &Word) -> usize {
     }
 }
 
-fn get_value(text: &str, core: &mut ShellCore) -> String {
+fn get_value(text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
     let key = match text {
         "" => "HOME",
         "+" => "PWD",
         "-" => "OLDPWD",
-        _ => return get_home_dir(text),
+        _ => return Ok(get_home_dir(text)),
     };
 
-    core.data.get_param(key).to_string()
+    core.db.get_param(key)
 }
 
 fn get_home_dir(user: &str) -> String {
