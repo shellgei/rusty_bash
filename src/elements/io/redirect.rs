@@ -4,7 +4,6 @@
 use std::fs::{File, OpenOptions};
 use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
-use crate::error::exec;
 use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
@@ -35,7 +34,7 @@ impl Redirect {
         let args = match self.right.eval(core) {
             Ok(v) => v,
             Err(e) => {
-                exec::print_error(e, core);
+                e.print(core);
                 return false;
             },
         };

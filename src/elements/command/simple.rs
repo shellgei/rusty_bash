@@ -4,7 +4,7 @@
 pub mod parser;
 
 use crate::{proc_ctrl, ShellCore};
-use crate::error::exec;
+
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
@@ -141,7 +141,7 @@ impl SimpleCommand {
                 Ok(())
             },
             Err(e) => {
-                exec::print_error(e.clone(), core);
+                e.print(core);
                 if ! core.sigint.load(Relaxed) {
                     core.db.exit_status = 1;
                 }

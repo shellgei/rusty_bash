@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, ShellCore};
-use crate::error::exec;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
 use super::parameter;
@@ -63,7 +62,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return match parameter::set_positions(core, &args) {
             Ok(()) => 0,
             Err(e) => {
-                exec::print_error(e, core);
+                e.print(core);
                 return 1;
             },
         }
@@ -89,11 +88,11 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     match args[1].starts_with("-") || args[1].starts_with("+") {
         true  => if let Err(e) = set_options(core, &args[1..]) {
-            exec::print_error(e, core);
+            e.print(core);
             return 2;
         },
         false => if let Err(e) = parameter::set_positions(core, &args) {
-            exec::print_error(e, core);
+            e.print(core);
             return 2;
         },
     }
