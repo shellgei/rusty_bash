@@ -3,7 +3,6 @@
 
 use super::job::Job;
 use crate::{Feeder, ShellCore};
-use crate::error::parse;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 
@@ -83,7 +82,7 @@ impl Script {
                 Status::UnexpectedSymbol(s) => {
                     eprintln!("Unexpected token: {}", s);
                     let e = ParseError::UnexpectedSymbol(s.clone());
-                    parse::print_error(e.clone(), core);
+                    e.print(core);
                     core.db.set_param("?", "2").unwrap();
                     feeder.consume(feeder.len());
                     return Err(e);

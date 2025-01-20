@@ -4,7 +4,7 @@
 use crate::ShellCore;
 use crate::error::parse::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ExecError {
     Internal,
     ArrayIndexInvalid(String),
@@ -28,6 +28,12 @@ pub enum ExecError {
 
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
+        Self::from(&e)
+    }
+}
+
+impl From<&ExecError> for String {
+    fn from(e: &ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
             ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
@@ -35,8 +41,8 @@ impl From<ExecError> for String {
             ExecError::DivZero => "divided by 0".to_string(),
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
-            ExecError::InvalidBase(b) => format!("sush: {0}: invalid arithmetic base (error token is \"{0}\")", b),
-            ExecError::InvalidOption(opt) => format!("sush: {}: invalid option", opt),
+            ExecError::InvalidBase(b) => format!("{0}: invalid arithmetic base (error token is \"{0}\")", b),
+            ExecError::InvalidOption(opt) => format!("{}: invalid option", opt),
             ExecError::Interrupted => "interrupted".to_string(),
             ExecError::AssignmentToNonVariable(right) => format!("attempted assignment to non-variable (error token is \"{}\")", right),
             ExecError::ValidOnlyInFunction(com) => format!("{}: can only be used in a function", &com),
@@ -46,18 +52,20 @@ impl From<ExecError> for String {
             ExecError::ParseError(p) => From::from(p),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
-            ExecError::Other(name) => name,
+            ExecError::Other(name) => name.to_string(),
         }
     }
 }
 
-pub fn print_error(e: ExecError, core: &mut ShellCore) {
-    let name = core.db.get_param("0").unwrap();
-    let s: String = From::<ExecError>::from(e);
-    if core.flags.contains('i') {
-        eprintln!("{}: {}", &name, &s);
-    }else{
-        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
-        eprintln!("{}: line {}: {}", &name, &lineno, s);
+impl ExecError {
+    pub fn print(&self, core: &mut ShellCore) {
+        let name = core.db.get_param("0").unwrap();
+        let s: String = From::<&ExecError>::from(self);
+        if core.flags.contains('i') {
+            eprintln!("{}: {}", &name, &s);
+        }else{
+            let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+            eprintln!("{}: line {}: {}", &name, &lineno, s);
+        }
     }
 }

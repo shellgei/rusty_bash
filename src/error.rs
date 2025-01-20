@@ -6,10 +6,6 @@ pub mod input;
 pub mod parse;
 
 /*
-use crate::ShellCore;
-use nix::sys::signal::Signal;
-use nix::unistd::Pid;
-
 pub fn print(s: &str, core: &mut ShellCore) {
     let name = core.db.get_param("0").unwrap();
     if core.flags.contains('i') {

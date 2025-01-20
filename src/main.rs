@@ -12,7 +12,6 @@ use std::{env, process};
 use crate::core::ShellCore;
 use crate::utils::exit;
 use crate::elements::script::Script;
-use crate::error::exec;
 use crate::error::input::InputError;
 use crate::feeder::Feeder;
 use utils::file_check;
@@ -56,7 +55,7 @@ fn main_loop(core: &mut ShellCore) {
 
         if let Ok(Some(mut s)) = Script::parse(&mut feeder, core){
             if let Err(e) = s.exec(core) {
-                exec::print_error(e, core);
+                e.print(core);
             }
         }
         core.sigint.store(false, Relaxed);
