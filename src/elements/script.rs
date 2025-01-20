@@ -79,12 +79,10 @@ impl Script {
     
             match ans.check_nest(feeder){
                 Status::NormalEnd => return Ok(Some(ans)),
+                Status::NeedMoreLine => feeder.feed_additional_line(core)?,
                 Status::UnexpectedSymbol(s) => {
                     core.db.set_param("?", "2").unwrap();
                     return Err(ParseError::UnexpectedSymbol(s.clone()));
-                },
-                Status::NeedMoreLine => {
-                    feeder.feed_additional_line(core)?;
                 },
             }
         }
