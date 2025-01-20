@@ -18,7 +18,6 @@ mod loop_control;
 mod unset;
 
 use crate::{error, proc_ctrl, Feeder, Script, ShellCore};
-use crate::error::parse;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, exit, file};
@@ -149,7 +148,7 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.eval_level += 1;
     match Script::parse(&mut feeder, core, false){
         Ok(Some(mut s)) => {let _ = s.exec(core); },
-        Err(e) => parse::print_error(e, core),
+        Err(e) => e.print(core),
         _        => {},
     }
 

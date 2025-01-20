@@ -13,7 +13,7 @@ use builtins::{option, parameter};
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
-use crate::error::{exec, parse};
+use crate::error::exec;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
@@ -146,7 +146,7 @@ fn main_loop(core: &mut ShellCore) {
                 set_history(core, &s.get_text());
             },
             Err(e) => {
-                parse::print_error(e, core);
+                e.print(core);
                 feeder.consume(feeder.len());
                 feeder.nest = vec![("".to_string(), vec![])];
             },
@@ -193,7 +193,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     let mut feeder = Feeder::new(&c_parts[1]);
     match Script::parse(&mut feeder, &mut core, false){
         Ok(Some(mut s)) => {let _ = s.exec(&mut core);},
-        Err(e) => parse::print_error(e, &mut core),
+        Err(e) => e.print(&mut core),
         _ => {},
     }
     exit::normal(&mut core)
