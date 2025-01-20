@@ -80,19 +80,11 @@ impl Script {
             match ans.check_nest(feeder){
                 Status::NormalEnd => return Ok(Some(ans)),
                 Status::UnexpectedSymbol(s) => {
-                    eprintln!("Unexpected token: {}", s);
-                    let e = ParseError::UnexpectedSymbol(s.clone());
-                    e.print(core);
                     core.db.set_param("?", "2").unwrap();
-                    feeder.consume(feeder.len());
-                    return Err(e);
+                    return Err(ParseError::UnexpectedSymbol(s.clone()));
                 },
                 Status::NeedMoreLine => {
-                    let res = feeder.feed_additional_line(core);
-                    if let Err(e) = res {
-                        feeder.consume(feeder.len());
-                        return Err(e);
-                    }
+                    feeder.feed_additional_line(core)?;
                 },
             }
         }
