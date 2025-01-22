@@ -20,14 +20,8 @@ impl From<&ParseError> for String {
 }
 
 impl ParseError {
-    pub fn print(&self, core: &mut ShellCore) {
-        let name = core.db.get_param("0").unwrap();
-        let s: String = From::<&ParseError>::from(self);
-        if core.flags.contains('i') {
-            eprintln!("{}: {}", &name, &s);
-        }else{
-            let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
-            eprintln!("{}: line {}: {}", &name, &lineno, s);
-        }
+    pub fn print(&self, _: &mut ShellCore) {
+        let s: String = From::from(self);
+        eprintln!("{}", &s);
     }
 }
