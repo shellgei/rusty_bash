@@ -8,7 +8,6 @@ pub mod r#while;
 pub mod r#if;
 
 use crate::{ShellCore, Feeder, Script};
-use crate::error::exec;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
@@ -45,7 +44,7 @@ pub trait Command {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core);
                 if let Err(e) = self.run(core, true) {
-                    exec::print_error(e, core);
+                    e.print(core);
                 }
                 exit::normal(core)
             },
