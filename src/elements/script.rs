@@ -79,23 +79,12 @@ impl Script {
     
             match ans.check_nest(feeder){
                 Status::NormalEnd => return Ok(Some(ans)),
+                Status::NeedMoreLine => feeder.feed_additional_line(core)?,
                 Status::UnexpectedSymbol(s) => {
-                    eprintln!("Unexpected token: {}", s);
-                    let e = ParseError::UnexpectedSymbol(s.clone());
-                    e.print(core);
                     core.db.set_param("?", "2").unwrap();
-                    feeder.consume(feeder.len());
-                    return Err(e);
-                },
-                Status::NeedMoreLine => {
-                    if ! feeder.feed_additional_line(core).is_ok() {
-                        break;
-                    }
+                    return Err(ParseError::UnexpectedSymbol(s.clone()));
                 },
             }
         }
-
-        feeder.consume(feeder.len());
-        Ok(None)
     }
 }

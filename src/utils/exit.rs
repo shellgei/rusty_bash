@@ -1,5 +1,5 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
-//PDX-License-Identifier: BSD-3-Clause
+//SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
 use std::process;

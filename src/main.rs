@@ -53,9 +53,18 @@ fn main_loop(core: &mut ShellCore) {
             _ => break,
         }
 
-        if let Ok(Some(mut s)) = Script::parse(&mut feeder, core){
-            if let Err(e) = s.exec(core) {
+        match Script::parse(&mut feeder, core){
+            Ok(Some(mut s)) => {
+                if let Err(e) = s.exec(core) {
+                    e.print(core);
+                    break;
+                }
+            }
+            Ok(None) => {},
+            Err(e) => {
+                feeder.consume(feeder.len());
                 e.print(core);
+                break;
             }
         }
         core.sigint.store(false, Relaxed);
