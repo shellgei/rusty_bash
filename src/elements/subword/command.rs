@@ -19,6 +19,7 @@ impl Subword for CommandSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {
+        dbg!("{:?}", &self.text);
         Ok(())
     }
 }
@@ -32,7 +33,7 @@ impl CommandSubstitution {
 
         if let Some(pc) = ParenCommand::parse(feeder, core)? {
             text += &pc.get_text();
-            Ok(Some(CommandSubstitution {text: text, command: pc} ))
+            Ok(Some(Self {text: text, command: pc} ))
         }else{
             Ok(None)
         }
