@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod command;
 mod escaped_char;
 pub mod parameter;
 pub mod simple;
@@ -11,6 +12,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use std::fmt;
+use self::command::CommandSubstitution;
 use self::escaped_char::EscapedChar;
 use self::parameter::Parameter;
 use self::simple::SimpleSubword;
@@ -80,6 +82,7 @@ pub trait Subword {
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Box<dyn Subword>>, ParseError> {
     if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
