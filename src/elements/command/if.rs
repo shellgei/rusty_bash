@@ -7,7 +7,7 @@ use crate::error::parse::ParseError;
 use crate::elements::command;
 use super::{Command, Redirect};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct IfCommand {
     pub text: String,
     pub if_elif_scripts: Vec<Script>,
@@ -36,6 +36,7 @@ impl Command for IfCommand {
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
+    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
 }
 

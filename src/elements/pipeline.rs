@@ -10,7 +10,7 @@ use super::Pipe;
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub pipes: Vec<Pipe>,
