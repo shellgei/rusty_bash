@@ -25,7 +25,8 @@ impl Subword for CommandSubstitution {
 }
 
 impl CommandSubstitution {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+                         -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("$(") {
             return Ok(None);
         }
