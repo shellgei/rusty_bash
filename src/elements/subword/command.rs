@@ -2,18 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::Subword;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use nix::unistd;
-use std::{thread, time};
-use std::fs::File;
-use std::io::{BufReader, BufRead, Error};
-use std::os::fd::{FromRawFd, RawFd};
-use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
@@ -25,7 +18,7 @@ impl Subword for CommandSubstitution {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {
         Ok(())
     }
 }
@@ -37,7 +30,7 @@ impl CommandSubstitution {
         }
         let mut text = feeder.consume(1);
 
-        if let Some(pc) = ParenCommand::parse(feeder, core, true)? {
+        if let Some(pc) = ParenCommand::parse(feeder, core)? {
             text += &pc.get_text();
             Ok(Some(CommandSubstitution {text: text, command: pc} ))
         }else{
