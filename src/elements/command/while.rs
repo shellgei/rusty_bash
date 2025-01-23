@@ -7,7 +7,7 @@ use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct WhileCommand {
     pub text: String,
     pub while_script: Option<Script>,
@@ -37,6 +37,7 @@ impl Command for WhileCommand {
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
+    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
 }
 

@@ -10,7 +10,7 @@ use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Job {
     pub pipelines: Vec<Pipeline>,
     pub pipeline_ends: Vec<String>,
