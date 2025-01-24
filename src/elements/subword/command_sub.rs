@@ -32,7 +32,7 @@ impl CommandSubstitution {
         }
         let mut text = feeder.consume(1);
 
-        if let Some(pc) = ParenCommand::parse(feeder, core)? {
+        if let Some(pc) = ParenCommand::parse(feeder, core, true)? {
             text += &pc.get_text();
             Ok(Some(Self {text: text, command: pc} ))
         }else{
