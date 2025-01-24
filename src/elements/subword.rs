@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod command;
+mod command_sub;
 mod escaped_char;
 pub mod parameter;
 pub mod simple;
@@ -12,7 +12,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use std::fmt;
-use self::command::CommandSubstitution;
+use self::command_sub::CommandSubstitution;
 use self::escaped_char::EscapedChar;
 use self::parameter::Parameter;
 use self::simple::SimpleSubword;
