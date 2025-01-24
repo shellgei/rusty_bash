@@ -4,7 +4,7 @@
 pub mod simple;
 pub mod single_quoted;
 mod braced_param;
-mod command;
+mod command_sub;
 mod escaped_char;
 mod ext_glob;
 mod double_quoted;
@@ -17,7 +17,7 @@ use crate::error::{exec::ExecError, parse::ParseError};
 use self::arithmetic::Arithmetic;
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
-use self::command::CommandSubstitution;
+use self::command_sub::CommandSubstitution;
 use self::escaped_char::EscapedChar;
 use self::ext_glob::ExtGlob;
 use self::double_quoted::DoubleQuoted;
