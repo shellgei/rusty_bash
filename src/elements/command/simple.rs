@@ -29,7 +29,7 @@ pub struct SimpleCommand {
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        let _ = core.db.set_param("LINENO", &self.lineno.to_string(), None);
+        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         if Self::break_continue_or_return(core) {
             return Ok(None);
         }
@@ -37,7 +37,6 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
         if ! words.iter_mut().all(|w| self.set_arg(w, core).is_ok()){
-//            core.word_eval_error = true;
             return Err(ExecError::Other("word evaluation error".to_string()));
         }
 
@@ -85,9 +84,7 @@ impl SimpleCommand {
     }
 
     pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        if Self::check_sigint(core) {
-            return Ok(None);
-        }
+        Self::check_sigint(core)?;
 
         core.db.last_arg = self.args.last().unwrap().clone();
         self.option_x_output(core);
@@ -102,12 +99,12 @@ impl SimpleCommand {
         }
     }
 
-    fn check_sigint(core: &mut ShellCore) -> bool {
+    fn check_sigint(core: &mut ShellCore) -> Result<(), ExecError> {
         if core.sigint.load(Relaxed) {
             core.db.exit_status = 130;
-            return true;
+            return Err(ExecError::Interrupted);
         }
-        false
+        Ok(())
     }
 
     fn exec_set_param(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {

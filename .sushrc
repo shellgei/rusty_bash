@@ -72,4 +72,4 @@ command_not_found_handle() {
 }
 
 #. /usr/share/bash-completion/bash_completion
-#. ~/GIT/bash-completion/bash_completion
+. ~/GIT/bash-completion/bash_completion
