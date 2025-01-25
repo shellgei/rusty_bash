@@ -4,6 +4,7 @@
 use crate::ShellCore;
 use crate::error;
 use sprintf::PrintfError;
+use std::io::{stdout, Write};
 
 fn split_format(format: &str) -> (Vec<String>, Option<String>) {
     let mut escaped = false;
@@ -121,5 +122,6 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         },
     };
     print!("{}", &s);
+    stdout().flush().unwrap();
     0
 }

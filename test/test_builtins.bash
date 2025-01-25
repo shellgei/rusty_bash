@@ -251,6 +251,11 @@ res=$($com <<< 'printf -v a[3] bb cc dd &> /dev/null; echo ${a[@]}')
 res=$($com <<< 'printf -v a[3] bb cc dd &> /dev/null; echo ${a[3]}')
 [ "$res" = "bb" ] || err $LINENO
 
+res=$($com <<< 'printf %s abc > /dev/null')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'printf %s abc &> /dev/null')
+[ "$res" = "" ] || err $LINENO
 
 echo $0 >> ./ok
 
