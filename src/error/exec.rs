@@ -3,13 +3,16 @@
 
 use crate::ShellCore;
 use crate::error::parse::ParseError;
+use std::os::fd::RawFd;
 
 #[derive(Debug, Clone)]
 pub enum ExecError {
     Internal,
+    AmbiguousRedirect(String),
     ArrayIndexInvalid(String),
     AssignmentToNonVariable(String),
     BadSubstitution(String),
+    BadFd(RawFd),
     DivZero,
     Exponent(i64),
     InvalidBase(String),
@@ -30,8 +33,10 @@ impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
+            ExecError::AmbiguousRedirect(name) => format!("`{}': not a valid index", name),
             ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
             ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
+            ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
             ExecError::DivZero => "divided by 0".to_string(),
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),

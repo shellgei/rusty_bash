@@ -7,6 +7,7 @@ pub mod redirect;
 use std::os::unix::prelude::RawFd;
 use nix::{fcntl, unistd};
 use crate::{process, ShellCore};
+use crate::exec::ExecError;
 use nix::errno::Errno;
 use crate::elements::Pipe;
 use crate::elements::io::redirect::Redirect;
@@ -38,21 +39,15 @@ pub fn replace(from: RawFd, to: RawFd) -> bool {
     }
 }
 
-fn share(from: RawFd, to: RawFd) -> bool {
+fn share(from: RawFd, to: RawFd) -> Result<(), ExecError> {
     if from < 0 || to < 0 {
-        return false;
+        return Err(ExecError::Other("minus fd number".to_string()));
     }
 
     match unistd::dup2(from, to) {
-        Ok(_) => true,
-        Err(Errno::EBADF) => {
-            eprintln!("sush: {}: Bad file descriptor", to);
-            false
-        },
-        Err(_) => {
-            eprintln!("sush: dup2 Unknown error");
-            false
-        },
+        Ok(_) => Ok(()),
+        Err(Errno::EBADF) => Err(ExecError::BadFd(to)),
+        Err(_) => Err(ExecError::Other("dup2 Unknown error".to_string())),
     }
 }
 
@@ -63,7 +58,7 @@ pub fn backup(from: RawFd) -> RawFd {
 
 pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>, core: &mut ShellCore) {
     pipe.connect();
-    if ! rs.iter_mut().all(|r| r.connect(false, core)){
+    if ! rs.iter_mut().all(|r| r.connect(false, core).is_ok()){
         process::exit(1);
     }
 }

@@ -2,6 +2,7 @@
 ./test_options.bash
 ./test_glob.bash
 ./test_brace.bash
+./test_builtins.bash
 ./test_others.bash
 ./test_calculation.bash
 ./test_compound.bash

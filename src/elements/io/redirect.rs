@@ -4,10 +4,10 @@
 use std::fs::{File, OpenOptions};
 use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
-use crate::error::exec;
+use crate::{Feeder, ShellCore};
 use crate::elements::io;
 use crate::elements::word::Word;
-use crate::{Feeder, ShellCore};
+use crate::exec::ExecError;
 use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::ForkResult;
@@ -27,22 +27,14 @@ pub struct Redirect {
 }
 
 impl Redirect {
-    pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> bool {
+    pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.symbol == "<<<" {
             return self.redirect_herestring(core);
         }
 
-        let args = match self.right.eval(core) {
-            Ok(v) => v,
-            Err(e) => {
-                exec::print_error(e, core);
-                return false;
-            },
-        };
-
+        let args = self.right.eval(core)?;
         if args.len() != 1 {
-            eprintln!("sush: {}: ambiguous redirect", self.right.text);
-            return false;
+            return Err(ExecError::AmbiguousRedirect(self.right.text.clone()));
         }
 
         self.right.text = args[0].clone();
@@ -86,46 +78,55 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_input(&mut self, restore: bool) -> bool {
+    fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
-        self.connect_to_file(File::open(&self.right.text), restore)
+        if ! self.connect_to_file(File::open(&self.right.text), restore) {
+            return Err(ExecError::Other("file error".to_string()));
+        }
+        Ok(())
     }
 
-    fn redirect_simple_output(&mut self, restore: bool) -> bool {
+    fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
-        self.connect_to_file(File::create(&self.right.text), restore)
+        if ! self.connect_to_file(File::create(&self.right.text), restore) {
+            return Err(ExecError::Other("file error".to_string()));
+        }
+        Ok(())
     }
 
-    fn redirect_output_fd(&mut self, _: bool) -> bool {
+    fn redirect_output_fd(&mut self, _: bool) -> Result<(), ExecError> {
         let fd = match self.right.text.parse::<RawFd>() {
             Ok(n) => n,
-            _     => return false,
+            _     => return Err(ExecError::AmbiguousRedirect(self.right.text.clone())),
         };
 
         self.set_left_fd(1);
         io::share(fd, self.left_fd)
     }
 
-    fn redirect_append(&mut self, restore: bool) -> bool {
+    fn redirect_append(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
-        self.connect_to_file(OpenOptions::new().create(true)
-                .write(true).append(true).open(&self.right.text), restore)
+        if ! self.connect_to_file(OpenOptions::new().create(true)
+                .write(true).append(true).open(&self.right.text), restore) {
+            return Err(ExecError::Other("file error".to_string()));
+        }
+        Ok(())
     }
 
-    fn redirect_both_output(&mut self, restore: bool) -> bool {
+    fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 1;
         if ! self.connect_to_file(File::create(&self.right.text), restore){
-            return false;
+            return Err(ExecError::Other("file error".to_string()));
         }
 
         if restore {
             self.extra_left_backup = io::backup(2);
         }
         io::share(1, 2);
-        true
+        Ok(())
     }
 
-    fn redirect_herestring(&mut self, core: &mut ShellCore) -> bool {
+    fn redirect_herestring(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
@@ -148,8 +149,7 @@ impl Redirect {
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
-
-        true
+        Ok(())
     }
 
     pub fn restore(&mut self) {

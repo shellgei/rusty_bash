@@ -1,6 +1,2 @@
 ./test_redirects.bash
-./test_builtins.bash
-../../../test/test_builtins.bash
-../../../test/test_builtins.bash
-../../../test/test_builtins.bash
-../../../test/test_builtins.bash
+../../../test/test_redirects.bash

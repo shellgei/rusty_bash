@@ -193,7 +193,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
     let mut feeder = Feeder::new(&c_parts[1]);
     match Script::parse(&mut feeder, &mut core, false){
         Ok(Some(mut s)) => {let _ = s.exec(&mut core);},
-        Err(e) => parse::print_error(e, &mut core),
+        Err(e) => e.print(&mut core),
         _ => {},
     }
     exit::normal(&mut core)
