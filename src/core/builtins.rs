@@ -14,6 +14,7 @@ mod printf;
 mod pwd;
 mod read;
 mod source;
+mod trap;
 mod loop_control;
 mod unset;
 
@@ -48,6 +49,7 @@ impl ShellCore {
         self.builtins.insert("read".to_string(), read::read);
         self.builtins.insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option::set);
+        self.builtins.insert("trap".to_string(), trap::trap);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
         self.builtins.insert("unalias".to_string(), alias::unalias);

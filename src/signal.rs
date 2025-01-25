@@ -26,7 +26,7 @@ pub fn run_signal_check(core: &mut ShellCore) {
         nix::unistd::dup2(2, fd).expect("sush(fatal): init error");
     }
 
-    let sigint = Arc::clone(&core.sigint); //追加
+    let sigint = Arc::clone(&core.sigint);
  
     thread::spawn(move || {
         let mut signals = Signals::new(vec![consts::SIGINT])

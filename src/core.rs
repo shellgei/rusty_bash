@@ -48,6 +48,7 @@ pub struct ShellCore {
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
+    pub trapped: Arc<AtomicBool>,
     pub read_stdin: bool,
     //pub word_eval_error: bool,
     pub is_subshell: bool,
