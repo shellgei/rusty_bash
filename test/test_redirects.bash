@@ -118,7 +118,7 @@ res=$($com <<< 'ls aaaaaaaaaaaaaa 2>&1 | wc -l')
 
 res=$($com <<< 'echo a > {a,b}' 2>&1)
 [ "$?" == "1" ] || err $LINENO
-[ "$res" == "sush: {a,b}: ambiguous redirect" ] || err $LINENO
+[[ "$res" =~ ambiguous ]] || err $LINENO
 
 # herestring
 

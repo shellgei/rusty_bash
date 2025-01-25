@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, Script};
-use crate::error::exec;
+
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
@@ -59,7 +59,7 @@ impl ForCommand {
             match w.eval(core) {
                 Ok(mut ws) => ans.append(&mut ws),
                 Err(e)     => {
-                    exec::print_error(e, core);
+                    e.print(core);
                     return None;
                 },
             }

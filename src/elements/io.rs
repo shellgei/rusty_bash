@@ -7,7 +7,7 @@ pub mod redirect;
 use std::os::unix::prelude::RawFd;
 use nix::{fcntl, unistd};
 use crate::{process, ShellCore};
-use crate::exec::ExecError;
+use crate::error::exec::ExecError;
 use nix::errno::Errno;
 use crate::elements::Pipe;
 use crate::elements::io::redirect::Redirect;
@@ -58,7 +58,15 @@ pub fn backup(from: RawFd) -> RawFd {
 
 pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>, core: &mut ShellCore) {
     pipe.connect();
+    for r in rs.iter_mut() {
+        if let Err(e) = r.connect(false, core) {
+            e.print(core);
+            process::exit(1);
+        }
+    }
+
+    /*
     if ! rs.iter_mut().all(|r| r.connect(false, core).is_ok()){
         process::exit(1);
-    }
+    }*/
 }

@@ -3,7 +3,6 @@
 
 use crate::{file_check, Script, ShellCore, Feeder};
 use crate::elements::io;
-use crate::error::parse;
 use std::fs::File;
 use std::os::fd::IntoRawFd;
 
@@ -48,7 +47,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
         match Script::parse(&mut feeder, core, false){
             Ok(Some(mut s)) => {let _ = s.exec(core); },
-            Err(e) => parse::print_error(e, core),
+            Err(e) => e.print(core),
             _ => {},
         }
     }

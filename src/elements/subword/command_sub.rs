@@ -31,10 +31,7 @@ impl Subword for CommandSubstitution {
         let pid = self.command.exec(core, &mut pipe)?;
         let result = self.read(pipe.recv, core);
         proc_ctrl::wait_pipeline(core, vec![pid], false, false);
-        match result {
-            true  => Ok(()),
-            false => Err(ExecError::Other("command substitution error".to_string())),
-        }
+        result
     }
 }
 
@@ -48,27 +45,31 @@ impl CommandSubstitution {
         false
     }
 
-    fn interrupted(&mut self, count: usize, core: &mut ShellCore) -> bool {
+    fn interrupted(&mut self, count: usize, core: &mut ShellCore) -> Result<(), ExecError> {
         if count%100 == 99 { //To receive Ctrl+C
             thread::sleep(time::Duration::from_millis(1));
         }
-        core.sigint.load(Relaxed) 
+        match core.sigint.load(Relaxed) {
+            true  => Err(ExecError::Interrupted),
+            false => Ok(()),
+        }
     }
 
-    fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> bool {
+    fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> Result<(), ExecError> {
         let f = unsafe { File::from_raw_fd(fd) };
         let reader = BufReader::new(f);
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {
-            if self.interrupted(i, core) {
+            self.interrupted(i, core)?;
+            if ! self.set_line(line) {
                 break;
             }
-            if ! self.set_line(line) {
-                return false;
-            }
         }
-        self.text.pop();
-        true
+
+        if ! self.text.is_empty() {
+            self.text.pop();
+        }
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

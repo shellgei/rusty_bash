@@ -31,9 +31,15 @@ pub enum ExecError {
 
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
+        Self::from(&e)
+    }
+}
+
+impl From<&ExecError> for String {
+    fn from(e: &ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
-            ExecError::AmbiguousRedirect(name) => format!("`{}': not a valid index", name),
+            ExecError::AmbiguousRedirect(name) => format!("{}: ambiguous redirect", name),
             ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
             ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
             ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
@@ -51,18 +57,20 @@ impl From<ExecError> for String {
             ExecError::ParseError(p) => From::from(p),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
-            ExecError::Other(name) => name,
+            ExecError::Other(name) => name.to_string(),
         }
     }
 }
 
-pub fn print_error(e: ExecError, core: &mut ShellCore) {
-    let name = core.db.get_param("0").unwrap();
-    let s: String = From::<ExecError>::from(e);
-    if core.db.flags.contains('i') {
-        eprintln!("{}: {}", &name, &s);
-    }else{
-        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
-        eprintln!("{}: line {}: {}", &name, &lineno, s);
+impl ExecError {
+    pub fn print(&self, core: &mut ShellCore) {
+        let name = core.db.get_param("0").unwrap();
+        let s: String = From::<&ExecError>::from(self);
+        if core.db.flags.contains('i') {
+            eprintln!("{}: {}", &name, &s);
+        }else{
+            let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+            eprintln!("{}: line {}: {}", &name, &lineno, s);
+        }
     }
 }

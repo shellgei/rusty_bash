@@ -58,8 +58,10 @@ pub trait Command {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
-                io::connect(pipe, self.get_redirects(), core);
-                let _ = self.run(core, true);
+                io::connect(pipe, self.get_redirects(), core); //exit with failure
+                if let Err(e) = self.run(core, true) {
+                    e.print(core);
+                }
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {

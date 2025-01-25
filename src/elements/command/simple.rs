@@ -4,7 +4,7 @@
 pub mod parser;
 
 use crate::{proc_ctrl, ShellCore};
-use crate::error::exec;
+
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
@@ -89,7 +89,6 @@ impl SimpleCommand {
         core.db.last_arg = self.args.last().unwrap().clone();
         self.option_x_output(core);
 
-
         if self.force_fork 
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
@@ -139,7 +138,7 @@ impl SimpleCommand {
                 Ok(())
             },
             Err(e) => {
-                exec::print_error(e.clone(), core);
+                e.print(core);
                 if ! core.sigint.load(Relaxed) {
                     core.db.exit_status = 1;
                 }

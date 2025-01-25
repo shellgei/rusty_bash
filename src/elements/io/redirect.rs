@@ -7,7 +7,7 @@ use std::io::Error;
 use crate::{Feeder, ShellCore};
 use crate::elements::io;
 use crate::elements::word::Word;
-use crate::exec::ExecError;
+use crate::error::exec::ExecError;
 use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::ForkResult;

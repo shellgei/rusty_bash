@@ -8,34 +8,15 @@ use super::calculator;
 
 pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
-    let num = match calculator::pop_operand(stack, core) {
-        Ok(v)  => v,
-        Err(e) => return Err(e),
-    };
 
-    let mut left = match left {
-        Some(c) => c.clone(),
-        None    => return Err(ExecError::Other("expr not found".to_string())),
-    };
-    let mut right = match right {
-        Some(c) => c.clone(),
-        None    => return Err(ExecError::Other("expr not found".to_string())),
-    };
+    let e = ExecError::Other("expr not found".to_string());
+    let mut left = left.clone().ok_or(e.clone())?;
+    let mut right = right.clone().ok_or(e.clone())?;
 
-    let ans = match num {
-        ArithElem::Integer(0) /*| ArithElem::Float(0.0)*/ => {
-            match right.eval_in_cond(core) {
-                Ok(num) => num,
-                Err(e)  => return Err(e),
-            }
-        },
+    let ans = match calculator::pop_operand(stack, core)? {
+        ArithElem::Integer(0) => right.eval_in_cond(core)?,
         ArithElem::Float(_) => return Err(ExecError::Other("float condition is not permitted".to_string())),
-        _ => {
-            match left.eval_in_cond(core) {
-                Ok(num) => num,
-                Err(e)  => return Err(e),
-            }
-        },
+        _ => left.eval_in_cond(core)?,
     };
 
     stack.push( ans );

@@ -101,7 +101,9 @@ impl Job {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pgid);
-                let _ = self.exec(core, false);
+                if let Err(e) = self.exec(core, false) {
+                    e.print(core);
+                }
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
