@@ -10,6 +10,7 @@ use crate::error::parse::ParseError;
 use nix::sys::wait::WaitStatus;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
 pub struct Job {
@@ -35,6 +36,9 @@ impl Job {
     fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<(), ExecError> {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
+
+        Self::check_trap(core);
+
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
 
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
@@ -51,8 +55,18 @@ impl Job {
             }
 
             do_next = (core.db.exit_status == 0) == (end == "&&");
+            Self::check_trap(core);
         }
         Ok(())
+    }
+
+    fn check_trap(core: &mut ShellCore) {
+        for t in &core.trapped {
+            if t.load(Relaxed) {
+                eprintln!("!!!!");
+                t.store(false, Relaxed);
+            }
+        }
     }
 
     fn check_stop(core: &mut ShellCore, text: &str,

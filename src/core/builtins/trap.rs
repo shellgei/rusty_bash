@@ -5,6 +5,7 @@
 use crate::ShellCore;
 use crate::signal;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 use std::{thread, time};
 use signal_hook::iterator::Signals;
@@ -25,7 +26,9 @@ pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         signal::ignore(*s);
     }
 
-    let trap = Arc::clone(&core.trapped);
+    core.trapped.push(Arc::new(AtomicBool::new(false)));
+
+    let trap = Arc::clone(&core.trapped.last().unwrap());
 
     thread::spawn(move || {
         let mut signals = Signals::new(signals_i32.clone())
