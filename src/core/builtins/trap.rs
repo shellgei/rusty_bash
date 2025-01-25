@@ -13,11 +13,23 @@ use signal_hook::iterator::Signals;
 pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut signals = vec![];
     let mut signals_i32 = vec![];
+
+    let forbiddens = Vec::from(signal_hook::consts::FORBIDDEN);
+
     for a in &args[2..] {
         if let Ok(n) = a.parse::<i32>() {
+
+            if forbiddens.contains(&n) {
+                let err = format!("sush: trap: {}: forbidden signal for trap", n);
+                eprintln!("{}", err);
+                return 1;
+            }
+
+
             signals.push(TryFrom::try_from(n).unwrap());
             signals_i32.push(n);
         }else{
+            eprintln!("sush: trap: e: invalid signal specification");
             return 1;
         }
     }
