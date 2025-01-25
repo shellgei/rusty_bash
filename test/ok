@@ -9,3 +9,4 @@
 ./test_compound.bash
 ./test_parameters.bash
 ./test_job.bash
+../test/test_future.bash
