@@ -4,6 +4,7 @@
 use super::pipeline::Pipeline;
 use crate::{proc_ctrl, Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
+use crate::Script;
 use crate::utils::exit;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -57,16 +58,35 @@ impl Job {
             do_next = (core.db.exit_status == 0) == (end == "&&");
             Self::check_trap(core);
         }
+        Self::check_trap(core);
         Ok(())
     }
 
     fn check_trap(core: &mut ShellCore) {
+        let bkup = core.db.exit_status;
+
+        let mut scripts = vec![];
         for t in &core.trapped {
             if t.0.load(Relaxed) {
-                eprintln!("!!!!");
+                scripts.push(t.1.clone());
                 t.0.store(false, Relaxed);
             }
         }
+
+        for s in scripts {
+            let mut feeder = Feeder::new(&s);
+            let mut script = match Script::parse(&mut feeder, core, true) {
+                Ok(None) => {continue;},
+                Ok(s) => s.unwrap(),
+                Err(e) => {e.print(core); continue;},
+            };
+
+            if let Err(e) = script.exec(core) {
+                e.print(core);
+            }
+        }
+
+        core.db.exit_status = bkup;
     }
 
     fn check_stop(core: &mut ShellCore, text: &str,

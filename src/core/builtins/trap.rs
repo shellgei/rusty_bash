@@ -13,6 +13,11 @@ use std::{thread, time};
 use signal_hook::iterator::Signals;
 
 pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 3 { // TODO: print the list of trap entries if args.len() == 1
+        eprintln!("trap: usage: trap arg signal_spec ...");
+        return 2;
+    }
+
     let forbiddens = Vec::from(signal_hook::consts::FORBIDDEN);
     let signals = match args_to_nums(&args[2..], &forbiddens){
         Ok(v) => v,
