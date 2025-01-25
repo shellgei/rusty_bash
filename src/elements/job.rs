@@ -62,9 +62,9 @@ impl Job {
 
     fn check_trap(core: &mut ShellCore) {
         for t in &core.trapped {
-            if t.load(Relaxed) {
+            if t.0.load(Relaxed) {
                 eprintln!("!!!!");
-                t.store(false, Relaxed);
+                t.0.store(false, Relaxed);
             }
         }
     }

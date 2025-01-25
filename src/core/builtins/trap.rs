@@ -13,10 +13,8 @@ use std::{thread, time};
 use signal_hook::iterator::Signals;
 
 pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut signals: Vec<Signal> = vec![];
-
     let forbiddens = Vec::from(signal_hook::consts::FORBIDDEN);
-    let signals_i32 = match args_to_nums(&args[2..], &forbiddens){
+    let signals = match args_to_nums(&args[2..], &forbiddens){
         Ok(v) => v,
         Err(e) => {
             e.print(core);
@@ -24,29 +22,29 @@ pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     };
 
-    for n in &signals_i32 {
-        signals.push(TryFrom::try_from(*n).unwrap());
+    for n in &signals {
+        let s: Signal = TryFrom::try_from(*n).unwrap();
+        signal::ignore(s);
     }
 
-    signals.iter().for_each(|s| signal::ignore(*s) );
-    run_thread(signals_i32, core);
+    run_thread(signals, &args[1], core);
 
     0
 }
 
-fn run_thread(signals_i32: Vec<i32>, core: &mut ShellCore) {
-    core.trapped.push(Arc::new(AtomicBool::new(false)));
+fn run_thread(signal_nums: Vec<i32>, script: &String, core: &mut ShellCore) {
+    core.trapped.push((Arc::new(AtomicBool::new(false)), script.clone()));
 
-    let trap = Arc::clone(&core.trapped.last().unwrap());
+    let trap = Arc::clone(&core.trapped.last().unwrap().0);
 
     thread::spawn(move || {
-        let mut signals = Signals::new(signals_i32.clone())
+        let mut signals = Signals::new(signal_nums.clone())
                           .expect("sush(fatal): cannot prepare signal data");
 
         loop {
-            thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
+            thread::sleep(time::Duration::from_millis(100));
             for signal in signals.pending() {
-                if signals_i32.contains(&signal) {
+                if signal_nums.contains(&signal) {
                     trap.store(true, Relaxed);
                 }
             }
