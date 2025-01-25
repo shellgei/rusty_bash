@@ -3,6 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::io;
+use crate::error::exec::ExecError;
 use std::os::fd::IntoRawFd;
 use std::os::unix::prelude::RawFd;
 use nix::unistd;
@@ -53,14 +54,15 @@ impl Pipe {
         self.pgid = pgid;
     }
 
-    pub fn connect(&mut self) {
+    pub fn connect(&mut self) -> Result<(), ExecError> {
         io::close(self.recv, "Cannot close in-pipe");
         io::replace(self.send, 1);
         io::replace(self.prev, 0);
 
         if &self.text == &"|&" {
-            io::share(1, 2);
+            io::share(1, 2)?;
         }
+        Ok(())
     }
 
     pub fn parent_close(&mut self) {

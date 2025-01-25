@@ -57,16 +57,15 @@ pub fn backup(from: RawFd) -> RawFd {
 }
 
 pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>, core: &mut ShellCore) {
-    pipe.connect();
+    if let Err(e) = pipe.connect() {
+        e.print(core);
+        process::exit(1);
+    }
+
     for r in rs.iter_mut() {
         if let Err(e) = r.connect(false, core) {
             e.print(core);
             process::exit(1);
         }
     }
-
-    /*
-    if ! rs.iter_mut().all(|r| r.connect(false, core).is_ok()){
-        process::exit(1);
-    }*/
 }

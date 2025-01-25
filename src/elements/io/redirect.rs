@@ -122,8 +122,7 @@ impl Redirect {
         if restore {
             self.extra_left_backup = io::backup(2);
         }
-        io::share(1, 2);
-        Ok(())
+        io::share(1, 2)
     }
 
     fn redirect_herestring(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
