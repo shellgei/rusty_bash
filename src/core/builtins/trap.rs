@@ -4,6 +4,8 @@
 
 use crate::ShellCore;
 use crate::signal;
+use crate::error::exec::ExecError;
+use nix::sys::signal::Signal;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
@@ -11,33 +13,28 @@ use std::{thread, time};
 use signal_hook::iterator::Signals;
 
 pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut signals = vec![];
-    let mut signals_i32 = vec![];
+    let mut signals: Vec<Signal> = vec![];
 
     let forbiddens = Vec::from(signal_hook::consts::FORBIDDEN);
-
-    for a in &args[2..] {
-        if let Ok(n) = a.parse::<i32>() {
-
-            if forbiddens.contains(&n) {
-                let err = format!("sush: trap: {}: forbidden signal for trap", n);
-                eprintln!("{}", err);
-                return 1;
-            }
-
-
-            signals.push(TryFrom::try_from(n).unwrap());
-            signals_i32.push(n);
-        }else{
-            eprintln!("sush: trap: e: invalid signal specification");
+    let signals_i32 = match args_to_nums(&args[2..], &forbiddens){
+        Ok(v) => v,
+        Err(e) => {
+            e.print(core);
             return 1;
         }
+    };
+
+    for n in &signals_i32 {
+        signals.push(TryFrom::try_from(*n).unwrap());
     }
 
-    for s in &signals {
-        signal::ignore(*s);
-    }
+    signals.iter().for_each(|s| signal::ignore(*s) );
+    run_thread(signals_i32, core);
 
+    0
+}
+
+fn run_thread(signals_i32: Vec<i32>, core: &mut ShellCore) {
     core.trapped.push(Arc::new(AtomicBool::new(false)));
 
     let trap = Arc::clone(&core.trapped.last().unwrap());
@@ -55,6 +52,24 @@ pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
         }
     });
+}
 
-    0
+fn arg_to_num(arg: &str, forbiddens: &Vec<i32>) -> Result<i32, ExecError> {
+    if let Ok(n) = arg.parse::<i32>() {
+        if forbiddens.contains(&n) {
+            return Err(ExecError::Other(format!("trap: {}: forbidden signal for trap", arg)));
+        }
+        return Ok(n);
+    }
+
+    return Err(ExecError::Other(format!("trap: {}: invalid signal specification", arg)));
+}
+
+fn args_to_nums(args: &[String], forbiddens: &Vec<i32>) -> Result<Vec<i32>, ExecError> {
+    let mut ans = vec![];
+    for a in args {
+        let n = arg_to_num(a, forbiddens)?;
+        ans.push(n);
+    }
+    Ok(ans)
 }
