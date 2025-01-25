@@ -184,7 +184,7 @@ impl ConditionalExpr {
             Err(e) => return Err(ExecError::Other(e)),
         };
 
-        let right_eval = match right.eval_for_case_pattern(core) {
+        let right_eval = match right.eval_for_regex(core) {
             Some(r) => r,
             None  => return Err(ExecError::Other("Invalid operand".to_string())),
         };

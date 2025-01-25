@@ -83,6 +83,13 @@ pub trait Subword {
         }
     }
 
+    fn make_regex(&mut self) -> Option<String> {
+        match self.get_text() {
+            "" => None,
+            s  => Some(s.to_string()),
+        }
+    }
+
     fn is_name(&self) -> bool {false}
     fn is_array(&self) -> bool {false}
     fn get_array_elem(&self) -> Vec<String> {vec![]}

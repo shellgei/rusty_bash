@@ -81,8 +81,17 @@ impl Word {
         match self.tilde_and_dollar_expansion(core) {
             Ok(mut w) => w.make_unquoted_word(),
             Err(e)    => {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
+                e.print(core);
+                return None;
+            },
+        }
+    }
+
+    pub fn eval_for_regex(&self, core: &mut ShellCore) -> Option<String> {
+        match self.tilde_and_dollar_expansion(core) {
+            Ok(mut w) => w.make_regex(),
+            Err(e)    => {
+                e.print(core);
                 return None;
             },
         }
@@ -92,8 +101,7 @@ impl Word {
         match self.tilde_and_dollar_expansion(core) {
             Ok(mut w) => Some(w.make_glob_string()),
             Err(e)    => {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
+                e.print(core);
                 return None;
             },
         }
@@ -126,6 +134,19 @@ impl Word {
     pub fn make_unquoted_word(&mut self) -> Option<String> {
         let sw: Vec<Option<String>> = self.subwords.iter_mut()
             .map(|s| s.make_unquoted_string())
+            .filter(|s| *s != None)
+            .collect();
+
+        if sw.is_empty() {
+            return None;
+        }
+
+        Some(sw.into_iter().map(|s| s.unwrap()).collect::<String>())
+    }
+
+    pub fn make_regex(&mut self) -> Option<String> {
+        let sw: Vec<Option<String>> = self.subwords.iter_mut()
+            .map(|s| s.make_regex())
             .filter(|s| *s != None)
             .collect();
 
