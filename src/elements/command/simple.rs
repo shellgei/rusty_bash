@@ -89,6 +89,7 @@ impl SimpleCommand {
         core.db.last_arg = self.args.last().unwrap().clone();
         self.option_x_output(core);
 
+
         if self.force_fork 
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
