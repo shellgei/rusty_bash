@@ -8,6 +8,7 @@ use super::input::InputError;
 pub enum ParseError {
     UnexpectedSymbol(String),
     Input(InputError),
+    WrongAlias(String),
 }
 
 impl From<&ParseError> for String {
@@ -15,6 +16,7 @@ impl From<&ParseError> for String {
         match e {
             ParseError::UnexpectedSymbol(s) => format!("Unexpected token: {}", s),
             ParseError::Input(e) => From::from(e),
+            ParseError::WrongAlias(msg) => format!("Someting wrong alias: {}", msg),
         }
     }
 }

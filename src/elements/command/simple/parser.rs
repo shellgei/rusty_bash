@@ -44,7 +44,7 @@ impl SimpleCommand {
         }
 
         if ans.words.is_empty() {
-            if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder) {
+            if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder)? {
                 return Ok(true);
             }
         }
@@ -59,10 +59,10 @@ impl SimpleCommand {
     }
 
     fn set_alias(word: &Word, words: &mut Vec<Word>, text: &mut String,
-                 core: &mut ShellCore, feeder: &mut Feeder) -> bool {
+                 core: &mut ShellCore, feeder: &mut Feeder) -> Result<bool, ParseError> {
         let mut w = word.text.clone();
         if ! core.replace_alias(&mut w) {
-            return false;
+            return Ok(false);
         }
 
         let mut feeder_local = Feeder::new(&mut w);
@@ -78,11 +78,11 @@ impl SimpleCommand {
         }
 
         if words.is_empty() {
-            panic!("sush: alias: fatal alias");
+            return Err(ParseError::WrongAlias(w));
         }
 
         feeder.replace(0, &feeder_local.consume(feeder_local.len()));
-        true
+        Ok(true)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
