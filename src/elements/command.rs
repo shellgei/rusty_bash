@@ -54,19 +54,18 @@ pub trait Command {
         }
     }
 
+    fn fork_exec_child(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<(), ExecError> {
+        core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
+        io::connect(pipe, self.get_redirects(), core)?;
+        self.run(core, true)
+    }
+
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
-                core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
-                if let Err(e) = io::connect(pipe, self.get_redirects(), core) {
+                if let Err(e) = self.fork_exec_child(core, pipe) {
                     e.print(core);
                     core.db.exit_status = 1;
-                    exit::normal(core)
-                }
-                if let Err(e) = self.run(core, true) {
-                    e.print(core);
-                    core.db.exit_status = 1;
-                    exit::normal(core)
                 }
                 exit::normal(core)
             },
