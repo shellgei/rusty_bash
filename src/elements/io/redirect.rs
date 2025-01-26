@@ -137,8 +137,8 @@ impl Redirect {
         let text = self.right.eval_for_case_word(core)
                        .unwrap_or("".to_string());
 
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
+        match unsafe{unistd::fork()?} {
+            ForkResult::Child => {
                 io::close(recv, "herestring close error (child recv)");
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}\n", &text);
@@ -146,11 +146,10 @@ impl Redirect {
                 io::close(send, "herestring close error (child send)");
                 process::exit(0);
             },
-            Ok(ForkResult::Parent { child: _ } ) => {
+            ForkResult::Parent { child: _ } => {
                 io::close(send, "herestring close error (parent send)");
                 io::replace(recv, 0);
             },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
         Ok(())
     }

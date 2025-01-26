@@ -119,7 +119,14 @@ impl Job {
             }
             self.pipelines[0].exec(core, pgid).0
         }else{
-            vec![self.exec_fork_bg(core, pgid)]
+            match self.exec_fork_bg(core, pgid) {
+                Ok(pid) => vec![pid],
+                Err(e) => {
+                    e.print(core);
+                    return;
+                },
+            }
+            //vec![self.exec_fork_bg(core, pgid)]
         };
         eprintln!("{}", &pids[0].unwrap().as_raw());
         let len = pids.len();
@@ -131,20 +138,19 @@ impl Job {
         core.tty_fd = backup;
     }
 
-    fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Option<Pid> {
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
+    fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<Option<Pid>, ExecError> {
+        match unsafe{unistd::fork()? } {
+            ForkResult::Child => {
                 core.initialize_as_subshell(Pid::from_raw(0), pgid);
                 if let Err(e) = self.exec(core, false) {
                     e.print(core);
                 }
                 exit::normal(core)
             },
-            Ok(ForkResult::Parent { child } ) => {
+            ForkResult::Parent { child } => {
                 proc_ctrl::set_pgid(core, child, pgid);
-                Some(child) 
+                Ok(Some(child))
             },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
 
