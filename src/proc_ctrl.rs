@@ -3,6 +3,7 @@
 
 use crate::{exit, Feeder, Script, ShellCore, signal};
 use crate::error;
+use crate::error::exec::ExecError;
 use nix::unistd;
 use nix::errno::Errno;
 use nix::sys::{resource, wait};
@@ -76,8 +77,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
             148
         },
         Ok(unsupported) => {
-            let msg = format!("Unsupported wait status: {:?}", unsupported);
-            error::print(&msg, core);
+            ExecError::UnsupportedWaitStatus(unsupported).print(core);
             1
         },
         Err(err) => {

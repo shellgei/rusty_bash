@@ -4,6 +4,7 @@
 use crate::ShellCore;
 use crate::error::parse::ParseError;
 use nix::errno::Errno;
+use nix::sys::wait::WaitStatus;
 use std::os::fd::RawFd;
 
 #[derive(Debug, Clone)]
@@ -14,6 +15,7 @@ pub enum ExecError {
     AssignmentToNonVariable(String),
     BadSubstitution(String),
     BadFd(RawFd),
+    Bug(String),
     DivZero,
     Exponent(i64),
     InvalidBase(String),
@@ -28,8 +30,8 @@ pub enum ExecError {
     SyntaxError(String),
     Recursion(String),
     SubstringMinus(i64),
+    UnsupportedWaitStatus(WaitStatus),
     Errno(Errno),
-    Bug(String),
     Other(String),
 }
 
@@ -68,6 +70,7 @@ impl From<&ExecError> for String {
             ExecError::SyntaxError(near) => format!("syntax error near {}", &near),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
+            ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {:?}", ws),
             ExecError::Errno(e) => format!("system error {:?}", e),
             ExecError::Bug(msg) => format!("INTERNAL BUG: {}", msg),
             ExecError::Other(name) => name.to_string(),
