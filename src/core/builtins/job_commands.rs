@@ -125,7 +125,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if let Ok(_) =  unistd::tcsetpgrp(fd, pgid) {
         eprintln!("{}", &job.text);
         job.send_cont();
-        exit_status = job.update_status(true);
+        exit_status = job.update_status(true).unwrap_or(1);
 
         if let Ok(mypgid) = unistd::getpgid(Some(Pid::from_raw(0))) {
             let _ = unistd::tcsetpgrp(fd, mypgid);
@@ -146,7 +146,10 @@ pub fn jobs(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         for job in core.job_table.iter_mut() {
-            job.update_status(true);
+            if let Err(e) = job.update_status(true) {
+                e.print(core);
+                return 1;
+            }
         }
         return 0;
     }
@@ -159,7 +162,10 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         },
     };
     match id_to_job(id, &mut core.job_table) {
-        Some(job) => {job.update_status(true);},
+        Some(job) => if let Err(e) = job.update_status(true) {
+            e.print(core);
+            return 1;
+        }
         _ => return 1, 
     }
 

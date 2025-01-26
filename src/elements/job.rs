@@ -44,7 +44,7 @@ impl Job {
 
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
             if do_next {
-                core.jobtable_check_status();
+                core.jobtable_check_status()?;
                 let (pids, exclamation, time, err) = pipeline.exec(core, pgid);
                 let waitstatuses = proc_ctrl::wait_pipeline(core, pids.clone(), exclamation, time);
 

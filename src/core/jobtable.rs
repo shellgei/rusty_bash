@@ -2,10 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::exec::ExecError;
 use nix::unistd;
 use nix::unistd::Pid;
 use nix::sys::signal;
-use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
+use nix::sys::wait;
+use nix::sys::wait::{WaitPidFlag, WaitStatus};
 
 #[derive(Debug)]
 pub struct JobEntry {
@@ -17,37 +19,28 @@ pub struct JobEntry {
     change: bool,
 }
 
-fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) {
+fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) -> Result<(), ExecError> {
     let waitflags = WaitPidFlag::WNOHANG 
                   | WaitPidFlag::WUNTRACED
                   | WaitPidFlag::WCONTINUED;
 
-    match waitpid(*pid, Some(waitflags)) {
-        Ok(s) => {
-            if s == WaitStatus::StillAlive && still(status) {
-                return;
-            }
-
-            *status = s;
-        },
-        _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
+    let s = wait::waitpid(*pid, Some(waitflags))?;
+    if s != WaitStatus::StillAlive || ! still(status) {
+        *status = s;
     }
+    Ok(())
 }
 
-fn wait_block(pid: &Pid, status: &mut WaitStatus) -> i32 {
-    match waitpid(*pid, Some(WaitPidFlag::WUNTRACED)) {
-        Ok(s) => {
-            *status = s;
+fn wait_block(pid: &Pid, status: &mut WaitStatus) -> Result<i32, ExecError> {
+    *status = wait::waitpid(*pid, Some(WaitPidFlag::WUNTRACED))?;
+    let exit_status = match status {
+        WaitStatus::Exited(_, es) => *es,
+        WaitStatus::Stopped(_, _) => 148,
+        WaitStatus::Signaled(_, sig, _) => *sig as i32 + 128,
+        _ => 1,
+    };
 
-            return match status {
-                WaitStatus::Exited(_, es) => *es,
-                WaitStatus::Stopped(_, _) => 148,
-                WaitStatus::Signaled(_, sig, _) => *sig as i32 + 128,
-                _ => 1,
-            };
-        },
-        _  => panic!("SUSHI INTERNAL ERROR (wrong pid wait)"),
-    }
+    Ok(exit_status)
 }
 
 fn still(status: &WaitStatus) -> bool {
@@ -72,14 +65,14 @@ impl JobEntry {
         }
     }
 
-    pub fn update_status(&mut self, wait: bool) -> i32 {
+    pub fn update_status(&mut self, wait: bool) -> Result<i32, ExecError> {
         let mut exit_status = 0;
         let before = self.proc_statuses[0];
         for (status, pid) in self.proc_statuses.iter_mut().zip(&self.pids) {
             if still(status) {
                 match wait {
-                    true  => exit_status = wait_block(pid, status),
-                    false => wait_nonblock(pid, status),
+                    true  => exit_status = wait_block(pid, status)?,
+                    false => {wait_nonblock(pid, status)?;},
                 }
             }
         }
@@ -96,14 +89,14 @@ impl JobEntry {
 
         if stopped {
             self.display_status = "Stopped".to_string();
-            return 148;
+            return Ok(148);
         }
 
         if ! stopped && self.display_status == "Stopped" || self.change {
             self.change_display_status(self.proc_statuses[0]);
         }
 
-        exit_status
+        Ok(exit_status)
     }
 
     pub fn print(&self, priority: &Vec<usize>) {
@@ -180,10 +173,11 @@ impl JobEntry {
 }
 
 impl ShellCore {
-    pub fn jobtable_check_status(&mut self) {
+    pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {
         for e in self.job_table.iter_mut() {
-            e.update_status(false);
+            e.update_status(false)?;
         }
+        Ok(())
     }
 
     pub fn jobtable_print_status_change(&mut self) {

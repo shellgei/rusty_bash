@@ -128,7 +128,9 @@ fn main_loop(core: &mut ShellCore) {
     }
 
     loop {
-        core.jobtable_check_status();
+        if let Err(e) = core.jobtable_check_status() {
+            e.print(core);
+        }
         core.jobtable_print_status_change();
 
         match feeder.feed_line(core) {
