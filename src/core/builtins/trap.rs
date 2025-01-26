@@ -6,6 +6,7 @@ use crate::ShellCore;
 use crate::signal;
 use crate::error::exec::ExecError;
 use nix::sys::signal::Signal;
+use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
@@ -58,6 +59,14 @@ fn run_thread(signal_nums: Vec<i32>, script: &String, core: &mut ShellCore) {
 }
 
 fn arg_to_num(arg: &str, forbiddens: &Vec<i32>) -> Result<i32, ExecError> {
+    if let Ok(n) = Signal::from_str(arg) {
+        return Ok(n as i32);
+    }
+
+    if let Ok(n) = Signal::from_str(&("SIG".to_owned() + arg)) {
+        return Ok(n as i32);
+    }
+
     if let Ok(n) = arg.parse::<i32>() {
         if forbiddens.contains(&n) {
             return Err(ExecError::Other(format!("trap: {}: forbidden signal for trap", arg)));
