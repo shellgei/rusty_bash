@@ -8,7 +8,6 @@ use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::conditional::ConditionalExpr;
 use crate::elements::expr::conditional::elem::CondElem;
-use crate::error;
 
 #[derive(Debug, Clone, Default)]
 pub struct TestCommand {
@@ -24,12 +23,13 @@ impl Command for TestCommand {
             Ok(CondElem::Ans(true))  => core.db.exit_status = 0,
             Ok(CondElem::Ans(false)) => core.db.exit_status = 1,
             Err(err_msg)  => {
-                error::print(&err_msg, core);
-                core.db.exit_status = 2
+                //error::print(&err_msg, core);
+                core.db.exit_status = 2;
+                return Err(err_msg);
             },
             _  => {
-                error::print("unknown error", core);
-                core.db.exit_status = 2
+                core.db.exit_status = 2;
+                return Err(ExecError::Other("unknown error".to_string()));
             },
         } ;
         Ok(())

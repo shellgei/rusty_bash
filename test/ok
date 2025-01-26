@@ -5,10 +5,7 @@
 ./test_brace.bash
 ./test_others.bash
 ./test_calculation.bash
-./test_parameters.bash
 ./test_compound.bash
+./test_parameters.bash
 ./test_builtins.bash
 ./test_job.bash
-../test/test_builtins.bash
-../test/test_builtins.bash
-../test/test_builtins.bash

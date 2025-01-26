@@ -14,19 +14,19 @@ use super::arithmetic::word;
 use super::arithmetic::elem::ArithElem;
 use std::env;
 
-fn to_operand(w: &Word, core: &mut ShellCore) -> Result<CondElem, String> {
+fn to_operand(w: &Word, core: &mut ShellCore) -> Result<CondElem, ExecError> {
     match w.eval_for_case_pattern(core) {
         Some(v) => Ok(CondElem::Operand(v)),
-        None => return Err(format!("{}: wrong substitution", &w.text)),
+        None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
     }
 }
 
-fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<CondElem, String> {
+fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<CondElem, ExecError> {
     match stack.pop() {
         Some(CondElem::InParen(mut expr)) => expr.eval(core),
         Some(CondElem::Word(w)) => to_operand(&w, core),
         Some(elem) => Ok(elem),
-        None => return Err("no operand 1".to_string()),
+        None => return Err(ExecError::OperandExpected("".to_string())),
     }
 }
 
@@ -37,7 +37,7 @@ pub struct ConditionalExpr {
 }
 
 impl ConditionalExpr {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Result<CondElem, String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<CondElem, ExecError> {
         let mut from = 0;
         let mut next = true;
         let mut last = CondElem::Ans(true);
@@ -52,7 +52,7 @@ impl ConditionalExpr {
                     next = match (&self.elements[i], &last) {
                         (CondElem::And, CondElem::Ans(ans)) => *ans,
                         (CondElem::Or, CondElem::Ans(ans))  => !ans,
-                        _ => panic!("SUSH INTERNAL ERROR"),
+                        _ => return Err(ExecError::Other("Internal error conditional.rs:55".to_string())),
                     };
                 },
                 _ => {},
@@ -62,7 +62,7 @@ impl ConditionalExpr {
         Ok(last)
     }
 
-    fn calculate(elems: &[CondElem], core: &mut ShellCore) -> Result<CondElem, String> {
+    fn calculate(elems: &[CondElem], core: &mut ShellCore) -> Result<CondElem, ExecError> {
         let rev_pol = Self::rev_polish(elems)?;
         let mut stack = Self::reduce(&rev_pol, core)?;
     
@@ -72,7 +72,7 @@ impl ConditionalExpr {
         }
     }
 
-    fn rev_polish(elems: &[CondElem]) -> Result<Vec<CondElem>, String> {
+    fn rev_polish(elems: &[CondElem]) -> Result<Vec<CondElem>, ExecError> {
         let mut ans = vec![];
         let mut stack = vec![];
     
@@ -85,8 +85,7 @@ impl ConditionalExpr {
             };
     
             if !ok {
-                let msg = "syntax error near ".to_owned() + &e.to_string();
-                return Err(msg);
+                return Err(ExecError::SyntaxError(e.to_string()));
             }
         }
     
@@ -151,7 +150,7 @@ impl ConditionalExpr {
         let operand = match pop_operand(stack, core) {
             Ok(CondElem::Operand(v))  => v,
             Ok(_)  => return Err(ExecError::Other("unknown operand".to_string())), 
-            Err(e) => return Err(ExecError::Other(e + " to conditional unary operator")),
+            Err(e) => return Err(e),
         };
 
         if op == "-o" || op == "-v" || op == "-z" || op == "-n" {
@@ -175,13 +174,13 @@ impl ConditionalExpr {
         let right = match pop_operand(stack, core) {
             Ok(CondElem::Regex(right)) => right, 
             Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
-            Err(e) => return Err(ExecError::Other(e)),
+            Err(e) => return Err(e),
         };
 
         let left = match pop_operand(stack, core) {
             Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
-            Err(e) => return Err(ExecError::Other(e)),
+            Err(e) => return Err(e),
         };
 
         let right_eval = match right.eval_for_regex(core) {
@@ -203,13 +202,13 @@ impl ConditionalExpr {
         let right = match pop_operand(stack, core) {
             Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
-            Err(e) => return Err(ExecError::Other(e)),
+            Err(e) => return Err(e),
         };
     
         let left = match pop_operand(stack, core) {
             Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
-            Err(e) => return Err(ExecError::Other(e)),
+            Err(e) => return Err(e),
         };
 
         let extglob = core.shopts.query("extglob");
