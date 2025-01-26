@@ -20,10 +20,6 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
     for a in args {
         if a.len() != 2 {
             return Err(ExecError::InvalidOption(a.to_string()));
-            /*
-            error::internal("invalid option");
-            return 1;
-            */
         }
 
         let pm = a.chars().nth(0).unwrap();
@@ -31,16 +27,8 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
 
         if pm != '-' && pm != '+' {
             return Err(ExecError::InvalidOption(a.to_string()));
-            /*
-            error::internal("not an option");
-            return 1;
-            */
         }else if "xveB".find(ch).is_none() {
             return Err(ExecError::InvalidOption(a.to_string()));
-            /*
-            eprintln!("sush: set: {}: invalid option", &a);
-            return 2;
-            */
         }
 
         set_option(core, ch, pm);

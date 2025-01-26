@@ -63,14 +63,17 @@ fn configure(args: &Vec<String>) -> ShellCore {
         }
     }
 
-    if let Err(e) = option::set_options(&mut core, &options) {
-        e.print(&mut core);
-        panic!("");
-    }
     if let Err(e) = parameter::set_positions(&mut core, &parameters) {
         e.print(&mut core);
-        panic!("");
+        core.db.exit_status = 2;
+        exit::normal(&mut core);
     }
+    if let Err(e) = option::set_options(&mut core, &options) {
+        e.print(&mut core);
+        core.db.exit_status = 2;
+        exit::normal(&mut core);
+    }
+
     core
 }
 
