@@ -9,6 +9,7 @@ pub mod jobtable;
 pub mod options;
 
 use crate::{error, proc_ctrl, signal};
+use crate::error::exec::ExecError;
 use self::database::DataBase;
 use self::options::Options;
 use std::collections::HashMap;
@@ -18,7 +19,6 @@ use nix::{fcntl, unistd};
 use nix::sys::signal::Signal;
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::unistd::Pid;
-use crate::utils::exit;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -134,19 +134,20 @@ impl ShellCore {
         self.db.exit_status = if self.db.exit_status == 0 { 1 } else { 0 };
     }
 
-    pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
+    pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>)
+                                -> Result<bool, ExecError> {
         if args.is_empty() {
-            exit::internal(" (no arg for builtins)");
+            return Err(ExecError::Bug("ShellCore::run_builtin".to_string()));
         }
 
         if self.builtins.contains_key(&args[0]) {
             let func = self.builtins[&args[0]];
             args.append(special_args);
             self.db.exit_status = func(self, args);
-            return true;
+            return Ok(true);
         }
 
-        false
+        Ok(false)
     }
 
     fn set_subshell_parameters(&mut self) -> Result<(), String> {

@@ -29,6 +29,7 @@ pub enum ExecError {
     Recursion(String),
     SubstringMinus(i64),
     Errno(Errno),
+    Bug(String),
     Other(String),
 }
 
@@ -68,6 +69,7 @@ impl From<&ExecError> for String {
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
             ExecError::Errno(e) => format!("system error {:?}", e),
+            ExecError::Bug(msg) => format!("INTERNAL BUG: {}", msg),
             ExecError::Other(name) => name.to_string(),
         }
     }

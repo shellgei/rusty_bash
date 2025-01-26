@@ -57,7 +57,7 @@ impl Command for SimpleCommand {
         } else if core.builtins.contains_key(&self.args[0]) {
             let mut special_args = self.substitutions_as_args.iter()
                                        .map(|a| a.text.clone()).collect();
-            core.run_builtin(&mut self.args, &mut special_args);
+            core.run_builtin(&mut self.args, &mut special_args)?;
         } else {
             let _ = self.set_environment_variables(core);
             proc_ctrl::exec_command(&self.args, core);

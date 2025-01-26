@@ -44,7 +44,9 @@ fn read_rc_file(core: &mut ShellCore) {
     let rc_file = dir + "/.sushrc";
 
     if file_check::is_regular_file(&rc_file) {
-        core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]);
+        if let Err(e) = core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]) {
+            e.print(core);
+        }
     }
 }
 
