@@ -268,5 +268,9 @@ res=$($com <<< 'trap "echo hoge" QUIT; kill -3 $$; sleep 1')
 res=$($com <<< 'trap "echo hoge" 444444') 
 [ $? -eq 1 ] || err $LINENO
 
+res=$($com <<< 'trap "echo hoge" EXIT; echo fuge') 
+[ "$res" = "fuge
+hoge" ] || err $LINENO
+
 echo $0 >> ./ok
 

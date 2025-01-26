@@ -1,13 +1,31 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use crate::error;
+use crate::{error, Feeder, Script, ShellCore};
 use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {
+    run_script(core);
+
     core.write_history_to_file();
     process::exit(core.db.exit_status%256)
+}
+
+fn run_script(core: &mut ShellCore) {
+    if core.exit_script.is_empty() {
+        return;
+    }
+
+    let mut feeder = Feeder::new(&core.exit_script);
+    match Script::parse(&mut feeder, core, true) {
+        Ok(Some(mut s)) => {
+            if let Err(e) = s.exec(core) {
+                e.print(core);
+            }
+        },
+        Err(e) => {e.print(core);},
+        Ok(None) => {},
+    };
 }
 
 /* error at exec */

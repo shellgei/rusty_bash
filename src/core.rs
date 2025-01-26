@@ -168,6 +168,8 @@ impl ShellCore {
         proc_ctrl::set_pgid(self, pid, pgid);
         let _ = self.set_subshell_parameters();
         self.job_table.clear();
+
+        self.exit_script.clear();
     }
 
     pub fn init_current_directory(&mut self) {
