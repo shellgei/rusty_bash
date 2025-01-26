@@ -25,9 +25,7 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
         let pm = a.chars().nth(0).unwrap();
         let ch = a.chars().nth(1).unwrap();
 
-        if pm != '-' && pm != '+' {
-            return Err(ExecError::InvalidOption(a.to_string()));
-        }else if "xveB".find(ch).is_none() {
+        if (pm != '-' && pm != '+') || "xveB".find(ch).is_none() {
             return Err(ExecError::InvalidOption(a.to_string()));
         }
 
@@ -39,9 +37,7 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if args.is_empty() {
-        panic!("never come here");
-    }else if args.len() == 1 {
+    if args.len() <= 1 {
         return parameter::print_all(core);
     }
 
