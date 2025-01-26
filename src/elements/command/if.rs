@@ -43,12 +43,12 @@ impl Command for IfCommand {
 }
 
 impl IfCommand {
-    fn end_words(word: &str) -> Vec<&str> {
+    fn end_words(word: &str) -> Result<Vec<&str>, ParseError> {
         match word {
-            "if" | "elif" => vec!["then"],
-            "then" => vec!["fi", "else", "elif"],
-            "else" => vec!["fi"],
-            _ => exit::internal(" (if parse error)"),
+            "if" | "elif" => Ok(vec!["then"]),
+            "then" => Ok(vec!["fi", "else", "elif"]),
+            "else" => Ok(vec!["fi"]),
+            unknown => return Err(ParseError::UnexpectedSymbol(unknown.to_string())),
         }
     }
 
@@ -64,7 +64,7 @@ impl IfCommand {
     fn eat_word_and_script(word: &str, feeder: &mut Feeder,
                            ans: &mut IfCommand, core: &mut ShellCore) -> Result<bool, ParseError> {
         let mut s = None;
-        let ends = Self::end_words(word);
+        let ends = Self::end_words(word)?;
         if ! command::eat_inner_script(feeder, core, word, ends, &mut s, false)? {
             return Ok(false);
         }
