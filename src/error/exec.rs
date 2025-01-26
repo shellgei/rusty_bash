@@ -3,6 +3,7 @@
 
 use crate::ShellCore;
 use crate::error::parse::ParseError;
+use nix::errno::Errno;
 use std::os::fd::RawFd;
 
 #[derive(Debug, Clone)]
@@ -27,7 +28,14 @@ pub enum ExecError {
     SyntaxError(String),
     Recursion(String),
     SubstringMinus(i64),
+    Errno(Errno),
     Other(String),
+}
+
+impl From<Errno> for ExecError {
+    fn from(e: Errno) -> ExecError {
+        ExecError::Errno(e)
+    }
 }
 
 impl From<ExecError> for String {
@@ -59,6 +67,7 @@ impl From<&ExecError> for String {
             ExecError::SyntaxError(near) => format!("syntax error near {}", &near),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
+            ExecError::Errno(e) => format!("system error {:?}", e),
             ExecError::Other(name) => name.to_string(),
         }
     }

@@ -55,8 +55,8 @@ pub trait Command {
     }
 
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
+        match unsafe{unistd::fork()?} {
+            ForkResult::Child => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
                 io::connect(pipe, self.get_redirects(), core); //exit with failure
                 if let Err(e) = self.run(core, true) {
@@ -64,12 +64,11 @@ pub trait Command {
                 }
                 exit::normal(core)
             },
-            Ok(ForkResult::Parent { child } ) => {
+            ForkResult::Parent { child } => {
                 proc_ctrl::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
                 Ok(Some(child))
             },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
 

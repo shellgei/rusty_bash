@@ -176,14 +176,17 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
         vec![args[0].clone()]
     };
 
-    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
-        e.print(&mut core);
-        panic!("");
-    }
     if let Err(e) = parameter::set_positions(&mut core, &parameters) {
         e.print(&mut core);
-        panic!("");
+        core.db.exit_status = 2;
+        exit::normal(&mut core);
     }
+    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
+        e.print(&mut core);
+        core.db.exit_status = 2;
+        exit::normal(&mut core);
+    }
+
     signal::run_signal_check(&mut core);
     core.db.flags.retain(|f| f != 'i');
 
