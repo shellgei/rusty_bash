@@ -28,12 +28,19 @@ pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     };
 
+    let mut valid_signals = vec![];
     for n in &signals {
-        let s: Signal = TryFrom::try_from(*n).unwrap();
-        signal::ignore(s);
+        if let Ok(s) = TryFrom::try_from(*n) {
+            signal::ignore(s);
+            valid_signals.push(*n);
+            continue;
+        };
+
+        ExecError::Other(format!("trap: {}: invalid signal specification", n)).print(core);
+        return 1;
     }
 
-    run_thread(signals, &args[1], core);
+    run_thread(valid_signals, &args[1], core);
 
     0
 }

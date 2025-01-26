@@ -257,5 +257,16 @@ res=$($com <<< 'printf %s abc > /dev/null')
 res=$($com <<< 'printf %s abc &> /dev/null')
 [ "$res" = "" ] || err $LINENO
 
+### trap ###
+#
+res=$($com <<< 'trap "echo hoge" 4') # 4 (SIGILL) is forbidden by signal_hook
+[ $? -eq 1 ] || err $LINENO
+
+res=$($com <<< 'trap "echo hoge" QUIT; kill -3 $$; sleep 1')
+[ "$res" = "hoge" ] || err $LINENO
+
+res=$($com <<< 'trap "echo hoge" 444444') 
+[ $? -eq 1 ] || err $LINENO
+
 echo $0 >> ./ok
 
