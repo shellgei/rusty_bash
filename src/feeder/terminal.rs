@@ -6,9 +6,10 @@ mod completion;
 use crate::{file_check, ShellCore};
 use crate::utils::file;
 use crate::error::input::InputError;
-use std::{io, thread};
+use std::{io, thread, time};
 use std::fs::File;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use std::io::{Write, Stdin, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
 use std::path::Path;
@@ -377,13 +378,20 @@ fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab
 }
 
 fn input_async(core: &mut ShellCore) -> Keys<Stdin> {
-    let sigint = Arc::clone(&core.sigint);
+    let stop: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    let stop_in_thread = Arc::clone(&stop);
+    //let sigint = Arc::clone(&core.sigint);
  
     let thread_join_handle = thread::spawn(move || {
+        while ! stop_in_thread.load(Relaxed) {
+            thread::sleep(time::Duration::from_millis(10));
+        }
     });
 
-    let res = thread_join_handle.join();
-    io::stdin().keys()
+    let recv = io::stdin().keys();
+    stop.store(true, Relaxed);
+    thread_join_handle.join().unwrap();
+    recv
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
