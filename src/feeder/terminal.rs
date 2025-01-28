@@ -6,15 +6,17 @@ mod completion;
 use crate::{file_check, ShellCore};
 use crate::utils::file;
 use crate::error::input::InputError;
-use std::io;
+use std::{io, thread};
 use std::fs::File;
-use std::io::{Write, Stdout};
+use std::sync::Arc;
+use std::io::{Write, Stdin, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
 use std::path::Path;
 use nix::unistd;
 use nix::unistd::User;
-use termion::cursor::DetectCursorPos;
 use termion::event;
+use termion::cursor::DetectCursorPos;
+use termion::input::Keys;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthChar;
@@ -374,6 +376,16 @@ fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab
     }
 }
 
+fn input_async(core: &mut ShellCore) -> Keys<Stdin> {
+    let sigint = Arc::clone(&core.sigint);
+ 
+    let thread_join_handle = thread::spawn(move || {
+    });
+
+    let res = thread_join_handle.join();
+    io::stdin().keys()
+}
+
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
@@ -381,7 +393,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut prev_key = event::Key::Char('a');
     let mut tab_num = 0;
 
-    for c in io::stdin().keys() {
+    for c in input_async(core) {
         term.check_size_change(&mut term_size);
 
         match c.as_ref().unwrap() {
