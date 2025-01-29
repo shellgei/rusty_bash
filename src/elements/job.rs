@@ -62,7 +62,7 @@ impl Job {
         Ok(())
     }
 
-    fn check_trap(core: &mut ShellCore) {
+    pub fn check_trap(core: &mut ShellCore) {
         let bkup = core.db.exit_status;
 
         let mut scripts = vec![];

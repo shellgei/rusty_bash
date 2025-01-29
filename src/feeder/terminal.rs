@@ -396,15 +396,18 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let stdin = termion::async_stdin();
     let mut it = stdin.keys();
 
-    //for c in input_async(core) {
     loop { 
         let c = match it.next() {
             Some(k) => k,
             _ => {
+                thread::sleep(time::Duration::from_millis(10));
                 if core.sigint.load(Relaxed) {
                     Ok(event::Key::Ctrl('c'))
+                }else if core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
+                    term.goto(term.chars.len());
+                    term.write("^\\\r\n");
+                    return Err(InputError::Interrupt);
                 }else{
-                    thread::sleep(time::Duration::from_millis(10));
                     continue;
                 }
             },
