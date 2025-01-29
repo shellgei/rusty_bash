@@ -374,18 +374,6 @@ fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab
     }
 }
 
-/*
-fn input_async(core: &mut ShellCore) -> Keys<AsyncReader> {
-    let mut ans;
-    loop {
-        thread::sleep(time::Duration::from_millis(1000));
-        ans = termion::async_stdin().keys();
-
-        return ans;
-    }
-}
-*/
-
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
@@ -405,7 +393,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
                     Ok(event::Key::Ctrl('c'))
                 }else if core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
                     term.goto(term.chars.len());
-                    term.write("^\\\r\n");
+                    term.write("\r\n");
                     return Err(InputError::Interrupt);
                 }else{
                     continue;
