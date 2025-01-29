@@ -416,59 +416,80 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut prev_key = event::Key::Char('a');
     let mut tab_num = 0;
 
-    let mut stdin = termion::async_stdin().keys();
-
-    while signal_check(core, &mut term)? {
-        let c = match stdin.next() {
-            Some(k) => k,
-            _ => {
-                thread::sleep(time::Duration::from_millis(10));
-                continue;
-            },
-        };
-
-        term.check_size_change(&mut term_size);
-
-        match c.as_ref().unwrap() {
-            event::Key::Ctrl(c) => reaction_ctrl_char(core, &mut term, *c)?,
-            event::Key::Down |
-            event::Key::Left |
-            event::Key::Right |
-            event::Key::Up => on_arrow_key(&mut term, core, c.as_ref().unwrap(), tab_num),
-            event::Key::Backspace => term.backspace(),
-            event::Key::Delete => term.delete(),
-            event::Key::Char('\n') => {
-                if term.completion_candidate.len() > 0 {
-                    term.set_double_tab_completion();
-                }else{
-                    term.goto(term.chars.len());
-                    term.write("\r\n");
-                    term.chars.push('\n');
-                    break;
+    let mut ok = false;
+    let mut completion = false;
+    loop {
+        loop {
+            let mut stdin = termion::async_stdin().keys();
+            while signal_check(core, &mut term)? {
+                let c = match stdin.next() {
+                    Some(k) => k,
+                    _ => {
+                        thread::sleep(time::Duration::from_millis(10));
+                        continue;
+                    },
+                };
+        
+                term.check_size_change(&mut term_size);
+        
+                match c.as_ref().unwrap() {
+                    event::Key::Ctrl(c) => reaction_ctrl_char(core, &mut term, *c)?,
+                    event::Key::Down |
+                    event::Key::Left |
+                    event::Key::Right |
+                    event::Key::Up => on_arrow_key(&mut term, core, c.as_ref().unwrap(), tab_num),
+                    event::Key::Backspace => term.backspace(),
+                    event::Key::Delete => term.delete(),
+                    event::Key::Char('\n') => {
+                        if term.completion_candidate.len() > 0 {
+                            term.set_double_tab_completion();
+                        }else{
+                            term.goto(term.chars.len());
+                            term.write("\r\n");
+                            term.chars.push('\n');
+                            ok = true;
+                            break;
+                        }
+                    },
+                    event::Key::Char('\t') => {
+                        completion = true;
+                        break;
+                    },
+                    event::Key::Char(c) => {
+                        term.insert(*c);
+                    },
+                    _  => {},
                 }
-            },
-            event::Key::Char('\t') => {
-                if tab_num == 0 || prev_key == event::Key::Char('\t') {
-                    tab_num += 1;
+                term.check_scroll();
+                prev_key = c.as_ref().unwrap().clone();
+                if ! is_completion_key(prev_key) {
+                    tab_num = 0;
+                    term.completion_candidate = String::new();
                 }
-                if tab_num == 2 {
-                    term.tab_row = -1;
-                    term.tab_col = 0;
-                }else if tab_num > 2 {
-                    term.tab_row += 1;
-                }
-                term.completion(core, tab_num);
-            },
-            event::Key::Char(c) => {
-                term.insert(*c);
-            },
-            _  => {},
+            }
+    
+            if ok || completion {
+                break;
+            }
         }
-        term.check_scroll();
-        prev_key = c.as_ref().unwrap().clone();
-        if ! is_completion_key(prev_key) {
-            tab_num = 0;
-            term.completion_candidate = String::new();
+
+        if ok {
+            break;
+        }
+
+        if completion {
+            if tab_num == 0 || prev_key == event::Key::Char('\t') {
+                tab_num += 1;
+            }
+            if tab_num == 2 {
+                term.tab_row = -1;
+                term.tab_col = 0;
+            }else if tab_num > 2 {
+                term.tab_row += 1;
+            }
+            term.completion(core, tab_num);
+            prev_key = event::Key::Char('\t');
+            completion = false;
         }
     }
 
