@@ -388,11 +388,8 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         let c = match it.next() {
             Some(k) => k,
             _ => {
-                if core.sigint.load(Relaxed) {
-                    Ok(event::Key::Ctrl('c'))
-                }else if core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
-                    term.goto(term.chars.len());
-                    term.write("\r\n");
+                if core.sigint.load(Relaxed)
+                || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
                     return Err(InputError::Interrupt);
                 }else{
                     thread::sleep(time::Duration::from_millis(10));
