@@ -2,16 +2,15 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
+use crate::signal;
 use crate::{proc_ctrl, Feeder, ShellCore};
 use crate::core::jobtable::JobEntry;
-use crate::Script;
 use crate::utils::exit;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use nix::sys::wait::WaitStatus;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
-use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
 pub struct Job {
@@ -38,7 +37,7 @@ impl Job {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
 
-        Self::check_trap(core);
+        signal::check_trap(core);
 
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
 
@@ -56,12 +55,13 @@ impl Job {
             }
 
             do_next = (core.db.exit_status == 0) == (end == "&&");
-            Self::check_trap(core);
+            signal::check_trap(core);
         }
-        Self::check_trap(core);
+        signal::check_trap(core);
         Ok(())
     }
 
+    /*
     pub fn check_trap(core: &mut ShellCore) {
         let bkup = core.db.exit_status;
 
@@ -87,7 +87,7 @@ impl Job {
         }
 
         core.db.exit_status = bkup;
-    }
+    }*/
 
     fn check_stop(core: &mut ShellCore, text: &str,
                   pids: &Vec<Option<Pid>>, waitstatuses: &Vec<WaitStatus>) {

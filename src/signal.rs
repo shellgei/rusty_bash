@@ -6,6 +6,7 @@ use nix::sys::signal::{Signal, SigHandler};
 use std::{thread, time};
 use std::sync::Arc;
 use std::sync::atomic::Ordering::Relaxed;
+use crate::Script;
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
 use signal_hook::consts;
@@ -56,4 +57,31 @@ pub fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     core.db.exit_status = 130;
     feeder.consume(feeder.len());
     true
+}
+
+pub fn check_trap(core: &mut ShellCore) {
+    let bkup = core.db.exit_status;
+
+    let mut scripts = vec![];
+    for t in &core.trapped {
+        if t.0.load(Relaxed) {
+            scripts.push(t.1.clone());
+            t.0.store(false, Relaxed);
+        }
+    }
+
+    for s in scripts {
+        let mut feeder = Feeder::new(&s);
+        let mut script = match Script::parse(&mut feeder, core, true) {
+            Ok(None) => {continue;},
+            Ok(s) => s.unwrap(),
+            Err(e) => {e.print(core); continue;},
+        };
+
+        if let Err(e) = script.exec(core) {
+            e.print(core);
+        }
+    }
+
+    core.db.exit_status = bkup;
 }

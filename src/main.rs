@@ -9,7 +9,6 @@ mod signal;
 mod proc_ctrl;
 mod utils;
 
-use crate::elements::job::Job;
 use builtins::{option, parameter};
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
@@ -140,7 +139,7 @@ fn main_loop(core: &mut ShellCore) {
             Ok(()) => {}, 
             Err(InputError::Interrupt) => {
                 signal::input_interrupt_check(&mut feeder, core);
-                Job::check_trap(core);
+                signal::check_trap(core);
                 continue;
             },
             _ => break,
