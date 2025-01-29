@@ -374,6 +374,15 @@ fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab
     }
 }
 
+fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, InputError> {
+    if core.sigint.load(Relaxed) 
+    || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
+        term.write("\r\n");
+        return Err(InputError::Interrupt);
+    }
+    Ok(true)
+}
+
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
@@ -384,17 +393,12 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let stdin = termion::async_stdin();
     let mut it = stdin.keys();
 
-    loop { 
+    while signal_check(core, &mut term)? {
         let c = match it.next() {
             Some(k) => k,
             _ => {
-                if core.sigint.load(Relaxed)
-                || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
-                    return Err(InputError::Interrupt);
-                }else{
-                    thread::sleep(time::Duration::from_millis(10));
-                    continue;
-                }
+                thread::sleep(time::Duration::from_millis(10));
+                continue;
             },
         };
 
