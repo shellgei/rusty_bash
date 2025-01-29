@@ -431,26 +431,6 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
 
         match c.as_ref().unwrap() {
             event::Key::Ctrl(c) => reaction_ctrl_char(core, &mut term, *c)?,
-            /*
-            event::Key::Ctrl('a') => term.goto_origin(),
-            event::Key::Ctrl('b') => term.shift_cursor(-1),
-            event::Key::Ctrl('c') => {
-                core.sigint.store(true, Relaxed);
-                term.goto(term.chars.len());
-                term.write("^C\r\n");
-                return Err(InputError::Interrupt);
-            },
-            event::Key::Ctrl('d') => {
-                if term.chars.len() == term.prompt.chars().count() {
-                    term.write("\r\n");
-                    return Err(InputError::Eof);
-                }else{
-                    term.delete();
-                }
-            },
-            event::Key::Ctrl('e') => term.goto_end(),
-            event::Key::Ctrl('f') => term.shift_cursor(1),
-            */
             event::Key::Down |
             event::Key::Left |
             event::Key::Right |
