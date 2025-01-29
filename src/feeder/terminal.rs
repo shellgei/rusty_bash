@@ -383,6 +383,32 @@ fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, Input
     Ok(true)
 }
 
+fn reaction_ctrl_char(core: &mut ShellCore, term: &mut Terminal, c: char)
+                       -> Result<(), InputError>{
+    match c {
+        'a' => term.goto_origin(),
+        'b' => term.shift_cursor(-1),
+        'c' => {
+            core.sigint.store(true, Relaxed);
+            term.goto(term.chars.len());
+            term.write("^C\r\n");
+            return Err(InputError::Interrupt);
+        },
+        'd' => {
+            if term.chars.len() == term.prompt.chars().count() {
+                term.write("\r\n");
+                return Err(InputError::Eof);
+            }else{
+                term.delete();
+            }
+        },
+        'e' => term.goto_end(),
+        'f' => term.shift_cursor(1),
+        _ => {},
+    }
+    Ok(())
+}
+
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     let mut term_size = Terminal::size();
@@ -390,11 +416,10 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut prev_key = event::Key::Char('a');
     let mut tab_num = 0;
 
-    let stdin = termion::async_stdin();
-    let mut it = stdin.keys();
+    let mut stdin = termion::async_stdin().keys();
 
     while signal_check(core, &mut term)? {
-        let c = match it.next() {
+        let c = match stdin.next() {
             Some(k) => k,
             _ => {
                 thread::sleep(time::Duration::from_millis(10));
@@ -405,6 +430,8 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         term.check_size_change(&mut term_size);
 
         match c.as_ref().unwrap() {
+            event::Key::Ctrl(c) => reaction_ctrl_char(core, &mut term, *c)?,
+            /*
             event::Key::Ctrl('a') => term.goto_origin(),
             event::Key::Ctrl('b') => term.shift_cursor(-1),
             event::Key::Ctrl('c') => {
@@ -423,6 +450,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
             event::Key::Ctrl('e') => term.goto_end(),
             event::Key::Ctrl('f') => term.shift_cursor(1),
+            */
             event::Key::Down |
             event::Key::Left |
             event::Key::Right |
