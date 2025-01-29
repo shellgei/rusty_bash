@@ -8,16 +8,13 @@ use crate::utils::file;
 use crate::error::input::InputError;
 use std::{io, thread, time};
 use std::fs::File;
-use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
-use std::io::{Write, Stdin, Stdout};
+use std::io::{Write, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
 use std::path::Path;
 use nix::unistd;
 use nix::unistd::User;
 use termion::event;
 use termion::cursor::DetectCursorPos;
-use termion::input::Keys;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthChar;
@@ -377,22 +374,17 @@ fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab
     }
 }
 
-fn input_async(core: &mut ShellCore) -> Keys<Stdin> {
-    let stop: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
-    let stop_in_thread = Arc::clone(&stop);
-    //let sigint = Arc::clone(&core.sigint);
- 
-    let thread_join_handle = thread::spawn(move || {
-        while ! stop_in_thread.load(Relaxed) {
-            thread::sleep(time::Duration::from_millis(10));
-        }
-    });
+/*
+fn input_async(core: &mut ShellCore) -> Keys<AsyncReader> {
+    let mut ans;
+    loop {
+        thread::sleep(time::Duration::from_millis(1000));
+        ans = termion::async_stdin().keys();
 
-    let recv = io::stdin().keys();
-    stop.store(true, Relaxed);
-    thread_join_handle.join().unwrap();
-    recv
+        return ans;
+    }
 }
+*/
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
@@ -401,7 +393,23 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut prev_key = event::Key::Char('a');
     let mut tab_num = 0;
 
-    for c in input_async(core) {
+    let stdin = termion::async_stdin();
+    let mut it = stdin.keys();
+
+    //for c in input_async(core) {
+    loop { 
+        let c = match it.next() {
+            Some(k) => k,
+            _ => {
+                if core.sigint.load(Relaxed) {
+                    Ok(event::Key::Ctrl('c'))
+                }else{
+                    thread::sleep(time::Duration::from_millis(10));
+                    continue;
+                }
+            },
+        };
+
         term.check_size_change(&mut term_size);
 
         match c.as_ref().unwrap() {
