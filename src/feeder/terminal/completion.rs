@@ -8,7 +8,6 @@ use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;
 use crate::feeder::terminal::Terminal;
-use termion::cursor::DetectCursorPos;
 use unicode_width::UnicodeWidthStr;
 
 fn str_width(s: &str) -> usize {
@@ -99,11 +98,6 @@ impl Terminal {
 
     fn get_cur_pos(core: &mut ShellCore) -> i32 {
         core.db.get_param("COMP_CWORD").unwrap().parse::<i32>().unwrap()
-            /*
-            Ok(i) => i,
-            _     => exit::internal("no COMP_CWORD"),
-        }
-            */
     }
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -223,13 +217,14 @@ impl Terminal {
             print!("\r\n");
         }
 
-        let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap();
+        //let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap();
+        let (cur_col, cur_row) = self.head_to_cursor_pos(self.head, self.prompt_row);
 
         self.check_scroll();
         match cur_row as usize == terminal_row_num {
             true => {
                 let back_row = std::cmp::max(cur_row as i16 - row_num as i16, 1);
-                self.write(&termion::cursor::Goto(cur_col, back_row as u16).to_string());
+                self.write(&termion::cursor::Goto(cur_col as u16, back_row as u16).to_string());
                 print!("\x1b[1A");
                 self.flush();
             },
