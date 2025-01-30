@@ -319,9 +319,7 @@ impl Terminal {
         *prev_size = Terminal::size();
 
         let cur_row = prev_size.1 as isize - from_under;
-        let diff = self.head_to_cursor_pos(self.head, 0).1;
-        let ans = cur_row - diff as isize;
-        self.prompt_row = std::cmp::max(ans, 1) as usize;
+        self.prompt_row = std::cmp::max(cur_row, 1) as usize;
     }
 
     pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
