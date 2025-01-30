@@ -314,11 +314,13 @@ impl Terminal {
         if *prev_size == Terminal::size() {
             return;
         }
+
+        let from_under = prev_size.1 as isize - self.prompt_row as isize;
         *prev_size = Terminal::size();
 
-        let cur_row = self.stdout.cursor_pos().unwrap().1;
+        let cur_row = prev_size.1 as isize - from_under;
         let diff = self.head_to_cursor_pos(self.head, 0).1;
-        let ans = cur_row as isize - diff as isize;
+        let ans = cur_row - diff as isize;
         self.prompt_row = std::cmp::max(ans, 1) as usize;
     }
 
