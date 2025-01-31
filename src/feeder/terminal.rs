@@ -387,7 +387,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         if key::action(core, &mut term, &c, &mut tab_num, &prev_key)? {
             break;
         }
-        prev_key = c.clone();
+        prev_key = c;
         if ! is_completion_key(prev_key) {
             tab_num = 0;
             term.completion_candidate = String::new();
