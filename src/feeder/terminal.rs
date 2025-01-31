@@ -372,22 +372,30 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
 
     let mut stdin = termion::async_stdin().keys();
 
-    while signal_check(core, &mut term)? {
+    loop {
+        if let Err(e) = signal_check(core, &mut term) {
+            core.history.remove(0);
+            return Err(e);
+        }
+
         let c = match stdin.next() {
-            Some(k) => {
-                term.check_size_change(&mut term_size);
-                k.as_ref().unwrap().clone()
-            },
+            Some(k) => k.as_ref().unwrap().clone(),
             _ => {
                 thread::sleep(time::Duration::from_millis(10));
                 continue;
             },
         };
 
-        if key::action(core, &mut term, &c, &mut tab_num, &prev_key)? {
-            break;
+        term.check_size_change(&mut term_size);
+        match key::action(core, &mut term, &c, &mut tab_num, &prev_key) {
+            Ok(true) => break,
+            Ok(false) => prev_key = c,
+            Err(e) => {
+                core.history.remove(0);
+                return Err(e)
+            },
         }
-        prev_key = c;
+
         if ! is_completion_key(prev_key) {
             tab_num = 0;
             term.completion_candidate = String::new();
