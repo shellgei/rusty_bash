@@ -8,17 +8,17 @@ use super::Terminal;
 use termion::event;
 use termion::event::Key;
 
-pub fn action(core: &mut ShellCore, term: &mut Terminal, c: &Key,
-               tab_num: &mut usize, prev_key: &Key) -> Result<bool, InputError> {
+pub fn action(core: &mut ShellCore, term: &mut Terminal,
+              c: &Key, prev_key: &Key) -> Result<bool, InputError> {
     match c {
         event::Key::Ctrl(ch) => ctrl(core, term, *ch)?,
         event::Key::Down |
         event::Key::Left |
         event::Key::Right |
-        event::Key::Up => arrow(term, core, c, *tab_num),
+        event::Key::Up => arrow(term, core, c),
         event::Key::Backspace => term.backspace(),
         event::Key::Delete => term.delete(),
-        event::Key::Char(c) => return char_key(term, core, c, tab_num, &prev_key),
+        event::Key::Char(c) => return char_key(term, core, c, &prev_key),
         _  => {},
     }
     Ok(false)
@@ -49,8 +49,8 @@ fn ctrl(core: &mut ShellCore, term: &mut Terminal, c: char) -> Result<(), InputE
     Ok(())
 }
 
-fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: usize) {
-    if tab_num > 1 {
+fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key) {
+    if term.tab_num > 1 {
         match key {
             event::Key::Down  => term.tab_row += 1,
             event::Key::Up    => term.tab_row -= 1,
@@ -58,7 +58,7 @@ fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: u
             event::Key::Left  => term.tab_col -= 1,
             _ => {},
         }
-        term.completion(core, tab_num);
+        term.completion(core);
     }else{
         match key {
             event::Key::Down  => term.call_history(-1, core),
@@ -71,7 +71,7 @@ fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: u
 }
 
 fn char_key(term: &mut Terminal, core: &mut ShellCore,
-            c: &char, tab_num: &mut usize, prev_key: &Key) -> Result<bool, InputError> {
+            c: &char, prev_key: &Key) -> Result<bool, InputError> {
     match c {
         '\n' => {
             if term.completion_candidate.len() > 0 {
@@ -84,16 +84,16 @@ fn char_key(term: &mut Terminal, core: &mut ShellCore,
             }
         },
         '\t' => {
-            if *tab_num == 0 || *prev_key == event::Key::Char('\t') {
-                *tab_num += 1;
+            if term.tab_num == 0 || *prev_key == event::Key::Char('\t') {
+                term.tab_num += 1;
             }
-            if *tab_num == 2 {
+            if term.tab_num == 2 {
                 term.tab_row = -1;
                 term.tab_col = 0;
-            }else if *tab_num > 2 {
+            }else if term.tab_num > 2 {
                 term.tab_row += 1;
             }
-            term.completion(core, *tab_num);
+            term.completion(core);
         },
         c => term.insert(*c),
     }

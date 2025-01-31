@@ -28,6 +28,8 @@ struct Terminal {
     head: usize,
     hist_ptr: usize,
     prompt_width_map: Vec<usize>,
+    size: (usize, usize),
+    tab_num: usize,
     /* for extended completion */
     completion_candidate: String,
     tab_row: i32,
@@ -98,7 +100,9 @@ impl Terminal {
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
             hist_ptr: 0,
+            size: Terminal::size(),
             prompt_width_map: Self::make_width_map(&replaced_prompt),
+            tab_num: 0,
             completion_candidate: String::new(),
             tab_row: -1,
             tab_col: -1,
@@ -311,15 +315,17 @@ impl Terminal {
         }
     }
 
-    pub fn check_size_change(&mut self, prev_size: &mut (usize, usize)) {
-        if *prev_size == Terminal::size() {
+    pub fn check_terminal_size(&mut self/*, prev_size: &mut (usize, usize)*/) {
+        //if *prev_size == Terminal::size() {
+        if self.size == Terminal::size() {
             return;
         }
 
-        let from_under = prev_size.1 as isize - self.prompt_row as isize;
-        *prev_size = Terminal::size();
+        let from_under = self.size.1 as isize - self.prompt_row as isize;
+        //*prev_size = Terminal::size();
+        self.size = Terminal::size();
 
-        let cur_row = prev_size.1 as isize - from_under;
+        let cur_row = self.size.1 as isize - from_under;
         self.prompt_row = std::cmp::max(cur_row, 1) as usize;
     }
 
@@ -365,10 +371,9 @@ fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, Input
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
-    let mut term_size = Terminal::size();
     core.history.insert(0, String::new());
     let mut prev_key = event::Key::Char('a');
-    let mut tab_num = 0;
+    //let mut tab_num = 0;
 
     let mut stdin = termion::async_stdin().keys();
 
@@ -386,8 +391,8 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
         };
 
-        term.check_size_change(&mut term_size);
-        match key::action(core, &mut term, &c, &mut tab_num, &prev_key) {
+        term.check_terminal_size();
+        match key::action(core, &mut term, &c, &prev_key) {
             Ok(true) => break,
             Ok(false) => prev_key = c,
             Err(e) => {
@@ -397,15 +402,14 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         }
 
         if ! is_completion_key(prev_key) {
-            tab_num = 0;
+            term.tab_num = 0;
             term.completion_candidate = String::new();
         }
 
         term.check_scroll();
     }
 
-    core.history[0] = term.get_string(term.prompt.chars().count());
-    core.history[0].pop();
-
-    Ok(term.get_string(term.prompt.chars().count()))
+    let ans = term.get_string(term.prompt.chars().count());
+    core.history[0] = ans.trim_end().to_string();
+    Ok(ans)
 }

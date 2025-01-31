@@ -48,7 +48,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 }
 
 impl Terminal {
-    pub fn completion(&mut self, core: &mut ShellCore, tab_num: usize) {
+    pub fn completion(&mut self, core: &mut ShellCore/*, tab_num: usize*/) {
         self.escape_at_completion = true;
         let _ = core.db.set_array("COMPREPLY", vec![], None);
         self.set_completion_info(core);
@@ -59,9 +59,9 @@ impl Terminal {
             return;
         }
 
-        match tab_num  {
+        match self.tab_num  {
             1 => self.try_completion(core).unwrap(),
-            _ => self.show_list(&core.db.get_array_all("COMPREPLY"), tab_num),
+            _ => self.show_list(&core.db.get_array_all("COMPREPLY")),
         }
     }
 
@@ -186,15 +186,17 @@ impl Terminal {
         self.tab_row = i%row_num;
     }
 
-    fn show_list(&mut self, list: &Vec<String>, tab_num: usize) {
+    fn show_list(&mut self, list: &Vec<String>/*, tab_num: usize*/) {
         if list.is_empty() {
             return;
         }
         let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
-        let terminal_row_num = Terminal::size().1;
+        //let terminal_row_num = Terminal::size().1;
+        let terminal_row_num = self.size.1;
         let col_num = std::cmp::min(
-                          std::cmp::max(Terminal::size().0 / max_entry_width, 1),
+                          //std::cmp::max(Terminal::size().0 / max_entry_width, 1),
+                          std::cmp::max(self.size.0 / max_entry_width, 1),
                           list.len()
                       );
         let row_num = std::cmp::min(
@@ -203,7 +205,7 @@ impl Terminal {
                       );
         self.completion_candidate = String::new();
 
-        if tab_num > 2 {
+        if self.tab_num > 2 {
             self.normalize_tab(row_num as i32, col_num as i32);
         }
 
