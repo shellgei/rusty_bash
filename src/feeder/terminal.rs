@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod completion;
+mod keyaction;
 
 use crate::{file_check, ShellCore};
 use crate::utils::file;
@@ -353,27 +354,6 @@ fn is_completion_key(key: event::Key) -> bool {
     }
 }
 
-fn on_arrow_key(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: usize) {
-    if tab_num > 1 {
-        match key {
-            event::Key::Down  => term.tab_row += 1,
-            event::Key::Up    => term.tab_row -= 1,
-            event::Key::Right => term.tab_col += 1,
-            event::Key::Left  => term.tab_col -= 1,
-            _ => {},
-        }
-        term.completion(core, tab_num);
-    }else{
-        match key {
-            event::Key::Down  => term.call_history(-1, core),
-            event::Key::Up    => term.call_history(1, core),
-            event::Key::Right => term.shift_cursor(1),
-            event::Key::Left  => term.shift_cursor(-1),
-            _ => {},
-        }
-    }
-}
-
 fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, InputError> {
     if core.sigint.load(Relaxed) 
     || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
@@ -381,32 +361,6 @@ fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, Input
         return Err(InputError::Interrupt);
     }
     Ok(true)
-}
-
-fn reaction_ctrl_char(core: &mut ShellCore, term: &mut Terminal, c: char)
-                       -> Result<(), InputError>{
-    match c {
-        'a' => term.goto_origin(),
-        'b' => term.shift_cursor(-1),
-        'c' => {
-            core.sigint.store(true, Relaxed);
-            term.goto(term.chars.len());
-            term.write("^C\r\n");
-            return Err(InputError::Interrupt);
-        },
-        'd' => {
-            if term.chars.len() == term.prompt.chars().count() {
-                term.write("\r\n");
-                return Err(InputError::Eof);
-            }else{
-                term.delete();
-            }
-        },
-        'e' => term.goto_end(),
-        'f' => term.shift_cursor(1),
-        _ => {},
-    }
-    Ok(())
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
@@ -430,38 +384,18 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         term.check_size_change(&mut term_size);
 
         match c.as_ref().unwrap() {
-            event::Key::Ctrl(c) => reaction_ctrl_char(core, &mut term, *c)?,
+            event::Key::Ctrl(ch) => keyaction::ctrl(core, &mut term, *ch)?,
             event::Key::Down |
             event::Key::Left |
             event::Key::Right |
-            event::Key::Up => on_arrow_key(&mut term, core, c.as_ref().unwrap(), tab_num),
+            event::Key::Up => keyaction::arrow(&mut term, core, c.as_ref().unwrap(), tab_num),
             event::Key::Backspace => term.backspace(),
             event::Key::Delete => term.delete(),
-            event::Key::Char('\n') => {
-                if term.completion_candidate.len() > 0 {
-                    term.set_double_tab_completion();
-                }else{
-                    term.goto(term.chars.len());
-                    term.write("\r\n");
-                    term.chars.push('\n');
+            event::Key::Char(c) => {
+                if keyaction::char(&mut term, core, c, &mut tab_num, &mut prev_key) {
                     break;
                 }
-            },
-            event::Key::Char('\t') => {
-                if tab_num == 0 || prev_key == event::Key::Char('\t') {
-                    tab_num += 1;
-                }
-                if tab_num == 2 {
-                    term.tab_row = -1;
-                    term.tab_col = 0;
-                }else if tab_num > 2 {
-                    term.tab_row += 1;
-                }
-                term.completion(core, tab_num);
-            },
-            event::Key::Char(c) => {
-                term.insert(*c);
-            },
+            }
             _  => {},
         }
         term.check_scroll();
