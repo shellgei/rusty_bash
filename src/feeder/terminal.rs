@@ -374,36 +374,27 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
 
     while signal_check(core, &mut term)? {
         let c = match stdin.next() {
-            Some(k) => k,
+            Some(k) => {
+                term.check_size_change(&mut term_size);
+                k
+            },
             _ => {
                 thread::sleep(time::Duration::from_millis(10));
                 continue;
             },
         };
 
-        term.check_size_change(&mut term_size);
-
-        match c.as_ref().unwrap() {
-            event::Key::Ctrl(ch) => keyaction::ctrl(core, &mut term, *ch)?,
-            event::Key::Down |
-            event::Key::Left |
-            event::Key::Right |
-            event::Key::Up => keyaction::arrow(&mut term, core, c.as_ref().unwrap(), tab_num),
-            event::Key::Backspace => term.backspace(),
-            event::Key::Delete => term.delete(),
-            event::Key::Char(c) => {
-                if keyaction::char(&mut term, core, c, &mut tab_num, &mut prev_key) {
-                    break;
-                }
-            }
-            _  => {},
+        if keyaction::action(core, &mut term, c.as_ref().unwrap(),
+                             &mut tab_num, &prev_key)? {
+            break;
         }
-        term.check_scroll();
         prev_key = c.as_ref().unwrap().clone();
         if ! is_completion_key(prev_key) {
             tab_num = 0;
             term.completion_candidate = String::new();
         }
+
+        term.check_scroll();
     }
 
     core.history[0] = term.get_string(term.prompt.chars().count());

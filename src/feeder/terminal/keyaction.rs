@@ -8,6 +8,22 @@ use super::Terminal;
 use termion::event;
 use termion::event::Key;
 
+pub fn action (core: &mut ShellCore, term: &mut Terminal, c: &Key,
+               tab_num: &mut usize, prev_key: &Key) -> Result<bool, InputError> {
+    match c {
+        event::Key::Ctrl(ch) => ctrl(core, term, *ch)?,
+        event::Key::Down |
+        event::Key::Left |
+        event::Key::Right |
+        event::Key::Up => arrow(term, core, c, *tab_num),
+        event::Key::Backspace => term.backspace(),
+        event::Key::Delete => term.delete(),
+        event::Key::Char(c) => return char_key(term, core, c, tab_num, &prev_key),
+        _  => {},
+    }
+    Ok(false)
+}
+
 pub fn ctrl(core: &mut ShellCore, term: &mut Terminal, c: char) -> Result<(), InputError>{
     match c {
         'a' => term.goto_origin(),
@@ -54,8 +70,8 @@ pub fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_nu
     }
 }
 
-pub fn char(term: &mut Terminal, core: &mut ShellCore,
-            c: &char, tab_num: &mut usize, prev_key: &Key) -> bool {
+pub fn char_key(term: &mut Terminal, core: &mut ShellCore,
+            c: &char, tab_num: &mut usize, prev_key: &Key) -> Result<bool, InputError> {
     match c {
         '\n' => {
             if term.completion_candidate.len() > 0 {
@@ -64,7 +80,7 @@ pub fn char(term: &mut Terminal, core: &mut ShellCore,
                 term.goto(term.chars.len());
                 term.write("\r\n");
                 term.chars.push('\n');
-                return true;
+                return Ok(true);
             }
         },
         '\t' => {
@@ -81,5 +97,5 @@ pub fn char(term: &mut Terminal, core: &mut ShellCore,
         },
         c => term.insert(*c),
     }
-    false
+    Ok(false)
 }
