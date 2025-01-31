@@ -376,7 +376,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         let c = match stdin.next() {
             Some(k) => {
                 term.check_size_change(&mut term_size);
-                k
+                k.as_ref().unwrap().clone()
             },
             _ => {
                 thread::sleep(time::Duration::from_millis(10));
@@ -384,11 +384,10 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
         };
 
-        if key::action(core, &mut term, c.as_ref().unwrap(),
-                             &mut tab_num, &prev_key)? {
+        if key::action(core, &mut term, &c, &mut tab_num, &prev_key)? {
             break;
         }
-        prev_key = c.as_ref().unwrap().clone();
+        prev_key = c.clone();
         if ! is_completion_key(prev_key) {
             tab_num = 0;
             term.completion_candidate = String::new();
