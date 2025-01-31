@@ -8,8 +8,7 @@ use super::Terminal;
 use termion::event;
 use termion::event::Key;
 
-pub fn action(core: &mut ShellCore, term: &mut Terminal,
-              c: &Key, prev_key: &Key) -> Result<bool, InputError> {
+pub fn action(core: &mut ShellCore, term: &mut Terminal, c: &Key) -> Result<bool, InputError> {
     match c {
         event::Key::Ctrl(ch) => ctrl(core, term, *ch)?,
         event::Key::Down |
@@ -18,7 +17,7 @@ pub fn action(core: &mut ShellCore, term: &mut Terminal,
         event::Key::Up => arrow(term, core, c),
         event::Key::Backspace => term.backspace(),
         event::Key::Delete => term.delete(),
-        event::Key::Char(c) => return char_key(term, core, c, &prev_key),
+        event::Key::Char(c) => return char_key(term, core, c),
         _  => {},
     }
     Ok(false)
@@ -70,8 +69,8 @@ fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key) {
     }
 }
 
-fn char_key(term: &mut Terminal, core: &mut ShellCore,
-            c: &char, prev_key: &Key) -> Result<bool, InputError> {
+fn char_key(term: &mut Terminal, core: &mut ShellCore, c: &char)
+                                       -> Result<bool, InputError> {
     match c {
         '\n' => {
             if term.completion_candidate.len() > 0 {
@@ -84,7 +83,7 @@ fn char_key(term: &mut Terminal, core: &mut ShellCore,
             }
         },
         '\t' => {
-            if term.tab_num == 0 || *prev_key == event::Key::Char('\t') {
+            if term.tab_num == 0 || term.prev_key == event::Key::Char('\t') {
                 term.tab_num += 1;
             }
             if term.tab_num == 2 {

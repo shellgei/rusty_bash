@@ -16,6 +16,7 @@ use nix::unistd;
 use nix::unistd::User;
 use termion::event;
 use termion::cursor::DetectCursorPos;
+use termion::event::Key;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthChar;
@@ -30,6 +31,7 @@ struct Terminal {
     prompt_width_map: Vec<usize>,
     size: (usize, usize),
     tab_num: usize,
+    prev_key: Key,
     /* for extended completion */
     completion_candidate: String,
     tab_row: i32,
@@ -102,6 +104,7 @@ impl Terminal {
             hist_ptr: 0,
             size: Terminal::size(),
             prompt_width_map: Self::make_width_map(&replaced_prompt),
+            prev_key: event::Key::Char('a'),
             tab_num: 0,
             completion_candidate: String::new(),
             tab_row: -1,
@@ -349,14 +352,17 @@ impl Terminal {
         print!("\x07");
         self.flush();
     }
-}
 
-fn is_completion_key(key: event::Key) -> bool {
-    match key {
-        event::Key::Char('\t') 
-            | event::Key::Left | event::Key::Down
-            | event::Key::Right | event::Key::Up => true,
-        _ => false,
+    fn completion_finish_check(&mut self) {
+        match self.prev_key {
+            event::Key::Char('\t') 
+                | event::Key::Left | event::Key::Down
+                | event::Key::Right | event::Key::Up => return,
+            _ => {
+                self.tab_num = 0;
+                self.completion_candidate = String::new();
+            },
+        }
     }
 }
 
@@ -372,8 +378,6 @@ fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, Input
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
     core.history.insert(0, String::new());
-    let mut prev_key = event::Key::Char('a');
-    //let mut tab_num = 0;
 
     let mut stdin = termion::async_stdin().keys();
 
@@ -392,20 +396,16 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         };
 
         term.check_terminal_size();
-        match key::action(core, &mut term, &c, &prev_key) {
+        match key::action(core, &mut term, &c) {
             Ok(true) => break,
-            Ok(false) => prev_key = c,
+            Ok(false) => term.prev_key = c,
             Err(e) => {
                 core.history.remove(0);
                 return Err(e)
             },
         }
 
-        if ! is_completion_key(prev_key) {
-            term.tab_num = 0;
-            term.completion_candidate = String::new();
-        }
-
+        term.completion_finish_check();
         term.check_scroll();
     }
 
