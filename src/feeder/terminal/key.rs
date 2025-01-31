@@ -8,7 +8,7 @@ use super::Terminal;
 use termion::event;
 use termion::event::Key;
 
-pub fn action (core: &mut ShellCore, term: &mut Terminal, c: &Key,
+pub fn action(core: &mut ShellCore, term: &mut Terminal, c: &Key,
                tab_num: &mut usize, prev_key: &Key) -> Result<bool, InputError> {
     match c {
         event::Key::Ctrl(ch) => ctrl(core, term, *ch)?,
@@ -24,7 +24,7 @@ pub fn action (core: &mut ShellCore, term: &mut Terminal, c: &Key,
     Ok(false)
 }
 
-pub fn ctrl(core: &mut ShellCore, term: &mut Terminal, c: char) -> Result<(), InputError>{
+fn ctrl(core: &mut ShellCore, term: &mut Terminal, c: char) -> Result<(), InputError>{
     match c {
         'a' => term.goto_origin(),
         'b' => term.shift_cursor(-1),
@@ -49,7 +49,7 @@ pub fn ctrl(core: &mut ShellCore, term: &mut Terminal, c: char) -> Result<(), In
     Ok(())
 }
 
-pub fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: usize) {
+fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_num: usize) {
     if tab_num > 1 {
         match key {
             event::Key::Down  => term.tab_row += 1,
@@ -70,7 +70,7 @@ pub fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key, tab_nu
     }
 }
 
-pub fn char_key(term: &mut Terminal, core: &mut ShellCore,
+fn char_key(term: &mut Terminal, core: &mut ShellCore,
             c: &char, tab_num: &mut usize, prev_key: &Key) -> Result<bool, InputError> {
     match c {
         '\n' => {

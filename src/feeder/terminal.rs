@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod completion;
-mod keyaction;
+mod key;
 
 use crate::{file_check, ShellCore};
 use crate::utils::file;
@@ -384,7 +384,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             },
         };
 
-        if keyaction::action(core, &mut term, c.as_ref().unwrap(),
+        if key::action(core, &mut term, c.as_ref().unwrap(),
                              &mut tab_num, &prev_key)? {
             break;
         }
