@@ -51,12 +51,7 @@ impl Subword for BracedParam {
         self.check()?;
 
         if self.indirect {
-            let value = core.db.get_param(&self.param.name).unwrap_or_default();
-            if utils::is_param(&value) {
-                self.param.name = value;
-            }else{
-                return Err(ExecError::InvalidName(value));
-            }
+            self.indirect_replace(core)?;
         }
 
         if self.param.subscript.is_some() {
@@ -108,6 +103,31 @@ impl BracedParam {
         && ! self.unknown.starts_with(",") {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
+        Ok(())
+    }
+
+    fn indirect_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut sw = self.clone();
+        sw.indirect = false;
+        sw.substitute(core)?;
+        self.param.name = sw.text.clone();
+        self.param.subscript = None;
+
+        if ! utils::is_param(&self.param.name) {
+            return Err(ExecError::InvalidName(self.param.name.clone()));
+        }
+
+//        let value = core.db.get_param(&self.param.name).unwrap_or_default();
+ //       if utils::is_param(&value) {
+         //   self.param.name = value;
+      //  }else {
+          //  let mut feeder = Feeder::new(&value);
+       //     if let Ok(Some(w)) = Word::parse(&mut feeder, core, true) {
+                //dbg!("{:?}", &w);
+        //    }else {
+       //         return Err(ExecError::InvalidName(value));
+         //   }
+        //}
         Ok(())
     }
 
