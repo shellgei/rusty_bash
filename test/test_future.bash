@@ -10,6 +10,11 @@ err () {
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+# memo 
+# sush: shopt: -po: invalid shell option name
+# printf: ParseError
+
+
 cd $(dirname $0)
 com=../target/release/sush
 
