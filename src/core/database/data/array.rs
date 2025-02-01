@@ -36,6 +36,11 @@ impl Data for ArrayData {
         formatted
     }
 
+    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        self.body.insert(0, value.to_string());
+        Ok(())
+    }
+
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         if let Ok(n) = key.parse::<usize>() {
             self.body.insert(n, value.to_string());

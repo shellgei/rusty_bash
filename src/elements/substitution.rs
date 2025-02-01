@@ -138,7 +138,12 @@ impl Substitution {
                 }
                 s.eval(core, &self.name)
             },
-            _ => Err(ExecError::ArrayIndexInvalid("".to_string())),
+            _ => {
+                match core.db.is_array(&self.name) && ! self.append && self.evaluated_array == None {
+                    true  => Ok("0".to_string()),
+                    false => Err(ExecError::ArrayIndexInvalid("".to_string())),
+                }
+            },
         }
     }
 
