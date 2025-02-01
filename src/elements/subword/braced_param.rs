@@ -109,6 +109,14 @@ impl BracedParam {
     fn indirect_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut sw = self.clone();
         sw.indirect = false;
+        sw.replace = None;
+        sw.substr = None;
+        sw.remove = None;
+        sw.value_check = None;
+        sw.unknown = String::new();
+        sw.is_array = false;
+        sw.num = false;
+
         sw.substitute(core)?;
         self.param.name = sw.text.clone();
         self.param.subscript = None;
@@ -116,18 +124,6 @@ impl BracedParam {
         if ! utils::is_param(&self.param.name) {
             return Err(ExecError::InvalidName(self.param.name.clone()));
         }
-
-//        let value = core.db.get_param(&self.param.name).unwrap_or_default();
- //       if utils::is_param(&value) {
-         //   self.param.name = value;
-      //  }else {
-          //  let mut feeder = Feeder::new(&value);
-       //     if let Ok(Some(w)) = Word::parse(&mut feeder, core, true) {
-                //dbg!("{:?}", &w);
-        //    }else {
-       //         return Err(ExecError::InvalidName(value));
-         //   }
-        //}
         Ok(())
     }
 
