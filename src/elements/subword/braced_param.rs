@@ -118,8 +118,20 @@ impl BracedParam {
         sw.num = false;
 
         sw.substitute(core)?;
-        self.param.name = sw.text.clone();
-        self.param.subscript = None;
+
+        if sw.text.contains('[') {
+            let mut feeder = Feeder::new(&("${".to_owned() + &sw.text + "}" ));
+            if let Ok(Some(mut bp)) = BracedParam::parse(&mut feeder, core) {
+                bp.substitute(core)?;
+                self.param.name = bp.param.name;
+                self.param.subscript = bp.param.subscript;
+            }else{
+                return Err(ExecError::InvalidName(sw.text.clone()));
+            }
+        }else{
+            self.param.name = sw.text.clone();
+            self.param.subscript = None;
+        }
 
         if ! utils::is_param(&self.param.name) {
             return Err(ExecError::InvalidName(self.param.name.clone()));
