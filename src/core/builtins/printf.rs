@@ -53,6 +53,8 @@ fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
             if let Ok(_) = args[i].parse::<i32>() {
                 ans += &parts[i].replace("%d", &args[i]);
             }
+        }else if parts[i].contains("%q") {
+                ans += &parts[i].replace("%q", &("'".to_owned() + &args[i] + "'"));
         }else {
             ans += &sprintf::sprintf!(&parts[i], args[i])?;
         }
