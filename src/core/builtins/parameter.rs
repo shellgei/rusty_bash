@@ -29,7 +29,12 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
     let mut feeder = Feeder::new(arg);
     if feeder.scanner_name(core) == feeder.len() { // name only
         let name = feeder.consume(feeder.len());
-        return core.db.set_param(&name, "", Some(layer));
+
+        if ! core.db.has_value_layer(&name, layer) {
+            return core.db.set_param(&name, "", Some(layer));
+        }else{
+            return Ok(());
+        }
     }
 
     match Substitution::parse(&mut feeder, core) {
