@@ -51,7 +51,7 @@ impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
         let _ = core.db.set_array("COMPREPLY", vec![], None);
-        self.set_completion_info(core);
+        self.set_completion_info(core)?;
 
         if ! Self::set_custom_compreply(core).is_ok()
         && ! self.set_default_compreply(core).is_ok() {
