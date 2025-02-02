@@ -57,7 +57,7 @@ fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key) {
             event::Key::Left  => term.tab_col -= 1,
             _ => {},
         }
-        term.completion(core);
+        let _ = term.completion(core);
     }else{
         match key {
             event::Key::Down  => term.call_history(-1, core),
@@ -92,7 +92,7 @@ fn char_key(term: &mut Terminal, core: &mut ShellCore, c: &char)
             }else if term.tab_num > 2 {
                 term.tab_row += 1;
             }
-            term.completion(core);
+            let _ = term.completion(core);
         },
         c => term.insert(*c),
     }

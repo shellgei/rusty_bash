@@ -48,21 +48,22 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 }
 
 impl Terminal {
-    pub fn completion(&mut self, core: &mut ShellCore/*, tab_num: usize*/) {
+    pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
         let _ = core.db.set_array("COMPREPLY", vec![], None);
-        self.set_completion_info(core);
+        self.set_completion_info(core)?;
 
         if ! Self::set_custom_compreply(core).is_ok()
         && ! self.set_default_compreply(core).is_ok() {
             self.cloop();
-            return;
+            return Ok(());
         }
 
         match self.tab_num  {
             1 => self.try_completion(core).unwrap(),
             _ => self.show_list(&core.db.get_array_all("COMPREPLY")),
         }
+        Ok(())
     }
 
     fn set_custom_compreply(core: &mut ShellCore) -> Result<(), String> {
@@ -313,13 +314,18 @@ impl Terminal {
         (tilde_prefix, tilde_path, last_tilde_expanded)
     }
 
-    fn set_completion_info(&mut self, core: &mut ShellCore){
-        let prompt = self.prompt.chars().count();
-        let all_string = self.get_string(prompt);
+    fn set_completion_info(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let prompt_len = self.prompt.chars().count();
+        core.db.set_param("COMP_POINT", &(self.head - prompt_len).to_string(), None)?;
+
+        let all_string = self.get_string(prompt_len);
+        core.db.set_param("COMP_LINE", &all_string, None)?;
+
         let mut words_all = utils::split_words(&all_string);
         words_all.retain(|e| e != "");
 
-        let left_string: String = self.chars[prompt..self.head].iter().collect();
+
+        let left_string: String = self.chars[prompt_len..self.head].iter().collect();
         let mut words_left = utils::split_words(&left_string);
         words_left.retain(|e| e != "");
         let from = completion_from(&words_left, core);
@@ -340,6 +346,7 @@ impl Terminal {
         }
 
         let _ = core.db.set_param("COMP_CWORD", &num.to_string(), None);
+        Ok(())
     }
 }
 
