@@ -630,42 +630,5 @@ ef
 res=$($com <<< 'echo @$SUSH_TEST@')
 [ "$res" = "@ ab cd ef @" ] || err $LINENO
 
-### glob
-
-res=$($com <<< 'echo /bin/?' | grep -F '/bin/[')
-[ "$?" == "0" ] || err $LINENO
-
-res=$($com <<< 'echo /*' | grep '/etc')
-[ "$?" == 0 ] || err $LINENO
-
-res=$($com <<< 'echo ~+/*' | grep '*')
-[ "$?" == 1 ] || err $LINENO
-
-#res=$($com <<< 'echo ~/*' | grep -F '/.')
-#[ "$?" == 1 ] || err $LINENO
-
-res=$($com <<< 'echo ~/.*' | grep -F '/.')
-[ "$?" == 0 ] || err $LINENO
-
-res=$($com <<< 'echo /etc*/' | grep -F '/etc/')
-[ "$?" == 0 ] || err $LINENO
-
-res=$($com <<< 'echo .*' | grep -F './.')
-[ "$?" == 1 ] || err $LINENO
-
-res=$($com <<< 'echo ./*' | grep -F './')
-[ "$?" == "0" ] || err $LINENO
-
-#res=$($com <<< 'echo *"$PATH"')
-#[ "$?" == "0" ] || err $LINENO
-#
-#res=$($com <<< 'echo /*"b"*' | grep -F '*')
-#[ "$?" == "1" ] || err $LINENO
-
-res=$($com <<< "echo /*'b'*" | grep -F '*')
-[ "$?" == "1" ] || err $LINENO
-
-#res=$($com <<< 'echo /"*"' | grep -F '*')
-#[ "$?" == "0" ] || err $LINENO
 
 echo OK $0

@@ -23,14 +23,6 @@ pub fn files(dir: &str) -> Vec<String> {
 pub fn glob(dir: &str, pattern: &str) -> Vec<String> {
     let make_path = |f: &str| dir.to_owned() + f + "/";
 
-    if pattern == "" {
-        let path = make_path(pattern);
-        match fs::metadata(&path).is_ok() {
-            true  => return vec![path],
-            false => return vec![],
-        }
-    }
-
     let pat = glob::parse(pattern);
     files(dir).iter()
               .filter(|f| glob::compare(f, &pat) )
