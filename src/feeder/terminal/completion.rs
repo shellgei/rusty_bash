@@ -48,7 +48,9 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
 }
 
 impl Terminal {
-    pub fn completion(&mut self, core: &mut ShellCore/*, tab_num: usize*/) {
+    pub fn completion(&mut self, core: &mut ShellCore) {
+        core.db.set_param("COMP_LINE", &self.get_string(self.prompt.chars().count()), None);
+        core.db.set_param("COMP_POINT", &(self.head - self.prompt.chars().count()).to_string(), None);
         self.escape_at_completion = true;
         let _ = core.db.set_array("COMPREPLY", vec![], None);
         self.set_completion_info(core);
