@@ -66,6 +66,10 @@ res=$($com <<< 'set -o pipefail; set -e; false | true ; echo NG')
 res=$($com <<< 'set +B; echo {a,b}')
 [ "$res" == "{a,b}" ] || err $LINENO
 
+### noglob
+
+res=$($com <<< 'set -o noglob; echo /etc/*')
+[ "$res" = "/etc/*" ] || err $LINENO
 
 
 echo $0 >> ./ok
