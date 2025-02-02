@@ -73,8 +73,8 @@ fn eat_string(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
 }
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
-    let cut = remaining[0..cutpos].to_string();
-    *remaining = remaining.split_off(cutpos);
-
-    cut
+    let back = remaining.split_off(cutpos);
+    let front = remaining.clone();
+    *remaining = back;
+    front
 }
