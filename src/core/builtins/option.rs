@@ -145,8 +145,16 @@ pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i
 }
 
 pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+
+    if args.contains(&"-p".to_string()) && args.contains(&"-o".to_string()) {
+            core.options.print_all(false);
+            return 0;
+    }
+
     if args.len() < 3 {
-        return shopt_print(core, args, args.len() < 2);
+        let len = args.len();
+        return shopt_print(core, &mut args, len < 2);
     }
 
     let res = match args[1].as_str() {
