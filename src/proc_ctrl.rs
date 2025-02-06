@@ -8,6 +8,7 @@ use nix::unistd;
 use nix::errno::Errno;
 use nix::sys::{resource, wait};
 use nix::sys::resource::UsageWho;
+use nix::sys::termios::FlushArg;
 use nix::sys::signal::Signal;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::time::{clock_gettime, ClockId};

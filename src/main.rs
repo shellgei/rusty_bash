@@ -9,6 +9,7 @@ mod signal;
 mod proc_ctrl;
 mod utils;
 
+use nix::sys::signal::Signal;
 use builtins::{option, parameter};
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
@@ -80,6 +81,7 @@ fn configure(args: &Vec<String>) -> ShellCore {
 }
 
 fn main() {
+    signal::ignore(Signal::SIGTTIN); //SIGTTOUを無視
     let mut args = arg::dissolve_options(&env::args().collect());
     if args.len() > 1 && args[1] == "--version" {
         show_version();

@@ -14,6 +14,7 @@ use std::sync::atomic::Ordering::Relaxed;
 use std::path::Path;
 use nix::unistd;
 use nix::unistd::User;
+use nix::sys::termios::FlushArg;
 use termion::event;
 use termion::cursor::DetectCursorPos;
 use termion::event::Key;
@@ -379,6 +380,27 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut term = Terminal::new(core, prompt);
     core.history.insert(0, String::new());
 
+    for c in io::stdin().keys() {
+        let c = c.as_ref().unwrap();
+        term.check_terminal_size();
+        match key::action(core, &mut term, c) {
+            Ok(true) => {
+    let ans = term.get_string(term.prompt.chars().count());
+    core.history[0] = ans.trim_end().to_string();
+    return Ok(ans);
+            },
+            Ok(false) => term.prev_key = *c,
+            Err(e) => {
+                core.history.remove(0);
+                return Err(e)
+            },
+        }
+
+        term.completion_finish_check();
+        term.check_scroll();
+        break;
+    }
+    
     let mut stdin = termion::async_stdin().keys();
 
     loop {

@@ -4,7 +4,9 @@
 mod terminal;
 mod scanner;
 
+use nix::sys::termios::FlushArg;
 use std::{io, process};
+use std::io::Write;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use crate::ShellCore;
@@ -126,7 +128,14 @@ impl Feeder {
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
         let line = match ! core.read_stdin && self.script_lines.is_none() {
-            true  => terminal::read_line(core, "PS1"),
+            true  => {
+                //let mut attr = nix::sys::termios::tcgetattr(io::stdin()).unwrap();
+                let res = terminal::read_line(core, "PS1");
+                //nix::sys::termios::tcflush(io::stdin(), FlushArg::TCIFLUSH);
+                //nix::sys::termios::tcsetattr(io::stdin(), nix::sys::termios::SetArg::TCSAFLUSH, &attr);
+
+                res
+            },
             false => self.read_script(core),
         };
 
