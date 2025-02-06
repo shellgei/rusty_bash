@@ -85,7 +85,7 @@ fn oct_to_hex_in_str(from: &str) -> String {
 }
 
 impl Terminal<'_> {
-    pub fn new(core: &mut ShellCore, ps: &str) -> Self {
+    pub fn new(core: &mut ShellCore, ps: &str, row: usize) -> Self {
         let raw_prompt = core.db.get_param(ps).unwrap_or(String::new());
         let ansi_on_prompt = oct_to_hex_in_str(&raw_prompt);
 
@@ -95,7 +95,7 @@ impl Terminal<'_> {
         io::stdout().flush().unwrap();
 
         let mut sout = io::stdout().into_raw_mode().unwrap();
-        let row = sout.cursor_pos().unwrap_or((1,1)).1;
+        //let row = sout.cursor_pos().unwrap_or((1,1)).1;
 
         Terminal {
             prompt: prompt.to_string(),
@@ -379,7 +379,9 @@ fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, Input
 }
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
-    let mut term = Terminal::new(core, prompt);
+    let mut sout = io::stdout().lock().into_raw_mode().unwrap();
+    let row = sout.cursor_pos().unwrap_or((1,1)).1 as usize;
+    let mut term = Terminal::new(core, prompt, row);
     core.history.insert(0, String::new());
 
     /*
