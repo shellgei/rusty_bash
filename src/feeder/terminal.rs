@@ -4,6 +4,7 @@
 mod completion;
 mod key;
 
+use std::io::StdoutLock;
 use crate::{file_check, ShellCore};
 use crate::utils::file;
 use crate::error::input::InputError;
@@ -22,9 +23,9 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
 use unicode_width::UnicodeWidthChar;
 
-struct Terminal {
+struct Terminal<'a> {
     prompt: String,
-    stdout: RawTerminal<Stdout>,
+    stdout: RawTerminal<StdoutLock<'a>>,
     prompt_row: usize,
     chars: Vec<char>,
     head: usize,
@@ -83,7 +84,7 @@ fn oct_to_hex_in_str(from: &str) -> String {
     ans
 }
 
-impl Terminal {
+impl Terminal<'_> {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
         let raw_prompt = core.db.get_param(ps).unwrap_or(String::new());
         let ansi_on_prompt = oct_to_hex_in_str(&raw_prompt);
@@ -98,7 +99,8 @@ impl Terminal {
 
         Terminal {
             prompt: prompt.to_string(),
-            stdout: sout,
+            //stdout: sout,
+            stdout: io::stdout().lock().into_raw_mode().unwrap(),
             prompt_row: row as usize,
             chars: prompt.chars().collect(),
             head: prompt.chars().count(),
@@ -380,6 +382,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     let mut term = Terminal::new(core, prompt);
     core.history.insert(0, String::new());
 
+    /*
     for c in io::stdin().keys() {
         let c = c.as_ref().unwrap();
         term.check_terminal_size();
@@ -400,6 +403,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
         term.check_scroll();
         break;
     }
+    */
     
     let mut stdin = termion::async_stdin().keys();
 

@@ -47,7 +47,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     file_check::is_dir(&s.replace(&tilde_prefix, &tilde_path))
 }
 
-impl Terminal {
+impl Terminal<'_> {
     pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
         let _ = core.db.set_array("COMPREPLY", vec![], None);
