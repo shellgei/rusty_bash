@@ -7,7 +7,7 @@ mod key;
 use crate::{file_check, ShellCore};
 use crate::utils::file;
 use crate::error::input::InputError;
-use std::{io, thread, time};
+use std::io;
 use std::fs::File;
 use std::io::{Write, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
@@ -377,6 +377,45 @@ fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, Input
 
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
     let mut term = Terminal::new(core, prompt);
+    signal_check(core, &mut term)?;
+
+    core.history.insert(0, String::new());
+
+    for c in io::stdin().keys() {
+        let c = c.unwrap();
+
+        if let Err(e) = signal_check(core, &mut term) {
+            core.history.remove(0);
+            return Err(e);
+        }
+
+        term.check_terminal_size();
+        match key::action(core, &mut term, &c) {
+            Ok(true) => break,
+            Ok(false) => term.prev_key = c,
+            Err(e) => {
+                core.history.remove(0);
+                return Err(e)
+            },
+        }
+
+        term.completion_finish_check();
+        term.check_scroll();
+    }
+
+    let ans = term.get_string(term.prompt.chars().count());
+    core.history[0] = ans.trim_end().to_string();
+    Ok(ans)
+}
+
+/*TODO: The following version uses async_stdin and enables
+ * the shell be interrupted by signals. However, some bugs
+ * found around cursor control. Moreover, this implementation
+ * causes a SIGTTIN signal after a command runs. 
+ */
+/*
+pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
+    let mut term = Terminal::new(core, prompt);
     core.history.insert(0, String::new());
 
     let mut stdin = termion::async_stdin().keys();
@@ -413,3 +452,4 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
     core.history[0] = ans.trim_end().to_string();
     Ok(ans)
 }
+*/
