@@ -7,5 +7,5 @@
 ./test_calculation.bash
 ./test_compound.bash
 ./test_parameters.bash
+./test_builtins.bash
 ./test_job.bash
-../../../test/test_builtins.bash

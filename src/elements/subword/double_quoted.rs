@@ -7,6 +7,7 @@ use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
+use crate::elements::subword::Arithmetic;
 use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone, Default)]
@@ -115,6 +116,17 @@ impl DoubleQuoted {
         }
     }
 
+    fn eat_arithmetic(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
+        if let Some(a) = Arithmetic::parse(feeder, core)? {
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            Ok(true)
+        }else{
+            Ok(false)
+        }
+    }
+
     fn eat_command_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
         -> Result<bool, ParseError> {
         if let Some(a) = CommandSubstitution::parse(feeder, core)? {
@@ -180,6 +192,7 @@ impl DoubleQuoted {
 
         loop {
             while Self::eat_braced_param(feeder, &mut ans, core)?
+               || Self::eat_arithmetic(feeder, &mut ans, core)?
                || Self::eat_command_substitution(feeder, &mut ans, core)?
                || Self::eat_special_or_positional_param(feeder, &mut ans, core)
                || Self::eat_doller(feeder, &mut ans)
