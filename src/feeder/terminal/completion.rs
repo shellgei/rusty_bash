@@ -79,9 +79,9 @@ impl Terminal {
         let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
         let cur_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
 
-        match core.completion_functions.get(&org_word) {
-            Some(value) => {
-                let command = format!("prev={} cur={} {}", &prev_word, &cur_word, &value);//TODO: cur should be set
+        match core.completion_info.get(&org_word) {
+            Some(info) => {
+                let command = format!("prev={} cur={} {}", &prev_word, &cur_word, &info.function);//TODO: cur should be set
                 let mut feeder = Feeder::new(&command);                              // by bash-completion 
 
                 if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {

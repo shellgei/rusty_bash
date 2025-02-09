@@ -63,7 +63,7 @@ complete -c sudo xargs which
 complete -j -P '"%' -S '"' disown fg jobs
 complete -u groups w
 complete -v unset
-complete -o set
+complete -A setopt set
 
 command_not_found_handle() {
 	if [ -e /usr/lib/command-not-found ] ; then
