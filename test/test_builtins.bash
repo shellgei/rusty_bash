@@ -236,6 +236,16 @@ echo $OPTIND
 [[ "$res" == '1
 3' ]] || err $LINENO
 
+res=$($com <<< 'set -- -s --; echo $@
+getopts s flag "$@"; res=$?
+echo flag:$flag OPTIND:$OPTIND exit:$res
+getopts s flag "$@"; res=$?
+echo flag:$flag OPTIND:$OPTIND exit:$res
+')
+[ "$res" = "-s --
+flag:s OPTIND:2 exit:0
+flag:? OPTIND:3 exit:1" ] || err $LINENO
+
 ### printf ###
 
 res=$($com <<< 'printf -v a %s bbb &> /dev/null; echo $a')

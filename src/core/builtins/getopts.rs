@@ -76,7 +76,15 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let arg = args[index].clone();
 
     if ! arg.starts_with("-") {
+        let _ = core.db.set_param(&name, "?", None);
         let _ = core.db.set_param("OPTARG", "?", None);
+        return 1;
+    }
+
+    if arg.starts_with("--") {
+        let _ = core.db.set_param(&name, "?", None);
+        let _ = core.db.set_param("OPTARG", "?", None);
+        let _ = core.db.set_param("OPTIND", &(index+1).to_string(), None);
         return 1;
     }
 
