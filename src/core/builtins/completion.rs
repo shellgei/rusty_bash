@@ -346,8 +346,6 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    dbg!("{:?}", &args);
-
     let mut o_options = vec![];
     let mut args = arg::dissolve_options(args);
     while let Some(v) = arg::consume_with_next_arg("-o", &mut args) {
