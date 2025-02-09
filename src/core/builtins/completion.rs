@@ -389,20 +389,15 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() > 3 && args[1] == "-F" {
         let func = args[2].clone();
-        let command = args[3].clone();
-
-        if ! core.completion_info.contains_key(&command) {
-            core.completion_info.insert(command.clone(), CompletionInfo::default());
+        for command in &args[3..] {
+            if ! core.completion_info.contains_key(command) {
+                core.completion_info.insert(command.clone(), CompletionInfo::default());
+            }
+    
+            let info = &mut core.completion_info.get_mut(command).unwrap();
+            info.function = func.clone();
+            info.o_options = o_options.clone();
         }
-
-        let mut info = &mut core.completion_info.get_mut(&command).unwrap();
-
-        info.function = func;
-        info.o_options = o_options;
-        /*
-        core.completion_info[&command].function = func;
-        core.completion_info[&command].o_options = o_options;
-        */
 
         return 0;
     }
