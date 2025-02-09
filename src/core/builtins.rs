@@ -34,6 +34,7 @@ impl ShellCore {
         self.builtins.insert("command".to_string(), command);
         self.builtins.insert("compgen".to_string(), completion::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
+        self.builtins.insert("compopt".to_string(), completion::compopt);
         self.builtins.insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("declare".to_string(), parameter::declare);
         self.builtins.insert("eval".to_string(), eval);

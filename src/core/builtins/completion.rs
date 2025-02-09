@@ -400,3 +400,11 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     eprintln!("sush: {} {}: still unsupported", &args[0], &args[1]);
     1
 }
+
+pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
+        eprintln!("bash: compopt: not currently executing completion function");
+    }
+
+    0
+}
