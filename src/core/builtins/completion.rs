@@ -490,6 +490,8 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
         }
         println!("{}", &com);
+    }else{
+        eprintln!("sush: compopt: {}: no completion specification", &args[1]);
     }
 
     0
