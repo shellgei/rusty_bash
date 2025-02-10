@@ -345,6 +345,8 @@ fn print_complete(core: &mut ShellCore) -> i32 {
     if core.default_completion_functions != "" {
         println!("complete -F {} -D", &core.default_completion_functions);
     }
+    //dbg!("{:?}", &core.completion_actions);
+    //dbg!("{:?}", &core.completion);
     0
 }
 
@@ -372,14 +374,28 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let action = opt_to_action(&args[1]);
     if action != "" {
         for command in &args[2..] {
-            core.completion_actions.insert(command.clone(), (action.clone(), options.clone()));
+            if ! core.completion_info.contains_key(command) {
+                core.completion_info.insert(command.clone(), CompletionInfo::default());
+            }
+    
+            let info = &mut core.completion_info.get_mut(command).unwrap();
+            info.action = action.clone();
+            info.options = options.clone();
+            //core.completion_actions.insert(command.clone(), (action.clone(), options.clone()));
         }
         return 0;
     }
 
     if args.len() > 2 && args[1] == "-A" {
-        for a in &args[3..] {
-            core.completion_actions.insert(a.clone(), (args[2].to_string(), options.clone()));
+        for command in &args[3..] {
+            if ! core.completion_info.contains_key(command) {
+                core.completion_info.insert(command.clone(), CompletionInfo::default());
+            }
+    
+            let info = &mut core.completion_info.get_mut(command).unwrap();
+            info.action = action.clone();
+            info.options = options.clone();
+            //core.completion_actions.insert(a.clone(), (args[2].to_string(), options.clone()));
         }
 
         return 0;

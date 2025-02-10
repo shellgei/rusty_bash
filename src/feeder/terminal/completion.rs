@@ -122,28 +122,32 @@ impl Terminal {
 
     fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
                               com: &str, pos: &str) -> Vec<String> {
-        if core.completion_actions.contains_key(com) {
-            let (action, options) = core.completion_actions[com].clone();
-            let mut cands = match action.as_ref() {
-                "alias" => completion::compgen_a(core, args),
-                "command" => completion::compgen_c(core, args),
-                "job" => completion::compgen_j(core, args),
-                "setopt" => completion::compgen_o(core, args),
-                "stopped" => completion::compgen_stopped(core, args),
-                "user" => completion::compgen_u(core, args),
-                "variable" => completion::compgen_v(core, args),
-                _ => vec![],
-            };
+        if core.completion_info.contains_key(com) {
+            let action = core.completion_info[com].action.clone();
+            let options = core.completion_info[com].options.clone();
 
-            if options.contains_key("-P") {
-                let prefix = &options["-P"];
-                cands = cands.iter().map(|c| prefix.clone() + c).collect();
+            if action != "" {
+                let mut cands = match action.as_ref() {
+                    "alias" => completion::compgen_a(core, args),
+                    "command" => completion::compgen_c(core, args),
+                    "job" => completion::compgen_j(core, args),
+                    "setopt" => completion::compgen_o(core, args),
+                    "stopped" => completion::compgen_stopped(core, args),
+                    "user" => completion::compgen_u(core, args),
+                    "variable" => completion::compgen_v(core, args),
+                    _ => vec![],
+                };
+    
+                if options.contains_key("-P") {
+                    let prefix = &options["-P"];
+                    cands = cands.iter().map(|c| prefix.clone() + c).collect();
+                }
+                if options.contains_key("-S") {
+                    let suffix = &options["-S"];
+                    cands = cands.iter().map(|c| c.to_owned() + &suffix.clone()).collect();
+                }
+                return cands;
             }
-            if options.contains_key("-S") {
-                let suffix = &options["-S"];
-                cands = cands.iter().map(|c| c.to_owned() + &suffix.clone()).collect();
-            }
-            return cands;
         }
 
         if pos == "0" {
