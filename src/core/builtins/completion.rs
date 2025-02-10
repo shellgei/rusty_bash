@@ -341,9 +341,16 @@ fn opt_to_action(arg: &str) -> String {
     }.to_string()
 }
 
+fn print_complete(core: &mut ShellCore) -> i32 {
+    if core.default_completion_functions != "" {
+        println!("complete -F {} -D", &core.default_completion_functions);
+    }
+    0
+}
+
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
-        return 0;
+        return print_complete(core);
     }
 
     let mut o_options = vec![];
