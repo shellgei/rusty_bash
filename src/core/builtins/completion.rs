@@ -345,8 +345,14 @@ fn print_complete(core: &mut ShellCore) -> i32 {
     if core.default_completion_functions != "" {
         println!("complete -F {} -D", &core.default_completion_functions);
     }
-    //dbg!("{:?}", &core.completion_actions);
-    //dbg!("{:?}", &core.completion);
+
+    for (name, info) in &core.completion_info {
+        if info.function != "" {
+            println!("complete -F {} {}", &info.function, &name);
+        }else if info.action != "" {
+            println!("complete -A {} {}", &info.action, &name);
+        }
+    }
     0
 }
 
@@ -381,7 +387,6 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             let info = &mut core.completion_info.get_mut(command).unwrap();
             info.action = action.clone();
             info.options = options.clone();
-            //core.completion_actions.insert(command.clone(), (action.clone(), options.clone()));
         }
         return 0;
     }
@@ -395,7 +400,6 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             let info = &mut core.completion_info.get_mut(command).unwrap();
             info.action = action.clone();
             info.options = options.clone();
-            //core.completion_actions.insert(a.clone(), (args[2].to_string(), options.clone()));
         }
 
         return 0;
