@@ -49,6 +49,25 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     ans
 }
 
+fn action_to_reduce_symbol(arg: &str) -> String {
+    match arg {
+        "file" => "f",
+        "directory" => "d",
+        "command" => "c",
+        "alias" => "a",
+        "builtin" => "b",
+        "keyword" => "k",
+        "variable" => "v",
+        "export" => "e",
+        "setopt" => "o",
+        "job" => "j",
+        "service" => "s",
+        "user" => "u",
+        "group" => "g",
+        _ => "",
+    }.to_string()
+}
+
 fn replace_args_compgen(args: &mut Vec<String>) -> bool {
     if args.len() < 3 || args[1] != "-A" {
         return true;
