@@ -473,9 +473,23 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
+    let optlist = vec!["bashdefault", "default",
+                       "dirnames", "filenames", "noquote",
+                       "nosort", "nospace", "plusdirs"];
+    let optlist: Vec<String> = optlist.iter().map(|s| s.to_string()).collect();
+
     let com = args[1].clone();
     if core.completion_info.contains_key(&com) {
-        dbg!("{:?}", &core.completion_info[&com]);
+        let info = &core.completion_info.get_mut(&com).unwrap();
+
+        print!("compopt ");
+        for opt in &optlist {
+            match info.o_options.contains(opt) {
+                true  => print!("-o {} ", opt), 
+                false => print!("+o {} ", opt), 
+            }
+        }
+        println!("{}", &com);
     }
 
     0
