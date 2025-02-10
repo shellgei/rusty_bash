@@ -369,7 +369,13 @@ fn print_complete(core: &mut ShellCore) -> i32 {
         if info.function != "" {
             println!("complete -F {} {}", &info.function, &name);
         }else if info.action != "" {
-            println!("complete -A {} {}", &info.action, &name);
+            let symbol = action_to_reduce_symbol(&info.action);
+
+            if symbol == "" {
+                println!("complete -A {} {}", &info.action, &name);
+            }else{
+                println!("complete -{} {}", &symbol, &name);
+            }
         }
     }
     0
