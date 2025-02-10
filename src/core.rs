@@ -67,7 +67,6 @@ pub struct ShellCore {
     pub completion_info: HashMap<String, CompletionInfo>,
     pub completion_functions: HashMap<String, String>,
     pub default_completion_functions: String,
-    //pub completion_actions: HashMap<String, (String, HashMap<String, String>)>, //command, action,
                                                                             //options for compgen
     pub measured_time: MeasuredTime,
     pub options: Options,

@@ -367,16 +367,27 @@ fn print_complete(core: &mut ShellCore) -> i32 {
 
     for (name, info) in &core.completion_info {
         if info.function != "" {
-            println!("complete -F {} {}", &info.function, &name);
+            print!("complete -F {} ", &info.function);
         }else if info.action != "" {
             let symbol = action_to_reduce_symbol(&info.action);
 
             if symbol == "" {
-                println!("complete -A {} {}", &info.action, &name);
+                print!("complete -A {} ", &info.action);
             }else{
-                println!("complete -{} {}", &symbol, &name);
+                print!("complete -{} ", &symbol);
             }
+
+            if info.options.contains_key("-P") {
+                print!("-P '{}' ", &info.options["-P"]);
+            }
+            if info.options.contains_key("-S") {
+                print!("-S '{}' ", &info.options["-S"]);
+            }
+        }else{
+            dbg!("{:?}", &info);
+            print!("complete ");
         }
+        println!("{}", &name); 
     }
     0
 }
@@ -416,14 +427,14 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    if args.len() > 2 && args[1] == "-A" {
+    if args.len() > 3 && args[1] == "-A" {
         for command in &args[3..] {
             if ! core.completion_info.contains_key(command) {
                 core.completion_info.insert(command.clone(), CompletionInfo::default());
             }
     
             let info = &mut core.completion_info.get_mut(command).unwrap();
-            info.action = action.clone();
+            info.action = args[2].clone();
             info.options = options.clone();
         }
 
