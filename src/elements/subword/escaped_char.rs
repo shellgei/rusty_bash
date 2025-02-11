@@ -22,6 +22,26 @@ impl Subword for EscapedChar {
         }
     }
 
+    fn make_ansi_c_string(&mut self) -> String {
+        match &self.text[1..] {
+            "a" => return r"\a".to_string(),
+            "b" => return r"\b".to_string(),
+            "e" => return r"\e".to_string(),
+            "E" => return r"\E".to_string(),
+            "f" => return r"\f".to_string(),
+            "n" => return "\n".to_string(),
+            "r" => return "\r".to_string(),
+            "t" => return "\t".to_string(),
+            "v" => return r"\v".to_string(),
+            "\\" => return "\\".to_string(),
+            "'" => return "'".to_string(),
+            "\"" => return "\"".to_string(),
+            _ => {},
+        }
+
+        self.text.clone()
+    }
+
     fn make_glob_string(&mut self) -> String {
         if let Some(c) = self.text.chars().nth(1) {
             if ! "*?[]^!\\".contains(c) {

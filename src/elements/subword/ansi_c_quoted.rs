@@ -3,11 +3,12 @@
 
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
-use super::Subword;
+use super::{Subword, SimpleSubword, EscapedChar};
 
 #[derive(Debug, Clone, Default)]
 pub struct AnsiCQuoted {
     pub text: String,
+    pub subwords: Vec<Box<dyn Subword>>,
 }
 
 impl Subword for AnsiCQuoted {
@@ -15,7 +16,13 @@ impl Subword for AnsiCQuoted {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn make_unquoted_string(&mut self) -> Option<String> {
-        Some( self.text[2..self.text.len()-1].to_string() )
+        let mut ans = String::new();
+        for sw in &mut self.subwords {
+            ans += &sw.make_ansi_c_string();
+        }
+
+        dbg!("{:?}", &ans);
+        Some(ans)
     }
 
     fn make_glob_string(&mut self) -> String {
@@ -30,6 +37,26 @@ impl Subword for AnsiCQuoted {
 }
 
 impl AnsiCQuoted {
+    fn eat_simple_subword(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if let Some(a) = SimpleSubword::parse(feeder) {
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
+    }
+
+    fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if let Some(a) = EscapedChar::parse(feeder, core) {
+            ans.text += a.get_text();
+            ans.subwords.push(Box::new(a));
+            true
+        }else{
+            false
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
                           -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("$'") {
@@ -39,11 +66,8 @@ impl AnsiCQuoted {
         ans.text += &feeder.consume(2);
 
         while ! feeder.starts_with("'") {
-            let len = feeder.scanner_subword();
-            if len > 0 {
-                ans.text += &feeder.consume(len);
-                continue;
-            }
+            if Self::eat_simple_subword(feeder, &mut ans) 
+            || Self::eat_escaped_char(feeder, &mut ans, core) {}
         }
 
         ans.text += &feeder.consume(1);

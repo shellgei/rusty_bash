@@ -18,20 +18,6 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-res=$($com <<< 'A=(a b) ; echo ${#A[@]}')
-[ "$res" -eq 2 ] || err $LINENO
-
-res=$($com <<< 'A=(a b) ; echo "${#A[@]}"')
-[ "$res" -eq 2 ] || err $LINENO
-
-res=$($com <<< '[[ a =~ "." ]]')
-[ $? -eq 1 ] || err $LINENO
-
-echo $0 >> ./ok
-
-res=$($com <<< 'A=1 ; echo "$((A+1))"')
-[ "$res" -eq 2 ] || err $LINENO
-
 res=$($com <<< '[[ a =~ "." ]]')
 [ $? -eq 1 ] || err $LINENO
 

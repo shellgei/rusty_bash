@@ -660,4 +660,19 @@ res=$($com <<< 'A=( a b ); A[]=1')
 res=$($com <<< 'echo ]')
 [ "$res" == "]" ] || err $LINENO
 
+# ansi-c quoting
+
+res=$($com <<- FIN
+echo $'aaa'
+FIN
+)
+[ "$res" == "aaa" ] || err $LINENO
+
+res=$($com <<- FIN
+echo $'a\nb'
+FIN
+)
+[ "$res" == "a
+b" ] || err $LINENO
+
 echo $0 >> ./ok

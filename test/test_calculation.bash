@@ -668,4 +668,7 @@ res=$($com <<< 'if ((0 >= 1 && 1 >= 1 )); then echo a ; else echo b ; fi')
 res=$($com <<< 'echo $(( 1 > 0 || 2 > 2 ))')
 [ "$res" == "1" ] || err $LINENO
 
+res=$($com <<< 'A=1 ; echo "$((A+1))"')
+[ "$res" -eq 2 ] || err $LINENO
+
 echo $0 >> ./ok

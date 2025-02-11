@@ -100,4 +100,10 @@ res=$($com <<< 'set a b ; A=("${@:1}") ; echo ${A[0]}')
 res=$($com <<< 'set a b c ; A=("${@:1:1}") ; echo ${A[0]}')
 [ "$res" == "a" ] || err $LINENO
 
+res=$($com <<< 'A=(a b) ; echo ${#A[@]}')
+[ "$res" -eq 2 ] || err $LINENO
+
+res=$($com <<< 'A=(a b) ; echo "${#A[@]}"')
+[ "$res" -eq 2 ] || err $LINENO
+
 echo $0 >> ./ok

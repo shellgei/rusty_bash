@@ -3,9 +3,9 @@
 ./test_glob.bash
 ./test_redirects.bash
 ./test_brace.bash
-./test_others.bash
 ./test_calculation.bash
 ./test_compound.bash
 ./test_parameters.bash
 ./test_builtins.bash
 ./test_job.bash
+../../../test/test_others.bash
