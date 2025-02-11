@@ -62,8 +62,8 @@ impl Token {
 
 #[derive(Debug, Clone, Default)]
 pub struct AnsiCQuoted {
-    pub text: String,
-    pub tokens: Vec<Token>,
+    text: String,
+    tokens: Vec<Token>,
 }
 
 impl Subword for AnsiCQuoted {
