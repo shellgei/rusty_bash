@@ -384,7 +384,6 @@ fn print_complete(core: &mut ShellCore) -> i32 {
                 print!("-S '{}' ", &info.options["-S"]);
             }
         }else{
-            dbg!("{:?}", &info);
             print!("complete ");
         }
         println!("{}", &name); 
