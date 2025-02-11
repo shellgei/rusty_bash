@@ -73,21 +73,22 @@ impl DoubleQuoted {
         let mut ans = vec![];
 
         for sw in &mut self.subwords {
-            if sw.is_array() {
-                let array = match sw.get_text() {
-                    "$@" | "${@}" => core.db.get_position_params(),
-                    _ => {
-                        let _ = sw.substitute(core);
-                        sw.get_array_elem()
-                    },
-                };
-
-                for pp in array {
-                    ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
-                    self.split_points.push(ans.len());
-                }
-            }else{
+            if ! sw.is_array() {
                 ans.push(sw.boxed_clone());
+                continue;
+            }
+
+            let array = match sw.get_text() {
+                "$@" | "${@}" => core.db.get_position_params(),
+                _ => {
+                    let _ = sw.substitute(core);
+                    sw.get_array_elem()
+                },
+            };
+
+            for pp in array {
+                ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
+                self.split_points.push(ans.len());
             }
         }
         self.split_points.pop();

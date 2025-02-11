@@ -90,7 +90,7 @@ impl Subword for BracedParam {
         }
     }
 
-    fn is_array(&self) -> bool {self.is_array}
+    fn is_array(&self) -> bool {self.is_array && ! self.num}
     fn get_array_elem(&self) -> Vec<String> {self.array.clone()}
 }
 
@@ -151,12 +151,7 @@ impl BracedParam {
         }
 
         self.text = match (self.num, index.as_str()) {
-            (true, "@") => {
-                let ans = core.db.len(&self.param.name).to_string();
-                self.array.clear();
-                self.array.push(ans.clone());//for double quoted subword
-                ans
-            },
+            (true, "@") => core.db.len(&self.param.name).to_string(),
             (true, _)   => core.db.get_array_elem(&self.param.name, &index).unwrap().chars().count().to_string(),
             (false, _)  => core.db.get_array_elem(&self.param.name, &index).unwrap(),
        };
