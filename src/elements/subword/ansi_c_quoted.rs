@@ -8,6 +8,7 @@ use super::{Subword, SimpleSubword, EscapedChar};
 #[derive(Clone, Debug)]
 enum Token {
     Normal(String),
+    Oct(String),
     Control(char),
     OtherEscaped(String),
 }
@@ -16,28 +17,21 @@ impl Token {
     fn to_string(&mut self) -> String {
         match &self {
             Token::Normal(s) => s.clone(), 
+            Token::Oct(s) => {
+                let num = u32::from_str_radix(&s, 8).unwrap();
+                char::from_u32(num).unwrap().to_string()
+            },
             Token::Control(c) => {
-                let num = if *c == '@' {
-                    0
-                }else if *c == '[' {
-                    27
-                }else if *c == '\\' {
-                    28
-                }else if *c == ']' {
-                    29
-                }else if *c == '^' {
-                    30
-                }else if '0' <= *c && *c <= '9' {
-                    *c as u32 - 32
-                }else if 'a' <= *c && *c <= 'z' {
-                    *c as u32 - 96
-                }else if 'A' <= *c && *c <= 'Z' {
-                    *c as u32 - 64
-                }else if *c as u32 >= 32 {
-                    *c as u32 - 32
-                }else{
-                    *c as u32
-                };
+                let num = if *c == '@' { 0 }
+                    else if *c == '[' { 27 }
+                    else if *c == '\\' { 28 }
+                    else if *c == ']' { 29 }
+                    else if *c == '^' { 30 }
+                    else if '0' <= *c && *c <= '9' { *c as u32 - 32 }
+                    else if 'a' <= *c && *c <= 'z' { *c as u32 - 96 }
+                    else if 'A' <= *c && *c <= 'Z' { *c as u32 - 64 }
+                    else if *c as u32 >= 32 { *c as u32 - 32 }
+                    else{ *c as u32 };
 
                 char::from_u32(num).unwrap().to_string()
             },
@@ -54,7 +48,7 @@ impl Token {
                 "\\" => "\\".to_string(),
                 "'" => "'".to_string(),
                 "\"" => "\"".to_string(),
-                _ => s.to_string(),
+                _ => ("\\".to_owned() + s).to_string(),
             }
         }
     }
@@ -100,6 +94,35 @@ impl AnsiCQuoted {
         }
     }
 
+    fn eat_oct(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if ! feeder.starts_with("\\") || feeder.len() < 2 {
+            return false;
+        }
+
+        let mut len = 1;
+        for p in 1..4 {
+            match feeder.nth(p) {
+                Some(c) => {
+                    if c < '0' || '7' < c {
+                        break;
+                    }
+                    len += 1;
+                },
+                None => break,
+            }
+        }
+
+        if len < 2 {
+            return false;
+        }
+
+        let token = feeder.consume(len);
+        ans.text += &token.clone();
+        ans.tokens.push( Token::Oct(token[1..].to_string()));
+
+        true
+    }
+
     fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(a) = EscapedChar::parse(feeder, core) {
             let txt = a.get_text().to_string();
@@ -128,6 +151,7 @@ impl AnsiCQuoted {
 
         while ! feeder.starts_with("'") {
             if Self::eat_simple_subword(feeder, &mut ans) 
+            || Self::eat_oct(feeder, &mut ans)
             || Self::eat_escaped_char(feeder, &mut ans, core) {
                 continue;
             }
@@ -143,6 +167,7 @@ impl AnsiCQuoted {
         }
 
         ans.text += &feeder.consume(1);
+        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }

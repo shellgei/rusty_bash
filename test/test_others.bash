@@ -681,4 +681,10 @@ FIN
 )
 [ "$res" == $'\c2\cr\cR\c-\c[\c]\c^\c<' ] || err $LINENO
 
+res=$($com <<- FIN
+echo $'\110\19\9'
+FIN
+)
+[ "$res" == $'\110\19\9' ] || err $LINENO
+
 echo $0 >> ./ok
