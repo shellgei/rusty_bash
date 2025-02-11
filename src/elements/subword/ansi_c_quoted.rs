@@ -20,8 +20,6 @@ impl Subword for AnsiCQuoted {
         for sw in &mut self.subwords {
             ans += &sw.make_ansi_c_string();
         }
-
-        dbg!("{:?}", &ans);
         Some(ans)
     }
 
@@ -67,7 +65,18 @@ impl AnsiCQuoted {
 
         while ! feeder.starts_with("'") {
             if Self::eat_simple_subword(feeder, &mut ans) 
-            || Self::eat_escaped_char(feeder, &mut ans, core) {}
+            || Self::eat_escaped_char(feeder, &mut ans, core) {
+                continue;
+            }
+
+            if feeder.len() == 0 {
+                feeder.feed_additional_line(core)?;
+                continue;
+            }
+        
+            let other = feeder.consume(1);
+            ans.text += &other.clone();
+            ans.subwords.push( Box::new(SimpleSubword{ text: other }));
         }
 
         ans.text += &feeder.consume(1);
