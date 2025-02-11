@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod ansi_c_quoted;
 pub mod simple;
 pub mod single_quoted;
 mod braced_param;
@@ -14,6 +15,7 @@ mod arithmetic;
 
 use crate::{ShellCore, Feeder};
 use crate::error::{exec::ExecError, parse::ParseError};
+use self::ansi_c_quoted::AnsiCQuoted;
 use self::arithmetic::Arithmetic;
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
@@ -129,6 +131,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     }
 
     if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = AnsiCQuoted::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = Arithmetic::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
