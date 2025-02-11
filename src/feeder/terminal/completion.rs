@@ -76,13 +76,15 @@ impl Terminal {
         }
 
         let org_word = core.db.get_array_elem("COMP_WORDS", "0")?;
+        /*
         let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
         let cur_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
+        */
 
         match core.completion_info.get(&org_word) {
             Some(info) => {
-                let command = format!("prev={} cur={} {}", &prev_word, &cur_word, &info.function);//TODO: cur should be set
-                let mut feeder = Feeder::new(&command);                              // by bash-completion 
+                //let command = format!("prev={} cur={} {}", &prev_word, &cur_word, &info.function);//TODO: cur should be set by bash-completion 
+                let mut feeder = Feeder::new(&info.function);
 
                 if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
                     let mut dummy = Pipe::new("".to_string());
@@ -324,6 +326,13 @@ impl Terminal {
 
         let all_string = self.get_string(prompt_len);
         core.db.set_param("COMP_LINE", &all_string, None)?;
+
+        let tp = match self.tab_num {
+            1 => "\t",
+            _ => "?",
+        };
+        core.db.set_param("COMP_TYPE", &tp, None)?;
+        core.db.set_param("COMP_KEY", "9", None)?;
 
         let mut words_all = utils::split_words(&all_string);
         words_all.retain(|e| e != "");
