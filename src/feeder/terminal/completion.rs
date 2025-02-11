@@ -76,15 +76,14 @@ impl Terminal {
         }
 
         let org_word = core.db.get_array_elem("COMP_WORDS", "0")?;
-        /*
         let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
-        let cur_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
-        */
+        let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
 
         match core.completion_info.get(&org_word) {
             Some(info) => {
-                //let command = format!("prev={} cur={} {}", &prev_word, &cur_word, &info.function);//TODO: cur should be set by bash-completion 
-                let mut feeder = Feeder::new(&info.function);
+                let command = format!("{} \"{}\" \"{}\" \"{}\"",
+                                        &info.function, &org_word, &target_word, &prev_word);
+                let mut feeder = Feeder::new(&command);
 
                 if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
                     let mut dummy = Pipe::new("".to_string());
