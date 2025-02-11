@@ -675,4 +675,10 @@ FIN
 [ "$res" == "a
 b" ] || err $LINENO
 
+res=$($com <<- FIN
+echo $'\c2\cr\cR\c-\c[\c]\c^\c<'
+FIN
+)
+[ "$res" == $'\c2\cr\cR\c-\c[\c]\c^\c<' ] || err $LINENO
+
 echo $0 >> ./ok

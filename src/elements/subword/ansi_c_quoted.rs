@@ -5,10 +5,65 @@ use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use super::{Subword, SimpleSubword, EscapedChar};
 
+#[derive(Clone, Debug)]
+enum Token {
+    Normal(String),
+    Control(char),
+    OtherEscaped(String),
+}
+
+impl Token {
+    fn to_string(&mut self) -> String {
+        match &self {
+            Token::Normal(s) => s.clone(), 
+            Token::Control(c) => {
+                let num = if *c == '@' {
+                    0
+                }else if *c == '[' {
+                    27
+                }else if *c == '\\' {
+                    28
+                }else if *c == ']' {
+                    29
+                }else if *c == '^' {
+                    30
+                }else if '0' <= *c && *c <= '9' {
+                    *c as u32 - 32
+                }else if 'a' <= *c && *c <= 'z' {
+                    *c as u32 - 96
+                }else if 'A' <= *c && *c <= 'Z' {
+                    *c as u32 - 64
+                }else if *c as u32 >= 32 {
+                    *c as u32 - 32
+                }else{
+                    *c as u32
+                };
+
+                char::from_u32(num).unwrap().to_string()
+            },
+            Token::OtherEscaped(s) => match s.as_ref() {
+                "a" => r"\a".to_string(),
+                "b" => r"\b".to_string(),
+                "e" => r"\e".to_string(),
+                "E" => r"\E".to_string(),
+                "f" => r"\f".to_string(),
+                "n" => "\n".to_string(),
+                "r" => "\r".to_string(),
+                "t" => "\t".to_string(),
+                "v" => r"\v".to_string(),
+                "\\" => "\\".to_string(),
+                "'" => "'".to_string(),
+                "\"" => "\"".to_string(),
+                _ => s.to_string(),
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct AnsiCQuoted {
     pub text: String,
-    pub subwords: Vec<Box<dyn Subword>>,
+    pub tokens: Vec<Token>,
 }
 
 impl Subword for AnsiCQuoted {
@@ -17,8 +72,8 @@ impl Subword for AnsiCQuoted {
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         let mut ans = String::new();
-        for sw in &mut self.subwords {
-            ans += &sw.make_ansi_c_string();
+        for t in &mut self.tokens {
+            ans += &t.to_string();
         }
         Some(ans)
     }
@@ -38,7 +93,7 @@ impl AnsiCQuoted {
     fn eat_simple_subword(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if let Some(a) = SimpleSubword::parse(feeder) {
             ans.text += a.get_text();
-            ans.subwords.push(Box::new(a));
+            ans.tokens.push(Token::Normal(a.get_text().to_string()));
             true
         }else{
             false
@@ -47,8 +102,16 @@ impl AnsiCQuoted {
 
     fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(a) = EscapedChar::parse(feeder, core) {
-            ans.text += a.get_text();
-            ans.subwords.push(Box::new(a));
+            let txt = a.get_text().to_string();
+            ans.text += &txt.clone();
+
+            if txt != "\\c" || feeder.len() == 0 {
+                ans.tokens.push(Token::OtherEscaped(txt[1..].to_string()));
+            }else{
+                let ctrl_c = feeder.consume(1).chars().nth(0).unwrap();
+                ans.text += &ctrl_c.to_string();
+                ans.tokens.push(Token::Control(ctrl_c));
+            }
             true
         }else{
             false
@@ -76,7 +139,7 @@ impl AnsiCQuoted {
         
             let other = feeder.consume(1);
             ans.text += &other.clone();
-            ans.subwords.push( Box::new(SimpleSubword{ text: other }));
+            ans.tokens.push(Token::Normal(other));
         }
 
         ans.text += &feeder.consume(1);

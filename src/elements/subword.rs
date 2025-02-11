@@ -77,7 +77,6 @@ pub trait Subword {
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
-    fn make_ansi_c_string(&mut self) -> String {self.get_text().to_string()}
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         match self.get_text() {

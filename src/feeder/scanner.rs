@@ -113,6 +113,17 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_ansi_c_ctrl(&mut self, core: &mut ShellCore) -> usize {
+        if ! self.starts_with(r"\c") {
+            return 0;
+        }
+
+        match self.remaining.chars().nth(2) {
+            Some(ch) => 2 + ch.len_utf8(),
+            None =>     2,
+        }
+    }
+
     pub fn scanner_history_expansion(&mut self, _: &mut ShellCore) -> usize {
         match self.starts_with("!$") {
             true  => 2,
