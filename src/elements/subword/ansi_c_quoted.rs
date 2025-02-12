@@ -9,6 +9,7 @@ use super::{Subword, SimpleSubword, EscapedChar};
 enum Token {
     Normal(String),
     Oct(String),
+    Hex(String),
     Control(char),
     OtherEscaped(String),
 }
@@ -19,6 +20,15 @@ impl Token {
             Token::Normal(s) => s.clone(), 
             Token::Oct(s) => {
                 let mut num = u32::from_str_radix(&s, 8).unwrap();
+                if num >= 256 {
+                    num -= 256;
+                }
+                char::from(num as u8).to_string() //MEMO (differece from Bash)
+                                                  //128-255 are never straightly converted 
+                                                  //because a binary 1.... is a reserved number in UTF-8
+            },
+            Token::Hex(s) => {
+                let mut num = u32::from_str_radix(&s, 16).unwrap();
                 if num >= 256 {
                     num -= 256;
                 }
@@ -128,6 +138,37 @@ impl AnsiCQuoted {
         true
     }
 
+    fn eat_hex(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if ! feeder.starts_with("\\x") || feeder.len() < 3 {
+            return false;
+        }
+
+        let mut len = 2;
+        for p in 2..4 {
+            match feeder.nth(p) {
+                Some(c) => {
+                    if ! ('0' <= c && c <= '9') 
+                    && ! ('a' <= c && c <= 'f' )
+                    && ! ('A' <= c && c <= 'F' ) {
+                        break;
+                    }
+                    len += 1;
+                },
+                None => break,
+            }
+        }
+
+        if len < 3 {
+            return false;
+        }
+
+        let token = feeder.consume(len);
+        ans.text += &token.clone();
+        ans.tokens.push( Token::Hex(token[2..].to_string()));
+
+        true
+    }
+
     fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(a) = EscapedChar::parse(feeder, core) {
             let txt = a.get_text().to_string();
@@ -156,6 +197,7 @@ impl AnsiCQuoted {
 
         while ! feeder.starts_with("'") {
             if Self::eat_simple_subword(feeder, &mut ans) 
+            || Self::eat_hex(feeder, &mut ans)
             || Self::eat_oct(feeder, &mut ans)
             || Self::eat_escaped_char(feeder, &mut ans, core) {
                 continue;

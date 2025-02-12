@@ -682,10 +682,10 @@ FIN
 [ "$res" == $'\c2\cr\cR\c-\c[\c]\c^\c<' ] || err $LINENO
 
 res=$($com <<- FIN
-echo $'\110\19\9\477' 
+echo $'\110\19\9\477\x40\x7A\x7a\x9Z' 
 FIN
 )
-[ "$res" == $'\110\19\9\477' ] || err $LINENO
+[ "$res" == $'\110\19\9\477\x40\x7A\x7a\x9Z' ] || err $LINENO
 #MEMO 128-255 is not the same with Bash
 
 echo $0 >> ./ok
