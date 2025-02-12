@@ -113,17 +113,25 @@ impl Feeder {
         }
     }
 
-    /*
-    pub fn scanner_ansi_c_ctrl(&mut self) -> usize {
-        if ! self.starts_with(r"\c") {
+    pub fn scanner_ansi_c_oct(&mut self, core: &mut ShellCore) -> usize {
+        if ! self.starts_with("\\") {
             return 0;
         }
 
-        match self.remaining.chars().nth(2) {
-            Some(ch) => 2 + ch.len_utf8(),
-            None =>     2,
+        let judge = |ch| '0' <= ch && ch <= '7';
+        self.scanner_chars(judge, core, 1) + 1
+    }
+
+    pub fn scanner_ansi_c_hex(&mut self, core: &mut ShellCore) -> usize {
+        if ! self.starts_with("\\x") {
+            return 0;
         }
-    }*/
+
+        let judge = |ch| ('0' <= ch && ch <= '9') 
+                         || ('a' <= ch && ch <= 'f') 
+                         || ('A' <= ch && ch <= 'F'); 
+        self.scanner_chars(judge, core, 2) + 2
+    }
 
     pub fn scanner_history_expansion(&mut self, _: &mut ShellCore) -> usize {
         match self.starts_with("!$") {

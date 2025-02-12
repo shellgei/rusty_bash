@@ -109,63 +109,35 @@ impl AnsiCQuoted {
         }
     }
 
-    fn eat_oct(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        if ! feeder.starts_with("\\") || feeder.len() < 2 {
-            return false;
-        }
-
-        let mut len = 1;
-        for p in 1..4 {
-            match feeder.nth(p) {
-                Some(c) => {
-                    if c < '0' || '7' < c {
-                        break;
-                    }
-                    len += 1;
-                },
-                None => break,
-            }
-        }
-
+    fn eat_oct(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let mut len = feeder.scanner_ansi_c_oct(core);
         if len < 2 {
             return false;
+        }
+
+        if len > 4 {
+            len = 4;
         }
 
         let token = feeder.consume(len);
         ans.text += &token.clone();
         ans.tokens.push( Token::Oct(token[1..].to_string()));
-
         true
     }
 
-    fn eat_hex(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        if ! feeder.starts_with("\\x") || feeder.len() < 3 {
-            return false;
-        }
-
-        let mut len = 2;
-        for p in 2..4 {
-            match feeder.nth(p) {
-                Some(c) => {
-                    if ! ('0' <= c && c <= '9') 
-                    && ! ('a' <= c && c <= 'f' )
-                    && ! ('A' <= c && c <= 'F' ) {
-                        break;
-                    }
-                    len += 1;
-                },
-                None => break,
-            }
-        }
-
+    fn eat_hex(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let mut len = feeder.scanner_ansi_c_hex(core);
         if len < 3 {
             return false;
+        }
+
+        if len > 4 {
+            len = 4;
         }
 
         let token = feeder.consume(len);
         ans.text += &token.clone();
         ans.tokens.push( Token::Hex(token[2..].to_string()));
-
         true
     }
 
@@ -197,8 +169,8 @@ impl AnsiCQuoted {
 
         while ! feeder.starts_with("'") {
             if Self::eat_simple_subword(feeder, &mut ans) 
-            || Self::eat_hex(feeder, &mut ans)
-            || Self::eat_oct(feeder, &mut ans)
+            || Self::eat_hex(feeder, &mut ans, core)
+            || Self::eat_oct(feeder, &mut ans, core)
             || Self::eat_escaped_char(feeder, &mut ans, core) {
                 continue;
             }
