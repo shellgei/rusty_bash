@@ -18,8 +18,13 @@ impl Token {
         match &self {
             Token::Normal(s) => s.clone(), 
             Token::Oct(s) => {
-                let num = u32::from_str_radix(&s, 8).unwrap();
-                char::from_u32(num).unwrap().to_string()
+                let mut num = u32::from_str_radix(&s, 8).unwrap();
+                if num >= 256 {
+                    num -= 256;
+                }
+                char::from(num as u8).to_string() //MEMO (differece from Bash)
+                                                  //128-255 are never straightly converted 
+                                                  //because a binary 1.... is a reserved number in UTF-8
             },
             Token::Control(c) => {
                 let num = if *c == '@' { 0 }
@@ -167,7 +172,6 @@ impl AnsiCQuoted {
         }
 
         ans.text += &feeder.consume(1);
-        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
