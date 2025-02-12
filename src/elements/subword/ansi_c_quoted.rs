@@ -152,7 +152,7 @@ impl AnsiCQuoted {
 
     fn eat_unicode4(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut len = feeder.scanner_ansi_unicode4(core);
-        if len < 6 {
+        if len < 3 {
             return false;
         }
 
@@ -168,7 +168,7 @@ impl AnsiCQuoted {
 
     fn eat_unicode8(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut len = feeder.scanner_ansi_unicode8(core);
-        if len < 10 {
+        if len < 3 {
             return false;
         }
 
