@@ -700,4 +700,10 @@ FIN
 )
 [ "$res" == $'\u40X' ] || err $LINENO
 
+res=$($com <<- FIN
+echo $'\U110000' 
+FIN
+)
+[ "$res" == $'\U110000' ] || err $LINENO
+
 echo $0 >> ./ok

@@ -36,15 +36,17 @@ impl Token {
                 }
                 char::from(num as u8).to_string()
             },
-            Token::Unicode4(s) | Token::Unicode8(s) => {
+            Token::Unicode4(s) => {
                 let num = u32::from_str_radix(&s, 16).unwrap();
-                char::from_u32(num).expect("!!").to_string()
+                match char::from_u32(num) {
+                    Some(c) => c.to_string(),
+                    _ => "U+".to_owned() + s,
+                }
             },
-            /*
-            Token::Unicode8(s) | Token::Unicode8(s) => {
+            Token::Unicode8(s) => {
                 let num = u64::from_str_radix(&s, 16).unwrap();
-                char::from(num).to_string()
-            },*/
+                unsafe { char::from_u32_unchecked(num as u32) }.to_string()
+            },
             Token::Control(c) => {
                 let num = if *c == '@' { 0 }
                     else if *c == '[' { 27 }
