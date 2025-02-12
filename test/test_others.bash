@@ -688,4 +688,10 @@ FIN
 [ "$res" == $'\110\19\9\477\x40\x7A\x7a\x9Z' ] || err $LINENO
 #MEMO 128-255 is not the same with Bash
 
+res=$($com <<- FIN
+echo $'\u1234\uffFF' 
+FIN
+)
+[ "$res" == $'\u1234\uffFF' ] || err $LINENO
+
 echo $0 >> ./ok

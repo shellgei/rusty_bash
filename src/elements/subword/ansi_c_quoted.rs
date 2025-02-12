@@ -10,6 +10,8 @@ enum Token {
     Normal(String),
     Oct(String),
     Hex(String),
+    Unicode4(String),
+    Unicode8(String),
     Control(char),
     OtherEscaped(String),
 }
@@ -32,10 +34,17 @@ impl Token {
                 if num >= 256 {
                     num -= 256;
                 }
-                char::from(num as u8).to_string() //MEMO (differece from Bash)
-                                                  //128-255 are never straightly converted 
-                                                  //because a binary 1.... is a reserved number in UTF-8
+                char::from(num as u8).to_string()
             },
+            Token::Unicode4(s) | Token::Unicode8(s) => {
+                let num = u32::from_str_radix(&s, 16).unwrap();
+                char::from_u32(num).expect("!!").to_string()
+            },
+            /*
+            Token::Unicode8(s) | Token::Unicode8(s) => {
+                let num = u64::from_str_radix(&s, 16).unwrap();
+                char::from(num).to_string()
+            },*/
             Token::Control(c) => {
                 let num = if *c == '@' { 0 }
                     else if *c == '[' { 27 }
@@ -141,6 +150,38 @@ impl AnsiCQuoted {
         true
     }
 
+    fn eat_unicode4(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let mut len = feeder.scanner_ansi_unicode4(core);
+        if len < 6 {
+            return false;
+        }
+
+        if len > 6 {
+            len = 6;
+        }
+
+        let token = feeder.consume(len);
+        ans.text += &token.clone();
+        ans.tokens.push( Token::Unicode4(token[2..].to_string()));
+        true
+    }
+
+    fn eat_unicode8(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let mut len = feeder.scanner_ansi_unicode8(core);
+        if len < 10 {
+            return false;
+        }
+
+        if len > 10 {
+            len = 10;
+        }
+
+        let token = feeder.consume(len);
+        ans.text += &token.clone();
+        ans.tokens.push( Token::Unicode8(token[2..].to_string()));
+        true
+    }
+
     fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if let Some(a) = EscapedChar::parse(feeder, core) {
             let txt = a.get_text().to_string();
@@ -171,6 +212,8 @@ impl AnsiCQuoted {
             if Self::eat_simple_subword(feeder, &mut ans) 
             || Self::eat_hex(feeder, &mut ans, core)
             || Self::eat_oct(feeder, &mut ans, core)
+            || Self::eat_unicode4(feeder, &mut ans, core)
+            || Self::eat_unicode8(feeder, &mut ans, core)
             || Self::eat_escaped_char(feeder, &mut ans, core) {
                 continue;
             }

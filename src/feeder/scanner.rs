@@ -133,6 +133,28 @@ impl Feeder {
         self.scanner_chars(judge, core, 2) + 2
     }
 
+    pub fn scanner_ansi_unicode4(&mut self, core: &mut ShellCore) -> usize {
+        if ! self.starts_with("\\u") {
+            return 0;
+        }
+
+        let judge = |ch| ('0' <= ch && ch <= '9') 
+                         || ('a' <= ch && ch <= 'f') 
+                         || ('A' <= ch && ch <= 'F'); 
+        self.scanner_chars(judge, core, 2) + 2
+    }
+
+    pub fn scanner_ansi_unicode8(&mut self, core: &mut ShellCore) -> usize {
+        if ! self.starts_with("\\U") {
+            return 0;
+        }
+
+        let judge = |ch| ('0' <= ch && ch <= '9') 
+                         || ('a' <= ch && ch <= 'f') 
+                         || ('A' <= ch && ch <= 'F'); 
+        self.scanner_chars(judge, core, 2) + 2
+    }
+
     pub fn scanner_history_expansion(&mut self, _: &mut ShellCore) -> usize {
         match self.starts_with("!$") {
             true  => 2,
