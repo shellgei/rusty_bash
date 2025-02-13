@@ -17,9 +17,6 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-res=$($com <<< '_var=${_comp_compgen__var-COMPREPLY}; echo $_var')
-[ "$res" = "COMPREPLY" ] || err $LINENO
-
 res=$($com <<< '[[ a =~ "." ]]')
 [ $? -eq 1 ] || err $LINENO
 
