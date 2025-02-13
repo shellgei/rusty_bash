@@ -22,7 +22,7 @@ impl ValueCheck {
             },
             Some(":?") => self.colon_question(name, text, core),
             Some(":=") => self.colon_equal(name, core),
-            Some("-")  => self.minus(text),
+            Some("-")  => self.minus(name, text, core),
             Some(":+") => self.colon_plus(text, core),
             Some("+")  => self.plus(name, text, core),
             _          => exit::internal("no operation"),
@@ -36,10 +36,17 @@ impl ValueCheck {
         Ok(value.clone())
     }
 
-    fn minus(&mut self, text: &String) -> Result<String, ExecError> {
+    fn minus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        match core.db.has_value(&name) {
+            false => {self.set_alter_word(core)?;},
+            true  => self.alternative_value = None,
+        }
+        Ok(text.clone())
+            /*
         self.alternative_value = None;
         self.symbol = None;
         Ok(text.clone())
+            */
     }
 
     fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
