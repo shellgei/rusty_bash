@@ -26,14 +26,21 @@ impl Opt {
     }
 }
 
-fn parse(optstring: &str) -> Vec<Opt> {
+fn parse(optstring: &str) -> (Vec<Opt>, bool) {
+    let mut optstring = optstring.to_string();
     let mut ans = vec![];
+    let mut silence = false;
+
+    if optstring.starts_with(":") {
+        optstring.remove(0);
+        silence = true;
+    }
     
     for c in optstring.chars() {
         if c == ':' {
             match ans.pop() {
                 Some(Opt::Single(opt)) => ans.push( Opt::WithArg(opt) ),
-                _ => return vec![],
+                _ => return (vec![], silence),
             }
         }
 
@@ -41,7 +48,7 @@ fn parse(optstring: &str) -> Vec<Opt> {
         ans.push( Opt::Single(opt) );
     }
 
-    ans
+    (ans, silence)
 }
 
 pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -50,7 +57,7 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 2;
     }
 
-    let targets = parse(&args[1]);
+    let (targets, silence) = parse(&args[1]);
     if targets.is_empty() {
         return 1;
     }
@@ -94,8 +101,10 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         let _ = core.db.set_param("OPTARG", "", None);
 
         if let Err(e) = result {
-            let msg = format!("getopts: {:?}", &e);
-            error::print(&msg, core);
+            if ! silence {
+                let msg = format!("getopts: {:?}", &e);
+                error::print(&msg, core);
+            }
             return 1;
         }
         return 0;

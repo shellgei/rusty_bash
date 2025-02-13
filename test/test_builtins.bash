@@ -246,6 +246,12 @@ echo flag:$flag OPTIND:$OPTIND exit:$res
 flag:s OPTIND:2 exit:0
 flag:? OPTIND:3 exit:1" ] || err $LINENO
 
+res=$($com <<< 'getopts :av:U:Rc:C:lF:i:x: _opt -a filedir ; echo $_opt')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< 'getopts :av:U:Rc:C:lF:i:x: _opt -a filedir ; echo $_opt')
+[ "$res" = "a" ] || err $LINENO
+
 ### printf ###
 
 res=$($com <<< 'printf -v a %s bbb &> /dev/null; echo $a')
