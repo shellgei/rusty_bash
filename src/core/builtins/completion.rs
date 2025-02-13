@@ -119,6 +119,8 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
     let mut args = arg::dissolve_options(args);
 
+    let _  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
+
     replace_args_compgen(&mut args);
 
     let ans = match args[1].as_str() {
