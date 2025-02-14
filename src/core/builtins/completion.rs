@@ -118,7 +118,6 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
     let mut args = arg::dissolve_options(args);
-
     let _  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
 
     replace_args_compgen(&mut args);
@@ -183,13 +182,6 @@ pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 pub fn compgen_b(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
-    /*
-    if args.len() > 2 {
-        commands.extend(compgen_f(core, args));
-    }
-    commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
-    */
-
     let mut builtins: Vec<String> = core.builtins.clone().into_keys().collect();
     commands.append(&mut builtins);
 

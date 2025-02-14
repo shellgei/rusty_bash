@@ -17,6 +17,10 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+
+res=$($com <<< 'printf -v REPLY %q /l; echo $REPLY')
+[ "$res" = "/l" ] || err $LINENO
+
 res=$($com <<< '[[ a =~ "." ]]')
 [ $? -eq 1 ] || err $LINENO
 
