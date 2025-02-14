@@ -160,7 +160,8 @@ impl Terminal {
             };
         }
 
-        completion::compgen_f(core, args)
+        //completion::compgen_f(core, args)
+        vec![]
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) -> Result<(), String> {
