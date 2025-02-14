@@ -22,7 +22,7 @@ pub struct SimpleCommand {
     redirects: Vec<Redirect>,
     force_fork: bool, 
     substitutions_as_args: Vec<Substitution>,
-    permit_substitution_arg: bool,
+    command_name: String,
     lineno: usize,
 }
 
@@ -57,7 +57,10 @@ impl Command for SimpleCommand {
         } else if core.builtins.contains_key(&self.args[0]) {
             let mut special_args = vec![];
             for sub in &self.substitutions_as_args {
-                special_args.push(sub.get_string_for_eval(core)?);
+                match self.command_name.as_ref() {
+                    "eval" => special_args.push(sub.get_string_for_eval(core)?),
+                    _ => special_args.push(sub.text.clone()),
+                }
             }
             core.run_builtin(&mut self.args, &mut special_args)?;
         } else {

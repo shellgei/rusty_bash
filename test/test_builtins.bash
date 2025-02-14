@@ -69,6 +69,9 @@ res=$($com <<< 'set 1 2 3 ; eval b=(\"\$@\"); echo ${b[0]}')
 res=$($com <<< 'set 1 2 3 ; eval b=(\"$@\"); echo ${b[0]}')
 [ "$res" = "1 2 3" ] || err $LINENO
 
+res=$($com <<< 'set 1 2 3 ; eval -- "a=(\"\$@\")"; echo ${a[0]}')
+[ "$res" = "1" ] || err $LINENO
+
 res=$($com <<< 'A=aaa ; unset A ; echo $A')
 [ "$res" = "" ] || err $LINENO
 
