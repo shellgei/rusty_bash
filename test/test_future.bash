@@ -17,9 +17,6 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-res=$($com <<< '[[ ! $a ]]')
-[ $? -eq 0 ] || err $LINENO
-
 res=$($com <<< '[[ a =~ "." ]]')
 [ $? -eq 1 ] || err $LINENO
 

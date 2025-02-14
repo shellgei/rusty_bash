@@ -121,6 +121,10 @@ impl ConditionalExpr {
                         stack.push(CondElem::Ans(!res));
                         Ok(())
                     },
+                    Ok(CondElem::Operand(s)) => {
+                        stack.push(CondElem::Ans(s == ""));
+                        Ok(())
+                    },
                     _ => Err(ExecError::Other("no operand to negate".to_string())),
                 },
                // _ => Err(ExecError::Other( error::syntax("TODO"))),
