@@ -56,7 +56,7 @@ impl Command for SimpleCommand {
             let _ = f.run_as_command(&mut self.args, core);
         } else if core.builtins.contains_key(&self.args[0]) {
             let mut special_args = self.substitutions_as_args.iter()
-                                       .map(|a| a.text.clone()).collect();
+                                       .map(|a| a.get_string_for_eval()).collect();
             core.run_builtin(&mut self.args, &mut special_args)?;
         } else {
             let _ = self.set_environment_variables(core);

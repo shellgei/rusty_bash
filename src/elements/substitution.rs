@@ -17,6 +17,23 @@ pub enum ParsedDataType {
     Array(Array),
 }
 
+impl ParsedDataType {
+    pub fn get_evaluated_text(&self) -> String {
+        match self {
+            Self::None      => "".to_string(),
+            Self::Single(s) => s.text.clone(),
+            Self::Array(a) => {
+                let mut ans = "(".to_string();
+                ans += &a.words.clone()
+                        .into_iter().map(|w| w.text.clone())
+                        .collect::<Vec<String>>().join(" ");
+                ans += ")";
+                ans
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
@@ -53,6 +70,11 @@ impl Substitution {
             },
             true  => self.set_to_env(),
         }
+    }
+
+    pub fn get_string_for_eval(&self) -> String {
+        let mut splits = self.text.split("=");
+        splits.nth(0).unwrap().to_owned() + "=" + &self.value.get_evaluated_text()
     }
 
     fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
