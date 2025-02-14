@@ -14,10 +14,13 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
         return Err(ExecError::OperandExpected(w.text.to_string()));
     }
 
+    let name = w.eval_as_value(core)?;
+    /*
     let name = match w.eval_as_value(core) {
         Some(v) => v, 
         None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
     };
+    */
 
     /*let res =*/ match pre_increment {
         0 => change_variable(&name, core, post_increment, false),
@@ -36,10 +39,12 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
         return Err(ExecError::OperandExpected(w.text.to_string()));
     }
 
+    let name = w.eval_as_value(core)?;
+    /*
     let name = match w.eval_as_value(core) {
         Some(v) => v, 
         None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
-    };
+    };*/
 
     str_to_num(&name, core)
 }
@@ -163,10 +168,12 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
         return Err(ExecError::OperandExpected(w.text.to_string()));
     }
 
+    let name = w.eval_as_value(core)?;
+    /*
     let name = match w.eval_as_value(core) {
         Some(v) => v, 
         None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
-    };
+    };*/
 
     let right_str = match right_value {
         ArithElem::Integer(n) => n.to_string(),

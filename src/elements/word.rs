@@ -9,7 +9,6 @@ mod split;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
-use crate::error;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
@@ -64,17 +63,20 @@ impl Word {
         Ok( Self::make_args(&mut ws) )
     }
 
-    pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
             Ok(w) => w.split_and_path_expansion(core),
             Err(e)    => {
+                /*
                 let msg = format!("{:?}", &e);
                 error::print(&msg, core);
                 return None;
+                */
+                return Err(e);
             },
         };
 
-        Some( Self::make_args(&mut ws).join(" ") )
+        Ok( Self::make_args(&mut ws).join(" ") )
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {

@@ -18,17 +18,19 @@ pub enum ParsedDataType {
 }
 
 impl ParsedDataType {
-    pub fn get_evaluated_text(&self) -> String {
+    pub fn get_evaluated_text(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         match self {
-            Self::None      => "".to_string(),
-            Self::Single(s) => s.text.clone(),
+            Self::None      => Ok("".to_string()),
+            Self::Single(s) => Ok(s.text.clone()),
             Self::Array(a) => {
                 let mut ans = "(".to_string();
-                ans += &a.words.clone()
-                        .into_iter().map(|w| w.text.clone())
-                        .collect::<Vec<String>>().join(" ");
+                let mut ws = vec![];
+                for w in &a.words {
+                    ws.push(w.eval_as_value(core)?);
+                }
+                ans += &ws.join(" ");
                 ans += ")";
-                ans
+                Ok(ans)
             },
         }
     }
@@ -51,7 +53,7 @@ impl Substitution {
             ParsedDataType::None 
             => self.evaluated_string = Some("".to_string()),
             ParsedDataType::Single(v) 
-            => if let Some(e) = self.eval_as_value(&v, core) {
+            => if let Ok(e) = self.eval_as_value(&v, core) {
                 self.evaluated_string = Some(e);
             }
             ParsedDataType::Array(mut a) 
@@ -72,9 +74,12 @@ impl Substitution {
         }
     }
 
-    pub fn get_string_for_eval(&self) -> String {
+    pub fn get_string_for_eval(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut splits = self.text.split("=");
-        splits.nth(0).unwrap().to_owned() + "=" + &self.value.get_evaluated_text()
+        let front = splits.nth(0).unwrap().to_owned() + "=";
+        let rear = self.value.get_evaluated_text(core)?;
+
+        Ok(front + &rear)
     }
 
     fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
@@ -169,15 +174,15 @@ impl Substitution {
         }
     }
 
-    fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> Option<String> {
+    fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> Result<String, ExecError> {
         let prev = match self.append {
             true  => core.db.get_param(&self.name).unwrap_or(String::new()),
             false => "".to_string(),
         };
 
         match w.eval_as_value(core) {
-            Some(s) => Some((prev + &s).to_string()),
-            None    => None,
+            Ok(s) => Ok((prev + &s).to_string()),
+            Err(e) => Err(e),
         }
     }
 

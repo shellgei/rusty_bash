@@ -32,7 +32,7 @@ impl ValueCheck {
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         let v = self.alternative_value.clone().ok_or(ExecError::OperandExpected("".to_string()))?;
         self.alternative_value = Some(v.tilde_and_dollar_expansion(core)? );
-        let value = v.eval_as_value(core).ok_or(ExecError::OperandExpected("".to_string()))?;
+        let value = v.eval_as_value(core)?;//.ok_or(ExecError::OperandExpected("".to_string()))?;
         Ok(value.clone())
     }
 
