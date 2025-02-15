@@ -42,6 +42,10 @@ impl ConditionalExpr {
         let mut next = true;
         let mut last = CondElem::Ans(true);
 
+        for e in self.elements.iter_mut() {
+            e.eval(core)?;
+        }
+
         if core.db.flags.contains('x') {
             let text = self.elements.clone()
                            .into_iter().map(|e| e.to_string())

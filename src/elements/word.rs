@@ -65,15 +65,8 @@ impl Word {
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
-            Ok(w) => w.split_and_path_expansion(core),
-            Err(e)    => {
-                /*
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
-                return None;
-                */
-                return Err(e);
-            },
+            Ok(w)  => w.split_and_path_expansion(core),
+            Err(e) => return Err(e),
         };
 
         Ok( Self::make_args(&mut ws).join(" ") )
