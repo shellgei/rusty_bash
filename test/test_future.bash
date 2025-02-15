@@ -17,6 +17,19 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+#$ echo 'aaa\
+#bbb' | ( read -r a ; echo $a )
+#aaa\
+#ueda@x1gen13:~$ echo 'aaa\
+#bbb' | ( read a ; echo $a )
+#aaabbb
+
+
+res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
+[ "$res" = "aaabb" ] || err $LINENO
+
+res=$($com <<< 'echo "aaa\bb" | ( read -r a ; echo $a )' )
+[ "$res" = "aaa\bb" ] || err $LINENO
 
 res=$($com <<< 'printf -v REPLY %q /l; echo $REPLY')
 [ "$res" = "/l" ] || err $LINENO

@@ -41,6 +41,14 @@ impl ConditionalExpr {
         let mut from = 0;
         let mut next = true;
         let mut last = CondElem::Ans(true);
+
+        if core.db.flags.contains('x') {
+            let text = self.elements.clone()
+                           .into_iter().map(|e| e.to_string())
+                           .collect::<Vec<String>>().join(" ");
+            eprintln!("{} ]]\r", &text);
+        }
+
         for i in 0..self.elements.len() {
             match self.elements[i] {
                 CondElem::And | CondElem::Or => {

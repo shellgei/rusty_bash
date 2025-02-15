@@ -17,6 +17,12 @@ use rev_lines::RevLines;
 pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let path = match args.len() {
         2 => "".to_string(),
+        3 => {
+            match args[2].as_str() {
+                "--" => "".to_string(),
+                _ => args[2].to_string(),
+            }
+        },
         _ => {
             match args[2].as_str() {
                 "--" => args[3].to_string(),

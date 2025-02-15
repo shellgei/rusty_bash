@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::error;
+use crate::{arg, error};
 
 fn is_varname(s :&String) -> bool {
     if s.is_empty() {
@@ -24,6 +24,9 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         return 0;
     }
+
+    let mut args = arg::dissolve_options(args);
+    let r_opt = arg::consume_option("-r", &mut args);
 
     for a in &args[1..] {
         if ! is_varname(&a) {

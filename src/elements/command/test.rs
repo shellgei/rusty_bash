@@ -19,11 +19,15 @@ pub struct TestCommand {
 
 impl Command for TestCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+        if core.db.flags.contains('x') {
+            let ps4 = core.get_ps4();
+            eprint!("\r{} [[ ", &ps4);
+        }
+
         match self.cond.clone().unwrap().eval(core) {
             Ok(CondElem::Ans(true))  => core.db.exit_status = 0,
             Ok(CondElem::Ans(false)) => core.db.exit_status = 1,
             Err(err_msg)  => {
-                //error::print(&err_msg, core);
                 core.db.exit_status = 2;
                 return Err(err_msg);
             },
