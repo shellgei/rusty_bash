@@ -987,6 +987,10 @@ res=$($com -c 'A=あいう ; [[ A =~ あ ]]')
 res=$($com -c 'A=あいう ; [[ $A =~ * ]]')
 [ "$?" = "2" ] || err $LINENO
 
+res=$($com -c 'A=あいう ; [[ $A =~ (.)(..) ]]; echo ${BASH_REMATCH[@]}')
+[ "$?" = "0" ] || err $LINENO
+[ "$res" = "あいう あ いう" ] || err $LINENO
+
 # and or 
 
 res=$($com -c '[[ -a /etc/passwd && -a /etc/passwd ]]')

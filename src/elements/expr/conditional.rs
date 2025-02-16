@@ -210,7 +210,22 @@ impl ConditionalExpr {
             Err(e) => return Err(ExecError::Other(e.to_string())),
         };
 
-        stack.push( CondElem::Ans(re.is_match(&left)) );
+        core.db.set_array("BASH_REMATCH", vec![], None)?;
+        if let Some(res) = re.captures(&left) {
+            for i in 0.. {
+                if let Some(e) = res.get(i) {
+                    let s = e.as_str().to_string();
+                    core.db.set_array_elem("BASH_REMATCH", &s, i, None)?;
+                }else{
+                    break;
+                }
+            }
+            stack.push( CondElem::Ans(true) );
+        }else{
+            stack.push( CondElem::Ans(false) );
+        }
+
+        //stack.push( CondElem::Ans(re.is_match(&left)) );
         return Ok(());
     }
 
