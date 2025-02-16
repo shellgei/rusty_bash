@@ -50,7 +50,7 @@ impl ValueCheck {
     }
 
     fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        match core.db.has_value(&name) {
+        match core.db.has_value(&name) && ! core.db.is_array(&name) {
             true  => {self.set_alter_word(core)?;},
             false => self.alternative_value = None,
         }

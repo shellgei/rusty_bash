@@ -59,7 +59,6 @@ impl Word {
             let expanded = w.tilde_and_dollar_expansion(core)?;
             ws.append( &mut expanded.split_and_path_expansion(core) );
         }
-
         Ok( Self::make_args(&mut ws) )
     }
 

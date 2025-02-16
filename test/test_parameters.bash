@@ -106,4 +106,17 @@ res=$($com <<< 'A=(a b) ; echo ${#A[@]}')
 res=$($com <<< 'A=(a b) ; echo "${#A[@]}"')
 [ "$res" -eq 2 ] || err $LINENO
 
+res=$($com <<< 'b=1 ; f () { echo $# ; echo $1 ; } ; f ${b+"$b"}')
+[ "$res" = "1
+1" ] || err $LINENO
+
+res=$($com <<< 'b= ; f () { echo $# ; echo $1 ; } ; f ${b+"$b"}')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"aaa"}')
+[ "$res" = "0" ] || err $LINENO
+
+res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"${b[@]}"}')
+[ "$res" = "0" ] || err $LINENO
+
 echo $0 >> ./ok
