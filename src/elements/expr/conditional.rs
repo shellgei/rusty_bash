@@ -47,10 +47,11 @@ impl ConditionalExpr {
         }
 
         if core.db.flags.contains('x') {
-            let text = self.elements.clone()
+            let mut elems = self.elements.clone()
                            .into_iter().map(|e| e.to_string())
-                           .collect::<Vec<String>>().join(" ");
-            eprintln!("{} ]]\r", &text);
+                           .collect::<Vec<String>>();
+            elems.pop();
+            eprintln!("{} ]]\r", &elems.join(" "));
         }
 
         for i in 0..self.elements.len() {

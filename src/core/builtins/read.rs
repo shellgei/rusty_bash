@@ -26,7 +26,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
-    let r_opt = arg::consume_option("-r", &mut args);
+    let _r_opt = arg::consume_option("-r", &mut args); //TODO: change the precedure
 
     for a in &args[1..] {
         if ! is_varname(&a) {
@@ -41,6 +41,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
+    //TODO: this procedure may be for -r option
     let mut line = String::new();
     let len = std::io::stdin()
         .read_line(&mut line)

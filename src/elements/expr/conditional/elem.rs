@@ -5,7 +5,6 @@ use crate::ShellCore;
 use crate::elements::word::Word;
 use super::ConditionalExpr;
 use crate::error::exec::ExecError;
-use crate::elements::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
 pub enum CondElem {
@@ -36,25 +35,7 @@ impl CondElem {
             CondElem::Word(ref mut w) => {
                 let new_w = w.tilde_and_dollar_expansion(core)?;
                 *w = new_w;
-                /*
-                let s = w.eval_as_value(core)?;
-                w.text = s.clone();
-                w.subwords = vec![ Box::new(SimpleSubword{ text: s }) ];
-                */
             },
-            /*
-            CondElem::UnaryOp(op) => op.to_string(),
-            CondElem::BinaryOp(op) => op.to_string(),
-            CondElem::InParen(expr) => expr.text.clone(),
-            CondElem::Word(w) => w.text.clone(),
-            CondElem::Regex(w) => w.text.clone(),
-            CondElem::Operand(op) => op.to_string(),
-            CondElem::Not => "!".to_string(),
-            CondElem::And => "&&".to_string(),
-            CondElem::Or => "||".to_string(),
-            CondElem::Ans(true) => "true".to_string(),
-            CondElem::Ans(false) => "false".to_string(),
-            */
             _ => {},
         }
         Ok(())
