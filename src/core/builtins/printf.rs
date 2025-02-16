@@ -14,10 +14,19 @@ fn split_format(format: &str) -> (Vec<String>, Option<String>) {
     let mut ans = vec![];
 
     for c in format.chars() {
-        if c == '\\' || escaped {
+        if c == '\\' {
             len += c.len_utf8();
-            escaped = ! escaped;
+            escaped = true;
             percent = false;
+            continue;
+        }
+
+        if escaped {
+            len += c.len_utf8();
+            escaped = false;
+            percent = false;
+            ans.push(format[len_prev..len].to_string());
+            len_prev = len;
             continue;
         }
 
@@ -57,7 +66,19 @@ fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
                 //ans += &parts[i].replace("%q", &("'".to_owned() + &args[i] + "'"));
                 ans += &parts[i].replace("%q", &args[i]);
         }else {
-            ans += &sprintf::sprintf!(&parts[i], args[i])?;
+            match parts[i].as_ref() {
+                "\\a" => ans += r"\a",
+                "\\b" => ans += r"\b",
+                "\\e" => ans += r"\e",
+                "\\E" => ans += r"\E",
+                "\\f" => ans += r"\f",
+                "\\n" => ans += "\n",
+                "\\r" => ans += "\r",
+                "\\v" => ans += r"\v",
+                "\\t" => ans += "\t",
+                "\\\\" => ans += "\\",
+                _ => ans += &sprintf::sprintf!(&parts[i], args[i])?,
+            };
         }
     }
 

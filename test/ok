@@ -9,5 +9,3 @@
 ./test_parameters.bash
 ./test_builtins.bash
 ./test_job.bash
-../test/test_parameters.bash
-../../../test/test_parameters.bash
