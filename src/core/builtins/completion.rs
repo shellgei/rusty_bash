@@ -286,7 +286,15 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
-    let mut feeder = Feeder::new(&args[2]);
+    let mut words = args[2].to_string();
+
+    if words.starts_with("$") {
+        if let Ok(value) = core.db.get_param(&args[2][1..]) {
+            words = value;
+        }
+    }
+
+    let mut feeder = Feeder::new(&words);
     while feeder.len() != 0 {
         match Word::parse(&mut feeder, core, false) {
             Ok(Some(mut w)) => {
