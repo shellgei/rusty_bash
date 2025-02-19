@@ -188,6 +188,9 @@ pub fn type_command(core: &mut ShellCore, com: &String) -> i32 {
     if core.builtins.contains_key(com) {
         println!("{} is a shell builtin", com);
     }
+    if let Some(path) = file::search_command(com) {//TODO: show in the fullpath case
+        println!("{} is {}", com, &path);
+    }
     0
 }
 
