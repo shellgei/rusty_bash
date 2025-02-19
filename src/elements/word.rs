@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
-mod tilde_expansion;
+pub mod tilde_expansion;
 pub mod substitution;
 mod path_expansion;
 mod split;

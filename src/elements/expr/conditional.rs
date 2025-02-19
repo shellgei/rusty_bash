@@ -247,7 +247,7 @@ impl ConditionalExpr {
         if op.starts_with("=") || op == "!=" || op == "<" || op == ">" {
             let ans = match op {
                 "==" | "=" => glob::parse_and_compare(&left, &right, extglob),
-                "=~"       => glob::parse_and_compare(&left, &right, extglob),
+                //"=~"       => glob::parse_and_compare(&left, &right, extglob),
                 "!="       => ! glob::parse_and_compare(&left, &right, extglob),
                 ">"        => left > right,
                 "<"        => left < right,
