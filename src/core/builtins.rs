@@ -51,6 +51,7 @@ impl ShellCore {
         self.builtins.insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
+        self.builtins.insert("type".to_string(), type_);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
         self.builtins.insert("unalias".to_string(), alias::unalias);
@@ -177,5 +178,27 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    0
+}
+
+pub fn type_command(core: &mut ShellCore, com: &String) -> i32 {
+    if core.builtins.contains_key(com) {
+        println!("{} is a shell builtin", com);
+    }
+    0
+}
+
+pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
+        return 0;
+    }
+
+    //let args = arg::dissolve_options(args);
+
+
+    if args.len() == 2 {
+        return type_command(core, &args[1]);
+    }
+
     0
 }
