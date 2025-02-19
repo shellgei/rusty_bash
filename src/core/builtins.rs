@@ -15,13 +15,14 @@ mod pwd;
 mod read;
 mod source;
 mod trap;
+mod type_;
 mod loop_control;
 mod unset;
 
-use crate::{error, file_check, proc_ctrl, Feeder, Script, ShellCore};
+use crate::{error, exit, proc_ctrl, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
-use crate::utils::{arg, exit, file};
+use crate::utils::{arg, file};
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -51,7 +52,7 @@ impl ShellCore {
         self.builtins.insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
-        self.builtins.insert("type".to_string(), type_);
+        self.builtins.insert("type".to_string(), type_::type_);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
         self.builtins.insert("unalias".to_string(), alias::unalias);
@@ -181,6 +182,7 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
 
+/*
 pub fn print_command_type(core: &mut ShellCore, com: &String) -> i32 {
     if core.aliases.contains_key(com) {
         println!("{} is aliased to `{}'", &com, &core.aliases[com]);
@@ -226,3 +228,4 @@ pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
     exit_status
 }
+*/
