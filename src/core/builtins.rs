@@ -18,7 +18,7 @@ mod trap;
 mod loop_control;
 mod unset;
 
-use crate::{error, proc_ctrl, Feeder, Script, ShellCore};
+use crate::{error, file_check, proc_ctrl, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, exit, file};
@@ -197,6 +197,10 @@ pub fn print_command_type(core: &mut ShellCore, com: &String) -> i32 {
     }
     if let Some(path) = file::search_command(com) {//TODO: show in the fullpath case
         println!("{} is {}", com, &path);
+        return 0;
+    }
+    if file_check::is_executable(com) {
+        println!("{} is {}", com, com);
         return 0;
     }
     1
