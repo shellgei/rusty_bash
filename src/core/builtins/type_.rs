@@ -2,12 +2,16 @@
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{file_check, ShellCore};
+use crate::{file_check, ShellCore, utils};
 use crate::utils::{arg, file};
 
-fn type_no_opt(core: &mut ShellCore, com: &String) -> i32 {
+fn type_no_opt_sub(core: &mut ShellCore, com: &String) -> i32 {
     if core.aliases.contains_key(com) {
         println!("{} is aliased to `{}'", &com, &core.aliases[com]);
+        return 0;
+    }
+    if utils::reserved(com) {
+        println!("{} is reserved", &com);
         return 0;
     }
     if core.db.functions.contains_key(com) {
@@ -30,9 +34,69 @@ fn type_no_opt(core: &mut ShellCore, com: &String) -> i32 {
     1
 }
 
-fn type_p(core: &mut ShellCore, com: &String) -> i32 {
+fn type_no_opt(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut exit_status = 0;
+    for a in args {
+         exit_status += type_no_opt_sub(core, a);
+    }
+    if exit_status > 1 {
+        exit_status = 1;
+    }
+    return exit_status;
+}
+
+fn type_t(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut exit_status = 0;
+    for a in args {
+         exit_status += type_t_sub(core, a);
+    }
+    if exit_status > 1 {
+        exit_status = 1;
+    }
+    return exit_status;
+}
+
+fn type_t_sub(core: &mut ShellCore, com: &String) -> i32 {
+    if core.aliases.contains_key(com) {
+        println!("alias");
+        return 0;
+    }
+    if utils::reserved(com) {
+        println!("keyword");
+        return 0;
+    }
+    if core.db.functions.contains_key(com) {
+        println!("function");
+        return 0;
+    }
+    if core.builtins.contains_key(com) {
+        println!("builtin");
+        return 0;
+    }
+    if file::search_command(com).is_some()
+    || file_check::is_executable(com) {
+        println!("file");
+        return 0;
+    }
+
+    1
+}
+
+fn type_p(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut exit_status = 0;
+    for a in args {
+         exit_status += type_p_sub(core, a);
+    }
+    if exit_status > 1 {
+        exit_status = 1;
+    }
+    return exit_status;
+}
+
+fn type_p_sub(core: &mut ShellCore, com: &String) -> i32 {
     if core.aliases.contains_key(com) 
     || core.db.functions.contains_key(com)
+    || utils::reserved(com)
     || core.builtins.contains_key(com) {
         return 0;
     }
@@ -53,27 +117,16 @@ pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    let mut exit_status = 0;
     let mut args = arg::dissolve_options(args);
+    if arg::consume_option("-t", &mut args) {
+        return type_t(core, &args[1..]);
+    }
     if arg::consume_option("-p", &mut args) {
-        for a in &args[1..] {
-             exit_status += type_p(core, a);
-        }
-        if exit_status > 1 {
-            exit_status = 1;
-        }
-        return exit_status;
+        return type_p(core, &args[1..]);
     }
     if arg::consume_option("-P", &mut args) {
         return 0;
     }
 
-    for a in &args[1..] {
-         exit_status += type_no_opt(core, a);
-    }
-
-    if exit_status > 1 {
-        exit_status = 1;
-    }
-    exit_status
+    type_no_opt(core, &args[1..])
 }
