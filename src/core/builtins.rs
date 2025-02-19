@@ -181,17 +181,20 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn type_command(core: &mut ShellCore, com: &String) -> i32 {
+pub fn print_command_type(core: &mut ShellCore, com: &String) -> i32 {
     if core.aliases.contains_key(com) {
         println!("{} is aliased to `{}'", &com, &core.aliases[com]);
+        return 0;
     }
     if core.builtins.contains_key(com) {
         println!("{} is a shell builtin", com);
+        return 0;
     }
     if let Some(path) = file::search_command(com) {//TODO: show in the fullpath case
         println!("{} is {}", com, &path);
+        return 0;
     }
-    0
+    1
 }
 
 pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -201,10 +204,13 @@ pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     //let args = arg::dissolve_options(args);
 
-
-    if args.len() == 2 {
-        return type_command(core, &args[1]);
+    let mut exit_status = 0;
+    for a in &args[1..] {
+         exit_status += print_command_type(core, a);
     }
 
-    0
+    if exit_status > 1 {
+        exit_status = 1;
+    }
+    exit_status
 }
