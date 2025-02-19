@@ -93,6 +93,17 @@ fn type_p(core: &mut ShellCore, args: &[String]) -> i32 {
     return exit_status;
 }
 
+fn type_large_p(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut exit_status = 0;
+    for a in args {
+         exit_status += type_large_p_sub(core, a);
+    }
+    if exit_status > 1 {
+        exit_status = 1;
+    }
+    return exit_status;
+}
+
 fn type_p_sub(core: &mut ShellCore, com: &String) -> i32 {
     if core.aliases.contains_key(com) 
     || core.db.functions.contains_key(com)
@@ -112,6 +123,26 @@ fn type_p_sub(core: &mut ShellCore, com: &String) -> i32 {
     1
 }
 
+fn type_large_p_sub(core: &mut ShellCore, com: &String) -> i32 {
+    let mut es = 1;
+    if core.aliases.contains_key(com) 
+    || core.db.functions.contains_key(com)
+    || utils::reserved(com)
+    || core.builtins.contains_key(com) {
+        es = 0;
+    }
+
+    if let Some(path) = file::search_command(com) {
+        println!("{}", &path);
+        return 0;
+    }
+    if file_check::is_executable(com) {
+        println!("{}", com);
+        return 0;
+    }
+    es
+}
+
 pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
         return 0;
@@ -125,7 +156,7 @@ pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return type_p(core, &args[1..]);
     }
     if arg::consume_option("-P", &mut args) {
-        return 0;
+        return type_large_p(core, &args[1..]);
     }
 
     type_no_opt(core, &args[1..])

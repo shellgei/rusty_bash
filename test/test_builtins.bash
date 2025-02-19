@@ -300,5 +300,24 @@ res=$($com <<< 'trap "echo hoge" EXIT; echo fuge')
 [ "$res" = "fuge
 hoge" ] || err $LINENO
 
+### type ###
+
+res=$($com <<< 'type bash | grep "bash is /"') 
+[ $? -eq 0 ] || err $LINENO
+
+res=$($com <<< 'type -p bash | grep "^/.*bash"') 
+[ $? -eq 0 ] || err $LINENO
+
+res=$($com <<< 'type -t for') 
+[ "$res" = "keyword" ] || err $LINENO
+
+res=$($com <<< 'type -p printf') 
+[ $? -eq 0 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'type -P printf') 
+[ $? -eq 0 ] || err $LINENO
+[ "$res" != "" ] || err $LINENO
+
 echo $0 >> ./ok
 
