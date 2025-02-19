@@ -24,13 +24,24 @@ com=../target/release/sush
 #bbb' | ( read a ; echo $a )
 #aaabbb
 
-res=$($com <<< 'cur="~" ; [[ $cur == '~' ]]' )
+res=$($com << 'EOF'
+cur='~'
+[[ $cur == '~' ]]
+EOF
+)
 [ "$?" -eq 0 ] || err $LINENO
 
-res=$($com <<< '[[ ~ == '~' ]]' )
+res=$($com << 'EOF'
+[[ ~ == '~' ]]
+EOF
+)
 [ "$?" -eq 1 ] || err $LINENO
 
-res=$($com <<< 'cur="~" ; [[ $cur == \~* ]]' )
+res=$($com << 'EOF'
+cur="~"
+[[ $cur == \~* ]]
+EOF
+)
 [ "$?" -eq 0 ] || err $LINENO
 
 res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
