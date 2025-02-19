@@ -211,7 +211,10 @@ pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    //let args = arg::dissolve_options(args);
+    let mut args = arg::dissolve_options(args);
+    if arg::consume_option("-P", &mut args) {
+        return 0;
+    }
 
     let mut exit_status = 0;
     for a in &args[1..] {
