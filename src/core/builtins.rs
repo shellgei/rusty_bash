@@ -182,6 +182,9 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn type_command(core: &mut ShellCore, com: &String) -> i32 {
+    if core.aliases.contains_key(com) {
+        println!("{} is aliased to `{}'", &com, &core.aliases[com]);
+    }
     if core.builtins.contains_key(com) {
         println!("{} is a shell builtin", com);
     }
