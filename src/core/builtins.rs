@@ -186,6 +186,11 @@ pub fn print_command_type(core: &mut ShellCore, com: &String) -> i32 {
         println!("{} is aliased to `{}'", &com, &core.aliases[com]);
         return 0;
     }
+    if core.db.functions.contains_key(com) {
+        println!("{} is a function", &com);
+        println!("{}", &core.db.functions[com].text);
+        return 0;
+    }
     if core.builtins.contains_key(com) {
         println!("{} is a shell builtin", com);
         return 0;
