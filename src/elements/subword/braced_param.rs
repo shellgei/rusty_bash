@@ -169,7 +169,7 @@ impl BracedParam {
         self.text = if let Some(s) = self.substr.as_mut() {
             s.get_text(&self.text, core)?
         }else if let Some(v) = self.value_check.as_mut() {
-            v.set(&self.param.name, &self.text, core)?
+            v.set(&self.param.name, &self.param.subscript, &self.text, core)?
         }else if let Some(r) = self.remove.as_mut() {
             r.set(&mut self.text, core)?
         }else if let Some(r) = &self.replace {

@@ -110,6 +110,19 @@ impl DataBase {
         false
     }
 
+    pub fn has_array_value(&mut self, name: &str, index: &str) -> bool {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(e) = self.params[layer].get(name) {
+                let mut a = e.clone();
+                return a.get_as_array_or_assoc(index).is_ok();
+            }
+        }
+        false
+    }
+
+//    fn get_as_array_or_assoc(&mut self, pos: &str) -> Result<String, ExecError> {
+
     pub fn len(&mut self, key: &str) -> usize {
         match getter::clone(self, key).as_mut() {
             Some(d) => d.len(),

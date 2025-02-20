@@ -14,19 +14,17 @@ use super::arithmetic::word;
 use super::arithmetic::elem::ArithElem;
 use std::env;
 
-fn to_operand(w: &mut Word, core: &mut ShellCore) -> Result<CondElem, ExecError> {
-    //match w.eval_for_case_pattern(core) {
+fn to_operand(w: &mut Word) -> Result<CondElem, ExecError> {
     match w.make_unquoted_word() {
         Some(v) => Ok(CondElem::Operand(v)),
         None => Ok(CondElem::Operand("".to_string())),
-        //None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
     }
 }
 
 fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<CondElem, ExecError> {
     match stack.pop() {
         Some(CondElem::InParen(mut expr)) => expr.eval(core),
-        Some(CondElem::Word(mut w)) => to_operand(&mut w, core),
+        Some(CondElem::Word(mut w)) => to_operand(&mut w),
         Some(elem) => Ok(elem),
         None => return Err(ExecError::OperandExpected("".to_string())),
     }

@@ -6,15 +6,18 @@ use crate::elements::subword::BracedParam;
 use crate::elements::subword::braced_param::Word;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
+use super::Subscript;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
+    pub subscript: Option<Subscript>,
     pub symbol: Option<String>,
     pub alternative_value: Option<Word>,
 }
 
 impl ValueCheck {
-    pub fn set(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn set(&mut self, name: &String, sub: &Option<Subscript>, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.subscript = sub.clone();
         match self.symbol.as_deref() {
             Some(":-")   => {
                 self.set_alter_word(core)?;
@@ -42,15 +45,26 @@ impl ValueCheck {
             true  => self.alternative_value = None,
         }
         Ok(text.clone())
-            /*
-        self.alternative_value = None;
-        self.symbol = None;
-        Ok(text.clone())
-            */
     }
 
-    fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        match core.db.has_value(&name) && ! core.db.is_array(&name) {
+    fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> { 
+        if core.db.is_array(&name) {
+            if core.db.get_array_all(&name).is_empty() {
+                self.alternative_value = None;
+                return Ok(text.clone());
+            }
+        }
+        
+        if let Some(sub) = self.subscript.as_mut() {
+            if sub.eval(core, &name).is_ok() {
+                if core.db.has_array_value(&name, &sub.text) {
+                    self.set_alter_word(core)?;
+                    return Ok(text.clone());
+                }
+            }
+        }
+
+        match core.db.has_value(&name) {
             true  => {self.set_alter_word(core)?;},
             false => self.alternative_value = None,
         }
