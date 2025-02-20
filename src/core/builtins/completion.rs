@@ -4,6 +4,7 @@
 use crate::{file_check, ShellCore, Feeder};
 use crate::core::{CompletionInfo, HashMap};
 use crate::elements::word::Word;
+use crate::elements::word::tilde_expansion;
 use crate::utils;
 use crate::utils::{arg, directory};
 use faccess;
@@ -15,20 +16,13 @@ use std::path::Path;
 use rev_lines::RevLines;
 
 pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    if args[2] == "--" {
+        args.remove(2);
+    }
+
     let path = match args.len() {
         2 => "".to_string(),
-        3 => {
-            match args[2].as_str() {
-                "--" => "".to_string(),
-                _ => args[2].to_string(),
-            }
-        },
-        _ => {
-            match args[2].as_str() {
-                "--" => args[3].to_string(),
-                _ => args[2].to_string(),
-            }
-        },
+        _ => args[2].to_string(),
     }.replace("\\", "");
 
     let mut split: Vec<String> = path.split("/").map(|s| s.to_string()).collect();
@@ -38,11 +32,18 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     };
 
     split.push("".to_string());
-    let dir = split.join("/");
+    let org_dir = split.join("/");
+    let mut dir = org_dir.clone();
+    if dir.starts_with("~") {
+        if let Ok(Some(mut w)) = Word::parse(&mut Feeder::new(&dir), core, true) {
+            tilde_expansion::eval(&mut w, core);
+            dir = w.text;
+        }
+    }
 
     if key == "" {
         let files = directory::files(&dir);
-        return files.iter().map(|f| dir.clone() + &f).collect();
+        return files.iter().map(|f| org_dir.clone() + &f).collect();
     }
 
     let mut ans = directory::glob(&dir, &(key.clone() + "*"), core.shopts.query("extglob"));
@@ -52,6 +53,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     }
     ans.iter_mut().for_each(|a| { a.pop(); } );
     ans.sort();
+    ans.iter_mut().for_each(|e| {*e = e.replacen(&dir, &org_dir, 1); });
     ans
 }
 
