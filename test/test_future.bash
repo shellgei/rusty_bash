@@ -24,6 +24,9 @@ com=../target/release/sush
 #bbb' | ( read a ; echo $a )
 #aaabbb
 
+res=$($com <<< 'a=(a b) ; echo ${a+"${a[@]}"}')
+[ "$res" = "a b" ] || err $LINENO
+
 res=$($com << 'EOF'
 cur='~'
 [[ $cur == '~' ]]
