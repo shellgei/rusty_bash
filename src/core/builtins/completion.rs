@@ -16,7 +16,7 @@ use std::path::Path;
 use rev_lines::RevLines;
 
 pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
-    if args[2] == "--" {
+    if args.len() > 2 && args[2] == "--" {
         args.remove(2);
     }
 
