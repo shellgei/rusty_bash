@@ -646,6 +646,21 @@ res=$($com <<< 'echo {,,}$(date "+%w")')
 res=$($com <<< 'echo $(date) | grep "  "')
 [ "$?" == "1" ] || err $LINENO
 
+res=$($com <<< 'a=$(seq 2)
+echo "$a"
+')
+[ "$res" == "1
+2" ] || err $LINENO
+
+res=$($com <<< 'a=$(
+echo a
+echo b
+)
+echo "$a"
+')
+[ "$res" == "a
+b" ] || err $LINENO
+
 # array
 
 res=$($com <<< 'A=( a b ); echo ${A[1]}')

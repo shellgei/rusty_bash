@@ -64,7 +64,7 @@ impl Word {
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
-            Ok(w)  => w.split_and_path_expansion(core),
+            Ok(w)  => w.path_expansion(core),
             Err(e) => return Err(e),
         };
 
@@ -113,6 +113,21 @@ impl Word {
         let extglob = core.shopts.query("extglob");
 
         let splitted = split::eval(self, core);
+        if core.options.query("noglob") {
+            return splitted;
+        }
+
+        for mut w in splitted {
+            ans.append(&mut path_expansion::eval(&mut w, extglob) );
+        }
+        ans
+    }
+
+    pub fn path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
+        let mut ans = vec![];
+        let extglob = core.shopts.query("extglob");
+
+        let splitted = vec![self.clone()];
         if core.options.query("noglob") {
             return splitted;
         }
