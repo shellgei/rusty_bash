@@ -692,6 +692,13 @@ res=$($com <<< 'echo ]')
 
 # ansi-c quoting
 
+# this test case is never fulfilled until we use String type
+#res=$($com <<- FIN
+#echo -n $'\xdb' | xxd -p
+#FIN
+#)
+#[ "$res" == "db" ] || err $LINENO
+
 res=$($com <<- FIN
 echo $'aaa'
 FIN
