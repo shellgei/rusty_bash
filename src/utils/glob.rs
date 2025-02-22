@@ -9,15 +9,15 @@ mod parser;
 pub enum GlobElem {
     Normal(String),
     Symbol(char),
-    OneOf(bool, Vec<CharClass>),
+    OneOf(bool, Vec<MetaChar>),
     ExtGlob(char, Vec<String>),
 }
 
 #[derive(Debug)]
-pub enum CharClass {
+pub enum MetaChar {
     Normal(char),
     Range(char, char),
-    Class(String),
+    CharClass(String),
 }
 
 pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
