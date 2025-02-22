@@ -24,6 +24,21 @@ com=../target/release/sush
 #bbb' | ( read a ; echo $a )
 #aaabbb
 
+res=$($com <<< 'a=abca ; echo @${a//a}@')
+[ "$res" = "@bc@" ] || err $LINENO
+
+res=$($com <<< 'a=abca ; echo @${a//a/}@')
+[ "$res" = "@bc@" ] || err $LINENO
+
+res=$($com <<< 'a=" " ; echo @${a/[[:space:]]/}@')
+[ "$res" = "@@" ] || err $LINENO
+
+res=$($com <<< 'a="  " ; echo @${a/[[:space:]]/}@')
+[ "$res" = "@ @" ] || err $LINENO
+
+res=$($com <<< 'a="  " ; echo @${a//[[:space:]]/}@')
+[ "$res" = "@@" ] || err $LINENO
+
 res=$($com <<< 'a=(a b) ; echo ${a+"${a[@]}"}')
 [ "$res" = "a b" ] || err $LINENO
 

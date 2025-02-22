@@ -30,7 +30,8 @@ impl Replace {
             }
         }
 
-        Err(ExecError::Other("parse error".to_string()))
+        Ok("".to_string())
+        //Err(ExecError::Other("parse error".to_string()))
     }
 
     pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {

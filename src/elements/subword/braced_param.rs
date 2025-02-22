@@ -276,7 +276,6 @@ impl BracedParam {
                  || Remove::eat(feeder, &mut ans, core)?
                  || Replace::eat(feeder, &mut ans, core)?;
         }
-
         while ! feeder.starts_with("}") {
             Self::eat_unknown(feeder, &mut ans, core)?;
         }
