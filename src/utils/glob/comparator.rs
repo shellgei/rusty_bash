@@ -61,6 +61,22 @@ fn compare_head(cand: &String, c: &CharClass) -> bool {
 
     match c {
         CharClass::Normal(c) => head == *c,
+        CharClass::Range(f, t) => range_check(*f, *t, head),
         _ => false,
     }
+}
+
+fn range_check(from: char, to: char, c: char) -> bool {
+    if ('0' <= from && from <= to && to <= '9')
+    || ('a' <= from && from <= to && to <= 'z')
+    || ('A' <= from && from <= to && to <= 'Z') {
+        return from <= c && c <= to;
+        /*
+        let mut ch = from;
+        while ch <= *to {
+            ans.push(CharClass::Normal(ch));
+            ch = (ch as u8 + 1) as char;
+        }*/
+    }
+    false
 }

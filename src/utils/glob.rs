@@ -16,6 +16,7 @@ pub enum GlobElem {
 #[derive(Debug)]
 pub enum CharClass {
     Normal(char),
+    Range(char, char),
     Class(String),
 }
 

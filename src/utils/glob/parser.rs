@@ -123,8 +123,12 @@ fn expand_range_representation(chars: &Vec<char>) -> Vec<CharClass> {
                 ans.pop();
             }
 
-            let mut expand = expand_range(&from, c);
-            ans.append(&mut expand);
+            //let mut expand = expand_range(&from, c);
+            //ans.append(&mut expand);
+            match from {
+                Some(f) => ans.push(CharClass::Range(f, *c)),
+                None => ans.push(CharClass::Normal(*c)),
+            }
             hyphen = false;
             continue;
         }else {
