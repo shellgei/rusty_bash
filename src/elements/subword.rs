@@ -58,7 +58,7 @@ fn split_str(s: &str, ifs: &str) -> Vec<String> {
             continue;
         }
 
-        if " \t\n".contains(c) {
+        if ifs.contains(c) {
             ans.push(s[from..pos-c.len_utf8()].to_string());
             from = pos;
         }
