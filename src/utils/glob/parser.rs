@@ -68,8 +68,7 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     
     let bkup = pattern.clone();
     let not = pattern.starts_with("[^") || pattern.starts_with("[!");
-    let mut len = if not {2} else {1};
-    let mut escaped = false;
+    let len = if not {2} else {1};
     let mut inner = vec![];
 
     *pattern = pattern.split_off(len);
@@ -159,6 +158,7 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     ans
 }
 
+/*
 fn expand_range_representation(chars: &Vec<char>) -> Vec<CharClass> {
     let mut ans = vec![];
     let mut from = None;
@@ -193,6 +193,7 @@ fn expand_range_representation(chars: &Vec<char>) -> Vec<CharClass> {
 
     ans
 }
+*/
 
 fn consume(remaining: &mut String, cutpos: usize) -> String {
     let cut = remaining[0..cutpos].to_string();
