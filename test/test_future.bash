@@ -28,6 +28,12 @@ res=$($com <<< 'a=" a  b  c "; echo $a; IFS= ; echo $a')
 [ "$res" = "a b c
  a  b  c " ] || err $LINENO
 
+res=$($com <<< 'a="@a@b@c@"; IFS=@ ; echo $a@')
+[ "$res" = " a b c @" ] || err $LINENO
+
+res=$($com <<< 'a="@a@b@c@"; IFS=@ ; echo $a')
+[ "$res" = " a b c" ] || err $LINENO
+
 res=$($com << 'EOF'
 IFS='
 '
