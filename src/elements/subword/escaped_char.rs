@@ -30,6 +30,8 @@ impl Subword for EscapedChar {
         }
         self.text.clone()
     }
+
+    fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
 impl EscapedChar {
