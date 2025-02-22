@@ -123,8 +123,6 @@ fn expand_range_representation(chars: &Vec<char>) -> Vec<CharClass> {
                 ans.pop();
             }
 
-            //let mut expand = expand_range(&from, c);
-            //ans.append(&mut expand);
             match from {
                 Some(f) => ans.push(CharClass::Range(f, *c)),
                 None => ans.push(CharClass::Normal(*c)),
@@ -141,28 +139,6 @@ fn expand_range_representation(chars: &Vec<char>) -> Vec<CharClass> {
         ans.push(CharClass::Normal('-'));
     }
 
-    ans
-}
-
-fn expand_range(from: &Option<char>, to: &char) -> Vec<CharClass> {
-    if from.is_none() {
-        return vec![CharClass::Normal(*to)];
-    }
-
-    let from = from.unwrap();
-
-    let mut ans = vec![];
-
-    if ('0' <= from && from <= *to && *to <= '9')
-    || ('a' <= from && from <= *to && *to <= 'z')
-    || ('A' <= from && from <= *to && *to <= 'Z') {
-        let mut ch = from;
-        while ch <= *to {
-            ans.push(CharClass::Normal(ch));
-            ch = (ch as u8 + 1) as char;
-        }
-
-    }
     ans
 }
 

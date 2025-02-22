@@ -71,12 +71,6 @@ fn range_check(from: char, to: char, c: char) -> bool {
     || ('a' <= from && from <= to && to <= 'z')
     || ('A' <= from && from <= to && to <= 'Z') {
         return from <= c && c <= to;
-        /*
-        let mut ch = from;
-        while ch <= *to {
-            ans.push(CharClass::Normal(ch));
-            ch = (ch as u8 + 1) as char;
-        }*/
     }
     false
 }
