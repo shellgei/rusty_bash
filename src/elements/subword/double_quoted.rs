@@ -47,7 +47,7 @@ impl Subword for DoubleQuoted {
             .concat() )
     }
 
-    fn split(&self) -> Vec<Box<dyn Subword>>{
+    fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{
         if self.split_points.len() < 1 {
             return vec![];
         }

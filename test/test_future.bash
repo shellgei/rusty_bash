@@ -24,6 +24,28 @@ com=../target/release/sush
 #bbb' | ( read a ; echo $a )
 #aaabbb
 
+res=$($com <<< 'a=" a  b  c "; echo $a; IFS= ; echo $a')
+[ "$res" = "a b c
+ a  b  c " ] || err $LINENO
+
+res=$($com << 'EOF'
+IFS='
+'
+set a '1
+2
+3'
+
+eval "$1=(\$2)"
+echo ${#a[@]}
+
+IFS=
+eval "$1=(\$2)"
+echo ${#a[@]}
+EOF
+)
+[ "$res" = "3
+1" ] || err $LINENO
+
 res=$($com <<< 'a=abca ; echo @${a//a}@')
 [ "$res" = "@bc@" ] || err $LINENO
 

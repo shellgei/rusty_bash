@@ -41,7 +41,11 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
-fn split_str(s: &str) -> Vec<String> {
+fn split_str(s: &str, ifs: &str) -> Vec<String> {
+    if ifs == "" {
+        return vec![s.to_string()];
+    }
+
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
@@ -71,9 +75,9 @@ pub trait Subword {
     fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {Ok(())}
     fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {vec![]}
 
-    fn split(&self) -> Vec<Box<dyn Subword>>{
+    fn split(&self, ifs: &str) -> Vec<Box<dyn Subword>>{
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
-        split_str(self.get_text()).iter().map(|s| f(s.to_string())).collect()
+        split_str(self.get_text(), ifs).iter().map(|s| f(s.to_string())).collect()
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}

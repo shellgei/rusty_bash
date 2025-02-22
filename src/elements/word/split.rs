@@ -6,7 +6,8 @@ use crate::elements::word::Word;
 use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
-    let (pos, mut split) = find_pos(word);
+    let ifs = core.db.get_param("IFS").unwrap_or(" \r\n".to_string());
+    let (pos, mut split) = find_pos(word, &ifs);
     if split.is_empty() {
         return vec![word.clone()];
     }
@@ -27,9 +28,9 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     [ ans, eval(&right, core) ].concat()
 }
 
-pub fn find_pos(word: &Word) -> (usize, Vec<Box<dyn Subword>>) {
+pub fn find_pos(word: &Word, ifs: &str) -> (usize, Vec<Box<dyn Subword>>) {
     for (i, sw) in word.subwords.iter().enumerate() {
-        let split = sw.split();
+        let split = sw.split(ifs);
         if split.len() >= 2 {
             return (i, split);
         }
