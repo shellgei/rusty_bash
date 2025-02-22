@@ -27,16 +27,66 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     true
 }
 
+fn cut_charclass(pattern: &mut String) -> Option<CharClass> {
+    if pattern.starts_with("]") {
+        return None;
+    }
+
+    if pattern.starts_with("\\") {
+        if pattern.len() > 1 {
+            let ch = pattern.chars().nth(1).unwrap();
+            *pattern = pattern.split_off(ch.len_utf8() + 1);
+            return Some(CharClass::Normal(ch));
+        }else{
+            *pattern = pattern.split_off(1);
+            return None;
+        }
+    }
+
+    if pattern.len() > 2
+    && pattern.chars().nth(1) == Some('-')
+    && pattern.chars().nth(2) != Some(']') {
+        let f = pattern.chars().nth(0).unwrap();
+        let t = pattern.chars().nth(2).unwrap();
+        *pattern = pattern.split_off(f.len_utf8() + 1 + t.len_utf8());
+        return Some(CharClass::Range(f, t));
+    }
+
+    if pattern.len() > 0 {
+        let ch = pattern.chars().nth(0).unwrap();
+        *pattern = pattern.split_off(ch.len_utf8());
+        return Some(CharClass::Normal(ch));
+    }
+
+    None
+}
+
 fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     if ! pattern.starts_with("[") {
         return false;
     }
     
+    let bkup = pattern.clone();
     let not = pattern.starts_with("[^") || pattern.starts_with("[!");
     let mut len = if not {2} else {1};
     let mut escaped = false;
     let mut inner = vec![];
 
+    *pattern = pattern.split_off(len);
+    while pattern.len() > 0 {
+        //dbg!("{:?}", &pattern);
+        if pattern.starts_with("]") {
+            *pattern = pattern.split_off(1);
+            ans.push( GlobElem::OneOf(!not, inner) );
+            return true;
+        }
+
+        if let Some(p) = cut_charclass(pattern) {
+            inner.push(p);
+        }
+    }
+
+    /*
     for c in pattern[len..].chars() {
         len += c.len_utf8();
 
@@ -54,7 +104,9 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
             inner.push(c);
         }
     }
+    */
 
+    *pattern = bkup;
     false
 }
 
