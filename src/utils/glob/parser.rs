@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::{GlobElem, extglob};
+use super::{CharClass, GlobElem, extglob};
 
 fn eat_one_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     if pattern.starts_with("*") || pattern.starts_with("?") {
@@ -107,7 +107,7 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     ans
 }
 
-fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
+fn expand_range_representation(chars: &Vec<char>) -> Vec<CharClass> {
     let mut ans = vec![];
     let mut from = None;
     let mut hyphen = false;
@@ -128,21 +128,21 @@ fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
             hyphen = false;
             continue;
         }else {
-            ans.push(*c);
+            ans.push(CharClass::Normal(*c));
             from = Some(*c);
         }
     }
 
     if hyphen {
-        ans.push('-');
+        ans.push(CharClass::Normal('-'));
     }
 
     ans
 }
 
-fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
+fn expand_range(from: &Option<char>, to: &char) -> Vec<CharClass> {
     if from.is_none() {
-        return vec![*to];
+        return vec![CharClass::Normal(*to)];
     }
 
     let from = from.unwrap();
@@ -154,7 +154,7 @@ fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
     || ('A' <= from && from <= *to && *to <= 'Z') {
         let mut ch = from;
         while ch <= *to {
-            ans.push(ch);
+            ans.push(CharClass::Normal(ch));
             ch = (ch as u8 + 1) as char;
         }
 
