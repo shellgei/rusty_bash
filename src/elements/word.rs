@@ -86,8 +86,18 @@ impl Word {
     }
 
     pub fn eval_for_regex(&self, core: &mut ShellCore) -> Option<String> {
+        let quoted = self.text.starts_with("\"") && self.text.ends_with("\"");
+
         match self.tilde_and_dollar_expansion(core) {
-            Ok(mut w) => w.make_regex(),
+            Ok(mut w) => {
+                let mut re = w.make_regex()?;
+                if quoted {
+                    re.insert(0, '"');
+                    re += "\"";
+                }
+
+                Some(re)
+            },
             Err(e)    => {
                 e.print(core);
                 return None;
