@@ -77,6 +77,52 @@ pub fn get_index(core: &mut ShellCore) -> (usize, usize) { //index, subindex
     (index, subindex)
 }
 
+fn set_no_arg_option(name: &str, arg: &str, index: usize, subindex: usize,
+                     subarg: bool, exp_args_len: usize, silence: bool ,core: &mut ShellCore) -> i32 {
+    let result = core.db.set_param(&name, &arg[1..], None);
+    let _ = core.db.set_param("OPTARG", "", None);
+
+    if ! subarg || subindex + 1 == exp_args_len {
+        let _ = core.db.set_param("OPTIND", &(index+1).to_string(), None);
+        let _ = core.db.set_param("OPTIND_SUB", "0", None);
+        let _ = core.db.set_param("OPTIND_PREV", &(index+1).to_string(), None);
+    }else{
+        let _ = core.db.set_param("OPTIND", &index.to_string(), None);
+        let _ = core.db.set_param("OPTIND_SUB", &(subindex + 1).to_string(), None);
+        let _ = core.db.set_param("OPTIND_PREV", &index.to_string(), None);
+    }
+
+    if let Err(e) = result {
+        if ! silence {
+            let msg = format!("getopts: {:?}", &e);
+            error::print(&msg, core);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+fn set_option_with_arg(name: &str, arg: &str, index: usize, optarg: &str,
+                     silence: bool ,core: &mut ShellCore) -> i32 {
+    let result = core.db.set_param(&name, &arg[1..], None);
+
+    let _ = core.db.set_param("OPTARG", &optarg, None);
+    let _ = core.db.set_param("OPTIND", &(index+2).to_string(), None);
+    let _ = core.db.set_param("OPTIND_PREV", &(index+2).to_string(), None);
+    let _ = core.db.set_param("OPTIND_SUB", "0", None);
+
+    if let Err(e) = result {
+        let _ = core.db.set_param("OPTIND_PREV", &(index+10).to_string(), None);
+        if ! silence {
+            let msg = format!("getopts: {:?}", &e);
+            error::print(&msg, core);
+        }
+        return 1;
+    }
+
+    0
+}
+
 pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let _ = core.db.set_param("OPTARG", "", None);
 
@@ -92,6 +138,7 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let name = args[2].clone();
     let (index, subindex) = get_index(core);
+    let _ = core.db.set_param(&name, "?", None);
 
     let args = match args.len() > 3 {
         true  => &args[2..],
@@ -110,69 +157,33 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             subarg = true;
             arg = exp_args[subindex].clone();
         }else{
-            let _ = core.db.set_param(&name, "?", None);
             return 1;
         }
     }
 
     if ! arg.starts_with("-") {
-        let _ = core.db.set_param(&name, "?", None);
-        //let _ = core.db.set_param("OPTARG", "", None);
         return 1;
     }
 
     if arg.starts_with("--") {
-        let _ = core.db.set_param(&name, "?", None);
-        let _ = core.db.set_param("OPTARG", "?", None);
         let _ = core.db.set_param("OPTIND", &(index+1).to_string(), None);
         let _ = core.db.set_param("OPTIND_PREV", &(index+1).to_string(), None);
         return 1;
     }
 
     if targets.iter().any(|t| t.is_single(&arg) ) {
-        let result = core.db.set_param(&name, &arg[1..], None);
-        let _ = core.db.set_param("OPTARG", "", None);
-
-        if ! subarg || subindex + 1 == exp_args.len() {
-            let _ = core.db.set_param("OPTIND", &(index+1).to_string(), None);
-            let _ = core.db.set_param("OPTIND_SUB", "0", None);
-            let _ = core.db.set_param("OPTIND_PREV", &(index+1).to_string(), None);
-        }else{
-            let _ = core.db.set_param("OPTIND", &index.to_string(), None);
-            let _ = core.db.set_param("OPTIND_SUB", &(subindex + 1).to_string(), None);
-            let _ = core.db.set_param("OPTIND_PREV", &index.to_string(), None);
-        }
-
-        if let Err(e) = result {
-            if ! silence {
-                let msg = format!("getopts: {:?}", &e);
-                error::print(&msg, core);
-            }
-            return 1;
-        }
-        return 0;
+        return set_no_arg_option(&name, &arg, index, subindex, subarg, exp_args.len(), silence, core);
     }
 
-    let optarg = match args.len() > index+1 {
-        true  => args[index+1].clone(),
-        false => return 1,
-    };
 
     if targets.iter().any(|t| t.is_witharg(&arg) ) {
-        let result = core.db.set_param(&name, &arg[1..], None);
+        let optarg = match args.len() > index+1 {
+            true  => args[index+1].clone(),
+            false => return 1,
+        };
 
-        let _ = core.db.set_param("OPTARG", &optarg, None);
-        let _ = core.db.set_param("OPTIND", &(index+2).to_string(), None);
-        let _ = core.db.set_param("OPTIND_PREV", &(index+2).to_string(), None);
-        let _ = core.db.set_param("OPTIND_SUB", "0", None);
-
-        if let Err(e) = result {
-            let msg = format!("getopts: {:?}", &e);
-            let _ = core.db.set_param("OPTIND_PREV", &(index+10).to_string(), None);
-            error::print(&msg, core);
-            return 1;
-        }
+        return set_option_with_arg(&name, &arg, index, &optarg, silence, core);
     }
 
-    0
+    1
 }
