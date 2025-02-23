@@ -144,9 +144,15 @@ impl CaseCommand {
             }
 
             let mut script = None;
-            if command::eat_inner_script(feeder, core, ")", vec![";;&", ";;", ";&"], &mut script, true)? {
+            if command::eat_inner_script(feeder, core, ")", vec![";;&", ";;", ";&", "esac"], &mut script, true)? {
                 ans.text.push_str(")");
                 ans.text.push_str(&script.as_ref().unwrap().get_text());
+
+                if feeder.starts_with("esac") {
+                    ans.patterns_script_end.push( (patterns, script.unwrap(), "".to_string() ) );
+                    break;
+                }
+
                 let end_len = if feeder.starts_with(";;&") { 3 }else{ 2 };
                 let end = feeder.consume(end_len);
                 ans.text.push_str(&end);

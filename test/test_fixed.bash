@@ -18,6 +18,16 @@ cd $(dirname $0)
 com=../target/release/sush
 
 res=$($com << 'EOF'
+a=1
+case $a in
+	1) echo OK ;;
+	*) 
+esac
+EOF
+)
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com << 'EOF'
 a=(aa bb cc)
 echo ${!a[@]}
 echo ${!a[*]}

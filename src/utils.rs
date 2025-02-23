@@ -14,7 +14,7 @@ use crate::{Feeder, ShellCore};
 
 pub fn reserved(w: &str) -> bool {
     match w {
-        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" => true,
+        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" | "esac" => true,
         _ => false,
     }
 }
