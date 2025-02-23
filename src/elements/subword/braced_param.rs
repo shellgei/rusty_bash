@@ -5,20 +5,18 @@ mod value_check;
 mod substr;
 mod remove;
 mod replace;
+mod parse;
 
-use crate::{ShellCore, Feeder};
-use crate::elements::subword;
+use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::utils;
-use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
 use self::value_check::ValueCheck;
-use super::filler::FillerSubword;
 
 #[derive(Debug, Clone, Default)]
 struct Param {
@@ -216,6 +214,7 @@ impl BracedParam {
         Ok(())
     }
 
+    /*
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text;
@@ -318,4 +317,5 @@ impl BracedParam {
         ans.text += &feeder.consume(1);
         Ok(Some(ans))
     }
+    */
 }
