@@ -285,6 +285,9 @@ res=$($com <<< 'printf %s abc > /dev/null')
 res=$($com <<< 'printf %s abc &> /dev/null')
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< 'printf -v REPLY %q /l; echo $REPLY')
+[ "$res" = "/l" ] || err $LINENO
+
 ### trap ###
 #
 res=$($com <<< 'trap "echo hoge" 4') # 4 (SIGILL) is forbidden by signal_hook

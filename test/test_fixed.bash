@@ -17,59 +17,6 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-res=$($com <<< 'a=abca ; echo @${a//a}@')
-[ "$res" = "@bc@" ] || err $LINENO
-
-res=$($com <<< 'a=abca ; echo @${a//a/}@')
-[ "$res" = "@bc@" ] || err $LINENO
-
-res=$($com <<< 'a=" " ; echo @${a/[[:space:]]/}@')
-[ "$res" = "@@" ] || err $LINENO
-
-res=$($com <<< 'a="  " ; echo @${a/[[:space:]]/}@')
-[ "$res" = "@ @" ] || err $LINENO
-
-res=$($com <<< 'a="  " ; echo @${a//[[:space:]]/}@')
-[ "$res" = "@@" ] || err $LINENO
-
-res=$($com <<< 'a=(a b) ; echo ${a+"${a[@]}"}')
-[ "$res" = "a b" ] || err $LINENO
-
-res=$($com << 'EOF'
-cur='~'
-[[ $cur == '~' ]]
-EOF
-)
-[ "$?" -eq 0 ] || err $LINENO
-
-res=$($com << 'EOF'
-[[ ~ == '~' ]]
-EOF
-)
-[ "$?" -eq 1 ] || err $LINENO
-
-res=$($com << 'EOF'
-cur="~"
-[[ $cur == \~* ]]
-EOF
-)
-[ "$?" -eq 0 ] || err $LINENO
-
-res=$($com << 'EOF'
-_cur=a
-b=(${_cur:+-- "$_cur"})
-echo ${b[0]}
-echo ${b[1]}
-EOF
-)
-[ "$res" = "--
-a" ] || err $LINENO
-
-res=$($com <<< 'printf -v REPLY %q /l; echo $REPLY')
-[ "$res" = "/l" ] || err $LINENO
-
-res=$($com <<< '[[ a =~ "." ]]')
-[ $? -eq 1 ] || err $LINENO
 
 echo $0 >> ./ok
 exit

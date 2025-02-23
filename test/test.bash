@@ -27,6 +27,7 @@ com=../target/release/sush
 ./test_options.bash nobuild &
 ./test_parameters.bash nobuild &
 ./test_glob.bash nobuild &
+./test_ansi_c_quoting.bash nobuild &
 
 wait 
 

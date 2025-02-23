@@ -133,6 +133,20 @@ res=$($com <<< 'A=aaa; echo ${B+$A}' )
 res=$($com <<< 'A=aaa; B=b ; echo ${B+$A}' )
 [ "$res" = "aaa" ] || err $LINENO
 
+res=$($com <<< 'a=(a b) ; echo ${a+"${a[@]}"}')
+[ "$res" = "a b" ] || err $LINENO
+
+
+res=$($com << 'EOF'
+_cur=a
+b=(${_cur:+-- "$_cur"})
+echo ${b[0]}
+echo ${b[1]}
+EOF
+)
+[ "$res" = "--
+a" ] || err $LINENO
+
 # offset
 
 res=$($com <<< 'A=abc; echo ${A:1}' )
@@ -219,9 +233,20 @@ res=$($com -c 'A="あいうえお いうえお"; echo ${A/%えお/えええeee}'
 res=$($com -c 'A="あいうえお"; echo ${A/%あ/えええeee}' )
 [ "$res" = "あいうえお" ] || err $LINENO
 
-res=$($com -c 'echo ${@[0]}' )
-[ $? = 1 ] || err $LINENO
-[ "$res" = "" ] || err $LINENO
+res=$($com <<< 'a=abca ; echo @${a//a}@')
+[ "$res" = "@bc@" ] || err $LINENO
+
+res=$($com <<< 'a=abca ; echo @${a//a/}@')
+[ "$res" = "@bc@" ] || err $LINENO
+
+res=$($com <<< 'a=" " ; echo @${a/[[:space:]]/}@')
+[ "$res" = "@@" ] || err $LINENO
+
+res=$($com <<< 'a="  " ; echo @${a/[[:space:]]/}@')
+[ "$res" = "@ @" ] || err $LINENO
+
+res=$($com <<< 'a="  " ; echo @${a//[[:space:]]/}@')
+[ "$res" = "@@" ] || err $LINENO
 
 ### IRREGULAR INPUT TEST ###
 
@@ -742,5 +767,9 @@ echo $'\U110000'
 FIN
 )
 [ "$res" == $'\U110000' ] || err $LINENO
+
+res=$($com -c 'echo ${@[0]}' )
+[ $? = 1 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
 
 echo $0 >> ./ok

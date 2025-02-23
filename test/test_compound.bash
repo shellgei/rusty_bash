@@ -1036,4 +1036,27 @@ res=$($com -c '[[ "10#1 + 2" -eq 3 ]]')
 res=$($com <<< '[[ "a\ b" == "a\ b" ]]; echo $?')
 [ "$res" = "0" ] || err $LINENO
 
+res=$($com << 'EOF'
+cur='~'
+[[ $cur == '~' ]]
+EOF
+)
+[ "$?" -eq 0 ] || err $LINENO
+
+res=$($com << 'EOF'
+[[ ~ == '~' ]]
+EOF
+)
+[ "$?" -eq 1 ] || err $LINENO
+
+res=$($com << 'EOF'
+cur="~"
+[[ $cur == \~* ]]
+EOF
+)
+[ "$?" -eq 0 ] || err $LINENO
+
+res=$($com <<< '[[ a =~ "." ]]')
+[ $? -eq 1 ] || err $LINENO
+
 echo $0 >> ./ok
