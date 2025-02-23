@@ -149,16 +149,14 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
-    let mut subarg = false;
     let mut arg = args[index].clone();
     let exp_args = arg::dissolve_options(&vec![arg.clone()]);
-    if exp_args.len() > 1 {
-        if exp_args.len() > subindex {
-            subarg = true;
-            arg = exp_args[subindex].clone();
-        }else{
+    let subarg = exp_args.len() > 1;
+    if subarg {
+        if exp_args.len() <= subindex {
             return 1;
         }
+        arg = exp_args[subindex].clone();
     }
 
     if ! arg.starts_with("-") {
