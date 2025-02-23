@@ -57,6 +57,8 @@ pub trait Data {
 
     fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {Err(ExecError::Other("not an array".to_string()))}
 
+    fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {Err(ExecError::Other("not an array".to_string()))}
+
     fn is_special(&self) -> bool {false}
     fn is_single(&self) -> bool {false}
     fn is_assoc(&self) -> bool {false}

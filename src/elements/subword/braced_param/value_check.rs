@@ -19,12 +19,9 @@ impl ValueCheck {
     pub fn set(&mut self, name: &String, sub: &Option<Subscript>, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         self.subscript = sub.clone();
         match self.symbol.as_deref() {
-            Some(":-")   => {
-                self.set_alter_word(core)?;
-                Ok(text.clone())
-            },
+            Some(":-")   => self.colon_minus(text, core),
             Some(":?") => self.colon_question(name, text, core),
-            Some(":=") => self.colon_equal(name, core),
+            Some(":=") => self.colon_equal(name, text, core),
             Some("-")  => self.minus(name, text, core),
             Some(":+") => self.colon_plus(text, core),
             Some("+")  => self.plus(name, text, core),
@@ -79,11 +76,26 @@ impl ValueCheck {
         Ok(text.clone())
     }
 
-    fn colon_equal(&mut self, name: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn colon_equal(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        if text != "" {
+            self.alternative_value = None;
+            return Ok(text.clone());
+        }
+
         let value = self.set_alter_word(core)?;
         core.db.set_param(&name, &value, None)?;
         self.alternative_value = None;
         Ok(value)
+    }
+
+    fn colon_minus(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        if text != "" {
+            self.alternative_value = None;
+            return Ok(text.clone());
+        }
+
+        self.set_alter_word(core)?;
+        Ok(text.clone())
     }
 
     fn colon_question(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {

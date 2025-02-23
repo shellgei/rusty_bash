@@ -51,6 +51,11 @@ impl Subword for BracedParam {
         self.check()?;
 
         if self.indirect {
+            if let Some(sub) = &self.param.subscript {
+                if sub.text == "[*]" || sub.text == "[@]" {
+                    return self.index_replace(core);
+                }
+            }
             self.indirect_replace(core)?;
         }
 
@@ -103,6 +108,23 @@ impl BracedParam {
         && ! self.unknown.starts_with(",") {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
+        Ok(())
+    }
+
+    fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if ! core.db.has_value(&self.param.name) {
+            self.text = "".to_string();
+            return Ok(());
+        }
+
+        if ! core.db.is_array(&self.param.name) && ! core.db.is_assoc(&self.param.name) {
+            self.text = "0".to_string();
+            return Ok(());
+        }
+
+        self.array = core.db.get_indexes_all(&self.param.name);
+        self.text = self.array.join(" ");
+
         Ok(())
     }
 

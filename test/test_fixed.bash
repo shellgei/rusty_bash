@@ -51,6 +51,9 @@ F
 
 3" ] || err $LINENO
 
+res=$($com <<< 'a=A ; echo ${a:-B}' )
+[ "$res" = "A" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 

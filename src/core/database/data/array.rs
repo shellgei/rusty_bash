@@ -62,6 +62,10 @@ impl Data for ArrayData {
         Ok(self.values().clone())
     }
 
+    fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
+        Ok(self.keys().iter().map(|k| k.to_string()).collect())
+    }
+
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         self.body.get(&0).map(|v| Ok(v.clone())).ok_or(ExecError::Other("No entry".to_string()))?
     }

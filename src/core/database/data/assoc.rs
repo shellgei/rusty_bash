@@ -57,6 +57,10 @@ impl Data for AssocData {
 
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
+
+    fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
+        Ok(self.keys().clone())
+    }
 }
 
 impl AssocData {
