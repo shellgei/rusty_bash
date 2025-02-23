@@ -173,7 +173,6 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return set_no_arg_option(&name, &arg, index, subindex, subarg, exp_args.len(), silence, core);
     }
 
-
     if targets.iter().any(|t| t.is_witharg(&arg) ) {
         let optarg = match args.len() > index+1 {
             true  => args[index+1].clone(),
