@@ -18,6 +18,7 @@ impl Subword for ExtGlob {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> { self.subwords.clone() }
     fn is_extglob(&self) -> bool {true}
+    fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
 impl ExtGlob {

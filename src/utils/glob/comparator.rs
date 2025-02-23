@@ -3,7 +3,7 @@
 
 use crate::exit;
 use super::extglob;
-use super::GlobElem;
+use super::{GlobElem, MetaChar};
 
 pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
@@ -49,9 +49,35 @@ fn asterisk(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
-fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, not_inv: bool) {
-    cands.retain(|cand| cs.iter().any(|c| cand.starts_with(*c)) == not_inv );
+fn one_of(cands: &mut Vec<String>, cs: &Vec<MetaChar>, not_inv: bool) {
     cands.retain(|cand| cand.len() != 0 );
+    cands.retain(|cand| cs.iter().any(|c| compare_head(cand, c)) == not_inv );
     let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
     cands.iter_mut().for_each(|c| {*c = c.split_off(len(c));});
+}
+
+fn compare_head(cand: &String, c: &MetaChar) -> bool {
+    let head = cand.chars().nth(0).unwrap();
+
+    match c {
+        MetaChar::Normal(c) => head == *c,
+        MetaChar::Range(f, t) => range_check(*f, *t, head),
+        MetaChar::CharClass(cls) => charclass_check(&cls, head),
+    }
+}
+
+fn range_check(from: char, to: char, c: char) -> bool {
+    if ('0' <= from && from <= to && to <= '9')
+    || ('a' <= from && from <= to && to <= 'z')
+    || ('A' <= from && from <= to && to <= 'Z') {
+        return from <= c && c <= to;
+    }
+    false
+}
+
+fn charclass_check(cls: &str, c: char) -> bool {
+    match cls {
+        "[:space:]" => r"\t\n\v\f\r ".contains(c),
+        _ => false, //TODO: support all classes
+    }
 }

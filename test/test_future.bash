@@ -17,12 +17,56 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-#$ echo 'aaa\
-#bbb' | ( read -r a ; echo $a )
-#aaa\
-#ueda@x1gen13:~$ echo 'aaa\
-#bbb' | ( read a ; echo $a )
-#aaabbb
+res=$($com <<< 'a= ; echo ${a[@]}')
+[ "$?" -eq 0 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< '[[ "a\ b" == "a\ b" ]]; echo $?')
+[ "$res" = "0" ] || err $LINENO
+
+
+res=$($com <<< 'a=" a  b  c "; echo $a; IFS= ; echo $a')
+[ "$res" = "a b c
+ a  b  c " ] || err $LINENO
+
+res=$($com <<< 'a="@a@b@c@"; IFS=@ ; echo $a@')
+[ "$res" = " a b c @" ] || err $LINENO
+
+res=$($com <<< 'a="@a@b@c@"; IFS=@ ; echo $a')
+[ "$res" = " a b c" ] || err $LINENO
+
+res=$($com << 'EOF'
+IFS='
+'
+set a '1
+2
+3'
+
+eval "$1=(\$2)"
+echo ${#a[@]}
+
+IFS=
+eval "$1=(\$2)"
+echo ${#a[@]}
+EOF
+)
+[ "$res" = "3
+1" ] || err $LINENO
+
+res=$($com <<< 'a=abca ; echo @${a//a}@')
+[ "$res" = "@bc@" ] || err $LINENO
+
+res=$($com <<< 'a=abca ; echo @${a//a/}@')
+[ "$res" = "@bc@" ] || err $LINENO
+
+res=$($com <<< 'a=" " ; echo @${a/[[:space:]]/}@')
+[ "$res" = "@@" ] || err $LINENO
+
+res=$($com <<< 'a="  " ; echo @${a/[[:space:]]/}@')
+[ "$res" = "@ @" ] || err $LINENO
+
+res=$($com <<< 'a="  " ; echo @${a//[[:space:]]/}@')
+[ "$res" = "@@" ] || err $LINENO
 
 res=$($com <<< 'a=(a b) ; echo ${a+"${a[@]}"}')
 [ "$res" = "a b" ] || err $LINENO
@@ -47,6 +91,20 @@ EOF
 )
 [ "$?" -eq 0 ] || err $LINENO
 
+res=$($com << 'EOF'
+_cur=a
+b=(${_cur:+-- "$_cur"})
+echo ${b[0]}
+echo ${b[1]}
+EOF
+)
+[ "$res" = "--
+a" ] || err $LINENO
+
+echo $0 >> ./ok
+exit
+
+
 res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
 [ "$res" = "aaabb" ] || err $LINENO
 
@@ -59,4 +117,3 @@ res=$($com <<< 'printf -v REPLY %q /l; echo $REPLY')
 res=$($com <<< '[[ a =~ "." ]]')
 [ $? -eq 1 ] || err $LINENO
 
-echo $0 >> ./ok

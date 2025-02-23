@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::{GlobElem, extglob};
+use super::{MetaChar, GlobElem, extglob};
 
 fn eat_one_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     if pattern.starts_with("*") || pattern.starts_with("?") {
@@ -20,11 +20,64 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
         ans.push( GlobElem::Normal(pattern.remove(0).to_string()) );
         return true;
     }
-    pattern.remove(0);
+    ans.push( GlobElem::Normal(pattern.remove(0).to_string()) );
+    //pattern.remove(0);
 
     let len = pattern.chars().nth(0).unwrap().len_utf8();
     ans.push( GlobElem::Normal( consume(pattern, len) ) );
     true
+}
+
+fn cut_charclass(pattern: &mut String) -> Option<MetaChar> {
+    for c in vec!["alnum", "alpha", "ascii", "blank", "cntrl",
+                  "digit", "graph", "lower", "print", "punct",
+                  "space", "upper", "word", "xdigit"] {
+        if pattern.starts_with(&("[:".to_owned() + c + ":]")) {
+            return Some(MetaChar::CharClass(consume(pattern, c.len() + 4)));
+        }
+    }
+
+    None
+}
+
+fn cut_metachar(pattern: &mut String) -> Option<MetaChar> {
+    if pattern.starts_with("]") {
+        return None;
+    }
+
+    if pattern.starts_with("[:") {
+        if let Some(cls) = cut_charclass(pattern) {
+            return Some(cls);
+        }
+    }
+
+    if pattern.starts_with("\\") {
+        if pattern.len() > 1 {
+            let ch = pattern.chars().nth(1).unwrap();
+            *pattern = pattern.split_off(ch.len_utf8() + 1);
+            return Some(MetaChar::Normal(ch));
+        }else{
+            *pattern = pattern.split_off(1);
+            return None;
+        }
+    }
+
+    if pattern.len() > 2
+    && pattern.chars().nth(1) == Some('-')
+    && pattern.chars().nth(2) != Some(']') {
+        let f = pattern.chars().nth(0).unwrap();
+        let t = pattern.chars().nth(2).unwrap();
+        *pattern = pattern.split_off(f.len_utf8() + 1 + t.len_utf8());
+        return Some(MetaChar::Range(f, t));
+    }
+
+    if pattern.len() > 0 {
+        let ch = pattern.chars().nth(0).unwrap();
+        *pattern = pattern.split_off(ch.len_utf8());
+        return Some(MetaChar::Normal(ch));
+    }
+
+    None
 }
 
 fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
@@ -32,29 +85,25 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
         return false;
     }
     
+    let bkup = pattern.clone();
     let not = pattern.starts_with("[^") || pattern.starts_with("[!");
-    let mut len = if not {2} else {1};
-    let mut escaped = false;
+    let len = if not {2} else {1};
     let mut inner = vec![];
 
-    for c in pattern[len..].chars() {
-        len += c.len_utf8();
-
-        if escaped {
-            inner.push(c); 
-            escaped = false;
-        }else if c == '\\' {
-            escaped = true;
-        }else if c == ']' {
-            let expand_inner = expand_range_representation(&inner);
-            ans.push( GlobElem::OneOf(!not, expand_inner) );
-            *pattern = pattern.split_off(len);
+    *pattern = pattern.split_off(len);
+    while pattern.len() > 0 {
+        if pattern.starts_with("]") {
+            *pattern = pattern.split_off(1);
+            ans.push( GlobElem::OneOf(!not, inner) );
             return true;
-        }else{
-            inner.push(c);
+        }
+
+        if let Some(p) = cut_metachar(pattern) {
+            inner.push(p);
         }
     }
 
+    *pattern = bkup;
     false
 }
 
@@ -104,61 +153,6 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
         ans.push( GlobElem::Normal(s) );
     }
 
-    ans
-}
-
-fn expand_range_representation(chars: &Vec<char>) -> Vec<char> {
-    let mut ans = vec![];
-    let mut from = None;
-    let mut hyphen = false;
-
-    for c in chars {
-        if *c == '-' {
-            hyphen = true;
-            continue;
-        }
-
-        if hyphen {
-            if ans.len() > 0 {
-                ans.pop();
-            }
-
-            let mut expand = expand_range(&from, c);
-            ans.append(&mut expand);
-            hyphen = false;
-            continue;
-        }else {
-            ans.push(*c);
-            from = Some(*c);
-        }
-    }
-
-    if hyphen {
-        ans.push('-');
-    }
-
-    ans
-}
-
-fn expand_range(from: &Option<char>, to: &char) -> Vec<char> {
-    if from.is_none() {
-        return vec![*to];
-    }
-
-    let from = from.unwrap();
-
-    let mut ans = vec![];
-
-    if ('0' <= from && from <= *to && *to <= '9')
-    || ('a' <= from && from <= *to && *to <= 'z')
-    || ('A' <= from && from <= *to && *to <= 'Z') {
-        let mut ch = from;
-        while ch <= *to {
-            ans.push(ch);
-            ch = (ch as u8 + 1) as char;
-        }
-
-    }
     ans
 }
 

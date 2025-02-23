@@ -17,6 +17,7 @@ use super::subword::simple::SimpleSubword;
 #[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
+    pub do_not_erase: bool,
     pub subwords: Vec<Box<dyn Subword>>,
 }
 
@@ -25,6 +26,7 @@ impl From<&String> for Word {
         Self {
             text: s.to_string(),
             subwords: vec![Box::new(SimpleSubword{text: s.to_string() })],
+            do_not_erase: false,
         }
     }
 }
@@ -34,6 +36,7 @@ impl From<Box::<dyn Subword>> for Word {
         Self {
             text: subword.get_text().to_string(),
             subwords: vec![subword],
+            do_not_erase: false,
         }
     }
 }
@@ -43,6 +46,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
         Self {
             text: subwords.iter().map(|s| s.get_text()).collect(),
             subwords: subwords,
+            do_not_erase: false,
         }
     }
 }
@@ -64,7 +68,7 @@ impl Word {
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
-            Ok(w)  => w.split_and_path_expansion(core),
+            Ok(w)  => w.path_expansion(core),
             Err(e) => return Err(e),
         };
 
@@ -110,9 +114,15 @@ impl Word {
 
     pub fn split_and_path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
         let mut ans = vec![];
+        let mut splitted = split::eval(self, core);
+
+        let len = splitted.len();
+        if len > 0 {
+            splitted[len-1].do_not_erase = false;
+        }
+        
         let extglob = core.shopts.query("extglob");
 
-        let splitted = split::eval(self, core);
         if core.options.query("noglob") {
             return splitted;
         }
@@ -121,6 +131,15 @@ impl Word {
             ans.append(&mut path_expansion::eval(&mut w, extglob) );
         }
         ans
+    }
+
+   fn path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
+        let extglob = core.shopts.query("extglob");
+        if core.options.query("noglob") {
+            return vec![self.clone()];
+        }
+
+        path_expansion::eval(&mut self.clone(), extglob)
     }
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
@@ -137,7 +156,7 @@ impl Word {
             .filter(|s| *s != None)
             .collect();
 
-        if sw.is_empty() {
+        if sw.is_empty() && ! self.do_not_erase {
             return None;
         }
 

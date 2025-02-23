@@ -646,6 +646,21 @@ res=$($com <<< 'echo {,,}$(date "+%w")')
 res=$($com <<< 'echo $(date) | grep "  "')
 [ "$?" == "1" ] || err $LINENO
 
+res=$($com <<< 'a=$(seq 2)
+echo "$a"
+')
+[ "$res" == "1
+2" ] || err $LINENO
+
+res=$($com <<< 'a=$(
+echo a
+echo b
+)
+echo "$a"
+')
+[ "$res" == "a
+b" ] || err $LINENO
+
 # array
 
 res=$($com <<< 'A=( a b ); echo ${A[1]}')
@@ -676,6 +691,13 @@ res=$($com <<< 'echo ]')
 [ "$res" == "]" ] || err $LINENO
 
 # ansi-c quoting
+
+# this test case is never fulfilled until we use String type
+#res=$($com <<- FIN
+#echo -n $'\xdb' | xxd -p
+#FIN
+#)
+#[ "$res" == "db" ] || err $LINENO
 
 res=$($com <<- FIN
 echo $'aaa'

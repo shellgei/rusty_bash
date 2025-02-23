@@ -12,6 +12,7 @@ mod double_quoted;
 pub mod parameter;
 mod varname;
 mod arithmetic;
+pub mod filler;
 
 use crate::{ShellCore, Feeder};
 use crate::error::{exec::ExecError, parse::ParseError};
@@ -22,6 +23,7 @@ use self::braced_param::BracedParam;
 use self::command_sub::CommandSubstitution;
 use self::escaped_char::EscapedChar;
 use self::ext_glob::ExtGlob;
+use self::filler::FillerSubword;
 use self::double_quoted::DoubleQuoted;
 use self::single_quoted::SingleQuoted;
 use self::parameter::Parameter;
@@ -41,7 +43,11 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
-fn split_str(s: &str) -> Vec<String> {
+fn split_str(s: &str, ifs: &str) -> Vec<String> {
+    if ifs == "" {
+        return vec![s.to_string()];
+    }
+
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
@@ -54,7 +60,7 @@ fn split_str(s: &str) -> Vec<String> {
             continue;
         }
 
-        if " \t\n".contains(c) {
+        if ifs.contains(c) {
             ans.push(s[from..pos-c.len_utf8()].to_string());
             from = pos;
         }
@@ -71,9 +77,9 @@ pub trait Subword {
     fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {Ok(())}
     fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {vec![]}
 
-    fn split(&self) -> Vec<Box<dyn Subword>>{
+    fn split(&self, ifs: &str) -> Vec<Box<dyn Subword>>{
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
-        split_str(self.get_text()).iter().map(|s| f(s.to_string())).collect()
+        split_str(self.get_text(), ifs).iter().map(|s| f(s.to_string())).collect()
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
@@ -141,5 +147,24 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
+    else{ Ok(None) }
+}
+
+pub fn parse_filler(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Subword>>, ParseError> {
+    if replace_history_expansion(feeder, core) {
+        return parse(feeder, core);
+    }
+
+    if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = AnsiCQuoted::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = Arithmetic::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = ExtGlob::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = FillerSubword::parse(feeder){ Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }

@@ -18,7 +18,7 @@ use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
 use self::value_check::ValueCheck;
-use super::simple::SimpleSubword;
+use super::filler::FillerSubword;
 
 #[derive(Debug, Clone, Default)]
 struct Param {
@@ -140,6 +140,11 @@ impl BracedParam {
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if ! core.db.is_array(&self.param.name) && ! core.db.is_assoc(&self.param.name) {
+            self.text = "".to_string();
+            return Ok(());
+        }
+
         let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
 
         if core.db.is_assoc(&self.param.name) {
@@ -198,7 +203,7 @@ impl BracedParam {
         -> Result<Word, ParseError> {
         let mut word = Word::default();
         while ! ends.iter().any(|e| feeder.starts_with(e)) {
-            if let Some(sw) = subword::parse(feeder, core)? {
+            if let Some(sw) = subword::parse_filler(feeder, core)? {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
                 word.subwords.push(sw);
@@ -206,7 +211,7 @@ impl BracedParam {
                 let c = feeder.consume(1);
                 ans.text += &c;
                 word.text += &c;
-                word.subwords.push(Box::new(SimpleSubword{text: c}) );
+                word.subwords.push(Box::new(FillerSubword{text: c}) );
             }
 
             if feeder.len() == 0 {
@@ -276,7 +281,6 @@ impl BracedParam {
                  || Remove::eat(feeder, &mut ans, core)?
                  || Replace::eat(feeder, &mut ans, core)?;
         }
-
         while ! feeder.starts_with("}") {
             Self::eat_unknown(feeder, &mut ans, core)?;
         }

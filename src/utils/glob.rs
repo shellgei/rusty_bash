@@ -9,8 +9,15 @@ mod parser;
 pub enum GlobElem {
     Normal(String),
     Symbol(char),
-    OneOf(bool, Vec<char>),
+    OneOf(bool, Vec<MetaChar>),
     ExtGlob(char, Vec<String>),
+}
+
+#[derive(Debug)]
+pub enum MetaChar {
+    Normal(char),
+    Range(char, char),
+    CharClass(String),
 }
 
 pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
@@ -19,6 +26,8 @@ pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
 }
 
 pub fn compare(word: &String, pattern: &Vec<GlobElem>) -> bool {
+//    dbg!("{:?}", &word);
+//    dbg!("{:?}", &pattern);
     comparator::shave_word(word, pattern).iter().any(|c| c == "")
 }
 
