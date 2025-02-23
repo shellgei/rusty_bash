@@ -83,6 +83,16 @@ EOF
 )
 [ "$?" -eq 0 ] || err $LINENO
 
+res=$($com << 'EOF'
+_cur=a
+b=(${_cur:+-- "$_cur"})
+echo ${b[0]}
+echo ${b[1]}
+EOF
+)
+[ "$res" = "--
+a" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 

@@ -110,15 +110,14 @@ res=$($com <<< 'echo ${A:-abc def}' )
 [ "$res" = "abc def" ] || err $LINENO
 
 res=$($com <<< 'echo ${A:-abc   def}' )
-[ "$res" = "abc   def" ] || err $LINENO
+[ "$res" = "abc def" ] || err $LINENO
 
 res=$($com <<< 'B=あ ; echo ${A:-$B def}' )
 [ "$res" = "あ def" ] || err $LINENO
 
 res=$($com <<< 'B=あ ; echo ${A:-$B
 def}' )
-[ "$res" = "あ
-def" ] || err $LINENO
+[ "$res" = "あ def" ] || err $LINENO
 
 res=$($com <<< 'B=あ ; echo ${A:-"$B
 def"}' )
