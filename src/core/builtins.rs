@@ -118,8 +118,17 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    let mut args = arg::dissolve_options(args);
-    let mut words = arg::consume_after_options(&mut args, 1);
+    let mut pos = 1;
+    while args.len() > pos {
+        match args[pos].starts_with("-") {
+            true  => pos += 1,
+            false => break,
+        }
+    }
+
+    let mut words = args[pos..].to_vec();
+    let mut args = args[..pos].to_vec();
+    args = arg::dissolve_options(&args);
 
     if words.is_empty() {
         return 0;
