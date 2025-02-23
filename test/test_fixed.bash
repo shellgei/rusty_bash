@@ -17,42 +17,6 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-res=$($com <<< 'a= ; echo ${a[@]}')
-[ "$?" -eq 0 ] || err $LINENO
-[ "$res" = "" ] || err $LINENO
-
-res=$($com <<< '[[ "a\ b" == "a\ b" ]]; echo $?')
-[ "$res" = "0" ] || err $LINENO
-
-
-res=$($com <<< 'a=" a  b  c "; echo $a; IFS= ; echo $a')
-[ "$res" = "a b c
- a  b  c " ] || err $LINENO
-
-res=$($com <<< 'a="@a@b@c@"; IFS=@ ; echo $a@')
-[ "$res" = " a b c @" ] || err $LINENO
-
-res=$($com <<< 'a="@a@b@c@"; IFS=@ ; echo $a')
-[ "$res" = " a b c" ] || err $LINENO
-
-res=$($com << 'EOF'
-IFS='
-'
-set a '1
-2
-3'
-
-eval "$1=(\$2)"
-echo ${#a[@]}
-
-IFS=
-eval "$1=(\$2)"
-echo ${#a[@]}
-EOF
-)
-[ "$res" = "3
-1" ] || err $LINENO
-
 res=$($com <<< 'a=abca ; echo @${a//a}@')
 [ "$res" = "@bc@" ] || err $LINENO
 

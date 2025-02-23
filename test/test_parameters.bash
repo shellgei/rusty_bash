@@ -41,6 +41,12 @@ res=$($com -c 'echo $(( $EPOCHREALTIME - $(date +%s) )) | awk -F. "{print \$1}"'
 res=$($com <<< 'declare -a A; A[0]=bbb; echo ${A[aaa]}')
 [ "$res" == "bbb" ] || err $LINENO
 
+### INVALID REF ###
+
+res=$($com <<< 'a= ; echo ${a[@]}')
+[ "$?" -eq 0 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
 ### ASSOCIATED ARRAY ###
 
 res=$($com <<< 'declare -A A; A[aaa]=bbb; echo ${A[aaa]}')
@@ -118,5 +124,36 @@ res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"aaa"}')
 
 res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"${b[@]}"}')
 [ "$res" = "0" ] || err $LINENO
+
+### IFS ###
+
+res=$($com <<< 'a=" a  b  c "; echo $a; IFS= ; echo $a')
+[ "$res" = "a b c
+ a  b  c " ] || err $LINENO
+
+res=$($com <<< 'a="@a@b@c@"; IFS=@ ; echo $a@')
+[ "$res" = " a b c @" ] || err $LINENO
+
+res=$($com <<< 'a="@a@b@c@"; IFS=@ ; echo $a')
+[ "$res" = " a b c" ] || err $LINENO
+
+res=$($com << 'EOF'
+IFS='
+'
+set a '1
+2
+3'
+
+eval "$1=(\$2)"
+echo ${#a[@]}
+
+IFS=
+eval "$1=(\$2)"
+echo ${#a[@]}
+EOF
+)
+[ "$res" = "3
+1" ] || err $LINENO
+
 
 echo $0 >> ./ok

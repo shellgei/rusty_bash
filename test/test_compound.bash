@@ -1031,4 +1031,9 @@ res=$($com -c '[[ "1 + 2" -eq 3 ]]')
 res=$($com -c '[[ "10#1 + 2" -eq 3 ]]')
 [ "$?" = "0" ] || err $LINENO
 
+# escaping
+
+res=$($com <<< '[[ "a\ b" == "a\ b" ]]; echo $?')
+[ "$res" = "0" ] || err $LINENO
+
 echo $0 >> ./ok
