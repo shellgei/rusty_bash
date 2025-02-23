@@ -17,6 +17,10 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+res=$($com <<< '[[ "a\ b" == "a\ b" ]]; echo $?')
+[ "$res" = "0" ] || err $LINENO
+
+
 res=$($com <<< 'a=" a  b  c "; echo $a; IFS= ; echo $a')
 [ "$res" = "a b c
  a  b  c " ] || err $LINENO
@@ -95,6 +99,7 @@ a" ] || err $LINENO
 
 echo $0 >> ./ok
 exit
+
 
 res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
 [ "$res" = "aaabb" ] || err $LINENO

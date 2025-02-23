@@ -26,6 +26,8 @@ pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
 }
 
 pub fn compare(word: &String, pattern: &Vec<GlobElem>) -> bool {
+//    dbg!("{:?}", &word);
+//    dbg!("{:?}", &pattern);
     comparator::shave_word(word, pattern).iter().any(|c| c == "")
 }
 

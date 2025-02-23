@@ -20,7 +20,8 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
         ans.push( GlobElem::Normal(pattern.remove(0).to_string()) );
         return true;
     }
-    pattern.remove(0);
+    ans.push( GlobElem::Normal(pattern.remove(0).to_string()) );
+    //pattern.remove(0);
 
     let len = pattern.chars().nth(0).unwrap().len_utf8();
     ans.push( GlobElem::Normal( consume(pattern, len) ) );
