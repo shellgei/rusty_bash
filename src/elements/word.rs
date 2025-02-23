@@ -17,6 +17,7 @@ use super::subword::simple::SimpleSubword;
 #[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
+    pub do_not_erase: bool,
     pub subwords: Vec<Box<dyn Subword>>,
 }
 
@@ -25,6 +26,7 @@ impl From<&String> for Word {
         Self {
             text: s.to_string(),
             subwords: vec![Box::new(SimpleSubword{text: s.to_string() })],
+            do_not_erase: false,
         }
     }
 }
@@ -34,6 +36,7 @@ impl From<Box::<dyn Subword>> for Word {
         Self {
             text: subword.get_text().to_string(),
             subwords: vec![subword],
+            do_not_erase: false,
         }
     }
 }
@@ -43,6 +46,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
         Self {
             text: subwords.iter().map(|s| s.get_text()).collect(),
             subwords: subwords,
+            do_not_erase: false,
         }
     }
 }
@@ -110,7 +114,13 @@ impl Word {
 
     pub fn split_and_path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
         let mut ans = vec![];
-        let splitted = split::eval(self, core);
+        let mut splitted = split::eval(self, core);
+
+        let len = splitted.len();
+        if len > 0 {
+            splitted[len-1].do_not_erase = false;
+        }
+        
         let extglob = core.shopts.query("extglob");
 
         if core.options.query("noglob") {
@@ -146,7 +156,7 @@ impl Word {
             .filter(|s| *s != None)
             .collect();
 
-        if sw.is_empty() {
+        if sw.is_empty() && ! self.do_not_erase {
             return None;
         }
 

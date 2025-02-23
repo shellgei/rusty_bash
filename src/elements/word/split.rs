@@ -12,7 +12,12 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    let gen_word = |sws| Word{ text: String::new(), subwords: sws};
+    let ifs = core.db.get_param("IFS").unwrap_or(" \r\n".to_string());
+
+    let gen_word = |sws| Word{
+        text: String::new(),
+        subwords: sws,
+        do_not_erase: ! ifs.contains(" ") };
 
     let mut left = gen_word(word.subwords[..pos].to_vec());
     left.subwords.push(split.remove(0));
