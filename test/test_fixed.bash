@@ -18,6 +18,15 @@ cd $(dirname $0)
 com=../target/release/sush
 
 res=$($com << 'EOF'
+a=(aa bb cc)
+echo ${!a[@]}
+echo ${!a[*]}
+EOF
+)
+[ "$res" = "0 1 2
+0 1 2" ] || err $LINENO
+
+res=$($com << 'EOF'
 getopts :alF: _opt -aF : paths a:b
 echo $_opt
 echo $OPTARG
