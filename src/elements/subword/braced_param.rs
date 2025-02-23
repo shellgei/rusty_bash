@@ -53,6 +53,14 @@ impl Subword for BracedParam {
         if self.indirect {
             if let Some(sub) = &self.param.subscript {
                 if sub.text == "[*]" || sub.text == "[@]" {
+                    if self.replace.is_some() 
+                    || self.substr.is_some()
+                    || self.remove.is_some()
+                    || self.value_check.is_some() {
+                        let msg = core.db.get_array_all(&self.param.name).join(" ");
+                        return Err(ExecError::InvalidName(msg));
+                    }
+
                     return self.index_replace(core);
                 }
             }

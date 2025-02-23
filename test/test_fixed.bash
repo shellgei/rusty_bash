@@ -27,6 +27,17 @@ EOF
 0 1 2" ] || err $LINENO
 
 res=$($com << 'EOF'
+a=(aa bb cc)
+b=("${!a[@]}")
+echo ${b[0]}
+b=("${!a[*]}")
+echo ${b[0]}
+EOF
+)
+[ "$res" = "0
+0 1 2" ] || err $LINENO
+
+res=$($com << 'EOF'
 getopts :alF: _opt -aF : paths a:b
 echo $_opt
 echo $OPTARG
