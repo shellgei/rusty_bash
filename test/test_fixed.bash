@@ -101,9 +101,14 @@ EOF
 [ "$res" = "--
 a" ] || err $LINENO
 
+res=$($com <<< 'printf -v REPLY %q /l; echo $REPLY')
+[ "$res" = "/l" ] || err $LINENO
+
+
 echo $0 >> ./ok
 exit
 
+### fixed in future ###
 
 res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
 [ "$res" = "aaabb" ] || err $LINENO
@@ -111,9 +116,5 @@ res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
 res=$($com <<< 'echo "aaa\bb" | ( read -r a ; echo $a )' )
 [ "$res" = "aaa\bb" ] || err $LINENO
 
-res=$($com <<< 'printf -v REPLY %q /l; echo $REPLY')
-[ "$res" = "/l" ] || err $LINENO
-
 res=$($com <<< '[[ a =~ "." ]]')
 [ $? -eq 1 ] || err $LINENO
-
