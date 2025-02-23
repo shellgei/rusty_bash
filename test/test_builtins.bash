@@ -214,25 +214,35 @@ res=$($com -c 'command cd /; pwd')
 res=$($com -c '
 getopts xyz opt -x -y
 echo $opt
+echo $OPTIND
 getopts xyz opt -x -y
 echo $opt
+echo $OPTIND
 ')
 
 [[ "$res" == "x
-y" ]] || err $LINENO
+2
+y
+3" ]] || err $LINENO
 
 res=$($com -c '
 getopts x:y:z opt -x hoge -y fuge -z
 echo $opt $OPTARG
+echo $OPTIND
 getopts x:y:z opt -x hoge -y fuge -z
 echo $opt $OPTARG
+echo $OPTIND
 getopts x:y:z opt -x hoge -y fuge -z
 echo $opt $OPTARG
+echo $OPTIND
 ')
 
 [[ "$res" == 'x hoge
+3
 y fuge
-z' ]] || err $LINENO
+5
+z
+6' ]] || err $LINENO
 
 
 res=$($com -c '

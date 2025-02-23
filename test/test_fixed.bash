@@ -17,6 +17,30 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+res=$($com << 'EOF'
+getopts :alF: _opt -aF : paths a:b
+echo $_opt
+echo $OPTARG
+echo $OPTIND
+getopts :alF: _opt -aF : paths a:b
+echo $_opt
+echo $OPTARG
+echo $OPTIND
+getopts :alF: _opt -aF : paths a:b
+echo $_opt
+echo $OPTARG
+echo $OPTIND
+EOF
+)
+[ "$res" = "a
+
+1
+F
+:
+3
+?
+
+3" ] || err $LINENO
 
 echo $0 >> ./ok
 exit
