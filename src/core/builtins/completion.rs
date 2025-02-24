@@ -483,14 +483,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     1
 }
 
-fn compopt_set_current(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
-    let com = &core.current_completion_target;
-    dbg!("{:?}", &com);
-
-    if com == "" {
-        return 1;
-    }
-
+fn compopt_set(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<String>, com: &str) -> i32 {
     let info = match core.completion_info.get_mut(com) {
         Some(i) => i,
         None => return 1,
@@ -507,6 +500,15 @@ fn compopt_set_current(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<Str
     }
 
     0
+}
+
+fn compopt_set_current(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
+    let com = &core.current_completion_target;
+
+    if com == "" {
+        return 1;
+    }
+    compopt_set(core, plus, minus, &com.clone())
 }
 
 fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -545,37 +547,60 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return compopt_print(core, args);
     }
 
+    let mut flag = "".to_string();
     let mut minus = vec![];
-    loop {
-        let opt = arg::consume_with_next_arg("-o", args);
-        if opt.is_none() {
-            break;
-        }
-        minus.push(opt.unwrap());
-    }
-
     let mut plus = vec![];
-    loop {
-        let opt = arg::consume_with_next_arg("+o", args);
-        if opt.is_none() {
-            break;
+    let mut minus_d = vec![];
+    let mut plus_d = vec![];
+    let mut minus_e = vec![];
+    let mut plus_e = vec![];
+
+    while args.len() > 1 {
+        if args[1] == "-D" || args[1] == "-E" {
+            flag = args[1].clone();
+            args.remove(1);
+            continue;
         }
-        plus.push(opt.unwrap());
+
+        if args[1] == "-o" {
+            let opt = arg::consume_with_next_arg("-o", args);
+            if opt.is_none() {
+                return 1;
+            }
+
+            match flag.as_str() { 
+                ""   => minus.push(opt.unwrap()),
+                "-D" => minus_d.push(opt.unwrap()),
+                "-E" => minus_e.push(opt.unwrap()),
+                _ => return 1,
+            }
+            continue;
+        }
+
+        if args[1] == "+o" {
+            let opt = arg::consume_with_next_arg("+o", args);
+            if opt.is_none() {
+                return 1;
+            }
+
+            match flag.as_str() { 
+                ""   => plus.push(opt.unwrap()),
+                "-D" => plus_d.push(opt.unwrap()),
+                "-E" => plus_e.push(opt.unwrap()),
+                _ => return 1,
+            }
+            continue;
+        }
+
+        break;
     }
 
     if args.len() == 1 {
         return compopt_set_current(core, &plus, &minus);
-    }
-
-    /*
-    let com = args.last().unwrap();
-    if com == "-E" || com == "-D" {
-        eprintln!("not supported yet");
+    }else if args.len() == 2 {
+        return compopt_set(core, &plus, &minus, &args[1]);
+    }else{
         return 1;
     }
-
-    dbg!("{:?}", &com);
-    */
-
-    0
+    //TODO: support of -D -E
 }

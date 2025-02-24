@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{proc_ctrl, ShellCore, Feeder};
+use crate::{ShellCore, Feeder};
 use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
@@ -9,11 +9,6 @@ use crate::elements::subword::Subword;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use nix::unistd;
-use std::{thread, time};
-use std::fs::File;
-use std::io::{BufReader, BufRead, Error};
-use std::os::fd::{FromRawFd, RawFd};
-use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
 pub struct ProcessSubstitution {
