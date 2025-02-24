@@ -27,9 +27,13 @@ impl Subword for ProcessSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if self.direction != '<' {
+            return Err(ExecError::Other(">() is not supported yet".to_string()));
+        }
+
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let pid = self.command.exec(core, &mut pipe)?;
+        let _ = self.command.exec(core, &mut pipe)?;
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
         Ok(())
     }
