@@ -31,11 +31,6 @@ impl Subword for ProcessSubstitution {
         pipe.set(-1, unistd::getpgrp());
         let pid = self.command.exec(core, &mut pipe)?;
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
-        /*
-        let result = self.read(pipe.recv, core);
-        proc_ctrl::wait_pipeline(core, vec![pid], false, false);
-        result
-        */
         Ok(())
     }
 }
