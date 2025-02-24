@@ -79,6 +79,7 @@ impl Terminal {
         let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
         let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
 
+        core.current_completion_target = org_word.clone();
         match core.completion_info.get(&org_word) {
             Some(info) => {
                 let command = format!("{} \"{}\" \"{}\" \"{}\"",

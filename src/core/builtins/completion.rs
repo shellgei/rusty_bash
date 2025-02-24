@@ -483,12 +483,33 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     1
 }
 
-pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() < 2 {
-        dbg!("{:?}", &core.completion_info);
+fn compopt_set_current(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
+    let com = &core.current_completion_target;
+    dbg!("{:?}", &com);
+
+    if com == "" {
         return 1;
     }
 
+    let info = match core.completion_info.get_mut(com) {
+        Some(i) => i,
+        None => return 1,
+    };
+
+    for opt in minus { //add
+        if ! info.o_options.contains(opt) {
+            info.o_options.push(opt.to_string());
+        }
+    }
+
+    for opt in plus { //remove
+        info.o_options.retain(|e| e != opt);
+    }
+
+    0
+}
+
+fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let optlist = vec!["bashdefault", "default",
                        "dirnames", "filenames", "noquote",
                        "nosort", "nospace", "plusdirs"];
@@ -508,7 +529,53 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         println!("{}", &com);
     }else{
         eprintln!("sush: compopt: {}: no completion specification", &args[1]);
+        return 1;
     }
+
+    0
+}
+
+pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
+        dbg!("{:?}", &core.completion_info);
+        return 1;
+    }
+
+    if ! args[1].starts_with("-") && ! args[1].starts_with("+") {
+        return compopt_print(core, args);
+    }
+
+    let mut minus = vec![];
+    loop {
+        let opt = arg::consume_with_next_arg("-o", args);
+        if opt.is_none() {
+            break;
+        }
+        minus.push(opt.unwrap());
+    }
+
+    let mut plus = vec![];
+    loop {
+        let opt = arg::consume_with_next_arg("+o", args);
+        if opt.is_none() {
+            break;
+        }
+        plus.push(opt.unwrap());
+    }
+
+    if args.len() == 1 {
+        return compopt_set_current(core, &plus, &minus);
+    }
+
+    /*
+    let com = args.last().unwrap();
+    if com == "-E" || com == "-D" {
+        eprintln!("not supported yet");
+        return 1;
+    }
+
+    dbg!("{:?}", &com);
+    */
 
     0
 }
