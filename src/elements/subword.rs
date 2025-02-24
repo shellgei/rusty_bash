@@ -13,6 +13,7 @@ pub mod parameter;
 mod varname;
 mod arithmetic;
 pub mod filler;
+mod process_sub;
 
 use crate::{ShellCore, Feeder};
 use crate::error::{exec::ExecError, parse::ParseError};
@@ -26,6 +27,7 @@ use self::ext_glob::ExtGlob;
 use self::filler::FillerSubword;
 use self::double_quoted::DoubleQuoted;
 use self::single_quoted::SingleQuoted;
+use self::process_sub::ProcessSubstitution;
 use self::parameter::Parameter;
 use self::varname::VarName;
 use std::fmt;
@@ -140,6 +142,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = AnsiCQuoted::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = Arithmetic::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = ProcessSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = ExtGlob::parse(feeder, core)? { Ok(Some(Box::new(a))) }
@@ -159,6 +162,7 @@ pub fn parse_filler(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<
     else if let Some(a) = AnsiCQuoted::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = Arithmetic::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = ProcessSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = ExtGlob::parse(feeder, core)? { Ok(Some(Box::new(a))) }

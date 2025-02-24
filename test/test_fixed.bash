@@ -75,6 +75,9 @@ F
 res=$($com <<< 'a=A ; echo ${a:-B}' )
 [ "$res" = "A" ] || err $LINENO
 
+res=$($com <<< 'rev <(echo abc)' )
+[ "$res" = "cba" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 
