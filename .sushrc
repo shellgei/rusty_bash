@@ -73,6 +73,8 @@ command_not_found_handle() {
 
 if [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
+    _completion_loader git
+    complete -o bashdefault -o default -o nospace -F __git_wrap__git_main git
 elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi

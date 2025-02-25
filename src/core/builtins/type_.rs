@@ -150,12 +150,21 @@ pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut args = arg::dissolve_options(args);
     if arg::consume_option("-t", &mut args) {
+        if args[1] == "--" {
+            args.remove(1);
+        }
         return type_t(core, &args[1..]);
     }
     if arg::consume_option("-p", &mut args) {
+        if args[1] == "--" {
+            args.remove(1);
+        }
         return type_p(core, &args[1..]);
     }
     if arg::consume_option("-P", &mut args) {
+        if args[1] == "--" {
+            args.remove(1);
+        }
         return type_large_p(core, &args[1..]);
     }
 
