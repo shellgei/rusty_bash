@@ -81,6 +81,10 @@ res=$($com <<< 'rev <(echo abc)' )
 res=$($com <<< 'rev < <(echo abc)' )
 [ "$res" = "cba" ] || err $LINENO
 
+res=$($com <<< '__a=x; echo $__a ; echo $__a' )
+[ "$res" = "x
+x" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 
