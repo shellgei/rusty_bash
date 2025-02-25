@@ -90,10 +90,16 @@ impl Terminal {
                     let mut dummy = Pipe::new("".to_string());
                     let _ = a.exec(core, &mut dummy);
                 }
-                match core.db.len("COMPREPLY") {
-                    0 => Err("no completion cand".to_string()),
-                    _ => Ok(()),
+                if core.db.len("COMPREPLY") == 0 {
+                    return Err("no completion cand".to_string());
                 }
+
+                let mut ans = core.db.get_array_all("COMPREPLY");
+                for s in ans.iter_mut() {
+                    *s = s.trim_end().to_string();
+                }
+                core.db.set_array("COMPREPLY", ans, None)?;
+                Ok(())
             },
             _ => Err("no completion function".to_string())
         }
@@ -169,7 +175,8 @@ impl Terminal {
         let target = core.db.get_array_elem("COMP_WORDS", &pos)?;
 
         if core.db.len("COMPREPLY") == 1 {
-            let output = core.db.get_array_elem("COMPREPLY", "0")?;
+            let arr = core.db.get_array_all("COMPREPLY");
+            let output = arr[0].clone();
             let tail = match is_dir(&output, core) {
                 true  => "/",
                 false => " ",
