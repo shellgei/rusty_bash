@@ -85,6 +85,14 @@ res=$($com <<< '__a=x; echo $__a ; echo $__a' )
 [ "$res" = "x
 x" ] || err $LINENO
 
+res=$($com <<< '
+_=aaa
+echo $_
+echo $_
+' )
+[ "$res" = "
+echo" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 

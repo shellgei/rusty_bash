@@ -166,9 +166,11 @@ impl Feeder {
         if ! self.starts_with("$") {
             return 0;
         }
-        self.backslash_check_and_feed(vec!["$", "$_"], core);
+        //self.backslash_check_and_feed(vec!["$", "$_"], core);
+        self.backslash_check_and_feed(vec!["$"], core);
 
         match self.remaining.chars().nth(1) {
+            /*
             Some('_') => {
                 if let Some(c) = self.remaining.chars().nth(2) {
                     if c.is_ascii_digit() || c.is_ascii_alphabetic() {
@@ -177,6 +179,7 @@ impl Feeder {
                 }
                 return 2;
             },
+            */
             Some(c) => if "$?*@#-!0123456789".find(c) != None { 2 }else{ 0 },
             None    => 0,
         }
