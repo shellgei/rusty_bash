@@ -65,7 +65,7 @@ complete -u groups w
 complete -v unset
 complete -A setopt set
 
-command_not_found_handle() {
+command_not_found_handle() { #command_not_found should be loaded before bash-completion in this stage
 	if [ -e /usr/lib/command-not-found ] ; then
 		/usr/lib/command-not-found -- "$1"
 	fi
