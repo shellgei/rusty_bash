@@ -14,17 +14,17 @@ use super::arithmetic::word;
 use super::arithmetic::elem::ArithElem;
 use std::env;
 
-fn to_operand(w: &Word, core: &mut ShellCore) -> Result<CondElem, ExecError> {
-    match w.eval_for_case_pattern(core) {
+fn to_operand(w: &mut Word) -> Result<CondElem, ExecError> {
+    match w.make_unquoted_word() {
         Some(v) => Ok(CondElem::Operand(v)),
-        None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
+        None => Ok(CondElem::Operand("".to_string())),
     }
 }
 
 fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<CondElem, ExecError> {
     match stack.pop() {
         Some(CondElem::InParen(mut expr)) => expr.eval(core),
-        Some(CondElem::Word(w)) => to_operand(&w, core),
+        Some(CondElem::Word(mut w)) => to_operand(&mut w),
         Some(elem) => Ok(elem),
         None => return Err(ExecError::OperandExpected("".to_string())),
     }
@@ -41,6 +41,19 @@ impl ConditionalExpr {
         let mut from = 0;
         let mut next = true;
         let mut last = CondElem::Ans(true);
+
+        for e in self.elements.iter_mut() {
+            e.eval(core)?;
+        }
+
+        if core.db.flags.contains('x') {
+            let mut elems = self.elements.clone()
+                           .into_iter().map(|e| e.to_string())
+                           .collect::<Vec<String>>();
+            elems.pop();
+            eprintln!("{} ]]\r", &elems.join(" "));
+        }
+
         for i in 0..self.elements.len() {
             match self.elements[i] {
                 CondElem::And | CondElem::Or => {
@@ -121,6 +134,10 @@ impl ConditionalExpr {
                         stack.push(CondElem::Ans(!res));
                         Ok(())
                     },
+                    Ok(CondElem::Operand(s)) => {
+                        stack.push(CondElem::Ans(s == ""));
+                        Ok(())
+                    },
                     _ => Err(ExecError::Other("no operand to negate".to_string())),
                 },
                // _ => Err(ExecError::Other( error::syntax("TODO"))),
@@ -193,7 +210,22 @@ impl ConditionalExpr {
             Err(e) => return Err(ExecError::Other(e.to_string())),
         };
 
-        stack.push( CondElem::Ans(re.is_match(&left)) );
+        core.db.set_array("BASH_REMATCH", vec![], None)?;
+        if let Some(res) = re.captures(&left) {
+            for i in 0.. {
+                if let Some(e) = res.get(i) {
+                    let s = e.as_str().to_string();
+                    core.db.set_array_elem("BASH_REMATCH", &s, i, None)?;
+                }else{
+                    break;
+                }
+            }
+            stack.push( CondElem::Ans(true) );
+        }else{
+            stack.push( CondElem::Ans(false) );
+        }
+
+        //stack.push( CondElem::Ans(re.is_match(&left)) );
         return Ok(());
     }
 
@@ -215,7 +247,7 @@ impl ConditionalExpr {
         if op.starts_with("=") || op == "!=" || op == "<" || op == ">" {
             let ans = match op {
                 "==" | "=" => glob::parse_and_compare(&left, &right, extglob),
-                "=~"       => glob::parse_and_compare(&left, &right, extglob),
+                //"=~"       => glob::parse_and_compare(&left, &right, extglob),
                 "!="       => ! glob::parse_and_compare(&left, &right, extglob),
                 ">"        => left > right,
                 "<"        => left < right,

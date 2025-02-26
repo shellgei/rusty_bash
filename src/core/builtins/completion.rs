@@ -4,6 +4,7 @@
 use crate::{file_check, ShellCore, Feeder};
 use crate::core::{CompletionInfo, HashMap};
 use crate::elements::word::Word;
+use crate::elements::word::tilde_expansion;
 use crate::utils;
 use crate::utils::{arg, directory};
 use faccess;
@@ -15,14 +16,13 @@ use std::path::Path;
 use rev_lines::RevLines;
 
 pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    if args.len() > 2 && args[2] == "--" {
+        args.remove(2);
+    }
+
     let path = match args.len() {
         2 => "".to_string(),
-        _ => {
-            match args[2].as_str() {
-                "--" => args[3].to_string(),
-                _ => args[2].to_string(),
-            }
-        },
+        _ => args[2].to_string(),
     }.replace("\\", "");
 
     let mut split: Vec<String> = path.split("/").map(|s| s.to_string()).collect();
@@ -32,11 +32,18 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     };
 
     split.push("".to_string());
-    let dir = split.join("/");
+    let org_dir = split.join("/");
+    let mut dir = org_dir.clone();
+    if dir.starts_with("~") {
+        if let Ok(Some(mut w)) = Word::parse(&mut Feeder::new(&dir), core, true) {
+            tilde_expansion::eval(&mut w, core);
+            dir = w.text;
+        }
+    }
 
     if key == "" {
         let files = directory::files(&dir);
-        return files.iter().map(|f| dir.clone() + &f).collect();
+        return files.iter().map(|f| org_dir.clone() + &f).collect();
     }
 
     let mut ans = directory::glob(&dir, &(key.clone() + "*"), core.shopts.query("extglob"));
@@ -46,6 +53,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     }
     ans.iter_mut().for_each(|a| { a.pop(); } );
     ans.sort();
+    ans.iter_mut().for_each(|e| {*e = e.replacen(&dir, &org_dir, 1); });
     ans
 }
 
@@ -118,10 +126,12 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
     let mut args = arg::dissolve_options(args);
+    let _  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
+    let prefix = arg::consume_with_next_arg("-P", &mut args);
 
     replace_args_compgen(&mut args);
 
-    let ans = match args[1].as_str() {
+    let mut ans = match args[1].as_str() {
         "-a" => compgen_a(core, &mut args),
         "-b" => compgen_b(core, &mut args),
         "-c" => compgen_c(core, &mut args),
@@ -144,6 +154,12 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 2;
         },
     };
+
+    if let Some(p) = prefix {
+        for a in ans.iter_mut() {
+            *a = p.clone() + a;
+        }
+    }
 
     ans.iter().for_each(|a| println!("{}", &a));
     0
@@ -181,13 +197,6 @@ pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 pub fn compgen_b(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
-    /*
-    if args.len() > 2 {
-        commands.extend(compgen_f(core, args));
-    }
-    commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
-    */
-
     let mut builtins: Vec<String> = core.builtins.clone().into_keys().collect();
     commands.append(&mut builtins);
 
@@ -286,7 +295,15 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
-    let mut feeder = Feeder::new(&args[2]);
+    let mut words = args[2].to_string();
+
+    if words.starts_with("$") {
+        if let Ok(value) = core.db.get_param(&args[2][1..]) {
+            words = value;
+        }
+    }
+
+    let mut feeder = Feeder::new(&words);
     while feeder.len() != 0 {
         match Word::parse(&mut feeder, core, false) {
             Ok(Some(mut w)) => {

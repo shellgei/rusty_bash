@@ -21,6 +21,7 @@ pub fn reserved(w: &str) -> bool {
 
 pub fn split_words(s: &str) -> Vec<String> {
     let mut ans = vec![];
+    let mut end_with_space = false;
 
     let mut in_quote = false;
     let mut escaped = false;
@@ -28,6 +29,7 @@ pub fn split_words(s: &str) -> Vec<String> {
 
     let mut tmp = String::new();
     for c in s.chars() {
+        end_with_space = false;
         if escaped || c == '\\' {
             escaped = ! escaped;
             tmp.push(c);
@@ -52,7 +54,8 @@ pub fn split_words(s: &str) -> Vec<String> {
         }
 
         if ! in_quote && ( c == ' ' || c == '\t') {
-            if tmp.len() != 0 {
+            end_with_space = true;
+            if ! tmp.is_empty() {
                 ans.push(tmp.clone());
                 tmp.clear();
             }
@@ -61,8 +64,12 @@ pub fn split_words(s: &str) -> Vec<String> {
         }
     }
 
-    if tmp.len() != 0 {
+    if ! tmp.is_empty() {
         ans.push(tmp);
+    }
+
+    if end_with_space {
+        ans.push("".to_string());
     }
 
     ans

@@ -6,15 +6,18 @@ use crate::elements::subword::BracedParam;
 use crate::elements::subword::braced_param::Word;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
+use super::Subscript;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
+    pub subscript: Option<Subscript>,
     pub symbol: Option<String>,
     pub alternative_value: Option<Word>,
 }
 
 impl ValueCheck {
-    pub fn set(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn set(&mut self, name: &String, sub: &Option<Subscript>, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.subscript = sub.clone();
         match self.symbol.as_deref() {
             Some(":-")   => {
                 self.set_alter_word(core)?;
@@ -22,7 +25,7 @@ impl ValueCheck {
             },
             Some(":?") => self.colon_question(name, text, core),
             Some(":=") => self.colon_equal(name, core),
-            Some("-")  => self.minus(text),
+            Some("-")  => self.minus(name, text, core),
             Some(":+") => self.colon_plus(text, core),
             Some("+")  => self.plus(name, text, core),
             _          => exit::internal("no operation"),
@@ -32,17 +35,35 @@ impl ValueCheck {
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         let v = self.alternative_value.clone().ok_or(ExecError::OperandExpected("".to_string()))?;
         self.alternative_value = Some(v.tilde_and_dollar_expansion(core)? );
-        let value = v.eval_as_value(core).ok_or(ExecError::OperandExpected("".to_string()))?;
+        let value = v.eval_as_value(core)?;//.ok_or(ExecError::OperandExpected("".to_string()))?;
         Ok(value.clone())
     }
 
-    fn minus(&mut self, text: &String) -> Result<String, ExecError> {
-        self.alternative_value = None;
-        self.symbol = None;
+    fn minus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        match core.db.has_value(&name) {
+            false => {self.set_alter_word(core)?;},
+            true  => self.alternative_value = None,
+        }
         Ok(text.clone())
     }
 
-    fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> { 
+        if core.db.is_array(&name) {
+            if core.db.get_array_all(&name).is_empty() {
+                self.alternative_value = None;
+                return Ok(text.clone());
+            }
+        }
+        
+        if let Some(sub) = self.subscript.as_mut() {
+            if sub.eval(core, &name).is_ok() {
+                if core.db.has_array_value(&name, &sub.text) {
+                    self.set_alter_word(core)?;
+                    return Ok(text.clone());
+                }
+            }
+        }
+
         match core.db.has_value(&name) {
             true  => {self.set_alter_word(core)?;},
             false => self.alternative_value = None,

@@ -14,6 +14,7 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_param("BASH_SUBSHELL", "0", None)?;
     db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
     db.set_param("OPTIND", "1", None)?;
+    db.set_param("IFS", " \t\n", None)?;
 
     SpecialData::set_new_entry(&mut db.params[0], "SRANDOM", random::get_srandom)?;
     SpecialData::set_new_entry(&mut db.params[0], "RANDOM", random::get_random)?;

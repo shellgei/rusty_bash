@@ -15,6 +15,7 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
         w.substitute(core)?;
     }
     alternative_replace(word);
+    word.text = word.subwords.iter().map(|sw| sw.get_text().to_string()).collect::<Vec<String>>().join("");
     Ok(())
 }
 

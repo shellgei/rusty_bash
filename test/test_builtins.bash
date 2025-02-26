@@ -63,6 +63,15 @@ res=$($com <<< 'eval -- "A=(a b)"; echo ${A[@]}')
 res=$($com <<< 'eval "(" echo abc ")" "|" rev')
 [ "$res" = "cba" ] || err $LINENO
 
+res=$($com <<< 'set 1 2 3 ; eval b=(\"\$@\"); echo ${b[0]}')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'set 1 2 3 ; eval b=(\"$@\"); echo ${b[0]}')
+[ "$res" = "1 2 3" ] || err $LINENO
+
+res=$($com <<< 'set 1 2 3 ; eval -- "a=(\"\$@\")"; echo ${a[0]}')
+[ "$res" = "1" ] || err $LINENO
+
 res=$($com <<< 'A=aaa ; unset A ; echo $A')
 [ "$res" = "" ] || err $LINENO
 
@@ -246,6 +255,12 @@ echo flag:$flag OPTIND:$OPTIND exit:$res
 flag:s OPTIND:2 exit:0
 flag:? OPTIND:3 exit:1" ] || err $LINENO
 
+res=$($com <<< 'getopts :av:U:Rc:C:lF:i:x: _opt -a filedir ; echo $_opt')
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< 'getopts :av:U:Rc:C:lF:i:x: _opt -a filedir ; echo $_opt')
+[ "$res" = "a" ] || err $LINENO
+
 ### printf ###
 
 res=$($com <<< 'printf -v a %s bbb &> /dev/null; echo $a')
@@ -284,6 +299,25 @@ res=$($com <<< 'trap "echo hoge" 444444')
 res=$($com <<< 'trap "echo hoge" EXIT; echo fuge') 
 [ "$res" = "fuge
 hoge" ] || err $LINENO
+
+### type ###
+
+res=$($com <<< 'type bash | grep "bash is /"') 
+[ $? -eq 0 ] || err $LINENO
+
+res=$($com <<< 'type -p bash | grep "^/.*bash"') 
+[ $? -eq 0 ] || err $LINENO
+
+res=$($com <<< 'type -t for') 
+[ "$res" = "keyword" ] || err $LINENO
+
+res=$($com <<< 'type -p printf') 
+[ $? -eq 0 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'type -P printf') 
+[ $? -eq 0 ] || err $LINENO
+[ "$res" != "" ] || err $LINENO
 
 echo $0 >> ./ok
 

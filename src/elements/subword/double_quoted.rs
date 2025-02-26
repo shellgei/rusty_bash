@@ -47,7 +47,7 @@ impl Subword for DoubleQuoted {
             .concat() )
     }
 
-    fn split(&self) -> Vec<Box<dyn Subword>>{
+    fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{
         if self.split_points.len() < 1 {
             return vec![];
         }
@@ -157,7 +157,7 @@ impl DoubleQuoted {
     }
 
     fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if feeder.starts_with("\\$") || feeder.starts_with("\\\\") {
+        if feeder.starts_with("\\$") || feeder.starts_with("\\\\") || feeder.starts_with("\\\"") {
             let txt = feeder.consume(2);
             ans.text += &txt;
             ans.subwords.push(Box::new(EscapedChar{ text: txt }));

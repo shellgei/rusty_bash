@@ -334,12 +334,11 @@ impl Terminal {
         core.db.set_param("COMP_KEY", "9", None)?;
 
         let mut words_all = utils::split_words(&all_string);
-        words_all.retain(|e| e != "");
-
+        //words_all.retain(|e| e != "");
 
         let left_string: String = self.chars[prompt_len..self.head].iter().collect();
         let mut words_left = utils::split_words(&left_string);
-        words_left.retain(|e| e != "");
+        //words_left.retain(|e| e != "");
         let from = completion_from(&words_left, core);
 
         words_all = words_all[from..].to_vec();
@@ -348,7 +347,7 @@ impl Terminal {
 
         let mut num = words_left.len();
         match left_string.chars().last() {
-            Some(' ') => {},
+            Some(' ') => {num -= 1},
             Some(_) => {
                 if num > 0 {
                     num -= 1
@@ -363,7 +362,7 @@ impl Terminal {
 }
 
 fn completion_from(ws: &Vec<String>, core: &mut ShellCore) -> usize {
-    for i in (0..ws.len()).rev() {
+    for i in 0..ws.len() {
         if utils::reserved(&ws[i]) {
             continue;
         }
@@ -371,9 +370,8 @@ fn completion_from(ws: &Vec<String>, core: &mut ShellCore) -> usize {
         let s = ws[i..].join(" ");
         let mut feeder = Feeder::new(&s);
         if let Ok(Some(_)) = SimpleCommand::parse(&mut feeder, core) {
-        }else{
-            return i+1;
+            return i;
         }
     }
-    0
+    ws.len()
 }

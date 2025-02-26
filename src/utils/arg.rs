@@ -1,5 +1,15 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
+//
+pub fn consume_option(opt: &str, args: &mut Vec<String>) -> bool {
+    match args.iter().position(|a| a == opt) {
+        Some(pos) => {
+            args.remove(pos);
+            true
+        },
+        None => false,
+    }
+}
 
 pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> Option<String> {
     match args.iter().position(|a| a == prev_opt) {

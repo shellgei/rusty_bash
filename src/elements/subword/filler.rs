@@ -5,18 +5,17 @@ use crate::Feeder;
 use super::Subword;
 
 #[derive(Debug, Clone)]
-pub struct SimpleSubword {
+pub struct FillerSubword {
     pub text: String,
 }
 
-impl Subword for SimpleSubword {
+impl Subword for FillerSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
-impl SimpleSubword {
+impl FillerSubword {
     pub fn parse(feeder: &mut Feeder) -> Option<Self> {
         let len = feeder.scanner_subword_symbol();
         if len > 0 {

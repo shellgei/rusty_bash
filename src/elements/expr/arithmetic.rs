@@ -42,7 +42,7 @@ impl ArithmeticExpr {
             match e {
                 ArithElem::Word(w, i) => {
                     match w.eval_as_value(core) {
-                        Some(s) => {
+                        Ok(s) => {
                             ans += &s;
                             if *i > 0 {
                                 ans += "++";
@@ -50,7 +50,7 @@ impl ArithmeticExpr {
                                 ans += "--";
                             }
                         },
-                        None => return Err(ExecError::ArrayIndexInvalid(w.text.clone())),
+                        Err(e) => return Err(e),
                     }
                 },
                 _ => ans += &e.to_string(),

@@ -82,6 +82,18 @@ ok"}' )
 [ "$res" = "set
 ok" ] || err $LINENO
 
+res=$($com <<< 'echo ${A-abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'A=a ; echo ${A-abc}' )
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< 'echo ${A+abc}' )
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=a ; echo ${A+abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
 res=$($com <<< 'A=aaa ; echo ${A- - - - -}' )
 [ "$res" = "aaa" ] || err $LINENO
 
@@ -510,6 +522,9 @@ res=$($com <<< "echo 123'abc'")
 res=$($com <<< "echo 123'abc'def")
 [ "$res" == "123abcdef" ] || err $LINENO
 
+res=$($com <<< 'echo "\""')
+[ "$res" == '"' ] || err $LINENO
+
 # parameter expansion
 
 res=$($com <<< 'echo $')
@@ -631,6 +646,21 @@ res=$($com <<< 'echo {,,}$(date "+%w")')
 res=$($com <<< 'echo $(date) | grep "  "')
 [ "$?" == "1" ] || err $LINENO
 
+res=$($com <<< 'a=$(seq 2)
+echo "$a"
+')
+[ "$res" == "1
+2" ] || err $LINENO
+
+res=$($com <<< 'a=$(
+echo a
+echo b
+)
+echo "$a"
+')
+[ "$res" == "a
+b" ] || err $LINENO
+
 # array
 
 res=$($com <<< 'A=( a b ); echo ${A[1]}')
@@ -661,6 +691,13 @@ res=$($com <<< 'echo ]')
 [ "$res" == "]" ] || err $LINENO
 
 # ansi-c quoting
+
+# this test case is never fulfilled until we use String type
+#res=$($com <<- FIN
+#echo -n $'\xdb' | xxd -p
+#FIN
+#)
+#[ "$res" == "db" ] || err $LINENO
 
 res=$($com <<- 'FIN'
 echo $'aaa'

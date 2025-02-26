@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::error;
+use crate::{arg, error};
 
 fn is_varname(s :&String) -> bool {
     if s.is_empty() {
@@ -25,6 +25,9 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
+    let mut args = arg::dissolve_options(args);
+    let _r_opt = arg::consume_option("-r", &mut args); //TODO: change the precedure
+
     for a in &args[1..] {
         if ! is_varname(&a) {
             eprintln!("bash: read: `{}': not a valid identifier", &a);
@@ -38,6 +41,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
+    //TODO: this procedure may be for -r option
     let mut line = String::new();
     let len = std::io::stdin()
         .read_line(&mut line)

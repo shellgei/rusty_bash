@@ -15,13 +15,14 @@ mod pwd;
 mod read;
 mod source;
 mod trap;
+mod type_;
 mod loop_control;
 mod unset;
 
-use crate::{error, proc_ctrl, Feeder, Script, ShellCore};
+use crate::{error, exit, proc_ctrl, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
-use crate::utils::{arg, exit, file};
+use crate::utils::{arg, file};
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -51,6 +52,7 @@ impl ShellCore {
         self.builtins.insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
+        self.builtins.insert("type".to_string(), type_::type_);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
         self.builtins.insert("unalias".to_string(), alias::unalias);
@@ -150,7 +152,9 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     core.eval_level += 1;
     match Script::parse(&mut feeder, core, false){
-        Ok(Some(mut s)) => {let _ = s.exec(core); },
+        Ok(Some(mut s)) => {
+            let _ = s.exec(core);
+        },
         Err(e) => e.print(core),
         _        => {},
     }
@@ -177,3 +181,51 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
+
+/*
+pub fn print_command_type(core: &mut ShellCore, com: &String) -> i32 {
+    if core.aliases.contains_key(com) {
+        println!("{} is aliased to `{}'", &com, &core.aliases[com]);
+        return 0;
+    }
+    if core.db.functions.contains_key(com) {
+        println!("{} is a function", &com);
+        println!("{}", &core.db.functions[com].text);
+        return 0;
+    }
+    if core.builtins.contains_key(com) {
+        println!("{} is a shell builtin", com);
+        return 0;
+    }
+    if let Some(path) = file::search_command(com) {//TODO: show in the fullpath case
+        println!("{} is {}", com, &path);
+        return 0;
+    }
+    if file_check::is_executable(com) {
+        println!("{} is {}", com, com);
+        return 0;
+    }
+    1
+}
+
+pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
+        return 0;
+    }
+
+    let mut args = arg::dissolve_options(args);
+    if arg::consume_option("-P", &mut args) {
+        return 0;
+    }
+
+    let mut exit_status = 0;
+    for a in &args[1..] {
+         exit_status += print_command_type(core, a);
+    }
+
+    if exit_status > 1 {
+        exit_status = 1;
+    }
+    exit_status
+}
+*/

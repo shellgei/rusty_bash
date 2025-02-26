@@ -2,14 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
-mod tilde_expansion;
+pub mod tilde_expansion;
 pub mod substitution;
 mod path_expansion;
 mod split;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
-use crate::error;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
@@ -18,6 +17,7 @@ use super::subword::simple::SimpleSubword;
 #[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
+    pub do_not_erase: bool,
     pub subwords: Vec<Box<dyn Subword>>,
 }
 
@@ -26,6 +26,7 @@ impl From<&String> for Word {
         Self {
             text: s.to_string(),
             subwords: vec![Box::new(SimpleSubword{text: s.to_string() })],
+            do_not_erase: false,
         }
     }
 }
@@ -35,6 +36,7 @@ impl From<Box::<dyn Subword>> for Word {
         Self {
             text: subword.get_text().to_string(),
             subwords: vec![subword],
+            do_not_erase: false,
         }
     }
 }
@@ -44,6 +46,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
         Self {
             text: subwords.iter().map(|s| s.get_text()).collect(),
             subwords: subwords,
+            do_not_erase: false,
         }
     }
 }
@@ -60,21 +63,16 @@ impl Word {
             let expanded = w.tilde_and_dollar_expansion(core)?;
             ws.append( &mut expanded.split_and_path_expansion(core) );
         }
-
         Ok( Self::make_args(&mut ws) )
     }
 
-    pub fn eval_as_value(&self, core: &mut ShellCore) -> Option<String> {
+    pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
-            Ok(w) => w.split_and_path_expansion(core),
-            Err(e)    => {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
-                return None;
-            },
+            Ok(w)  => w.path_expansion(core),
+            Err(e) => return Err(e),
         };
 
-        Some( Self::make_args(&mut ws).join(" ") )
+        Ok( Self::make_args(&mut ws).join(" ") )
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
@@ -88,8 +86,18 @@ impl Word {
     }
 
     pub fn eval_for_regex(&self, core: &mut ShellCore) -> Option<String> {
+        let quoted = self.text.starts_with("\"") && self.text.ends_with("\"");
+
         match self.tilde_and_dollar_expansion(core) {
-            Ok(mut w) => w.make_regex(),
+            Ok(mut w) => {
+                let mut re = w.make_regex()?;
+                if quoted {
+                    re.insert(0, '"');
+                    re += "\"";
+                }
+
+                Some(re)
+            },
             Err(e)    => {
                 e.print(core);
                 return None;
@@ -116,9 +124,15 @@ impl Word {
 
     pub fn split_and_path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
         let mut ans = vec![];
+        let mut splitted = split::eval(self, core);
+
+        let len = splitted.len();
+        if len > 0 {
+            splitted[len-1].do_not_erase = false;
+        }
+        
         let extglob = core.shopts.query("extglob");
 
-        let splitted = split::eval(self, core);
         if core.options.query("noglob") {
             return splitted;
         }
@@ -127,6 +141,15 @@ impl Word {
             ans.append(&mut path_expansion::eval(&mut w, extglob) );
         }
         ans
+    }
+
+   fn path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
+        let extglob = core.shopts.query("extglob");
+        if core.options.query("noglob") {
+            return vec![self.clone()];
+        }
+
+        path_expansion::eval(&mut self.clone(), extglob)
     }
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
@@ -143,7 +166,7 @@ impl Word {
             .filter(|s| *s != None)
             .collect();
 
-        if sw.is_empty() {
+        if sw.is_empty() && ! self.do_not_erase {
             return None;
         }
 
