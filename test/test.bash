@@ -16,6 +16,7 @@ com=../target/release/sush
 : > error
 : > ok
 
+./test_case.bash nobuild &
 ./test_others.bash nobuild &
 ./test_redirects.bash nobuild &
 ./test_calculation.bash nobuild &

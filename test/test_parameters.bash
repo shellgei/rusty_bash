@@ -86,6 +86,26 @@ res=$($com <<< 'a=(aaa bbb); bbb=eeee ; echo ${!a[1]/ee/bb}')
 res=$($com <<< 'a=(aaa bbb[2]); bbb[2]=eeee ; echo ${!a[1]}')
 [ "$res" = "eeee" ] || err $LINENO
 
+res=$($com << 'EOF'
+a=(aa bb cc)
+echo ${!a[@]}
+echo ${!a[*]}
+EOF
+)
+[ "$res" = "0 1 2
+0 1 2" ] || err $LINENO
+
+res=$($com << 'EOF'
+a=(aa bb cc)
+b=("${!a[@]}")
+echo ${b[0]}
+b=("${!a[*]}")
+echo ${b[0]}
+EOF
+)
+[ "$res" = "0
+0 1 2" ] || err $LINENO
+
 ### PARTIAL POSITION PARAMETER ###
 
 res=$($com <<< 'set 1 2 3 4 ; echo ${@:2:2}')

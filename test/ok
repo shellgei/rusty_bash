@@ -1,0 +1,13 @@
+./test_ansi_c_quoting.bash
+./test_script.bash
+./test_options.bash
+./test_glob.bash
+./test_redirects.bash
+./test_brace.bash
+./test_case.bash
+./test_calculation.bash
+./test_others.bash
+./test_compound.bash
+./test_parameters.bash
+./test_builtins.bash
+./test_job.bash

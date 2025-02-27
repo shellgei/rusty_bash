@@ -709,7 +709,6 @@ res=$($com <<< 'A=( a b ); A[0]=( 1 2 )')
 res=$($com <<< 'A=( a b ); A[]=1')
 [ "$?" == 1 ] || err $LINENO
 
-
 # symbol
 
 res=$($com <<< 'echo ]')
