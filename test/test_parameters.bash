@@ -175,5 +175,16 @@ EOF
 [ "$res" = "3
 1" ] || err $LINENO
 
+res=$($com <<< '
+_=aaa
+echo $_
+echo $_
+' )
+[ "$res" = "
+echo" ] || err $LINENO
+
+res=$($com <<< '__a=x; echo $__a ; echo $__a' )
+[ "$res" = "x
+x" ] || err $LINENO
 
 echo $0 >> ./ok

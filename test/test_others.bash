@@ -147,6 +147,9 @@ EOF
 [ "$res" = "--
 a" ] || err $LINENO
 
+res=$($com <<< 'a=A ; echo ${a:-B}' )
+[ "$res" = "A" ] || err $LINENO
+
 # offset
 
 res=$($com <<< 'A=abc; echo ${A:1}' )
@@ -708,6 +711,14 @@ res=$($com <<< 'A=( a b ); A[0]=( 1 2 )')
 
 res=$($com <<< 'A=( a b ); A[]=1')
 [ "$?" == 1 ] || err $LINENO
+
+### PROCESS SUBSTITUTION ###
+
+res=$($com <<< 'rev <(echo abc)' )
+[ "$res" = "cba" ] || err $LINENO
+
+res=$($com <<< 'rev < <(echo abc)' )
+[ "$res" = "cba" ] || err $LINENO
 
 # symbol
 
