@@ -79,10 +79,10 @@ impl Terminal {
         let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
         let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
 
-        core.current_completion_target = org_word.clone();
+        //core.current_completion_target = org_word.clone();
         match core.completion_info.get(&org_word) {
             Some(info) => {
-                self.completion_info = info.clone();
+                core.current_completion_info = info.clone();
                 let command = format!("{} \"{}\" \"{}\" \"{}\"",
                                         &info.function, &org_word, &target_word, &prev_word);
                 let mut feeder = Feeder::new(&command);
@@ -95,11 +95,13 @@ impl Terminal {
                     return Err("no completion cand".to_string());
                 }
 
+                /*
                 let mut ans = core.db.get_array_all("COMPREPLY");
                 for s in ans.iter_mut() {
                     *s = s.trim_end().to_string();
                 }
                 core.db.set_array("COMPREPLY", ans, None)?;
+                */
                 Ok(())
             },
             _ => Err("no completion function".to_string())
@@ -178,10 +180,15 @@ impl Terminal {
         if core.db.len("COMPREPLY") == 1 {
             let arr = core.db.get_array_all("COMPREPLY");
             let output = arr[0].clone();
-            let tail = match is_dir(&output, core) {
+            let mut tail = match is_dir(&output, core) {
                 true  => "/",
                 false => " ",
             };
+
+            if core.current_completion_info.o_options.contains(&"nospace".to_string()) {
+                tail = "";
+            }
+
             self.replace_input(&(output + tail));
             return Ok(());
         }
@@ -270,7 +277,7 @@ impl Terminal {
         }
     }
 
-    pub fn replace_input(&mut self, to: &String) {
+    fn shave_existing_word(&mut self) {
         while self.head > self.prompt.chars().count() 
         && ( self.head > 0 && self.chars[self.head-1] != ' ' ||
            (self.head > 1 && self.chars[self.head-1] == ' ' 
@@ -281,6 +288,10 @@ impl Terminal {
         && self.chars[self.head] != ' ' {
             self.delete();
         }
+    }
+
+    pub fn replace_input(&mut self, to: &String) {
+        self.shave_existing_word();
 
         let to_escaped = if to.ends_with(" ") {
             let mut tmp = to.to_string();

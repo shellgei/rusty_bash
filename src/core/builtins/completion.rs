@@ -484,12 +484,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     1
 }
 
-fn compopt_set(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<String>, com: &str) -> i32 {
-    let info = match core.completion_info.get_mut(com) {
-        Some(i) => i,
-        None => return 1,
-    };
-
+fn compopt_set(info: &mut CompletionInfo, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
     for opt in minus { //add
         if ! info.o_options.contains(opt) {
             info.o_options.push(opt.to_string());
@@ -503,6 +498,7 @@ fn compopt_set(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<String>, co
     0
 }
 
+    /*
 fn compopt_set_current(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
     let com = &core.current_completion_target;
 
@@ -511,6 +507,7 @@ fn compopt_set_current(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<Str
     }
     compopt_set(core, plus, minus, &com.clone())
 }
+    */
 
 fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let optlist = vec!["bashdefault", "default",
@@ -596,12 +593,17 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         break;
     }
 
-    if args.len() == 1 {
-        return compopt_set_current(core, &plus, &minus);
+    let info = if args.len() == 1 {
+        &mut core.current_completion_info
     }else if args.len() == 2 {
-        return compopt_set(core, &plus, &minus, &args[1]);
+        match core.completion_info.get_mut(&args[1]) {
+            Some(i) => i,
+            None => return 1,
+        }
     }else{
         return 1;
-    }
+    };
+    return compopt_set(info, &plus, &minus);
+
     //TODO: support of -D -E
 }
