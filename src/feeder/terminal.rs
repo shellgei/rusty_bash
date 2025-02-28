@@ -343,8 +343,13 @@ impl Terminal {
         self.rewrite(true);
     }
 
-    pub fn set_double_tab_completion(&mut self) {
-        let s = self.completion_candidate.clone() + " ";
+    pub fn set_double_tab_completion(&mut self, core: &ShellCore) {
+        let tail = match core.current_completion_info.o_options.contains(&"nospace".to_string()) {
+            true  => "",
+            false => " ",
+        };
+
+        let s = self.completion_candidate.clone() + tail;
         self.replace_input(&s);
     }
 

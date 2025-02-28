@@ -198,16 +198,15 @@ impl Terminal {
         self.tab_row = i%row_num;
     }
 
-    fn show_list(&mut self, list: &Vec<String>/*, tab_num: usize*/) {
+    fn show_list(&mut self, list: &Vec<String>) {
         if list.is_empty() {
             return;
         }
+
         let widths: Vec<usize> = list.iter().map(|s| str_width(s)).collect();
         let max_entry_width = widths.iter().max().unwrap_or(&1000) + 1;
-        //let terminal_row_num = Terminal::size().1;
         let terminal_row_num = self.size.1;
         let col_num = std::cmp::min(
-                          //std::cmp::max(Terminal::size().0 / max_entry_width, 1),
                           std::cmp::max(self.size.0 / max_entry_width, 1),
                           list.len()
                       );
@@ -231,7 +230,6 @@ impl Terminal {
             print!("\r\n");
         }
 
-        //let (cur_col, cur_row) = self.stdout.cursor_pos().unwrap();
         let (cur_col, cur_row) = self.head_to_cursor_pos(self.head, self.prompt_row);
 
         self.check_scroll();

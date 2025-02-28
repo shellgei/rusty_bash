@@ -74,7 +74,7 @@ fn char_key(term: &mut Terminal, core: &mut ShellCore, c: &char)
     match c {
         '\n' => {
             if term.completion_candidate.len() > 0 {
-                term.set_double_tab_completion();
+                term.set_double_tab_completion(core);
             }else{
                 term.goto(term.chars.len());
                 term.write("\r\n");
