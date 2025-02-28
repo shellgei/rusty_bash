@@ -20,6 +20,18 @@ com=../target/release/sush
 res=$($com <<< 'cd -- ""' )
 [ $? -eq 0 ] || err $LINENO
 
+if [ ! -e ~/tmp/a/b/c ] ; then 
+	res=$($com <<< '
+	mkdir -p ~/tmp/a/b
+	touch ~/tmp/a/b/c
+	compgen -f -X "" -- "~/tmp/a/b/c"
+	rm ~/tmp/a/b/c
+	rmdir -p ~/tmp/a/b
+	rmdir -p ~/tmp/a
+	' ) 2> /dev/null
+	[ "$res" = "~/tmp/a/b/c" ] || err $LINENO
+fi
+
 echo $0 >> ./ok
 exit
 
