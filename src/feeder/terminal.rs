@@ -5,6 +5,7 @@ mod completion;
 mod key;
 
 use crate::{file_check, ShellCore};
+use crate::core::completion::CompletionInfo;
 use crate::utils::file;
 use crate::error::input::InputError;
 use std::io;
@@ -32,6 +33,7 @@ struct Terminal {
     size: (usize, usize),
     tab_num: usize,
     prev_key: Key,
+    completion_info: CompletionInfo,
     /* for extended completion */
     completion_candidate: String,
     tab_row: i32,
@@ -103,6 +105,7 @@ impl Terminal {
             head: prompt.chars().count(),
             hist_ptr: 0,
             size: Terminal::size(),
+            completion_info: CompletionInfo::default(),
             prompt_width_map: Self::make_width_map(&replaced_prompt),
             prev_key: event::Key::Char('a'),
             tab_num: 0,

@@ -3,12 +3,10 @@
 
 use std::collections::HashMap;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct CompletionInfo {
     pub function: String,
     pub o_options: Vec<String>,
     pub action: String,
     pub options: HashMap<String, String>,
 }
-
-    //pub completion_actions: HashMap<String, (String, HashMap<String, String>)>, //command, action,

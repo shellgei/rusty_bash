@@ -53,7 +53,7 @@ impl Terminal {
         let _ = core.db.set_array("COMPREPLY", vec![], None);
         self.set_completion_info(core)?;
 
-        if ! Self::set_custom_compreply(core).is_ok()
+        if ! self.set_custom_compreply(core).is_ok()
         && ! self.set_default_compreply(core).is_ok() {
             self.cloop();
             return Ok(());
@@ -66,7 +66,7 @@ impl Terminal {
         Ok(())
     }
 
-    fn set_custom_compreply(core: &mut ShellCore) -> Result<(), String> {
+    fn set_custom_compreply(&mut self, core: &mut ShellCore) -> Result<(), String> {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
         let word_num = core.db.len("COMP_WORDS") as i32;
@@ -82,13 +82,14 @@ impl Terminal {
         core.current_completion_target = org_word.clone();
         match core.completion_info.get(&org_word) {
             Some(info) => {
+                self.completion_info = info.clone();
                 let command = format!("{} \"{}\" \"{}\" \"{}\"",
                                         &info.function, &org_word, &target_word, &prev_word);
                 let mut feeder = Feeder::new(&command);
 
                 if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
                     let mut dummy = Pipe::new("".to_string());
-                    let _ = a.exec(core, &mut dummy);
+                    a.exec(core, &mut dummy)?;
                 }
                 if core.db.len("COMPREPLY") == 0 {
                     return Err("no completion cand".to_string());
