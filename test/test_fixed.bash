@@ -20,7 +20,7 @@ com=../target/release/sush
 res=$($com <<< 'cd -- ""' )
 [ $? -eq 0 ] || err $LINENO
 
-if [ ! -e ~/tmp/a/b/c ] ; then 
+if [ ! -e ~/tmp/a/b ] ; then 
 	res=$($com <<< '
 	mkdir -p ~/tmp/a/b
 	touch ~/tmp/a/b/c
