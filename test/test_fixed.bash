@@ -17,6 +17,9 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+res=$($com <<< 'cd -- ""' )
+[ $? -eq 0 ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 

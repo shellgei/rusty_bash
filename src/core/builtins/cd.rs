@@ -3,9 +3,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, ShellCore};
+use crate::arg;
 use crate::utils::file;
 
 pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let _ = arg::consume_option("--", args);
+
     if args.len() > 2 {
         eprintln!("sush: cd: too many arguments");
         return 1;
