@@ -6,7 +6,6 @@ use crate::core::builtins::completion;
 use crate::error::exec::ExecError;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
-use crate::elements::script::Script;
 use crate::elements::io::pipe::Pipe;
 use crate::feeder::terminal::Terminal;
 use unicode_width::UnicodeWidthStr;
@@ -84,9 +83,7 @@ impl Terminal {
         Ok(())
     }
 
-    fn exec_action(org_word: &str, prev_pos: i32, cur_pos: i32, 
-                              core: &mut ShellCore)-> Result<(), ExecError> {
-        let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
+    fn exec_action(cur_pos: i32, core: &mut ShellCore)-> Result<(), ExecError> {
         let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
         let info = &core.current_completion_info;
 
@@ -118,7 +115,7 @@ impl Terminal {
         if info.function != "" {
             Self::exec_complete_function(&org_word, prev_pos, cur_pos, core)?;
         }else{
-            Self::exec_action(&org_word, prev_pos, cur_pos, core)?;
+            Self::exec_action(cur_pos, core)?;
         }
 
         match core.db.len("COMPREPLY") {
