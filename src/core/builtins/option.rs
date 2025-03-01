@@ -59,11 +59,6 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             core.options.print_all(positive);
             return 0;
         }else{
-            /*
-            if args[2] == "noglob" {
-                eprintln!("{}: not supprted yet", &args[2]);
-                return 1;
-            }*/
             return match core.options.set(&args[2], positive) {
                 true  => 0,
                 false => 2,

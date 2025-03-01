@@ -1,6 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
-//
+
 pub fn consume_option(opt: &str, args: &mut Vec<String>) -> bool {
     match args.iter().position(|a| a == opt) {
         Some(pos) => {
@@ -50,11 +50,20 @@ pub fn replace_to_short_opt(opt1: &str, opt2: &str, to: &str, args: &mut Vec<Str
 */
 
 fn dissolve_option(opt: &str) -> Vec<String> {
+    if opt.starts_with("-") {
+        opt[1..].chars().map(|c| ("-".to_owned() + &c.to_string()).to_string()).collect()
+    }else if opt.starts_with("+") {
+        opt[1..].chars().map(|c| ("+".to_owned() + &c.to_string()).to_string()).collect()
+    }else {
+        vec![opt.to_string()]
+    }
+    /*
     if opt.starts_with("--") || ! opt.starts_with("-") {
         return vec![opt.to_string()];
     }
 
     opt[1..].chars().map(|c| ("-".to_owned() + &c.to_string()).to_string()).collect()
+    */
 }
 
 pub fn dissolve_options(args: &Vec<String>) -> Vec<String> {

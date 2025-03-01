@@ -6,6 +6,7 @@ use crate::core::builtins::completion;
 use crate::error::exec::ExecError;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
+use crate::elements::script::Script;
 use crate::elements::io::pipe::Pipe;
 use crate::feeder::terminal::Terminal;
 use unicode_width::UnicodeWidthStr;
@@ -66,6 +67,39 @@ impl Terminal {
         Ok(())
     }
 
+    fn exec_complete_function(org_word: &str, prev_pos: i32, cur_pos: i32, 
+                              core: &mut ShellCore)-> Result<(), ExecError> {
+        let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
+        let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
+        let info = &core.current_completion_info;
+
+        let command = format!("{} \"{}\" \"{}\" \"{}\"",
+                                &info.function, &org_word, &target_word, &prev_word);
+        let mut feeder = Feeder::new(&command);
+
+        if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
+            let mut dummy = Pipe::new("".to_string());
+            a.exec(core, &mut dummy)?;
+        }
+        Ok(())
+    }
+
+    fn exec_action(org_word: &str, prev_pos: i32, cur_pos: i32, 
+                              core: &mut ShellCore)-> Result<(), ExecError> {
+        let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
+        let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
+        let info = &core.current_completion_info;
+
+        let command = format!("COMPREPLY=($(compgen -A \"{}\" \"{}\"))",  &info.action, &target_word);
+        let mut feeder = Feeder::new(&command);
+
+        if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
+            let mut dummy = Pipe::new("".to_string());
+            a.exec(core, &mut dummy)?;
+        }
+        Ok(())
+    }
+
     fn set_custom_compreply(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
@@ -76,20 +110,15 @@ impl Terminal {
         }
 
         let org_word = core.db.get_array_elem("COMP_WORDS", "0")?;
-        let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
-        let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
 
         let info = core.completion_info.get(&org_word)
                    .ok_or(ExecError::Other("no completion function".to_string()))?;
 
         core.current_completion_info = info.clone();
-        let command = format!("{} \"{}\" \"{}\" \"{}\"",
-                                &info.function, &org_word, &target_word, &prev_word);
-        let mut feeder = Feeder::new(&command);
-
-        if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
-            let mut dummy = Pipe::new("".to_string());
-            a.exec(core, &mut dummy)?;
+        if info.function != "" {
+            Self::exec_complete_function(&org_word, prev_pos, cur_pos, core)?;
+        }else{
+            Self::exec_action(&org_word, prev_pos, cur_pos, core)?;
         }
 
         match core.db.len("COMPREPLY") {

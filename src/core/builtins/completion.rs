@@ -89,6 +89,7 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
         "file" => "-f",
         "user" => "-u",
         "setopt" => "-o",
+        "shopt" => "-A shopt",
         "stopped" => "-A stopped",
         "job" => "-j",
         a => a,
@@ -142,6 +143,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-j" => compgen_j(core, &mut args),
         "-u" => compgen_u(core, &mut args),
         "-v" => compgen_v(core, &mut args),
+        "-A shopt" => compgen_shopt(core, &mut args),
         "-A stopped" => compgen_stopped(core, &mut args),
         "-W" => {
             if args.len() < 2 {
@@ -341,6 +343,12 @@ pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     ans
 }
 
+pub fn compgen_shopt(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut ans = core.shopts.get_keys();
+    drop_unmatch(args, 2, &mut ans);
+    ans
+}
+
 pub fn compgen_stopped(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans = vec![];
 
@@ -497,17 +505,6 @@ fn compopt_set(info: &mut CompletionInfo, plus: &Vec<String>, minus: &Vec<String
 
     0
 }
-
-    /*
-fn compopt_set_current(core: &mut ShellCore, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
-    let com = &core.current_completion_target;
-
-    if com == "" {
-        return 1;
-    }
-    compopt_set(core, plus, minus, &com.clone())
-}
-    */
 
 fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let optlist = vec!["bashdefault", "default",
