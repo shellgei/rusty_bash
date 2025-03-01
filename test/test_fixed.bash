@@ -17,20 +17,12 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-res=$($com <<< 'cd -- ""' )
-[ $? -eq 0 ] || err $LINENO
+res=$($com <<< 'shopt -s nullglob ; echo aaaaaa*' )
+[ "$res" = "" ] || err $LINENO
 
-if [ ! -e ~/tmp/a/b ] ; then 
-	res=$($com <<< '
-	mkdir -p ~/tmp/a/b
-	touch ~/tmp/a/b/c
-	compgen -f -X "" -- "~/tmp/a/b/c"
-	rm ~/tmp/a/b/c
-	rmdir -p ~/tmp/a/b
-	rmdir -p ~/tmp/a
-	' ) 2> /dev/null
-	[ "$res" = "~/tmp/a/b/c" ] || err $LINENO
-fi
+res=$($com <<< 'shopt -s nullglob ; echo aaaaaa*; shopt -u nullglob ; echo aaaaaa*' )
+[ "$res" = "
+aaaaaa*" ] || err $LINENO
 
 echo $0 >> ./ok
 exit

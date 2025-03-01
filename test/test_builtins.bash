@@ -16,6 +16,9 @@ com=../target/release/sush
 res=$($com <<< 'cd /; pwd')
 [ "$res" = "/" ] || err $LINENO
 
+res=$($com <<< 'cd -- ""' )
+[ $? -eq 0 ] || err $LINENO
+
 res=$($com <<< 'rm -f /tmp/link; cd /tmp; mkdir -p hoge; ln -s hoge link; cd link; pwd -L; pwd -P')
 [ "$res" = "/tmp/link
 /tmp/hoge" ] ||
@@ -53,6 +56,20 @@ res=$($com <<< 'compgen -d -- /etc | wc -l')
 b=$(cd ; compgen -f . | wc -l )
 res=$($com <<< 'cd ; compgen -f . | wc -l')
 [ "$res" = "$b" ] || err $LINENO
+
+if [ ! -e ~/tmp/a/b ] ; then 
+	res=$($com <<< '
+	mkdir -p ~/tmp/a/b
+	touch ~/tmp/a/b/c
+	compgen -f -X "" -- "~/tmp/a/b/c"
+	rm ~/tmp/a/b/c
+	rmdir -p ~/tmp/a/b
+	rmdir -p ~/tmp/a
+	' ) 2> /dev/null
+	[ "$res" = "~/tmp/a/b/c" ] || err $LINENO
+fi
+
+### eval ###
 
 res=$($com <<< 'eval "echo a" b')
 [ "$res" = "a b" ] || err $LINENO

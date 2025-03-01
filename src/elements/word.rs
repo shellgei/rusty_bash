@@ -137,8 +137,9 @@ impl Word {
             return splitted;
         }
 
+        let nullglob = core.shopts.query("nullglob");
         for mut w in splitted {
-            ans.append(&mut path_expansion::eval(&mut w, extglob) );
+            ans.append(&mut path_expansion::eval(&mut w, extglob, nullglob) );
         }
         ans
     }
@@ -149,7 +150,8 @@ impl Word {
             return vec![self.clone()];
         }
 
-        path_expansion::eval(&mut self.clone(), extglob)
+        let nullglob = core.shopts.query("nullglob");
+        path_expansion::eval(&mut self.clone(), extglob, nullglob)
     }
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
