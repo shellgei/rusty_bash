@@ -418,7 +418,7 @@ fn print_complete(core: &mut ShellCore) -> i32 {
 }
 
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() <= 1 {
+    if args.len() <= 1 || args[1] == "-p" {
         return print_complete(core);
     }
 
