@@ -1,0 +1,7 @@
+
+cat > /tmp/$$-result
+
+echo OK:  $(awk '$2==0'  /tmp/$$-result | wc -l)
+echo NG: $(awk '$2!=0' /tmp/$$-result | wc -l)
+echo DNF: $(awk '$2=="DNF"' /tmp/$$-result | wc -l)
+echo DIFF_LINES: $(awk '$2!="DNF"{a+=$2}END{print a}' /tmp/$$-result)

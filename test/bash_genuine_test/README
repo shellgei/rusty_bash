@@ -24,5 +24,15 @@ run-jobs DNF     #DNF means that the script didn't finish within 60 seconds.
 run-posixexp2 48 
 ```
 
+5. You can obtain the summary of the result.
+
+```bash
+$ cat <file of the above output> | sush ./summary 
+OK: 2
+NG: 81
+DNF: 1
+DIFF_LINES: 44143
+```
+
 
 
