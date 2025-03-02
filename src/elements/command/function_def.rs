@@ -60,8 +60,10 @@ impl FunctionDefinition {
         -> Result<Option<Pid>, ExecError> {
         let mut array = core.db.get_array_all("FUNCNAME");
         array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
-        let _ = core.db.set_array("FUNCNAME", array, None);
-        let _ = core.db.set_array("BASH_SOURCE", vec![self.file.clone()], None);
+        let _ = core.db.set_array("FUNCNAME", array.clone(), None);
+        let mut source = core.db.get_array_all("BASH_SOURCE");
+        source.insert(0, self.file.clone());
+        let _ = core.db.set_array("BASH_SOURCE", source.clone(), None);
 
         let len = core.db.position_parameters.len();
         args[0] = core.db.position_parameters[len-1][0].clone();
@@ -78,11 +80,9 @@ impl FunctionDefinition {
 
         core.db.position_parameters.pop();
 
-        let mut array = core.db.get_array_all("FUNCNAME");
         array.remove(0);
-        let _ = core.db.set_array("FUNCNAME", array, None);
-        let mut source = core.db.get_array_all("BASH_SOURCE");
         source.remove(0);
+        let _ = core.db.set_array("FUNCNAME", array, None);
         let _ = core.db.set_array("BASH_SOURCE", source, None);
         pid
     }
