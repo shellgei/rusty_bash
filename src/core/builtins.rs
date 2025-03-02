@@ -52,6 +52,7 @@ impl ShellCore {
         self.builtins.insert("declare".to_string(), parameter::declare);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exit".to_string(), exit);
+        self.builtins.insert("export".to_string(), parameter::export);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("fg".to_string(), job_commands::fg);
         self.builtins.insert("getopts".to_string(), getopts::getopts);

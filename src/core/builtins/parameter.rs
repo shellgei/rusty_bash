@@ -5,6 +5,7 @@ use crate::{ShellCore, utils, Feeder};
 use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
+use super::error_exit;
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
     if core.db.position_parameters.pop().is_none() {
@@ -135,5 +136,33 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
+    0
+}
+
+fn export_var(arg: &str, core: &mut ShellCore) -> Result<(), ExecError> {
+    let mut feeder = Feeder::new(arg);
+    if feeder.scanner_name(core) == feeder.len() { // name only
+        let name = feeder.consume(feeder.len());
+
+        if ! core.db.has_value(&name) {
+            return core.db.set_param(&name, "", None);
+        }else{
+            return Ok(())
+        }
+    }
+
+    match Substitution::parse(&mut feeder, core) {
+        Ok(ans) => ans.unwrap().eval(core, None, true),
+        Err(e)  => Err(ExecError::ParseError(e)),
+    }
+}
+
+pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    for arg in &args[1..] {
+        if export_var(arg, core).is_err() {
+            let msg = format!("parse error");
+            return error_exit(1, &args[0], &msg, core);
+        }
+    }
     0
 }
