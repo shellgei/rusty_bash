@@ -110,7 +110,7 @@ impl ForCommand {
 
         match a.clone().unwrap().eval(core) {
             Ok(n) => return (true, n),
-            _     => return (false, "0".to_string()), 
+            _     => return (false, "0".to_string()),
         }
     }
 

@@ -144,14 +144,7 @@ impl ArithmeticExpr {
 
     fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
         let es = self.decompose_increments()?;
-
         calculate(&es, core)
-            /*
-        match calculate(&es, core) {
-            Ok(ans)      => Ok(ans),
-            Err(err_msg) => return Err(err_msg),
-        }
-            */
     }
 
     fn preinc_to_unarys(&mut self, ans: &mut Vec<ArithElem>, pos: usize, inc: i64) -> i64 {

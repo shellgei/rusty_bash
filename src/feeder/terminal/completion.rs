@@ -375,7 +375,8 @@ impl Terminal {
         core.db.set_param("COMP_KEY", "9", None)?;
 
         let mut words_all = utils::split_words(&all_string);
-        //words_all.retain(|e| e != "");
+        //TODO: An infinite loop occurs in bash-completion if redirect symbols exit
+        words_all.iter_mut().for_each(|e| *e = e.replace(">", "_").replace("<", "_")); 
 
         let left_string: String = self.chars[prompt_len..self.head].iter().collect();
         let mut words_left = utils::split_words(&left_string);

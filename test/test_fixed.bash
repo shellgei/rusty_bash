@@ -26,6 +26,9 @@ res=$($com <<< 'a=(aa bb cc); echo ${a[@]:1+1}' )
 res=$($com <<< 'a=(aa bb cc); i=0; j=1; echo ${a[@]:i+j}' )
 [ "$res" = "bb cc" ] || err $LINENO
 
+res=$($com <<< 'a=(aa bb cc); i=0; j=1; echo ${a[@]:0:1}' )
+[ "$res" = "aa" ] || err $LINENO
+
 res=$($com <<< 'a=3; b=4; echo $((a-=b))' )
 [ "$res" = "-1" ] || err $LINENO
 
