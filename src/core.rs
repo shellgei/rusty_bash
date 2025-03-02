@@ -54,7 +54,7 @@ pub struct ShellCore {
     pub read_stdin: bool,
     pub is_subshell: bool,
     pub source_function_level: i32,
-    pub source_level: i32,
+    pub source_files: Vec<String>,
     pub eval_level: i32,
     pub loop_level: i32,
     pub break_counter: i32,
@@ -203,7 +203,7 @@ impl ShellCore {
     pub fn get_ps4(&mut self) -> String {
         let ps4 = self.db.get_param("PS4").unwrap_or_default().trim_end().to_string();
         let mut multi_ps4 = ps4.to_string();
-        for _ in 0..(self.source_level + self.eval_level) {
+        for _ in 0..(self.source_files.len() as i32 + self.eval_level) {
             multi_ps4 += &ps4;
         }
 

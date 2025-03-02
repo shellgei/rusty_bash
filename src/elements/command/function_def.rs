@@ -16,9 +16,10 @@ fn reserved(w: &str) -> bool {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct FunctionDefinition {
     pub text: String,
+    pub file: String,
     name: String,
     command: Option<Box<dyn Command>>,
     redirects: Vec<Redirect>,
@@ -44,6 +45,7 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
+    /*
     fn new() -> FunctionDefinition {
         FunctionDefinition {
             text: String::new(),
@@ -52,13 +54,14 @@ impl FunctionDefinition {
             redirects: vec![],
             force_fork: false,
         }
-    }
+    }*/
 
     pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore)
         -> Result<Option<Pid>, ExecError> {
         let mut array = core.db.get_array_all("FUNCNAME");
-        array.insert(0, args[0].clone());
+        array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
         let _ = core.db.set_array("FUNCNAME", array, None);
+        let _ = core.db.set_array("BASH_SOURCE", vec![self.file.clone()], None);
 
         let len = core.db.position_parameters.len();
         args[0] = core.db.position_parameters[len-1][0].clone();
@@ -111,7 +114,7 @@ impl FunctionDefinition {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let mut ans = Self::new();
+        let mut ans = Self::default();
         feeder.set_backup();
 
         if feeder.starts_with("function") {
@@ -144,6 +147,9 @@ impl FunctionDefinition {
 
         if let Some(_) = &ans.command {
             feeder.pop_backup();
+            if let Some(f) = core.source_files.last() {
+                ans.file = f.clone();
+            }
             Ok(Some(ans))
         }else{
             feeder.rewind();

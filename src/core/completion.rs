@@ -10,3 +10,13 @@ pub struct CompletionInfo {
     pub action: String,
     pub options: HashMap<String, String>,
 }
+
+/*
+impl CompletionInfo {
+    pub fn new(function: &String) -> Self {
+        Self {
+            function: function.clone(),
+            ..Default::default()
+        }
+    }
+}*/

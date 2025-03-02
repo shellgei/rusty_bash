@@ -3,6 +3,7 @@
 
 use crate::{file_check, Feeder, ShellCore, utils};
 use crate::core::builtins::completion;
+use crate::core::completion::CompletionInfo;
 use crate::error::exec::ExecError;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
@@ -108,13 +109,19 @@ impl Terminal {
 
         let org_word = core.db.get_array_elem("COMP_WORDS", "0")?;
 
-        let info = core.completion_info.get(&org_word)
-                   .ok_or(ExecError::Other("no completion function".to_string()))?;
+        let info = match core.completion_info.get(&org_word) {
+            Some(i) => i.clone(),
+            None    => {
+                let mut tmp = CompletionInfo::default();
+                tmp.function = core.default_completion_functions.clone();
+                tmp
+            },
+        };
 
         core.current_completion_info = info.clone();
         if info.function != "" {
             Self::exec_complete_function(&org_word, prev_pos, cur_pos, core)?;
-        }else{
+        }else if info.action != "" {
             Self::exec_action(cur_pos, core)?;
         }
 

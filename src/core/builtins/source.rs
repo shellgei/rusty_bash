@@ -32,7 +32,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let read_stdin_backup = core.read_stdin;
     core.read_stdin = true;
     core.source_function_level += 1;
-    core.source_level += 1;
+    core.source_files.push(args[1].to_string());
 
     let mut feeder = Feeder::new("");
     loop {
@@ -54,7 +54,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     io::replace(backup, 0);
     core.source_function_level -= 1;
-    core.source_level -= 1;
+    core.source_files.pop();
     core.return_flag = false;
     core.read_stdin = read_stdin_backup;
     core.db.exit_status
