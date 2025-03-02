@@ -81,6 +81,9 @@ impl FunctionDefinition {
         let mut array = core.db.get_array_all("FUNCNAME");
         array.remove(0);
         let _ = core.db.set_array("FUNCNAME", array, None);
+        let mut source = core.db.get_array_all("BASH_SOURCE");
+        source.remove(0);
+        let _ = core.db.set_array("BASH_SOURCE", source, None);
         pid
     }
 
