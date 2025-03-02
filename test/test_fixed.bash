@@ -17,6 +17,12 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+res=$($com <<< 'a=3; b=4; echo $((a-=b))' )
+[ "$res" = "-1" ] || err $LINENO
+
+res=$($com <<< 'echo $((a-=b))' )
+[ "$res" = "0" ] || err $LINENO
+
 res=$($com <<< 'if [ a = b ] ; then echo a ; fi' )
 [ "$?" -eq "0" ] || err $LINENO
 

@@ -15,23 +15,11 @@ pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
     }
 
     let name = w.eval_as_value(core)?;
-    /*
-    let name = match w.eval_as_value(core) {
-        Some(v) => v, 
-        None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
-    };
-    */
 
-    /*let res =*/ match pre_increment {
+    match pre_increment {
         0 => change_variable(&name, core, post_increment, false),
         _ => change_variable(&name, core, pre_increment, true),
-    }//;
-
-    /*
-    match res {
-        Ok(n)  => return Ok(n),
-        Err(e) => return Err(ExecError::Other(e)),
-    }*/
+    }
 }
 
 fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
@@ -40,12 +28,6 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     }
 
     let name = w.eval_as_value(core)?;
-    /*
-    let name = match w.eval_as_value(core) {
-        Some(v) => v, 
-        None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
-    };*/
-
     str_to_num(&name, core)
 }
 
@@ -145,6 +127,7 @@ pub fn get_sign(s: &mut String) -> String {
 
 pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-> Result<(), ExecError> {
     let right = match stack.pop() {
+        Some(ArithElem::Word(w, inc)) => to_operand(&w, 0, inc, core)?,
         Some(e) => e,
         _ => return Err(ExecError::OperandExpected(op.to_string())),
     };
@@ -169,16 +152,11 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
     }
 
     let name = w.eval_as_value(core)?;
-    /*
-    let name = match w.eval_as_value(core) {
-        Some(v) => v, 
-        None => return Err(ExecError::Other(format!("{}: wrong substitution", &w.text))),
-    };*/
 
     let right_str = match right_value {
         ArithElem::Integer(n) => n.to_string(),
         ArithElem::Float(f)   => f.to_string(),
-        _ => exit::internal("not a value"),
+        _ => exit::internal(&format!("{:?}: not a value", &right_value)),
     };
 
     match op {

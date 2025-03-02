@@ -78,7 +78,6 @@ impl ArithmeticExpr {
     pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<ArithElem, ExecError> {
         if self.elements.is_empty() && ! permit_empty {
             return Err(ExecError::OperandExpected("\")\"".to_string()));
-            //return Err("operand expexted (error token: \")\")".to_string());
         }
         let es = match self.decompose_increments() {
             Ok(data)     => data, 
