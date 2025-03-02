@@ -22,7 +22,19 @@ mod unset;
 use crate::{error, exit, proc_ctrl, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
+use crate::utils;
 use crate::utils::{arg, file};
+
+pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
+    let shellname = core.db.get_param("0").unwrap();
+    if core.db.flags.contains('i') {
+        eprintln!("{}: {}: {}", &shellname, name, msg);
+    }else{
+        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+        eprintln!("{}: line {}: {}: {}", &shellname, &lineno, name, msg);
+    }
+    exit_status
+}
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
@@ -49,6 +61,7 @@ impl ShellCore {
         self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
+        self.builtins.insert("readonly".to_string(), readonly);
         self.builtins.insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
@@ -70,9 +83,8 @@ pub fn builtin(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if ! core.builtins.contains_key(&args[1]) {
-        let msg = format!("{}: {}: not a shell builtin", &args[0], &args[1]);
-        error::print(&msg, core);
-        return 1;
+        let msg = format!("{}: not a shell builtin", &args[1]);
+        return error_exit(1, &args[0], &msg, core);
     }
 
     core.builtins[&args[1]](core, &mut args[1..].to_vec())
@@ -191,50 +203,13 @@ pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
 
-/*
-pub fn print_command_type(core: &mut ShellCore, com: &String) -> i32 {
-    if core.aliases.contains_key(com) {
-        println!("{} is aliased to `{}'", &com, &core.aliases[com]);
-        return 0;
+pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    for name in &args[1..] {
+        if ! utils::is_name(&name, core) {
+            let msg = format!("`{}': not a valid identifier", name);
+            return error_exit(1, &args[0], &msg, core);
+        }
+        core.db.set_flag(name, 'r');
     }
-    if core.db.functions.contains_key(com) {
-        println!("{} is a function", &com);
-        println!("{}", &core.db.functions[com].text);
-        return 0;
-    }
-    if core.builtins.contains_key(com) {
-        println!("{} is a shell builtin", com);
-        return 0;
-    }
-    if let Some(path) = file::search_command(com) {//TODO: show in the fullpath case
-        println!("{} is {}", com, &path);
-        return 0;
-    }
-    if file_check::is_executable(com) {
-        println!("{} is {}", com, com);
-        return 0;
-    }
-    1
+    0
 }
-
-pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() < 2 {
-        return 0;
-    }
-
-    let mut args = arg::dissolve_options(args);
-    if arg::consume_option("-P", &mut args) {
-        return 0;
-    }
-
-    let mut exit_status = 0;
-    for a in &args[1..] {
-         exit_status += print_command_type(core, a);
-    }
-
-    if exit_status > 1 {
-        exit_status = 1;
-    }
-    exit_status
-}
-*/

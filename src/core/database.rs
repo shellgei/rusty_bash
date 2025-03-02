@@ -20,7 +20,7 @@ use self::data::special::SpecialData;
 pub struct DataBase {
     pub flags: String,
     params: Vec<HashMap<String, Box<dyn Data>>>,
-    param_options: Vec<HashMap<String, String>>,
+    pub param_options: Vec<HashMap<String, String>>,
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
     pub exit_status: i32,
