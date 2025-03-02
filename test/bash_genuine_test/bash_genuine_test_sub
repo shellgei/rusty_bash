@@ -1,0 +1,16 @@
+#!/bin/bash
+
+sushdir=${1:-~/GIT/rusty_bash}
+testdir=${2:-~/GIT/bash/tests}
+
+( cd $sushdir && cargo build --release) || exit 1 
+
+export THIS_SH=${sushdir}/target/release/sush
+
+cd $testdir || exit 1
+
+for t in $(echo run-*) ; do
+	[[ "$t" == "run-all" ]] && continue;
+	[[ "$t" == "run-minimal" ]] && continue;
+	echo $t $(BASH_TSTOUT=/tmp/$$-$t bash $t | wc -l) 2> /dev/null &
+done
