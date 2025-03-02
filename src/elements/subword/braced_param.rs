@@ -65,6 +65,14 @@ impl Subword for BracedParam {
             self.indirect_replace(core)?;
         }
 
+        if let Some(sub) = &self.param.subscript {
+            if sub.text == "[*]" || sub.text == "[@]" {
+                if let Some(s) = self.substr.as_mut() {
+                    return s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core);
+                }
+            }
+        }
+
         if self.param.subscript.is_some() {
             if self.param.name == "@" {
                 return Err(ExecError::BadSubstitution("@".to_string()));

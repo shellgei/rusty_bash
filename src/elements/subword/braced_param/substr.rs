@@ -25,8 +25,8 @@ impl Substr {
             None => return Err(ExecError::OperandExpected(offset.text.clone())),
             Some(n) => {
                 ans = text.chars().enumerate()
-                          .filter(|(i, _)| (*i as i64) >= n)
-                          .map(|(_, c)| c).collect();
+                      .filter(|(i, _)| (*i as i64) >= n)
+                      .map(|(_, c)| c).collect();
             },
         };
     
@@ -55,6 +55,54 @@ impl Substr {
         }
     
         *array = core.db.get_array_all("@");
+        match offset.eval_as_int(core) {
+            //None => return Err("evaluation error".to_string()),
+            None => return Err(ExecError::OperandExpected(offset.text.clone())),
+            Some(n) => {
+                let mut start = std::cmp::max(0, n) as usize;
+                start = std::cmp::min(start, array.len()) as usize;
+                *array = array.split_off(start);
+            },
+        };
+    
+        if self.length.is_none() {
+            *text = array.join(" ");
+            return Ok(());
+        }
+    
+        let mut length = match self.length.clone() {
+            None => return Err(ExecError::BadSubstitution("".to_string())),
+            Some(ofs) => ofs,
+        };
+    
+        if length.text == "" {
+            return Err(ExecError::BadSubstitution("".to_string()));
+        }
+    
+        match length.eval_as_int(core) {
+            None => return Err(ExecError::BadSubstitution(length.text.clone())),
+            Some(n) => {
+                if n < 0 {
+                    return Err(ExecError::SubstringMinus(n));
+                }
+                let len = std::cmp::min(n as usize, array.len());
+                let _ = array.split_off(len);
+            },
+        };
+    
+        *text = array.join(" ");
+        Ok(())
+    }
+
+    pub fn set_partial_array(&mut self, name: &str, array: &mut Vec<String>,
+                    text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
+        let offset = self.offset.as_mut().unwrap();
+    
+        if offset.text == "" {
+            return Err(ExecError::BadSubstitution(String::new()));
+        }
+    
+        *array = core.db.get_array_all(name);
         match offset.eval_as_int(core) {
             //None => return Err("evaluation error".to_string()),
             None => return Err(ExecError::OperandExpected(offset.text.clone())),
