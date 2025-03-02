@@ -17,6 +17,9 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+res=$($com <<< 'a=aaa; echo ${a^^}' )
+[ "$res" = "AAA" ] || err $LINENO
+
 res=$($com <<< 'a=(aa bb cc); echo ${a[*]:2}' )
 [ "$res" = "cc" ] || err $LINENO
 
