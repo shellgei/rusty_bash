@@ -17,6 +17,16 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+res=$($com <<< 'if [ a = b ] ; then echo a ; fi' )
+[ "$?" -eq "0" ] || err $LINENO
+
+res=$($com << 'EOF'
+echo 'echo $1' > /tmp/$$-tmp
+source /tmp/$$-tmp aaa
+EOF
+)
+[ "$res" = "aaa" ] || err $LINENO
+
 res=$($com << 'EOF'
 export A=1
 bash -c 'echo $A'

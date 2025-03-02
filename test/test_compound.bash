@@ -263,8 +263,8 @@ res=$($com <<< 'if [ "a" == "a" ] ; then echo aa; fi')
 res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; else echo bb; fi')
 [ "$res" = "bb" ] || err $LINENO
 
-res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi' || echo x)
-[ "$res" = "x" ] || err $LINENO
+res=$($com <<< 'if [ "a" == "b" ] ; then echo aa; fi || echo x')
+[ "$res" = "" ] || err $LINENO
 
 res=$($com <<< 'if [ "a" == "b" ] ; then echo a ; fi ; if [ "b" == "b" ] ; then echo bb ; fi')
 [ "$res" = "bb" ] || err $LINENO

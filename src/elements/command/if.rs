@@ -21,10 +21,12 @@ pub struct IfCommand {
 impl Command for IfCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
         for i in 0..self.if_elif_scripts.len() {
-            let _ = self.if_elif_scripts[i].exec(core);
+            self.if_elif_scripts[i].exec(core)?;
             if core.db.exit_status == 0 {
                 let _ = self.then_scripts[i].exec(core);
                 return Ok(());
+            }else {
+                core.db.exit_status = 0;
             }
         }
 

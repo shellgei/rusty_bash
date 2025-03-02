@@ -34,6 +34,8 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.source_function_level += 1;
     core.source_files.push(args[1].to_string());
 
+    core.db.position_parameters.push(args[1..].to_vec());
+
     let mut feeder = Feeder::new("");
     loop {
         match feeder.feed_line(core) {
@@ -52,6 +54,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
+    core.db.position_parameters.pop();
     io::replace(backup, 0);
     core.source_function_level -= 1;
     core.source_files.pop();
