@@ -148,6 +148,7 @@ impl ConditionalExpr {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         let mut ans = Self::default();
+        let mut read_option = true;
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
@@ -187,9 +188,19 @@ impl ConditionalExpr {
                 _ => continue,
             }
  
-            if Self::eat_file_check_option(feeder, &mut ans, core)
-            || Self::eat_not_and_or(feeder, &mut ans) 
-            || Self::eat_word(feeder, &mut ans, core) {
+            if read_option {
+                if Self::eat_file_check_option(feeder, &mut ans, core) {
+                    continue;
+                }
+            }
+
+            if Self::eat_not_and_or(feeder, &mut ans) {
+                read_option = true;
+                continue;
+            }
+
+            if Self::eat_word(feeder, &mut ans, core) {
+                read_option = false;
                 continue;
             }
 
