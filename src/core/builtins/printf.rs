@@ -63,7 +63,6 @@ fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
                 ans += &parts[i].replace("%d", &args[i]);
             }
         }else if parts[i].contains("%q") {
-                //ans += &parts[i].replace("%q", &("'".to_owned() + &args[i] + "'"));
                 ans += &parts[i].replace("%q", &args[i]);
         }else {
             match parts[i].as_ref() {
@@ -77,7 +76,11 @@ fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
                 "\\v" => ans += r"\v",
                 "\\t" => ans += "\t",
                 "\\\\" => ans += "\\",
-                _ => ans += &sprintf::sprintf!(&parts[i], args[i])?,
+                _ => if parts[i].contains('%') {
+                        ans += &sprintf::sprintf!(&parts[i], args[i])?;
+                }else{
+                    ans += &parts[i];
+                },
             };
         }
     }
