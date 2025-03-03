@@ -15,7 +15,7 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 use rev_lines::RevLines;
 
-pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -> Vec<String> {
     if args.len() > 2 && args[2] == "--" {
         args.remove(2);
     }
@@ -53,6 +53,9 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
         ans.append(&mut directory::glob(&dir, "..", false));
     }
     ans.iter_mut().for_each(|a| { a.pop(); } );
+    if dir_only {
+        ans.retain(|p| file_check::is_dir(&p));
+    }
     ans.sort();
     ans.iter_mut().for_each(|e| {*e = e.replacen(&dir, &org_dir, 1); });
     ans
@@ -138,7 +141,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-b" => compgen_b(core, &mut args),
         "-c" => compgen_c(core, &mut args),
         "-d" => compgen_d(core, &mut args),
-        "-f" => compgen_f(core, &mut args),
+        "-f" => compgen_f(core, &mut args, false),
         "-h" => compgen_h(core, &mut args), //history (sush original)
         "-j" => compgen_j(core, &mut args),
         "-u" => compgen_u(core, &mut args),
@@ -213,7 +216,7 @@ pub fn compgen_b(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
     if args.len() > 2 {
-        commands.extend(compgen_f(core, args));
+        commands.extend(compgen_f(core, args, false));
     }
     commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
 
@@ -234,9 +237,7 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 }
 
 fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
-    let mut paths = compgen_f(core, args);
-    paths.retain(|p| file_check::is_dir(&p));
-    paths
+    compgen_f(core, args, true)
 }
 
 pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {

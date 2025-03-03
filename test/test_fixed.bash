@@ -20,6 +20,9 @@ com=../target/release/sush
 #res=$($com <<< 'a=aaa; echo ${a^^}' )
 #[ "$res" = "AAA" ] || err $LINENO
 
+res=$($com <<< 'compgen -d -- "~/" | wc -l' )
+[ "$res" != "0" ] || err $LINENO
+
 res=$($com <<< '[[ -d == -d ]]' )
 [ $? -eq 2 ] || err $LINENO
 

@@ -193,7 +193,7 @@ impl Terminal {
             };
         }
 
-        completion::compgen_f(core, args)
+        completion::compgen_f(core, args, false)
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) -> Result<(), String> {
