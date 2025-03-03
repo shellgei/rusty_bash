@@ -130,7 +130,6 @@ impl Substitution {
 
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
-        dbg!("{:?}", &self);
             core.db.exit_status = 1;
             return Err(ExecError::Other("no value".to_string()));
         }
