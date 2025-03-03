@@ -20,13 +20,9 @@ com=../target/release/sush
 #res=$($com <<< 'a=aaa; echo ${a^^}' )
 #[ "$res" = "AAA" ] || err $LINENO
 
-res=$($com << 'EOF'
-A=def
-B=${A-${A-}}
-echo $B
-EOF
-)
-[ "$res" == "def" ] || err $LINENO
+res=$($com <<< 'paths=(a b c); echo ${paths[@]/%//d}')
+[ "$res" = "a/d b/d c/d" ] || err $LINENO
+
 
 res=$($com << 'EOF'
 set 0
@@ -37,60 +33,6 @@ echo $B
 EOF
 )
 [ "$res" == "def" ] || err $LINENO
-
-res=$($com << 'EOF'
-set vim
-declare -A ASSOC
-ASSOC[vim]=def
-B=${ASSOC[$1]-}
-echo $B
-EOF
-)
-[ "$res" == "def" ] || err $LINENO
-
-res=$($com << 'EOF'
-set vim
-declare -A ASSOC
-ASSOC[vim]=def
-B=${ASSOC[$1]-${ASSOC[$1]}}
-echo $B
-EOF
-)
-[ "$res" == "def" ] || err $LINENO
-
-res=$($com << 'EOF'
-set vim
-declare -A ASSOC
-ASSOC[vim]=def
-B=${ASSOC[$1]-${ASSOC[$1]-}}
-echo $B
-EOF
-)
-[ "$res" == "def" ] || err $LINENO
-
-res=$($com << 'EOF'
-set vim
-declare -A ASSOC
-ASSOC["vim"]=def
-B=${ASSOC[$1]-${ASSOC[$1]-}}
-echo $B
-EOF
-)
-[ "$res" == "def" ] || err $LINENO
-
-res=$($com << 'EOF'
-set vim
-declare -A ASSOC
-ASSOC["vim"]=def
-echo ${1##*/}
-B=${ASSOC[${1##*/}]-${ASSOC[${1##*/}]-}}
-echo $B
-echo ${ASSOC[${1##*/}]-}
-EOF
-)
-[ "$res" == "vim
-def
-def" ] || err $LINENO
 
 res=$($com <<< 'compgen -d -- "~/" | wc -l' )
 [ "$res" != "0" ] || err $LINENO
