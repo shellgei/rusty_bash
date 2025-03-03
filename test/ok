@@ -1,5 +1,6 @@
 ./test_script.bash
 ./test_ansi_c_quoting.bash
+./test_fixed.bash
 ./test_options.bash
 ./test_glob.bash
 ./test_redirects.bash

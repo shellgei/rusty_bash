@@ -6,6 +6,7 @@ mod substr;
 mod remove;
 mod replace;
 mod parse;
+mod case_conv;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
@@ -13,6 +14,7 @@ use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::utils;
 use crate::error::exec::ExecError;
+use self::case_conv::CaseConv;
 use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
@@ -34,6 +36,7 @@ pub struct BracedParam {
     substr: Option<Substr>,
     remove: Option<Remove>,
     value_check: Option<ValueCheck>,
+    case_conv: Option<CaseConv>,
 
     unknown: String,
     is_array: bool,

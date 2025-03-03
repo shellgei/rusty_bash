@@ -8,6 +8,7 @@ use crate::elements::word::Word;
 use crate::error::parse::ParseError;
 use super::{BracedParam, Param, Remove, Replace};
 use super::substr::Substr;
+use super::case_conv::CaseConv;
 use super::value_check::ValueCheck;
 use crate::elements::subword::filler::FillerSubword;
 
@@ -103,6 +104,7 @@ impl BracedParam {
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core)?;
             let _ = ValueCheck::eat(feeder, &mut ans, core)?
+                 || CaseConv::eat(feeder, &mut ans, core)?
                  || Substr::eat(feeder, &mut ans, core)
                  || Remove::eat(feeder, &mut ans, core)?
                  || Replace::eat(feeder, &mut ans, core)?;
