@@ -44,6 +44,27 @@ impl Replace {
         Ok(ans)
     }
 
+    fn get_text_tail(text: &String, pattern: &Vec<GlobElem>, string_to: &String) -> Result<String, ExecError> {
+        if pattern.is_empty() {
+            let ans = text.to_string() + &string_to;
+            return Ok(ans);
+        }
+
+        let mut start = 0;
+        for ch in text.chars() {
+            let len = glob::longest_match_length(&text[start..].to_string(), pattern);
+
+            if len == text[start..].len() {
+                let ans = text[..start].to_string() + &string_to;
+                return Ok(ans);
+            }
+
+            start += ch.len_utf8();
+        }
+
+        Ok(text.to_string())
+    }
+
     pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let extglob = core.shopts.query("extglob");
         let tmp = self.to_string(&self.replace_from, core)?;
@@ -52,16 +73,14 @@ impl Replace {
 
         if self.head_only_replace {
             return Self::get_text_head(text, &pattern, &string_to);
+        }else if self.tail_only_replace {
+            return Self::get_text_tail(text, &pattern, &string_to);
         }
 
         let mut start = 0;
         let mut ans = String::new();
         let mut skip = 0;
         for ch in text.chars() {
-            /*
-            if start != 0 && self.head_only_replace {
-                return Ok(text.clone());
-            }*/
             if skip > 0 {
                 skip -= 1;
                 start += ch.len_utf8();
