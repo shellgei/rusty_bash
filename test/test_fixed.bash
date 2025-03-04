@@ -20,6 +20,15 @@ com=../target/release/sush
 #res=$($com <<< 'a=aaa; echo ${a^^}' )
 #[ "$res" = "AAA" ] || err $LINENO
 
+res=$($com << 'EOF'
+toks=(a aa aaa)
+compgen -W '"${toks[@]}"'
+EOF
+)
+[ "$res" = "a
+aa
+aaa" ] || err $LINENO
+
 res=$($com <<< 'a=(a ""); set ${a[@]+"${a[@]}"}; echo $# ')
 [ "$res" = "2" ] || err $LINENO
 
