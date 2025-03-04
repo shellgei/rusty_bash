@@ -187,16 +187,41 @@ impl BracedParam {
         let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
 
         if index.as_str() == "@" {
-            self.array = core.db.get_array_all(&self.param.name);
+            self.atmark_operation(core)
+        }else{
+            self.text = core.db.get_array_elem(&self.param.name, &index).unwrap();
+            if self.num {
+                self.text = self.text.chars().count().to_string();
+            }
+            self.optional_operation(core)
         }
+    }
 
-        self.text = match (self.num, index.as_str()) {
-            (true, "@") => core.db.len(&self.param.name).to_string(),
-            (true, _)   => core.db.get_array_elem(&self.param.name, &index).unwrap().chars().count().to_string(),
-            (false, _)  => core.db.get_array_elem(&self.param.name, &index).unwrap(),
-       };
+    fn atmark_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        self.array = core.db.get_array_all(&self.param.name);
+        self.text = match self.num {
+            true  => core.db.len(&self.param.name).to_string(),
+            false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
+        };
 
-       self.optional_operation(core)
+        self.optional_operation(core)
+    }
+
+    fn optional_operation_(&mut self, text: &mut String, core: &mut ShellCore) -> Result<String, ExecError> {
+        if let Some(s) = self.substr.as_mut() {
+            s.get_text(text, core)
+        }else if let Some(v) = self.value_check.as_mut() {
+            v.set(&self.param.name, &self.param.subscript, text, core)
+        }else if let Some(r) = self.remove.as_mut() {
+            r.set(text, core)
+        }else if let Some(r) = &self.replace {
+            match core.db.has_value(&self.param.name) {
+                true  => r.get_text(text, core),
+                false => Ok("".to_string()),
+            }
+        }else{
+            Ok(text.clone())
+        }
     }
 
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
