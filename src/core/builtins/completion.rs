@@ -311,8 +311,13 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
     while feeder.len() != 0 {
         match Word::parse(&mut feeder, core, false) {
             Ok(Some(mut w)) => {
+                if let Ok(mut v) =  w.eval(core) {
+                    ans.append(&mut v);
+                }
+                /*
                 w.make_unquoted_word();
                 ans.push(w.text)
+                */
             },
             _ => {
                 let len = feeder.scanner_multiline_blank(core);
