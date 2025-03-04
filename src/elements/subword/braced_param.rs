@@ -199,12 +199,25 @@ impl BracedParam {
 
     fn atmark_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.array = core.db.get_array_all(&self.param.name);
+        if self.num {
+            self.text = self.array.len().to_string();
+            return Ok(());
+        }
+
         self.text = match self.num {
             true  => core.db.len(&self.param.name).to_string(),
             false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
         };
 
-        self.optional_operation(core)
+        if self.array.len() <= 1 {
+            self.optional_operation(core)
+        }else {
+            for i in 0..self.array.len() {
+                self.array[i] = self.optional_operation_(&mut self.array[i].clone(), core)?;
+            }
+            self.text = self.array.join(" ");
+            Ok(())
+        }
     }
 
     fn optional_operation_(&mut self, text: &mut String, core: &mut ShellCore) -> Result<String, ExecError> {
