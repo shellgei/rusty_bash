@@ -32,12 +32,11 @@ impl Replace {
         }
 
         Ok("".to_string())
-        //Err(ExecError::Other("parse error".to_string()))
     }
 
     fn get_text_head(text: &String, pattern: &Vec<GlobElem>, string_to: &String) -> Result<String, ExecError> {
         let len = glob::longest_match_length(text, pattern);
-        if len == 0 && text.len() != 0 {
+        if len == 0 && ! pattern.is_empty() {
             return Ok(text.clone());
         }
 
@@ -59,9 +58,10 @@ impl Replace {
         let mut ans = String::new();
         let mut skip = 0;
         for ch in text.chars() {
+            /*
             if start != 0 && self.head_only_replace {
                 return Ok(text.clone());
-            }
+            }*/
             if skip > 0 {
                 skip -= 1;
                 start += ch.len_utf8();
