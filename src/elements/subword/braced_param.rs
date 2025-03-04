@@ -209,7 +209,7 @@ impl BracedParam {
             false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
         };
 
-        if self.array.len() <= 1 {
+        if self.array.len() <= 1 || self.value_check.is_some() {
             self.optional_operation(core)
         }else {
             for i in 0..self.array.len() {

@@ -20,6 +20,9 @@ com=../target/release/sush
 #res=$($com <<< 'a=aaa; echo ${a^^}' )
 #[ "$res" = "AAA" ] || err $LINENO
 
+res=$($com <<< 'a=(a ""); set ${a[@]+"${a[@]}"}; echo $# ')
+[ "$res" = "2" ] || err $LINENO
+
 res=$($com <<< 'A=1; echo ${A/#//d}')
 [ "$res" = "/d1" ] || err $LINENO
 
