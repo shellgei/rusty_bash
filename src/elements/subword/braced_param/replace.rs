@@ -5,6 +5,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
+use crate::utils::glob::GlobElem;
 use crate::error::parse::ParseError;
 use super::BracedParam;
 
@@ -34,11 +35,26 @@ impl Replace {
         //Err(ExecError::Other("parse error".to_string()))
     }
 
+    fn get_text_head(text: &String, pattern: &Vec<GlobElem>, string_to: &String) -> Result<String, ExecError> {
+        let len = glob::longest_match_length(text, pattern);
+        if len == 0 && text.len() != 0 {
+            return Ok(text.clone());
+        }
+
+        let ans = string_to.clone() + &text[len..];
+        Ok(ans)
+    }
+
     pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        let pattern = self.to_string(&self.replace_from, core)?;
-        let string_to = self.to_string(&self.replace_to, core)?;
         let extglob = core.shopts.query("extglob");
-    
+        let tmp = self.to_string(&self.replace_from, core)?;
+        let pattern = glob::parse(&tmp, extglob);
+        let string_to = self.to_string(&self.replace_to, core)?;
+
+        if self.head_only_replace {
+            return Self::get_text_head(text, &pattern, &string_to);
+        }
+
         let mut start = 0;
         let mut ans = String::new();
         let mut skip = 0;
@@ -52,8 +68,7 @@ impl Replace {
                 continue;
             }
     
-            let pat = glob::parse(&pattern, extglob);
-            let len = glob::longest_match_length(&text[start..].to_string(), &pat);
+            let len = glob::longest_match_length(&text[start..].to_string(), &pattern);
             if len != 0 && self.tail_only_replace {
                 if len == text[start..].len() {
                     return Ok([&text[..start], &string_to[0..] ].concat());

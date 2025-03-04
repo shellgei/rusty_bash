@@ -20,6 +20,27 @@ com=../target/release/sush
 #res=$($com <<< 'a=aaa; echo ${a^^}' )
 #[ "$res" = "AAA" ] || err $LINENO
 
+res=$($com <<< 'A=1; echo ${A/#//d}')
+[ "$res" = "/d1" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo ${A/#1//d}')
+[ "$res" = "/d" ] || err $LINENO
+
+res=$($com <<< 'A= ; echo ${A/#//d}')
+[ "$res" = "/d" ] || err $LINENO
+
+res=$($com <<< 'echo ${A/#//d}')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo ${A/%//d}')
+[ "$res" = "1/d" ] || err $LINENO
+
+res=$($com <<< 'A= ; echo ${A/%//d}')
+[ "$res" = "/d" ] || err $LINENO
+
+res=$($com <<< 'echo ${A/%//d}')
+[ "$res" = "" ] || err $LINENO
+
 res=$($com <<< 'paths=(a b c); echo ${paths[@]/%//d}')
 [ "$res" = "a/d b/d c/d" ] || err $LINENO
 
