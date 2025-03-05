@@ -6,6 +6,7 @@ use crate::elements::subword::braced_param::Word;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
+use crate::utils::glob::GlobElem;
 use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
@@ -30,6 +31,13 @@ impl CaseConv {
         Ok("".to_string())
     }
 
+    fn get_match_length(&self, text: &str, pattern: &Vec<GlobElem>) -> usize {
+        if pattern.is_empty() {
+            return 1;
+        }
+        glob::longest_match_length(&text.to_string(), &pattern)
+    }
+
     pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let tmp = self.to_string(&self.pattern, core)?;
         let extglob = core.shopts.query("extglob");
@@ -45,9 +53,9 @@ impl CaseConv {
                 continue;
             }
     
-            let len = glob::longest_match_length(&text[start..].to_string(), &pattern);
-            if (len != 0 || pattern.is_empty()) && ! self.all_replace {
-                if 'a' <= ch && ch <= 'z' {
+            let len = self.get_match_length(&text[start..], &pattern);
+            if len != 0 && ! self.all_replace {
+                if self.to_upper && 'a' <= ch && ch <= 'z' {
                     let s = ch.to_string();
                     let ch = s.to_uppercase();
                     return Ok([&text[..start], &ch, &text[start+len..] ].concat());
@@ -55,11 +63,8 @@ impl CaseConv {
                 return Ok(text.to_string());
             }
 
-            if len != 0 {
+            if len != 0 && self.to_upper && 'a' <= ch && ch <= 'z' {
                 skip = text[start..start+len].chars().count() - 1;
-            }
-    
-            if (len != 0 || pattern.is_empty()) && 'a' <= ch && ch <= 'z' {
                 let s = ch.to_string();
                 let ch = s.to_uppercase();
                 ans += &ch;

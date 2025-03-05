@@ -20,6 +20,18 @@ com=../target/release/sush
 res=$($com <<< 'a=aaa; echo ${a^^}' )
 [ "$res" = "AAA" ] || err $LINENO
 
+res=$($com <<< 'a=aba; echo ${a^^[ac]}' )
+[ "$res" = "AbA" ] || err $LINENO
+
+res=$($com <<< 'a=あacaba; echo ${a^^[ac]}' )
+[ "$res" = "あACAbA" ] || err $LINENO
+
+res=$($com <<< 'a=あacaba; echo ${a^^[cあ]}' )
+[ "$res" = "あaCaba" ] || err $LINENO
+
+#res=$($com <<< 'a=あAcabA; echo ${a,,[Aあ]}' )
+#[ "$res" = "あacaba" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 
