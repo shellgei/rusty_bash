@@ -35,46 +35,39 @@ impl CaseConv {
         let extglob = core.shopts.query("extglob");
         let pattern = glob::parse(&tmp, extglob);
 
-        let mut ans = String::new();
-        /*
-        let string_to = self.to_string(&self.replace_to, core)?;
-    
         let mut start = 0;
         let mut ans = String::new();
         let mut skip = 0;
         for ch in text.chars() {
-            if start != 0 && self.head_only_replace {
-                return Ok(text.clone());
-            }
             if skip > 0 {
                 skip -= 1;
                 start += ch.len_utf8();
                 continue;
             }
     
-            let len = glob::longest_match_length(&text[start..].to_string(), &pat);
-            if len != 0 && self.tail_only_replace {
-                if len == text[start..].len() {
-                    return Ok([&text[..start], &string_to[0..] ].concat());
-                }else{
-                    ans += &ch.to_string();
-                    start += ch.len_utf8();
-                    continue;
+            let len = glob::longest_match_length(&text[start..].to_string(), &pattern);
+            if (len != 0 || pattern.is_empty()) && ! self.all_replace {
+                if 'a' <= ch && ch <= 'z' {
+                    let s = ch.to_string();
+                    let ch = s.to_uppercase();
+                    return Ok([&text[..start], &ch, &text[start+len..] ].concat());
                 }
-            } else if len != 0 && ! self.all_replace {
-                return Ok([&text[..start], &string_to[0..], &text[start+len..] ].concat());
+                return Ok(text.to_string());
             }
-    
+
             if len != 0 {
                 skip = text[start..start+len].chars().count() - 1;
-                ans += &string_to.clone();
+            }
+    
+            if (len != 0 || pattern.is_empty()) && 'a' <= ch && ch <= 'z' {
+                let s = ch.to_string();
+                let ch = s.to_uppercase();
+                ans += &ch;
             }else{
                 ans += &ch.to_string();
             }
             start += ch.len_utf8();
         }
-    
-        */
         Ok(ans)
     }
 

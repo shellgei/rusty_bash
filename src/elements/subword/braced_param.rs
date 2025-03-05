@@ -234,14 +234,10 @@ impl BracedParam {
                 true  => r.get_text(&text, core),
                 false => Ok("".to_string()),
             }
+        }else if let Some(c) = &self.case_conv {
+            c.get_text(&text, core)
         }else{
             Ok(text.clone())
         }
     }
-
-    /*
-    fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        self.text = self.optional_operation_(&mut self.text.clone(), core)?;
-        Ok(())
-    }*/
 }
