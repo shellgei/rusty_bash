@@ -62,17 +62,19 @@ impl CaseConv {
             }
     
             let len = self.get_match_length(&text[start..], &pattern);
-            if len != 0 && ! self.all_replace {
+            if len == 0 {
+                ans += &ch.to_string();
+                start += ch.len_utf8();
+                continue;
+            }
+
+            if ! self.all_replace {
                 let new_ch = self.conv(ch);
                 return Ok([&text[..start], &new_ch, &text[start+len..] ].concat());
             }
 
-            if len != 0 {
-                let new_ch = self.conv(ch);
-                ans += &new_ch;
-            }else{
-                ans += &ch.to_string();
-            }
+            let new_ch = self.conv(ch);
+            ans += &new_ch;
             start += ch.len_utf8();
         }
         Ok(ans)
