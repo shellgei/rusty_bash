@@ -29,8 +29,11 @@ res=$($com <<< 'a=あacaba; echo ${a^^[ac]}' )
 res=$($com <<< 'a=あacaba; echo ${a^^[cあ]}' )
 [ "$res" = "あaCaba" ] || err $LINENO
 
-#res=$($com <<< 'a=あAcabA; echo ${a,,[Aあ]}' )
-#[ "$res" = "あacaba" ] || err $LINENO
+res=$($com <<< 'a=あAcabA; echo ${a,,[Aあ]}' )
+[ "$res" = "あacaba" ] || err $LINENO
+
+res=$($com <<< 'a=あAcabA; echo ${a~~[Aaあ]}' )
+[ "$res" = "あacAba" ] || err $LINENO
 
 echo $0 >> ./ok
 exit

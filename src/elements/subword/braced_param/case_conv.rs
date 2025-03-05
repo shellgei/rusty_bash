@@ -11,9 +11,8 @@ use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
 pub struct CaseConv {
-    pub all_replace: bool,
     pub pattern: Option<Word>,
-    pub to_upper: bool,
+    pub replace_symbol: String,
 }
 
 impl CaseConv {
@@ -31,16 +30,26 @@ impl CaseConv {
         Ok("".to_string())
     }
 
-    fn get_match_length(&self, text: &str, pattern: &Vec<GlobElem>) -> usize {
+    fn get_match_length(&self, text: &str, pattern: &Vec<GlobElem>, ch: char) -> usize {
         if pattern.is_empty() {
-            return 1;
+            return ch.len_utf8();
         }
         glob::longest_match_length(&text.to_string(), &pattern)
     }
 
     fn conv(&self, ch: char) -> String {
-        if self.to_upper && 'a' <= ch && ch <= 'z' {
-            return ch.to_string().to_uppercase();
+        if 'a' <= ch && ch <= 'z' {
+            if self.replace_symbol.starts_with("^") 
+            || self.replace_symbol.starts_with("~") {
+                return ch.to_string().to_uppercase();
+            }
+        }
+
+        if 'A' <= ch && ch <= 'Z' {
+            if self.replace_symbol.starts_with(",") 
+            || self.replace_symbol.starts_with("~") {
+                return ch.to_string().to_lowercase();
+            }
         }
 
         ch.to_string()
@@ -61,7 +70,7 @@ impl CaseConv {
                 continue;
             }
     
-            let len = self.get_match_length(&text[start..], &pattern);
+            let len = self.get_match_length(&text[start..], &pattern, ch);
             if len == 0 {
                 ans += &ch.to_string();
                 start += ch.len_utf8();
@@ -70,7 +79,7 @@ impl CaseConv {
 
             let new_ch = self.conv(ch);
             ans += &new_ch;
-            if ! self.all_replace {
+            if ! self.replace_symbol.len() == 2 {
                 return Ok(ans + &text[start+len..]);
             }
 
@@ -81,24 +90,24 @@ impl CaseConv {
 
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
            -> Result<bool, ParseError> {
-        if ! feeder.starts_with("^") && ! feeder.starts_with(",") {
+        if ! feeder.starts_with("^") 
+        && ! feeder.starts_with(",") 
+        && ! feeder.starts_with("~") {
             return Ok(false);
         }
 
         let mut info = CaseConv::default();
 
-        if feeder.starts_with("^^") {
-            info.to_upper = true;
-            info.all_replace = true;
-            ans.text += &feeder.consume(2);
-        }else if feeder.starts_with("^") {
-            info.to_upper = true;
-            ans.text += &feeder.consume(1);
-        }else if feeder.starts_with(",,") {
-            info.all_replace = true;
-            ans.text += &feeder.consume(2);
-        }else if feeder.starts_with(",") {
-            ans.text += &feeder.consume(1);
+        if feeder.starts_with("^^") 
+        || feeder.starts_with(",,") 
+        || feeder.starts_with("~~") {
+            info.replace_symbol = feeder.consume(2);
+            ans.text += &info.replace_symbol;
+        }else if feeder.starts_with("^") 
+        || feeder.starts_with(",") 
+        || feeder.starts_with("~") {
+            info.replace_symbol = feeder.consume(1);
+            ans.text += &info.replace_symbol;
         }
 
         info.pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
