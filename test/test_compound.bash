@@ -392,6 +392,9 @@ EOF
 [ "$res" = "a
 a" ] || err $LINENO
 
+res=$($com <<< 'if [ a = b ] ; then echo a ; fi' )
+[ "$?" -eq "0" ] || err $LINENO
+
 res=$($com <<< 'function f () { echo a; if true ; then return ; fi ; echo b; } ; f')
 [ "$res" = "a" ] || err $LINENO
 
@@ -1017,6 +1020,11 @@ res=$($com -c '[[ -a /etc/passwd && -a /etc/passwdaaa ]]')
 res=$($com -c '[[ -a /etc/passwdaaaa || -a /etc/passwd ]]')
 [ "$?" = "0" ] || err $LINENO
 
+res=$($com <<< '[[ -d == -d ]]' )
+[ $? -eq 2 ] || err $LINENO
+
+res=$($com <<< 'a="-d" ; [[ $a == -d ]]' )
+[ $? -eq 0 ] || err $LINENO
 # glob
 
 res=$($com -c '[[ $- == Bc ]]')

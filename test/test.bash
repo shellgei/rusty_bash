@@ -30,6 +30,7 @@ com=../target/release/sush
 ./test_glob.bash nobuild &
 ./test_ansi_c_quoting.bash nobuild &
 ./test_fixed.bash nobuild &
+./test_param_substitutions.bash nobuild &
 
 wait 
 

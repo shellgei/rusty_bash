@@ -69,6 +69,19 @@ if [ ! -e ~/tmp/a/b ] ; then
 	[ "$res" = "~/tmp/a/b/c" ] || err $LINENO
 fi
 
+res=$($com << 'EOF'
+toks=(a aa aaa)
+compgen -W '"${toks[@]}"'
+EOF
+)
+[ "$res" = "a
+aa
+aaa" ] || err $LINENO
+
+
+res=$($com <<< 'compgen -d -- "~/" | wc -l' )
+[ "$res" != "0" ] || err $LINENO
+
 ### eval ###
 
 res=$($com <<< 'eval "echo a" b')
@@ -120,6 +133,27 @@ res=$($com <<< 'echo $PS1')
 res=$($com <<< 'case aaa in aaa) return && echo NG ;; esac')
 [ "$?" = "2" ] || err $LINENO
 [ "$res" = "" ] || err $LINENO
+
+res=$($com << 'EOF'
+echo 'echo $1' > /tmp/$$-tmp
+source /tmp/$$-tmp aaa
+EOF
+)
+[ "$res" = "aaa" ] || err $LINENO
+
+# export
+
+res=$($com << 'EOF'
+export A=1
+bash -c 'echo $A'
+EOF
+)
+[ "$res" = "1" ] || err $LINENO
+
+# readonly
+
+res=$($com <<< 'A=1; readonly A ; A=2; echo $A' )
+[ "$res" = "1" ] || err $LINENO
 
 # break command
 
@@ -179,6 +213,13 @@ res=$($com <<< 'shopt -u extglob
 echo @(a)')
 [ "$?" == "2" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
+
+res=$($com <<< 'shopt -s nullglob ; echo aaaaaa*' )
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'shopt -s nullglob ; echo aaaaaa*; shopt -u nullglob ; echo aaaaaa*' )
+[ "$res" = "
+aaaaaa*" ] || err $LINENO
 
 # local
 
