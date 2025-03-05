@@ -3,7 +3,9 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::braced_param::Word;
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::utils::glob;
 use super::BracedParam;
 
 #[derive(Debug, Clone, Default)]
@@ -14,7 +16,6 @@ pub struct CaseConv {
 }
 
 impl CaseConv {
-/*
     fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, ExecError> {
         if let Some(w) = &w {
             match w.eval_for_case_word(core) {
@@ -27,13 +28,16 @@ impl CaseConv {
         }
 
         Ok("".to_string())
-        //Err(ExecError::Other("parse error".to_string()))
     }
 
     pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        let pattern = self.to_string(&self.replace_from, core)?;
-        let string_to = self.to_string(&self.replace_to, core)?;
+        let tmp = self.to_string(&self.pattern, core)?;
         let extglob = core.shopts.query("extglob");
+        let pattern = glob::parse(&tmp, extglob);
+
+        let mut ans = String::new();
+        /*
+        let string_to = self.to_string(&self.replace_to, core)?;
     
         let mut start = 0;
         let mut ans = String::new();
@@ -48,7 +52,6 @@ impl CaseConv {
                 continue;
             }
     
-            let pat = glob::parse(&pattern, extglob);
             let len = glob::longest_match_length(&text[start..].to_string(), &pat);
             if len != 0 && self.tail_only_replace {
                 if len == text[start..].len() {
@@ -71,9 +74,9 @@ impl CaseConv {
             start += ch.len_utf8();
         }
     
+        */
         Ok(ans)
     }
-*/
 
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
            -> Result<bool, ParseError> {

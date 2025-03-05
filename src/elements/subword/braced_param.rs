@@ -95,7 +95,8 @@ impl Subword for BracedParam {
             false => value.to_string(),
         };
 
-        self.optional_operation(core)
+        self.text = self.optional_operation(self.text.clone(), core)?;
+        Ok(())
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
@@ -193,7 +194,8 @@ impl BracedParam {
             if self.num {
                 self.text = self.text.chars().count().to_string();
             }
-            self.optional_operation(core)
+            self.text = self.optional_operation(self.text.clone(), core)?;
+            Ok(())
         }
     }
 
@@ -210,26 +212,26 @@ impl BracedParam {
         };
 
         if self.array.len() <= 1 || self.value_check.is_some() {
-            self.optional_operation(core)
+            self.text = self.optional_operation(self.text.clone(), core)?;
         }else {
             for i in 0..self.array.len() {
-                self.array[i] = self.optional_operation_(&mut self.array[i].clone(), core)?;
+                self.array[i] = self.optional_operation(self.array[i].clone(), core)?;
             }
             self.text = self.array.join(" ");
-            Ok(())
         }
+        Ok(())
     }
 
-    fn optional_operation_(&mut self, text: &mut String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn optional_operation(&mut self, text: String, core: &mut ShellCore) -> Result<String, ExecError> {
         if let Some(s) = self.substr.as_mut() {
-            s.get_text(text, core)
+            s.get_text(&text, core)
         }else if let Some(v) = self.value_check.as_mut() {
-            v.set(&self.param.name, &self.param.subscript, text, core)
+            v.set(&self.param.name, &self.param.subscript, &text, core)
         }else if let Some(r) = self.remove.as_mut() {
-            r.set(text, core)
+            r.set(&text, core)
         }else if let Some(r) = &self.replace {
             match core.db.has_value(&self.param.name) {
-                true  => r.get_text(text, core),
+                true  => r.get_text(&text, core),
                 false => Ok("".to_string()),
             }
         }else{
@@ -237,22 +239,9 @@ impl BracedParam {
         }
     }
 
+    /*
     fn optional_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        self.text = if let Some(s) = self.substr.as_mut() {
-            s.get_text(&self.text, core)?
-        }else if let Some(v) = self.value_check.as_mut() {
-            v.set(&self.param.name, &self.param.subscript, &self.text, core)?
-        }else if let Some(r) = self.remove.as_mut() {
-            r.set(&mut self.text, core)?
-        }else if let Some(r) = &self.replace {
-            match core.db.has_value(&self.param.name) {
-                true  => r.get_text(&self.text, core)?,
-                false => "".to_string(),
-            }
-        }else{
-            self.text.clone()
-        };
-
+        self.text = self.optional_operation_(&mut self.text.clone(), core)?;
         Ok(())
-    }
+    }*/
 }
