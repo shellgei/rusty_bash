@@ -69,10 +69,9 @@ impl CaseConv {
             }
 
             let new_ch = self.conv(ch);
-            if self.all_replace {
-                ans += &new_ch;
-            }else{
-                return Ok([&text[..start], &new_ch, &text[start+len..] ].concat());
+            ans += &new_ch;
+            if ! self.all_replace {
+                return Ok(ans + &text[start+len..]);
             }
 
             start += ch.len_utf8();
