@@ -38,6 +38,14 @@ impl CaseConv {
         glob::longest_match_length(&text.to_string(), &pattern)
     }
 
+    fn conv(&self, ch: char) -> String {
+        if self.to_upper && 'a' <= ch && ch <= 'z' {
+            return ch.to_string().to_uppercase();
+        }
+
+        ch.to_string()
+    }
+
     pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let tmp = self.to_string(&self.pattern, core)?;
         let extglob = core.shopts.query("extglob");
@@ -55,19 +63,13 @@ impl CaseConv {
     
             let len = self.get_match_length(&text[start..], &pattern);
             if len != 0 && ! self.all_replace {
-                if self.to_upper && 'a' <= ch && ch <= 'z' {
-                    let s = ch.to_string();
-                    let ch = s.to_uppercase();
-                    return Ok([&text[..start], &ch, &text[start+len..] ].concat());
-                }
-                return Ok(text.to_string());
+                let new_ch = self.conv(ch);
+                return Ok([&text[..start], &new_ch, &text[start+len..] ].concat());
             }
 
-            if len != 0 && self.to_upper && 'a' <= ch && ch <= 'z' {
-                skip = text[start..start+len].chars().count() - 1;
-                let s = ch.to_string();
-                let ch = s.to_uppercase();
-                ans += &ch;
+            if len != 0 {
+                let new_ch = self.conv(ch);
+                ans += &new_ch;
             }else{
                 ans += &ch.to_string();
             }
