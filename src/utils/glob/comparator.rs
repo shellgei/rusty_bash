@@ -75,8 +75,21 @@ fn range_check(from: char, to: char, c: char) -> bool {
 }
 
 fn charclass_check(cls: &str, c: char) -> bool {
-    match cls {
+    match cls { //TODO: rough implementation, no test except for [:space:]
+        "[:alnum:]" => c.is_ascii_alphanumeric(),
+        "[:alpha:]" => c.is_ascii_alphabetic(),
+        "[:ascii:]" => c.is_ascii(),
+        "[:blank:]" => c == ' ' || c == '\t',
+        "[:cntrl:]" => c.is_ascii_control(),
+        "[:digit:]" => c.is_digit(10),
+        "[:graph:]" => c.is_ascii_graphic(),
+        "[:lower:]" => c.is_ascii_lowercase(),
+        "[:print:]" => c.is_ascii() && ! c.is_ascii_control(),
+        "[:punct:]" => c.is_ascii_punctuation(),
         "[:space:]" => c.is_ascii_whitespace(),
-        _ => false, //TODO: support all classes
+        "[:upper:]" => c.is_ascii_uppercase(),
+        "[:word:]" => c.is_ascii_alphanumeric() || c == '_',
+        "[:xdigit:]" => c.is_digit(16),
+        _ => false,
     }
 }
