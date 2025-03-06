@@ -376,11 +376,10 @@ impl Terminal {
 
         let mut words_all = utils::split_words(&all_string);
         //TODO: An infinite loop occurs in bash-completion if redirect symbols exit
-        words_all.iter_mut().for_each(|e| *e = e.replace(">", "_").replace("<", "_")); 
+        //words_all.iter_mut().for_each(|e| *e = e.replace(">", "_").replace("<", "_")); 
 
         let left_string: String = self.chars[prompt_len..self.head].iter().collect();
         let mut words_left = utils::split_words(&left_string);
-        //words_left.retain(|e| e != "");
         let from = completion_from(&words_left, core);
 
         words_all = words_all[from..].to_vec();

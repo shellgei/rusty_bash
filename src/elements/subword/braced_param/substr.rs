@@ -56,7 +56,6 @@ impl Substr {
     
         *array = core.db.get_array_all("@");
         match offset.eval_as_int(core) {
-            //None => return Err("evaluation error".to_string()),
             None => return Err(ExecError::OperandExpected(offset.text.clone())),
             Some(n) => {
                 let mut start = std::cmp::max(0, n) as usize;
@@ -104,7 +103,6 @@ impl Substr {
     
         *array = core.db.get_array_all(name);
         match offset.eval_as_int(core) {
-            //None => return Err("evaluation error".to_string()),
             None => return Err(ExecError::OperandExpected(offset.text.clone())),
             Some(n) => {
                 let mut start = std::cmp::max(0, n) as usize;
