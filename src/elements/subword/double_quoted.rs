@@ -15,6 +15,7 @@ pub struct DoubleQuoted {
     text: String,
     subwords: Vec<Box<dyn Subword>>,
     split_points: Vec<usize>,
+    array_empty: bool,
 }
 
 impl Subword for DoubleQuoted {
@@ -39,12 +40,17 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
-        Some(self.subwords.iter_mut()
+        let text = self.subwords.iter_mut()
             .map(|s| s.make_unquoted_string())
             .filter(|s| *s != None)
             .map(|s| s.unwrap())
             .collect::<Vec<String>>()
-            .concat() )
+            .concat();
+
+        if text.is_empty() && self.array_empty {
+            return None;
+        }
+        Some(text)
     }
 
     fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{
@@ -71,6 +77,8 @@ impl Subword for DoubleQuoted {
 impl DoubleQuoted {
     fn replace_array(&mut self, core: &mut ShellCore) -> Vec<Box<dyn Subword>> {
         let mut ans = vec![];
+        let mut has_array = false;
+        let mut not_array_empty = false;
 
         for sw in &mut self.subwords {
             if ! sw.is_array() {
@@ -78,6 +86,7 @@ impl DoubleQuoted {
                 continue;
             }
 
+            has_array = true;
             let array = match sw.get_text() {
                 "$@" | "${@}" => core.db.get_position_params(),
                 _ => {
@@ -87,11 +96,15 @@ impl DoubleQuoted {
             };
 
             for pp in array {
+                not_array_empty = true;
                 ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
                 self.split_points.push(ans.len());
             }
         }
         self.split_points.pop();
+        if has_array && ! not_array_empty {
+            self.array_empty = true;
+        }
         ans
     }
 
