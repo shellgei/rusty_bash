@@ -1,6 +1,6 @@
 ./test_fixed.bash
-./test_ansi_c_quoting.bash
 ./test_script.bash
+./test_ansi_c_quoting.bash
 ./test_options.bash
 ./test_param_substitutions.bash
 ./test_glob.bash
@@ -13,16 +13,4 @@
 ./test_parameters.bash
 ./test_builtins.bash
 ./test_job.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
-../../test/test_fixed.bash
+../../../../test/test_fixed.bash

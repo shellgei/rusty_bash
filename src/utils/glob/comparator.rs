@@ -58,7 +58,6 @@ fn one_of(cands: &mut Vec<String>, cs: &Vec<MetaChar>, not_inv: bool) {
 
 fn compare_head(cand: &String, c: &MetaChar) -> bool {
     let head = cand.chars().nth(0).unwrap();
-
     match c {
         MetaChar::Normal(c) => head == *c,
         MetaChar::Range(f, t) => range_check(*f, *t, head),
@@ -77,7 +76,7 @@ fn range_check(from: char, to: char, c: char) -> bool {
 
 fn charclass_check(cls: &str, c: char) -> bool {
     match cls {
-        "[:space:]" => r"\t\n\v\f\r ".contains(c),
+        "[:space:]" => c.is_ascii_whitespace(),
         _ => false, //TODO: support all classes
     }
 }
