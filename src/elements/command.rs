@@ -47,6 +47,10 @@ impl Clone for Box::<dyn Command> {
 
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+        if core.return_flag {
+            return Ok(None);
+        }
+
         if self.force_fork() || pipe.is_connected() {
             self.fork_exec(core, pipe)
         }else{

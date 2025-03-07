@@ -47,10 +47,16 @@ pub trait Data {
 
     fn get_as_array_or_assoc(&mut self, pos: &str) -> Result<String, ExecError> {
         if self.is_assoc() {
-            return self.get_as_assoc(pos);
+            return match self.get_as_assoc(pos) {
+                Ok(d)  => Ok(d),
+                Err(_) => Ok("".to_string()),
+            }
         }
         if self.is_array() {
-            return self.get_as_array(pos);
+            return match self.get_as_array(pos) {
+                Ok(d)  => Ok(d),
+                Err(_) => Ok("".to_string()),
+            }
         }
         Err(ExecError::ArrayIndexInvalid(pos.to_string()))
     }
