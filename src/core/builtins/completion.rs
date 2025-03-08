@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{file_check, ShellCore, Feeder};
+use crate::{builtins, file_check, ShellCore, Feeder};
 use crate::core::{CompletionInfo, HashMap};
 use crate::elements::word::Word;
 use crate::elements::word::{path_expansion, tilde_expansion};
@@ -480,17 +480,25 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
         return 0;
     }
-    //complete -F _comp_cmd_gpg2 -o default gpg2
 
     // completion functions
-    if args.len() > 3 && args[1] == "-D" && args[2] == "-F" {
-        core.default_completion_functions = args[3].clone();
-        return 0;
+    if ! arg::consume_option("-F", &mut args) {
+        let msg = format!("{}: still unsupported", &args[1]);
+        return builtins::error_exit(1, &args[0], &msg, core);
     }
 
-    if args.len() > 3 && args[1] == "-F" {
-        let func = args[2].clone();
-        for command in &args[3..] {
+    let d_option = arg::consume_option("-D", &mut args);
+
+    if args.len() <= 1 {
+        return builtins::error_exit(2, &args[0], "-F: option requires an argument", core);
+    }
+ 
+    if d_option {
+        core.default_completion_functions = args[1].clone();
+        return 0;
+    }else {
+        let func = args[1].clone();
+        for command in &args[2..] {
             if ! core.completion_info.contains_key(command) {
                 core.completion_info.insert(command.clone(), CompletionInfo::default());
             }
@@ -502,9 +510,6 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
         return 0;
     }
-
-    eprintln!("sush: {} {}: still unsupported", &args[0], &args[1]);
-    1
 }
 
 fn compopt_set(info: &mut CompletionInfo, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
