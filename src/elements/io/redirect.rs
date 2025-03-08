@@ -149,7 +149,7 @@ impl Redirect {
             ForkResult::Child => {
                 io::close(recv, "herestring close error (child recv)");
                 let mut f = unsafe { File::from_raw_fd(send) };
-                let _ = write!(&mut f, "{}\n", &text);
+                let _ = write!(&mut f, "{}", &text);
                 f.flush().unwrap();
                 io::close(send, "herestring close error (child send)");
                 process::exit(0);
