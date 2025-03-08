@@ -156,6 +156,26 @@ res=$($com <<< 'function f () { echo ok && return 3; } ; f')
 res=$($com <<< 'f () { g () { return; echo NG; } ; g ; echo OK; } ; f')
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< '
+f () {
+	g () {
+		h () {
+			return 
+			echo NG
+		}
+		h
+		echo OK
+	}
+	g
+	echo OK
+	return 
+	echo NG
+}
+f
+')
+[ "$res" = "OK
+OK" ] || err $LINENO
+
 res=$($com <<< 'f () { echo $#; } ; f x y z')
 [ "$res" = "3" ] || err $LINENO
 
