@@ -34,7 +34,7 @@ pub struct Redirect {
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.symbol == "<<" {
-            return self.redirect_heredocument();
+            return self.redirect_heredocument(core);
         }
         if self.symbol == "<<<" {
             return self.redirect_herestring(core);
@@ -137,12 +137,13 @@ impl Redirect {
         io::share(1, 2)
     }
 
-    fn redirect_heredocument(&mut self) -> Result<(), ExecError> {
+    fn redirect_heredocument(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
 
-        let text = self.herestring.text.clone();
+        let text = self.herestring.eval_as_value(core)?; // TODO: make it precise based on the rule
+                                                         // of heredocument
 
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
