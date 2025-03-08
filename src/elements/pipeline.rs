@@ -11,7 +11,6 @@ use nix::time;
 use nix::sys::resource;
 use nix::time::ClockId;
 use nix::unistd::Pid;
-use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
 pub struct Pipeline {
