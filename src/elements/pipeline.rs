@@ -25,11 +25,6 @@ pub struct Pipeline {
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid)
         -> (Vec<Option<Pid>>, bool, bool, Option<ExecError>) {
-        if core.sigint.load(Relaxed) { //以下4行追加
-            core.db.exit_status = 130;
-            return (vec![], false, false, Some(ExecError::Interrupted));
-        }
-
         if self.commands.is_empty() { // the case of only '!'
             self.set_time(core);
             return (vec![], self.exclamation, self.time, None);
@@ -52,7 +47,6 @@ impl Pipeline {
                 pgid = pids[0].unwrap();
             }
             prev = p.recv;
-//            core.word_eval_error = false;
         }
 
         match self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid)) {

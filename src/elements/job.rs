@@ -11,6 +11,7 @@ use crate::error::parse::ParseError;
 use nix::sys::wait::WaitStatus;
 use nix::unistd;
 use nix::unistd::{Pid, ForkResult};
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
 pub struct Job {
@@ -42,6 +43,10 @@ impl Job {
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
             if core.return_flag {
                 continue;
+            }
+            if core.sigint.load(Relaxed) {
+                core.db.exit_status = 130;
+                return Err(ExecError::Interrupted);
             }
 
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
