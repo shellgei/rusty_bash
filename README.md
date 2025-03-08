@@ -35,14 +35,10 @@ $ cd rusty_bash
 $ cargo build --release
 ### ↓  Change /bin/ to /usr/local/bin/ or another path in $PATH if you are using Mac or BSD ###
 $ sudo cp target/release/sush /bin/
-$ cp .sushrc_for_linux ~/.sushrc # edit if some errors occur
+$ cp .sushrc ~/.sushrc # edit if some errors occur
 $ sush
 ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
-
-## For Contributors 
-
-Please give us issues or pull requests in a way you think sensible. We do not have a rigid rule at this stage. 
 
 ## List of Features
 
@@ -218,12 +214,19 @@ Partially in Japanese.
 
 Because the shell in this repository can be a standard one in the next generation, it may a good idea to leave your name as a contributor. Give us pull requests with what you think as contribution. As our community is not big, rules have not been fixed yet. 
 
+### Important branch 
+
+- alpha: checkout this branch if you want to develop.
+- beta: we are using the head version of this branch on a day-to-day basis.
+- main: the beta version is merged to this branch if fatal problems are not found for a week.
+
+### Especially welcomed contributions 
+
 Followings are not difficult but very important tasks.
 
 * To fix the code based on Clippy. (There are many warnings by Clippy in the current codes. )
 * To develop builtin commands. (Especially `echo` may be easy. )
 * To add test cases.
-* To fix the test methodology, especially for the parts related to human input.
 
 
 ## Copyright
