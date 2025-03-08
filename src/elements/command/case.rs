@@ -165,7 +165,7 @@ impl CaseCommand {
         if feeder.starts_with("esac") {
             ans.text += &feeder.consume(4);
             if ans.patterns_script_end.len() > 0 {
-                command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+                command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
                 return Ok(Some(ans));
             }
         }

@@ -61,6 +61,10 @@ res=$($com <<< 'B=ccc; declare -A A; A[aaa]=bbb ;A[ccc]=ddd ; echo ${A[$B]}')
 res=$($com <<< 'declare -a arr ; arr=bbb ; echo ${arr[0]}')
 [ "$res" == "bbb" ] || err $LINENO
 
+res=$($com <<< 'declare -A a; echo ${a[aaa]}')
+[ "$?" = "0" ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
 ### FUNCNAME ###
 
 res=$($com <<< 'f(){ g () { echo ${FUNCNAME[@]} ;} ; g ;} ; f')
@@ -85,6 +89,9 @@ res=$($com <<< 'a=(aaa bbb); bbb=eeee ; echo ${!a[1]/ee/bb}')
 
 res=$($com <<< 'a=(aaa bbb[2]); bbb[2]=eeee ; echo ${!a[1]}')
 [ "$res" = "eeee" ] || err $LINENO
+
+res=$($com <<< 'cur=r ;echo ${cur//[[:space:]]/}')
+[ "$res" = "r" ] || err $LINENO
 
 res=$($com << 'EOF'
 a=(aa bb cc)
@@ -132,6 +139,12 @@ res=$($com <<< 'A=(a b) ; echo ${#A[@]}')
 res=$($com <<< 'A=(a b) ; echo "${#A[@]}"')
 [ "$res" -eq 2 ] || err $LINENO
 
+res=$($com <<< 'a=(); a=("${a[@]}"); echo ${#a[@]}')
+[ "$res" = "0" ] || err $LINENO
+
+res=$($com <<< 'a=(1 2 3); a=("${a[@]:3}"); echo ${#a[@]}')
+[ "$res" = "0" ] || err $LINENO
+
 res=$($com <<< 'b=1 ; f () { echo $# ; echo $1 ; } ; f ${b+"$b"}')
 [ "$res" = "1
 1" ] || err $LINENO
@@ -144,6 +157,23 @@ res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"aaa"}')
 
 res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"${b[@]}"}')
 [ "$res" = "0" ] || err $LINENO
+
+### CASE CONVERSION ###
+
+res=$($com <<< 'a=aba; echo ${a^^[ac]}' )
+[ "$res" = "AbA" ] || err $LINENO
+
+res=$($com <<< 'a=あacaba; echo ${a^^[ac]}' )
+[ "$res" = "あACAbA" ] || err $LINENO
+
+res=$($com <<< 'a=あacaba; echo ${a^^[cあ]}' )
+[ "$res" = "あaCaba" ] || err $LINENO
+
+res=$($com <<< 'a=あAcabA; echo ${a,,[Aあ]}' )
+[ "$res" = "あacaba" ] || err $LINENO
+
+res=$($com <<< 'a=あAcabA; echo ${a~~[Aaあ]}' )
+[ "$res" = "あacAba" ] || err $LINENO
 
 ### IFS ###
 

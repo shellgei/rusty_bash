@@ -249,7 +249,7 @@ impl ForCommand {
             ans.text.push_str(&ans.do_script.as_mut().unwrap().get_text());
             ans.text.push_str(&feeder.consume(4)); //done
 
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             Ok(Some(ans))
         }else{
             Ok(None)

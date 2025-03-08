@@ -156,13 +156,22 @@ fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
 }
 
 pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
-                     ans_redirects: &mut Vec<Redirect>, ans_text: &mut String) {
+                     ans_redirects: &mut Vec<Redirect>, ans_text: &mut String) 
+                     -> Result<(), ParseError> {
     loop {
         eat_blank_with_comment(feeder, core, ans_text);
         if ! eat_redirect(feeder, core, ans_redirects, ans_text){
             break;
         }
     }
+
+    for r in ans_redirects {
+        if r.symbol == "<<" {
+            r.eat_herestring(feeder, core)?;
+        }
+    }
+
+    Ok(())
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Command>>, ParseError> {

@@ -6,8 +6,12 @@ use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::{Feeder, ShellCore};
 use crate::elements::io;
+//use crate::elements::subword::Subword;
+use crate::elements::subword;
+use crate::elements::subword::filler::FillerSubword;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
 use crate::utils::exit;
 use nix::unistd;
 use nix::unistd::ForkResult;
@@ -24,10 +28,14 @@ pub struct Redirect {
     left_fd: RawFd,
     left_backup: RawFd,
     extra_left_backup: RawFd, // &>, &>>用
+    herestring: Word,
 }
 
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+        if self.symbol == "<<" {
+            return self.redirect_heredocument();
+        }
         if self.symbol == "<<<" {
             return self.redirect_herestring(core);
         }
@@ -129,6 +137,30 @@ impl Redirect {
         io::share(1, 2)
     }
 
+    fn redirect_heredocument(&mut self) -> Result<(), ExecError> {
+        let (r, s) = unistd::pipe().expect("Cannot open pipe");
+        let recv = r.into_raw_fd();
+        let send = s.into_raw_fd();
+
+        let text = self.herestring.text.clone();
+
+        match unsafe{unistd::fork()?} {
+            ForkResult::Child => {
+                io::close(recv, "herestring close error (child recv)");
+                let mut f = unsafe { File::from_raw_fd(send) };
+                let _ = write!(&mut f, "{}\n", &text);
+                f.flush().unwrap();
+                io::close(send, "herestring close error (child send)");
+                process::exit(0);
+            },
+            ForkResult::Parent { child: _ } => {
+                io::close(send, "herestring close error (parent send)");
+                io::replace(recv, 0);
+            },
+        }
+        Ok(())
+    }
+
     fn redirect_herestring(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
@@ -170,6 +202,35 @@ impl Redirect {
             extra_left_backup: -1,
             ..Default::default()
         }
+    }
+
+    /* called from elements/command.rs */
+    pub fn eat_herestring(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        let end = self.right.text.clone() + "\n";
+        if feeder.starts_with("\n") {
+            feeder.consume(1);
+        }
+
+        loop {
+            if feeder.len() == 0 {
+                feeder.feed_additional_line(core)?;
+                if feeder.starts_with(&end) {
+                    feeder.consume(self.right.text.len());
+                    break;
+                }
+            }
+
+            if let Some(sw) = subword::parse(feeder, core)? {
+                self.herestring.text += sw.get_text();
+                self.herestring.subwords.push(sw);
+            }else{
+                let c = feeder.consume(1);
+                self.herestring.text += &c;
+                self.herestring.subwords.push(Box::new(FillerSubword{text: c}) );
+            }
+        }
+
+        Ok(())
     }
 
     fn eat_symbol(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

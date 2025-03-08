@@ -50,7 +50,7 @@ impl ParenCommand {
             ans.text.push_str(&feeder.consume(1));
 
             if ! substitution {
-                command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+                command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             }
             Ok(Some(ans))
         }else{

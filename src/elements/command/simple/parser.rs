@@ -95,7 +95,7 @@ impl SimpleCommand {
         }
 
         loop {
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             if ( ans.command_name == "local" || ans.command_name == "eval" || ans.command_name == "export")
             && Self::eat_substitution(feeder, &mut ans, core)? {
                 continue;

@@ -138,5 +138,4 @@ if [ "$(uname)" = "Linux" ] ; then
 	[ "$res" == "1" ] || err $LINENO
 fi
 
-
 echo $0 >> ./ok

@@ -65,7 +65,7 @@ impl TestCommand {
 
         if feeder.starts_with("]]") {
             ans.text += &feeder.consume(2);
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text);
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             return Ok(Some(ans));
         }
     
