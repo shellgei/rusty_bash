@@ -2,6 +2,7 @@
 
 dir=$(dirname $0)
 
+export TMPDIR=/tmp
 timeout 60 $dir/bash_genuine_test_sub > /tmp/$$-result &
 
 sleep 65

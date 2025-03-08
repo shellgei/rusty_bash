@@ -235,7 +235,7 @@ impl Word {
                 }
             }
         }
-
+        
         match ans.subwords.len() {
             0 => Ok(None),
             _ => Ok(Some(ans)),

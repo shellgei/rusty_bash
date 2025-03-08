@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{proc_ctrl, ShellCore, Feeder};
-use crate::elements::Pipe;
+use crate::{proc_ctrl, Script, ShellCore, Feeder};
+use crate::elements::{command, Pipe};
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::Subword;
@@ -15,10 +15,11 @@ use std::io::{BufReader, BufRead, Error};
 use std::os::fd::{FromRawFd, RawFd};
 use std::sync::atomic::Ordering::Relaxed;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CommandSubstitution {
     pub text: String,
     command: ParenCommand,
+    old_style: bool,
 }
 
 impl Subword for CommandSubstitution {
@@ -72,15 +73,44 @@ impl CommandSubstitution {
         Ok(())
     }
 
+    pub fn parse_old_style(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        if feeder.nest.last().unwrap().0 == "`" {
+            return Ok(None);
+        }
+        if ! feeder.starts_with("`") {
+            return Ok(None);
+        }
+        let mut script = Some(Script::default());
+
+        if command::eat_inner_script(feeder, core, "`", vec!["`"], &mut script, false)? {
+            let mut ans = Self::default();
+            ans.old_style = true;
+            ans.text.push_str("`");
+            ans.text.push_str(&script.as_ref().expect("").get_text());
+            ans.text.push_str(&feeder.consume(1));
+            ans.command = ParenCommand::new(&ans.text, script);
+
+            Ok(Some(ans))
+        }else{
+            Ok(None)
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        if let Some(ans) = Self::parse_old_style(feeder, core)? {
+            return Ok(Some(ans));
+        }
+        
         if ! feeder.starts_with("$(") {
             return Ok(None);
         }
-        let mut text = feeder.consume(1);
+        let mut ans = Self::default();
+        ans.text = feeder.consume(1);
 
         if let Some(pc) = ParenCommand::parse(feeder, core, true)? {
-            text += &pc.get_text();
-            Ok(Some(CommandSubstitution {text: text, command: pc} ))
+            ans.text += &pc.get_text();
+            ans.command = pc;
+            Ok(Some(ans))
         }else{
             Ok(None)
         }

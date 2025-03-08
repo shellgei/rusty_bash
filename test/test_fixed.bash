@@ -35,6 +35,9 @@ EOF
 ういあ
 egoh" ] || err $LINENO
 
+res=$($com <<< 'echo `echo aaa`' )
+[ "$res" = "aaa" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 
