@@ -432,6 +432,32 @@ fn print_complete(core: &mut ShellCore) -> i32 {
     0
 }
 
+fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<String>) -> i32 {
+    let d_option = arg::consume_option("-D", args);
+
+    if args.len() <= 1 {
+        return builtins::error_exit(2, &args[0], "-F: option requires an argument", core);
+    }
+ 
+    if d_option {
+        core.default_completion_functions = args[1].clone();
+        return 0;
+    }else {
+        let func = args[1].clone();
+        for command in &args[2..] {
+            if ! core.completion_info.contains_key(command) {
+                core.completion_info.insert(command.clone(), CompletionInfo::default());
+            }
+    
+            let info = &mut core.completion_info.get_mut(command).unwrap();
+            info.function = func.clone();
+            info.o_options = o_options.clone();
+        }
+
+        return 0;
+    }
+}
+
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 || args[1] == "-p" {
         return print_complete(core);
@@ -481,34 +507,11 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    // completion functions
-    if ! arg::consume_option("-F", &mut args) {
+    if arg::consume_option("-F", &mut args) {
+        complete_f(core, &mut args, &o_options)
+    }else{
         let msg = format!("{}: still unsupported", &args[1]);
-        return builtins::error_exit(1, &args[0], &msg, core);
-    }
-
-    let d_option = arg::consume_option("-D", &mut args);
-
-    if args.len() <= 1 {
-        return builtins::error_exit(2, &args[0], "-F: option requires an argument", core);
-    }
- 
-    if d_option {
-        core.default_completion_functions = args[1].clone();
-        return 0;
-    }else {
-        let func = args[1].clone();
-        for command in &args[2..] {
-            if ! core.completion_info.contains_key(command) {
-                core.completion_info.insert(command.clone(), CompletionInfo::default());
-            }
-    
-            let info = &mut core.completion_info.get_mut(command).unwrap();
-            info.function = func.clone();
-            info.o_options = o_options.clone();
-        }
-
-        return 0;
+        builtins::error_exit(1, &args[0], &msg, core)
     }
 }
 
