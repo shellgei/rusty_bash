@@ -58,8 +58,6 @@ impl FunctionDefinition {
 
     pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore)
         -> Result<Option<Pid>, ExecError> {
-        core.return_flag = false;
-
         let mut array = core.db.get_array_all("FUNCNAME");
         array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
         let _ = core.db.set_array("FUNCNAME", array.clone(), None);

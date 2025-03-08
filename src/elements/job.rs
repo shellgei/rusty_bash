@@ -40,6 +40,9 @@ impl Job {
         signal::check_trap(core);
 
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
+            if core.return_flag {
+                continue;
+            }
 
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
             if do_next {
@@ -60,34 +63,6 @@ impl Job {
         signal::check_trap(core);
         Ok(())
     }
-
-    /*
-    pub fn check_trap(core: &mut ShellCore) {
-        let bkup = core.db.exit_status;
-
-        let mut scripts = vec![];
-        for t in &core.trapped {
-            if t.0.load(Relaxed) {
-                scripts.push(t.1.clone());
-                t.0.store(false, Relaxed);
-            }
-        }
-
-        for s in scripts {
-            let mut feeder = Feeder::new(&s);
-            let mut script = match Script::parse(&mut feeder, core, true) {
-                Ok(None) => {continue;},
-                Ok(s) => s.unwrap(),
-                Err(e) => {e.print(core); continue;},
-            };
-
-            if let Err(e) = script.exec(core) {
-                e.print(core);
-            }
-        }
-
-        core.db.exit_status = bkup;
-    }*/
 
     fn check_stop(core: &mut ShellCore, text: &str,
                   pids: &Vec<Option<Pid>>, waitstatuses: &Vec<WaitStatus>) {

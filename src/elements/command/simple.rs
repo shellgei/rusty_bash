@@ -85,7 +85,7 @@ impl Command for SimpleCommand {
 
 impl SimpleCommand {
     fn break_continue_or_return(core: &mut ShellCore) -> bool {
-        core.return_flag || core.break_counter > 0 || core.continue_counter > 0 
+        core.break_counter > 0 || core.continue_counter > 0 
     }
 
     pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
