@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{file_check, Feeder, ShellCore, utils};
-use crate::core::builtins::completion;
+use crate::core::builtins::compgen;
 use crate::core::completion::CompletionInfo;
 use crate::error::exec::ExecError;
 use crate::elements::command::simple::SimpleCommand;
@@ -162,13 +162,13 @@ impl Terminal {
 
             if action != "" {
                 let mut cands = match action.as_ref() {
-                    "alias" => completion::compgen_a(core, args),
-                    "command" => completion::compgen_c(core, args),
-                    "job" => completion::compgen_j(core, args),
-                    "setopt" => completion::compgen_o(core, args),
-                    "stopped" => completion::compgen_stopped(core, args),
-                    "user" => completion::compgen_u(core, args),
-                    "variable" => completion::compgen_v(core, args),
+                    "alias" => compgen::compgen_a(core, args),
+                    "command" => compgen::compgen_c(core, args),
+                    "job" => compgen::compgen_j(core, args),
+                    "setopt" => compgen::compgen_o(core, args),
+                    "stopped" => compgen::compgen_stopped(core, args),
+                    "user" => compgen::compgen_u(core, args),
+                    "variable" => compgen::compgen_v(core, args),
                     _ => vec![],
                 };
     
@@ -187,13 +187,13 @@ impl Terminal {
         if pos == "0" {
             return if core.db.len("COMP_WORDS") == 0 {
                 self.escape_at_completion = false;
-                completion::compgen_h(core, args).to_vec().into_iter().filter(|h| h.len() > 0).collect()
+                compgen::compgen_h(core, args).to_vec().into_iter().filter(|h| h.len() > 0).collect()
             }else{
-                completion::compgen_c(core, args)
+                compgen::compgen_c(core, args)
             };
         }
 
-        completion::compgen_f(core, args, false)
+        compgen::compgen_f(core, args, false)
     }
 
     pub fn try_completion(&mut self, core: &mut ShellCore) -> Result<(), String> {

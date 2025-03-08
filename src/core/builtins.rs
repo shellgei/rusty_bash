@@ -4,6 +4,7 @@
 
 mod alias;
 mod cd;
+pub mod compgen;
 pub mod completion;
 mod getopts;
 mod history;
@@ -45,7 +46,7 @@ impl ShellCore {
         self.builtins.insert("builtin".to_string(), builtin);
         self.builtins.insert("cd".to_string(), cd::cd);
         self.builtins.insert("command".to_string(), command);
-        self.builtins.insert("compgen".to_string(), completion::compgen);
+        self.builtins.insert("compgen".to_string(), compgen::compgen);
         self.builtins.insert("complete".to_string(), completion::complete);
         self.builtins.insert("compopt".to_string(), completion::compopt);
         self.builtins.insert("continue".to_string(), loop_control::continue_);
