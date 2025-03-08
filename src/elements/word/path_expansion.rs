@@ -29,7 +29,7 @@ fn no_glob_symbol(pattern: &str) -> bool {
     "*?@+![".chars().all(|c| ! pattern.contains(c))
 }
 
-fn expand(pattern: &str, extglob: bool) -> Vec<String> {
+pub fn expand(pattern: &str, extglob: bool) -> Vec<String> {
     let mut paths = vec!["".to_string()];
 
     for dir_glob in pattern.split("/") {

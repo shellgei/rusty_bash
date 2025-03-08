@@ -4,7 +4,7 @@
 mod brace_expansion;
 pub mod tilde_expansion;
 pub mod substitution;
-mod path_expansion;
+pub mod path_expansion;
 mod split;
 
 use crate::{ShellCore, Feeder};

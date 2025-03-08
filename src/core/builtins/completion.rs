@@ -4,7 +4,7 @@
 use crate::{file_check, ShellCore, Feeder};
 use crate::core::{CompletionInfo, HashMap};
 use crate::elements::word::Word;
-use crate::elements::word::tilde_expansion;
+use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::utils;
 use crate::utils::{arg, directory};
 use faccess;
@@ -155,6 +155,13 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
             compgen_large_w(core, &mut args)
         },
+        "-G" => {
+            if args.len() < 2 {
+                eprintln!("sush: compgen: -G: option requires an argument");
+                return 2;
+            }
+            compgen_large_g(core, &mut args)
+        },
         _ => {
             eprintln!("sush: compgen: {}: invalid option", &args[1]);
             return 2;
@@ -297,6 +304,12 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     commands
 }
 
+fn compgen_large_g(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let glob = args[2].to_string();
+    let extglob = core.shopts.query("extglob");
+    path_expansion::expand(&glob, extglob)
+}
+
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
     let mut words = args[2].to_string();
@@ -314,10 +327,6 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
                 if let Ok(mut v) =  w.eval(core) {
                     ans.append(&mut v);
                 }
-                /*
-                w.make_unquoted_word();
-                ans.push(w.text)
-                */
             },
             _ => {
                 let len = feeder.scanner_multiline_blank(core);

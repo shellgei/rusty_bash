@@ -38,6 +38,9 @@ egoh" ] || err $LINENO
 res=$($com <<< 'echo `echo aaa`' )
 [ "$res" = "aaa" ] || err $LINENO
 
+res=$($com <<< 'compgen -G "/*" | wc -l' )
+[ "$res" -gt 1 ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 
