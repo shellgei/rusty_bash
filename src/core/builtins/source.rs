@@ -36,6 +36,10 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     core.db.position_parameters.push(args[1..].to_vec());
 
+    let mut source = core.db.get_array_all("BASH_SOURCE");
+    source.insert(0, args[1].clone());
+    let _ = core.db.set_array("BASH_SOURCE", source.clone(), None);
+
     let mut feeder = Feeder::new("");
     loop {
         match feeder.feed_line(core) {
@@ -54,6 +58,8 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
+    source.remove(0);
+    let _ = core.db.set_array("BASH_SOURCE", source, None);
     core.db.position_parameters.pop();
     io::replace(backup, 0);
     core.source_function_level -= 1;
