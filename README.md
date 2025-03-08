@@ -153,9 +153,9 @@ Born Shell Variables
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| CDPATH | :no_good: | HOME | :heavy_check_mark: | IFS | :no_good: |
-| MAIL | :no_good: | MAILPATH | :no_good: | OPTARG | :no_good: |
-| OPTIND | :no_good: | PATH | :heavy_check_mark: | PS1 | :heavy_check_mark: |
+| CDPATH | :no_good: | HOME | :heavy_check_mark: | IFS | :construction: |
+| MAIL | :no_good: | MAILPATH | :no_good: | OPTARG | :heavy_check_mark: |
+| OPTIND | :heavy_check_mark: | PATH | :heavy_check_mark: | PS1 | :heavy_check_mark: |
 | PS2 | :heavy_check_mark: | | | | |
 
 Bash Variables
