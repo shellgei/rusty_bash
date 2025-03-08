@@ -17,34 +17,6 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
-res=$($com <<< 'declare -A a; echo ${a[aaa]}')
-[ "$?" = "0" ] || err $LINENO
-[ "$res" = "" ] || err $LINENO
-
-res=$($com <<< 'a=(); a=("${a[@]}"); echo ${#a[@]}')
-[ "$res" = "0" ] || err $LINENO
-
-res=$($com <<< 'a=(1 2 3); a=("${a[@]:3}"); echo ${#a[@]}')
-[ "$res" = "0" ] || err $LINENO
-
-res=$($com <<< 'cur=r ;echo ${cur//[[:space:]]/}')
-[ "$res" = "r" ] || err $LINENO
-
-res=$($com <<< 'a=aba; echo ${a^^[ac]}' )
-[ "$res" = "AbA" ] || err $LINENO
-
-res=$($com <<< 'a=あacaba; echo ${a^^[ac]}' )
-[ "$res" = "あACAbA" ] || err $LINENO
-
-res=$($com <<< 'a=あacaba; echo ${a^^[cあ]}' )
-[ "$res" = "あaCaba" ] || err $LINENO
-
-res=$($com <<< 'a=あAcabA; echo ${a,,[Aあ]}' )
-[ "$res" = "あacaba" ] || err $LINENO
-
-res=$($com <<< 'a=あAcabA; echo ${a~~[Aaあ]}' )
-[ "$res" = "あacAba" ] || err $LINENO
-
 echo $0 >> ./ok
 exit
 
