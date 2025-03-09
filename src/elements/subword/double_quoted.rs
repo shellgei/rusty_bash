@@ -100,8 +100,9 @@ impl DoubleQuoted {
                 ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
                 self.split_points.push(ans.len());
             }
+
+            self.split_points.pop();
         }
-        self.split_points.pop();
         if has_array && ! not_array_empty {
             self.array_empty = true;
         }
