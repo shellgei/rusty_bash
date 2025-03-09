@@ -46,6 +46,9 @@ exit
 
 ### fixed in future ###
 
+res=$($com <<< 'a=(a b); set "${a[@]}${a[@]}" ;echo $@ $#' )
+[ "$res" = "a ba b 3" ] || err $LINENO
+
 res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
 [ "$res" = "aaabb" ] || err $LINENO
 
