@@ -24,7 +24,13 @@ impl Subword for DoubleQuoted {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut word = Word::default();
-        word.subwords = self.replace_array(core);
+        word.subwords = match self.subwords.iter().any(|sw| sw.is_array()) {
+            true  => self.replace_array(core),
+            false => self.subwords.clone(),
+        };
+
+    
+  //      word.subwords = self.replace_array(core);
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
@@ -77,8 +83,7 @@ impl Subword for DoubleQuoted {
 impl DoubleQuoted {
     fn replace_array(&mut self, core: &mut ShellCore) -> Vec<Box<dyn Subword>> {
         let mut ans = vec![];
-        let mut has_array = false;
-        let mut not_array_empty = false;
+        self.array_empty = true;
 
         for sw in &mut self.subwords {
             if ! sw.is_array() {
@@ -86,7 +91,6 @@ impl DoubleQuoted {
                 continue;
             }
 
-            has_array = true;
             let array = match sw.get_text() {
                 "$@" | "${@}" => core.db.get_position_params(),
                 _ => {
@@ -96,15 +100,11 @@ impl DoubleQuoted {
             };
 
             for pp in array {
-                not_array_empty = true;
+                self.array_empty = false;
                 ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
                 self.split_points.push(ans.len());
             }
-
             self.split_points.pop();
-        }
-        if has_array && ! not_array_empty {
-            self.array_empty = true;
         }
         ans
     }
