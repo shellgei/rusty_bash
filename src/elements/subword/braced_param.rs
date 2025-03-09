@@ -63,7 +63,6 @@ impl Subword for BracedParam {
                     }
 
                     self.index_replace(core)?;
-                    //return Ok(vec![self.boxed_clone()]);
                     return self.ans();
                 }
             }
@@ -74,7 +73,6 @@ impl Subword for BracedParam {
             if sub.text == "[*]" || sub.text == "[@]" {
                 if let Some(s) = self.substr.as_mut() {
                     s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core)?;
-                   // return Ok(vec![self.boxed_clone()]);
                     return self.ans();
                 }
             }
@@ -85,14 +83,12 @@ impl Subword for BracedParam {
                 return Err(ExecError::BadSubstitution("@".to_string()));
             }
             self.subscript_operation(core)?;
-           // return Ok(vec![self.boxed_clone()]);
             return self.ans();
         }
 
         if self.param.name == "@" {
             if let Some(s) = self.substr.as_mut() {
                 s.set_partial_position_params(&mut self.array, &mut self.text, core)?;
-       //         return Ok(vec![self.boxed_clone()]);
                 return self.ans();
             }
         }
@@ -128,10 +124,12 @@ impl BracedParam {
 
     fn ans(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let alts = self.get_alternative_subwords();
-        if alts.is_empty() {
-            Ok(vec![self.boxed_clone()])
-        }else{
+        if ! alts.is_empty() {
             Ok(alts)
+       // }else if ! self.array.is_empty() {
+        //    Ok(self.array.iter().map(|s| super::make_boxed_simple(s)).collect())
+        }else{
+            Ok(vec![self.boxed_clone()])
         }
     }
 
