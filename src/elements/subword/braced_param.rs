@@ -64,7 +64,7 @@ impl Subword for BracedParam {
 
                     self.index_replace(core)?;
                     //return Ok(vec![self.boxed_clone()]);
-                    return self.ans(core);
+                    return self.ans();
                 }
             }
             self.indirect_replace(core)?;
@@ -75,7 +75,7 @@ impl Subword for BracedParam {
                 if let Some(s) = self.substr.as_mut() {
                     s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core)?;
                    // return Ok(vec![self.boxed_clone()]);
-                    return self.ans(core);
+                    return self.ans();
                 }
             }
         }
@@ -86,14 +86,14 @@ impl Subword for BracedParam {
             }
             self.subscript_operation(core)?;
            // return Ok(vec![self.boxed_clone()]);
-            return self.ans(core);
+            return self.ans();
         }
 
         if self.param.name == "@" {
             if let Some(s) = self.substr.as_mut() {
                 s.set_partial_position_params(&mut self.array, &mut self.text, core)?;
        //         return Ok(vec![self.boxed_clone()]);
-                return self.ans(core);
+                return self.ans();
             }
         }
 
@@ -104,21 +104,16 @@ impl Subword for BracedParam {
         };
 
         self.text = self.optional_operation(self.text.clone(), core)?;
-
-        /*
-        let alts = self.get_alternative_subwords();
-        if alts.is_empty() {
-            Ok(vec![self.boxed_clone()])
-        }else{
-            Ok(alts)
-        }*/
-        self.ans(core)
-
-        //Ok(())
+        self.ans()
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
+    fn is_array(&self) -> bool {self.is_array && ! self.num}
+    fn get_array_elem(&self) -> Vec<String> {self.array.clone()}
+}
+
+impl BracedParam {
     fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {
         if self.value_check.is_none() {
             return vec![];
@@ -131,12 +126,7 @@ impl Subword for BracedParam {
         }
     }
 
-    fn is_array(&self) -> bool {self.is_array && ! self.num}
-    fn get_array_elem(&self) -> Vec<String> {self.array.clone()}
-}
-
-impl BracedParam {
-    fn ans(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn ans(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let alts = self.get_alternative_subwords();
         if alts.is_empty() {
             Ok(vec![self.boxed_clone()])

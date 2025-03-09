@@ -17,26 +17,8 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
     }
 
     word.subwords = tmp;
-//    alternative_replace(word);
     word.text = word.subwords.iter().map(|sw| sw.get_text().to_string()).collect::<Vec<String>>().join("");
     Ok(())
-}
-
-fn alternative_replace(word: &mut Word) {
-    let mut pos = 0;
-    while pos < word.subwords.len() {
-        let sws = word.subwords[pos].get_alternative_subwords();
-        if sws.is_empty() {
-            pos += 1;
-            continue;
-        }
-
-        word.subwords.remove(pos);
-        for s in sws {
-            word.subwords.insert(pos, s.clone());
-            pos += 1;
-        }
-    }
 }
 
 fn connect_names(subwords: &mut [Box<dyn Subword>]) {

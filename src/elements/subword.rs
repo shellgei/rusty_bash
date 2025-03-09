@@ -84,8 +84,6 @@ pub trait Subword {
         Ok(vec![self.boxed_clone()])
     }
 
-    fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {vec![]}
-
     fn split(&self, ifs: &str) -> Vec<Box<dyn Subword>>{
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
         split_str(self.get_text(), ifs).iter().map(|s| f(s.to_string())).collect()
