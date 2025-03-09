@@ -63,7 +63,8 @@ impl Subword for BracedParam {
                     }
 
                     self.index_replace(core)?;
-                    return Ok(vec![self.boxed_clone()]);
+                    //return Ok(vec![self.boxed_clone()]);
+                    return self.ans(core);
                 }
             }
             self.indirect_replace(core)?;
@@ -73,7 +74,8 @@ impl Subword for BracedParam {
             if sub.text == "[*]" || sub.text == "[@]" {
                 if let Some(s) = self.substr.as_mut() {
                     s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core)?;
-                    return Ok(vec![self.boxed_clone()]);
+                   // return Ok(vec![self.boxed_clone()]);
+                    return self.ans(core);
                 }
             }
         }
@@ -83,13 +85,15 @@ impl Subword for BracedParam {
                 return Err(ExecError::BadSubstitution("@".to_string()));
             }
             self.subscript_operation(core)?;
-            return Ok(vec![self.boxed_clone()]);
+           // return Ok(vec![self.boxed_clone()]);
+            return self.ans(core);
         }
 
         if self.param.name == "@" {
             if let Some(s) = self.substr.as_mut() {
                 s.set_partial_position_params(&mut self.array, &mut self.text, core)?;
-                return Ok(vec![self.boxed_clone()]);
+       //         return Ok(vec![self.boxed_clone()]);
+                return self.ans(core);
             }
         }
 
@@ -100,7 +104,16 @@ impl Subword for BracedParam {
         };
 
         self.text = self.optional_operation(self.text.clone(), core)?;
-        Ok(vec![self.boxed_clone()])
+
+        /*
+        let alts = self.get_alternative_subwords();
+        if alts.is_empty() {
+            Ok(vec![self.boxed_clone()])
+        }else{
+            Ok(alts)
+        }*/
+        self.ans(core)
+
         //Ok(())
     }
 
@@ -123,6 +136,15 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
+    fn ans(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+        let alts = self.get_alternative_subwords();
+        if alts.is_empty() {
+            Ok(vec![self.boxed_clone()])
+        }else{
+            Ok(alts)
+        }
+    }
+
     fn check(&mut self) -> Result<(), ExecError> {
         if self.param.name.is_empty() || ! utils::is_param(&self.param.name) {
             return Err(ExecError::BadSubstitution(self.text.clone()));
