@@ -11,9 +11,12 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
+    let mut tmp = vec![];
     for w in word.subwords.iter_mut() {
-        w.substitute(core)?;
+        tmp.append(&mut w.substitute(core)?);
     }
+
+    word.subwords = tmp;
     alternative_replace(word);
     word.text = word.subwords.iter().map(|sw| sw.get_text().to_string()).collect::<Vec<String>>().join("");
     Ok(())

@@ -48,7 +48,7 @@ impl Subword for BracedParam {
     fn get_text(&self) -> &str { &self.text.as_ref() }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         self.check()?;
 
         if self.indirect {
@@ -62,7 +62,8 @@ impl Subword for BracedParam {
                         return Err(ExecError::InvalidName(msg));
                     }
 
-                    return self.index_replace(core);
+                    self.index_replace(core)?;
+                    return Ok(vec![self.boxed_clone()]);
                 }
             }
             self.indirect_replace(core)?;
@@ -71,7 +72,8 @@ impl Subword for BracedParam {
         if let Some(sub) = &self.param.subscript {
             if sub.text == "[*]" || sub.text == "[@]" {
                 if let Some(s) = self.substr.as_mut() {
-                    return s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core);
+                    s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core)?;
+                    return Ok(vec![self.boxed_clone()]);
                 }
             }
         }
@@ -80,12 +82,14 @@ impl Subword for BracedParam {
             if self.param.name == "@" {
                 return Err(ExecError::BadSubstitution("@".to_string()));
             }
-            return self.subscript_operation(core);
+            self.subscript_operation(core)?;
+            return Ok(vec![self.boxed_clone()]);
         }
 
         if self.param.name == "@" {
             if let Some(s) = self.substr.as_mut() {
-                return s.set_partial_position_params(&mut self.array, &mut self.text, core);
+                s.set_partial_position_params(&mut self.array, &mut self.text, core)?;
+                return Ok(vec![self.boxed_clone()]);
             }
         }
 
@@ -96,7 +100,8 @@ impl Subword for BracedParam {
         };
 
         self.text = self.optional_operation(self.text.clone(), core)?;
-        Ok(())
+        Ok(vec![self.boxed_clone()])
+        //Ok(())
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }

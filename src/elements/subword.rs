@@ -45,6 +45,10 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
+fn make_boxed_simple(s: &str) -> Box<dyn Subword> {
+    Box::new(SimpleSubword { text: s.to_string() })
+}
+
 fn split_str(s: &str, ifs: &str) -> Vec<String> {
     if ifs == "" {
         return vec![s.to_string()];
@@ -76,7 +80,10 @@ pub trait Subword {
     fn get_text(&self) -> &str;
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {Ok(())}
+    fn substitute(&mut self, _: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+        Ok(vec![self.boxed_clone()])
+    }
+
     fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {vec![]}
 
     fn split(&self, ifs: &str) -> Vec<Box<dyn Subword>>{
