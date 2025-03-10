@@ -25,7 +25,7 @@ impl Subword for DoubleQuoted {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut word = Word::default();
         word.subwords = match self.subwords.iter().any(|sw| sw.is_array()) {
-            true  => self.replace_array(core),
+            true  => self.replace_array(core)?,
             false => self.subwords.clone(),
         };
 
@@ -79,7 +79,7 @@ impl Subword for DoubleQuoted {
 }
 
 impl DoubleQuoted {
-    fn replace_array(&mut self, core: &mut ShellCore) -> Vec<Box<dyn Subword>> {
+    fn replace_array(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut ans = vec![];
         self.array_empty = true;
 
@@ -92,7 +92,7 @@ impl DoubleQuoted {
             let array = match sw.get_text() {
                 "$@" | "${@}" => core.db.get_position_params(),
                 _ => {
-                    let _ = sw.substitute(core);
+                    sw.substitute(core)?;
                     sw.get_array_elem()
                 },
             };
@@ -104,7 +104,7 @@ impl DoubleQuoted {
             }
             self.split_points.pop();
         }
-        ans
+        Ok(ans)
     }
 
     fn set_simple_subword(feeder: &mut Feeder, ans: &mut Self, len: usize) -> bool {
