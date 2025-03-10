@@ -7,7 +7,15 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
-use super::BracedParam;
+use super::{BracedParam, Param, OptionalOperation};
+
+impl OptionalOperation for CaseConv {
+    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.get_text(text, core)
+    }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct CaseConv {
@@ -111,7 +119,8 @@ impl CaseConv {
         }
 
         info.pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-        ans.case_conv = Some(info);
+        //ans.case_conv = Some(info.clone());
+        ans.optional_operation = Some(Box::new(info));
         return Ok(true);
     }
 }

@@ -14,7 +14,6 @@ use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::utils;
 use crate::error::exec::ExecError;
-use self::case_conv::CaseConv;
 use self::remove::Remove;
 use self::replace::Replace;
 use self::value_check::ValueCheck;
@@ -63,7 +62,7 @@ pub struct BracedParam {
     //substr: Option<Substr>,
     remove: Option<Remove>,
     value_check: Option<ValueCheck>,
-    case_conv: Option<CaseConv>,
+    //case_conv: Option<CaseConv>,
 
     unknown: String,
     is_array: bool,
@@ -273,14 +272,12 @@ impl BracedParam {
             return op.exec(&self.param, &text, core);
         }
 
-        /*if let Some(s) = self.substr.as_mut() {
-            s.get_text(&text, core)
-        }else*/ if let Some(v) = self.value_check.as_mut() {
+        if let Some(v) = self.value_check.as_mut() {
             v.set(&self.param.name, &self.param.subscript, &text, core)
         }else if let Some(r) = self.remove.as_mut() {
             r.set(&text, core)
-        }else if let Some(c) = &self.case_conv {
-            c.get_text(&text, core)
+        //}else if let Some(c) = &self.case_conv {
+         //   c.get_text(&text, core)
         }else{
             Ok(text.clone())
         }
