@@ -7,7 +7,7 @@ use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::error::parse::ParseError;
-use super::{BracedParam, OptionalOperation};
+use super::{BracedParam, OptionalOperation, Param};
 
 #[derive(Debug, Clone, Default)]
 pub struct Replace {
@@ -20,8 +20,8 @@ pub struct Replace {
 }
 
 impl OptionalOperation for Replace {
-    fn exec(&self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        match core.db.has_value(&name) {
+    fn exec(&self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        match core.db.has_value(&param.name) {
             true  => self.get_text(text, core),
             false => Ok("".to_string()),
         }
