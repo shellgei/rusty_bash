@@ -60,7 +60,7 @@ pub struct BracedParam {
 
     //replace: Option<Replace>,
     //substr: Option<Substr>,
-    remove: Option<Remove>,
+    //remove: Option<Remove>,
     value_check: Option<ValueCheck>,
     //case_conv: Option<CaseConv>,
 
@@ -82,7 +82,7 @@ impl Subword for BracedParam {
                 if sub.text == "[*]" || sub.text == "[@]" {
                     if self.optional_operation.is_some() 
                     //|| self.substr.is_some()
-                    || self.remove.is_some()
+                    //|| self.remove.is_some()
                     || self.value_check.is_some() {
                         let msg = core.db.get_array_all(&self.param.name).join(" ");
                         return Err(ExecError::InvalidName(msg));
@@ -196,7 +196,7 @@ impl BracedParam {
         sw.indirect = false;
         //sw.replace = None;
         //sw.substr = None;
-        sw.remove = None;
+        //sw.remove = None;
         sw.value_check = None;
         sw.unknown = String::new();
         sw.is_array = false;
@@ -274,10 +274,8 @@ impl BracedParam {
 
         if let Some(v) = self.value_check.as_mut() {
             v.set(&self.param.name, &self.param.subscript, &text, core)
-        }else if let Some(r) = self.remove.as_mut() {
-            r.set(&text, core)
-        //}else if let Some(c) = &self.case_conv {
-         //   c.get_text(&text, core)
+       // }else if let Some(r) = self.remove.as_mut() {
+       //     r.set(&text, core)
         }else{
             Ok(text.clone())
         }

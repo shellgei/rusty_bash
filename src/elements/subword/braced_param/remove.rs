@@ -6,7 +6,15 @@ use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::BracedParam;
+use super::{BracedParam, OptionalOperation, Param};
+
+impl OptionalOperation for Remove {
+    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.set(text, core)
+    }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Remove {
@@ -70,7 +78,8 @@ impl Remove {
         ans.text += &info.remove_symbol.clone();
 
         info.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-        ans.remove = Some(info);
+        //ans.remove = Some(info.clone());
+        ans.optional_operation = Some(Box::new(info));
         Ok(true)
     }
 }
