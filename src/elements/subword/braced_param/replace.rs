@@ -20,8 +20,11 @@ pub struct Replace {
 }
 
 impl OptionalOperation for Replace {
-    fn exec(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.get_text(text, core)
+    fn exec(&self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        match core.db.has_value(&name) {
+            true  => self.get_text(text, core),
+            false => Ok("".to_string()),
+        }
     }
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}

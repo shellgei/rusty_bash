@@ -29,7 +29,7 @@ struct Param {
 }
 
 trait OptionalOperation {
-    fn exec(&self, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
+    fn exec(&self, _: &String, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
     fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
     fn get_text(&self) -> String {"".to_string()}
 }
@@ -260,10 +260,12 @@ impl BracedParam {
 
     fn optional_operation(&mut self, text: String, core: &mut ShellCore) -> Result<String, ExecError> {
         if let Some(op) = self.optional_operation.as_mut() {
+            return op.exec(&self.param.name, &text, core);
+            /*
             return match core.db.has_value(&self.param.name) {
                 true  => op.exec(&text, core),
                 false => Ok("".to_string()),
-            };
+            };*/
         }
 
         if let Some(s) = self.substr.as_mut() {
@@ -272,13 +274,6 @@ impl BracedParam {
             v.set(&self.param.name, &self.param.subscript, &text, core)
         }else if let Some(r) = self.remove.as_mut() {
             r.set(&text, core)
-        }else if let Some(r) = &self.replace {
-            /*
-            match core.db.has_value(&self.param.name) {
-                true  => r.get_text(&text, core),
-                false => Ok("".to_string()),
-            }*/
-            panic!("!!");
         }else if let Some(c) = &self.case_conv {
             c.get_text(&text, core)
         }else{
