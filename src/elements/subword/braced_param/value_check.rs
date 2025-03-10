@@ -2,11 +2,27 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{exit, Feeder, ShellCore};
-use crate::elements::subword::BracedParam;
+use crate::elements::subword::{Subword, BracedParam};
 use crate::elements::subword::braced_param::Word;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::Subscript;
+use super::{Subscript, OptionalOperation, Param};
+
+impl OptionalOperation for ValueCheck {
+    fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.set(&param.name, &param.subscript, text, core)
+    }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+    fn is_value_check(&self) -> bool {true}
+
+    fn get_alternative(&self) -> Vec<Box<dyn Subword>> {
+        match &self.alternative_value {
+            Some(w) => w.subwords.to_vec(),
+            None    => vec![],
+        }
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
@@ -125,7 +141,8 @@ impl ValueCheck {
         ans.text += &feeder.consume(num);
         info.alternative_value = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)?);
 
-        ans.value_check = Some(info);
+//        ans.value_check = Some(info.clone());
+        ans.optional_operation = Some(Box::new(info));
         Ok(true)
     }
 }

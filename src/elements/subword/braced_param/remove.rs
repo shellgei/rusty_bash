@@ -78,7 +78,6 @@ impl Remove {
         ans.text += &info.remove_symbol.clone();
 
         info.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-        //ans.remove = Some(info.clone());
         ans.optional_operation = Some(Box::new(info));
         Ok(true)
     }
