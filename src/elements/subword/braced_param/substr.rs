@@ -4,7 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use super::BracedParam;
+use super::{BracedParam, OptionalOperation, Param};
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
@@ -12,41 +12,15 @@ pub struct Substr {
     pub length: Option<ArithmeticExpr>,
 }
 
-impl Substr {
-    pub fn get_text(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        let offset = self.offset.as_mut().unwrap();
-    
-        if offset.text == "" {
-            return Err(ExecError::OperandExpected("".to_string()));
-        }
-    
-        let mut ans;
-        match offset.eval_as_int(core) {
-            None => return Err(ExecError::OperandExpected(offset.text.clone())),
-            Some(n) => {
-                ans = text.chars().enumerate()
-                      .filter(|(i, _)| (*i as i64) >= n)
-                      .map(|(_, c)| c).collect();
-            },
-        };
-    
-        if self.length.is_some() {
-            ans = self.length(&ans, core)?;
-        }
-    
-        Ok(ans)
-    }
-    
-    fn length(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        match self.length.as_mut().unwrap().eval_as_int(core) {
-            Some(n) => Ok(text.chars().enumerate()
-                            .filter(|(i, _)| (*i as i64) < n)
-                            .map(|(_, c)| c).collect()),
-            None => return Err(ExecError::OperandExpected(self.length.clone().unwrap().text.clone())),
-        }
+impl OptionalOperation for Substr {
+    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.get(text, core)
     }
 
-    pub fn set_partial_position_params(&mut self, array: &mut Vec<String>,
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+    fn is_substr(&self) -> bool {true}
+
+    fn set_partial_position_params(&mut self, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         let offset = self.offset.as_mut().unwrap();
     
@@ -93,7 +67,7 @@ impl Substr {
         Ok(())
     }
 
-    pub fn set_partial_array(&mut self, name: &str, array: &mut Vec<String>,
+    fn set_partial_array(&mut self, name: &str, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         let offset = self.offset.as_mut().unwrap();
     
@@ -140,6 +114,42 @@ impl Substr {
         Ok(())
     }
 
+}
+
+impl Substr {
+    pub fn get(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        let offset = self.offset.as_mut().unwrap();
+    
+        if offset.text == "" {
+            return Err(ExecError::OperandExpected("".to_string()));
+        }
+    
+        let mut ans;
+        match offset.eval_as_int(core) {
+            None => return Err(ExecError::OperandExpected(offset.text.clone())),
+            Some(n) => {
+                ans = text.chars().enumerate()
+                      .filter(|(i, _)| (*i as i64) >= n)
+                      .map(|(_, c)| c).collect();
+            },
+        };
+    
+        if self.length.is_some() {
+            ans = self.length(&ans, core)?;
+        }
+    
+        Ok(ans)
+    }
+    
+    fn length(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        match self.length.as_mut().unwrap().eval_as_int(core) {
+            Some(n) => Ok(text.chars().enumerate()
+                            .filter(|(i, _)| (*i as i64) < n)
+                            .map(|(_, c)| c).collect()),
+            None => return Err(ExecError::OperandExpected(self.length.clone().unwrap().text.clone())),
+        }
+    }
+
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
         if ! feeder.starts_with(":") {
             return false;
@@ -156,7 +166,8 @@ impl Substr {
             _ => None,
         };
 
-        ans.substr = Some(info);
+        //ans.substr = Some(info.clone());
+        ans.optional_operation = Some(Box::new(info));
         true
     }
 
