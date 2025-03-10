@@ -146,7 +146,6 @@ impl Replace {
         info.replace_from = Some(BracedParam::eat_subwords(feeder, ans, vec!["}", "/"], core)? );
 
         if ! feeder.starts_with("/") {
-            ans.replace = Some(info.clone());
             ans.optional_operation = Some(Box::new(info));
             return Ok(true);
         }
@@ -154,7 +153,6 @@ impl Replace {
         info.has_replace_to = true;
         info.replace_to = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
 
-        ans.replace = Some(info.clone());
         ans.optional_operation = Some(Box::new(info));
         Ok(true)
     }

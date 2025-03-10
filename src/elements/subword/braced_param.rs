@@ -55,7 +55,7 @@ pub struct BracedParam {
 
     optional_operation: Option<Box<dyn OptionalOperation>>,
 
-    replace: Option<Replace>,
+    //replace: Option<Replace>,
     substr: Option<Substr>,
     remove: Option<Remove>,
     value_check: Option<ValueCheck>,
@@ -77,7 +77,7 @@ impl Subword for BracedParam {
         if self.indirect {
             if let Some(sub) = &self.param.subscript {
                 if sub.text == "[*]" || sub.text == "[@]" {
-                    if self.replace.is_some() 
+                    if self.optional_operation.is_some() 
                     || self.substr.is_some()
                     || self.remove.is_some()
                     || self.value_check.is_some() {
@@ -185,7 +185,7 @@ impl BracedParam {
     fn indirect_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut sw = self.clone();
         sw.indirect = false;
-        sw.replace = None;
+        //sw.replace = None;
         sw.substr = None;
         sw.remove = None;
         sw.value_check = None;
