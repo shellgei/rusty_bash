@@ -32,6 +32,11 @@ trait OptionalOperation {
     fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
     fn get_text(&self) -> String {"".to_string()}
     fn is_substr(&self) -> bool {false}
+    fn set_array(&mut self, _: &Param, _: &mut Vec<String>,
+                    _: &mut String, _: &mut ShellCore) -> Result<(), ExecError> {
+        Ok(())
+    }
+
     fn set_partial_position_params(&mut self, _: &mut Vec<String>,
                     _: &mut String, _: &mut ShellCore) -> Result<(), ExecError> {
         Ok(())
@@ -105,7 +110,8 @@ impl Subword for BracedParam {
             if sub.text == "[*]" || sub.text == "[@]" {
                 if let Some(s) = self.optional_operation.as_mut() {
                     if s.is_substr() {
-                        s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core)?;
+                        //s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core)?;
+                        s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
                         return self.ans();
                     }
                 }
@@ -123,7 +129,8 @@ impl Subword for BracedParam {
         if self.param.name == "@" {
             if let Some(s) = self.optional_operation.as_mut() {
                 if s.is_substr() {
-                    s.set_partial_position_params(&mut self.array, &mut self.text, core)?;
+                   // s.set_partial_position_params(&mut self.array, &mut self.text, core)?;
+                    s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
                     return self.ans();
                 }
             }
