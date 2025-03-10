@@ -19,11 +19,31 @@ use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
 use self::value_check::ValueCheck;
+use core::fmt;
+use core::fmt::Debug;
 
 #[derive(Debug, Clone, Default)]
 struct Param {
     name: String,
     subscript: Option<Subscript>,
+}
+
+trait OptionalOperation {
+    fn exec(&self, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
+    fn get_text(&self) -> String {"".to_string()}
+}
+
+impl Clone for Box::<dyn OptionalOperation> {
+    fn clone(&self) -> Box<dyn OptionalOperation> {
+        self.boxed_clone()
+    }
+}
+
+impl Debug for dyn OptionalOperation {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct(&self.get_text()).finish()
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -32,6 +52,9 @@ pub struct BracedParam {
     array: Vec<String>,
 
     param: Param,
+
+    optional_operation: Option<Box<dyn OptionalOperation>>,
+
     replace: Option<Replace>,
     substr: Option<Substr>,
     remove: Option<Remove>,
@@ -126,8 +149,6 @@ impl BracedParam {
         let alts = self.get_alternative_subwords();
         if ! alts.is_empty() {
             Ok(alts)
-       // }else if ! self.array.is_empty() {
-        //    Ok(self.array.iter().map(|s| super::make_boxed_simple(s)).collect())
         }else{
             Ok(vec![])
         }
@@ -238,6 +259,13 @@ impl BracedParam {
     }
 
     fn optional_operation(&mut self, text: String, core: &mut ShellCore) -> Result<String, ExecError> {
+        if let Some(op) = self.optional_operation.as_mut() {
+            return match core.db.has_value(&self.param.name) {
+                true  => op.exec(&text, core),
+                false => Ok("".to_string()),
+            };
+        }
+
         if let Some(s) = self.substr.as_mut() {
             s.get_text(&text, core)
         }else if let Some(v) = self.value_check.as_mut() {
@@ -245,10 +273,12 @@ impl BracedParam {
         }else if let Some(r) = self.remove.as_mut() {
             r.set(&text, core)
         }else if let Some(r) = &self.replace {
+            /*
             match core.db.has_value(&self.param.name) {
                 true  => r.get_text(&text, core),
                 false => Ok("".to_string()),
-            }
+            }*/
+            panic!("!!");
         }else if let Some(c) = &self.case_conv {
             c.get_text(&text, core)
         }else{

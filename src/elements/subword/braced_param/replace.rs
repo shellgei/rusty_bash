@@ -7,7 +7,7 @@ use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::error::parse::ParseError;
-use super::BracedParam;
+use super::{BracedParam, OptionalOperation};
 
 #[derive(Debug, Clone, Default)]
 pub struct Replace {
@@ -17,6 +17,14 @@ pub struct Replace {
     pub replace_from: Option<Word>,
     pub replace_to: Option<Word>,
     pub has_replace_to: bool,
+}
+
+impl OptionalOperation for Replace {
+    fn exec(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.get_text(text, core)
+    }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
 }
 
 impl Replace {
@@ -135,14 +143,16 @@ impl Replace {
         info.replace_from = Some(BracedParam::eat_subwords(feeder, ans, vec!["}", "/"], core)? );
 
         if ! feeder.starts_with("/") {
-            ans.replace = Some(info);
+            ans.replace = Some(info.clone());
+            ans.optional_operation = Some(Box::new(info));
             return Ok(true);
         }
         ans.text += &feeder.consume(1);
         info.has_replace_to = true;
         info.replace_to = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
 
-        ans.replace = Some(info);
+        ans.replace = Some(info.clone());
+        ans.optional_operation = Some(Box::new(info));
         Ok(true)
     }
 }
