@@ -27,7 +27,9 @@ impl OptionalOperation for Substr {
             _   => self.set_partial_array(&param.name, array, text, core),
         }
     }
+}
 
+impl Substr {
     fn set_partial_position_params(&mut self, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         let offset = self.offset.as_mut().unwrap();
@@ -122,9 +124,6 @@ impl OptionalOperation for Substr {
         Ok(())
     }
 
-}
-
-impl Substr {
     pub fn get(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let offset = self.offset.as_mut().unwrap();
     

@@ -33,17 +33,7 @@ trait OptionalOperation {
     fn get_text(&self) -> String {"".to_string()}
     fn is_substr(&self) -> bool {false}
     fn set_array(&mut self, _: &Param, _: &mut Vec<String>,
-                    _: &mut String, _: &mut ShellCore) -> Result<(), ExecError> {
-        Ok(())
-    }
-
-    fn set_partial_position_params(&mut self, _: &mut Vec<String>,
-                    _: &mut String, _: &mut ShellCore) -> Result<(), ExecError> {
-        Ok(())
-    }
-
-    fn set_partial_array(&mut self, _: &str, _: &mut Vec<String>,
-                    _: &mut String, _: &mut ShellCore) -> Result<(), ExecError> {
+                 _: &mut String, _: &mut ShellCore) -> Result<(), ExecError> {
         Ok(())
     }
 }
