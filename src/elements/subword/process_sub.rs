@@ -30,50 +30,11 @@ impl Subword for ProcessSubstitution {
         pipe.set(-1, unistd::getpgrp());
         let _ = self.command.exec(core, &mut pipe)?;
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
-        //Ok(())
-        Ok(vec![super::make_boxed_simple(&self.text)])
+        Ok(vec![])
     }
 }
 
 impl ProcessSubstitution {
-    /*
-    fn set_line(&mut self, line: Result<String, Error>) -> bool {
-        if let Ok(ln) = line {
-            self.text.push_str(&ln);
-            self.text.push('\n');
-            return true;
-        }
-        false
-    }
-
-    fn interrupted(&mut self, count: usize, core: &mut ShellCore) -> Result<(), ExecError> {
-        if count%100 == 99 { //To receive Ctrl+C
-            thread::sleep(time::Duration::from_millis(1));
-        }
-        match core.sigint.load(Relaxed) {
-            true  => Err(ExecError::Interrupted),
-            false => Ok(()),
-        }
-    }
-
-    fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> Result<(), ExecError> {
-        let f = unsafe { File::from_raw_fd(fd) };
-        let reader = BufReader::new(f);
-        self.text.clear();
-        for (i, line) in reader.lines().enumerate() {
-            self.interrupted(i, core)?;
-            if ! self.set_line(line) {
-                break;
-            }
-        }
-
-        if ! self.text.is_empty() {
-            self.text.pop();
-        }
-        Ok(())
-    }
-    */
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("<(") && ! feeder.starts_with(">(") {
             return Ok(None);

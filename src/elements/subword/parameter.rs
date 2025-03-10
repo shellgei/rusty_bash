@@ -16,13 +16,11 @@ impl Subword for Parameter {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         if ! self.text.starts_with("$") {
-            return Ok(vec![self.boxed_clone()]);
-            //return Ok(());
+            return Ok(vec![]);
         }
         let value = core.db.get_param(&self.text[1..]).unwrap_or(String::new());
         self.text = value.to_string();
-        //Ok(())
-        Ok(vec![self.boxed_clone()])
+        Ok(vec![])
     }
 
     fn is_array(&self) -> bool {self.text == "$@"}

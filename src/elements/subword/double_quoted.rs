@@ -29,12 +29,10 @@ impl Subword for DoubleQuoted {
             false => self.subwords.clone(),
         };
 
-    
-  //      word.subwords = self.replace_array(core);
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
         self.text = self.subwords.iter().map(|s| s.get_text()).collect();
-        Ok(vec![self.boxed_clone()])
+        Ok(vec![])
     }
 
     fn make_glob_string(&mut self) -> String {

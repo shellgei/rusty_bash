@@ -20,8 +20,7 @@ impl Subword for Arithmetic {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         if let Ok(s) = self.com.eval(core) {
             self.text = s;
-            return Ok(vec![super::make_boxed_simple(&self.text)]);
-           // return Ok(());
+            return Ok(vec![]);
         }
         Err(ExecError::OperandExpected(self.com.text.clone()))
     }

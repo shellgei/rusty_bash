@@ -129,7 +129,7 @@ impl BracedParam {
        // }else if ! self.array.is_empty() {
         //    Ok(self.array.iter().map(|s| super::make_boxed_simple(s)).collect())
         }else{
-            Ok(vec![self.boxed_clone()])
+            Ok(vec![])
         }
     }
 
