@@ -7,7 +7,8 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
-use super::{BracedParam, Param, OptionalOperation};
+use super::{BracedParam, Param};
+use super::optional_operation::OptionalOperation;
 
 impl OptionalOperation for CaseConv {
     fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {

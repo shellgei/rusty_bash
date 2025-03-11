@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod optional_operation;
 mod value_check;
 mod substr;
 mod remove;
@@ -9,11 +10,13 @@ mod parse;
 mod case_conv;
 
 use crate::{Feeder, ShellCore};
+use crate::error::parse::ParseError;
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::utils;
 use crate::error::exec::ExecError;
+use self::optional_operation::OptionalOperation;
 use self::remove::Remove;
 use self::replace::Replace;
 use core::fmt;
@@ -25,6 +28,7 @@ struct Param {
     subscript: Option<Subscript>,
 }
 
+/*
 trait OptionalOperation {
     fn exec(&mut self, _: &Param, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
     fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
@@ -38,6 +42,11 @@ trait OptionalOperation {
     fn get_alternative(&self) -> Vec<Box<dyn Subword>> { vec![] }
 }
 
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn OptionalOperation>>, ParseError> {
+    if let Some(a) = Replace::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else{ Ok(None) }
+}
+
 impl Clone for Box::<dyn OptionalOperation> {
     fn clone(&self) -> Box<dyn OptionalOperation> {
         self.boxed_clone()
@@ -49,6 +58,7 @@ impl Debug for dyn OptionalOperation {
         fmt.debug_struct(&self.get_text()).finish()
     }
 }
+*/
 
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
@@ -230,9 +240,7 @@ impl BracedParam {
             false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
         };
 
-        if self.has_value_check() {
-            self.text = self.optional_operation(self.text.clone(), core)?;
-        }else if self.array.len() <= 1 {
+        if self.array.len() <= 1 || self.has_value_check() {
             self.text = self.optional_operation(self.text.clone(), core)?;
         }else {
             for i in 0..self.array.len() {

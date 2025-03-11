@@ -6,7 +6,8 @@ use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::{BracedParam, OptionalOperation, Param};
+use super::{BracedParam, Param};
+use super::optional_operation::OptionalOperation;
 
 impl OptionalOperation for Remove {
     fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {

@@ -7,10 +7,12 @@ use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::error::parse::ParseError;
-use super::{BracedParam, OptionalOperation, Param};
+use super::{BracedParam, Param};
+use super::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
 pub struct Replace {
+    pub text: String,
     pub head_only_replace: bool,
     pub tail_only_replace: bool,
     pub all_replace: bool,
@@ -123,6 +125,7 @@ impl Replace {
         Ok(ans)
     }
 
+    /*
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
            -> Result<bool, ParseError> {
         if ! feeder.starts_with("/") {
@@ -155,5 +158,38 @@ impl Replace {
 
         ans.optional_operation = Some(Box::new(info));
         Ok(true)
+    }*/
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        if ! feeder.starts_with("/") {
+            return Ok(None);
+        }
+
+        let mut ans = Replace::default();
+
+        ans.text += &feeder.consume(1);
+        if feeder.starts_with("/") {
+            ans.text += &feeder.consume(1);
+            ans.all_replace = true;
+        }else if feeder.starts_with("#") {
+            ans.text += &feeder.consume(1);
+            ans.head_only_replace = true;
+        }else if feeder.starts_with("%") {
+            ans.text += &feeder.consume(1);
+            ans.tail_only_replace = true;
+        }
+
+        ans.replace_from = Some(BracedParam::eat_subwords2(feeder, vec!["}", "/"], core)? );
+
+        if ! feeder.starts_with("/") {
+        //    ans.optional_operation = Some(Box::new(ans));
+            return Ok(Some(ans));
+        }
+        ans.text += &feeder.consume(1);
+        ans.has_replace_to = true;
+        ans.replace_to = Some(BracedParam::eat_subwords2(feeder, vec!["}"], core)? );
+
+        //ans.optional_operation = Some(Box::new(ans));
+        Ok(Some(ans))
     }
 }

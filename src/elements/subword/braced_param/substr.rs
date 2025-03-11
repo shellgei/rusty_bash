@@ -4,7 +4,8 @@
 use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use super::{BracedParam, OptionalOperation, Param};
+use super::{BracedParam, Param};
+use super::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
