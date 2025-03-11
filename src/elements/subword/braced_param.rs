@@ -3,7 +3,6 @@
 
 mod optional_operation;
 mod value_check;
-mod substr;
 mod parse;
 mod case_conv;
 

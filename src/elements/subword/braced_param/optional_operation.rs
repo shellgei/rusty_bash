@@ -3,6 +3,7 @@
 
 mod replace;
 mod remove;
+pub mod substr;
 
 use crate::{Feeder, ShellCore};
 use crate::error::parse::ParseError;
@@ -13,7 +14,6 @@ use self::replace::Replace;
 use self::remove::Remove;
 use core::fmt;
 use core::fmt::Debug;
-use crate::elements::subword::braced_param::substr::Substr;
 
 pub trait OptionalOperation {
     fn exec(&mut self, _: &Param, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;

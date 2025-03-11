@@ -9,7 +9,7 @@ use crate::error::parse::ParseError;
 use super::{BracedParam, Param};
 use super::optional_operation;
 //use super::optional_operation::remove::Remove;
-use super::substr::Substr;
+use super::optional_operation::substr::Substr;
 use super::case_conv::CaseConv;
 use super::value_check::ValueCheck;
 use crate::elements::subword::filler::FillerSubword;
