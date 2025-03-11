@@ -20,6 +20,7 @@ impl OptionalOperation for CaseConv {
 
 #[derive(Debug, Clone, Default)]
 pub struct CaseConv {
+    pub text: String,
     pub pattern: Option<Word>,
     pub replace_symbol: String,
 }
@@ -123,5 +124,30 @@ impl CaseConv {
         //ans.case_conv = Some(info.clone());
         ans.optional_operation = Some(Box::new(info));
         return Ok(true);
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        if ! feeder.starts_with("^") 
+        && ! feeder.starts_with(",") 
+        && ! feeder.starts_with("~") {
+            return Ok(None);
+        }
+
+        let mut ans = CaseConv::default();
+
+        if feeder.starts_with("^^") 
+        || feeder.starts_with(",,") 
+        || feeder.starts_with("~~") {
+            ans.replace_symbol = feeder.consume(2);
+            ans.text += &ans.replace_symbol;
+        }else if feeder.starts_with("^") 
+        || feeder.starts_with(",") 
+        || feeder.starts_with("~") {
+            ans.replace_symbol = feeder.consume(1);
+            ans.text += &ans.replace_symbol;
+        }
+
+        ans.pattern = Some(BracedParam::eat_subwords2(feeder, vec!["}"], core)? );
+        Ok(Some(ans))
     }
 }
