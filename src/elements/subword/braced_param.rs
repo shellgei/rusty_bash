@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod optional_operation;
-mod value_check;
 mod parse;
 
 use crate::{Feeder, ShellCore};

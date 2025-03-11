@@ -4,7 +4,8 @@
 mod case_conv;
 mod replace;
 mod remove;
-pub mod substr;
+mod substr;
+mod value_check;
 
 use crate::{Feeder, ShellCore};
 use crate::error::parse::ParseError;
@@ -15,7 +16,7 @@ use self::case_conv::CaseConv;
 use self::replace::Replace;
 use self::remove::Remove;
 use self::substr::Substr;
-use super::value_check::ValueCheck;
+use self::value_check::ValueCheck;
 use core::fmt;
 use core::fmt::Debug;
 

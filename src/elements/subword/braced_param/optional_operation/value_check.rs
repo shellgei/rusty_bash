@@ -6,8 +6,8 @@ use crate::elements::subword::{Subword, BracedParam};
 use crate::elements::subword::braced_param::Word;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::{Subscript, Param};
-use super::optional_operation::OptionalOperation;
+use super::super::{Subscript, Param};
+use super::OptionalOperation;
 
 impl OptionalOperation for ValueCheck {
     fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
