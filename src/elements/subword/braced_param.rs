@@ -71,26 +71,24 @@ impl Subword for BracedParam {
 
         if self.indirect && self.has_aster_or_atmark_subscript() { // ${!name[@]}, ${!name[*]}
             self.index_replace(core)?;
-            return self.ans();
+            return Ok(vec![]);
         }
 
         if self.indirect {
             self.indirect_replace(core)?;
+            self.check()?;
         }
 
         if self.has_aster_or_atmark_subscript() {
             if let Some(s) = self.optional_operation.as_mut() {
                 if s.is_substr() {
                     s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
-                    return self.ans();
+                    return Ok(vec![]);
                 }
             }
         }
 
         if self.param.subscript.is_some() {
-            if self.param.name == "@" {
-                return Err(ExecError::BadSubstitution("@".to_string()));
-            }
             self.subscript_operation(core)?;
             return self.ans();
         }
@@ -99,7 +97,7 @@ impl Subword for BracedParam {
             if let Some(s) = self.optional_operation.as_mut() {
                 if s.is_substr() {
                     s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
-                    return self.ans();
+                    return Ok(vec![]);
                 }
             }
         }
@@ -143,6 +141,12 @@ impl BracedParam {
         if self.unknown.len() > 0 
         && ! self.unknown.starts_with(",") {
             return Err(ExecError::BadSubstitution(self.text.clone()));
+        }
+
+        if self.param.subscript.is_some() {
+            if self.param.name == "@" || self.param.name == "*" {
+                return Err(ExecError::BadSubstitution(self.param.name.clone()));
+            }
         }
         Ok(())
     }
