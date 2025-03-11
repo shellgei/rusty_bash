@@ -182,14 +182,12 @@ impl Replace {
         ans.replace_from = Some(BracedParam::eat_subwords2(feeder, vec!["}", "/"], core)? );
 
         if ! feeder.starts_with("/") {
-        //    ans.optional_operation = Some(Box::new(ans));
             return Ok(Some(ans));
         }
         ans.text += &feeder.consume(1);
         ans.has_replace_to = true;
         ans.replace_to = Some(BracedParam::eat_subwords2(feeder, vec!["}"], core)? );
 
-        //ans.optional_operation = Some(Box::new(ans));
         Ok(Some(ans))
     }
 }

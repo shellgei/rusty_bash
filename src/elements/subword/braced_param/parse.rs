@@ -6,8 +6,9 @@ use crate::elements::subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
 use crate::error::parse::ParseError;
-use super::{BracedParam, Param, Remove};
+use super::{BracedParam, Param};
 use super::optional_operation;
+//use super::optional_operation::remove::Remove;
 use super::substr::Substr;
 use super::case_conv::CaseConv;
 use super::value_check::ValueCheck;
@@ -132,10 +133,9 @@ impl BracedParam {
             }else{
             let _ = ValueCheck::eat(feeder, &mut ans, core)?
                  || CaseConv::eat(feeder, &mut ans, core)?
-                 || Substr::eat(feeder, &mut ans, core)
-                 || Remove::eat(feeder, &mut ans, core)?;
+                 || Substr::eat(feeder, &mut ans, core);
+//                 || Remove::eat(feeder, &mut ans, core)?;
             }
-            //     || Replace::eat(feeder, &mut ans, core)?;
         }
         while ! feeder.starts_with("}") {
             Self::eat_unknown(feeder, &mut ans, core)?;

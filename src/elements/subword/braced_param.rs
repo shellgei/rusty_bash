@@ -4,7 +4,6 @@
 mod optional_operation;
 mod value_check;
 mod substr;
-mod remove;
 mod parse;
 mod case_conv;
 
@@ -15,7 +14,6 @@ use crate::elements::word::Word;
 use crate::utils;
 use crate::error::exec::ExecError;
 use self::optional_operation::OptionalOperation;
-use self::remove::Remove;
 
 #[derive(Debug, Clone, Default)]
 pub struct Param {

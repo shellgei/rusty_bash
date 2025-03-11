@@ -6,8 +6,8 @@ use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::{BracedParam, Param};
-use super::optional_operation::OptionalOperation;
+use super::super::{BracedParam, Param};
+use super::OptionalOperation;
 
 impl OptionalOperation for Remove {
     fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -19,6 +19,7 @@ impl OptionalOperation for Remove {
 
 #[derive(Debug, Clone, Default)]
 pub struct Remove {
+    pub text: String,
     pub remove_symbol: String,
     pub remove_pattern: Option<Word>,
 }
@@ -66,6 +67,7 @@ impl Remove {
         *text = text[0..ans_length].to_string();
     }
 
+    /*
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
         -> Result<bool, ParseError> {
         let len = feeder.scanner_parameter_remove_symbol();
@@ -73,13 +75,28 @@ impl Remove {
             return Ok(false);
         }
 
-        let mut info = Remove::default();
+        let mut ans = Remove::default();
 
-        info.remove_symbol = feeder.consume(len);
-        ans.text += &info.remove_symbol.clone();
+        ans.remove_symbol = feeder.consume(len);
+        ans.text += &ans.remove_symbol.clone();
 
-        info.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-        ans.optional_operation = Some(Box::new(info));
+        ans.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
+        ans.optional_operation = Some(Box::new(ans));
         Ok(true)
+    }*/
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        let len = feeder.scanner_parameter_remove_symbol();
+        if len == 0 {
+            return Ok(None);
+        }
+
+        let mut ans = Remove::default();
+
+        ans.remove_symbol = feeder.consume(len);
+        ans.text += &ans.remove_symbol.clone();
+
+        ans.remove_pattern = Some(BracedParam::eat_subwords2(feeder, vec!["}"], core)? );
+        Ok(Some(ans))
     }
 }
