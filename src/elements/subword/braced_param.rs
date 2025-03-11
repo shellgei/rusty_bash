@@ -129,15 +129,20 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
+    /*
     fn get_alternative_subwords(&mut self) -> Vec<Box<dyn Subword>> {
         match self.optional_operation.as_mut() {
             Some(op) => op.get_alternative(),
             None     => vec![],
         }
-    }
+    }*/
 
     fn ans(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        let alts = self.get_alternative_subwords();
+        let alts = match self.optional_operation.as_mut() {
+            Some(op) => op.get_alternative(),
+            None     => vec![],
+        };
+
         if ! alts.is_empty() {
             Ok(alts)
         }else{
