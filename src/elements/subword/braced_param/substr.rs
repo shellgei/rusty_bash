@@ -9,6 +9,7 @@ use super::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
+    pub text: String,
     pub offset: Option<ArithmeticExpr>,
     pub length: Option<ArithmeticExpr>,
 }
@@ -158,6 +159,7 @@ impl Substr {
         }
     }
 
+    /*
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
         if ! feeder.starts_with(":") {
             return false;
@@ -174,22 +176,41 @@ impl Substr {
             _ => None,
         };
 
-        //ans.substr = Some(info.clone());
         ans.optional_operation = Some(Box::new(info));
         true
-    }
+    }*/
 
-    fn eat_length(feeder: &mut Feeder, ans: &mut BracedParam, info: &mut Substr, core: &mut ShellCore) {
+    fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
         if ! feeder.starts_with(":") {
             return;
         }
         ans.text += &feeder.consume(1);
-        info.length = match ArithmeticExpr::parse(feeder, core, true) {
+        ans.length = match ArithmeticExpr::parse(feeder, core, true) {
             Ok(Some(a)) => {
                 ans.text += &a.text.clone();
                 Some(a)
             },
             _ => None,
         };
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+        if ! feeder.starts_with(":") {
+            return None;
+        }
+        let mut ans = Self::default();
+        ans.text += &feeder.consume(1);
+
+        let mut ans = Substr::default();
+        ans.offset = match ArithmeticExpr::parse(feeder, core, true) {
+            Ok(Some(a)) => {
+                ans.text += &a.text.clone();
+                Self::eat_length(feeder, &mut ans, core);
+                Some(a)
+            },
+            _ => None,
+        };
+
+        Some(ans)
     }
 }

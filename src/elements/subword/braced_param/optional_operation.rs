@@ -13,6 +13,7 @@ use self::replace::Replace;
 use self::remove::Remove;
 use core::fmt;
 use core::fmt::Debug;
+use crate::elements::subword::braced_param::substr::Substr;
 
 pub trait OptionalOperation {
     fn exec(&mut self, _: &Param, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
@@ -30,6 +31,7 @@ pub trait OptionalOperation {
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn OptionalOperation>>, ParseError> {
     if let Some(a) = Replace::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = Remove::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+//    else if let Some(a) = Substr::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }
 

@@ -13,6 +13,7 @@ use super::substr::Substr;
 use super::case_conv::CaseConv;
 use super::value_check::ValueCheck;
 use crate::elements::subword::filler::FillerSubword;
+use super::optional_operation::OptionalOperation;
 
 impl BracedParam {
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
@@ -133,8 +134,14 @@ impl BracedParam {
             }else{
             let _ = ValueCheck::eat(feeder, &mut ans, core)?
                  || CaseConv::eat(feeder, &mut ans, core)?
-                 || Substr::eat(feeder, &mut ans, core);
-//                 || Remove::eat(feeder, &mut ans, core)?;
+                 || if let Some(op) = Substr::parse(feeder, core){
+                    ans.text += &op.get_text();
+                    ans.optional_operation = Some(Box::new(op));
+                    true
+                 }else{
+                    true
+                 };
+//                 || Substr::eat(feeder, &mut ans, core);
             }
         }
         while ! feeder.starts_with("}") {
