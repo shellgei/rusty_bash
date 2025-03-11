@@ -79,7 +79,9 @@ impl Subword for BracedParam {
             self.check()?;
         }
 
-        if self.has_aster_or_atmark_subscript() {
+        if self.has_aster_or_atmark_subscript()
+        || self.param.name == "@" 
+        || self.param.name == "*" {
             if let Some(s) = self.optional_operation.as_mut() {
                 if s.is_substr() {
                     s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
@@ -88,27 +90,10 @@ impl Subword for BracedParam {
             }
         }
 
-        if self.param.subscript.is_some() {
-            self.subscript_operation(core)?;
-            return self.ans();
+        match self.param.subscript.is_some() {
+            true  => self.subscript_operation(core)?,
+            false => self.non_subscript_operation(core)?,
         }
-
-        if self.param.name == "@" {
-            if let Some(s) = self.optional_operation.as_mut() {
-                if s.is_substr() {
-                    s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
-                    return Ok(vec![]);
-                }
-            }
-        }
-
-        let value = core.db.get_param(&self.param.name).unwrap_or_default();
-        self.text = match self.num {
-            true  => value.chars().count().to_string(),
-            false => value.to_string(),
-        };
-
-        self.text = self.optional_operation(self.text.clone(), core)?;
         self.ans()
     }
 
@@ -200,6 +185,17 @@ impl BracedParam {
             return Err(ExecError::InvalidName(self.param.name.clone()));
         }
         Ok(())
+    }
+
+    fn non_subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+            let value = core.db.get_param(&self.param.name).unwrap_or_default();
+            self.text = match self.num {
+                true  => value.chars().count().to_string(),
+                false => value.to_string(),
+            };
+    
+            self.text = self.optional_operation(self.text.clone(), core)?;
+            Ok(())
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
