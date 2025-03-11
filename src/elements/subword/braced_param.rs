@@ -69,28 +69,20 @@ impl Subword for BracedParam {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         self.check()?;
 
-        if self.indirect {
-            if let Some(sub) = &self.param.subscript {
-                if sub.text == "[*]" || sub.text == "[@]" {
-                    if self.optional_operation.is_some() {
-                        let msg = core.db.get_array_all(&self.param.name).join(" ");
-                        return Err(ExecError::InvalidName(msg));
-                    }
+        if self.indirect && self.has_aster_or_atmark_subscript() { // ${!name[@]}, ${!name[*]}
+            self.index_replace(core)?;
+            return self.ans();
+        }
 
-                    self.index_replace(core)?;
-                    return self.ans();
-                }
-            }
+        if self.indirect {
             self.indirect_replace(core)?;
         }
 
-        if let Some(sub) = &self.param.subscript {
-            if sub.text == "[*]" || sub.text == "[@]" {
-                if let Some(s) = self.optional_operation.as_mut() {
-                    if s.is_substr() {
-                        s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
-                        return self.ans();
-                    }
+        if self.has_aster_or_atmark_subscript() {
+            if let Some(s) = self.optional_operation.as_mut() {
+                if s.is_substr() {
+                    s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
+                    return self.ans();
                 }
             }
         }
@@ -129,25 +121,19 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    /*
-    fn get_alternative_subwords(&mut self) -> Vec<Box<dyn Subword>> {
-        match self.optional_operation.as_mut() {
-            Some(op) => op.get_alternative(),
-            None     => vec![],
-        }
-    }*/
-
     fn ans(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        let alts = match self.optional_operation.as_mut() {
-            Some(op) => op.get_alternative(),
-            None     => vec![],
-        };
-
-        if ! alts.is_empty() {
-            Ok(alts)
-        }else{
-            Ok(vec![])
+        match self.optional_operation.as_mut() {
+            Some(op) => Ok(op.get_alternative()),
+            None     => Ok(vec![]),
         }
+    }
+
+    fn has_aster_or_atmark_subscript(&self) -> bool {
+        if self.param.subscript.is_none() {
+            return false;
+        }
+        let sub = &self.param.subscript.as_ref().unwrap().text;
+        sub == "[*]" || sub == "[@]"
     }
 
     fn check(&mut self) -> Result<(), ExecError> {
@@ -162,6 +148,11 @@ impl BracedParam {
     }
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if self.optional_operation.is_some() {
+            let msg = core.db.get_array_all(&self.param.name).join(" ");
+            return Err(ExecError::InvalidName(msg));
+        }
+
         if ! core.db.has_value(&self.param.name) {
             self.text = "".to_string();
             return Ok(());
