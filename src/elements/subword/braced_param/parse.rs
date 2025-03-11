@@ -24,7 +24,7 @@ impl BracedParam {
         Ok(false)
     }
 
-    pub fn eat_subwords2(feeder: &mut Feeder, ends: Vec<&str>, core: &mut ShellCore)
+    pub fn eat_subwords(feeder: &mut Feeder, ends: Vec<&str>, core: &mut ShellCore)
         -> Result<Word, ParseError> {
         let mut word = Word::default();
         while ! ends.iter().any(|e| feeder.starts_with(e)) {

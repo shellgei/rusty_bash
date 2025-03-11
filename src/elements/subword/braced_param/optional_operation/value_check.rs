@@ -126,29 +126,6 @@ impl ValueCheck {
         Err(ExecError::Other(msg))
     }
 
-    /*
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
-        let num = feeder.scanner_parameter_alternative_symbol();
-        if num == 0 {
-            return Ok(false);
-        }
-
-        let mut info = ValueCheck::default();
-
-        let symbol = feeder.consume(num);
-        info.symbol = Some(symbol.clone());
-        ans.text += &symbol;
-
-        let num = feeder.scanner_blank(core);
-        ans.text += &feeder.consume(num);
-        info.alternative_value = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)?);
-
-//        ans.value_check = Some(info.clone());
-        ans.optional_operation = Some(Box::new(info));
-        Ok(true)
-    }*/
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let num = feeder.scanner_parameter_alternative_symbol();
         if num == 0 {
@@ -163,10 +140,8 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        ans.alternative_value = Some(BracedParam::eat_subwords2(feeder, vec!["}"], core)?);
+        ans.alternative_value = Some(BracedParam::eat_subwords(feeder, vec!["}"], core)?);
 
-//        ans.value_check = Some(ans.clone());
-//        ans.optional_operation = Some(Box::new(ans));
         Ok(Some(ans))
     }
 }
