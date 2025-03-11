@@ -4,12 +4,8 @@
 use crate::{Feeder, ShellCore};
 use crate::error::parse::ParseError;
 use crate::elements::subword::Subword;
-use crate::elements::subscript::Subscript;
-use crate::elements::word::Word;
-use crate::utils;
 use crate::error::exec::ExecError;
 use super::Param;
-use super::remove::Remove;
 use super::replace::Replace;
 use core::fmt;
 use core::fmt::Debug;

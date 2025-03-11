@@ -10,7 +10,6 @@ mod parse;
 mod case_conv;
 
 use crate::{Feeder, ShellCore};
-use crate::error::parse::ParseError;
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::Word;
@@ -18,12 +17,9 @@ use crate::utils;
 use crate::error::exec::ExecError;
 use self::optional_operation::OptionalOperation;
 use self::remove::Remove;
-use self::replace::Replace;
-use core::fmt;
-use core::fmt::Debug;
 
 #[derive(Debug, Clone, Default)]
-struct Param {
+pub struct Param {
     name: String,
     subscript: Option<Subscript>,
 }
