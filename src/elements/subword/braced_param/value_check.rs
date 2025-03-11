@@ -126,6 +126,7 @@ impl ValueCheck {
         Err(ExecError::Other(msg))
     }
 
+    /*
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
         -> Result<bool, ParseError> {
         let num = feeder.scanner_parameter_alternative_symbol();
@@ -146,7 +147,7 @@ impl ValueCheck {
 //        ans.value_check = Some(info.clone());
         ans.optional_operation = Some(Box::new(info));
         Ok(true)
-    }
+    }*/
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let num = feeder.scanner_parameter_alternative_symbol();

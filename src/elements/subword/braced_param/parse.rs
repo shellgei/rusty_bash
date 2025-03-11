@@ -8,12 +8,7 @@ use crate::elements::word::Word;
 use crate::error::parse::ParseError;
 use super::{BracedParam, Param};
 use super::optional_operation;
-//use super::optional_operation::remove::Remove;
-use super::optional_operation::substr::Substr;
-//use super::optional_operation::case_conv::CaseConv;
-use super::value_check::ValueCheck;
 use crate::elements::subword::filler::FillerSubword;
-use super::optional_operation::OptionalOperation;
 
 impl BracedParam {
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
@@ -27,29 +22,6 @@ impl BracedParam {
         }
 
         Ok(false)
-    }
-
-    pub fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore)
-        -> Result<Word, ParseError> {
-        let mut word = Word::default();
-        while ! ends.iter().any(|e| feeder.starts_with(e)) {
-            if let Some(sw) = subword::parse_filler(feeder, core)? {
-                ans.text += sw.get_text();
-                word.text += sw.get_text();
-                word.subwords.push(sw);
-            }else{
-                let c = feeder.consume(1);
-                ans.text += &c;
-                word.text += &c;
-                word.subwords.push(Box::new(FillerSubword{text: c}) );
-            }
-
-            if feeder.len() == 0 {
-                feeder.feed_additional_line(core)?;
-            }
-        }
-
-        Ok(word)
     }
 
     pub fn eat_subwords2(feeder: &mut Feeder, ends: Vec<&str>, core: &mut ShellCore)
@@ -131,18 +103,7 @@ impl BracedParam {
             if let Some(op) = optional_operation::parse(feeder, core)? {
                 ans.text += &op.get_text();
                 ans.optional_operation = Some(op);
-            }/*else{
-
-            let _ = ValueCheck::eat(feeder, &mut ans, core)?
-//                 || CaseConv::eat(feeder, &mut ans, core)?
-                 || if let Some(op) = Substr::parse(feeder, core){
-                    ans.text += &op.get_text();
-                    ans.optional_operation = Some(Box::new(op));
-                    true
-                 }else{
-                    true
-                 };
-            }*/
+            }
         }
         while ! feeder.starts_with("}") {
             Self::eat_unknown(feeder, &mut ans, core)?;
