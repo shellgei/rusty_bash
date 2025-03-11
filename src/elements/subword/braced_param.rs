@@ -5,7 +5,6 @@ mod optional_operation;
 mod value_check;
 mod substr;
 mod remove;
-mod replace;
 mod parse;
 mod case_conv;
 

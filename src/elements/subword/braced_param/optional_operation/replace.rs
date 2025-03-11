@@ -7,8 +7,8 @@ use crate::elements::subword::braced_param::Word;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::error::parse::ParseError;
-use super::{BracedParam, Param};
-use super::optional_operation::OptionalOperation;
+use super::super::{BracedParam, Param};
+use super::super::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
 pub struct Replace {

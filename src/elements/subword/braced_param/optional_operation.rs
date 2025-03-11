@@ -1,12 +1,14 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod replace;
+
 use crate::{Feeder, ShellCore};
 use crate::error::parse::ParseError;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use super::Param;
-use super::replace::Replace;
+use self::replace::Replace;
 use core::fmt;
 use core::fmt::Debug;
 
