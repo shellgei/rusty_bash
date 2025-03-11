@@ -4,7 +4,6 @@
 mod optional_operation;
 mod value_check;
 mod parse;
-mod case_conv;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;

@@ -7,8 +7,8 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
-use super::{BracedParam, Param};
-use super::optional_operation::OptionalOperation;
+use super::super::{BracedParam, Param};
+use super::OptionalOperation;
 
 impl OptionalOperation for CaseConv {
     fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -96,34 +96,6 @@ impl CaseConv {
             start += ch.len_utf8();
         }
         Ok(ans)
-    }
-
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
-           -> Result<bool, ParseError> {
-        if ! feeder.starts_with("^") 
-        && ! feeder.starts_with(",") 
-        && ! feeder.starts_with("~") {
-            return Ok(false);
-        }
-
-        let mut info = CaseConv::default();
-
-        if feeder.starts_with("^^") 
-        || feeder.starts_with(",,") 
-        || feeder.starts_with("~~") {
-            info.replace_symbol = feeder.consume(2);
-            ans.text += &info.replace_symbol;
-        }else if feeder.starts_with("^") 
-        || feeder.starts_with(",") 
-        || feeder.starts_with("~") {
-            info.replace_symbol = feeder.consume(1);
-            ans.text += &info.replace_symbol;
-        }
-
-        info.pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-        //ans.case_conv = Some(info.clone());
-        ans.optional_operation = Some(Box::new(info));
-        return Ok(true);
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

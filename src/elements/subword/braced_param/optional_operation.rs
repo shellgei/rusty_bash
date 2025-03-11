@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod case_conv;
 mod replace;
 mod remove;
 pub mod substr;
@@ -10,7 +11,7 @@ use crate::error::parse::ParseError;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use super::Param;
-use super::case_conv::CaseConv;
+use self::case_conv::CaseConv;
 use self::replace::Replace;
 use self::remove::Remove;
 use core::fmt;
