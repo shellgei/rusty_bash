@@ -27,6 +27,7 @@ impl OptionalOperation for ValueCheck {
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
+    pub text: String,
     pub subscript: Option<Subscript>,
     pub symbol: Option<String>,
     pub alternative_value: Option<Word>,
@@ -145,5 +146,26 @@ impl ValueCheck {
 //        ans.value_check = Some(info.clone());
         ans.optional_operation = Some(Box::new(info));
         Ok(true)
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        let num = feeder.scanner_parameter_alternative_symbol();
+        if num == 0 {
+            return Ok(None);
+        }
+
+        let mut ans = ValueCheck::default();
+
+        let symbol = feeder.consume(num);
+        ans.symbol = Some(symbol.clone());
+        ans.text += &symbol;
+
+        let num = feeder.scanner_blank(core);
+        ans.text += &feeder.consume(num);
+        ans.alternative_value = Some(BracedParam::eat_subwords2(feeder, vec!["}"], core)?);
+
+//        ans.value_check = Some(ans.clone());
+//        ans.optional_operation = Some(Box::new(ans));
+        Ok(Some(ans))
     }
 }

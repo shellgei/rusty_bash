@@ -14,6 +14,8 @@ use super::Param;
 use self::case_conv::CaseConv;
 use self::replace::Replace;
 use self::remove::Remove;
+use self::substr::Substr;
+use super::value_check::ValueCheck;
 use core::fmt;
 use core::fmt::Debug;
 
@@ -32,9 +34,10 @@ pub trait OptionalOperation {
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn OptionalOperation>>, ParseError> {
     if let Some(a) = Replace::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = ValueCheck::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = CaseConv::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = Remove::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-//    else if let Some(a) = Substr::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = Substr::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }
 

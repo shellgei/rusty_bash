@@ -131,7 +131,8 @@ impl BracedParam {
             if let Some(op) = optional_operation::parse(feeder, core)? {
                 ans.text += &op.get_text();
                 ans.optional_operation = Some(op);
-            }else{
+            }/*else{
+
             let _ = ValueCheck::eat(feeder, &mut ans, core)?
 //                 || CaseConv::eat(feeder, &mut ans, core)?
                  || if let Some(op) = Substr::parse(feeder, core){
@@ -141,7 +142,7 @@ impl BracedParam {
                  }else{
                     true
                  };
-            }
+            }*/
         }
         while ! feeder.starts_with("}") {
             Self::eat_unknown(feeder, &mut ans, core)?;
