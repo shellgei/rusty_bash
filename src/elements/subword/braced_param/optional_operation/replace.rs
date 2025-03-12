@@ -180,14 +180,22 @@ impl Replace {
             ans.tail_only_replace = true;
         }
 
-        ans.replace_from = Some(BracedParam::eat_subwords(feeder, vec!["}", "/"], core)? );
+        let sws = BracedParam::eat_subwords(feeder, vec!["}", "/"], core)?;
+        ans.text += &sws.subwords.iter()
+                    .map(|sw| sw.get_text())
+                    .collect::<Vec<&str>>().join("");
+        ans.replace_from = Some(sws);
 
         if ! feeder.starts_with("/") {
             return Ok(Some(ans));
         }
         ans.text += &feeder.consume(1);
         ans.has_replace_to = true;
-        ans.replace_to = Some(BracedParam::eat_subwords(feeder, vec!["}"], core)? );
+        let sws = BracedParam::eat_subwords(feeder, vec!["}"], core)?;
+        ans.text += &sws.subwords.iter()
+                    .map(|sw| sw.get_text())
+                    .collect::<Vec<&str>>().join("");
+        ans.replace_to = Some(sws);
 
         Ok(Some(ans))
     }

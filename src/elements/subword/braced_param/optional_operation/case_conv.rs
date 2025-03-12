@@ -120,7 +120,11 @@ impl CaseConv {
             ans.text += &ans.replace_symbol;
         }
 
-        ans.pattern = Some(BracedParam::eat_subwords(feeder, vec!["}"], core)? );
+        let sws = BracedParam::eat_subwords(feeder, vec!["}"], core)?;
+        ans.text += &sws.subwords.iter()
+                    .map(|sw| sw.get_text())
+                    .collect::<Vec<&str>>().join("");
+        ans.pattern = Some(sws);
         Ok(Some(ans))
     }
 }

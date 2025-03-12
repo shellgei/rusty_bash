@@ -160,27 +160,6 @@ impl Substr {
         }
     }
 
-    /*
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with(":") {
-            return false;
-        }
-        ans.text += &feeder.consume(1);
-
-        let mut info = Substr::default();
-        info.offset = match ArithmeticExpr::parse(feeder, core, true) {
-            Ok(Some(a)) => {
-                ans.text += &a.text.clone();
-                Self::eat_length(feeder, ans, &mut info, core);
-                Some(a)
-            },
-            _ => None,
-        };
-
-        ans.optional_operation = Some(Box::new(info));
-        true
-    }*/
-
     fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
         if ! feeder.starts_with(":") {
             return;
