@@ -10,6 +10,7 @@ use super::super::{Subscript, Param};
 use super::OptionalOperation;
 
 impl OptionalOperation for ValueCheck {
+    fn get_text(&self) -> String {self.text.clone()}
     fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         self.set(&param.name, &param.subscript, text, core)
     }
@@ -140,7 +141,9 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        ans.alternative_value = Some(BracedParam::eat_subwords(feeder, vec!["}"], core)?);
+        let alt = BracedParam::eat_subwords(feeder, vec!["}"], core)?;
+        ans.text += &alt.subwords.iter().map(|e| e.get_text()).collect::<Vec<&str>>().join("");
+        ans.alternative_value = Some(alt);
 
         Ok(Some(ans))
     }

@@ -10,6 +10,7 @@ use super::super::{BracedParam, Param};
 use super::OptionalOperation;
 
 impl OptionalOperation for Remove {
+    fn get_text(&self) -> String {self.text.clone()}
     fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         self.set(text, core)
     }

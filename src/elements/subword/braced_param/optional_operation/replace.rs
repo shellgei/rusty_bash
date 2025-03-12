@@ -22,6 +22,7 @@ pub struct Replace {
 }
 
 impl OptionalOperation for Replace {
+    fn get_text(&self) -> String {self.text.clone()}
     fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         match core.db.has_value(&param.name) {
             true  => self.get_text(text, core),

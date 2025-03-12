@@ -23,7 +23,7 @@ use core::fmt::Debug;
 pub trait OptionalOperation {
     fn exec(&mut self, _: &Param, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
     fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
-    fn get_text(&self) -> String {"".to_string()}
+    fn get_text(&self) -> String;
     fn is_substr(&self) -> bool {false}
     fn is_value_check(&self) -> bool {false}
     fn set_array(&mut self, _: &Param, _: &mut Vec<String>,
