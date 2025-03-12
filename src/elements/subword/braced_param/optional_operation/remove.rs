@@ -97,7 +97,11 @@ impl Remove {
         ans.remove_symbol = feeder.consume(len);
         ans.text += &ans.remove_symbol.clone();
 
-        ans.remove_pattern = Some(BracedParam::eat_subwords(feeder, vec!["}"], core)? );
+        let sws = BracedParam::eat_subwords(feeder, vec!["}"], core)?;
+        ans.text += &sws.subwords.iter()
+                    .map(|sw| sw.get_text())
+                    .collect::<Vec<&str>>().join("");
+        ans.remove_pattern = Some(sws);
         Ok(Some(ans))
     }
 }

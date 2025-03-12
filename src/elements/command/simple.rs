@@ -173,6 +173,7 @@ impl SimpleCommand {
                 true  => eprint!(" '{}'", &a),
             }
         }
+
         eprintln!("");
     }
 }

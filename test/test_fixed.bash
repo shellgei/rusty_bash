@@ -17,6 +17,20 @@ err () {
 cd $(dirname $0)
 com=../target/release/sush
 
+res=$($com << 'EOF'
+f () {
+    COMP_LINE='cd ~/G'
+    COMP_POINT=6
+    local lead=${COMP_LINE:0:COMP_POINT}
+    echo $lead
+}
+f
+EOF
+)
+[ "$res" == "cd ~/G" ] || err $LINENO
+
+
+
 res=$($com <<< 'rev << EOF
 abc
 あいう
