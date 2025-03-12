@@ -211,7 +211,6 @@ impl Substr {
             _ => None,
         };
 
-        dbg!("{:?}", &ans);
         Some(ans)
     }
 }
