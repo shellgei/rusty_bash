@@ -81,6 +81,7 @@ fn local_(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    //dbg!("{:?}", &args);
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2//The last element of data.parameters is for local itself. 
     }else{

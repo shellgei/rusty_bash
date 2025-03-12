@@ -202,7 +202,6 @@ impl Substr {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        let mut ans = Substr::default();
         ans.offset = match ArithmeticExpr::parse(feeder, core, true) {
             Ok(Some(a)) => {
                 ans.text += &a.text.clone();
@@ -212,6 +211,7 @@ impl Substr {
             _ => None,
         };
 
+        dbg!("{:?}", &ans);
         Some(ans)
     }
 }
