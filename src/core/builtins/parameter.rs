@@ -15,7 +15,7 @@ pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecEr
     Ok(())
 }
 
-fn print_data(name: &str, core: &mut ShellCore) {
+pub fn print_data(name: &str, core: &mut ShellCore) {
     core.db.print(name);
 }
 

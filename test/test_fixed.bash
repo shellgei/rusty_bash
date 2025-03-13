@@ -58,6 +58,9 @@ res=$($com <<< 'compgen -G "/*" | wc -l' )
 res=$($com <<< 'a=(a b); set "${a[@]}${a[@]}" ;echo $@ $#' )
 [ "$res" = "a ba b 3" ] || err $LINENO
 
+res=$($com <<< 'shopt -po noglob' )
+[ "$res" = "set +o noglob" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 
