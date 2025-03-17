@@ -81,6 +81,9 @@ impl ForCommand {
             if core.sigint.load(Relaxed) {
                 return false;
             }
+            if core.return_flag {
+                return false;
+            }
 
             if let Err(e) = core.db.set_param(&self.name, &p, None) {
                 core.db.exit_status = 1;

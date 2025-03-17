@@ -16,8 +16,8 @@ err () {
 
 
 res=$($com << 'EOF'
-f () {
 c=0
+f () {
 while [ $c -lt 3 ]; do
         for word in a bc ; do
                 return

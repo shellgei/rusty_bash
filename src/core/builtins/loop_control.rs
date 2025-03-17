@@ -4,7 +4,6 @@
 use crate::ShellCore;
 
 pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    dbg!("{:?}", &args);
     if core.source_function_level <= 0 {
         eprintln!("sush: return: can only `return' from a function or sourced script");
         return 2;
