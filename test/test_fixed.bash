@@ -14,6 +14,24 @@ err () {
 # sush: shopt: -po: invalid shell option name
 # printf: ParseError
 
+
+res=$($com << 'EOF'
+f () {
+c=0
+while [ $c -lt 3 ]; do
+        for word in a bc ; do
+                return
+        done
+        ((c++))
+done
+}
+
+f
+echo $c
+EOF
+)
+[ "$res" = "0" ] || err $LINENO
+
 cd $(dirname $0)
 com=../target/release/sush
 
