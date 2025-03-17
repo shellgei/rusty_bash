@@ -1,0 +1,19 @@
+#!/bin/bash
+
+tmp=/tmp/$$
+
+grep . *.summary     |
+sed 's/\.summary/ /' |
+tr -d :              |
+sort                 |
+while read day item num ; do
+	date "+%Y %j $item $num" -d $day
+done                 |
+awk '{print $1"."$2/366, $3, $4}' |
+sed 's/\.0//'        |
+awk -v tmp=$tmp '{print $1, $3 > tmp"-"$2}'
+
+cat $tmp-OK
+cat $tmp-NG
+cat $tmp-DNF
+cat $tmp-DIFF_LINES

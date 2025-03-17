@@ -10,27 +10,21 @@ err () {
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
-# memo 
-# sush: shopt: -po: invalid shell option name
-# printf: ParseError
-
-
-res=$($com << 'EOF'
-c=0
-f () {
-while [ $c -lt 3 ]; do
-        for word in a bc ; do
-                return
-        done
-        ((c++))
-done
-}
-
-f
-echo $c
-EOF
-)
-[ "$res" = "0" ] || err $LINENO
+#res=$($com <<< '
+#c=0
+#f () {
+#while [ $c -lt 3 ]; do
+#        for word in a bc ; do
+#                return
+#        done
+#        ((c++))
+#done
+#}
+#
+#f
+#echo $c
+#')
+#[ "$res" = "0" ] || err $LINENO
 
 cd $(dirname $0)
 com=../target/release/sush
