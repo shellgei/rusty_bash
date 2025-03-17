@@ -158,6 +158,9 @@ res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"aaa"}')
 res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"${b[@]}"}')
 [ "$res" = "0" ] || err $LINENO
 
+res=$($com <<< 'a=(a b); set "${a[@]}${a[@]}" ;echo $@ $#' )
+[ "$res" = "a ba b 3" ] || err $LINENO
+
 ### CASE CONVERSION ###
 
 res=$($com <<< 'a=aba; echo ${a^^[ac]}' )

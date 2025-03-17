@@ -689,6 +689,9 @@ echo "$a"
 [ "$res" == "a
 b" ] || err $LINENO
 
+res=$($com <<< 'echo `echo aaa`' )
+[ "$res" = "aaa" ] || err $LINENO
+
 # array
 
 res=$($com <<< 'A=( a b ); echo ${A[1]}')

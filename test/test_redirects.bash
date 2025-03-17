@@ -138,4 +138,25 @@ if [ "$(uname)" = "Linux" ] ; then
 	[ "$res" == "1" ] || err $LINENO
 fi
 
+# here documents
+
+res=$($com <<< 'rev << EOF
+abc
+あいう
+EOF
+')
+[ "$res" == "cba
+ういあ" ] || err $LINENO
+
+res=$($com <<< 'A=hoge ; rev << EOF
+abc
+あいう
+$A
+EOF
+')
+[ "$res" == "cba
+ういあ
+egoh" ] || err $LINENO
+
+
 echo $0 >> ./ok

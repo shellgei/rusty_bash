@@ -82,6 +82,9 @@ aaa" ] || err $LINENO
 res=$($com <<< 'compgen -d -- "~/" | wc -l' )
 [ "$res" != "0" ] || err $LINENO
 
+res=$($com <<< 'compgen -G "/*" | wc -l' )
+[ "$res" -gt 1 ] || err $LINENO
+
 ### eval ###
 
 res=$($com <<< 'eval "echo a" b')
@@ -221,6 +224,9 @@ res=$($com <<< 'shopt -s nullglob ; echo aaaaaa*; shopt -u nullglob ; echo aaaaa
 [ "$res" = "
 aaaaaa*" ] || err $LINENO
 
+res=$($com <<< 'shopt -po noglob' )
+[ "$res" = "set +o noglob" ] || err $LINENO
+
 # local
 
 res=$($com -c 'A=1 ; f () { local -a A ; A[1]=123 ; echo ${A[@]} ; } ; f ; echo $A')
@@ -244,6 +250,18 @@ res=$($com -c 'A=1 ; f () { local A=5 ; A=4 ; } ; f ; echo $A')
 
 res=$($com <<< 'f() { local a=1 ; local "a" && echo "$a" ; } ; f')
 [ "$res" = "1" ] || err $LINENO
+
+res=$($com << 'EOF'
+f () {
+    COMP_LINE='cd ~/G'
+    COMP_POINT=6
+    local lead=${COMP_LINE:0:COMP_POINT}
+    echo $lead
+}
+f
+EOF
+)
+[ "$res" == "cd ~/G" ] || err $LINENO
 
 ### declare ###
 
