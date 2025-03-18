@@ -45,11 +45,6 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
-/*
-fn make_boxed_simple(s: &str) -> Box<dyn Subword> {
-    Box::new(SimpleSubword { text: s.to_string() })
-}*/
-
 fn split_str(s: &str, ifs: &str) -> Vec<String> {
     if ifs == "" {
         return vec![s.to_string()];

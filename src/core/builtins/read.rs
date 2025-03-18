@@ -23,6 +23,21 @@ fn is_varname(s :&String) -> bool {
     s.chars().position(|c| !name_c(c)) == None
 }
 
+fn remove_escape(text: &str) -> String {
+    let mut escape = false;
+    let mut ans = String::new();
+    for ch in text.chars() {
+        if ch == '\\' {
+            escape = !escape;
+            if escape {
+                continue;
+            }
+        }
+        ans.push(ch);
+    }
+    ans
+}
+
 pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut feeder = Feeder::new("");
     let mut tmp = String::new();
@@ -42,23 +57,23 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         _ => return 1,
     }
 
+    let return_value = if feeder.len() != 0{0}else{1};
     let mut pos = 1;
     let mut surplus = vec![];
     loop {
         command::eat_blank_with_comment(&mut feeder, core, &mut tmp);
         if let Ok(Some(w)) = Word::parse(&mut feeder, core, false) {
+            let text = remove_escape(&w.text);
             if pos < args.len()-1 {
-                if ! set_to_param(core, args, pos, &w.text) {
+                if ! set_to_param(core, args, pos, &text) {
                     return 1;
                 }
                 pos +=1;
             }else{
-                surplus.push(w.text);
+                surplus.push(text);
             }
-
             continue;
         }
-
         break;
     }
 
@@ -68,7 +83,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    0
+    return_value
 }
 
 fn set_to_param(core: &mut ShellCore, args: &mut Vec<String>,
