@@ -27,6 +27,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut feeder = Feeder::new("");
     let mut tmp = String::new();
 
+    let mut pos = 1;
     loop {
         if let Err(e) = core.jobtable_check_status() {
             e.print(core);
@@ -42,11 +43,29 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             },
             _ => break,
         }
-        dbg!("HERE");
         command::eat_blank_with_comment(&mut feeder, core, &mut tmp);
 
         if let Ok(Some(w)) = Word::parse(&mut feeder, core, false) {
-            dbg!("{:?}", &w.text);
+            /*
+            if pos < args.len()-1 {
+                if let Err(e) = core.db.set_param(&args[pos], &w, None) {
+                    let msg = format!("{:?}", &e);
+                    error::print(&msg, core);
+                    return 1;
+                }
+                pos += 1;
+            }else{
+                if overflow.len() != 0 {
+                    overflow += " ";
+                }
+                overflow += &w;
+                if let Err(e) = core.db.set_param(&args[pos], &overflow, None) {
+                    let msg = format!("{:?}", &e);
+                    error::print(&msg, core);
+                    return 1;
+                }
+            }
+            */
             continue;
         }
 
@@ -90,6 +109,16 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
+fn set_to_param(core: &mut ShellCore, args: &mut Vec<String>,
+    pos: usize, word: &str) -> bool {
+    if let Err(e) = core.db.set_param(&args[pos], word, None) {
+        let msg = format!("{:?}", &e);
+        error::print(&msg, core);
+        return false;
+    }
+    true
+}
+
 pub fn read_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut line = String::new();
     let len = std::io::stdin()
@@ -100,22 +129,24 @@ pub fn read_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut overflow = String::new();
     for w in line.trim_end().split(' ') {
         if pos < args.len()-1 {
-            if let Err(e) = core.db.set_param(&args[pos], &w, None) {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
-                return 1;
+            match set_to_param(core, args, pos, &w) {
+                true  => pos +=1,
+                false => return 1,
             }
-            pos += 1;
         }else{
             if overflow.len() != 0 {
                 overflow += " ";
             }
             overflow += &w;
+            match set_to_param(core, args, pos, &overflow) {
+                true  => {},
+                false => return 1,
+            }/*
             if let Err(e) = core.db.set_param(&args[pos], &overflow, None) {
                 let msg = format!("{:?}", &e);
                 error::print(&msg, core);
                 return 1;
-            }
+            }*/
         }
     }
 
@@ -146,44 +177,8 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-
     match r_opt {
         true  => read_r(core, &mut args),
-        false => read_(core, &mut args),
+        false => read_r(core, &mut args),
     }
-    /*
-    //TODO: this procedure may be for -r option
-    let mut line = String::new();
-    let len = std::io::stdin()
-        .read_line(&mut line)
-        .expect("SUSHI INTERNAL ERROR: Failed to read line");
-
-    let mut pos = 1;
-    let mut overflow = String::new();
-    for w in line.trim_end().split(' ') {
-        if pos < args.len()-1 {
-            if let Err(e) = core.db.set_param(&args[pos], &w, None) {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
-                return 1;
-            }
-            pos += 1;
-        }else{
-            if overflow.len() != 0 {
-                overflow += " ";
-            }
-            overflow += &w;
-            if let Err(e) = core.db.set_param(&args[pos], &overflow, None) {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
-                return 1;
-            }
-        }
-    }
-
-    match len == 0 {
-        true  => 1,
-        false => 0,
-    }
-    */
 }
