@@ -20,6 +20,19 @@ res=$($com <<< 'echo "aaa\bb" | ( read -r a ; echo $a )' )
 res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
 [ "$res" = "aaabb" ] || err $LINENO
 
+res=$($com << 'EOF'
+echo 'aaa\
+bb' | ( read a ; echo $a )
+EOF
+)
+[ "$res" = "aaabb" ] || err $LINENO
+
+res=$($com << 'EOF'
+echo 'aaa\
+bb' | ( read -r a ; echo $a )
+EOF
+)
+[ "$res" = 'aaa\' ] || err $LINENO
 
 echo $0 >> ./ok
 exit
