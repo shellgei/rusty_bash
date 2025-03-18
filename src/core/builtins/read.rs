@@ -27,85 +27,47 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut feeder = Feeder::new("");
     let mut tmp = String::new();
 
+    if let Err(e) = core.jobtable_check_status() {
+        e.print(core);
+    }
+    core.jobtable_print_status_change();
+
+    match feeder.feed_line(core) {
+        Ok(()) => {}, 
+        Err(InputError::Interrupt) => {
+            signal::input_interrupt_check(&mut feeder, core);
+            signal::check_trap(core);
+            return 1;
+        },
+        _ => return 1,
+    }
+
     let mut pos = 1;
+    let mut surplus = vec![];
     loop {
-        if let Err(e) = core.jobtable_check_status() {
-            e.print(core);
-        }
-        core.jobtable_print_status_change();
-
-        match feeder.feed_line(core) {
-            Ok(()) => {}, 
-            Err(InputError::Interrupt) => {
-                signal::input_interrupt_check(&mut feeder, core);
-                signal::check_trap(core);
-                continue;
-            },
-            _ => break,
-        }
         command::eat_blank_with_comment(&mut feeder, core, &mut tmp);
-
         if let Ok(Some(w)) = Word::parse(&mut feeder, core, false) {
-            /*
             if pos < args.len()-1 {
-                if let Err(e) = core.db.set_param(&args[pos], &w, None) {
-                    let msg = format!("{:?}", &e);
-                    error::print(&msg, core);
+                if ! set_to_param(core, args, pos, &w.text) {
                     return 1;
                 }
-                pos += 1;
+                pos +=1;
             }else{
-                if overflow.len() != 0 {
-                    overflow += " ";
-                }
-                overflow += &w;
-                if let Err(e) = core.db.set_param(&args[pos], &overflow, None) {
-                    let msg = format!("{:?}", &e);
-                    error::print(&msg, core);
-                    return 1;
-                }
+                surplus.push(w.text);
             }
-            */
+
             continue;
         }
 
         break;
     }
 
-    /*
-    let mut line = String::new();
-    let len = std::io::stdin()
-        .read_line(&mut line)
-        .expect("SUSHI INTERNAL ERROR: Failed to read line");
-
-    let mut pos = 1;
-    let mut overflow = String::new();
-    for w in line.trim_end().split(' ') {
-        if pos < args.len()-1 {
-            if let Err(e) = core.db.set_param(&args[pos], &w, None) {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
-                return 1;
-            }
-            pos += 1;
-        }else{
-            if overflow.len() != 0 {
-                overflow += " ";
-            }
-            overflow += &w;
-            if let Err(e) = core.db.set_param(&args[pos], &overflow, None) {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
-                return 1;
-            }
+    if ! surplus.is_empty() {
+        if ! set_to_param(core, args, args.len()-1, &surplus.join(" ")) {
+            return 1;
         }
     }
 
-    match len == 0 {
-        true  => 1,
-        false => 0,
-    }
-    */
     0
 }
 
@@ -126,27 +88,21 @@ pub fn read_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         .expect("SUSHI INTERNAL ERROR: Failed to read line");
 
     let mut pos = 1;
-    let mut overflow = String::new();
+    let mut surplus = vec![];
     for w in line.trim_end().split(' ') {
         if pos < args.len()-1 {
-            match set_to_param(core, args, pos, &w) {
-                true  => pos +=1,
-                false => return 1,
-            }
-        }else{
-            if overflow.len() != 0 {
-                overflow += " ";
-            }
-            overflow += &w;
-            match set_to_param(core, args, pos, &overflow) {
-                true  => {},
-                false => return 1,
-            }/*
-            if let Err(e) = core.db.set_param(&args[pos], &overflow, None) {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
+            if ! set_to_param(core, args, pos, &w) {
                 return 1;
-            }*/
+            }
+            pos +=1;
+        }else{
+            surplus.push(w);
+        }
+    }
+
+    if ! surplus.is_empty() {
+        if ! set_to_param(core, args, args.len()-1, &surplus.join(" ")) {
+            return 1;
         }
     }
 
@@ -179,6 +135,6 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     match r_opt {
         true  => read_r(core, &mut args),
-        false => read_r(core, &mut args),
+        false => read_(core, &mut args),
     }
 }
