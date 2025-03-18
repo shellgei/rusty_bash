@@ -39,15 +39,21 @@ fn remove_escape(text: &str) -> String {
 }
 
 pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut feeder = Feeder::new("");
+    let mut line = String::new();
+    let len = std::io::stdin()
+        .read_line(&mut line)
+        .expect("SUSHI INTERNAL ERROR: Failed to read line");
+    let mut feeder = Feeder::new(&line);
+
     let mut tmp = String::new();
 
+    /*
     if let Err(e) = core.jobtable_check_status() {
         e.print(core);
     }
     core.jobtable_print_status_change();
 
-    match feeder.feed_line(core) {
+    match feeder.feed_additional_line(core) {
         Ok(()) => {}, 
         Err(InputError::Interrupt) => {
             signal::input_interrupt_check(&mut feeder, core);
@@ -55,7 +61,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1;
         },
         _ => return 1,
-    }
+    }*/
 
     let return_value = if feeder.len() != 0{0}else{1};
     let mut pos = 1;
