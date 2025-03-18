@@ -10,33 +10,17 @@ err () {
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
-#res=$($com <<< '
-#c=0
-#f () {
-#while [ $c -lt 3 ]; do
-#        for word in a bc ; do
-#                return
-#        done
-#        ((c++))
-#done
-#}
-#
-#f
-#echo $c
-#')
-#[ "$res" = "0" ] || err $LINENO
 
 cd $(dirname $0)
 com=../target/release/sush
 
-echo $0 >> ./ok
-exit
-
-### fixed in future ###
+res=$($com <<< 'echo "aaa\bb" | ( read -r a ; echo $a )' )
+[ "$res" = "aaa\bb" ] || err $LINENO
 
 res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
 [ "$res" = "aaabb" ] || err $LINENO
 
-res=$($com <<< 'echo "aaa\bb" | ( read -r a ; echo $a )' )
-[ "$res" = "aaa\bb" ] || err $LINENO
+
+echo $0 >> ./ok
+exit
 
