@@ -2,8 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::{arg, error, signal};
-use crate::InputError;
+use crate::{arg, error};
 use crate::elements::command;
 use crate::elements::word::Word;
 
@@ -46,7 +45,6 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut feeder = Feeder::new(&line);
     let mut tmp = String::new();
 
-    let return_value = if feeder.len() != 0{0}else{1};
     let mut pos = 1;
     let mut surplus = vec![];
     loop {
@@ -72,7 +70,10 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    return_value
+    match len == 0 {
+        true  => 1,
+        false => 0,
+    }
 }
 
 fn set_to_param(core: &mut ShellCore, args: &mut Vec<String>,
