@@ -31,16 +31,13 @@ pub struct SimpleCommand {
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         self.args.clear();
-        /*
-        let mut words = self.words.to_vec();
-
-        for w in words.iter_mut() {
-            self.args.append(&mut w.eval(core).unwrap());
-        }*/
-
         let mut words = self.words.to_vec();
         for w in words.iter_mut() {
-            self.set_arg(w, core)?;
+            let mut args = match w.eval(core) {
+                Ok(a) => a,
+                Err(e) => return Err(ExecError::Other(e)),
+            };
+            self.args.append(&mut args);
         }
 
         if self.args.is_empty() {
