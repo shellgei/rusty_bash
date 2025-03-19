@@ -9,9 +9,11 @@ use crate::elements::subword::Subword;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use nix::unistd;
+use std::{thread, time};
 use std::fs::File;
 use std::io::{BufReader, BufRead, Error};
 use std::os::fd::{FromRawFd, RawFd};
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
 pub struct CommandSubstitution {
@@ -43,11 +45,23 @@ impl CommandSubstitution {
         false
     }
 
+    fn interrupted(&mut self, count: usize, core: &mut ShellCore)
+                                         -> Result<(), ExecError> {
+        if count%100 == 99 { //To receive Ctrl+C
+            thread::sleep(time::Duration::from_millis(1));
+        }
+        match core.sigint.load(Relaxed) {
+            true  => Err(ExecError::Interrupted),
+            false => Ok(()),
+        }
+    }
+
     fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> Result<(), ExecError> {
         let f = unsafe { File::from_raw_fd(fd) };
         let reader = BufReader::new(f);
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {
+            self.interrupted(i, core)?;
             if ! self.set_line(line) {
                 break;
             }
