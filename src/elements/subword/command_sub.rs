@@ -53,9 +53,7 @@ impl CommandSubstitution {
             }
         }
 
-        if ! self.text.is_empty() {
-            self.text.pop();
-        }
+        self.text.pop();
         Ok(())
     }
 
