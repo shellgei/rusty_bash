@@ -57,14 +57,12 @@ fn main_loop(core: &mut ShellCore) {
             Ok(Some(mut s)) => {
                 if let Err(e) = s.exec(core) {
                     e.print(core);
-                    break;
                 }
             }
             Ok(None) => {},
             Err(e) => {
                 feeder.consume(feeder.len());
                 e.print(core);
-                break;
             }
         }
         core.sigint.store(false, Relaxed);
