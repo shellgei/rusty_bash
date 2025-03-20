@@ -203,10 +203,13 @@ impl Terminal {
         if core.db.len("COMPREPLY") == 1 {
             let arr = core.db.get_array_all("COMPREPLY");
             let output = arr[0].clone();
-            let mut tail = match is_dir(&output, core) {
-                true  => "/",
-                false => " ",
-            };
+            let mut tail = " ";
+
+            if core.current_completion_info.o_options.contains(&"filenames".to_string()) {
+                if is_dir(&output, core) {
+                    tail = "/";
+                }
+            }
 
             if core.current_completion_info.o_options.contains(&"nospace".to_string()) {
                 tail = tail.trim_end();
