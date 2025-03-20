@@ -92,8 +92,10 @@ fn main() {
     }
 
     let mut core = configure(&args);
-    core.compat_bash = compat_bash;
-    core.db.flags += "b";
+    if compat_bash {
+        core.compat_bash = true;
+        core.db.flags += "b";
+    }
     signal::run_signal_check(&mut core);
 
     if core.script_name == "-" {
@@ -178,8 +180,10 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
     }
 
     let mut core = ShellCore::new();
-    core.compat_bash = compat_bash;
-    core.db.flags += "b";
+    if compat_bash {
+        core.compat_bash = true;
+        core.db.flags += "b";
+    }
     let parameters = if c_parts.len() > 2 {
         c_parts[2..].to_vec()
     }else{

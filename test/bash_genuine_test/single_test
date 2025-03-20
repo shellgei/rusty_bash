@@ -6,7 +6,7 @@ export PATH=$PATH:/home/ueda/GIT/bash/tests
 
 ( cd $sushdir && cargo build --release) || exit 1 
 
-export THIS_SH=${sushdir}/target/release/sush
+export THIS_SH="${sushdir}/target/release/sush -b"
 
 cd $testdir || exit 1
 

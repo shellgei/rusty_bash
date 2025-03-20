@@ -208,7 +208,7 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
 
     let mut series = gen_nums(&start, &end, skip_num);
     if series.is_empty() {
-        series = gen_chars(&start, &end, skip_num);
+        series = gen_chars(&start, &end, skip_num, compat_bash);
     }
     if series.is_empty() {
         return subwords_to_word(subwords);
@@ -250,7 +250,7 @@ fn gen_nums(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
     ans.into_iter().enumerate().filter(|e| e.0%skip == 0).map(|e| e.1).collect() 
 }
 
-fn gen_chars(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
+fn gen_chars(start: &str, end: &str, skip: usize, compat_bash: bool) -> Vec<Box<dyn Subword>> {
     let (start_num, end_num) = match (start.chars().nth(0), end.chars().nth(0) ) {
         ( Some(s), Some(e) ) => (s, e),
         _ => return vec![],
@@ -262,6 +262,15 @@ fn gen_chars(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
 
     let min = std::cmp::min(start_num, end_num);
     let max = std::cmp::max(start_num, end_num);
+
+    if compat_bash {
+        if ('0' <= min && min <= '9') && ! ('0' <= max && max <= '9') {
+            return vec![];
+        }
+        if ('0' <= max && max <= '9') && ! ('0' <= min && min <= '9') {
+            return vec![];
+        }
+    }
 
     let mut ans: Vec<Box<dyn Subword>> = (min..max).map(|n| ascii_to_subword(n) ).collect();
     ans.push( ascii_to_subword(max) );
