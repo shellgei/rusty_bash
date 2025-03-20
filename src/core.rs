@@ -60,6 +60,7 @@ pub struct ShellCore {
     pub break_counter: i32,
     pub continue_counter: i32,
     pub return_flag: bool,
+    pub compat_bash: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     pub job_table_priority: Vec<usize>,

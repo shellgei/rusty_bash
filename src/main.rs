@@ -85,12 +85,15 @@ fn main() {
         show_version();
     }
 
+    let compat_bash = arg::consume_option("-b", &mut args);
     let c_parts = arg::consume_with_subsequents("-c", &mut args);
     if c_parts.len() != 0 {
-        run_and_exit_c_option(&args, &c_parts);
+        run_and_exit_c_option(&args, &c_parts, compat_bash);
     }
 
     let mut core = configure(&args);
+    core.compat_bash = compat_bash;
+    core.db.flags += "b";
     signal::run_signal_check(&mut core);
 
     if core.script_name == "-" {
@@ -168,13 +171,15 @@ fn main_loop(core: &mut ShellCore) {
     exit::normal(core);
 }
 
-fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>) {
+fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash: bool) {
     if c_parts.len() < 2 {
         println!("{}: -c: option requires an argument", &args[0]);
         process::exit(2);                
     }
 
     let mut core = ShellCore::new();
+    core.compat_bash = compat_bash;
+    core.db.flags += "b";
     let parameters = if c_parts.len() > 2 {
         c_parts[2..].to_vec()
     }else{

@@ -54,7 +54,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, ExecError> {
         let ws_after_brace_exp = match core.db.flags.contains('B') {
-            true  => brace_expansion::eval(&mut self.clone()),
+            true  => brace_expansion::eval(&mut self.clone(), core.compat_bash),
             false => vec![self.clone()],
         };
 
