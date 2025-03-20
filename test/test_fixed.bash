@@ -37,6 +37,16 @@ EOF
 res=$($com <<< 'echo {2147483650..2147483655}')
 [ "$res" = "2147483650 2147483651 2147483652 2147483653 2147483654 2147483655" ] || err $LINENO
 
+res=$($com << 'AAA'
+while read a b ; do echo $a _ $b ; done << EOF
+A B
+A ()
+EOF
+AAA
+)
+[ "$res" = "A _ B
+A _ ()" ] || err $LINENO
+
 echo $0 >> ./ok
 exit
 
