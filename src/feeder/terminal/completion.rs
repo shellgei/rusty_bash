@@ -54,6 +54,13 @@ fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &Vec<Stri
         tail = "/";
     }
 
+    if file_check::exists(cand) {
+        *cand = cand.replace(" ", "\\ ").replace("(", "\\(").replace(")", "\\)");
+        if ! is_dir(cand, core) {
+            tail = tail.trim_end();
+        }
+    }
+
     if o_options.contains(&"nospace".to_string()) {
         tail = tail.trim_end();
     }
@@ -322,34 +329,10 @@ impl Terminal {
     pub fn replace_input(&mut self, to: &String) {
         self.shave_existing_word();
         let mut to_modified = to.replace("↵ \0", "\n");
-
-        /*
-        let to_escaped = if to.ends_with(" ") {
-            let mut tmp = to.to_string();
-            tmp.pop();
-            match self.escape_at_completion {
-                true  => tmp.replace(" ", "\\ ") + " ",
-                false => tmp.replace("↵ \0", "\n") + " ",
-            }
-        }else {
-            match self.escape_at_completion {
-                true  => to.replace(" ", "\\ ").to_string(),
-                false => to.replace("↵ \0", "\n").to_string(),
-            }
-        };*/
-
         for c in to_modified.chars() {
             self.insert(c);
             self.check_scroll();
         }
-        /*
-
-        if to.ends_with(" ") 
-        && self.head < self.chars.len() 
-        && self.chars[self.head] == ' ' {
-            self.backspace();
-        }*/
-
         self.rewrite(true);
     }
 
