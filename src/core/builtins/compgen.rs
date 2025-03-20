@@ -44,7 +44,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
     if key == "" {
         let mut files = directory::files(&dir);
         if dir_only {
-            files.retain(|p| file_check::is_dir(&(org_dir.clone() + &p)));
+            files.retain(|p| file_check::is_dir(&(dir.clone() + &p)));
         }
         files.sort();
         return files.iter().map(|f| org_dir.clone() + &f).collect();
