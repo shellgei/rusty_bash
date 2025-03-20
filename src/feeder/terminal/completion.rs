@@ -321,7 +321,9 @@ impl Terminal {
 
     pub fn replace_input(&mut self, to: &String) {
         self.shave_existing_word();
+        let mut to_modified = to.replace("↵ \0", "\n");
 
+        /*
         let to_escaped = if to.ends_with(" ") {
             let mut tmp = to.to_string();
             tmp.pop();
@@ -334,18 +336,19 @@ impl Terminal {
                 true  => to.replace(" ", "\\ ").to_string(),
                 false => to.replace("↵ \0", "\n").to_string(),
             }
-        };
+        };*/
 
-        for c in to_escaped.chars() {
+        for c in to_modified.chars() {
             self.insert(c);
             self.check_scroll();
         }
+        /*
 
         if to.ends_with(" ") 
         && self.head < self.chars.len() 
         && self.chars[self.head] == ' ' {
             self.backspace();
-        }
+        }*/
 
         self.rewrite(true);
     }
