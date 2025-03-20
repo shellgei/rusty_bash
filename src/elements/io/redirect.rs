@@ -34,10 +34,10 @@ pub struct Redirect {
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.symbol == "<<" {
-            return self.redirect_heredocument(core);
+            return self.redirect_heredocument(core, restore);
         }
         if self.symbol == "<<<" {
-            return self.redirect_herestring(core);
+            return self.redirect_herestring(core, restore);
         }
 
         let args = self.right.eval(core)?;
@@ -137,10 +137,15 @@ impl Redirect {
         io::share(1, 2)
     }
 
-    fn redirect_heredocument(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_heredocument(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+        self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
+
+        if restore {
+            self.left_backup = io::backup(0);
+        }
 
         let text = self.herestring.eval_as_value(core)?; // TODO: make it precise based on the rule
                                                          // of heredocument
@@ -162,10 +167,15 @@ impl Redirect {
         Ok(())
     }
 
-    fn redirect_herestring(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_herestring(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+        self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
+
+        if restore {
+            self.left_backup = io::backup(0);
+        }
 
         let text = self.right.eval_for_case_word(core)
                        .unwrap_or("".to_string());
