@@ -48,6 +48,19 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     file_check::is_dir(&s.replace(&tilde_prefix, &tilde_path))
 }
 
+fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &Vec<String>) {
+    let mut tail = " ";
+    if is_dir(cand, core) {
+        tail = "/";
+    }
+
+    if o_options.contains(&"nospace".to_string()) {
+        tail = tail.trim_end();
+    }
+
+    *cand += tail
+}
+
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
@@ -60,9 +73,15 @@ impl Terminal {
             return Ok(());
         }
 
+        let mut cands = core.db.get_array_all("COMPREPLY");
+        let o_options = core.current_completion_info.o_options.clone();
+        for cand in cands.iter_mut() {
+            apply_o_options(cand, core, &o_options);
+        }
+
         match self.tab_num  {
-            1 => self.try_completion(core).unwrap(),
-            _ => self.show_list(&core.db.get_array_all("COMPREPLY")),
+            1 => self.try_completion(&mut cands, core).unwrap(),
+            _ => self.show_list(&mut cands),
         }
         Ok(())
     }
@@ -196,30 +215,16 @@ impl Terminal {
         compgen::compgen_f(core, args, false)
     }
 
-    pub fn try_completion(&mut self, core: &mut ShellCore) -> Result<(), String> {
+    pub fn try_completion(&mut self, cands: &mut Vec<String>, core: &mut ShellCore) -> Result<(), String> {
         let pos = core.db.get_param("COMP_CWORD")?;
         let target = core.db.get_array_elem("COMP_WORDS", &pos)?;
 
-        if core.db.len("COMPREPLY") == 1 {
-            let arr = core.db.get_array_all("COMPREPLY");
-            let output = arr[0].clone();
-            let mut tail = " ";
-
-            if core.current_completion_info.o_options.contains(&"filenames".to_string()) {
-                if is_dir(&output, core) {
-                    tail = "/";
-                }
-            }
-
-            if core.current_completion_info.o_options.contains(&"nospace".to_string()) {
-                tail = tail.trim_end();
-            }
-
-            self.replace_input(&(output + tail));
+        if cands.len() == 1 {
+            self.replace_input(&cands[0]);
             return Ok(());
         }
 
-        let common = common_string(&core.db.get_array_all("COMPREPLY"));
+        let common = common_string(&cands);
         if common.len() != target.len() {
             self.replace_input(&common);
             return Ok(());
