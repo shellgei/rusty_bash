@@ -15,7 +15,7 @@ fn after_dollar(s: &str) -> bool {
     s == "$" || s == "$$"
 }
 
-fn num_to_subword(n: i32) -> Box<dyn Subword> {
+fn num_to_subword(n: i64) -> Box<dyn Subword> {
     Box::new( SingleQuoted { text: format!("'{}'", n)  } )
 }
 
@@ -25,6 +25,8 @@ fn ascii_to_subword(c: char) -> Box<dyn Subword> {
     let n = c as usize;
     let text = if n >= 127 && n < 127 + table.len() {
         table[n-127].to_string()
+    //}else if c == '\\' { COMPAT_BASH
+    //    "".to_string()
     }else{
         c.to_string()
     };
@@ -224,7 +226,7 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
 }
 
 fn gen_nums(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
-    let (start_num, end_num) = match (start.parse::<i32>(), end.parse::<i32>() ) {
+    let (start_num, end_num) = match (start.parse::<i64>(), end.parse::<i64>() ) {
         ( Ok(s), Ok(e) ) => (s, e),
         _ => return vec![],
     };
