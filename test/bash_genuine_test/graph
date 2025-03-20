@@ -22,7 +22,7 @@ cat $tmp-DIFF_LINES
 gnuplot << EOF
 set terminal png
 set output "$dir/graph.png"
-set title "TEST RESULTS with run-* SCRIPTS in OFFICIAL BASH REPO (alpha branch)"
+set title "TEST RESULTS using run-* SCRIPTS in OFFICIAL BASH REPO (alpha branch)"
 set xrange [2025:2026]
 set xtics 1
 set mxtics 4
@@ -30,8 +30,8 @@ set yrange [0:90]
 set ytics nomirror
 set y2range [0:80000]
 set y2tics 20000
-plot '$tmp-OK' title "OK (LEFT Y-AXIS)" axis x1y1 with linespoints pt 1 lc 1,\
-'$tmp-NG' title "NG (LEFT Y-AXIS)" axis x1y1 with linespoints pt 2 lc 2,\
-'$tmp-DNF' axis x1y1 title "DNF (LEFT Y-AXIS)" with linespoints pt 3 lc 3, \
-'$tmp-DIFF_LINES' axis x1y2 title "LINE # of DIFF (RIGHT Y-AXIS)" with linespoints pt 4 lc 4
+plot '$tmp-OK' title "PASSED run-* FILES (LEFT Y-AXIS)" axis x1y1 with linespoints pt 2 lc 1,\
+'$tmp-NG' title "NOT PASSED run-* FILES (LEFT Y-AXIS)" axis x1y1 with linespoints pt 1 lc 2,\
+'$tmp-DNF' axis x1y1 title "DNF run-* FILES (LEFT Y-AXIS)" with linespoints pt 3 lc 3, \
+'$tmp-DIFF_LINES' axis x1y2 title "TOTAL LINES of DIFF (RIGHT Y-AXIS)" with linespoints pt 4 lc 4
 EOF
