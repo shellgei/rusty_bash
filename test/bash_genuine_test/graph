@@ -17,3 +17,11 @@ cat $tmp-OK
 cat $tmp-NG
 cat $tmp-DNF
 cat $tmp-DIFF_LINES
+
+gnuplot << EOF
+set terminal png
+set output "/tmp/graph.png"
+set xrange [2025:2025.5]
+set yrange [0:100]
+plot '$tmp-OK' with linespoints pt 1 lc 1
+EOF
