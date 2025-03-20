@@ -328,7 +328,7 @@ impl Terminal {
 
     pub fn replace_input(&mut self, to: &String) {
         self.shave_existing_word();
-        let mut to_modified = to.replace("↵ \0", "\n");
+        let to_modified = to.replace("↵ \0", "\n");
         for c in to_modified.chars() {
             self.insert(c);
             self.check_scroll();
