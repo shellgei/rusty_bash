@@ -218,8 +218,12 @@ impl Word {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: Option<WordMode>)
         -> Result<Option<Word>, ParseError> {
+
         if feeder.starts_with("#") {
-            return Ok(None);
+            if let Some(WordMode::ReadToken) = mode {
+            }else{
+                return Ok(None);
+            }
         }
         if let Some(WordMode::Operand) = mode {
             if feeder.starts_with("}") {

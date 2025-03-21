@@ -166,13 +166,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
                     let c = SimpleSubword { text: feeder.consume(1) };
                     Ok(Some(Box::new(c)))
                 }
-                /*
-                if let Some(a) = FillerSubword::parse(feeder){
-                    Ok(Some(Box::new(a)))
-                }else{
-                    Ok(None)
-                }
-                */
             },
             _ => Ok(None),
         }
