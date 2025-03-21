@@ -231,6 +231,7 @@ impl Word {
                 false => ans.push(&sw),
                 true  => {
                     let mut sws = sw.get_child_subwords();
+                    ans.text += &sws.iter().map(|sw| sw.get_text()).collect::<Vec<&str>>().join("");
                     ans.subwords.append(&mut sws);
                 },
             }
