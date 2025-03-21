@@ -41,11 +41,13 @@ res=$($com << 'AAA'
 while read a b ; do echo $a _ $b ; done << EOF
 A B
 A ()
+t fofo                *(f*(o))
 EOF
 AAA
 )
 [ "$res" = "A _ B
-A _ ()" ] || err $LINENO
+A _ ()
+t _ fofo *(f*(o))" ] || err $LINENO
 
 echo $0 >> ./ok
 exit
