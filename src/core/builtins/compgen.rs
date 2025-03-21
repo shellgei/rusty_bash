@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{file_check, ShellCore, Feeder};
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::utils;
 use crate::utils::{arg, directory};
@@ -35,8 +35,8 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
     let mut dir = org_dir.clone();
     if dir.starts_with("~") {
         let mut feeder = Feeder::new(&dir);
-        if let Ok(Some(mut w)) = Word::parse(&mut feeder, core, true) {
-            tilde_expansion::eval(&mut w, core);
+        if let Ok(Some(mut w)) = Word::parse(&mut feeder, core, Some(WordMode::Operand)) {
+            tilde_expansion::eval(&mut w, core);                  //TODO: ^It's a kind of hack.
             dir = w.text + &feeder.consume(feeder.len());
         }
     }
@@ -306,7 +306,7 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
 
     let mut feeder = Feeder::new(&words);
     while feeder.len() != 0 {
-        match Word::parse(&mut feeder, core, false) {
+        match Word::parse(&mut feeder, core, None) {
             Ok(Some(mut w)) => {
                 if let Ok(mut v) =  w.eval(core) {
                     ans.append(&mut v);

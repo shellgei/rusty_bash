@@ -28,7 +28,7 @@ impl BracedParam {
         -> Result<Word, ParseError> {
         let mut word = Word::default();
         while ! ends.iter().any(|e| feeder.starts_with(e)) {
-            if let Some(sw) = subword::parse_filler(feeder, core)? {
+            if let Some(sw) = subword::parse_filler(feeder, core, &None)? {
                 word.text += sw.get_text();
                 word.subwords.push(sw);
             }else{

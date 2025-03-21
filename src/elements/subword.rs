@@ -17,6 +17,7 @@ mod process_sub;
 
 use crate::{ShellCore, Feeder};
 use crate::error::{exec::ExecError, parse::ParseError};
+use crate::elements::word::WordMode;
 use self::ansi_c_quoted::AnsiCQuoted;
 use self::arithmetic::Arithmetic;
 use self::simple::SimpleSubword;
@@ -134,9 +135,10 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Subword>>, ParseError> {
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
+                                    -> Result<Option<Box<dyn Subword>>, ParseError> {
     if replace_history_expansion(feeder, core) {
-        return parse(feeder, core);
+        return parse(feeder, core, mode);
     }
 
     if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
@@ -151,12 +153,35 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
-    else{ Ok(None) }
+    else{
+        match mode {
+            None => Ok(None),
+            Some(WordMode::ReadToken) => {
+                if feeder.len() == 0 
+                || feeder.starts_with("\n") 
+                || feeder.starts_with("\t") 
+                || feeder.starts_with(" ") {
+                    Ok(None)
+                }else{
+                    let c = SimpleSubword { text: feeder.consume(1) };
+                    Ok(Some(Box::new(c)))
+                }
+                /*
+                if let Some(a) = FillerSubword::parse(feeder){
+                    Ok(Some(Box::new(a)))
+                }else{
+                    Ok(None)
+                }
+                */
+            },
+            _ => Ok(None),
+        }
+    }
 }
 
-pub fn parse_filler(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Subword>>, ParseError> {
+pub fn parse_filler(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>) -> Result<Option<Box<dyn Subword>>, ParseError> {
     if replace_history_expansion(feeder, core) {
-        return parse(feeder, core);
+        return parse(feeder, core, mode);
     }
 
     if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }

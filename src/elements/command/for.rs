@@ -206,7 +206,7 @@ impl ForCommand {
 
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            match Word::parse(feeder, core, false)? {
+            match Word::parse(feeder, core, None)? {
                 Some(w) => {
                     ans.text += &w.text.clone();
                     ans.values.push(w);

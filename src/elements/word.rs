@@ -14,6 +14,12 @@ use crate::error::exec::ExecError;
 use super::subword::Subword;
 use super::subword::simple::SimpleSubword;
 
+#[derive(Debug, Clone)]
+pub enum WordMode {
+    Operand,
+    ReadToken,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
@@ -208,17 +214,19 @@ impl Word {
         self.subwords.push(subword.clone());
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, as_operand: bool)
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: Option<WordMode>)
         -> Result<Option<Word>, ParseError> {
         if feeder.starts_with("#") {
             return Ok(None);
         }
-        if as_operand && feeder.starts_with("}") {
-            return Ok(None);
+        if let Some(WordMode::Operand) = mode {
+            if feeder.starts_with("}") {
+                return Ok(None);
+            }
         }
 
         let mut ans = Word::default();
-        while let Some(sw) = subword::parse(feeder, core)? {
+        while let Some(sw) = subword::parse(feeder, core, &mode)? {
             match sw.is_extglob() {
                 false => ans.push(&sw),
                 true  => {
@@ -227,7 +235,7 @@ impl Word {
                 },
             }
 
-            if as_operand {
+            if let Some(WordMode::Operand) = mode {
                 if feeder.starts_with("]")
                 || feeder.starts_with("}")
                 || feeder.scanner_math_symbol(core) != 0 {

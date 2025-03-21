@@ -231,7 +231,7 @@ impl Redirect {
                 }
             }
 
-            if let Some(sw) = subword::parse(feeder, core)? {
+            if let Some(sw) = subword::parse(feeder, core, &None)? {
                 self.herestring.text += sw.get_text();
                 self.herestring.subwords.push(sw);
             }else{
@@ -259,7 +259,7 @@ impl Redirect {
         let blank_len = feeder.scanner_blank(core);
         ans.text += &feeder.consume(blank_len);
 
-        let w = match Word::parse(feeder, core, false) {
+        let w = match Word::parse(feeder, core, None) {
             Ok(Some(w)) => w,
             _       => return false,
         };

@@ -76,7 +76,7 @@ impl CaseCommand {
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
         -> Result<bool, ParseError> {
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
-        let w = match Word::parse(feeder, core, false)? {
+        let w = match Word::parse(feeder, core, None)? {
             Some(w) => w,
             _       => return Ok(false),
         };
@@ -95,7 +95,7 @@ impl CaseCommand {
 
         command::eat_blank_with_comment(feeder, core, text);
         loop {
-            if let Some(w) = Word::parse(feeder, core, false)? {
+            if let Some(w) = Word::parse(feeder, core, None)? {
                 *text += &w.text;
                 ans.push(w)
             }else{

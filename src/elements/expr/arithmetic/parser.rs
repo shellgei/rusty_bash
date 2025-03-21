@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::elements::subscript::Subscript;
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 use super::{ArithmeticExpr, ArithElem, int, float};
 
 impl ArithmeticExpr {
@@ -89,7 +89,7 @@ impl ArithmeticExpr {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let mut word = match Word::parse(feeder, core, true) {
+        let mut word = match Word::parse(feeder, core, Some(WordMode::Operand)) {
             Ok(Some(w)) => w,
             _       => return false,
         };

@@ -4,7 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::{arg, error};
 use crate::elements::command;
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 
 fn is_varname(s :&String) -> bool {
     if s.is_empty() {
@@ -49,7 +49,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut surplus = vec![];
     loop {
         command::eat_blank_with_comment(&mut feeder, core, &mut tmp);
-        if let Ok(Some(w)) = Word::parse(&mut feeder, core, false) {
+        if let Ok(Some(w)) = Word::parse(&mut feeder, core, Some(WordMode::ReadToken)) {
             let text = remove_escape(&w.text);
             if pos < args.len()-1 {
                 if ! set_to_param(core, args, pos, &text) {
