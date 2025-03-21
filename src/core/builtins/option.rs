@@ -160,7 +160,7 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let res = match args[1].as_str() {
         "-s" => {
-            if ["extglob", "progcomp", "nullglob"].iter().any(|&e| e == args[2]) {
+            if ["extglob", "progcomp", "nullglob", "dotglob"].iter().any(|&e| e == args[2]) {
                 core.shopts.set(&args[2], true)
             }else{
                 let msg = format!("shopt: {}: not supported yet", &args[2]);

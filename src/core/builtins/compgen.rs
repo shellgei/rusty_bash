@@ -50,10 +50,11 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
         return files.iter().map(|f| org_dir.clone() + &f).collect();
     }
 
-    let mut ans = directory::glob(&dir, &(key.clone() + "*"), core.shopts.query("extglob"));
+    let dotglob = core.shopts.query("dotglob");
+    let mut ans = directory::glob(&dir, &(key.clone() + "*"), core.shopts.query("extglob"), dotglob);
     if key == "." {
-        ans.append(&mut directory::glob(&dir, ".", false));
-        ans.append(&mut directory::glob(&dir, "..", false));
+        ans.append(&mut directory::glob(&dir, ".", false, dotglob));
+        ans.append(&mut directory::glob(&dir, "..", false, dotglob));
     }
     ans.iter_mut().for_each(|a| { a.pop(); } );
     if dir_only {
@@ -291,7 +292,8 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 fn compgen_large_g(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let glob = args[2].to_string();
     let extglob = core.shopts.query("extglob");
-    path_expansion::expand(&glob, extglob)
+    let dotglob = core.shopts.query("dotglob");
+    path_expansion::expand(&glob, extglob, dotglob)
 }
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {

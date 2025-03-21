@@ -6,13 +6,13 @@ use crate::elements::word::Word;
 use crate::utils::directory;
 use super::subword::simple::SimpleSubword;
 
-pub fn eval(word: &mut Word, extglob: bool, nullglob: bool) -> Vec<Word> {
+pub fn eval(word: &mut Word, extglob: bool, nullglob: bool, dotglob: bool) -> Vec<Word> {
     let globstr = word.make_glob_string();
     if no_glob_symbol(&globstr) {
         return vec![word.clone()];
     }
 
-    let paths = expand(&globstr, extglob);
+    let paths = expand(&globstr, extglob, dotglob);
     if paths.is_empty() {
         if nullglob {
             return vec![Word::from(&String::new())];
@@ -29,12 +29,12 @@ fn no_glob_symbol(pattern: &str) -> bool {
     "*?@+![".chars().all(|c| ! pattern.contains(c))
 }
 
-pub fn expand(pattern: &str, extglob: bool) -> Vec<String> {
+pub fn expand(pattern: &str, extglob: bool, dotglob: bool) -> Vec<String> {
     let mut paths = vec!["".to_string()];
 
     for dir_glob in pattern.split("/") {
         paths = paths.iter()
-                .map(|c| directory::glob(&c, &dir_glob, extglob) )
+                .map(|c| directory::glob(&c, &dir_glob, extglob, dotglob) )
                 .collect::<Vec<Vec<String>>>()
                 .concat();
     }

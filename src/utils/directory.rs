@@ -20,7 +20,7 @@ pub fn files(dir: &str) -> Vec<String> {
     entries.map(|e| f(e.unwrap()) ).collect()
 }
 
-pub fn glob(dir: &str, pattern: &str, extglob: bool) -> Vec<String> {
+pub fn glob(dir: &str, pattern: &str, extglob: bool, dotglob: bool) -> Vec<String> {
     let make_path = |f: &str| dir.to_owned() + f + "/";
 
     if ["", ".", ".."].contains(&pattern) {
@@ -33,7 +33,7 @@ pub fn glob(dir: &str, pattern: &str, extglob: bool) -> Vec<String> {
 
     let pat = glob::parse(pattern, extglob);
     files(dir).iter()
-        .filter(|f| !f.starts_with(".") || pattern.starts_with(".") )
+        .filter(|f| !f.starts_with(".") || pattern.starts_with(".") || dotglob )
         .filter(|f| glob::compare(f, &pat) )
         .map(|f| make_path(&f) ).collect()
 }
