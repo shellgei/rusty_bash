@@ -21,7 +21,8 @@ impl ParsedDataType {
     pub fn get_evaluated_text(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         match self {
             Self::None      => Ok("".to_string()),
-            Self::Single(s) => Ok(s.text.clone()),
+            //Self::Single(s) => Ok(s.text.clone()),
+            Self::Single(s) => Ok(s.eval_as_value(core)?),
             Self::Array(a) => {
                 let mut ans = "(".to_string();
                 let mut ws = vec![];
