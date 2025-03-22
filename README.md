@@ -225,10 +225,13 @@ Followings are not difficult but very important tasks.
 * To add test cases.
 * To fix the test methodology, especially for the parts related to human input.
 
+## Comparison with Bash
+
+![](./test/bash_genuine_test/graph.png)
 
 ## Copyright
 
-© 2022-2024 shellgei group
+© 2022-2025 shellgei group
 
 - Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi.shellgei.org/@ru), [@ryuichiueda@misskey.io](https://misskey.io/@ryuichiueda)
 - [@caro@mi.shellgei.org](https://mi.shellgei.org/@caro)
