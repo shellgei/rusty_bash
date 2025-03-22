@@ -163,7 +163,7 @@ Bash Variables
 | BASH_ARGV | :no_good: | BASH_ARGV0 | :no_good: | BASH_CMDS | :no_good: |
 | BASH_COMMAND | :no_good: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
 | BASH_EXECUTION_STRING | :no_good: | BASH_LINENO | :no_good: | BASH_LOADABLES_PATH | :no_good: |
-| BASH_REMATCH | :no_good: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
+| BASH_REMATCH | :heavy_check_mark: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
 | BASH_VERSINFO | :heavy_check_mark: | BASH_VERSION | :heavy_check_mark: | BASH_XTRACEFD | :no_good: |
 | CHILD_MAX | :no_good: | COLUMNS | :no_good: | COMP_CWORD | :no_good: |
 | COMP_LINE | :no_good: | COMP_POINT | :no_good: | COMP_TYPE | :no_good: |
