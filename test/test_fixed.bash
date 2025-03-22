@@ -51,6 +51,9 @@ AAA
 A _ ()
 t _ fofo *(f*(o))" ] || err $LINENO
 
+res=$($com <<< 'a=aaa; eval b=\$a; echo $b')
+[ "$res" = "aaa" ] || err $LINENO
+
 rm -f $tmp-*
 echo $0 >> ./ok
 exit

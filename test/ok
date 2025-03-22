@@ -13,3 +13,4 @@
 ./test_parameters.bash
 ./test_builtins.bash
 ./test_job.bash
+./test_fixed.bash
