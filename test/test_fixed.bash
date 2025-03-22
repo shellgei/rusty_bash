@@ -16,6 +16,9 @@ cd $(dirname $0)
 com=../target/release/sush
 tmp=/tmp/$$
 
+res=$($com <<< 'echo "\`"' )
+[ "$res" = "\`" ] || err $LINENO
+
 res=$($com <<< 'echo "aaa\bb" | ( read -r a ; echo $a )' )
 [ "$res" = "aaa\bb" ] || err $LINENO
 
