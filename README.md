@@ -69,13 +69,6 @@ Followings are not difficult but very important tasks.
 * :construction: :partially available (or having known bugs) 
 * :no_good: : not implemented
 
-### simple commands
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| command | :heavy_check_mark: | substitutions | :heavy_check_mark: | function definition | :heavy_check_mark: |
-
-
 ### compound commands
 
 |features | status |features | status |features | status |
@@ -83,22 +76,6 @@ Followings are not difficult but very important tasks.
 | if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: |
 | {} | :heavy_check_mark: | case | :heavy_check_mark: | until | :no_good: | select | :no_good: |
 | for | :heavy_check_mark: | [[ ]] | :heavy_check_mark: |
-
-### control operator
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
-| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :heavy_check_mark: |
-| \|& | :heavy_check_mark: |
-
-### expansion
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| brace `{a,b}` | :heavy_check_mark: | brace | :heavy_check_mark: | tilde | :heavy_check_mark: |
-| arithmetic | :heavy_check_mark: | word splitting | :heavy_check_mark: | path name | :heavy_check_mark: |
-| command substitution | :heavy_check_mark: | parameter/variable `$A ${A}` | :heavy_check_mark: | `${name:offset}, ${name:offset:length}` | :heavy_check_mark: |
 
 ### special parameters
 
@@ -155,15 +132,15 @@ Followings are not difficult but very important tasks.
 | checkhash | :no_good: | checkjobs | :no_good: | checkwinsize | :no_good: |
 | cmdhist | :no_good: | compat31 | :no_good: | compat32 | :no_good: |
 | compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
-| dotglob | :no_good: | execfail | :no_good: | expand_aliases | :no_good: |
+| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :no_good: |
 | extdebug | :no_good: | extglob | :heavy_check_mark: | extquote | :no_good: |
 | failglob | :no_good: | force_fignore | :no_good: | globstar | :no_good: |
 | gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
 | histverify | :no_good: | hostcomplete | :no_good: | huponexit | :no_good: |
 | interactive_comments | :no_good: | lastpipe | :no_good: | lithist | :no_good: |
 | login_shell | :no_good: | mailwarn | :no_good: | no_empty_cmd_completion | :no_good: |
-| nocaseglob | :no_good: | nocasematch | :no_good: | nullglob | :no_good: |
-| progcomp | :no_good: | promptvars | :no_good: | restricted_shell | :no_good: |
+| nocaseglob | :no_good: | nocasematch | :no_good: | nullglob | :heavy_check_mark: |
+| progcomp | :heavy_check_mark: | promptvars | :no_good: | restricted_shell | :no_good: |
 | shift_verbose | :no_good: | sourcepath | :no_good: | xpg_echo | :no_good: |
 
 ### variables
