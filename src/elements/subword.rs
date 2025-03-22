@@ -185,26 +185,3 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
         }
     }
 }
-
-/*
-pub fn parse_filler(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>) -> Result<Option<Box<dyn Subword>>, ParseError> {
-    if replace_history_expansion(feeder, core) {
-        return parse(feeder, core, mode);
-    }
-
-    if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = AnsiCQuoted::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = Arithmetic::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = ProcessSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else if let Some(a) = ExtGlob::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = FillerSubword::parse(feeder){ Ok(Some(Box::new(a))) }
-    else{ Ok(None) }
-}
-
-*/

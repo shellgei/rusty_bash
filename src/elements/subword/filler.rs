@@ -3,6 +3,7 @@
 
 use super::Subword;
 
+/* This subword disappers at word split. */
 #[derive(Debug, Clone)]
 pub struct FillerSubword {
     pub text: String,
@@ -13,20 +14,3 @@ impl Subword for FillerSubword {
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 }
-
-/*
-impl FillerSubword {
-    pub fn parse(feeder: &mut Feeder) -> Option<Self> {
-        let len = feeder.scanner_subword_symbol();
-        if len > 0 {
-            return Some( Self{ text :feeder.consume(len) } );
-        }
-
-        let len = feeder.scanner_subword();
-        if len > 0 {
-            return Some( Self{ text :feeder.consume(len) } );
-        }
-
-        None
-    }
-}*/

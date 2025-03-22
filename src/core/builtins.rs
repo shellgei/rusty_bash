@@ -43,6 +43,7 @@ impl ShellCore {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias::alias);
         self.builtins.insert("bg".to_string(), job_commands::bg);
+        self.builtins.insert("bind".to_string(), bind);
         self.builtins.insert("break".to_string(), loop_control::break_);
         self.builtins.insert("builtin".to_string(), builtin);
         self.builtins.insert("cd".to_string(), cd::cd);
@@ -203,6 +204,10 @@ pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 }
 
 pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+    0
+}
+
+pub fn bind(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
     0
 }
 

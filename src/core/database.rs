@@ -94,6 +94,10 @@ impl DataBase {
     }
 
     pub fn has_value_layer(&mut self, name: &str, layer: usize) -> bool {
+        if self.position_parameters.len() <= layer {
+            return false;
+        }
+
         if let Ok(n) = name.parse::<usize>() {
             if n < self.position_parameters[layer].len() {
                 return true;
