@@ -2,13 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword;
 use crate::elements::subscript::Subscript;
-use crate::elements::word::Word;
 use crate::error::parse::ParseError;
 use super::{BracedParam, Param};
 use super::optional_operation;
-use crate::elements::subword::filler::FillerSubword;
 
 impl BracedParam {
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
@@ -24,6 +21,7 @@ impl BracedParam {
         Ok(false)
     }
 
+    /*
     pub fn eat_subwords(feeder: &mut Feeder, ends: Vec<&str>, core: &mut ShellCore)
         -> Result<Word, ParseError> {
         let mut word = Word::default();
@@ -44,6 +42,7 @@ impl BracedParam {
 
         Ok(word)
     }
+    */
 
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);

@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::Feeder;
 use super::Subword;
 
 #[derive(Debug, Clone)]
@@ -15,6 +14,7 @@ impl Subword for FillerSubword {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 }
 
+/*
 impl FillerSubword {
     pub fn parse(feeder: &mut Feeder) -> Option<Self> {
         let len = feeder.scanner_subword_symbol();
@@ -29,4 +29,4 @@ impl FillerSubword {
 
         None
     }
-}
+}*/

@@ -17,7 +17,8 @@ use super::subword::simple::SimpleSubword;
 #[derive(Debug, Clone)]
 pub enum WordMode {
     Operand,
-    ReadToken,
+    ReadCommand,
+    ParamOption(Vec<String>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -220,15 +221,30 @@ impl Word {
         -> Result<Option<Word>, ParseError> {
 
         if feeder.starts_with("#") {
-            if let Some(WordMode::ReadToken) = mode {
+            if let Some(WordMode::ReadCommand) = mode {
             }else{
                 return Ok(None);
             }
         }
-        if let Some(WordMode::Operand) = mode {
-            if feeder.starts_with("}") {
-                return Ok(None);
+
+        if feeder.len() == 0 {
+            return Ok(None);
+        }
+
+        let first = feeder.nth(0).unwrap().to_string();
+
+        match mode {
+            Some(WordMode::Operand) => {
+                if first == "}" {
+                    return Ok(None);
+                }
+            },
+            Some(WordMode::ParamOption(ref v)) => {
+                if v.contains(&first) {
+                    return Ok(None);
+                }
             }
+            _ => {},
         }
 
         let mut ans = Word::default();
@@ -242,12 +258,24 @@ impl Word {
                 },
             }
 
-            if let Some(WordMode::Operand) = mode {
-                if feeder.starts_with("]")
-                || feeder.starts_with("}")
-                || feeder.scanner_math_symbol(core) != 0 {
-                    break;
+            if feeder.len() == 0 {
+                break;
+            }
+            let first = feeder.nth(0).unwrap().to_string();
+            match mode {
+                Some(WordMode::Operand) => {
+                    if feeder.starts_with("]")
+                    || feeder.starts_with("}")
+                    || feeder.scanner_math_symbol(core) != 0 {
+                        break;
+                    }
+                },
+                Some(WordMode::ParamOption(ref v)) => {
+                    if v.contains(&first) {
+                        break;
+                    }
                 }
+                _ => {},
             }
         }
         

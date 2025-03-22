@@ -40,9 +40,28 @@ $ sush
 ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
 
-## For Contributors 
+## Comparison with Bash
 
-Please give us issues or pull requests in a way you think sensible. We do not have a rigid rule at this stage. 
+This graph shows the test result with the scripts in `./tests/` of Bash repo. Currently, the binary built from alpha repo has passed five of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 5/84 features of Bash.
+
+![](./test/bash_genuine_test/graph.png)
+
+## Contribution
+
+Because the shell in this repository can be a standard one in the next generation, it may a good idea to leave your name as a contributor. Give us pull requests with what you think as contribution. As our community is not big, rules have not been fixed yet. 
+
+Followings are not difficult but very important tasks.
+
+* To fix the code based on Clippy. (There are many warnings by Clippy in the current codes. )
+* To develop builtin commands. (Especially `echo` may be easy. )
+* To add test cases.
+* To fix the test methodology, especially for the parts related to human input.
+
+### Important branch
+
+* alpha: checkout this branch if you want to develop.
+* beta: we are using the head version of this branch on a day-to-day basis.
+* main: the beta version is merged to this branch if fatal problems are not found for a week.
 
 ## List of Features
 
@@ -213,21 +232,6 @@ Partially in Japanese.
     * [原理原則で理解するフォアグラウンドプロセスとバックグラウンドプロセスの違い | @tajima_taso](https://qiita.com/tajima_taso/items/c5553762af5e1a599fed)
     * [Bashタブ補完自作入門 | Cybouzu Inside Out](https://blog.cybozu.io/entry/2016/09/26/080000)
 
-
-## Contribution
-
-Because the shell in this repository can be a standard one in the next generation, it may a good idea to leave your name as a contributor. Give us pull requests with what you think as contribution. As our community is not big, rules have not been fixed yet. 
-
-Followings are not difficult but very important tasks.
-
-* To fix the code based on Clippy. (There are many warnings by Clippy in the current codes. )
-* To develop builtin commands. (Especially `echo` may be easy. )
-* To add test cases.
-* To fix the test methodology, especially for the parts related to human input.
-
-## Comparison with Bash
-
-![](./test/bash_genuine_test/graph.png)
 
 ## Copyright
 

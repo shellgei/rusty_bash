@@ -156,7 +156,21 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
     else{
         match mode {
             None => Ok(None),
-            Some(WordMode::ReadToken) => {
+            Some(WordMode::ParamOption(ref v)) => {
+                if feeder.len() == 0 {
+                    return Ok(None);
+                }
+                let first = feeder.nth(0).unwrap().to_string();
+                if v.contains(&first) {
+                    return Ok(None);
+                }
+                let c = FillerSubword { text: feeder.consume(1) };
+                if feeder.len() == 0 {
+                    feeder.feed_additional_line(core)?;
+                }
+                Ok(Some(Box::new(c)))
+            },
+            Some(WordMode::ReadCommand) => {
                 if feeder.len() == 0 
                 || feeder.starts_with("\n") 
                 || feeder.starts_with("\t") 
@@ -172,6 +186,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
     }
 }
 
+/*
 pub fn parse_filler(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>) -> Result<Option<Box<dyn Subword>>, ParseError> {
     if replace_history_expansion(feeder, core) {
         return parse(feeder, core, mode);
@@ -191,3 +206,5 @@ pub fn parse_filler(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<Wor
     else if let Some(a) = FillerSubword::parse(feeder){ Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }
+
+*/

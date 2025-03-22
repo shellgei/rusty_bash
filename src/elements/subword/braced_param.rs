@@ -7,7 +7,6 @@ mod parse;
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
-use crate::elements::word::Word;
 use crate::utils;
 use crate::error::exec::ExecError;
 use self::optional_operation::OptionalOperation;

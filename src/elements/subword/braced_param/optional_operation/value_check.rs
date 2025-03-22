@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{exit, Feeder, ShellCore};
-use crate::elements::subword::{Subword, BracedParam};
-use crate::elements::subword::braced_param::Word;
+use crate::elements::subword::Subword;
+use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::super::{Subscript, Param};
@@ -141,9 +141,10 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        let alt = BracedParam::eat_subwords(feeder, vec!["}"], core)?;
-        ans.text += &alt.subwords.iter().map(|e| e.get_text()).collect::<Vec<&str>>().join("");
-        ans.alternative_value = Some(alt);
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.alternative_value = Some(w);
+        }
 
         Ok(Some(ans))
     }
