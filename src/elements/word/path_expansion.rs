@@ -31,14 +31,11 @@ fn no_glob_symbol(pattern: &str) -> bool {
 }
 
 pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
-    let extglob = shopts.query("extglob");
-    let dotglob = shopts.query("dotglob");
-
     let mut paths = vec!["".to_string()];
 
     for dir_glob in pattern.split("/") {
         paths = paths.iter()
-                .map(|c| directory::glob(&c, &dir_glob, extglob, dotglob) )
+                .map(|c| directory::glob(&c, &dir_glob, shopts) )
                 .collect::<Vec<Vec<String>>>()
                 .concat();
     }

@@ -50,11 +50,10 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
         return files.iter().map(|f| org_dir.clone() + &f).collect();
     }
 
-    let dotglob = core.shopts.query("dotglob");
-    let mut ans = directory::glob(&dir, &(key.clone() + "*"), core.shopts.query("extglob"), dotglob);
+    let mut ans = directory::glob(&dir, &(key.clone() + "*"), &core.shopts);
     if key == "." {
-        ans.append(&mut directory::glob(&dir, ".", false, dotglob));
-        ans.append(&mut directory::glob(&dir, "..", false, dotglob));
+        ans.append(&mut directory::glob(&dir, ".", &core.shopts));
+        ans.append(&mut directory::glob(&dir, "..", &core.shopts));
     }
     ans.iter_mut().for_each(|a| { a.pop(); } );
     if dir_only {

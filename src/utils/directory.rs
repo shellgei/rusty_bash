@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::core::options::Options;
 use std::fs::DirEntry;
 use std::path::Path;
 use super::glob;
@@ -20,7 +21,10 @@ pub fn files(dir: &str) -> Vec<String> {
     entries.map(|e| f(e.unwrap()) ).collect()
 }
 
-pub fn glob(dir: &str, pattern: &str, extglob: bool, dotglob: bool) -> Vec<String> {
+pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
+    let extglob = shopts.query("extglob");
+    let dotglob = shopts.query("dotglob");
+
     let make_path = |f: &str| dir.to_owned() + f + "/";
 
     if ["", ".", ".."].contains(&pattern) {
