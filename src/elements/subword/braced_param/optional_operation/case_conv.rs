@@ -123,7 +123,10 @@ impl CaseConv {
         if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
             ans.text += &w.text.clone();
             ans.pattern = Some(w);
+        }else{
+            ans.pattern = Some(Word::default());
         }
+
         Ok(Some(ans))
     }
 }

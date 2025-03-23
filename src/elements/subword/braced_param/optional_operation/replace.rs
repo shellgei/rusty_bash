@@ -180,16 +180,11 @@ impl Replace {
             ans.tail_only_replace = true;
         }
 
-        /*
-        let sws = BracedParam::eat_subwords(feeder, vec!["}", "/"], core)?;
-        ans.text += &sws.subwords.iter()
-                    .map(|sw| sw.get_text())
-                    .collect::<Vec<&str>>().join("");
-        ans.replace_from = Some(sws);
-        */
         if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string(), "/".to_string()])))? {
             ans.text += &w.text.clone();
             ans.replace_from = Some(w);
+        }else{
+            ans.replace_from = Some(Word::default());
         }
 
         if ! feeder.starts_with("/") {
@@ -201,6 +196,8 @@ impl Replace {
         if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
             ans.text += &w.text.clone();
             ans.replace_to = Some(w);
+        }else{
+            ans.replace_to = Some(Word::default());
         }
 
         Ok(Some(ans))

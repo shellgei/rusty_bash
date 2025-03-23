@@ -82,6 +82,8 @@ impl Remove {
         if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
             ans.text += &w.text.clone();
             ans.remove_pattern = Some(w);
+        }else{
+            ans.remove_pattern = Some(Word::default());
         }
         Ok(Some(ans))
     }

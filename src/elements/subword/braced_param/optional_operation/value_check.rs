@@ -144,6 +144,8 @@ impl ValueCheck {
         if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
             ans.text += &w.text.clone();
             ans.alternative_value = Some(w);
+        }else{
+            ans.alternative_value = Some(Word::default());
         }
 
         Ok(Some(ans))
