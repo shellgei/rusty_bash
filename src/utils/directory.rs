@@ -38,13 +38,9 @@ fn globstar(dir: &str) -> Vec<String> {
 }
 
 pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
-    if file_check::is_symlink(dir.trim_end_matches("/")) {
-        dbg!("{:?}", &dir);
-        return vec![];
-    }
-
     let make_path = |f: &str| dir.to_owned() + f + "/";
-    if ["", ".", ".."].contains(&pattern) {
+    if ["", ".", ".."].contains(&pattern) 
+    || file_check::is_symlink(dir.trim_end_matches("/")) {
         let path = make_path(pattern);
         match file_check::exists(&path) {
             true  => return vec![path],
@@ -56,6 +52,8 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
         let mut tmp = globstar(dir);
         tmp.push(dir.to_string());
         tmp.iter_mut().for_each(|d| if d != "" && ! d.ends_with("/") {*d += "/"; });
+        tmp.sort();
+        tmp.dedup();
         return tmp;
     }
 

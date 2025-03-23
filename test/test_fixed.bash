@@ -16,6 +16,30 @@ cd $(dirname $0)
 com=../target/release/sush
 tmp=/tmp/$$
 
+res=$($com << 'EOF'
+mkdir -p /tmp/$$
+cd /tmp/$$
+mkdir a b
+touch a/{aa,ab}
+touch b/{bb,bc}
+ln -s a c
+shopt -s globstar
+echo 1: **
+echo 2: **/
+echo 3: **/*
+echo 4: **/**/*
+rm a/*
+rm b/*
+rm c
+rmdir a b
+rmdir /tmp/$$
+EOF
+)
+[ "$res" = "1: a a/aa a/ab b b/bb b/bc c
+2: a/ b/ c/
+3: a a/aa a/ab b b/bb b/bc c
+4: a a/aa a/ab b b/bb b/bc c" ] || err $LINENO
+
 res=$($com <<< 'set a ; b=${1-" "}; echo $b' )
 [ "$res" = "a" ] || err $LINENO
 

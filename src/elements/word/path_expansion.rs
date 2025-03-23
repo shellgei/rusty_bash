@@ -42,5 +42,6 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
 
     paths.iter_mut().for_each(|e| {e.pop();} );
     paths.sort();
+    paths.dedup();
     paths
 }
