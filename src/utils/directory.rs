@@ -28,9 +28,8 @@ fn globstar(dir: &str) -> Vec<String> {
     }
     let mut ans = dirs.clone();
 
-    for dir in dirs {
-        let mut tmp = globstar(&dir);
-        ans.append(&mut tmp);
+    for d in dirs {
+        ans.append(&mut globstar(&d));
     }
 
     ans
