@@ -1,12 +1,17 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::core::options::Options;
 use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 use crate::utils::directory;
 use super::subword::simple::SimpleSubword;
 
-pub fn eval(word: &mut Word, extglob: bool, nullglob: bool, dotglob: bool) -> Vec<Word> {
+pub fn eval(word: &mut Word, shopts: &Options) -> Vec<Word> {
+    let extglob = shopts.query("extglob");
+    let nullglob = shopts.query("nullglob");
+    let dotglob = shopts.query("dotglob");
+
     let globstr = word.make_glob_string();
     if no_glob_symbol(&globstr) {
         return vec![word.clone()];
