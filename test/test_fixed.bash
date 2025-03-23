@@ -60,6 +60,12 @@ t _ fofo *(f*(o))" ] || err $LINENO
 res=$($com <<< 'a=aaa; eval b=\$a; echo $b')
 [ "$res" = "aaa" ] || err $LINENO
 
+res=$($com <<< 'read -a hoge <<< "A B C"; echo ${hoge[1]}')
+[ "$res" = "B" ] || err $LINENO
+
+res=$($com <<< 'read -a hoge <<< "A B C"; echo ${hoge[2]}')
+[ "$res" = "C" ] || err $LINENO
+
 rm -f $tmp-*
 echo $0 >> ./ok
 exit

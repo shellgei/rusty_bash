@@ -3,6 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::{arg, error};
+use crate::builtins::error_exit;
 use crate::elements::command;
 use crate::elements::word::{Word, WordMode};
 
@@ -86,6 +87,34 @@ fn set_to_param(core: &mut ShellCore, args: &mut Vec<String>,
     true
 }
 
+pub fn read_a(core: &mut ShellCore, name: &String) -> i32 {
+    let mut line = String::new();
+    let len = std::io::stdin()
+        .read_line(&mut line)
+        .expect("SUSHI INTERNAL ERROR: Failed to read line");
+    let mut feeder = Feeder::new(&line);
+    let mut tmp = String::new();
+
+    let mut pos = 0;
+    loop {
+        command::eat_blank_with_comment(&mut feeder, core, &mut tmp);
+        if let Ok(Some(w)) = Word::parse(&mut feeder, core, Some(WordMode::ReadCommand)) {
+            let text = remove_escape(&w.text);
+            if let Err(_) = core.db.set_array_elem(name, &text, pos, None) {
+                return error_exit(1, "read", "array allocation error", core);
+            }
+            pos +=1;
+        }else{
+            break;
+        }
+    }
+
+    match len == 0 {
+        true  => 1,
+        false => 0,
+    }
+}
+
 pub fn read_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut line = String::new();
     let len = std::io::stdin()
@@ -123,6 +152,9 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
+    if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
+        return read_a(core, &a);
+    }
     let r_opt = arg::consume_option("-r", &mut args); //TODO: change the precedure
 
     for a in &args[1..] {
