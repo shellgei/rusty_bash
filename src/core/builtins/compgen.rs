@@ -358,7 +358,7 @@ pub fn compgen_shopt(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String
     ans
 }
 
-pub fn compgen_hostname(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_hostname(_: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
     //TODO: Implement!
     vec![]
 }
