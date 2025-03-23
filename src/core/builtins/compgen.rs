@@ -118,6 +118,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
     let _  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
     let prefix = arg::consume_with_next_arg("-P", &mut args);
+    let suffix = arg::consume_with_next_arg("-S", &mut args);
 
     replace_args_compgen(&mut args);
 
@@ -156,6 +157,11 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if let Some(p) = prefix {
         for a in ans.iter_mut() {
             *a = p.clone() + a;
+        }
+    }
+    if let Some(s) = suffix {
+        for a in ans.iter_mut() {
+            *a = a.to_owned() + &s.clone();
         }
     }
 
