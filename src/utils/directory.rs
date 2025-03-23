@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::core::options::Options;
@@ -21,12 +21,22 @@ pub fn files(dir: &str) -> Vec<String> {
     entries.map(|e| f(e.unwrap()) ).collect()
 }
 
-pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
-    let extglob = shopts.query("extglob");
-    let dotglob = shopts.query("dotglob");
+fn globstar(dir: &str) -> Vec<String> {
+    let mut dirs = files(dir);
+    if dir != "" {
+        dirs.iter_mut().for_each(|d| {*d = dir.to_string() + "/" + &d; });
+    }
+    let mut ans = dirs.clone();
 
-    let make_path = |f: &str| dir.to_owned() + f + "/";
+    for dir in dirs {
+        let mut tmp = globstar(&dir);
+        ans.append(&mut tmp);
+    }
 
+    ans
+}
+
+pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> { let make_path = |f: &str| dir.to_owned() + f + "/";
     if ["", ".", ".."].contains(&pattern) {
         let path = make_path(pattern);
         match file_check::exists(&path) {
@@ -35,6 +45,14 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
         }
     }
 
+    if pattern == "**" && shopts.query("globstar") {
+        let mut tmp = globstar(dir);
+        tmp.iter_mut().for_each(|d| {*d += "/"; });
+        return tmp;
+    }
+
+    let dotglob = shopts.query("dotglob");
+    let extglob = shopts.query("extglob");
     let pat = glob::parse(pattern, extglob);
     files(dir).iter()
         .filter(|f| !f.starts_with(".") || pattern.starts_with(".") || dotglob )
