@@ -77,6 +77,7 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
         "file" => "-f",
         "user" => "-u",
         "setopt" => "-o",
+        "hostname" => "-A hostname",
         "shopt" => "-A shopt",
         "stopped" => "-A stopped",
         "job" => "-j",
@@ -132,6 +133,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-j" => compgen_j(core, &mut args),
         "-u" => compgen_u(core, &mut args),
         "-v" => compgen_v(core, &mut args),
+        "-A hostname" => compgen_hostname(core, &mut args),
         "-A shopt" => compgen_shopt(core, &mut args),
         "-A stopped" => compgen_stopped(core, &mut args),
         "-W" => {
@@ -354,6 +356,11 @@ pub fn compgen_shopt(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String
     let mut ans = core.shopts.get_keys();
     drop_unmatch(args, 2, &mut ans);
     ans
+}
+
+pub fn compgen_hostname(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    //TODO: Implement!
+    vec![]
 }
 
 pub fn compgen_stopped(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
