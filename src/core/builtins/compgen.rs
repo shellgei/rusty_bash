@@ -299,9 +299,7 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 fn compgen_large_g(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let glob = args[2].to_string();
-    let extglob = core.shopts.query("extglob");
-    let dotglob = core.shopts.query("dotglob");
-    path_expansion::expand(&glob, extglob, dotglob)
+    path_expansion::expand(&glob, &core.shopts)
 }
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {

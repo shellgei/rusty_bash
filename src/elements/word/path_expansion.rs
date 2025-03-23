@@ -8,18 +8,14 @@ use crate::utils::directory;
 use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word, shopts: &Options) -> Vec<Word> {
-    let extglob = shopts.query("extglob");
-    let nullglob = shopts.query("nullglob");
-    let dotglob = shopts.query("dotglob");
-
     let globstr = word.make_glob_string();
     if no_glob_symbol(&globstr) {
         return vec![word.clone()];
     }
 
-    let paths = expand(&globstr, extglob, dotglob);
+    let paths = expand(&globstr, shopts);
     if paths.is_empty() {
-        if nullglob {
+        if shopts.query("nullglob") {
             return vec![Word::from(&String::new())];
         }
         return vec![word.clone()];
@@ -34,7 +30,10 @@ fn no_glob_symbol(pattern: &str) -> bool {
     "*?@+![".chars().all(|c| ! pattern.contains(c))
 }
 
-pub fn expand(pattern: &str, extglob: bool, dotglob: bool) -> Vec<String> {
+pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
+    let extglob = shopts.query("extglob");
+    let dotglob = shopts.query("dotglob");
+
     let mut paths = vec!["".to_string()];
 
     for dir_glob in pattern.split("/") {
