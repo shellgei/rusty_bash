@@ -22,7 +22,7 @@ impl Command for WhileCommand {
             return Ok(());
         }
         core.loop_level += 1;
-        loop {
+        while ! core.return_flag {
             core.suspend_e_option = true;
             let _ = self.while_script.as_mut().unwrap().exec(core);
 

@@ -123,7 +123,7 @@ impl ForCommand {
             return false;
         }
 
-        loop {
+        while ! core.return_flag {
             if core.sigint.load(Relaxed) {
                 return false;
             }
