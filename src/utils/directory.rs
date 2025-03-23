@@ -29,13 +29,21 @@ fn globstar(dir: &str) -> Vec<String> {
     let mut ans = dirs.clone();
 
     for d in dirs {
-        ans.append(&mut globstar(&d));
+        if ! file_check::is_symlink(&d) {
+            ans.append(&mut globstar(&d));
+        }
     }
 
     ans
 }
 
-pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> { let make_path = |f: &str| dir.to_owned() + f + "/";
+pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
+    if file_check::is_symlink(dir.trim_end_matches("/")) {
+        dbg!("{:?}", &dir);
+        return vec![];
+    }
+
+    let make_path = |f: &str| dir.to_owned() + f + "/";
     if ["", ".", ".."].contains(&pattern) {
         let path = make_path(pattern);
         match file_check::exists(&path) {
