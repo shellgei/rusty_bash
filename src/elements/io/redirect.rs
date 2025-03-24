@@ -10,7 +10,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Redirect {
     pub text: String,
     pub symbol: String,
@@ -57,7 +57,7 @@ impl Redirect {
                 let fd = file.into_raw_fd();
                 let result = io::replace(fd, self.left_fd);
                 if ! result {
-                    io::close(fd, &format!("sush(fatal): file does not close"));
+                    io::close(fd, "sush(fatal): file does not close");
                     self.left_fd = -1; 
                     let msg = format!("{}: cannot replace", &fd);
                     return Err(ExecError::Other(msg));
@@ -131,13 +131,14 @@ impl Redirect {
 
     pub fn new() -> Redirect {
         Redirect {
-            text: String::new(),
-            symbol: String::new(),
+           // text: String::new(),
+            //symbol: String::new(),
             right: Word::from(vec![]),
-            left: String::new(),
+           // left: String::new(),
             left_fd: -1,
             left_backup: -1,
             extra_left_backup: -1,
+            ..Default::default()
         }
     }
 

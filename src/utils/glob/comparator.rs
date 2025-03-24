@@ -14,7 +14,7 @@ pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
         GlobElem::Normal(s) => normal(candidates, s),
         GlobElem::Symbol('?') => question(candidates),
         GlobElem::Symbol('*') => asterisk(candidates),
-        GlobElem::OneOf(not, cs) => one_of(candidates, &cs, *not),
+        GlobElem::OneOf(not, cs) => one_of(candidates, cs, *not),
         _ => panic!("Unknown glob symbol"),
     }
 }
@@ -46,9 +46,9 @@ fn asterisk(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
-fn one_of(cands: &mut Vec<String>, cs: &Vec<char>, not_inv: bool) {
+fn one_of(cands: &mut Vec<String>, cs: &[char], not_inv: bool) {
     cands.retain(|cand| cs.iter().any(|c| cand.starts_with(*c)) == not_inv );
-    cands.retain(|cand| cand.len() != 0 );
-    let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
+    cands.retain(|cand| !cand.is_empty() );
+    let len = |c: &String| c.chars().next().unwrap().len_utf8();
     cands.iter_mut().for_each(|c| {*c = c.split_off(len(c));});
 }

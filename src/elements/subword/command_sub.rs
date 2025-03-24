@@ -22,7 +22,7 @@ pub struct CommandSubstitution {
 }
 
 impl Subword for CommandSubstitution {
-    fn get_text(&self) -> &str {&self.text.as_ref()}
+    fn get_text(&self) -> &str {self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -80,7 +80,7 @@ impl CommandSubstitution {
 
         if let Some(pc) = ParenCommand::parse(feeder, core, true)? {
             text += &pc.get_text();
-            Ok(Some(Self {text: text, command: pc} ))
+            Ok(Some(Self {text, command: pc} ))
         }else{
             Ok(None)
         }
