@@ -100,20 +100,12 @@ impl DoubleQuoted {
         Ok(ans)
     }
 
-    fn set_simple_subword(feeder: &mut Feeder, ans: &mut Self, len: usize) -> bool {
-        let txt = feeder.consume(len);
-        ans.text += &txt;
-        ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
-        true
-    }
-
-    fn eat_subword(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+    fn eat_element(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         let sw: Box<dyn Subword> 
             = if let Some(a) = BracedParam::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Arithmetic::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
-            else if feeder.starts_with("$") { Box::new( SimpleSubword { text: feeder.consume(1)} ) }
             else if let Some(a) = Self::parse_escaped_char(feeder, core) { a }
             else if let Some(a) = Self::parse_name(feeder, core) { Box::new(a) }
             else { return Ok(false) ; };
@@ -123,8 +115,7 @@ impl DoubleQuoted {
         Ok(true)
     }
 
-    fn parse_escaped_char(feeder: &mut Feeder, core: &mut ShellCore)
-    -> Option<Box<dyn Subword>> {
+    fn parse_escaped_char(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
         if feeder.starts_with("\\$") || feeder.starts_with("\\\\") 
         || feeder.starts_with("\\\"") || feeder.starts_with("\\`") {
             return Some(Box::new(EscapedChar{ text: feeder.consume(2) }));
@@ -148,7 +139,12 @@ impl DoubleQuoted {
                 ans.text += &feeder.consume(1);
                 return Ok(false);
             },
-            Some(ch) => { Self::set_simple_subword(feeder, ans, ch.len_utf8()); },
+            Some(ch) => {
+                let txt = feeder.consume(ch.len_utf8());
+                ans.text += &txt;
+                ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
+                return Ok(true);
+            },
             None     => feeder.feed_additional_line(core)?,
         }
         Ok(true)
@@ -161,7 +157,7 @@ impl DoubleQuoted {
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
 
-        while Self::eat_subword(feeder, &mut ans, core)?
+        while Self::eat_element(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}
 
         Ok(Some(ans))
