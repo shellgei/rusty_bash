@@ -166,20 +166,9 @@ impl Feeder {
         if ! self.starts_with("$") {
             return 0;
         }
-        //self.backslash_check_and_feed(vec!["$", "$_"], core);
         self.backslash_check_and_feed(vec!["$"], core);
 
         match self.remaining.chars().nth(1) {
-            /*
-            Some('_') => {
-                if let Some(c) = self.remaining.chars().nth(2) {
-                    if c.is_ascii_digit() || c.is_ascii_alphabetic() {
-                        return 0;
-                    }
-                }
-                return 2;
-            },
-            */
             Some(c) => if "$?*@#-!0123456789".find(c) != None { 2 }else{ 0 },
             None    => 0,
         }
@@ -204,7 +193,7 @@ impl Feeder {
     }
 
     pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| "\"\\$".find(ch) == None;
+        let judge = |ch| "`\"\\$".find(ch) == None;
         self.scanner_chars(judge, core, 0)
     }
 
