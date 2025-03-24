@@ -45,17 +45,6 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
-    /*
-    fn new() -> FunctionDefinition {
-        FunctionDefinition {
-            text: String::new(),
-            name: String::new(),
-            command: None,
-            redirects: vec![],
-            force_fork: false,
-        }
-    }*/
-
     pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore)
         -> Result<Option<Pid>, ExecError> {
         let mut array = core.db.get_array_all("FUNCNAME");
