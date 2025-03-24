@@ -218,8 +218,8 @@ impl DoubleQuoted {
             if feeder.starts_with("\"") {
                 ans.text += &feeder.consume(1);
                 return Ok(Some(ans));
-            }else if feeder.len() > 0 {
-                return Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())));
+//            }else if feeder.len() > 0 {
+ //               return Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())));
             }else{
                 feeder.feed_additional_line(core)?;
             }
