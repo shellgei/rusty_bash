@@ -33,10 +33,7 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
         for w in words.iter_mut() {
-            let mut args = match w.eval(core) {
-                Ok(a) => a,
-                Err(e) => return Err(ExecError::Other(e)),
-            };
+            let mut args = w.eval(core)?;
             self.args.append(&mut args);
         }
 

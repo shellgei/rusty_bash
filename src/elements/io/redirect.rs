@@ -7,6 +7,7 @@ use std::io::Error;
 use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 
 #[derive(Debug, Clone)]
@@ -21,21 +22,13 @@ pub struct Redirect {
 }
 
 impl Redirect {
-    pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> bool {
-        let args = match self.right.eval(core) {
-            Ok(v) => v,
-            Err(e) => {
-                eprintln!("{}", e);
-                return false;
-            },
-        };
-
-        if args.len() != 1 {
-            eprintln!("sush: {}: ambiguous redirect", self.right.text);
-            return false;
-        }else{
-            self.right.text = args[0].clone();
+    pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+        let args = self.right.eval(core)?;
+        if args.len() != 1 { 
+            return Err(ExecError::AmbiguousRedirect(self.right.text.clone()));
         }
+
+        self.right.text = args[0].clone();
 
         match self.symbol.as_str() {
             "<" => self.redirect_simple_input(restore),
@@ -54,7 +47,32 @@ impl Redirect {
         };
     }
 
-    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> bool {
+    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> Result<(), ExecError> {
+        if restore {
+            self.left_backup = io::backup(self.left_fd);
+        }   
+
+        match file_open_result {
+            Ok(file) => {
+                let fd = file.into_raw_fd();
+                let result = io::replace(fd, self.left_fd);
+                if ! result {
+                    io::close(fd, &format!("sush(fatal): file does not close"));
+                    self.left_fd = -1; 
+                    let msg = format!("{}: cannot replace", &fd);
+                    return Err(ExecError::Other(msg));
+                }
+                Ok(())
+            },
+            _  => {
+                let msg = format!("{}: {}", &self.right.text, Error::last_os_error().kind());
+                Err(ExecError::Other(msg))
+            },
+        }
+    }
+
+    /*
+    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> Result<(), ExecError> {
         if restore {
             self.left_backup = io::backup(self.left_fd);
         }
@@ -74,35 +92,32 @@ impl Redirect {
                 false
             },
         }
-    }
+    }*/
 
-    fn redirect_simple_input(&mut self, restore: bool) -> bool {
+    fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
         self.connect_to_file(File::open(&self.right.text), restore)
     }
 
-    fn redirect_simple_output(&mut self, restore: bool) -> bool {
+    fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
         self.connect_to_file(File::create(&self.right.text), restore)
     }
 
-    fn redirect_append(&mut self, restore: bool) -> bool {
+    fn redirect_append(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
         self.connect_to_file(OpenOptions::new().create(true)
                 .append(true).open(&self.right.text), restore)
     }
 
-    fn redirect_both_output(&mut self, restore: bool) -> bool {
+    fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 1;
-        if ! self.connect_to_file(File::create(&self.right.text), restore){
-            return false;
-        }
+        self.connect_to_file(File::create(&self.right.text), restore)?;
 
         if restore {
             self.extra_left_backup = io::backup(2);
         }
-        io::share(1, 2);
-        true
+        io::share(1, 2)
     }
 
     pub fn restore(&mut self) {

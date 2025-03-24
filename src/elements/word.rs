@@ -8,6 +8,7 @@ mod path_expansion;
 mod split;
 
 use crate::{Feeder, ShellCore};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::subword;
 use super::subword::Subword;
@@ -48,7 +49,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
 }
 
 impl Word {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, ExecError> {
         let mut ws = vec![];
         for w in brace_expansion::eval(&mut self.clone()) {
             let expanded = w.tilde_and_dollar_expansion(core)?;
@@ -57,7 +58,7 @@ impl Word {
         Self::make_args(&mut ws)
     }
 
-    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, String> {
+    pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
         let mut w = self.clone();
         tilde_expansion::eval(&mut w, core);
         substitution::eval(&mut w, core)?;
@@ -72,7 +73,7 @@ impl Word {
         ans
     }
 
-    fn make_args(words: &mut [Word]) -> Result<Vec<String>, String> {
+    fn make_args(words: &mut [Word]) -> Result<Vec<String>, ExecError> {
         Ok( words.iter_mut().filter_map(|w| w.make_unquoted_word()).collect() )
     }
 

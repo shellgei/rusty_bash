@@ -44,11 +44,35 @@ pub trait Command {
         }
     }
 
+    fn fork_exec_child(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<(), ExecError> {
+        core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
+        io::connect(pipe, self.get_redirects(), core)?;
+        self.run(core, true)
+    } 
+
+    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+        match unsafe{unistd::fork()?} {
+            ForkResult::Child => {
+                if let Err(e) = self.fork_exec_child(core, pipe) {
+                    e.print(core);
+                    core.db.set_param("?", "1")?;
+                }
+                exit::normal(core)
+            },
+            ForkResult::Parent { child } => {
+                core.set_pgid(child, pipe.pgid);
+                pipe.parent_close();
+                Ok(Some(child))
+            },
+        }
+    }
+
+    /*
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         match unsafe{unistd::fork()} {
             Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
-                io::connect(pipe, self.get_redirects(), core);
+                io::connect(pipe, self.get_redirects(), core)?;
                 if let Err(e) = self.run(core, true) {
                     e.print(core);
                 }
@@ -62,19 +86,24 @@ pub trait Command {
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
         }
     }
+    */
 
     fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
-        let mut result = Ok(());
-        if self.get_redirects().iter_mut().all(|r| r.connect(true, core)){
-            result = self.run(core, false);
+        let mut result = Ok(None);
+        for r in self.get_redirects().iter_mut() {
+            if let Err(e) = r.connect(true, core) {
+                result = Err(e);
+            }   
+        }   
+
+        if result.is_ok() {
+            let _ = self.run(core, false);
         }else{
-            core.db.set_param("?", "1").unwrap();
+            core.db.set_param("?", "1")?;
         }
         self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
-
-        result?;
-        Ok(None)
-    }
+        result
+    }  
 
     fn run(&mut self, _: &mut ShellCore, fork: bool) -> Result<(), ExecError>;
     fn get_text(&self) -> String;

@@ -3,13 +3,17 @@
 
 use crate::ShellCore;
 use crate::error::parse::ParseError;
+use std::os::fd::RawFd;
+use nix::errno::Errno;
 
 #[derive(Debug, Clone)]
 pub enum ExecError {
     Internal,
+    AmbiguousRedirect(String),
     ArrayIndexInvalid(String),
     AssignmentToNonVariable(String),
     BadSubstitution(String),
+    BadFd(RawFd),
     DivZero,
     Exponent(i64),
     InvalidBase(String),
@@ -23,7 +27,14 @@ pub enum ExecError {
     ParseError(ParseError),
     Recursion(String),
     SubstringMinus(i64),
+    Errno(Errno),
     Other(String),
+}
+
+impl From<Errno> for ExecError {
+    fn from(e: Errno) -> ExecError {
+        ExecError::Errno(e)
+    }
 }
 
 impl From<ExecError> for String {
@@ -36,8 +47,10 @@ impl From<&ExecError> for String {
     fn from(e: &ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
+            ExecError::AmbiguousRedirect(name) => format!("{}: ambiguous redirect", name),
             ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
             ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
+            ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
             ExecError::DivZero => "divided by 0".to_string(),
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
@@ -52,6 +65,7 @@ impl From<&ExecError> for String {
             ExecError::ParseError(p) => From::from(p),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
+            ExecError::Errno(e) => format!("system error {:?}", e),
             ExecError::Other(name) => name.to_string(),
         }
     }
@@ -59,7 +73,7 @@ impl From<&ExecError> for String {
 
 impl ExecError {
     pub fn print(&self, _: &mut ShellCore) {
-        let s: String = From::from(self);
-        eprintln!("{}", &s);
+        let s: String = From::<&ExecError>::from(self);
+        eprintln!("sush: {}", s);
     }
 }
