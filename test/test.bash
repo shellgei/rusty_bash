@@ -668,4 +668,79 @@ res=$($com <<< "echo /*'b'*" | grep -F '*')
 #res=$($com <<< 'echo /"*"' | grep -F '*')
 #[ "$?" == "0" ] || err $LINENO
 
+### double quotation ###
+
+res=$($com <<< 'echo "*"')
+[ "$res" == "*" ] || err $LINENO
+
+res=$($com <<< 'echo "{a,{b},c}"')
+[ "$res" == "{a,{b},c}" ] || err $LINENO
+
+#export RUSTY_BASH_A='a
+#b'
+#res=$($com <<< 'echo "$RUSTY_BASH_A"')
+#[ "$res" == "a
+#b" ] || err $LINENO
+
+#res=$($com <<< 'echo "$BASH{PID,_SUBSHELL}"')
+#[ "$res" == "{PID,_SUBSHELL}" ] || err $LINENO
+
+#res=$($com <<< 'echo "\$HOME"')
+#[ "$res" == '$HOME' ] || err $LINENO
+
+res=$($com <<< 'echo "\a"')
+[ "$res" == '\a' ] || err $LINENO
+
+#res=$($com <<< 'echo "\\"')
+#[ "$res" == '\' ] || err $LINENO
+
+res=$($com <<< 'echo "a   b"')
+[ "$res" == 'a   b' ] || err $LINENO
+
+res=$($com <<< 'echo "a
+b
+c"')
+[ "$res" == 'a
+b
+c' ] || err $LINENO
+
+res=$($com <<< 'echo "')
+[ "$?" == 2 ] || err $LINENO
+
+res=$($com <<< 'echo "" a')
+[ "$res" == " a" ] || err $LINENO
+
+#res=$($com <<< 'set a b c; echo a"$@"c')
+#[ "$res" == "aa b cc" ] || err $LINENO
+
+#res=$($com <<< 'set a b c; echo $#')
+#[ "$res" == "3" ] || err $LINENO
+
+#res=$($com <<< 'set a b c; A=( A"$@"C ); echo ${A[0]}')
+#[ "$res" == "Aa" ] || err $LINENO
+#
+#res=$($com <<< 'set a b c; A=( A"$@"C ); echo ${A[2]}')
+#[ "$res" == "cC" ] || err $LINENO
+#
+#res=$($com <<< 'set a b c; A=( A"$*"C ); echo ${A[0]}')
+#[ "$res" == "Aa b cC" ] || err $LINENO
+#
+#res=$($com <<< 'set a b c; A=( A$*C ); echo ${A[1]}')
+#[ "$res" == "b" ] || err $LINENO
+#
+#res=$($com <<< 'set a; A=( A"$@"C ); echo ${A[0]}')
+#[ "$res" == "AaC" ] || err $LINENO
+#
+#res=$($com <<< 'A=( A"$@"C ); echo ${A[0]}')
+#[ "$res" == "AC" ] || err $LINENO
+#
+#res=$($com <<< 'set あ; echo a"$@"c')
+#[ "$res" == "aあc" ] || err $LINENO
+#
+#res=$($com <<< 'set あ い; echo a"$@"c')
+#[ "$res" == "aあ いc" ] || err $LINENO
+
+#res=$($com <<< 'echo a"$@"c')
+#[ "$res" == "ac" ] || err $LINENO
+
 echo OK $0
