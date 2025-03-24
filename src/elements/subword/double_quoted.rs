@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::utils::exit;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use crate::elements::word::{Word, substitution};
@@ -220,7 +219,7 @@ impl DoubleQuoted {
                 ans.text += &feeder.consume(1);
                 return Ok(Some(ans));
             }else if feeder.len() > 0 {
-                exit::internal("unknown chars in double quoted word");
+                return Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())));
             }else{
                 feeder.feed_additional_line(core)?;
             }
