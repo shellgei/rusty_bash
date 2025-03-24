@@ -33,7 +33,6 @@ impl DoubleQuoted {
                 let txt = feeder.consume(ch.len_utf8());
                 ans.text += &txt;
                 ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
-                return Ok(true);
             },
             None     => feeder.feed_additional_line(core)?,
         }
