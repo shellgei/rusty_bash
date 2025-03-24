@@ -25,7 +25,20 @@ fn split_format(format: &str) -> (Vec<String>, Option<String>) {
             len += c.len_utf8();
             escaped = false;
             percent = false;
-            ans.push(format[len_prev..len].to_string());
+            ans.push(format[len_prev..len-2].to_string());
+            match c {
+                'a' => ans.push(r"\a".to_string()),
+                'b' => ans.push(r"\b".to_string()),
+                'e' => ans.push(r"\e".to_string()),
+                'E' => ans.push(r"\E".to_string()),
+                'f' => ans.push(r"\f".to_string()),
+                'n' => ans.push("\n".to_string()),
+                'r' => ans.push("\r".to_string()),
+                'v' => ans.push(r"\v".to_string()),
+                't' => ans.push("\t".to_string()),
+                '\\' => ans.push("\\".to_string()),
+                _ => ans.push(format[len-2..len].to_string()),
+            }
             len_prev = len;
             continue;
         }
@@ -49,23 +62,31 @@ fn split_format(format: &str) -> (Vec<String>, Option<String>) {
     }
 }
 
+fn pop(args: &mut Vec<String>) -> String {
+    match args.is_empty() {
+        true  => "".to_string(),
+        false => args.remove(0),
+    }
+}
+
 fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> {
     let mut ans = String::new();
     let (parts, tail) = split_format(&pattern);
-
-    while parts.len() > args.len() {
-        args.push(String::new());
-    }
+    dbg!("{:?}", &parts);
+    dbg!("{:?}", &tail);
 
     for i in 0..parts.len() {
         if parts[i].contains("%d") {
             if let Ok(_) = args[i].parse::<i32>() {
-                ans += &parts[i].replace("%d", &args[i]);
+                let a = pop(args);
+                ans += &parts[i].replace("%d", &a);
             }
         }else if parts[i].contains("%q") {
-                ans += &parts[i].replace("%q", &args[i]);
+                let a = pop(args);
+                ans += &parts[i].replace("%q", &a);
         }else {
-            match parts[i].as_ref() {
+            //match parts[i].as_ref() {
+                /*
                 "\\a" => ans += r"\a",
                 "\\b" => ans += r"\b",
                 "\\e" => ans += r"\e",
@@ -76,17 +97,26 @@ fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
                 "\\v" => ans += r"\v",
                 "\\t" => ans += "\t",
                 "\\\\" => ans += "\\",
-                _ => if parts[i].contains('%') {
-                        ans += &sprintf::sprintf!(&parts[i], args[i])?;
-                }else{
-                    ans += &parts[i];
-                },
-            };
+                _ => {
+                */
+                    if parts[i].contains('%') {
+                        let a = pop(args);
+                        ans += &sprintf::sprintf!(&parts[i], a)?;
+                    }else{
+                        ans += &parts[i];
+                    }
+                //},
+            //};
         }
     }
 
     if let Some(s) = tail {
         ans += &s;
+    }
+    if ! args.is_empty() {
+        if let Ok(s) = output(pattern, args) {
+            ans += &s;
+        }
     }
     Ok(ans)
 }

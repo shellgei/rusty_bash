@@ -16,6 +16,10 @@ cd $(dirname $0)
 com=../target/release/sush
 tmp=/tmp/$$
 
+res=$($com <<< 'printf "== <%s %s> ==\n" a b c' )
+[ "$res" = "== <a b> ==
+== <c > ==" ] || err $LINENO
+
 res=$($com << 'EOF'
 mkdir -p /tmp/$$
 cd /tmp/$$
