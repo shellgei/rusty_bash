@@ -8,11 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
 
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 # this test case is never fulfilled until we use String type
 #res=$($com <<- FIN

@@ -9,12 +9,11 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
-
 cd $(dirname $0)
 com=../target/release/sush
 tmp=/tmp/$$
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 res=$($com <<< 'echo "ab `echo a`"')
 [ "$res" = "ab a" ] || err $LINENO
