@@ -107,82 +107,39 @@ impl DoubleQuoted {
         true
     }
 
-    fn eat_braced_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
-        if let Some(a) = BracedParam::parse(feeder, core)? {
-            ans.text += a.get_text();
-            ans.subwords.push(Box::new(a));
-            Ok(true)
-        }else{
-            Ok(false)
-        }
+    fn eat_subword(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+        let sw: Box<dyn Subword> 
+            = if let Some(a) = BracedParam::parse(feeder, core)? {Box::new(a)}
+            else if let Some(a) = Arithmetic::parse(feeder, core)? {Box::new(a)}
+            else if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
+            else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
+            else if feeder.starts_with("$") { Box::new( SimpleSubword { text: feeder.consume(1)} ) }
+            else if let Some(a) = Self::parse_escaped_char(feeder, core) { a }
+            else if let Some(a) = Self::parse_name(feeder, core) { Box::new(a) }
+            else { return Ok(false) ; };
+
+        ans.text += sw.get_text();
+        ans.subwords.push(sw);
+        Ok(true)
     }
 
-    fn eat_arithmetic(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
-        if let Some(a) = Arithmetic::parse(feeder, core)? {
-            ans.text += a.get_text();
-            ans.subwords.push(Box::new(a));
-            Ok(true)
-        }else{
-            Ok(false)
-        }
-    }
-
-    fn eat_command_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
-        if let Some(a) = CommandSubstitution::parse(feeder, core)? {
-            ans.text += a.get_text();
-            ans.subwords.push(Box::new(a));
-            Ok(true)
-        }else{
-            Ok(false)
-        }
-    }
-
-    fn eat_special_or_positional_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(a) = Parameter::parse(feeder, core){
-            ans.text += a.get_text();
-            ans.subwords.push(Box::new(a));
-            true
-        }else{
-            false
-        }
-    }
-
-    fn eat_doller(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        match feeder.starts_with("$") {
-            true  => Self::set_simple_subword(feeder, ans, 1),
-            false => false,
-        }
-    }
-
-    fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if feeder.starts_with("\\$") 
-        || feeder.starts_with("\\\\") 
-        || feeder.starts_with("\\\"") 
-        || feeder.starts_with("\\`") {
-            let txt = feeder.consume(2);
-            ans.text += &txt;
-            ans.subwords.push(Box::new(EscapedChar{ text: txt }));
-            return true;
+    fn parse_escaped_char(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Option<Box<dyn Subword>> {
+        if feeder.starts_with("\\$") || feeder.starts_with("\\\\") 
+        || feeder.starts_with("\\\"") || feeder.starts_with("\\`") {
+            return Some(Box::new(EscapedChar{ text: feeder.consume(2) }));
         }
         match feeder.scanner_escaped_char(core) {
-            0 => false,
-            n => Self::set_simple_subword(feeder, ans, n),
+            0 => None,
+            n => Some(Box::new(SimpleSubword{text: feeder.consume(n)})),
         }
     }
 
-    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_name(core);
-        if len == 0 {
-            return false;
+    fn parse_name(feeder: &mut Feeder, core: &mut ShellCore) -> Option<VarName> {
+        match feeder.scanner_name(core) {
+            0 => None,
+            n => Some(VarName{ text: feeder.consume(n) }),
         }
-
-        let txt = feeder.consume(len);
-        ans.text += &txt;
-        ans.subwords.push(Box::new( VarName{ text: txt}));
-        true
     }
 
     fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
@@ -204,13 +161,7 @@ impl DoubleQuoted {
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
 
-        while Self::eat_braced_param(feeder, &mut ans, core)?
-           || Self::eat_arithmetic(feeder, &mut ans, core)?
-           || Self::eat_command_substitution(feeder, &mut ans, core)?
-           || Self::eat_special_or_positional_param(feeder, &mut ans, core)
-           || Self::eat_doller(feeder, &mut ans)
-           || Self::eat_escaped_char(feeder, &mut ans, core)
-           || Self::eat_name(feeder, &mut ans, core) 
+        while Self::eat_subword(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}
 
         Ok(Some(ans))
