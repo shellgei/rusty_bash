@@ -140,10 +140,6 @@ impl Redirect {
     fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 1;
         self.connect_to_file(File::create(&self.right.text), restore)?;
-            /*
-        if ! self.connect_to_file(File::create(&self.right.text), restore){
-            return Err(ExecError::Other("file error".to_string()));
-        }*/
 
         if restore {
             self.extra_left_backup = io::backup(2);
