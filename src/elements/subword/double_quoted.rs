@@ -3,19 +3,23 @@
 
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
-use super::{EscapedChar, SimpleSubword, Parameter, Subword, VarName};
+use super::{EscapedChar, SimpleSubword, Subword};
 
 #[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
     text: String,
     subwords: Vec<Box<dyn Subword>>,
-    split_points: Vec<usize>,
-    array_empty: bool,
 }
 
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
+
+    fn make_unquoted_string(&mut self) -> Option<String> {
+        Some( self.text[1..self.text.len()-1].to_string() )
+    }
+
+    fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
 impl DoubleQuoted {

@@ -84,7 +84,7 @@ impl Feeder {
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},\\'$/~".find(ch).is_some() {
+            if " \t\n;&|()<>{},\\'$/~\"".find(ch).is_some() {
                 break;
             }
             ans += ch.len_utf8();
@@ -94,7 +94,7 @@ impl Feeder {
 
     pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| "\"\\$".find(ch) == None;
-        self.scanner_chars(judge, core, 0)
+        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_single_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
