@@ -14,7 +14,6 @@ pub struct DoubleQuoted {
     text: String,
     subwords: Vec<Box<dyn Subword>>,
     split_points: Vec<usize>,
-    array_empty: bool,
 }
 
 impl Subword for DoubleQuoted {
@@ -50,9 +49,10 @@ impl Subword for DoubleQuoted {
             .collect::<Vec<String>>()
             .concat();
 
-        if text.is_empty() && self.array_empty {
+        if text.is_empty() && self.split_points.len() == 1 {
             return None;
         }
+
         Some(text)
     }
 
@@ -72,7 +72,6 @@ impl Subword for DoubleQuoted {
 impl DoubleQuoted {
     fn replace_array(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut ans = vec![];
-        self.array_empty = true;
 
         for sw in &mut self.subwords {
             if ! sw.is_array() {
@@ -89,7 +88,6 @@ impl DoubleQuoted {
             };
 
             for text in array {
-                self.array_empty = false;
                 ans.push(SimpleSubword{text}.boxed_clone());
                 self.split_points.push(ans.len());
             }
