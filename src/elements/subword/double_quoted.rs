@@ -22,15 +22,15 @@ impl Subword for DoubleQuoted {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        let mut word = Word::default();
-        word.subwords = match self.subwords.iter().any(|sw| sw.is_array()) {
-            true  => self.replace_array(core)?,
-            false => self.subwords.clone(),
+        let mut word = match self.subwords.iter().any(|sw| sw.is_array()) {
+            true  => Word::from(self.replace_array(core)?),
+            false => Word::from(self.subwords.clone()),
         };
 
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
-        self.text = self.subwords.iter().map(|s| s.get_text()).collect();
+        //self.text = self.subwords.iter().map(|s| s.get_text()).collect();
+        self.text = word.text;
         Ok(vec![])
     }
 
