@@ -21,7 +21,8 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore)
+    -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut word = match self.subwords.iter().any(|sw| sw.is_array()) {
             true  => Word::from(self.replace_array(core)?),
             false => Word::from(self.subwords.clone()),
@@ -29,7 +30,6 @@ impl Subword for DoubleQuoted {
 
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
-        //self.text = self.subwords.iter().map(|s| s.get_text()).collect();
         self.text = word.text;
         Ok(vec![])
     }
