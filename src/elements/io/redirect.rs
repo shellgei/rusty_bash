@@ -71,29 +71,6 @@ impl Redirect {
         }
     }
 
-    /*
-    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> Result<(), ExecError> {
-        if restore {
-            self.left_backup = io::backup(self.left_fd);
-        }
-
-        match file_open_result {
-            Ok(file) => {
-                let fd = file.into_raw_fd();
-                let result = io::replace(fd, self.left_fd);
-                if ! result {
-                    io::close(fd, "sush(fatal): file does not close");
-                    self.left_fd = -1;
-                }
-                result
-            },
-            _  => {
-                eprintln!("sush: {}: {}", &self.right.text, Error::last_os_error().kind());
-                false
-            },
-        }
-    }*/
-
     fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
         self.connect_to_file(File::open(&self.right.text), restore)
@@ -131,10 +108,7 @@ impl Redirect {
 
     pub fn new() -> Redirect {
         Redirect {
-           // text: String::new(),
-            //symbol: String::new(),
             right: Word::from(vec![]),
-           // left: String::new(),
             left_fd: -1,
             left_backup: -1,
             extra_left_backup: -1,
