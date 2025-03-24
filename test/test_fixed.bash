@@ -16,6 +16,12 @@ cd $(dirname $0)
 com=../target/release/sush
 tmp=/tmp/$$
 
+res=$($com <<< 'printf -v __git_printf_supports_v %s yes; echo $__git_printf_supports_v' )
+[ "$res" = "yes" ] || err $LINENO
+
+res=$($com <<< 'printf -v __git_printf_supports_v -- %s yes; echo $__git_printf_supports_v' )
+[ "$res" = "yes" ] || err $LINENO
+
 res=$($com <<< 'printf "== <%s %s> ==\n" a b c' )
 [ "$res" = "== <a b> ==
 == <c > ==" ] || err $LINENO

@@ -22,10 +22,9 @@ fn split_format(format: &str) -> (Vec<String>, Option<String>) {
         }
 
         if escaped {
-            len += c.len_utf8();
             escaped = false;
             percent = false;
-            ans.push(format[len_prev..len-2].to_string());
+            ans.push(format[len_prev..len-1].to_string());
             match c {
                 'a' => ans.push(r"\a".to_string()),
                 'b' => ans.push(r"\b".to_string()),
@@ -37,8 +36,9 @@ fn split_format(format: &str) -> (Vec<String>, Option<String>) {
                 'v' => ans.push(r"\v".to_string()),
                 't' => ans.push("\t".to_string()),
                 '\\' => ans.push("\\".to_string()),
-                _ => ans.push(format[len-2..len].to_string()),
+                _ => ans.push(format[len..len+c.len_utf8()].to_string()),
             }
+            len += c.len_utf8();
             len_prev = len;
             continue;
         }
@@ -72,8 +72,6 @@ fn pop(args: &mut Vec<String>) -> String {
 fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> {
     let mut ans = String::new();
     let (parts, tail) = split_format(&pattern);
-    dbg!("{:?}", &parts);
-    dbg!("{:?}", &tail);
 
     for i in 0..parts.len() {
         if parts[i].contains("%d") {
@@ -138,6 +136,9 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args[1] == "-v" {
+        if args[3] == "--" {
+            args.remove(3);
+        }
         let s = match output(&args[3], &mut args[4..].to_vec()) {
             Ok(ans) => ans,
             Err(e) => {

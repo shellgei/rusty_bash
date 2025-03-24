@@ -2,6 +2,7 @@
 ./test_script.bash
 ./test_options.bash
 ./test_param_substitutions.bash
+./test_fixed.bash
 ./test_redirects.bash
 ./test_brace.bash
 ./test_case.bash
@@ -10,7 +11,3 @@
 ./test_compound.bash
 ./test_parameters.bash
 ./test_job.bash
-../test/test_fixed.bash
-../test/test_fixed.bash
-../test/test_fixed.bash
-../test/test_fixed.bash
