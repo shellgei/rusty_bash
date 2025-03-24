@@ -106,7 +106,7 @@ impl DoubleQuoted {
             else if let Some(a) = Arithmetic::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
-            else if let Some(a) = Self::parse_escaped_char(feeder, core) { a }
+            else if let Some(a) = Self::parse_escaped_char(feeder) { Box::new(a) }
             else if let Some(a) = Self::parse_name(feeder, core) { Box::new(a) }
             else { return Ok(false) ; };
 
@@ -115,15 +115,12 @@ impl DoubleQuoted {
         Ok(true)
     }
 
-    fn parse_escaped_char(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Subword>> {
+    fn parse_escaped_char(feeder: &mut Feeder) -> Option<EscapedChar> {
         if feeder.starts_with("\\$") || feeder.starts_with("\\\\") 
         || feeder.starts_with("\\\"") || feeder.starts_with("\\`") {
-            return Some(Box::new(EscapedChar{ text: feeder.consume(2) }));
+            return Some(EscapedChar{ text: feeder.consume(2) });
         }
-        match feeder.scanner_escaped_char(core) {
-            0 => None,
-            n => Some(Box::new(SimpleSubword{text: feeder.consume(n)})),
-        }
+        None
     }
 
     fn parse_name(feeder: &mut Feeder, core: &mut ShellCore) -> Option<VarName> {
