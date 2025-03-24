@@ -51,26 +51,25 @@ impl Subword for DoubleQuoted {
             .concat();
 
         if text.is_empty() && self.array_empty {
+        //if text.is_empty() && self.split_points.is_empty() {
             return None;
         }
         Some(text)
     }
 
     fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{
-        if self.split_points.len() < 1 {
+        if self.split_points.is_empty() {
             return vec![];
         }
 
         let mut ans = vec![];
-        let mut points = self.split_points.clone();
-        points.push(self.subwords.len());
 
         let mut last = 0;
-        for p in points {
+        for p in &self.split_points {
             let mut tmp = Self::default();
-            tmp.subwords = self.subwords[last..p].to_vec();
-            ans.push(Box::new(tmp) as Box<dyn Subword>);
-            last = p;
+            tmp.subwords = self.subwords[last..*p].to_vec();
+            ans.push(tmp.boxed_clone());
+            last = *p;
         }
 
         ans
@@ -96,12 +95,17 @@ impl DoubleQuoted {
                 },
             };
 
-            for pp in array {
+            for text in array {
                 self.array_empty = false;
-                ans.push(Box::new( SimpleSubword {text: pp}) as Box<dyn Subword>);
+                ans.push(SimpleSubword{text}.boxed_clone());
                 self.split_points.push(ans.len());
             }
             self.split_points.pop();
+        }
+
+        self.split_points.push(ans.len());
+        if self.array_empty {
+            self.split_points.clear();
         }
         Ok(ans)
     }
