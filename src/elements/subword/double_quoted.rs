@@ -65,8 +65,8 @@ impl Subword for DoubleQuoted {
         let mut ans = vec![];
 
         let mut last = 0;
+        let mut tmp = Self::default();
         for p in &self.split_points {
-            let mut tmp = Self::default();
             tmp.subwords = self.subwords[last..*p].to_vec();
             ans.push(tmp.boxed_clone());
             last = *p;
