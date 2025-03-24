@@ -72,46 +72,34 @@ fn pop(args: &mut Vec<String>) -> String {
 fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> {
     let mut ans = String::new();
     let (parts, tail) = split_format(&pattern);
+    let mut fin = true;
 
     for i in 0..parts.len() {
         if parts[i].contains("%d") {
+            fin = false;
             if let Ok(_) = args[i].parse::<i32>() {
                 let a = pop(args);
                 ans += &parts[i].replace("%d", &a);
             }
         }else if parts[i].contains("%q") {
-                let a = pop(args);
-                ans += &parts[i].replace("%q", &a);
+            fin = false;
+            let a = pop(args);
+            ans += &parts[i].replace("%q", &a);
         }else {
-            //match parts[i].as_ref() {
-                /*
-                "\\a" => ans += r"\a",
-                "\\b" => ans += r"\b",
-                "\\e" => ans += r"\e",
-                "\\E" => ans += r"\E",
-                "\\f" => ans += r"\f",
-                "\\n" => ans += "\n",
-                "\\r" => ans += "\r",
-                "\\v" => ans += r"\v",
-                "\\t" => ans += "\t",
-                "\\\\" => ans += "\\",
-                _ => {
-                */
-                    if parts[i].contains('%') {
-                        let a = pop(args);
-                        ans += &sprintf::sprintf!(&parts[i], a)?;
-                    }else{
-                        ans += &parts[i];
-                    }
-                //},
-            //};
+            if parts[i].contains('%') {
+                fin = false;
+                let a = pop(args);
+                ans += &sprintf::sprintf!(&parts[i], a)?;
+            }else{
+                ans += &parts[i];
+            }
         }
     }
 
     if let Some(s) = tail {
         ans += &s;
     }
-    if ! args.is_empty() {
+    if ! args.is_empty() && ! fin {
         if let Ok(s) = output(pattern, args) {
             ans += &s;
         }
