@@ -668,7 +668,7 @@ res=$($com <<< "echo /*'b'*" | grep -F '*')
 #res=$($com <<< 'echo /"*"' | grep -F '*')
 #[ "$?" == "0" ] || err $LINENO
 
-### double quotation ###
+### DOUBLE QUOTATION ###
 
 res=$($com <<< 'echo "*"')
 [ "$res" == "*" ] || err $LINENO
