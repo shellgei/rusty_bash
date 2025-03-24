@@ -39,8 +39,8 @@ impl Job {
                 let (pids, err) = pipeline.exec(core, pgid);
                 core.wait_pipeline(pids);
 
-                if err.is_some() {
-                    return Err(err.unwrap());
+                if let Some(e) = err {
+                    return Err(e);
                 }
             }
             do_next = (core.db.get_param("?").unwrap() == "0") == (end == "&&");
