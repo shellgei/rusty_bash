@@ -64,7 +64,7 @@ impl Redirect {
         }
     }
 
-    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> bool {
+    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> Result<(), ExecError> {
         if restore {
             self.left_backup = io::backup(self.left_fd);
         }
@@ -76,30 +76,38 @@ impl Redirect {
                 if ! result {
                     io::close(fd, &format!("sush(fatal): file does not close"));
                     self.left_fd = -1;
+                    let msg = format!("{}: cannot replace", &fd);
+                    return Err(ExecError::Other(msg));
                 }
-                result
+                Ok(())
             },
             _  => {
-                eprintln!("sush: {}: {}", &self.right.text, Error::last_os_error().kind());
-                false
+                let msg = format!("{}: {}", &self.right.text, Error::last_os_error().kind());
+                Err(ExecError::Other(msg))
             },
         }
     }
 
     fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
+        self.connect_to_file(File::open(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(File::open(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
+        self.connect_to_file(File::create(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(File::create(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_output_fd(&mut self, restore: bool) -> Result<(), ExecError> {
@@ -118,18 +126,24 @@ impl Redirect {
 
     fn redirect_append(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
+        self.connect_to_file(OpenOptions::new().create(true)
+                .write(true).append(true).open(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(OpenOptions::new().create(true)
                 .write(true).append(true).open(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 1;
+        self.connect_to_file(File::create(&self.right.text), restore)?;
+            /*
         if ! self.connect_to_file(File::create(&self.right.text), restore){
             return Err(ExecError::Other("file error".to_string()));
-        }
+        }*/
 
         if restore {
             self.extra_left_backup = io::backup(2);
