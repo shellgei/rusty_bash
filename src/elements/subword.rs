@@ -5,6 +5,7 @@ mod command_sub;
 mod escaped_char;
 pub mod parameter;
 pub mod simple;
+mod double_quoted;
 mod single_quoted;
 mod varname;
 
@@ -16,6 +17,7 @@ use self::command_sub::CommandSubstitution;
 use self::escaped_char::EscapedChar;
 use self::parameter::Parameter;
 use self::simple::SimpleSubword;
+use self::double_quoted::DoubleQuoted;
 use self::single_quoted::SingleQuoted;
 use self::varname::VarName;
 use std::fmt::Debug;
@@ -87,5 +89,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }
