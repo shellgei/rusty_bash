@@ -20,6 +20,13 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_char(&mut self) -> usize {
+        match self.remaining.chars().next() {
+            Some(c) => c.len_utf8(),
+            None    => 0,
+        }
+    }
+
     fn scanner_chars(&mut self, judge: fn(char) -> bool,
                      core: &mut ShellCore, skip_bytes: usize) -> usize {
         loop {
