@@ -226,13 +226,8 @@ impl Terminal {
         let pos = core.db.get_param("COMP_CWORD")?;
         let target = core.db.get_array_elem("COMP_WORDS", &pos)?;
 
-        if cands.len() == 1 {
-            self.replace_input(&cands[0]);
-            return Ok(());
-        }
-
         let common = common_string(&cands);
-        if common.len() != target.len() {
+        if common.len() != target.len() && ! common.is_empty() {
             self.replace_input(&common);
             return Ok(());
         }

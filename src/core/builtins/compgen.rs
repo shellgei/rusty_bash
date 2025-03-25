@@ -5,7 +5,7 @@ use crate::{file_check, ShellCore, Feeder};
 use crate::elements::word::{Word, WordMode};
 use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::utils;
-use crate::utils::{arg, directory};
+use crate::utils::{arg, directory, glob};
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
@@ -116,7 +116,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
     let mut args = arg::dissolve_options(args);
-    let _  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
+    let exclude  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
     let prefix = arg::consume_with_next_arg("-P", &mut args);
     let suffix = arg::consume_with_next_arg("-S", &mut args);
 
@@ -154,6 +154,11 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 2;
         },
     };
+
+    if let Some(pattern) = exclude {
+        let extglob = core.shopts.query("extglob");
+        ans.retain(|a| ! glob::parse_and_compare(&a, &pattern, extglob));
+    }
 
     if let Some(p) = prefix {
         for a in ans.iter_mut() {
