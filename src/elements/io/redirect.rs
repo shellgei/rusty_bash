@@ -34,10 +34,10 @@ pub struct Redirect {
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.symbol == "<<" {
-            return self.redirect_heredocument(core);
+            return self.redirect_heredocument(core, restore);
         }
         if self.symbol == "<<<" {
-            return self.redirect_herestring(core);
+            return self.redirect_herestring(core, restore);
         }
 
         let args = self.right.eval(core)?;
@@ -64,7 +64,7 @@ impl Redirect {
         }
     }
 
-    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> bool {
+    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> Result<(), ExecError> {
         if restore {
             self.left_backup = io::backup(self.left_fd);
         }
@@ -76,30 +76,38 @@ impl Redirect {
                 if ! result {
                     io::close(fd, &format!("sush(fatal): file does not close"));
                     self.left_fd = -1;
+                    let msg = format!("{}: cannot replace", &fd);
+                    return Err(ExecError::Other(msg));
                 }
-                result
+                Ok(())
             },
             _  => {
-                eprintln!("sush: {}: {}", &self.right.text, Error::last_os_error().kind());
-                false
+                let msg = format!("{}: {}", &self.right.text, Error::last_os_error().kind());
+                Err(ExecError::Other(msg))
             },
         }
     }
 
     fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
+        self.connect_to_file(File::open(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(File::open(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
+        self.connect_to_file(File::create(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(File::create(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_output_fd(&mut self, restore: bool) -> Result<(), ExecError> {
@@ -118,18 +126,20 @@ impl Redirect {
 
     fn redirect_append(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
+        self.connect_to_file(OpenOptions::new().create(true)
+                .write(true).append(true).open(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(OpenOptions::new().create(true)
                 .write(true).append(true).open(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 1;
-        if ! self.connect_to_file(File::create(&self.right.text), restore){
-            return Err(ExecError::Other("file error".to_string()));
-        }
+        self.connect_to_file(File::create(&self.right.text), restore)?;
 
         if restore {
             self.extra_left_backup = io::backup(2);
@@ -137,10 +147,15 @@ impl Redirect {
         io::share(1, 2)
     }
 
-    fn redirect_heredocument(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_heredocument(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+        self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
+
+        if restore {
+            self.left_backup = io::backup(0);
+        }
 
         let text = self.herestring.eval_as_value(core)?; // TODO: make it precise based on the rule
                                                          // of heredocument
@@ -162,10 +177,15 @@ impl Redirect {
         Ok(())
     }
 
-    fn redirect_herestring(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_herestring(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+        self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
         let send = s.into_raw_fd();
+
+        if restore {
+            self.left_backup = io::backup(0);
+        }
 
         let text = self.right.eval_for_case_word(core)
                        .unwrap_or("".to_string());
@@ -221,7 +241,7 @@ impl Redirect {
                 }
             }
 
-            if let Some(sw) = subword::parse(feeder, core)? {
+            if let Some(sw) = subword::parse(feeder, core, &None)? {
                 self.herestring.text += sw.get_text();
                 self.herestring.subwords.push(sw);
             }else{
@@ -249,7 +269,7 @@ impl Redirect {
         let blank_len = feeder.scanner_blank(core);
         ans.text += &feeder.consume(blank_len);
 
-        let w = match Word::parse(feeder, core, false) {
+        let w = match Word::parse(feeder, core, None) {
             Ok(Some(w)) => w,
             _       => return false,
         };

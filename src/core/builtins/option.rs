@@ -131,7 +131,7 @@ pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i
         "-s" => core.shopts.print_if(true),
         "-u" => core.shopts.print_if(false),
         "-q" => return 0,
-        opt  => res = core.shopts.print_opt(opt),
+        opt  => res = core.shopts.print_opt(opt, false),
     }
 
     match res {
@@ -142,10 +142,15 @@ pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i
 
 pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
+    let print = arg::consume_option("-p", &mut args);
 
-    if args.contains(&"-p".to_string()) && args.contains(&"-o".to_string()) {
+    if print && args.contains(&"-o".to_string()) {
+        if args.len() >= 3 {
+            core.options.print_opt(&args[2], true);
+        }else{
             core.options.print_all(false);
-            return 0;
+        }
+        return 0;
     }
 
     if args.len() < 3 {
@@ -155,7 +160,7 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let res = match args[1].as_str() {
         "-s" => {
-            if ["extglob", "progcomp", "nullglob"].iter().any(|&e| e == args[2]) {
+            if ["extglob", "progcomp", "nullglob", "dotglob", "globstar"].iter().any(|&e| e == args[2]) {
                 core.shopts.set(&args[2], true)
             }else{
                 let msg = format!("shopt: {}: not supported yet", &args[2]);

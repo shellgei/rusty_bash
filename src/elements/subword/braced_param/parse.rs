@@ -2,15 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword;
 use crate::elements::subscript::Subscript;
-use crate::elements::word::Word;
 use crate::error::parse::ParseError;
-use super::{BracedParam, Param, Remove, Replace};
-use super::substr::Substr;
-use super::case_conv::CaseConv;
-use super::value_check::ValueCheck;
-use crate::elements::subword::filler::FillerSubword;
+use super::{BracedParam, Param};
+use super::optional_operation;
 
 impl BracedParam {
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
@@ -26,17 +21,16 @@ impl BracedParam {
         Ok(false)
     }
 
-    pub fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, ends: Vec<&str>, core: &mut ShellCore)
+    /*
+    pub fn eat_subwords(feeder: &mut Feeder, ends: Vec<&str>, core: &mut ShellCore)
         -> Result<Word, ParseError> {
         let mut word = Word::default();
         while ! ends.iter().any(|e| feeder.starts_with(e)) {
-            if let Some(sw) = subword::parse_filler(feeder, core)? {
-                ans.text += sw.get_text();
+            if let Some(sw) = subword::parse_filler(feeder, core, &None)? {
                 word.text += sw.get_text();
                 word.subwords.push(sw);
             }else{
                 let c = feeder.consume(1);
-                ans.text += &c;
                 word.text += &c;
                 word.subwords.push(Box::new(FillerSubword{text: c}) );
             }
@@ -48,6 +42,7 @@ impl BracedParam {
 
         Ok(word)
     }
+    */
 
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
@@ -103,11 +98,11 @@ impl BracedParam {
 
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core)?;
-            let _ = ValueCheck::eat(feeder, &mut ans, core)?
-                 || CaseConv::eat(feeder, &mut ans, core)?
-                 || Substr::eat(feeder, &mut ans, core)
-                 || Remove::eat(feeder, &mut ans, core)?
-                 || Replace::eat(feeder, &mut ans, core)?;
+
+            if let Some(op) = optional_operation::parse(feeder, core)? {
+                ans.text += &op.get_text();
+                ans.optional_operation = Some(op);
+            }
         }
         while ! feeder.starts_with("}") {
             Self::eat_unknown(feeder, &mut ans, core)?;

@@ -2,15 +2,26 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword::braced_param::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
-use super::BracedParam;
+use super::super::Param;
+use super::OptionalOperation;
+
+impl OptionalOperation for CaseConv {
+    fn get_text(&self) -> String {self.text.clone()}
+    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.get_text(text, core)
+    }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct CaseConv {
+    pub text: String,
     pub pattern: Option<Word>,
     pub replace_symbol: String,
 }
@@ -88,30 +99,34 @@ impl CaseConv {
         Ok(ans)
     }
 
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
-           -> Result<bool, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("^") 
         && ! feeder.starts_with(",") 
         && ! feeder.starts_with("~") {
-            return Ok(false);
+            return Ok(None);
         }
 
-        let mut info = CaseConv::default();
+        let mut ans = CaseConv::default();
 
         if feeder.starts_with("^^") 
         || feeder.starts_with(",,") 
         || feeder.starts_with("~~") {
-            info.replace_symbol = feeder.consume(2);
-            ans.text += &info.replace_symbol;
+            ans.replace_symbol = feeder.consume(2);
+            ans.text += &ans.replace_symbol;
         }else if feeder.starts_with("^") 
         || feeder.starts_with(",") 
         || feeder.starts_with("~") {
-            info.replace_symbol = feeder.consume(1);
-            ans.text += &info.replace_symbol;
+            ans.replace_symbol = feeder.consume(1);
+            ans.text += &ans.replace_symbol;
         }
 
-        info.pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-        ans.case_conv = Some(info);
-        return Ok(true);
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.pattern = Some(w);
+        }else{
+            ans.pattern = Some(Word::default());
+        }
+
+        Ok(Some(ans))
     }
 }

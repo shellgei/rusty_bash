@@ -7,11 +7,11 @@ err () {
 	exit 1
 }
 
-cargo build --release || err $LINENO
-cargo --version
-
 cd $(dirname $0)
 com=../target/release/sush
+
+cargo build --release || err $LINENO
+cargo --version
 
 : > error
 : > ok

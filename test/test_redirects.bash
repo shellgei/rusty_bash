@@ -8,10 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 ### REDIRECTS ###
 
@@ -137,5 +137,26 @@ if [ "$(uname)" = "Linux" ] ; then
 	res=$($com <<< 'cat <<< $(aaa) | wc -l')
 	[ "$res" == "1" ] || err $LINENO
 fi
+
+# here documents
+
+res=$($com <<< 'rev << EOF
+abc
+あいう
+EOF
+')
+[ "$res" == "cba
+ういあ" ] || err $LINENO
+
+res=$($com <<< 'A=hoge ; rev << EOF
+abc
+あいう
+$A
+EOF
+')
+[ "$res" == "cba
+ういあ
+egoh" ] || err $LINENO
+
 
 echo $0 >> ./ok

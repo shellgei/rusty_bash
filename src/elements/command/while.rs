@@ -18,8 +18,11 @@ pub struct WhileCommand {
 
 impl Command for WhileCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+        if core.return_flag {
+            return Ok(());
+        }
         core.loop_level += 1;
-        loop {
+        while ! core.return_flag {
             core.suspend_e_option = true;
             let _ = self.while_script.as_mut().unwrap().exec(core);
 

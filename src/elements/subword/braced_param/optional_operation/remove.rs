@@ -2,14 +2,25 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword::braced_param::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::utils::glob;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::BracedParam;
+use super::super::Param;
+use super::OptionalOperation;
+
+impl OptionalOperation for Remove {
+    fn get_text(&self) -> String {self.text.clone()}
+    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.set(text, core)
+    }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Remove {
+    pub text: String,
     pub remove_symbol: String,
     pub remove_pattern: Option<Word>,
 }
@@ -57,20 +68,23 @@ impl Remove {
         *text = text[0..ans_length].to_string();
     }
 
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_parameter_remove_symbol();
         if len == 0 {
-            return Ok(false);
+            return Ok(None);
         }
 
-        let mut info = Remove::default();
+        let mut ans = Remove::default();
 
-        info.remove_symbol = feeder.consume(len);
-        ans.text += &info.remove_symbol.clone();
+        ans.remove_symbol = feeder.consume(len);
+        ans.text += &ans.remove_symbol.clone();
 
-        info.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-        ans.remove = Some(info);
-        Ok(true)
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.remove_pattern = Some(w);
+        }else{
+            ans.remove_pattern = Some(Word::default());
+        }
+        Ok(Some(ans))
     }
 }

@@ -17,6 +17,7 @@ mod process_sub;
 
 use crate::{ShellCore, Feeder};
 use crate::error::{exec::ExecError, parse::ParseError};
+use crate::elements::word::WordMode;
 use self::ansi_c_quoted::AnsiCQuoted;
 use self::arithmetic::Arithmetic;
 use self::simple::SimpleSubword;
@@ -43,10 +44,6 @@ impl Clone for Box::<dyn Subword> {
     fn clone(&self) -> Box<dyn Subword> {
         self.boxed_clone()
     }
-}
-
-fn make_boxed_simple(s: &str) -> Box<dyn Subword> {
-    Box::new(SimpleSubword { text: s.to_string() })
 }
 
 fn split_str(s: &str, ifs: &str) -> Vec<String> {
@@ -81,7 +78,7 @@ pub trait Subword {
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
     fn substitute(&mut self, _: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        Ok(vec![self.boxed_clone()])
+        Ok(vec![]) // return subwords if the self object must be replaced to them
     }
 
     fn split(&self, ifs: &str) -> Vec<Box<dyn Subword>>{
@@ -138,9 +135,10 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Subword>>, ParseError> {
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
+                                    -> Result<Option<Box<dyn Subword>>, ParseError> {
     if replace_history_expansion(feeder, core) {
-        return parse(feeder, core);
+        return parse(feeder, core, mode);
     }
 
     if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
@@ -155,25 +153,35 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
-    else{ Ok(None) }
-}
-
-pub fn parse_filler(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Subword>>, ParseError> {
-    if replace_history_expansion(feeder, core) {
-        return parse(feeder, core);
+    else{
+        match mode {
+            None => Ok(None),
+            Some(WordMode::ParamOption(ref v)) => {
+                if feeder.len() == 0 {
+                    return Ok(None);
+                }
+                let first = feeder.nth(0).unwrap().to_string();
+                if v.contains(&first) {
+                    return Ok(None);
+                }
+                let c = FillerSubword { text: feeder.consume(1) };
+                if feeder.len() == 0 {
+                    feeder.feed_additional_line(core)?;
+                }
+                Ok(Some(Box::new(c)))
+            },
+            Some(WordMode::ReadCommand) => {
+                if feeder.len() == 0 
+                || feeder.starts_with("\n") 
+                || feeder.starts_with("\t") 
+                || feeder.starts_with(" ") {
+                    Ok(None)
+                }else{
+                    let c = SimpleSubword { text: feeder.consume(1) };
+                    Ok(Some(Box::new(c)))
+                }
+            },
+            _ => Ok(None),
+        }
     }
-
-    if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = AnsiCQuoted::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = Arithmetic::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = ProcessSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else if let Some(a) = ExtGlob::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = FillerSubword::parse(feeder){ Ok(Some(Box::new(a))) }
-    else{ Ok(None) }
 }

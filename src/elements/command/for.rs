@@ -81,6 +81,9 @@ impl ForCommand {
             if core.sigint.load(Relaxed) {
                 return false;
             }
+            if core.return_flag {
+                return false;
+            }
 
             if let Err(e) = core.db.set_param(&self.name, &p, None) {
                 core.db.exit_status = 1;
@@ -120,7 +123,7 @@ impl ForCommand {
             return false;
         }
 
-        loop {
+        while ! core.return_flag {
             if core.sigint.load(Relaxed) {
                 return false;
             }
@@ -203,7 +206,7 @@ impl ForCommand {
 
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            match Word::parse(feeder, core, false)? {
+            match Word::parse(feeder, core, None)? {
                 Some(w) => {
                     ans.text += &w.text.clone();
                     ans.values.push(w);

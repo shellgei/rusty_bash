@@ -8,10 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 ### SIMPLE COMMAND TEST ###
 
@@ -688,6 +688,9 @@ echo "$a"
 ')
 [ "$res" == "a
 b" ] || err $LINENO
+
+res=$($com <<< 'echo `echo aaa`' )
+[ "$res" = "aaa" ] || err $LINENO
 
 # array
 

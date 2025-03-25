@@ -200,7 +200,7 @@ impl Feeder {
     }
 
     pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| "\"\\$".find(ch) == None;
+        let judge = |ch| "`\"\\$".find(ch) == None;
         self.scanner_chars(judge, core, 0)
     }
 

@@ -15,7 +15,7 @@ impl ConditionalExpr {
             return false;
         }
 
-        match Word::parse(feeder, core, false) {
+        match Word::parse(feeder, core, None) {
             Ok(Some(w)) => {
                 ans.text += &w.text.clone();
                 ans.elements.push(CondElem::Word(w));
@@ -42,7 +42,7 @@ impl ConditionalExpr {
     fn eat_subwords(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Word {
         let mut word = Word::default();
         while ! feeder.starts_with(" ") {
-            if let Ok(Some(sw)) = subword::parse(feeder, core) {
+            if let Ok(Some(sw)) = subword::parse(feeder, core, &None) {
                 ans.text += sw.get_text();
                 word.text += sw.get_text();
                 word.subwords.push(sw);

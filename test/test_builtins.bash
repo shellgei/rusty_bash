@@ -8,10 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 res=$($com <<< 'cd /; pwd')
 [ "$res" = "/" ] || err $LINENO
@@ -81,6 +81,9 @@ aaa" ] || err $LINENO
 
 res=$($com <<< 'compgen -d -- "~/" | wc -l' )
 [ "$res" != "0" ] || err $LINENO
+
+res=$($com <<< 'compgen -G "/*" | wc -l' )
+[ "$res" -gt 1 ] || err $LINENO
 
 ### eval ###
 
@@ -195,6 +198,10 @@ res=$($com <<< 'A=BBB; seq 2 | while read $A ; do echo $BBB ; done')
 [ "$res" == "1
 2" ] || err $LINENO
 
+res=$($com <<< 'echo あ い う | while read -r a b ; do echo $a ; echo $b ; done')
+[ "$res" == "あ
+い う" ] || err $LINENO
+
 res=$($com <<< 'echo あ い う | while read a b ; do echo $a ; echo $b ; done')
 [ "$res" == "あ
 い う" ] || err $LINENO
@@ -221,6 +228,9 @@ res=$($com <<< 'shopt -s nullglob ; echo aaaaaa*; shopt -u nullglob ; echo aaaaa
 [ "$res" = "
 aaaaaa*" ] || err $LINENO
 
+res=$($com <<< 'shopt -po noglob' )
+[ "$res" = "set +o noglob" ] || err $LINENO
+
 # local
 
 res=$($com -c 'A=1 ; f () { local -a A ; A[1]=123 ; echo ${A[@]} ; } ; f ; echo $A')
@@ -244,6 +254,18 @@ res=$($com -c 'A=1 ; f () { local A=5 ; A=4 ; } ; f ; echo $A')
 
 res=$($com <<< 'f() { local a=1 ; local "a" && echo "$a" ; } ; f')
 [ "$res" = "1" ] || err $LINENO
+
+res=$($com << 'EOF'
+f () {
+    COMP_LINE='cd ~/G'
+    COMP_POINT=6
+    local lead=${COMP_LINE:0:COMP_POINT}
+    echo $lead
+}
+f
+EOF
+)
+[ "$res" == "cd ~/G" ] || err $LINENO
 
 ### declare ###
 

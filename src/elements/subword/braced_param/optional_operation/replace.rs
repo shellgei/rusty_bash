@@ -3,20 +3,34 @@
 
 use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
-use crate::elements::subword::braced_param::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::error::parse::ParseError;
-use super::BracedParam;
+use super::super::Param;
+use super::super::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
 pub struct Replace {
+    pub text: String,
     pub head_only_replace: bool,
     pub tail_only_replace: bool,
     pub all_replace: bool,
     pub replace_from: Option<Word>,
     pub replace_to: Option<Word>,
     pub has_replace_to: bool,
+}
+
+impl OptionalOperation for Replace {
+    fn get_text(&self) -> String {self.text.clone()}
+    fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        match core.db.has_value(&param.name) {
+            true  => self.get_text(text, core),
+            false => Ok("".to_string()),
+        }
+    }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
 }
 
 impl Replace {
@@ -112,6 +126,7 @@ impl Replace {
         Ok(ans)
     }
 
+    /*
     pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
            -> Result<bool, ParseError> {
         if ! feeder.starts_with("/") {
@@ -135,14 +150,56 @@ impl Replace {
         info.replace_from = Some(BracedParam::eat_subwords(feeder, ans, vec!["}", "/"], core)? );
 
         if ! feeder.starts_with("/") {
-            ans.replace = Some(info);
+            ans.optional_operation = Some(Box::new(info));
             return Ok(true);
         }
         ans.text += &feeder.consume(1);
         info.has_replace_to = true;
         info.replace_to = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
 
-        ans.replace = Some(info);
+        ans.optional_operation = Some(Box::new(info));
         Ok(true)
+    }*/
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        if ! feeder.starts_with("/") {
+            return Ok(None);
+        }
+
+        let mut ans = Replace::default();
+
+        ans.text += &feeder.consume(1);
+        if feeder.starts_with("/") {
+            ans.text += &feeder.consume(1);
+            ans.all_replace = true;
+        }else if feeder.starts_with("#") {
+            ans.text += &feeder.consume(1);
+            ans.head_only_replace = true;
+        }else if feeder.starts_with("%") {
+            ans.text += &feeder.consume(1);
+            ans.tail_only_replace = true;
+        }
+
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string(), "/".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.replace_from = Some(w);
+        }else{
+            ans.replace_from = Some(Word::default());
+        }
+
+        if ! feeder.starts_with("/") {
+            return Ok(Some(ans));
+        }
+        ans.text += &feeder.consume(1);
+        ans.has_replace_to = true;
+
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.replace_to = Some(w);
+        }else{
+            ans.replace_to = Some(Word::default());
+        }
+
+        Ok(Some(ans))
     }
 }

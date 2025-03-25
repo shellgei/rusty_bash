@@ -2,14 +2,33 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{exit, Feeder, ShellCore};
-use crate::elements::subword::BracedParam;
-use crate::elements::subword::braced_param::Word;
+use crate::elements::subword::Subword;
+use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::Subscript;
+use super::super::{Subscript, Param};
+use super::OptionalOperation;
+
+impl OptionalOperation for ValueCheck {
+    fn get_text(&self) -> String {self.text.clone()}
+    fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.set(&param.name, &param.subscript, text, core)
+    }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+    fn is_value_check(&self) -> bool {true}
+
+    fn get_alternative(&self) -> Vec<Box<dyn Subword>> {
+        match &self.alternative_value {
+            Some(w) => w.subwords.to_vec(),
+            None    => vec![],
+        }
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
+    pub text: String,
     pub subscript: Option<Subscript>,
     pub symbol: Option<String>,
     pub alternative_value: Option<Word>,
@@ -108,24 +127,27 @@ impl ValueCheck {
         Err(ExecError::Other(msg))
     }
 
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let num = feeder.scanner_parameter_alternative_symbol();
         if num == 0 {
-            return Ok(false);
+            return Ok(None);
         }
 
-        let mut info = ValueCheck::default();
+        let mut ans = ValueCheck::default();
 
         let symbol = feeder.consume(num);
-        info.symbol = Some(symbol.clone());
+        ans.symbol = Some(symbol.clone());
         ans.text += &symbol;
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        info.alternative_value = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)?);
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.alternative_value = Some(w);
+        }else{
+            ans.alternative_value = Some(Word::default());
+        }
 
-        ans.value_check = Some(info);
-        Ok(true)
+        Ok(Some(ans))
     }
 }

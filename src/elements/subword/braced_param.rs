@@ -1,27 +1,18 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod value_check;
-mod substr;
-mod remove;
-mod replace;
+mod optional_operation;
 mod parse;
-mod case_conv;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
-use crate::elements::word::Word;
 use crate::utils;
 use crate::error::exec::ExecError;
-use self::case_conv::CaseConv;
-use self::remove::Remove;
-use self::replace::Replace;
-use self::substr::Substr;
-use self::value_check::ValueCheck;
+use self::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
-struct Param {
+pub struct Param {
     name: String,
     subscript: Option<Subscript>,
 }
@@ -30,14 +21,8 @@ struct Param {
 pub struct BracedParam {
     text: String,
     array: Vec<String>,
-
     param: Param,
-    replace: Option<Replace>,
-    substr: Option<Substr>,
-    remove: Option<Remove>,
-    value_check: Option<ValueCheck>,
-    case_conv: Option<CaseConv>,
-
+    optional_operation: Option<Box<dyn OptionalOperation>>,
     unknown: String,
     is_array: bool,
     num: bool,
@@ -51,55 +36,31 @@ impl Subword for BracedParam {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         self.check()?;
 
+        if self.indirect && self.has_aster_or_atmark_subscript() { // ${!name[@]}, ${!name[*]}
+            self.index_replace(core)?;
+            return Ok(vec![]);
+        }
+
         if self.indirect {
-            if let Some(sub) = &self.param.subscript {
-                if sub.text == "[*]" || sub.text == "[@]" {
-                    if self.replace.is_some() 
-                    || self.substr.is_some()
-                    || self.remove.is_some()
-                    || self.value_check.is_some() {
-                        let msg = core.db.get_array_all(&self.param.name).join(" ");
-                        return Err(ExecError::InvalidName(msg));
-                    }
-
-                    self.index_replace(core)?;
-                    return self.ans();
-                }
-            }
             self.indirect_replace(core)?;
+            self.check()?;
         }
 
-        if let Some(sub) = &self.param.subscript {
-            if sub.text == "[*]" || sub.text == "[@]" {
-                if let Some(s) = self.substr.as_mut() {
-                    s.set_partial_array(&self.param.name, &mut self.array, &mut self.text, core)?;
-                    return self.ans();
+        if self.has_aster_or_atmark_subscript()
+        || self.param.name == "@" 
+        || self.param.name == "*" {
+            if let Some(s) = self.optional_operation.as_mut() {
+                if s.is_substr() {
+                    s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
+                    return Ok(vec![]);
                 }
             }
         }
 
-        if self.param.subscript.is_some() {
-            if self.param.name == "@" {
-                return Err(ExecError::BadSubstitution("@".to_string()));
-            }
-            self.subscript_operation(core)?;
-            return self.ans();
+        match self.param.subscript.is_some() {
+            true  => self.subscript_operation(core)?,
+            false => self.non_subscript_operation(core)?,
         }
-
-        if self.param.name == "@" {
-            if let Some(s) = self.substr.as_mut() {
-                s.set_partial_position_params(&mut self.array, &mut self.text, core)?;
-                return self.ans();
-            }
-        }
-
-        let value = core.db.get_param(&self.param.name).unwrap_or_default();
-        self.text = match self.num {
-            true  => value.chars().count().to_string(),
-            false => value.to_string(),
-        };
-
-        self.text = self.optional_operation(self.text.clone(), core)?;
         self.ans()
     }
 
@@ -110,27 +71,19 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn get_alternative_subwords(&self) -> Vec<Box<dyn Subword>> {
-        if self.value_check.is_none() {
-            return vec![];
-        }
-
-        let check = self.value_check.clone().unwrap();
-        match &check.alternative_value {
-            Some(w) => w.subwords.to_vec(),
-            None    => vec![],
+    fn ans(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+        match self.optional_operation.as_mut() {
+            Some(op) => Ok(op.get_alternative()),
+            None     => Ok(vec![]),
         }
     }
 
-    fn ans(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        let alts = self.get_alternative_subwords();
-        if ! alts.is_empty() {
-            Ok(alts)
-       // }else if ! self.array.is_empty() {
-        //    Ok(self.array.iter().map(|s| super::make_boxed_simple(s)).collect())
-        }else{
-            Ok(vec![self.boxed_clone()])
+    fn has_aster_or_atmark_subscript(&self) -> bool {
+        if self.param.subscript.is_none() {
+            return false;
         }
+        let sub = &self.param.subscript.as_ref().unwrap().text;
+        sub == "[*]" || sub == "[@]"
     }
 
     fn check(&mut self) -> Result<(), ExecError> {
@@ -141,10 +94,21 @@ impl BracedParam {
         && ! self.unknown.starts_with(",") {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
+
+        if self.param.subscript.is_some() {
+            if self.param.name == "@" || self.param.name == "*" {
+                return Err(ExecError::BadSubstitution(self.param.name.clone()));
+            }
+        }
         Ok(())
     }
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if self.optional_operation.is_some() {
+            let msg = core.db.get_array_all(&self.param.name).join(" ");
+            return Err(ExecError::InvalidName(msg));
+        }
+
         if ! core.db.has_value(&self.param.name) {
             self.text = "".to_string();
             return Ok(());
@@ -164,10 +128,6 @@ impl BracedParam {
     fn indirect_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut sw = self.clone();
         sw.indirect = false;
-        sw.replace = None;
-        sw.substr = None;
-        sw.remove = None;
-        sw.value_check = None;
         sw.unknown = String::new();
         sw.is_array = false;
         sw.num = false;
@@ -192,6 +152,17 @@ impl BracedParam {
             return Err(ExecError::InvalidName(self.param.name.clone()));
         }
         Ok(())
+    }
+
+    fn non_subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+            let value = core.db.get_param(&self.param.name).unwrap_or_default();
+            self.text = match self.num {
+                true  => value.chars().count().to_string(),
+                false => value.to_string(),
+            };
+    
+            self.text = self.optional_operation(self.text.clone(), core)?;
+            Ok(())
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -226,7 +197,7 @@ impl BracedParam {
             false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
         };
 
-        if self.array.len() <= 1 || self.value_check.is_some() {
+        if self.array.len() <= 1 || self.has_value_check() {
             self.text = self.optional_operation(self.text.clone(), core)?;
         }else {
             for i in 0..self.array.len() {
@@ -236,23 +207,18 @@ impl BracedParam {
         }
         Ok(())
     }
+    
+    fn has_value_check(&mut self) -> bool {
+        match self.optional_operation.as_mut() {
+            Some(op) => op.is_value_check(),
+            _ => false,
+        }
+    }
 
     fn optional_operation(&mut self, text: String, core: &mut ShellCore) -> Result<String, ExecError> {
-        if let Some(s) = self.substr.as_mut() {
-            s.get_text(&text, core)
-        }else if let Some(v) = self.value_check.as_mut() {
-            v.set(&self.param.name, &self.param.subscript, &text, core)
-        }else if let Some(r) = self.remove.as_mut() {
-            r.set(&text, core)
-        }else if let Some(r) = &self.replace {
-            match core.db.has_value(&self.param.name) {
-                true  => r.get_text(&text, core),
-                false => Ok("".to_string()),
-            }
-        }else if let Some(c) = &self.case_conv {
-            c.get_text(&text, core)
-        }else{
-            Ok(text.clone())
+        match self.optional_operation.as_mut() {
+            Some(op) => op.exec(&self.param, &text, core),
+            None => Ok(text.clone()),
         }
     }
 }

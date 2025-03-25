@@ -101,9 +101,14 @@ impl DataBase {
     }
 
     pub fn has_value(&mut self, name: &str) -> bool {
+        if let Ok(n) = name.parse::<usize>() {
+            let layer = self.position_parameters.len() - 1;
+            return n < self.position_parameters[layer].len();
+        }
+
         let num = self.params.len();
         for layer in (0..num).rev()  {
-            if let Some(_) = self.params[layer].get(name) {
+            if self.has_value_layer(name, layer) {
                 return true;
             }
         }

@@ -40,22 +40,34 @@ $ sush
 ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
 
-## For Contributors 
+## Comparison with Bash
 
-Please give us issues or pull requests in a way you think sensible. We do not have a rigid rule at this stage. 
+This graph shows the test result with the scripts in `./tests/` of Bash repo. Currently, the binary built from alpha repo has passed five of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 5/84 features of Bash.
+
+![](./test/bash_genuine_test/graph.png)
+
+## Contribution
+
+Because the shell in this repository can be a standard one in the next generation, it may a good idea to leave your name as a contributor. Give us pull requests with what you think as contribution. As our community is not big, rules have not been fixed yet. 
+
+Followings are not difficult but very important tasks.
+
+* To fix the code based on Clippy. (There are many warnings by Clippy in the current codes. )
+* To develop builtin commands. (Especially `echo` may be easy. )
+* To add test cases.
+* To fix the test methodology, especially for the parts related to human input.
+
+### Important branch
+
+* alpha: checkout this branch if you want to develop.
+* beta: we are using the head version of this branch on a day-to-day basis.
+* main: the beta version is merged to this branch if fatal problems are not found for a week.
 
 ## List of Features
 
 * :heavy_check_mark: :available
 * :construction: :partially available (or having known bugs) 
 * :no_good: : not implemented
-
-### simple commands
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| command | :heavy_check_mark: | substitutions | :heavy_check_mark: | function definition | :heavy_check_mark: |
-
 
 ### compound commands
 
@@ -64,22 +76,6 @@ Please give us issues or pull requests in a way you think sensible. We do not ha
 | if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: |
 | {} | :heavy_check_mark: | case | :heavy_check_mark: | until | :no_good: | select | :no_good: |
 | for | :heavy_check_mark: | [[ ]] | :heavy_check_mark: |
-
-### control operator
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
-| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :heavy_check_mark: |
-| \|& | :heavy_check_mark: |
-
-### expansion
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| brace `{a,b}` | :heavy_check_mark: | brace | :heavy_check_mark: | tilde | :heavy_check_mark: |
-| arithmetic | :heavy_check_mark: | word splitting | :heavy_check_mark: | path name | :heavy_check_mark: |
-| command substitution | :heavy_check_mark: | parameter/variable `$A ${A}` | :heavy_check_mark: | `${name:offset}, ${name:offset:length}` | :heavy_check_mark: |
 
 ### special parameters
 
@@ -136,15 +132,15 @@ Please give us issues or pull requests in a way you think sensible. We do not ha
 | checkhash | :no_good: | checkjobs | :no_good: | checkwinsize | :no_good: |
 | cmdhist | :no_good: | compat31 | :no_good: | compat32 | :no_good: |
 | compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
-| dotglob | :no_good: | execfail | :no_good: | expand_aliases | :no_good: |
+| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :no_good: |
 | extdebug | :no_good: | extglob | :heavy_check_mark: | extquote | :no_good: |
 | failglob | :no_good: | force_fignore | :no_good: | globstar | :no_good: |
 | gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
 | histverify | :no_good: | hostcomplete | :no_good: | huponexit | :no_good: |
 | interactive_comments | :no_good: | lastpipe | :no_good: | lithist | :no_good: |
 | login_shell | :no_good: | mailwarn | :no_good: | no_empty_cmd_completion | :no_good: |
-| nocaseglob | :no_good: | nocasematch | :no_good: | nullglob | :no_good: |
-| progcomp | :no_good: | promptvars | :no_good: | restricted_shell | :no_good: |
+| nocaseglob | :no_good: | nocasematch | :no_good: | nullglob | :heavy_check_mark: |
+| progcomp | :heavy_check_mark: | promptvars | :no_good: | restricted_shell | :no_good: |
 | shift_verbose | :no_good: | sourcepath | :no_good: | xpg_echo | :no_good: |
 
 ### variables
@@ -167,7 +163,7 @@ Bash Variables
 | BASH_ARGV | :no_good: | BASH_ARGV0 | :no_good: | BASH_CMDS | :no_good: |
 | BASH_COMMAND | :no_good: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
 | BASH_EXECUTION_STRING | :no_good: | BASH_LINENO | :no_good: | BASH_LOADABLES_PATH | :no_good: |
-| BASH_REMATCH | :no_good: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
+| BASH_REMATCH | :heavy_check_mark: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
 | BASH_VERSINFO | :heavy_check_mark: | BASH_VERSION | :heavy_check_mark: | BASH_XTRACEFD | :no_good: |
 | CHILD_MAX | :no_good: | COLUMNS | :no_good: | COMP_CWORD | :no_good: |
 | COMP_LINE | :no_good: | COMP_POINT | :no_good: | COMP_TYPE | :no_good: |
@@ -214,21 +210,9 @@ Partially in Japanese.
     * [Bashタブ補完自作入門 | Cybouzu Inside Out](https://blog.cybozu.io/entry/2016/09/26/080000)
 
 
-## Contribution
-
-Because the shell in this repository can be a standard one in the next generation, it may a good idea to leave your name as a contributor. Give us pull requests with what you think as contribution. As our community is not big, rules have not been fixed yet. 
-
-Followings are not difficult but very important tasks.
-
-* To fix the code based on Clippy. (There are many warnings by Clippy in the current codes. )
-* To develop builtin commands. (Especially `echo` may be easy. )
-* To add test cases.
-* To fix the test methodology, especially for the parts related to human input.
-
-
 ## Copyright
 
-© 2022-2024 shellgei group
+© 2022-2025 shellgei group
 
 - Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi.shellgei.org/@ru), [@ryuichiueda@misskey.io](https://misskey.io/@ryuichiueda)
 - [@caro@mi.shellgei.org](https://mi.shellgei.org/@caro)

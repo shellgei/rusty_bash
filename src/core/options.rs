@@ -63,14 +63,17 @@ impl Options {
         format!("set {}o {}", onoff_str, opt)
     }
 
-    pub fn print_opt(&self, opt: &str) -> bool {
+    pub fn print_opt(&self, opt: &str, set_format: bool) -> bool {
         match self.opts.get_key_value(opt) {
             None     => {
                 eprintln!("sush: shopt: {}: invalid shell option name", opt);
                 false
             },
             Some(kv) => {
-                println!("{}", Self::format(kv.0, *kv.1));
+                match set_format {
+                    false => println!("{}", Self::format(kv.0, *kv.1)),
+                    true  => println!("{}", Self::format2(kv.0, *kv.1)),
+                }
                 true
             },
         }

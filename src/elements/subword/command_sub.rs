@@ -33,7 +33,7 @@ impl Subword for CommandSubstitution {
         let result = self.read(pipe.recv, core);
         proc_ctrl::wait_pipeline(core, vec![pid], false, false);
         result?;
-        Ok(vec![self.boxed_clone()])
+        Ok(vec![])
     }
 }
 
@@ -68,9 +68,7 @@ impl CommandSubstitution {
             }
         }
 
-        if ! self.text.is_empty() {
-            self.text.pop();
-        }
+        self.text.pop();
         Ok(())
     }
 
