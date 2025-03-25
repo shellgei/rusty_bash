@@ -77,7 +77,7 @@ impl ShellCore {
     }
 
     pub fn has_flag(&self, flag: char) -> bool {
-        self.flags.find(flag).is_some()
+        self.flags.contains(flag)
     }
 
     pub fn wait_process(&mut self, child: Pid) {

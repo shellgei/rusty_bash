@@ -110,12 +110,12 @@ impl Feeder {
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| " \t".find(ch).is_some();
+        let judge = |ch| " \t".contains(ch);
         self.scanner_chars(judge, core)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| " \t\n".find(ch).is_some();
+        let judge = |ch| " \t\n".contains(ch);
         self.scanner_chars(judge, core)
     }
 
@@ -160,7 +160,7 @@ impl Feeder {
 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if "\n".find(ch).is_some() {
+            if "\n".contains(ch) {
                 break;
             }
             ans += ch.len_utf8();
