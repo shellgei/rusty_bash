@@ -12,12 +12,20 @@ pub struct DoubleQuoted {
 }
 
 impl Subword for DoubleQuoted {
-    fn get_text(&self) -> &str {&self.text.as_ref()}
+    fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         Some( self.text[1..self.text.len()-1].to_string() )
-    }
+    }   
+
+    fn make_glob_string(&mut self) -> String {
+        self.text[1..self.text.len()-1].replace("\\", "\\\\")
+            .replace("*", "\\*")
+            .replace("?", "\\?")
+            .replace("[", "\\[")
+            .replace("]", "\\]")
+    }   
 
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
