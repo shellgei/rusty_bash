@@ -84,7 +84,12 @@ fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
         }else if parts[i].contains("%q") {
             fin = false;
             let a = pop(args);
-            ans += &parts[i].replace("%q", &a);
+            let q = a.replace("\\", "\\\\").replace("$", "\\$").replace("|", "\\|")
+                .replace("\"", "\\\"").replace("'", "\\\'")
+                .replace("(", "\\(").replace(")", "\\)")
+                .replace("{", "\\{").replace("}", "\\}")
+                .replace("!", "\\!").replace("&", "\\&");
+            ans += &parts[i].replace("%q", &q);
         }else {
             if parts[i].contains('%') {
                 fin = false;

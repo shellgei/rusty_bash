@@ -15,6 +15,12 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'printf %q "()\""')
+[ "$res" = '\(\)\"' ] || err $LINENO
+
+res=$($com <<< "printf %q '@(|!(!(|)))'")
+[ "$res" = '@\(\|\!\(\!\(\|\)\)\)' ] || err $LINENO
+
 res=$($com <<< 'compgen -f -X "*test*" | grep test')
 [ "$?" = "1" ] || err $LINENO
 
