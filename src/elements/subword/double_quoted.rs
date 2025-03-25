@@ -38,7 +38,10 @@ impl Subword for DoubleQuoted {
                         .replace("*", "\\*")
                         .replace("?", "\\?")
                         .replace("[", "\\[")
-                        .replace("]", "\\]");
+                        .replace("]", "\\]")
+                        .replace("@", "\\@")
+                        .replace("+", "\\+")
+                        .replace("!", "\\!")
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
