@@ -50,6 +50,7 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
 
     if pattern == "**" && shopts.query("globstar") {
         let mut tmp = globstar(dir);
+        tmp.iter_mut().for_each(|d| {*d = dir.to_owned() + d ; });
         tmp.push(dir.to_string());
         tmp.iter_mut().for_each(|d| if d != "" && ! d.ends_with("/") {*d += "/"; });
         tmp.sort();
