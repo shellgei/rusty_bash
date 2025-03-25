@@ -25,6 +25,8 @@ fn globstar(dir: &str) -> Vec<String> {
     let mut dirs = files(dir);
     if dir != "" && ! dir.ends_with("/") {
         dirs.iter_mut().for_each(|d| {*d = dir.to_string() + "/" + &d; });
+    }else if dir.ends_with("/") {
+        dirs.iter_mut().for_each(|d| {*d = dir.to_string() + &d; });
     }
     let mut ans = dirs.clone();
 
