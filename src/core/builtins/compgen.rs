@@ -172,7 +172,10 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     ans.iter().for_each(|a| println!("{}", &a));
-    0
+    match ans.is_empty() {
+        true  => 1,
+        false => 0,
+    }
 }
 
 fn get_head(args: &mut Vec<String>, pos: usize) -> String {
