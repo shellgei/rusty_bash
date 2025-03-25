@@ -150,6 +150,9 @@ a" ] || err $LINENO
 res=$($com <<< 'a=A ; echo ${a:-B}' )
 [ "$res" = "A" ] || err $LINENO
 
+res=$($com <<< 'set a ; b=${1-" "}; echo $b' )
+[ "$res" = "a" ] || err $LINENO
+
 # offset
 
 res=$($com <<< 'A=abc; echo ${A:1}' )
@@ -552,6 +555,9 @@ res=$($com <<< "echo 123'abc'def")
 
 res=$($com <<< 'echo "\""')
 [ "$res" == '"' ] || err $LINENO
+
+res=$($com <<< 'echo "\`"' )
+[ "$res" = "\`" ] || err $LINENO
 
 # parameter expansion
 

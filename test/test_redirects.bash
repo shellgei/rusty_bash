@@ -138,6 +138,12 @@ if [ "$(uname)" = "Linux" ] ; then
 	[ "$res" == "1" ] || err $LINENO
 fi
 
+res=$($com <<< 'read -a hoge <<< "A B C"; echo ${hoge[1]}')
+[ "$res" = "B" ] || err $LINENO
+
+res=$($com <<< 'read -a hoge <<< "A B C"; echo ${hoge[2]}')
+[ "$res" = "C" ] || err $LINENO
+
 # here documents
 
 res=$($com <<< 'rev << EOF
@@ -158,5 +164,16 @@ EOF
 ういあ
 egoh" ] || err $LINENO
 
+res=$($com << 'AAA'
+while read a b ; do echo $a _ $b ; done << EOF
+A B
+A ()
+t fofo                *(f*(o))
+EOF
+AAA
+)
+[ "$res" = "A _ B
+A _ ()
+t _ fofo *(f*(o))" ] || err $LINENO
 
 echo $0 >> ./ok
