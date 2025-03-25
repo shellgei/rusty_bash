@@ -105,6 +105,11 @@ res=$($com <<< 'set 1 2 3 ; eval b=(\"$@\"); echo ${b[0]}')
 res=$($com <<< 'set 1 2 3 ; eval -- "a=(\"\$@\")"; echo ${a[0]}')
 [ "$res" = "1" ] || err $LINENO
 
+res=$($com <<< 'a=aaa; eval b=\$a; echo $b')
+[ "$res" = "aaa" ] || err $LINENO
+
+### unset
+
 res=$($com <<< 'A=aaa ; unset A ; echo $A')
 [ "$res" = "" ] || err $LINENO
 
@@ -205,6 +210,26 @@ res=$($com <<< 'echo あ い う | while read -r a b ; do echo $a ; echo $b ; do
 res=$($com <<< 'echo あ い う | while read a b ; do echo $a ; echo $b ; done')
 [ "$res" == "あ
 い う" ] || err $LINENO
+
+res=$($com <<< 'echo "aaa\bb" | ( read -r a ; echo $a )' )
+[ "$res" = "aaa\bb" ] || err $LINENO
+
+res=$($com <<< 'echo "aaa\bb" | ( read a ; echo $a )' )
+[ "$res" = "aaabb" ] || err $LINENO
+
+res=$($com << 'EOF'
+echo 'aaa\
+bb' | ( read a ; echo $a )
+EOF
+)
+[ "$res" = "aaabb" ] || err $LINENO
+
+res=$($com << 'EOF'
+echo 'aaa\
+bb' | ( read -r a ; echo $a )
+EOF
+)
+[ "$res" = 'aaa\' ] || err $LINENO
 
 # set command
 
