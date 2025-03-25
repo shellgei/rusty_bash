@@ -166,12 +166,15 @@ impl BracedParam {
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
+
         if ! core.db.is_array(&self.param.name) && ! core.db.is_assoc(&self.param.name) {
-            self.text = "".to_string();
+            self.text = match index.as_str() { //case: a=aaa; echo ${a[@]}; (output: aaa)
+                "@" | "*" | "0" => core.db.get_param(&self.param.name)?,
+                 _ => "".to_string(),
+            };
             return Ok(());
         }
-
-        let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
 
         if index.as_str() == "@" {
             self.atmark_operation(core)
