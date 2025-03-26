@@ -66,6 +66,7 @@ echo 1: **
 echo 2: **/
 echo 3: **/*
 echo 4: **/**/*
+echo 5: a/**
 rm a/*
 rm b/*
 rm c
@@ -76,7 +77,8 @@ EOF
 [ "$res" = "1: a a/aa a/ab b b/bb b/bc c
 2: a/ b/ c/
 3: a a/aa a/ab b b/bb b/bc c
-4: a a/aa a/ab b b/bb b/bc c" ] || err $LINENO
+4: a a/aa a/ab b b/bb b/bc c
+5: a/ a/aa a/ab" ] || err $LINENO
 
 rm -f $tmp-*
 echo $0 >> ./ok

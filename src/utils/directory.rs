@@ -22,11 +22,7 @@ pub fn files(dir: &str) -> Vec<String> {
 }
 
 fn globstar(dir: &str) -> Vec<String> {
-    /*
-    let mut dirs = files(dir);
-    dirs.iter_mut().for_each(|d| {*d = dir.to_string() + &d + "/"; });
-    let mut ans = dirs.clone();
-    */
+    let dir = if dir.is_empty() || dir.ends_with("/") { dir } else { &(dir.to_owned() + "/") };
     let mut dirs = vec![dir.to_string()];
     let mut ans = dirs.clone();
 
@@ -42,7 +38,6 @@ fn globstar(dir: &str) -> Vec<String> {
         }
         ans.extend(tmp.clone());
         dirs = tmp;
-       // dbg!("{:?}", &dirs);
     }
 
     ans
@@ -61,15 +56,6 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
 
     if pattern == "**" && shopts.query("globstar") {
         return globstar(dir);
-        /*
-        let mut tmp = globstar(dir);
-        //tmp.iter_mut().for_each(|d| {*d = dir.to_owned() + d ; });
-        tmp.push(dir.to_string());
-        tmp.iter_mut().for_each(|d| if d != "" && ! d.ends_with("/") {*d += "/"; });
-        tmp.sort();
-        tmp.dedup();
-        return tmp;
-        */
     }
 
     let dotglob = shopts.query("dotglob");
