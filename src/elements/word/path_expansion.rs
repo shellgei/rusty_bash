@@ -41,6 +41,12 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
     }
 
     paths.iter_mut().for_each(|e| {e.pop();} );
+
+    if shopts.query("globstar") {
+        let ptn = pattern.trim_end_matches("/**");
+        paths.iter_mut().for_each(|p| if p == ptn {*p += "/";} );
+    }
+
     paths.sort();
     paths.dedup();
     paths
