@@ -40,7 +40,7 @@ $ sush
 ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
 
-## Comparison with Bash
+## Comparison with Bash 5.2
 
 This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed five of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 5/84 features of Bash.
 
