@@ -32,7 +32,6 @@ fn no_glob_symbol(pattern: &str) -> bool {
 
 pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
     let mut paths = vec!["".to_string()];
-    let mut ok = vec![];
 
     for dir_glob in pattern.split("/") {
         let mut tmp = paths.iter()
@@ -49,7 +48,6 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
         paths.dedup();
     }
 
-    paths.append(&mut ok);
     paths.iter_mut().for_each(|e| {e.pop();} );
 
     if shopts.query("globstar") {
