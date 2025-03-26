@@ -42,9 +42,9 @@ ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 
 ## Comparison with Bash
 
-This graph shows the test result with the scripts in `./tests/` of Bash repo. Currently, the binary built from alpha repo has passed five of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 5/84 features of Bash.
+This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed five of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 5/84 features of Bash.
 
-![](./test/bash_genuine_test/graph.png)
+![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
 
 ## Contribution
 
