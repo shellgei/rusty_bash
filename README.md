@@ -46,7 +46,7 @@ This graph shows the test result with the script in `./sush_test/bash_genuine_te
 
 ![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
 
-### strange bash behavior of Bash that we don't want to follow
+### strange behavior of Bash that we don't want to follow
 
 The following behavior of Bash will not be imitated by `sush`. So we alter the right output file (e.g `globstar.right`) for comparision. 
 
