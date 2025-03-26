@@ -33,21 +33,36 @@ fn no_glob_symbol(pattern: &str) -> bool {
 pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
     let mut paths = vec!["".to_string()];
     let globstar = shopts.query("globstar");
-    //let mut exist_globstar = false;
+    let mut exist_globstar = false;
+    let mut compat_bash = false;
+    let mut last_path = "".to_string();
 
     for dir_glob in pattern.split("/") {
+        paths.sort();
+        paths.dedup();
+
+        if exist_globstar {
+            if dir_glob != "**" {
+                if last_path == "" {
+                    last_path = dir_glob.to_owned() + "/";
+                }
+                compat_bash = true;
+            }
+        }else if dir_glob == "**" {
+            exist_globstar = true;
+        }
+        
         let mut tmp = paths.iter()
                 .map(|c| directory::glob(&c, &dir_glob, shopts) )
                 .collect::<Vec<Vec<String>>>()
                 .concat();
 
         if dir_glob == "**" && globstar {
+            paths.retain(|p| p.ends_with(&last_path));
             tmp.append(&mut paths);
         }
 
         paths = tmp;
-        paths.sort();
-        paths.dedup();
     }
 
     paths.iter_mut().for_each(|e| {e.pop();} );
@@ -58,6 +73,9 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
         }
     }
 
-    //paths.sort();
+    paths.sort();
+    if ! compat_bash {
+        paths.dedup();
+    }
     paths
 }
