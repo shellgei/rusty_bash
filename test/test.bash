@@ -7,6 +7,8 @@ err () {
 	exit 1
 }
 
+export SUSH_COMPAT_TEST_MODE=0
+
 cd $(dirname $0)
 com=../target/release/sush
 

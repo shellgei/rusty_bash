@@ -112,6 +112,16 @@ impl ShellCore {
         let _ = core.db.set_param("HISTFILE", &(home + "/.sush_history"), None);
         let _ = core.db.set_param("HISTFILESIZE", "2000", None);
 
+        match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+            Ok("1") => {
+                if unistd::isatty(0) == Ok(true) {
+                    eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
+                }
+                core.compat_bash = true;
+            },
+            _ => {},
+        };
+
         core
     }
 
