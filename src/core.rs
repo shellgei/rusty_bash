@@ -114,7 +114,7 @@ impl ShellCore {
 
         match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
             Ok("1") => {
-                if unistd::isatty(0) == Ok(true) {
+                if core.db.flags.contains('i') {
                     eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
                 }
                 core.compat_bash = true;
