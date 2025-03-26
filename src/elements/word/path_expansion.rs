@@ -4,7 +4,6 @@
 use crate::core::options::Options;
 use crate::elements::subword::Subword;
 use crate::elements::word::Word;
-use crate::utils::file_check;
 use crate::utils::directory;
 use super::subword::simple::SimpleSubword;
 
@@ -44,6 +43,5 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
     paths.iter_mut().for_each(|e| {e.pop();} );
     paths.sort();
     paths.dedup();
-    paths.retain(|d| file_check::exists(&d));
     paths
 }

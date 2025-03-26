@@ -22,18 +22,27 @@ pub fn files(dir: &str) -> Vec<String> {
 }
 
 fn globstar(dir: &str) -> Vec<String> {
+    /*
     let mut dirs = files(dir);
-    if dir != "" && ! dir.ends_with("/") {
-        dirs.iter_mut().for_each(|d| {*d = dir.to_string() + "/" + &d; });
-    }else if dir.ends_with("/") {
-        dirs.iter_mut().for_each(|d| {*d = dir.to_string() + &d; });
-    }
+    dirs.iter_mut().for_each(|d| {*d = dir.to_string() + &d + "/"; });
+    let mut ans = dirs.clone();
+    */
+    let mut dirs = vec![dir.to_string()];
     let mut ans = dirs.clone();
 
-    for d in dirs {
-        if ! file_check::is_symlink(&d) {
-            ans.append(&mut globstar(&d));
+    while ! dirs.is_empty() {
+        let mut tmp = vec![];
+        for d in dirs {
+            if file_check::is_symlink(&d.trim_end_matches("/")) {
+                continue;
+            }
+            let mut fs = files(&d);
+            fs.iter_mut().for_each(|f| {*f = d.to_string() + &f + "/"; });
+            tmp.append(&mut fs);
         }
+        ans.extend(tmp.clone());
+        dirs = tmp;
+       // dbg!("{:?}", &dirs);
     }
 
     ans
@@ -41,7 +50,7 @@ fn globstar(dir: &str) -> Vec<String> {
 
 pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
     let make_path = |f: &str| dir.to_owned() + f + "/";
-    if ["", ".", ".."].contains(&pattern) 
+    if ["", ".", ".."].contains(&pattern)
     || (file_check::is_symlink(dir.trim_end_matches("/")) && shopts.query("globstar")) {
         let path = make_path(pattern);
         match file_check::exists(&path) {
@@ -51,6 +60,8 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
     }
 
     if pattern == "**" && shopts.query("globstar") {
+        return globstar(dir);
+        /*
         let mut tmp = globstar(dir);
         //tmp.iter_mut().for_each(|d| {*d = dir.to_owned() + d ; });
         tmp.push(dir.to_string());
@@ -58,6 +69,7 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
         tmp.sort();
         tmp.dedup();
         return tmp;
+        */
     }
 
     let dotglob = shopts.query("dotglob");
