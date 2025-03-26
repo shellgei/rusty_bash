@@ -42,7 +42,7 @@ ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 
 ## Comparison with Bash 5.2
 
-This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed five of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 5/84 features of Bash.
+This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed six of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 6/84 features of Bash.
 
 ![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
 
@@ -50,7 +50,7 @@ This graph shows the test result with the script in `./sush_test/bash_genuine_te
 
 The following behavior of Bash will not be imitated by `sush`. So we alter the right output file (e.g `globstar.right`) for comparision. 
 
-* Bash outputs the same path repeatedly in some situations. It may be for compatibility of ksh. 
+* Bash outputs the same path repeatedly in some situations of globstar. It may be for compatibility of ksh. 
 
 ## Contribution
 
