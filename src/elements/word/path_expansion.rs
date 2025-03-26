@@ -38,6 +38,8 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
                 .map(|c| directory::glob(&c, &dir_glob, shopts) )
                 .collect::<Vec<Vec<String>>>()
                 .concat();
+        paths.sort();
+        paths.dedup();
     }
 
     paths.iter_mut().for_each(|e| {e.pop();} );
@@ -48,7 +50,6 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
         }
     }
 
-    paths.sort();
-    paths.dedup();
+    //paths.sort();
     paths
 }

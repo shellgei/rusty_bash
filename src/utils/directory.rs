@@ -38,8 +38,12 @@ fn globstar(dir: &str) -> Vec<String> {
         }
         ans.extend(tmp.clone());
         dirs = tmp;
+        dirs.sort();
+        dirs.dedup();
     }
 
+    ans.sort();
+    ans.dedup();
     ans
 }
 
@@ -61,8 +65,12 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
     let dotglob = shopts.query("dotglob");
     let extglob = shopts.query("extglob");
     let pat = glob::parse(pattern, extglob);
-    files(dir).iter()
+    let mut ans: Vec<String> = files(dir).iter()
         .filter(|f| !f.starts_with(".") || pattern.starts_with(".") || dotglob )
         .filter(|f| glob::compare(f, &pat) )
-        .map(|f| make_path(&f) ).collect()
+        .map(|f| make_path(&f) ).collect();
+
+    ans.sort();
+    ans.dedup();
+    ans
 }
