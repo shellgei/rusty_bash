@@ -24,7 +24,8 @@ pub fn files(dir: &str) -> Vec<String> {
 fn globstar(dir: &str) -> Vec<String> {
     let dir = if dir.is_empty() || dir.ends_with("/") { dir } else { &(dir.to_owned() + "/") };
     let mut dirs = vec![dir.to_string()];
-    let mut ans = dirs.clone();
+//    let mut ans = dirs.clone();
+    let mut ans = vec![];
 
     while ! dirs.is_empty() {
         let mut tmp = vec![];

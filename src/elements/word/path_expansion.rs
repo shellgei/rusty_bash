@@ -32,16 +32,24 @@ fn no_glob_symbol(pattern: &str) -> bool {
 
 pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
     let mut paths = vec!["".to_string()];
+    let mut ok = vec![];
 
     for dir_glob in pattern.split("/") {
-        paths = paths.iter()
+        let mut tmp = paths.iter()
                 .map(|c| directory::glob(&c, &dir_glob, shopts) )
                 .collect::<Vec<Vec<String>>>()
                 .concat();
+
+        if dir_glob == "**" && shopts.query("globstar") {
+            tmp.append(&mut paths);
+        }
+        paths = tmp;
+
         paths.sort();
         paths.dedup();
     }
 
+    paths.append(&mut ok);
     paths.iter_mut().for_each(|e| {e.pop();} );
 
     if shopts.query("globstar") {
