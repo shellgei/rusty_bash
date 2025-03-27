@@ -59,13 +59,13 @@ impl Subword for DoubleQuoted {
         Some(text)
     }
 
-    fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{
+    fn split(&self, _: &str) -> Vec<(Box<dyn Subword>, bool)>{
         let mut ans = vec![];
         let mut last = 0;
         let mut tmp = Self::default();
         for p in &self.split_points {
             tmp.subwords = self.subwords[last..*p].to_vec();
-            ans.push(tmp.boxed_clone());
+            ans.push((tmp.boxed_clone(), true));
             last = *p;
         }
         ans

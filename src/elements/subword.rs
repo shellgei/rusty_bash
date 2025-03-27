@@ -46,15 +46,17 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
-fn split_str(s: &str, ifs: &str) -> Vec<String> {
+fn split_str(s: &str, ifs: &str) -> Vec<(String, bool)> {
     if ifs == "" {
-        return vec![s.to_string()];
+        return vec![(s.to_string(), false)];
     }
 
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
     let mut ans = vec![];
+    let ifs_has_space = ifs.contains(' ') || ifs.contains('\t') || ifs.contains('\n');
+    let mut special_delimiter = ! ifs_has_space;
 
     for c in s.chars() {
         pos += c.len_utf8();
@@ -64,12 +66,13 @@ fn split_str(s: &str, ifs: &str) -> Vec<String> {
         }
 
         if ifs.contains(c) {
-            ans.push(s[from..pos-c.len_utf8()].to_string());
+            ans.push((s[from..pos-c.len_utf8()].to_string(), special_delimiter));
             from = pos;
+            special_delimiter = ! " \t\n".contains(c) || ! ifs_has_space;
         }
     }
 
-    ans.push(s[from..].to_string());
+    ans.push((s[from..].to_string(), special_delimiter && ifs_has_space));
     ans
 }
 
@@ -81,9 +84,9 @@ pub trait Subword {
         Ok(vec![]) // return subwords if the self object must be replaced to them
     }
 
-    fn split(&self, ifs: &str) -> Vec<Box<dyn Subword>>{
+    fn split(&self, ifs: &str) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
-        split_str(self.get_text(), ifs).iter().map(|s| f(s.to_string())).collect()
+        split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
