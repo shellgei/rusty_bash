@@ -142,11 +142,6 @@ impl Word {
             return splitted;
         }
 
-        /*
-        let extglob = core.shopts.query("extglob");
-        let nullglob = core.shopts.query("nullglob");
-        let dotglob = core.shopts.query("dotglob");
-        */
         for mut w in splitted {
             ans.append(&mut path_expansion::eval(&mut w, &core.shopts) );
         }

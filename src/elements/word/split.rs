@@ -7,12 +7,14 @@ use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     if ! core.db.has_value("IFS") {
-        let _ = core.db.set_param("IFS", " \r\n", None);
+        let _ = core.db.set_param("IFS", " \t\n", None);
     }else if core.db.get_param("IFS").unwrap() == "" {
         return vec![word.clone()];
     }
 
     let ifs = core.db.get_param("IFS").unwrap();
+    let ifs_special: Vec<char> = ifs.chars().filter(|c| ! " \t\n".contains(*c)).collect();
+
     let (pos, mut split) = find_pos(word, &ifs);
     if split.is_empty() {
         return vec![word.clone()];
@@ -21,12 +23,12 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     let gen_word = |sws| Word{
         text: String::new(),
         subwords: sws,
-        do_not_erase: ! ifs.contains(" ") };
+        do_not_erase: ! ifs_special.is_empty() };
 
-    let mut left = gen_word(word.subwords[..pos].to_vec());
-    left.subwords.push(split.remove(0));
+    let mut left = word.subwords[..pos].to_vec();
+    left.push(split.remove(0));
+    let mut ans = vec![gen_word(left)];
 
-    let mut ans = vec![left];
     while split.len() >= 2 {
         ans.push(gen_word(vec![split.remove(0)]));
     }
