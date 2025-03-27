@@ -8,6 +8,8 @@ use crate::elements::subword::Subword;
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     if ! core.db.has_value("IFS") {
         let _ = core.db.set_param("IFS", " \r\n", None);
+    }else if core.db.get_param("IFS").unwrap() == "" {
+        return vec![word.clone()];
     }
 
     let ifs = core.db.get_param("IFS").unwrap();
