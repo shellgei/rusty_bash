@@ -6,7 +6,11 @@ use crate::elements::word::Word;
 use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
-    let ifs = core.db.get_param("IFS").unwrap_or(" \r\n".to_string());
+    if ! core.db.has_value("IFS") {
+        let _ = core.db.set_param("IFS", " \r\n", None);
+    }
+
+    let ifs = core.db.get_param("IFS").unwrap();
     let (pos, mut split) = find_pos(word, &ifs);
     if split.is_empty() {
         return vec![word.clone()];
