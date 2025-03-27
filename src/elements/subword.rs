@@ -66,13 +66,15 @@ fn split_str(s: &str, ifs: &str) -> Vec<(String, bool)> {
         }
 
         if ifs.contains(c) {
-            ans.push((s[from..pos-c.len_utf8()].to_string(), special_delimiter));
+            let sw = s[from..pos-c.len_utf8()].to_string();
+            ans.push((sw, special_delimiter));
             from = pos;
             special_delimiter = ! " \t\n".contains(c) || ! ifs_has_space;
         }
     }
 
     ans.push((s[from..].to_string(), special_delimiter && ifs_has_space));
+
     ans
 }
 

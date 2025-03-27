@@ -20,7 +20,15 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    //dbg!("{:?}", &split);
+    /*
+    dbg!("{:?}", &split);
+    while split.len() > 2 {
+        if split[split.len()-1].0.get_text() == "" && ! split[split.len()-1].1 {
+            split.pop();
+        }else{
+            break;
+        }
+    }*/
 
     let gen_word = |sws, remain| Word{
         text: String::new(),
@@ -32,9 +40,11 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     left.push(split.remove(0).0);
     let mut ans = vec![gen_word(left, remain)];
 
+    dbg!("{:?}", &split);
     while split.len() >= 2 {
         let remain = split[0].1;
         ans.push(gen_word(vec![split.remove(0).0], remain));
+        //ans.push(gen_word(vec![split.remove(0).0], false));
     }
 
     let remain = split[0].1;
