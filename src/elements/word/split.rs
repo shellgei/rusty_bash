@@ -40,7 +40,7 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     left.push(split.remove(0).0);
     let mut ans = vec![gen_word(left, remain)];
 
-    dbg!("{:?}", &split);
+    //dbg!("{:?}", &split);
     while split.len() >= 2 {
         let remain = split[0].1;
         ans.push(gen_word(vec![split.remove(0).0], remain));

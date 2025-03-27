@@ -30,6 +30,9 @@ res=$($com <<< 'IFS=":" ; a=" a b c:"; set "${a}" ; echo $#')
 res=$($com <<< 'IFS=": "; x=" :"; set x $x; shift; echo "[$#]($1)"')
 [ "$res" = "[1]()" ] || err $LINENO
 
+res=$($com <<< 'IFS=": "; x=" a : b :  : "; set x $x; shift; echo "[$#]($1)($2)($3)"')
+[ "$res" = "[3](a)(b)()" ] || err $LINENO
+
 res=$($com << 'AAA'
 cat << "EOF"
 abc
