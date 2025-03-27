@@ -16,8 +16,6 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    let ifs = core.db.get_param("IFS").unwrap_or(" \r\n".to_string());
-
     let gen_word = |sws| Word{
         text: String::new(),
         subwords: sws,
