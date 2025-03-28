@@ -163,8 +163,6 @@ fn split_str(s: &str, ifs: &str) -> Vec<(String, bool)> {
     let mut from = 0;
     let mut pos = 0;
     let mut ans = vec![];
-    let ifs_has_space = ifs.contains(' ') || ifs.contains('\t') || ifs.contains('\n');
-    let mut special_delimiter = ! ifs_has_space;
 
     for c in s.chars() {
         pos += c.len_utf8();
@@ -175,13 +173,12 @@ fn split_str(s: &str, ifs: &str) -> Vec<(String, bool)> {
 
         if ifs.contains(c) {
             let sw = s[from..pos-c.len_utf8()].to_string();
-            ans.push((sw, special_delimiter));
+            ans.push((sw, false));
             from = pos;
-            special_delimiter = ! " \t\n".contains(c) || ! ifs_has_space;
         }
     }
 
-    ans.push((s[from..].to_string(), special_delimiter && ifs_has_space));
+    ans.push((s[from..].to_string(), false));
 
     ans
 }
@@ -199,11 +196,9 @@ pub trait Subword {
         let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
         if special_ifs.is_empty() {
             split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
-        }else { //if ifs.contains(' ') || ifs.contains('\t') || ifs.contains('\n') {
+        }else {
             split_str2(self.get_text(), ifs, prev_char).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
-        }/*else{
-            split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
-        }*/
+        }
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
