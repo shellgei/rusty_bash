@@ -46,10 +46,15 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
 }
 
 pub fn find_pos(word: &Word, ifs: &str) -> (usize, Vec<(Box<dyn Subword>, bool)>) {
+    let mut prev_char = None;
     for (i, sw) in word.subwords.iter().enumerate() {
-        let split = sw.split(ifs);
+        let split = sw.split(ifs, prev_char);
         if split.len() >= 2 {
             return (i, split);
+        }
+
+        if ! sw.get_text().is_empty() {
+            prev_char = sw.get_text().chars().last();
         }
     }
     (0, vec![])

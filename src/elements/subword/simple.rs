@@ -13,7 +13,7 @@ impl Subword for SimpleSubword {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
-    fn split(&self, _: &str) -> Vec<(Box<dyn Subword>, bool)>{ vec![] }
+    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ vec![] }
 }
 
 impl SimpleSubword {

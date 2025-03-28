@@ -46,6 +46,114 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
+pub fn scanner_blank(s: &str, blank: &Vec<char>) -> usize {
+    let mut ans = 0;
+    let mut esc = false;
+
+    for ch in s.chars() {
+        if esc || ch == '\\' {
+            esc = ! esc;
+            ans += ch.len_utf8();
+            continue;
+        }
+
+        if blank.contains(&ch) {
+            ans += ch.len_utf8();
+        }else {
+            break;
+        }
+    }
+
+    ans
+}
+
+pub fn scanner_ifs_blank(s: &str, blank: &Vec<char>, delim: &Vec<char>) -> usize {
+    let mut ans = 0;
+    let mut esc = false;
+
+    for ch in s.chars() {
+        if esc || ch == '\\' {
+            esc = ! esc;
+            ans += ch.len_utf8();
+            continue;
+        }
+
+        if delim.contains(&ch) {
+            ans += ch.len_utf8();
+            ans += scanner_blank(&s[ans..], blank);
+            return ans;
+        }else if blank.contains(&ch) {
+            ans += ch.len_utf8();
+        }else {
+            break;
+        }
+    }
+
+    ans
+}
+
+pub fn scanner_word(s: &str, ifs: &str) -> usize {
+    let mut ans = 0;
+    let mut esc = false;
+
+    for ch in s.chars() {
+        if esc || ch == '\\' {
+            esc = ! esc;
+            ans += ch.len_utf8();
+            continue;
+        }
+
+        if ifs.contains(ch) {
+            return ans;
+        }
+
+        ans += ch.len_utf8();
+    }
+
+    ans
+}
+
+fn split_str2(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
+    if ifs == "" {
+        return vec![(s.to_string(), false)];
+    }
+
+    let mut ans = vec![];
+    let mut remaining = s.to_string();
+
+    let shave_prev = match prev_char {
+        None    => true,
+        Some(c) => " \t\n".contains(c),
+    };
+
+    let blank: Vec<char> = ifs.chars().filter(|s| " \t\n".contains(*s)).collect(); 
+    let delim: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
+
+    if shave_prev {
+        let len = scanner_blank(&remaining, &blank);
+        let tail = remaining.split_off(len);
+        remaining = tail;
+    }
+
+    while ! remaining.is_empty() {
+        let len = scanner_word(&remaining, ifs);
+        let tail = remaining.split_off(len);
+
+        ans.push((remaining.to_string(), true));
+        remaining = tail;
+
+        let len = scanner_ifs_blank(&remaining, &blank, &delim);
+        if len > 0 {
+            remaining = remaining.split_off(len);
+            if remaining.is_empty() {
+                ans.push(("".to_string(), false));
+            }
+        }
+    }
+
+    ans
+}
+
 fn split_str(s: &str, ifs: &str) -> Vec<(String, bool)> {
     if ifs == "" {
         return vec![(s.to_string(), false)];
@@ -86,9 +194,16 @@ pub trait Subword {
         Ok(vec![]) // return subwords if the self object must be replaced to them
     }
 
-    fn split(&self, ifs: &str) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
+    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
-        split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
+        let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
+        if special_ifs.is_empty() {
+            split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
+        }else if ifs.contains(' ') || ifs.contains('\t') || ifs.contains('\n') {
+            split_str2(self.get_text(), ifs, prev_char).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
+        }else{
+            split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
+        }
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
