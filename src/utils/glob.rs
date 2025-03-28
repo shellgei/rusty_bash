@@ -22,6 +22,8 @@ pub enum MetaChar {
 
 pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
     let pat = parser::parse(pattern, extglob);
+    dbg!("{:?}", &pattern);
+    dbg!("{:?}", &pat);
     compare(word, &pat)
 }
 

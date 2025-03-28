@@ -21,10 +21,18 @@ fn to_operand(w: &mut Word) -> Result<CondElem, ExecError> {
     }
 }
 
-fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<CondElem, ExecError> {
+fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore, glob: bool) -> Result<CondElem, ExecError> {
     match stack.pop() {
         Some(CondElem::InParen(mut expr)) => expr.eval(core),
-        Some(CondElem::Word(mut w)) => to_operand(&mut w),
+        Some(CondElem::Word(mut w)) => {
+            if glob {
+                return match w.eval_for_case_pattern(core) {
+                    Some(v) => Ok(CondElem::Operand(v)),
+                    None => Ok(CondElem::Operand("".to_string())),
+                };
+            }
+            to_operand(&mut w)
+        },
         Some(elem) => Ok(elem),
         None => return Err(ExecError::OperandExpected("".to_string())),
     }
@@ -79,7 +87,7 @@ impl ConditionalExpr {
         let rev_pol = Self::rev_polish(elems)?;
         let mut stack = Self::reduce(&rev_pol, core)?;
     
-        match pop_operand(&mut stack, core) {
+        match pop_operand(&mut stack, core, false) {
             Ok(CondElem::Operand(s))  => Ok(CondElem::Ans(s.len() > 0)), //for [[ string ]]
             other_ans             => other_ans,
         }
@@ -129,7 +137,7 @@ impl ConditionalExpr {
                         Self::bin_operation(&op, &mut stack, core)
                     }
                 },
-                CondElem::Not => match pop_operand(&mut stack, core) {
+                CondElem::Not => match pop_operand(&mut stack, core, false) {
                     Ok(CondElem::Ans(res)) => {
                         stack.push(CondElem::Ans(!res));
                         Ok(())
@@ -164,7 +172,7 @@ impl ConditionalExpr {
     }
 
     fn unary_operation(op: &str, stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), ExecError> {
-        let operand = match pop_operand(stack, core) {
+        let operand = match pop_operand(stack, core, false) {
             Ok(CondElem::Operand(v))  => v,
             Ok(_)  => return Err(ExecError::Other("unknown operand".to_string())), 
             Err(e) => return Err(e),
@@ -188,13 +196,13 @@ impl ConditionalExpr {
     }
 
     fn regex_operation(stack: &mut Vec<CondElem>, core: &mut ShellCore) -> Result<(), ExecError> {
-        let right = match pop_operand(stack, core) {
+        let right = match pop_operand(stack, core, false) {
             Ok(CondElem::Regex(right)) => right, 
             Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
             Err(e) => return Err(e),
         };
 
-        let left = match pop_operand(stack, core) {
+        let left = match pop_operand(stack, core, false) {
             Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
             Err(e) => return Err(e),
@@ -231,13 +239,13 @@ impl ConditionalExpr {
 
     fn bin_operation(op: &str, stack: &mut Vec<CondElem>,
                      core: &mut ShellCore) -> Result<(), ExecError> {
-        let right = match pop_operand(stack, core) {
+        let right = match pop_operand(stack, core, true) {
             Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
             Err(e) => return Err(e),
         };
     
-        let left = match pop_operand(stack, core) {
+        let left = match pop_operand(stack, core, false) {
             Ok(CondElem::Operand(name)) => name,
             Ok(_)  => return Err(ExecError::Other("Invalid operand".to_string())),
             Err(e) => return Err(e),

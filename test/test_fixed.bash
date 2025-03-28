@@ -15,6 +15,9 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 's="[0]" ; g="[0]" ;case $g in "$s") echo ok ;; esac')
+[ "$res" = "ok" ] || err $LINENO
+
 res=$($com <<< 'a=" a b c "; set 1${a}2 ; echo $#')
 [ "$res" = "5" ] || err $LINENO
 
@@ -32,6 +35,9 @@ res=$($com <<< 'IFS=": "; x=" :"; set x $x; shift; echo "[$#]($1)"')
 
 res=$($com <<< 'IFS=": "; x=" a : b :  : "; set x $x; shift; echo "[$#]($1)($2)($3)"')
 [ "$res" = "[3](a)(b)()" ] || err $LINENO
+
+res=$($com <<< 'IFS=": "; x=" a :  : b : "; set x $x; shift; echo "[$#]($1)($2)($3)"')
+[ "$res" = "[3](a)()(b)" ] || err $LINENO
 
 res=$($com << 'AAA'
 cat << "EOF"
