@@ -1,42 +1,130 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2025 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod completion;
-mod key;
+//mod completion;
+//mod key;
 
-use crate::{file_check, ShellCore};
+use crate::{env, file_check, ShellCore};
 use crate::utils::file;
 use crate::error::input::InputError;
-use std::io;
+use std::io::{BufReader, BufRead};
+use std::fs;
 use std::fs::File;
-use std::io::{Write, Stdout};
 use std::sync::atomic::Ordering::Relaxed;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use nix::unistd;
 use nix::unistd::User;
-use termion::event;
-use termion::cursor::DetectCursorPos;
-use termion::event::Key;
-use termion::raw::{IntoRawMode, RawTerminal};
-use termion::input::TermRead;
-use unicode_width::UnicodeWidthChar;
+use rustyline::{Context, Helper, Editor, Config, EditMode, CompletionType};
+use rustyline::validate::{MatchingBracketValidator, Validator, ValidationContext, ValidationResult};
+use rustyline::highlight::{Highlighter, MatchingBracketHighlighter, CmdKind};
+use rustyline::hint::Hinter;
+use rustyline::completion::{Completer, FilenameCompleter, Pair};
+use rustyline::error::ReadlineError;
+use std::borrow::Cow::{self, Borrowed, Owned};
+use std::collections::HashSet;
+use std::os::unix::fs::PermissionsExt;
 
-struct Terminal {
-    prompt: String,
-    stdout: RawTerminal<Stdout>,
-    prompt_row: usize,
-    chars: Vec<char>,
-    head: usize,
-    hist_ptr: usize,
-    prompt_width_map: Vec<usize>,
-    size: (usize, usize),
-    tab_num: usize,
-    prev_key: Key,
-    /* for extended completion */
-    completion_candidate: String,
-    tab_row: i32,
-    tab_col: i32,
-    escape_at_completion: bool,
+struct SushHelper {
+    completer: FilenameCompleter,
+    highlighter: MatchingBracketHighlighter,
+    validator: MatchingBracketValidator,
+    colored_prompt: String,
+}
+
+impl Helper for SushHelper {}
+
+// コマンド候補取得（仮）
+fn get_commands(prefix: &str) -> Vec<Pair> {
+    // PATHから
+    let commands_set: HashSet<String> = env::var("PATH")
+        .ok()
+        .into_iter()
+        .flat_map(|paths| env::split_paths(&paths).collect::<Vec<_>>())
+        .filter_map(|dir| fs::read_dir(dir).ok())
+        .flat_map(|entries| entries.filter_map(Result::ok))
+        .filter_map(|entry| {
+            let meta = entry.metadata().ok()?;
+            if meta.is_file() && (meta.permissions().mode() & 0o111 != 0) {
+                entry.file_name().into_string().ok().filter(|name| name.starts_with(prefix))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    // 仮設なのでbuilt-inとかalias無い・・・
+
+    // 重複を除いたPairに変換しソート
+    let mut pairs: Vec<Pair> = commands_set
+        .into_iter()
+        .map(|name| Pair {
+            display: name.clone(),
+            replacement: name,
+        })
+        .collect();
+    pairs.sort_by(|a, b| a.display.cmp(&b.display));
+    pairs
+}
+
+impl Completer for SushHelper {
+    type Candidate = Pair;
+
+    fn complete(&self, line: &str, pos: usize, ctx: &Context<'_>) -> rustyline::Result<(usize, Vec<Pair>)> {
+        let text = &line[..pos];
+        let tokens: Vec<&str> = text.split_whitespace().collect();
+        // 最初のトークン入力中かつ '/' が含まれていなければコマンド補完
+        if tokens.is_empty() || (tokens.len() == 1 && !tokens[0].contains('/')) {
+            let prefix = if tokens.is_empty() { "" } else { tokens[0] };
+            let completions = get_commands(prefix);
+            let start = text.find(prefix).unwrap_or(0);
+            Ok((start, completions))
+        } else {
+            // それ以外はファイル補完
+            self.completer.complete(line, pos, ctx)
+        }
+    }
+}
+
+impl Hinter for SushHelper {
+    type Hint = String;
+    fn hint(&self, _line: &str, _pos: usize, _ctx: &Context<'_>) -> Option<String> {
+        None
+    }
+}
+
+// よくわからないのでサンプルそのまま
+impl Highlighter for SushHelper {
+    fn highlight_prompt<'b, 's: 'b, 'p: 'b>(&'s self, prompt: &'p str, default: bool) -> Cow<'b, str> {
+        if default {
+            Borrowed(&self.colored_prompt)
+        } else {
+            Borrowed(prompt)
+        }
+    }
+
+    fn highlight_hint<'h>(&self, hint: &'h str) -> Cow<'h, str> {
+        Owned("\x1b[1m".to_owned() + hint + "\x1b[m")
+    }
+
+    fn highlight<'l>(&self, line: &'l str, pos: usize) -> Cow<'l, str> {
+        self.highlighter.highlight(line, pos)
+    }
+
+    fn highlight_char(&self, line: &str, pos: usize, kind: CmdKind) -> bool {
+        self.highlighter.highlight_char(line, pos, kind)
+    }
+}
+
+// よくわかんないけど、シェル芸で便利そう！！！
+impl Validator for SushHelper {
+    fn validate(&self, ctx: &mut ValidationContext) -> rustyline::Result<ValidationResult> {
+        self.validator.validate(ctx)
+    }
+
+    fn validate_while_typing(&self) -> bool {
+        self.validator.validate_while_typing()
+    }
 }
 
 fn oct_string(s: &str) -> bool {
@@ -82,379 +170,186 @@ fn oct_to_hex_in_str(from: &str) -> String {
     ans
 }
 
-impl Terminal {
-    pub fn new(core: &mut ShellCore, ps: &str) -> Self {
-        let raw_prompt = core.db.get_param(ps).unwrap_or(String::new());
-        let ansi_on_prompt = oct_to_hex_in_str(&raw_prompt);
+fn get_branch(cwd: &String) -> String {
+    let mut dirs: Vec<String> = cwd.split("/").map(|s| s.to_string()).collect();
+    while dirs.len() > 0 {
+        let path = dirs.join("/") + "/.git/HEAD";
+        dirs.pop();
 
-        let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
-        let prompt = replaced_prompt.replace("\\[", "").replace("\\]", "").to_string();
-        print!("{}", prompt);
-        io::stdout().flush().unwrap();
-
-        let mut sout = io::stdout().into_raw_mode().unwrap();
-        let row = sout.cursor_pos().unwrap_or((1,1)).1;
-
-        Terminal {
-            prompt: prompt.to_string(),
-            stdout: sout,
-            prompt_row: row as usize,
-            chars: prompt.chars().collect(),
-            head: prompt.chars().count(),
-            hist_ptr: 0,
-            size: Terminal::size(),
-            prompt_width_map: Self::make_width_map(&replaced_prompt),
-            prev_key: event::Key::Char('a'),
-            tab_num: 0,
-            completion_candidate: String::new(),
-            tab_row: -1,
-            tab_col: -1,
-            escape_at_completion: true,
-        }
-    }
-
-    fn get_branch(cwd: &String) -> String {
-        let mut dirs: Vec<String> = cwd.split("/").map(|s| s.to_string()).collect();
-        while dirs.len() > 0 {
-            let path = dirs.join("/") + "/.git/HEAD";
-            dirs.pop();
-
-            if ! file_check::is_regular_file(&path) {
-                continue;
-            }
-
-            if let Ok(mut f) = File::open(Path::new(&path)){
-                return match f.read_line() {
-                    Ok(Some(s)) => s.replace("ref: refs/heads/","") + "🌵",
-                    _ => "".to_string(),
-                };
-            }
+        if ! file_check::is_regular_file(&path) {
+            continue;
         }
 
-        "".to_string()
-    }
-
-    fn make_prompt_string(raw: &str) -> String {
-        let uid = unistd::getuid();
-        let user = match User::from_uid(uid) {
-            Ok(Some(u)) => u.name,
-            _ => "".to_string(),
-        };
-        let hostname = match unistd::gethostname() {
-            Ok(h) => file::oss_to_name(&h),
-            _ => "".to_string(),
-        };
-
-        let homedir = match User::from_uid(uid) {
-            Ok(Some(u)) => file::buf_to_name(&u.dir),
-            _ => "".to_string(),
-        };
-        let mut cwd = match unistd::getcwd() {
-            Ok(p) => file::buf_to_name(&p),
-            _ => "".to_string(),
-        };
-        let branch = Self::get_branch(&cwd);
-
-        if cwd.starts_with(&homedir) {
-            cwd = cwd.replacen(&homedir, "~", 1);
-        }
-
-        raw.replace("\\u", &user)
-           .replace("\\h", &hostname)
-           .replace("\\w", &cwd)
-           .replace("\\b", &branch)
-           .to_string()
-    }
-
-    fn make_width_map(prompt: &str) -> Vec<usize> {
-        let tmp = prompt.replace("\\[", "\x01").replace("\\]", "\x02").to_string();
-        let mut in_escape = false;
-        let mut ans = vec![];
-        for c in tmp.chars() {
-            if c == '\x01' || c == '\x02' {
-                in_escape = c == '\x01';
-                continue;
-            }
-
-            let wid = match in_escape {
-                true  => 0,
-                false => UnicodeWidthChar::width(c).unwrap_or(0),
+        if let Ok(f) = File::open(Path::new(&path)) {
+            let r = BufReader::new(f);
+            return match r.lines().next() {
+                Some(Ok(l)) => l.replace("ref: refs/heads/", "") + "🌵",
+                _ => "".to_string(),
             };
-            ans.push(wid);
-        }
-        ans
-    }
-
-    fn write(&mut self, s: &str) {
-        write!(self.stdout, "{}", s).unwrap();
-    }
-
-    fn flush(&mut self) {
-        self.stdout.flush().unwrap();
-    }
-
-    fn char_width(&self, c: &char, pos: usize) -> usize {
-        if pos < self.prompt.chars().count() {
-            return self.prompt_width_map[pos];
-        }
-
-        UnicodeWidthChar::width(*c).unwrap_or(0)
-    }
-
-    fn size() -> (usize, usize) {
-        let (c, r) = termion::terminal_size().unwrap();
-        (c as usize, r as usize)
-    }
-
-    fn shift_in_range(x: &mut usize, shift: i32, min: usize, max: usize) {
-        *x = if      shift < 0 && *x < min + (- shift as usize) { min }
-             else if shift > 0 && *x + (shift as usize) > max   { max }
-             else           { (*x as isize + shift as isize) as usize };
-    }
-
-    fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
-        let col = Terminal::size().0;
-        let (mut x, mut y) = (0, y_origin);
-
-        for (i, c) in self.chars[..head].iter().enumerate() {
-            if *c == '\n' {
-                y += 1;
-                x = 0;
-                continue;
-            }
-
-            let w = self.char_width(c, i);
-            if x + w > col {
-                y += 1;
-                x = w;
-            }else{
-                x += w;
-            }
-        }
-
-        (x + 1, y)
-    }
-
-    fn goto(&mut self, head: usize) {
-        let pos = self.head_to_cursor_pos(head, self.prompt_row);
-        let size = Terminal::size();
-
-        let x: u16 = std::cmp::min(size.0, pos.0).try_into().unwrap();
-        let y: u16 = std::cmp::min(size.1, pos.1).try_into().unwrap();
-        self.write(&termion::cursor::Goto(x, y).to_string());
-    }
-
-    fn rewrite(&mut self, erase: bool) {
-        self.goto(0);
-        if erase {
-            self.write(&termion::clear::AfterCursor.to_string());
-        }
-        self.write(&self.get_string(0).replace("\n", "\n\r"));
-        self.goto(self.head);
-        self.flush();
-    }
-
-    pub fn insert(&mut self, c: char) {
-        self.chars.insert(self.head, c);
-        self.head += 1;
-        self.rewrite(false);
-    }
-
-    pub fn backspace(&mut self) {
-        if self.head <= self.prompt.chars().count() {
-            return;
-        }
-        self.head -= 1;
-        self.chars.remove(self.head);
-        self.rewrite(true);
-    }
-
-    pub fn delete(&mut self) {
-        if self.head >= self.chars.len() {
-            return;
-        }
-        self.chars.remove(self.head);
-        self.rewrite(true);
-    }
-
-    pub fn get_string(&self, from: usize) -> String {
-        self.chars[from..].iter().collect()
-    }
-
-    pub fn goto_origin(&mut self) {
-        self.head = self.prompt.chars().count();
-        self.goto(self.head);
-        self.flush();
-    }
-
-    pub fn goto_end(&mut self) {
-        self.head = self.chars.len();
-        self.goto(self.head);
-        self.flush();
-    }
-
-    pub fn shift_cursor(&mut self, shift: i32) {
-        let prev = self.head;
-        Self::shift_in_range(&mut self.head, shift, 
-                             self.prompt.chars().count(),
-                             self.chars.len());
-
-        if prev == self.head {
-            self.cloop();
-            return;
-        }
-
-        self.goto(self.head);
-        self.flush();
-    }
-
-    pub fn check_scroll(&mut self) {
-        let extra_lines = self.head_to_cursor_pos(self.chars.len(), 0).1;
-        let row = Terminal::size().1;
-
-        if self.prompt_row + extra_lines > row {
-            let ans = row as isize - extra_lines as isize;
-            self.prompt_row = std::cmp::max(ans, 1) as usize;
         }
     }
 
-    pub fn check_terminal_size(&mut self/*, prev_size: &mut (usize, usize)*/) {
-        //if *prev_size == Terminal::size() {
-        if self.size == Terminal::size() {
-            return;
-        }
-
-        let from_under = self.size.1 as isize - self.prompt_row as isize;
-        //*prev_size = Terminal::size();
-        self.size = Terminal::size();
-
-        let cur_row = self.size.1 as isize - from_under;
-        self.prompt_row = std::cmp::max(cur_row, 1) as usize;
-    }
-
-    pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
-        let prev = self.hist_ptr;
-        let prev_str = self.get_string(self.prompt.chars().count());
-        Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::isize::MAX as usize);
-
-        self.chars = self.prompt.chars().collect();
-        self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str).replace("↵ \0", "\n").chars());
-        self.head = self.chars.len();
-        self.rewrite(true);
-    }
-
-    pub fn set_double_tab_completion(&mut self, core: &ShellCore) {
-        let tail = match core.current_completion_info.o_options.contains(&"nospace".to_string()) {
-            true  => "",
-            false => " ",
-        };
-
-        let s = self.completion_candidate.clone() + tail;
-        self.replace_input(&s);
-    }
-
-    pub fn cloop(&mut self) {
-        print!("\x07");
-        self.flush();
-    }
-
-    fn completion_finish_check(&mut self) {
-        match self.prev_key {
-            event::Key::Char('\t') 
-                | event::Key::Left | event::Key::Down
-                | event::Key::Right | event::Key::Up => return,
-            _ => {
-                self.tab_num = 0;
-                self.completion_candidate = String::new();
-            },
-        }
-    }
+    "".to_string()
 }
 
-fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, InputError> {
+fn make_prompt_string(raw: &str) -> String {
+    let uid = unistd::getuid();
+    let user = match User::from_uid(uid) {
+        Ok(Some(u)) => u.name,
+        _ => "".to_string(),
+    };
+    let hostname = match unistd::gethostname() {
+        Ok(h) => file::oss_to_name(&h),
+        _ => "".to_string(),
+    };
+
+    let homedir = match User::from_uid(uid) {
+        Ok(Some(u)) => file::buf_to_name(&u.dir),
+        _ => "".to_string(),
+    };
+    let mut cwd = match unistd::getcwd() {
+        Ok(p) => file::buf_to_name(&p),
+        _ => "".to_string(),
+    };
+    let branch = get_branch(&cwd);
+
+    if cwd.starts_with(&homedir) {
+        cwd = cwd.replacen(&homedir, "~", 1);
+    }
+
+    raw.replace("\\u", &user)
+       .replace("\\h", &hostname)
+       .replace("\\w", &cwd)
+       .replace("\\b", &branch)
+       .to_string()
+}
+
+fn parse_visible_prompt(prompt: &str) -> (String, String) {
+    let mut display = String::new();
+    let mut hidden = String::new();
+    let mut chars = prompt.chars().peekable();
+
+    while let Some(c) = chars.next() {
+        // 非表示ブロック開始"\["を検出
+        if c == '\\' {
+            if let Some(&next) = chars.peek() {
+                if next == '[' {
+                    chars.next(); // "\["
+                    let mut block = String::new();
+                    // "\]" が来るまでブロック内容を収集
+                    while let Some(ch) = chars.next() {
+                        if ch == '\\' {
+                            if let Some(&maybe_end) = chars.peek() {
+                                if maybe_end == ']' {
+                                    chars.next(); // "\]"
+                                    break;
+                                }
+                            }
+                        }
+                        block.push(ch);
+                    }
+                    // hiddenに追加
+                    hidden.push_str(&block);
+                    // ブロックがウィンドウタイトル用（ESCの後に']'で始まる）はdisplayに追加しない
+                    if !block.starts_with("\u{1b}]") {
+                        display.push_str(&block);
+                    }
+                    continue;
+                }
+            }
+        }
+        // 非表示ブロック外の文字はdisplay
+        display.push(c);
+    }
+    (display, hidden)
+}
+
+pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError> {
+    let raw = core.db.get_param(prompt).unwrap_or(String::new());
+    //println!("RAW:{:?}", raw);
+    let replaced = make_prompt_string(&raw);
+    //println!("REP:{:?}", replaced);
+    let ansi = oct_to_hex_in_str(&replaced);
+    //println!("ANS:{:?}", ansi);
+    let (display, hidden) = parse_visible_prompt(&ansi);
+    //println!("HID:{:?}", hidden);
+    //println!("DSP:{:?}", display);
+
+    // Rustylineの設定
+    let config = Config::builder()
+        .edit_mode(EditMode::Emacs)
+        .auto_add_history(true)
+        .color_mode(rustyline::ColorMode::Enabled)
+        .completion_type(CompletionType::List)
+        .build();
+
+    // エディタの初期化
+    let mut rl = Editor::with_config(config).unwrap();
+    
+    // ヘルパーの設定
+    let helper = SushHelper {
+        completer: FilenameCompleter::new(),
+        highlighter: MatchingBracketHighlighter::new(),
+        colored_prompt: display.clone(),
+        validator: MatchingBracketValidator::new(),
+    };
+    rl.set_helper(Some(helper));
+    
+    // 履歴の設定（仮）
+    if let Ok(history_file) = core.db.get_param("HISTFILE") {
+        if !history_file.is_empty() {
+            let path = PathBuf::from(&history_file);
+            if path.exists() {
+                let _ = rl.load_history(&path);
+            }
+        }
+    }
+
+    // 履歴読み出し（仮）
+    for h in core.history.iter() {
+        if !h.is_empty() {
+            let _ = rl.add_history_entry(h);
+        }
+    }
+
+    // シグナルチェック
     if core.sigint.load(Relaxed) 
-    || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
-        term.write("\r\n");
+       || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
         return Err(InputError::Interrupt);
     }
-    Ok(true)
-}
 
-pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
-    let mut term = Terminal::new(core, prompt);
-    signal_check(core, &mut term)?;
-
-    core.history.insert(0, String::new());
-
-    for c in io::stdin().keys() {
-        let c = c.unwrap();
-
-        if let Err(e) = signal_check(core, &mut term) {
-            core.history.remove(0);
-            return Err(e);
+    // 非表示部分（ウインドウタイトル）を出力
+    print!("{}", hidden);
+    
+    // 入力読み出し
+    let readline = rl.readline(&display);
+    match readline {
+        Ok(line) => {
+            // 履歴に追加
+            core.history.insert(0, line.trim_end().to_string());
+            
+            // 履歴ファイルに保存（仮）
+            if let Ok(history_file) = core.db.get_param("HISTFILE") {
+                if !history_file.is_empty() {
+                    let path = PathBuf::from(&history_file);
+                    let _ = rl.save_history(&path);
+                }
+            }
+            
+            Ok(line)
+        },
+        Err(ReadlineError::Interrupted) => {
+            // Ctrl-C
+            core.sigint.store(true, Relaxed);
+            Err(InputError::Interrupt)
+        },
+        Err(ReadlineError::Eof) => {
+            // Ctrl-D
+            Err(InputError::Eof)
+        },
+        Err(_) => {
+            // その他のエラー
+            Err(InputError::Interrupt)
         }
-
-        term.check_terminal_size();
-        match key::action(core, &mut term, &c) {
-            Ok(true) => break,
-            Ok(false) => term.prev_key = c,
-            Err(e) => {
-                core.history.remove(0);
-                return Err(e)
-            },
-        }
-
-        term.completion_finish_check();
-        term.check_scroll();
     }
-
-    let ans = term.get_string(term.prompt.chars().count());
-    core.history[0] = ans.trim_end().to_string();
-    Ok(ans)
 }
-
-/*TODO: The following version uses async_stdin and enables
- * the shell be interrupted by signals. However, some bugs
- * found around cursor control. Moreover, this implementation
- * causes a SIGTTIN signal after a command runs. 
- */
-/*
-pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
-    let mut term = Terminal::new(core, prompt);
-    core.history.insert(0, String::new());
-
-    let mut stdin = termion::async_stdin().keys();
-
-    loop {
-        if let Err(e) = signal_check(core, &mut term) {
-            core.history.remove(0);
-            return Err(e);
-        }
-
-        let c = match stdin.next() {
-            Some(k) => k.as_ref().unwrap().clone(),
-            _ => {
-                thread::sleep(time::Duration::from_millis(10));
-                continue;
-            },
-        };
-
-        term.check_terminal_size();
-        match key::action(core, &mut term, &c) {
-            Ok(true) => break,
-            Ok(false) => term.prev_key = c,
-            Err(e) => {
-                core.history.remove(0);
-                return Err(e)
-            },
-        }
-
-        term.completion_finish_check();
-        term.check_scroll();
-    }
-
-    let ans = term.get_string(term.prompt.chars().count());
-    core.history[0] = ans.trim_end().to_string();
-    Ok(ans)
-}
-*/
