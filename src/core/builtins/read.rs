@@ -51,7 +51,6 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     loop {
         command::eat_blank_with_comment(&mut feeder, core, &mut tmp);
         if let Ok(Some(w)) = Word::parse(&mut feeder, core, Some(WordMode::ReadCommand)) {
-            dbg!("{:?}", &w.split_and_path_expansion(core));
             let text = remove_escape(&w.text);
             if pos < args.len()-1 {
                 if ! set_to_param(core, args, pos, &text) {
