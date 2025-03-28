@@ -4,7 +4,6 @@
 use crate::ShellCore;
 use crate::elements::word::Word;
 use crate::elements::subword::Subword;
-use crate::elements::subword::single_quoted::SingleQuoted;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     if ! core.db.has_value("IFS") {
@@ -38,9 +37,6 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     let remain = split[0].1;
     let mut right = gen_word(word.subwords[pos+1..].to_vec(), remain);
     right.subwords.insert(0, split.remove(0).0);
-    if remain {
-        right.subwords.insert(0, SingleQuoted{ text: "''".to_string() }.boxed_clone());
-    }
 
     [ ans, eval(&right, core) ].concat()
 }

@@ -199,11 +199,11 @@ pub trait Subword {
         let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
         if special_ifs.is_empty() {
             split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
-        }else if ifs.contains(' ') || ifs.contains('\t') || ifs.contains('\n') {
+        }else { //if ifs.contains(' ') || ifs.contains('\t') || ifs.contains('\n') {
             split_str2(self.get_text(), ifs, prev_char).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
-        }else{
+        }/*else{
             split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
-        }
+        }*/
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}
