@@ -147,6 +147,11 @@ fn split_str2(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)
         }
     }
 
+    if ans.is_empty() {
+        ans.push(("".to_string(), false));
+        ans.push(("".to_string(), false));
+    }
+
     ans
 }
 
