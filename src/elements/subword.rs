@@ -114,10 +114,6 @@ pub fn scanner_word(s: &str, ifs: &str) -> usize {
 }
 
 fn split_str2(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
-    if ifs == "" {
-        return vec![(s.to_string(), false)];
-    }
-
     let mut ans = vec![];
     let mut remaining = s.to_string();
 
@@ -155,10 +151,6 @@ fn split_str2(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)
 }
 
 fn split_str(s: &str, ifs: &str) -> Vec<(String, bool)> {
-    if ifs == "" {
-        return vec![(s.to_string(), false)];
-    }
-
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
@@ -192,6 +184,10 @@ pub trait Subword {
     }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
+        if ifs == "" {
+            return vec![(self.boxed_clone(), false)];
+        }
+
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
         let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
         if special_ifs.is_empty() {
