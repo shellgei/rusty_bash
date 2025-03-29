@@ -29,9 +29,14 @@ pub fn exponent(s: &str) -> String {
 
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
-    match coredump {
-        true  => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
-        false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
+    match signal {
+        Signal::SIGPIPE => (),
+        _ => {
+            match coredump {
+                true  => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
+                false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
+            }        
+        }
     }
     128+signal as i32
 }
