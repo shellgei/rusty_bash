@@ -39,42 +39,43 @@ fn remove_escape(text: &str) -> String {
 }
 
 pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut line = String::new();
+    let mut remaining = String::new();
     let len = std::io::stdin()
-        .read_line(&mut line)
+        .read_line(&mut remaining)
         .expect("SUSHI INTERNAL ERROR: Failed to read line");
-    let mut feeder = Feeder::new(&line);
-    let mut tmp = String::new();
 
-    let mut pos = 1;
-    let mut surplus = vec![];
-    loop {
-        command::eat_blank_with_comment(&mut feeder, core, &mut tmp);
-        if let Ok(Some(w)) = Word::parse(&mut feeder, core, Some(WordMode::ReadCommand)) {
-            let text = remove_escape(&w.text);
-            if pos < args.len()-1 {
-                if ! set_to_param(core, args, pos, &text) {
-                    return 1;
-                }
-                pos +=1;
-            }else{
-                surplus.push(text);
-            }
-            continue;
-        }
-        break;
+    if len == 0 {
+        return 1;
     }
 
-    if ! surplus.is_empty() {
-        if ! set_to_param(core, args, args.len()-1, &surplus.join(" ")) {
+    let ifs = match core.db.has_value("IFS") {
+        true  => core.db.get_param("IFS").unwrap(),
+        false => " \t\n".to_string(),
+    };
+
+    args.remove(0);
+    while args.len() > 0 && ! remaining.is_empty() {
+        consume_ifs(&mut remaining, &ifs);
+
+        let mut ifs_ = ifs.clone();
+        if args.len() == 1 {
+            ifs_ = "".to_string();
+        }
+
+        let word = match eat_word(core, &mut remaining, &ifs_) {
+            Some(w) => w,
+            None => break,
+        };
+
+        if let Err(e) = core.db.set_param(&args[0], &word, None) {
+            let msg = format!("{:?}", &e);
+            error::print(&msg, core);
             return 1;
         }
+        args.remove(0);
     }
 
-    match len == 0 {
-        true  => 1,
-        false => 0,
-    }
+    0
 }
 
 fn set_to_param(core: &mut ShellCore, args: &mut Vec<String>,
@@ -178,13 +179,16 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str) -> Option<String> {
     let mut esc = false;
-    let mut from = 0;
     let mut pos = 0;
+    let mut escape_pos = vec![];
 
     for c in remaining.chars() {
         pos += c.len_utf8();
         if esc || c == '\\' {
             esc = ! esc;
+            if esc {
+                escape_pos.push(pos-1);
+            }
             continue;
         }
 
@@ -193,14 +197,36 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str) -> Opti
         }
     }
 
+    if let Some(p) = escape_pos.last() {
+        if p + 2 == remaining.len() && remaining.ends_with('\n') {
+            remaining.pop();
+            remaining.pop();
+
+            let mut line = String::new();
+            let len = std::io::stdin()
+                .read_line(&mut line)
+                .expect("SUSHI INTERNAL ERROR: Failed to read line");
+        
+            if len > 0 {
+                *remaining += &line;
+                return eat_word(core, remaining, ifs);
+                
+            }
+        }
+    }
+
     let tail = remaining.split_off(pos);
-    let ans = remaining.clone();
+    let mut ans = remaining.clone();
     *remaining = tail;
+
+    for p in escape_pos {
+        ans.remove(p);
+    }
 
     Some(ans)
 }
 
-pub fn consume_ifs(remaining: &mut String, ifs: &Vec<char>) {
+pub fn consume_ifs(remaining: &mut String, ifs: &str) {
     let mut pos = 0;
     let mut esc = false;
 
@@ -211,7 +237,7 @@ pub fn consume_ifs(remaining: &mut String, ifs: &Vec<char>) {
             continue;
         }
 
-        if ! ifs.contains(&ch) {
+        if ! ifs.contains(ch) {
             break;
         }
     }
