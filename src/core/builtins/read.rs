@@ -38,7 +38,7 @@ fn remove_escape(text: &str) -> String {
     ans
 }
 
-pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool) -> i32 {
     let mut remaining = String::new();
     let len = std::io::stdin()
         .read_line(&mut remaining)
@@ -53,19 +53,21 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         false => " \t\n".to_string(),
     };
 
+    consume_ifs(&mut remaining, " \t");
+
     args.remove(0);
     while args.len() > 0 && ! remaining.is_empty() {
-        consume_ifs(&mut remaining, &ifs);
 
-        let mut ifs_ = ifs.clone();
-        if args.len() == 1 {
-            ifs_ = "".to_string();
-        }
-
-        let word = match eat_word(core, &mut remaining, &ifs_) {
+        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape) {
             Some(w) => w,
             None => break,
         };
+
+        if args.len() == 1 {
+            word += &remaining;
+        }
+
+        consume_tail_ifs(&mut word, " \t\n");
 
         if let Err(e) = core.db.set_param(&args[0], &word, None) {
             let msg = format!("{:?}", &e);
@@ -73,11 +75,13 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1;
         }
         args.remove(0);
+        consume_ifs(&mut remaining, &ifs);
     }
 
     0
 }
 
+/*
 fn set_to_param(core: &mut ShellCore, args: &mut Vec<String>,
     pos: usize, word: &str) -> bool {
     if let Err(e) = core.db.set_param(&args[pos], word, None) {
@@ -86,7 +90,7 @@ fn set_to_param(core: &mut ShellCore, args: &mut Vec<String>,
         return false;
     }
     true
-}
+}*/
 
 pub fn read_a(core: &mut ShellCore, name: &String) -> i32 {
     let mut line = String::new();
@@ -116,6 +120,7 @@ pub fn read_a(core: &mut ShellCore, name: &String) -> i32 {
     }
 }
 
+/*
 pub fn read_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut line = String::new();
     let len = std::io::stdin()
@@ -146,6 +151,7 @@ pub fn read_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         false => 0,
     }
 }
+*/
 
 pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
@@ -172,29 +178,30 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     match r_opt {
-        true  => read_r(core, &mut args),
-        false => read_(core, &mut args),
+        true  => read_(core, &mut args, true),
+        false => read_(core, &mut args, false),
     }
 }
 
-pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str) -> Option<String> {
+pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str, ignore_escape: bool) -> Option<String> {
     let mut esc = false;
     let mut pos = 0;
     let mut escape_pos = vec![];
 
     for c in remaining.chars() {
-        pos += c.len_utf8();
-        if esc || c == '\\' {
+        if (esc || c == '\\') && ! ignore_escape {
             esc = ! esc;
             if esc {
-                escape_pos.push(pos-1);
+                escape_pos.push(pos);
             }
+            pos += c.len_utf8();
             continue;
         }
 
         if ifs.contains(c) {
             break;
         }
+        pos += c.len_utf8();
     }
 
     if let Some(p) = escape_pos.last() {
@@ -209,7 +216,7 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str) -> Opti
         
             if len > 0 {
                 *remaining += &line;
-                return eat_word(core, remaining, ifs);
+                return eat_word(core, remaining, ifs, ignore_escape);
                 
             }
         }
@@ -223,28 +230,48 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str) -> Opti
         ans.remove(p);
     }
 
-    if ans.ends_with("\n") {
-        ans.pop();
-    }
 
     Some(ans)
 }
 
+pub fn consume_tail_ifs(remaining: &mut String, ifs: &str) {
+    loop {
+        if let Some(c) = remaining.chars().last() {
+            if ifs.contains(c) {
+                remaining.pop();
+                continue;
+            }
+        }
+        break;
+    }
+}
+
 pub fn consume_ifs(remaining: &mut String, ifs: &str) {
+    let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
     let mut pos = 0;
-    let mut esc = false;
+    //let mut esc = false;
+    let mut special_ifs_exist = false;
 
     for ch in remaining.chars() {
+        /*
         if esc || ch == '\\' {
             esc = ! esc;
             pos += ch.len_utf8();
             continue;
-        }
+        }*/
 
         if ! ifs.contains(ch) {
             break;
         }
         pos += ch.len_utf8();
+
+        if special_ifs.contains(&ch) {
+            if special_ifs_exist {
+                break;
+            }
+            
+            special_ifs_exist = true;
+        }
     }
 
     let tail = remaining.split_off(pos);
