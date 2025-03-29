@@ -223,6 +223,10 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str) -> Opti
         ans.remove(p);
     }
 
+    if ans.ends_with("\n") {
+        ans.pop();
+    }
+
     Some(ans)
 }
 
@@ -240,6 +244,7 @@ pub fn consume_ifs(remaining: &mut String, ifs: &str) {
         if ! ifs.contains(ch) {
             break;
         }
+        pos += ch.len_utf8();
     }
 
     let tail = remaining.split_off(pos);
