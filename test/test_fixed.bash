@@ -24,6 +24,9 @@ res=$($com <<< 'let a=1 b=0; echo $a $b $?')
 res=$($com <<< 'let a== b=0; echo $a $b $?')
 [ "$res" = "1" ] || err $LINENO
 
+res=$($com <<< 'let "c=$((1+1))"; echo $c $?')
+[ "$res" = "2 0" ] || err $LINENO
+
 res=$($com <<< 'let a=1; echo $a')
 [ "$res" = "1" ] || err $LINENO
 
