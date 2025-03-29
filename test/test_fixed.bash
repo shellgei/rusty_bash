@@ -140,3 +140,11 @@ OH
 EOF
 )
 [ "$res" = "@OH" ] || err $LINENO
+
+### WHY ???????????? ###
+
+#ueda@x1gen13:~/GIT/bash_for_sush_test/sush_test$ echo "a:b:" | ( IFS=" :" read x y; echo "($x)($y)" )
+#(a)(b)
+#ueda@x1gen13:~/GIT/bash_for_sush_test/sush_test$ echo "a:b::" | ( IFS=" :" read x y; echo "($x)($y)" )
+#(a)(b::)
+

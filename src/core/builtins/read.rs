@@ -64,7 +64,13 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool) 
         };
 
         if args.len() == 1 {
-            word += &remaining;
+            let bkup = remaining.clone();
+            consume_ifs(&mut remaining, &ifs);
+
+            if remaining.is_empty() || remaining == "\n" {
+            }else{
+                word += &bkup;
+            }
         }
 
         consume_tail_ifs(&mut word, " \t\n");
@@ -80,17 +86,6 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool) 
 
     0
 }
-
-/*
-fn set_to_param(core: &mut ShellCore, args: &mut Vec<String>,
-    pos: usize, word: &str) -> bool {
-    if let Err(e) = core.db.set_param(&args[pos], word, None) {
-        let msg = format!("{:?}", &e);
-        error::print(&msg, core);
-        return false;
-    }
-    true
-}*/
 
 pub fn read_a(core: &mut ShellCore, name: &String) -> i32 {
     let mut line = String::new();
@@ -249,21 +244,12 @@ pub fn consume_tail_ifs(remaining: &mut String, ifs: &str) {
 pub fn consume_ifs(remaining: &mut String, ifs: &str) {
     let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
     let mut pos = 0;
-    //let mut esc = false;
     let mut special_ifs_exist = false;
 
     for ch in remaining.chars() {
-        /*
-        if esc || ch == '\\' {
-            esc = ! esc;
-            pos += ch.len_utf8();
-            continue;
-        }*/
-
         if ! ifs.contains(ch) {
             break;
         }
-        pos += ch.len_utf8();
 
         if special_ifs.contains(&ch) {
             if special_ifs_exist {
@@ -272,8 +258,10 @@ pub fn consume_ifs(remaining: &mut String, ifs: &str) {
             
             special_ifs_exist = true;
         }
+        pos += ch.len_utf8();
     }
 
     let tail = remaining.split_off(pos);
+    //dbg!("{:?}", &remaining);
     *remaining = tail;
 }
