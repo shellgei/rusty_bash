@@ -175,3 +175,47 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         false => read_(core, &mut args),
     }
 }
+
+pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str) -> Option<String> {
+    let mut esc = false;
+    let mut from = 0;
+    let mut pos = 0;
+
+    for c in remaining.chars() {
+        pos += c.len_utf8();
+        if esc || c == '\\' {
+            esc = ! esc;
+            continue;
+        }
+
+        if ifs.contains(c) {
+            break;
+        }
+    }
+
+    let tail = remaining.split_off(pos);
+    let ans = remaining.clone();
+    *remaining = tail;
+
+    Some(ans)
+}
+
+pub fn consume_ifs(remaining: &mut String, ifs: &Vec<char>) {
+    let mut pos = 0;
+    let mut esc = false;
+
+    for ch in remaining.chars() {
+        if esc || ch == '\\' {
+            esc = ! esc;
+            pos += ch.len_utf8();
+            continue;
+        }
+
+        if ! ifs.contains(&ch) {
+            break;
+        }
+    }
+
+    let tail = remaining.split_off(pos);
+    *remaining = tail;
+}
