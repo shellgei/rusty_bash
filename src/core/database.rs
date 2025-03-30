@@ -187,6 +187,13 @@ impl DataBase {
         }
     }
 
+    pub fn is_single_num(&mut self, name: &str) -> bool {
+        match getter::clone(self, name).as_mut() {
+            Some(d) => return d.is_single_num(),
+            _ => false,
+        }
+    }
+
     pub fn get_position_params(&self) -> Vec<String> {
         match self.position_parameters.last() {
             Some(v) => v[1..].to_vec(),

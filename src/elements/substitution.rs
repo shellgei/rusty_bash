@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use std::env;
@@ -21,7 +22,6 @@ impl ParsedDataType {
     pub fn get_evaluated_text(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         match self {
             Self::None      => Ok("".to_string()),
-            //Self::Single(s) => Ok(s.text.clone()),
             Self::Single(s) => Ok(s.eval_as_value(core)?),
             Self::Array(a) => {
                 let mut ans = "(".to_string();
@@ -111,6 +111,23 @@ impl Substitution {
     }
  
     fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        if core.db.is_single_num(&self.name) {
+            let s = match &self.evaluated_string {
+                Some(s) => s,
+                None => return Err(ExecError::OperandExpected("".to_string())),
+            };
+            let mut feeder = Feeder::new(&s);
+            if let Some(mut exp) = ArithmeticExpr::parse(&mut feeder, core, false)? {
+                if feeder.len() > 0 {
+                    return Err(ExecError::SyntaxError(feeder.consume(feeder.len())));
+                }
+                let ans = exp.eval(core)?;
+                return core.db.set_param(&self.name, &ans, Some(layer));
+            }else{
+                return Err(ExecError::OperandExpected("".to_string()));
+            }
+        }
+
         let (done, result) = match &self.evaluated_string {
             Some(data) => (true, core.db.set_param(&self.name, &data, Some(layer))),
             _ => (false, Ok(()) ),
