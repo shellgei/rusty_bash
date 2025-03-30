@@ -156,6 +156,13 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
     let right_str = match right_value {
         ArithElem::Integer(n) => n.to_string(),
         ArithElem::Float(f)   => f.to_string(),
+        ArithElem::InParen(a) => {
+            match a.clone().eval_elems(core, false)? {
+                ArithElem::Integer(n) => n.to_string(),
+                ArithElem::Float(f)   => f.to_string(),
+                _ => exit::internal(&format!("{:?}: not a value", &a.clone())),
+            }
+        },
         _ => exit::internal(&format!("{:?}: not a value", &right_value)),
     };
 
