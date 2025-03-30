@@ -67,7 +67,10 @@ pub trait Data {
 
     fn is_special(&self) -> bool {false}
     fn is_single(&self) -> bool {false}
+    fn is_single_num(&self) -> bool {false}
     fn is_assoc(&self) -> bool {false}
     fn is_array(&self) -> bool {false}
     fn len(&mut self) -> usize;
+
+    fn init_as_num(&mut self) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call".to_string()))}
 }

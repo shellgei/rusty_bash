@@ -7,28 +7,79 @@ use std::env;
 use super::Data;
 
 #[derive(Debug, Clone)]
+enum Body {
+    Str(String),
+    Num(Option<isize>),
+}
+
+impl Body {
+    fn to_string(&self) -> String {
+        match &self {
+            Self::Str(s) => s.clone(),
+            Self::Num(None) => "".to_string(),
+            Self::Num(Some(n)) => n.to_string(),
+        }
+    }
+
+    fn len(&self) -> usize {
+        match &self {
+            Self::Str(s) => s.chars().count(),
+            Self::Num(None) => 0,
+            Self::Num(Some(n)) => n.to_string().len(),
+        }
+    }
+
+    fn set(&mut self, value: &str) -> Result<(), ExecError> {
+        match self {
+            Self::Str(_) => *self = Self::Str(value.to_string()),
+            Self::Num(_) => {
+                match value.parse::<isize>() {
+                    Ok(n) => *self = Self::Num(Some(n)),
+                    _ => return Err(ExecError::InvalidNumber(value.to_string())),
+                }
+            },
+        }
+        Ok(())
+    }
+
+    fn is_num(&self) -> bool {
+        match self {
+            Self::Num(_) => true,
+            Self::Str(_) => false,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct SingleData {
-    body: String,
+    body: Body,
 }
 
 impl From<&str> for SingleData {
     fn from(s: &str) -> Self {
-        Self { body: s.to_string() }
+        Self {
+            body: Body::Str(s.to_string()),
+        }
     }
 }
 
 impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
-    fn print_body(&self) -> String { self.body.clone() }
+    fn print_body(&self) -> String { self.body.to_string() }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.body = value.to_string();
+        self.body.set(value)
+    }
+
+    fn init_as_num(&mut self) -> Result<(), ExecError> {
+        self.body = Body::Num(None);
         Ok(())
     }
 
-    fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.body.clone()) }
-    fn len(&mut self) -> usize { self.body.chars().count() }
+    fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.print_body()) }
+    fn len(&mut self) -> usize { self.body.len() }
     fn is_single(&self) -> bool {true}
+    fn is_single_num(&self) -> bool { self.body.is_num() }
 }
 
 impl SingleData {
@@ -47,5 +98,11 @@ impl SingleData {
         }
     
         db_layer.get_mut(name).unwrap().set_as_single(val)
+    }
+
+    pub fn init_as_num(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str)-> Result<(), ExecError> {
+        let data = SingleData{body: Body::Num(None)};
+        db_layer.insert( name.to_string(), Box::new(data) );
+        Ok(())
     }
 }

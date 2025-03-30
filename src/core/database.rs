@@ -223,6 +223,13 @@ impl DataBase {
         None
     }
 
+    pub fn init_as_num(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
+        Self::name_check(name)?;
+        self.write_check(name)?;
+        let layer = self.get_target_layer(name, layer);
+        SingleData::init_as_num(&mut self.params[layer], name)
+    }
+
     pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
