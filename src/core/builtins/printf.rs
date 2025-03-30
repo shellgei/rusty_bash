@@ -67,12 +67,10 @@ impl PrintfToken {
 
     fn to_string(&mut self, args: &mut Vec<String>) -> Result<String, ExecError> {
         match self {
-            Self::D(s) => {
-                let a = pop(args);
-                match a.parse::<i32>() {
-                    Ok(_) => Ok(a),
-                    Err(_) => return Err(ExecError::InvalidNumber(a)),
-                }
+            Self::D(fmt) => {
+                let mut a = pop(args);
+                Self::padding(&mut a, &mut fmt.clone(), true);
+                Ok(a)
             },
             Self::S(fmt) => {
                 let mut a = pop(args);
