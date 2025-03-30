@@ -33,20 +33,35 @@ impl PrintfToken {
         }
     }
 
-    fn padding(s: &mut String, fmt: &mut String) {
+    fn padding(s: &mut String, fmt: &mut String, is_int: bool) {
         if fmt.is_empty() {
             return;
         }
 
+        let mut right = false;
         let mut padding = ' ';
 
+        if fmt.starts_with("-") {
+            fmt.remove(0);
+            right = true;
+        }
         if fmt.starts_with("0") {
             padding = fmt.remove(0);
         }
 
+        if ! is_int {
+            padding = ' ';
+        }
+
         let len = fmt.parse::<usize>().unwrap_or(0);
-        while s.len() < len {
-            s.insert(0, padding);
+        if right {
+            while s.len() < len {
+                s.push(' ');
+            }
+        }else{
+            while s.len() < len {
+                s.insert(0, padding);
+            }
         }
     }
 
@@ -59,17 +74,19 @@ impl PrintfToken {
                     Err(_) => return Err(ExecError::InvalidNumber(a)),
                 }
             },
-            Self::S(s) => {
-                Ok(pop(args))
+            Self::S(fmt) => {
+                let mut a = pop(args);
+                Self::padding(&mut a, &mut fmt.clone(), false);
+                Ok(a)
             },
             Self::X(fmt) => {
                 let mut a = format!("{:x}", Self::to_int(&pop(args))?);
-                Self::padding(&mut a, &mut fmt.clone());
+                Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
             },
             Self::LargeX(fmt) => {
                 let mut a = format!("{:X}", Self::to_int(&pop(args))?);
-                Self::padding(&mut a, &mut fmt.clone());
+                Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
             },
             Self::Q => {
@@ -147,7 +164,7 @@ fn scanner_escaped_char(remaining: &str) -> usize {
 fn scanner_format_num(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
-        if c < '0' || c > '9' {
+        if c != '-' && (c < '0' || c > '9') {
             break;
         }
 
@@ -211,57 +228,14 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
 
     let mut tokens = parse(pattern);
     let mut fin = true;
-    //dbg!("{:?}", &tokens);
 
     for tok in tokens.iter_mut() {
         if tok.continue_() {
             fin = false;
         }
-
         ans += &tok.to_string(args)?;
     }
 
-
-    /*
-    let (parts, tail) = split_format(&pattern);
-    let mut fin = true;
-
-    for i in 0..parts.len() {
-        if parts[i].contains("%d") {
-            fin = false;
-            if let Ok(_) = args[i].parse::<i32>() {
-                let a = pop(args);
-                ans += &parts[i].replace("%d", &a);
-            }
-        }else if parts[i].contains("%q") {
-            fin = false;
-            let a = pop(args);
-            let q = a.replace("\\", "\\\\").replace("$", "\\$").replace("|", "\\|")
-                .replace("\"", "\\\"").replace("'", "\\\'")
-                .replace("(", "\\(").replace(")", "\\)")
-                .replace("{", "\\{").replace("}", "\\}")
-                .replace("!", "\\!").replace("&", "\\&");
-            ans += &parts[i].replace("%q", &q);
-        }else {
-            if parts[i].contains('%') {
-                fin = false;
-                let a = pop(args);
-                match sprintf::sprintf!(&parts[i], a) {
-                    Ok(s) => ans += &s.clone(),
-                    Err(e) => {
-                        return Err(ExecError::Other(e.to_string()));
-                    },
-                }
-            }else{
-                ans += &parts[i];
-            }
-        }
-    }
-
-    if let Some(s) = tail {
-        ans += &s;
-    }
-    */
     if ! args.is_empty() && ! fin {
         if let Ok(s) = format(pattern, args) {
             ans += &s;

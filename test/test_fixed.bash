@@ -21,6 +21,21 @@ res=$($com <<< 'printf "%03x" 123')
 res=$($com <<< 'printf "%03X" 123')
 [ "$res" = "07B" ] || err $LINENO
 
+res=$($com <<< 'printf "%3X" 123')
+[ "$res" = " 7B" ] || err $LINENO
+
+res=$($com <<< 'printf "%-3X" 123')
+[ "$res" = "7B " ] || err $LINENO
+
+res=$($com <<< 'printf "%10s" 123')
+[ "$res" = "       123" ] || err $LINENO
+
+res=$($com <<< 'printf "%010s" 123')
+[ "$res" = "       123" ] || err $LINENO
+
+res=$($com <<< 'printf "%-10s" 123')
+[ "$res" = "123       " ] || err $LINENO
+
 res=$($com <<< 'let a=1; echo $a')
 [ "$res" = "1" ] || err $LINENO
 
