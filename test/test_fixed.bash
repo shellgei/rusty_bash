@@ -18,6 +18,21 @@ tmp=/tmp/$$
 res=$($com <<< 'declare -i n; n="1+1" ; echo $n')
 [ "$res" = "2" ] || err $LINENO
 
+res=$($com <<< 'declare -i n; echo $(( n ))')
+[ "$res" = "0" ] || err $LINENO
+
+res=$($com <<< 'declare -i n; echo $(( (n+1) ))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'echo $(( c=(n+1) ))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'declare -i n; echo $(( c=(n+1) ))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'declare -i n; echo $(( c+=(n+1) ))')
+[ "$res" = "1" ] || err $LINENO
+
 res=$($com <<< 'printf "%03x" 123')
 [ "$res" = "07b" ] || err $LINENO
 
