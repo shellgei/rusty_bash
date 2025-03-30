@@ -76,8 +76,13 @@ impl DataBase {
         }
 
         if let Some(d) = getter::clone(self, name).as_mut() {
-            let val = d.get_as_single().unwrap_or_default();
-            return Ok(val);
+            if d.is_single_num() {
+                let val = d.get_as_single_num()?;//.unwrap_or_default();
+                return Ok(val.to_string());
+            }else{
+                let val = d.get_as_single().unwrap_or_default();
+                return Ok(val);
+            }
         }
 
         if let Ok(v) = env::var(name) {

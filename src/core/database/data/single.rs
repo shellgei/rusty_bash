@@ -21,6 +21,14 @@ impl Body {
         }
     }
 
+    fn get_as_num(&mut self) -> Result<isize, ExecError> {
+        match self {
+            Self::Str(s) => Err(ExecError::InvalidNumber(s.to_string())),
+            Self::Num(None) => Ok(0),
+            Self::Num(Some(n)) => Ok(*n),
+        }
+    }
+
     fn len(&self) -> usize {
         match &self {
             Self::Str(s) => s.chars().count(),
@@ -77,6 +85,11 @@ impl Data for SingleData {
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.print_body()) }
+
+    fn get_as_single_num(&mut self) -> Result<isize, ExecError> {
+        self.body.get_as_num()
+    }
+
     fn len(&mut self) -> usize { self.body.len() }
     fn is_single(&self) -> bool {true}
     fn is_single_num(&self) -> bool { self.body.is_num() }
