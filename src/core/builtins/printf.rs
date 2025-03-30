@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::error;
+use crate::{arg, error};
 use sprintf::PrintfError;
 use std::io::{stdout, Write};
 
@@ -69,7 +69,7 @@ fn pop(args: &mut Vec<String>) -> String {
     }
 }
 
-fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> {
+fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> {
     let mut ans = String::new();
     let (parts, tail) = split_format(&pattern);
     let mut fin = true;
@@ -105,14 +105,14 @@ fn output(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
         ans += &s;
     }
     if ! args.is_empty() && ! fin {
-        if let Ok(s) = output(pattern, args) {
+        if let Ok(s) = format(pattern, args) {
             ans += &s;
         }
     }
     Ok(ans)
 }
 
-pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn arg_check(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 || args[1] == "--help"
     || args[1] == "-v" && args.len() == 3 {
         let msg = format!("printf: usage: printf [-v var] format [arguments]");
@@ -128,43 +128,59 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 2;
     }
 
-    if args[1] == "-v" {
-        if args[3] == "--" {
-            args.remove(3);
-        }
-        let s = match output(&args[3], &mut args[4..].to_vec()) {
-            Ok(ans) => ans,
-            Err(e) => {
-                let msg = format!("printf: {:?}", e);
-                error::print(&msg, core);
-                return 1;
-            },
-        };
+    0
+}
 
-        if args[2].contains("[") {
-            let tokens = args[2].split('[').collect::<Vec<&str>>();
-            let name = tokens[0].to_string();
-            let subscript = tokens[1].split(']').nth(0).unwrap().to_string();
-
-            let result = match subscript.parse::<usize>() {
-                Ok(n) => core.db.set_array_elem(&name, &s, n, None),
-                _ => core.db.set_assoc_elem(&name, &subscript, &s, None),
-            };
-            if let Err(e) = result {
-                let msg = format!("printf: {:?}", e);
-                error::print(&msg, core);
-                return 2;
-            }
-            return 0;
-        }
-        if ! core.db.set_param(&args[2], &s, None).is_ok() {
-            return 2;
-        }
-
-        return 0;
+fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args[3] == "--" {
+        args.remove(3);
     }
 
-    let s = match output(&args[1], &mut args[2..].to_vec()) {
+    let s = match format(&args[3], &mut args[4..].to_vec()) {
+        Ok(ans) => ans,
+        Err(e) => {
+            let msg = format!("printf: {:?}", e);
+            error::print(&msg, core);
+            return 1;
+        },
+    };
+
+    if args[2].contains("[") {
+        let tokens = args[2].split('[').collect::<Vec<&str>>();
+        let name = tokens[0].to_string();
+        let subscript = tokens[1].split(']').nth(0).unwrap().to_string();
+
+        let result = match subscript.parse::<usize>() {
+            Ok(n) => core.db.set_array_elem(&name, &s, n, None),
+            _ => core.db.set_assoc_elem(&name, &subscript, &s, None),
+        };
+        if let Err(e) = result {
+            let msg = format!("printf: {:?}", e);
+            error::print(&msg, core);
+            return 2;
+        }
+        return 0;
+    }
+    if ! core.db.set_param(&args[2], &s, None).is_ok() {
+        return 2;
+    }
+
+    return 0;
+}
+
+pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+
+    match arg_check(core, &mut args) {
+        0 => {},
+        n => return n,
+    }
+
+    if args[1] == "-v" {
+        return printf_v(core, &mut args);
+    }
+
+    let s = match format(&args[1], &mut args[2..].to_vec()) {
         Ok(ans) => ans,
         Err(e) => {
             let msg = format!("printf: {:?}", e);
