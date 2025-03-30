@@ -10,6 +10,8 @@ use std::io::{stdout, Write};
 enum PrintfToken {
     D(String),
     S(String),
+    X(String),
+    LargeX(String),
     Q,
     Other(String),
     Normal(String),
@@ -36,6 +38,42 @@ impl PrintfToken {
             Self::S(s) => {
                 Ok(pop(args))
             },
+            Self::X(fmt) => {
+                let mut a = pop(args);
+                let num = match a.parse::<isize>() {
+                    Ok(n) => n,
+                    Err(_) => return Err(ExecError::InvalidNumber(a)),
+                };
+
+                a = format!("{:x}", num);
+                if fmt.is_empty() {
+                    return Ok(a);
+                }
+
+                let mut fmt = fmt.clone();
+                let mut padding = ' ';
+
+                if fmt.starts_with("0") {
+                    padding = fmt.remove(0);
+                }
+
+                let digit = fmt.parse::<usize>().unwrap_or(0);
+                while a.len() < digit {
+                    a.insert(0, padding);
+                }
+
+                Ok(a)
+            },
+            Self::LargeX(s) => {
+                let a = pop(args);
+                let num = match a.parse::<isize>() {
+                    Ok(n) => n,
+                    Err(_) => return Err(ExecError::InvalidNumber(a)),
+                };
+
+                let ans = format!("{:X}", num);
+                Ok(ans)
+            },
             Self::Q => {
                 let a = pop(args);
                 let q = a.replace("\\", "\\\\").replace("$", "\\$").replace("|", "\\|")
@@ -50,7 +88,8 @@ impl PrintfToken {
                 let formatted = match sprintf::sprintf!(&s, a) {
                     Ok(res) => res,
                     Err(e) => {
-                        return Err(ExecError::Other(e.to_string()));
+                        let msg = format!("{} {} {}", &e, &s, &a);
+                        return Err(ExecError::Other(msg));
                     },
                 };
 
@@ -76,64 +115,6 @@ impl PrintfToken {
         }
     }
 }
-
-/*
-fn split_format(format: &str) -> (Vec<String>, Option<String>) {
-    let mut escaped = false;
-    let mut percent = false;
-    let mut len = 0;
-    let mut len_prev = 0;
-    let mut ans = vec![];
-
-    for c in format.chars() {
-        if c == '\\' {
-            len += c.len_utf8();
-            escaped = true;
-            percent = false;
-            continue;
-        }
-
-        if escaped {
-            escaped = false;
-            percent = false;
-            ans.push(format[len_prev..len-1].to_string());
-            match c {
-                'a' => ans.push(r"\a".to_string()),
-                'b' => ans.push(r"\b".to_string()),
-                'e' => ans.push(r"\e".to_string()),
-                'E' => ans.push(r"\E".to_string()),
-                'f' => ans.push(r"\f".to_string()),
-                'n' => ans.push("\n".to_string()),
-                'r' => ans.push("\r".to_string()),
-                'v' => ans.push(r"\v".to_string()),
-                't' => ans.push("\t".to_string()),
-                '\\' => ans.push("\\".to_string()),
-                _ => ans.push(format[len..len+c.len_utf8()].to_string()),
-            }
-            len += c.len_utf8();
-            len_prev = len;
-            continue;
-        }
-
-        len += c.len_utf8();
-        if c == '%' {
-            percent = true;
-            continue;
-        }
-
-        if percent {
-            ans.push(format[len_prev..len].to_string());
-            len_prev = len;
-            percent = false;
-        }
-    }
-
-    match format[len_prev..len].is_empty() {
-        true  => (ans, None),
-        false => (ans, Some(format[len_prev..len].to_string()) ),
-    }
-}
-*/
 
 fn pop(args: &mut Vec<String>) -> String {
     match args.is_empty() {
@@ -199,6 +180,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
 
         if remaining.starts_with("%") {
             remaining.remove(0); // %
+                               
             let mut num_part = String::new();
             let len = scanner_format_num(&remaining);
             if len > 0 {
@@ -210,6 +192,8 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
             let token = match remaining.chars().next() {
                 Some('d') => PrintfToken::D(num_part),
                 Some('s') => PrintfToken::S(num_part),
+                Some('x') => PrintfToken::X(num_part),
+                Some('X') => PrintfToken::LargeX(num_part),
                 Some('q') => PrintfToken::Q,
                 Some(c)   => PrintfToken::Other("%".to_owned() + &num_part + &c.to_string()),
                 None      => PrintfToken::Normal("%".to_string()),
