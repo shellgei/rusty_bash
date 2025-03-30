@@ -9,6 +9,7 @@ use std::io::{stdout, Write};
 #[derive(Debug, Clone)]
 enum PrintfToken {
     D(String),
+    F(String),
     S(String),
     X(String),
     LargeX(String),
@@ -30,6 +31,20 @@ impl PrintfToken {
         match s.parse::<isize>() {
             Ok(n) => Ok(n),
             Err(_) => Err(ExecError::InvalidNumber(s.to_string())),
+        }
+    }
+
+    fn to_float(s: &String) -> Result<f64, ExecError> {
+        match s.parse::<f64>() {
+            Ok(n) => Ok(n),
+            Err(_) => Err(ExecError::InvalidNumber(s.to_string())),
+        }
+    }
+
+    //TODO: implement!
+    fn padding_float(_: &mut String, fmt: &mut String) {
+        if fmt.is_empty() {
+            return;
         }
     }
 
@@ -78,6 +93,11 @@ impl PrintfToken {
             Self::D(fmt) => {
                 let mut a = pop(args);
                 Self::padding(&mut a, &mut fmt.clone(), true);
+                Ok(a)
+            },
+            Self::F(fmt) => {
+                let mut a = format!("{:.6}", Self::to_float(&pop(args))?);
+                Self::padding_float(&mut a, &mut fmt.clone());
                 Ok(a)
             },
             Self::S(fmt) => {
@@ -170,7 +190,7 @@ fn scanner_escaped_char(remaining: &str) -> usize {
 fn scanner_format_num(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
-        if c != '-' && (c < '0' || c > '9') {
+        if ! "-.".contains(c) && (c < '0' || c > '9') {
             break;
         }
 
@@ -212,6 +232,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
 
             let token = match remaining.chars().next() {
                 Some('d') => PrintfToken::D(num_part),
+                Some('f') => PrintfToken::F(num_part),
                 Some('s') => PrintfToken::S(num_part),
                 Some('x') => PrintfToken::X(num_part),
                 Some('X') => PrintfToken::LargeX(num_part),
@@ -222,7 +243,6 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
 
             remaining.remove(0);
             ans.push(token);
-
         }
     }
 
