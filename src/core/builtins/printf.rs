@@ -4,7 +4,6 @@
 use crate::ShellCore;
 use crate::{arg, error};
 use crate::error::exec::ExecError;
-use sprintf::PrintfError;
 use std::io::{stdout, Write};
 
 #[derive(Debug, Clone)]
@@ -14,20 +13,28 @@ enum PrintfToken {
     Q,
     Other(String),
     Normal(String),
+    EscapedChar(char),
 }
 
 impl PrintfToken {
-    fn to_string(&mut self, args: &mut Vec<String>) -> Result<(bool, String), ExecError> {
+    fn continue_(&self) -> bool {
+        match self {
+            Self::Normal(_) | Self::EscapedChar(_) => false,
+            _ => true,
+        }
+    }
+
+    fn to_string(&mut self, args: &mut Vec<String>) -> Result<String, ExecError> {
         match self {
             Self::D(s) => {
                 let a = pop(args);
                 match a.parse::<i32>() {
-                    Ok(_) => Ok((true, a)),
+                    Ok(_) => Ok(a),
                     Err(_) => return Err(ExecError::InvalidNumber(a)),
                 }
             },
             Self::S(s) => {
-                Ok((true, pop(args) ))
+                Ok(pop(args))
             },
             Self::Q => {
                 let a = pop(args);
@@ -36,7 +43,7 @@ impl PrintfToken {
                     .replace("(", "\\(").replace(")", "\\)")
                     .replace("{", "\\{").replace("}", "\\}")
                     .replace("!", "\\!").replace("&", "\\&");
-                Ok((true, q))
+                Ok(q)
             },
             Self::Other(s) => {
                 let a = pop(args);
@@ -47,14 +54,30 @@ impl PrintfToken {
                     },
                 };
 
-                Ok((true, formatted))
+                Ok(formatted)
             },
-            Self::Normal(s) => Ok((false, s.clone())),
-            _ => Ok((false, "".to_string())),
+            Self::EscapedChar(c) => {
+                let s = match c {
+                    'a' => r"\a".to_string(),
+                    'b' => r"\b".to_string(),
+                    'e' => r"\e".to_string(),
+                    'E' => r"\E".to_string(),
+                    'f' => r"\f".to_string(),
+                    'n' => "\n".to_string(),
+                    'r' => "\r".to_string(),
+                    'v' => r"\v".to_string(),
+                    't' => "\t".to_string(),
+                    '\\' => "\\".to_string(),
+                    _    => c.to_string(),
+                };
+                Ok(s)
+            },
+            Self::Normal(s) => Ok(s.clone()),
         }
     }
 }
 
+/*
 fn split_format(format: &str) -> (Vec<String>, Option<String>) {
     let mut escaped = false;
     let mut percent = false;
@@ -110,6 +133,7 @@ fn split_format(format: &str) -> (Vec<String>, Option<String>) {
         false => (ans, Some(format[len_prev..len].to_string()) ),
     }
 }
+*/
 
 fn pop(args: &mut Vec<String>) -> String {
     match args.is_empty() {
@@ -118,23 +142,27 @@ fn pop(args: &mut Vec<String>) -> String {
     }
 }
 
-fn scanner_not_percent(remaining: &str) -> usize {
-    let mut esc = false;
+fn scanner_normal(remaining: &str) -> usize {
     let mut pos = 0;
 
     for c in remaining.chars() {
-        if esc || c == '\\' {
-            esc = ! esc;
-            pos += c.len_utf8();
-            continue;
-        }
-
-        if c == '%' {
+        if c == '%' || c == '\\' {
             break;
         }
         pos += c.len_utf8();
     }
     pos
+}
+
+fn scanner_escaped_char(remaining: &str) -> usize {
+    if ! remaining.starts_with("\\") {
+        return 0;
+    }
+
+    match remaining.chars().nth(1) {
+        Some(ch) => 1 + ch.len_utf8(),
+        _ => 0,
+    }
 }
 
 fn scanner_format_num(remaining: &str) -> usize {
@@ -154,11 +182,19 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
     let mut ans = vec![];
 
     while ! remaining.is_empty() {
-        let len = scanner_not_percent(&remaining);
+        let len = scanner_normal(&remaining);
         if len > 0 {
             let tail = remaining.split_off(len);
             ans.push(PrintfToken::Normal(remaining));
             remaining = tail;
+            continue;
+        }
+
+        let len = scanner_escaped_char(&remaining);
+        if len > 0 {
+            remaining.remove(0);
+            ans.push(PrintfToken::EscapedChar(remaining.remove(0)));
+            continue;
         }
 
         if remaining.starts_with("%") {
@@ -179,6 +215,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
                 None      => PrintfToken::Normal("%".to_string()),
             };
 
+            remaining.remove(0);
             ans.push(token);
 
         }
@@ -190,24 +227,20 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
 fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
     let mut ans = String::new();
 
-    let tokens = parse(pattern);
+    let mut tokens = parse(pattern);
     let mut fin = true;
     //dbg!("{:?}", &tokens);
 
-    /*
-    for tok in tokens {
-        match tok {
-            PrintfToken::D(_) => {
-                fin = false;
-                let a = pop(args);
-                match a.parse::<i32>() {
-                    Ok(_) => ans += &a,
-                    Err(_) => return Err(ExecError::InvalidNumber(a)),
-                }
-            },
+    for tok in tokens.iter_mut() {
+        if tok.continue_() {
+            fin = false;
         }
-    }*/
 
+        ans += &tok.to_string(args)?;
+    }
+
+
+    /*
     let (parts, tail) = split_format(&pattern);
     let mut fin = true;
 
@@ -246,6 +279,7 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
     if let Some(s) = tail {
         ans += &s;
     }
+    */
     if ! args.is_empty() && ! fin {
         if let Ok(s) = format(pattern, args) {
             ans += &s;
