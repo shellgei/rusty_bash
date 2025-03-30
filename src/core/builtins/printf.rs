@@ -3,8 +3,57 @@
 
 use crate::ShellCore;
 use crate::{arg, error};
+use crate::error::exec::ExecError;
 use sprintf::PrintfError;
 use std::io::{stdout, Write};
+
+#[derive(Debug, Clone)]
+enum PrintfToken {
+    D(String),
+    S(String),
+    Q,
+    Other(String),
+    Normal(String),
+}
+
+impl PrintfToken {
+    fn to_string(&mut self, args: &mut Vec<String>) -> Result<(bool, String), ExecError> {
+        match self {
+            Self::D(s) => {
+                let a = pop(args);
+                match a.parse::<i32>() {
+                    Ok(_) => Ok((true, a)),
+                    Err(_) => return Err(ExecError::InvalidNumber(a)),
+                }
+            },
+            Self::S(s) => {
+                Ok((true, pop(args) ))
+            },
+            Self::Q => {
+                let a = pop(args);
+                let q = a.replace("\\", "\\\\").replace("$", "\\$").replace("|", "\\|")
+                    .replace("\"", "\\\"").replace("'", "\\\'")
+                    .replace("(", "\\(").replace(")", "\\)")
+                    .replace("{", "\\{").replace("}", "\\}")
+                    .replace("!", "\\!").replace("&", "\\&");
+                Ok((true, q))
+            },
+            Self::Other(s) => {
+                let a = pop(args);
+                let formatted = match sprintf::sprintf!(&s, a) {
+                    Ok(res) => res,
+                    Err(e) => {
+                        return Err(ExecError::Other(e.to_string()));
+                    },
+                };
+
+                Ok((true, formatted))
+            },
+            Self::Normal(s) => Ok((false, s.clone())),
+            _ => Ok((false, "".to_string())),
+        }
+    }
+}
 
 fn split_format(format: &str) -> (Vec<String>, Option<String>) {
     let mut escaped = false;
@@ -69,8 +118,96 @@ fn pop(args: &mut Vec<String>) -> String {
     }
 }
 
-fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> {
+fn scanner_not_percent(remaining: &str) -> usize {
+    let mut esc = false;
+    let mut pos = 0;
+
+    for c in remaining.chars() {
+        if esc || c == '\\' {
+            esc = ! esc;
+            pos += c.len_utf8();
+            continue;
+        }
+
+        if c == '%' {
+            break;
+        }
+        pos += c.len_utf8();
+    }
+    pos
+}
+
+fn scanner_format_num(remaining: &str) -> usize {
+    let mut ans = 0;
+    for c in remaining.chars() {
+        if c < '0' || c > '9' {
+            break;
+        }
+
+        ans += 1;
+    }
+    ans
+}
+
+fn parse(pattern: &str) -> Vec<PrintfToken> {
+    let mut remaining = pattern.to_string();
+    let mut ans = vec![];
+
+    while ! remaining.is_empty() {
+        let len = scanner_not_percent(&remaining);
+        if len > 0 {
+            let tail = remaining.split_off(len);
+            ans.push(PrintfToken::Normal(remaining));
+            remaining = tail;
+        }
+
+        if remaining.starts_with("%") {
+            remaining.remove(0); // %
+            let mut num_part = String::new();
+            let len = scanner_format_num(&remaining);
+            if len > 0 {
+                let tail = remaining.split_off(len);
+                num_part = remaining.clone();
+                remaining = tail;
+            }
+
+            let token = match remaining.chars().next() {
+                Some('d') => PrintfToken::D(num_part),
+                Some('s') => PrintfToken::S(num_part),
+                Some('q') => PrintfToken::Q,
+                Some(c)   => PrintfToken::Other("%".to_owned() + &num_part + &c.to_string()),
+                None      => PrintfToken::Normal("%".to_string()),
+            };
+
+            ans.push(token);
+
+        }
+    }
+
+    ans
+}
+
+fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
     let mut ans = String::new();
+
+    let tokens = parse(pattern);
+    let mut fin = true;
+    //dbg!("{:?}", &tokens);
+
+    /*
+    for tok in tokens {
+        match tok {
+            PrintfToken::D(_) => {
+                fin = false;
+                let a = pop(args);
+                match a.parse::<i32>() {
+                    Ok(_) => ans += &a,
+                    Err(_) => return Err(ExecError::InvalidNumber(a)),
+                }
+            },
+        }
+    }*/
+
     let (parts, tail) = split_format(&pattern);
     let mut fin = true;
 
@@ -94,7 +231,12 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, PrintfError> 
             if parts[i].contains('%') {
                 fin = false;
                 let a = pop(args);
-                ans += &sprintf::sprintf!(&parts[i], a)?;
+                match sprintf::sprintf!(&parts[i], a) {
+                    Ok(s) => ans += &s.clone(),
+                    Err(e) => {
+                        return Err(ExecError::Other(e.to_string()));
+                    },
+                }
             }else{
                 ans += &parts[i];
             }
