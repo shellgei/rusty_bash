@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::{arg, error};
+use crate::error;
 use crate::error::exec::ExecError;
 use std::io::{stdout, Write};
 
@@ -58,10 +58,18 @@ impl PrintfToken {
             while s.len() < len {
                 s.push(' ');
             }
-        }else{
+            return;
+        }
+
+        if is_int && s.starts_with("-") && padding == '0' {
             while s.len() < len {
-                s.insert(0, padding);
+                s.insert(1, '0');
             }
+            return;
+        }
+
+        while s.len() < len {
+            s.insert(0, padding);
         }
     }
 
@@ -299,15 +307,13 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut args = arg::dissolve_options(args);
-
-    match arg_check(core, &mut args) {
+    match arg_check(core, args) {
         0 => {},
         n => return n,
     }
 
     if args[1] == "-v" {
-        return printf_v(core, &mut args);
+        return printf_v(core, args);
     }
 
     let s = match format(&args[1], &mut args[2..].to_vec()) {
