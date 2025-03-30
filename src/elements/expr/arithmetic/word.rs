@@ -172,11 +172,26 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
             return Ok(right_value.clone());
         },
         "+=" => {
-            let val_str = core.db.get_param(&name)?;
+            let mut val_str = core.db.get_param(&name)?;
+            if val_str == "" {
+                val_str = "0".to_string();
+            }
             if let Ok(left) = val_str.parse::<i64>() {
-                if let ArithElem::Integer(n) = right_value {
-                    core.db.set_param(&name, &(left + n).to_string(), None)?;
-                    return Ok(ArithElem::Integer(left + n));
+                match right_value {
+                    ArithElem::Integer(n) => {
+                        core.db.set_param(&name, &(left + n).to_string(), None)?;
+                        return Ok(ArithElem::Integer(left + n));
+                    },
+                    ArithElem::InParen(p) => {
+                        match p.clone().eval_elems(core, false)? {
+                            ArithElem::Integer(n) => {
+                                core.db.set_param(&name, &(left + n).to_string(), None)?;
+                                return Ok(ArithElem::Integer(left + n));
+                            },
+                            _ => exit::internal(&format!("{:?}: not a value", &p.clone())),
+                        }
+                    },
+                    _ => {},
                 }
             }else if let Ok(left) = val_str.parse::<f64>() {
                 if let ArithElem::Float(f) = right_value {
