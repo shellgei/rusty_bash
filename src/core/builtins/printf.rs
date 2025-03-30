@@ -26,6 +26,30 @@ impl PrintfToken {
         }
     }
 
+    fn to_int(s: &String) -> Result<isize, ExecError> {
+        match s.parse::<isize>() {
+            Ok(n) => Ok(n),
+            Err(_) => Err(ExecError::InvalidNumber(s.to_string())),
+        }
+    }
+
+    fn padding(s: &mut String, fmt: &mut String) {
+        if fmt.is_empty() {
+            return;
+        }
+
+        let mut padding = ' ';
+
+        if fmt.starts_with("0") {
+            padding = fmt.remove(0);
+        }
+
+        let len = fmt.parse::<usize>().unwrap_or(0);
+        while s.len() < len {
+            s.insert(0, padding);
+        }
+    }
+
     fn to_string(&mut self, args: &mut Vec<String>) -> Result<String, ExecError> {
         match self {
             Self::D(s) => {
@@ -39,40 +63,14 @@ impl PrintfToken {
                 Ok(pop(args))
             },
             Self::X(fmt) => {
-                let mut a = pop(args);
-                let num = match a.parse::<isize>() {
-                    Ok(n) => n,
-                    Err(_) => return Err(ExecError::InvalidNumber(a)),
-                };
-
-                a = format!("{:x}", num);
-                if fmt.is_empty() {
-                    return Ok(a);
-                }
-
-                let mut fmt = fmt.clone();
-                let mut padding = ' ';
-
-                if fmt.starts_with("0") {
-                    padding = fmt.remove(0);
-                }
-
-                let digit = fmt.parse::<usize>().unwrap_or(0);
-                while a.len() < digit {
-                    a.insert(0, padding);
-                }
-
+                let mut a = format!("{:x}", Self::to_int(&pop(args))?);
+                Self::padding(&mut a, &mut fmt.clone());
                 Ok(a)
             },
-            Self::LargeX(s) => {
-                let a = pop(args);
-                let num = match a.parse::<isize>() {
-                    Ok(n) => n,
-                    Err(_) => return Err(ExecError::InvalidNumber(a)),
-                };
-
-                let ans = format!("{:X}", num);
-                Ok(ans)
+            Self::LargeX(fmt) => {
+                let mut a = format!("{:X}", Self::to_int(&pop(args))?);
+                Self::padding(&mut a, &mut fmt.clone());
+                Ok(a)
             },
             Self::Q => {
                 let a = pop(args);
