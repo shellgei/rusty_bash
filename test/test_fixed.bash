@@ -42,6 +42,10 @@ res=$($com <<< 'printf "%010d" -123')
 res=$($com <<< 'printf "%f" -.3')
 [ "$res" = "-0.300000" ] || err $LINENO
 
+res=$($com <<< 'printf "%b" "aaa\nbbb"')
+[ "$res" = "aaa
+bbb" ] || err $LINENO
+
 res=$($com <<< 'let a=1; echo $a')
 [ "$res" = "1" ] || err $LINENO
 

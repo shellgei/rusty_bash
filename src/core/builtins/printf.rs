@@ -8,6 +8,7 @@ use std::io::{stdout, Write};
 
 #[derive(Debug, Clone)]
 enum PrintfToken {
+    B(String),
     D(String),
     F(String),
     S(String),
@@ -105,6 +106,11 @@ impl PrintfToken {
                 Self::padding(&mut a, &mut fmt.clone(), false);
                 Ok(a)
             },
+            Self::B(fmt) => {
+                let mut a = replace_escape(&pop(args));
+                Self::padding(&mut a, &mut fmt.clone(), false);
+                Ok(a)
+            },
             Self::X(fmt) => {
                 let mut a = format!("{:x}", Self::to_int(&pop(args))?);
                 Self::padding(&mut a, &mut fmt.clone(), true);
@@ -136,22 +142,7 @@ impl PrintfToken {
 
                 Ok(formatted)
             },
-            Self::EscapedChar(c) => {
-                let s = match c {
-                    'a' => r"\a".to_string(),
-                    'b' => r"\b".to_string(),
-                    'e' => r"\e".to_string(),
-                    'E' => r"\E".to_string(),
-                    'f' => r"\f".to_string(),
-                    'n' => "\n".to_string(),
-                    'r' => "\r".to_string(),
-                    'v' => r"\v".to_string(),
-                    't' => "\t".to_string(),
-                    '\\' => "\\".to_string(),
-                    _    => c.to_string(),
-                };
-                Ok(s)
-            },
+            Self::EscapedChar(c) => Ok(esc_to_str(*c)),
             Self::Normal(s) => Ok(s.clone()),
         }
     }
@@ -162,6 +153,41 @@ fn pop(args: &mut Vec<String>) -> String {
         true  => "".to_string(),
         false => args.remove(0),
     }
+}
+
+fn esc_to_str(ch: char) -> String {
+    match ch {
+        'a' => r"\a".to_string(),
+        'b' => r"\b".to_string(),
+        'e' => r"\e".to_string(),
+        'E' => r"\E".to_string(),
+        'f' => r"\f".to_string(),
+        'n' => "\n".to_string(),
+        'r' => "\r".to_string(),
+        'v' => r"\v".to_string(),
+        't' => "\t".to_string(),
+        '\\' => "\\".to_string(),
+        _    => ch.to_string(),
+    }
+}
+
+fn replace_escape(s: &str) -> String {
+    let mut ans = String::new();
+    let mut esc = false;
+
+    for ch in s.chars() {
+        if esc || ch == '\\' {
+            if esc {
+                ans.push_str(&esc_to_str(ch));
+            }
+            esc = ! esc;
+            continue;
+        }
+
+        ans.push(ch);
+    }
+
+    ans
 }
 
 fn scanner_normal(remaining: &str) -> usize {
@@ -231,6 +257,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
             }
 
             let token = match remaining.chars().next() {
+                Some('b') => PrintfToken::B(num_part),
                 Some('d') => PrintfToken::D(num_part),
                 Some('f') => PrintfToken::F(num_part),
                 Some('s') => PrintfToken::S(num_part),
