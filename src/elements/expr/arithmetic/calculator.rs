@@ -9,7 +9,7 @@ use super::{float, int, rev_polish, trenary, word, array_elem};
 
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if let Some(mut e) = stack.pop() {
-        e.change_to_operand(core)?;
+        e.change_to_value(core)?;
         return Ok(e);
     }
 

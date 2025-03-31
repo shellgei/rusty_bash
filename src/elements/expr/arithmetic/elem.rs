@@ -74,7 +74,7 @@ impl ArithElem {
         }
     }
 
-    pub fn change_to_operand(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    pub fn change_to_value(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let tmp = match self {
             ArithElem::ArrayElem(name, ref mut sub, inc)
                 => array_elem::to_operand(&name, sub, 0, *inc, core)?,

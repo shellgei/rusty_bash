@@ -152,8 +152,7 @@ fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
     }
 
     let name = w.eval_as_value(core)?;
-    right_value.change_to_operand(core)?; // InParen -> Value
-    //let right_str = right_value.clone().to_string_eval(core)?;
+    right_value.change_to_value(core)?; // InParen -> Value
     let right_str = right_value.to_string_asis();
 
     match op {
