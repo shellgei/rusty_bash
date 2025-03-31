@@ -96,17 +96,32 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-fn declare_set(core: &mut ShellCore, name: &String, args: &mut Vec<String>) -> Result<(), ExecError> {
+fn declare_set(core: &mut ShellCore, name_and_value: &String,
+               args: &mut Vec<String>, read_only: bool) -> Result<(), ExecError> {
+    let name = match name_and_value.split("=").next() {
+        Some(nm) => nm,
+        None => return Err(ExecError::InvalidName(name_and_value.to_string())),
+    };
+
+    if ! utils::is_name(&name, core) {
+        return Err(ExecError::InvalidName(name.to_string()));
+    }
+
     if args.contains(&"-a".to_string()) {
-        core.db.set_array(&name, vec![], None)
+        core.db.set_array(&name, vec![], None)?;
     }else if args.contains(&"-A".to_string()) {
-        core.db.set_assoc(&name, None)
+        core.db.set_assoc(&name, None)?;
     }else {
         match args.contains(&"-i".to_string()) {
-            false => core.db.set_param(&name, "", None),
-            true  => core.db.init_as_num(&name, None),
-        }
+            false => core.db.set_param(&name, "", None)?,
+            true  => core.db.init_as_num(&name, None)?,
+        };
     }
+
+    if read_only {
+        core.db.set_flag(&name, 'r');
+    }
+    Ok(())
 }
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -117,31 +132,38 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
     let r_flg = arg::consume_option("-r", &mut args);
 
-    let mut names = vec![];
+    let mut name_and_values = vec![];
     while args.len() > 1 {
-        let name = args.pop().unwrap();
-        if name.starts_with("-") {
-            args.push(name);
+        let nv = args.pop().unwrap();
+        if nv.starts_with("-") {
+            args.push(nv);
             break;
         }
 
-        names.push(name);
+        name_and_values.push(nv);
     }
 
-    for name in names.iter().rev() {
+    for name_and_value in name_and_values.iter().rev() {
+        /*
+        let name = match name_and_value.split("=").next() {
+            Some(nm) => nm,
+            None => {
+                let e = ExecError::InvalidName(name.to_string());
+                e.print(core);
+                return 1;
+            };
+        }
+
         if ! utils::is_name(&name, core) {
             let e = ExecError::InvalidName(name.to_string());
             e.print(core);
             return 1;
         }
     
-        if let Err(e) = declare_set(core, &name, &mut args) {
+    */
+        if let Err(e) = declare_set(core, &name_and_value, &mut args, r_flg) {
             e.print(core);
             return 1;
-        }
-    
-        if r_flg {
-            core.db.set_flag(&name, 'r');
         }
     }
 
