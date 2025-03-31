@@ -113,8 +113,19 @@ impl SingleData {
         db_layer.get_mut(name).unwrap().set_as_single(val)
     }
 
-    pub fn init_as_num(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str)-> Result<(), ExecError> {
-        let data = SingleData{body: Body::Num(None)};
+    pub fn init_as_num(db_layer: &mut HashMap<String, Box<dyn Data>>,
+        name: &str, value: &str)-> Result<(), ExecError> {
+        let mut data = SingleData{body: Body::Num(None)};
+
+        if value != "" {
+            match value.parse::<isize>() {
+                Ok(n) => data.body = Body::Num(Some(n)),
+                Err(e) => {
+                    return Err(ExecError::Other(e.to_string()));
+                },
+            }
+        }
+
         db_layer.insert( name.to_string(), Box::new(data) );
         Ok(())
     }

@@ -98,10 +98,22 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 fn declare_set(core: &mut ShellCore, name_and_value: &String,
                args: &mut Vec<String>, read_only: bool) -> Result<(), ExecError> {
+    let mut tmp = name_and_value.clone();
+    let (name, value) = match name_and_value.find('=') {
+        Some(n) => {
+            tmp.remove(n);
+            let v = tmp.split_off(n);
+            let n = tmp;
+            (n, v)
+        },
+        None => (name_and_value.to_string(), "".to_string()),
+    };
+
+    /*
     let name = match name_and_value.split("=").next() {
         Some(nm) => nm,
         None => return Err(ExecError::InvalidName(name_and_value.to_string())),
-    };
+    };*/
 
     if ! utils::is_name(&name, core) {
         return Err(ExecError::InvalidName(name.to_string()));
@@ -113,8 +125,8 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
         core.db.set_assoc(&name, None)?;
     }else {
         match args.contains(&"-i".to_string()) {
-            false => core.db.set_param(&name, "", None)?,
-            true  => core.db.init_as_num(&name, None)?,
+            false => core.db.set_param(&name, &value, None)?,
+            true  => core.db.init_as_num(&name, &value, None)?,
         };
     }
 
