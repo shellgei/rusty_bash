@@ -90,7 +90,7 @@ impl ArithmeticExpr {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let mut word = match Word::parse(feeder, core, Some(WordMode::Operand)) {
+        let mut word = match Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
             Ok(Some(w)) => w,
             _       => return false,
         };

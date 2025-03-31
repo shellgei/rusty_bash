@@ -15,6 +15,15 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'declare -i i=1 j=1 ;echo $i $j ')
+[ "$res" = "1 1" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 4> (2+3) ? 1 : 32))')
+[ "$res" = "32" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 4>(2+3) ? 1 : 32))')
+[ "$res" = "32" ] || err $LINENO
+
 res=$($com <<< 'declare -i n; n="1+1" ; echo $n')
 [ "$res" = "2" ] || err $LINENO
 
