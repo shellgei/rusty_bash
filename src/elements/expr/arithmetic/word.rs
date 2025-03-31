@@ -126,7 +126,7 @@ pub fn get_sign(s: &mut String) -> String {
 }
 
 pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-> Result<(), ExecError> {
-    let right = match stack.pop() {
+    let mut right = match stack.pop() {
         Some(ArithElem::Word(w, inc)) => to_operand(&w, 0, inc, core)?,
         Some(e) => e,
         _ => return Err(ExecError::OperandExpected(op.to_string())),
@@ -138,33 +138,23 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-
         _ => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
     };
 
-    match subs(op, &left, &right, core) {
+    match subs(op, &left, &mut right, core) {
         Ok(elem) => stack.push(elem),
         Err(msg) => return Err(msg),
     }
     Ok(())
 }
 
-fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
+fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
                                       -> Result<ArithElem, ExecError> {
     if w.text.find('\'').is_some() {
         return Err(ExecError::OperandExpected(w.text.to_string()));
     }
 
     let name = w.eval_as_value(core)?;
-
-    let right_str = match right_value {
-        ArithElem::Integer(n) => n.to_string(),
-        ArithElem::Float(f)   => f.to_string(),
-        ArithElem::InParen(a) => {
-            match a.clone().eval_elems(core, false)? {
-                ArithElem::Integer(n) => n.to_string(),
-                ArithElem::Float(f)   => f.to_string(),
-                _ => exit::internal(&format!("{:?}: not a value", &a.clone())),
-            }
-        },
-        _ => exit::internal(&format!("{:?}: not a value", &right_value)),
-    };
+    right_value.change_to_operand(core)?; // InParen -> Value
+    //let right_str = right_value.clone().to_string_eval(core)?;
+    let right_str = right_value.to_string_asis();
 
     match op {
         "=" => {
@@ -179,24 +169,15 @@ fn subs(op: &str, w: &Word, right_value: &ArithElem, core: &mut ShellCore)
             if let Ok(left) = val_str.parse::<i64>() {
                 match right_value {
                     ArithElem::Integer(n) => {
-                        core.db.set_param(&name, &(left + n).to_string(), None)?;
-                        return Ok(ArithElem::Integer(left + n));
-                    },
-                    ArithElem::InParen(p) => {
-                        match p.clone().eval_elems(core, false)? {
-                            ArithElem::Integer(n) => {
-                                core.db.set_param(&name, &(left + n).to_string(), None)?;
-                                return Ok(ArithElem::Integer(left + n));
-                            },
-                            _ => exit::internal(&format!("{:?}: not a value", &p.clone())),
-                        }
+                        core.db.set_param(&name, &(left + *n).to_string(), None)?;
+                        return Ok(ArithElem::Integer(left + *n));
                     },
                     _ => {},
                 }
             }else if let Ok(left) = val_str.parse::<f64>() {
                 if let ArithElem::Float(f) = right_value {
-                    core.db.set_param(&name, &(left + f).to_string(), None)?;
-                    return Ok(ArithElem::Float(left + f));
+                    core.db.set_param(&name, &(left + *f).to_string(), None)?;
+                    return Ok(ArithElem::Float(left + *f));
                 }
             }
         },

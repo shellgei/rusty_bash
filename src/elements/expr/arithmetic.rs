@@ -53,7 +53,7 @@ impl ArithmeticExpr {
                         Err(e) => return Err(e),
                     }
                 },
-                _ => ans += &e.to_string(),
+                _ => ans += &e.to_string_asis(),
             }
         }
 

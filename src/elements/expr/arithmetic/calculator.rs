@@ -8,14 +8,12 @@ use super::elem::ArithElem;
 use super::{float, int, rev_polish, trenary, word, array_elem};
 
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
-    match stack.pop() {
-        Some(ArithElem::ArrayElem(name, mut sub, inc))
-            => array_elem::to_operand(&name, &mut sub, 0, inc, core),
-        Some(ArithElem::Word(w, inc)) => word::to_operand(&w, 0, inc, core),
-        Some(ArithElem::InParen(mut a)) => a.eval_elems(core, false),
-        Some(elem) => Ok(elem),
-        None       => Err(ExecError::Other("no operand 2".to_string())),
+    if let Some(mut e) = stack.pop() {
+        e.change_to_operand(core)?;
+        return Ok(e);
     }
+
+    Err(ExecError::Other("no operand 2".to_string()))
 }
 
 fn bin_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -95,7 +93,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
         return Err( ExecError::OperandExpected(String::new()));
     }
     if stack.len() != 1 {
-        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
+        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string_asis()));
     }
     pop_operand(&mut stack, core)
 }
@@ -108,14 +106,14 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
             ArithElem::BinaryOp(_) => {
                 stack.pop();
                 if stack.is_empty() {
-                    return Err( ExecError::OperandExpected(e.to_string()));
+                    return Err( ExecError::OperandExpected(e.to_string_asis()));
                 }
             },
             ArithElem::UnaryOp(_) 
             | ArithElem::Increment(_)
             | ArithElem::Ternary(_, _) => {
                 if stack.is_empty() {
-                    return Err( ExecError::OperandExpected(e.to_string()));
+                    return Err( ExecError::OperandExpected(e.to_string_asis()));
                 }
             },
             ArithElem::Delimiter(_) => {},
@@ -127,7 +125,7 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
         return Err( ExecError::OperandExpected(String::new()));
     }
     if stack.len() != 1 {
-        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
+        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string_asis()));
     }
     Ok(())
 }
@@ -156,7 +154,7 @@ fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(),
         Some(ArithElem::ArrayElem(name, mut sub, inc_post)) => {
             array_elem::to_operand(&name, &mut sub, inc, inc_post, core)?
         },
-        Some(e) => return Err(ExecError::OperandExpected(e.to_string())),
+        Some(e) => return Err(ExecError::OperandExpected(e.to_string_asis())),
         None => return Err(ExecError::OperandExpected("".to_string())),
     };
     stack.push(op);

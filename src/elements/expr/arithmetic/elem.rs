@@ -3,7 +3,10 @@
 
 use super::ArithmeticExpr;
 use super::Word;
+use crate::ShellCore;
+use crate::error::exec::ExecError;
 use crate::elements::subscript::Subscript;
+use crate::elements::expr::arithmetic::{array_elem, word};
 
 #[derive(Debug, Clone)]
 pub enum ArithElem {
@@ -51,7 +54,7 @@ impl ArithElem {
         }
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_string_asis(&self) -> String {
         match self {
             ArithElem::InParen(a) => a.text.to_string(),
             ArithElem::Integer(n) => n.to_string(),
@@ -70,26 +73,31 @@ impl ArithElem {
             _ => "".to_string(),
         }
     }
+
+    pub fn change_to_operand(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let tmp = match self {
+            ArithElem::ArrayElem(name, ref mut sub, inc)
+                => array_elem::to_operand(&name, sub, 0, *inc, core)?,
+            ArithElem::Word(w, inc) => word::to_operand(&w, 0, *inc, core)?,
+            ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
+            _ => return Ok(()),
+        };
+
+        *self = tmp;
+        Ok(())
+    }
+
+    /*
+    pub fn to_string_eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        match self {
+            ArithElem::Integer(n) => Ok(n.to_string()),
+            ArithElem::Float(f)   => Ok(f.to_string()),
+            ArithElem::InParen(ref mut a) => {
+                let e = a.eval_elems(core, false)?;
+                Ok(e.to_string_asis())
+            },
+            _ => exit::internal(&format!("{:?}: not a value", &self)),
+        }
+    }*/
 }
 
-/*
-pub fn to_string(op: &ArithElem) -> String {
-    match op {
-        ArithElem::InParen(a) => a.text.to_string(),
-        ArithElem::Integer(n) => n.to_string(),
-        ArithElem::Float(f) => f.to_string(),
-        ArithElem::Word(w, inc) => {
-            match inc {
-                1  => w.text.clone() + "++",
-                -1 => w.text.clone() + "--",
-                _  => w.text.clone(),
-            }
-        },
-        ArithElem::UnaryOp(s) => s.clone(),
-        ArithElem::BinaryOp(s) => s.clone(),
-        ArithElem::Increment(1) => "++".to_string(),
-        ArithElem::Increment(-1) => "--".to_string(),
-        _ => "".to_string(),
-    }
-}
-*/

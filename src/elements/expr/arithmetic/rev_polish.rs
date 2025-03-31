@@ -33,7 +33,7 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
         };
 
         if !ok {
-            return Err(ExecError::OperandExpected(e.to_string()));
+            return Err(ExecError::OperandExpected(e.to_string_asis()));
             //return Err(e.clone());
         }
     }
