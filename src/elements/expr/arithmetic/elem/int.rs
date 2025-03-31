@@ -91,9 +91,9 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
     }
 }
 
-fn parse_with_base(base: i64, s: &mut String) -> Result<i64, String> {
+fn parse_with_base(base: i64, s: &mut String) -> Result<i64, ExecError> {
     if s.is_empty() {
-        return Err("empty".to_string());
+        return Err(ExecError::InvalidArithmeticOperator(s.clone(), s.clone()));
     }
 
     let mut ans = 0;
@@ -113,12 +113,12 @@ fn parse_with_base(base: i64, s: &mut String) -> Result<i64, String> {
         }else if ch == '_' {
             63
         }else{
-            return Err("invalid digit".to_string());
+            return Err(ExecError::InvalidArithmeticOperator(s.clone(), ch.to_string()));
         };
 
         match num < base {
             true  => ans += num,
-            false => return Err("base error".to_string()),
+            false => return Err(ExecError::InvalidBase(base.to_string())),
         }
     }
 
