@@ -5,7 +5,8 @@ use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::{Word, WordMode};
-use super::{ArithmeticExpr, ArithElem, int, float};
+use super::{ArithmeticExpr, ArithElem};
+use super::elem::{int, float};
 
 impl ArithmeticExpr {
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {

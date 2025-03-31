@@ -1,15 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod array_elem;
 mod calculator;
 pub mod elem;
 mod parser;
 mod rev_polish;
-mod trenary;
-pub mod word;
-mod int;
-mod float;
 
 use crate::ShellCore;
 use crate::error::exec::ExecError;

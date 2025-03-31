@@ -5,7 +5,9 @@ use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
-use super::{ArithElem, ArithmeticExpr, float, int, Word};
+use super::super::{ArithElem, ArithmeticExpr};
+use super::{float, int};
+use super::Word;
 
 pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
                    core: &mut ShellCore) -> Result<ArithElem, ExecError> {
@@ -179,16 +181,11 @@ fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
         _   => {},
     }
 
-    let current_num = match to_num(w, core) {
-        Ok(n)  => n,
-        Err(e) => return Err(ExecError::Other(format!("{:?}", e))),
-    };
-
-    match (current_num, right_value) {
+    match (to_num(w, core)?, right_value) {
         (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, cur, *right, core)?),
         (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, cur, *right as f64, core)?),
         (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur, *right, core)?),
         (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur as f64, *right, core)?),
-        _ => Err(ExecError::Other("support not yet".to_string())),
+        _ => Err(ExecError::Other("not supported yet".to_string())),
     }
 }

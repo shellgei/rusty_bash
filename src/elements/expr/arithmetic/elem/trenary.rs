@@ -3,8 +3,8 @@
 
 use crate::ShellCore;
 use crate::error::exec::ExecError;
-use super::{ArithmeticExpr, ArithElem};
-use super::calculator;
+use super::super::{ArithmeticExpr, ArithElem};
+use super::super::calculator;
 
 pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {

@@ -3,7 +3,8 @@
 
 use crate::{error, ShellCore};
 use crate::error::exec::ExecError;
-use super::{ArithElem, word};
+use super::ArithElem;
+use super::word;
 
 pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {

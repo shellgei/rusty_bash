@@ -8,9 +8,9 @@ use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
+use crate::elements::expr::arithmetic::elem::word;
 use regex::Regex;
 use self::elem::CondElem;
-use super::arithmetic::word;
 use super::arithmetic::elem::ArithElem;
 use std::env;
 

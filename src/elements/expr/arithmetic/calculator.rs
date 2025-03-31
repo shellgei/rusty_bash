@@ -5,7 +5,8 @@ use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::elem::ArithElem;
-use super::{float, int, rev_polish, trenary, word};
+use super::{rev_polish};
+use super::elem::{float, int, trenary, word};
 
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if let Some(mut e) = stack.pop() {

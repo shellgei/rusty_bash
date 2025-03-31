@@ -3,8 +3,8 @@
 ./test_options.bash
 ./test_param_substitutions.bash
 ./test_glob.bash
-./test_brace.bash
 ./test_fixed.bash
+./test_brace.bash
 ./test_redirects.bash
 ./test_case.bash
 ./test_calculation.bash

@@ -1,12 +1,17 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod array_elem;
+pub mod int;
+pub mod float;
+pub mod trenary;
+pub mod word;
+
 use super::ArithmeticExpr;
 use super::Word;
 use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::elements::subscript::Subscript;
-use crate::elements::expr::arithmetic::{array_elem, word};
 
 #[derive(Debug, Clone)]
 pub enum ArithElem {
