@@ -125,16 +125,16 @@ fn parse_with_base(base: i64, s: &mut String) -> Result<i64, String> {
     Ok(ans)
 }
 
-fn get_base(s: &mut String) -> Option<i64> {
+fn get_base(s: &mut String) -> Result<i64, ExecError> {
     if s.starts_with("0x") || s.starts_with("0X") {
         s.remove(0);
         s.remove(0);
-        return Some(16);
+        return Ok(16);
     }
 
     if s.starts_with("0") && s.len() > 1 {
         s.remove(0);
-        return Some(8);
+        return Ok(8);
     }
 
     if let Some(n) = s.find("#") {
@@ -143,15 +143,15 @@ fn get_base(s: &mut String) -> Option<i64> {
         return match base_str.parse::<i64>() {
             Ok(n) => {
                 match n <= 64 {
-                    true  => Some(n),
-                    false => None,
+                    true  => Ok(n),
+                    false => Err(ExecError::InvalidBase(base_str)),
                 }
             },
-            _     => None,
+            _     => Err(ExecError::InvalidBase(base_str)),
         };
     }
 
-    Some(10)
+    Ok(10)
 }
 
 pub fn parse(s: &str) -> Result<i64, ExecError> {
@@ -165,10 +165,7 @@ pub fn parse(s: &str) -> Result<i64, ExecError> {
 
     let mut sw = s.to_string();
     let sign = word::get_sign(&mut sw);
-    let base = match get_base(&mut sw) {
-        Some(n) => n, 
-        _       => return Err(ExecError::Other("invalid base".to_string())),
-    };
+    let base = get_base(&mut sw)?;
 
     match ( parse_with_base(base, &mut sw), sign.as_str() ) {
         (Ok(n), "-") => Ok(-n), 
