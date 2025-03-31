@@ -74,11 +74,11 @@ impl ArithElem {
         }
     }
 
-    pub fn change_to_value(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    pub fn change_to_value(&mut self, add: i64, core: &mut ShellCore) -> Result<(), ExecError> {
         let tmp = match self {
             ArithElem::ArrayElem(name, ref mut sub, inc)
-                => array_elem::to_operand(&name, sub, 0, *inc, core)?,
-            ArithElem::Word(w, inc) => word::to_operand(&w, 0, *inc, core)?,
+                => array_elem::to_operand(&name, sub, add, *inc, core)?,
+            ArithElem::Word(w, inc) => word::to_operand(&w, add, *inc, core)?,
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
             _ => return Ok(()),
         };

@@ -1,5 +1,5 @@
-./test_ansi_c_quoting.bash
 ./test_script.bash
+./test_ansi_c_quoting.bash
 ./test_options.bash
 ./test_param_substitutions.bash
 ./test_glob.bash

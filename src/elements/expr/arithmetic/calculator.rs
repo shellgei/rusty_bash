@@ -5,11 +5,11 @@ use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::elem::ArithElem;
-use super::{float, int, rev_polish, trenary, word, array_elem};
+use super::{float, int, rev_polish, trenary, word};
 
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if let Some(mut e) = stack.pop() {
-        e.change_to_value(core)?;
+        e.change_to_value(0, core)?;
         return Ok(e);
     }
 
@@ -149,14 +149,11 @@ fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Res
 }
 
 fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
-    let op = match stack.pop() {
-        Some(ArithElem::Word(w, inc_post)) => word::to_operand(&w, inc, inc_post, core)?,
-        Some(ArithElem::ArrayElem(name, mut sub, inc_post)) => {
-            array_elem::to_operand(&name, &mut sub, inc, inc_post, core)?
-        },
-        Some(e) => return Err(ExecError::OperandExpected(e.to_string_asis())),
-        None => return Err(ExecError::OperandExpected("".to_string())),
-    };
-    stack.push(op);
-    Ok(())
+    if let Some(mut op) = stack.pop() {
+        op.change_to_value(inc, core)?;
+        stack.push(op);
+        Ok(())
+    }else{
+        Err(ExecError::OperandExpected("".to_string()))
+    }
 }

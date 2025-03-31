@@ -127,8 +127,7 @@ pub fn get_sign(s: &mut String) -> String {
 
 pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-> Result<(), ExecError> {
     let mut right = match stack.pop() {
-        Some(ArithElem::Word(w, inc)) => to_operand(&w, 0, inc, core)?,
-        Some(e) => e,
+        Some(mut e) => {e.change_to_value(0, core)?; e},
         _ => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
@@ -138,10 +137,7 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-
         _ => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
     };
 
-    match subs(op, &left, &mut right, core) {
-        Ok(elem) => stack.push(elem),
-        Err(msg) => return Err(msg),
-    }
+    stack.push( subs(op, &left, &mut right, core)? );
     Ok(())
 }
 
@@ -152,7 +148,7 @@ fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
     }
 
     let name = w.eval_as_value(core)?;
-    right_value.change_to_value(core)?; // InParen -> Value
+    right_value.change_to_value(0, core)?; // InParen -> Value
     let right_str = right_value.to_string_asis();
 
     match op {
