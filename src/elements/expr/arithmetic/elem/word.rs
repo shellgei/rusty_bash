@@ -39,6 +39,12 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
     const RESOLVE_LIMIT: i32 = 10000;
 
     for i in 0..RESOLVE_LIMIT {
+        /*
+        let mut f = Feeder::new(&name);
+        if f.scanner_uint(core) == name.len() {
+            break;
+        }
+*/
         match utils::is_name(&name, core) {
             true  => name = core.db.get_param(&name)?,
             false => break,

@@ -38,6 +38,10 @@ impl Data for SpecialData {
         v.chars().count()
     }
 
+    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        Ok(())
+    }
+
     fn is_special(&self) -> bool {true}
 }
 

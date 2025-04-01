@@ -80,6 +80,7 @@ impl ArithElem {
     }
 
     pub fn change_to_value(&mut self, add: i64, core: &mut ShellCore) -> Result<(), ExecError> {
+    dbg!("IN: {:?}", &self);
         let tmp = match self {
             ArithElem::ArrayElem(name, ref mut sub, inc)
                 => array_elem::to_operand(&name, sub, add, *inc, core)?,
@@ -88,6 +89,7 @@ impl ArithElem {
             _ => return Ok(()),
         };
 
+    dbg!("OUT: {:?}", &self);
         *self = tmp;
         Ok(())
     }

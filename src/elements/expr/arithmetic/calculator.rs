@@ -90,6 +90,8 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
         }
     }
 
+    dbg!("{:?}", &stack);
+
     if stack.is_empty() {
         return Err( ExecError::OperandExpected(String::new()));
     }
