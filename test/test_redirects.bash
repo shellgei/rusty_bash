@@ -176,4 +176,12 @@ AAA
 A _ ()
 t _ fofo *(f*(o))" ] || err $LINENO
 
+res=$($com << 'AAA'
+cat << "EOF"
+abc
+EOF
+AAA
+)
+[ "$res" = 'abc' ] || err $LINENO
+
 echo $0 >> ./ok

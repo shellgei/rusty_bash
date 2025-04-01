@@ -221,4 +221,7 @@ EOF
 )
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 's="[0]" ; g="[0]" ;case $g in "$s") echo ok ;; esac')
+[ "$res" = "ok" ] || err $LINENO
+
 echo $0 >> ./ok
