@@ -44,9 +44,9 @@ impl ArithmeticExpr {
         if ! feeder.starts_with("?") {
             return Ok(false);
         }
-
+ 
         ans.text += &feeder.consume(1);
-        let left = Self::parse(feeder, core, true)?;
+        let left = Self::parse(feeder, core, true, "?")?;
         if left.is_some() {
             ans.text += &left.as_ref().unwrap().text;
         }
@@ -57,7 +57,7 @@ impl ArithmeticExpr {
         }
 
         ans.text += &feeder.consume(1);
-        let right = Self::parse(feeder, core, true)?;
+        let right = Self::parse(feeder, core, true, ":")?;
         if right.is_some() {
             ans.text += &right.as_ref().unwrap().text;
         }
@@ -162,8 +162,7 @@ impl ArithmeticExpr {
         }
 
         ans.text += &feeder.consume(1);
-
-        let arith = Self::parse(feeder, core, true)?;
+        let arith = Self::parse(feeder, core, true, "(")?;
         if arith.is_none() || ! feeder.starts_with(")") {
             return Ok(false);
         }
@@ -175,10 +174,17 @@ impl ArithmeticExpr {
         return Ok(true);
     }
 
-    fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self,
+                           core: &mut ShellCore, left: &str) -> bool {
         let len = feeder.scanner_binary_operator(core);
         if len == 0 {
             return false;
+        }
+
+        if left == ":" 
+        && ! feeder.starts_with("==")
+        && feeder.scanner_substitution(core) > 0 {
+                return false;
         }
 
         let s = feeder.consume(len);
@@ -187,15 +193,16 @@ impl ArithmeticExpr {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, addline: bool)
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, addline: bool, left: &str)
         -> Result<Option<Self>, ParseError> {
         let mut ans = ArithmeticExpr::new();
 
         loop {
             Self::eat_blank(feeder, &mut ans, core);
 
-            if feeder.starts_with(":")
-            || feeder.starts_with("]") {
+            if left == "[" && feeder.starts_with("]") 
+            || left == "?" && feeder.starts_with(":")
+            || left == ":" && ( feeder.starts_with("]") || feeder.starts_with(":") ) {
                 break;
             }
 
@@ -204,7 +211,7 @@ impl ArithmeticExpr {
             || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, core, &mut ans)?
-            || Self::eat_binary_operator(feeder, &mut ans, core)
+            || Self::eat_binary_operator(feeder, &mut ans, core, left)
             || Self::eat_array_elem(feeder, &mut ans, core)?
             || Self::eat_word(feeder, &mut ans, core) { 
                 continue;

@@ -253,6 +253,13 @@ impl Feeder {
             ">>", "<<", "<=", ">=", "&", "^", "=", "+", "-", "/", "*", "%", "<", ">", "|", "^", ","])
     }
 
+    pub fn scanner_substitution(&mut self, core: &mut ShellCore) -> usize {
+        self.backslash_check_and_feed(vec!["*", "/", "%", "+", "-", "<",
+                                           "<<", ">", ">>", "^", "|"], core);
+        self.scanner_one_of(&["=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "^=", "|="])
+
+    }
+
     pub fn scanner_uint(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| '0' <= ch && ch <= '9';
         self.scanner_chars(judge, core, 0)
