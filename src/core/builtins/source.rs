@@ -41,6 +41,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let _ = core.db.set_array("BASH_SOURCE", source.clone(), None);
 
     let mut feeder = Feeder::new("");
+    feeder.main_feeder = true;
     loop {
         match feeder.feed_line(core) {
             Ok(()) => {}, 
