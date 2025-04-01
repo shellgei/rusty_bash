@@ -90,6 +90,12 @@ impl ArithmeticExpr {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if let Some(c) = feeder.nth(0) {
+            if "+=-!~*/%<>&|,?^".contains(c) {
+                return false;
+            }
+        }
+
         let mut word = match Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
             Ok(Some(w)) => w,
             _       => return false,
