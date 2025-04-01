@@ -38,7 +38,7 @@ impl Data for SpecialData {
         v.chars().count()
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {
         Ok(())
     }
 
