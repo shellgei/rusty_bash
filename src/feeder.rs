@@ -19,6 +19,7 @@ pub struct Feeder {
     pub nest: Vec<(String, Vec<String>)>,
     pub lineno: usize,
     script_lines: Option<Lines<BufReader<File>>>,
+    pub main_feeder: bool,
 }
 
 impl Feeder {
@@ -94,6 +95,10 @@ impl Feeder {
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
+        if ! self.main_feeder {
+             return Err(InputError::Eof);
+        }
+
         if core.sigint.load(Relaxed) {
             return Err(InputError::Interrupt);
         }

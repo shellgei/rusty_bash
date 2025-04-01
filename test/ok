@@ -9,7 +9,7 @@
 ./test_case.bash
 ./test_parameters.bash
 ./test_calculation.bash
-./test_others.bash
 ./test_compound.bash
+./test_others.bash
 ./test_builtins.bash
 ./test_job.bash
