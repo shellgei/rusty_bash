@@ -4,6 +4,7 @@
 use crate::core::{DataBase, HashMap};
 use crate::error::exec::ExecError;
 use super::Data;
+use crate::utils::random::get_random;
 
 #[derive(Debug, Clone)]
 pub struct SpecialData {
@@ -38,7 +39,11 @@ impl Data for SpecialData {
         v.chars().count()
     }
 
-    fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        if self.function == get_random {
+            self.internal_data.clear();
+            self.internal_data.push(value.to_string());
+        }
         Ok(())
     }
 
