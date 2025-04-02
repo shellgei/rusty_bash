@@ -85,6 +85,9 @@ res=$($com <<< 'compgen -d -- "~/" | wc -l' )
 res=$($com <<< 'compgen -G "/*" | wc -l' )
 [ "$res" -gt 1 ] || err $LINENO
 
+res=$($com <<< 'compgen -f -X "*test*" | grep test')
+[ "$?" = "1" ] || err $LINENO
+
 ### eval ###
 
 res=$($com <<< 'eval "echo a" b')
@@ -429,6 +432,53 @@ res=$($com <<< 'printf %s abc &> /dev/null')
 res=$($com <<< 'printf -v REPLY %q /l; echo $REPLY')
 [ "$res" = "/l" ] || err $LINENO
 
+res=$($com <<< 'printf "%03x" 123')
+[ "$res" = "07b" ] || err $LINENO
+
+res=$($com <<< 'printf "%03X" 123')
+[ "$res" = "07B" ] || err $LINENO
+
+res=$($com <<< 'printf "%3X" 123')
+[ "$res" = " 7B" ] || err $LINENO
+
+res=$($com <<< 'printf "%-3X" 123')
+[ "$res" = "7B " ] || err $LINENO
+
+res=$($com <<< 'printf "%10s" 123')
+[ "$res" = "       123" ] || err $LINENO
+
+res=$($com <<< 'printf "%010s" 123')
+[ "$res" = "       123" ] || err $LINENO
+
+res=$($com <<< 'printf "%-10s" 123')
+[ "$res" = "123       " ] || err $LINENO
+
+res=$($com <<< 'printf "%010d" -123')
+[ "$res" = "-000000123" ] || err $LINENO
+
+res=$($com <<< 'printf "%f" -.3')
+[ "$res" = "-0.300000" ] || err $LINENO
+
+res=$($com <<< 'printf "%b" "aaa\nbbb"')
+[ "$res" = "aaa
+bbb" ] || err $LINENO
+
+res=$($com <<< 'printf %q "()\""')
+[ "$res" = '\(\)\"' ] || err $LINENO
+
+res=$($com <<< "printf %q '@(|!(!(|)))'")
+[ "$res" = '@\(\|\!\(\!\(\|\)\)\)' ] || err $LINENO
+
+res=$($com <<< 'printf -v __git_printf_supports_v %s yes; echo $__git_printf_supports_v' )
+[ "$res" = "yes" ] || err $LINENO
+
+res=$($com <<< 'printf -v __git_printf_supports_v -- %s yes; echo $__git_printf_supports_v' )
+[ "$res" = "yes" ] || err $LINENO
+
+res=$($com <<< 'printf "== <%s %s> ==\n" a b c' )
+[ "$res" = "== <a b> ==
+== <c > ==" ] || err $LINENO
+
 ### trap ###
 #
 res=$($com <<< 'trap "echo hoge" 4') # 4 (SIGILL) is forbidden by signal_hook
@@ -462,6 +512,23 @@ res=$($com <<< 'type -p printf')
 res=$($com <<< 'type -P printf') 
 [ $? -eq 0 ] || err $LINENO
 [ "$res" != "" ] || err $LINENO
+
+### let ###
+
+res=$($com <<< 'let a=1; echo $a')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'let a=1 b=0; echo $a $b $?')
+[ "$res" = "1 0 1" ] || err $LINENO
+
+res=$($com <<< 'let a== b=0; echo $a $b $?')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'let "c=$((1+1))"; echo $c $?')
+[ "$res" = "2 0" ] || err $LINENO
+
+res=$($com <<< 'let a=1; echo $a')
+[ "$res" = "1" ] || err $LINENO
 
 echo $0 >> ./ok
 

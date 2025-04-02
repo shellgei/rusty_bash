@@ -100,7 +100,7 @@ Followings are not difficult but very important tasks.
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
 | fc | :no_good: | fg | :construction: | getopts | :construction: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
-| jobs | :construction: | kill | :no_good: | let | :no_good: |
+| jobs | :construction: | kill | :no_good: | let | :construction: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | readonly | :no_good: | return | :heavy_check_mark: | false | :heavy_check_mark: |
