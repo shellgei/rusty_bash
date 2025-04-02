@@ -6,6 +6,7 @@ pub mod assoc;
 pub mod random;
 pub mod single;
 pub mod special;
+pub mod srandom;
 
 use crate::error::exec::ExecError;
 use std::fmt;

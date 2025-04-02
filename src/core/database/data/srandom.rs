@@ -3,17 +3,16 @@
 
 use crate::error::exec::ExecError;
 use rand_chacha::ChaCha20Rng;
-use rand_chacha::rand_core::RngCore;
-use rand_chacha::rand_core::SeedableRng;
+use rand_chacha::rand_core::{RngCore, SeedableRng};
 use super::Data;
 
 #[derive(Debug, Clone)]
-pub struct RandomVar {
+pub struct SRandomVar {
     rng: ChaCha20Rng,
     prev: String,
 }
 
-impl Data for RandomVar {
+impl Data for SRandomVar {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
@@ -21,7 +20,7 @@ impl Data for RandomVar {
     fn print_body(&self) -> String { self.prev.clone() }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
-        let rand = self.rng.next_u32() & 0x7FFF;
+        let rand = self.rng.next_u32();
         self.prev = rand.to_string();
         Ok(self.prev.clone())
     }
@@ -30,19 +29,15 @@ impl Data for RandomVar {
         self.prev.len()
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        let seed = u64::from_str_radix(&value, 10).unwrap_or(0);
-        self.rng = ChaCha20Rng::seed_from_u64(seed + 4011); //4011: for bash test
-        Ok(())
-    }
+    fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> { Ok(()) }
 
     fn is_special(&self) -> bool {true}
 }
 
-impl RandomVar {
+impl SRandomVar {
     pub fn new() -> Self {
         Self {
-            rng: ChaCha20Rng::seed_from_u64(0),
+            rng: ChaCha20Rng::from_os_rng(),
             prev: "".to_string(),
         }
     }

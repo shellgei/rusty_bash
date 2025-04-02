@@ -16,8 +16,8 @@ tmp=/tmp/$$
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 res=$($com <<< 'RANDOM=2 ;echo $RANDOM ; echo $RANDOM')
-[ "$res" = "2958
-20303" ] || err $LINENO
+[ "$res" = "27297
+16812" ] || err $LINENO
 
 res=$($com <<< 'echo $((42%5))')
 [ "$res" = "2" ] || err $LINENO
