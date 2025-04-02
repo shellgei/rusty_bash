@@ -1,0 +1,3 @@
+./test_fixed.bash
+./test_calculation.bash
+./test_compound.bash
