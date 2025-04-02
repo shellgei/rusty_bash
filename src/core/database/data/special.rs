@@ -3,8 +3,8 @@
 
 use crate::core::{DataBase, HashMap};
 use crate::error::exec::ExecError;
-use super::Data;
 use crate::utils::random::get_random;
+use super::Data;
 
 #[derive(Debug, Clone)]
 pub struct SpecialData {
