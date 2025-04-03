@@ -1,2 +1,8 @@
 ./test/test_fixed.bash
 test/test_fixed.bash
+test/test_fixed.bash
+../test/test_fixed.bash
+../test/test_fixed.bash
+../test/test_fixed.bash
+../test/test_fixed.bash
+../test/test_fixed.bash

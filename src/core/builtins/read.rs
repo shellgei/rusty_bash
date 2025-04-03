@@ -38,6 +38,10 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool) 
     consume_ifs(&mut remaining, " \t");
 
     args.remove(0);
+    if args.len() == 0 {
+        args.push("REPLY".to_string());
+    }
+
     while args.len() > 0 && ! remaining.is_empty() {
         let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape) {
             Some(w) => w,
@@ -106,13 +110,13 @@ pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool) -> i32 {
 }
 
 pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() <= 1 {
+    if args.len() < 1 {
         return 0;
     }
 
     let mut args = arg::dissolve_options(args);
     let r_opt = arg::consume_option("-r", &mut args);
-                                                      //
+
     if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
         return read_a(core, &a, r_opt);
     }
@@ -217,6 +221,5 @@ pub fn consume_ifs(remaining: &mut String, ifs: &str) {
     }
 
     let tail = remaining.split_off(pos);
-    //dbg!("{:?}", &remaining);
     *remaining = tail;
 }
