@@ -38,8 +38,7 @@ pub fn get_epochseconds() -> String {
     real.tv_sec().to_string()
 }
 
-pub fn get_epochrealtime(_: &mut Vec<String>) -> String {
+pub fn get_epochrealtime() -> String {
     let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
-    let epoch_realtime = format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string();
-    epoch_realtime
+    format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string()
 }

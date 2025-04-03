@@ -4,6 +4,7 @@
 pub mod array;
 pub mod assoc;
 pub mod epochseconds;
+pub mod epochrealtime;
 pub mod random;
 pub mod seconds;
 pub mod single;
