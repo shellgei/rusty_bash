@@ -3,7 +3,6 @@
 
 use crate::error::exec::ExecError;
 use crate::core::DataBase;
-use crate::core::database::Data;
 
 pub fn special_param(db :&DataBase, name: &str) -> Option<String> {
     let val = match name {
@@ -44,6 +43,7 @@ pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> Result<String, Ex
     db.params[layer].get_mut(name).unwrap().get_as_array_or_assoc(pos)
 }
 
+/*
 pub fn clone(db: &mut DataBase, name: &str) -> Option<Box<dyn Data>> {
     let num = db.params.len();
     for layer in (0..num).rev()  {
@@ -52,4 +52,4 @@ pub fn clone(db: &mut DataBase, name: &str) -> Option<Box<dyn Data>> {
         }
     }
     None
-}
+}*/

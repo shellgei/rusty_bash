@@ -71,19 +71,16 @@ impl DataBase {
             return getter::position_param(self, n);
         }
 
-        let layer_num = self.params.len();
-        for layer in (0..layer_num).rev()  {
-            if let Some(v) = self.params[layer].get_mut(name) {
-                if v.is_special() {
-                    return Ok(v.get_as_single()?);
-                }
-                if v.is_single_num() {
-                    let val = v.get_as_single_num()?;//.unwrap_or_default();
-                    return Ok(val.to_string());
-                }else{
-                    let val = v.get_as_single().unwrap_or_default();
-                    return Ok(val);
-                }
+        if let Some(v) = self.get_ref(name) {
+            if v.is_special() {
+                return Ok(v.get_as_single()?);
+            }
+            if v.is_single_num() {
+                let val = v.get_as_single_num()?;//.unwrap_or_default();
+                return Ok(val.to_string());
+            }else{
+                let val = v.get_as_single().unwrap_or_default();
+                return Ok(val);
             }
         }
 
@@ -133,13 +130,11 @@ impl DataBase {
         false
     }
 
-//    fn get_as_array_or_assoc(&mut self, pos: &str) -> Result<String, ExecError> {
-
-    pub fn len(&mut self, key: &str) -> usize {
-        match getter::clone(self, key).as_mut() {
-            Some(d) => d.len(),
-            _ => 0,
+    pub fn len(&mut self, name: &str) -> usize {
+        if let Some(d) = self.get_ref(name) {
+            return d.len();
         }
+        0
     }
 
     pub fn get_array_all(&mut self, name: &str) -> Vec<String> {
@@ -148,15 +143,12 @@ impl DataBase {
             return self.position_parameters[layer].clone();
         }
 
-        match getter::clone(self, name).as_mut() {
+        //match getter::clone(self, name).as_mut() {
+        match self.get_ref(name) {
             Some(d) => {
                 if let Ok(v) = d.get_all_as_array() {
                     return v;
                 }
-                /*
-                if let Ok(v) = d.get_as_single() {
-                    return vec![v];
-                }*/
                 vec![]
             },
             None => vec![],
@@ -169,7 +161,8 @@ impl DataBase {
             return self.position_parameters[layer].clone();
         }
 
-        match getter::clone(self, name).as_mut() {
+        //match getter::clone(self, name).as_mut() {
+        match self.get_ref(name) {
             Some(d) => {
                 match d.get_all_indexes_as_array() {
                     Ok(v) => v,
@@ -181,21 +174,24 @@ impl DataBase {
     }
 
     pub fn is_array(&mut self, name: &str) -> bool {
-        match getter::clone(self, name).as_mut() {
+        //match getter::clone(self, name).as_mut() {
+        match self.get_ref(name) {
             Some(d) => return d.is_array(),
             _ => false,
         }
     }
 
     pub fn is_assoc(&mut self, name: &str) -> bool {
-        match getter::clone(self, name) {
+       // match getter::clone(self, name) {
+        match self.get_ref(name) {
             Some(d) => d.is_assoc(),
             None => false,
         }
     }
 
     pub fn is_single_num(&mut self, name: &str) -> bool {
-        match getter::clone(self, name).as_mut() {
+        //match getter::clone(self, name).as_mut() {
+        match self.get_ref(name) {
             Some(d) => return d.is_single_num(),
             _ => false,
         }
@@ -330,10 +326,21 @@ impl DataBase {
     }
 
     pub fn print(&mut self, name: &str) {
-        if let Some(d) = getter::clone(self, name) {
+        //if let Some(d) = getter::clone(self, name) {
+        if let Some(d) = self.get_ref(name) {
             d.print_with_name(name);
         }else if let Some(f) = self.functions.get(name) {
             println!("{}", &f.text);
         }
+    }
+
+    fn get_ref(&mut self, name: &str) -> Option<&mut Box<dyn Data>> {
+        let num = self.params.len();
+        for layer in (0..num).rev() {
+            if self.params[layer].get_mut(name).is_some() {
+                return self.params[layer].get_mut(name);
+            }
+        }
+        None
     }
 }
