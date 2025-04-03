@@ -13,6 +13,11 @@ pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     let mut left = left.clone().ok_or(e.clone())?;
     let mut right = right.clone().ok_or(e.clone())?;
 
+    if left.elements.is_empty() || right.elements.is_empty() {
+        let msg = format!(": {}", &right.text);
+        return Err(ExecError::OperandExpected(msg));
+    }
+
     let ans = match calculator::pop_operand(stack, core)? {
         ArithElem::Integer(0) => right.eval_in_cond(core)?,
         ArithElem::Float(_) => return Err(ExecError::Other("float condition is not permitted".to_string())),
