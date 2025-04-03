@@ -15,6 +15,9 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'shopt -u globskipdots ; echo /../.*')
+[ "$res" = "/../. /../.." ] || err $LINENO
+
 res=$($com <<< 'read -n 4 <<< "  abc def"; echo $REPLY')
 [ "$res" = "ab" ] || err $LINENO
 
