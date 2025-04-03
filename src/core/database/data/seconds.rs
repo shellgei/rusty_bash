@@ -10,6 +10,7 @@ use super::Data;
 #[derive(Debug, Clone)]
 pub struct Seconds {
     origin: String,
+    shift: isize,
 }
 
 fn monotonic_time() -> Duration {
@@ -34,7 +35,7 @@ impl Data for Seconds {
         let offset = Duration::new(sec, nano);
         let elapsed = monotonic_time() - offset;
 
-        let ans = format!("{}", elapsed.as_secs());
+        let ans = format!("{}", elapsed.as_secs() as isize + self.shift);
 
         Ok(ans)
     }
@@ -43,11 +44,15 @@ impl Data for Seconds {
         0
     }
 
-    fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        self.shift = value.parse::<isize>()?;
+        let time = monotonic_time();
+        self.origin = format!("{}.{}", time.as_secs(), time.subsec_nanos());
         Ok(()) // TODO
     }
 
     fn is_special(&self) -> bool {true}
+    fn is_single_num(&self) -> bool { true }
 }
 
 impl Seconds {
@@ -55,6 +60,7 @@ impl Seconds {
         let time = monotonic_time();
         Self {
             origin: format!("{}.{}", time.as_secs(), time.subsec_nanos()),
+            shift: 0,
         }
     }
 }

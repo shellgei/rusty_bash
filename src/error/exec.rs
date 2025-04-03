@@ -5,6 +5,7 @@ use crate::ShellCore;
 use crate::error::parse::ParseError;
 use nix::errno::Errno;
 use nix::sys::wait::WaitStatus;
+use std::num::ParseIntError;
 use std::os::fd::RawFd;
 
 #[derive(Debug, Clone)]
@@ -30,6 +31,7 @@ pub enum ExecError {
     VariableInvalid(String),
     OperandExpected(String),
     ParseError(ParseError),
+    ParseIntError(String),
     SyntaxError(String),
     Recursion(String),
     SubstringMinus(i64),
@@ -41,6 +43,12 @@ pub enum ExecError {
 impl From<Errno> for ExecError {
     fn from(e: Errno) -> ExecError {
         ExecError::Errno(e)
+    }
+}
+
+impl From<ParseIntError> for ExecError {
+    fn from(e: ParseIntError) -> ExecError {
+        ExecError::ParseIntError(e.to_string())
     }
 }
 
@@ -79,6 +87,7 @@ impl From<&ExecError> for String {
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
             ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
             ExecError::ParseError(p) => From::from(p),
+            ExecError::ParseIntError(e) => e.to_string(),
             ExecError::SyntaxError(near) => format!("syntax error near {}", &near),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
