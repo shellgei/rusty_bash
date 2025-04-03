@@ -8,7 +8,7 @@ pub mod epochrealtime;
 pub mod random;
 pub mod seconds;
 pub mod single;
-pub mod special;
+//pub mod special;
 pub mod srandom;
 
 use crate::error::exec::ExecError;

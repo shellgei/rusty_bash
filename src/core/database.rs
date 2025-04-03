@@ -14,7 +14,7 @@ use self::data::Data;
 use self::data::assoc::AssocData;
 use self::data::single::SingleData;
 use self::data::array::ArrayData;
-use self::data::special::SpecialData;
+//use self::data::special::SpecialData;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -71,8 +71,17 @@ impl DataBase {
             return getter::position_param(self, n);
         }
 
+        /*
         if let Some(ans) = SpecialData::get(self, name) {
             return Ok(ans);
+        }*/
+        let layer_num = self.params.len();
+        for layer in (0..layer_num).rev()  {
+            if let Some(v) = self.params[layer].get_mut(name) {
+                if v.is_special() {
+                    return Ok(v.get_as_single()?);
+                }
+            }
         }
 
         if let Some(d) = getter::clone(self, name).as_mut() {
