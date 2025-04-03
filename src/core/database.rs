@@ -71,26 +71,19 @@ impl DataBase {
             return getter::position_param(self, n);
         }
 
-        /*
-        if let Some(ans) = SpecialData::get(self, name) {
-            return Ok(ans);
-        }*/
         let layer_num = self.params.len();
         for layer in (0..layer_num).rev()  {
             if let Some(v) = self.params[layer].get_mut(name) {
                 if v.is_special() {
                     return Ok(v.get_as_single()?);
                 }
-            }
-        }
-
-        if let Some(d) = getter::clone(self, name).as_mut() {
-            if d.is_single_num() {
-                let val = d.get_as_single_num()?;//.unwrap_or_default();
-                return Ok(val.to_string());
-            }else{
-                let val = d.get_as_single().unwrap_or_default();
-                return Ok(val);
+                if v.is_single_num() {
+                    let val = v.get_as_single_num()?;//.unwrap_or_default();
+                    return Ok(val.to_string());
+                }else{
+                    let val = v.get_as_single().unwrap_or_default();
+                    return Ok(val);
+                }
             }
         }
 
