@@ -8,10 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 res=$($com <<< 'echo /bin/?' | grep -F '/bin/[')
 [ "$?" == "0" ] || err $LINENO
@@ -55,6 +55,9 @@ res=$($com <<< 'cd /etc ; echo *.conf/' | grep -F '*')
 res=$($com <<< 'echo @(あ|{い,う,})')
 [ "$res" == "@(あ|い) @(あ|う) @(あ|)" ] || err $LINENO
 
+res=$($com <<< 'a="*"; echo "@($a)"')
+[ "$res" = '@(*)' ] || err $LINENO
+
 res=$($com <<< 'echo \/e\tc/* | grep -F "*"')
 [ $? -eq 1 ] || err $LINENO
 
@@ -92,5 +95,33 @@ if [ "$(uname)" = Linux ] ; then
 	res=$($com <<< 'touch /tmp/{1..9} ; ls /tmp/[!1-] | grep ^/tmp/5$')
 	[ "$?" == "0" ] || err $LINENO
 fi 
+
+res=$($com << 'EOF'
+mkdir -p /tmp/$$
+cd /tmp/$$
+mkdir a b
+touch a/{aa,ab}
+touch b/{bb,bc}
+ln -s a c
+shopt -s globstar
+echo 1: **
+echo 2: **/
+echo 3: **/*
+echo 4: **/**/*
+echo 5: a/**
+echo 6: a/**/**
+rm a/*
+rm b/*
+rm c
+rmdir a b
+rmdir /tmp/$$
+EOF
+)
+[ "$res" = "1: a a/aa a/ab b b/bb b/bc c
+2: a/ b/ c/
+3: a a/aa a/ab b b/bb b/bc c
+4: a a/aa a/ab b b/bb b/bc c
+5: a/ a/aa a/ab
+6: a a/aa a/ab" ] || err $LINENO
 
 echo $0 >> ./ok

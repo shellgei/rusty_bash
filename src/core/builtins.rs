@@ -23,6 +23,7 @@ mod unset;
 
 use crate::{error, exit, proc_ctrl, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::io::pipe::Pipe;
 use crate::utils;
 use crate::utils::{arg, file};
@@ -62,6 +63,7 @@ impl ShellCore {
         self.builtins.insert("getopts".to_string(), getopts::getopts);
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
+        self.builtins.insert("let".to_string(), let_);
         self.builtins.insert("local".to_string(), parameter::local);
         self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
@@ -216,6 +218,25 @@ pub fn debug(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     dbg!("{:?}", &args);
     dbg!("{:?}", &core.db.get_param("depth"));
     0
+}
+
+pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut last_result = 0;
+    for a in &args[1..] {
+        if let Ok(Some(mut a)) = ArithmeticExpr::parse(&mut Feeder::new(a), core, false) {
+            match a.eval(core) {
+                Ok(s) => last_result = if s == "0" {1} else {0},
+                Err(e) => {
+                    e.print(core);
+                    return 1;
+                },
+            }
+        }else{
+            return 1;
+        }
+    }
+
+    last_result
 }
 
 pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

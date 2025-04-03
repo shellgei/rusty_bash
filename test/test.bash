@@ -7,11 +7,13 @@ err () {
 	exit 1
 }
 
-cargo build --release || err $LINENO
-cargo --version
+export SUSH_COMPAT_TEST_MODE=0
 
 cd $(dirname $0)
 com=../target/release/sush
+
+cargo build --release || err $LINENO
+cargo --version
 
 : > error
 : > ok
