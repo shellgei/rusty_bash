@@ -4,6 +4,7 @@
 pub mod array;
 pub mod assoc;
 pub mod random;
+pub mod seconds;
 pub mod single;
 pub mod special;
 pub mod srandom;

@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2024 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::str::FromStr;
-use ::time::Duration;
+//use ::time::Duration;
 use nix::time;
 use nix::time::ClockId;
 
+/*
 fn monotonic_time() -> Duration {
     let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
     Duration::new(now.tv_sec(), now.tv_nsec() as i32)
@@ -31,6 +31,7 @@ pub fn get_seconds(v: &mut Vec<String>) -> String {
     v[0] = format!("{}.{}", sec, nano);
     ans
 }
+*/
 
 pub fn get_epochseconds(_: &mut Vec<String>) -> String {
     let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();

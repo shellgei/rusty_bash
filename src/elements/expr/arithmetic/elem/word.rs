@@ -103,7 +103,7 @@ fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Res
 
     match str_to_num(&name, core) {
         Ok(ArithElem::Integer(n))        => {
-            if name != "RANDOM" {
+            if name != "RANDOM" && name != "SECONDS" {
                 core.db.set_param(name, &(n + inc).to_string(), None)?;
             }
             match pre {
