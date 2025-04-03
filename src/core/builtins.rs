@@ -73,6 +73,7 @@ impl ShellCore {
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
         self.builtins.insert("type".to_string(), type_::type_);
+        self.builtins.insert("typeset".to_string(), parameter::declare);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
         self.builtins.insert("unalias".to_string(), alias::unalias);
