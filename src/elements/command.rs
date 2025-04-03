@@ -167,7 +167,7 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 
     for r in ans_redirects {
         if r.symbol == "<<" {
-            r.eat_herestring(feeder, core)?;
+            r.eat_heredoc(feeder, core)?;
         }
     }
 

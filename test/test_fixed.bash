@@ -9,12 +9,12 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
-
 cd $(dirname $0)
 com=../target/release/sush
 tmp=/tmp/$$
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
+
 
 rm -f $tmp-*
 echo $0 >> ./ok
@@ -47,3 +47,11 @@ OH
 EOF
 )
 [ "$res" = "@OH" ] || err $LINENO
+
+### WHY ???????????? ###
+
+#ueda@x1gen13:~/GIT/bash_for_sush_test/sush_test$ echo "a:b:" | ( IFS=" :" read x y; echo "($x)($y)" )
+#(a)(b)
+#ueda@x1gen13:~/GIT/bash_for_sush_test/sush_test$ echo "a:b::" | ( IFS=" :" read x y; echo "($x)($y)" )
+#(a)(b::)
+

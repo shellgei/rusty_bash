@@ -138,29 +138,22 @@ impl Word {
             splitted[len-1].do_not_erase = false;
         }
         
-        let extglob = core.shopts.query("extglob");
-
         if core.options.query("noglob") {
             return splitted;
         }
 
-        let nullglob = core.shopts.query("nullglob");
-        let dotglob = core.shopts.query("dotglob");
         for mut w in splitted {
-            ans.append(&mut path_expansion::eval(&mut w, extglob, nullglob, dotglob) );
+            ans.append(&mut path_expansion::eval(&mut w, &core.shopts) );
         }
         ans
     }
 
    fn path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
-        let extglob = core.shopts.query("extglob");
         if core.options.query("noglob") {
             return vec![self.clone()];
         }
 
-        let nullglob = core.shopts.query("nullglob");
-        let dotglob = core.shopts.query("dotglob");
-        path_expansion::eval(&mut self.clone(), extglob, nullglob, dotglob)
+        path_expansion::eval(&mut self.clone(), &core.shopts)
     }
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {

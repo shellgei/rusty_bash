@@ -5,7 +5,7 @@ use crate::{file_check, ShellCore, Feeder};
 use crate::elements::word::{Word, WordMode};
 use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::utils;
-use crate::utils::{arg, directory};
+use crate::utils::{arg, directory, glob};
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
@@ -50,11 +50,10 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
         return files.iter().map(|f| org_dir.clone() + &f).collect();
     }
 
-    let dotglob = core.shopts.query("dotglob");
-    let mut ans = directory::glob(&dir, &(key.clone() + "*"), core.shopts.query("extglob"), dotglob);
+    let mut ans = directory::glob(&dir, &(key.clone() + "*"), &core.shopts);
     if key == "." {
-        ans.append(&mut directory::glob(&dir, ".", false, dotglob));
-        ans.append(&mut directory::glob(&dir, "..", false, dotglob));
+        ans.append(&mut directory::glob(&dir, ".", &core.shopts));
+        ans.append(&mut directory::glob(&dir, "..", &core.shopts));
     }
     ans.iter_mut().for_each(|a| { a.pop(); } );
     if dir_only {
@@ -117,7 +116,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
     let mut args = arg::dissolve_options(args);
-    let _  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
+    let exclude  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
     let prefix = arg::consume_with_next_arg("-P", &mut args);
     let suffix = arg::consume_with_next_arg("-S", &mut args);
 
@@ -156,6 +155,11 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         },
     };
 
+    if let Some(pattern) = exclude {
+        let extglob = core.shopts.query("extglob");
+        ans.retain(|a| ! glob::parse_and_compare(&a, &pattern, extglob));
+    }
+
     if let Some(p) = prefix {
         for a in ans.iter_mut() {
             *a = p.clone() + a;
@@ -168,7 +172,10 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     ans.iter().for_each(|a| println!("{}", &a));
-    0
+    match ans.is_empty() {
+        true  => 1,
+        false => 0,
+    }
 }
 
 fn get_head(args: &mut Vec<String>, pos: usize) -> String {
@@ -299,9 +306,7 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 fn compgen_large_g(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let glob = args[2].to_string();
-    let extglob = core.shopts.query("extglob");
-    let dotglob = core.shopts.query("dotglob");
-    path_expansion::expand(&glob, extglob, dotglob)
+    path_expansion::expand(&glob, &core.shopts)
 }
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {

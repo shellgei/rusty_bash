@@ -28,7 +28,7 @@ pub struct Redirect {
     left_fd: RawFd,
     left_backup: RawFd,
     extra_left_backup: RawFd, // &>, &>>用
-    herestring: Word,
+    here_data: Word,
 }
 
 impl Redirect {
@@ -37,7 +37,7 @@ impl Redirect {
             return self.redirect_heredocument(core, restore);
         }
         if self.symbol == "<<<" {
-            return self.redirect_herestring(core, restore);
+            return self.redirect_here_data(core, restore);
         }
 
         let args = self.right.eval(core)?;
@@ -64,7 +64,7 @@ impl Redirect {
         }
     }
 
-    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> bool {
+    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> Result<(), ExecError> {
         if restore {
             self.left_backup = io::backup(self.left_fd);
         }
@@ -76,30 +76,38 @@ impl Redirect {
                 if ! result {
                     io::close(fd, &format!("sush(fatal): file does not close"));
                     self.left_fd = -1;
+                    let msg = format!("{}: cannot replace", &fd);
+                    return Err(ExecError::Other(msg));
                 }
-                result
+                Ok(())
             },
             _  => {
-                eprintln!("sush: {}: {}", &self.right.text, Error::last_os_error().kind());
-                false
+                let msg = format!("{}: {}", &self.right.text, Error::last_os_error().kind());
+                Err(ExecError::Other(msg))
             },
         }
     }
 
     fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
+        self.connect_to_file(File::open(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(File::open(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
+        self.connect_to_file(File::create(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(File::create(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_output_fd(&mut self, restore: bool) -> Result<(), ExecError> {
@@ -118,18 +126,20 @@ impl Redirect {
 
     fn redirect_append(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
+        self.connect_to_file(OpenOptions::new().create(true)
+                .write(true).append(true).open(&self.right.text), restore)
+            /*
         if ! self.connect_to_file(OpenOptions::new().create(true)
                 .write(true).append(true).open(&self.right.text), restore) {
             return Err(ExecError::Other("file error".to_string()));
         }
         Ok(())
+            */
     }
 
     fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 1;
-        if ! self.connect_to_file(File::create(&self.right.text), restore){
-            return Err(ExecError::Other("file error".to_string()));
-        }
+        self.connect_to_file(File::create(&self.right.text), restore)?;
 
         if restore {
             self.extra_left_backup = io::backup(2);
@@ -147,27 +157,27 @@ impl Redirect {
             self.left_backup = io::backup(0);
         }
 
-        let text = self.herestring.eval_as_value(core)?; // TODO: make it precise based on the rule
+        let text = self.here_data.eval_as_value(core)?; // TODO: make it precise based on the rule
                                                          // of heredocument
 
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
-                io::close(recv, "herestring close error (child recv)");
+                io::close(recv, "here_data close error (child recv)");
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}", &text);
                 f.flush().unwrap();
-                io::close(send, "herestring close error (child send)");
+                io::close(send, "here_data close error (child send)");
                 process::exit(0);
             },
             ForkResult::Parent { child: _ } => {
-                io::close(send, "herestring close error (parent send)");
+                io::close(send, "here_data close error (parent send)");
                 io::replace(recv, 0);
             },
         }
         Ok(())
     }
 
-    fn redirect_herestring(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+    fn redirect_here_data(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
@@ -182,15 +192,15 @@ impl Redirect {
 
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
-                io::close(recv, "herestring close error (child recv)");
+                io::close(recv, "here_data close error (child recv)");
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}\n", &text);
                 f.flush().unwrap();
-                io::close(send, "herestring close error (child send)");
+                io::close(send, "here_data close error (child send)");
                 process::exit(0);
             },
             ForkResult::Parent { child: _ } => {
-                io::close(send, "herestring close error (parent send)");
+                io::close(send, "here_data close error (parent send)");
                 io::replace(recv, 0);
             },
         }
@@ -216,8 +226,11 @@ impl Redirect {
     }
 
     /* called from elements/command.rs */
-    pub fn eat_herestring(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
-        let end = self.right.text.clone() + "\n";
+    pub fn eat_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        let end = match self.right.eval_as_value(core) {
+            Ok(s)  => s + "\n",
+            Err(_) => return Err(ParseError::UnexpectedSymbol(self.right.text.clone())),
+        };
         if feeder.starts_with("\n") {
             feeder.consume(1);
         }
@@ -226,18 +239,21 @@ impl Redirect {
             if feeder.len() == 0 {
                 feeder.feed_additional_line(core)?;
                 if feeder.starts_with(&end) {
-                    feeder.consume(self.right.text.len());
+                    feeder.consume(end.len());
                     break;
                 }
             }
 
             if let Some(sw) = subword::parse(feeder, core, &None)? {
-                self.herestring.text += sw.get_text();
-                self.herestring.subwords.push(sw);
+                self.here_data.text += sw.get_text();
+                self.here_data.subwords.push(sw);
             }else{
-                let c = feeder.consume(1);
-                self.herestring.text += &c;
-                self.herestring.subwords.push(Box::new(FillerSubword{text: c}) );
+                let len = feeder.scanner_char();
+                if len > 0 {
+                    let c = feeder.consume(len);
+                    self.here_data.text += &c;
+                    self.here_data.subwords.push(Box::new(FillerSubword{text: c}) );
+                }
             }
         }
 

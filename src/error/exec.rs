@@ -20,6 +20,7 @@ pub enum ExecError {
     Exponent(i64),
     InvalidBase(String),
     InvalidName(String),
+    InvalidNumber(String),
     //InvalidIdentifier(String),
     InvalidOption(String),
     Interrupted,
@@ -42,6 +43,12 @@ impl From<Errno> for ExecError {
     }
 }
 
+impl From<ParseError> for ExecError {
+    fn from(e: ParseError) -> ExecError {
+        ExecError::ParseError(e)
+    }
+}
+
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         Self::from(&e)
@@ -59,6 +66,7 @@ impl From<&ExecError> for String {
             ExecError::DivZero => "divided by 0".to_string(),
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
+            ExecError::InvalidNumber(name) => format!("`{}': invalid number", name),
             //ExecError::InvalidIdentifier(name) => format!("`{}': not a valid identifier", name),
             ExecError::InvalidBase(b) => format!("{0}: invalid arithmetic base (error token is \"{0}\")", b),
             ExecError::InvalidOption(opt) => format!("{}: invalid option", opt),

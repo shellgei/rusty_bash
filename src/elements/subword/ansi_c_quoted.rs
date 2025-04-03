@@ -106,7 +106,7 @@ impl Subword for AnsiCQuoted {
             .replace("]", "\\]")
     }
 
-    fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{ vec![] }
+    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ vec![] }
 }
 
 impl AnsiCQuoted {
