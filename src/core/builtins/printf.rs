@@ -11,6 +11,7 @@ enum PrintfToken {
     B(String),
     DI(String),
     F(String),
+    O(String),
     S(String),
     X(String),
     LargeX(String),
@@ -113,6 +114,11 @@ impl PrintfToken {
             },
             Self::X(fmt) => {
                 let mut a = format!("{:x}", Self::to_int(&pop(args))?);
+                Self::padding(&mut a, &mut fmt.clone(), true);
+                Ok(a)
+            },
+            Self::O(fmt) => {
+                let mut a = format!("{:o}", Self::to_int(&pop(args))?);
                 Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
             },
@@ -261,6 +267,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
                 Some('d') => PrintfToken::DI(num_part),
                 Some('i') => PrintfToken::DI(num_part),
                 Some('f') => PrintfToken::F(num_part),
+                Some('o') => PrintfToken::O(num_part),
                 Some('s') => PrintfToken::S(num_part),
                 Some('x') => PrintfToken::X(num_part),
                 Some('X') => PrintfToken::LargeX(num_part),
