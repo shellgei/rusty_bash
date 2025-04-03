@@ -2,8 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::error::exec::ExecError;
-use nix::time;
-use nix::time::ClockId;
+use crate::utils::clock;
 use std::time::Duration;
 use super::Data;
 
@@ -12,12 +11,6 @@ pub struct Seconds {
     origin: String,
     shift: isize,
 }
-
-fn monotonic_time() -> Duration {
-    let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
-    Duration::new(now.tv_sec().try_into().unwrap(), now.tv_nsec().try_into().unwrap())
-}
-
 
 impl Data for Seconds {
     fn boxed_clone(&self) -> Box<dyn Data> {
@@ -33,7 +26,7 @@ impl Data for Seconds {
         let sec = part[0].parse::<u64>().unwrap();
         let nano = part[1].parse::<u32>().unwrap();
         let offset = Duration::new(sec, nano);
-        let elapsed = monotonic_time() - offset;
+        let elapsed = clock::monotonic_time() - offset;
 
         let ans = format!("{}", elapsed.as_secs() as isize + self.shift);
 
@@ -46,7 +39,7 @@ impl Data for Seconds {
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.shift = value.parse::<isize>()?;
-        let time = monotonic_time();
+        let time = clock::monotonic_time();
         self.origin = format!("{}.{}", time.as_secs(), time.subsec_nanos());
         Ok(()) // TODO
     }
@@ -57,7 +50,7 @@ impl Data for Seconds {
 
 impl Seconds {
     pub fn new() -> Self {
-        let time = monotonic_time();
+        let time = clock::monotonic_time();
         Self {
             origin: format!("{}.{}", time.as_secs(), time.subsec_nanos()),
             shift: 0,
