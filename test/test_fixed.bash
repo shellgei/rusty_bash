@@ -15,7 +15,7 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
-res=$($com <<< '"printf "%i\n" 42')
+res=$($com <<< 'printf "%i\n" 42')
 [ "$res" = "42" ] || err $LINENO
 
 res=$($com -c 'echo $(( 4 ? : $A ))')

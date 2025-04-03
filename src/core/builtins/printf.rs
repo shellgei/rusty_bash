@@ -9,7 +9,7 @@ use std::io::{stdout, Write};
 #[derive(Debug, Clone)]
 enum PrintfToken {
     B(String),
-    D(String),
+    DI(String),
     F(String),
     S(String),
     X(String),
@@ -91,7 +91,7 @@ impl PrintfToken {
 
     fn to_string(&mut self, args: &mut Vec<String>) -> Result<String, ExecError> {
         match self {
-            Self::D(fmt) => {
+            Self::DI(fmt) => {
                 let mut a = pop(args);
                 Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
@@ -258,7 +258,8 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
 
             let token = match remaining.chars().next() {
                 Some('b') => PrintfToken::B(num_part),
-                Some('d') => PrintfToken::D(num_part),
+                Some('d') => PrintfToken::DI(num_part),
+                Some('i') => PrintfToken::DI(num_part),
                 Some('f') => PrintfToken::F(num_part),
                 Some('s') => PrintfToken::S(num_part),
                 Some('x') => PrintfToken::X(num_part),
