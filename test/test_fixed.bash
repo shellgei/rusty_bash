@@ -15,6 +15,15 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'read <<< "abc def"; echo $REPLY')
+[ "$res" = "abc def" ] || err $LINENO
+
+res=$($com <<< 'read -n 4 foo <<< abcde; echo $foo')
+[ "$res" = "abcd" ] || err $LINENO
+
+res=$($com <<< 'read -n 4 foo <<< abc de; echo $foo')
+[ "$res" = "abc" ] || err $LINENO
+
 res=$($com <<< 'printf "%u\n" 123')
 [ "$res" = "123" ] || err $LINENO
 
