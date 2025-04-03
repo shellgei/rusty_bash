@@ -15,8 +15,20 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'printf "%u\n" 123')
+[ "$res" = "123" ] || err $LINENO
+
+res=$($com <<< 'printf "%u\n" -100')
+[ "$res" = "18446744073709551516" ] || err $LINENO
+
+res=$($com <<< 'printf "%u\n" -1')
+[ "$res" = "18446744073709551615" ] || err $LINENO
+
 res=$($com <<< 'printf "%o\n" 123')
 [ "$res" = "173" ] || err $LINENO
+
+res=$($com <<< 'printf "%o\n" -100')
+[ "$res" = "1777777777777777777634" ] || err $LINENO
 
 res=$($com <<< 'printf "%i\n" 42')
 [ "$res" = "42" ] || err $LINENO
