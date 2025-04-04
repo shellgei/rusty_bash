@@ -17,6 +17,28 @@ pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<A
     Err(ExecError::Other("no operand 2".to_string()))
 }
 
+pub fn pop_operands(stack: &mut Vec<ArithElem>, core: &mut ShellCore)
+-> Result<(ArithElem, ArithElem), ExecError> {
+    let right = stack.pop();
+    let left = stack.pop();
+
+    if let Some(mut left_v) = left {
+        left_v.change_to_value(0, core)?;
+
+        if let Some(mut right_v) = right {
+            right_v.change_to_value(0, core)?;
+            return Ok((left_v, right_v));
+        }
+    }
+    /*
+    if let Some(mut e) = stack.pop() {
+        e.change_to_value(0, core)?;
+        return Ok(e);
+    }*/
+
+    Err(ExecError::Other("no operand 2".to_string()))
+}
+
 fn bin_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
    match op {
     "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" 
@@ -27,8 +49,11 @@ fn bin_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> 
 
 fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
     -> Result<(), ExecError> {
+    let (left, right) = pop_operands(stack, core)?;
+/*
     let right = pop_operand(stack, core)?;
     let left = pop_operand(stack, core)?;
+*/
 
     if op == "," {
         stack.push(right);

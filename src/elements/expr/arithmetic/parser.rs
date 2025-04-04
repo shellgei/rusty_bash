@@ -27,10 +27,10 @@ impl ArithmeticExpr {
     }
 
     fn eat_incdec(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        if feeder.starts_with("++") {
+        if feeder.starts_with("++") && ! feeder.starts_with("+++") {
             ans.text += &feeder.consume(2);
             ans.elements.push( ArithElem::Increment(1) );
-        }else if feeder.starts_with("--") {
+        }else if feeder.starts_with("--") && ! feeder.starts_with("---") {
             ans.text += &feeder.consume(2);
             ans.elements.push( ArithElem::Increment(-1) );
         }else {

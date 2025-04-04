@@ -15,6 +15,25 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+
+res=$($com <<< 'a=1 ; echo $((4+ + +a))')
+[ "$res" = "5" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((4+ ++a))')
+[ "$res" = "6" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((4+++a))')
+[ "$res" = "6" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((4---a))')
+[ "$res" = "4" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((a++ +0))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((a++ +a))')
+[ "$res" = "3" ] || err $LINENO
+
 res=$($com <<< 'shopt -u globskipdots ; echo /..*')
 [ "$res" = "/.." ] || err $LINENO
 
