@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elements::subscript::Subscript;
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
@@ -135,19 +136,21 @@ pub fn get_sign(s: &mut String) -> String {
     }
 }
 
-pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)-> Result<(), ExecError> {
+pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
+-> Result<(), ExecError> {
     let mut right = match stack.pop() {
         Some(mut e) => {e.change_to_value(0, core)?; e},
         _ => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
-    let left = match stack.pop() {
-        Some(ArithElem::Word(w, 0)) => w,
+    let ans = match stack.pop() {
+        Some(ArithElem::ArrayElem(name, mut sub , 0)) => subs_array(op, &name, &mut sub, &mut right, core)?,
+        Some(ArithElem::Word(w, 0)) => subs(op, &w, &mut right, core)?,
         Some(ArithElem::Word(_, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
         _ => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
     };
 
-    stack.push( subs(op, &left, &mut right, core)? );
+    stack.push(ans);
     Ok(())
 }
 
@@ -196,4 +199,66 @@ fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
         (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur as f64, *right, core)?),
         _ => Err(ExecError::Other("not supported yet".to_string())),
     }
+}
+
+fn set_array(name: &str, sub: &mut Subscript, value: &String, core: &mut  ShellCore) {
+    let index = match sub.eval(core, name) {
+        Ok(s) => s,
+        Err(e) => {e.print(core); return},
+    };
+
+    if core.db.is_array(name) {
+        if let Ok(n) = index.parse::<usize>() {
+            if let Err(e) = core.db.set_array_elem(&name, value, n, None) {
+                e.print(core);
+            }
+        }
+    }
+}
+
+fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut ArithElem, core: &mut ShellCore)
+                                      -> Result<ArithElem, ExecError> {
+    right_value.change_to_value(0, core)?; // InParen -> Value
+    let right_str = right_value.to_string_asis();
+
+    match op {
+        "=" => {
+            set_array(name, sub, &right_str, core);
+            return Ok(right_value.clone());
+        },
+        /*
+        "+=" => {
+            let mut val_str = core.db.get_param(&name)?;
+            if val_str == "" {
+                val_str = "0".to_string();
+            }
+            if let Ok(left) = val_str.parse::<i64>() {
+                match right_value {
+                    ArithElem::Integer(n) => {
+                        core.db.set_param(&name, &(left + *n).to_string(), None)?;
+                        return Ok(ArithElem::Integer(left + *n));
+                    },
+                    _ => {},
+                }
+            }else if let Ok(left) = val_str.parse::<f64>() {
+                if let ArithElem::Float(f) = right_value {
+                    core.db.set_param(&name, &(left + *f).to_string(), None)?;
+                    return Ok(ArithElem::Float(left + *f));
+                }
+            }
+        },
+        */
+        _   => {},
+    }
+
+    /*
+    match (to_num(w, core)?, right_value) {
+        (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, cur, *right, core)?),
+        (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, cur, *right as f64, core)?),
+        (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur, *right, core)?),
+        (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur as f64, *right, core)?),
+        _ => Err(ExecError::Other("not supported yet".to_string())),
+    }*/
+
+    Err(ExecError::Other("not supported yet".to_string()))
 }
