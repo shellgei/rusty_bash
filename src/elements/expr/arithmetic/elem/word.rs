@@ -201,7 +201,7 @@ fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
     }
 }
 
-fn set_array(name: &str, sub: &mut Subscript, value: &String, core: &mut  ShellCore) {
+fn set_array(name: &str, sub: &mut Subscript, value: &String, core: &mut ShellCore) {
     let index = match sub.eval(core, name) {
         Ok(s) => s,
         Err(e) => {e.print(core); return},
@@ -213,7 +213,24 @@ fn set_array(name: &str, sub: &mut Subscript, value: &String, core: &mut  ShellC
                 e.print(core);
             }
         }
+    }else if core.db.is_assoc(name) {
+        if let Err(e) = core.db.set_assoc_elem(&name, &index, value, None) {
+            e.print(core);
+        }
     }
+}
+
+fn get_array(name: &str, sub: &mut Subscript, core: &mut ShellCore) -> String {
+    let index = match sub.eval(core, name) {
+        Ok(s) => s,
+        Err(e) => {e.print(core); return "".to_string()},
+    };
+
+    match core.db.get_array_elem(&name, &index) {
+        Ok(s) => return s,
+        Err(e) => e.print(core),
+    }
+    "".to_string()
 }
 
 fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut ArithElem, core: &mut ShellCore)
@@ -226,28 +243,26 @@ fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut Arith
             set_array(name, sub, &right_str, core);
             return Ok(right_value.clone());
         },
-        /*
         "+=" => {
-            let mut val_str = core.db.get_param(&name)?;
+            let mut val_str = get_array(name, sub, core);
             if val_str == "" {
                 val_str = "0".to_string();
             }
             if let Ok(left) = val_str.parse::<i64>() {
                 match right_value {
                     ArithElem::Integer(n) => {
-                        core.db.set_param(&name, &(left + *n).to_string(), None)?;
+                        set_array(&name, sub, &(left + *n).to_string(), core);
                         return Ok(ArithElem::Integer(left + *n));
                     },
                     _ => {},
                 }
             }else if let Ok(left) = val_str.parse::<f64>() {
                 if let ArithElem::Float(f) = right_value {
-                    core.db.set_param(&name, &(left + *f).to_string(), None)?;
+                    set_array(&name, sub, &(left + *f).to_string(), core);
                     return Ok(ArithElem::Float(left + *f));
                 }
             }
         },
-        */
         _   => {},
     }
 
