@@ -211,7 +211,7 @@ impl Word {
         self.subwords.push(subword.clone());
     }
 
-     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
+    fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
         if feeder.starts_with("#") && mode.is_none() 
         || feeder.is_empty() {
             return false;
@@ -231,7 +231,30 @@ impl Word {
             _ => {},
         }
         true
-     }
+    }
+
+    fn post_check(feeder: &mut Feeder, core: &mut ShellCore,
+                  mode: &Option<WordMode>) -> bool {
+        if feeder.len() == 0 {
+            return false;
+        }
+
+        match mode {
+            Some(WordMode::Arithmetric) | Some(WordMode::CompgenF) => {
+                if feeder.starts_withs(&["]", "}"]) 
+                || feeder.scanner_math_symbol(core) != 0 {
+                    return false;
+                }
+            },
+            Some(WordMode::ParamOption(ref v)) => {
+                if feeder.starts_withs2(v) {
+                    return false;
+                }
+            }
+            _ => {},
+        }
+        true
+    }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: Option<WordMode>)
     -> Result<Option<Word>, ParseError> {
@@ -249,25 +272,8 @@ impl Word {
                 },
             }
 
-            if feeder.len() == 0 {
+            if ! Self::post_check(feeder, core, &mode) {
                 break;
-            }
-            let first = feeder.nth(0).unwrap().to_string();
-            match mode {
-                Some(WordMode::Arithmetric) 
-                | Some(WordMode::CompgenF) => {
-                    if feeder.starts_with("]")
-                    || feeder.starts_with("}")
-                    || feeder.scanner_math_symbol(core) != 0 {
-                        break;
-                    }
-                },
-                Some(WordMode::ParamOption(ref v)) => {
-                    if v.contains(&first) {
-                        break;
-                    }
-                }
-                _ => {},
             }
         }
         
