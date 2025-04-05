@@ -217,6 +217,16 @@ fn set_array(name: &str, sub: &mut Subscript, value: &String, core: &mut ShellCo
         if let Err(e) = core.db.set_assoc_elem(&name, &index, value, None) {
             e.print(core);
         }
+    }else{
+        if let Ok(n) = index.parse::<usize>() {
+            if let Err(e) = core.db.set_array_elem(&name, value, n, None) {
+                e.print(core);
+            }
+        }else{
+            if let Err(e) = core.db.set_assoc_elem(&name, &index, value, None) {
+                e.print(core);
+            }
+        }
     }
 }
 
