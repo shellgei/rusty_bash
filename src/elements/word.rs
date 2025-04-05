@@ -211,9 +211,28 @@ impl Word {
         self.subwords.push(subword.clone());
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: Option<WordMode>)
-        -> Result<Option<Word>, ParseError> {
+     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>)
+        -> bool {
+        if feeder.starts_with("#") {
+            if let Some(WordMode::ReadCommand) = mode {
+            }else{
+                return false;
+            }
+        }
 
+        if feeder.len() == 0 {
+            return false;
+        }
+        true
+     }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: Option<WordMode>)
+    -> Result<Option<Word>, ParseError> {
+        if ! Self::pre_check(feeder, &mode) {
+            return Ok(None);
+        }
+
+            /*
         if feeder.starts_with("#") {
             if let Some(WordMode::ReadCommand) = mode {
             }else{
@@ -223,7 +242,7 @@ impl Word {
 
         if feeder.len() == 0 {
             return Ok(None);
-        }
+        }*/
 
         let first = feeder.nth(0).unwrap().to_string();
 
