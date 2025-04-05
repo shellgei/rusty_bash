@@ -15,6 +15,15 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'RANDOM=42; v=3 ; (( dice[RANDOM%6+1 + RANDOM%6+1]=v )) ; echo ${dice[6]}' )
+[ "$res" = "3" ] || err $LINENO
+
+res=$($com <<< 'RANDOM=42; v=3 ; (( dice[RANDOM%6+1 + RANDOM%6+1]+=v )) ; echo ${dice[6]}' )
+[ "$res" = "3" ] || err $LINENO
+
+res=$($com <<< 'RANDOM=42; v=3 ; (( dice[RANDOM%6+1 + RANDOM%6+1]-=v )) ; echo ${dice[6]}' )
+[ "$res" = "-3" ] || err $LINENO
+
 res=$($com <<< 'echo $(( a[0] += b )) ; echo ${a[0]}' )
 [ "$res" = "0
 0" ] || err $LINENO

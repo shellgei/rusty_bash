@@ -201,11 +201,10 @@ fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
     }
 }
 
-fn set_array(name: &str, sub: &mut Subscript, value: &String, core: &mut ShellCore) {
-    let index = match sub.eval(core, name) {
-        Ok(s) => s,
-        Err(e) => {e.print(core); return},
-    };
+fn set_array(name: &str, index: &String, value: &String, core: &mut ShellCore) {
+    if index == "" {
+        return;
+    }
 
     if core.db.is_array(name) {
         if let Ok(n) = index.parse::<usize>() {
@@ -230,11 +229,10 @@ fn set_array(name: &str, sub: &mut Subscript, value: &String, core: &mut ShellCo
     }
 }
 
-fn get_array(name: &str, sub: &mut Subscript, core: &mut ShellCore) -> String {
-    let index = match sub.eval(core, name) {
-        Ok(s) => s,
-        Err(e) => {e.print(core); return "".to_string()},
-    };
+fn get_array(name: &str, index: &String, core: &mut ShellCore) -> String {
+    if index == "" {
+        return "".to_string();
+    }
 
     match core.db.get_array_elem(&name, &index) {
         Ok(s) => return s,
@@ -248,42 +246,58 @@ fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut Arith
     right_value.change_to_value(0, core)?; // InParen -> Value
     let right_str = right_value.to_string_asis();
 
+    let index = match sub.eval(core, name) {
+        Ok(s) => s,
+        Err(_) => "".to_string(),
+    };
+
     match op {
         "=" => {
-            set_array(name, sub, &right_str, core);
+            set_array(name, &index, &right_str, core);
             return Ok(right_value.clone());
         },
         "+=" => {
-            let mut val_str = get_array(name, sub, core);
+            let mut val_str = get_array(name, &index, core);
             if val_str == "" {
                 val_str = "0".to_string();
             }
             if let Ok(left) = val_str.parse::<i64>() {
                 match right_value {
                     ArithElem::Integer(n) => {
-                        set_array(&name, sub, &(left + *n).to_string(), core);
+                        set_array(&name, &index, &(left + *n).to_string(), core);
                         return Ok(ArithElem::Integer(left + *n));
                     },
                     _ => {},
                 }
             }else if let Ok(left) = val_str.parse::<f64>() {
                 if let ArithElem::Float(f) = right_value {
-                    set_array(&name, sub, &(left + *f).to_string(), core);
+                    set_array(&name, &index, &(left + *f).to_string(), core);
                     return Ok(ArithElem::Float(left + *f));
+                }
+            }
+        },
+        "-=" => {
+            let mut val_str = get_array(name, &index, core);
+            if val_str == "" {
+                val_str = "0".to_string();
+            }
+            if let Ok(left) = val_str.parse::<i64>() {
+                match right_value {
+                    ArithElem::Integer(n) => {
+                        set_array(&name, &index, &(left - *n).to_string(), core);
+                        return Ok(ArithElem::Integer(left - *n));
+                    },
+                    _ => {},
+                }
+            }else if let Ok(left) = val_str.parse::<f64>() {
+                if let ArithElem::Float(f) = right_value {
+                    set_array(&name, &index, &(left - *f).to_string(), core);
+                    return Ok(ArithElem::Float(left - *f));
                 }
             }
         },
         _   => {},
     }
-
-    /*
-    match (to_num(w, core)?, right_value) {
-        (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, cur, *right, core)?),
-        (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, cur, *right as f64, core)?),
-        (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur, *right, core)?),
-        (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur as f64, *right, core)?),
-        _ => Err(ExecError::Other("not supported yet".to_string())),
-    }*/
 
     Err(ExecError::Other("not supported yet".to_string()))
 }
