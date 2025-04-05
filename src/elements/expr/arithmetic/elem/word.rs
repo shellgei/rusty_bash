@@ -296,6 +296,26 @@ fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut Arith
                 }
             }
         },
+        "*=" => { //TODO: refacutor with -=, /=, ... and relocate methods related to array
+            let mut val_str = get_array(name, &index, core);
+            if val_str == "" {
+                val_str = "0".to_string();
+            }
+            if let Ok(left) = val_str.parse::<i64>() {
+                match right_value {
+                    ArithElem::Integer(n) => {
+                        set_array(&name, &index, &(left * *n).to_string(), core);
+                        return Ok(ArithElem::Integer(left * *n));
+                    },
+                    _ => {},
+                }
+            }else if let Ok(left) = val_str.parse::<f64>() {
+                if let ArithElem::Float(f) = right_value {
+                    set_array(&name, &index, &(left * *f).to_string(), core);
+                    return Ok(ArithElem::Float(left * *f));
+                }
+            }
+        },
         _   => {},
     }
 

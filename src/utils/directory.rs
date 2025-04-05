@@ -72,6 +72,15 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
         .filter(|f| glob::compare(f, &pat) )
         .map(|f| make_path(&f) ).collect();
 
+    if ! shopts.query("globskipdots") {
+        if glob::compare(&"..".to_string(), &pat) {
+            ans.push(make_path(".."));
+        }
+        if glob::compare(&".".to_string(), &pat) {
+            ans.push(make_path("."));
+        }
+    }
+
     ans.sort();
     ans.dedup();
     ans
