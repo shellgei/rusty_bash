@@ -251,6 +251,38 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
+pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
+    mode: &Option<WordMode>) -> Result<Option<Box<dyn Subword>>, ParseError> {
+    match mode {
+        None => Ok(None),
+        Some(WordMode::ParamOption(ref v)) => {
+            if feeder.len() == 0 {
+                return Ok(None);
+            }
+            let first = feeder.nth(0).unwrap().to_string();
+            if v.contains(&first) {
+                return Ok(None);
+            }
+
+            let c = FillerSubword { text: feeder.consume(1) };
+            if feeder.len() == 0 {
+                feeder.feed_additional_line(core)?;
+            }
+            Ok(Some(Box::new(c)))
+        },
+        Some(WordMode::ReadCommand) => {
+            if feeder.len() == 0 
+            || feeder.starts_withs(&["\n", "\t", " "]) {
+                Ok(None)
+            }else{
+                let c = SimpleSubword { text: feeder.consume(1) };
+                Ok(Some(Box::new(c)))
+            }
+        },
+        _ => Ok(None),
+    }
+}
+
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
                                     -> Result<Option<Box<dyn Subword>>, ParseError> {
     if replace_history_expansion(feeder, core) {
@@ -269,35 +301,5 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
-    else{
-        match mode {
-            None => Ok(None),
-            Some(WordMode::ParamOption(ref v)) => {
-                if feeder.len() == 0 {
-                    return Ok(None);
-                }
-                let first = feeder.nth(0).unwrap().to_string();
-                if v.contains(&first) {
-                    return Ok(None);
-                }
-                let c = FillerSubword { text: feeder.consume(1) };
-                if feeder.len() == 0 {
-                    feeder.feed_additional_line(core)?;
-                }
-                Ok(Some(Box::new(c)))
-            },
-            Some(WordMode::ReadCommand) => {
-                if feeder.len() == 0 
-                || feeder.starts_with("\n") 
-                || feeder.starts_with("\t") 
-                || feeder.starts_with(" ") {
-                    Ok(None)
-                }else{
-                    let c = SimpleSubword { text: feeder.consume(1) };
-                    Ok(Some(Box::new(c)))
-                }
-            },
-            _ => Ok(None),
-        }
-    }
+    else{ parse_special_subword(feeder, core, mode) }
 }

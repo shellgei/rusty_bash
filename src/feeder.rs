@@ -153,6 +153,10 @@ impl Feeder {
         self.remaining = to.to_string() + &self.remaining;
     }
 
+    pub fn starts_withs(&self, vs: &[&str]) -> bool {
+        vs.iter().any(|s| self.remaining.starts_with(s) )
+    }
+
     pub fn starts_with(&self, s: &str) -> bool {
         self.remaining.starts_with(s)
     }
