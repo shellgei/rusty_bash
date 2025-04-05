@@ -211,17 +211,24 @@ impl Word {
         self.subwords.push(subword.clone());
     }
 
-     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>)
-        -> bool {
-        if feeder.starts_with("#") {
-            if let Some(WordMode::ReadCommand) = mode {
-            }else{
-                return false;
-            }
+     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
+        if feeder.starts_with("#") && mode.is_none() 
+        || feeder.is_empty() {
+            return false;
         }
 
-        if feeder.len() == 0 {
-            return false;
+        match mode {
+            Some(WordMode::Arithmetric) | Some(WordMode::CompgenF) => {
+                if feeder.starts_with("}") {
+                    return false;
+                }
+            },
+            Some(WordMode::ParamOption(ref v)) => {
+                if feeder.starts_withs2(v) {
+                    return false;
+                }
+            }
+            _ => {},
         }
         true
      }
@@ -232,43 +239,13 @@ impl Word {
             return Ok(None);
         }
 
-            /*
-        if feeder.starts_with("#") {
-            if let Some(WordMode::ReadCommand) = mode {
-            }else{
-                return Ok(None);
-            }
-        }
-
-        if feeder.len() == 0 {
-            return Ok(None);
-        }*/
-
-        let first = feeder.nth(0).unwrap().to_string();
-
-        match mode {
-            Some(WordMode::Arithmetric)
-            | Some(WordMode::CompgenF) => {
-                if first == "}" {
-                    return Ok(None);
-                }
-            },
-            Some(WordMode::ParamOption(ref v)) => {
-                if v.contains(&first) {
-                    return Ok(None);
-                }
-            }
-            _ => {},
-        }
-
         let mut ans = Word::default();
         while let Some(sw) = subword::parse(feeder, core, &mode)? {
             match sw.is_extglob() {
                 false => ans.push(&sw),
                 true  => {
-                    let mut sws = sw.get_child_subwords();
-                    ans.text += &sws.iter().map(|sw| sw.get_text()).collect::<Vec<&str>>().join("");
-                    ans.subwords.append(&mut sws);
+                    ans.text += &sw.get_text();
+                    ans.subwords.append(&mut sw.get_child_subwords());
                 },
             }
 
