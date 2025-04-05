@@ -6,7 +6,7 @@ pub mod elem;
 mod parser;
 mod rev_polish;
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use self::calculator::calculate;
@@ -15,6 +15,7 @@ use crate::elements::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct ArithmeticExpr {
+    word: Option<Word>,
     pub text: String,
     elements: Vec<ArithElem>,
     output_base: String,
@@ -23,6 +24,16 @@ pub struct ArithmeticExpr {
 
 impl ArithmeticExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        if self.word.is_none() {
+            return Err(ExecError::Other("error".to_string()));
+        }
+
+        let text = self.word.as_ref().unwrap().text.clone();
+        match Self::parse2(&mut Feeder::new(&text), core, false, "") {
+            Ok(Some(a)) => *self = a,
+            _ => return Err(ExecError::Other("error".to_string())),
+        }
+
         match self.eval_elems(core, true)? {
             ArithElem::Integer(n) => self.ans_to_string(n),
             ArithElem::Float(f)   => Ok(f.to_string()),

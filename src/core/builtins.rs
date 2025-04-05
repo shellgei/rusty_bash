@@ -224,7 +224,7 @@ pub fn debug(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut last_result = 0;
     for a in &args[1..] {
-        if let Ok(Some(mut a)) = ArithmeticExpr::parse(&mut Feeder::new(a), core, false, "") {
+        if let Ok(Some(mut a)) = ArithmeticExpr::parse2(&mut Feeder::new(a), core, false, "") {
             match a.eval(core) {
                 Ok(s) => last_result = if s == "0" {1} else {0},
                 Err(e) => {

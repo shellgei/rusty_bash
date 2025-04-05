@@ -16,7 +16,8 @@ use super::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
-    Arithmetric,
+    Arithmetic(String),
+    InArithmetric,
     CompgenF,
     ReadCommand,
     ParamOption(Vec<String>),
@@ -218,7 +219,7 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::Arithmetric) | Some(WordMode::CompgenF) => {
+            Some(WordMode::InArithmetric) | Some(WordMode::CompgenF) => {
                 if feeder.starts_with("}") {
                     return false;
                 }
@@ -240,7 +241,7 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::Arithmetric) | Some(WordMode::CompgenF) => {
+            Some(WordMode::InArithmetric) | Some(WordMode::CompgenF) => {
                 if feeder.starts_withs(&["]", "}"]) 
                 || feeder.scanner_math_symbol(core) != 0 {
                     return false;

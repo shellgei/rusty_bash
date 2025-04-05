@@ -64,7 +64,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
 
 fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
-    let mut parsed = match ArithmeticExpr::parse(&mut f, core, false, "") {
+    let mut parsed = match ArithmeticExpr::parse2(&mut f, core, false, "") {
         Ok(Some(p)) => p,
         _    => return Err(ExecError::OperandExpected(name.to_string())),
     };

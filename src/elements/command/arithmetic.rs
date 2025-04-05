@@ -71,11 +71,14 @@ impl ArithmeticCommand {
         ans.text = feeder.consume(2);
 
         if let Some(c) = ArithmeticExpr::parse(feeder, core, true, "((")? {
+                dbg!("{:?}", &c);
+                dbg!("{:?}", &feeder);
             if feeder.starts_with("))") {
                 ans.text += &c.text;
                 ans.text += &feeder.consume(2);
                 ans.expressions.push(c);
                 feeder.pop_backup();
+                dbg!("{:?}", &ans);
                 return Ok(Some(ans));
             }
         }

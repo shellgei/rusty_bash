@@ -117,7 +117,7 @@ impl Substitution {
                 None => return Err(ExecError::OperandExpected("".to_string())),
             };
             let mut feeder = Feeder::new(&s);
-            if let Some(mut exp) = ArithmeticExpr::parse(&mut feeder, core, false, "")? {
+            if let Some(mut exp) = ArithmeticExpr::parse2(&mut feeder, core, false, "")? {
                 if feeder.len() > 0 {
                     return Err(ExecError::SyntaxError(feeder.consume(feeder.len())));
                 }

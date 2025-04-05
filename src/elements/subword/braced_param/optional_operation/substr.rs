@@ -165,7 +165,7 @@ impl Substr {
             return;
         }
         ans.text += &feeder.consume(1);
-        ans.length = match ArithmeticExpr::parse(feeder, core, true, ":") {
+        ans.length = match ArithmeticExpr::parse2(feeder, core, true, ":") {
             Ok(Some(a)) => {
                 ans.text += &a.text.clone();
                 Some(a)
@@ -181,7 +181,7 @@ impl Substr {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":") {
+        ans.offset = match ArithmeticExpr::parse2(feeder, core, true, ":") {
             Ok(Some(a)) => {
                 ans.text += &a.text.clone();
                 Self::eat_length(feeder, &mut ans, core);

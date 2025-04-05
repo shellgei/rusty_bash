@@ -279,6 +279,17 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
                 Ok(Some(Box::new(c)))
             }
         },
+        Some(WordMode::Arithmetic(_)) => {
+            if feeder.starts_with("))") {
+                return Ok(None);
+            }
+
+            let c = FillerSubword { text: feeder.consume(1) };
+            if feeder.len() == 0 {
+                feeder.feed_additional_line(core)?;
+            }
+            Ok(Some(Box::new(c)))
+        },
         _ => Ok(None),
     }
 }
