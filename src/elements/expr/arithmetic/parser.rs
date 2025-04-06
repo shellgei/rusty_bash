@@ -15,16 +15,14 @@ impl ArithmeticExpr {
         ans.text += &feeder.consume(len);
     }*/
 
-    fn eat_space(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore, internal: bool) {
+    fn eat_space(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Option<ArithElem> {
         let len = feeder.scanner_multiline_blank(core);
         if len == 0 {
-            return;
+            return None;
         }
         let sp = feeder.consume(len);
-        if ! internal {
-            ans.elements.push(ArithElem::Space(sp.clone()));
-            ans.text += &sp;
-        }
+        ans.text += &sp;
+        Some(ArithElem::Space(sp.clone()))
     }
 
     fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> i128 {
@@ -123,13 +121,19 @@ impl ArithmeticExpr {
 
         if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text.clone();
-            Self::eat_space(feeder, ans, core, internal);
+            let sp = Self::eat_space(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
             ans.elements.push( ArithElem::ArrayElem(name.clone(), s, suffix) );
+            if ! internal && sp.is_some() {
+                ans.elements.push(sp.unwrap());
+            }
         }else{
-            Self::eat_space(feeder, ans, core, internal);
+            let sp = Self::eat_space(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
             ans.elements.push( ArithElem::Word(Word::from(name), suffix) );
+            if ! internal && sp.is_some() {
+                ans.elements.push(sp.unwrap());
+            }
         };
 
         Ok(true)
@@ -138,9 +142,12 @@ impl ArithmeticExpr {
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore, internal: bool) -> bool {
         if let Ok(Some(w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
             ans.text += &w.text.clone();
-            Self::eat_space(feeder, ans, core, internal);
+            let sp = Self::eat_space(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
             ans.elements.push( ArithElem::Word(w, suffix) );
+            if ! internal && sp.is_some() {
+                ans.elements.push(sp.unwrap());
+            }
             return true;
         }
 
@@ -246,7 +253,7 @@ impl ArithmeticExpr {
         let mut ans = ArithmeticExpr::new();
 
         loop {
-            Self::eat_space(feeder, &mut ans, core, true);
+            Self::eat_space(feeder, &mut ans, core);
 
             if left == "[" && feeder.starts_with("]") 
             || left == "?" && feeder.starts_with(":")
@@ -276,7 +283,9 @@ impl ArithmeticExpr {
         let mut ans = ArithmeticExpr::new();
 
         loop {
-            Self::eat_space(feeder, &mut ans, core, false);
+            if let Some(sp) = Self::eat_space(feeder, &mut ans, core) {
+                ans.elements.push(sp);
+            }
 
             if ! ans.in_ternary && feeder.starts_with(":") {
                 break;
