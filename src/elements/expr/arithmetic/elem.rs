@@ -37,7 +37,7 @@ impl ArithElem {
             ArithElem::UnaryOp(s) => {
                 match s.as_str() {
                     "-" | "+" => 19,
-                    _         => 18,
+                    _         => 19,
                 }
             },
             ArithElem::BinaryOp(s) => {

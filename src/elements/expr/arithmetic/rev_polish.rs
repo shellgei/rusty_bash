@@ -28,13 +28,12 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
         let ok = match e {
             ArithElem::Float(_) | ArithElem::ArrayElem(_, _, _) | ArithElem::Integer(_) |
             ArithElem::Word(_, _) | ArithElem::InParen(_)
-                             => {ans.push(e.clone()); true},
+                             => { ans.push(e.clone()); true },
             op               => rev_polish_op(&op, &mut stack, &mut ans),
         };
 
         if !ok {
             return Err(ExecError::OperandExpected(e.to_string()));
-            //return Err(e.clone());
         }
     }
 
@@ -55,7 +54,6 @@ fn rev_polish_op(elem: &ArithElem,
             },
             Some(_) => {
                 let last = stack.last().unwrap();
-                //if elem::op_order(last) <= elem::op_order(elem) {
                 if last.order() <= elem.order() {
                     stack.push(elem.clone());
                     break;
@@ -64,6 +62,5 @@ fn rev_polish_op(elem: &ArithElem,
             },
         }
     }
-
     true
 }
