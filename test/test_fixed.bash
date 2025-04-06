@@ -15,6 +15,9 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'n=0 a="(a[n]=++n)<7&&a[0]"; ((a[0])); echo "${a[@]:1}"')
+[ "$res" = "1 2 3 4 5 6 7" ] || err $LINENO
+
 res=$($com <<< 'echo $((a b))')
 [ "$?" -eq 1 ] || err $LINENO
 [ "$res" = "" ] || err $LINENO

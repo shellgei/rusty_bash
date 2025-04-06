@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::elements::subscript::Subscript;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
@@ -34,6 +35,30 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     str_to_num(&name, core)
 }
 
+fn is_array(name: &str, core: &mut ShellCore) -> bool {
+    let mut f = Feeder::new(&name);
+    let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
+        Ok(Some(p)) => p,
+        _    => return false,
+    };
+
+    if parsed.elements.len() != 1 {
+        return false;
+    }
+
+    if let ArithElem::ArrayElem(_, _, _) = parsed.elements[0] {
+            dbg!("{:?}", &parsed);
+            dbg!("{:?}", parsed.eval(core));
+            /*
+            if let Ok(eval) = parsed.eval(core) {
+                dbg!("{:?}", &eval);
+            }*/
+        return true;
+    }
+
+    false
+}
+
 pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut name = name.to_string();
 
@@ -42,7 +67,10 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
     for i in 0..RESOLVE_LIMIT {
         match utils::is_name(&name, core) {
             true  => name = core.db.get_param(&name)?,
-            false => break,
+            false => {
+                is_array(&name, core);
+                break
+            },
         }
 
         if i == RESOLVE_LIMIT - 1 {
@@ -51,7 +79,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
     }
 
     single_str_to_num(&name, core)
-    /*
+        /*
     match single_str_to_num(&name, core) {
         Ok(e)  => Ok(e),
         Err(_) => {
@@ -60,10 +88,9 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
     }*/
 }
 
-/*
 fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
-    let mut parsed = match ArithmeticExpr::parse(&mut f, core, false, "") {
+    let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
         Ok(Some(p)) => p,
         _    => return Err(ExecError::OperandExpected(name.to_string())),
     };
@@ -77,7 +104,7 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
     }
 
     Err(ExecError::OperandExpected(name.to_string()))
-}*/
+}
 
 fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if name.contains('.') {
