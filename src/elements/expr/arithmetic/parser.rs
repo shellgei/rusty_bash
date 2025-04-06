@@ -9,19 +9,22 @@ use super::{ArithmeticExpr, ArithElem};
 use super::elem::{int, float};
 
 impl ArithmeticExpr {
-    fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+    /*
+    fn eat_space(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
         let len = feeder.scanner_multiline_blank(core);
         ans.text += &feeder.consume(len);
-    }
+    }*/
 
-    fn eat_space(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+    fn eat_space(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore, internal: bool) {
         let len = feeder.scanner_multiline_blank(core);
         if len == 0 {
             return;
         }
         let sp = feeder.consume(len);
-        ans.elements.push(ArithElem::Space(sp.clone()));
-        ans.text += &sp;
+        if ! internal {
+            ans.elements.push(ArithElem::Space(sp.clone()));
+            ans.text += &sp;
+        }
     }
 
     fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> i128 {
@@ -108,7 +111,8 @@ impl ArithmeticExpr {
         Ok(true)
     }
 
-    fn eat_array_elem(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+    fn eat_array_elem(feeder: &mut Feeder, ans: &mut Self,
+                      core: &mut ShellCore, internal: bool) -> Result<bool, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {
             return Ok(false);
@@ -119,11 +123,11 @@ impl ArithmeticExpr {
 
         if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text.clone();
-            Self::eat_blank(feeder, ans, core);
+            Self::eat_space(feeder, ans, core, internal);
             let suffix = Self::eat_suffix(feeder, ans);
             ans.elements.push( ArithElem::ArrayElem(name.clone(), s, suffix) );
         }else{
-            Self::eat_blank(feeder, ans, core);
+            Self::eat_space(feeder, ans, core, internal);
             let suffix = Self::eat_suffix(feeder, ans);
             ans.elements.push( ArithElem::Word(Word::from(name), suffix) );
         };
@@ -131,10 +135,10 @@ impl ArithmeticExpr {
         Ok(true)
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore, internal: bool) -> bool {
         if let Ok(Some(w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
             ans.text += &w.text.clone();
-            Self::eat_blank(feeder, ans, core);
+            Self::eat_space(feeder, ans, core, internal);
             let suffix = Self::eat_suffix(feeder, ans);
             ans.elements.push( ArithElem::Word(w, suffix) );
             return true;
@@ -242,7 +246,7 @@ impl ArithmeticExpr {
         let mut ans = ArithmeticExpr::new();
 
         loop {
-            Self::eat_blank(feeder, &mut ans, core);
+            Self::eat_space(feeder, &mut ans, core, true);
 
             if left == "[" && feeder.starts_with("]") 
             || left == "?" && feeder.starts_with(":")
@@ -256,9 +260,9 @@ impl ArithmeticExpr {
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren_internal(feeder, core, &mut ans)?
             || Self::eat_binary_operator(feeder, &mut ans, core, left)
-            || Self::eat_array_elem(feeder, &mut ans, core)?
+            || Self::eat_array_elem(feeder, &mut ans, core, true)?
             || Self::eat_num(feeder, &mut ans, core)
-            || Self::eat_word(feeder, &mut ans, core) { 
+            || Self::eat_word(feeder, &mut ans, core, true) { 
                 continue;
             }
 
@@ -272,15 +276,13 @@ impl ArithmeticExpr {
         let mut ans = ArithmeticExpr::new();
 
         loop {
-            Self::eat_space(feeder, &mut ans, core);
+            Self::eat_space(feeder, &mut ans, core, false);
 
             if ! ans.in_ternary && feeder.starts_with(":") {
                 break;
             }
 
             if left == "[" && feeder.starts_with("]") {
-            //|| left == "?" && feeder.starts_with(":")
-            //|| left == ":" && ( feeder.starts_with("]") || feeder.starts_with(":") ) {
                 break;
             }
 
@@ -289,8 +291,8 @@ impl ArithmeticExpr {
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, core, &mut ans)?
             || Self::eat_binary_operator(feeder, &mut ans, core, left)
-            || Self::eat_array_elem(feeder, &mut ans, core)?
-            || Self::eat_word(feeder, &mut ans, core) { 
+            || Self::eat_array_elem(feeder, &mut ans, core, false)?
+            || Self::eat_word(feeder, &mut ans, core, false) { 
                 continue;
             }
 

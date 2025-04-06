@@ -15,6 +15,10 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'echo $(( a b ))')
+[ "$?" -eq 1 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
 res=$($com <<< 'PARAM=abcdefg; echo ${PARAM:1 ? 4 : 2}')
 [ "$res" = "efg" ] || err $LINENO
 
