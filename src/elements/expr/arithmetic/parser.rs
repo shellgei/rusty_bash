@@ -131,12 +131,6 @@ impl ArithmeticExpr {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(c) = feeder.nth(0) {
-            if "+=-!~*/%<>&|,?^".contains(c) {
-                return false;
-            }
-        }
-
         if let Ok(Some(w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
             ans.text += &w.text.clone();
             Self::eat_blank(feeder, ans, core);
