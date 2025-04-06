@@ -265,6 +265,14 @@ impl Feeder {
         self.scanner_chars(judge, core, 0)
     }
 
+    pub fn scanner_arith_number(&mut self, core: &mut ShellCore) -> usize {
+        let judge = |ch| ('0' <= ch && ch <= '9') 
+                         || ('a' <= ch && ch <= 'z') 
+                         || ('A' <= ch && ch <= 'Z') 
+                         || ".#xX_@".contains(ch);
+        self.scanner_chars(judge, core, 0)
+    }
+
     pub fn scanner_name(&mut self, core: &mut ShellCore) -> usize {
         let c = self.remaining.chars().nth(0).unwrap_or('0');
         if '0' <= c && c <= '9' {

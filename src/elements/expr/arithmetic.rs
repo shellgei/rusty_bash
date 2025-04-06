@@ -38,7 +38,7 @@ impl ArithmeticExpr {
             }
         }
 
-        if let Some(a) = Self::parse_internal(&mut Feeder::new(&txt), core, false, "")? {
+        if let Some(a) = Self::parse_after_eval(&mut Feeder::new(&txt), core, "")? {
             self.text = a.text;
             self.elements = a.elements;
         }
