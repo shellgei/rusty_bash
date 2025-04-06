@@ -14,6 +14,16 @@ impl ArithmeticExpr {
         ans.text += &feeder.consume(len);
     }
 
+    fn eat_space(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+        let len = feeder.scanner_multiline_blank(core);
+        if len == 0 {
+            return;
+        }
+        let sp = feeder.consume(len);
+        ans.elements.push(ArithElem::Space(sp.clone()));
+        ans.text += &sp;
+    }
+
     fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> i64 {
         if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
@@ -39,6 +49,17 @@ impl ArithmeticExpr {
         true
     }
 
+    fn eat_symbol(feeder: &mut Feeder, ans: &mut Self) -> bool {
+        if feeder.starts_withs(&["?", ":"]) {
+            let symbol = feeder.consume(1);
+            ans.text += &symbol.clone();
+            ans.elements.push( ArithElem::Symbol(symbol));
+            return true;
+        }
+
+        false
+    }
+
     fn eat_conditional_op(feeder: &mut Feeder,
         ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if ! feeder.starts_with("?") {
@@ -46,7 +67,7 @@ impl ArithmeticExpr {
         }
  
         ans.text += &feeder.consume(1);
-        let left = Self::parse(feeder, core, true, "?")?;
+        let left = Self::parse_internal(feeder, core, true, "?")?;
         if left.is_some() {
             ans.text += &left.as_ref().unwrap().text;
         }
@@ -57,7 +78,7 @@ impl ArithmeticExpr {
         }
 
         ans.text += &feeder.consume(1);
-        let right = Self::parse(feeder, core, true, ":")?;
+        let right = Self::parse_internal(feeder, core, true, ":")?;
         if right.is_some() {
             ans.text += &right.as_ref().unwrap().text;
         }
@@ -162,13 +183,13 @@ impl ArithmeticExpr {
         true
     }
 
-    fn eat_paren(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self) -> Result<bool, ParseError> {
+    fn eat_paren_internal(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self) -> Result<bool, ParseError> {
         if ! feeder.starts_with("(") {
             return Ok(false);
         }
 
         ans.text += &feeder.consume(1);
-        let arith = Self::parse(feeder, core, true, "(")?;
+        let arith = Self::parse_internal(feeder, core, true, "(")?;
         if arith.is_none() || ! feeder.starts_with(")") {
             return Ok(false);
         }
@@ -177,6 +198,29 @@ impl ArithmeticExpr {
         ans.elements.push( ArithElem::InParen(arith.unwrap()) );
 
         ans.text += &feeder.consume(1);
+        return Ok(true);
+    }
+
+    fn eat_paren(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self) -> Result<bool, ParseError> {
+        if ! feeder.starts_with("(") {
+            return Ok(false);
+        }
+
+        let paren = feeder.consume(1);
+        ans.text += &paren.clone();
+        ans.elements.push(ArithElem::Symbol(paren));
+        let arith = Self::parse(feeder, core, true, "(")?;
+        if arith.is_none() || ! feeder.starts_with(")") {
+            return Ok(false);
+        }
+        ans.text += &arith.as_ref().unwrap().text;
+        ans.elements.append(&mut arith.unwrap().elements);
+
+        //ans.elements.push( ArithElem::InParen(arith.unwrap()) );
+
+        let paren = feeder.consume(1);
+        ans.text += &paren.clone();
+        ans.elements.push(ArithElem::Symbol(paren));
         return Ok(true);
     }
 
@@ -199,7 +243,7 @@ impl ArithmeticExpr {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, addline: bool, left: &str)
+    pub fn parse_internal(feeder: &mut Feeder, core: &mut ShellCore, addline: bool, left: &str)
         -> Result<Option<Self>, ParseError> {
         let mut ans = ArithmeticExpr::new();
 
@@ -214,6 +258,38 @@ impl ArithmeticExpr {
 
             if Self::eat_output_format(feeder, &mut ans, core) 
             || Self::eat_conditional_op(feeder, &mut ans, core)?
+            || Self::eat_incdec(feeder, &mut ans) 
+            || Self::eat_unary_operator(feeder, &mut ans, core)
+            || Self::eat_paren_internal(feeder, core, &mut ans)?
+            || Self::eat_binary_operator(feeder, &mut ans, core, left)
+            || Self::eat_array_elem(feeder, &mut ans, core)?
+            || Self::eat_word(feeder, &mut ans, core) { 
+                continue;
+            }
+
+            if ! addline || feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
+                break;
+            }
+        }
+        return Ok(Some(ans));
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, addline: bool, left: &str)
+        -> Result<Option<Self>, ParseError> {
+        let mut ans = ArithmeticExpr::new();
+
+        loop {
+            Self::eat_space(feeder, &mut ans, core);
+
+            if left == "[" && feeder.starts_with("]") 
+            || left == "?" && feeder.starts_with(":")
+            || left == ":" && ( feeder.starts_with("]") || feeder.starts_with(":") ) {
+                break;
+            }
+
+            if Self::eat_output_format(feeder, &mut ans, core) 
+//            || Self::eat_conditional_op(feeder, &mut ans, core)?
+            || Self::eat_symbol(feeder, &mut ans)
             || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, core, &mut ans)?

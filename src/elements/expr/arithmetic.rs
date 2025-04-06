@@ -6,7 +6,7 @@ pub mod elem;
 mod parser;
 mod rev_polish;
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use self::calculator::calculate;
@@ -16,21 +16,47 @@ use crate::elements::word::Word;
 #[derive(Debug, Clone, Default)]
 pub struct ArithmeticExpr {
     pub text: String,
-    elements: Vec<ArithElem>,
+    pub elements: Vec<ArithElem>,
     output_base: String,
     hide_base: bool,
 }
 
 impl ArithmeticExpr {
+    pub fn eval_doller(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut txt = String::new();
+        for e in &self.elements {
+            match e {
+                ArithElem::Word(w, inc) => {
+                    if w.text.contains("'") {
+                        return Err(ExecError::OperandExpected(w.text.clone()));
+                    }
+                    let text = w.eval_as_value(core)?;
+                    let word = ArithElem::Word( Word::from(&text), *inc);
+                    txt += &word.to_string();
+                },
+                e => txt += &e.to_string(),
+            }
+        }
+
+        if let Some(a) = Self::parse_internal(&mut Feeder::new(&txt), core, false, "")? {
+            self.text = a.text;
+            self.elements = a.elements;
+        }
+        Ok(())
+    }
+
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.eval_doller(core)?;
+
         match self.eval_elems(core, true)? {
             ArithElem::Integer(n) => self.ans_to_string(n),
             ArithElem::Float(f)   => Ok(f.to_string()),
-            _ => exit::internal("invalid calculation result"),
+            e => return Err(ExecError::OperandExpected(e.to_string())),
         }
     }
 
     pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.eval_doller(core)?;
         let mut ans = String::new();
 
         for e in &self.elements {
@@ -48,7 +74,7 @@ impl ArithmeticExpr {
                         Err(e) => return Err(e),
                     }
                 },
-                _ => ans += &e.to_string_asis(),
+                _ => ans += &e.to_string(),
             }
         }
 
@@ -56,6 +82,8 @@ impl ArithmeticExpr {
     }
 
     pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Option<i64> {
+        let _ = self.eval_doller(core);
+
         match self.eval_elems(core, true) {
             Ok(ArithElem::Integer(n)) => Some(n),
             Ok(ArithElem::Float(f))   => {

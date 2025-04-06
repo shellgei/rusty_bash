@@ -4,11 +4,12 @@
 pub mod elem;
 mod parser;
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore, utils};
+use crate::elements::expr::arithmetic::elem::{int, float};
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
-use crate::elements::expr::arithmetic::elem::word;
 use regex::Regex;
 use self::elem::CondElem;
 use super::arithmetic::elem::ArithElem;
@@ -236,6 +237,39 @@ impl ConditionalExpr {
         return Ok(());
     }
 
+    fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+        let mut f = Feeder::new(&name);
+        let mut parsed = match ArithmeticExpr::parse(&mut f, core, false, "") {
+            Ok(Some(p)) => p,
+            _    => return Err(ExecError::OperandExpected(name.to_string())),
+        };
+
+        /*
+        if parsed.elements.len() == 1 { // In this case, the element is not changed by the evaluation.
+            return Err(ExecError::OperandExpected(name.to_string()));
+        }*/
+    
+        if let Ok(eval) = parsed.eval(core) {
+            return Self::single_str_to_num(&eval, core);
+        }
+    
+        Err(ExecError::OperandExpected(name.to_string()))
+    }
+
+    fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+        if name.contains('.') {
+            let f = float::parse(&name)?;
+            return Ok(ArithElem::Float(f));
+        }
+    
+        if utils::is_name(&name, core) {
+            return Ok( ArithElem::Integer(0) );
+        }
+    
+        let n = int::parse(&name)?;
+        Ok( ArithElem::Integer(n) )
+    }
+
     fn bin_operation(op: &str, stack: &mut Vec<CondElem>,
                      core: &mut ShellCore) -> Result<(), ExecError> {
         let right = match pop_operand(stack, core, true) {
@@ -265,12 +299,12 @@ impl ConditionalExpr {
         }
 
         if op == "-eq" || op == "-ne" || op == "-lt" || op == "-le" || op == "-gt" || op == "-ge" {
-            let lnum = match word::str_to_num(&left, core) {
+            let lnum = match Self::resolve_arithmetic_op(&left, core) {
                 Ok(ArithElem::Integer(n)) => n,
                 Ok(_) => return Err(ExecError::Other("non integer number is not supported".to_string())),
                 Err(msg) => return Err(msg),
             };
-            let rnum = match word::str_to_num(&right, core) {
+            let rnum = match Self::resolve_arithmetic_op(&right, core) {
                 Ok(ArithElem::Integer(n)) => n,
                 Ok(_) => return Err(ExecError::Other("non integer number is not supported".to_string())),
                 Err(msg) => return Err(msg),

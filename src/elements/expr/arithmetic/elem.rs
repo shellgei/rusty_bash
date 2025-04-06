@@ -25,6 +25,9 @@ pub enum ArithElem {
     InParen(ArithmeticExpr),
     Increment(i64), //pre increment
     Delimiter(String), //delimiter dividing left and right of &&, ||, and ','
+    /* only for parse */
+    Space(String),
+    Symbol(String),
 }
 
 impl ArithElem {
@@ -59,11 +62,19 @@ impl ArithElem {
         }
     }
 
-    pub fn to_string_asis(&self) -> String {
+    pub fn to_string(&self) -> String {
         match self {
+            ArithElem::Space(s) => s.to_string(),
+            ArithElem::Symbol(s) => s.to_string(),
             ArithElem::InParen(a) => a.text.to_string(),
             ArithElem::Integer(n) => n.to_string(),
-            ArithElem::Float(f) => f.to_string(),
+            ArithElem::Float(f) => {
+                let mut ans = f.to_string();
+                if ! ans.contains('.') {
+                    ans += ".0";
+                }
+                ans
+            },
             ArithElem::Word(w, inc) => {
                 match inc {
                     1  => w.text.clone() + "++",
@@ -71,10 +82,30 @@ impl ArithElem {
                     _  => w.text.clone(),
                 }
             },
+            ArithElem::Ternary(left, right) => {
+                let mut ans = "?".to_string();
+                if let Some(e) = *left.clone() {
+                    ans += &e.text.clone();
+                }
+                ans += ":";
+                if let Some(e) = *right.clone() {
+                    ans += &e.text.clone();
+                }
+                ans
+            },
             ArithElem::UnaryOp(s) => s.clone(),
             ArithElem::BinaryOp(s) => s.clone(),
             ArithElem::Increment(1) => "++".to_string(),
             ArithElem::Increment(-1) => "--".to_string(),
+            ArithElem::ArrayElem(name, subs, inc) => {
+                let mut arr = name.clone() + &subs.text;
+                match inc {
+                    1  => arr += "++",
+                    -1 => arr += "--",
+                    _  => {},
+                }
+                arr
+            },
             _ => "".to_string(),
         }
     }
@@ -91,18 +122,5 @@ impl ArithElem {
         *self = tmp;
         Ok(())
     }
-
-    /*
-    pub fn to_string_eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        match self {
-            ArithElem::Integer(n) => Ok(n.to_string()),
-            ArithElem::Float(f)   => Ok(f.to_string()),
-            ArithElem::InParen(ref mut a) => {
-                let e = a.eval_elems(core, false)?;
-                Ok(e.to_string_asis())
-            },
-            _ => exit::internal(&format!("{:?}: not a value", &self)),
-        }
-    }*/
 }
 

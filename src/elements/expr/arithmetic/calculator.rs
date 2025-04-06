@@ -109,7 +109,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
         return Err( ExecError::OperandExpected(String::new()));
     }
     if stack.len() != 1 {
-        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string_asis()));
+        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
     }
     pop_operand(&mut stack, core)
 }
@@ -122,14 +122,14 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
             ArithElem::BinaryOp(_) => {
                 stack.pop();
                 if stack.is_empty() {
-                    return Err( ExecError::OperandExpected(e.to_string_asis()));
+                    return Err( ExecError::OperandExpected(e.to_string()));
                 }
             },
             ArithElem::UnaryOp(_) 
             | ArithElem::Increment(_)
             | ArithElem::Ternary(_, _) => {
                 if stack.is_empty() {
-                    return Err( ExecError::OperandExpected(e.to_string_asis()));
+                    return Err( ExecError::OperandExpected(e.to_string()));
                 }
             },
             ArithElem::Delimiter(_) => {},
@@ -141,7 +141,7 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
         return Err( ExecError::OperandExpected(String::new()));
     }
     if stack.len() != 1 {
-        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string_asis()));
+        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
     }
     Ok(())
 }

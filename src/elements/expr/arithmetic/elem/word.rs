@@ -1,12 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::ShellCore;
 use crate::elements::subscript::Subscript;
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
-use super::super::{ArithElem, ArithmeticExpr};
+use super::super::ArithElem;
 use super::{float, int};
 use super::Word;
 
@@ -40,12 +40,6 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
     const RESOLVE_LIMIT: i32 = 10000;
 
     for i in 0..RESOLVE_LIMIT {
-        /*
-        let mut f = Feeder::new(&name);
-        if f.scanner_uint(core) == name.len() {
-            break;
-        }
-*/
         match utils::is_name(&name, core) {
             true  => name = core.db.get_param(&name)?,
             false => break,
@@ -56,12 +50,17 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
         }
     }
 
+    single_str_to_num(&name, core)
+    /*
     match single_str_to_num(&name, core) {
         Ok(e)  => Ok(e),
-        Err(_) => resolve_arithmetic_op(&name, core),
-    }
+        Err(_) => {
+            resolve_arithmetic_op(&name, core)
+        },
+    }*/
 }
 
+/*
 fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse(&mut f, core, false, "") {
@@ -78,7 +77,7 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
     }
 
     Err(ExecError::OperandExpected(name.to_string()))
-}
+}*/
 
 fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if name.contains('.') {
@@ -162,7 +161,7 @@ fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
 
     let name = w.eval_as_value(core)?;
     right_value.change_to_value(0, core)?; // InParen -> Value
-    let right_str = right_value.to_string_asis();
+    let right_str = right_value.to_string();
 
     match op {
         "=" => {
@@ -244,7 +243,7 @@ fn get_array(name: &str, index: &String, core: &mut ShellCore) -> String {
 fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut ArithElem, core: &mut ShellCore)
                                       -> Result<ArithElem, ExecError> {
     right_value.change_to_value(0, core)?; // InParen -> Value
-    let right_str = right_value.to_string_asis();
+    let right_str = right_value.to_string();
 
     let index = match sub.eval(core, name) {
         Ok(s) => s,

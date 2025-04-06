@@ -55,6 +55,7 @@ impl Substr {
             *text = array.join(" ");
             return Ok(());
         }
+
     
         let mut length = match self.length.clone() {
             None => return Err(ExecError::BadSubstitution("".to_string())),
