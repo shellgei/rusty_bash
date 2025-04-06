@@ -60,6 +60,40 @@ impl ArithmeticExpr {
         false
     }
 
+    fn eat_num(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let mut before_period = String::new();
+        let len = feeder.scanner_uint(core);
+        if len > 0 {
+            before_period = feeder.consume(len);
+        }
+
+        if ! feeder.starts_with(".") {
+            if before_period.is_empty() {
+                return false;
+            }
+
+            ans.text += &before_period.clone();
+            let num = before_period.parse::<i64>().unwrap();
+            ans.elements.push( ArithElem::Integer( num ));
+            return true;
+        }
+
+        ans.text += &feeder.consume(1); //period
+
+        let mut after_period = String::new();
+        let len = feeder.scanner_uint(core);
+        if len > 0 {
+            after_period = feeder.consume(len);
+            ans.text += &after_period.clone();
+        }
+
+        let float_str = format!("{}.{}", before_period, after_period);
+        let num = float_str.parse::<f64>().unwrap();
+        ans.elements.push( ArithElem::Float( num ));
+
+        true
+    }
+
     fn eat_conditional_op(feeder: &mut Feeder,
         ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if ! feeder.starts_with("?") {
@@ -263,6 +297,7 @@ impl ArithmeticExpr {
             || Self::eat_paren_internal(feeder, core, &mut ans)?
             || Self::eat_binary_operator(feeder, &mut ans, core, left)
             || Self::eat_array_elem(feeder, &mut ans, core)?
+            || Self::eat_num(feeder, &mut ans, core)
             || Self::eat_word(feeder, &mut ans, core) { 
                 continue;
             }

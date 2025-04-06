@@ -55,7 +55,7 @@ impl Feeder {
     }
 
     pub fn scanner_subword_symbol(&self) -> usize {
-        self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?", "%",
+        self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?", "%", "!",
                               "@", "!", "+", "-", ".", ":", "=", "^", ",", "]"])
     }
 
