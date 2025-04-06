@@ -50,6 +50,7 @@ impl Data for ArrayData {
     }
 
     fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> {
+        dbg!("GET_AS_ARRAY");
         if key == "@" || key == "*" {
             return Ok(self.values().join(" "));
         }
@@ -59,7 +60,20 @@ impl Data for ArrayData {
     }
 
     fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {
-        Ok(self.values().clone())
+        if self.body.is_empty() {
+            return Ok(vec![]);
+        }
+        
+        let keys = self.keys();
+        let max = *keys.iter().max().unwrap() as usize;
+        let mut ans = vec![];
+        for i in 0..(max+1) {
+            match self.body.get(&i) {
+                Some(s) => ans.push(s.clone()),
+                None => ans.push("".to_string()),
+            }
+        }
+        Ok(ans)
     }
 
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {

@@ -87,7 +87,7 @@ impl ArithmeticExpr {
         Ok(ans)
     }
 
-    pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Option<i64> {
+    pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Option<i128> {
         let _ = self.eval_doller(core);
 
         match self.eval_elems(core, true) {
@@ -116,14 +116,14 @@ impl ArithmeticExpr {
         calculate(&es, core)
     }
 
-    fn ans_to_string(&self, n: i64) -> Result<String, ExecError> {
+    fn ans_to_string(&self, n: i128) -> Result<String, ExecError> {
         let base_str = self.output_base.clone();
 
         if base_str == "10" {
             return Ok(n.to_string());
         }
 
-        let base = match base_str.parse::<i64>() {
+        let base = match base_str.parse::<i128>() {
             Ok(b) => b,
             _     => {
                 return Err(ExecError::InvalidBase(base_str));
@@ -153,7 +153,7 @@ impl ArithmeticExpr {
         Ok(ans)
     }
 
-    fn dec_to_str(nums: &Vec<u8>, base: i64) -> String {
+    fn dec_to_str(nums: &Vec<u8>, base: i128) -> String {
         let shift = if base <= 0 {
             |n| n + '0' as u8
         }else if base <= 36 {
@@ -176,7 +176,7 @@ impl ArithmeticExpr {
         calculate(&es, core)
     }
 
-    fn preinc_to_unarys(&mut self, ans: &mut Vec<ArithElem>, pos: usize, inc: i64) -> i64 {
+    fn preinc_to_unarys(&mut self, ans: &mut Vec<ArithElem>, pos: usize, inc: i128) -> i128 {
         let pm = match inc {
             1  => "+",
             -1 => "-",

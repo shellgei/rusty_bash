@@ -140,7 +140,7 @@ impl Substr {
             None => return Err(ExecError::OperandExpected(offset.text.clone())),
             Some(n) => {
                 ans = text.chars().enumerate()
-                      .filter(|(i, _)| (*i as i64) >= n)
+                      .filter(|(i, _)| (*i as i128) >= n)
                       .map(|(_, c)| c).collect();
             },
         };
@@ -155,7 +155,7 @@ impl Substr {
     fn length(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         match self.length.as_mut().unwrap().eval_as_int(core) {
             Some(n) => Ok(text.chars().enumerate()
-                            .filter(|(i, _)| (*i as i64) < n)
+                            .filter(|(i, _)| (*i as i128) < n)
                             .map(|(_, c)| c).collect()),
             None => return Err(ExecError::OperandExpected(self.length.clone().unwrap().text.clone())),
         }

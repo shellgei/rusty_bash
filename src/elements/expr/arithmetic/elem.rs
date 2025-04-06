@@ -17,13 +17,13 @@ use crate::elements::subscript::Subscript;
 pub enum ArithElem {
     UnaryOp(String),
     BinaryOp(String),
-    Integer(i64),
+    Integer(i128),
     Float(f64),
     Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
-    ArrayElem(String, Subscript, i64), // a[1]++
-    Word(Word, i64), // Word + post increment or decrement
+    ArrayElem(String, Subscript, i128), // a[1]++
+    Word(Word, i128), // Word + post increment or decrement
     InParen(ArithmeticExpr),
-    Increment(i64), //pre increment
+    Increment(i128), //pre increment
     Delimiter(String), //delimiter dividing left and right of &&, ||, and ','
     /* only for parse */
     Space(String),
@@ -110,7 +110,7 @@ impl ArithElem {
         }
     }
 
-    pub fn change_to_value(&mut self, add: i64, core: &mut ShellCore) -> Result<(), ExecError> {
+    pub fn change_to_value(&mut self, add: i128, core: &mut ShellCore) -> Result<(), ExecError> {
         let tmp = match self {
             ArithElem::ArrayElem(name, ref mut sub, inc)
                 => array_elem::to_operand(&name, sub, add, *inc, core)?,

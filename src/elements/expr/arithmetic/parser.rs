@@ -24,7 +24,7 @@ impl ArithmeticExpr {
         ans.text += &sp;
     }
 
-    fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> i64 {
+    fn eat_suffix(feeder: &mut Feeder, ans: &mut Self) -> i128 {
         if feeder.starts_with("++") {
             ans.text += &feeder.consume(2);
             1

@@ -164,7 +164,7 @@ fn check_skip(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Res
     Ok("".to_string())
 }
 
-fn inc(inc: i64, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
+fn inc(inc: i128, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
     if let Some(mut op) = stack.pop() {
         op.change_to_value(inc, core)?;
         stack.push(op);

@@ -6,7 +6,7 @@ use crate::error::exec::ExecError;
 use super::ArithElem;
 use crate::elements::subscript::Subscript;
 
-pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_increment: i64,
+pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i128, post_increment: i128,
                    core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let key = sub.eval(core, name)?;
 
@@ -15,7 +15,7 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
         value_str = "0".to_string();
     }
 
-    let mut value_num = match value_str.parse::<i64>() {
+    let mut value_num = match value_str.parse::<i128>() {
         Ok(n) => n,
         Err(_) => return Err(ExecError::Other(format!("{}: not an interger", &name))),
     };
@@ -34,9 +34,9 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i64, post_i
     ans
 }
 
-fn set_value(name: &String, key: &String, new_value: i64,
+fn set_value(name: &String, key: &String, new_value: i128,
                      core: &mut ShellCore) -> Result<(), ExecError> {
-    if let Ok(n) = key.parse::<i64>() {
+    if let Ok(n) = key.parse::<i128>() {
         return match n >= 0 {
             true  => core.db.set_array_elem(name, &(new_value.to_string()), n as usize, None),
             false => Err(ExecError::Other("negative index".to_string())),

@@ -10,7 +10,7 @@ use super::super::ArithElem;
 use super::{float, int};
 use super::Word;
 
-pub fn to_operand(w: &Word, pre_increment: i64, post_increment: i64,
+pub fn to_operand(w: &Word, pre_increment: i128, post_increment: i128,
                    core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if pre_increment != 0 && post_increment != 0 
     || w.text.find('\'').is_some() {
@@ -93,7 +93,7 @@ fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, Exec
     Ok( ArithElem::Integer(n) )
 }
 
-fn change_variable(name: &str, core: &mut ShellCore, inc: i64, pre: bool) -> Result<ArithElem, ExecError> {
+fn change_variable(name: &str, core: &mut ShellCore, inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
     if ! utils::is_name(name, core) {
         return match inc != 0 && ! pre {
             true  => Err(ExecError::OperandExpected(name.to_string())),
@@ -173,7 +173,7 @@ fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
             if val_str == "" {
                 val_str = "0".to_string();
             }
-            if let Ok(left) = val_str.parse::<i64>() {
+            if let Ok(left) = val_str.parse::<i128>() {
                 match right_value {
                     ArithElem::Integer(n) => {
                         core.db.set_param(&name, &(left + *n).to_string(), None)?;
@@ -260,7 +260,7 @@ fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut Arith
             if val_str == "" {
                 val_str = "0".to_string();
             }
-            if let Ok(left) = val_str.parse::<i64>() {
+            if let Ok(left) = val_str.parse::<i128>() {
                 match right_value {
                     ArithElem::Integer(n) => {
                         set_array(&name, &index, &(left + *n).to_string(), core);
@@ -280,7 +280,7 @@ fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut Arith
             if val_str == "" {
                 val_str = "0".to_string();
             }
-            if let Ok(left) = val_str.parse::<i64>() {
+            if let Ok(left) = val_str.parse::<i128>() {
                 match right_value {
                     ArithElem::Integer(n) => {
                         set_array(&name, &index, &(left - *n).to_string(), core);
@@ -300,7 +300,7 @@ fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut Arith
             if val_str == "" {
                 val_str = "0".to_string();
             }
-            if let Ok(left) = val_str.parse::<i64>() {
+            if let Ok(left) = val_str.parse::<i128>() {
                 match right_value {
                     ArithElem::Integer(n) => {
                         set_array(&name, &index, &(left * *n).to_string(), core);
