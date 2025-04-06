@@ -76,9 +76,7 @@ impl ArithmeticExpr {
             return true;
         }
 
-        Self::eat_blank(feeder, ans, core);
-        let suffix = Self::eat_suffix(feeder, ans);
-        ans.elements.push( ArithElem::Word(Word::from(&w), suffix) );
+        ans.elements.push( ArithElem::Word(Word::from(&w), 0) );
         true
     }
 
@@ -139,36 +137,15 @@ impl ArithmeticExpr {
             }
         }
 
-        let mut word = match Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
-            Ok(Some(w)) => w,
-            _       => return false,
-        };
-
-        if word.text.starts_with("\"") 
-        && word.text.ends_with("\"")
-        && word.text.len() >= 2 {
-            feeder.replace(0, &word.text[1..word.text.len()-1]);
+        if let Ok(Some(w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
+            ans.text += &w.text.clone();
+            Self::eat_blank(feeder, ans, core);
+            let suffix = Self::eat_suffix(feeder, ans);
+            ans.elements.push( ArithElem::Word(w, suffix) );
             return true;
         }
 
-        ans.text += &word.text.clone();
-
-        if let Some(w) = word.make_unquoted_word() {
-            if word.text.find('\'').is_none() {
-                if let Ok(n) = int::parse(&w) {
-                    ans.elements.push( ArithElem::Integer(n) );
-                    return true;
-                }else if let Ok(f) = float::parse(&w) {
-                    ans.elements.push( ArithElem::Float(f) );
-                    return true;
-                }
-            }
-        }
-
-        Self::eat_blank(feeder, ans, core);
-        let suffix = Self::eat_suffix(feeder, ans);
-        ans.elements.push( ArithElem::Word(word, suffix) );
-        true
+        false
     }
 
     fn eat_output_format(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
