@@ -49,9 +49,10 @@ impl ArithmeticExpr {
         true
     }
 
-    fn eat_symbol(feeder: &mut Feeder, ans: &mut Self) -> bool {
+    fn eat_ternary_symbol(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if feeder.starts_withs(&["?", ":"]) {
             let symbol = feeder.consume(1);
+            ans.in_ternary = symbol == "?";
             ans.text += &symbol.clone();
             ans.elements.push( ArithElem::Symbol(symbol));
             return true;
@@ -273,14 +274,18 @@ impl ArithmeticExpr {
         loop {
             Self::eat_space(feeder, &mut ans, core);
 
-            if left == "[" && feeder.starts_with("]") 
-            || left == "?" && feeder.starts_with(":")
-            || left == ":" && ( feeder.starts_with("]") || feeder.starts_with(":") ) {
+            if ! ans.in_ternary && feeder.starts_with(":") {
+                break;
+            }
+
+            if left == "[" && feeder.starts_with("]") {
+            //|| left == "?" && feeder.starts_with(":")
+            //|| left == ":" && ( feeder.starts_with("]") || feeder.starts_with(":") ) {
                 break;
             }
 
             if Self::eat_output_format(feeder, &mut ans, core) 
-            || Self::eat_symbol(feeder, &mut ans)
+            || Self::eat_ternary_symbol(feeder, &mut ans)
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, core, &mut ans)?
             || Self::eat_binary_operator(feeder, &mut ans, core, left)

@@ -19,6 +19,7 @@ pub struct ArithmeticExpr {
     pub elements: Vec<ArithElem>,
     output_base: String,
     hide_base: bool,
+    in_ternary: bool,
 }
 
 impl ArithmeticExpr {
