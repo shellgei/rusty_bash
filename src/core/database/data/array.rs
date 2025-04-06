@@ -50,7 +50,6 @@ impl Data for ArrayData {
     }
 
     fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> {
-        dbg!("GET_AS_ARRAY");
         if key == "@" || key == "*" {
             return Ok(self.values().join(" "));
         }
