@@ -42,6 +42,12 @@ impl ArithmeticExpr {
             self.text = a.text;
             self.elements = a.elements;
         }
+
+        if core.db.flags.contains('x') {
+            let ps4 = core.get_ps4();
+            eprintln!("\r{} (( {} ))\r", ps4, &self.text);
+        }
+
         Ok(())
     }
 

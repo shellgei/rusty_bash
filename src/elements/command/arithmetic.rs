@@ -47,10 +47,12 @@ impl ArithmeticCommand {
     }
 
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        /*
         if core.db.flags.contains('x') {
             let ps4 = core.get_ps4();
             eprintln!("\r{} {}\r", ps4, &self.text);
         }
+        */
 
         let mut ans = String::new();
         for a in &mut self.expressions {
