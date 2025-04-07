@@ -17,7 +17,7 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i128, post_
 
     let mut value_num = match value_str.parse::<i128>() {
         Ok(n) => n,
-        Err(_) => return Err(ExecError::Other(format!("{}: not an interger", &name))),
+        Err(_) => recursive_eval(&value_str)?,
     };
 
     if pre_increment != 0 {
@@ -32,6 +32,10 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i128, post_
         set_value(name, &key, value_num, core)?;
     }
     ans
+}
+
+fn recursive_eval(s: &String) -> Result<i128, ExecError> {
+    Err(ExecError::Other(format!("{}: not an interger", &s)))
 }
 
 fn set_value(name: &String, key: &String, new_value: i128,

@@ -1,9 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
+use crate::ShellCore;
 use crate::elements::subscript::Subscript;
-use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
@@ -35,29 +34,11 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     str_to_num(&name, core)
 }
 
+/*
 fn is_array(name: &str, core: &mut ShellCore) -> bool {
-    let mut f = Feeder::new(&name);
-    let parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
-        Ok(Some(p)) => p,
-        _    => return false,
-    };
-
-    if parsed.elements.len() != 1 {
-        return false;
-    }
-
-    if let ArithElem::ArrayElem(_, _, _) = parsed.elements[0] {
-            /*
-            dbg!("{:?}", &parsed);
-            dbg!("{:?}", parsed.eval(core));
-            if let Ok(eval) = parsed.eval(core) {
-                dbg!("{:?}", &eval);
-            }*/
-        return true;
-    }
-
+    dbg!("{:?}", &name);
     false
-}
+}*/
 
 pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut name = name.to_string();
@@ -68,7 +49,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
         match utils::is_name(&name, core) {
             true  => name = core.db.get_param(&name)?,
             false => {
-                is_array(&name, core);
+  //              is_array(&name, core);
                 break
             },
         }
