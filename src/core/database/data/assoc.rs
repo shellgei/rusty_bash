@@ -47,6 +47,7 @@ impl Data for AssocData {
             return Ok(self.values().join(" "));
         }
 
+        dbg!("{:?}", &self.body);
         match self.body.get(key) {
             Some(s) => Ok(s.to_string()),
             None => Err(ExecError::ArrayIndexInvalid(key.to_string())),

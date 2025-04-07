@@ -64,7 +64,17 @@ pub trait Data {
                 Err(_) => Ok("".to_string()),
             }
         }
-        Err(ExecError::ArrayIndexInvalid(pos.to_string()))
+
+        if pos == "0" || pos == "*" || pos == "@" {
+            return match self.get_as_single() {
+                Ok(d)  => Ok(d),
+                Err(_) => Ok("".to_string()),
+            }
+        }else{
+            return Ok("".to_string());
+        }
+
+        //Err(ExecError::ArrayIndexInvalid(pos.to_string()))
     }
 
     fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {Err(ExecError::Other("not an array".to_string()))}
