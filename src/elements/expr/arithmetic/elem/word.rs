@@ -18,11 +18,11 @@ pub fn to_operand(w: &Word, pre_increment: i128, post_increment: i128,
         return Err(ExecError::OperandExpected(w.text.to_string()));
     }
 
-    let name = w.eval_as_value(core)?;
+//    let name = w.eval_as_value(core)?;
 
     match pre_increment {
-        0 => change_variable(&name, core, post_increment, false),
-        _ => change_variable(&name, core, pre_increment, true),
+        0 => change_variable(&w.text, core, post_increment, false),
+        _ => change_variable(&w.text, core, pre_increment, true),
     }
 }
 
@@ -37,7 +37,7 @@ fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
 
 fn is_array(name: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(&name);
-    let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
+    let parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
         Ok(Some(p)) => p,
         _    => return false,
     };
@@ -47,9 +47,9 @@ fn is_array(name: &str, core: &mut ShellCore) -> bool {
     }
 
     if let ArithElem::ArrayElem(_, _, _) = parsed.elements[0] {
+            /*
             dbg!("{:?}", &parsed);
             dbg!("{:?}", parsed.eval(core));
-            /*
             if let Ok(eval) = parsed.eval(core) {
                 dbg!("{:?}", &eval);
             }*/
@@ -88,6 +88,7 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
     }*/
 }
 
+/*
 fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
@@ -105,6 +106,7 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
 
     Err(ExecError::OperandExpected(name.to_string()))
 }
+*/
 
 fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if name.contains('.') {

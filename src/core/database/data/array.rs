@@ -54,7 +54,6 @@ impl Data for ArrayData {
             return Ok(self.values().join(" "));
         }
 
-        dbg!("{:?}", &key);
         let n = key.parse::<usize>().map_err(|_| ExecError::ArrayIndexInvalid(key.to_string()))?;
         Ok( self.body.get(&n).unwrap_or(&"".to_string()).clone() )
     }
