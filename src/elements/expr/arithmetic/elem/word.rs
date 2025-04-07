@@ -1,7 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::subscript::Subscript;
 use crate::error::exec::ExecError;
 use crate::utils;
@@ -16,8 +17,6 @@ pub fn to_operand(w: &Word, pre_increment: i128, post_increment: i128,
     || w.text.find('\'').is_some() {
         return Err(ExecError::OperandExpected(w.text.to_string()));
     }
-
-//    let name = w.eval_as_value(core)?;
 
     match pre_increment {
         0 => change_variable(&w.text, core, post_increment, false),
@@ -59,17 +58,14 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
         }
     }
 
-    single_str_to_num(&name, core)
-        /*
     match single_str_to_num(&name, core) {
         Ok(e)  => Ok(e),
         Err(_) => {
             resolve_arithmetic_op(&name, core)
         },
-    }*/
+    }
 }
 
-/*
 fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
@@ -87,7 +83,6 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
 
     Err(ExecError::OperandExpected(name.to_string()))
 }
-*/
 
 fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if name.contains('.') {
@@ -104,12 +99,13 @@ fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, Exec
 }
 
 fn change_variable(name: &str, core: &mut ShellCore, inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
+    /*
     if ! utils::is_name(name, core) {
         return match inc != 0 && ! pre {
             true  => Err(ExecError::OperandExpected(name.to_string())),
             false => str_to_num(&name, core),
         }
-    }
+    }*/
 
     match str_to_num(&name, core) {
         Ok(ArithElem::Integer(n))        => {
