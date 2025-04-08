@@ -8,24 +8,7 @@ use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
 use super::super::ArithElem;
-use super::{array_elem, float, int};
-
-pub fn to_operand(w: &str, sub: &mut Option<Subscript>, pre_increment: i128, post_increment: i128,
-                   core: &mut ShellCore) -> Result<ArithElem, ExecError> {
-    if pre_increment != 0 && post_increment != 0 
-    || w.find('\'').is_some() {
-        return Err(ExecError::OperandExpected(w.to_string()));
-    }
-
-    if let Some(ref mut s) = sub {
-        return array_elem::to_operand(w, s, pre_increment, post_increment, core);
-    }
-
-    match pre_increment {
-        0 => change_variable(&w, core, post_increment, false),
-        _ => change_variable(&w, core, pre_increment, true),
-    }
-}
+use super::{float, int};
 
 fn to_num(w: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if w.find('\'').is_some() {
@@ -101,7 +84,8 @@ fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, Exec
     Ok( ArithElem::Integer(n) )
 }
 
-fn change_variable(name: &str, core: &mut ShellCore, inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
+pub fn change_variable(name: &str, core: &mut ShellCore, inc: i128, pre: bool)
+-> Result<ArithElem, ExecError> {
     match str_to_num(&name, core) {
         Ok(ArithElem::Integer(n))        => {
             if name != "RANDOM" && name != "SECONDS" {
