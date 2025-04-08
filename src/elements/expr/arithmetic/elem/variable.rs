@@ -22,76 +22,56 @@ pub fn str_to_num(name: &str, sub: &String,
                   core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut name = name.to_string();
 
-    const RESOLVE_LIMIT: i32 = 10000;
+    const RESOLVE_LIMIT: i32 = 100;//000;
 
     for i in 0..RESOLVE_LIMIT {
-        match utils::is_name(&name, core) {
-            //true  => name = get_param(&name, sub, core)?,//core.db.get_param(&name)?,
-            true  => name = core.db.get_param2(&name, sub)?,//core.db.get_param(&name)?,
-            false => {
-                break
-            },
+        if utils::is_name(&name, core) {
+            if i == RESOLVE_LIMIT - 1 {
+                return Err(ExecError::Recursion(name.clone()));
+            }
+            name = core.db.get_param2(&name, sub)?;
+            continue;
         }
-
-        if i == RESOLVE_LIMIT - 1 {
-            return Err(ExecError::Recursion(name.clone()));
-        }
+        break;
     }
+    /* name is not a name here */
 
-    match single_str_to_num(&name, core) {
+    match try_parse_to_num(&name, core) {
         Ok(e)  => Ok(e),
-        Err(_) => {
-            resolve_arithmetic_op(&name, sub, core)
-        },
+        Err(_) => resolve_arithmetic_op(&name, core),
     }
 }
 
-fn resolve_arithmetic_op(name: &str, sub: &String,
-                         core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
         Ok(Some(p)) => p,
         _    => return Err(ExecError::OperandExpected(name.to_string())),
     };
 
-    if parsed.elements.len() == 1 { // In this case, the element is not changed by the evaluation.
-        return Err(ExecError::OperandExpected(name.to_string()));
-    }
-
     if let Ok(eval) = parsed.eval(core) {
-        return single_str_to_num(&eval, core);
+        return try_parse_to_num(&eval, core);
     }
 
     Err(ExecError::OperandExpected(name.to_string()))
 }
 
-fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+fn try_parse_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if name.contains('.') {
         let f = float::parse(&name)?;
-        return Ok(ArithElem::Float(f));
+        Ok(ArithElem::Float(f))
+    }else{
+        let n = int::parse(&name)?;
+        Ok( ArithElem::Integer(n) )
     }
-
-    if utils::is_name(&name, core) {
-        return Ok( ArithElem::Integer(0) );
-    }
-
-    let n = int::parse(&name)?;
-    Ok( ArithElem::Integer(n) )
 }
 
 pub fn set_and_to_value(name: &str, sub: &String, core: &mut ShellCore,
                         inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
-    //dbg!("{:?}", &name);
-    //dbg!("{:?}", &sub);
-    let num = str_to_num(&name, sub, core);
-    //dbg!("{:?}", &num);
-
-    match num {
+    match str_to_num(&name, sub, core) {
         Ok(ArithElem::Integer(n))        => {
             if inc != 0 {
-                //set_param(name, sub, &(n + inc).to_string(), core)?;
                 core.db.set_param2(&name, sub, &(n + inc).to_string(), None)?;
-                //core.db.set_param(name, &(n + inc).to_string(), None)?;
             }
             match pre {
                 true  => Ok(ArithElem::Integer(n+inc)),
@@ -100,9 +80,7 @@ pub fn set_and_to_value(name: &str, sub: &String, core: &mut ShellCore,
         },
         Ok(ArithElem::Float(n))        => {
             if inc != 0 {
-                //set_param(name, sub, &(n + inc as f64).to_string(), core)?;
                 core.db.set_param2(&name, sub, &(n + inc as f64).to_string(), None)?;
-                //core.db.set_param(name, &(n + inc as f64).to_string(), None)?;
             }
             match pre {
                 true  => Ok(ArithElem::Float(n+inc as f64)),

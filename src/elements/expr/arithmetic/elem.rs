@@ -8,7 +8,7 @@ pub mod variable;
 
 use super::ArithmeticExpr;
 use super::Word;
-use crate::ShellCore;
+use crate::{ShellCore, utils};
 use crate::error::exec::ExecError;
 use crate::elements::subscript::Subscript;
 
@@ -126,19 +126,19 @@ impl ArithElem {
     -> Result<(), ExecError> {
         *self = match self {
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
-            ArithElem::Variable(w, s, inc) => {
-                if add != 0 && *inc != 0 {
-                    return Err(ExecError::OperandExpected(w.to_string()));
+            ArithElem::Variable(name, s, inc) => {
+                if add != 0 && *inc != 0 || ! utils::is_name(&name, core) {
+                    return Err(ExecError::OperandExpected(name.to_string()));
                 }
 
                 let index = match s {
-                    Some(sub) => sub.eval(core, &w)?,
+                    Some(sub) => sub.eval(core, &name)?,
                     None => "".to_string(),
                 };
 
                 match add {
-                    0 => variable::set_and_to_value(&w, &index, core, *inc, false)?,
-                    _ => variable::set_and_to_value(&w, &index, core, add, true)?,
+                    0 => variable::set_and_to_value(&name, &index, core, *inc, false)?,
+                    _ => variable::set_and_to_value(&name, &index, core, add, true)?,
                 }
             },
             _ => return Ok(()),
