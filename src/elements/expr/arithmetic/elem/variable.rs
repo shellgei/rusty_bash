@@ -70,6 +70,13 @@ pub fn set_and_to_value(name: &str, sub: &String, core: &mut ShellCore,
                         inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
     match str_to_num(&name, sub, core) {
         Ok(ArithElem::Integer(n))        => {
+            /*
+            if pre && inc != 0 {
+                dbg!("{:?}", &sub);
+            }else{
+                dbg!("{:?}", &sub);
+            }*/
+
             if inc != 0 {
                 core.db.set_param2(&name, sub, &(n + inc).to_string(), None)?;
             }
