@@ -186,15 +186,15 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
     }
 
     match (to_num(w, sub, core)?, right_value) {
-        (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, cur, *right, core)?),
-        (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, cur, *right as f64, core)?),
-        (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur, *right, core)?),
-        (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur as f64, *right, core)?),
+        (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, sub, cur, *right, core)?),
+        (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, sub, cur, *right as f64, core)?),
+        (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, sub, cur, *right, core)?),
+        (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, sub, cur as f64, *right, core)?),
         _ => Err(ExecError::Other("not supported yet".to_string())),
     }
 }
 
-fn set_param(name: &str, sub: &String, value: &String, core: &mut ShellCore) -> Result<(), ExecError> {
+pub fn set_param(name: &str, sub: &String, value: &String, core: &mut ShellCore) -> Result<(), ExecError> {
     if sub.is_empty() {
         return core.db.set_param(name, value, None);
     }

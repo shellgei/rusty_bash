@@ -49,8 +49,8 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
     Ok(())
 }
 
-pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut ShellCore)
-                                      -> Result<ArithElem, ExecError> {
+pub fn substitute(op: &str, name: &String, index: &String,
+    cur: f64, right: f64, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let new_value = match op {
         "+=" => cur + right,
         "-=" => cur - right,
@@ -64,10 +64,13 @@ pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut Shel
         _   => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
+    variable::set_param(name, index, &new_value.to_string(), core)?;
+    Ok(ArithElem::Float(new_value))
+        /*
     match core.db.set_param(&name, &new_value.to_string(), None) {
         Ok(()) => Ok(ArithElem::Float(new_value)),
         Err(e) => Err(e),
-    }
+    }*/
 }
 
 pub fn parse(s: &str) -> Result<f64, ExecError> {
