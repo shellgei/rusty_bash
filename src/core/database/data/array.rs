@@ -98,11 +98,18 @@ impl ArrayData {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 return d.set_as_array(&pos.to_string(), val);
+            }else if d.is_assoc() {
+                return d.set_as_assoc(&pos.to_string(), val);
+            }else{
+                let data = d.get_as_single()?;
+                ArrayData::set_new_entry(db_layer, name, vec![])?;
+                Self::set_elem(db_layer, name, 0, &data)?;
+                Self::set_elem(db_layer, name, pos, val)
             }
+        }else{
+            ArrayData::set_new_entry(db_layer, name, vec![])?;
+            Self::set_elem(db_layer, name, pos, val)
         }
-
-        ArrayData::set_new_entry(db_layer, name, vec![])?;
-        Self::set_elem(db_layer, name, pos, val)
     }
 
     pub fn values(&self) -> Vec<String> {

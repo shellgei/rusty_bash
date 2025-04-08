@@ -162,6 +162,8 @@ impl Substitution {
             self.set_assoc(core, layer)
         }else if core.db.is_array(&self.name) {
             self.set_array(core, layer)
+        }else if self.index.is_some() {
+            self.set_array(core, layer)
         }else {
             self.set_param(core, layer)
         }

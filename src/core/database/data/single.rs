@@ -112,13 +112,6 @@ impl SingleData {
 
         let d = db_layer.get_mut(name).unwrap();
 
-        if name == "a" {
-            dbg!("{:?}", &name);
-            dbg!("{:?}", &val);
-            dbg!("{:?}", &d.is_array());
-        }
-
-
         if d.is_array() {
             return d.set_as_array("0", val);
         }
