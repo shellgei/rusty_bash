@@ -25,7 +25,6 @@ impl Subscript {
             }
             return match core.db.is_assoc(param_name) {
                 true  => {
-                    dbg!("{:?}", &self.inner);
                     match self.inner.as_mut() {
                         Some(sub) => sub.eval_as_assoc_index(core),
                         None => Err(ExecError::ArrayIndexInvalid("".to_string())),
