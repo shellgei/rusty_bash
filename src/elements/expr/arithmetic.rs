@@ -189,8 +189,7 @@ impl ArithmeticExpr {
             (Some(&ArithElem::Variable(_, _, _)), Some(&ArithElem::Word(_, _)))
                                      => ans.push(ArithElem::BinaryOp(pm.clone())),
             (_, None)
-            | (_, Some(&ArithElem::Variable(_, _, _)))
-            | (_, Some(&ArithElem::ArrayElem(_, _, _))) => return inc,
+            | (_, Some(&ArithElem::Variable(_, _, _))) => return inc,
             (Some(&ArithElem::Integer(_)), _)
             | (Some(&ArithElem::Float(_)), _)   => ans.push(ArithElem::BinaryOp(pm.clone())),
             _                              => ans.push(ArithElem::UnaryOp(pm.clone())),
@@ -207,7 +206,7 @@ impl ArithmeticExpr {
         for i in 0..len {
             let e = self.elements[i].clone();
             pre_increment = match e {
-                ArithElem::Variable(_, _, _) | ArithElem::ArrayElem(_, _, _) => {
+                ArithElem::Variable(_, _, _) => {
                     if pre_increment != 0 {
                         ans.push(ArithElem::Increment(pre_increment));
                     }

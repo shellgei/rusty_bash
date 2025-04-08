@@ -6,7 +6,7 @@ use crate::error::exec::ExecError;
 use super::ArithElem;
 use crate::elements::subscript::Subscript;
 
-pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i128, post_increment: i128,
+pub fn to_operand(name: &str, sub: &mut Subscript, pre_increment: i128, post_increment: i128,
                    core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let key = sub.eval(core, name)?;
 
@@ -34,11 +34,11 @@ pub fn to_operand(name: &String, sub: &mut Subscript, pre_increment: i128, post_
     ans
 }
 
-fn recursive_eval(s: &String) -> Result<i128, ExecError> {
+fn recursive_eval(s: &str) -> Result<i128, ExecError> {
     Err(ExecError::Other(format!("{}: not an interger", &s)))
 }
 
-fn set_value(name: &String, key: &String, new_value: i128,
+fn set_value(name: &str, key: &String, new_value: i128,
                      core: &mut ShellCore) -> Result<(), ExecError> {
     if let Ok(n) = key.parse::<i128>() {
         return match n >= 0 {

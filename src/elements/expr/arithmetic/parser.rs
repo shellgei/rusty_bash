@@ -9,12 +9,6 @@ use super::{ArithmeticExpr, ArithElem};
 use super::elem::{int, float};
 
 impl ArithmeticExpr {
-    /*
-    fn eat_space(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
-        let len = feeder.scanner_multiline_blank(core);
-        ans.text += &feeder.consume(len);
-    }*/
-
     fn eat_space(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Option<ArithElem> {
         let len = feeder.scanner_multiline_blank(core);
         if len == 0 {
@@ -124,7 +118,11 @@ impl ArithmeticExpr {
             ans.text += &s.text.clone();
             let sp = Self::eat_space(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
-            ans.elements.push( ArithElem::ArrayElem(name.clone(), s, suffix) );
+            if internal {
+                ans.elements.push( ArithElem::Variable(name.clone(), Some(s), suffix) );
+            }else{
+                ans.elements.push( ArithElem::ArrayElem(name.clone(), s, suffix) );
+            }
             if ! internal && sp.is_some() {
                 ans.elements.push(sp.unwrap());
             }
