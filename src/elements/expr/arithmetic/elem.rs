@@ -132,8 +132,8 @@ impl ArithElem {
                 }
 
                 let index = match s {
-                    Some(sub) => Some(sub.eval(core, &w)?),
-                    None => None,
+                    Some(sub) => sub.eval(core, &w)?,
+                    None => "".to_string(),
                 };
 
                 /*
