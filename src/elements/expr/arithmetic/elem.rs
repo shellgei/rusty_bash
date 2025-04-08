@@ -122,8 +122,9 @@ impl ArithElem {
         }
     }
 
-    pub fn change_to_value(&mut self, add: i128, core: &mut ShellCore) -> Result<(), ExecError> {
-        let tmp = match self {
+    pub fn change_to_value(&mut self, add: i128, core: &mut ShellCore)
+    -> Result<(), ExecError> {
+        *self = match self {
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
             ArithElem::Variable(w, s, inc) => {
                 if add != 0 && *inc != 0 {
@@ -135,21 +136,13 @@ impl ArithElem {
                     None => "".to_string(),
                 };
 
-                /*
-                if let Some(ref mut sub) = s {
-                    array_elem::to_operand(w, sub, add, *inc, core)?
-                }else {
-                */
-                    match add {
-                        0 => variable::set_and_to_value(&w, &index, core, *inc, false)?,
-                        _ => variable::set_and_to_value(&w, &index, core, add, true)?,
-                    }
-                //}
+                match add {
+                    0 => variable::set_and_to_value(&w, &index, core, *inc, false)?,
+                    _ => variable::set_and_to_value(&w, &index, core, add, true)?,
+                }
             },
             _ => return Ok(()),
         };
-
-        *self = tmp;
         Ok(())
     }
 }

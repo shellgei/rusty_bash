@@ -26,7 +26,8 @@ pub fn str_to_num(name: &str, sub: &String,
 
     for i in 0..RESOLVE_LIMIT {
         match utils::is_name(&name, core) {
-            true  => name = get_param(&name, sub, core)?,//core.db.get_param(&name)?,
+            //true  => name = get_param(&name, sub, core)?,//core.db.get_param(&name)?,
+            true  => name = core.db.get_param2(&name, sub)?,//core.db.get_param(&name)?,
             false => {
                 break
             },
@@ -88,7 +89,8 @@ pub fn set_and_to_value(name: &str, sub: &String, core: &mut ShellCore,
     match num {
         Ok(ArithElem::Integer(n))        => {
             if inc != 0 {
-                set_param(name, sub, &(n + inc).to_string(), core)?;
+                //set_param(name, sub, &(n + inc).to_string(), core)?;
+                core.db.set_param2(&name, sub, &(n + inc).to_string(), None)?;
                 //core.db.set_param(name, &(n + inc).to_string(), None)?;
             }
             match pre {
@@ -98,7 +100,8 @@ pub fn set_and_to_value(name: &str, sub: &String, core: &mut ShellCore,
         },
         Ok(ArithElem::Float(n))        => {
             if inc != 0 {
-                set_param(name, sub, &(n + inc as f64).to_string(), core)?;
+                //set_param(name, sub, &(n + inc as f64).to_string(), core)?;
+                core.db.set_param2(&name, sub, &(n + inc as f64).to_string(), None)?;
                 //core.db.set_param(name, &(n + inc as f64).to_string(), None)?;
             }
             match pre {
@@ -158,26 +161,25 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
 
     match op {
         "=" => {
-            set_param(&name, sub, &right_str, core)?;
+            core.db.set_param2(&name, sub, &right_str, None)?;
             return Ok(right_value.clone());
         },
         "+=" => {
-            let mut val_str = get_param(&name, sub, core)?;
-            //let mut val_str = core.db.get_param(&name)?;
+            let mut val_str = core.db.get_param2(&name, sub)?;
             if val_str == "" {
                 val_str = "0".to_string();
             }
             if let Ok(left) = val_str.parse::<i128>() {
                 match right_value {
                     ArithElem::Integer(n) => {
-                        set_param(&name, sub, &(left + *n).to_string(), core)?;
+                        core.db.set_param2(&name, sub, &(left + *n).to_string(), None)?;
                         return Ok(ArithElem::Integer(left + *n));
                     },
                     _ => {},
                 }
             }else if let Ok(left) = val_str.parse::<f64>() {
                 if let ArithElem::Float(f) = right_value {
-                    set_param(&name, sub, &(left + *f).to_string(), core)?;
+                    core.db.set_param2(&name, sub, &(left + *f).to_string(), None)?;
                     return Ok(ArithElem::Float(left + *f));
                 }
             }
@@ -194,114 +196,3 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
     }
 }
 
-pub fn set_param(name: &str, sub: &String, value: &String, core: &mut ShellCore) -> Result<(), ExecError> {
-    if sub.is_empty() {
-        return core.db.set_param(name, value, None);
-    }
-
-    if core.db.is_array(name) {
-        if let Ok(n) = sub.parse::<usize>() {
-            core.db.set_array_elem(&name, value, n, None)?;
-        }
-    }else if core.db.is_assoc(name) {
-        core.db.set_assoc_elem(&name, &sub, value, None)?;
-    }else{
-        if let Ok(n) = sub.parse::<usize>() {
-            core.db.set_array_elem(&name, value, n, None)?;
-        }else{
-            core.db.set_assoc_elem(&name, &sub, value, None)?;
-        }
-    }
-    Ok(())
-}
-
-fn get_param(name: &str, sub: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-    if sub.is_empty() {
-        return core.db.get_param(&name);
-    }
-
-    core.db.get_array_elem(&name, &sub)
-}
-
-/*
-fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut ArithElem, core: &mut ShellCore)
-                                      -> Result<ArithElem, ExecError> {
-    right_value.change_to_value(0, core)?; // InParen -> Value
-    let right_str = right_value.to_string();
-
-    let index = match sub.eval(core, name) {
-        Ok(s) => s,
-        Err(_) => "".to_string(),
-    };
-
-    match op {
-        "=" => {
-            set_array(name, &index, &right_str, core);
-            return Ok(right_value.clone());
-        },
-        "+=" => {
-            let mut val_str = get_array(name, &index, core);
-            if val_str == "" {
-                val_str = "0".to_string();
-            }
-            if let Ok(left) = val_str.parse::<i128>() {
-                match right_value {
-                    ArithElem::Integer(n) => {
-                        set_array(&name, &index, &(left + *n).to_string(), core);
-                        return Ok(ArithElem::Integer(left + *n));
-                    },
-                    _ => {},
-                }
-            }else if let Ok(left) = val_str.parse::<f64>() {
-                if let ArithElem::Float(f) = right_value {
-                    set_array(&name, &index, &(left + *f).to_string(), core);
-                    return Ok(ArithElem::Float(left + *f));
-                }
-            }
-        },
-        "-=" => {
-            let mut val_str = get_array(name, &index, core);
-            if val_str == "" {
-                val_str = "0".to_string();
-            }
-            if let Ok(left) = val_str.parse::<i128>() {
-                match right_value {
-                    ArithElem::Integer(n) => {
-                        set_array(&name, &index, &(left - *n).to_string(), core);
-                        return Ok(ArithElem::Integer(left - *n));
-                    },
-                    _ => {},
-                }
-            }else if let Ok(left) = val_str.parse::<f64>() {
-                if let ArithElem::Float(f) = right_value {
-                    set_array(&name, &index, &(left - *f).to_string(), core);
-                    return Ok(ArithElem::Float(left - *f));
-                }
-            }
-        },
-        "*=" => { //TODO: refacutor with -=, /=, ... and relocate methods related to array
-            let mut val_str = get_array(name, &index, core);
-            if val_str == "" {
-                val_str = "0".to_string();
-            }
-            if let Ok(left) = val_str.parse::<i128>() {
-                match right_value {
-                    ArithElem::Integer(n) => {
-                        set_array(&name, &index, &(left * *n).to_string(), core);
-                        return Ok(ArithElem::Integer(left * *n));
-                    },
-                    _ => {},
-                }
-            }else if let Ok(left) = val_str.parse::<f64>() {
-                if let ArithElem::Float(f) = right_value {
-                    set_array(&name, &index, &(left * *f).to_string(), core);
-                    return Ok(ArithElem::Float(left * *f));
-                }
-            }
-        },
-        _   => {},
-    }
-
-    Err(ExecError::Other("not supported yet".to_string()))
-}
-*/

@@ -64,13 +64,8 @@ pub fn substitute(op: &str, name: &String, index: &String,
         _   => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
-    variable::set_param(name, index, &new_value.to_string(), core)?;
+    core.db.set_param2(&name, index, &new_value.to_string(), None)?;
     Ok(ArithElem::Float(new_value))
-        /*
-    match core.db.set_param(&name, &new_value.to_string(), None) {
-        Ok(()) => Ok(ArithElem::Float(new_value)),
-        Err(e) => Err(e),
-    }*/
 }
 
 pub fn parse(s: &str) -> Result<f64, ExecError> {

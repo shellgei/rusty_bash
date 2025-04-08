@@ -85,13 +85,8 @@ pub fn substitute(op: &str, name: &String, index: &String,
         _   => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
-    variable::set_param(name, index, &new_value.to_string(), core)?;
+    core.db.set_param2(&name, index, &new_value.to_string(), None)?;
     Ok(ArithElem::Integer(new_value))
-    /*
-    match core.db.set_param(&name, &new_value.to_string(), None) {
-        Ok(())  => Ok(ArithElem::Integer(new_value)),
-        Err(e) => Err(e),
-    }*/
 }
 
 fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ExecError> {

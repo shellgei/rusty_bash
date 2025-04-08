@@ -92,6 +92,13 @@ impl DataBase {
         Ok("".to_string())
     }
 
+    pub fn get_param2(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
+        match index.is_empty() {
+            true  => self.get_param(&name),
+            false => self.get_array_elem(&name, &index),
+        }
+}
+
     pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
         getter::array_elem(self, name, pos)
@@ -247,6 +254,27 @@ impl DataBase {
         SingleData::set_value(&mut self.params[layer], name, val)
     }
 
+    pub fn set_param2(&mut self, name: &str, index: &String, val: &String,
+                      layer: Option<usize>) -> Result<(), ExecError> {
+        if index.is_empty() {
+            return self.set_param(name, val, layer);
+        }
+
+        if self.is_array(name) {
+            if let Ok(n) = index.parse::<usize>() {
+                self.set_array_elem(&name, val, n, layer)?;
+            }
+        }else if self.is_assoc(name) {
+            self.set_assoc_elem(&name, &index, val, layer)?;
+        }else{
+            match index.parse::<usize>() {
+                Ok(n) => {self.set_array_elem(&name, val, n, layer)?;},
+                _ => {self.set_assoc_elem(&name, &index, val, layer)?;},
+            }
+        }
+        Ok(())
+    }
+
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
@@ -326,7 +354,6 @@ impl DataBase {
     }
 
     pub fn print(&mut self, name: &str) {
-        //if let Some(d) = getter::clone(self, name) {
         if let Some(d) = self.get_ref(name) {
             d.print_with_name(name);
         }else if let Some(f) = self.functions.get(name) {
