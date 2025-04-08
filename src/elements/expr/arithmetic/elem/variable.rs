@@ -3,38 +3,31 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::subscript::Subscript;
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
 use super::super::ArithElem;
 use super::{float, int};
 
-fn to_num(w: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+fn to_num(w: &str, sub: &Option<String>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if w.find('\'').is_some() {
         return Err(ExecError::OperandExpected(w.to_string()));
     }
 
     let name = w.to_string();//w.eval_as_value(core)?;
-    str_to_num(&name, core)
+    str_to_num(&name, sub, core)
 }
 
-/*
-fn is_array(name: &str, core: &mut ShellCore) -> bool {
-    dbg!("{:?}", &name);
-    false
-}*/
-
-pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+pub fn str_to_num(name: &str, sub: &Option<String>, 
+                  core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut name = name.to_string();
 
     const RESOLVE_LIMIT: i32 = 10000;
 
     for i in 0..RESOLVE_LIMIT {
         match utils::is_name(&name, core) {
-            true  => name = core.db.get_param(&name)?,
+            true  => name = get_param(&name, sub, core)?,//core.db.get_param(&name)?,
             false => {
-  //              is_array(&name, core);
                 break
             },
         }
@@ -47,12 +40,13 @@ pub fn str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
     match single_str_to_num(&name, core) {
         Ok(e)  => Ok(e),
         Err(_) => {
-            resolve_arithmetic_op(&name, core)
+            resolve_arithmetic_op(&name, sub, core)
         },
     }
 }
 
-fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+fn resolve_arithmetic_op(name: &str, sub: &Option<String>,
+                         core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
         Ok(Some(p)) => p,
@@ -84,12 +78,18 @@ fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, Exec
     Ok( ArithElem::Integer(n) )
 }
 
-pub fn change_variable(name: &str, core: &mut ShellCore, inc: i128, pre: bool)
--> Result<ArithElem, ExecError> {
-    match str_to_num(&name, core) {
+pub fn set_and_to_value(name: &str, sub: &Option<String>, core: &mut ShellCore,
+                        inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
+    //dbg!("{:?}", &name);
+    //dbg!("{:?}", &sub);
+    let num = str_to_num(&name, sub, core);
+    //dbg!("{:?}", &num);
+
+    match num {
         Ok(ArithElem::Integer(n))        => {
-            if name != "RANDOM" && name != "SECONDS" {
-                core.db.set_param(name, &(n + inc).to_string(), None)?;
+            if inc != 0 {
+                set_param(name, sub, &(n + inc).to_string(), core)?;
+                //core.db.set_param(name, &(n + inc).to_string(), None)?;
             }
             match pre {
                 true  => Ok(ArithElem::Integer(n+inc)),
@@ -97,7 +97,10 @@ pub fn change_variable(name: &str, core: &mut ShellCore, inc: i128, pre: bool)
             }
         },
         Ok(ArithElem::Float(n))        => {
-            core.db.set_param(name, &(n + inc as f64).to_string(), None)?;
+            if inc != 0 {
+                set_param(name, sub, &(n + inc as f64).to_string(), core)?;
+                //core.db.set_param(name, &(n + inc as f64).to_string(), None)?;
+            }
             match pre {
                 true  => Ok(ArithElem::Float(n+inc as f64)),
                 false => Ok(ArithElem::Float(n)),
@@ -128,10 +131,13 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
     };
 
     let ans = match stack.pop() {
-        Some(ArithElem::ArrayElem(name, mut sub , 0)) => subs_array(op, &name, &mut sub, &mut right, core)?,
-        //Some(ArithElem::Word(w, 0)) => subs(op, &w, &mut right, core)?,
-        Some(ArithElem::Variable(w, _, 0)) => subs(op, &w, &mut right, core)?,
-        //Some(ArithElem::Word(_, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
+        Some(ArithElem::Variable(w, s, 0)) => {
+            let index = match s {
+                Some(mut sub) => Some(sub.eval(core, &w)?),
+                None => None,
+            };
+            subs(op, &w, &index, &mut right, core)?
+        },
         Some(ArithElem::Variable(_, _, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
         _ => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
     };
@@ -140,7 +146,7 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
     Ok(())
 }
 
-fn subs(op: &str, w: &str, right_value: &mut ArithElem, core: &mut ShellCore)
+fn subs(op: &str, w: &str, sub: &Option<String>, right_value: &mut ArithElem, core: &mut ShellCore)
                                       -> Result<ArithElem, ExecError> {
     if w.find('\'').is_some() {
         return Err(ExecError::OperandExpected(w.to_string()));
@@ -152,25 +158,26 @@ fn subs(op: &str, w: &str, right_value: &mut ArithElem, core: &mut ShellCore)
 
     match op {
         "=" => {
-            core.db.set_param(&name, &right_str, None)?;
+            set_param(&name, sub, &right_str, core)?;
             return Ok(right_value.clone());
         },
         "+=" => {
-            let mut val_str = core.db.get_param(&name)?;
+            let mut val_str = get_param(&name, sub, core)?;
+            //let mut val_str = core.db.get_param(&name)?;
             if val_str == "" {
                 val_str = "0".to_string();
             }
             if let Ok(left) = val_str.parse::<i128>() {
                 match right_value {
                     ArithElem::Integer(n) => {
-                        core.db.set_param(&name, &(left + *n).to_string(), None)?;
+                        set_param(&name, sub, &(left + *n).to_string(), core)?;
                         return Ok(ArithElem::Integer(left + *n));
                     },
                     _ => {},
                 }
             }else if let Ok(left) = val_str.parse::<f64>() {
                 if let ArithElem::Float(f) = right_value {
-                    core.db.set_param(&name, &(left + *f).to_string(), None)?;
+                    set_param(&name, sub, &(left + *f).to_string(), core)?;
                     return Ok(ArithElem::Float(left + *f));
                 }
             }
@@ -178,7 +185,7 @@ fn subs(op: &str, w: &str, right_value: &mut ArithElem, core: &mut ShellCore)
         _   => {},
     }
 
-    match (to_num(w, core)?, right_value) {
+    match (to_num(w, sub, core)?, right_value) {
         (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, cur, *right, core)?),
         (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, cur, *right as f64, core)?),
         (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, cur, *right, core)?),
@@ -187,46 +194,46 @@ fn subs(op: &str, w: &str, right_value: &mut ArithElem, core: &mut ShellCore)
     }
 }
 
-fn set_array(name: &str, index: &String, value: &String, core: &mut ShellCore) {
+fn set_param(name: &str, sub: &Option<String>, value: &String, core: &mut ShellCore) -> Result<(), ExecError> {
+    if sub.is_none() {
+        return core.db.set_param(name, value, None);
+    }
+
+    let index = sub.clone().unwrap();
     if index == "" {
-        return;
+        return Err(ExecError::Other("empty subscript".to_string()));
     }
 
     if core.db.is_array(name) {
         if let Ok(n) = index.parse::<usize>() {
-            if let Err(e) = core.db.set_array_elem(&name, value, n, None) {
-                e.print(core);
-            }
+            core.db.set_array_elem(&name, value, n, None)?;
         }
     }else if core.db.is_assoc(name) {
-        if let Err(e) = core.db.set_assoc_elem(&name, &index, value, None) {
-            e.print(core);
-        }
+        core.db.set_assoc_elem(&name, &index, value, None)?;
     }else{
         if let Ok(n) = index.parse::<usize>() {
-            if let Err(e) = core.db.set_array_elem(&name, value, n, None) {
-                e.print(core);
-            }
+            core.db.set_array_elem(&name, value, n, None)?;
         }else{
-            if let Err(e) = core.db.set_assoc_elem(&name, &index, value, None) {
-                e.print(core);
-            }
+            core.db.set_assoc_elem(&name, &index, value, None)?;
         }
     }
+    Ok(())
 }
 
-fn get_array(name: &str, index: &String, core: &mut ShellCore) -> String {
+fn get_param(name: &str, sub: &Option<String>, core: &mut ShellCore) -> Result<String, ExecError> {
+    if sub.is_none() {
+        return core.db.get_param(&name);
+    }
+
+    let index = sub.clone().unwrap();
     if index == "" {
-        return "".to_string();
+        return Err(ExecError::Other("empty subscript".to_string()));
     }
 
-    match core.db.get_array_elem(&name, &index) {
-        Ok(s) => return s,
-        Err(e) => e.print(core),
-    }
-    "".to_string()
+    core.db.get_array_elem(&name, &index)
 }
 
+/*
 fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut ArithElem, core: &mut ShellCore)
                                       -> Result<ArithElem, ExecError> {
     right_value.change_to_value(0, core)?; // InParen -> Value
@@ -307,3 +314,4 @@ fn subs_array(op: &str, name: &str, sub: &mut Subscript, right_value: &mut Arith
 
     Err(ExecError::Other("not supported yet".to_string()))
 }
+*/

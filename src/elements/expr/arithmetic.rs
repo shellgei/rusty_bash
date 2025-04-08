@@ -40,7 +40,6 @@ impl ArithmeticExpr {
         }
 
         if let Some(a) = Self::parse_after_eval(&mut Feeder::new(&txt), core, "")? {
-            dbg!("{:?}", &a);
             self.text = a.text;
             self.elements = a.elements;
         }

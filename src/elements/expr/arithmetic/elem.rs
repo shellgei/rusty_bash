@@ -131,14 +131,21 @@ impl ArithElem {
                     return Err(ExecError::OperandExpected(w.to_string()));
                 }
 
+                let index = match s {
+                    Some(sub) => Some(sub.eval(core, &w)?),
+                    None => None,
+                };
+
+                /*
                 if let Some(ref mut sub) = s {
                     array_elem::to_operand(w, sub, add, *inc, core)?
                 }else {
+                */
                     match add {
-                        0 => variable::change_variable(&w, core, *inc, false)?,
-                        _ => variable::change_variable(&w, core, add, true)?,
+                        0 => variable::set_and_to_value(&w, &index, core, *inc, false)?,
+                        _ => variable::set_and_to_value(&w, &index, core, add, true)?,
                     }
-                }
+                //}
             },
             _ => return Ok(()),
         };
