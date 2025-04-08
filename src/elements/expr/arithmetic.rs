@@ -40,6 +40,7 @@ impl ArithmeticExpr {
         }
 
         if let Some(a) = Self::parse_after_eval(&mut Feeder::new(&txt), core, "")? {
+            dbg!("{:?}", &a);
             self.text = a.text;
             self.elements = a.elements;
         }
@@ -185,10 +186,10 @@ impl ArithmeticExpr {
         }.to_string();
     
         match (&ans.last(), &self.elements.iter().nth(pos+1)) {
-            (Some(&ArithElem::Word(_, _)), Some(&ArithElem::Word(_, _)))
+            (Some(&ArithElem::Name(_, _, _)), Some(&ArithElem::Word(_, _)))
                                      => ans.push(ArithElem::BinaryOp(pm.clone())),
             (_, None)
-            | (_, Some(&ArithElem::Word(_, _)))
+            | (_, Some(&ArithElem::Name(_, _, _)))
             | (_, Some(&ArithElem::ArrayElem(_, _, _))) => return inc,
             (Some(&ArithElem::Integer(_)), _)
             | (Some(&ArithElem::Float(_)), _)   => ans.push(ArithElem::BinaryOp(pm.clone())),
@@ -206,7 +207,7 @@ impl ArithmeticExpr {
         for i in 0..len {
             let e = self.elements[i].clone();
             pre_increment = match e {
-                ArithElem::Word(_, _) | ArithElem::ArrayElem(_, _, _) => {
+                ArithElem::Name(_, _, _) | ArithElem::ArrayElem(_, _, _) => {
                     if pre_increment != 0 {
                         ans.push(ArithElem::Increment(pre_increment));
                     }

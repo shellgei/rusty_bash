@@ -21,13 +21,14 @@ pub enum ArithElem {
     Float(f64),
     Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     ArrayElem(String, Subscript, i128), // a[1]++
-    Word(Word, i128), // Word + post increment or decrement
+    Name(String, Option<String>, i128), // name + subscript + post increment or decrement
     InParen(ArithmeticExpr),
     Increment(i128), //pre increment
     Delimiter(String), //delimiter dividing left and right of &&, ||, and ','
     /* only for parse */
     Space(String),
     Symbol(String),
+    Word(Word, i128), // Word + post increment or decrement
 }
 
 impl ArithElem {
@@ -82,6 +83,13 @@ impl ArithElem {
                     _  => w.text.clone(),
                 }
             },
+            ArithElem::Name(w, _, inc) => {
+                match inc {
+                    1  => w.clone() + "++",
+                    -1 => w.clone() + "--",
+                    _  => w.clone(),
+                }
+            },
             ArithElem::Ternary(left, right) => {
                 let mut ans = "?".to_string();
                 if let Some(e) = *left.clone() {
@@ -115,6 +123,7 @@ impl ArithElem {
             ArithElem::ArrayElem(name, ref mut sub, inc)
                 => array_elem::to_operand(&name, sub, add, *inc, core)?,
             ArithElem::Word(w, inc) => word::to_operand(&w, add, *inc, core)?,
+            ArithElem::Name(w, _, inc) => word::to_operand2(&w, add, *inc, core)?,
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
             _ => return Ok(()),
         };

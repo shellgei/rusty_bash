@@ -24,12 +24,25 @@ pub fn to_operand(w: &Word, pre_increment: i128, post_increment: i128,
     }
 }
 
-fn to_num(w: &Word, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
-    if w.text.find('\'').is_some() {
-        return Err(ExecError::OperandExpected(w.text.to_string()));
+pub fn to_operand2(w: &str, pre_increment: i128, post_increment: i128,
+                   core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+    if pre_increment != 0 && post_increment != 0 
+    || w.find('\'').is_some() {
+        return Err(ExecError::OperandExpected(w.to_string()));
     }
 
-    let name = w.eval_as_value(core)?;
+    match pre_increment {
+        0 => change_variable(&w, core, post_increment, false),
+        _ => change_variable(&w, core, pre_increment, true),
+    }
+}
+
+fn to_num(w: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+    if w.find('\'').is_some() {
+        return Err(ExecError::OperandExpected(w.to_string()));
+    }
+
+    let name = w.to_string();//w.eval_as_value(core)?;
     str_to_num(&name, core)
 }
 
@@ -99,14 +112,6 @@ fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, Exec
 }
 
 fn change_variable(name: &str, core: &mut ShellCore, inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
-    /*
-    if ! utils::is_name(name, core) {
-        return match inc != 0 && ! pre {
-            true  => Err(ExecError::OperandExpected(name.to_string())),
-            false => str_to_num(&name, core),
-        }
-    }*/
-
     match str_to_num(&name, core) {
         Ok(ArithElem::Integer(n))        => {
             if name != "RANDOM" && name != "SECONDS" {
@@ -150,8 +155,10 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 
     let ans = match stack.pop() {
         Some(ArithElem::ArrayElem(name, mut sub , 0)) => subs_array(op, &name, &mut sub, &mut right, core)?,
-        Some(ArithElem::Word(w, 0)) => subs(op, &w, &mut right, core)?,
-        Some(ArithElem::Word(_, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
+        //Some(ArithElem::Word(w, 0)) => subs(op, &w, &mut right, core)?,
+        Some(ArithElem::Name(w, _, 0)) => subs(op, &w, &mut right, core)?,
+        //Some(ArithElem::Word(_, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
+        Some(ArithElem::Name(_, _, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
         _ => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
     };
 
@@ -159,13 +166,13 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
     Ok(())
 }
 
-fn subs(op: &str, w: &Word, right_value: &mut ArithElem, core: &mut ShellCore)
+fn subs(op: &str, w: &str, right_value: &mut ArithElem, core: &mut ShellCore)
                                       -> Result<ArithElem, ExecError> {
-    if w.text.find('\'').is_some() {
-        return Err(ExecError::OperandExpected(w.text.to_string()));
+    if w.find('\'').is_some() {
+        return Err(ExecError::OperandExpected(w.to_string()));
     }
 
-    let name = w.eval_as_value(core)?;
+    let name = w.to_string();//w.eval_as_value(core)?;
     right_value.change_to_value(0, core)?; // InParen -> Value
     let right_str = right_value.to_string();
 
