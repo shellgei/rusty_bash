@@ -43,6 +43,7 @@ impl ArithmeticExpr {
             self.text = a.text;
             self.elements = a.elements;
         }
+        //dbg!("{:?}", &self);
 
         if core.db.flags.contains('x') {
             let ps4 = core.get_ps4();

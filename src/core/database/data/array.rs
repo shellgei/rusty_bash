@@ -95,13 +95,14 @@ impl ArrayData {
 
     pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
                         name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(d) => d.set_as_array(&pos.to_string(), val),
-            None    => {
-                ArrayData::set_new_entry(db_layer, name, vec![])?;
-                Self::set_elem(db_layer, name, pos, val)
-            },
+        if let Some(d) = db_layer.get_mut(name) {
+            if d.is_array() {
+                return d.set_as_array(&pos.to_string(), val);
+            }
         }
+
+        ArrayData::set_new_entry(db_layer, name, vec![])?;
+        Self::set_elem(db_layer, name, pos, val)
     }
 
     pub fn values(&self) -> Vec<String> {
