@@ -248,10 +248,6 @@ impl DataBase {
     }
 
     pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>) -> Result<(), ExecError> {
-        if name == "a" {
-            dbg!("{:?}", &name);
-            dbg!("{:?}", &val);
-        }
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);
