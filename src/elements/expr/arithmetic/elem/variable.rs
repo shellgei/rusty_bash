@@ -49,12 +49,9 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
         _    => return Err(ExecError::OperandExpected(name.to_string())),
     };
 
-    dbg!("IN {:?}", &parsed);
     if let Ok(eval) = parsed.eval(core) {
-        dbg!("OUT {:?}", &eval);
         return try_parse_to_num(&eval, core);
     }
-    dbg!("ERR {:?}", &parsed.eval(core));
 
     Err(ExecError::OperandExpected(name.to_string()))
 }

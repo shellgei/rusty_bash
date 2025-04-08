@@ -105,12 +105,25 @@ impl SingleData {
         if env::var(name).is_ok() {
             env::set_var(name, val);
         }
-    
+
         if db_layer.get(name).is_none() {
             SingleData::set_new_entry(db_layer, name, "")?;
         }
-    
-        db_layer.get_mut(name).unwrap().set_as_single(val)
+
+        let d = db_layer.get_mut(name).unwrap();
+
+        if name == "a" {
+            dbg!("{:?}", &name);
+            dbg!("{:?}", &val);
+            dbg!("{:?}", &d.is_array());
+        }
+
+
+        if d.is_array() {
+            return d.set_as_array("0", val);
+        }
+     
+        d.set_as_single(val)
     }
 
     pub fn init_as_num(db_layer: &mut HashMap<String, Box<dyn Data>>,
