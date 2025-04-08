@@ -5,7 +5,7 @@ pub mod array_elem;
 pub mod int;
 pub mod float;
 pub mod trenary;
-pub mod word;
+pub mod variable;
 
 use super::ArithmeticExpr;
 use super::Word;
@@ -122,8 +122,8 @@ impl ArithElem {
         let tmp = match self {
             ArithElem::ArrayElem(name, ref mut sub, inc)
                 => array_elem::to_operand(&name, sub, add, *inc, core)?,
-            ArithElem::Word(w, inc) => word::to_operand(&w, add, *inc, core)?,
-            ArithElem::Name(w, _, inc) => word::to_operand2(&w, add, *inc, core)?,
+          //  ArithElem::Word(w, inc) => word::to_operand(&w, add, *inc, core)?,
+            ArithElem::Name(w, _, inc) => variable::to_operand(&w, add, *inc, core)?,
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
             _ => return Ok(()),
         };

@@ -6,7 +6,7 @@ use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::elem::ArithElem;
 use super::{rev_polish};
-use super::elem::{float, int, trenary, word};
+use super::elem::{float, int, trenary, variable};
 
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if let Some(mut e) = stack.pop() {
@@ -36,7 +36,7 @@ pub fn pop_operands(stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 fn bin_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
    match op {
     "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" 
-          => word::substitution(op, stack, core),
+          => variable::substitution(op, stack, core),
         _ => bin_calc_operation(op, stack, core),
     }
 }

@@ -4,7 +4,7 @@
 use crate::{error, ShellCore};
 use crate::error::exec::ExecError;
 use super::ArithElem;
-use super::word;
+use super::variable;
 
 pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
@@ -72,7 +72,7 @@ pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut Shel
 
 pub fn parse(s: &str) -> Result<f64, ExecError> {
     let mut sw = s.to_string();
-    let sign = word::get_sign(&mut sw);
+    let sign = variable::get_sign(&mut sw);
 
     match (sw.parse::<f64>(), sign.as_str()) {
         (Ok(f), "-") => Ok(-f),
