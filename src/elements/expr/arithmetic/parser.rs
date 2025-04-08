@@ -79,7 +79,7 @@ impl ArithmeticExpr {
         }
 
         //ans.elements.push( ArithElem::Word(Word::from(&w), 0) );
-        ans.elements.push( ArithElem::Name(w.clone(), None, 0) );
+        ans.elements.push( ArithElem::Variable(w.clone(), None, 0) );
         true
     }
 
@@ -132,7 +132,7 @@ impl ArithmeticExpr {
             let sp = Self::eat_space(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
             if internal {
-                ans.elements.push( ArithElem::Name(name.clone(), None, suffix) );
+                ans.elements.push( ArithElem::Variable(name.clone(), None, suffix) );
             }else{
                 ans.elements.push( ArithElem::Word(Word::from(name), suffix) );
             }
@@ -150,7 +150,7 @@ impl ArithmeticExpr {
             let sp = Self::eat_space(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
             if internal {
-                ans.elements.push( ArithElem::Name(w.text.clone(), None, suffix) );
+                ans.elements.push( ArithElem::Variable(w.text.clone(), None, suffix) );
             }else {
                 ans.elements.push( ArithElem::Word(w, suffix) );
             }
@@ -183,7 +183,7 @@ impl ArithmeticExpr {
             | Some(ArithElem::Float(_)) 
             | Some(ArithElem::ArrayElem(_, _, _)) 
             | Some(ArithElem::Word(_, _)) 
-            | Some(ArithElem::Name(_, _, _)) 
+            | Some(ArithElem::Variable(_, _, _)) 
             | Some(ArithElem::InParen(_)) => return false,
             _ => {},
         }

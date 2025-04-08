@@ -157,9 +157,9 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
     let ans = match stack.pop() {
         Some(ArithElem::ArrayElem(name, mut sub , 0)) => subs_array(op, &name, &mut sub, &mut right, core)?,
         //Some(ArithElem::Word(w, 0)) => subs(op, &w, &mut right, core)?,
-        Some(ArithElem::Name(w, _, 0)) => subs(op, &w, &mut right, core)?,
+        Some(ArithElem::Variable(w, _, 0)) => subs(op, &w, &mut right, core)?,
         //Some(ArithElem::Word(_, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
-        Some(ArithElem::Name(_, _, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
+        Some(ArithElem::Variable(_, _, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
         _ => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
     };
 

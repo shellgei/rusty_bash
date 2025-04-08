@@ -21,7 +21,7 @@ pub enum ArithElem {
     Float(f64),
     Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     ArrayElem(String, Subscript, i128), // a[1]++
-    Name(String, Option<String>, i128), // name + subscript + post increment or decrement
+    Variable(String, Option<String>, i128), // name + subscript + post increment or decrement
     InParen(ArithmeticExpr),
     Increment(i128), //pre increment
     Delimiter(String), //delimiter dividing left and right of &&, ||, and ','
@@ -83,7 +83,7 @@ impl ArithElem {
                     _  => w.text.clone(),
                 }
             },
-            ArithElem::Name(w, _, inc) => {
+            ArithElem::Variable(w, _, inc) => {
                 match inc {
                     1  => w.clone() + "++",
                     -1 => w.clone() + "--",
@@ -123,7 +123,7 @@ impl ArithElem {
             ArithElem::ArrayElem(name, ref mut sub, inc)
                 => array_elem::to_operand(&name, sub, add, *inc, core)?,
           //  ArithElem::Word(w, inc) => word::to_operand(&w, add, *inc, core)?,
-            ArithElem::Name(w, _, inc) => variable::to_operand(&w, add, *inc, core)?,
+            ArithElem::Variable(w, _, inc) => variable::to_operand(&w, add, *inc, core)?,
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
             _ => return Ok(()),
         };
