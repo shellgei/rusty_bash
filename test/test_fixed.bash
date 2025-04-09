@@ -84,8 +84,10 @@ res=$($com <<< 'shopt -u globskipdots ; echo /..*')
 res=$($com <<< 'shopt -u globskipdots ; echo /../.*')
 [ "${res:0:12}" = "/../. /../.." ] || err $LINENO
 
-res=$($com <<< 'shopt -u globskipdots ; echo /..*/l* | grep lib')
-[ "$?" -eq 0 ] || err $LINENO
+if [ "$(uname)" = "Linux" ] ; then
+	res=$($com <<< 'shopt -u globskipdots ; echo /..*/l* | grep lib')
+	[ "$?" -eq 0 ] || err $LINENO
+fi
 
 res=$($com <<< 'read -n 4 <<< "  abc def"; echo $REPLY')
 [ "$res" = "ab" ] || err $LINENO
