@@ -47,31 +47,33 @@ pub struct ConditionalExpr {
 
 impl ConditionalExpr {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<CondElem, ExecError> {
+        let mut cp = self.clone();
+
         let mut from = 0;
         let mut next = true;
         let mut last = CondElem::Ans(true);
 
-        for e in self.elements.iter_mut() {
+        for e in cp.elements.iter_mut() {
             e.eval(core)?;
         }
 
         if core.db.flags.contains('x') {
-            let mut elems = self.elements.clone()
+            let mut elems = cp.elements.clone()
                            .into_iter().map(|e| e.to_string())
                            .collect::<Vec<String>>();
             elems.pop();
             eprintln!("{} ]]\r", &elems.join(" "));
         }
 
-        for i in 0..self.elements.len() {
-            match self.elements[i] {
+        for i in 0..cp.elements.len() {
+            match cp.elements[i] {
                 CondElem::And | CondElem::Or => {
                     if next {
-                        last = Self::calculate(&self.elements[from..i], core)?;
+                        last = Self::calculate(&cp.elements[from..i], core)?;
                     }
                     from = i + 1;
 
-                    next = match (&self.elements[i], &last) {
+                    next = match (&cp.elements[i], &last) {
                         (CondElem::And, CondElem::Ans(ans)) => *ans,
                         (CondElem::Or, CondElem::Ans(ans))  => !ans,
                         _ => return Err(ExecError::Other("Internal error conditional.rs:55".to_string())),
