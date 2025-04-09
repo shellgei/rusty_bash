@@ -109,24 +109,20 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
         None => (name_and_value.to_string(), "".to_string()),
     };
 
-    /*
-    let name = match name_and_value.split("=").next() {
-        Some(nm) => nm,
-        None => return Err(ExecError::InvalidName(name_and_value.to_string())),
-    };*/
-
     if ! utils::is_name(&name, core) {
         return Err(ExecError::InvalidName(name.to_string()));
     }
 
+    let layer = Some(core.db.get_layer_num() - 2);
+
     if args.contains(&"-a".to_string()) {
-        core.db.set_array(&name, vec![], None)?;
+        core.db.set_array(&name, vec![], layer)?;
     }else if args.contains(&"-A".to_string()) {
-        core.db.set_assoc(&name, None)?;
+        core.db.set_assoc(&name, layer)?;
     }else {
         match args.contains(&"-i".to_string()) {
-            false => core.db.set_param(&name, &value, None)?,
-            true  => core.db.init_as_num(&name, &value, None)?,
+            false => core.db.set_param(&name, &value, layer)?,
+            true  => core.db.init_as_num(&name, &value, layer)?,
         };
     }
 
@@ -156,23 +152,6 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     for name_and_value in name_and_values.iter().rev() {
-        /*
-        let name = match name_and_value.split("=").next() {
-            Some(nm) => nm,
-            None => {
-                let e = ExecError::InvalidName(name.to_string());
-                e.print(core);
-                return 1;
-            };
-        }
-
-        if ! utils::is_name(&name, core) {
-            let e = ExecError::InvalidName(name.to_string());
-            e.print(core);
-            return 1;
-        }
-    
-    */
         if let Err(e) = declare_set(core, &name_and_value, &mut args, r_flg) {
             e.print(core);
             return 1;
