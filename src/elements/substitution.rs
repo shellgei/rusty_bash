@@ -21,7 +21,8 @@ impl ParsedDataType {
     pub fn get_evaluated_text(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         match self {
             Self::None      => Ok("".to_string()),
-            Self::Single(s) => Ok(s.text.clone()),
+            //Self::Single(s) => Ok(s.text.clone()),
+            Self::Single(s) => Ok(s.eval_as_value(core)?),
             Self::Array(a) => {
                 let mut ans = "(".to_string();
                 let mut ws = vec![];
@@ -131,7 +132,6 @@ impl Substitution {
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
             core.db.exit_status = 1;
-            dbg!("{:?}", &self);
             return Err(ExecError::Other("no value".to_string()));
         }
 
@@ -229,7 +229,7 @@ impl Substitution {
         if let Some(a) = Array::parse(feeder, core) {
             ans.text += &a.text;
             ans.value = ParsedDataType::Array(a);
-        }else if let Ok(Some(w)) = Word::parse(feeder, core, false) {
+        }else if let Ok(Some(w)) = Word::parse(feeder, core, None) {
             ans.text += &w.text;
             ans.value = ParsedDataType::Single(w);
         }

@@ -8,10 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 ### RANDOM ###
 
@@ -157,6 +157,9 @@ res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"aaa"}')
 
 res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"${b[@]}"}')
 [ "$res" = "0" ] || err $LINENO
+
+res=$($com <<< 'a=(a b); set "${a[@]}${a[@]}" ;echo $@ $#' )
+[ "$res" = "a ba b 3" ] || err $LINENO
 
 ### CASE CONVERSION ###
 

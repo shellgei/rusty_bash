@@ -101,9 +101,14 @@ impl DataBase {
     }
 
     pub fn has_value(&mut self, name: &str) -> bool {
+        if let Ok(n) = name.parse::<usize>() {
+            let layer = self.position_parameters.len() - 1;
+            return n < self.position_parameters[layer].len();
+        }
+
         let num = self.params.len();
         for layer in (0..num).rev()  {
-            if let Some(_) = self.params[layer].get(name) {
+            if self.has_value_layer(name, layer) {
                 return true;
             }
         }
@@ -138,10 +143,14 @@ impl DataBase {
 
         match getter::clone(self, name).as_mut() {
             Some(d) => {
-                match d.get_all_as_array() {
-                    Ok(v) => v,
-                    _ => vec![],
+                if let Ok(v) = d.get_all_as_array() {
+                    return v;
                 }
+                /*
+                if let Ok(v) = d.get_as_single() {
+                    return vec![v];
+                }*/
+                vec![]
             },
             None => vec![],
         }

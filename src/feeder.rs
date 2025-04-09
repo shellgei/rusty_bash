@@ -37,12 +37,11 @@ impl Feeder {
     }
 
     pub fn consume(&mut self, cutpos: usize) -> String {
-        let cut = self.remaining[0..cutpos].to_string();
-        self.remaining = self.remaining[cutpos..].to_string();
-
-        self.lineno += cut.chars().filter(|c| *c == '\n').count();
-
-        cut
+        let tail = self.remaining.split_off(cutpos);
+        let ans = self.remaining.to_string();
+        self.remaining = tail;
+        self.lineno += ans.chars().filter(|c| *c == '\n').count();
+        ans
     }
 
     pub fn refer(&mut self, cutpos: usize) -> &str {

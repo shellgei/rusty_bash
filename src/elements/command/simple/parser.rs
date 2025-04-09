@@ -24,7 +24,7 @@ impl SimpleCommand {
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore)
         -> Result<bool, ParseError> {
-        let w = match Word::parse(feeder, core, false) {
+        let w = match Word::parse(feeder, core, None) {
             Ok(Some(w)) => w,
             Err(e) => {
                 feeder.rewind();
@@ -68,7 +68,7 @@ impl SimpleCommand {
 
         let mut feeder_local = Feeder::new(&mut w);
         loop {
-            match Word::parse(&mut feeder_local, core, false) {
+            match Word::parse(&mut feeder_local, core, None) {
                 Ok(Some(w)) => {
                     text.push_str(&w.text);
                     words.push(w);

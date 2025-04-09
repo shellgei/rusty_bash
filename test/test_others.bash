@@ -8,10 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 ### SIMPLE COMMAND TEST ###
 
@@ -149,6 +149,9 @@ a" ] || err $LINENO
 
 res=$($com <<< 'a=A ; echo ${a:-B}' )
 [ "$res" = "A" ] || err $LINENO
+
+res=$($com <<< 'set a ; b=${1-" "}; echo $b' )
+[ "$res" = "a" ] || err $LINENO
 
 # offset
 
@@ -553,6 +556,9 @@ res=$($com <<< "echo 123'abc'def")
 res=$($com <<< 'echo "\""')
 [ "$res" == '"' ] || err $LINENO
 
+res=$($com <<< 'echo "\`"' )
+[ "$res" = "\`" ] || err $LINENO
+
 # parameter expansion
 
 res=$($com <<< 'echo $')
@@ -688,6 +694,9 @@ echo "$a"
 ')
 [ "$res" == "a
 b" ] || err $LINENO
+
+res=$($com <<< 'echo `echo aaa`' )
+[ "$res" = "aaa" ] || err $LINENO
 
 # array
 

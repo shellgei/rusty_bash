@@ -14,6 +14,13 @@ use crate::error::exec::ExecError;
 use super::subword::Subword;
 use super::subword::simple::SimpleSubword;
 
+#[derive(Debug, Clone)]
+pub enum WordMode {
+    Operand,
+    ReadCommand,
+    ParamOption(Vec<String>),
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
@@ -54,7 +61,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, ExecError> {
         let ws_after_brace_exp = match core.db.flags.contains('B') {
-            true  => brace_expansion::eval(&mut self.clone()),
+            true  => brace_expansion::eval(&mut self.clone(), core.compat_bash),
             false => vec![self.clone()],
         };
 
@@ -131,27 +138,22 @@ impl Word {
             splitted[len-1].do_not_erase = false;
         }
         
-        let extglob = core.shopts.query("extglob");
-
         if core.options.query("noglob") {
             return splitted;
         }
 
-        let nullglob = core.shopts.query("nullglob");
         for mut w in splitted {
-            ans.append(&mut path_expansion::eval(&mut w, extglob, nullglob) );
+            ans.append(&mut path_expansion::eval(&mut w, &core.shopts) );
         }
         ans
     }
 
    fn path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
-        let extglob = core.shopts.query("extglob");
         if core.options.query("noglob") {
             return vec![self.clone()];
         }
 
-        let nullglob = core.shopts.query("nullglob");
-        path_expansion::eval(&mut self.clone(), extglob, nullglob)
+        path_expansion::eval(&mut self.clone(), &core.shopts)
     }
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
@@ -208,31 +210,65 @@ impl Word {
         self.subwords.push(subword.clone());
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, as_operand: bool)
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: Option<WordMode>)
         -> Result<Option<Word>, ParseError> {
+
         if feeder.starts_with("#") {
-            return Ok(None);
+            if let Some(WordMode::ReadCommand) = mode {
+            }else{
+                return Ok(None);
+            }
         }
-        if as_operand && feeder.starts_with("}") {
+
+        if feeder.len() == 0 {
             return Ok(None);
         }
 
+        let first = feeder.nth(0).unwrap().to_string();
+
+        match mode {
+            Some(WordMode::Operand) => {
+                if first == "}" {
+                    return Ok(None);
+                }
+            },
+            Some(WordMode::ParamOption(ref v)) => {
+                if v.contains(&first) {
+                    return Ok(None);
+                }
+            }
+            _ => {},
+        }
+
         let mut ans = Word::default();
-        while let Some(sw) = subword::parse(feeder, core)? {
+        while let Some(sw) = subword::parse(feeder, core, &mode)? {
             match sw.is_extglob() {
                 false => ans.push(&sw),
                 true  => {
                     let mut sws = sw.get_child_subwords();
+                    ans.text += &sws.iter().map(|sw| sw.get_text()).collect::<Vec<&str>>().join("");
                     ans.subwords.append(&mut sws);
                 },
             }
 
-            if as_operand {
-                if feeder.starts_with("]")
-                || feeder.starts_with("}")
-                || feeder.scanner_math_symbol(core) != 0 {
-                    break;
+            if feeder.len() == 0 {
+                break;
+            }
+            let first = feeder.nth(0).unwrap().to_string();
+            match mode {
+                Some(WordMode::Operand) => {
+                    if feeder.starts_with("]")
+                    || feeder.starts_with("}")
+                    || feeder.scanner_math_symbol(core) != 0 {
+                        break;
+                    }
+                },
+                Some(WordMode::ParamOption(ref v)) => {
+                    if v.contains(&first) {
+                        break;
+                    }
                 }
+                _ => {},
             }
         }
         

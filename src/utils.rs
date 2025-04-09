@@ -99,7 +99,12 @@ pub fn is_param(s :&str) -> bool {
         if "$?*@#-!_0123456789".find(first_ch) != None {
             return true;
         }
+    }else {
+        if let Ok(n) = s.parse::<usize>() {
+            return n > 0;
+        }
     }
+
     /* variable */
     if '0' <= first_ch && first_ch <= '9' {
         return false;
