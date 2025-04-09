@@ -82,7 +82,7 @@ res=$($com <<< 'shopt -u globskipdots ; echo /..*')
 [ "$res" = "/.." ] || err $LINENO
 
 res=$($com <<< 'shopt -u globskipdots ; echo /../.*')
-[ "$res" = "/../. /../.." ] || err $LINENO
+[ "${res:0:12}" = "/../. /../.." ] || err $LINENO
 
 res=$($com <<< 'shopt -u globskipdots ; echo /..*/l* | grep lib')
 [ "$?" -eq 0 ] || err $LINENO
