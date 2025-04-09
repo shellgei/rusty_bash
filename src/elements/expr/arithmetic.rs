@@ -53,9 +53,10 @@ impl ArithmeticExpr {
     }
 
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.eval_doller(core)?;
+        let mut cp = self.clone();
+        cp.eval_doller(core)?;
 
-        match self.eval_elems(core, true)? {
+        match cp.eval_elems(core, true)? {
             ArithElem::Integer(n) => self.ans_to_string(n),
             ArithElem::Float(f)   => Ok(f.to_string()),
             e => return Err(ExecError::OperandExpected(e.to_string())),
