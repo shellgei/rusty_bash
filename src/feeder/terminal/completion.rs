@@ -81,6 +81,7 @@ impl Terminal {
         }
 
         let mut cands = core.db.get_array_all("COMPREPLY");
+        cands.retain(|c| c != "");
         let o_options = core.current_completion_info.o_options.clone();
         for cand in cands.iter_mut() {
             apply_o_options(cand, core, &o_options);
