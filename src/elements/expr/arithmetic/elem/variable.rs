@@ -36,7 +36,7 @@ pub fn str_to_num(name: &str, sub: &String,
     }
     /* name is not a name here */
 
-    match try_parse_to_num(&name, core) {
+    match try_parse_to_num(&name) {
         Ok(e)  => Ok(e),
         Err(_) => resolve_arithmetic_op(&name, core),
     }
@@ -49,14 +49,11 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
         _    => return Err(ExecError::OperandExpected(name.to_string())),
     };
 
-    if let Ok(eval) = parsed.eval(core) {
-        return try_parse_to_num(&eval, core);
-    }
 
-    Err(ExecError::OperandExpected(name.to_string()))
+    parsed.eval_elems(core, true)
 }
 
-fn try_parse_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+fn try_parse_to_num(name: &str) -> Result<ArithElem, ExecError> {
     if name.contains('.') {
         let f = float::parse(&name)?;
         Ok(ArithElem::Float(f))
@@ -70,13 +67,6 @@ pub fn set_and_to_value(name: &str, sub: &String, core: &mut ShellCore,
                         inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
     match str_to_num(&name, sub, core) {
         Ok(ArithElem::Integer(n))        => {
-            /*
-            if pre && inc != 0 {
-                dbg!("{:?}", &sub);
-            }else{
-                dbg!("{:?}", &sub);
-            }*/
-
             if inc != 0 {
                 core.db.set_param2(&name, sub, &(n + inc).to_string(), None)?;
             }
@@ -114,7 +104,9 @@ pub fn get_sign(s: &mut String) -> String {
 pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 -> Result<(), ExecError> {
     let mut right = match stack.pop() {
-        Some(mut e) => {e.change_to_value(0, core)?; e},
+        Some(mut e) => {
+            e.change_to_value(0, core)?; e
+        },
         _ => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
