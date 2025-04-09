@@ -18,9 +18,6 @@ tmp=/tmp/$$
 res=$($com <<< 'n=0 a="(a[n]=++n)<1&&a[0]"; ((a[0])); echo "${a[@]}"')
 [ "$res" = "(a[n]=++n)<1&&a[0] 1" ] || err $LINENO
 
-#res=$($com <<< 'a[n]=++n ; echo ${a[1]}')
-#[ "$res" = "1" ] || err $LINENO
-
 res=$($com <<< 'a=1 ; a[1]=2 ; echo ${a[@]}' )
 [ "$res" = "1 2" ] || err $LINENO
 
@@ -175,6 +172,12 @@ res=$($com <<< 'n=0 ; (( (a[n]=++n)<7&&a[0])); echo "${a[@]:1}"' )
 res=$($com <<< 'n=0 a="(a[n]=++n)<7&&a[0]"; ((a[0])); echo "${a[@]:1}"')
 [ "$res" = "1 2 3 4 5 6 7" ] || err $LINENO
 
+res=$($com <<< 'echo "a:b:" | ( IFS=" :" read x y; echo "($x)($y)" )')
+[ "$res" = "(a)(b)" ] || err $LINENO
+
+res=$($com <<< 'echo "a:b::" | ( IFS=" :" read x y; echo "($x)($y)" )')
+[ "$res" = "(a)(b::)" ] || err $LINENO
+
 rm -f $tmp-*
 echo $0 >> ./ok
 exit
@@ -207,10 +210,6 @@ EOF
 )
 [ "$res" = "@OH" ] || err $LINENO
 
-### WHY ???????????? ###
-
-#ueda@x1gen13:~/GIT/bash_for_sush_test/sush_test$ echo "a:b:" | ( IFS=" :" read x y; echo "($x)($y)" )
-#(a)(b)
-#ueda@x1gen13:~/GIT/bash_for_sush_test/sush_test$ echo "a:b::" | ( IFS=" :" read x y; echo "($x)($y)" )
-#(a)(b::)
+res=$($com <<< 'a[n]=++n ; echo ${a[1]}')
+[ "$res" = "1" ] || err $LINENO
 
