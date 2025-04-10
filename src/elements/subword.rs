@@ -259,12 +259,19 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
             if feeder.len() == 0 {
                 return Ok(None);
             }
-            let first = feeder.nth(0).unwrap().to_string();
-            if v.contains(&first) {
+
+            if feeder.starts_withs2(v) {
                 return Ok(None);
             }
 
-            let c = FillerSubword { text: feeder.consume(1) };
+            /*
+            let first = feeder.scanner_char(); //feeder.nth(0).unwrap().to_string();
+            if v.contains(&first) {
+                return Ok(None);
+            }*/
+
+            let len = feeder.scanner_char();
+            let c = FillerSubword { text: feeder.consume(len) };
             if feeder.len() == 0 {
                 feeder.feed_additional_line(core)?;
             }
