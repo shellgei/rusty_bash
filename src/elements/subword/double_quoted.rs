@@ -31,23 +31,25 @@ impl Subword for DoubleQuoted {
 }
 
 impl DoubleQuoted {
-    fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
-        match feeder.nth(0) {
-            Some('"') => {
-                ans.text += &feeder.consume(1);
-                return Ok(false);
-            },
-            Some(ch) => {
-                let txt = feeder.consume(ch.len_utf8());
-                ans.text += &txt;
-                ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
-            },
-            None     => feeder.feed_additional_line(core)?,
+    fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
+        let len = feeder.scanner_char();
+        if len == 0 { 
+            feeder.feed_additional_line(core)?;
+            return Ok(true);
         }
-        Ok(true)
-    }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        let ch = feeder.consume(len);
+        ans.text += &ch.clone();
+        if ch != "\"" {
+            ans.subwords.push( Box::new(SimpleSubword{ text: ch }) );
+            return Ok(true);
+        }
+        Ok(false)
+    } 
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("\"") {
             return Ok(None);
         }
