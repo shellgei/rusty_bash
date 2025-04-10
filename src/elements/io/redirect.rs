@@ -10,7 +10,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Redirect {
     pub text: String,
     pub symbol: String,
@@ -57,7 +57,7 @@ impl Redirect {
                 let fd = file.into_raw_fd();
                 let result = io::replace(fd, self.left_fd);
                 if ! result {
-                    io::close(fd, &format!("sush(fatal): file does not close"));
+                    io::close(fd, "sush(fatal): file does not close");
                     self.left_fd = -1; 
                     let msg = format!("{}: cannot replace", &fd);
                     return Err(ExecError::Other(msg));
@@ -70,29 +70,6 @@ impl Redirect {
             },
         }
     }
-
-    /*
-    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> Result<(), ExecError> {
-        if restore {
-            self.left_backup = io::backup(self.left_fd);
-        }
-
-        match file_open_result {
-            Ok(file) => {
-                let fd = file.into_raw_fd();
-                let result = io::replace(fd, self.left_fd);
-                if ! result {
-                    io::close(fd, "sush(fatal): file does not close");
-                    self.left_fd = -1;
-                }
-                result
-            },
-            _  => {
-                eprintln!("sush: {}: {}", &self.right.text, Error::last_os_error().kind());
-                false
-            },
-        }
-    }*/
 
     fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
@@ -131,13 +108,11 @@ impl Redirect {
 
     pub fn new() -> Redirect {
         Redirect {
-            text: String::new(),
-            symbol: String::new(),
             right: Word::from(vec![]),
-            left: String::new(),
             left_fd: -1,
             left_backup: -1,
             extra_left_backup: -1,
+            ..Default::default()
         }
     }
 

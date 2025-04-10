@@ -89,7 +89,7 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
 fn eat_string(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     let mut len = 0;
     for c in pattern.chars() {
-        if "@!+*?[\\".find(c).is_some() {
+        if "@!+*?[\\".contains(c) {
             break;
         }
         len += c.len_utf8();

@@ -18,8 +18,8 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
                .collect::<Vec<String>>()
                .concat();
 
-    let value = get_value(&text, core).unwrap_or(String::new());
-    if value == "" {
+    let value = get_value(&text, core).unwrap_or_default();
+    if value.is_empty() {
         return;
     }
     word.subwords[0] = Box::new( SimpleSubword{ text: value } );

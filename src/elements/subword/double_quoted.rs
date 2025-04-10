@@ -3,7 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
-use super::{EscapedChar, SimpleSubword, Subword};
+use super::{SimpleSubword, Subword};
 
 #[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
@@ -12,66 +12,52 @@ pub struct DoubleQuoted {
 }
 
 impl Subword for DoubleQuoted {
-    fn get_text(&self) -> &str {&self.text.as_ref()}
+    fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         Some( self.text[1..self.text.len()-1].to_string() )
-    }
+    }   
+
+    fn make_glob_string(&mut self) -> String {
+        self.text[1..self.text.len()-1].replace("\\", "\\\\")
+            .replace("*", "\\*")
+            .replace("?", "\\?")
+            .replace("[", "\\[")
+            .replace("]", "\\]")
+    }   
 
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
 impl DoubleQuoted {
-    fn set_simple_subword(feeder: &mut Feeder, ans: &mut Self, len: usize) -> bool {
-        if len == 0 {
-            return false;
+    fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
+        let len = feeder.scanner_char();
+        if len == 0 { 
+            feeder.feed_additional_line(core)?;
+            return Ok(true);
         }
 
-        let txt = feeder.consume(len);
-        ans.text += &txt;
-        ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
-        true
-    }
-
-    fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if feeder.starts_with("\\$") 
-        || feeder.starts_with("\\\\") 
-        || feeder.starts_with("\\\"") 
-        || feeder.starts_with("\\`") {
-            let txt = feeder.consume(2);
-            ans.text += &txt;
-            ans.subwords.push(Box::new(EscapedChar{ text: txt }));
-            return true;
+        let ch = feeder.consume(len);
+        ans.text += &ch.clone();
+        if ch != "\"" {
+            ans.subwords.push( Box::new(SimpleSubword{ text: ch }) );
+            return Ok(true);
         }
-        let len = feeder.scanner_escaped_char(core);
-        Self::set_simple_subword(feeder, ans, len)
-    }
+        Ok(false)
+    } 
 
-    fn eat_other(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        let len = feeder.scanner_double_quoted_subword(core);
-        Self::set_simple_subword(feeder, ans, len)
-    }
-
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("\"") {
             return Ok(None);
         }
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
 
-        loop {
-            while Self::eat_escaped_char(feeder, &mut ans, core)
-               || Self::eat_other(feeder, &mut ans, core) {}
+        while Self::eat_char(feeder, &mut ans, core)? {}
 
-            if feeder.starts_with("\"") {
-                ans.text += &feeder.consume(1);
-                return Ok(Some(ans));
-            }else if feeder.len() > 0 {
-                return Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())));
-            }else{
-                feeder.feed_additional_line(core)?;
-            }
-        }
+        Ok(Some(ans))
     }
 }

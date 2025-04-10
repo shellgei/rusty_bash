@@ -18,6 +18,13 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_char(&mut self) -> usize {
+        match self.remaining.chars().next() {
+            Some(c) => c.len_utf8(),
+            None    => 0,
+        }
+    }
+
     fn scanner_chars(&mut self, judge: fn(char) -> bool,
                      core: &mut ShellCore) -> usize {
         loop {
@@ -84,17 +91,12 @@ impl Feeder {
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},\\'$/~\"".find(ch).is_some() {
+            if " \t\n;&|()<>{},\\'$/~\"".contains(ch) {
                 break;
             }
             ans += ch.len_utf8();
         }
         ans
-    }
-
-    pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| "\"\\$".find(ch) == None;
-        self.scanner_chars(judge, core)
     }
 
     pub fn scanner_single_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
@@ -108,19 +110,19 @@ impl Feeder {
         loop {
             if let Some(n) = self.remaining[1..].find("'") {
                 return n + 2;
-            }else if ! self.feed_additional_line(core).is_ok() {
+            }else if self.feed_additional_line(core).is_err() {
                 return 0;
             }
         }
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| " \t".find(ch).is_some();
+        let judge = |ch| " \t".contains(ch);
         self.scanner_chars(judge, core)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| " \t\n".find(ch).is_some();
+        let judge = |ch| " \t\n".contains(ch);
         self.scanner_chars(judge, core)
     }
 
@@ -165,7 +167,7 @@ impl Feeder {
 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if "\n".find(ch).is_some() {
+            if "\n".contains(ch) {
                 break;
             }
             ans += ch.len_utf8();
