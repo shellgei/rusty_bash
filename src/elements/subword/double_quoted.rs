@@ -18,15 +18,6 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut word = Word::from(self.subwords.clone());
-
-        substitution::eval(&mut word, core)?;
-        self.subwords = word.subwords;
-        self.text = word.text;
-        Ok(())
-    }
-
     fn make_unquoted_string(&mut self) -> Option<String> {
         Some( self.text[1..self.text.len()-1].to_string() )
     }   
@@ -44,8 +35,7 @@ impl Subword for DoubleQuoted {
 
 impl DoubleQuoted {
     fn eat_element(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
-        let sw: Box<dyn Subword> 
-            = if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
+        let sw: Box<dyn Subword> = if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
             else { return Ok(false) ; };
 
@@ -82,6 +72,7 @@ impl DoubleQuoted {
         while Self::eat_element(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}
 
+        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
