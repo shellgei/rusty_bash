@@ -40,7 +40,8 @@ pub fn bin_calc(op: &str, left: i128, right: i128, stack: &mut Vec<ArithElem>) -
         "!="  => bool_to_01( left != right ),
         "%" | "/" => {
             if right == 0 {
-                return Err(ExecError::DivZero);
+                let expr = format!("{} / {}", &left, &right);
+                return Err(ExecError::DivZero(expr, right.to_string()));
             }
             match op {
                 "%" => left % right,
@@ -75,7 +76,8 @@ pub fn substitute(op: &str, name: &String, index: &String,
         ">>="  => if right < 0 {0} else {cur >> right},
         "/=" | "%=" => {
             if right == 0 {
-                return Err(ExecError::DivZero);
+                let expr = format!("{} {} {}", &cur, &op, &right);
+                return Err(ExecError::DivZero(expr, right.to_string()));
             }
             match op == "%=" {
                 true  => cur % right,

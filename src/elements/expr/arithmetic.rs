@@ -89,18 +89,14 @@ impl ArithmeticExpr {
         Ok(ans)
     }
 
-    pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Option<i128> {
+    pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Result<i128, ExecError> {
         let _ = self.eval_doller(core);
 
-        match self.eval_elems(core, true) {
-            Ok(ArithElem::Integer(n)) => Some(n),
-            Ok(ArithElem::Float(f))   => {
-                eprintln!("sush: {}: Not integer. {}", &self.text, f);
-                None
-            },
-            Err(msg) => {
-                eprintln!("sush: {}: {:?}", &self.text, msg);
-                None
+        match self.eval_elems(core, true)? {
+            ArithElem::Integer(n) => Ok(n),
+            ArithElem::Float(f)   => {
+                let msg = format!("sush: {}: Not integer. {}", &self.text, f);
+                Err(ExecError::Other(msg))
             },
             _ => exit::internal("invalid calculation result"),
         }
