@@ -51,7 +51,7 @@ This graph shows the test result with the script in `./sush_test/bash_genuine_te
 The following behavior of Bash will not be imitated by `sush`. So we alter the right output file (e.g `globstar.right`) for comparision. 
 
 * Bash outputs the same path repeatedly in some situations of globstar. It may be for compatibility of ksh. 
-* Bash outputs overflow calculation results at the border of 64 bit intergers and `arith5.sub` tells that this behavior should be reproduced. But we don't follow it. The test cases are commented out. 
+* Bash outputs overflow calculation results at the border of 64 bit intergers and `arith5.sub` tells that this behavior should be reproduced. But we don't follow it. 
     ```bash
     ### Bash example ###
     $ echo $(( -9223372036854775808 * -1 )) 
