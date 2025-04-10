@@ -2,6 +2,9 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::exec::ExecError;
+use crate::elements::word::{substitution, Word};
+use crate::elements::subword::{CommandSubstitution, Parameter};
 use crate::error::parse::ParseError;
 use super::{SimpleSubword, Subword};
 
@@ -14,6 +17,15 @@ pub struct DoubleQuoted {
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
+
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut word = Word::from(self.subwords.clone());
+
+        substitution::eval(&mut word, core)?;
+        self.subwords = word.subwords;
+        self.text = word.text;
+        Ok(())
+    }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         Some( self.text[1..self.text.len()-1].to_string() )
@@ -31,6 +43,17 @@ impl Subword for DoubleQuoted {
 }
 
 impl DoubleQuoted {
+    fn eat_element(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+        let sw: Box<dyn Subword> 
+            = if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
+            else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
+            else { return Ok(false) ; };
+
+        ans.text += sw.get_text();
+        ans.subwords.push(sw);
+        Ok(true)
+    }
+
     fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
     -> Result<bool, ParseError> {
         let len = feeder.scanner_char();
@@ -56,7 +79,8 @@ impl DoubleQuoted {
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
 
-        while Self::eat_char(feeder, &mut ans, core)? {}
+        while Self::eat_element(feeder, &mut ans, core)?
+           || Self::eat_char(feeder, &mut ans, core)? {}
 
         Ok(Some(ans))
     }
