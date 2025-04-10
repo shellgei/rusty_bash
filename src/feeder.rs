@@ -164,5 +164,4 @@ impl Feeder {
     pub fn starts_with(&self, s: &str) -> bool { self.remaining.starts_with(s) }
     pub fn len(&self) -> usize { self.remaining.len() }
     pub fn is_empty(&self) -> bool { self.remaining.is_empty() }
-    //pub fn nth(&self, n: usize) -> Option<char> { self.remaining.chars().nth(n) }
 }

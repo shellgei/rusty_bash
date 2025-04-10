@@ -131,7 +131,8 @@ impl DoubleQuoted {
         }
     }
 
-    fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+    fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
         let len = feeder.scanner_char();
         if len == 0 {
             feeder.feed_additional_line(core)?;
