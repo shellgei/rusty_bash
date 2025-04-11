@@ -17,6 +17,8 @@ tmp=/tmp/$$
 
 res=$($com <<< '[[
 # hogehoge
+1 -eq 1 &&
+	#fugefuge
 1 -eq 1
 ]]')
 [ "$?" = 0 ] || err $LINENO
