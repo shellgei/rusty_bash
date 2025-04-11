@@ -15,6 +15,18 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'set a b ; IFS=c ; echo $@ ; echo "$@" ')
+[ "$res" = "a b
+a b" ] || err $LINENO
+
+res=$($com <<< 'set a b ; IFS="" ; echo $@ ; echo "$@" ')
+[ "$res" = "a b
+a b" ] || err $LINENO
+
+res=$($com <<< 'set a b ; IFS=c ; echo $* ; echo "$*" ')
+[ "$res" = "a b
+acb" ] || err $LINENO
+
 res=$($com <<< 'IFS=/ ; set bob "tom dick harry" joe; echo "$*"')
 [ "$res" = "bob/tom dick harry/joe" ] || err $LINENO
 
