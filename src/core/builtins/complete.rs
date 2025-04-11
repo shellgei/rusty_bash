@@ -29,6 +29,8 @@ fn opt_to_action(arg: &str) -> String {
         "-a" => "alias",
         "-b" => "builtin",
         "-c" => "command",
+        "-d" => "directory",
+        "-f" => "file",
         "-j" => "job",
         "-o" => "setopt",
         "-u" => "user",
