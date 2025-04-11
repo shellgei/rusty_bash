@@ -131,7 +131,8 @@ pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_tex
     true
 }
 
-fn eat_blank_lines(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> Result<(), ParseError> {
+pub fn eat_blank_lines(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String)
+-> Result<(), ParseError> {
     loop {
         eat_blank_with_comment(feeder, core, ans_text);
         if feeder.starts_with("\n") {

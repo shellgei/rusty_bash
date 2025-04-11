@@ -57,7 +57,7 @@ impl TestCommand {
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
-        match ConditionalExpr::parse(feeder, core) {
+        match ConditionalExpr::parse(feeder, core)? {
             Some(e) => {
                 ans.text += &e.text.clone();
                 ans.cond = Some(e);
