@@ -15,6 +15,12 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< '[[
+# hogehoge
+1 -eq 1
+]]')
+[ "$?" = 0 ] || err $LINENO
+
 res=$($com <<< 'IFS=/ ; set bob "tom dick harry" joe; echo "$*"')
 [ "$res" = "bob/tom dick harry/joe" ] || err $LINENO
 

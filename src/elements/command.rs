@@ -117,12 +117,16 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, r
 
 pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {
     let blank_len = feeder.scanner_blank(core);
+    /*
     if blank_len == 0 {
         return false;
-    }
+    }*/
     *ans_text += &feeder.consume(blank_len);
 
     let comment_len = feeder.scanner_comment();
+    if comment_len + blank_len == 0 {
+        return false;
+    }
     *ans_text += &feeder.consume(comment_len);
     true
 }
