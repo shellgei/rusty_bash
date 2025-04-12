@@ -22,7 +22,7 @@ pub enum ArithElem {
     Variable(String, Option<Subscript>, i128), // name + subscript + post increment or decrement
     InParen(ArithmeticExpr),
     Increment(i128), //pre increment
-    Delimiter(String), //delimiter dividing left and right of &&, ||, and ','
+//    Delimiter(String), //delimiter dividing left and right of &&, ||, and ','
     /* only for parse */
     Space(String),
     Symbol(String),
