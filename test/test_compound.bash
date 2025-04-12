@@ -198,6 +198,9 @@ res=$($com <<< 'touch /tmp/rusty_bash_x ; while [ -f /tmp/rusty_bash_x ] ; do ec
 [ "$res" == "wait
 wait" ] || err $LINENO
 
+res=$($com <<< 'set 1 ; while (( $# )) ; do echo $# ; [ $# -eq 0 ] && break ; shift ; done')
+[ "$res" = "1" ] || err $LINENO
+
 ### FOR TEST ###
 
 res=$($com <<< 'set a b c ; for x ; do echo $x ; done')

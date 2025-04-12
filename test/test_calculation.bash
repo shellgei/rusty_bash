@@ -671,4 +671,90 @@ res=$($com <<< 'echo $(( 1 > 0 || 2 > 2 ))')
 res=$($com <<< 'A=1 ; echo "$((A+1))"')
 [ "$res" -eq 2 ] || err $LINENO
 
+res=$($com <<< 'n=0 a="(a[n]=++n)<1&&a[0]"; ((a[0])); echo "${a[@]}"')
+[ "$res" = "(a[n]=++n)<1&&a[0] 1" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; a[1]=2 ; echo ${a[@]}' )
+[ "$res" = "1 2" ] || err $LINENO
+
+res=$($com <<< 'echo $((a b))')
+[ "$?" -eq 1 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'echo $(( a b ))')
+[ "$?" -eq 1 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'PARAM=abcdefg; echo ${PARAM:1 ? 4 : 2}')
+[ "$res" = "efg" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 0x11!=17 ))' )
+[ "$res" = "0" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 0x11!=18 ))' )
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'A="a[0]" ;echo $(( ++$A))' )
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'RANDOM=42; v=3 ; (( dice[RANDOM%6+1 + RANDOM%6+1]=v )) ; echo ${dice[6]}' )
+[ "$res" = "3" ] || err $LINENO
+
+res=$($com <<< 'RANDOM=42; v=3 ; (( dice[RANDOM%6+1 + RANDOM%6+1]+=v )) ; echo ${dice[6]}' )
+[ "$res" = "3" ] || err $LINENO
+
+res=$($com <<< 'echo $(( a[0] += b )) ; echo ${a[0]}' )
+[ "$res" = "0
+0" ] || err $LINENO
+
+res=$($com <<< 'echo $(( a[0]=1 ))' )
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((4+ + +a))')
+[ "$res" = "5" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((4+ ++a))')
+[ "$res" = "6" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((4+++a))')
+[ "$res" = "6" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((4---a))')
+[ "$res" = "4" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((a++ +0))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'a=1 ; echo $((a++ +a))')
+[ "$res" = "3" ] || err $LINENO
+
+res=$($com -c 'echo $(( 4 ? : $A ))')
+[[ "$?" -eq 1 ]] || err $LINENO
+[[ "$res" = "" ]] || err $LINENO
+
+res=$($com <<< 'echo $((42%5))')
+[ "$res" = "2" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 0 ? 1 : x=3))')
+[ $? -eq 1 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 4> (2+3) ? 1 : 32))')
+[ "$res" = "32" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 4>(2+3) ? 1 : 32))')
+[ "$res" = "32" ] || err $LINENO
+
+res=$($com <<< 'echo $(( c=(n+1) ))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'n=0 ; (( (a[n]=++n)<7&&a[0])); echo "${a[1]}"' )
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'n=0 ; (( (a[n]=++n)<7&&a[0])); echo "${a[@]:1}"' )
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'n=0 a="(a[n]=++n)<7&&a[0]"; ((a[0])); echo "${a[@]:1}"')
+[ "$res" = "1 2 3 4 5 6 7" ] || err $LINENO
+
 echo $0 >> ./ok

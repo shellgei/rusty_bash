@@ -124,4 +124,15 @@ EOF
 5: a/ a/aa a/ab
 6: a a/aa a/ab" ] || err $LINENO
 
+res=$($com <<< 'shopt -u globskipdots ; echo /..*')
+[ "$res" = "/.." ] || err $LINENO
+
+res=$($com <<< 'shopt -u globskipdots ; echo /../.*')
+[ "${res:0:12}" = "/../. /../.." ] || err $LINENO
+
+if [ "$(uname)" = "Linux" ] ; then
+	res=$($com <<< 'shopt -u globskipdots ; echo /..*/l* | grep lib')
+	[ "$?" -eq 0 ] || err $LINENO
+fi
+
 echo $0 >> ./ok

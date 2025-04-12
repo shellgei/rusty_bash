@@ -24,6 +24,13 @@ res=$($com -c 'RANDOM=a ; echo "$RANDOM"')
 res=$($com -c 'unset RANDOM; RANDOM=a ; echo "$RANDOM"')
 [ "$res" == "a" ] || err $LINENO
 
+res=$($com <<< 'RANDOM=42; v=3 ; (( dice[RANDOM%6+1 + RANDOM%6+1]-=v )) ; echo ${dice[6]}' )
+[ "$res" = "-3" ] || err $LINENO
+
+res=$($com <<< 'RANDOM=2 ;echo $RANDOM ; echo $RANDOM')
+[ "$res" = "27297
+16812" ] || err $LINENO
+
 ### TIME ###
 
 res=$($com -c '[[ 0 -eq $SECONDS ]] && sleep 1 && [[ 1 -eq $SECONDS ]]')
@@ -34,6 +41,9 @@ res=$($com -c '[[ $(date +%s) -eq $EPOCHSECONDS ]]')
 
 res=$($com -c 'echo $(( $EPOCHREALTIME - $(date +%s) )) | awk -F. "{print \$1}"')
 [[ "$res" -eq 0 ]] || err $LINENO
+
+res=$($com -c 'SECONDS=-10 ; sleep 1 ; echo $SECONDS')
+[[ "$res" -eq -9 ]] || err $LINENO
 
 
 ### ARRAY ###

@@ -234,6 +234,28 @@ EOF
 )
 [ "$res" = 'aaa\' ] || err $LINENO
 
+res=$($com <<< 'read -n 4 <<< "  abc def"; echo $REPLY')
+[ "$res" = "ab" ] || err $LINENO
+
+res=$($com <<< 'read <<< "abc def"; echo $REPLY')
+[ "$res" = "abc def" ] || err $LINENO
+
+res=$($com <<< 'read -n 5 <<< "abc
+def"; echo $REPLY')
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'read -n 4 foo <<< abcde; echo $foo')
+[ "$res" = "abcd" ] || err $LINENO
+
+res=$($com <<< 'read -n 4 foo <<< abc de; echo $foo')
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'echo "a:b:" | ( IFS=" :" read x y; echo "($x)($y)" )')
+[ "$res" = "(a)(b)" ] || err $LINENO
+
+res=$($com <<< 'echo "a:b::" | ( IFS=" :" read x y; echo "($x)($y)" )')
+[ "$res" = "(a)(b::)" ] || err $LINENO
+
 # set command
 
 res=$($com <<< 'set -- a b c ; echo $2')
@@ -308,6 +330,24 @@ res=$($com -c 'A=1 ; declare -r A ; f () { local A ; A=123 ; } ; f')
 
 res=$($com -c 'A=1 ; declare -r A ; A=(3 4)')
 [[ "$?" -eq 1 ]] || err $LINENO
+
+res=$($com <<< 'declare -i i=1 j=1 ;echo $i $j ')
+[ "$res" = "1 1" ] || err $LINENO
+
+res=$($com <<< 'declare -i n; n="1+1" ; echo $n')
+[ "$res" = "2" ] || err $LINENO
+
+res=$($com <<< 'declare -i n; echo $(( n ))')
+[ "$res" = "0" ] || err $LINENO
+
+res=$($com <<< 'declare -i n; echo $(( (n+1) ))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'declare -i n; echo $(( c=(n+1) ))')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'declare -i n; echo $(( c+=(n+1) ))')
+[ "$res" = "1" ] || err $LINENO
 
 ### command ###
 
@@ -478,6 +518,24 @@ res=$($com <<< 'printf -v __git_printf_supports_v -- %s yes; echo $__git_printf_
 res=$($com <<< 'printf "== <%s %s> ==\n" a b c' )
 [ "$res" = "== <a b> ==
 == <c > ==" ] || err $LINENO
+
+res=$($com <<< 'printf "%u\n" 123')
+[ "$res" = "123" ] || err $LINENO
+
+res=$($com <<< 'printf "%u\n" -100')
+[ "$res" = "18446744073709551516" ] || err $LINENO
+
+res=$($com <<< 'printf "%u\n" -1')
+[ "$res" = "18446744073709551615" ] || err $LINENO
+
+res=$($com <<< 'printf "%o\n" 123')
+[ "$res" = "173" ] || err $LINENO
+
+res=$($com <<< 'printf "%o\n" -100')
+[ "$res" = "1777777777777777777634" ] || err $LINENO
+
+res=$($com <<< 'printf "%i\n" 42')
+[ "$res" = "42" ] || err $LINENO
 
 ### trap ###
 #
