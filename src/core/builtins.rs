@@ -176,7 +176,11 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let args = arg::consume_after_options(args, 1);
+    args.remove(0);
+    if args.len() > 0 && args[0] == "--" {
+        args.remove(0);
+    }
+
     let mut feeder = Feeder::new(&args.join(" "));
 
     core.eval_level += 1;
