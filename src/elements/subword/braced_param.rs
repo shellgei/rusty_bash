@@ -180,7 +180,7 @@ impl BracedParam {
         }
 
         self.array = core.db.get_array_all(&self.param.name);
-        if self.num && index.as_str() == "@" {
+        if self.num && (index.as_str() == "@" || index.as_str() == "*" ) {
             self.text = self.array.len().to_string();
             return Ok(());
         }
