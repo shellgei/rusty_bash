@@ -168,14 +168,22 @@ impl BracedParam {
     fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
 
-        if ! core.db.is_array(&self.param.name) && ! core.db.is_assoc(&self.param.name) {
+        if core.db.has_value(&self.param.name)
+        && ! core.db.is_array(&self.param.name)
+        && ! core.db.is_assoc(&self.param.name) {
+            let param = core.db.get_param(&self.param.name);
             self.text = match index.as_str() { //case: a=aaa; echo ${a[@]}; (output: aaa)
-                "@" | "*" | "0" => core.db.get_param(&self.param.name)?,
+                "@" | "*" | "0" => param.unwrap_or("".to_string()),
                  _ => "".to_string(),
             };
             return Ok(());
         }
 
+        self.array = core.db.get_array_all(&self.param.name);
+        if self.num && index.as_str() == "@" {
+            self.text = self.array.len().to_string();
+            return Ok(());
+        }
         if index.as_str() == "@" {
             self.atmark_operation(core)
         }else{

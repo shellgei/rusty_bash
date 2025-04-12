@@ -23,6 +23,9 @@ res=$($com <<< '[[
 ]]')
 [ "$?" = 0 ] || err $LINENO
 
+res=$($com <<< 'echo ${#a[@]}')
+[ "$res" = "0" ] || err $LINENO
+
 res=$($com <<< 'set a b ; IFS=c ; echo $@ ; echo "$@" ')
 [ "$res" = "a b
 a b" ] || err $LINENO
