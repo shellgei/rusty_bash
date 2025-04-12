@@ -15,6 +15,14 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+cat << 'EOF' > $tmp-script
+echo OK | ( while read line ; do echo $line ; done )
+ああああああ！
+EOF
+res=$($com <<< "source $tmp-script")
+[ "$res" = "OK" ] || err $LINENO
+
+
 res=$($com <<< '[[
 # hogehoge
 1 -eq 1 &&
