@@ -118,7 +118,6 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
     let rev_pol = rev_polish::rearrange(elements)?;
     dry_run(&rev_pol)?;
 
-        dbg!("{:?}", &rev_pol);
     let mut stack = vec![];
     let mut escaped_unaries = vec![];
 
