@@ -82,6 +82,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
 
     let mut stack = vec![];
     let mut skip_until = String::new();
+    let mut escaped_unaries = vec![];
 
     for e in rev_pol {
         if let ArithElem::BinaryOp(ref op) = e { //for short-circuit evaluation
@@ -97,7 +98,23 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
 
         match e {
             ArithElem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core)?,
-            ArithElem::UnaryOp(ref op)  => unary_operation(&op, &mut stack, core)?,
+            ArithElem::UnaryOp(ref op)  => {
+                match stack.is_empty() {
+                    true  => escaped_unaries.push(e),
+                    false => {
+                        let mut ok = unary_operation(&op, &mut stack, core)?;
+                        while ! escaped_unaries.is_empty() {
+                            match escaped_unaries.pop().unwrap() {
+                                ArithElem::UnaryOp(ref op) => {
+                                    ok = unary_operation(&op, &mut stack, core)?;
+                                },
+                                _ => {},
+                            }
+                        }
+                        ok
+                    },
+                }
+            },
             ArithElem::Increment(n)     => inc(n, &mut stack, core)?,
             ArithElem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core)?,
             ArithElem::Delimiter(d) => skip_until = check_skip(&d, &mut stack, core)?,
@@ -125,9 +142,8 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
                     return Err( ExecError::OperandExpected(e.to_string()));
                 }
             },
-            ArithElem::UnaryOp(_) 
-            | ArithElem::Increment(_)
-            | ArithElem::Ternary(_, _) => {
+            ArithElem::UnaryOp(_) | ArithElem::Increment(_) => { },
+            ArithElem::Ternary(_, _) => {
                 if stack.is_empty() {
                     return Err( ExecError::OperandExpected(e.to_string()));
                 }
