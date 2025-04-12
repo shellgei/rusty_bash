@@ -41,6 +41,7 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
         ans.push(stack.pop().unwrap());
     }
 
+    dbg!("{:?}", &ans);
     Ok(ans)
 }
 
@@ -54,7 +55,7 @@ fn rev_polish_op(elem: &ArithElem,
             },
             Some(_) => {
                 let last = stack.last().unwrap();
-                if last.order() <= elem.order() {
+                if last.order() < elem.order() {
                     stack.push(elem.clone());
                     break;
                 }

@@ -31,6 +31,9 @@ res=$($com <<< '[[
 ]]')
 [ "$?" = 0 ] || err $LINENO
 
+res=$($com <<< 'echo $(( 3 - 4 + 5))')
+[ "$res" = "4" ] || err $LINENO
+
 res=$($com <<< 'echo ${#a[@]}')
 [ "$res" = "0" ] || err $LINENO
 

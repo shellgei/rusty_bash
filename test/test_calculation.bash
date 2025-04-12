@@ -64,12 +64,6 @@ res=$($com <<< 'echo $((456 + -123))')
 res=$($com <<< 'echo $((456 -123))')
 [ "$res" == "333" ] || err $LINENO
 
-res=$($com <<< 'echo $((- - - 1))')
-[ "$res" == "-1" ] || err $LINENO
-
-res=$($com <<< 'echo $((- + - 1))')
-[ "$res" == "1" ] || err $LINENO
-
 res=$($com <<< 'echo $((- (1 + 2 )))')
 [ "$res" == "-3" ] || err $LINENO
 
@@ -175,10 +169,6 @@ res=$($com <<< 'A=1; echo $(("A"-- )); echo $A')
 res=$($com <<< 'A=1; echo $(("A"--1 ))')
 [ "$?" == "1" ] || err $LINENO
 
-res=$($com <<< 'A=10; echo $(( ++"$A" )) ; echo $A')
-[ "$res" == "10
-10" ] || err $LINENO
-
 res=$($com <<< 'A=10; echo $(( "$A"++ ))')
 [ "$?" == "1" ] || err $LINENO
 
@@ -236,9 +226,6 @@ res=$($com <<< 'A=1; echo $(("2""1"++1 ))')
 res=$($com <<< 'A=1; echo $(("2"++1 ))')
 [ "$res" == "3" ] || err $LINENO
 
-res=$($com <<< 'A=1; echo $((++2++1 ))')
-[ "$res" == "3" ] || err $LINENO
-
 res=$($com <<< 'A=10 ; echo $(( ++A)); echo $A')
 [ "$res" == "11
 11" ] || err $LINENO
@@ -255,10 +242,6 @@ res=$($com <<< 'A=10 ; echo $(( -- A)); echo $A')
 [ "$res" == "9
 9" ] || err $LINENO
 
-res=$($com <<< 'A=10 ; echo $(( - - A)); echo $A')
-[ "$res" == "10
-10" ] || err $LINENO
-
 res=$($com <<< 'A=10 ; echo $(( ++A++))')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
@@ -272,9 +255,6 @@ res=$($com <<< 'echo $(($$ / $$ ))')
 
 res=$($com <<< 'echo $(( ! 123 )) $(( ! 0 ))')
 [ "$res" == "0 1" ] || err $LINENO
-
-res=$($com <<< 'echo $(( ~ 0 )) $(( ~ 1 )) $(( ~ -1 ))')
-[ "$res" == "-1 -2 0" ] || err $LINENO
 
 res=$($com <<< 'echo $(( 10 %3 )) $(( 10 %-3 )) $(( $$ % 1 ))')
 [ "$res" == "1 1 0" ] || err $LINENO
@@ -309,12 +289,6 @@ res=$($com <<< 'echo $((1+1&2)) $((1^2)) $((3^1)) $((1&2)) $((2|1)) ')
 
 res=$($com <<< 'echo $(( 1+1 & -1 )) $(( 1 ^ -2 )) $(( 1 & -2 ))')
 [ "$res" == "2 -1 0" ] || err $LINENO
-
-res=$($com <<< 'echo $((123 && -1 )) $(( 0 && 10 )) $(( 0 || -1 || 0 )) $(( 0 || 0  )) $(( 0 && 0))')
-[ "$res" == "1 0 1 0 0" ] || err $LINENO
-
-res=$($com<<<'echo $((123&&-1))$((0&&10))$((0||-1||0))$((0||0))$((0&&0))')
-[ "$res" == "10100" ] || err $LINENO
 
 res=$($com<<<'echo $((A=1 && B=1))')
 [ "$?" == "1" ] || err $LINENO
@@ -382,24 +356,12 @@ res=$($com <<< 'A=-8 ; echo $((A^=2)) $((A&=1)) $((A|=-1))')
 res=$($com <<< 'echo $((A=-8, A^=2)) $((A=3,A&=1)) $((A=9 ,A|=-1))')
 [ "$res" == "-6 1 -1" ] || err $LINENO
 
-res=$($com <<< 'echo $(( -" 12" )) $(( - "- 14" ))')
-[ "$res" == "-12 14" ] || err $LINENO
-
 res=$($com <<< 'echo $(( -"1 2" ))')
 [ "$?" == "1" ] || err $LINENO
 [ "$res" == "" ] || err $LINENO
 
-res=$($com <<< 'echo $(( 0x11 )) $(( -"0x11" )) $(( - "- 0x11" ))')
-[ "$res" == "17 -17 17" ] || err $LINENO
-
 res=$($com <<< 'A=0x11; echo $(( A ))')
 [ "$res" == "17" ] || err $LINENO
-
-res=$($com <<< 'echo $(( -"011" )) $(( - "- 011" ))')
-[ "$res" == "-9 9" ] || err $LINENO
-
-res=$($com <<< 'echo $(( -"2#011" )) $(( - "- 2#0111101" ))')
-[ "$res" == "-3 61" ] || err $LINENO
 
 res=$($com <<< 'echo $(( 64#a )) $(( 64#A ))')
 [ "$res" == "10 36" ] || err $LINENO
@@ -447,9 +409,6 @@ res=$($com <<< 'echo $((123 + +456.2))')
 
 res=$($com <<< 'echo $((456 + -123.9))')
 [ "$res" == "332.1" ] || err $LINENO
-
-res=$($com <<< 'echo $((- - - 1.09))')
-[ "$res" == "-1.09" ] || err $LINENO
 
 res=$($com <<< 'echo $((- (1 + 2.1 )))')
 [ "$res" == "-3.1" ] || err $LINENO
@@ -508,10 +467,6 @@ res=$($com <<< 'A=1.9; echo $(("A"-- )); echo $A')
 [ "$res" == "1.9
 0.8999999999999999" ] || err $LINENO
 
-res=$($com <<< 'A=10.1; echo $(( ++"$A" )) ; echo $A')
-[ "$res" == "10.1
-10.1" ] || err $LINENO
-
 res=$($com <<< 'A=5.1; echo $((A-- )); echo $A')
 [ "$res" == "5.1
 4.1" ] || err $LINENO
@@ -527,9 +482,6 @@ res=$($com <<< 'A=1; echo $((2++1.9 ))')
 
 res=$($com <<< 'A=1; echo $(("2""1"".9"++1 ))')
 [ "$res" == "22.9" ] || err $LINENO
-
-res=$($com <<< 'A=1; echo $((++2++1.2 ))')
-[ "$res" == "3.2" ] || err $LINENO
 
 res=$($com <<< 'echo $(( ! 123.1 ))')
 [ "$?" == "1" ] || err $LINENO
@@ -616,14 +568,8 @@ res=$($com <<< 'A=2.2 ; echo $(( A <<= 2 ))')
 res=$($com <<< 'A=-8.1 ; echo $((A^=2))')
 [ "$?" == "1" ] || err $LINENO
 
-res=$($com <<< 'echo $(( -" 12.3" )) $(( - "- 14.4" ))')
-[ "$res" == "-12.3 14.4" ] || err $LINENO
-
 res=$($com <<< 'echo $(( 0x11.2 ))')
 [ "$?" == "1" ] || err $LINENO
-
-res=$($com <<< 'echo $(( -" .3" )) $(( - "- .4" ))')
-[ "$res" == "-0.3 0.4" ] || err $LINENO
 
 res=$($com <<< 'echo $(( "1 + 1" ))')
 [ "$res" == "2" ] || err $LINENO
@@ -756,5 +702,59 @@ res=$($com <<< 'n=0 ; (( (a[n]=++n)<7&&a[0])); echo "${a[@]:1}"' )
 
 res=$($com <<< 'n=0 a="(a[n]=++n)<7&&a[0]"; ((a[0])); echo "${a[@]:1}"')
 [ "$res" = "1 2 3 4 5 6 7" ] || err $LINENO
+
+res=$($com <<< 'echo $((- - - 1))')
+[ "$res" == "-1" ] || err $LINENO
+
+res=$($com <<< 'echo $((- + - 1))')
+[ "$res" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=10; echo $(( ++"$A" )) ; echo $A')
+[ "$res" == "10
+10" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $((++2++1 ))')
+[ "$res" == "3" ] || err $LINENO
+
+res=$($com <<< 'A=10 ; echo $(( - - A)); echo $A')
+[ "$res" == "10
+10" ] || err $LINENO
+
+res=$($com <<< 'echo $(( ~ 0 )) $(( ~ 1 )) $(( ~ -1 ))')
+[ "$res" == "-1 -2 0" ] || err $LINENO
+
+res=$($com <<< 'echo $((123 && -1 )) $(( 0 && 10 )) $(( 0 || -1 || 0 )) $(( 0 || 0  )) $(( 0 && 0))')
+[ "$res" == "1 0 1 0 0" ] || err $LINENO
+
+res=$($com<<<'echo $((123&&-1))$((0&&10))$((0||-1||0))$((0||0))$((0&&0))')
+[ "$res" == "10100" ] || err $LINENO
+
+res=$($com <<< 'echo $(( -" 12" )) $(( - "- 14" ))')
+[ "$res" == "-12 14" ] || err $LINENO
+
+res=$($com <<< 'echo $(( 0x11 )) $(( -"0x11" )) $(( - "- 0x11" ))')
+[ "$res" == "17 -17 17" ] || err $LINENO
+
+res=$($com <<< 'echo $(( -"011" )) $(( - "- 011" ))')
+[ "$res" == "-9 9" ] || err $LINENO
+
+res=$($com <<< 'echo $(( -"2#011" )) $(( - "- 2#0111101" ))')
+[ "$res" == "-3 61" ] || err $LINENO
+
+res=$($com <<< 'echo $((- - - 1.09))')
+[ "$res" == "-1.09" ] || err $LINENO
+
+res=$($com <<< 'A=10.1; echo $(( ++"$A" )) ; echo $A')
+[ "$res" == "10.1
+10.1" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo $((++2++1.2 ))')
+[ "$res" == "3.2" ] || err $LINENO
+
+res=$($com <<< 'echo $(( -" 12.3" )) $(( - "- 14.4" ))')
+[ "$res" == "-12.3 14.4" ] || err $LINENO
+
+res=$($com <<< 'echo $(( -" .3" )) $(( - "- .4" ))')
+[ "$res" == "-0.3 0.4" ] || err $LINENO
 
 echo $0 >> ./ok
