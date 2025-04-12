@@ -9,23 +9,6 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
     let mut stack: Vec<ArithElem> = vec![];
 
     for e in elements {
-        /*
-        match e {
-            ArithElem::BinaryOp(op) => match op.as_str() {
-                "&&" | "||" => {
-                    while stack.len() > 0 {
-                        let pre_op = stack.pop().unwrap().clone();
-                        match pre_op.order() > e.order() {
-                            true  => ans.push(pre_op),
-                            false => {stack.push(pre_op); break},
-                        }
-                    }
-                    ans.push(ArithElem::Delimiter(op.to_string()))
-                },
-                _ => {},
-            },
-            _ => {},
-        }*/
         let ok = match e {
             ArithElem::Float(_) | ArithElem::Integer(_) |
             ArithElem::Variable(_, _, _) | ArithElem::InParen(_)
