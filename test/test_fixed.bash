@@ -22,6 +22,12 @@ EOF
 res=$($com <<< "source $tmp-script")
 [ "$res" = "OK" ] || err $LINENO
 
+res=$($com <<< 'declare -i i=1 j=2 k=3
+echo $((i += j += k))
+echo $i,$j,$k
+')
+[ "$res" = "6
+6,5,3" ] || err $LINENO
 
 res=$($com <<< '[[
 # hogehoge
