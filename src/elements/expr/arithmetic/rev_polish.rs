@@ -38,7 +38,8 @@ fn rev_polish_op(elem: &ArithElem,
             },
             Some(_) => {
                 let last = stack.last().unwrap();
-                if last.order() < elem.order() {
+                if last.order() < elem.order() 
+                || (last.order() == 2 && elem.order() == 2) { // assignment
                     stack.push(elem.clone());
                     break;
                 }
