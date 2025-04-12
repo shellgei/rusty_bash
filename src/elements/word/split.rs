@@ -19,11 +19,6 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    let gen_word = |sws, remain| Word{
-        text: String::new(),
-        subwords: sws,
-        do_not_erase: remain };
-
     let mut left = word.subwords[..pos].to_vec();
     let remain = split[0].1;
     left.push(split.remove(0).0);
@@ -39,6 +34,14 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     right.subwords.insert(0, split.remove(0).0);
 
     [ ans, eval(&right, core) ].concat()
+}
+
+fn gen_word(sws: Vec<Box<dyn Subword>>, remain: bool) -> Word {
+    Word {
+        text: String::new(),
+        subwords: sws,
+        do_not_erase: remain,
+    }
 }
 
 pub fn find_pos(word: &Word, ifs: &str) -> (usize, Vec<(Box<dyn Subword>, bool)>) {
