@@ -70,6 +70,7 @@ if [ "$(uname)" = "Darwin" -a -f /opt/homebrew/Cellar/bash-completion/1.3_3/etc/
 elif [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
     _comp_complete_load scp #for completion of rsync
+    # . /usr/share/bash-completion/completions/git # for git-completion on WSL
 elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
