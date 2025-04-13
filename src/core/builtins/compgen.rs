@@ -91,8 +91,11 @@ fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
 
     let mut comlist = HashSet::new();
     for path in core.db.get_param("PATH").unwrap_or(String::new()).to_string().split(":") {
-        if utils::is_wsl() && path.starts_with("/mnt") {
-            continue;
+        /* /mnt is ellimimated from PATH on WSL because it contains all files in Windows.*/
+        if utils::is_wsl() && path.starts_with("/mnt") { 
+            if ! path.ends_with("WINDOWS") { // We want to use explorer.exe
+                continue;    
+            }
         }
 
         for command in directory::files(path).iter() {
