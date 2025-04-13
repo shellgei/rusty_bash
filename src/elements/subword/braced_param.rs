@@ -5,7 +5,9 @@ mod optional_operation;
 mod parse;
 
 use crate::{Feeder, ShellCore};
+use crate::elements::subword;
 use crate::elements::subword::Subword;
+use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subscript::Subscript;
 use crate::utils;
 use crate::error::exec::ExecError;
@@ -20,7 +22,7 @@ pub struct Param {
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     text: String,
-    array: Vec<String>,
+    array: Option<Vec<String>>,
     param: Param,
     optional_operation: Option<Box<dyn OptionalOperation>>,
     unknown: String,
@@ -51,10 +53,16 @@ impl Subword for BracedParam {
         || self.param.name == "*" {
             if let Some(s) = self.optional_operation.as_mut() {
                 if s.is_substr() {
-                    s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
+                    let mut arr = vec![];
+                    s.set_array(&self.param, &mut arr, &mut self.text, core)?;
+                    self.array = Some(arr);
                     return Ok(vec![]);
                 }
             }
+        }
+
+        if self.param.name == "*" {
+            self.array = Some(core.db.get_position_params());
         }
 
         match self.param.subscript.is_some() {
@@ -67,7 +75,21 @@ impl Subword for BracedParam {
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn is_array(&self) -> bool {self.is_array && ! self.num}
-    fn get_array_elem(&self) -> Vec<String> {self.array.clone()}
+    fn get_array_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
+
+    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
+        if ifs.starts_with(" ") || self.array.is_none() || self.param.name != "*" {
+            return subword::split(&self.boxed_clone(), ifs, prev_char);
+        }
+
+        let mut ans = vec![];
+        let mut tmp = SimpleSubword{ text: "".to_string() };
+        for p in self.array.clone().unwrap() {
+            tmp.text = p.clone();
+            ans.push((tmp.boxed_clone(), true));
+        }
+        ans
+    }
 }
 
 impl BracedParam {
@@ -119,8 +141,9 @@ impl BracedParam {
             return Ok(());
         }
 
-        self.array = core.db.get_indexes_all(&self.param.name);
-        self.text = self.array.join(" ");
+        let arr = core.db.get_indexes_all(&self.param.name);
+        self.array = Some(arr.clone());
+        self.text = arr.join(" ");
 
         Ok(())
     }
@@ -179,9 +202,10 @@ impl BracedParam {
             return Ok(());
         }
 
-        self.array = core.db.get_array_all(&self.param.name);
+        let arr = core.db.get_array_all(&self.param.name);
         if self.num && (index.as_str() == "@" || index.as_str() == "*" ) {
-            self.text = self.array.len().to_string();
+            self.text = arr.len().to_string();
+            self.array = Some(arr);
             return Ok(());
         }
         if index.as_str() == "@" {
@@ -197,9 +221,10 @@ impl BracedParam {
     }
 
     fn atmark_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        self.array = core.db.get_array_all(&self.param.name);
+        let mut arr = core.db.get_array_all(&self.param.name);
+        self.array = Some(arr.clone());
         if self.num {
-            self.text = self.array.len().to_string();
+            self.text = arr.len().to_string();
             return Ok(());
         }
 
@@ -208,13 +233,14 @@ impl BracedParam {
             false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
         };
 
-        if self.array.len() <= 1 || self.has_value_check() {
+        if arr.len() <= 1 || self.has_value_check() {
             self.text = self.optional_operation(self.text.clone(), core)?;
         }else {
-            for i in 0..self.array.len() {
-                self.array[i] = self.optional_operation(self.array[i].clone(), core)?;
+            for i in 0..arr.len() {
+                arr[i] = self.optional_operation(arr[i].clone(), core)?;
             }
-            self.text = self.array.join(" ");
+            self.text = arr.join(" ");
+            self.array = Some(arr);
         }
         Ok(())
     }
