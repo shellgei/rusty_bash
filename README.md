@@ -7,7 +7,7 @@
 
 ## NEWS
 
-Bash-completion starts working on our shell! (currently, only with dev-completion branch and many TODOs)
+Bash-completion starts working on our shell!
 
 ![completion](https://github.com/user-attachments/assets/e4af177c-3fdd-4f59-a70b-9c97df96b4bc)
 
