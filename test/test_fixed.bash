@@ -15,6 +15,9 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'IFS="/" ; set bob "tom dick harry" joe; set $* ; echo $#')
+[ "$res" = "3" ] || err $LINENO
+
 cat << 'EOF' > $tmp-script
 echo OK | ( while read line ; do echo $line ; done )
 ああああああ！
