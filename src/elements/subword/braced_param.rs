@@ -58,11 +58,9 @@ impl Subword for BracedParam {
                     self.array = Some(arr);
                     return Ok(vec![]);
                 }
+            }else {
+                self.array = Some(core.db.get_position_params());
             }
-        }
-
-        if self.param.name == "*" {
-            self.array = Some(core.db.get_position_params());
         }
 
         match self.param.subscript.is_some() {
@@ -78,7 +76,9 @@ impl Subword for BracedParam {
     fn get_array_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
-        if ifs.starts_with(" ") || self.array.is_none() || self.param.name != "*" {
+        dbg!("HERE");
+        if (self.param.name != "@" && self.param.name != "*")
+        || ifs.starts_with(" ") || self.array.is_none() {
             return subword::split(&self.boxed_clone(), ifs, prev_char);
         }
 
