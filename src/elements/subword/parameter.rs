@@ -22,7 +22,7 @@ impl Subword for Parameter {
             return Ok(vec![]);
         }
 
-        if self.text == "$*" {
+        if self.text == "$*" || self.text == "$@" {
             self.array = Some(core.db.get_position_params());
         }
 
