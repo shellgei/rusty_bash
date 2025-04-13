@@ -180,6 +180,20 @@ fn split_str(s: &str, ifs: &str) -> Vec<(String, bool)> {
     ans
 }
 
+fn split(sw: &Box<dyn Subword>, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
+    if ifs == "" {
+        return vec![(sw.boxed_clone(), false)];
+    }
+
+    let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
+    let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
+    if special_ifs.is_empty() {
+        split_str(sw.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
+    }else {
+        split_str2(sw.get_text(), ifs, prev_char).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
+    }
+}
+
 pub trait Subword {
     fn get_text(&self) -> &str;
     fn set_text(&mut self, _: &str) {}
@@ -189,6 +203,8 @@ pub trait Subword {
     }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
+        split(&self.boxed_clone(), ifs, prev_char)
+                                                                                          /*
         if ifs == "" {
             return vec![(self.boxed_clone(), false)];
         }
@@ -199,7 +215,7 @@ pub trait Subword {
             split_str(self.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
         }else {
             split_str2(self.get_text(), ifs, prev_char).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
-        }
+        }*/
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}

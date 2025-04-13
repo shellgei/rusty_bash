@@ -18,6 +18,10 @@ tmp=/tmp/$$
 res=$($com <<< 'set bob "tom dick harry" joe; set $* ; echo $#')
 [ "$res" = "5" ] || err $LINENO
 
+res=$($com <<< 'IFS="" ; set bob "tom dick harry" joe; echo $* ; set $* ; echo $#')
+[ "$res" = "bob tom dick harry joe
+3" ] || err $LINENO
+
 res=$($com <<< 'IFS="/" ; set bob "tom dick harry" joe; set $* ; echo $#')
 [ "$res" = "3" ] || err $LINENO
 
