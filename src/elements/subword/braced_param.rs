@@ -60,10 +60,6 @@ impl Subword for BracedParam {
             }
         }
 
-        if self.param.name == "*" {
-            self.array = Some(core.db.get_position_params());
-        }
-
         match self.param.subscript.is_some() {
             true  => self.subscript_operation(core),
             false => self.non_subscript_operation(core),
@@ -176,6 +172,10 @@ impl BracedParam {
     }
 
     fn non_subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+            if self.param.name == "*" || self.param.name == "@" {
+                self.array = Some(core.db.get_position_params());
+            }
+
             let value = core.db.get_param(&self.param.name).unwrap_or_default();
             self.text = match self.num {
                 true  => value.chars().count().to_string(),
