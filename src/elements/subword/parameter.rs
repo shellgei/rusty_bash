@@ -35,7 +35,10 @@ impl Subword for Parameter {
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
         if ifs.starts_with(" ") || self.array.is_none() {
-            return subword::split(&self.boxed_clone(), ifs, prev_char);
+            let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
+
+            let ans = subword::split(&self.boxed_clone(), ifs, prev_char);
+            return ans.iter().map(|s| (f(s.0.to_string()), s.1)).collect();
         }
 
         let mut ans = vec![];
