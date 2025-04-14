@@ -147,8 +147,7 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
             || feeder.starts_withs(&["\n", "\t", " "]) {
                 Ok(None)
             }else{
-                let c = SimpleSubword { text: feeder.consume(1) };
-                Ok(Some(Box::new(c)))
+                Ok(Some(From::from(&feeder.consume(1))))
             }
         },
         _ => Ok(None),
