@@ -4,7 +4,6 @@
 use crate::{ShellCore, Feeder};
 use crate::utils::splitter;
 use crate::error::exec::ExecError;
-use crate::elements::subword::simple::SimpleSubword;
 use super::Subword;
 
 #[derive(Debug, Clone, Default)]
@@ -40,10 +39,8 @@ impl Subword for Parameter {
         }
 
         let mut ans = vec![];
-        let mut tmp = SimpleSubword{ text: "".to_string() };
         for p in self.array.clone().unwrap() {
-            tmp.text = p.clone();
-            ans.push((tmp.boxed_clone(), true));
+            ans.push( (From::from(&p), true) );
         }
         ans
     }

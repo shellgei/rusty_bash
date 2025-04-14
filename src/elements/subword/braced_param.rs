@@ -6,7 +6,6 @@ mod parse;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
-use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subscript::Subscript;
 use crate::utils;
 use crate::utils::splitter;
@@ -85,10 +84,8 @@ impl Subword for BracedParam {
         }
 
         let mut ans = vec![];
-        let mut tmp = SimpleSubword{ text: "".to_string() };
         for p in self.array.clone().unwrap() {
-            tmp.text = p.clone();
-            ans.push((tmp.boxed_clone(), true));
+            ans.push( (From::from(&p), true) );
         }
         ans
     }
