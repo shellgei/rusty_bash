@@ -12,7 +12,6 @@ use crate::elements::subword;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
-use super::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
@@ -33,7 +32,7 @@ impl From<&String> for Word {
     fn from(s: &String) -> Self {
         Self {
             text: s.to_string(),
-            subwords: vec![Box::new(SimpleSubword{text: s.to_string() })],
+            subwords: vec![From::from(s)],
             do_not_erase: false,
         }
     }

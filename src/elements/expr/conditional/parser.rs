@@ -4,7 +4,6 @@
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::elements::subword;
-use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::word::Word;
 use crate::elements::command;
 use super::{CondElem, ConditionalExpr};
@@ -58,7 +57,7 @@ impl ConditionalExpr {
 
             let symbol = feeder.consume(len);
             ans.text += &symbol.clone();
-            word.subwords.push( Box::new( SimpleSubword { text: symbol } ) );
+            word.subwords.push( From::from(&symbol) );
         }
 
         word

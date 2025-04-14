@@ -47,9 +47,21 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
+impl Default for Box::<dyn Subword> {
+    fn default() -> Box<dyn Subword> {
+        Box::new( SimpleSubword{ text: "".to_string() } )
+    }
+}
+
 impl From<&String> for Box::<dyn Subword> {
     fn from(s: &String) -> Box::<dyn Subword> {
         Box::new( SimpleSubword{ text: s.clone() } )
+    }
+}
+
+impl From<&str> for Box::<dyn Subword> {
+    fn from(s: &str) -> Box::<dyn Subword> {
+        Box::new( SimpleSubword{ text: s.to_string() } )
     }
 }
 
