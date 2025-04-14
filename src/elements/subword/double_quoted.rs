@@ -7,7 +7,7 @@ use crate::error::exec::ExecError;
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
 use crate::elements::subword::Arithmetic;
-use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
+use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
@@ -85,7 +85,7 @@ impl DoubleQuoted {
                     joint = ifs.chars().nth(0).unwrap().to_string();
                 }
 
-                *sw = Box::new(SimpleSubword{ text: params.join(&joint) });
+                *sw = From::from(&params.join(&joint));
             }
         }
         Ok(())
@@ -109,7 +109,7 @@ impl DoubleQuoted {
             };
 
             for text in array {
-                ans.push(SimpleSubword{text}.boxed_clone());
+                ans.push(From::from(&text));
                 self.split_points.push(ans.len());
             }
             self.split_points.pop();
@@ -160,7 +160,7 @@ impl DoubleQuoted {
         let ch = feeder.consume(len);
         ans.text += &ch.clone();
         if ch != "\"" {
-            ans.subwords.push( Box::new(SimpleSubword{ text: ch }) );
+            ans.subwords.push( From::from(&ch) );
             return Ok(true);
         }
         Ok(false)
