@@ -65,10 +65,9 @@ impl Subword for BracedParam {
         }
 
         match self.param.subscript.is_some() {
-            true  => self.subscript_operation(core)?,
-            false => self.non_subscript_operation(core)?,
+            true  => self.subscript_operation(core),
+            false => self.non_subscript_operation(core),
         }
-        Ok(())
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
