@@ -38,6 +38,8 @@ res=$($com <<< 'IFS="/" ; set bob "tom dick harry" joe; echo $@ ; set ${@} ; ech
 [ "$res" = "bob tom dick harry joe
 3" ] || err $LINENO
 
+# $ set | grep ^b
+# b=1:2:3
 res=$($com <<< 'IFS=: ; set 1 2 3; a=${*} ; echo $a ; b=$* ; echo $b ; echo "$b"')
 [ "$res" = "1 2 3
 1 2 3
