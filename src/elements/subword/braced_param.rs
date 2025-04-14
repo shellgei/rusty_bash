@@ -34,12 +34,12 @@ impl Subword for BracedParam {
     fn get_text(&self) -> &str { &self.text.as_ref() }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.check()?;
 
         if self.indirect && self.has_aster_or_atmark_subscript() { // ${!name[@]}, ${!name[*]}
             self.index_replace(core)?;
-            return Ok(vec![]);
+            return Ok(());
         }
 
         if self.indirect {
@@ -55,7 +55,7 @@ impl Subword for BracedParam {
                     let mut arr = vec![];
                     s.set_array(&self.param, &mut arr, &mut self.text, core)?;
                     self.array = Some(arr);
-                    return Ok(vec![]);
+                    return Ok(());
                 }
             }
         }
@@ -68,8 +68,7 @@ impl Subword for BracedParam {
             true  => self.subscript_operation(core)?,
             false => self.non_subscript_operation(core)?,
         }
-        Ok(vec![])
-    //    self.ans()
+        Ok(())
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
@@ -77,8 +76,11 @@ impl Subword for BracedParam {
     fn is_array(&self) -> bool {self.is_array && ! self.num}
     fn get_array_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
 
-    fn alter(&mut self, _: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        self.ans()
+    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+        match self.optional_operation.as_mut() {
+            Some(op) => Ok(op.get_alternative()),
+            None     => Ok(vec![]),
+        }
     }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
@@ -97,13 +99,6 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn ans(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        match self.optional_operation.as_mut() {
-            Some(op) => Ok(op.get_alternative()),
-            None     => Ok(vec![]),
-        }
-    }
-
     fn has_aster_or_atmark_subscript(&self) -> bool {
         if self.param.subscript.is_none() {
             return false;

@@ -57,11 +57,8 @@ pub trait Subword {
     fn get_text(&self) -> &str;
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn substitute(&mut self, _: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        Ok(vec![]) // return subwords if the self object must be replaced to them
-    }
-
-    fn alter(&mut self, _: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> { Ok(vec![]) }
+    fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> { Ok(()) }
+    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> { Ok(vec![]) }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
         splitter::split(&self.get_text(), ifs, prev_char).iter()

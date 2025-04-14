@@ -16,9 +16,9 @@ impl Subword for Parameter {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if ! self.text.starts_with("$") {
-            return Ok(vec![]);
+            return Ok(());
         }
 
         if self.text == "$*" || self.text == "$@" {
@@ -26,7 +26,7 @@ impl Subword for Parameter {
         }
 
         self.text = core.db.get_param(&self.text[1..]).unwrap_or(String::new());
-        Ok(vec![])
+        Ok(())
     }
 
     fn is_array(&self) -> bool {self.text == "$@"}
