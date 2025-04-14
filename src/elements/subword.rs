@@ -54,12 +54,11 @@ fn split(sw: &Box<dyn Subword>, ifs: &str, prev_char: Option<char>) -> Vec<(Box<
     }
 
     let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
-    let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
-    if special_ifs.is_empty() {
-        splitter::split_str_normal(sw.get_text(), ifs).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
+    if ifs.chars().all(|c| " \t\n".contains(c) ) {
+        splitter::split_str_normal(sw.get_text(), ifs)
     }else {
-        splitter::split_str_special(sw.get_text(), ifs, prev_char).iter().map(|s| (f(s.0.to_string()), s.1)).collect()
-    }
+        splitter::split_str_special(sw.get_text(), ifs, prev_char)
+    }.iter().map(|s| (f(s.0.to_string()), s.1)).collect()
 }
 
 pub trait Subword {
@@ -128,19 +127,9 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
     match mode {
         None => Ok(None),
         Some(WordMode::ParamOption(ref v)) => {
-            if feeder.len() == 0 {
+            if feeder.len() == 0 || feeder.starts_withs2(v) {
                 return Ok(None);
             }
-
-            if feeder.starts_withs2(v) {
-                return Ok(None);
-            }
-
-            /*
-            let first = feeder.scanner_char(); //feeder.nth(0).unwrap().to_string();
-            if v.contains(&first) {
-                return Ok(None);
-            }*/
 
             let len = feeder.scanner_char();
             let c = FillerSubword { text: feeder.consume(len) };
