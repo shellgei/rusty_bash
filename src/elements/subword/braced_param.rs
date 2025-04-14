@@ -68,13 +68,18 @@ impl Subword for BracedParam {
             true  => self.subscript_operation(core)?,
             false => self.non_subscript_operation(core)?,
         }
-        self.ans()
+        Ok(vec![])
+    //    self.ans()
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn is_array(&self) -> bool {self.is_array && ! self.num}
     fn get_array_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
+
+    fn alter(&mut self, _: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+        self.ans()
+    }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
         if (self.param.name != "@" && self.param.name != "*")
