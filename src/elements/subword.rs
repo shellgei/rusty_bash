@@ -47,16 +47,9 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
-
-fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)>{ //bool: true if it should remain
-    if ifs == "" {
-        return vec![(sw.to_string(), false)];
-    }
-
-    if ifs.chars().all(|c| " \t\n".contains(c) ) {
-        splitter::split_str_normal(sw, ifs)
-    }else {
-        splitter::split_str_special(sw, ifs, prev_char)
+impl From<&String> for Box::<dyn Subword> {
+    fn from(s: &String) -> Box::<dyn Subword> {
+        Box::new( SimpleSubword{ text: s.clone() } )
     }
 }
 
@@ -69,10 +62,8 @@ pub trait Subword {
     }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
-        let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
-
-        let ans = split(&self.get_text(), ifs, prev_char);
-        ans.iter().map(|s| (f(s.0.to_string()), s.1)).collect()
+        splitter::split(&self.get_text(), ifs, prev_char).iter()
+            .map(|s| ( From::from(&s.0), s.1)).collect()
     }
 
     fn make_glob_string(&mut self) -> String {self.get_text().to_string()}

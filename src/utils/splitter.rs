@@ -1,7 +1,19 @@
 //SPDX-FileCopyrightText: 2025 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub fn scanner_blank(s: &str, blank: &Vec<char>) -> usize {
+pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)>{ //bool: true if it should remain
+    if ifs == "" {
+        return vec![(sw.to_string(), false)];
+    }
+
+    if ifs.chars().all(|c| " \t\n".contains(c) ) {
+        split_str_normal(sw, ifs)
+    }else {
+        split_str_special(sw, ifs, prev_char)
+    }
+}
+
+fn scanner_blank(s: &str, blank: &Vec<char>) -> usize {
     let mut ans = 0;
     let mut esc = false;
 
@@ -22,7 +34,7 @@ pub fn scanner_blank(s: &str, blank: &Vec<char>) -> usize {
     ans
 }
 
-pub fn scanner_ifs_blank(s: &str, blank: &Vec<char>, delim: &Vec<char>) -> usize {
+fn scanner_ifs_blank(s: &str, blank: &Vec<char>, delim: &Vec<char>) -> usize {
     let mut ans = 0;
     let mut esc = false;
 
@@ -47,7 +59,7 @@ pub fn scanner_ifs_blank(s: &str, blank: &Vec<char>, delim: &Vec<char>) -> usize
     ans
 }
 
-pub fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
+fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
     let mut ans = vec![];
     let mut remaining = s.to_string();
 
@@ -89,7 +101,7 @@ pub fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(St
     ans
 }
 
-pub fn split_str_normal(s: &str, ifs: &str) -> Vec<(String, bool)> {
+fn split_str_normal(s: &str, ifs: &str) -> Vec<(String, bool)> {
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
@@ -114,7 +126,7 @@ pub fn split_str_normal(s: &str, ifs: &str) -> Vec<(String, bool)> {
     ans
 }
 
-pub fn scanner_word(s: &str, ifs: &str) -> usize {
+fn scanner_word(s: &str, ifs: &str) -> usize {
     let mut ans = 0;
     let mut esc = false;
 
@@ -134,3 +146,4 @@ pub fn scanner_word(s: &str, ifs: &str) -> usize {
 
     ans
 }
+

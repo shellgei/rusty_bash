@@ -5,11 +5,11 @@ mod optional_operation;
 mod parse;
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword;
 use crate::elements::subword::Subword;
 use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subscript::Subscript;
 use crate::utils;
+use crate::utils::splitter;
 use crate::error::exec::ExecError;
 use self::optional_operation::OptionalOperation;
 
@@ -82,7 +82,7 @@ impl Subword for BracedParam {
         || ifs.starts_with(" ") || self.array.is_none() {
             let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
 
-            let ans = subword::split(&self.get_text(), ifs, prev_char);
+            let ans = splitter::split(&self.get_text(), ifs, prev_char);
             return ans.iter().map(|s| (f(s.0.to_string()), s.1)).collect();
         }
 
