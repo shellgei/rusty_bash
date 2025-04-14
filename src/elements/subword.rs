@@ -48,15 +48,15 @@ impl Clone for Box::<dyn Subword> {
 }
 
 
-fn split(sw: &Box<dyn Subword>, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)>{ //bool: true if it should remain
+fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)>{ //bool: true if it should remain
     if ifs == "" {
-        return vec![(sw.get_text().to_string(), false)];
+        return vec![(sw.to_string(), false)];
     }
 
     if ifs.chars().all(|c| " \t\n".contains(c) ) {
-        splitter::split_str_normal(sw.get_text(), ifs)
+        splitter::split_str_normal(sw, ifs)
     }else {
-        splitter::split_str_special(sw.get_text(), ifs, prev_char)
+        splitter::split_str_special(sw, ifs, prev_char)
     }
 }
 
@@ -71,7 +71,7 @@ pub trait Subword {
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ //bool: true if it should remain
         let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
 
-        let ans = split(&self.boxed_clone(), ifs, prev_char);
+        let ans = split(&self.get_text(), ifs, prev_char);
         ans.iter().map(|s| (f(s.0.to_string()), s.1)).collect()
     }
 

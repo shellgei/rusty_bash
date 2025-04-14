@@ -82,7 +82,7 @@ impl Subword for BracedParam {
         || ifs.starts_with(" ") || self.array.is_none() {
             let f = |s| Box::new( SimpleSubword {text: s}) as Box<dyn Subword>;
 
-            let ans = subword::split(&self.boxed_clone(), ifs, prev_char);
+            let ans = subword::split(&self.get_text(), ifs, prev_char);
             return ans.iter().map(|s| (f(s.0.to_string()), s.1)).collect();
         }
 
