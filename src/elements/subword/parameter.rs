@@ -25,8 +25,7 @@ impl Subword for Parameter {
             self.array = Some(core.db.get_position_params());
         }
 
-        let value = core.db.get_param(&self.text[1..]).unwrap_or(String::new());
-        self.text = value.to_string();
+        self.text = core.db.get_param(&self.text[1..]).unwrap_or(String::new());
         Ok(vec![])
     }
 
