@@ -37,12 +37,16 @@ impl Command for CaseCommand {
 
         for e in &mut self.patterns_script_end {
             for pattern in &mut e.0 {
-                let p = match pattern.eval_for_case_pattern(core) {
-                    Some(p) => p, 
-                    _       => continue,
-                };
+                let mut exec_script = false;
+                if ! next {
+                    let p = match pattern.eval_for_case_pattern(core) {
+                        Some(p) => p, 
+                        _       => continue,
+                    };
+                    exec_script = glob::parse_and_compare(&w, &p, extglob);
+                }
 
-                if glob::parse_and_compare(&w, &p, extglob) || next {
+                if next || exec_script {
                     let _ = e.1.exec(core);
 
                     if e.2 == ";;" {
