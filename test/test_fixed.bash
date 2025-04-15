@@ -15,7 +15,8 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
-res=$($com <<< 'case 1 in $((y=0)) ) ;; $((x=1)) ) ;& $((x=2)) ) echo $x.$y ;; esac')
+res=$($com <<< 'x=0 y=1
+case 1 in $((y=0)) ) ;; $((x=1)) ) ;& $((x=2)) ) echo $x.$y ;; esac')
 [ "$res" = "1.0" ] || err $LINENO
 
 res=$($com <<< 'shopt -o -s posix')
