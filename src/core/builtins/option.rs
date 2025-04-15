@@ -143,22 +143,37 @@ pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i
 pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
     let print = arg::consume_option("-p", &mut args);
+    let o_opt = arg::consume_option("-o", &mut args);
 
-    if print && args.contains(&"-o".to_string()) {
-        if args.len() >= 3 {
-            core.options.print_opt(&args[2], true);
+    /* print section */
+    if print && o_opt {
+        if args.len() >= 2 {
+            core.options.print_opt(&args[1], true);
         }else{
             core.options.print_all(false);
         }
         return 0;
     }
 
-    if args.len() < 3 {
+    if args.len() < 3 { // "shopt" or "shopt option"
         let len = args.len();
         return shopt_print(core, &mut args, len < 2);
     }
+    /* end of print section */
 
-    let res = match args[1].as_str() {
+    if o_opt {
+        let opt = match args[1].as_str() {
+            "-s" => "-o",
+            "-u" => "+o",
+            other => other,
+        }.to_string();
+        let mut args_for_set = vec!["set".to_string(), opt];
+        args_for_set.append(&mut args[2..].to_vec());
+
+        return set(core, &mut args_for_set);
+    }
+
+    let res = match args[1].as_str() { //TODO: args[3..] must to be set
         "-s" => {
             if ["extglob", "progcomp", "nullglob", "dotglob", "globstar", "globskipdots"].iter().any(|&e| e == args[2]) {
                 core.shopts.set(&args[2], true)
