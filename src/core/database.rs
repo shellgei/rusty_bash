@@ -64,7 +64,7 @@ impl DataBase {
         }
 
         if name == "@" || name == "*" {   // $@ should return an array in a double quoted
-            return getter::connected_position_params(self);  // subword. Therefore another 
+            return getter::connected_position_params(self, name == "*");  // subword. Therefore another 
         }                                                   //access method should be used there. 
 
         if let Ok(n) = name.parse::<usize>() {
@@ -150,7 +150,6 @@ impl DataBase {
             return self.position_parameters[layer].clone();
         }
 
-        //match getter::clone(self, name).as_mut() {
         match self.get_ref(name) {
             Some(d) => {
                 if let Ok(v) = d.get_all_as_array() {
@@ -197,7 +196,6 @@ impl DataBase {
     }
 
     pub fn is_single_num(&mut self, name: &str) -> bool {
-        //match getter::clone(self, name).as_mut() {
         match self.get_ref(name) {
             Some(d) => return d.is_single_num(),
             _ => false,

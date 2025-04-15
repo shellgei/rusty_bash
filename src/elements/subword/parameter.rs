@@ -22,16 +22,7 @@ impl Subword for Parameter {
         }
 
         if self.text == "$*" || self.text == "$@" {
-            let arr = core.db.get_position_params();
-            self.array = Some(arr.clone());
-
-            let mut joint = core.db.get_ifs_head();
-            if self.text == "$@" {
-                joint = " ".to_string();
-            }
-        
-            self.text = arr.join(&joint);
-            return Ok(());
+            self.array = Some(core.db.get_position_params());
         }
 
         self.text = core.db.get_param(&self.text[1..]).unwrap_or(String::new());
