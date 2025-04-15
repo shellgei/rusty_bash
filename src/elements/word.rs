@@ -79,7 +79,8 @@ impl Word {
             Err(e) => return Err(e),
         };
 
-        Ok( Self::make_args(&mut ws).join(" ") )
+        let joint = core.db.get_ifs_head();
+        Ok( Self::make_args(&mut ws).join(&joint) )
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {

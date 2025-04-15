@@ -77,14 +77,8 @@ impl DoubleQuoted {
     fn connect_array(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for sw in self.subwords.iter_mut() {
             if sw.get_text() == "$*" || sw.get_text() == "${*}" {
-                let ifs = core.db.get_param("IFS").unwrap_or(" ".to_string());
                 let params = core.db.get_position_params();
-
-                let mut joint = "".to_string();
-                if ! ifs.is_empty() {
-                    joint = ifs.chars().nth(0).unwrap().to_string();
-                }
-
+                let joint = core.db.get_ifs_head();
                 *sw = From::from(&params.join(&joint));
             }
         }

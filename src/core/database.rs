@@ -370,4 +370,12 @@ impl DataBase {
         }
         None
     }
+
+    pub fn get_ifs_head(&mut self) -> String {
+        let ifs = self.get_param("IFS").unwrap_or(" ".to_string());
+        match ifs.as_str() {
+            "" => "".to_string(), 
+            s => s.chars().next().unwrap().to_string(),
+        }
+    }
 }
