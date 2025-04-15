@@ -126,8 +126,13 @@ impl CaseCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(4);
 
-        if ! Self::eat_word(feeder, &mut ans, core)?
-        || ! feeder.starts_with("in") {
+        command::eat_blank_lines(feeder, core, &mut ans.text)?;
+        if ! Self::eat_word(feeder, &mut ans, core)? {
+            return Ok(None);
+        }
+
+        command::eat_blank_lines(feeder, core, &mut ans.text)?;
+        if ! feeder.starts_with("in") {
             return Ok(None);
         }
         ans.text += &feeder.consume(2);

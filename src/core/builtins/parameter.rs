@@ -195,6 +195,7 @@ pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 e.print(core);
                 return 1;
             }
+            continue;
         }
 
         if ! utils::is_name(&name, core) {
