@@ -2,9 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword::{CommandSubstitution, Parameter};
 use crate::error::parse::ParseError;
-use super::{SimpleSubword, Subword};
+use super::{CommandSubstitution, Parameter, SimpleSubword, Subword};
 
 #[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
