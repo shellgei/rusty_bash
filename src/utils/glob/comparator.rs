@@ -6,6 +6,7 @@ use super::extglob;
 use super::{GlobElem, MetaChar};
 
 pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
+    dbg!("{:?}", &pattern);
     let mut candidates = vec![word.to_string()];
     pattern.iter().for_each(|w| shave(&mut candidates, &w) );
     candidates

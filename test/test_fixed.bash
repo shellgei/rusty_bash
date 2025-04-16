@@ -15,6 +15,12 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+res=$($com <<< 'case "]" in [a]] ) echo NG ;; esac')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'case "]" in [\]] ) echo OK ;; esac')
+[ "$res" = "OK" ] || err $LINENO
+
 res=$($com <<< 'case "]" in []] ) echo OK ;; esac')
 [ "$res" = "OK" ] || err $LINENO
 
