@@ -17,7 +17,7 @@ impl Subword for DoubleQuoted {
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         Some( self.text[1..self.text.len()-1].to_string() )
-    }   
+    }
 
     fn make_glob_string(&mut self) -> String {
         self.text[1..self.text.len()-1].replace("\\", "\\\\")
@@ -25,7 +25,7 @@ impl Subword for DoubleQuoted {
             .replace("?", "\\?")
             .replace("[", "\\[")
             .replace("]", "\\]")
-    }   
+    }
 
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
@@ -34,7 +34,7 @@ impl DoubleQuoted {
     fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
     -> Result<bool, ParseError> {
         let len = feeder.scanner_char();
-        if len == 0 { 
+        if len == 0 {
             feeder.feed_additional_line(core)?;
             return Ok(true);
         }
@@ -46,7 +46,7 @@ impl DoubleQuoted {
             return Ok(true);
         }
         Ok(false)
-    } 
+    }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
