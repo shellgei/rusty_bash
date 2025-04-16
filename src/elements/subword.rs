@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod command_sub;
+mod double_quoted;
 mod escaped_char;
 pub mod parameter;
 pub mod simple;
@@ -12,6 +13,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use std::fmt;
+use self::double_quoted::DoubleQuoted;
 use self::command_sub::CommandSubstitution;
 use self::escaped_char::EscapedChar;
 use self::parameter::Parameter;
@@ -87,5 +89,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }
