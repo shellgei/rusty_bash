@@ -32,8 +32,10 @@ impl Subword for DoubleQuoted {
 }
 
 impl DoubleQuoted {
-    fn eat_element(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
-        let sw: Box<dyn Subword> = if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
+    fn eat_element(feeder: &mut Feeder, ans: &mut Self,
+                   core: &mut ShellCore) -> Result<bool, ParseError> {
+        let sw: Box<dyn Subword>
+            = if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
             else { return Ok(false) ; };
 
