@@ -2,10 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod command_sub;
+mod double_quoted;
 mod escaped_char;
 pub mod parameter;
 pub mod simple;
-mod double_quoted;
 mod single_quoted;
 mod varname;
 
@@ -13,11 +13,11 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use std::fmt;
+use self::double_quoted::DoubleQuoted;
 use self::command_sub::CommandSubstitution;
 use self::escaped_char::EscapedChar;
 use self::parameter::Parameter;
 use self::simple::SimpleSubword;
-use self::double_quoted::DoubleQuoted;
 use self::single_quoted::SingleQuoted;
 use self::varname::VarName;
 use std::fmt::Debug;
