@@ -2,8 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::error::exec::ExecError;
-use crate::elements::word::{substitution, Word};
 use crate::elements::subword::{CommandSubstitution, Parameter};
 use crate::error::parse::ParseError;
 use super::{SimpleSubword, Subword};
