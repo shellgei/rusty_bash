@@ -47,6 +47,7 @@ impl Clone for Box::<dyn Command> {
 
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+        // TODO: set LINENO here (maybe each command must have the lineno field and get_lineno)
         if self.force_fork() || pipe.is_connected() {
             self.fork_exec(core, pipe)
         }else{
