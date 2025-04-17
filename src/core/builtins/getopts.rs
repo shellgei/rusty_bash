@@ -124,6 +124,18 @@ fn set_option_with_arg(name: &str, arg: &str, index: usize, optarg: &str,
 }
 
 pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let layer = core.db.get_layer_pos("OPTIND").unwrap_or(0);
+    let layer_sub = core.db.get_layer_pos("OPTIND_SUB").unwrap_or(0);
+    let layer_prev = core.db.get_layer_pos("OPTIND_PREV").unwrap_or(0);
+
+    if layer_sub != layer {
+        let _ = core.db.set_param("OPTIND_SUB", "0", Some(layer));
+    }
+    if layer_prev != layer {
+        let _ = core.db.set_param("OPTIND_PREV", "0", Some(layer));
+    }
+
+
     let _ = core.db.set_param("OPTARG", "", None);
 
     if args.len() < 3 {

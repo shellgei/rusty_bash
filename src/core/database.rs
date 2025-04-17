@@ -19,7 +19,7 @@ use self::data::array::ArrayData;
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
-    params: Vec<HashMap<String, Box<dyn Data>>>,
+    pub params: Vec<HashMap<String, Box<dyn Data>>>,
     pub param_options: Vec<HashMap<String, String>>,
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
