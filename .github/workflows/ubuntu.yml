@@ -2,7 +2,7 @@ name: ubuntu-latest
 
 on:
   push:
-    branches: [ main, alpha-notest, beta, sd/* ]
+    branches: [ main, alpha, beta, sd/* ]
     paths: ['src/**', 'test/**', '!README.md' ]
   pull_request:
     branches: [ main ]
