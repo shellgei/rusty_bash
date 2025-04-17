@@ -26,14 +26,7 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> { Some(self.text.clone()) }
-
-    fn make_glob_string(&mut self) -> String {
-        self.text[1..self.text.len()-1].replace("\\", "\\\\")
-            .replace("*", "\\*")
-            .replace("?", "\\?")
-            .replace("[", "\\[")
-            .replace("]", "\\]")
-    }
+    fn make_glob_string(&mut self) -> String {self.text.clone()}
 
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
