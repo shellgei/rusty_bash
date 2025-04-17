@@ -144,20 +144,24 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
     let print = arg::consume_option("-p", &mut args);
     let o_opt = arg::consume_option("-o", &mut args);
+    let q_opt = arg::consume_option("-q", &mut args);
 
     /* print section */
     if print && o_opt {
-        if args.len() >= 2 {
+        if args.len() >= 2 && ! q_opt {
             core.options.print_opt(&args[1], true);
-        }else{
+        }else if ! q_opt {
             core.options.print_all(false);
         }
         return 0;
     }
 
     if args.len() < 3 { // "shopt" or "shopt option"
-        let len = args.len();
-        return shopt_print(core, &mut args, len < 2);
+        if ! q_opt {
+            let len = args.len();
+            return shopt_print(core, &mut args, len < 2);
+        }
+        return 0;
     }
     /* end of print section */
 
