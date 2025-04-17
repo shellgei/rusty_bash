@@ -7,7 +7,7 @@
 
 ## NEWS
 
-Bash-completion starts working on our shell! (currently, only with dev-completion branch and many TODOs)
+Bash-completion starts working on our shell!
 
 ![completion](https://github.com/user-attachments/assets/e4af177c-3fdd-4f59-a70b-9c97df96b4bc)
 
@@ -15,7 +15,8 @@ Bash-completion starts working on our shell! (currently, only with dev-completio
 
 A clone of Bash, which is developed as a hobby of our group and for monthly articles on SoftwareDesign magazine published by Gijutsu-Hyohron Co., Ltd.
 
-## Quick Start
+## Quick 
+Start
 
 ```bash
 $ git clone https://github.com/shellgei/rusty_bash.git
@@ -40,11 +41,30 @@ $ sush
 ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
 
-## Comparison with Bash
+## Comparison with Bash 5.2
 
-This graph shows the test result with the scripts in `./tests/` of Bash repo. Currently, the binary built from alpha repo has passed five of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 5/84 features of Bash.
+This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed seven of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 7/84 features of Bash.
 
-![](./test/bash_genuine_test/graph.png)
+![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
+
+### strange behavior of Bash that we don't want to follow
+
+The following behavior of Bash will not be imitated by `sush`. So we alter the right output file (e.g `globstar.right`) for comparision. 
+
+* Bash outputs the same path repeatedly in some situations of globstar. It may be for compatibility of ksh. 
+* Bash outputs overflow calculation results at the border of 64 bit intergers and `arith5.sub` tells that this behavior should be reproduced. But we don't follow it. 
+    ```bash
+    ### Bash example ###
+    $ echo $(( -9223372036854775808 * -1 )) 
+    -9223372036854775808                    #IT'S WRONG. 
+    $ echo $(( -9223372036854775807 * -1 )) #IT'S OK.
+    9223372036854775807
+    ### Rusty Bash ###
+    🍣 echo $(( -9223372036854775808 * -1 ))
+    9223372036854775808
+    🍣 echo $(( -9223372036854775807 * -1 ))
+    9223372036854775807
+    ```
 
 ## Contribution
 
@@ -100,7 +120,7 @@ Followings are not difficult but very important tasks.
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
 | fc | :no_good: | fg | :construction: | getopts | :construction: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
-| jobs | :construction: | kill | :no_good: | let | :construction: |
+| jobs | :construction: | kill | :no_good: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :no_good: | pushd | :no_good: |
 | readonly | :no_good: | return | :heavy_check_mark: | false | :heavy_check_mark: |
