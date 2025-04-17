@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::parse::ParseError;
 use super::Subword;
 
 #[derive(Debug, Clone)]
@@ -29,12 +30,13 @@ impl Subword for DoubleQuoted {
 }
 
 impl DoubleQuoted {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         match feeder.scanner_single_quoted_subword(core) {
-            0 => None,
+            0 => Ok(None),
             n => {
                 let s = feeder.consume(n);
-                Some(DoubleQuoted{ text: s })
+                Ok(Some(DoubleQuoted{ text: s }))
             },
         }
     }

@@ -89,6 +89,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = DoubleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }
