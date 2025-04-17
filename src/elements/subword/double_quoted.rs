@@ -21,13 +21,11 @@ impl Subword for DoubleQuoted {
         let mut word = Word::from(self.subwords.clone());
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
-        dbg!("{:?}", &self.subwords);
         self.text = word.text;
         Ok(())
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
-        /*
         let text = self.subwords.iter_mut()
             .map(|s| s.make_unquoted_string())
             .filter(|s| *s != None)
@@ -35,13 +33,7 @@ impl Subword for DoubleQuoted {
             .collect::<Vec<String>>()
             .concat();
 
-        if text.is_empty() && self.split_points.len() == 1 {
-            return None;
-        }
-
         Some(text)
-        */
-        Some(self.text.clone())
     }
 
     fn make_glob_string(&mut self) -> String {
