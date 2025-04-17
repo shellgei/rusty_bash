@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elements::word::{substitution, Word};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{CommandSubstitution, Parameter, SimpleSubword, Subword};
 
@@ -14,6 +16,15 @@ pub struct DoubleQuoted {
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
+
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut word = Word::from(self.subwords.clone());
+        substitution::eval(&mut word, core)?;
+        self.subwords = word.subwords;
+        dbg!("{:?}", &self.subwords);
+        self.text = word.text;
+        Ok(())
+    }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         Some( self.text[1..self.text.len()-1].to_string() )
