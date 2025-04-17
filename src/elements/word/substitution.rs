@@ -14,6 +14,12 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
     for sw in word.subwords.iter_mut() {
         sw.substitute(core)?;
     };
+
+    word.text = word.subwords.iter()
+        .map(|sw| sw.get_text())
+        .collect::<Vec<&str>>()
+        .join("");
+
     Ok(())
 }
 
