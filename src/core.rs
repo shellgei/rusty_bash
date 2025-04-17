@@ -76,6 +76,7 @@ pub struct ShellCore {
     pub suspend_e_option: bool,
     pub script_name: String,
     pub exit_script: String,
+    pub exit_script_run: bool,
 }
 
 impl ShellCore {
