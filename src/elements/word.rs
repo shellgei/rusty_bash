@@ -116,15 +116,6 @@ impl Word {
     pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut w = self.tilde_and_dollar_expansion(core)?;
         Ok(w.make_glob_string())
-
-            /*
-        match self.tilde_and_dollar_expansion(core) {
-            Ok(mut w) => Some(w.make_glob_string()),
-            Err(e)    => {
-                e.print(core);
-                return None;
-            },
-        }*/
     }
 
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
