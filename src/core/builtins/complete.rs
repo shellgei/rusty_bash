@@ -98,6 +98,14 @@ fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<Stri
     }
 }
 
+fn complete_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    for command in &mut args[1..] {
+        core.completion_info.remove(command);
+    }
+
+    0
+}
+
 pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 || args[1] == "-p" {
         return print_complete(core);
@@ -105,6 +113,11 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut o_options = vec![];
     let mut args = arg::dissolve_options(args);
+
+    if arg::consume_option("-r", &mut args) {
+        return complete_r(core, &mut args);
+    }
+
     while let Some(v) = arg::consume_with_next_arg("-o", &mut args) {
         o_options.push(v);
     }
