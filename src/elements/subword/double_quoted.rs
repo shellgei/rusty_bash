@@ -27,7 +27,21 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
-        Some( self.text[1..self.text.len()-1].to_string() )
+        /*
+        let text = self.subwords.iter_mut()
+            .map(|s| s.make_unquoted_string())
+            .filter(|s| *s != None)
+            .map(|s| s.unwrap())
+            .collect::<Vec<String>>()
+            .concat();
+
+        if text.is_empty() && self.split_points.len() == 1 {
+            return None;
+        }
+
+        Some(text)
+        */
+        Some(self.text.clone())
     }
 
     fn make_glob_string(&mut self) -> String {
