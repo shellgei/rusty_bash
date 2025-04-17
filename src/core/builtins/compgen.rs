@@ -80,6 +80,7 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
         "shopt" => "-A shopt",
         "stopped" => "-A stopped",
         "job" => "-j",
+        "variable" => "-v",
         a => a,
     };
 
