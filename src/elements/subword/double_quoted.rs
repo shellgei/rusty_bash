@@ -25,16 +25,7 @@ impl Subword for DoubleQuoted {
         Ok(())
     }
 
-    fn make_unquoted_string(&mut self) -> Option<String> {
-        let text = self.subwords.iter_mut()
-            .map(|s| s.make_unquoted_string())
-            .filter(|s| s.is_some())
-            .map(|s| s.unwrap())
-            .collect::<Vec<String>>()
-            .concat();
-
-        Some(text)
-    }
+    fn make_unquoted_string(&mut self) -> Option<String> { Some(self.text.clone()) }
 
     fn make_glob_string(&mut self) -> String {
         self.text[1..self.text.len()-1].replace("\\", "\\\\")
