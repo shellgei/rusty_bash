@@ -41,6 +41,15 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return parameter::print_all(core);
     }
 
+    if arg::consume_option("-m", &mut args) {
+        if ! core.db.flags.contains('m') {
+            core.db.flags += "m";
+        }
+        if args.len() <= 1 {
+            return 0;
+        }
+    }
+
     if args[1].starts_with("--") {
         args.remove(0);
         return match parameter::set_positions(core, &args) {
