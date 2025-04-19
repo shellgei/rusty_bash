@@ -72,8 +72,10 @@ elif [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
     _comp_complete_load scp #for completion of rsync
     # . /usr/share/bash-completion/completions/git # for git-completion on WSL
+    complete -d cd
 elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
+    complete -d cd
 fi
 
 
