@@ -3,20 +3,21 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::command;
+use crate::elements::subscript::Subscript;
 use crate::error::exec::ExecError;
 use super::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct Array {
     pub text: String,
-    pub words: Vec<Word>,
+    pub words: Vec<(Option<Subscript>, Word)>,
 }
 
 impl Array {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, ExecError> {
         let mut ans = vec![];
 
-        for w in &mut self.words {
+        for (_, w) in &mut self.words {
             let ws = w.eval(core)?;
             ans.extend(ws);
         }
@@ -34,7 +35,7 @@ impl Array {
             _       => return false,
         };
         ans.text += &w.text;
-        ans.words.push(w);
+        ans.words.push((None, w));
         true
     }
 

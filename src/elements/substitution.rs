@@ -27,7 +27,7 @@ impl ParsedDataType {
             Self::Array(a) => {
                 let mut ans = "(".to_string();
                 let mut ws = vec![];
-                for w in &a.words {
+                for (_, w) in &a.words {
                     ws.push( w.eval_as_value(core)? );
                 }
                 ans += &ws.join(" ");
@@ -200,7 +200,6 @@ impl Substitution {
             index += 1;
         }
         self.evaluated_array = Some(hash);
-        dbg!("{:?}", &self.evaluated_array);
         Ok(())
     }
 
