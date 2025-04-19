@@ -329,8 +329,10 @@ impl DataBase {
         ans
     }
 
-    pub fn unset_var_layer(&mut self, name: &str, layer: usize) {
-        self.params[layer].remove(name);
+    pub fn init(&mut self, name: &str, layer: usize) {
+        if let Some(d) = self.params[layer].get_mut(name) {
+            d.clear();
+        }
     }
 
     pub fn unset_var(&mut self, name: &str) {

@@ -38,6 +38,7 @@ pub trait Data {
         println!("{}={}", name, self.print_body());
     }
 
+    fn clear(&mut self) {}
     fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call set_as_single".to_string()))}
     fn get_as_single_num(&mut self) -> Result<isize, ExecError> {Err(ExecError::Other("not a single variable".to_string()))}
     fn set_as_array(&mut self, _: &str, _: &str) -> Result<(), ExecError> {

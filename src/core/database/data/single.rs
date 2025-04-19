@@ -21,6 +21,13 @@ impl Body {
         }
     }
 
+    fn clear(&mut self) {
+        *self = match &self {
+            Self::Str(_) => Self::Str(String::new()),
+            _ => Self::Num(None),
+        }
+    }
+
     fn get_as_num(&mut self) -> Result<isize, ExecError> {
         match self {
             Self::Str(s) => Err(ExecError::InvalidNumber(s.to_string())),
@@ -74,6 +81,8 @@ impl From<&str> for SingleData {
 impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
     fn print_body(&self) -> String { self.body.to_string() }
+
+    fn clear(&mut self) { self.body.clear(); }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body.set(value)

@@ -89,7 +89,7 @@ impl Substitution {
         match self.get_index(core)? {
             None => {
                 if let Some(a) = &self.evaluated_array {
-                    core.db.unset_var_layer(&self.name, layer);
+                    core.db.init(&self.name, layer);
                     for e in a {
                         core.db.set_param2(&self.name, &e.0, &e.1, Some(layer))?;
                     }
