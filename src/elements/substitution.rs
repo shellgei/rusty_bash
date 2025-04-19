@@ -6,6 +6,7 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use std::env;
+use std::collections::HashMap;
 use super::array::Array;
 use super::subscript::Subscript;
 use super::word::Word;
@@ -44,7 +45,7 @@ pub struct Substitution {
     index: Option<Subscript>,
     value: ParsedDataType,
     evaluated_string: Option<String>,
-    evaluated_array: Option<Vec<String>>,
+    evaluated_array: Option<HashMap<String, String>>,
     append: bool,
 }
 
@@ -87,10 +88,14 @@ impl Substitution {
     fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         match self.get_index(core)? {
             None => {
-                return match &self.evaluated_array {
-                    Some(a) => core.db.set_array(&self.name, a.clone(), Some(layer)),
-                    _ => Err(ExecError::Other("no array and no index".to_string())),
-                };
+                if let Some(a) = &self.evaluated_array {
+                    core.db.unset_var_layer(&self.name, layer);
+                    for e in a {
+                        core.db.set_param2(&self.name, &e.0, &e.1, Some(layer))?;
+                    }
+                    return Ok(());
+                }
+                return Err(ExecError::Other("no array and no index".to_string()));
             },
             Some(index) => {
                 if index.is_empty() {
@@ -182,8 +187,20 @@ impl Substitution {
             false => vec![],
         };
 
+        let mut index = 0;
+        let mut hash = HashMap::new();
+        for e in prev {
+            hash.insert(index.to_string(), e);
+            index += 1;
+        }
+
         let values = a.eval(core)?;
-        self.evaluated_array = Some([prev, values].concat());
+        for e in values {
+            hash.insert(index.to_string(), e);
+            index += 1;
+        }
+        self.evaluated_array = Some(hash);
+        dbg!("{:?}", &self.evaluated_array);
         Ok(())
     }
 
