@@ -89,6 +89,11 @@ impl Substitution {
         match self.get_index(core)? {
             None => {
                 if let Some(a) = &self.evaluated_array {
+                    if a.is_empty() {
+                        core.db.set_array(&self.name, vec![], Some(layer))?;
+                        return Ok(());
+                    }
+
                     core.db.init(&self.name, layer);
                     for e in a {
                         core.db.set_param2(&self.name, &e.0, &e.1, Some(layer))?;
