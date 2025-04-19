@@ -41,6 +41,20 @@ impl Array {
         true
     }
 
+    fn eat_subscript(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self)
+    -> Result<Option<Subscript>, ParseError> {
+        if let Some(s) = Subscript::parse(feeder, core)? {
+            if feeder.starts_with("=") {
+                ans.text += &s.text.clone();
+                ans.text += &feeder.consume(1);
+                return Ok(Some(s));
+            }else{
+                feeder.replace(0, &s.text);
+            }
+        }
+        Ok(None)
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Array>, ParseError> {
         if ! feeder.starts_with("(") {
             return Ok(None);
@@ -51,19 +65,7 @@ impl Array {
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
-            let sub = if let Some(s) = Subscript::parse(feeder, core)? {
-                if feeder.starts_with("=") {
-                    ans.text += &s.text.clone();
-                    ans.text += &feeder.consume(1);
-                    Some(s)
-                }else{
-                    feeder.replace(0, &s.text);
-                    None
-                }
-            }else{
-                None
-            };
-
+            let sub = Self::eat_subscript(feeder, core, &mut ans)?;
             if Self::eat_word(feeder, &mut ans, sub, core) {
                 continue;
             }
