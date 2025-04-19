@@ -174,11 +174,6 @@ impl Substitution {
         let s = w.eval_as_value(core)?;
         self.evaluated_string = Some(prev + &s);
         Ok(())
-        /*
-        match w.eval_as_value(core) {
-            Ok(s) => Ok((prev + &s).to_string()),
-            Err(e) => Err(e),
-        }*/
     }
 
     fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore) -> Result<(), ExecError> {
