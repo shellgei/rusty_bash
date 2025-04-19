@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::elements::command;
 use crate::elements::subscript::Subscript;
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
 use super::word::Word;
 
 #[derive(Debug, Clone, Default)]
@@ -39,15 +40,22 @@ impl Array {
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Array> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Array>, ParseError> {
         if ! feeder.starts_with("(") {
-            return None;
+            return Ok(None);
         }
 
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
+
+            if let Some(s) = Subscript::parse(feeder, core)? {
+                if ! feeder.starts_with("=") {
+                    feeder.replace(0, &s.text);
+                }
+            }
+
             if Self::eat_word(feeder, &mut ans, core) {
                 continue;
             }
@@ -60,10 +68,10 @@ impl Array {
             }
 
             if feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
-                return None;
+                return Ok(None);
             }
         }
 
-        Some(ans)
+        Ok(Some(ans))
     }
 }

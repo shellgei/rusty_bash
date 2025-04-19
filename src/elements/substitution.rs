@@ -232,7 +232,7 @@ impl Substitution {
         }
         feeder.pop_backup();
 
-        if let Some(a) = Array::parse(feeder, core) {
+        if let Some(a) = Array::parse(feeder, core)? {
             ans.text += &a.text;
             ans.value = ParsedDataType::Array(a);
         }else if let Ok(Some(w)) = Word::parse(feeder, core, None) {
