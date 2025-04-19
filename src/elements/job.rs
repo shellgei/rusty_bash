@@ -106,9 +106,9 @@ impl Job {
                     return;
                 },
             }
-            //vec![self.exec_fork_bg(core, pgid)]
         };
         eprintln!("{}", &pids[0].unwrap().as_raw());
+        let _ = core.db.set_param("!", &pids[0].unwrap().to_string(), None);
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);
