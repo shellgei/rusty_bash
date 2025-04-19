@@ -2,9 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::parse::ParseError;
 use crate::elements::subword;
 use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::word::Word;
+use crate::elements::command;
 use super::{CondElem, ConditionalExpr};
 
 impl ConditionalExpr {
@@ -105,35 +107,35 @@ impl ConditionalExpr {
         false
     }
 
-    fn eat_paren(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_paren(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if let Some(e) = ans.elements.last() {
             match e {
                 CondElem::UnaryOp(_) => {
-                    return false
+                    return Ok(false)
                 },
                 _ => {},
             }
         }
 
         if ! feeder.starts_with("(") {
-            return false;
+            return Ok(false);
         }
 
         ans.text += &feeder.consume(1);
 
-        let expr = match Self::parse(feeder, core) {
+        let expr = match Self::parse(feeder, core)? {
             Some(e) => e,
-            None    => return false,
+            None    => return Ok(false),
         };
 
         if ! feeder.starts_with(")") {
-            return false;
+            return Ok(false);
         }
 
         ans.text += &expr.text.clone();
         ans.elements.push( CondElem::InParen(expr) );
         ans.text += &feeder.consume(1);
-        true
+        Ok(true)
     }
 
     fn eat_blank(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -146,19 +148,20 @@ impl ConditionalExpr {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         let mut read_option = true;
 
         loop {
-            Self::eat_blank(feeder, &mut ans, core);
+            //Self::eat_blank(feeder, &mut ans, core)?;
+            command::eat_blank_lines(feeder, core, &mut ans.text)?;
             if feeder.starts_with("\n"){
                 ans.text += &feeder.consume(1);
                 continue;
             }
             if feeder.len() == 0 {
                 if ! feeder.feed_additional_line(core).is_ok() {
-                    return None;
+                    return Ok(None);
                 }
                 continue;
             }
@@ -166,14 +169,14 @@ impl ConditionalExpr {
             if feeder.starts_with("]]")
             || feeder.starts_with(")") {
                 if ans.elements.is_empty() {
-                    return None;
+                    return Ok(None);
                 }
 
                 ans.elements.push(CondElem::And);
-                return Some(ans);
+                return Ok(Some(ans));
             }
 
-            if Self::eat_paren(feeder, &mut ans, core) {
+            if Self::eat_paren(feeder, &mut ans, core)? {
                 continue;
             }
 
@@ -181,7 +184,7 @@ impl ConditionalExpr {
                 "" => {},
                 "=~" => {
                     match Self::eat_regex(feeder, &mut ans, core) {
-                        false => return None,
+                        false => return Ok(None),
                         true  => continue,
                     }
                 },
@@ -206,6 +209,6 @@ impl ConditionalExpr {
 
             break;
         }
-        None
+        Ok(None)
     }
 }

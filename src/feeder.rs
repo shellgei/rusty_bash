@@ -19,6 +19,7 @@ pub struct Feeder {
     pub nest: Vec<(String, Vec<String>)>,
     pub lineno: usize,
     script_lines: Option<Lines<BufReader<File>>>,
+    pub main_feeder: bool,
 }
 
 impl Feeder {
@@ -94,6 +95,10 @@ impl Feeder {
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
+        if ! self.main_feeder {
+             return Err(InputError::Eof);
+        }
+
         if core.sigint.load(Relaxed) {
             return Err(InputError::Interrupt);
         }
@@ -157,15 +162,15 @@ impl Feeder {
         self.remaining = to.to_string() + &self.remaining;
     }
 
-    pub fn starts_with(&self, s: &str) -> bool {
-        self.remaining.starts_with(s)
+    pub fn starts_withs(&self, vs: &[&str]) -> bool {
+        vs.iter().any(|s| self.remaining.starts_with(s) )
     }
 
-    pub fn len(&self) -> usize {
-        self.remaining.len()
+    pub fn starts_withs2(&self, vs: &Vec<String>) -> bool {
+        vs.iter().any(|s| self.remaining.starts_with(s) )
     }
 
-    pub fn nth(&self, n: usize) -> Option<char> {
-        self.remaining.chars().nth(n)
-    }
+    pub fn starts_with(&self, s: &str) -> bool { self.remaining.starts_with(s) }
+    pub fn len(&self) -> usize { self.remaining.len() }
+    pub fn is_empty(&self) -> bool { self.remaining.is_empty() }
 }

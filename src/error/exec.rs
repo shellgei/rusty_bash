@@ -5,6 +5,7 @@ use crate::ShellCore;
 use crate::error::parse::ParseError;
 use nix::errno::Errno;
 use nix::sys::wait::WaitStatus;
+use std::num::ParseIntError;
 use std::os::fd::RawFd;
 
 #[derive(Debug, Clone)]
@@ -16,9 +17,10 @@ pub enum ExecError {
     BadSubstitution(String),
     BadFd(RawFd),
     Bug(String),
-    DivZero,
-    Exponent(i64),
+    DivZero(String, String),
+    Exponent(i128),
     InvalidBase(String),
+    InvalidArithmeticOperator(String, String),
     InvalidName(String),
     InvalidNumber(String),
     //InvalidIdentifier(String),
@@ -29,9 +31,10 @@ pub enum ExecError {
     VariableInvalid(String),
     OperandExpected(String),
     ParseError(ParseError),
+    ParseIntError(String),
     SyntaxError(String),
     Recursion(String),
-    SubstringMinus(i64),
+    SubstringMinus(i128),
     UnsupportedWaitStatus(WaitStatus),
     Errno(Errno),
     Other(String),
@@ -40,6 +43,12 @@ pub enum ExecError {
 impl From<Errno> for ExecError {
     fn from(e: Errno) -> ExecError {
         ExecError::Errno(e)
+    }
+}
+
+impl From<ParseIntError> for ExecError {
+    fn from(e: ParseIntError) -> ExecError {
+        ExecError::ParseIntError(e.to_string())
     }
 }
 
@@ -63,12 +72,13 @@ impl From<&ExecError> for String {
             ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
             ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
             ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
-            ExecError::DivZero => "divided by 0".to_string(),
+            ExecError::DivZero(expr, token) => format!("{}: division by 0 (error token is \"{}\"", expr, token),
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
             ExecError::InvalidNumber(name) => format!("`{}': invalid number", name),
             //ExecError::InvalidIdentifier(name) => format!("`{}': not a valid identifier", name),
             ExecError::InvalidBase(b) => format!("{0}: invalid arithmetic base (error token is \"{0}\")", b),
+            ExecError::InvalidArithmeticOperator(s, tok) => format!("{}: syntax error: invalid arithmetic operator (error token is \"{}\")", s, tok),
             ExecError::InvalidOption(opt) => format!("{}: invalid option", opt),
             ExecError::Interrupted => "interrupted".to_string(),
             ExecError::AssignmentToNonVariable(right) => format!("attempted assignment to non-variable (error token is \"{}\")", right),
@@ -77,6 +87,7 @@ impl From<&ExecError> for String {
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
             ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
             ExecError::ParseError(p) => From::from(p),
+            ExecError::ParseIntError(e) => e.to_string(),
             ExecError::SyntaxError(near) => format!("syntax error near {}", &near),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),

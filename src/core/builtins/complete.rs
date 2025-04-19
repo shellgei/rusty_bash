@@ -12,6 +12,7 @@ fn action_to_reduce_symbol(arg: &str) -> String {
         "command" => "c",
         "alias" => "a",
         "builtin" => "b",
+        "group" => "g",
         "keyword" => "k",
         "variable" => "v",
         "export" => "e",
@@ -19,7 +20,6 @@ fn action_to_reduce_symbol(arg: &str) -> String {
         "job" => "j",
         "service" => "s",
         "user" => "u",
-        "group" => "g",
         _ => "",
     }.to_string()
 }
@@ -29,6 +29,10 @@ fn opt_to_action(arg: &str) -> String {
         "-a" => "alias",
         "-b" => "builtin",
         "-c" => "command",
+        "-d" => "directory",
+        "-f" => "file",
+        "-g" => "group",
+        "-k" => "keyword",
         "-j" => "job",
         "-o" => "setopt",
         "-u" => "user",

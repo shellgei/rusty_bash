@@ -9,9 +9,11 @@ use std::io::{stdout, Write};
 #[derive(Debug, Clone)]
 enum PrintfToken {
     B(String),
-    D(String),
+    DI(String),
     F(String),
+    O(String),
     S(String),
+    U(String),
     X(String),
     LargeX(String),
     Q,
@@ -91,10 +93,24 @@ impl PrintfToken {
 
     fn to_string(&mut self, args: &mut Vec<String>) -> Result<String, ExecError> {
         match self {
-            Self::D(fmt) => {
+            Self::DI(fmt) => {
                 let mut a = pop(args);
                 Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
+            },
+            Self::U(fmt) => {
+                let mut a = pop(args);
+                if a.starts_with("-") {
+                    a.remove(0);
+                    let mut num = a.parse::<u64>()?;
+                    num = std::u64::MAX - num + 1;
+                    let mut a = num.to_string();
+                    Self::padding(&mut a, &mut fmt.clone(), true);
+                    Ok(a)
+                }else{
+                    Self::padding(&mut a, &mut fmt.clone(), true);
+                    Ok(a)
+                }
             },
             Self::F(fmt) => {
                 let mut a = format!("{:.6}", Self::to_float(&pop(args))?);
@@ -113,6 +129,11 @@ impl PrintfToken {
             },
             Self::X(fmt) => {
                 let mut a = format!("{:x}", Self::to_int(&pop(args))?);
+                Self::padding(&mut a, &mut fmt.clone(), true);
+                Ok(a)
+            },
+            Self::O(fmt) => {
+                let mut a = format!("{:o}", Self::to_int(&pop(args))?);
                 Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
             },
@@ -258,9 +279,12 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
 
             let token = match remaining.chars().next() {
                 Some('b') => PrintfToken::B(num_part),
-                Some('d') => PrintfToken::D(num_part),
+                Some('d') => PrintfToken::DI(num_part),
+                Some('i') => PrintfToken::DI(num_part),
                 Some('f') => PrintfToken::F(num_part),
+                Some('o') => PrintfToken::O(num_part),
                 Some('s') => PrintfToken::S(num_part),
+                Some('u') => PrintfToken::U(num_part),
                 Some('x') => PrintfToken::X(num_part),
                 Some('X') => PrintfToken::LargeX(num_part),
                 Some('q') => PrintfToken::Q,

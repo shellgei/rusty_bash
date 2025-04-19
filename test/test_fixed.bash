@@ -15,6 +15,48 @@ tmp=/tmp/$$
 
 [ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
+cat << 'EOF' > $tmp-script
+echo OK | ( while read line ; do echo $line ; done )
+ああああああ！
+EOF
+res=$($com <<< "source $tmp-script")
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< 'declare -i i=1 j=2 k=3
+echo $((i += j += k))
+echo $i,$j,$k
+')
+[ "$res" = "6
+6,5,3" ] || err $LINENO
+
+res=$($com <<< '[[
+# hogehoge
+1 -eq 1 &&
+	#fugefuge
+1 -eq 1
+]]')
+[ "$?" = 0 ] || err $LINENO
+
+res=$($com <<< 'echo $(( 3 - 4 + 5))')
+[ "$res" = "4" ] || err $LINENO
+
+res=$($com <<< 'echo ${#a[@]}')
+[ "$res" = "0" ] || err $LINENO
+
+res=$($com <<< 'set a b ; IFS=c ; echo $@ ; echo "$@" ')
+[ "$res" = "a b
+a b" ] || err $LINENO
+
+res=$($com <<< 'set a b ; IFS="" ; echo $@ ; echo "$@" ')
+[ "$res" = "a b
+a b" ] || err $LINENO
+
+res=$($com <<< 'set a b ; IFS=c ; echo $* ; echo "$*" ')
+[ "$res" = "a b
+acb" ] || err $LINENO
+
+res=$($com <<< 'IFS=/ ; set bob "tom dick harry" joe; echo "$*"')
+[ "$res" = "bob/tom dick harry/joe" ] || err $LINENO
 
 rm -f $tmp-*
 echo $0 >> ./ok
@@ -48,10 +90,6 @@ EOF
 )
 [ "$res" = "@OH" ] || err $LINENO
 
-### WHY ???????????? ###
-
-#ueda@x1gen13:~/GIT/bash_for_sush_test/sush_test$ echo "a:b:" | ( IFS=" :" read x y; echo "($x)($y)" )
-#(a)(b)
-#ueda@x1gen13:~/GIT/bash_for_sush_test/sush_test$ echo "a:b::" | ( IFS=" :" read x y; echo "($x)($y)" )
-#(a)(b::)
+res=$($com <<< 'a[n]=++n ; echo ${a[1]}')
+[ "$res" = "1" ] || err $LINENO
 

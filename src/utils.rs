@@ -8,7 +8,6 @@ pub mod file;
 pub mod file_check;
 pub mod glob;
 pub mod arg;
-pub mod random;
 
 use crate::{Feeder, ShellCore};
 

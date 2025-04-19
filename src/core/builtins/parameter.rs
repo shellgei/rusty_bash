@@ -96,45 +96,66 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
+fn declare_set(core: &mut ShellCore, name_and_value: &String,
+               args: &mut Vec<String>, read_only: bool) -> Result<(), ExecError> {
+    let mut tmp = name_and_value.clone();
+    let (name, value) = match name_and_value.find('=') {
+        Some(n) => {
+            tmp.remove(n);
+            let v = tmp.split_off(n);
+            let n = tmp;
+            (n, v)
+        },
+        None => (name_and_value.to_string(), "".to_string()),
+    };
+
+    if ! utils::is_name(&name, core) {
+        return Err(ExecError::InvalidName(name.to_string()));
+    }
+
+    let layer = Some(core.db.get_layer_num() - 2);
+
+    if args.contains(&"-a".to_string()) {
+        core.db.set_array(&name, vec![], layer)?;
+    }else if args.contains(&"-A".to_string()) {
+        core.db.set_assoc(&name, layer)?;
+    }else {
+        match args.contains(&"-i".to_string()) {
+            false => core.db.set_param(&name, &value, layer)?,
+            true  => core.db.init_as_num(&name, &value, layer)?,
+        };
+    }
+
+    if read_only {
+        core.db.set_flag(&name, 'r');
+    }
+    Ok(())
+}
+
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         return print_all(core);
     }
 
     let mut args = arg::dissolve_options(args);
+    let r_flg = arg::consume_option("-r", &mut args);
 
-    let name = args.pop().unwrap();
-    if args.contains(&"-r".to_string()) {
-        core.db.set_flag(&name, 'r');
-        return 0;
+    let mut name_and_values = vec![];
+    while args.len() > 1 {
+        let nv = args.pop().unwrap();
+        if nv.starts_with("-") {
+            args.push(nv);
+            break;
+        }
+
+        name_and_values.push(nv);
     }
 
-    if args.contains(&"-a".to_string()) {
-        if ! utils::is_name(&name, core) {
-            let e = ExecError::InvalidName(name.to_string());
+    for name_and_value in name_and_values.iter().rev() {
+        if let Err(e) = declare_set(core, &name_and_value, &mut args, r_flg) {
             e.print(core);
             return 1;
         }
-        if let Err(e) = core.db.set_array(&name, vec![], None) {
-            e.print(core);
-            return 1;
-        }
-
-        return 0;
-    }
-
-    if args.contains(&"-A".to_string()) {
-        if ! utils::is_name(&name, core) {
-            let e = ExecError::InvalidName(name.to_string());
-            e.print(core);
-            return 1;
-        }
-        if let Err(e) = core.db.set_assoc(&name, None) {
-            e.print(core);
-            return 1;
-        }
-
-        return 0;
     }
 
     0

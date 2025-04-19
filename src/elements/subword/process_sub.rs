@@ -6,6 +6,7 @@ use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::Subword;
+use crate::elements::word::WordMode;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use nix::unistd;
@@ -35,7 +36,12 @@ impl Subword for ProcessSubstitution {
 }
 
 impl ProcessSubstitution {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
+    -> Result<Option<Self>, ParseError> {
+        if let Some(WordMode::Arithmetric) = mode {
+            return Ok(None);
+        }
+
         if ! feeder.starts_with("<(") && ! feeder.starts_with(">(") {
             return Ok(None);
         }

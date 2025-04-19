@@ -42,19 +42,16 @@ impl Substr {
         }
     
         *array = core.db.get_array_all("@");
-        match offset.eval_as_int(core) {
-            None => return Err(ExecError::OperandExpected(offset.text.clone())),
-            Some(n) => {
-                let mut start = std::cmp::max(0, n) as usize;
-                start = std::cmp::min(start, array.len()) as usize;
-                *array = array.split_off(start);
-            },
-        };
+        let n = offset.eval_as_int(core)?;
+        let mut start = std::cmp::max(0, n) as usize;
+        start = std::cmp::min(start, array.len()) as usize;
+        *array = array.split_off(start);
     
         if self.length.is_none() {
             *text = array.join(" ");
             return Ok(());
         }
+
     
         let mut length = match self.length.clone() {
             None => return Err(ExecError::BadSubstitution("".to_string())),
@@ -65,16 +62,12 @@ impl Substr {
             return Err(ExecError::BadSubstitution("".to_string()));
         }
     
-        match length.eval_as_int(core) {
-            None => return Err(ExecError::BadSubstitution(length.text.clone())),
-            Some(n) => {
-                if n < 0 {
-                    return Err(ExecError::SubstringMinus(n));
-                }
-                let len = std::cmp::min(n as usize, array.len());
-                let _ = array.split_off(len);
-            },
-        };
+        let n = length.eval_as_int(core)?;
+        if n < 0 {
+            return Err(ExecError::SubstringMinus(n));
+        }
+        let len = std::cmp::min(n as usize, array.len());
+        let _ = array.split_off(len);
     
         *text = array.join(" ");
         Ok(())
@@ -89,14 +82,10 @@ impl Substr {
         }
     
         *array = core.db.get_array_all(name);
-        match offset.eval_as_int(core) {
-            None => return Err(ExecError::OperandExpected(offset.text.clone())),
-            Some(n) => {
-                let mut start = std::cmp::max(0, n) as usize;
-                start = std::cmp::min(start, array.len()) as usize;
-                *array = array.split_off(start);
-            },
-        };
+        let n = offset.eval_as_int(core)?;
+        let mut start = std::cmp::max(0, n) as usize;
+        start = std::cmp::min(start, array.len()) as usize;
+        *array = array.split_off(start);
     
         if self.length.is_none() {
             *text = array.join(" ");
@@ -112,16 +101,12 @@ impl Substr {
             return Err(ExecError::BadSubstitution("".to_string()));
         }
     
-        match length.eval_as_int(core) {
-            None => return Err(ExecError::BadSubstitution(length.text.clone())),
-            Some(n) => {
-                if n < 0 {
-                    return Err(ExecError::SubstringMinus(n));
-                }
-                let len = std::cmp::min(n as usize, array.len());
-                let _ = array.split_off(len);
-            },
-        };
+        let n = length.eval_as_int(core)?;
+        if n < 0 {
+            return Err(ExecError::SubstringMinus(n));
+        }
+        let len = std::cmp::min(n as usize, array.len());
+        let _ = array.split_off(len);
     
         *text = array.join(" ");
         Ok(())
@@ -135,14 +120,10 @@ impl Substr {
         }
     
         let mut ans;
-        match offset.eval_as_int(core) {
-            None => return Err(ExecError::OperandExpected(offset.text.clone())),
-            Some(n) => {
-                ans = text.chars().enumerate()
-                      .filter(|(i, _)| (*i as i64) >= n)
-                      .map(|(_, c)| c).collect();
-            },
-        };
+        let n = offset.eval_as_int(core)?;
+        ans = text.chars().enumerate()
+            .filter(|(i, _)| (*i as i128) >= n)
+            .map(|(_, c)| c).collect();
     
         if self.length.is_some() {
             ans = self.length(&ans, core)?;
@@ -152,12 +133,10 @@ impl Substr {
     }
     
     fn length(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        match self.length.as_mut().unwrap().eval_as_int(core) {
-            Some(n) => Ok(text.chars().enumerate()
-                            .filter(|(i, _)| (*i as i64) < n)
-                            .map(|(_, c)| c).collect()),
-            None => return Err(ExecError::OperandExpected(self.length.clone().unwrap().text.clone())),
-        }
+        let n = self.length.as_mut().unwrap().eval_as_int(core)?;
+        Ok(text.chars().enumerate()
+            .filter(|(i, _)| (*i as i128) < n)
+            .map(|(_, c)| c).collect())
     }
 
     fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
@@ -165,7 +144,7 @@ impl Substr {
             return;
         }
         ans.text += &feeder.consume(1);
-        ans.length = match ArithmeticExpr::parse(feeder, core, true) {
+        ans.length = match ArithmeticExpr::parse(feeder, core, true, ":") {
             Ok(Some(a)) => {
                 ans.text += &a.text.clone();
                 Some(a)
@@ -181,7 +160,7 @@ impl Substr {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        ans.offset = match ArithmeticExpr::parse(feeder, core, true) {
+        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":") {
             Ok(Some(a)) => {
                 ans.text += &a.text.clone();
                 Self::eat_length(feeder, &mut ans, core);

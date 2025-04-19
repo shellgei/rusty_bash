@@ -1,16 +1,16 @@
 //SPDX-FileCopyrightText: 2024 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::str::FromStr;
-use ::time::Duration;
+use std::time::Duration;
 use nix::time;
 use nix::time::ClockId;
 
-fn monotonic_time() -> Duration {
+pub fn monotonic_time() -> Duration {
     let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
-    Duration::new(now.tv_sec(), now.tv_nsec() as i32)
+    Duration::new(now.tv_sec().try_into().unwrap(), now.tv_nsec().try_into().unwrap())
 }
 
+/*
 pub fn set_seconds() -> String {
     let offset = Duration::seconds(0);
     let adjusted = monotonic_time() - offset;
@@ -31,15 +31,14 @@ pub fn get_seconds(v: &mut Vec<String>) -> String {
     v[0] = format!("{}.{}", sec, nano);
     ans
 }
+*/
 
-pub fn get_epochseconds(_: &mut Vec<String>) -> String {
+pub fn get_epochseconds() -> String {
     let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
-    let epoch_seconds = real.tv_sec().to_string();
-    epoch_seconds
+    real.tv_sec().to_string()
 }
 
-pub fn get_epochrealtime(_: &mut Vec<String>) -> String {
+pub fn get_epochrealtime() -> String {
     let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
-    let epoch_realtime = format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string();
-    epoch_realtime
+    format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string()
 }

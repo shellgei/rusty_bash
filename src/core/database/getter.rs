@@ -3,7 +3,6 @@
 
 use crate::error::exec::ExecError;
 use crate::core::DataBase;
-use crate::core::database::Data;
 
 pub fn special_param(db :&DataBase, name: &str) -> Option<String> {
     let val = match name {
@@ -20,12 +19,27 @@ pub fn special_param(db :&DataBase, name: &str) -> Option<String> {
     Some(val)
 }
 
-pub fn connected_position_params(db :&DataBase) -> Result<String, ExecError> {
+pub fn connected_position_params(db :&mut DataBase) -> Result<String, ExecError> {
     match db.position_parameters.last() {
         Some(a) => Ok(a[1..].join(" ")),
         _       => Ok("".to_string()),
     }
 }
+
+/*
+pub fn connected_position_params(db :&mut DataBase) -> Result<String, ExecError> {
+    let ifs = db.get_param("IFS").unwrap_or(" \t\n".to_string());
+    let joint = match ifs.chars().nth(0) {
+        None => "".to_string(),
+        Some(c) => c.to_string(),
+    };
+
+    match db.position_parameters.last() {
+        Some(a) => Ok(a[1..].join(&joint)),
+        _       => Ok("".to_string()),
+    }
+}
+*/
 
 pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
     let layer = db.position_parameters.len();
@@ -42,14 +56,4 @@ pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> Result<String, Ex
     };
 
     db.params[layer].get_mut(name).unwrap().get_as_array_or_assoc(pos)
-}
-
-pub fn clone(db: &mut DataBase, name: &str) -> Option<Box<dyn Data>> {
-    let num = db.params.len();
-    for layer in (0..num).rev()  {
-        if let Some(v) = db.params[layer].get_mut(name) {
-            return Some(v.clone());
-        }
-    }
-    None
 }

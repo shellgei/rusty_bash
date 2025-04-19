@@ -3,6 +3,7 @@
 
 use crate::ShellCore;
 use crate::{arg, error};
+use super::error_exit;
 
 fn is_varname(s :&String) -> bool {
     if s.is_empty() {
@@ -20,7 +21,21 @@ fn is_varname(s :&String) -> bool {
     s.chars().position(|c| !name_c(c)) == None
 }
 
-pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool) -> i32 {
+fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
+    let mut pos = 0;
+    for c in word.chars() {
+        if *limit == 0 {
+            let _ = word.split_off(pos);
+            return true;
+        }
+        *limit -= 1;
+
+        pos += c.len_utf8();
+    }
+    false
+}
+
+pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, limit: &mut usize) -> i32 {
     let mut remaining = String::new();
     let len = std::io::stdin()
         .read_line(&mut remaining)
@@ -35,18 +50,25 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool) 
         false => " \t\n".to_string(),
     };
 
-    consume_ifs(&mut remaining, " \t");
 
     args.remove(0);
-    while args.len() > 0 && ! remaining.is_empty() {
+    if args.len() == 0 {
+        args.push("REPLY".to_string());
+    }
+
+    consume_ifs(&mut remaining, " \t", limit);
+
+    while args.len() > 0 && ! remaining.is_empty() && *limit != 0 {
         let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape) {
             Some(w) => w,
             None => break,
         };
 
-        if args.len() == 1 {
+        check_word_limit(&mut word, limit);
+
+        if args.len() == 1 && *limit != 0 {
             let bkup = remaining.clone();
-            consume_ifs(&mut remaining, &ifs);
+            consume_ifs(&mut remaining, &ifs, limit);
 
             if remaining.is_empty() || remaining == "\n" {
             }else{
@@ -62,13 +84,13 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool) 
             return 1;
         }
         args.remove(0);
-        consume_ifs(&mut remaining, &ifs);
+        consume_ifs(&mut remaining, &ifs, limit);
     }
 
     0
 }
 
-pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool) -> i32 {
+pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &mut usize) -> i32 {
     let mut remaining = String::new();
     let len = std::io::stdin()
         .read_line(&mut remaining)
@@ -83,7 +105,7 @@ pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool) -> i32 {
         false => " \t\n".to_string(),
     };
 
-    consume_ifs(&mut remaining, " \t");
+    consume_ifs(&mut remaining, " \t", limit);
 
     let mut pos = 0;
     while ! remaining.is_empty() {
@@ -91,6 +113,7 @@ pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool) -> i32 {
             Some(w) => w,
             None => break,
         };
+        check_word_limit(&mut word, limit);
         consume_tail_ifs(&mut word, " \t\n");
 
         if let Err(e) = core.db.set_array_elem(name, &word, pos, None) {
@@ -99,22 +122,35 @@ pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool) -> i32 {
             return 1;
         }
         pos += 1;
-        consume_ifs(&mut remaining, &ifs);
+        consume_ifs(&mut remaining, &ifs, limit);
     }
 
     0
 }
 
 pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() <= 1 {
+    if args.len() < 1 {
         return 0;
     }
 
     let mut args = arg::dissolve_options(args);
     let r_opt = arg::consume_option("-r", &mut args);
-                                                      //
+    let mut limit = std::usize::MAX;
+    let limit_str = arg::consume_with_next_arg("-n", &mut args);
+
+    if limit_str.is_some() {
+        let s = limit_str.unwrap();
+        match s.parse::<usize>() {
+            Ok(n) => limit = n,
+            Err(_) => {
+                let err = format!("{}: invalid number", &s);
+                return error_exit(1, "read", &err, core);
+            },
+        };
+    }
+
     if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
-        return read_a(core, &a, r_opt);
+        return read_a(core, &a, r_opt, &mut limit);
     }
 
     for a in &args[1..] {
@@ -130,7 +166,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    read_(core, &mut args, r_opt)
+    read_(core, &mut args, r_opt, &mut limit)
 }
 
 pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str, ignore_escape: bool) -> Option<String> {
@@ -196,7 +232,7 @@ pub fn consume_tail_ifs(remaining: &mut String, ifs: &str) {
     }
 }
 
-pub fn consume_ifs(remaining: &mut String, ifs: &str) {
+pub fn consume_ifs(remaining: &mut String, ifs: &str, limit: &mut usize) {
     let special_ifs: Vec<char> = ifs.chars().filter(|s| ! " \t\n".contains(*s)).collect(); 
     let mut pos = 0;
     let mut special_ifs_exist = false;
@@ -214,9 +250,9 @@ pub fn consume_ifs(remaining: &mut String, ifs: &str) {
             special_ifs_exist = true;
         }
         pos += ch.len_utf8();
+        *limit -= 1;
     }
 
     let tail = remaining.split_off(pos);
-    //dbg!("{:?}", &remaining);
     *remaining = tail;
 }
