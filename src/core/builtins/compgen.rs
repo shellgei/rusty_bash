@@ -35,8 +35,8 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
     let mut dir = org_dir.clone();
     if dir.starts_with("~") {
         let mut feeder = Feeder::new(&dir);
-        if let Ok(Some(mut w)) = Word::parse(&mut feeder, core, Some(WordMode::Operand)) {
-            tilde_expansion::eval(&mut w, core);                  //TODO: ^It's a kind of hack.
+        if let Ok(Some(mut w)) = Word::parse(&mut feeder, core, Some(WordMode::CompgenF)) {
+            tilde_expansion::eval(&mut w, core);
             dir = w.text + &feeder.consume(feeder.len());
         }
     }

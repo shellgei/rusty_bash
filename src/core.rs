@@ -24,6 +24,7 @@ use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+use crate::feeder::terminal::Terminal;
 
 pub struct MeasuredTime {
     pub real: TimeSpec, 
@@ -76,6 +77,7 @@ pub struct ShellCore {
     pub suspend_e_option: bool,
     pub script_name: String,
     pub exit_script: String,
+    pub editor: Option<Terminal>,
 }
 
 impl ShellCore {
@@ -121,6 +123,10 @@ impl ShellCore {
             },
             _ => {},
         };
+
+        if core.db.flags.contains('i') {
+            core.editor = Some(Terminal::new(&mut core));
+        }
 
         core
     }
@@ -255,6 +261,15 @@ impl ShellCore {
                 ans = true;
             }
             prev_head = head;
+        }
+    }
+
+    pub fn write_history_to_file(&mut self) {
+        if let (Some(term), Ok(histfile)) = (self.editor.as_mut(), self.db.get_param("HISTFILE")) {
+            if !histfile.is_empty() {
+                let path = path::PathBuf::from(&histfile);
+                term.save_history(&path);
+            }
         }
     }
 }

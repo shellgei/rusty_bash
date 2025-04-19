@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod terminal;
+pub mod terminal;
 mod scanner;
 
 use std::{io, process};
@@ -19,6 +19,7 @@ pub struct Feeder {
     pub nest: Vec<(String, Vec<String>)>,
     pub lineno: usize,
     script_lines: Option<Lines<BufReader<File>>>,
+    pub main_feeder: bool,
 }
 
 impl Feeder {
@@ -70,7 +71,7 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_script(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
+    pub(crate) fn read_script(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
         if let Some(lines) = self.script_lines.as_mut() {
             match lines.next() {
                 Some(Ok(line)) => return Ok(line + "\n"),
@@ -94,13 +95,21 @@ impl Feeder {
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
+        if ! self.main_feeder {
+             return Err(InputError::Eof);
+        }
+
         if core.sigint.load(Relaxed) {
             return Err(InputError::Interrupt);
         }
-
-        let line = match ! core.read_stdin && self.script_lines.is_none() {
-            true  => terminal::read_line(core, "PS2"),
-            false => self.read_script(core),
+        let line = if !core.read_stdin && self.script_lines.is_none() {
+            // editorをtakeしないとcoreを引数で渡せない
+            let mut term = core.editor.take().unwrap();
+            let res = term.read_line(core, "PS2").map(|ln| ln + "\n");
+            core.editor = Some(term);
+            res
+        } else {
+            self.read_script(core)
         };
 
         line.map(|ln| {
@@ -124,9 +133,14 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = match ! core.read_stdin && self.script_lines.is_none() {
-            true  => terminal::read_line(core, "PS1"),
-            false => self.read_script(core),
+       let line = if !core.read_stdin && self.script_lines.is_none() {
+            // editorをtakeしないとcoreを引数で渡せない
+            let mut term = core.editor.take().unwrap();
+            let res = term.read_line(core, "PS1").map(|ln| ln + "\n");
+            core.editor = Some(term);
+            res
+        } else {
+            self.read_script(core)
         };
 
         line.map(|ln| self.add_line(ln, core))
@@ -148,15 +162,15 @@ impl Feeder {
         self.remaining = to.to_string() + &self.remaining;
     }
 
-    pub fn starts_with(&self, s: &str) -> bool {
-        self.remaining.starts_with(s)
+    pub fn starts_withs(&self, vs: &[&str]) -> bool {
+        vs.iter().any(|s| self.remaining.starts_with(s) )
     }
 
-    pub fn len(&self) -> usize {
-        self.remaining.len()
+    pub fn starts_withs2(&self, vs: &Vec<String>) -> bool {
+        vs.iter().any(|s| self.remaining.starts_with(s) )
     }
 
-    pub fn nth(&self, n: usize) -> Option<char> {
-        self.remaining.chars().nth(n)
-    }
+    pub fn starts_with(&self, s: &str) -> bool { self.remaining.starts_with(s) }
+    pub fn len(&self) -> usize { self.remaining.len() }
+    pub fn is_empty(&self) -> bool { self.remaining.is_empty() }
 }

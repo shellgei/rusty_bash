@@ -124,6 +124,7 @@ fn show_message() {
 
 fn main_loop(core: &mut ShellCore) {
     let mut feeder = Feeder::new("");
+    feeder.main_feeder = true;
 
     if core.script_name != "-" {
         core.db.flags.retain(|f| f != 'i');

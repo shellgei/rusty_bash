@@ -2,8 +2,13 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::DataBase;
-use crate::core::database::SpecialData;
-use crate::utils::{random, clock};
+//use crate::utils::clock;
+//use super::SpecialData;
+use super::data::random::RandomVar;
+use super::data::srandom::SRandomVar;
+use super::data::seconds::Seconds;
+use super::data::epochseconds::EpochSeconds;
+use super::data::epochrealtime::EpochRealTime;
 use std::{env, process};
 
 pub fn initialize(db: &mut DataBase) -> Result<(), String> {
@@ -17,13 +22,11 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_param("OPTIND", "1", None)?;
     db.set_param("IFS", " \t\n", None)?;
 
-    SpecialData::set_new_entry(&mut db.params[0], "SRANDOM", random::get_srandom)?;
-    SpecialData::set_new_entry(&mut db.params[0], "RANDOM", random::get_random)?;
-    SpecialData::set_new_entry(&mut db.params[0], "EPOCHSECONDS", clock::get_epochseconds)?;
-    SpecialData::set_new_entry(&mut db.params[0], "EPOCHREALTIME", clock::get_epochrealtime)?;
-    SpecialData::set_new_entry(&mut db.params[0], "SECONDS", clock::get_seconds)?;
-
-    SpecialData::get(db, "SECONDS");
+    db.params[0].insert( "RANDOM".to_string(), Box::new(RandomVar::new()) );
+    db.params[0].insert( "SRANDOM".to_string(), Box::new(SRandomVar::new()) );
+    db.params[0].insert( "SECONDS".to_string(), Box::new(Seconds::new()) );
+    db.params[0].insert( "EPOCHSECONDS".to_string(), Box::new(EpochSeconds{} ) );
+    db.params[0].insert( "EPOCHREALTIME".to_string(), Box::new(EpochRealTime{} ) );
 
     db.set_array("FUNCNAME", vec![], None)?;
     Ok(())

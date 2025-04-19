@@ -50,6 +50,7 @@ fn globstar(dir: &str) -> Vec<String> {
 
 pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
     let make_path = |f: &str| dir.to_owned() + f + "/";
+
     if ["", ".", ".."].contains(&pattern)
     || (file_check::is_symlink(dir.trim_end_matches("/")) && shopts.query("globstar")) {
         let path = make_path(pattern);
@@ -70,6 +71,15 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
         .filter(|f| !f.starts_with(".") || pattern.starts_with(".") || dotglob )
         .filter(|f| glob::compare(f, &pat) )
         .map(|f| make_path(&f) ).collect();
+
+    if ! shopts.query("globskipdots") {
+        if glob::compare(&"..".to_string(), &pat) {
+            ans.push(make_path(".."));
+        }
+        if glob::compare(&".".to_string(), &pat) {
+            ans.push(make_path("."));
+        }
+    }
 
     ans.sort();
     ans.dedup();

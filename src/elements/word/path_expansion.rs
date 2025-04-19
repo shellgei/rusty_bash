@@ -56,6 +56,6 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
         }
     }
 
-    //paths.sort();
+    paths.sort();
     paths
 }

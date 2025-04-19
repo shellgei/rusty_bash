@@ -4,9 +4,10 @@
 use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
-use super::{ArithElem, word};
+use super::ArithElem;
+use super::variable;
 
-pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
+pub fn unary_calc(op: &str, num: i128, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
         "+"  => stack.push( ArithElem::Integer(num) ),
         "-"  => stack.push( ArithElem::Integer(-num) ),
@@ -17,7 +18,7 @@ pub fn unary_calc(op: &str, num: i64, stack: &mut Vec<ArithElem>) -> Result<(), 
     Ok(())
 }
 
-pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
+pub fn bin_calc(op: &str, left: i128, right: i128, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     let bool_to_01 = |b| { if b { 1 } else { 0 } };
 
     let ans = match op {
@@ -39,7 +40,8 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> 
         "!="  => bool_to_01( left != right ),
         "%" | "/" => {
             if right == 0 {
-                return Err(ExecError::DivZero);
+                let expr = format!("{} / {}", &left, &right);
+                return Err(ExecError::DivZero(expr, right.to_string()));
             }
             match op {
                 "%" => left % right,
@@ -61,8 +63,8 @@ pub fn bin_calc(op: &str, left: i64, right: i64, stack: &mut Vec<ArithElem>) -> 
     Ok(())
 }
 
-pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut ShellCore)
-                                      -> Result<ArithElem, ExecError> {
+pub fn substitute(op: &str, name: &String, index: &String,
+    cur: i128, right: i128, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let new_value = match op {
         "+=" => cur + right,
         "-=" => cur - right,
@@ -74,7 +76,8 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
         ">>="  => if right < 0 {0} else {cur >> right},
         "/=" | "%=" => {
             if right == 0 {
-                return Err(ExecError::DivZero);
+                let expr = format!("{} {} {}", &cur, &op, &right);
+                return Err(ExecError::DivZero(expr, right.to_string()));
             }
             match op == "%=" {
                 true  => cur % right,
@@ -84,76 +87,74 @@ pub fn substitute(op: &str, name: &String, cur: i64, right: i64, core: &mut Shel
         _   => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
-    match core.db.set_param(&name, &new_value.to_string(), None) {
-        Ok(())  => Ok(ArithElem::Integer(new_value)),
-        Err(e) => Err(e),
-    }
+    core.db.set_param2(&name, index, &new_value.to_string(), None)?;
+    Ok(ArithElem::Integer(new_value))
 }
 
-fn parse_with_base(base: i64, s: &mut String) -> Result<i64, String> {
+fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ExecError> {
     if s.is_empty() {
-        return Err("empty".to_string());
+        return Err(ExecError::InvalidArithmeticOperator(s.clone(), s.clone()));
     }
 
     let mut ans = 0;
     for ch in s.chars() {
         ans *= base;
         let num = if ch >= '0' && ch <= '9' {
-            ch as i64 - '0' as i64
+            ch as i128 - '0' as i128
         }else if ch >= 'a' && ch <= 'z' {
-            ch as i64 - 'a' as i64 + 10
+            ch as i128 - 'a' as i128 + 10
         }else if ch >= 'A' && ch <= 'Z' {
             match base <= 36 {
-                true  => ch as i64 - 'A' as i64 + 10,
-                false => ch as i64 - 'A' as i64 + 36,
+                true  => ch as i128 - 'A' as i128 + 10,
+                false => ch as i128 - 'A' as i128 + 36,
             }
         }else if ch == '@' {
             62
         }else if ch == '_' {
             63
         }else{
-            return Err("invalid digit".to_string());
+            return Err(ExecError::InvalidArithmeticOperator(s.clone(), ch.to_string()));
         };
 
         match num < base {
             true  => ans += num,
-            false => return Err("base error".to_string()),
+            false => return Err(ExecError::InvalidBase(base.to_string())),
         }
     }
 
     Ok(ans)
 }
 
-fn get_base(s: &mut String) -> Option<i64> {
+fn get_base(s: &mut String) -> Result<i128, ExecError> {
     if s.starts_with("0x") || s.starts_with("0X") {
         s.remove(0);
         s.remove(0);
-        return Some(16);
+        return Ok(16);
     }
 
     if s.starts_with("0") && s.len() > 1 {
         s.remove(0);
-        return Some(8);
+        return Ok(8);
     }
 
     if let Some(n) = s.find("#") {
         let base_str = s[..n].to_string();
         *s = s[(n+1)..].to_string();
-        return match base_str.parse::<i64>() {
+        return match base_str.parse::<i128>() {
             Ok(n) => {
                 match n <= 64 {
-                    true  => Some(n),
-                    false => None,
+                    true  => Ok(n),
+                    false => Err(ExecError::InvalidBase(base_str)),
                 }
             },
-            _     => None,
+            _     => Err(ExecError::InvalidBase(base_str)),
         };
     }
 
-    Some(10)
+    Ok(10)
 }
 
-pub fn parse(s: &str) -> Result<i64, ExecError> {
+pub fn parse(s: &str) -> Result<i128, ExecError> {
     if s.find('\'').is_some() 
     || s.find('.').is_some() {
         return Err(ExecError::Other("invalid number".to_string()));
@@ -163,11 +164,8 @@ pub fn parse(s: &str) -> Result<i64, ExecError> {
     }
 
     let mut sw = s.to_string();
-    let sign = word::get_sign(&mut sw);
-    let base = match get_base(&mut sw) {
-        Some(n) => n, 
-        _       => return Err(ExecError::Other("invalid base".to_string())),
-    };
+    let sign = variable::get_sign(&mut sw);
+    let base = get_base(&mut sw)?;
 
     match ( parse_with_base(base, &mut sw), sign.as_str() ) {
         (Ok(n), "-") => Ok(-n), 

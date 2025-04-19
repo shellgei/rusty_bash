@@ -70,6 +70,7 @@ pub fn dissolve_options(args: &Vec<String>) -> Vec<String> {
     args.iter().map(|a| dissolve_option(a)).collect::<Vec<Vec<String>>>().concat()
 }
 
+/*
 pub fn consume_after_options(args: &mut Vec<String>, start: usize) -> Vec<String> {
     let mut has_option = false;
 
@@ -91,3 +92,4 @@ pub fn consume_after_options(args: &mut Vec<String>, start: usize) -> Vec<String
 
     args.split_off(start)
 }
+*/

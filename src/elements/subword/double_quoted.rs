@@ -22,6 +22,8 @@ impl Subword for DoubleQuoted {
 
     fn substitute(&mut self, core: &mut ShellCore)
     -> Result<Vec<Box<dyn Subword>>, ExecError> {
+        self.connect_array(core)?;
+
         let mut word = match self.subwords.iter().any(|sw| sw.is_array()) {
             true  => Word::from(self.replace_array(core)?),
             false => Word::from(self.subwords.clone()),
@@ -73,6 +75,23 @@ impl Subword for DoubleQuoted {
 }
 
 impl DoubleQuoted {
+    fn connect_array(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        for sw in self.subwords.iter_mut() {
+            if sw.get_text() == "$*" || sw.get_text() == "${*}" {
+                let ifs = core.db.get_param("IFS").unwrap_or(" ".to_string());
+                let params = core.db.get_position_params();
+
+                let mut joint = "".to_string();
+                if ! ifs.is_empty() {
+                    joint = ifs.chars().nth(0).unwrap().to_string();
+                }
+
+                *sw = Box::new(SimpleSubword{ text: params.join(&joint) });
+            }
+        }
+        Ok(())
+    }
+
     fn replace_array(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut ans = vec![];
 
@@ -131,20 +150,21 @@ impl DoubleQuoted {
         }
     }
 
-    fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
-        match feeder.nth(0) {
-            Some('"') => {
-                ans.text += &feeder.consume(1);
-                return Ok(false);
-            },
-            Some(ch) => {
-                let txt = feeder.consume(ch.len_utf8());
-                ans.text += &txt;
-                ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
-            },
-            None     => feeder.feed_additional_line(core)?,
+    fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
+        let len = feeder.scanner_char();
+        if len == 0 {
+            feeder.feed_additional_line(core)?;
+            return Ok(true);
         }
-        Ok(true)
+
+        let ch = feeder.consume(len);
+        ans.text += &ch.clone();
+        if ch != "\"" {
+            ans.subwords.push( Box::new(SimpleSubword{ text: ch }) );
+            return Ok(true);
+        }
+        Ok(false)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

@@ -59,7 +59,20 @@ impl Data for ArrayData {
     }
 
     fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {
-        Ok(self.values().clone())
+        if self.body.is_empty() {
+            return Ok(vec![]);
+        }
+        
+        let keys = self.keys();
+        let max = *keys.iter().max().unwrap() as usize;
+        let mut ans = vec![];
+        for i in 0..(max+1) {
+            match self.body.get(&i) {
+                Some(s) => ans.push(s.clone()),
+                None => ans.push("".to_string()),
+            }
+        }
+        Ok(ans)
     }
 
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
@@ -82,12 +95,20 @@ impl ArrayData {
 
     pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
                         name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(d) => d.set_as_array(&pos.to_string(), val),
-            None    => {
+        if let Some(d) = db_layer.get_mut(name) {
+            if d.is_array() {
+                return d.set_as_array(&pos.to_string(), val);
+            }else if d.is_assoc() {
+                return d.set_as_assoc(&pos.to_string(), val);
+            }else{
+                let data = d.get_as_single()?;
                 ArrayData::set_new_entry(db_layer, name, vec![])?;
+                Self::set_elem(db_layer, name, 0, &data)?;
                 Self::set_elem(db_layer, name, pos, val)
-            },
+            }
+        }else{
+            ArrayData::set_new_entry(db_layer, name, vec![])?;
+            Self::set_elem(db_layer, name, pos, val)
         }
     }
 

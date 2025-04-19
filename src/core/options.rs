@@ -24,7 +24,7 @@ impl Options {
                    "compat32", "compat40", "compat41", "dirspell",
                    "dotglob", "execfail", "expand_aliases", "extdebug",
                    "extglob", "extquote", "failglob", "force_fignore",
-                   "globstar", "gnu_errfmt", "histappend", "histreedit",
+                   "globstar", "globskipdots", "gnu_errfmt", "histappend", "histreedit",
                    "histverify", "hostcomplete", "huponexit", "interactive_comments",
                    "lastpipe", "lithist", "login_shell", "mailwarn",
                    "no_empty_cmd_completion", "nocaseglob", "nocasematch", "nullglob",
@@ -35,7 +35,7 @@ impl Options {
             options.opts.insert(opt.to_string(), false);
         }
 
-        let true_list = ["extglob", "progcomp"];
+        let true_list = ["extglob", "progcomp", "globskipdots"];
         for opt in true_list {
             options.opts.insert(opt.to_string(), true);
         }

@@ -609,9 +609,10 @@ res=$($com <<< 'set a b c;echo $@')
 res=$($com <<< 'A=あいうえおX; echo ${#A}')
 [ "$res" == "6" ] || err $LINENO
 
-res=$($com <<< 'A=(aaa bbbb); echo ${#A}; echo ${#A[1]}; echo ${#A[@]}')
+res=$($com <<< 'A=(aaa bbbb); echo ${#A}; echo ${#A[1]}; echo ${#A[@]}; echo ${#A[*]}')
 [ "$res" == "3
 4
+2
 2" ] || err $LINENO
 
 # tilde

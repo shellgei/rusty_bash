@@ -51,7 +51,7 @@ impl Subscript {
         }else if feeder.starts_with("*") {
             ans.text += "*";
             ans.inner_special = feeder.consume(1);
-        }else if let Some(a) = ArithmeticExpr::parse(feeder, core, true)? {
+        }else if let Some(a) = ArithmeticExpr::parse(feeder, core, true, "[")? {
             ans.text += &a.text.clone();
             ans.inner = Some(a);
         }

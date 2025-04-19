@@ -123,8 +123,12 @@ impl SimpleCommand {
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        let mut layer = Some(layer);
+        if core.options.query("posix") {
+            layer = None;
+        }
         for s in self.substitutions.iter_mut() {
-            s.eval(core, Some(layer), false)?;
+            s.eval(core, layer, false)?;
         }
         Ok(())
     }

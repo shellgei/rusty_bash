@@ -3,7 +3,8 @@
 
 use crate::{error, ShellCore};
 use crate::error::exec::ExecError;
-use super::{ArithElem, word};
+use super::ArithElem;
+use super::variable;
 
 pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
@@ -48,30 +49,31 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
     Ok(())
 }
 
-pub fn substitute(op: &str, name: &String, cur: f64, right: f64, core: &mut ShellCore)
-                                      -> Result<ArithElem, ExecError> {
+pub fn substitute(op: &str, name: &String, index: &String,
+    cur: f64, right: f64, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let new_value = match op {
         "+=" => cur + right,
         "-=" => cur - right,
         "*=" => cur * right,
         "/=" => {
             match right == 0.0 {
-                true  => return Err(ExecError::DivZero),
+                true  => {
+                    let expr = format!("{} /= {}", &cur, &right);
+                    return Err(ExecError::DivZero(expr, right.to_string()));
+                },
                 false => cur / right,
             }
         },
         _   => return Err(ExecError::OperandExpected(op.to_string())),
     };
 
-    match core.db.set_param(&name, &new_value.to_string(), None) {
-        Ok(()) => Ok(ArithElem::Float(new_value)),
-        Err(e) => Err(e),
-    }
+    core.db.set_param2(&name, index, &new_value.to_string(), None)?;
+    Ok(ArithElem::Float(new_value))
 }
 
 pub fn parse(s: &str) -> Result<f64, ExecError> {
     let mut sw = s.to_string();
-    let sign = word::get_sign(&mut sw);
+    let sign = variable::get_sign(&mut sw);
 
     match (sw.parse::<f64>(), sign.as_str()) {
         (Ok(f), "-") => Ok(-f),

@@ -73,6 +73,7 @@ impl ShellCore {
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
         self.builtins.insert("type".to_string(), type_::type_);
+        self.builtins.insert("typeset".to_string(), parameter::declare);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
         self.builtins.insert("unalias".to_string(), alias::unalias);
@@ -175,7 +176,11 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let args = arg::consume_after_options(args, 1);
+    args.remove(0);
+    if args.len() > 0 && args[0] == "--" {
+        args.remove(0);
+    }
+
     let mut feeder = Feeder::new(&args.join(" "));
 
     core.eval_level += 1;
@@ -223,7 +228,7 @@ pub fn debug(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut last_result = 0;
     for a in &args[1..] {
-        if let Ok(Some(mut a)) = ArithmeticExpr::parse(&mut Feeder::new(a), core, false) {
+        if let Ok(Some(mut a)) = ArithmeticExpr::parse(&mut Feeder::new(a), core, false, "") {
             match a.eval(core) {
                 Ok(s) => last_result = if s == "0" {1} else {0},
                 Err(e) => {
