@@ -26,7 +26,8 @@ impl Array {
         Ok(ans)
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_word(feeder: &mut Feeder, ans: &mut Self,
+                sub: Option<Subscript>, core: &mut ShellCore) -> bool {
         if feeder.starts_with(")") {
             return false;
         }
@@ -36,7 +37,7 @@ impl Array {
             _       => return false,
         };
         ans.text += &w.text;
-        ans.words.push((None, w));
+        ans.words.push((sub, w));
         true
     }
 
@@ -50,13 +51,20 @@ impl Array {
         loop {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
-            if let Some(s) = Subscript::parse(feeder, core)? {
-                if ! feeder.starts_with("=") {
+            let sub = if let Some(s) = Subscript::parse(feeder, core)? {
+                if feeder.starts_with("=") {
+                    ans.text += &s.text.clone();
+                    ans.text += &feeder.consume(1);
+                    Some(s)
+                }else{
                     feeder.replace(0, &s.text);
+                    None
                 }
-            }
+            }else{
+                None
+            };
 
-            if Self::eat_word(feeder, &mut ans, core) {
+            if Self::eat_word(feeder, &mut ans, sub, core) {
                 continue;
             }
 
