@@ -49,7 +49,8 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, env: bool) -> Result<(), ExecError> {
+    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, env: bool)
+    -> Result<(), ExecError> {
         match self.value.clone() {
             ParsedDataType::None 
             => self.evaluated_string = Some("".to_string()),
@@ -102,41 +103,36 @@ impl Substitution {
             },
         }
     }
- 
-    fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        if core.db.is_single_num(&self.name) {
-            let s = match &self.evaluated_string {
-                Some(s) => s,
-                None => return Err(ExecError::OperandExpected("".to_string())),
-            };
-            let mut feeder = Feeder::new(&s);
-            if let Some(mut exp) = ArithmeticExpr::parse(&mut feeder, core, false, "")? {
-                if feeder.len() > 0 {
-                    return Err(ExecError::SyntaxError(feeder.consume(feeder.len())));
-                }
-                let ans = exp.eval(core)?;
-                return core.db.set_param(&self.name, &ans, Some(layer));
-            }else{
-                return Err(ExecError::OperandExpected("".to_string()));
-            }
-        }
 
-        let (done, result) = match &self.evaluated_string {
-            Some(data) => (true, core.db.set_param(&self.name, &data, Some(layer))),
-            _ => (false, Ok(()) ),
+    fn set_number_param(&mut self, core: &mut ShellCore, layer: usize)
+    -> Result<(), ExecError> {
+        let s = match &self.evaluated_string {
+            Some(s) => s,
+            None => return Err(ExecError::OperandExpected("".to_string())),
         };
 
-        if result.is_err() || done {
-            return result;
+        let mut feeder = Feeder::new(&s);
+        if let Some(mut exp) = ArithmeticExpr::parse(&mut feeder, core, false, "")? {
+            if feeder.len() > 0 {
+                return Err(ExecError::SyntaxError(feeder.consume(feeder.len())));
+            }
+            let ans = exp.eval(core)?;
+            return core.db.set_param(&self.name, &ans, Some(layer));
         }
 
-        match &self.evaluated_array {
-            Some(data) => core.db.set_array(&self.name, data.to_vec(), Some(layer)),
-            _ => Err(ExecError::Other("evaluation error 3".to_string())),
-        }
+        return Err(ExecError::OperandExpected("".to_string()));
     }
+ 
+    /*
+    fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        match &self.evaluated_string {
+            Some(data) => core.db.set_param(&self.name, &data, Some(layer)),
+            _ => Err(ExecError::Other("no value".to_string())),
+        }
+    }*/
 
-    fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>) -> Result<(), ExecError> {
+    fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>)
+    -> Result<(), ExecError> {
         let layer = core.db.get_target_layer(&self.name, layer);
 
         if self.evaluated_string.is_none()
@@ -145,22 +141,14 @@ impl Substitution {
             return Err(ExecError::Other("no value".to_string()));
         }
 
-        if ! core.db.has_value(&self.name) {
-            if self.index.is_some() {
-                return self.set_array(core, layer);
-            }
+        if core.db.is_single_num(&self.name) {
+            return self.set_number_param(core, layer);
+        }else if self.evaluated_string.is_some() && self.index.is_none() {
+            let data = self.evaluated_string.clone().unwrap();
+            return core.db.set_param(&self.name, &data, Some(layer));
         }
 
-        if core.db.is_assoc(&self.name) {
-            //self.set_assoc(core, layer)
-            self.set_array(core, layer)
-        }else if core.db.is_array(&self.name) {
-            self.set_array(core, layer)
-        }else if self.index.is_some() {
-            self.set_array(core, layer)
-        }else {
-            self.set_param(core, layer)
-        }
+        self.set_array(core, layer)
     }
 
     pub fn set_to_env(&mut self) -> Result<(), ExecError> {
