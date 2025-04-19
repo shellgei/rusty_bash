@@ -187,17 +187,23 @@ impl Substitution {
             false => vec![],
         };
 
-        let mut index = 0;
+        let mut i = 0;
         let mut hash = HashMap::new();
         for e in prev {
-            hash.insert(index.to_string(), e);
-            index += 1;
+            hash.insert(i.to_string(), e);
+            i += 1;
         }
 
         let values = a.eval(core)?;
-        for e in values {
-            hash.insert(index.to_string(), e);
-            index += 1;
+        for (s, v) in values {
+            match s {
+                Some(mut sub) => {
+                    let index = sub.eval(core, &self.name)?;
+                    hash.insert(index, v)
+                },
+                None => hash.insert(i.to_string(), v),
+            };
+            i += 1;
         }
         self.evaluated_array = Some(hash);
         Ok(())

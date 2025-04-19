@@ -15,12 +15,14 @@ pub struct Array {
 }
 
 impl Array {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, ExecError> {
+    pub fn eval(&mut self, core: &mut ShellCore)
+    -> Result<Vec<(Option<Subscript>, String)>, ExecError> {
         let mut ans = vec![];
 
-        for (_, w) in &mut self.words {
-            let ws = w.eval(core)?;
-            ans.extend(ws);
+        for (s, w) in &mut self.words {
+            for e in w.eval(core)? {
+                ans.push( (s.clone(), e) );
+            }
         }
 
         Ok(ans)
