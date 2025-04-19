@@ -51,29 +51,29 @@ pub struct Substitution {
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, env: bool)
     -> Result<(), ExecError> {
-        match self.value.clone() {
-            ParsedDataType::None 
-            => self.evaluated_string = Some("".to_string()),
-            ParsedDataType::Single(v) 
-            => if let Ok(e) = self.eval_as_value(&v, core) {
-                self.evaluated_string = Some(e);
-            }
-            ParsedDataType::Array(mut a) 
-            => if let Ok(vec) = self.eval_as_array(&mut a, core) {
-                self.evaluated_array = Some(vec.clone());
-            }
+        let result = match self.value.clone() {
+            ParsedDataType::Single(v) => self.eval_as_value(&v, core),
+            ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core),
+            ParsedDataType::None => {
+                self.evaluated_string = Some("".to_string());
+                Ok(())
+            },
         };
 
-        match env {
-            false => {
-                let ans = self.set_to_shell(core, layer);
-                if ! ans.is_ok() {
-                    core.db.exit_status = 1;
-                }
-                ans
-            },
-            true  => self.set_to_env(),
+        if result.is_err() {
+            core.db.exit_status = 1;
+            return result;
         }
+
+        if env {
+            return self.set_to_env();
+        }
+
+        let ans = self.set_to_shell(core, layer);
+        if ! ans.is_ok() {
+            core.db.exit_status = 1;
+        }
+        ans
     }
 
     pub fn get_string_for_eval(&self, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -123,23 +123,9 @@ impl Substitution {
         return Err(ExecError::OperandExpected("".to_string()));
     }
  
-    /*
-    fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        match &self.evaluated_string {
-            Some(data) => core.db.set_param(&self.name, &data, Some(layer)),
-            _ => Err(ExecError::Other("no value".to_string())),
-        }
-    }*/
-
     fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>)
     -> Result<(), ExecError> {
         let layer = core.db.get_target_layer(&self.name, layer);
-
-        if self.evaluated_string.is_none()
-        && self.evaluated_array.is_none() {
-            core.db.exit_status = 1;
-            return Err(ExecError::Other("no value".to_string()));
-        }
 
         if core.db.is_single_num(&self.name) {
             return self.set_number_param(core, layer);
@@ -179,26 +165,31 @@ impl Substitution {
         }
     }
 
-    fn eval_as_value(&self, w: &Word, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore) -> Result<(), ExecError> {
         let prev = match self.append {
             true  => core.db.get_param(&self.name).unwrap_or(String::new()),
             false => "".to_string(),
         };
 
+        let s = w.eval_as_value(core)?;
+        self.evaluated_string = Some(prev + &s);
+        Ok(())
+        /*
         match w.eval_as_value(core) {
             Ok(s) => Ok((prev + &s).to_string()),
             Err(e) => Err(e),
-        }
+        }*/
     }
 
-    fn eval_as_array(&self, a: &mut Array, core: &mut ShellCore) -> Result<Vec<String>, String> {
+    fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore) -> Result<(), ExecError> {
         let prev = match self.append {
             true  => core.db.get_array_all(&self.name),
             false => vec![],
         };
 
         let values = a.eval(core)?;
-        Ok([prev, values].concat())
+        self.evaluated_array = Some([prev, values].concat());
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

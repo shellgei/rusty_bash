@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::command;
+use crate::error::exec::ExecError;
 use super::word::Word;
 
 #[derive(Debug, Clone, Default)]
@@ -12,7 +13,7 @@ pub struct Array {
 }
 
 impl Array {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, String> {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, ExecError> {
         let mut ans = vec![];
 
         for w in &mut self.words {
