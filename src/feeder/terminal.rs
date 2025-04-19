@@ -5,14 +5,16 @@
 //mod completion;
 //mod key;
 
-use crate::{env, file_check, ShellCore};
+use std::env;
+use crate::utils::file_check;
+use crate::ShellCore;
 use crate::utils::file;
 use crate::error::input::InputError;
 use std::io::{BufReader, BufRead};
 use std::fs;
 use std::fs::File;
 use std::sync::atomic::Ordering::Relaxed;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use nix::unistd;
 use nix::unistd::User;
 use rustyline::{Context, Helper, Editor, Config, EditMode, CompletionType};
@@ -21,11 +23,13 @@ use rustyline::highlight::{Highlighter, MatchingBracketHighlighter, CmdKind};
 use rustyline::hint::Hinter;
 use rustyline::completion::{Completer, FilenameCompleter, Pair};
 use rustyline::error::ReadlineError;
+use rustyline::history::DefaultHistory;
 use std::borrow::Cow::{self, Borrowed, Owned};
 use std::collections::HashSet;
 use std::os::unix::fs::PermissionsExt;
+use std::io::{stdout, Write};
 
-struct SushHelper {
+pub struct SushHelper {
     completer: FilenameCompleter,
     highlighter: MatchingBracketHighlighter,
     validator: MatchingBracketValidator,
@@ -119,12 +123,38 @@ impl Highlighter for SushHelper {
 // よくわかんないけど、シェル芸で便利そう！！！
 impl Validator for SushHelper {
     fn validate(&self, ctx: &mut ValidationContext) -> rustyline::Result<ValidationResult> {
-        self.validator.validate(ctx)
+        let input = ctx.input().to_string();
+        // bracket matching
+        let result = self.validator.validate(ctx)?;
+        if let ValidationResult::Incomplete = result {
+            return Ok(ValidationResult::Incomplete);
+        }
+        // unbalanced quotes
+        if unbalanced_quotes(&input) {
+            return Ok(ValidationResult::Incomplete);
+        }
+        Ok(ValidationResult::Valid(None))
     }
+}
 
-    fn validate_while_typing(&self) -> bool {
-        self.validator.validate_while_typing()
+fn unbalanced_quotes(s: &str) -> bool {
+    let mut single = 0;
+    let mut double = 0;
+    let mut escaped = false;
+    for c in s.chars() {
+        if c == '\\' && !escaped {
+            escaped = true;
+            continue;
+        }
+        if c == '\'' && !escaped {
+            single ^= 1;
+        }
+        if c == '"' && !escaped {
+            double ^= 1;
+        }
+        escaped = false;
     }
+    single != 0 || double != 0
 }
 
 fn oct_string(s: &str) -> bool {
@@ -264,92 +294,58 @@ fn parse_visible_prompt(prompt: &str) -> (String, String) {
     (display, hidden)
 }
 
-pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError> {
-    let raw = core.db.get_param(prompt).unwrap_or(String::new());
-    //println!("RAW:{:?}", raw);
-    let replaced = make_prompt_string(&raw);
-    //println!("REP:{:?}", replaced);
-    let ansi = oct_to_hex_in_str(&replaced);
-    //println!("ANS:{:?}", ansi);
-    let (display, hidden) = parse_visible_prompt(&ansi);
-    //println!("HID:{:?}", hidden);
-    //println!("DSP:{:?}", display);
+pub struct Terminal {
+    rl: Editor<SushHelper, DefaultHistory>,
+}
 
-    // Rustylineの設定
-    let config = Config::builder()
-        .edit_mode(EditMode::Emacs)
-        .auto_add_history(true)
-        .color_mode(rustyline::ColorMode::Enabled)
-        .completion_type(CompletionType::List)
-        .build();
-
-    // エディタの初期化
-    let mut rl = Editor::with_config(config).unwrap();
-    
-    // ヘルパーの設定
-    let helper = SushHelper {
-        completer: FilenameCompleter::new(),
-        highlighter: MatchingBracketHighlighter::new(),
-        colored_prompt: display.clone(),
-        validator: MatchingBracketValidator::new(),
-    };
-    rl.set_helper(Some(helper));
-    
-    // 履歴の設定（仮）
-    if let Ok(history_file) = core.db.get_param("HISTFILE") {
-        if !history_file.is_empty() {
-            let path = PathBuf::from(&history_file);
-            if path.exists() {
+impl Terminal {
+    pub fn new(core: &mut ShellCore) -> Terminal {
+        let config = Config::builder()
+            .edit_mode(EditMode::Emacs)
+            .auto_add_history(true)
+            .color_mode(rustyline::ColorMode::Enabled)
+            .completion_type(CompletionType::List)
+            .build();
+        let mut rl: Editor<SushHelper, DefaultHistory> = Editor::with_config(config).unwrap();
+        let helper = SushHelper { completer: FilenameCompleter::new(), highlighter: MatchingBracketHighlighter::new(), validator: MatchingBracketValidator::new(), colored_prompt: String::new() };
+        rl.set_helper(Some(helper));
+        if let Ok(history_file) = core.db.get_param("HISTFILE") {
+            if !history_file.is_empty() {
+                let path = std::path::PathBuf::from(&history_file);
                 let _ = rl.load_history(&path);
             }
         }
+        for entry in core.history.iter().rev() {
+            let _ = rl.add_history_entry(entry);
+        }
+        Terminal { rl }
     }
 
-    // 履歴読み出し（仮）
-    for h in core.history.iter() {
-        if !h.is_empty() {
-            let _ = rl.add_history_entry(h);
+    pub fn read_line(&mut self, core: &mut ShellCore, prompt: &str) -> Result<String, InputError> {
+        let raw = core.db.get_param(prompt).unwrap_or_default();
+        let replaced = make_prompt_string(&raw);
+        let ansi = oct_to_hex_in_str(&replaced);
+        let (display, hidden) = parse_visible_prompt(&ansi);
+        // output hidden parts for ANSI sequences
+        print!("{}", hidden);
+        stdout().flush().unwrap();
+        if let Some(helper) = self.rl.helper_mut() {
+            helper.colored_prompt = display.clone();
+        }
+        match self.rl.readline(&display) {
+            Ok(line) => Ok(line),
+            Err(ReadlineError::Interrupted) => {
+                // Ctrl-C, print newline
+                println!();
+                core.sigint.store(true, Relaxed);
+                Err(InputError::Interrupt)
+            },
+            Err(ReadlineError::Eof) => Err(InputError::Eof),
+            Err(_) => Err(InputError::Interrupt),
         }
     }
 
-    // シグナルチェック
-    if core.sigint.load(Relaxed) 
-       || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
-        return Err(InputError::Interrupt);
-    }
-
-    // 非表示部分（ウインドウタイトル）を出力
-    print!("{}", hidden);
-    
-    // 入力読み出し
-    let readline = rl.readline(&display);
-    match readline {
-        Ok(line) => {
-            // 履歴に追加
-            core.history.insert(0, line.trim_end().to_string());
-            
-            // 履歴ファイルに保存（仮）
-            if let Ok(history_file) = core.db.get_param("HISTFILE") {
-                if !history_file.is_empty() {
-                    let path = PathBuf::from(&history_file);
-                    let _ = rl.save_history(&path);
-                }
-            }
-            
-            Ok(line)
-        },
-        Err(ReadlineError::Interrupted) => {
-            // Ctrl-C
-            core.sigint.store(true, Relaxed);
-            Err(InputError::Interrupt)
-        },
-        Err(ReadlineError::Eof) => {
-            // Ctrl-D
-            Err(InputError::Eof)
-        },
-        Err(_) => {
-            // その他のエラー
-            Err(InputError::Interrupt)
-        }
+    pub fn save_history(&mut self, path: &std::path::Path) {
+        let _ = self.rl.save_history(path);
     }
 }

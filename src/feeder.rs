@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod terminal;
+pub mod terminal;
 mod scanner;
 
 use std::{io, process};
@@ -70,7 +70,7 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_script(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
+    pub(crate) fn read_script(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
         if let Some(lines) = self.script_lines.as_mut() {
             match lines.next() {
                 Some(Ok(line)) => return Ok(line + "\n"),
@@ -97,10 +97,14 @@ impl Feeder {
         if core.sigint.load(Relaxed) {
             return Err(InputError::Interrupt);
         }
-
-        let line = match ! core.read_stdin && self.script_lines.is_none() {
-            true  => terminal::read_line(core, "PS2"),
-            false => self.read_script(core),
+        let line = if !core.read_stdin && self.script_lines.is_none() {
+            // editorをtakeしないとcoreを引数で渡せない
+            let mut term = core.editor.take().unwrap();
+            let res = term.read_line(core, "PS2").map(|ln| ln + "\n");
+            core.editor = Some(term);
+            res
+        } else {
+            self.read_script(core)
         };
 
         line.map(|ln| {
@@ -124,9 +128,14 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = match ! core.read_stdin && self.script_lines.is_none() {
-            true  => terminal::read_line(core, "PS1"),
-            false => self.read_script(core),
+       let line = if !core.read_stdin && self.script_lines.is_none() {
+            // editorをtakeしないとcoreを引数で渡せない
+            let mut term = core.editor.take().unwrap();
+            let res = term.read_line(core, "PS1").map(|ln| ln + "\n");
+            core.editor = Some(term);
+            res
+        } else {
+            self.read_script(core)
         };
 
         line.map(|ln| self.add_line(ln, core))
