@@ -83,31 +83,24 @@ impl Substitution {
         Ok(front + &rear)
     }
 
-    fn set_assoc(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        let index = self.get_index(core);
-        match (&self.evaluated_string, index) {
-            (Some(v), Ok(k)) 
-                => core.db.set_assoc_elem(&self.name, &k, &v, Some(layer)),
-            _   => Err(ExecError::Other("evaluation error 1".to_string())),
-        }
-    }
-
     fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        if ! self.get_index(core).is_ok() {
-            return match &self.evaluated_array {
-                Some(a) => core.db.set_array(&self.name, a.clone(), Some(layer)),
-                _ => Err(ExecError::Other("no array and no index".to_string())),
-            };
+        match self.get_index(core)? {
+            None => {
+                return match &self.evaluated_array {
+                    Some(a) => core.db.set_array(&self.name, a.clone(), Some(layer)),
+                    _ => Err(ExecError::Other("no array and no index".to_string())),
+                };
+            },
+            Some(index) => {
+                if index.is_empty() {
+                    return Err(ExecError::Other(format!("{}[]: invalid index", &self.name)));
+                }
+                if let Some(v) = &self.evaluated_string {
+                    return core.db.set_param2(&self.name, &index, &v, Some(layer));
+                }
+                return Err(ExecError::Other("indexed to non array variable".to_string()));
+            },
         }
-
-        let index = self.get_index(core)
-                        .unwrap()
-                        .parse::<usize>().map_err(|e| ExecError::Other(format!("{:?}", e)))?;
-
-        if let Some(v) = &self.evaluated_string {
-            return core.db.set_array_elem(&self.name, &v, index, Some(layer));
-        }
-        Err(ExecError::Other("indexed to non array variable".to_string()))
     }
  
     fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
@@ -159,7 +152,8 @@ impl Substitution {
         }
 
         if core.db.is_assoc(&self.name) {
-            self.set_assoc(core, layer)
+            //self.set_assoc(core, layer)
+            self.set_array(core, layer)
         }else if core.db.is_array(&self.name) {
             self.set_array(core, layer)
         }else if self.index.is_some() {
@@ -177,18 +171,21 @@ impl Substitution {
         Ok(())
     }
 
-    pub fn get_index(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn get_index(&mut self, core: &mut ShellCore) -> Result<Option<String>, ExecError> {
         match self.index.clone() {
             Some(mut s) => {
                 if s.text.chars().all(|c| " \n\t[]".contains(c)) {
-                    return Ok("".to_string());
+                    return Ok(Some("".to_string()));
                 }
-                s.eval(core, &self.name)
+                let index = s.eval(core, &self.name)?;
+                Ok(Some(index)) 
             },
-            _ => {
-                match core.db.is_array(&self.name) && ! self.append && self.evaluated_array == None {
-                    true  => Ok("0".to_string()),
-                    false => Err(ExecError::ArrayIndexInvalid("".to_string())),
+            None => {
+                match core.db.is_array(&self.name)
+                    && ! self.append
+                    && self.evaluated_array == None {
+                    true  => Ok(Some("0".to_string())),
+                    false => Ok(None),
                 }
             },
         }
