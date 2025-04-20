@@ -187,9 +187,17 @@ impl AnsiCQuoted {
             if txt != "\\c" || feeder.len() == 0 {
                 ans.tokens.push(Token::OtherEscaped(txt[1..].to_string()));
             }else{
-                let ctrl_c = feeder.consume(1).chars().nth(0).unwrap();
-                ans.text += &ctrl_c.to_string();
-                ans.tokens.push(Token::Control(ctrl_c));
+                if let Some(a) = EscapedChar::parse(feeder, core) {
+                    let mut text_after = a.get_text().to_string();
+                    ans.text += &text_after.clone();
+                    text_after.remove(0);
+                    let ctrl_c = text_after.chars().nth(0).unwrap();
+                    ans.tokens.push(Token::Control(ctrl_c));
+                }else{
+                    let ctrl_c = feeder.consume(1).chars().nth(0).unwrap();
+                    ans.text += &ctrl_c.to_string();
+                    ans.tokens.push(Token::Control(ctrl_c));
+                }
             }
             true
         }else{
