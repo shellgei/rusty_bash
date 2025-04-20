@@ -90,6 +90,13 @@ impl Script {
         self.jobs.iter().map(|j| j.pipelines.len()).sum()
     }
 
+    fn read_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        for job in self.jobs.iter_mut() {
+            job.read_heredoc(feeder, core)?;
+        }
+        Ok(())
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
                  permit_empty: bool) -> Result<Option<Script>, ParseError> {
         let mut ans = Self::default();
@@ -100,6 +107,7 @@ impl Script {
             match ans.check_nest(feeder, permit_empty){
                 Status::NormalEnd => {
                     ans.unalias(core);
+                    ans.read_heredoc(feeder, core)?;
                     return Ok(Some(ans))
                 },
                 Status::NeedMoreLine => feeder.feed_additional_line(core)?,

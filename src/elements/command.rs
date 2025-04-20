@@ -101,6 +101,15 @@ pub trait Command {
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
     fn force_fork(&self) -> bool;
+
+    fn read_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        for r in self.get_redirects().iter_mut() {
+            if r.symbol == "<<" || r.symbol == "<<-" {
+                r.eat_heredoc(feeder, core)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, right: Vec<&str>,
@@ -157,6 +166,17 @@ fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
     }
 }
 
+/*
+pub fn read_heredoc(feeder: &mut Feeder, core: &mut ShellCore,
+                    ans_redirects: &mut Vec<Redirect>) -> Result<(), ParseError> {
+    for r in ans_redirects {
+        if r.symbol == "<<" || r.symbol == "<<-" {
+            r.eat_heredoc(feeder, core)?;
+        }
+    }
+    Ok(())
+}*/
+
 pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
                      ans_redirects: &mut Vec<Redirect>, ans_text: &mut String) 
                      -> Result<(), ParseError> {
@@ -167,15 +187,6 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
         }
     }
 
-    /*
-    for r in ans_redirects {
-        if r.symbol == "<<" || r.symbol == "<<-" {
-            if let Err(e) = r.eat_heredoc(feeder, core) {
-                e.print(core);
-            }
-        }
-    }
-    */
 
     Ok(())
 }

@@ -69,6 +69,13 @@ impl Pipeline {
         core.measured_time.real = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
     }
 
+    pub fn read_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        for command in self.commands.iter_mut() {
+            command.read_heredoc(feeder, core)?;
+        }
+        Ok(())
+    }
+
     fn eat_exclamation(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match feeder.starts_with("!") {
             true  => ans.text += &feeder.consume(1),
