@@ -53,6 +53,7 @@ impl Token {
                     else if *c == '\\' { 28 }
                     else if *c == ']' { 29 }
                     else if *c == '^' { 30 }
+                    else if *c == '?' { 127 }
                     else if '0' <= *c && *c <= '9' { *c as u32 - 32 }
                     else if 'a' <= *c && *c <= 'z' { *c as u32 - 96 }
                     else if 'A' <= *c && *c <= 'Z' { *c as u32 - 64 }
