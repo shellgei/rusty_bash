@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword::braced_param::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::utils::glob;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::super::{BracedParam, Param};
+use super::super::Param;
 use super::OptionalOperation;
 
 impl OptionalOperation for Remove {
@@ -68,24 +68,6 @@ impl Remove {
         *text = text[0..ans_length].to_string();
     }
 
-    /*
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
-        let len = feeder.scanner_parameter_remove_symbol();
-        if len == 0 {
-            return Ok(false);
-        }
-
-        let mut ans = Remove::default();
-
-        ans.remove_symbol = feeder.consume(len);
-        ans.text += &ans.remove_symbol.clone();
-
-        ans.remove_pattern = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-        ans.optional_operation = Some(Box::new(ans));
-        Ok(true)
-    }*/
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_parameter_remove_symbol();
         if len == 0 {
@@ -97,11 +79,12 @@ impl Remove {
         ans.remove_symbol = feeder.consume(len);
         ans.text += &ans.remove_symbol.clone();
 
-        let sws = BracedParam::eat_subwords(feeder, vec!["}"], core)?;
-        ans.text += &sws.subwords.iter()
-                    .map(|sw| sw.get_text())
-                    .collect::<Vec<&str>>().join("");
-        ans.remove_pattern = Some(sws);
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.remove_pattern = Some(w);
+        }else{
+            ans.remove_pattern = Some(Word::default());
+        }
         Ok(Some(ans))
     }
 }

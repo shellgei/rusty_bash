@@ -18,10 +18,13 @@ pub struct WhileCommand {
 
 impl Command for WhileCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+        if core.return_flag {
+            return Ok(());
+        }
         core.loop_level += 1;
-        loop {
+        while ! core.return_flag {
             core.suspend_e_option = true;
-            let _ = self.while_script.as_mut().unwrap().exec(core);
+            self.while_script.as_mut().unwrap().exec(core)?;
 
             core.suspend_e_option = false;
             if core.db.exit_status != 0 {
@@ -34,7 +37,7 @@ impl Command for WhileCommand {
                 continue;
             }
 
-            let _ = self.do_script.as_mut().unwrap().exec(core);
+            self.do_script.as_mut().unwrap().exec(core)?;
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;

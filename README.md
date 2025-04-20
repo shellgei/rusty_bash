@@ -7,7 +7,7 @@
 
 ## NEWS
 
-Bash-completion starts working on our shell! (currently, only with dev-completion branch and many TODOs)
+Bash-completion starts working on our shell!
 
 ![completion](https://github.com/user-attachments/assets/e4af177c-3fdd-4f59-a70b-9c97df96b4bc)
 
@@ -42,7 +42,7 @@ ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 
 ## Comparison with Bash 5.2
 
-This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed six of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 6/84 features of Bash.
+This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed eight of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 8/84 features of Bash.
 
 ![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
 
@@ -51,6 +51,19 @@ This graph shows the test result with the script in `./sush_test/bash_genuine_te
 The following behavior of Bash will not be imitated by `sush`. So we alter the right output file (e.g `globstar.right`) for comparision. 
 
 * Bash outputs the same path repeatedly in some situations of globstar. It may be for compatibility of ksh. 
+* Bash outputs overflow calculation results at the border of 64 bit intergers and `arith5.sub` tells that this behavior should be reproduced. But we don't follow it. 
+    ```bash
+    ### Bash example ###
+    $ echo $(( -9223372036854775808 * -1 )) 
+    -9223372036854775808                    #IT'S WRONG. 
+    $ echo $(( -9223372036854775807 * -1 )) #IT'S OK.
+    9223372036854775807
+    ### Rusty Bash ###
+    🍣 echo $(( -9223372036854775808 * -1 ))
+    9223372036854775808
+    🍣 echo $(( -9223372036854775807 * -1 ))
+    9223372036854775807
+    ```
 
 ## Contribution
 
@@ -75,13 +88,6 @@ Followings are not difficult but very important tasks.
 * :construction: :partially available (or having known bugs) 
 * :no_good: : not implemented
 
-### simple commands
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| command | :heavy_check_mark: | substitutions | :heavy_check_mark: | function definition | :heavy_check_mark: |
-
-
 ### compound commands
 
 |features | status |features | status |features | status |
@@ -89,22 +95,6 @@ Followings are not difficult but very important tasks.
 | if | :heavy_check_mark: | while | :heavy_check_mark: | () | :heavy_check_mark: |
 | {} | :heavy_check_mark: | case | :heavy_check_mark: | until | :no_good: | select | :no_good: |
 | for | :heavy_check_mark: | [[ ]] | :heavy_check_mark: |
-
-### control operator
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| \|\| | :heavy_check_mark: | && | :heavy_check_mark: | ; | :heavy_check_mark: |
-| ;; | :heavy_check_mark: | \| | :heavy_check_mark: | & | :heavy_check_mark: |
-| \|& | :heavy_check_mark: |
-
-### expansion
-
-|features | status |features | status |features | status |
-|-------------------|----|-------------------|----|-------------------|----|
-| brace `{a,b}` | :heavy_check_mark: | brace | :heavy_check_mark: | tilde | :heavy_check_mark: |
-| arithmetic | :heavy_check_mark: | word splitting | :heavy_check_mark: | path name | :heavy_check_mark: |
-| command substitution | :heavy_check_mark: | parameter/variable `$A ${A}` | :heavy_check_mark: | `${name:offset}, ${name:offset:length}` | :heavy_check_mark: |
 
 ### special parameters
 
@@ -161,15 +151,15 @@ Followings are not difficult but very important tasks.
 | checkhash | :no_good: | checkjobs | :no_good: | checkwinsize | :no_good: |
 | cmdhist | :no_good: | compat31 | :no_good: | compat32 | :no_good: |
 | compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
-| dotglob | :no_good: | execfail | :no_good: | expand_aliases | :no_good: |
+| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :no_good: |
 | extdebug | :no_good: | extglob | :heavy_check_mark: | extquote | :no_good: |
 | failglob | :no_good: | force_fignore | :no_good: | globstar | :no_good: |
 | gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
 | histverify | :no_good: | hostcomplete | :no_good: | huponexit | :no_good: |
 | interactive_comments | :no_good: | lastpipe | :no_good: | lithist | :no_good: |
 | login_shell | :no_good: | mailwarn | :no_good: | no_empty_cmd_completion | :no_good: |
-| nocaseglob | :no_good: | nocasematch | :no_good: | nullglob | :no_good: |
-| progcomp | :no_good: | promptvars | :no_good: | restricted_shell | :no_good: |
+| nocaseglob | :no_good: | nocasematch | :no_good: | nullglob | :heavy_check_mark: |
+| progcomp | :heavy_check_mark: | promptvars | :no_good: | restricted_shell | :no_good: |
 | shift_verbose | :no_good: | sourcepath | :no_good: | xpg_echo | :no_good: |
 
 ### variables
@@ -192,7 +182,7 @@ Bash Variables
 | BASH_ARGV | :no_good: | BASH_ARGV0 | :no_good: | BASH_CMDS | :no_good: |
 | BASH_COMMAND | :no_good: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
 | BASH_EXECUTION_STRING | :no_good: | BASH_LINENO | :no_good: | BASH_LOADABLES_PATH | :no_good: |
-| BASH_REMATCH | :no_good: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
+| BASH_REMATCH | :heavy_check_mark: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
 | BASH_VERSINFO | :heavy_check_mark: | BASH_VERSION | :heavy_check_mark: | BASH_XTRACEFD | :no_good: |
 | CHILD_MAX | :no_good: | COLUMNS | :no_good: | COMP_CWORD | :no_good: |
 | COMP_LINE | :no_good: | COMP_POINT | :no_good: | COMP_TYPE | :no_good: |

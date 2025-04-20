@@ -2,12 +2,12 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword::braced_param::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
-use super::super::{BracedParam, Param};
+use super::super::Param;
 use super::OptionalOperation;
 
 impl OptionalOperation for CaseConv {
@@ -120,11 +120,13 @@ impl CaseConv {
             ans.text += &ans.replace_symbol;
         }
 
-        let sws = BracedParam::eat_subwords(feeder, vec!["}"], core)?;
-        ans.text += &sws.subwords.iter()
-                    .map(|sw| sw.get_text())
-                    .collect::<Vec<&str>>().join("");
-        ans.pattern = Some(sws);
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.pattern = Some(w);
+        }else{
+            ans.pattern = Some(Word::default());
+        }
+
         Ok(Some(ans))
     }
 }

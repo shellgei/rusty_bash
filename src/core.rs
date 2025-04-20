@@ -46,7 +46,7 @@ pub struct ShellCore {
     pub db: DataBase,
     pub aliases: HashMap<String, String>,
     pub alias_memo: Vec<(String, String)>,
-    rewritten_history: HashMap<usize, String>,
+    pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
@@ -60,6 +60,7 @@ pub struct ShellCore {
     pub break_counter: i32,
     pub continue_counter: i32,
     pub return_flag: bool,
+    pub compat_bash: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     pub job_table_priority: Vec<usize>,
@@ -110,6 +111,16 @@ impl ShellCore {
         let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
         let _ = core.db.set_param("HISTFILE", &(home + "/.sush_history"), None);
         let _ = core.db.set_param("HISTFILESIZE", "2000", None);
+
+        match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+            Ok("1") => {
+                if core.db.flags.contains('i') {
+                    eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
+                }
+                core.compat_bash = true;
+            },
+            _ => {},
+        };
 
         core
     }

@@ -55,13 +55,17 @@ impl TestCommand {
         let mut ans = Self::default();
         ans.text = feeder.consume(2);
 
-        match ConditionalExpr::parse(feeder, core) {
+        command::eat_blank_lines(feeder, core, &mut ans.text)?;
+
+        match ConditionalExpr::parse(feeder, core)? {
             Some(e) => {
                 ans.text += &e.text.clone();
                 ans.cond = Some(e);
             },
             None => return Ok(None),
         }
+
+        command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
         if feeder.starts_with("]]") {
             ans.text += &feeder.consume(2);

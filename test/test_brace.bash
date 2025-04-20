@@ -8,10 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 res=$($com <<< 'echo {a,b}c')
 [ "$res" == "ac bc" ] || err $LINENO
@@ -147,5 +147,8 @@ res=$($com <<< 'echo {0..3.0}')
 
 res=$($com <<< 'echo {1..2}{1..2}')
 [ "$res" == "11 12 21 22" ] || err $LINENO
+
+res=$($com <<< 'echo {2147483650..2147483655}')
+[ "$res" = "2147483650 2147483651 2147483652 2147483653 2147483654 2147483655" ] || err $LINENO
 
 echo $0 >> ./ok

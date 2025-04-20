@@ -36,8 +36,8 @@ impl Command for SimpleCommand {
 
         self.args.clear();
         let mut words = self.words.to_vec();
-        if ! words.iter_mut().all(|w| self.set_arg(w, core).is_ok()){
-            return Err(ExecError::Other("word evaluation error".to_string()));
+        for w in words.iter_mut() {
+            self.set_arg(w, core)?;
         }
 
         match self.args.len() {
@@ -123,8 +123,12 @@ impl SimpleCommand {
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        let mut layer = Some(layer);
+        if core.options.query("posix") {
+            layer = None;
+        }
         for s in self.substitutions.iter_mut() {
-            s.eval(core, Some(layer), false)?;
+            s.eval(core, layer, false)?;
         }
         Ok(())
     }

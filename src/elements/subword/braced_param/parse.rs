@@ -2,13 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subword;
 use crate::elements::subscript::Subscript;
-use crate::elements::word::Word;
 use crate::error::parse::ParseError;
 use super::{BracedParam, Param};
 use super::optional_operation;
-use crate::elements::subword::filler::FillerSubword;
 
 impl BracedParam {
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
@@ -24,27 +21,6 @@ impl BracedParam {
         Ok(false)
     }
 
-    pub fn eat_subwords(feeder: &mut Feeder, ends: Vec<&str>, core: &mut ShellCore)
-        -> Result<Word, ParseError> {
-        let mut word = Word::default();
-        while ! ends.iter().any(|e| feeder.starts_with(e)) {
-            if let Some(sw) = subword::parse_filler(feeder, core)? {
-                word.text += sw.get_text();
-                word.subwords.push(sw);
-            }else{
-                let c = feeder.consume(1);
-                word.text += &c;
-                word.subwords.push(Box::new(FillerSubword{text: c}) );
-            }
-
-            if feeder.len() == 0 {
-                feeder.feed_additional_line(core)?;
-            }
-        }
-
-        Ok(word)
-    }
-
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
         if len != 0 {
@@ -53,7 +29,11 @@ impl BracedParam {
             return true;
         }
 
-        let len = feeder.scanner_special_and_positional_param();
+        let mut len = feeder.scanner_uint(core);
+        if len == 0 {
+            len = feeder.scanner_special_and_positional_param();
+        }
+
         if len != 0 {
             ans.param = Param {name: feeder.consume(len), subscript: None};
             ans.is_array = ans.param.name == "@";
@@ -72,7 +52,7 @@ impl BracedParam {
         let unknown = match feeder.starts_with("\\}") {
             true  => feeder.consume(2),
             false => {
-                let len = feeder.nth(0).unwrap().len_utf8();
+                let len = feeder.scanner_char(); //feeder.nth(0).unwrap().len_utf8();
                 feeder.consume(len)
             },
         };

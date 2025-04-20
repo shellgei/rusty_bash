@@ -3,11 +3,11 @@
 
 use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
-use crate::elements::subword::braced_param::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::error::parse::ParseError;
-use super::super::{BracedParam, Param};
+use super::super::Param;
 use super::super::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
@@ -180,22 +180,25 @@ impl Replace {
             ans.tail_only_replace = true;
         }
 
-        let sws = BracedParam::eat_subwords(feeder, vec!["}", "/"], core)?;
-        ans.text += &sws.subwords.iter()
-                    .map(|sw| sw.get_text())
-                    .collect::<Vec<&str>>().join("");
-        ans.replace_from = Some(sws);
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string(), "/".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.replace_from = Some(w);
+        }else{
+            ans.replace_from = Some(Word::default());
+        }
 
         if ! feeder.starts_with("/") {
             return Ok(Some(ans));
         }
         ans.text += &feeder.consume(1);
         ans.has_replace_to = true;
-        let sws = BracedParam::eat_subwords(feeder, vec!["}"], core)?;
-        ans.text += &sws.subwords.iter()
-                    .map(|sw| sw.get_text())
-                    .collect::<Vec<&str>>().join("");
-        ans.replace_to = Some(sws);
+
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            ans.text += &w.text.clone();
+            ans.replace_to = Some(w);
+        }else{
+            ans.replace_to = Some(Word::default());
+        }
 
         Ok(Some(ans))
     }

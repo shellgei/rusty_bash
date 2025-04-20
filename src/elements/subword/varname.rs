@@ -14,7 +14,7 @@ impl Subword for VarName {
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
     fn is_name(&self) -> bool {true}
-    fn split(&self, _: &str) -> Vec<Box<dyn Subword>>{ vec![] }
+    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ vec![] }
 }
 
 impl VarName {

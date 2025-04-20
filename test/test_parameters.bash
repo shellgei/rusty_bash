@@ -8,10 +8,10 @@ err () {
 	exit 1
 }
 
-[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
-
 cd $(dirname $0)
 com=../target/release/sush
+
+[ "$1" == "nobuild" ] || cargo build --release || err $LINENO
 
 ### RANDOM ###
 
@@ -24,6 +24,13 @@ res=$($com -c 'RANDOM=a ; echo "$RANDOM"')
 res=$($com -c 'unset RANDOM; RANDOM=a ; echo "$RANDOM"')
 [ "$res" == "a" ] || err $LINENO
 
+res=$($com <<< 'RANDOM=42; v=3 ; (( dice[RANDOM%6+1 + RANDOM%6+1]-=v )) ; echo ${dice[6]}' )
+[ "$res" = "-3" ] || err $LINENO
+
+res=$($com <<< 'RANDOM=2 ;echo $RANDOM ; echo $RANDOM')
+[ "$res" = "27297
+16812" ] || err $LINENO
+
 ### TIME ###
 
 res=$($com -c '[[ 0 -eq $SECONDS ]] && sleep 1 && [[ 1 -eq $SECONDS ]]')
@@ -35,11 +42,17 @@ res=$($com -c '[[ $(date +%s) -eq $EPOCHSECONDS ]]')
 res=$($com -c 'echo $(( $EPOCHREALTIME - $(date +%s) )) | awk -F. "{print \$1}"')
 [[ "$res" -eq 0 ]] || err $LINENO
 
+res=$($com -c 'SECONDS=-10 ; sleep 1 ; echo $SECONDS')
+[[ "$res" -eq -9 ]] || err $LINENO
+
 
 ### ARRAY ###
 
 res=$($com <<< 'declare -a A; A[0]=bbb; echo ${A[aaa]}')
 [ "$res" == "bbb" ] || err $LINENO
+
+res=$($com <<< 'a=aaa; echo ${a[@]}')
+[ "$res" = 'aaa' ] || err $LINENO
 
 ### INVALID REF ###
 
@@ -158,6 +171,9 @@ res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"aaa"}')
 res=$($com <<< 'b=() ; f () { echo $# ; echo $1 ; } ; f ${b[@]+"${b[@]}"}')
 [ "$res" = "0" ] || err $LINENO
 
+res=$($com <<< 'a=(a b); set "${a[@]}${a[@]}" ;echo $@ $#' )
+[ "$res" = "a ba b 3" ] || err $LINENO
+
 ### CASE CONVERSION ###
 
 res=$($com <<< 'a=aba; echo ${a^^[ac]}' )
@@ -204,6 +220,34 @@ EOF
 )
 [ "$res" = "3
 1" ] || err $LINENO
+
+res=$($com <<< 'a=" a b c "; set 1${a}2 ; echo $#')
+[ "$res" = "5" ] || err $LINENO
+
+res=$($com <<< 'IFS=": " ; a=" a b c:"; set 1${a}2 ; echo $#')
+[ "$res" = "5" ] || err $LINENO
+
+res=$($com <<< 'IFS=":" ; a=" a b c:"; set 1${a}2 ; echo $#')
+[ "$res" = "2" ] || err $LINENO
+
+res=$($com <<< 'IFS=":" ; a=" a b c:"; set "${a}" ; echo $#')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'IFS=": "; x=" :"; set x $x; shift; echo "[$#]($1)"')
+[ "$res" = "[1]()" ] || err $LINENO
+
+res=$($com <<< 'IFS=": "; x=" a :  : b : "; set x $x; shift; echo "[$#]($1)($2)($3)"')
+[ "$res" = "[3](a)()(b)" ] || err $LINENO
+
+res=$($com <<< 'IFS=": "; x=" a : b :  : "; set x $x; shift; echo "[$#]($1)($2)($3)"')
+[ "$res" = "[3](a)(b)()" ] || err $LINENO
+
+### position parameter ###
+
+res=$($com -c 'echo ${10}' {0..10})
+[ "$res" = '10' ] || err $LINENO
+
+### others ###
 
 res=$($com <<< '
 _=aaa

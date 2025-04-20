@@ -18,6 +18,7 @@ impl Subword for Parameter {
         if ! self.text.starts_with("$") {
             return Ok(vec![]);
         }
+
         let value = core.db.get_param(&self.text[1..]).unwrap_or(String::new());
         self.text = value.to_string();
         Ok(vec![])

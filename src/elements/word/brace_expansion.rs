@@ -15,7 +15,7 @@ fn after_dollar(s: &str) -> bool {
     s == "$" || s == "$$"
 }
 
-fn num_to_subword(n: i32) -> Box<dyn Subword> {
+fn num_to_subword(n: i128) -> Box<dyn Subword> {
     Box::new( SingleQuoted { text: format!("'{}'", n)  } )
 }
 
@@ -67,7 +67,7 @@ fn connect_minus(subwords: &mut Vec<Box<dyn Subword>>) {
     subwords.retain(|e| e.get_text().len() != 0);
 }
 
-pub fn eval(word: &mut Word) -> Vec<Word> {
+pub fn eval(word: &mut Word, compat_bash: bool) -> Vec<Word> {
     invalidate_brace(&mut word.subwords);
     connect_minus(&mut word.subwords);
 
@@ -86,8 +86,8 @@ pub fn eval(word: &mut Word) -> Vec<Word> {
             }
 
             return match d.1 {
-                BraceType::Comma => expand_comma_brace(&word.subwords, &shift_d),
-                BraceType::Range(n) => expand_range_brace(&mut word.subwords, &shift_d, n),
+                BraceType::Comma => expand_comma_brace(&word.subwords, &shift_d, compat_bash),
+                BraceType::Range(n) => expand_range_brace(&mut word.subwords, &shift_d, n, compat_bash),
             }
         }
     }
@@ -173,16 +173,18 @@ fn comma_brace_to_subwords(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<us
     ans
 }
 
-fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>, delimiters: &Vec<usize>) -> Vec<Word> {
+fn expand_comma_brace(subwords: &Vec<Box<dyn Subword>>,
+    delimiters: &Vec<usize>, compat_bash: bool) -> Vec<Word> {
     let left = subwords[..delimiters[0]].to_vec();
     let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
     invalidate_brace(&mut right);
 
     let sws = comma_brace_to_subwords(subwords, delimiters);
-    subword_sets_to_words(&sws, &left, &right)
+    subword_sets_to_words(&sws, &left, &right, compat_bash)
 }
 
-fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usize>, operand_num: usize) -> Vec<Word> {
+fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usize>,
+    operand_num: usize, compat_bash: bool)-> Vec<Word> {
     let start_wrap = subwords[delimiters[0]+1].make_unquoted_string(); // right of {
     let end_wrap = subwords[delimiters[2]+1].make_unquoted_string(); // left of }
     
@@ -206,11 +208,20 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
 
     let mut series = gen_nums(&start, &end, skip_num);
     if series.is_empty() {
-        series = gen_chars(&start, &end, skip_num);
+        series = gen_chars(&start, &end, skip_num, compat_bash);
     }
     if series.is_empty() {
         return subwords_to_word(subwords);
     }
+
+    if compat_bash {
+        for e in series.iter_mut() {
+            if e.get_text() == "'\\'" {
+                *e = Box::new( SingleQuoted { text: "''".to_string()  } );
+            }
+        }
+    }
+
     let mut series2 = vec![];
     for e in series {
         series2.push(vec![e]);
@@ -220,11 +231,11 @@ fn expand_range_brace(subwords: &mut Vec<Box<dyn Subword>>, delimiters: &Vec<usi
     let mut right = subwords[(delimiters.last().unwrap()+1)..].to_vec();
     invalidate_brace(&mut right);
 
-    subword_sets_to_words(&series2, left, &right)
+    subword_sets_to_words(&series2, left, &right, compat_bash)
 }
 
 fn gen_nums(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
-    let (start_num, end_num) = match (start.parse::<i32>(), end.parse::<i32>() ) {
+    let (start_num, end_num) = match (start.parse::<i128>(), end.parse::<i128>() ) {
         ( Ok(s), Ok(e) ) => (s, e),
         _ => return vec![],
     };
@@ -239,7 +250,7 @@ fn gen_nums(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
     ans.into_iter().enumerate().filter(|e| e.0%skip == 0).map(|e| e.1).collect() 
 }
 
-fn gen_chars(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
+fn gen_chars(start: &str, end: &str, skip: usize, compat_bash: bool) -> Vec<Box<dyn Subword>> {
     let (start_num, end_num) = match (start.chars().nth(0), end.chars().nth(0) ) {
         ( Some(s), Some(e) ) => (s, e),
         _ => return vec![],
@@ -252,16 +263,26 @@ fn gen_chars(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
     let min = std::cmp::min(start_num, end_num);
     let max = std::cmp::max(start_num, end_num);
 
+    if compat_bash {
+        if ('0' <= min && min <= '9') && ! ('0' <= max && max <= '9') {
+            return vec![];
+        }
+        if ('0' <= max && max <= '9') && ! ('0' <= min && min <= '9') {
+            return vec![];
+        }
+    }
+
     let mut ans: Vec<Box<dyn Subword>> = (min..max).map(|n| ascii_to_subword(n) ).collect();
     ans.push( ascii_to_subword(max) );
     if start_num > end_num {
         ans.reverse();
     }
+
     ans.into_iter().enumerate().filter(|e| e.0%skip == 0).map(|e| e.1).collect() 
 }
 
-fn subword_sets_to_words(series: &Vec<Vec<Box<dyn Subword>>>,
-                     left: &[Box<dyn Subword>], right: &[Box<dyn Subword>]) -> Vec<Word> {
+fn subword_sets_to_words(series: &Vec<Vec<Box<dyn Subword>>>, 
+    left: &[Box<dyn Subword>], right: &[Box<dyn Subword>], compat_bash: bool) -> Vec<Word> {
     let mut ws = vec![];
     for sws in series {
         let mut w = Word::default();
@@ -272,7 +293,7 @@ fn subword_sets_to_words(series: &Vec<Vec<Box<dyn Subword>>>,
 
     let mut ans = vec![];
     for w in ws.iter_mut() {
-        ans.append(&mut eval(w));
+        ans.append(&mut eval(w, compat_bash));
     }
     ans
 }

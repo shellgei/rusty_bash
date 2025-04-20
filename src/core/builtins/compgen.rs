@@ -2,10 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{file_check, ShellCore, Feeder};
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::utils;
-use crate::utils::{arg, directory};
+use crate::utils::{arg, directory, glob};
 use faccess;
 use faccess::PathExt;
 use std::collections::HashSet;
@@ -35,21 +35,25 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
     let mut dir = org_dir.clone();
     if dir.starts_with("~") {
         let mut feeder = Feeder::new(&dir);
-        if let Ok(Some(mut w)) = Word::parse(&mut feeder, core, true) {
+        if let Ok(Some(mut w)) = Word::parse(&mut feeder, core, Some(WordMode::CompgenF)) {
             tilde_expansion::eval(&mut w, core);
             dir = w.text + &feeder.consume(feeder.len());
         }
     }
 
     if key == "" {
-        let files = directory::files(&dir);
+        let mut files = directory::files(&dir);
+        if dir_only {
+            files.retain(|p| file_check::is_dir(&(dir.clone() + &p)));
+        }
+        files.sort();
         return files.iter().map(|f| org_dir.clone() + &f).collect();
     }
 
-    let mut ans = directory::glob(&dir, &(key.clone() + "*"), core.shopts.query("extglob"));
+    let mut ans = directory::glob(&dir, &(key.clone() + "*"), &core.shopts);
     if key == "." {
-        ans.append(&mut directory::glob(&dir, ".", false));
-        ans.append(&mut directory::glob(&dir, "..", false));
+        ans.append(&mut directory::glob(&dir, ".", &core.shopts));
+        ans.append(&mut directory::glob(&dir, "..", &core.shopts));
     }
     ans.iter_mut().for_each(|a| { a.pop(); } );
     if dir_only {
@@ -72,6 +76,7 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
         "file" => "-f",
         "user" => "-u",
         "setopt" => "-o",
+        "hostname" => "-A hostname",
         "shopt" => "-A shopt",
         "stopped" => "-A stopped",
         "job" => "-j",
@@ -111,8 +116,9 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
     let mut args = arg::dissolve_options(args);
-    let _  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
+    let exclude  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
     let prefix = arg::consume_with_next_arg("-P", &mut args);
+    let suffix = arg::consume_with_next_arg("-S", &mut args);
 
     replace_args_compgen(&mut args);
 
@@ -126,6 +132,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-j" => compgen_j(core, &mut args),
         "-u" => compgen_u(core, &mut args),
         "-v" => compgen_v(core, &mut args),
+        "-A hostname" => compgen_hostname(core, &mut args),
         "-A shopt" => compgen_shopt(core, &mut args),
         "-A stopped" => compgen_stopped(core, &mut args),
         "-W" => {
@@ -148,14 +155,27 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         },
     };
 
+    if let Some(pattern) = exclude {
+        let extglob = core.shopts.query("extglob");
+        ans.retain(|a| ! glob::parse_and_compare(&a, &pattern, extglob));
+    }
+
     if let Some(p) = prefix {
         for a in ans.iter_mut() {
             *a = p.clone() + a;
         }
     }
+    if let Some(s) = suffix {
+        for a in ans.iter_mut() {
+            *a = a.to_owned() + &s.clone();
+        }
+    }
 
     ans.iter().for_each(|a| println!("{}", &a));
-    0
+    match ans.is_empty() {
+        true  => 1,
+        false => 0,
+    }
 }
 
 fn get_head(args: &mut Vec<String>, pos: usize) -> String {
@@ -286,8 +306,7 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 fn compgen_large_g(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let glob = args[2].to_string();
-    let extglob = core.shopts.query("extglob");
-    path_expansion::expand(&glob, extglob)
+    path_expansion::expand(&glob, &core.shopts)
 }
 
 fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
@@ -302,7 +321,7 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
 
     let mut feeder = Feeder::new(&words);
     while feeder.len() != 0 {
-        match Word::parse(&mut feeder, core, false) {
+        match Word::parse(&mut feeder, core, None) {
             Ok(Some(mut w)) => {
                 if let Ok(mut v) =  w.eval(core) {
                     ans.append(&mut v);
@@ -342,6 +361,11 @@ pub fn compgen_shopt(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String
     let mut ans = core.shopts.get_keys();
     drop_unmatch(args, 2, &mut ans);
     ans
+}
+
+pub fn compgen_hostname(_: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
+    //TODO: Implement!
+    vec![]
 }
 
 pub fn compgen_stopped(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {

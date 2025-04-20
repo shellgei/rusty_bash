@@ -20,10 +20,7 @@ impl Command for ArithmeticCommand {
         let exit_status = match self.eval(core).as_deref() {
             Ok("0") => 1,
             Ok(_) => 0,
-            Err(e) => {
-                eprintln!("{:?}", e);
-                1
-            },
+            Err(e) => {e.print(core); 1 },
         };
         core.db.exit_status = exit_status;
         Ok(())
@@ -47,11 +44,6 @@ impl ArithmeticCommand {
     }
 
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        if core.db.flags.contains('x') {
-            let ps4 = core.get_ps4();
-            eprintln!("\r{} {}\r", ps4, &self.text);
-        }
-
         let mut ans = String::new();
         for a in &mut self.expressions {
             ans = a.eval(core)?;
@@ -70,7 +62,7 @@ impl ArithmeticCommand {
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
 
-        if let Some(c) = ArithmeticExpr::parse(feeder, core, true)? {
+        if let Some(c) = ArithmeticExpr::parse(feeder, core, true, "((")? {
             if feeder.starts_with("))") {
                 ans.text += &c.text;
                 ans.text += &feeder.consume(2);

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use std::env;
@@ -21,7 +22,7 @@ impl ParsedDataType {
     pub fn get_evaluated_text(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         match self {
             Self::None      => Ok("".to_string()),
-            Self::Single(s) => Ok(s.text.clone()),
+            Self::Single(s) => Ok(s.eval_as_value(core)?),
             Self::Array(a) => {
                 let mut ans = "(".to_string();
                 let mut ws = vec![];
@@ -110,6 +111,23 @@ impl Substitution {
     }
  
     fn set_param(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        if core.db.is_single_num(&self.name) {
+            let s = match &self.evaluated_string {
+                Some(s) => s,
+                None => return Err(ExecError::OperandExpected("".to_string())),
+            };
+            let mut feeder = Feeder::new(&s);
+            if let Some(mut exp) = ArithmeticExpr::parse(&mut feeder, core, false, "")? {
+                if feeder.len() > 0 {
+                    return Err(ExecError::SyntaxError(feeder.consume(feeder.len())));
+                }
+                let ans = exp.eval(core)?;
+                return core.db.set_param(&self.name, &ans, Some(layer));
+            }else{
+                return Err(ExecError::OperandExpected("".to_string()));
+            }
+        }
+
         let (done, result) = match &self.evaluated_string {
             Some(data) => (true, core.db.set_param(&self.name, &data, Some(layer))),
             _ => (false, Ok(()) ),
@@ -131,7 +149,6 @@ impl Substitution {
         if self.evaluated_string.is_none()
         && self.evaluated_array.is_none() {
             core.db.exit_status = 1;
-            dbg!("{:?}", &self);
             return Err(ExecError::Other("no value".to_string()));
         }
 
@@ -144,6 +161,8 @@ impl Substitution {
         if core.db.is_assoc(&self.name) {
             self.set_assoc(core, layer)
         }else if core.db.is_array(&self.name) {
+            self.set_array(core, layer)
+        }else if self.index.is_some() {
             self.set_array(core, layer)
         }else {
             self.set_param(core, layer)
@@ -229,7 +248,7 @@ impl Substitution {
         if let Some(a) = Array::parse(feeder, core) {
             ans.text += &a.text;
             ans.value = ParsedDataType::Array(a);
-        }else if let Ok(Some(w)) = Word::parse(feeder, core, false) {
+        }else if let Ok(Some(w)) = Word::parse(feeder, core, None) {
             ans.text += &w.text;
             ans.value = ParsedDataType::Single(w);
         }

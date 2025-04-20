@@ -48,6 +48,26 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     file_check::is_dir(&s.replace(&tilde_prefix, &tilde_path))
 }
 
+fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &Vec<String>) {
+    let mut tail = " ";
+    if is_dir(cand, core) {
+        tail = "/";
+    }
+
+    if file_check::exists(cand) {
+        *cand = cand.replace(" ", "\\ ").replace("(", "\\(").replace(")", "\\)");
+        if ! is_dir(cand, core) {
+            tail = tail.trim_end();
+        }
+    }
+
+    if o_options.contains(&"nospace".to_string()) {
+        tail = tail.trim_end();
+    }
+
+    *cand += tail
+}
+
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
@@ -60,9 +80,16 @@ impl Terminal {
             return Ok(());
         }
 
+        let mut cands = core.db.get_array_all("COMPREPLY");
+        cands.retain(|c| c != "");
+        let o_options = core.current_completion_info.o_options.clone();
+        for cand in cands.iter_mut() {
+            apply_o_options(cand, core, &o_options);
+        }
+
         match self.tab_num  {
-            1 => self.try_completion(core).unwrap(),
-            _ => self.show_list(&core.db.get_array_all("COMPREPLY")),
+            1 => self.try_completion(&mut cands, core).unwrap(),
+            _ => self.show_list(&mut cands),
         }
         Ok(())
     }
@@ -196,28 +223,12 @@ impl Terminal {
         compgen::compgen_f(core, args, false)
     }
 
-    pub fn try_completion(&mut self, core: &mut ShellCore) -> Result<(), String> {
+    pub fn try_completion(&mut self, cands: &mut Vec<String>, core: &mut ShellCore) -> Result<(), String> {
         let pos = core.db.get_param("COMP_CWORD")?;
         let target = core.db.get_array_elem("COMP_WORDS", &pos)?;
 
-        if core.db.len("COMPREPLY") == 1 {
-            let arr = core.db.get_array_all("COMPREPLY");
-            let output = arr[0].clone();
-            let mut tail = match is_dir(&output, core) {
-                true  => "/",
-                false => " ",
-            };
-
-            if core.current_completion_info.o_options.contains(&"nospace".to_string()) {
-                tail = "";
-            }
-
-            self.replace_input(&(output + tail));
-            return Ok(());
-        }
-
-        let common = common_string(&core.db.get_array_all("COMPREPLY"));
-        if common.len() != target.len() {
+        let common = common_string(&cands);
+        if common.len() != target.len() && ! common.is_empty() {
             self.replace_input(&common);
             return Ok(());
         }
@@ -313,32 +324,11 @@ impl Terminal {
 
     pub fn replace_input(&mut self, to: &String) {
         self.shave_existing_word();
-
-        let to_escaped = if to.ends_with(" ") {
-            let mut tmp = to.to_string();
-            tmp.pop();
-            match self.escape_at_completion {
-                true  => tmp.replace(" ", "\\ ") + " ",
-                false => tmp.replace("↵ \0", "\n") + " ",
-            }
-        }else {
-            match self.escape_at_completion {
-                true  => to.replace(" ", "\\ ").to_string(),
-                false => to.replace("↵ \0", "\n").to_string(),
-            }
-        };
-
-        for c in to_escaped.chars() {
+        let to_modified = to.replace("↵ \0", "\n");
+        for c in to_modified.chars() {
             self.insert(c);
             self.check_scroll();
         }
-
-        if to.ends_with(" ") 
-        && self.head < self.chars.len() 
-        && self.chars[self.head] == ' ' {
-            self.backspace();
-        }
-
         self.rewrite(true);
     }
 
@@ -375,8 +365,6 @@ impl Terminal {
         core.db.set_param("COMP_KEY", "9", None)?;
 
         let mut words_all = utils::split_words(&all_string);
-        //TODO: An infinite loop occurs in bash-completion if redirect symbols exit
-        //words_all.iter_mut().for_each(|e| *e = e.replace(">", "_").replace("<", "_")); 
 
         let left_string: String = self.chars[prompt_len..self.head].iter().collect();
         let mut words_left = utils::split_words(&left_string);

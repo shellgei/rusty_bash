@@ -20,6 +20,13 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_char(&mut self) -> usize {
+        match self.remaining.chars().next() {
+            Some(c) => c.len_utf8(),
+            None    => 0,
+        }
+    }
+
     fn scanner_chars(&mut self, judge: fn(char) -> bool,
                      core: &mut ShellCore, skip_bytes: usize) -> usize {
         loop {
@@ -48,7 +55,7 @@ impl Feeder {
     }
 
     pub fn scanner_subword_symbol(&self) -> usize {
-        self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?",
+        self.scanner_one_of(&["{", "}", ",", "$", "~", "/", "*", "?", "%", "!",
                               "@", "!", "+", "-", ".", ":", "=", "^", ",", "]"])
     }
 
@@ -166,20 +173,9 @@ impl Feeder {
         if ! self.starts_with("$") {
             return 0;
         }
-        //self.backslash_check_and_feed(vec!["$", "$_"], core);
         self.backslash_check_and_feed(vec!["$"], core);
 
         match self.remaining.chars().nth(1) {
-            /*
-            Some('_') => {
-                if let Some(c) = self.remaining.chars().nth(2) {
-                    if c.is_ascii_digit() || c.is_ascii_alphabetic() {
-                        return 0;
-                    }
-                }
-                return 2;
-            },
-            */
             Some(c) => if "$?*@#-!0123456789".find(c) != None { 2 }else{ 0 },
             None    => 0,
         }
@@ -195,7 +191,7 @@ impl Feeder {
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},\\'$/~\"*+-?@!.:=^]`".find(ch) != None {
+            if " \t\n;&|()<>{},\\'$/~\"*+-?@!.:=^]`%".find(ch) != None {
                 break;
             }
             ans += ch.len_utf8();
@@ -204,7 +200,7 @@ impl Feeder {
     }
 
     pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| "\"\\$".find(ch) == None;
+        let judge = |ch| "`\"\\$".find(ch) == None;
         self.scanner_chars(judge, core, 0)
     }
 
@@ -257,8 +253,23 @@ impl Feeder {
             ">>", "<<", "<=", ">=", "&", "^", "=", "+", "-", "/", "*", "%", "<", ">", "|", "^", ","])
     }
 
+    pub fn scanner_substitution(&mut self, core: &mut ShellCore) -> usize {
+        self.backslash_check_and_feed(vec!["*", "/", "%", "+", "-", "<",
+                                           "<<", ">", ">>", "^", "|"], core);
+        self.scanner_one_of(&["=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "^=", "|="])
+
+    }
+
     pub fn scanner_uint(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| '0' <= ch && ch <= '9';
+        self.scanner_chars(judge, core, 0)
+    }
+
+    pub fn scanner_arith_number(&mut self, core: &mut ShellCore) -> usize {
+        let judge = |ch| ('0' <= ch && ch <= '9') 
+                         || ('a' <= ch && ch <= 'z') 
+                         || ('A' <= ch && ch <= 'Z') 
+                         || ".#xX_@".contains(ch);
         self.scanner_chars(judge, core, 0)
     }
 
