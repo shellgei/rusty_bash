@@ -178,6 +178,21 @@ fn pop(args: &mut Vec<String>) -> String {
 
 fn esc_to_str(ch: char) -> String {
     match ch {
+        'a' => char::from(7).to_string(),
+        'b' =>  char::from(8).to_string(),
+        'e' | 'E' => char::from(27).to_string(),
+        'f' => char::from(12).to_string(),
+        'n' => "\n".to_string(),
+        'r' => "\r".to_string(),
+        't' => "\t".to_string(),
+        'v' => char::from(11).to_string(),
+        '\\' => "\\".to_string(),
+        '\'' => "'".to_string(),
+        '"' => "\"".to_string(),
+        _ => ("\\".to_owned() + &ch.to_string()).to_string(),
+    }
+                /*
+    match ch {
         'a' => r"\a".to_string(),
         'b' => r"\b".to_string(),
         'e' => r"\e".to_string(),
@@ -190,6 +205,7 @@ fn esc_to_str(ch: char) -> String {
         '\\' => "\\".to_string(),
         _    => ch.to_string(),
     }
+                */
 }
 
 fn replace_escape(s: &str) -> String {

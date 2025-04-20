@@ -89,16 +89,7 @@ impl Subword for AnsiCQuoted {
     fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn make_unquoted_string(&mut self) -> Option<String> {
-        Some( self.make_glob_string() )
-        /*
-        let mut ans = String::new();
-        for t in &mut self.tokens {
-            ans += &t.to_string();
-        }
-        Some(ans)
-        */
-    }
+    fn make_unquoted_string(&mut self) -> Option<String> { Some( self.make_glob_string() ) }
 
     fn make_glob_string(&mut self) -> String {
         let mut ans = String::new();
