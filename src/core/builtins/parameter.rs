@@ -150,14 +150,32 @@ pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return print_all(core);
     }
 
+    let mut names = core.db.get_keys();
+    let mut options = String::new();
+
+    if arg::consume_option("-a", args) {
+        names.retain(|n| core.db.is_array(n));
+        options += "a";
+    }
+
+    if arg::consume_option("-A", args) {
+        names.retain(|n| core.db.is_assoc(n));
+        options += "A";
+    }
+
+    if arg::consume_option("-r", args) {
+        names.retain(|n| core.db.is_readonly(n));
+        options += "r";
+    }
+
+    let prefix = format!("declare -{} ", options);
+
+    names.into_iter().for_each(|k| {print!("{}", prefix); core.db.print(&k);});
+
     0
 }
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() <= 1 {
-        return print_all(core);
-    }
-
     let mut args = arg::dissolve_options(args);
 
     if args[1..].iter().all(|a| a.starts_with("-")) {
