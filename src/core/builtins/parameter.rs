@@ -115,7 +115,15 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     let layer = Some(core.db.get_layer_num() - 2);
 
     if args.contains(&"-a".to_string()) {
-        core.db.set_array(&name, vec![], layer)?;
+        let mut v = vec![];
+        if ! core.db.is_array(&name)
+        && ! core.db.is_assoc(&name) {
+            if let Ok(s) = core.db.get_param(&name) {
+                v.push(s);
+            }
+        }
+
+        core.db.set_array(&name, v, layer)?;
     }else if args.contains(&"-A".to_string()) {
         core.db.set_assoc(&name, layer)?;
     }else {
