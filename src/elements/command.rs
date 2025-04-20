@@ -173,7 +173,9 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 
     for r in ans_redirects {
         if r.symbol == "<<" || r.symbol == "<<-" {
-            r.eat_heredoc(feeder, core)?;
+            if let Err(e) = r.eat_heredoc(feeder, core) {
+                e.print(core);
+            }
         }
     }
 

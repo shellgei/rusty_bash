@@ -211,9 +211,12 @@ impl Redirect {
     pub fn eat_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
         let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {
-            Ok(s)  => s + "\n",
+            Ok(s)  => s,
             Err(_) => return Err(ParseError::UnexpectedSymbol(self.right.text.clone())),
         };
+
+        let end_return = end.clone() + "\n";
+
         if feeder.starts_with("\n") {
             feeder.consume(1);
         }
@@ -227,7 +230,7 @@ impl Redirect {
                     feeder.consume(len);
                 }
 
-                if feeder.starts_with(&end) {
+                if feeder.starts_with(&end_return) {
                     feeder.consume(end.len());
                     break;
                 }
@@ -246,6 +249,8 @@ impl Redirect {
             }
         }
 
+        dbg!("{:?}", &feeder);
+        dbg!("{:?}", &self);
         Ok(())
     }
 
