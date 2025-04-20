@@ -145,12 +145,25 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     Ok(())
 }
 
+pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
+        return print_all(core);
+    }
+
+    0
+}
+
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         return print_all(core);
     }
 
     let mut args = arg::dissolve_options(args);
+
+    if args[1..].iter().all(|a| a.starts_with("-")) {
+        return declare_print(core, &mut args);
+    }
+
     let r_flg = arg::consume_option("-r", &mut args);
 
     let mut name_and_values = vec![];
