@@ -249,8 +249,6 @@ impl Redirect {
             }
         }
 
-        dbg!("{:?}", &feeder);
-        dbg!("{:?}", &self);
         Ok(())
     }
 
