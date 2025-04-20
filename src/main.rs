@@ -44,9 +44,7 @@ fn read_rc_file(core: &mut ShellCore) {
     let rc_file = dir + "/.sushrc";
 
     if file_check::is_regular_file(&rc_file) {
-        if let Err(e) = core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]) {
-            e.print(core);
-        }
+        core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]);
     }
 }
 
@@ -155,7 +153,9 @@ fn main_loop(core: &mut ShellCore) {
         core.sigint.store(false, Relaxed);
         match Script::parse(&mut feeder, core, false){
             Ok(Some(mut s)) => {
-                let _ = s.exec(core);
+                if let Err(e) = s.exec(core) {
+                    e.print(core);
+                }
                 set_history(core, &s.get_text());
             },
             Err(e) => {

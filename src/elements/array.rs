@@ -71,7 +71,7 @@ impl Array {
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
         loop {
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
             let sub = Self::eat_subscript(feeder, core, &mut ans)?;
             if Self::eat_word(feeder, &mut ans, sub, core) {
