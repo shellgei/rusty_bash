@@ -24,7 +24,7 @@ fn run_script(core: &mut ShellCore) {
     let mut feeder = Feeder::new(&core.exit_script);
     match Script::parse(&mut feeder, core, true) {
         Ok(Some(mut s)) => {
-            if let Err(e) = s.exec(core) {
+            if let Err(e) = s.exec(core, &mut feeder) {
                 e.print(core);
             }
         },

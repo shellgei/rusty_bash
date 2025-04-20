@@ -26,12 +26,12 @@ pub struct ForCommand {
 }
 
 impl Command for ForCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+    fn run(&mut self, core: &mut ShellCore, _: bool, feeder: &mut Feeder) -> Result<(), ExecError> {
         core.loop_level += 1;
 
         let ok = match self.has_arithmetic {
-            true  => self.run_with_arithmetic(core),
-            false => self.run_with_values(core),
+            true  => self.run_with_arithmetic(core, feeder),
+            false => self.run_with_values(core, feeder),
         };
 
         if ! ok && core.db.exit_status == 0 {
@@ -68,7 +68,7 @@ impl ForCommand {
         Some(ans)
     }
 
-    fn run_with_values(&mut self, core: &mut ShellCore) -> bool {
+    fn run_with_values(&mut self, core: &mut ShellCore, feeder: &mut Feeder) -> bool {
         let values = match self.has_in {
             true  => match self.eval_values(core) {
                 Some(vs) => vs,
@@ -96,7 +96,7 @@ impl ForCommand {
                 continue;
             }
 
-            let _ = self.do_script.as_mut().unwrap().exec(core);
+            let _ = self.do_script.as_mut().unwrap().exec(core, feeder);
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;
@@ -117,7 +117,7 @@ impl ForCommand {
         }
     }
 
-    fn run_with_arithmetic(&mut self, core: &mut ShellCore) -> bool {
+    fn run_with_arithmetic(&mut self, core: &mut ShellCore, feeder: &mut Feeder) -> bool {
         let (ok, _) = Self::eval_arithmetic(&mut self.arithmetics[0], core);
         if ! ok {
             return false;
@@ -133,7 +133,7 @@ impl ForCommand {
                 return ok;
             }
 
-            let _ = self.do_script.as_mut().unwrap().exec(core);
+            let _ = self.do_script.as_mut().unwrap().exec(core, feeder);
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;

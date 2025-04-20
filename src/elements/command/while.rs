@@ -17,14 +17,14 @@ pub struct WhileCommand {
 }
 
 impl Command for WhileCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+    fn run(&mut self, core: &mut ShellCore, _: bool, feeder: &mut Feeder) -> Result<(), ExecError> {
         if core.return_flag {
             return Ok(());
         }
         core.loop_level += 1;
         while ! core.return_flag {
             core.suspend_e_option = true;
-            self.while_script.as_mut().unwrap().exec(core)?;
+            self.while_script.as_mut().unwrap().exec(core, feeder)?;
 
             core.suspend_e_option = false;
             if core.db.exit_status != 0 {
@@ -37,7 +37,7 @@ impl Command for WhileCommand {
                 continue;
             }
 
-            self.do_script.as_mut().unwrap().exec(core)?;
+            self.do_script.as_mut().unwrap().exec(core, feeder)?;
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;

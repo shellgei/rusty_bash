@@ -27,7 +27,7 @@ pub struct FunctionDefinition {
 }
 
 impl Command for FunctionDefinition {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe, _: &mut Feeder) -> Result<Option<Pid>, ExecError> {
         if self.force_fork || pipe.is_connected() {
             return Ok(None);
         }
@@ -36,7 +36,7 @@ impl Command for FunctionDefinition {
         Ok(None)
     }
 
-    fn run(&mut self, _: &mut ShellCore, _: bool) -> Result<(), ExecError> {Ok(())}
+    fn run(&mut self, _: &mut ShellCore, _: bool, _: &mut Feeder) -> Result<(), ExecError> {Ok(())}
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
     fn set_force_fork(&mut self) { self.force_fork = true; }
@@ -45,7 +45,7 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
-    pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore)
+    pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore, feeder: &mut Feeder)
         -> Result<Option<Pid>, ExecError> {
         let mut array = core.db.get_array_all("FUNCNAME");
         array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
@@ -63,7 +63,7 @@ impl FunctionDefinition {
         core.source_function_level += 1;
         let pid = self.command.clone()
                         .unwrap()
-                        .exec(core, &mut dummy);
+                        .exec(core, &mut dummy, feeder);
         core.return_flag = false;
         core.source_function_level -= 1;
 

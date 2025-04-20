@@ -28,7 +28,7 @@ pub struct SimpleCommand {
 
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe)
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe, feeder: &mut Feeder)
     -> Result<Option<Pid>, ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         if Self::break_continue_or_return(core) {
@@ -47,14 +47,14 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
+    fn run(&mut self, core: &mut ShellCore, fork: bool, feeder: &mut Feeder) -> Result<(), ExecError> {
         core.db.push_local();
         let layer = core.db.get_layer_num()-1;
         let _ = self.set_local_params(core, layer);
 
         if core.db.functions.contains_key(&self.args[0]) {
             let mut f = core.db.functions[&self.args[0]].clone();
-            let _ = f.run_as_command(&mut self.args, core);
+            let _ = f.run_as_command(&mut self.args, core, feeder);
         } else if core.builtins.contains_key(&self.args[0]) {
             let mut special_args = vec![];
             for sub in &self.substitutions_as_args {
@@ -89,7 +89,7 @@ impl SimpleCommand {
         core.break_counter > 0 || core.continue_counter > 0 
     }
 
-    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe, feeder: &mut Feeder) -> Result<Option<Pid>, ExecError> {
         Self::check_sigint(core)?;
 
         core.db.last_arg = self.args.last().unwrap().clone();
@@ -99,9 +99,9 @@ impl SimpleCommand {
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.db.functions.contains_key(&self.args[0]) ) {
-            self.fork_exec(core, pipe)
+            self.fork_exec(core, pipe, feeder)
         }else{
-            self.nofork_exec(core)
+            self.nofork_exec(core, feeder)
         }
     }
 

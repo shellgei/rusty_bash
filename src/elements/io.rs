@@ -56,11 +56,11 @@ pub fn backup(from: RawFd) -> RawFd {
            .expect("Can't allocate fd for backup")
 }
 
-pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>, core: &mut ShellCore) -> Result<(), ExecError> {
+pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>, core: &mut ShellCore, feeder: &mut Feeder) -> Result<(), ExecError> {
     pipe.connect()?;
 
     for r in rs.iter_mut() {
-        r.connect(false, core)?;
+        r.connect(false, core, feeder)?;
     }
     Ok(())
 }

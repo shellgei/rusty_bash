@@ -32,9 +32,9 @@ pub struct Redirect {
 }
 
 impl Redirect {
-    pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+    pub fn connect(&mut self, restore: bool, core: &mut ShellCore, feeder: &mut Feeder) -> Result<(), ExecError> {
         if self.symbol == "<<" || self.symbol == "<<-" {
-            return self.redirect_heredocument(core, restore);
+            return self.redirect_heredocument(core, restore, feeder);
         }
         if self.symbol == "<<<" {
             return self.redirect_here_data(core, restore);
@@ -128,7 +128,7 @@ impl Redirect {
         io::share(1, 2)
     }
 
-    fn redirect_heredocument(&mut self, core: &mut ShellCore, restore: bool)
+    fn redirect_heredocument(&mut self, core: &mut ShellCore, restore: bool, feeder: &mut Feeder)
     -> Result<(), ExecError> {
         self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
@@ -139,9 +139,7 @@ impl Redirect {
             self.left_backup = io::backup(0);
         }
 
-        let mut feeder = Feeder::new("");
-        feeder.main_feeder = true;
-        if let Err(e) = self.eat_heredoc(&mut feeder, core) {
+        if let Err(e) = self.eat_heredoc(feeder, core) {
             e.print(core);
         }
 

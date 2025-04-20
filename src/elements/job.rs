@@ -21,20 +21,20 @@ pub struct Job {
 }
 
 impl Job {
-    pub fn exec(&mut self, core: &mut ShellCore, bg: bool) -> Result<(), ExecError> {
+    pub fn exec(&mut self, core: &mut ShellCore, bg: bool, feeder: &mut Feeder) -> Result<(), ExecError> {
         let pgid = match core.is_subshell {
             true  => unistd::getpgrp(),
             false => Pid::from_raw(0),
         };
 
         match bg {
-            true  => self.exec_bg(core, pgid),
-            false => self.exec_fg(core, pgid)?,
+            true  => self.exec_bg(core, pgid, feeder),
+            false => self.exec_fg(core, pgid, feeder)?,
         }
         Ok(())
     }
 
-    fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<(), ExecError> {
+    fn exec_fg(&mut self, core: &mut ShellCore, pgid: Pid, feeder: &mut Feeder) -> Result<(), ExecError> {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
 
@@ -52,7 +52,7 @@ impl Job {
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
             if do_next {
                 core.jobtable_check_status()?;
-                let (pids, exclamation, time, err) = pipeline.exec(core, pgid);
+                let (pids, exclamation, time, err) = pipeline.exec(core, pgid, feeder);
                 let waitstatuses = proc_ctrl::wait_pipeline(core, pids.clone(), exclamation, time);
 
                 Self::check_stop(core, &pipeline.text, &pids, &waitstatuses);
@@ -86,7 +86,7 @@ impl Job {
         }
     }
 
-    fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
+    fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid, feeder: &mut Feeder) {
         let backup = match core.tty_fd.as_ref() {
             Some(fd) => Some(fd.try_clone().unwrap()),
             _ => None,
@@ -97,9 +97,9 @@ impl Job {
             if self.pipelines[0].commands.len() == 1 {
                 self.pipelines[0].commands[0].set_force_fork();
             }
-            self.pipelines[0].exec(core, pgid).0
+            self.pipelines[0].exec(core, pgid, feeder).0
         }else{
-            match self.exec_fork_bg(core, pgid) {
+            match self.exec_fork_bg(core, pgid, feeder) {
                 Ok(pid) => vec![pid],
                 Err(e) => {
                     e.print(core);
@@ -118,11 +118,11 @@ impl Job {
         core.tty_fd = backup;
     }
 
-    fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<Option<Pid>, ExecError> {
+    fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid, feeder: &mut Feeder) -> Result<Option<Pid>, ExecError> {
         match unsafe{unistd::fork()? } {
             ForkResult::Child => {
                 core.initialize_as_subshell(Pid::from_raw(0), pgid);
-                if let Err(e) = self.exec(core, false) {
+                if let Err(e) = self.exec(core, false, feeder) {
                     e.print(core);
                 }
                 exit::normal(core)

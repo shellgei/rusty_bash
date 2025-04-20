@@ -20,7 +20,7 @@ pub struct CaseCommand {
 }
 
 impl Command for CaseCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+    fn run(&mut self, core: &mut ShellCore, _: bool, feeder: &mut Feeder) -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         let mut next = false;
         let word = self.word.clone().unwrap();
@@ -52,7 +52,7 @@ impl Command for CaseCommand {
                 }
 
                 if next || exec_script {
-                    let _ = e.1.exec(core);
+                    let _ = e.1.exec(core, feeder);
 
                     if e.2 == ";;" {
                         return Ok(());

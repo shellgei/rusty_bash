@@ -19,11 +19,11 @@ pub struct IfCommand {
 }
 
 impl Command for IfCommand {
-    fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+    fn run(&mut self, core: &mut ShellCore, _: bool, feeder: &mut Feeder) -> Result<(), ExecError> {
         for i in 0..self.if_elif_scripts.len() {
-            self.if_elif_scripts[i].exec(core)?;
+            self.if_elif_scripts[i].exec(core, feeder)?;
             if core.db.exit_status == 0 {
-                let _ = self.then_scripts[i].exec(core);
+                let _ = self.then_scripts[i].exec(core, feeder);
                 return Ok(());
             }else {
                 core.db.exit_status = 0;
@@ -31,7 +31,7 @@ impl Command for IfCommand {
         }
 
         match self.else_script.as_mut() {
-            Some(s) => s.exec(core)?,
+            Some(s) => s.exec(core, feeder)?,
             _ => {},
         }
         Ok(())

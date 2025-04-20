@@ -22,14 +22,14 @@ impl Subword for ProcessSubstitution {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore, feeder: &mut Feeder) -> Result<(), ExecError> {
         if self.direction != '<' {
             return Err(ExecError::Other(">() is not supported yet".to_string()));
         }
 
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let _ = self.command.exec(core, &mut pipe)?;
+        let _ = self.command.exec(core, &mut pipe, feeder)?;
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
         Ok(())
     }

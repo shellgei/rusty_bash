@@ -22,7 +22,7 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid)
+    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid, feeder: &mut Feeder)
         -> (Vec<Option<Pid>>, bool, bool, Option<ExecError>) {
         if self.commands.is_empty() { // the case of only '!'
             self.set_time(core);
@@ -37,7 +37,7 @@ impl Pipeline {
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
-            match self.commands[i].exec(core, p) {
+            match self.commands[i].exec(core, p, feeder) {
                 Ok(pid) => pids.push(pid),
                 Err(e)  => return (pids, self.exclamation, self.time, Some(e)),
             }
@@ -48,7 +48,7 @@ impl Pipeline {
             prev = p.recv;
         }
 
-        match self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid)) {
+        match self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid), feeder) {
             Ok(pid) => pids.push(pid),
             Err(e) => return (pids, self.exclamation, self.time, Some(e)),
         }

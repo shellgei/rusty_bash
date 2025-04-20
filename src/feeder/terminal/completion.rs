@@ -120,7 +120,8 @@ impl Terminal {
 
         if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
             let mut dummy = Pipe::new("".to_string());
-            a.exec(core, &mut dummy)?;
+            let mut dummy_f = Feeder::new("");
+            a.exec(core, &mut dummy, &mut dummy_f)?;
         }
         Ok(())
     }

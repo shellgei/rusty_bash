@@ -79,7 +79,7 @@ pub fn check_trap(core: &mut ShellCore) {
             Err(e) => {e.print(core); continue;},
         };
 
-        if let Err(e) = script.exec(core) {
+        if let Err(e) = script.exec(core, &mut feeder) {
             e.print(core);
         }
     }

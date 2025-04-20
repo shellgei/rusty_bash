@@ -17,17 +17,17 @@ pub struct ParenCommand {
 }
 
 impl Command for ParenCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        self.fork_exec(core, pipe)
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe, feeder: &mut Feeder) -> Result<Option<Pid>, ExecError> {
+        self.fork_exec(core, pipe, feeder)
     }
 
-    fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
+    fn run(&mut self, core: &mut ShellCore, fork: bool, feeder: &mut Feeder) -> Result<(), ExecError> {
         if ! fork {
             exit::internal(" (no fork for subshell)");
         }
 
         match self.script {
-            Some(ref mut s) => s.exec(core)?,
+            Some(ref mut s) => s.exec(core, feeder)?,
             _ => exit::internal(" (ParenCommand::exec)"),
         }
         Ok(())

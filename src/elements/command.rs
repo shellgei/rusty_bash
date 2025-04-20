@@ -46,25 +46,25 @@ impl Clone for Box::<dyn Command> {
 }
 
 pub trait Command {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe, feeder: &mut Feeder) -> Result<Option<Pid>, ExecError> {
         // TODO: set LINENO here (maybe each command must have the lineno field and get_lineno)
         if self.force_fork() || pipe.is_connected() {
-            self.fork_exec(core, pipe)
+            self.fork_exec(core, pipe, feeder)
         }else{
-            self.nofork_exec(core)
+            self.nofork_exec(core, feeder)
         }
     }
 
-    fn fork_exec_child(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<(), ExecError> {
+    fn fork_exec_child(&mut self, core: &mut ShellCore, pipe: &mut Pipe, feeder: &mut Feeder) -> Result<(), ExecError> {
         core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
-        io::connect(pipe, self.get_redirects(), core)?;
-        self.run(core, true)
+        io::connect(pipe, self.get_redirects(), core, feeder)?;
+        self.run(core, true, feeder)
     }
 
-    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe, feeder: &mut Feeder) -> Result<Option<Pid>, ExecError> {
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
-                if let Err(e) = self.fork_exec_child(core, pipe) {
+                if let Err(e) = self.fork_exec_child(core, pipe, feeder) {
                     e.print(core);
                     core.db.exit_status = 1;
                 }
@@ -78,16 +78,16 @@ pub trait Command {
         }
     }
 
-    fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
+    fn nofork_exec(&mut self, core: &mut ShellCore, feeder: &mut Feeder) -> Result<Option<Pid>, ExecError> {
         let mut result = Ok(None);
         for r in self.get_redirects().iter_mut() {
-            if let Err(e) = r.connect(true, core) {
+            if let Err(e) = r.connect(true, core, feeder) {
                 result = Err(e);
             }
         }
 
         if result.is_ok() {
-            let _ = self.run(core, false);
+            let _ = self.run(core, false, feeder);
         }else{
             core.db.exit_status = 1;
         }
@@ -95,7 +95,7 @@ pub trait Command {
         result
     }
 
-    fn run(&mut self, _: &mut ShellCore, fork: bool) -> Result<(), ExecError>;
+    fn run(&mut self, _: &mut ShellCore, _: bool, _: &mut Feeder) -> Result<(), ExecError>;
     fn get_text(&self) -> String;
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
     fn set_force_fork(&mut self);
