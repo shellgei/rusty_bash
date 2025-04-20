@@ -139,6 +139,12 @@ impl Redirect {
             self.left_backup = io::backup(0);
         }
 
+        let mut feeder = Feeder::new("");
+        feeder.main_feeder = true;
+        if let Err(e) = self.eat_heredoc(&mut feeder, core) {
+            e.print(core);
+        }
+
         let text = self.here_data.eval_as_value(core)?; // TODO: make it precise based on the rule
                                                          // of heredocument
 
@@ -207,7 +213,6 @@ impl Redirect {
         }
     }
 
-    /* called from elements/command.rs */
     pub fn eat_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
         let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {

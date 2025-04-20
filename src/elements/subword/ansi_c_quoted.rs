@@ -53,6 +53,7 @@ impl Token {
                     else if *c == '\\' { 28 }
                     else if *c == ']' { 29 }
                     else if *c == '^' { 30 }
+                    else if *c == '_' { 31 }
                     else if *c == '?' { 127 }
                     else if '0' <= *c && *c <= '9' { *c as u32 - 32 }
                     else if 'a' <= *c && *c <= 'z' { *c as u32 - 96 }
@@ -193,6 +194,8 @@ impl AnsiCQuoted {
                     text_after.remove(0);
                     let ctrl_c = text_after.chars().nth(0).unwrap();
                     ans.tokens.push(Token::Control(ctrl_c));
+                }else if feeder.starts_with("'") {
+                    ans.tokens.push(Token::Normal("\\c".to_string()));
                 }else{
                     let ctrl_c = feeder.consume(1).chars().nth(0).unwrap();
                     ans.text += &ctrl_c.to_string();

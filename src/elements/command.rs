@@ -118,10 +118,6 @@ pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, r
 
 pub fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String) -> bool {
     let blank_len = feeder.scanner_blank(core);
-    /*
-    if blank_len == 0 {
-        return false;
-    }*/
     *ans_text += &feeder.consume(blank_len);
 
     let comment_len = feeder.scanner_comment();
@@ -171,6 +167,7 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
         }
     }
 
+    /*
     for r in ans_redirects {
         if r.symbol == "<<" || r.symbol == "<<-" {
             if let Err(e) = r.eat_heredoc(feeder, core) {
@@ -178,6 +175,7 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
             }
         }
     }
+    */
 
     Ok(())
 }

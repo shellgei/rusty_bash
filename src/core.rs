@@ -233,8 +233,10 @@ impl ShellCore {
     }
 
     fn replace_alias_core(&self, word: &mut String) -> bool {
-        if ! self.db.flags.contains('i') {
-            return false;
+        if ! self.shopts.query("expand_aliases") {
+            if ! self.db.flags.contains('i') {
+                return false;
+            }
         }
 
         let mut ans = false;
