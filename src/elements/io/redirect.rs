@@ -29,6 +29,7 @@ pub struct Redirect {
     left_backup: RawFd,
     extra_left_backup: RawFd, // &>, &>>用
     here_data: Word,
+    pub called_as_heredoc: bool,
 }
 
 impl Redirect {
@@ -138,13 +139,6 @@ impl Redirect {
         if restore {
             self.left_backup = io::backup(0);
         }
-
-        /*
-        let mut feeder = Feeder::new("");
-        feeder.main_feeder = true;
-        if let Err(e) = self.eat_heredoc(&mut feeder, core) {
-            e.print(core);
-        }*/
 
         let text = self.here_data.eval_as_value(core)?; // TODO: make it precise based on the rule
                                                          // of heredocument

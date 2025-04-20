@@ -110,7 +110,10 @@ impl Script {
                     ans.read_heredoc(feeder, core)?;
                     return Ok(Some(ans))
                 },
-                Status::NeedMoreLine => feeder.feed_additional_line(core)?,
+                Status::NeedMoreLine => {
+                    ans.read_heredoc(feeder, core)?;
+                    feeder.feed_additional_line(core)?
+                },
                 Status::UnexpectedSymbol(s) => { //unexpected symbol
                     let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
                     core.db.exit_status = 2;

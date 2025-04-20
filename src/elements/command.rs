@@ -104,7 +104,11 @@ pub trait Command {
 
     fn read_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
         for r in self.get_redirects().iter_mut() {
+            if r.called_as_heredoc {
+                continue;
+            }
             if r.symbol == "<<" || r.symbol == "<<-" {
+                r.called_as_heredoc = true;
                 r.eat_heredoc(feeder, core)?;
             }
         }
