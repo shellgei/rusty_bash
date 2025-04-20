@@ -161,11 +161,14 @@ impl DoubleQuoted {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("\"") {
+        if ! feeder.starts_with("\"") && ! feeder.starts_with("$\"")  {
             return Ok(None);
         }
         let mut ans = Self::default();
-        ans.text = feeder.consume(1);
+
+        let len = if feeder.starts_with("\""){1}else{2};
+
+        ans.text = feeder.consume(len);
 
         while Self::eat_element(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}
