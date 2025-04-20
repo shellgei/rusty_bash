@@ -98,7 +98,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 fn declare_set(core: &mut ShellCore, name_and_value: &String,
                args: &mut Vec<String>, read_only: bool) -> Result<(), ExecError> {
     let mut tmp = name_and_value.clone();
-    let (name, value) = match name_and_value.find('=') {
+    let (mut name, value) = match name_and_value.find('=') {
         Some(n) => {
             tmp.remove(n);
             let v = tmp.split_off(n);
@@ -107,6 +107,12 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
         },
         None => (name_and_value.to_string(), "".to_string()),
     };
+
+    if name.contains('[') && read_only {
+        name = name.split('[').next().unwrap().to_string(); 
+        core.db.set_flag(&name, 'r');
+        return Ok(())
+    }
 
     if ! utils::is_name(&name, core) {
         return Err(ExecError::InvalidName(name.to_string()));
