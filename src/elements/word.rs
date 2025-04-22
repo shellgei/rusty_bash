@@ -194,6 +194,10 @@ impl Word {
             .concat()
     }
 
+    pub fn set_heredoc_flag(&mut self) {
+        self.subwords.iter_mut().for_each(|e| e.set_heredoc_flag());
+    }
+
     fn scan_pos(&self, s: &str) -> Vec<usize> {
         self.subwords.iter()
             .enumerate()

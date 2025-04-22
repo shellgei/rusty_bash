@@ -15,7 +15,6 @@ pub struct ValueCheck {
     pub subscript: Option<Subscript>,
     pub symbol: Option<String>,
     pub alternative_value: Option<Word>,
-    in_heredoc: bool,
 }
 
 impl OptionalOperation for ValueCheck {
@@ -34,7 +33,11 @@ impl OptionalOperation for ValueCheck {
         }
     }
 
-    fn set_heredoc_flag(&mut self) { self.in_heredoc = true; }
+    fn set_heredoc_flag(&mut self) { 
+        self.alternative_value
+            .iter_mut()
+            .for_each(|e| e.set_heredoc_flag());
+    }
 }
 
 impl ValueCheck {
@@ -144,8 +147,7 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        if let Some(mut w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
-            w.subwords.iter_mut().for_each(|e| e.set_heredoc_flag());
+        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
             ans.text += &w.text.clone();
             ans.alternative_value = Some(w);
         }else{
