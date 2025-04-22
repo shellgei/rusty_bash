@@ -55,13 +55,37 @@ impl Data for AssocData {
         }
     }
 
-    fn get_as_single(&mut self) -> Result<String, ExecError> { self.last.clone().ok_or(ExecError::Other("No last input".to_string())) }
+    fn get_as_single(&mut self) -> Result<String, ExecError> {
+        if let Some(s) = self.body.get("0") {
+            return Ok(s.to_string());
+        }
+
+        self.last.clone().ok_or(ExecError::Other("No last input".to_string()))
+    }
 
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
         Ok(self.keys().clone())
+    }
+
+    fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {
+        if self.body.is_empty() {
+            return Ok(vec![]);
+        }
+        
+        let mut keys = self.keys();
+        keys.sort();
+        //let max = *keys.iter().max().unwrap() as usize;
+        let mut ans = vec![];
+        for i in keys {
+            match self.body.get(&i) {
+                Some(s) => ans.push(s.clone()),
+                None => ans.push("".to_string()),
+            }
+        }
+        Ok(ans)
     }
 }
 
