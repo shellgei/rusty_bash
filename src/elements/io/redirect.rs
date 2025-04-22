@@ -140,8 +140,13 @@ impl Redirect {
             self.left_backup = io::backup(0);
         }
 
-        let text = self.here_data.eval_as_value(core)?; // TODO: make it precise based on the rule
-                                                         // of heredocument
+        let right = self.right.make_unquoted_word().unwrap_or("".to_string());
+        let quoted = right != self.right.text;
+
+        let text = match quoted {
+            false => self.here_data.eval_as_value(core)?, // TODO: make it precise
+            true  => self.here_data.text.clone(),
+        };
 
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
