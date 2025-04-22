@@ -36,11 +36,11 @@ impl SimpleCommand {
         };
 
         if ans.words.is_empty() {
+            ans.lineno = feeder.lineno;
             if utils::reserved(&w.text) {
                 return Ok(false);
-            }/*else if w.text == "local" || w.text == "eval" {
-                ans.permit_substitution_arg = true;
-            }*/
+            }
+
             ans.command_name = w.text.clone();
         }
 
@@ -53,9 +53,6 @@ impl SimpleCommand {
         ans.text += &w.text;
         ans.words.push(w);
 
-        if ans.words.len() == 1 {
-            ans.lineno = feeder.lineno;
-        }
         Ok(true)
     }
 

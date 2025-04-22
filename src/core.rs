@@ -99,7 +99,7 @@ impl ShellCore {
         let _ = core.db.set_param("PS4", "+ ", None);
 
         if unistd::isatty(0) == Ok(true) {
-            core.db.flags += "im";
+            core.db.flags += "imH";
             core.read_stdin = false;
             let _ = core.db.set_param("PS1", "🍣 ", None);
             let _ = core.db.set_param("PS2", "> ", None);

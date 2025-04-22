@@ -15,6 +15,7 @@ impl Options {
         options.opts.insert("pipefail".to_string(), false);
         options.opts.insert("noglob".to_string(), false);
         options.opts.insert("posix".to_string(), false); //TODO: still dummy
+        options.opts.insert("history".to_string(), false); //TODO: still dummy
         options
     }
 
@@ -42,8 +43,9 @@ impl Options {
         }
 
         options.implemented = ["extglob", "progcomp", "nullglob", "dotglob", "globstar",
-        "globskipdots", "nocasematch", "expand_aliases"].iter().map(|s| s.to_string()).collect();
-        //TODO: nocasematch is dummy
+                               "globskipdots", "nocasematch", "expand_aliases", "xpg_echo"]
+                                   .iter().map(|s| s.to_string()).collect();
+        //TODO: nocasematch and xpg_echo are dummy
 
         options
     }

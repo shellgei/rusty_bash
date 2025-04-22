@@ -18,6 +18,7 @@ pub struct Feeder {
     backup: Vec<String>,
     pub nest: Vec<(String, Vec<String>)>,
     pub lineno: usize,
+    pub lineno_addition: usize,
     script_lines: Option<Lines<BufReader<File>>>,
     pub main_feeder: bool,
 }
@@ -41,7 +42,18 @@ impl Feeder {
         let tail = self.remaining.split_off(cutpos);
         let ans = self.remaining.to_string();
         self.remaining = tail;
+        let lineno_org = self.lineno;
         self.lineno += ans.chars().filter(|c| *c == '\n').count();
+
+        while self.lineno > lineno_org {
+            if self.lineno_addition == 0 {
+                break;
+            }
+
+            self.lineno_addition -= 1;
+            self.lineno -= 1;
+        }
+        
         ans
     }
 
@@ -150,6 +162,8 @@ impl Feeder {
 
     pub fn replace(&mut self, num: usize, to: &str) {
         self.consume(num);
+        self.lineno_addition = to.chars().filter(|c| *c == '\n').count();
+
         self.remaining = to.to_string() + &self.remaining;
     }
 
