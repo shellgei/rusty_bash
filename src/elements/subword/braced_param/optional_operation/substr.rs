@@ -26,7 +26,7 @@ impl OptionalOperation for Substr {
     fn set_array(&mut self, param: &Param, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         match param.name.as_str() {
-            "@" => self.set_partial_position_params(array, text, core),
+            "@" | "*" => self.set_partial_position_params(array, text, core),
             _   => self.set_partial_array(&param.name, array, text, core),
         }
     }
