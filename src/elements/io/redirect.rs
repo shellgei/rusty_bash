@@ -213,7 +213,8 @@ impl Redirect {
         }
     }
 
-    pub fn eat_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+    pub fn eat_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<(), ParseError> {
         let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {
             Ok(s)  => s,
@@ -241,7 +242,8 @@ impl Redirect {
                 }
             }
 
-            if let Some(sw) = subword::parse(feeder, core, &None)? {
+            if let Some(mut sw) = subword::parse(feeder, core, &None)? {
+                sw.set_heredoc_flag();
                 self.here_data.text += sw.get_text();
                 self.here_data.subwords.push(sw);
             }else{

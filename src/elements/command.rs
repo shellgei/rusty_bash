@@ -170,17 +170,6 @@ fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
     }
 }
 
-/*
-pub fn read_heredoc(feeder: &mut Feeder, core: &mut ShellCore,
-                    ans_redirects: &mut Vec<Redirect>) -> Result<(), ParseError> {
-    for r in ans_redirects {
-        if r.symbol == "<<" || r.symbol == "<<-" {
-            r.eat_heredoc(feeder, core)?;
-        }
-    }
-    Ok(())
-}*/
-
 pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
                      ans_redirects: &mut Vec<Redirect>, ans_text: &mut String) 
                      -> Result<(), ParseError> {

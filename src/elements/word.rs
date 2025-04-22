@@ -18,6 +18,7 @@ pub enum WordMode {
     Arithmetric,
     CompgenF,
     ReadCommand,
+    Heredoc,
     ParamOption(Vec<String>),
 }
 

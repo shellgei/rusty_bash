@@ -100,6 +100,7 @@ pub trait Subword {
     fn get_array_elem(&self) -> Vec<String> {vec![]}
     fn is_extglob(&self) -> bool {false}
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> { vec![] }
+    fn set_heredoc_flag(&mut self) {}
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
@@ -156,8 +157,8 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
     }
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
-                                    -> Result<Option<Box<dyn Subword>>, ParseError> {
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+             mode: &Option<WordMode>) -> Result<Option<Box<dyn Subword>>, ParseError> {
     if replace_history_expansion(feeder, core) {
         return parse(feeder, core, mode);
     }

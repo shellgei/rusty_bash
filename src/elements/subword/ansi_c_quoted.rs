@@ -85,15 +85,20 @@ impl Token {
 pub struct AnsiCQuoted {
     text: String,
     tokens: Vec<Token>,
+    in_heredoc: bool, 
 }
 
 impl Subword for AnsiCQuoted {
     fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn make_unquoted_string(&mut self) -> Option<String> { Some( self.make_glob_string() ) }
+    fn make_unquoted_string(&mut self) -> Option<String> { Some(self.make_glob_string()) }
 
     fn make_glob_string(&mut self) -> String {
+        if self.in_heredoc {
+            return self.text.clone();
+        }
+
         let mut ans = String::new();
         for t in &mut self.tokens {
             ans += &t.to_string();
@@ -103,6 +108,8 @@ impl Subword for AnsiCQuoted {
     }
 
     fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ vec![] }
+
+    fn set_heredoc_flag(&mut self) {self.in_heredoc = true; }
 }
 
 impl AnsiCQuoted {
@@ -208,8 +215,7 @@ impl AnsiCQuoted {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
-                          -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("$'") {
             return Ok(None);
         }

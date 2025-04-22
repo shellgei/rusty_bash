@@ -31,6 +31,8 @@ pub trait OptionalOperation {
         Ok(())
     }
     fn get_alternative(&self) -> Vec<Box<dyn Subword>> { vec![] }
+
+    fn set_heredoc_flag(&mut self) {}
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn OptionalOperation>>, ParseError> {

@@ -9,6 +9,15 @@ use crate::error::exec::ExecError;
 use super::super::{Subscript, Param};
 use super::OptionalOperation;
 
+#[derive(Debug, Clone, Default)]
+pub struct ValueCheck {
+    pub text: String,
+    pub subscript: Option<Subscript>,
+    pub symbol: Option<String>,
+    pub alternative_value: Option<Word>,
+    in_heredoc: bool,
+}
+
 impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {self.text.clone()}
     fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -24,14 +33,8 @@ impl OptionalOperation for ValueCheck {
             None    => vec![],
         }
     }
-}
 
-#[derive(Debug, Clone, Default)]
-pub struct ValueCheck {
-    pub text: String,
-    pub subscript: Option<Subscript>,
-    pub symbol: Option<String>,
-    pub alternative_value: Option<Word>,
+    fn set_heredoc_flag(&mut self) { self.in_heredoc = true; }
 }
 
 impl ValueCheck {
@@ -141,7 +144,8 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+        if let Some(mut w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+            w.subwords.iter_mut().for_each(|e| e.set_heredoc_flag());
             ans.text += &w.text.clone();
             ans.alternative_value = Some(w);
         }else{

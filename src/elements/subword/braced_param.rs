@@ -91,6 +91,11 @@ impl Subword for BracedParam {
         }
         ans
     }
+
+    fn set_heredoc_flag(&mut self) {
+        self.optional_operation.iter_mut()
+            .for_each(|e| e.set_heredoc_flag());
+    }
 }
 
 impl BracedParam {
