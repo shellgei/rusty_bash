@@ -51,7 +51,7 @@ impl Subword for BracedParam {
         || self.param.name == "@" 
         || self.param.name == "*" {
             if let Some(s) = self.optional_operation.as_mut() {
-                if s.is_substr() || s.is_replace() {
+                if s.has_array_replace() {
                     let mut arr = vec![];
                     s.set_array(&self.param, &mut arr, &mut self.text, core)?;
                     self.array = Some(arr);

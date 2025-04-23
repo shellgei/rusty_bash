@@ -47,7 +47,7 @@ impl OptionalOperation for Replace {
         Ok(())
     }
 
-    fn is_replace(&self) -> bool {true}
+    fn has_array_replace(&self) -> bool {true}
 }
 
 impl Replace {

@@ -21,7 +21,7 @@ impl OptionalOperation for Substr {
     }
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
-    fn is_substr(&self) -> bool {true}
+    fn has_array_replace(&self) -> bool {true}
 
     fn set_array(&mut self, param: &Param, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
