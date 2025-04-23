@@ -139,6 +139,28 @@ impl AnsiCQuoted {
         true
     }
 
+    fn eat_hex_braced(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with("\\x{") {
+            return false;
+        }
+
+        let len = feeder.scanner_ansi_c_hex(core);
+        if len < 4 {
+            return false;
+        }
+
+        let mut token = feeder.consume(len);
+        ans.text += &token.clone();
+        if token.ends_with("}") {
+            token.pop();
+        }
+        if token.len() > 3 {
+            ans.tokens.push( Token::Hex(token[3..].to_string()));
+        }
+        true
+
+    }
+
     fn eat_hex(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let mut len = feeder.scanner_ansi_c_hex(core);
         if len < 3 {
@@ -224,6 +246,7 @@ impl AnsiCQuoted {
 
         while ! feeder.starts_with("'") {
             if Self::eat_simple_subword(feeder, &mut ans) 
+            || Self::eat_hex_braced(feeder, &mut ans, core)
             || Self::eat_hex(feeder, &mut ans, core)
             || Self::eat_oct(feeder, &mut ans, core)
             || Self::eat_unicode4(feeder, &mut ans, core)
