@@ -25,6 +25,7 @@ pub trait OptionalOperation {
     fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
     fn get_text(&self) -> String;
     fn is_substr(&self) -> bool {false}
+    fn is_replace(&self) -> bool {false}
     fn is_value_check(&self) -> bool {false}
     fn set_array(&mut self, _: &Param, _: &mut Vec<String>,
                  _: &mut String, _: &mut ShellCore) -> Result<(), ExecError> {
