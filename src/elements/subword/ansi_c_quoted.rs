@@ -170,9 +170,7 @@ impl AnsiCQuoted {
 
         let mut token = feeder.consume(len);
         ans.text += &token.clone();
-        if token.ends_with("}") {
-            token.pop();
-        }
+        token.retain(|c| c != '}' && c != '{');
         if token.len() > 3 {
             ans.tokens.push( Token::Hex(token[3..].to_string()));
         }
