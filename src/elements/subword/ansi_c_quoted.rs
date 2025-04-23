@@ -10,6 +10,7 @@ enum Token {
     Normal(String),
     Oct(String),
     Hex(String),
+    EmptyHex,
     Unicode4(String),
     Unicode8(String),
     Control(char),
@@ -19,6 +20,7 @@ enum Token {
 impl Token {
     fn to_string(&mut self) -> String {
         match &self {
+            Token::EmptyHex => String::new(),
             Token::Normal(s) => s.clone(), 
             Token::Oct(s) => {
                 let mut num = u32::from_str_radix(&s, 8).unwrap();
@@ -30,7 +32,15 @@ impl Token {
                                                   //because a binary 1.... is a reserved number in UTF-8
             },
             Token::Hex(s) => {
-                let mut num = u32::from_str_radix(&s, 16).unwrap();
+                let hex = match s.len() > 2 {
+                    true  => s[s.len()-2..].to_string(),
+                    false => s.to_string(),
+                };
+
+                let mut num = match u32::from_str_radix(&hex, 16) {
+                    Ok(n) => n,
+                    _ => return String::new(),
+                };
                 if num >= 256 {
                     num -= 256;
                 }
@@ -101,6 +111,9 @@ impl Subword for AnsiCQuoted {
 
         let mut ans = String::new();
         for t in &mut self.tokens {
+            if let Token::EmptyHex = t {
+                break;
+            }
             ans += &t.to_string();
         }
 
@@ -142,6 +155,12 @@ impl AnsiCQuoted {
     fn eat_hex_braced(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         if ! feeder.starts_with("\\x{") {
             return false;
+        }
+
+        if feeder.starts_with("\\x{}") {
+            ans.text += &feeder.consume(4);
+            ans.tokens.push(Token::EmptyHex);
+            return true;
         }
 
         let len = feeder.scanner_ansi_c_hex(core);
