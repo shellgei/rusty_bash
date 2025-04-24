@@ -229,7 +229,7 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String,
             let mut line = String::new();
     let mut len = 0;
     len = if let Some(e) = core.read_command_reader.as_mut() {
-        e.read_line(remaining).unwrap_or(0)
+        e.read_line(&mut line).unwrap_or(0)
     }else {
         0
     };
