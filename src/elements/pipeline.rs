@@ -37,6 +37,7 @@ impl Pipeline {
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
+
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
                 Err(e)  => return (pids, self.exclamation, self.time, Some(e)),

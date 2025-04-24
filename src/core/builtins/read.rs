@@ -93,6 +93,17 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
 
 fn read_line(core: &mut ShellCore, buffer: &mut String) -> usize {
     if let Some(e) = core.read_command_reader.as_mut() {
+        /*
+        match e.read_line(buffer) {
+            Ok(n) => {
+                dbg!("OK {:?}", &n);
+                n
+            },
+            Err(e) => {
+                dbg!("{:?}", &e);
+                0
+            },
+        }*/
         e.read_line(buffer).unwrap_or(0)
     }else {
         0
@@ -156,7 +167,6 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let f = unsafe { File::from_raw_fd(0) };
-    //let mut reader = BufReader::new(f);
     if core.read_command_reader.is_none() {
         core.read_command_reader = Some(BufReader::new(f));
     }

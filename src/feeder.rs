@@ -115,7 +115,8 @@ impl Feeder {
             return Err(InputError::Interrupt);
         }
 
-        let line = match ! core.read_stdin && self.script_lines.is_none() {
+        //let line = match ! core.read_stdin && self.script_lines.is_none() {
+        let line = match core.db.flags.contains('i') && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS2"),
             false => self.read_script(core),
         };
@@ -141,7 +142,8 @@ impl Feeder {
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = match ! core.read_stdin && self.script_lines.is_none() {
+        //let line = match ! core.read_stdin && self.script_lines.is_none() {
+        let line = match core.db.flags.contains('i') && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS1"),
             false => self.read_script(core),
         };

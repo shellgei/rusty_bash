@@ -52,7 +52,7 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
-    pub read_stdin: bool,
+    //pub read_stdin: bool,
     pub read_command_reader: Option<BufReader<File>>,
     pub is_subshell: bool,
     pub source_function_level: i32,
@@ -82,7 +82,7 @@ impl ShellCore {
         let mut core = ShellCore{
             db: DataBase::new(),
             sigint: Arc::new(AtomicBool::new(false)),
-            read_stdin: true,
+            //read_stdin: true,
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             script_name: "-".to_string(),
@@ -99,7 +99,7 @@ impl ShellCore {
 
         if unistd::isatty(0) == Ok(true) {
             core.db.flags += "imH";
-            core.read_stdin = false;
+            //core.read_stdin = false;
             let _ = core.db.set_param("PS1", "🍣 ", None);
             let _ = core.db.set_param("PS2", "> ", None);
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
