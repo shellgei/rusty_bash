@@ -5,6 +5,10 @@ use crate::ShellCore;
 use crate::{arg, error};
 use super::error_exit;
 
+use std::fs::File;
+use std::io::{BufReader, BufRead, Error};
+use std::os::fd::{FromRawFd, RawFd};
+
 fn is_varname(s :&String) -> bool {
     if s.is_empty() {
         return false;
@@ -37,9 +41,17 @@ fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
 
 pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, limit: &mut usize) -> i32 {
     let mut remaining = String::new();
-    let len = std::io::stdin()
-        .read_line(&mut remaining)
-        .expect("SUSHI INTERNAL ERROR: Failed to read line");
+    /*
+    let f = unsafe { File::from_raw_fd(0) };
+    let mut reader = BufReader::new(f);
+    */
+
+    let mut len = 0;
+    len = if let Some(e) = core.read_command_reader.as_mut() {
+        e.read_line(&mut remaining).unwrap_or(0)
+    }else {
+        0
+    };
 
     if len == 0 {
         return 1;
@@ -92,9 +104,16 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
 
 pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &mut usize) -> i32 {
     let mut remaining = String::new();
-    let len = std::io::stdin()
-        .read_line(&mut remaining)
-        .expect("SUSHI INTERNAL ERROR: Failed to read line");
+    /*
+    let f = unsafe { File::from_raw_fd(0) };
+    let mut reader = BufReader::new(f);
+    */
+    let mut len = 0;
+    len = if let Some(e) = core.read_command_reader.as_mut() {
+        e.read_line(&mut remaining).unwrap_or(0)
+    }else {
+        0
+    };
 
     if len == 0 {
         return 1;
@@ -149,6 +168,12 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         };
     }
 
+    let f = unsafe { File::from_raw_fd(0) };
+    //let mut reader = BufReader::new(f);
+    if core.read_command_reader.is_none() {
+        core.read_command_reader = Some(BufReader::new(f));
+    }
+
     if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
         return read_a(core, &a, r_opt, &mut limit);
     }
@@ -169,10 +194,16 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     read_(core, &mut args, r_opt, &mut limit)
 }
 
-pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str, ignore_escape: bool) -> Option<String> {
+pub fn eat_word(core: &mut ShellCore, remaining: &mut String,
+                ifs: &str, ignore_escape: bool) -> Option<String> {
     let mut esc = false;
     let mut pos = 0;
     let mut escape_pos = vec![];
+
+    /*
+    let f = unsafe { File::from_raw_fd(0) };
+    let mut reader = BufReader::new(f);
+    */
 
     for c in remaining.chars() {
         if (esc || c == '\\') && ! ignore_escape {
@@ -196,9 +227,12 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str, ignore_
             remaining.pop();
 
             let mut line = String::new();
-            let len = std::io::stdin()
-                .read_line(&mut line)
-                .expect("SUSHI INTERNAL ERROR: Failed to read line");
+    let mut len = 0;
+    len = if let Some(e) = core.read_command_reader.as_mut() {
+        e.read_line(remaining).unwrap_or(0)
+    }else {
+        0
+    };
         
             if len > 0 {
                 *remaining += &line;
