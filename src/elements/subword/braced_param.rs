@@ -79,6 +79,10 @@ impl Subword for BracedParam {
     }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
+        if self.text == "" {
+            return vec![];
+        }
+
         if (self.param.name != "@" && self.param.name != "*")
         || ifs.starts_with(" ") || self.array.is_none() {
             return splitter::split(&self.get_text(), ifs, prev_char).iter()
