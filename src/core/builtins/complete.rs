@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{builtins, ShellCore};
-use crate::core::{CompletionInfo, HashMap};
+use crate::core::{CompletionEntry, HashMap};
 use crate::utils::arg;
 
 fn action_to_reduce_symbol(arg: &str) -> String {
@@ -86,7 +86,7 @@ fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<Stri
         let func = args[1].clone();
         for command in &args[2..] {
             if ! core.completion_info.contains_key(command) {
-                core.completion_info.insert(command.clone(), CompletionInfo::default());
+                core.completion_info.insert(command.clone(), CompletionEntry::default());
             }
     
             let info = &mut core.completion_info.get_mut(command).unwrap();
@@ -136,7 +136,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if action != "" {
         for command in &args[2..] {
             if ! core.completion_info.contains_key(command) {
-                core.completion_info.insert(command.clone(), CompletionInfo::default());
+                core.completion_info.insert(command.clone(), CompletionEntry::default());
             }
     
             let info = &mut core.completion_info.get_mut(command).unwrap();
@@ -149,7 +149,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() > 3 && args[1] == "-A" {
         for command in &args[3..] {
             if ! core.completion_info.contains_key(command) {
-                core.completion_info.insert(command.clone(), CompletionInfo::default());
+                core.completion_info.insert(command.clone(), CompletionEntry::default());
             }
     
             let info = &mut core.completion_info.get_mut(command).unwrap();

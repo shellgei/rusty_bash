@@ -2,10 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::core::CompletionInfo;
+use crate::core::CompletionEntry;
 use crate::utils::arg;
 
-fn compopt_set(info: &mut CompletionInfo, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
+fn compopt_set(info: &mut CompletionEntry, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
     for opt in minus { //add
         if ! info.o_options.contains(opt) {
             info.o_options.push(opt.to_string());

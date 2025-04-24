@@ -3,7 +3,7 @@
 
 use crate::{file_check, Feeder, ShellCore, utils};
 use crate::core::builtins::compgen;
-use crate::core::completion::CompletionInfo;
+use crate::core::completion::CompletionEntry;
 use crate::error::exec::ExecError;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
@@ -139,7 +139,7 @@ impl Terminal {
         let info = match core.completion_info.get(&org_word) {
             Some(i) => i.clone(),
             None    => {
-                let mut tmp = CompletionInfo::default();
+                let mut tmp = CompletionEntry::default();
                 tmp.function = core.default_completion_functions.clone();
                 tmp
             },
