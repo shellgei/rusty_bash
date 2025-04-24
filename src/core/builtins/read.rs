@@ -6,8 +6,8 @@ use crate::{arg, error};
 use super::error_exit;
 
 use std::fs::File;
-use std::io::{BufReader, BufRead, Error};
-use std::os::fd::{FromRawFd, RawFd};
+use std::io::{BufReader, BufRead};
+use std::os::fd::FromRawFd;
 
 fn is_varname(s :&String) -> bool {
     if s.is_empty() {
@@ -41,18 +41,7 @@ fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
 
 pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, limit: &mut usize) -> i32 {
     let mut remaining = String::new();
-    /*
-    let f = unsafe { File::from_raw_fd(0) };
-    let mut reader = BufReader::new(f);
-    */
-
-    let mut len = 0;
-    len = if let Some(e) = core.read_command_reader.as_mut() {
-        e.read_line(&mut remaining).unwrap_or(0)
-    }else {
-        0
-    };
-
+    let len = read_line(core, &mut remaining);
     if len == 0 {
         return 1;
     }
@@ -102,19 +91,17 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
     0
 }
 
-pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &mut usize) -> i32 {
-    let mut remaining = String::new();
-    /*
-    let f = unsafe { File::from_raw_fd(0) };
-    let mut reader = BufReader::new(f);
-    */
-    let mut len = 0;
-    len = if let Some(e) = core.read_command_reader.as_mut() {
-        e.read_line(&mut remaining).unwrap_or(0)
+fn read_line(core: &mut ShellCore, buffer: &mut String) -> usize {
+    if let Some(e) = core.read_command_reader.as_mut() {
+        e.read_line(buffer).unwrap_or(0)
     }else {
         0
-    };
+    }
+}
 
+pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &mut usize) -> i32 {
+    let mut remaining = String::new();
+    let len = read_line(core, &mut remaining);
     if len == 0 {
         return 1;
     }
@@ -227,13 +214,7 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String,
             remaining.pop();
 
             let mut line = String::new();
-    let mut len = 0;
-    len = if let Some(e) = core.read_command_reader.as_mut() {
-        e.read_line(&mut line).unwrap_or(0)
-    }else {
-        0
-    };
-        
+            let len = read_line(core, &mut line);
             if len > 0 {
                 *remaining += &line;
                 return eat_word(core, remaining, ifs, ignore_escape);
