@@ -12,7 +12,7 @@ pub mod options;
 use crate::{error, proc_ctrl, signal};
 use self::database::DataBase;
 use self::options::Options;
-use self::completion::CompletionEntry;
+use self::completion::{Completion, CompletionEntry};
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path};
@@ -67,11 +67,7 @@ pub struct ShellCore {
     pub job_table: Vec<JobEntry>,
     pub job_table_priority: Vec<usize>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
-    pub completion_info: HashMap<String, CompletionEntry>,
-    pub current_completion_info: CompletionEntry,
-    //pub current_completion_target: String,
-    pub completion_functions: HashMap<String, String>,
-    pub default_completion_functions: String,
+    pub completion: Completion,
     pub measured_time: MeasuredTime,
     pub options: Options,
     pub shopts: Options,

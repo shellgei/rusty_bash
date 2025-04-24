@@ -26,8 +26,8 @@ fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let optlist: Vec<String> = optlist.iter().map(|s| s.to_string()).collect();
 
     let com = args[1].clone();
-    if core.completion_info.contains_key(&com) {
-        let info = &core.completion_info.get_mut(&com).unwrap();
+    if core.completion.entries.contains_key(&com) {
+        let info = &core.completion.entries.get_mut(&com).unwrap();
 
         print!("compopt ");
         for opt in &optlist {
@@ -47,7 +47,7 @@ fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
-        dbg!("{:?}", &core.completion_info);
+        dbg!("{:?}", &core.completion.entries);
         return 1;
     }
 
@@ -104,9 +104,9 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let info = if args.len() == 1 {
-        &mut core.current_completion_info
+        &mut core.completion.current
     }else if args.len() == 2 {
-        match core.completion_info.get_mut(&args[1]) {
+        match core.completion.entries.get_mut(&args[1]) {
             Some(i) => i,
             None => return 1,
         }
