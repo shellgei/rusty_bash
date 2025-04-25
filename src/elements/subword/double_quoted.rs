@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::elements::word::{substitution, Word};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use super::{CommandSubstitution, Parameter, SimpleSubword, Subword};
+use super::{CommandSubstitution, EscapedChar, Parameter, SimpleSubword, Subword};
 
 #[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
@@ -53,11 +53,20 @@ impl DoubleQuoted {
         let sw: Box<dyn Subword>
             = if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
+            else if let Some(a) = Self::parse_escaped_char(feeder) { Box::new(a) }
             else { return Ok(false) ; };
 
         ans.text += sw.get_text();
         ans.subwords.push(sw);
         Ok(true)
+    }
+
+    fn parse_escaped_char(feeder: &mut Feeder) -> Option<EscapedChar> {
+        if feeder.starts_with("\\$") || feeder.starts_with("\\\\") 
+        || feeder.starts_with("\\\"") || feeder.starts_with("\\`") {
+            return Some(EscapedChar{ text: feeder.consume(2) });
+        }
+        None
     }
 
     fn eat_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
