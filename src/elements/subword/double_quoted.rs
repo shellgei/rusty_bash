@@ -36,13 +36,7 @@ impl Subword for DoubleQuoted {
         Some(text)
     }
 
-    fn make_glob_string(&mut self) -> String {
-        self.text[1..self.text.len()-1].replace("\\", "\\\\")
-            .replace("*", "\\*")
-            .replace("?", "\\?")
-            .replace("[", "\\[")
-            .replace("]", "\\]")
-    }
+    fn make_glob_string(&mut self) -> String {self.text.clone()}
 
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
@@ -62,7 +56,7 @@ impl DoubleQuoted {
     }
 
     fn parse_escaped_char(feeder: &mut Feeder) -> Option<EscapedChar> {
-        if feeder.starts_with("\\$") || feeder.starts_with("\\\\") 
+        if feeder.starts_with("\\$") || feeder.starts_with("\\\\")
         || feeder.starts_with("\\\"") || feeder.starts_with("\\`") {
             return Some(EscapedChar{ text: feeder.consume(2) });
         }
