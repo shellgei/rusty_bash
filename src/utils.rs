@@ -11,6 +11,9 @@ pub mod arg;
 pub mod splitter;
 
 use crate::{Feeder, ShellCore};
+use crate::error::input::InputError;
+use io_streams::StreamReader;
+use std::io::Read;
 
 pub fn reserved(w: &str) -> bool {
     match w {
@@ -113,4 +116,33 @@ pub fn is_param(s :&str) -> bool {
     let name_c = |c| ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
                      || ('0' <= c && c <= '9') || '_' == c;
     s.chars().position(|c| !name_c(c)) == None
+}
+
+pub fn read_line_stdin_unbuffered() -> Result<String, InputError> {
+    let mut line = vec![];
+    let mut ch: [u8; 1] = Default::default();
+    let mut stdin = StreamReader::stdin().unwrap();
+
+    loop {
+        match stdin.read(&mut ch) {
+            Ok(0) => {
+                if line.is_empty() {
+                    return Err(InputError::Eof);
+                }
+                break;
+            },
+            Ok(_) => {
+                line.push(ch[0]);
+                if ch[0] == b'\n' {
+                    break;
+                }
+            },
+            Err(_) => return Err(InputError::Eof),
+        }
+    }
+
+    match String::from_utf8(line) {
+        Ok(s) => Ok(s),
+        Err(_) => Err(InputError::NotUtf8),
+    }
 }

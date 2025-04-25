@@ -4,15 +4,12 @@
 mod terminal;
 mod scanner;
 
-use std::process;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
-use io_streams::StreamReader;
-use crate::ShellCore;
+use crate::{ShellCore, utils};
 use crate::error::input::InputError;
 use crate::error::parse::ParseError;
 use std::sync::atomic::Ordering::Relaxed;
-use std::io::Read;
 
 #[derive(Debug, Default)]
 pub struct Feeder {
@@ -85,7 +82,7 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_script(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
+    fn read_script(&mut self) -> Result<String, InputError> {
         if let Some(lines) = self.script_lines.as_mut() {
             match lines.next() {
                 Some(Ok(line)) => return Ok(line + "\n"),
@@ -93,35 +90,7 @@ impl Feeder {
             }
         }
 
-        let mut len = 0;
-        let mut line = vec![];
-        let mut ch: [u8; 1] = Default::default();
-        let mut stdin = StreamReader::stdin().unwrap();
-
-        loop {
-            match stdin.read(&mut ch) {
-                Ok(0) => break,
-                Ok(_) => {
-                    line.push(ch[0]);
-                    len += 1;
-
-                    if ch[0] == b'\n' {
-                        break;
-                    }
-                },
-                Err(why) => {
-                    eprintln!("sush: {}: {}", &core.script_name, why);
-                    process::exit(1)
-                },
-            }
-        }
-
-        let line: String = String::from_utf8(line).unwrap();
-
-        match len  {
-            0 => Err(InputError::Eof),
-            _ => Ok(line),
-        }
+        utils::read_line_stdin_unbuffered()
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
@@ -133,10 +102,9 @@ impl Feeder {
             return Err(InputError::Interrupt);
         }
 
-        //let line = match ! core.read_stdin && self.script_lines.is_none() {
         let line = match core.db.flags.contains('i') && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS2"),
-            false => self.read_script(core),
+            false => self.read_script(),
         };
 
         line.map(|ln| {
@@ -148,22 +116,21 @@ impl Feeder {
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> Result<(), ParseError> {
         match self.feed_additional_line_core(core) {
             Ok(()) => Ok(()),
-            Err(InputError::Eof) => {
-                core.db.exit_status = 2;
-                return Err(ParseError::Input(InputError::Eof));
-            },
             Err(InputError::Interrupt) => {
                 core.db.exit_status = 130;
                 Err(ParseError::Input(InputError::Interrupt))
+            },
+            Err(e) => {
+                core.db.exit_status = 2;
+                return Err(ParseError::Input(e));
             },
         }
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        //let line = match ! core.read_stdin && self.script_lines.is_none() {
         let line = match core.db.flags.contains('i') && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS1"),
-            false => self.read_script(core),
+            false => self.read_script(),
         };
 
         line.map(|ln| self.add_line(ln, core))
