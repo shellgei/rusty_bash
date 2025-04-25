@@ -4,13 +4,15 @@
 mod terminal;
 mod scanner;
 
-use std::{io, process};
+use std::process;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
+use io_streams::StreamReader;
 use crate::ShellCore;
 use crate::error::input::InputError;
 use crate::error::parse::ParseError;
 use std::sync::atomic::Ordering::Relaxed;
+use std::io::Read;
 
 #[derive(Debug, Default)]
 pub struct Feeder {
@@ -91,14 +93,30 @@ impl Feeder {
             }
         }
 
-        let mut line = String::new();
-        let len = match io::stdin().read_line(&mut line) {
-            Ok(len)  => len,
-            Err(why) => {
-                eprintln!("sush: {}: {}", &core.script_name, why);
-                process::exit(1)
-            },
-        };
+        let mut len = 0;
+        let mut line = vec![];
+        let mut ch: [u8; 1] = Default::default();
+        let mut stdin = StreamReader::stdin().unwrap();
+
+        loop {
+            match stdin.read(&mut ch) {
+                Ok(0) => break,
+                Ok(_) => {
+                    line.push(ch[0]);
+                    len += 1;
+
+                    if ch[0] == b'\n' {
+                        break;
+                    }
+                },
+                Err(why) => {
+                    eprintln!("sush: {}: {}", &core.script_name, why);
+                    process::exit(1)
+                },
+            }
+        }
+
+        let line: String = String::from_utf8(line).unwrap();
 
         match len  {
             0 => Err(InputError::Eof),
