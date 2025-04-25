@@ -6,10 +6,6 @@ use crate::utils;
 use crate::{arg, error};
 use super::error_exit;
 
-use std::fs::File;
-use std::io::{BufReader, BufRead};
-use std::os::fd::FromRawFd;
-
 fn is_varname(s :&String) -> bool {
     if s.is_empty() {
         return false;
@@ -41,9 +37,8 @@ fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
 }
 
 pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, limit: &mut usize) -> i32 {
-    let mut remaining = String::new();
-    let len = read_line(core, &mut remaining);
-    if len == 0 {
+    let mut remaining = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
+    if remaining.is_empty() {
         return 1;
     }
 
@@ -92,21 +87,15 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
     0
 }
 
-fn read_line(core: &mut ShellCore, buffer: &mut String) -> usize {
+/*
+fn read_line(_: &mut ShellCore, buffer: &mut String) -> usize {
     *buffer = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
     buffer.len()
-    /*
-    if let Some(e) = core.read_command_reader.as_mut() {
-        e.read_line(buffer).unwrap_or(0)
-    }else {
-        0
-    }*/
-}
+}*/
 
 pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &mut usize) -> i32 {
-    let mut remaining = String::new();
-    let len = read_line(core, &mut remaining);
-    if len == 0 {
+    let mut remaining = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
+    if remaining.is_empty() {
         return 1;
     }
 
@@ -191,11 +180,6 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String,
     let mut pos = 0;
     let mut escape_pos = vec![];
 
-    /*
-    let f = unsafe { File::from_raw_fd(0) };
-    let mut reader = BufReader::new(f);
-    */
-
     for c in remaining.chars() {
         if (esc || c == '\\') && ! ignore_escape {
             esc = ! esc;
@@ -217,9 +201,8 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String,
             remaining.pop();
             remaining.pop();
 
-            let mut line = String::new();
-            let len = read_line(core, &mut line);
-            if len > 0 {
+            let line = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
+            if line.len() > 0 {
                 *remaining += &line;
                 return eat_word(core, remaining, ifs, ignore_escape);
                 

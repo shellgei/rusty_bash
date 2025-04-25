@@ -23,8 +23,6 @@ use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
-use crate::core::io::BufReader;
-use std::fs::File;
 
 pub struct MeasuredTime {
     pub real: TimeSpec, 
@@ -52,8 +50,6 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
-    //pub read_stdin: bool,
-    pub read_command_reader: Option<BufReader<File>>,
     pub is_subshell: bool,
     pub source_function_level: i32,
     pub source_files: Vec<String>,
