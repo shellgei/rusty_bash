@@ -76,6 +76,7 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
         "file" => "-f",
         "user" => "-u",
         "setopt" => "-o",
+        "function" => "-A function",
         "hostname" => "-A hostname",
         "shopt" => "-A shopt",
         "stopped" => "-A stopped",
@@ -136,6 +137,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-j" => compgen_j(core, &mut args),
         "-u" => compgen_u(core, &mut args),
         "-v" => compgen_v(core, &mut args),
+        "-A function" => compgen_function(core, &mut args),
         "-A hostname" => compgen_hostname(core, &mut args),
         "-A shopt" => compgen_shopt(core, &mut args),
         "-A stopped" => compgen_stopped(core, &mut args),
@@ -202,7 +204,7 @@ fn drop_unmatch(args: &mut Vec<String>, pos: usize, list: &mut Vec<String>) {
 pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
 
-    let mut aliases: Vec<String> = core.aliases.clone().into_keys().collect();
+    let mut aliases: Vec<String> = core.aliases.keys().map(|k| k.clone()).collect();
     commands.append(&mut aliases);
 
     let head = get_head(args, 2);
@@ -214,7 +216,7 @@ pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 pub fn compgen_b(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
-    let mut builtins: Vec<String> = core.builtins.clone().into_keys().collect();
+    let mut builtins: Vec<String> = core.builtins.keys().map(|k| k.clone()).collect();
     commands.append(&mut builtins);
 
     let head = get_head(args, 2);
@@ -231,11 +233,11 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     }
     commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
 
-    let mut aliases: Vec<String> = core.aliases.clone().into_keys().collect();
+    let mut aliases: Vec<String> = core.aliases.keys().map(|k| k.clone()).collect();
     commands.append(&mut aliases);
-    let mut builtins: Vec<String> = core.builtins.clone().into_keys().collect();
+    let mut builtins: Vec<String> = core.builtins.keys().map(|k| k.clone()).collect();
     commands.append(&mut builtins);
-    let mut functions: Vec<String> = core.db.functions.clone().into_keys().collect();
+    let mut functions: Vec<String> = core.db.functions.keys().map(|k| k.clone()).collect();
     commands.append(&mut functions);
 
     let head = get_head(args, 2);
@@ -281,9 +283,9 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
 pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
 
-    let mut aliases: Vec<String> = core.aliases.clone().into_keys().collect();
+    let mut aliases: Vec<String> = core.aliases.keys().map(|k| k.clone()).collect();
     commands.append(&mut aliases);
-    let mut functions: Vec<String> = core.db.functions.clone().into_keys().collect();
+    let mut functions: Vec<String> = core.db.functions.keys().map(|k| k.clone()).collect();
     commands.append(&mut functions);
     let mut vars: Vec<String> = core.db.get_keys();
     commands.append(&mut vars);
@@ -363,6 +365,12 @@ pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 pub fn compgen_shopt(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans = core.shopts.get_keys();
+    drop_unmatch(args, 2, &mut ans);
+    ans
+}
+
+pub fn compgen_function(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+    let mut ans = core.db.functions.keys().map(|k| k.clone()).collect();
     drop_unmatch(args, 2, &mut ans);
     ans
 }
