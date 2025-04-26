@@ -145,7 +145,34 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     Ok(())
 }
 
-pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn declare_print(core: &mut ShellCore, names: &[String]) -> i32 {
+    for n in names {
+        let mut opt = if core.db.is_assoc(&n) {
+            "A"
+        }else if core.db.is_array(&n) {
+            "a"
+        }else if core.db.has_value(&n) {
+            ""
+        }else{
+            return error_exit(1, &n, "not found", core);
+        }.to_string();
+
+        if core.db.is_readonly(&n) {
+            opt += "r";
+        }
+
+        if opt.is_empty() {
+            opt += "-";
+        }
+
+        let prefix = format!("declare -{} ", opt);
+        print!("{}", prefix);
+        core.db.print(&n);
+    }
+    0
+}
+
+fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 {
         return print_all(core);
     }
@@ -157,13 +184,6 @@ pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         for n in names {
             core.db.functions.get_mut(&n).unwrap().pretty_print(0); 
         }
-        /*
-        for f in core.db.functions.iter_mut() {
-            names.push(f.0);
-        }
-        for f in core.db.functions.iter_mut() {
-            f.1.pretty_print(0);
-        }*/
         return 0;
     }
 
@@ -186,7 +206,6 @@ pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let prefix = format!("declare -{} ", options);
-
     names.into_iter().for_each(|k| {print!("{}", prefix); core.db.print(&k);});
 
     0
@@ -196,7 +215,11 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
     if args[1..].iter().all(|a| a.starts_with("-")) {
-        return declare_print(core, &mut args);
+        return declare_print_all(core, &mut args);
+    }
+
+    if arg::consume_option("-p", &mut args) {
+        return declare_print(core, &args[1..]);
     }
 
     let r_flg = arg::consume_option("-r", &mut args);
