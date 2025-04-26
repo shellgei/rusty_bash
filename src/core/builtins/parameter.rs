@@ -151,9 +151,19 @@ pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() == 2 && args[1] == "-f" {
+        let mut names: Vec<String> = core.db.functions.keys().map(|k| k.to_string()).collect();
+        names.sort();
+
+        for n in names {
+            core.db.functions.get_mut(&n).unwrap().pretty_print(0); 
+        }
+        /*
+        for f in core.db.functions.iter_mut() {
+            names.push(f.0);
+        }
         for f in core.db.functions.iter_mut() {
             f.1.pretty_print(0);
-        }
+        }*/
         return 0;
     }
 

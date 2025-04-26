@@ -36,7 +36,7 @@ impl Command for BraceCommand {
         for s in self.script.iter_mut() {
             s.pretty_print(indent_num+1);
         }
-        println!("{} ", "}");
+        println!("{}", "}");
     }
 }
 
