@@ -48,6 +48,8 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
         false => " \t\n".to_string(),
     };
 
+    let mut tail_space = ifs.chars().filter(|i| " \t\n".contains(*i)).collect::<String>();
+    tail_space += delim;
 
     args.remove(0);
     if args.len() == 0 {
@@ -74,7 +76,8 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
             }
         }
 
-        consume_tail_ifs(&mut word, " \t\n");
+        //consume_tail_ifs(&mut word, " \t\n");
+        consume_tail_ifs(&mut word, &tail_space);
 
         if let Err(e) = core.db.set_param(&args[0], &word, None) {
             let msg = format!("{:?}", &e);
