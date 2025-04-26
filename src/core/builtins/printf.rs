@@ -191,21 +191,6 @@ fn esc_to_str(ch: char) -> String {
         '"' => "\"".to_string(),
         _ => ("\\".to_owned() + &ch.to_string()).to_string(),
     }
-                /*
-    match ch {
-        'a' => r"\a".to_string(),
-        'b' => r"\b".to_string(),
-        'e' => r"\e".to_string(),
-        'E' => r"\E".to_string(),
-        'f' => r"\f".to_string(),
-        'n' => "\n".to_string(),
-        'r' => "\r".to_string(),
-        'v' => r"\v".to_string(),
-        't' => "\t".to_string(),
-        '\\' => "\\".to_string(),
-        _    => ch.to_string(),
-    }
-                */
 }
 
 fn replace_escape(s: &str) -> String {

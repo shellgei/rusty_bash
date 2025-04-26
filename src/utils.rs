@@ -118,10 +118,15 @@ pub fn is_param(s :&str) -> bool {
     s.chars().position(|c| !name_c(c)) == None
 }
 
-pub fn read_line_stdin_unbuffered() -> Result<String, InputError> {
+pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     let mut line = vec![];
     let mut ch: [u8; 1] = Default::default();
     let mut stdin = StreamReader::stdin().unwrap();
+
+    let mut d = 10; //\n
+    if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+        d = c;    
+    }
 
     loop {
         match stdin.read(&mut ch) {
@@ -133,7 +138,7 @@ pub fn read_line_stdin_unbuffered() -> Result<String, InputError> {
             },
             Ok(_) => {
                 line.push(ch[0]);
-                if ch[0] == b'\n' {
+                if d == ch[0] {
                     break;
                 }
             },

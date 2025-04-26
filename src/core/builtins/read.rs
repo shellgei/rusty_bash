@@ -36,8 +36,9 @@ fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
     false
 }
 
-pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, limit: &mut usize) -> i32 {
-    let mut remaining = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
+pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
+             ignore_escape: bool, limit: &mut usize, delim: &String) -> i32 {
+    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
     if remaining.is_empty() {
         return 1;
     }
@@ -56,7 +57,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
     consume_ifs(&mut remaining, " \t", limit);
 
     while args.len() > 0 && ! remaining.is_empty() && *limit != 0 {
-        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape) {
+        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
         };
@@ -93,8 +94,9 @@ fn read_line(_: &mut ShellCore, buffer: &mut String) -> usize {
     buffer.len()
 }*/
 
-pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &mut usize) -> i32 {
-    let mut remaining = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
+pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool,
+              limit: &mut usize, delim: &String) -> i32 {
+    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
     if remaining.is_empty() {
         return 1;
     }
@@ -108,7 +110,7 @@ pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &
 
     let mut pos = 0;
     while ! remaining.is_empty() {
-        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape) {
+        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
         };
@@ -136,6 +138,10 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let r_opt = arg::consume_option("-r", &mut args);
     let mut limit = std::usize::MAX;
     let limit_str = arg::consume_with_next_arg("-n", &mut args);
+    let delim = match arg::consume_with_next_arg("-d", &mut args) {
+        Some(c) => c,
+        None    => "\n".to_string(),
+    };
 
     if limit_str.is_some() {
         let s = limit_str.unwrap();
@@ -148,14 +154,8 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         };
     }
 
-    /*
-    let f = unsafe { File::from_raw_fd(0) };
-    if core.read_command_reader.is_none() {
-        core.read_command_reader = Some(BufReader::new(f));
-    }*/
-
     if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
-        return read_a(core, &a, r_opt, &mut limit);
+        return read_a(core, &a, r_opt, &mut limit, &delim);
     }
 
     for a in &args[1..] {
@@ -171,11 +171,11 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    read_(core, &mut args, r_opt, &mut limit)
+    read_(core, &mut args, r_opt, &mut limit, &delim)
 }
 
 pub fn eat_word(core: &mut ShellCore, remaining: &mut String,
-                ifs: &str, ignore_escape: bool) -> Option<String> {
+                ifs: &str, ignore_escape: bool, delim: &String) -> Option<String> {
     let mut esc = false;
     let mut pos = 0;
     let mut escape_pos = vec![];
@@ -201,10 +201,10 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String,
             remaining.pop();
             remaining.pop();
 
-            let line = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
+            let line = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
             if line.len() > 0 {
                 *remaining += &line;
-                return eat_word(core, remaining, ifs, ignore_escape);
+                return eat_word(core, remaining, ifs, ignore_escape, delim);
                 
             }
         }
