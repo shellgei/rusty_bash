@@ -151,3 +151,10 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
         Err(_) => Err(InputError::NotUtf8),
     }
 }
+
+pub fn to_ansi_c(s: &String) -> String {
+    if s.contains('\n') { //TODO: add \t \a ...
+        return "$'".to_owned() + &s.replace("\n", "\\n") + "'";
+    }
+    s.clone()
+}

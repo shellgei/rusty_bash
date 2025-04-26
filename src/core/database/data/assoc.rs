@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::utils;
 use crate::error::exec::ExecError;
 use super::Data;
 use std::collections::HashMap;
@@ -26,8 +27,13 @@ impl Data for AssocData {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
-            let v = self.get(&k).unwrap_or("".to_string());
-            formatted += &format!("[{}]=\"{}\" ", k, v);
+            let v = &self.get(&k).unwrap_or("".to_string());
+            let ansi = utils::to_ansi_c(v);
+            if ansi == *v {
+                formatted += &format!("[{}]=\"{}\" ", k, &ansi);
+            }else{
+                formatted += &format!("[{}]={} ", k, &ansi);
+            }
         }
         if formatted.ends_with(" ") {
             formatted.pop();
