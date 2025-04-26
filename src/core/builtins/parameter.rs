@@ -150,6 +150,13 @@ pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return print_all(core);
     }
 
+    if args.len() == 2 && args[1] == "-f" {
+        for f in &core.db.functions {
+            println!("{}", &f.1.text);
+        }
+        return 0;
+    }
+
     let mut names = core.db.get_keys();
     let mut options = String::new();
 

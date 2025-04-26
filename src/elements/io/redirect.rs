@@ -38,7 +38,7 @@ impl Redirect {
             return self.redirect_heredocument(core, restore);
         }
         if self.symbol == "<<<" {
-            return self.redirect_here_data(core, restore);
+            return self.redirect_herestring(core, restore);
         }
 
         let args = self.right.eval(core)?;
@@ -165,7 +165,7 @@ impl Redirect {
         Ok(())
     }
 
-    fn redirect_here_data(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+    fn redirect_herestring(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
@@ -175,8 +175,7 @@ impl Redirect {
             self.left_backup = io::backup(0);
         }
 
-        let text = self.right.eval_for_case_word(core)
-                       .unwrap_or("".to_string());
+        let text = self.right.eval(core)?.join(" ");
 
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
