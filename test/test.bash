@@ -670,8 +670,8 @@ res=$($com <<< "echo /*'b'*" | grep -F '*')
 
 ### DOUBLE QUOTATION ###
 
-#res=$($com <<< 'echo "*"')
-#[ "$res" == "*" ] || err $LINENO
+res=$($com <<< 'echo "*"')
+[ "$res" == "*" ] || err $LINENO
 
 res=$($com <<< 'echo "{a,{b},c}"')
 [ "$res" == "{a,{b},c}" ] || err $LINENO
