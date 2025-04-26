@@ -35,11 +35,11 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_glob_string(&mut self) -> String {
-        return self.text.replace("\\", "\\\\")
-                   .replace("*", "\\*").replace("?", "\\?")
-                   .replace("[", "\\[").replace("]", "\\]")
-                   .replace("@", "\\@").replace("+", "\\+")
-                   .replace("!", "\\!")
+        self.text.replace("\\", "\\\\")
+            .replace("*", "\\*").replace("?", "\\?")
+            .replace("[", "\\[").replace("]", "\\]")
+            .replace("@", "\\@").replace("+", "\\+")
+            .replace("!", "\\!")
     }
 
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
