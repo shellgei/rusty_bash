@@ -151,8 +151,8 @@ pub fn declare_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() == 2 && args[1] == "-f" {
-        for f in &core.db.functions {
-            println!("{}", &f.1.text);
+        for f in core.db.functions.iter_mut() {
+            f.1.pretty_print(0);
         }
         return 0;
     }

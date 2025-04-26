@@ -30,6 +30,14 @@ impl Command for BraceCommand {
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
+
+    fn pretty_print(&mut self, indent_num: usize) {
+        println!("{} ", "{");
+        for s in self.script.iter_mut() {
+            s.pretty_print(indent_num+1);
+        }
+        println!("{} ", "}");
+    }
 }
 
 impl BraceCommand {

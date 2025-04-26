@@ -114,6 +114,13 @@ pub trait Command {
         }
         Ok(())
     }
+
+    fn pretty_print(&mut self, indent_num: usize) {
+        for _ in 0..indent_num {
+            print!("    ");
+        }
+        println!("{}", &self.get_text());
+    }
 }
 
 pub fn eat_inner_script(feeder: &mut Feeder, core: &mut ShellCore, left: &str, right: Vec<&str>,

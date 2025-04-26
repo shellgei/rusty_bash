@@ -29,6 +29,39 @@ impl Script {
 
     pub fn get_text(&self) -> String { self.text.clone() }
 
+    pub fn pretty_print(&mut self, indent_num: usize) {
+        let mut semicolon = false;
+        let mut printed = false;
+        for (i, job) in self.jobs.iter_mut().enumerate() {
+            let tmp = job.text.clone();
+            let job_text = tmp.trim_ascii_end();
+
+            if job_text.is_empty() {
+                semicolon = printed;
+                continue;
+            }
+
+            if semicolon {
+                println!(";");
+                semicolon = false;
+            }else if printed {
+                println!("");
+            }
+
+            let tmp = self.job_ends[i].clone();
+            let job_end = tmp.trim_ascii_end();
+
+            let text = job_text.to_owned() + &job_end;
+
+            for _ in 0..indent_num {
+                print!("    ");
+            }
+            print!("{}", &text);
+            printed = true;
+        }
+        println!("");
+    }
+
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> Result<bool, ParseError> {
         if let Some(job) = Job::parse(feeder, core)? {
             ans.text += &job.text.clone();
