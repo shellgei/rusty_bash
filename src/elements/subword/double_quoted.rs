@@ -28,9 +28,6 @@ impl Subword for DoubleQuoted {
     fn make_unquoted_string(&mut self) -> Option<String> {
         let text = self.subwords.iter_mut()
             .filter_map(|s| s.make_unquoted_string())
-            //.filter(|s| s.is_some())
-//            .map(|s| s.unwrap())
-            //.flatten()
             .collect::<Vec<String>>()
             .concat();
 
