@@ -27,9 +27,10 @@ impl Subword for DoubleQuoted {
 
     fn make_unquoted_string(&mut self) -> Option<String> {
         let text = self.subwords.iter_mut()
-            .map(|s| s.make_unquoted_string())
-            .filter(|s| s.is_some())
-            .map(|s| s.unwrap())
+            .filter_map(|s| s.make_unquoted_string())
+            //.filter(|s| s.is_some())
+//            .map(|s| s.unwrap())
+            //.flatten()
             .collect::<Vec<String>>()
             .concat();
 
@@ -85,8 +86,8 @@ impl DoubleQuoted {
         if ! feeder.starts_with("\"") {
             return Ok(None);
         }
-        let mut ans = Self::default();
-        ans.text = feeder.consume(1);
+
+        let mut ans = Self { text: feeder.consume(1), ..Default::default() };
 
         while Self::eat_element(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}
