@@ -35,7 +35,7 @@ $ cd rusty_bash
 $ cargo build --release
 ### ↓  Change /bin/ to /usr/local/bin/ or another path in $PATH if you are using Mac or BSD ###
 $ sudo cp target/release/sush /bin/
-$ cp .sushrc_for_linux ~/.sushrc # edit if some errors occur
+$ cp .sushrc ~/.sushrc # edit if some errors occur
 $ sush
 ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
