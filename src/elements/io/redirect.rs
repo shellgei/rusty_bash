@@ -175,7 +175,7 @@ impl Redirect {
             self.left_backup = io::backup(0);
         }
 
-        let text = self.right.eval(core)?.join(" ");
+        let text = self.right.eval_as_herestring(core)?;
 
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {

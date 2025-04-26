@@ -74,6 +74,10 @@ impl Word {
         Ok( Self::make_args(&mut ws) )
     }
 
+    pub fn eval_as_herestring(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.eval_as_value(core)
+    }
+
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
             Ok(w)  => w.path_expansion(core),
@@ -155,9 +159,7 @@ impl Word {
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
         words.iter_mut()
-              .map(|w| w.make_unquoted_word())
-              .filter(|w| *w != None)
-              .map(|w| w.unwrap())
+              .filter_map(|w| w.make_unquoted_word())
               .collect()
     }
 
