@@ -233,5 +233,5 @@ Partially in Japanese.
 
 © 2022-2025 shellgei group
 
-- Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi.shellgei.org/@ru), [@ryuichiueda@misskey.io](https://misskey.io/@ryuichiueda)
+- Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi.shellgei.org/@ru), @ueda.tech (https://bsky.app/profile/ueda.tech)
 - [@caro@mi.shellgei.org](https://mi.shellgei.org/@caro)
