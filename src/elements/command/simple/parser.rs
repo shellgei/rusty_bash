@@ -67,6 +67,20 @@ impl SimpleCommand {
         self.continue_alias_check = w.ends_with(" ");
 
         let mut feeder_local = Feeder::new(&mut w);
+
+        loop {
+            if let Some(s) = Substitution::parse(&mut feeder_local, core)? {
+                self.text += &s.text;
+                match self.command_name.as_ref() {
+                    "local" | "eval" | "export"  => self.substitutions_as_args.push(s),
+                    _ => self.substitutions.push(s),
+                }
+                command::eat_blank_with_comment(&mut feeder_local, core, &mut self.text);
+            }else{
+                break;
+            }
+        }
+
         loop {
             match Word::parse(&mut feeder_local, core, None) {
                 Ok(Some(w)) => {
@@ -78,7 +92,7 @@ impl SimpleCommand {
             command::eat_blank_with_comment(&mut feeder_local, core, &mut self.text);
         }
 
-        if self.words.is_empty() {
+        if self.words.is_empty() && self.substitutions.is_empty() {
             return Err(ParseError::WrongAlias(w));
         }
 
