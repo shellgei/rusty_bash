@@ -18,6 +18,7 @@ pub enum WordMode {
     Arithmetric,
     CompgenF,
     ReadCommand,
+    Heredoc,
     ParamOption(Vec<String>),
 }
 
@@ -71,6 +72,10 @@ impl Word {
             ws.append( &mut expanded.split_and_path_expansion(core) );
         }
         Ok( Self::make_args(&mut ws) )
+    }
+
+    pub fn eval_as_herestring(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.eval_as_value(core)
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -154,9 +159,7 @@ impl Word {
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
         words.iter_mut()
-              .map(|w| w.make_unquoted_word())
-              .filter(|w| *w != None)
-              .map(|w| w.unwrap())
+              .filter_map(|w| w.make_unquoted_word())
               .collect()
     }
 
@@ -191,6 +194,10 @@ impl Word {
             .map(|s| s.make_glob_string())
             .collect::<Vec<String>>()
             .concat()
+    }
+
+    pub fn set_heredoc_flag(&mut self) {
+        self.subwords.iter_mut().for_each(|e| e.set_heredoc_flag());
     }
 
     fn scan_pos(&self, s: &str) -> Vec<usize> {

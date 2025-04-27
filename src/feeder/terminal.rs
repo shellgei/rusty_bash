@@ -344,7 +344,7 @@ impl Terminal {
     }
 
     pub fn set_double_tab_completion(&mut self, core: &ShellCore) {
-        let tail = match core.current_completion_info.o_options.contains(&"nospace".to_string()) {
+        let tail = match core.completion.current.o_options.contains(&"nospace".to_string()) {
             true  => "",
             false => " ",
         };

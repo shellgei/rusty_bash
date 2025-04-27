@@ -48,6 +48,10 @@ impl DataBase {
         Ok(())
     }
 
+    pub fn is_readonly(&mut self, name: &str) -> bool {
+        self.has_flag(name, 'r')
+    }
+
     fn write_check(&mut self, name: &str) -> Result<(), ExecError> {
         if self.has_flag(name, 'r') {
             self.exit_status = 1;

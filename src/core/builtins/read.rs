@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::utils;
 use crate::{arg, error};
 use super::error_exit;
 
@@ -35,13 +36,10 @@ fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
     false
 }
 
-pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, limit: &mut usize) -> i32 {
-    let mut remaining = String::new();
-    let len = std::io::stdin()
-        .read_line(&mut remaining)
-        .expect("SUSHI INTERNAL ERROR: Failed to read line");
-
-    if len == 0 {
+pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
+             ignore_escape: bool, limit: &mut usize, delim: &String) -> i32 {
+    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+    if remaining.is_empty() {
         return 1;
     }
 
@@ -50,6 +48,8 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
         false => " \t\n".to_string(),
     };
 
+    let mut tail_space = ifs.chars().filter(|i| " \t\n".contains(*i)).collect::<String>();
+    tail_space += delim;
 
     args.remove(0);
     if args.len() == 0 {
@@ -59,7 +59,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
     consume_ifs(&mut remaining, " \t", limit);
 
     while args.len() > 0 && ! remaining.is_empty() && *limit != 0 {
-        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape) {
+        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
         };
@@ -76,7 +76,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
             }
         }
 
-        consume_tail_ifs(&mut word, " \t\n");
+        consume_tail_ifs(&mut word, &tail_space);
 
         if let Err(e) = core.db.set_param(&args[0], &word, None) {
             let msg = format!("{:?}", &e);
@@ -90,13 +90,16 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>, ignore_escape: bool, 
     0
 }
 
-pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &mut usize) -> i32 {
-    let mut remaining = String::new();
-    let len = std::io::stdin()
-        .read_line(&mut remaining)
-        .expect("SUSHI INTERNAL ERROR: Failed to read line");
+/*
+fn read_line(_: &mut ShellCore, buffer: &mut String) -> usize {
+    *buffer = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
+    buffer.len()
+}*/
 
-    if len == 0 {
+pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool,
+              limit: &mut usize, delim: &String) -> i32 {
+    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+    if remaining.is_empty() {
         return 1;
     }
 
@@ -105,16 +108,19 @@ pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool, limit: &
         false => " \t\n".to_string(),
     };
 
+    let mut tail_space = ifs.chars().filter(|i| " \t\n".contains(*i)).collect::<String>();
+    tail_space += delim;
+
     consume_ifs(&mut remaining, " \t", limit);
 
     let mut pos = 0;
     while ! remaining.is_empty() {
-        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape) {
+        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
         };
         check_word_limit(&mut word, limit);
-        consume_tail_ifs(&mut word, " \t\n");
+        consume_tail_ifs(&mut word, &tail_space);
 
         if let Err(e) = core.db.set_array_elem(name, &word, pos, None) {
             let msg = format!("{:?}", &e);
@@ -137,6 +143,10 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let r_opt = arg::consume_option("-r", &mut args);
     let mut limit = std::usize::MAX;
     let limit_str = arg::consume_with_next_arg("-n", &mut args);
+    let delim = match arg::consume_with_next_arg("-d", &mut args) {
+        Some(c) => c,
+        None    => "\n".to_string(),
+    };
 
     if limit_str.is_some() {
         let s = limit_str.unwrap();
@@ -150,7 +160,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
-        return read_a(core, &a, r_opt, &mut limit);
+        return read_a(core, &a, r_opt, &mut limit, &delim);
     }
 
     for a in &args[1..] {
@@ -166,10 +176,11 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    read_(core, &mut args, r_opt, &mut limit)
+    read_(core, &mut args, r_opt, &mut limit, &delim)
 }
 
-pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str, ignore_escape: bool) -> Option<String> {
+pub fn eat_word(core: &mut ShellCore, remaining: &mut String,
+                ifs: &str, ignore_escape: bool, delim: &String) -> Option<String> {
     let mut esc = false;
     let mut pos = 0;
     let mut escape_pos = vec![];
@@ -195,14 +206,10 @@ pub fn eat_word(core: &mut ShellCore, remaining: &mut String, ifs: &str, ignore_
             remaining.pop();
             remaining.pop();
 
-            let mut line = String::new();
-            let len = std::io::stdin()
-                .read_line(&mut line)
-                .expect("SUSHI INTERNAL ERROR: Failed to read line");
-        
-            if len > 0 {
+            let line = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+            if line.len() > 0 {
                 *remaining += &line;
-                return eat_word(core, remaining, ifs, ignore_escape);
+                return eat_word(core, remaining, ifs, ignore_escape, delim);
                 
             }
         }

@@ -51,7 +51,7 @@ impl Subword for BracedParam {
         || self.param.name == "@" 
         || self.param.name == "*" {
             if let Some(s) = self.optional_operation.as_mut() {
-                if s.is_substr() {
+                if s.has_array_replace() {
                     let mut arr = vec![];
                     s.set_array(&self.param, &mut arr, &mut self.text, core)?;
                     self.array = Some(arr);
@@ -79,6 +79,10 @@ impl Subword for BracedParam {
     }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
+        if self.text == "" {
+            return vec![];
+        }
+
         if (self.param.name != "@" && self.param.name != "*")
         || ifs.starts_with(" ") || self.array.is_none() {
             return splitter::split(&self.get_text(), ifs, prev_char).iter()
@@ -90,6 +94,11 @@ impl Subword for BracedParam {
             ans.push( (From::from(&p), true) );
         }
         ans
+    }
+
+    fn set_heredoc_flag(&mut self) {
+        self.optional_operation.iter_mut()
+            .for_each(|e| e.set_heredoc_flag());
     }
 }
 

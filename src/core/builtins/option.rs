@@ -25,7 +25,7 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
         let pm = a.chars().nth(0).unwrap();
         let ch = a.chars().nth(1).unwrap();
 
-        if (pm != '-' && pm != '+') || "xveB".find(ch).is_none() {
+        if (pm != '-' && pm != '+') || "xveBH".find(ch).is_none() {
             return Err(ExecError::InvalidOption(a.to_string()));
         }
 
@@ -188,7 +188,7 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let res = match args[1].as_str() { //TODO: args[3..] must to be set
         "-s" => {
-            if ["extglob", "progcomp", "nullglob", "dotglob", "globstar", "globskipdots", "nocasematch"].iter().any(|&e| e == args[2]) {
+            if core.shopts.implemented.contains(&args[2]) {
                 core.shopts.set(&args[2], true)
             }else{
                 let msg = format!("shopt: {}: not supported yet", &args[2]);

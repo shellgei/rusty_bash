@@ -10,10 +10,9 @@ pub mod jobtable;
 pub mod options;
 
 use crate::{error, proc_ctrl, signal};
-use crate::error::exec::ExecError;
 use self::database::DataBase;
 use self::options::Options;
-use self::completion::CompletionInfo;
+use self::completion::{Completion, CompletionEntry};
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path};
@@ -51,7 +50,6 @@ pub struct ShellCore {
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
-    pub read_stdin: bool,
     pub is_subshell: bool,
     pub source_function_level: i32,
     pub source_files: Vec<String>,
@@ -65,10 +63,7 @@ pub struct ShellCore {
     pub job_table: Vec<JobEntry>,
     pub job_table_priority: Vec<usize>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
-    pub completion_info: HashMap<String, CompletionInfo>,
-    pub current_completion_info: CompletionInfo,
-    pub completion_functions: HashMap<String, String>,
-    pub default_completion_functions: String,
+    pub completion: Completion,
     pub measured_time: MeasuredTime,
     pub options: Options,
     pub shopts: Options,
@@ -83,7 +78,7 @@ impl ShellCore {
         let mut core = ShellCore{
             db: DataBase::new(),
             sigint: Arc::new(AtomicBool::new(false)),
-            read_stdin: true,
+            //read_stdin: true,
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             script_name: "-".to_string(),
@@ -99,8 +94,8 @@ impl ShellCore {
         let _ = core.db.set_param("PS4", "+ ", None);
 
         if unistd::isatty(0) == Ok(true) {
-            core.db.flags += "im";
-            core.read_stdin = false;
+            core.db.flags += "imH";
+            //core.read_stdin = false;
             let _ = core.db.set_param("PS1", "🍣 ", None);
             let _ = core.db.set_param("PS2", "> ", None);
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
@@ -148,20 +143,20 @@ impl ShellCore {
         self.db.exit_status = if self.db.exit_status == 0 { 1 } else { 0 };
     }
 
-    pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>)
-                                -> Result<bool, ExecError> {
+    pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
         if args.is_empty() {
-            return Err(ExecError::Bug("ShellCore::run_builtin".to_string()));
+            eprintln!("ShellCore::run_builtin");
+            return false;
         }
 
         if self.builtins.contains_key(&args[0]) {
             let func = self.builtins[&args[0]];
             args.append(special_args);
             self.db.exit_status = func(self, args);
-            return Ok(true);
+            return true;
         }
 
-        Ok(false)
+        false
     }
 
     fn set_subshell_parameters(&mut self) -> Result<(), String> {
@@ -233,12 +228,15 @@ impl ShellCore {
     }
 
     fn replace_alias_core(&self, word: &mut String) -> bool {
-        if ! self.db.flags.contains('i') {
-            return false;
+        if ! self.shopts.query("expand_aliases") {
+            if ! self.db.flags.contains('i') {
+                return false;
+            }
         }
 
         let mut ans = false;
         let mut prev_head = "".to_string();
+        let history = vec![word.clone()];
 
         loop {
             let head = match word.replace("\n", " ").split(' ').nth(0) {
@@ -252,6 +250,9 @@ impl ShellCore {
     
             if let Some(value) = self.aliases.get(&head) {
                 *word = word.replacen(&head, value, 1);
+                if history.contains(word) {
+                    return false;
+                }
                 ans = true;
             }
             prev_head = head;

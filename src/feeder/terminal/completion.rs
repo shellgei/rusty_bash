@@ -3,7 +3,7 @@
 
 use crate::{file_check, Feeder, ShellCore, utils};
 use crate::core::builtins::compgen;
-use crate::core::completion::CompletionInfo;
+use crate::core::completion::CompletionEntry;
 use crate::error::exec::ExecError;
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::command::Command;
@@ -82,7 +82,7 @@ impl Terminal {
 
         let mut cands = core.db.get_array_all("COMPREPLY");
         cands.retain(|c| c != "");
-        let o_options = core.current_completion_info.o_options.clone();
+        let o_options = core.completion.current.o_options.clone();
         for cand in cands.iter_mut() {
             apply_o_options(cand, core, &o_options);
         }
@@ -98,7 +98,7 @@ impl Terminal {
                               core: &mut ShellCore)-> Result<(), ExecError> {
         let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
         let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
-        let info = &core.current_completion_info;
+        let info = &core.completion.current;
 
         let command = format!("{} \"{}\" \"{}\" \"{}\"",
                                 &info.function, &org_word, &target_word, &prev_word);
@@ -113,7 +113,7 @@ impl Terminal {
 
     fn exec_action(cur_pos: i32, core: &mut ShellCore)-> Result<(), ExecError> {
         let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
-        let info = &core.current_completion_info;
+        let info = &core.completion.current;
 
         let command = format!("COMPREPLY=($(compgen -A \"{}\" \"{}\"))",  &info.action, &target_word);
         let mut feeder = Feeder::new(&command);
@@ -136,16 +136,16 @@ impl Terminal {
 
         let org_word = core.db.get_array_elem("COMP_WORDS", "0")?;
 
-        let info = match core.completion_info.get(&org_word) {
+        let info = match core.completion.entries.get(&org_word) {
             Some(i) => i.clone(),
             None    => {
-                let mut tmp = CompletionInfo::default();
-                tmp.function = core.default_completion_functions.clone();
+                let mut tmp = CompletionEntry::default();
+                tmp.function = core.completion.default_function.clone();
                 tmp
             },
         };
 
-        core.current_completion_info = info.clone();
+        core.completion.current = info.clone();
         if info.function != "" {
             Self::exec_complete_function(&org_word, prev_pos, cur_pos, core)?;
         }else if info.action != "" {
@@ -183,9 +183,9 @@ impl Terminal {
 
     fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
                               com: &str, pos: &str) -> Vec<String> {
-        if core.completion_info.contains_key(com) {
-            let action = core.completion_info[com].action.clone();
-            let options = core.completion_info[com].options.clone();
+        if core.completion.entries.contains_key(com) {
+            let action = core.completion.entries[com].action.clone();
+            let options = core.completion.entries[com].options.clone();
 
             if action != "" {
                 let mut cands = match action.as_ref() {

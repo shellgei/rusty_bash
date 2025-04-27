@@ -134,10 +134,18 @@ impl Feeder {
             return 0;
         }
 
+        let mut skip = 2;
+        if self.starts_with("\\x{") {
+            skip = 3;
+            let judge = |ch| ch != '}' && ch != '\''; 
+            let len = self.scanner_chars(judge, core, skip) + skip;
+            return len + self.scanner_chars(|c| c == '}', core, len);
+        }
+
         let judge = |ch| ('0' <= ch && ch <= '9') 
                          || ('a' <= ch && ch <= 'f') 
                          || ('A' <= ch && ch <= 'F'); 
-        self.scanner_chars(judge, core, 2) + 2
+        self.scanner_chars(judge, core, skip) + skip
     }
 
     pub fn scanner_ansi_unicode4(&mut self, core: &mut ShellCore) -> usize {
