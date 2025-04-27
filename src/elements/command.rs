@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod function_def;
 pub mod simple;
 pub mod paren;
 pub mod brace;
@@ -14,6 +15,7 @@ use crate::utils::exit;
 use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
+use self::function_def::FunctionDefinition;
 use self::r#while::WhileCommand;
 use self::r#if::IfCommand;
 use std::fmt;
@@ -161,7 +163,8 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Ok(Some(a)) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
+    if let Some(a) = FunctionDefinition::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Ok(Some(a)) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
     else if let Ok(Some(a)) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
     else if let Ok(Some(a)) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
     else if let Ok(Some(a)) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
