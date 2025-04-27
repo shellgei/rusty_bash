@@ -19,23 +19,14 @@ impl Command for FunctionDefinition {
     fn run(&mut self, _: &mut ShellCore, _: bool) -> Result<(), ExecError> {Ok(())}
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
-    fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
+    fn set_force_fork(&mut self) { self.force_fork = true; }
     fn force_fork(&self) -> bool { self.force_fork }
-    /*
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        Ok(None)
-    }
-
-
-    fn pretty_print(&mut self, indent_num: usize) {
-        self.pretty_print(indent_num);
-    }
-    */
 }
 
 impl FunctionDefinition {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         return Ok(None);
     }
 }
