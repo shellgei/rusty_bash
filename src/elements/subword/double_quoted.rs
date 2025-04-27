@@ -7,7 +7,7 @@ use crate::error::exec::ExecError;
 use crate::elements::word::{Word, substitution};
 use crate::elements::subword::CommandSubstitution;
 use crate::elements::subword::Arithmetic;
-use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
+use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
@@ -20,8 +20,7 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore)
-    -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.connect_array(core)?;
 
         let mut word = match self.subwords.iter().any(|sw| sw.is_array()) {
@@ -32,7 +31,7 @@ impl Subword for DoubleQuoted {
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
         self.text = word.text;
-        Ok(vec![])
+        Ok(())
     }
 
     fn make_glob_string(&mut self) -> String {
@@ -78,15 +77,9 @@ impl DoubleQuoted {
     fn connect_array(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for sw in self.subwords.iter_mut() {
             if sw.get_text() == "$*" || sw.get_text() == "${*}" {
-                let ifs = core.db.get_param("IFS").unwrap_or(" ".to_string());
                 let params = core.db.get_position_params();
-
-                let mut joint = "".to_string();
-                if ! ifs.is_empty() {
-                    joint = ifs.chars().nth(0).unwrap().to_string();
-                }
-
-                *sw = Box::new(SimpleSubword{ text: params.join(&joint) });
+                let joint = core.db.get_ifs_head();
+                *sw = From::from(&params.join(&joint));
             }
         }
         Ok(())
@@ -110,7 +103,7 @@ impl DoubleQuoted {
             };
 
             for text in array {
-                ans.push(SimpleSubword{text}.boxed_clone());
+                ans.push(From::from(&text));
                 self.split_points.push(ans.len());
             }
             self.split_points.pop();
@@ -161,7 +154,7 @@ impl DoubleQuoted {
         let ch = feeder.consume(len);
         ans.text += &ch.clone();
         if ch != "\"" {
-            ans.subwords.push( Box::new(SimpleSubword{ text: ch }) );
+            ans.subwords.push( From::from(&ch) );
             return Ok(true);
         }
         Ok(false)

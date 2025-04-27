@@ -33,7 +33,7 @@ pub struct Redirect {
 
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.symbol == "<<" {
+        if self.symbol == "<<" || self.symbol == "<<-" {
             return self.redirect_heredocument(core, restore);
         }
         if self.symbol == "<<<" {
@@ -91,23 +91,11 @@ impl Redirect {
     fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
         self.connect_to_file(File::open(&self.right.text), restore)
-            /*
-        if ! self.connect_to_file(File::open(&self.right.text), restore) {
-            return Err(ExecError::Other("file error".to_string()));
-        }
-        Ok(())
-            */
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
         self.connect_to_file(File::create(&self.right.text), restore)
-            /*
-        if ! self.connect_to_file(File::create(&self.right.text), restore) {
-            return Err(ExecError::Other("file error".to_string()));
-        }
-        Ok(())
-            */
     }
 
     fn redirect_output_fd(&mut self, restore: bool) -> Result<(), ExecError> {
@@ -128,13 +116,6 @@ impl Redirect {
         self.set_left_fd(1);
         self.connect_to_file(OpenOptions::new().create(true)
                 .write(true).append(true).open(&self.right.text), restore)
-            /*
-        if ! self.connect_to_file(OpenOptions::new().create(true)
-                .write(true).append(true).open(&self.right.text), restore) {
-            return Err(ExecError::Other("file error".to_string()));
-        }
-        Ok(())
-            */
     }
 
     fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
@@ -147,7 +128,8 @@ impl Redirect {
         io::share(1, 2)
     }
 
-    fn redirect_heredocument(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+    fn redirect_heredocument(&mut self, core: &mut ShellCore, restore: bool)
+    -> Result<(), ExecError> {
         self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
@@ -227,6 +209,7 @@ impl Redirect {
 
     /* called from elements/command.rs */
     pub fn eat_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {
             Ok(s)  => s + "\n",
             Err(_) => return Err(ParseError::UnexpectedSymbol(self.right.text.clone())),
@@ -238,6 +221,12 @@ impl Redirect {
         loop {
             if feeder.len() == 0 {
                 feeder.feed_additional_line(core)?;
+
+                if remove_tab {
+                    let len = feeder.scanner_tabs();
+                    feeder.consume(len);
+                }
+
                 if feeder.starts_with(&end) {
                     feeder.consume(end.len());
                     break;

@@ -36,6 +36,8 @@ impl Data for ArrayData {
         formatted
     }
 
+    fn clear(&mut self) { self.body.clear(); }
+
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body.insert(0, value.to_string());
         Ok(())

@@ -81,7 +81,6 @@ fn local_(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    //dbg!("{:?}", &args);
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2//The last element of data.parameters is for local itself. 
     }else{
@@ -185,6 +184,25 @@ pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             let msg = format!("parse error");
             return error_exit(1, &args[0], &msg, core);
         }
+    }
+    0
+}
+
+pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    for name in &args[1..] {
+        if name.contains('=') {
+            if let Err(e) = declare_set(core, &name, &mut vec![], true) {
+                e.print(core);
+                return 1;
+            }
+            continue;
+        }
+
+        if ! utils::is_name(&name, core) {
+            let msg = format!("`{}': not a valid identifier", name);
+            return error_exit(1, &args[0], &msg, core);
+        }
+        core.db.set_flag(name, 'r');
     }
     0
 }

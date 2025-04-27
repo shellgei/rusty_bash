@@ -4,7 +4,6 @@
 use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 use crate::elements::subword::single_quoted::SingleQuoted;
-use crate::elements::subword::simple::SimpleSubword;
 
 enum BraceType {
     Comma,
@@ -58,9 +57,9 @@ fn connect_minus(subwords: &mut Vec<Box<dyn Subword>>) {
                 continue;
             }
 
-            subwords[i] = Box::new( SimpleSubword { text: "".to_string() } );
+            subwords[i] = Default::default();
             let m_str = "-".to_owned() + subwords[i+1].get_text();
-            subwords[i+1] = Box::new( SimpleSubword { text: m_str } );
+            subwords[i+1] = From::from(&m_str);
         }
     }
 

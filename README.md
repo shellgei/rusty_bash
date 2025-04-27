@@ -15,7 +15,8 @@ Bash-completion starts working on our shell! ([how to use](docs/SETUP_BASH_COMPL
 
 A clone of Bash, which is developed as a hobby of our group and for monthly articles on SoftwareDesign magazine published by Gijutsu-Hyohron Co., Ltd.
 
-## Quick Start
+## Quick 
+Start
 
 ```bash
 $ git clone https://github.com/shellgei/rusty_bash.git

@@ -12,7 +12,6 @@ use crate::elements::subword;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
-use super::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
@@ -33,7 +32,7 @@ impl From<&String> for Word {
     fn from(s: &String) -> Self {
         Self {
             text: s.to_string(),
-            subwords: vec![Box::new(SimpleSubword{text: s.to_string() })],
+            subwords: vec![From::from(s)],
             do_not_erase: false,
         }
     }
@@ -80,7 +79,8 @@ impl Word {
             Err(e) => return Err(e),
         };
 
-        Ok( Self::make_args(&mut ws).join(" ") )
+        let joint = core.db.get_ifs_head();
+        Ok( Self::make_args(&mut ws).join(&joint) )
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
@@ -113,14 +113,9 @@ impl Word {
         }
     }
 
-    pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Option<String> {
-        match self.tilde_and_dollar_expansion(core) {
-            Ok(mut w) => Some(w.make_glob_string()),
-            Err(e)    => {
-                e.print(core);
-                return None;
-            },
-        }
+    pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let mut w = self.tilde_and_dollar_expansion(core)?;
+        Ok(w.make_glob_string())
     }
 
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {

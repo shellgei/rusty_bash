@@ -2,10 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::core::options::Options;
-use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 use crate::utils::directory;
-use super::subword::simple::SimpleSubword;
 
 pub fn eval(word: &mut Word, shopts: &Options) -> Vec<Word> {
     let globstr = word.make_glob_string();
@@ -21,9 +19,7 @@ pub fn eval(word: &mut Word, shopts: &Options) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    let subwd = |path| Box::new(SimpleSubword{ text: path });
-    let wd = |path| Word::from( subwd(path) as Box::<dyn Subword>);
-    paths.iter().map(|p| wd(p.to_string())).collect()
+    paths.iter().map(|p| From::from(p) ).collect()
 }
 
 fn no_glob_symbol(pattern: &str) -> bool {

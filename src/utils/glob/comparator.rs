@@ -50,6 +50,13 @@ fn asterisk(cands: &mut Vec<String>) {
 }
 
 fn one_of(cands: &mut Vec<String>, cs: &Vec<MetaChar>, not_inv: bool) {
+    if cs.is_empty() {
+        if ! not_inv {
+            cands.clear();
+        }
+        return;
+    }
+
     cands.retain(|cand| cand.len() != 0 );
     cands.retain(|cand| cs.iter().any(|c| compare_head(cand, c)) == not_inv );
     let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();

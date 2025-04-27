@@ -19,9 +19,14 @@ pub fn special_param(db :&DataBase, name: &str) -> Option<String> {
     Some(val)
 }
 
-pub fn connected_position_params(db :&mut DataBase) -> Result<String, ExecError> {
+pub fn connected_position_params(db :&mut DataBase, aster: bool) -> Result<String, ExecError> {
+    let mut joint = " ".to_string();
+    if aster {
+        joint = db.get_ifs_head();
+    }
+
     match db.position_parameters.last() {
-        Some(a) => Ok(a[1..].join(" ")),
+        Some(a) => Ok(a[1..].join(&joint)),
         _       => Ok("".to_string()),
     }
 }

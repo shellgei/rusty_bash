@@ -9,17 +9,19 @@ use crate::elements::word::Word;
 use crate::utils::glob;
 use super::{Command, Redirect};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CaseCommand {
     pub text: String,
     pub word: Option<Word>,
     pub patterns_script_end: Vec<(Vec<Word>, Script, String)>,
     pub redirects: Vec<Redirect>,
     force_fork: bool,
+    lineno: usize,
 }
 
 impl Command for CaseCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         let mut next = false;
         let word = self.word.clone().unwrap();
 
@@ -37,12 +39,20 @@ impl Command for CaseCommand {
 
         for e in &mut self.patterns_script_end {
             for pattern in &mut e.0 {
-                let p = match pattern.eval_for_case_pattern(core) {
-                    Some(p) => p, 
-                    _       => continue,
-                };
+                let mut exec_script = false;
+                if ! next {
+                    //let p = pattern.eval_for_case_pattern(core)?;
+                    let p = match pattern.eval_for_case_pattern(core) {
+                        Ok(p) => p, 
+                        Err(e) => {
+                            e.print(core); //TODO: it should be output at a higher level
+                            return Err(e);
+                        },
+                    };
+                    exec_script = glob::parse_and_compare(&w, &p, extglob);
+                }
 
-                if glob::parse_and_compare(&w, &p, extglob) || next {
+                if next || exec_script {
                     let _ = e.1.exec(core);
 
                     if e.2 == ";;" {
@@ -63,6 +73,7 @@ impl Command for CaseCommand {
 }
 
 impl CaseCommand {
+    /*
     fn new() -> Self {
         CaseCommand {
             text: String::new(),
@@ -71,7 +82,7 @@ impl CaseCommand {
             redirects: vec![],
             force_fork: false,
         }
-    }
+    }*/
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
         -> Result<bool, ParseError> {
@@ -123,11 +134,18 @@ impl CaseCommand {
             return Ok(None);
         }
 
-        let mut ans = Self::new();
+        //dbg!("{:?}", &core.db.get_param("LINENO"));
+
+        let mut ans = Self::default();
         ans.text = feeder.consume(4);
 
-        if ! Self::eat_word(feeder, &mut ans, core)?
-        || ! feeder.starts_with("in") {
+        command::eat_blank_lines(feeder, core, &mut ans.text)?;
+        if ! Self::eat_word(feeder, &mut ans, core)? {
+            return Ok(None);
+        }
+
+        command::eat_blank_lines(feeder, core, &mut ans.text)?;
+        if ! feeder.starts_with("in") {
             return Ok(None);
         }
         ans.text += &feeder.consume(2);
@@ -166,6 +184,7 @@ impl CaseCommand {
             ans.text += &feeder.consume(4);
             if ans.patterns_script_end.len() > 0 {
                 command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
+                ans.lineno = feeder.lineno;
                 return Ok(Some(ans));
             }
         }

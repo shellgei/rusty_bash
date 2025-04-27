@@ -76,6 +76,7 @@ pub struct ShellCore {
     pub suspend_e_option: bool,
     pub script_name: String,
     pub exit_script: String,
+    pub exit_script_run: bool,
 }
 
 impl ShellCore {
@@ -99,7 +100,7 @@ impl ShellCore {
         let _ = core.db.set_param("PS4", "+ ", None);
 
         if unistd::isatty(0) == Ok(true) {
-            core.db.flags += "i";
+            core.db.flags += "im";
             core.read_stdin = false;
             let _ = core.db.set_param("PS1", "🍣 ", None);
             let _ = core.db.set_param("PS2", "> ", None);
