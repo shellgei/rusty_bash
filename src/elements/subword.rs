@@ -170,7 +170,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = ProcessSubstitution::parse(feeder, core, mode)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core, mode)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = ExtGlob::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
