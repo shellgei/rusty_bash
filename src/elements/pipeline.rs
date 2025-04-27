@@ -50,7 +50,7 @@ impl Pipeline {
 
     fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore)
         -> Result<bool, ParseError> {
-        if let Some(command) = command::parse(feeder, core) {
+        if let Some(command) = command::parse(feeder, core)? {
             ans.text += &command.get_text();
             ans.commands.push(command);
 

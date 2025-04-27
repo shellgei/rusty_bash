@@ -160,11 +160,11 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
     Ok(())
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
-    if let Ok(Some(a)) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Ok(Some(a)) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
-    else if let Ok(Some(a)) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Ok(Some(a)) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Ok(Some(a)) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else{ None }
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Command>>, ParseError> {
+    if let Some(a) = SimpleCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = IfCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = ParenCommand::parse(feeder, core, false)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = BraceCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = WhileCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else{ Ok(None) }
 }
