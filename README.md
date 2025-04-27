@@ -7,7 +7,7 @@
 
 ## NEWS
 
-Bash-completion starts working on our shell!
+Bash-completion starts working on our shell! ([how to use](docs/SETUP_BASH_COMPLETION.md))
 
 ![completion](https://github.com/user-attachments/assets/e4af177c-3fdd-4f59-a70b-9c97df96b4bc)
 
