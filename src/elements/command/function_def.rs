@@ -5,9 +5,6 @@ use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
-use crate::elements::command;
-use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
-use nix::unistd::Pid;
 
 #[derive(Debug, Clone, Default)]
 pub struct FunctionDefinition {

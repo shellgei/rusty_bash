@@ -69,27 +69,6 @@ pub trait Command {
         }
     }
 
-    /*
-    fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        match unsafe{unistd::fork()} {
-            Ok(ForkResult::Child) => {
-                core.initialize_as_subshell(Pid::from_raw(0), pipe.pgid);
-                io::connect(pipe, self.get_redirects(), core)?;
-                if let Err(e) = self.run(core, true) {
-                    e.print(core);
-                }
-                exit::normal(core)
-            },
-            Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, pipe.pgid);
-                pipe.parent_close();
-                Ok(Some(child))
-            },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
-        }
-    }
-    */
-
     fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
         let mut result = Ok(None);
         for r in self.get_redirects().iter_mut() {
@@ -162,12 +141,12 @@ pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
     Ok(())
 }
 
-pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Box<dyn Command>> {
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Command>>, ParseError> {
     if let Some(a) = FunctionDefinition::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else if let Ok(Some(a)) = SimpleCommand::parse(feeder, core){ Some(Box::new(a)) }
-    else if let Ok(Some(a)) = ParenCommand::parse(feeder, core, false) { Some(Box::new(a)) }
-    else if let Ok(Some(a)) = BraceCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Ok(Some(a)) = WhileCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else if let Ok(Some(a)) = IfCommand::parse(feeder, core) { Some(Box::new(a)) }
-    else{ None }
+    else if let Some(a) = SimpleCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = IfCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = ParenCommand::parse(feeder, core, false)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = BraceCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = WhileCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else{ Ok(None) }
 }
