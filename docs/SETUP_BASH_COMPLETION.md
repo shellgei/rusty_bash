@@ -1,7 +1,9 @@
 # setup of bash-completion
 
-20250427 Ryuichi Ueda
-bluesky: @ueda.tech (https://bsky.app/profile/ueda.tech)
+- 20250427 Ryuichi Ueda
+    - bluesky: @ueda.tech (https://bsky.app/profile/ueda.tech)
+
+## contents
 
 - Linux
     - with command_not_found
