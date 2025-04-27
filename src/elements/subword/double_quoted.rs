@@ -97,7 +97,6 @@ impl DoubleQuoted {
         if ! feeder.starts_with("\"") {
             return Ok(None);
         }
-
         let mut ans = Self { text: feeder.consume(1), ..Default::default() };
 
         while Self::eat_element(feeder, &mut ans, core)?
