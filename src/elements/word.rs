@@ -266,6 +266,11 @@ impl Word {
         }
 
         let mut ans = Word::default();
+        if let Some(WordMode::Alias) = mode {
+            let len = feeder.scanner_blank(core);
+            ans.text = feeder.consume(len);
+        }
+
         while let Some(sw) = subword::parse(feeder, core, &mode)? {
             match sw.is_extglob() {
                 false => ans.push(&sw),
