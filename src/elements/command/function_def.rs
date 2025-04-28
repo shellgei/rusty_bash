@@ -153,7 +153,7 @@ impl FunctionDefinition {
             }
         }
 
-        Self::eat_compound_command(feeder, &mut ans, core)?;
+        let result = Self::eat_compound_command(feeder, &mut ans, core);
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
         if let Some(_) = &ans.command {
@@ -164,6 +164,7 @@ impl FunctionDefinition {
             Ok(Some(ans))
         }else{
             feeder.rewind();
+            result?;
             Ok(None)
         }
     }
