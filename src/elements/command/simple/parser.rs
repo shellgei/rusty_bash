@@ -104,7 +104,8 @@ impl SimpleCommand {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        while Self::eat_substitution(feeder, &mut ans, core)? {
+        while command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?
+        || Self::eat_substitution(feeder, &mut ans, core)? {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
 

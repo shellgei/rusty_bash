@@ -179,16 +179,18 @@ fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
 
 pub fn eat_redirects(feeder: &mut Feeder, core: &mut ShellCore,
                      ans_redirects: &mut Vec<Redirect>, ans_text: &mut String) 
-                     -> Result<(), ParseError> {
+                     -> Result<bool, ParseError> {
+    let mut exist = false;
     loop {
         eat_blank_with_comment(feeder, core, ans_text);
         if ! eat_redirect(feeder, core, ans_redirects, ans_text){
             break;
+        }else{
+            exist = true;
         }
     }
 
-
-    Ok(())
+    Ok(exist)
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Command>>, ParseError> {
