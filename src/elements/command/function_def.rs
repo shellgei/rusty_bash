@@ -4,17 +4,11 @@
 use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::utils;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
 use nix::unistd::Pid;
-
-fn reserved(w: &str) -> bool {
-    match w {
-        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" => true,
-        _ => false,
-    }
-}
 
 #[derive(Debug, Clone, Default)]
 pub struct FunctionDefinition {
@@ -91,7 +85,7 @@ impl FunctionDefinition {
         let len = feeder.scanner_name(core);
         ans.name = feeder.consume(len).to_string();
 
-        if ans.name.is_empty() && reserved(&ans.name) {
+        if ans.name.is_empty() && utils::reserved(&ans.name) {
             return false;
         }
         ans.text += &ans.name;
