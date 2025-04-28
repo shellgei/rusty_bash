@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, utils};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
