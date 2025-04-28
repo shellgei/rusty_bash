@@ -114,9 +114,8 @@ impl FunctionDefinition {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        let mut has_function_keyword = false;
-        if feeder.starts_with("function") {
-            has_function_keyword = true;
+        let has_function_keyword = feeder.starts_with("function");
+        if has_function_keyword {
             ans.text += &feeder.consume(8);
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
