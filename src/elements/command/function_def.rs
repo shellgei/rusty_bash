@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
+use super::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
 
 #[derive(Debug, Clone, Default)]
 pub struct FunctionDefinition {
@@ -25,22 +26,37 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
+    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+        let len = feeder.scanner_name(core);
+        ans.name = feeder.consume(len).to_string();
+
+        if ans.name.is_empty() && utils::reserved(&ans.name) {
+            return false;
+        }
+        ans.text += &ans.name;
+        super::eat_blank_with_comment(feeder, core, &mut ans.text);
+
+        true
+    }
+
+    fn eat_compound_command(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+        -> Result<bool, ParseError> {
+        ans.command = if let Some(a) = IfCommand::parse(feeder, core)? { Some(Box::new(a)) }
+        else if let Some(a) = ParenCommand::parse(feeder, core, false)? { Some(Box::new(a)) }
+        else if let Some(a) = BraceCommand::parse(feeder, core)? { Some(Box::new(a)) }
+        else if let Some(a) = WhileCommand::parse(feeder, core)? { Some(Box::new(a)) }
+        else {None};
+ 
+        if let Some(c) = &ans.command {
+            ans.text += &c.get_text();
+            Ok(true)
+        }else{
+            Ok(false)
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
-        let mut ans = Self::default();
-        feeder.set_backup();
-
-        let has_function_keyword = feeder.starts_with("function");
-        if has_function_keyword {
-            ans.text += &feeder.consume(8);
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-        }
-
-        if ! Self::eat_name(feeder, &mut ans, core) {
-            feeder.rewind();
-            return Ok(None);
-        }
-
-
+        return Ok(None);
     }
 }
