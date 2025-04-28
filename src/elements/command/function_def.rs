@@ -30,12 +30,17 @@ impl FunctionDefinition {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        if ans.command.is_some() {
-            feeder.pop_backup();
-            Ok(Some(ans))
-        }else{
-            feeder.rewind();
-            Ok(None)
+        let has_function_keyword = feeder.starts_with("function");
+        if has_function_keyword {
+            ans.text += &feeder.consume(8);
+            command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
+
+        if ! Self::eat_name(feeder, &mut ans, core) {
+            feeder.rewind();
+            return Ok(None);
+        }
+
+
     }
 }
