@@ -5,3 +5,7 @@ pub mod directory;
 pub mod exit;
 pub mod file_check;
 pub mod glob;
+
+pub fn reserved(w: &str) -> bool {
+    matches!(w, "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi")
+}

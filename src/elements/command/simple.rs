@@ -7,6 +7,7 @@ use crate::error::parse::ParseError;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
+use crate::utils;
 use crate::utils::exit;
 use nix::unistd;
 use std::ffi::CString;
@@ -14,10 +15,6 @@ use std::process;
 
 use nix::unistd::Pid;
 use nix::errno::Errno;
-
-fn reserved(w: &str) -> bool {
-    matches!(w, "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi")
-}
 
 #[derive(Debug, Default, Clone)]
 pub struct SimpleCommand {
@@ -103,7 +100,7 @@ impl SimpleCommand {
             _       => return Ok(false),
         };
 
-        if ans.words.is_empty() && reserved(&w.text) {
+        if ans.words.is_empty() && utils::reserved(&w.text) {
             return Ok(false);
         }
         ans.text += &w.text;
