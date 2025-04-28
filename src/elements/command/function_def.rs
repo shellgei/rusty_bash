@@ -142,7 +142,7 @@ impl FunctionDefinition {
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
         Self::eat_compound_command(feeder, &mut ans, core)?;
 
-        if let Some(_) = &ans.command {
+        if ans.command.is_some() {
             feeder.pop_backup();
             if let Some(f) = core.source_files.last() {
                 ans.file = f.clone();
