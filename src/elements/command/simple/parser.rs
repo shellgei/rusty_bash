@@ -92,6 +92,13 @@ impl SimpleCommand {
             command::eat_blank_with_comment(&mut feeder_local, core, &mut self.text);
         }
 
+        if let Some(lst) = self.words.last() {
+            if lst.text == "\\" {
+                self.words.pop();
+                feeder_local.replace(0, "\\");
+            }
+        }
+
         if self.words.is_empty() && self.substitutions.is_empty() {
             return Err(ParseError::WrongAlias(w));
         }
