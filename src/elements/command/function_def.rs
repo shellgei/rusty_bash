@@ -139,22 +139,8 @@ impl FunctionDefinition {
             return Ok(None);
         }
         
-        loop {
-            if feeder.starts_with("\n") {
-                ans.text += &feeder.consume(1);
-                continue;
-            }
-
-            if feeder.len() == 0 {
-                feeder.feed_additional_line(core)?;
-            }
-            if ! command::eat_blank_with_comment(feeder, core, &mut ans.text) {
-                break;
-            }
-        }
-
+        command::eat_blank_lines(feeder, core, &mut ans.text)?;
         Self::eat_compound_command(feeder, &mut ans, core)?;
-        command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
         if let Some(_) = &ans.command {
             feeder.pop_backup();
