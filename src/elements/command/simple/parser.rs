@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder, utils};
 use super::SimpleCommand;
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
 
 impl SimpleCommand {
@@ -82,7 +82,7 @@ impl SimpleCommand {
         }
 
         loop {
-            match Word::parse(&mut feeder_local, core, None) {
+            match Word::parse(&mut feeder_local, core, Some(WordMode::Alias)) {
                 Ok(Some(w)) => {
                     self.text.push_str(&w.text);
                     self.words.push(w);

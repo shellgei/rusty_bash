@@ -153,6 +153,13 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
                 Ok(Some(From::from(&feeder.consume(1))))
             }
         },
+        Some(WordMode::Alias) => {
+            if feeder.starts_with("\t") {
+                Ok(Some(From::from(&feeder.consume(1))))
+            }else{
+                Ok(None)
+            }
+        },
         _ => Ok(None),
     }
 }

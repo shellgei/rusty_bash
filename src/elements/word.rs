@@ -15,6 +15,7 @@ use super::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
+    Alias,
     Arithmetric,
     CompgenF,
     ReadCommand,
