@@ -27,6 +27,15 @@ impl Command for FunctionDefinition {
 impl FunctionDefinition {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
-        return Ok(None);
+        let mut ans = Self::default();
+        feeder.set_backup();
+
+        if ans.command.is_some() {
+            feeder.pop_backup();
+            Ok(Some(ans))
+        }else{
+            feeder.rewind();
+            Ok(None)
+        }
     }
 }
