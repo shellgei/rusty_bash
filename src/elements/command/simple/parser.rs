@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder, utils};
 use super::SimpleCommand;
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
 
 impl SimpleCommand {
@@ -44,8 +44,8 @@ impl SimpleCommand {
             ans.command_name = w.text.clone();
         }
 
-        if ans.words.is_empty() {
-            if Self::set_alias(&w, &mut ans.words, &mut ans.text, core, feeder)? {
+        if ans.words.is_empty() || ans.continue_alias_check {
+            if ans.set_alias(&w, core, feeder)? {
                 return Ok(true);
             }
         }
@@ -56,26 +56,50 @@ impl SimpleCommand {
         Ok(true)
     }
 
-    fn set_alias(word: &Word, words: &mut Vec<Word>, text: &mut String,
+    fn set_alias(&mut self, word: &Word,
                  core: &mut ShellCore, feeder: &mut Feeder) -> Result<bool, ParseError> {
+        self.continue_alias_check = false;
         let mut w = word.text.clone();
         if ! core.replace_alias(&mut w) {
             return Ok(false);
         }
 
+        self.continue_alias_check = w.ends_with(" ");
+
         let mut feeder_local = Feeder::new(&mut w);
+
         loop {
-            match Word::parse(&mut feeder_local, core, None) {
+            if let Some(s) = Substitution::parse(&mut feeder_local, core)? {
+                self.text += &s.text;
+                match self.command_name.as_ref() {
+                    "local" | "eval" | "export"  => self.substitutions_as_args.push(s),
+                    _ => self.substitutions.push(s),
+                }
+                command::eat_blank_with_comment(&mut feeder_local, core, &mut self.text);
+            }else{
+                break;
+            }
+        }
+
+        loop {
+            match Word::parse(&mut feeder_local, core, Some(WordMode::Alias)) {
                 Ok(Some(w)) => {
-                    text.push_str(&w.text);
-                    words.push(w);
+                    self.text.push_str(&w.text);
+                    self.words.push(w);
                 },
                 _    => break,
             }
-            command::eat_blank_with_comment(&mut feeder_local, core, text);
+            command::eat_blank_with_comment(&mut feeder_local, core, &mut self.text);
         }
 
-        if words.is_empty() {
+        if let Some(lst) = self.words.last() {
+            if lst.text == "\\" {
+                self.words.pop();
+                feeder_local.replace(0, "\\");
+            }
+        }
+
+        if self.words.is_empty() && self.substitutions.is_empty() {
             return Err(ParseError::WrongAlias(w));
         }
 
@@ -87,7 +111,8 @@ impl SimpleCommand {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        while Self::eat_substitution(feeder, &mut ans, core)? {
+        while command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?
+        || Self::eat_substitution(feeder, &mut ans, core)? {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
 

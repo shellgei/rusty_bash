@@ -6,7 +6,7 @@ use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::{Feeder, ShellCore};
 use crate::elements::io;
-//use crate::elements::subword::Subword;
+use crate::elements::word::WordMode;
 use crate::elements::subword;
 use crate::elements::subword::filler::FillerSubword;
 use crate::elements::word::Word;
@@ -241,7 +241,7 @@ impl Redirect {
                 }
             }
 
-            if let Some(mut sw) = subword::parse(feeder, core, &None)? {
+            if let Some(mut sw) = subword::parse(feeder, core, &Some(WordMode::Heredoc))? {
                 sw.set_heredoc_flag();
                 self.here_data.text += sw.get_text();
                 self.here_data.subwords.push(sw);

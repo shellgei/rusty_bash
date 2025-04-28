@@ -24,6 +24,7 @@ pub struct SimpleCommand {
     substitutions_as_args: Vec<Substitution>,
     command_name: String,
     lineno: usize,
+    continue_alias_check: bool,
 }
 
 

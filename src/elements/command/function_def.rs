@@ -4,17 +4,11 @@
 use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::utils;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
 use nix::unistd::Pid;
-
-fn reserved(w: &str) -> bool {
-    match w {
-        "{" | "}" | "while" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" => true,
-        _ => false,
-    }
-}
 
 #[derive(Debug, Clone, Default)]
 pub struct FunctionDefinition {
@@ -91,7 +85,7 @@ impl FunctionDefinition {
         let len = feeder.scanner_name(core);
         ans.name = feeder.consume(len).to_string();
 
-        if ans.name.is_empty() && reserved(&ans.name) {
+        if ans.name.is_empty() && utils::reserved(&ans.name) {
             return false;
         }
         ans.text += &ans.name;
@@ -120,9 +114,8 @@ impl FunctionDefinition {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        let mut has_function_keyword = false;
-        if feeder.starts_with("function") {
-            has_function_keyword = true;
+        let has_function_keyword = feeder.starts_with("function");
+        if has_function_keyword {
             ans.text += &feeder.consume(8);
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
         }
@@ -139,24 +132,10 @@ impl FunctionDefinition {
             return Ok(None);
         }
         
-        loop {
-            if feeder.starts_with("\n") {
-                ans.text += &feeder.consume(1);
-                continue;
-            }
-
-            if feeder.len() == 0 {
-                feeder.feed_additional_line(core)?;
-            }
-            if ! command::eat_blank_with_comment(feeder, core, &mut ans.text) {
-                break;
-            }
-        }
-
+        let _ = command::eat_blank_lines(feeder, core, &mut ans.text);
         let result = Self::eat_compound_command(feeder, &mut ans, core);
-        command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
-        if let Some(_) = &ans.command {
+        if ans.command.is_some() {
             feeder.pop_backup();
             if let Some(f) = core.source_files.last() {
                 ans.file = f.clone();

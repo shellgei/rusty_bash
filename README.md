@@ -7,7 +7,7 @@
 
 ## NEWS
 
-Bash-completion starts working on our shell!
+Bash-completion starts working on our shell! ([how to use](docs/SETUP_BASH_COMPLETION.md))
 
 ![completion](https://github.com/user-attachments/assets/e4af177c-3fdd-4f59-a70b-9c97df96b4bc)
 
@@ -36,14 +36,14 @@ $ cd rusty_bash
 $ cargo build --release
 ### ↓  Change /bin/ to /usr/local/bin/ or another path in $PATH if you are using Mac or BSD ###
 $ sudo cp target/release/sush /bin/
-$ cp .sushrc_for_linux ~/.sushrc # edit if some errors occur
+$ cp .sushrc ~/.sushrc # edit if some errors occur
 $ sush
 ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 ```
 
 ## Comparison with Bash 5.2
 
-This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed seven of 84 test scripts. Because the test scripts are composed of edge cases, it never means our shell covers only 7/84 features of Bash.
+This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed 15 of 84 test scripts. 
 
 ![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
 
@@ -234,5 +234,5 @@ Partially in Japanese.
 
 © 2022-2025 shellgei group
 
-- Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi.shellgei.org/@ru), [@ryuichiueda@misskey.io](https://misskey.io/@ryuichiueda)
+- Ryuichi Ueda: [@ry@mi.shellgei.org](https://mi.shellgei.org/@ru), @ueda.tech (https://bsky.app/profile/ueda.tech)
 - [@caro@mi.shellgei.org](https://mi.shellgei.org/@caro)

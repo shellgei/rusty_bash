@@ -236,6 +236,7 @@ impl ShellCore {
 
         let mut ans = false;
         let mut prev_head = "".to_string();
+        let history = vec![word.clone()];
 
         loop {
             let head = match word.replace("\n", " ").split(' ').nth(0) {
@@ -249,6 +250,9 @@ impl ShellCore {
     
             if let Some(value) = self.aliases.get(&head) {
                 *word = word.replacen(&head, value, 1);
+                if history.contains(word) {
+                    return false;
+                }
                 ans = true;
             }
             prev_head = head;

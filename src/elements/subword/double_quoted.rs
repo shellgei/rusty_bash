@@ -4,9 +4,8 @@
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use crate::elements::word::{Word, substitution};
-use crate::elements::subword::CommandSubstitution;
-use crate::elements::subword::Arithmetic;
+use crate::elements::word::{Word, WordMode, substitution};
+use crate::elements::subword::{Arithmetic, CommandSubstitution};
 use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone, Default)]
@@ -173,10 +172,15 @@ impl DoubleQuoted {
         Ok(false)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+                 mode: &Option<WordMode>) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("\"") && ! feeder.starts_with("$\"")  {
             return Ok(None);
         }
+        if let Some(WordMode::Heredoc) = mode {
+            return Ok(None);
+        }
+
         let mut ans = Self::default();
 
         let len = if feeder.starts_with("\""){1}else{2};
