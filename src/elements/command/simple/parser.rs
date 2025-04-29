@@ -103,7 +103,6 @@ impl SimpleCommand {
 
         if self.words.is_empty() && self.substitutions.is_empty() {
             self.invalid_alias = true;
-            command::eat_blank_with_comment(feeder, core, &mut self.text);
             return Ok(false);
         }
 
