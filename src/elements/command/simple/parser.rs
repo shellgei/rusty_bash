@@ -84,6 +84,9 @@ impl SimpleCommand {
         loop {
             match Word::parse(&mut feeder_local, core, Some(WordMode::Alias)) {
                 Ok(Some(w)) => {
+                    if w.text.starts_with("#") && self.words.is_empty() {
+                        break;
+                    }
                     self.text.push_str(&w.text);
                     self.words.push(w);
                 },
