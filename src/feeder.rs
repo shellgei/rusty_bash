@@ -20,6 +20,8 @@ pub struct Feeder {
     pub lineno_addition: usize,
     script_lines: Option<Lines<BufReader<File>>>,
     pub main_feeder: bool,
+    c_mode_buffer: Vec<String>,
+    c_mode: bool,
 }
 
 impl Feeder {
@@ -28,6 +30,16 @@ impl Feeder {
             remaining: s.to_string(),
             nest: vec![("".to_string(), vec![])],
             lineno: 1,
+            ..Default::default()
+        }
+    }
+
+    pub fn new_c_mode(s: String) -> Feeder {
+        Feeder {
+            nest: vec![("".to_string(), vec![])],
+            lineno: 1,
+            c_mode_buffer: s.split('\n').map(|s| s.to_string()).collect(),
+            c_mode: true,
             ..Default::default()
         }
     }
@@ -83,6 +95,15 @@ impl Feeder {
     }   
 
     fn read_script(&mut self) -> Result<String, InputError> {
+        if self.c_mode {
+            if self.c_mode_buffer.is_empty() {
+                return Err(InputError::Eof);
+            }
+
+            return Ok(self.c_mode_buffer.remove(0) + "\n");
+
+        }
+
         if let Some(lines) = self.script_lines.as_mut() {
             match lines.next() {
                 Some(Ok(line)) => return Ok(line + "\n"),

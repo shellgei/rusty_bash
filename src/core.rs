@@ -78,7 +78,6 @@ impl ShellCore {
         let mut core = ShellCore{
             db: DataBase::new(),
             sigint: Arc::new(AtomicBool::new(false)),
-            //read_stdin: true,
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             script_name: "-".to_string(),
@@ -95,7 +94,6 @@ impl ShellCore {
 
         if unistd::isatty(0) == Ok(true) {
             core.db.flags += "imH";
-            //core.read_stdin = false;
             let _ = core.db.set_param("PS1", "🍣 ", None);
             let _ = core.db.set_param("PS2", "> ", None);
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
@@ -114,6 +112,32 @@ impl ShellCore {
                 }
                 core.compat_bash = true;
             },
+            _ => {},
+        };
+
+        core
+    }
+
+    pub fn new_c_mode() -> ShellCore {
+        let mut core = ShellCore{
+            db: DataBase::new(),
+            sigint: Arc::new(AtomicBool::new(false)),
+            options: Options::new_as_basic_opts(),
+            shopts: Options::new_as_shopts(),
+            script_name: "-".to_string(),
+            ..Default::default()
+        };
+
+        core.init_current_directory();
+        core.set_initial_parameters();
+        core.set_builtins();
+        signal::ignore(Signal::SIGPIPE);
+        signal::ignore(Signal::SIGTSTP);
+
+        core.db.flags += "m";
+
+        match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+            Ok("1") => core.compat_bash = true,
             _ => {},
         };
 

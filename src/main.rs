@@ -150,7 +150,6 @@ fn main_loop(core: &mut ShellCore) {
             _ => break,
         }
 
-        //core.word_eval_error = false;
         core.sigint.store(false, Relaxed);
         match Script::parse(&mut feeder, core, false){
             Ok(Some(mut s)) => {
@@ -181,7 +180,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
         process::exit(2);                
     }
 
-    let mut core = ShellCore::new();
+    let mut core = ShellCore::new_c_mode();
     if compat_bash {
         core.compat_bash = true;
         core.db.flags += "b";
@@ -211,7 +210,49 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
         eprintln!("{}", &c_parts[1]);
     }
 
-    let mut feeder = Feeder::new(&c_parts[1]);
+    let mut feeder = Feeder::new_c_mode(c_parts[1].clone());
+    feeder.main_feeder = true;
+
+    loop {
+        if let Err(e) = core.jobtable_check_status() {
+            e.print(&mut core);
+        }
+        core.jobtable_print_status_change();
+
+        match feeder.feed_line(&mut core) {
+            Ok(()) => {}, 
+            Err(InputError::Interrupt) => {
+                signal::input_interrupt_check(&mut feeder, &mut core);
+                signal::check_trap(&mut &mut core);
+                continue;
+            },
+            _ => break,
+        }
+
+        core.sigint.store(false, Relaxed);
+        match Script::parse(&mut feeder, &mut core, false){
+            Ok(Some(mut s)) => {
+                if let Err(e) = s.exec(&mut core) {
+                    e.print(&mut core);
+                }
+            },
+            Err(e) => {
+                e.print(&mut core);
+                feeder.consume(feeder.len());
+                feeder.nest = vec![("".to_string(), vec![])];
+            },
+            _ => {
+                feeder.consume(feeder.len());
+                feeder.nest = vec![("".to_string(), vec![])];
+            },
+        }
+        core.sigint.store(false, Relaxed);
+    }
+    exit::normal(&mut core);
+
+
+    /*
+
     match Script::parse(&mut feeder, &mut core, false){
         Ok(Some(mut s)) => {
             if let Err(e) = s.exec(&mut core) {
@@ -222,4 +263,5 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
         _ => {},
     }
     exit::normal(&mut core)
+    */
 }
