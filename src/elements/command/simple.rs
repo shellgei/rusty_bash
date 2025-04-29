@@ -26,6 +26,7 @@ pub struct SimpleCommand {
     lineno: usize,
     continue_alias_check: bool,
     invalid_alias: bool,
+    hash_p: bool,
 }
 
 
@@ -68,7 +69,7 @@ impl Command for SimpleCommand {
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
             let _ = self.set_environment_variables(core);
-            proc_ctrl::exec_command(&self.args, core);
+            proc_ctrl::exec_command(&self.args, core, ! self.hash_p);
         }
 
         core.db.pop_local();
@@ -91,8 +92,18 @@ impl SimpleCommand {
         core.break_counter > 0 || core.continue_counter > 0 
     }
 
+    fn hash_p_procedure(&mut self) {
+        if self.args.len() > 2 && self.args[0] == "hash" && self.args[1] == "-p" {
+            self.hash_p = true;
+            self.args.remove(0);
+            self.args.remove(0);
+        }
+    }
+
     pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         Self::check_sigint(core)?;
+
+        self.hash_p_procedure();
 
         core.db.last_arg = self.args.last().unwrap().clone();
         self.option_x_output(core);

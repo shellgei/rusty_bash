@@ -135,10 +135,15 @@ fn show_time(core: &ShellCore) {
                sys_diff.tv_sec()%60, sys_diff.tv_usec());
 }
 
-pub fn exec_command(args: &Vec<String>, core: &mut ShellCore) -> ! {
+pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, path_search: bool) -> ! {
     let cargs = to_cargs(args);
 
-    match unistd::execvp(&cargs[0], &cargs) {
+    let result = match path_search {
+        true  => unistd::execvp(&cargs[0], &cargs),
+        false => unistd::execv(&cargs[0], &cargs),
+    };
+
+    match result {
         Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),
         Err(Errno::EACCES) => exit::permission_denied(&args[0], core),
         Err(Errno::ENOENT) => run_command_not_found(&args[0], core),

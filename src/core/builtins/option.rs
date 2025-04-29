@@ -25,7 +25,9 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
         let pm = a.chars().nth(0).unwrap();
         let ch = a.chars().nth(1).unwrap();
 
-        if (pm != '-' && pm != '+') || "xveBH".find(ch).is_none() {
+        if (pm != '-' && pm != '+')
+        || (pm == '+' && ch == 'r')
+        || "rxveBH".find(ch).is_none() {
             return Err(ExecError::InvalidOption(a.to_string()));
         }
 

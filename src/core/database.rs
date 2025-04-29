@@ -57,6 +57,12 @@ impl DataBase {
             self.exit_status = 1;
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
+
+        if self.flags.contains('r') {
+            if ["SHELL", "PATH", "ENV", "BASH_ENV"].contains(&name) {
+                return Err(ExecError::VariableReadOnly(name.to_string()));
+            }
+        }
         Ok(())
     }
 
