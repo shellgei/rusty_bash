@@ -99,11 +99,14 @@ impl SimpleCommand {
             }
         }
 
+        feeder.replace(0, &feeder_local.consume(feeder_local.len()));
+
         if self.words.is_empty() && self.substitutions.is_empty() {
-            return Err(ParseError::WrongAlias(w));
+            self.invalid_alias = true;
+            command::eat_blank_with_comment(feeder, core, &mut self.text);
+            return Ok(false);
         }
 
-        feeder.replace(0, &feeder_local.consume(feeder_local.len()));
         Ok(true)
     }
 
@@ -127,6 +130,12 @@ impl SimpleCommand {
             if ! Self::eat_word(feeder, &mut ans, core)? {
                 break;
             }
+        }
+
+        if ans.invalid_alias {
+            feeder.pop_backup();
+            feeder.consume(feeder.len());
+            return Ok(None);
         }
 
         if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {

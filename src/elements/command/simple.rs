@@ -25,6 +25,7 @@ pub struct SimpleCommand {
     command_name: String,
     lineno: usize,
     continue_alias_check: bool,
+    invalid_alias: bool,
 }
 
 
