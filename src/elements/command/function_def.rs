@@ -26,29 +26,29 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
-    fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_name(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
-        ans.name = feeder.consume(len).to_string();
+        self.name = feeder.consume(len).to_string();
 
-        if ans.name.is_empty() && utils::reserved(&ans.name) {
+        if self.name.is_empty() && utils::reserved(&self.name) {
             return false;
         }
-        ans.text += &ans.name;
-        super::eat_blank_with_comment(feeder, core, &mut ans.text);
+        self.text += &self.name;
+        super::eat_blank_with_comment(feeder, core, &mut self.text);
 
         true
     }
 
-    fn eat_compound_command(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    fn eat_compound_command(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
         -> Result<bool, ParseError> {
-        ans.command = if let Some(a) = IfCommand::parse(feeder, core)? { Some(Box::new(a)) }
+        self.command = if let Some(a) = IfCommand::parse(feeder, core)? { Some(Box::new(a)) }
         else if let Some(a) = ParenCommand::parse(feeder, core, false)? { Some(Box::new(a)) }
         else if let Some(a) = BraceCommand::parse(feeder, core)? { Some(Box::new(a)) }
         else if let Some(a) = WhileCommand::parse(feeder, core)? { Some(Box::new(a)) }
         else {None};
  
-        if let Some(c) = &ans.command {
-            ans.text += &c.get_text();
+        if let Some(c) = &self.command {
+            self.text += &c.get_text();
             Ok(true)
         }else{
             Ok(false)
