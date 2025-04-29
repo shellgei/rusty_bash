@@ -69,6 +69,10 @@ impl Command for SimpleCommand {
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
             let _ = self.set_environment_variables(core);
+
+            if core.hash.contains_key(&self.args[0]) {
+                self.args[0] = core.hash[&self.args[0]].clone();
+            }
             proc_ctrl::exec_command(&self.args, core, ! self.hash_p);
         }
 
@@ -92,18 +96,8 @@ impl SimpleCommand {
         core.break_counter > 0 || core.continue_counter > 0 
     }
 
-    fn hash_p_procedure(&mut self) {
-        if self.args.len() > 2 && self.args[0] == "hash" && self.args[1] == "-p" {
-            self.hash_p = true;
-            self.args.remove(0);
-            self.args.remove(0);
-        }
-    }
-
     pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         Self::check_sigint(core)?;
-
-        self.hash_p_procedure();
 
         core.db.last_arg = self.args.last().unwrap().clone();
         self.option_x_output(core);

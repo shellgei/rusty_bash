@@ -60,6 +60,7 @@ impl ShellCore {
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("fg".to_string(), job_commands::fg);
         self.builtins.insert("getopts".to_string(), getopts::getopts);
+        self.builtins.insert("hash".to_string(), hash);
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
         self.builtins.insert("let".to_string(), let_);
@@ -221,6 +222,21 @@ pub fn bind(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 pub fn debug(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     dbg!("{:?}", &args);
     dbg!("{:?}", &core.db.get_param("depth"));
+    0
+}
+
+pub fn hash(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+    if arg::consume_option("-p", &mut args) {
+        if args.len() == 1 {
+            return error_exit(1, "hash", "-p: option requires an argument", core);
+        }
+        if args.len() == 2 {
+            return error_exit(1, "hash", "still not implemented", core);
+        }
+
+        core.hash.insert(args[2].clone(), args[1].clone()); 
+    }
     0
 }
 
