@@ -138,14 +138,11 @@ pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String)
     let cargs = to_cargs(args);
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
-    let mut result = match fullpath.is_empty() {
-        true  => unistd::execvp(&cargs[0], &cargs),
-        false => unistd::execv(&cfullpath, &cargs),
-    };
-
-    if result.is_err() {
-        result = unistd::execvp(&cargs[0], &cargs);
+    if ! fullpath.is_empty() {
+        let _ = unistd::execv(&cfullpath, &cargs);
+    
     }
+    let result = unistd::execvp(&cargs[0], &cargs);
 
     match result {
         Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),
