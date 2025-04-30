@@ -46,7 +46,6 @@ pub struct ShellCore {
     pub aliases: HashMap<String, String>,
     pub alias_memo: Vec<(String, String)>,
     pub rewritten_history: HashMap<usize, String>,
-    pub hash: HashMap<String, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
     pub sigint: Arc<AtomicBool>,

@@ -235,7 +235,9 @@ pub fn hash(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return error_exit(1, "hash", "still not implemented", core);
         }
 
-        core.hash.insert(args[2].clone(), args[1].clone()); 
+        if core.db.set_assoc_elem("BASH_CMDS", &args[2], &args[1], None).is_err() {
+            return error_exit(1, "hash", "BASH_CMDS not found", core);
+        }
     }
     0
 }

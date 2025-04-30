@@ -6,6 +6,7 @@ pub mod parser;
 use crate::{proc_ctrl, ShellCore};
 
 use crate::error::exec::ExecError;
+use crate::utils;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -26,7 +27,7 @@ pub struct SimpleCommand {
     lineno: usize,
     continue_alias_check: bool,
     invalid_alias: bool,
-    hash_p: bool,
+    path_search: bool,
 }
 
 
@@ -69,11 +70,7 @@ impl Command for SimpleCommand {
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
             let _ = self.set_environment_variables(core);
-
-            if core.hash.contains_key(&self.args[0]) {
-                self.args[0] = core.hash[&self.args[0]].clone();
-            }
-            proc_ctrl::exec_command(&self.args, core, ! self.hash_p);
+            proc_ctrl::exec_command(&self.args, core, self.path_search);
         }
 
         core.db.pop_local();
@@ -106,6 +103,7 @@ impl SimpleCommand {
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.db.functions.contains_key(&self.args[0]) ) {
+            self.path_search = self.hash_control(core)?;
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core)
@@ -191,5 +189,28 @@ impl SimpleCommand {
         }
 
         eprintln!("");
+    }
+
+    fn hash_control(&mut self, core: &mut ShellCore) -> Result<bool, ExecError> {
+        if self.args[0].starts_with("/")
+        || self.args[0].starts_with("./")
+        || self.args[0].starts_with("../") {
+            return Ok(false);
+        }
+
+        let hash = core.db.get_array_elem("BASH_CMDS", &self.args[0])?;
+
+        if hash.is_empty() {
+            let path = utils::get_command_path(&self.args[0], core);
+            if path != "" {
+                core.db.set_assoc_elem("BASH_CMDS", &self.args[0], &path, None)?;
+                self.args[0] = path;
+                return Ok(false);
+            }
+        }else{
+            self.args[0] = hash.clone();
+            return Ok(false);
+        }
+        Ok(true)
     }
 }

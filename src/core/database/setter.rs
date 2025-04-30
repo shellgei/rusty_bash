@@ -29,6 +29,7 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.params[0].insert( "EPOCHREALTIME".to_string(), Box::new(EpochRealTime{} ) );
 
     db.set_array("FUNCNAME", vec![], None)?;
+    db.set_assoc("BASH_CMDS", None)?;
     Ok(())
 }
 

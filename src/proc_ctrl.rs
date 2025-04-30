@@ -1,8 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{exit, Feeder, Script, ShellCore, signal};
-use crate::error;
+use crate::{exit, error, Feeder, Script, ShellCore, signal};
 use crate::error::exec::ExecError;
 use nix::unistd;
 use nix::errno::Errno;
