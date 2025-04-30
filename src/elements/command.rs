@@ -117,6 +117,24 @@ fn eat_blank_with_comment(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &
     true
 }
 
+pub fn eat_blank_lines(feeder: &mut Feeder, core: &mut ShellCore, ans_text: &mut String)
+-> Result<(), ParseError> {
+    loop {
+        eat_blank_with_comment(feeder, core, ans_text);
+        if feeder.starts_with("\n") {
+            *ans_text += &feeder.consume(1);
+            continue;
+        }
+
+        if feeder.len() == 0 {
+            feeder.feed_additional_line(core)?;
+            continue;
+        }
+
+        return Ok(());
+    }
+}
+
 fn eat_redirect(feeder: &mut Feeder, core: &mut ShellCore,
                      ans: &mut Vec<Redirect>, ans_text: &mut String) -> Result<bool, ParseError> {
     if let Some(r) = Redirect::parse(feeder, core)? {
