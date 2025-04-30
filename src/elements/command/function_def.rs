@@ -81,7 +81,13 @@ impl FunctionDefinition {
         pid
     }
 
-    fn eat_name(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+    fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+        let has_function_keyword = feeder.starts_with("function");
+        if has_function_keyword {
+            self.text += &feeder.consume(8);
+            command::eat_blank_with_comment(feeder, core, &mut self.text);
+        }
+
         let len = feeder.scanner_name(core);
         self.name = feeder.consume(len).to_string();
 
@@ -91,11 +97,17 @@ impl FunctionDefinition {
         self.text += &self.name;
         command::eat_blank_with_comment(feeder, core, &mut self.text);
 
+        if feeder.starts_with("()") {
+            self.text += &feeder.consume(2);
+        }else if ! has_function_keyword {
+            return false;
+        }
+
+        let _ = command::eat_blank_lines(feeder, core, &mut self.text);
         true
     }
 
-    fn eat_compound_command(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
+    fn eat_body(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
         self.command = if let Some(a) = IfCommand::parse(feeder, core)? { Some(Box::new(a)) }
         else if let Some(a) = ParenCommand::parse(feeder, core, false)? { Some(Box::new(a)) }
         else if let Some(a) = BraceCommand::parse(feeder, core)? { Some(Box::new(a)) }
@@ -104,36 +116,23 @@ impl FunctionDefinition {
 
         if let Some(c) = &self.command {
             self.text += &c.get_text();
-            Ok(true)
-        }else{
-            Ok(false)
         }
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        let has_function_keyword = feeder.starts_with("function");
-        if has_function_keyword {
-            ans.text += &feeder.consume(8);
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-        }
-
-        if ! ans.eat_name(feeder, core) {
+        if ! ans.eat_header(feeder, core) {
             feeder.rewind();
             return Ok(None);
         }
 
-        if feeder.starts_with("()") {
-            ans.text += &feeder.consume(2);
-        }else if ! has_function_keyword {
+        if let Err(e) = ans.eat_body(feeder, core) {
             feeder.rewind();
-            return Ok(None);
+            return Err(e);
         }
-        
-        let _ = command::eat_blank_lines(feeder, core, &mut ans.text);
-        let result = ans.eat_compound_command(feeder, core);
 
         if ans.command.is_some() {
             feeder.pop_backup();
@@ -143,7 +142,6 @@ impl FunctionDefinition {
             Ok(Some(ans))
         }else{
             feeder.rewind();
-            result?;
             Ok(None)
         }
     }
