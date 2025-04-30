@@ -67,6 +67,26 @@ impl FunctionDefinition {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
-        return Ok(None);
+        let mut ans = Self::default();
+        feeder.set_backup();
+
+        if ! ans.eat_header(feeder, core) {
+            feeder.rewind();
+            return Ok(None);
+        }
+
+        if let Err(e) = ans.eat_body(feeder, core) {
+            feeder.rewind();
+            return Err(e);
+        }
+
+        if ans.command.is_some() {
+            feeder.pop_backup();
+            dbg!("{:?}", &ans);
+            Ok(Some(ans))
+        }else{
+            feeder.rewind();
+            Ok(None)
+        }
     }
 }
