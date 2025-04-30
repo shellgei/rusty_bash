@@ -30,7 +30,7 @@ impl FunctionDefinition {
         let has_function_keyword = feeder.starts_with("function");
         if has_function_keyword {
             self.text += &feeder.consume(8);
-            command::eat_blank_with_comment(feeder, core, &mut self.text);
+            super::eat_blank_with_comment(feeder, core, &mut self.text);
         }
 
         let len = feeder.scanner_name(core);
@@ -40,7 +40,7 @@ impl FunctionDefinition {
             return false;
         }
         self.text += &self.name;
-        command::eat_blank_with_comment(feeder, core, &mut self.text);
+        super::eat_blank_with_comment(feeder, core, &mut self.text);
 
         if feeder.starts_with("()") {
             self.text += &feeder.consume(2);
@@ -48,11 +48,22 @@ impl FunctionDefinition {
             return false;
         }
 
-        let _ = command::eat_blank_lines(feeder, core, &mut self.text);
+        let _ = super::eat_blank_lines(feeder, core, &mut self.text);
         true
     } 
 
+    fn eat_body(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        self.command = if let Some(a) = IfCommand::parse(feeder, core)? { Some(Box::new(a)) }
+        else if let Some(a) = ParenCommand::parse(feeder, core, false)? { Some(Box::new(a)) }
+        else if let Some(a) = BraceCommand::parse(feeder, core)? { Some(Box::new(a)) }
+        else if let Some(a) = WhileCommand::parse(feeder, core)? { Some(Box::new(a)) }
+        else {None};
 
+        if let Some(c) = &self.command {
+            self.text += &c.get_text();
+        }
+        Ok(())
+    }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
