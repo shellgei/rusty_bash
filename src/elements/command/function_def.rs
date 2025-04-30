@@ -11,14 +11,14 @@ pub struct FunctionDefinition {
     pub text: String,
     name: String,
     command: Option<Box<dyn Command>>,
-    redirects: Vec<Redirect>,
+    _dummy: Vec<Redirect>,
     force_fork: bool,
 }
 
 impl Command for FunctionDefinition {
     fn run(&mut self, _: &mut ShellCore, _: bool) -> Result<(), ExecError> {Ok(())}
     fn get_text(&self) -> String { self.text.clone() }
-    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self._dummy }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn force_fork(&self) -> bool { self.force_fork }
