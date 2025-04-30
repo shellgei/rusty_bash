@@ -134,13 +134,18 @@ fn show_time(core: &ShellCore) {
                sys_diff.tv_sec()%60, sys_diff.tv_usec());
 }
 
-pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, path_search: bool) -> ! {
+pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> ! {
     let cargs = to_cargs(args);
+    let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
-    let result = match path_search {
+    let mut result = match fullpath.is_empty() {
         true  => unistd::execvp(&cargs[0], &cargs),
-        false => unistd::execv(&cargs[0], &cargs),
+        false => unistd::execv(&cfullpath, &cargs),
     };
+
+    if result.is_err() {
+        result = unistd::execvp(&cargs[0], &cargs);
+    }
 
     match result {
         Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),

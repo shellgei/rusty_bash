@@ -27,7 +27,7 @@ pub struct SimpleCommand {
     lineno: usize,
     continue_alias_check: bool,
     invalid_alias: bool,
-    path_search: bool,
+    command_path: String,
 }
 
 
@@ -70,7 +70,7 @@ impl Command for SimpleCommand {
             core.run_builtin(&mut self.args, &mut special_args);
         } else {
             let _ = self.set_environment_variables(core);
-            proc_ctrl::exec_command(&self.args, core, self.path_search);
+            proc_ctrl::exec_command(&self.args, core, &self.command_path);
         }
 
         core.db.pop_local();
@@ -103,7 +103,7 @@ impl SimpleCommand {
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.db.functions.contains_key(&self.args[0]) ) {
-            self.path_search = self.hash_control(core)?;
+            self.command_path = self.hash_control(core)?;
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core)
@@ -191,11 +191,11 @@ impl SimpleCommand {
         eprintln!("");
     }
 
-    fn hash_control(&mut self, core: &mut ShellCore) -> Result<bool, ExecError> {
+    fn hash_control(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         if self.args[0].starts_with("/")
         || self.args[0].starts_with("./")
         || self.args[0].starts_with("../") {
-            return Ok(false);
+            return Ok(self.args[0].clone());
         }
 
         let hash = core.db.get_array_elem("BASH_CMDS", &self.args[0])?;
@@ -204,13 +204,11 @@ impl SimpleCommand {
             let path = utils::get_command_path(&self.args[0], core);
             if path != "" {
                 core.db.set_assoc_elem("BASH_CMDS", &self.args[0], &path, None)?;
-                self.args[0] = path;
-                return Ok(false);
+                return Ok(path);
             }
         }else{
-            self.args[0] = hash.clone();
-            return Ok(false);
+            return Ok(hash);
         }
-        Ok(true)
+        Ok(String::new())
     }
 }
