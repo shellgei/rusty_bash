@@ -56,6 +56,7 @@ impl ShellCore {
         self.builtins.insert("declare".to_string(), parameter::declare);
         self.builtins.insert("debug".to_string(), debug);
         self.builtins.insert("eval".to_string(), eval);
+        self.builtins.insert("exec".to_string(), exec);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("export".to_string(), parameter::export);
         self.builtins.insert("false".to_string(), false_);
@@ -202,6 +203,13 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     core.eval_level -= 1;
     core.db.exit_status
+}
+
+pub fn exec(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() == 1 {
+        args.push("sush".to_string());
+    }
+    proc_ctrl::exec_command(&args[1..].to_vec(), core, &"".to_string())
 }
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
