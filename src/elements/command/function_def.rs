@@ -17,6 +17,11 @@ pub struct FunctionDefinition {
 }
 
 impl Command for FunctionDefinition {
+    fn exec(&mut self, core: &mut ShellCore, _: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+        core.db.functions.insert(self.name.to_string(), self.clone());
+        Ok(None)
+    }
+
     fn run(&mut self, _: &mut ShellCore, _: bool) -> Result<(), ExecError> {Ok(())}
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self._dummy }
