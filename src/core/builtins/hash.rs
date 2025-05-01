@@ -10,7 +10,7 @@ fn print_all(core: &mut ShellCore) -> i32 {
     for com in core.db.get_indexes_all("BASH_CMDS") {
         if let Ok(path) = core.db.get_array_elem("BASH_CMDS", &com) {
             if let Some(n) = core.db.hash_counter.get(&com) {
-                println!("{:4}  {}", &n, &path);
+                println!("{:4}\t{}", &n, &path);
             }
         }
     }
