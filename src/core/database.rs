@@ -60,7 +60,7 @@ impl DataBase {
         }
 
         if self.flags.contains('r') {
-            if ["SHELL", "PATH", "ENV", "BASH_ENV"].contains(&name) {
+            if ["SHELL", "PATH", "ENV", "BASH_ENV", "BASH_CMDS"].contains(&name) {
                 return Err(ExecError::VariableReadOnly(name.to_string()));
             }
         }
