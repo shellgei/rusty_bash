@@ -33,8 +33,9 @@ pub fn hash(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return super::error_exit(1, "hash", "still not implemented", core);
         }
 
-        if core.db.set_assoc_elem("BASH_CMDS", &args[2], &args[1], None).is_err() {
-            return super::error_exit(1, "hash", "BASH_CMDS not found", core);
+        if let Err(e) = core.db.set_assoc_elem("BASH_CMDS", &args[2], &args[1], None) {
+            let msg = String::from(&e);
+            return super::error_exit(1, "hash", &msg, core);
         }
     }
     0

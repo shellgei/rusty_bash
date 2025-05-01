@@ -9,6 +9,7 @@ use crate::{env, exit};
 use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::{HashMap, HashSet};
 use crate::utils;
+use crate::utils::file_check;
 use crate::error::exec::ExecError;
 use self::data::Data;
 use self::data::assoc::AssocData;
@@ -53,17 +54,34 @@ impl DataBase {
         self.has_flag(name, 'r')
     }
 
+    fn rsh_cmd_check(&mut self, cmds: &Vec<String>) -> Result<(), ExecError> {
+        for c in cmds {
+            if c.contains('/') {
+                let msg = format!("{}: restricted", &c);
+                return Err(ExecError::Other(msg));
+            }
+
+            if file_check::is_executable(&c) {
+                let msg = format!("{}: not found", &c);
+                return Err(ExecError::Other(msg));
+            }
+        }
+        Ok(())
+    }
+
+    fn rsh_check(&mut self, name: &str) -> Result<(), ExecError> {
+        if ["SHELL", "PATH", "ENV", "BASH_ENV"].contains(&name) {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
+        Ok(())
+    }
+
     fn write_check(&mut self, name: &str) -> Result<(), ExecError> {
         if self.has_flag(name, 'r') {
             self.exit_status = 1;
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
-        if self.flags.contains('r') {
-            if ["SHELL", "PATH", "ENV", "BASH_ENV", "BASH_CMDS"].contains(&name) {
-                return Err(ExecError::VariableReadOnly(name.to_string()));
-            }
-        }
         Ok(())
     }
 
@@ -199,7 +217,6 @@ impl DataBase {
     }
 
     pub fn is_assoc(&mut self, name: &str) -> bool {
-       // match getter::clone(self, name) {
         match self.get_ref(name) {
             Some(d) => d.is_assoc(),
             None => false,
@@ -252,18 +269,33 @@ impl DataBase {
     pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        if self.flags.contains('r') {
+            if name == "BASH_CMDS" {
+                self.rsh_cmd_check(&vec![value.to_string()])?;
+            }
+            self.rsh_check(name)?;
+        }
+
         let layer = self.get_target_layer(name, layer);
         SingleData::init_as_num(&mut self.params[layer], name, value)
     }
 
     pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>) -> Result<(), ExecError> {
+        Self::name_check(name)?;
+        self.write_check(name)?;
+        if self.flags.contains('r') {
+            if name == "BASH_CMDS" {
+                self.rsh_cmd_check(&vec![val.to_string()])?;
+            }
+            self.rsh_check(name)?;
+        }
+
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
             self.position_parameters[n][0] = val.to_string();
         }
 
-        Self::name_check(name)?;
-        self.write_check(name)?;
+
         let layer = self.get_target_layer(name, layer);
         SingleData::set_value(&mut self.params[layer], name, val)
     }
@@ -292,6 +324,13 @@ impl DataBase {
     pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        if self.flags.contains('r') {
+            if name == "BASH_CMDS" {
+                self.rsh_cmd_check(&vec![val.to_string()])?;
+            }
+            self.rsh_check(name)?;
+        }
+
         let layer = self.get_target_layer(name, layer);
         ArrayData::set_elem(&mut self.params[layer], name, pos, val)
     }
@@ -299,6 +338,13 @@ impl DataBase {
     pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        if self.flags.contains('r') {
+            if name == "BASH_CMDS" {
+                self.rsh_cmd_check(&vec![val.to_string()])?;
+            }
+            self.rsh_check(name)?;
+        }
+
         let layer = self.get_target_layer(name, layer);
         AssocData::set_elem(&mut self.params[layer], name, key, val)
     }
@@ -306,6 +352,15 @@ impl DataBase {
     pub fn set_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        if self.flags.contains('r') {
+            if name == "BASH_CMDS" {
+                for val in &v{
+                    self.rsh_cmd_check(&vec![val.to_string()])?;
+                }
+            }
+            self.rsh_check(name)?;
+        }
+
         let layer = self.get_target_layer(name, layer);
         ArrayData::set_new_entry(&mut self.params[layer], name, v)
     }
@@ -313,6 +368,10 @@ impl DataBase {
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        if self.flags.contains('r') {
+            self.rsh_check(name)?;
+        }
+
         let layer = self.get_target_layer(name, layer);
         AssocData::set_new_entry(&mut self.params[layer], name)
     }
