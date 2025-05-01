@@ -25,6 +25,7 @@ pub struct DataBase {
     pub functions: HashMap<String, FunctionDefinition>,
     pub exit_status: i32,
     pub last_arg: String,
+    pub hash_counter: HashMap<String, usize>,
 }
 
 impl DataBase {

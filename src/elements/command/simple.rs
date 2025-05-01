@@ -204,9 +204,14 @@ impl SimpleCommand {
             let path = utils::get_command_path(&self.args[0], core);
             if path != "" {
                 core.db.set_assoc_elem("BASH_CMDS", &self.args[0], &path, None)?;
+                core.db.hash_counter.insert(self.args[0].clone(), 1);
                 return Ok(path);
             }
         }else{
+            match core.db.hash_counter.get_mut(&self.args[0]) {
+                Some(v) => *v += 1,
+                None => {core.db.hash_counter.insert(self.args[0].clone(), 1);},
+            }
             return Ok(hash);
         }
         Ok(String::new())

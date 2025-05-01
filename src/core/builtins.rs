@@ -8,6 +8,7 @@ pub mod compgen;
 pub mod complete;
 mod compopt;
 mod getopts;
+mod hash;
 mod history;
 mod job_commands;
 pub mod parameter;
@@ -60,7 +61,7 @@ impl ShellCore {
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("fg".to_string(), job_commands::fg);
         self.builtins.insert("getopts".to_string(), getopts::getopts);
-        self.builtins.insert("hash".to_string(), hash);
+        self.builtins.insert("hash".to_string(), hash::hash);
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
         self.builtins.insert("let".to_string(), let_);
@@ -222,23 +223,6 @@ pub fn bind(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
 pub fn debug(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     dbg!("{:?}", &args);
     dbg!("{:?}", &core.db.get_param("depth"));
-    0
-}
-
-pub fn hash(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut args = arg::dissolve_options(args);
-    if arg::consume_option("-p", &mut args) {
-        if args.len() == 1 {
-            return error_exit(1, "hash", "-p: option requires an argument", core);
-        }
-        if args.len() == 2 {
-            return error_exit(1, "hash", "still not implemented", core);
-        }
-
-        if core.db.set_assoc_elem("BASH_CMDS", &args[2], &args[1], None).is_err() {
-            return error_exit(1, "hash", "BASH_CMDS not found", core);
-        }
-    }
     0
 }
 
