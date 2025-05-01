@@ -206,6 +206,10 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn exec(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if core.db.flags.contains('r') {
+        return error_exit(1, &args[0], "restricted", core);
+    }
+
     if args.len() == 1 {
         args.push("sush".to_string());
     }
