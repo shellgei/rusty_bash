@@ -39,6 +39,8 @@ impl Command for SimpleCommand {
             return Ok(None);
         }
 
+        core.db.set_param("BASH_COMMAND", &self.text, None)?;
+
         self.args.clear();
         let mut words = self.words.to_vec();
         for w in words.iter_mut() {

@@ -180,8 +180,8 @@ Bash Variables
 |-------------------|----|-------------------|----|-------------------|----|
 | _ | :heavy_check_mark: | BASH | :no_good: | BASHOPTS | :no_good: |
 | BASHPID | :heavy_check_mark: | BASH_ALIASES | :no_good: | BASH_ARGC | :no_good: |
-| BASH_ARGV | :no_good: | BASH_ARGV0 | :no_good: | BASH_CMDS | :no_good: |
-| BASH_COMMAND | :no_good: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
+| BASH_ARGV | :heavy_check_mark: | BASH_ARGV0 | :no_good: | BASH_CMDS | :no_good: |
+| BASH_COMMAND | :heavy_check_mark: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
 | BASH_EXECUTION_STRING | :no_good: | BASH_LINENO | :no_good: | BASH_LOADABLES_PATH | :no_good: |
 | BASH_REMATCH | :heavy_check_mark: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
 | BASH_VERSINFO | :heavy_check_mark: | BASH_VERSION | :heavy_check_mark: | BASH_XTRACEFD | :no_good: |
