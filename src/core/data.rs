@@ -2,12 +2,14 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::error::exec::ExecError;
+use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::HashMap;
 use std::env;
 
 #[derive(Debug, Default)]
 pub struct Data {
     pub parameters: HashMap<String, String>,
+    pub functions: HashMap<String, FunctionDefinition>,
 }
 
 impl Data {

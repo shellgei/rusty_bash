@@ -4,6 +4,8 @@
 use crate::{ShellCore, Feeder, utils};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use super::Pipe;
+use nix::unistd::Pid;
 use super::{Command, Redirect};
 use super::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
 
