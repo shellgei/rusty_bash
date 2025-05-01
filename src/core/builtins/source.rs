@@ -3,7 +3,14 @@
 
 use crate::{file_check, Script, ShellCore, Feeder};
 
-pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn check_error(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if core.db.flags.contains('r') {
+        if args[1].contains('/') {
+            let msg = format!("{}: restricted", &args[1]);
+            return super::error_exit(1, &args[0], &msg, core);
+        }
+    }
+
     if args.len() < 2 {
         eprintln!("sush: source: filename argument required");
         eprintln!("source: usage: source filename [arguments]");
@@ -13,6 +20,14 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if file_check::is_dir(&args[1]) {
         eprintln!("sush: source: {}: is a directory", &args[1]);
         return 1;
+    }
+    0
+}
+
+pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let check = check_error(core, args);
+    if check != 0 {
+        return check;
     }
 
     core.source_function_level += 1;
