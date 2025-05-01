@@ -257,6 +257,11 @@ impl DataBase {
     }
 
     pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>) -> Result<(), ExecError> {
+        if name == "BASH_ARGV0" {
+            let n = layer.unwrap_or(self.get_layer_num() - 1);
+            self.position_parameters[n][0] = val.to_string();
+        }
+
         Self::name_check(name)?;
         self.write_check(name)?;
         let layer = self.get_target_layer(name, layer);

@@ -19,7 +19,7 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) {
 pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
     for a in args {
         if a.len() != 2 {
-            return Err(ExecError::InvalidOption(a.to_string()));
+            return Err(ExecError::InvalidOption("set: ".to_owned() + &a.to_string()));
         }
 
         let pm = a.chars().nth(0).unwrap();
@@ -28,7 +28,7 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
         if (pm != '-' && pm != '+')
         || (pm == '+' && ch == 'r')
         || "rxveBH".find(ch).is_none() {
-            return Err(ExecError::InvalidOption(a.to_string()));
+            return Err(ExecError::InvalidOption("set: ".to_owned() + &a.to_string()));
         }
 
         set_option(core, ch, pm);
