@@ -47,11 +47,13 @@ pub struct Substitution {
     evaluated_string: Option<String>,
     evaluated_array: Option<HashMap<String, String>>,
     append: bool,
+    lineno: usize,
 }
 
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, env: bool)
     -> Result<(), ExecError> {
+        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         let result = match self.value.clone() {
             ParsedDataType::Single(v) => self.eval_as_value(&v, core),
             ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core),
@@ -221,6 +223,7 @@ impl Substitution {
         }
 
         let mut ans = Self::default();
+        ans.lineno = feeder.lineno;
 
         feeder.set_backup();
         let name = feeder.consume(len);
