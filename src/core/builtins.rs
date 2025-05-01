@@ -135,6 +135,13 @@ pub fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -
 }
 
 pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+    if core.db.flags.contains('r') {
+        if arg::consume_option("-p", &mut args) {
+            return error_exit(1, &args[0], "-p: restricted", core);
+        }
+    }
+
     if args.len() <= 1 {
         return 0;
     }

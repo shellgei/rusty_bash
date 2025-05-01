@@ -46,6 +46,16 @@ impl Redirect {
             return Err(ExecError::AmbiguousRedirect(self.right.text.clone()));
         }
 
+        if core.db.flags.contains('r') {
+            match self.symbol.as_str() {
+                ">" | ">|" | "<>" | ">&" | "&>" | ">>" => {
+                    let msg = format!("{}: restricted: cannot redirect output", &args[0]);
+                    return Err(ExecError::Other(msg));
+                },
+                _ => {},
+            }
+        }
+
         self.right.text = args[0].clone();
 
         match self.symbol.as_str() {
