@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::error::exec::ExecError;
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
@@ -119,14 +120,14 @@ impl Options {
         self.exist(opt) && self.opts[opt]
     }
 
-    pub fn set(&mut self, opt: &str, onoff: bool) -> bool {
+    pub fn set(&mut self, opt: &str, onoff: bool) -> Result<(), ExecError> {
         if ! self.opts.contains_key(opt) {
-            eprintln!("sush: shopt: {}: invalid shell option name", opt);
-            return false;
+            let msg = format!("{}: invalid option name", opt);
+            return Err(ExecError::Other(msg));
         }
 
         self.opts.insert(opt.to_string(), onoff);
-        true
+        Ok(())
     }
 
     pub fn get_keys(&self) -> Vec<String> {

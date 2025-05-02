@@ -39,6 +39,14 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
+    if core.db.flags.contains('r') {
+        if arg::consume_option("+r", &mut args) {
+            let _ = super::error_exit(1, &args[0], "+r: invalid option", core);
+            eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
+            return 1;
+        }
+    }
+
     if args.len() <= 1 {
         return parameter::print_all(core);
     }
@@ -57,8 +65,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return match parameter::set_positions(core, &args) {
             Ok(()) => 0,
             Err(e) => {
-                e.print(core);
-                return 1;
+                return super::error_exit(1, &args[0], &String::from(&e), core);
             },
         }
     }
@@ -71,8 +78,10 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 0;
         }else{
             return match core.options.set(&args[2], positive) {
-                true  => 0,
-                false => 2,
+                Ok(())  => 0,
+                Err(e) => {
+                    return super::error_exit(2, &args[0], &String::from(&e), core);
+                },
             };
         }
     }
@@ -188,10 +197,16 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return set(core, &mut args_for_set);
     }
 
-    let res = match args[1].as_str() { //TODO: args[3..] must to be set
+    match args[1].as_str() { //TODO: args[3..] must to be set
         "-s" => {
             if core.shopts.implemented.contains(&args[2]) {
-                core.shopts.set(&args[2], true)
+                match core.shopts.set(&args[2], true) {
+                    Ok(()) => return 0,
+                    Err(e) => {
+                        e.print(core);
+                        return 1;
+                    },
+                }
             }else{
                 let msg = format!("shopt: {}: not supported yet", &args[2]);
                 error::print(&msg, core);
@@ -211,16 +226,17 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
             return 0;
         },
-        "-u" => core.shopts.set(&args[2], false),
+        "-u" => match core.shopts.set(&args[2], false) {
+            Ok(()) => return 0,
+            Err(e) => {
+                e.print(core);
+                return 1;
+            },
+        },
         arg  => {
             eprintln!("sush: shopt: {}: invalid shell option name", arg);
             eprintln!("shopt: usage: shopt [-su] [optname ...]");
-            false
+            return 1;
         },
-    };
-
-    match res {
-        true  => 0,
-        false => 1,
     }
 }

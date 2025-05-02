@@ -217,7 +217,9 @@ pub fn exec(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    eprintln!("exit");
+    if core.db.flags.contains('i') {
+        eprintln!("exit");
+    }
     if args.len() > 1 {
         match &args[1].parse::<i32>() {
             Ok(n) => core.db.exit_status = *n,
