@@ -21,6 +21,7 @@ pub struct FunctionDefinition {
 impl Command for FunctionDefinition {
     fn exec(&mut self, core: &mut ShellCore, _: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         core.db.functions.insert(self.name.to_string(), self.clone());
+        dbg!("{:?}", &core.db.functions);
         Ok(None)
     }
 
@@ -89,7 +90,6 @@ impl FunctionDefinition {
 
         if ans.command.is_some() {
             feeder.pop_backup();
-            dbg!("{:?}", &ans);
             Ok(Some(ans))
         }else{
             feeder.rewind();
