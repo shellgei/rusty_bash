@@ -103,7 +103,12 @@ impl JobEntry {
         println!("{}", self.pids[0]);
     }
 
-    pub fn print(&self, priority: &Vec<usize>, l_opt: bool) {
+    pub fn print(&self, priority: &Vec<usize>, l_opt: bool, r_opt: bool, s_opt: bool) {
+        if r_opt && self.display_status != "Running"
+        || s_opt && self.display_status != "Stopped" {
+            return;
+        }
+
         let symbol = if priority[0] == self.id {"+"}
                      else if priority.len() > 1 && priority[1] == self.id {"-"}
                      else {" "};
@@ -191,7 +196,7 @@ impl ShellCore {
     pub fn jobtable_print_status_change(&mut self) {
         for e in self.job_table.iter_mut() {
             if e.change {
-                e.print(&self.job_table_priority, false);
+                e.print(&self.job_table_priority, false, false, false);
                 e.change = false;
             }
         }
