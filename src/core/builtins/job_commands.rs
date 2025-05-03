@@ -172,6 +172,18 @@ fn jobspec_choice(core: &mut ShellCore, jobspec: &String) -> Vec<usize> {
                 }
             }
         }
+    }else if s.starts_with("?") {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if job.text.contains(&s[1..]) {
+                ans.push(i);
+            }
+        }
+    }else {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if job.text.starts_with(s) {
+                ans.push(i);
+            }
+        }
     }
 
     ans
