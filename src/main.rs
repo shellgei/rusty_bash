@@ -138,7 +138,10 @@ fn main_loop(core: &mut ShellCore) {
         if let Err(e) = core.jobtable_check_status() {
             e.print(core);
         }
-        core.jobtable_print_status_change();
+
+        if core.db.flags.contains('i') {
+            core.jobtable_print_status_change();
+        }
 
         match feeder.feed_line(core) {
             Ok(()) => {}, 
@@ -217,7 +220,10 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
         if let Err(e) = core.jobtable_check_status() {
             e.print(&mut core);
         }
-        core.jobtable_print_status_change();
+
+        if core.db.flags.contains('i') {
+            core.jobtable_print_status_change();
+        }
 
         match feeder.feed_line(&mut core) {
             Ok(()) => {}, 

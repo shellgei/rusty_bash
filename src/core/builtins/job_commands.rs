@@ -9,6 +9,16 @@ use nix::sys::signal::Signal;
 use nix::unistd;
 use nix::unistd::Pid;
 
+fn pid_to_job(pid: i32, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
+    for job in jobs.iter_mut() {
+        if job.pids[0].as_raw() == pid {
+            return Some(job);
+        }
+    }
+
+    None
+}
+
 fn id_to_job(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
     for job in jobs.iter_mut() {
         if job.id == id {
@@ -19,7 +29,7 @@ fn id_to_job(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
     None
 }
 
-fn arg_to_id(s: &str, priority: &Vec<usize>, table: &Vec<JobEntry>) -> Result<usize, String> {
+fn job_to_id(s: &str, priority: &Vec<usize>, table: &Vec<JobEntry>) -> Result<usize, String> {
     if s == "%+" {
         return match priority.len() {
             0 => Err("%+: no such job".to_string()), 
@@ -68,7 +78,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         core.job_table_priority[0]
     }else if args.len() == 2 {
-        match arg_to_id(&args[1], &core.job_table_priority, &core.job_table) {
+        match job_to_id(&args[1], &core.job_table_priority, &core.job_table) {
             Ok(n) => n,
             Err(s) => {
                 error::print(&("bg: ".to_owned() + &s), core);
@@ -98,7 +108,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         core.job_table_priority[0]
     }else if args.len() == 2 {
-        match arg_to_id(&args[1], &core.job_table_priority, &core.job_table) {
+        match job_to_id(&args[1], &core.job_table_priority, &core.job_table) {
             Ok(n) => n,
             Err(s) => {
                 error::print(&s, core);
@@ -247,7 +257,21 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    let id = match arg_to_id(&args[1], &core.job_table_priority, &core.job_table) {
+    if let Ok(pid) = args[1].parse::<i32>() {
+        match pid_to_job(pid, &mut core.job_table) {
+            Some(job) => {
+                if let Err(e) = job.update_status(true) {
+                    e.print(core);
+                    return 1;
+                }else{
+                    return 0;
+                }
+            }
+            _ => return 1, 
+        }
+    }
+
+    let id = match job_to_id(&args[1], &core.job_table_priority, &core.job_table) {
         Ok(n)  => n,
         Err(s) => {
             error::print(&("wait: ".to_owned() + &s), core);

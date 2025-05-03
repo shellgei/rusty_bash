@@ -12,7 +12,7 @@ use nix::sys::wait::{WaitPidFlag, WaitStatus};
 #[derive(Debug)]
 pub struct JobEntry {
     pub id: usize,
-    pids: Vec<Pid>,
+    pub pids: Vec<Pid>,
     proc_statuses: Vec<WaitStatus>,
     pub display_status: String,
     pub text: String,
