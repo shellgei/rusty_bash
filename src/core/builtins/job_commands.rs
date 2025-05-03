@@ -214,6 +214,13 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return super::error_exit(1, "jobs", &msg, core);
     }
 
+    if arg::consume_option("-p", &mut args) {
+        for id in ids {
+            core.job_table[id].print_p();
+        }
+        return 0;
+    }
+
     for id in ids {
         core.job_table[id].print(&core.job_table_priority);
     }

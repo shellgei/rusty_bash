@@ -99,6 +99,13 @@ impl JobEntry {
         Ok(exit_status)
     }
 
+    pub fn print_p(&self) {
+        if self.pids.is_empty() {
+            return;
+        }
+        println!("{}", self.pids[0]);
+    }
+
     pub fn print(&self, priority: &Vec<usize>) {
         if priority[0] == self.id {
             println!("[{}]+  {}     {}", self.id, &self.display_status, &self.text);
