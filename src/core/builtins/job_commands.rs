@@ -191,6 +191,11 @@ fn jobspec_choice(core: &mut ShellCore, jobspec: &String) -> Vec<usize> {
 
 pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
+    if arg::consume_option("-n", &mut args) {
+        core.jobtable_print_status_change();
+        return 0;
+    }
+
     let jobspecs = arg::consume_starts_with("%", &mut args);
     let jobspec = match jobspecs.last() {
         Some(s) => s.clone(),
