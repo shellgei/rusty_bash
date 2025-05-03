@@ -12,8 +12,8 @@ pub struct FunctionDefinition {
     pub text: String,
     name: String,
     command: Option<Box<dyn Command>>,
-    _dummy: Vec<Redirect>,
     force_fork: bool,
+    _dummy: Vec<Redirect>,
 }
 
 impl Command for FunctionDefinition {
