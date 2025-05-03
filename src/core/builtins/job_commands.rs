@@ -2,9 +2,9 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::{error, signal};
 use crate::core::JobEntry;
-use crate::signal;
-use crate::error;
+use crate::utils::arg;
 use nix::sys::signal::Signal;
 use nix::unistd;
 use nix::unistd::Pid;
@@ -136,10 +136,48 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     exit_status
 }
 
-pub fn jobs(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
-    for job in core.job_table.iter() {
-        job.print(&core.job_table_priority);
+fn jobspec_choice(core: &mut ShellCore, jobspec: &String) -> Vec<usize> {
+    if jobspec == "" {
+        return (0..core.job_table.len()).collect();
     }
+
+    let s = &jobspec[1..];
+
+    if let Ok(n) = s.parse::<usize>() {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if n == job.id {
+                return vec![i];
+            }
+        }
+    }
+
+
+    vec![]
+}
+
+pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+    let jobspecs = arg::consume_starts_with("%", &mut args);
+    let jobspec = match jobspecs.last() {
+        Some(s) => s.clone(),
+        None => String::new(),
+    };
+
+    if core.job_table.is_empty() && jobspec == "" {
+        return 0;
+    }
+
+    let ids = jobspec_choice(core, &jobspec);
+
+    if ids.is_empty() {
+        let msg = format!("{}: no such job", &jobspec);
+        return super::error_exit(1, "jobs", &msg, core);
+    }
+
+    for id in ids {
+        core.job_table[id].print(&core.job_table_priority);
+    }
+
     0
 }
 

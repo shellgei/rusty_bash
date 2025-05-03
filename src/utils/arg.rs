@@ -11,6 +11,13 @@ pub fn consume_option(opt: &str, args: &mut Vec<String>) -> bool {
     }
 }
 
+pub fn consume_starts_with(s: &str, args: &mut Vec<String>) -> Vec<String> {
+    let mut ans = args.clone();
+    ans.retain(|a| a.starts_with(s));
+    args.retain(|a| ! a.starts_with(s));
+    ans
+}
+
 pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> Option<String> {
     match args.iter().position(|a| a == prev_opt) {
         Some(pos) => {
