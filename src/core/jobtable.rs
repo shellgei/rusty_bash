@@ -100,20 +100,21 @@ impl JobEntry {
     }
 
     pub fn print_p(&self) {
-        if self.pids.is_empty() {
-            return;
-        }
         println!("{}", self.pids[0]);
     }
 
-    pub fn print(&self, priority: &Vec<usize>) {
-        if priority[0] == self.id {
-            println!("[{}]+  {}     {}", self.id, &self.display_status, &self.text);
-        }else if priority.len() > 1 && priority[1] == self.id {
-            println!("[{}]-  {}     {}", self.id, &self.display_status, &self.text);
-        }else {
-            println!("[{}]   {}     {}", self.id, &self.display_status, &self.text);
-        }
+    pub fn print(&self, priority: &Vec<usize>, l_opt: bool) {
+        let symbol = if priority[0] == self.id {"+"}
+                     else if priority.len() > 1 && priority[1] == self.id {"-"}
+                     else {" "};
+
+        let pid = match l_opt {
+            true => &self.pids[0].to_string(),
+            false => "",
+        };
+
+        println!("[{}]{} {} {}     {}", self.id, &symbol, &pid, 
+            &self.display_status, &self.text);
     }
 
     fn display_status_on_signal(signal: &signal::Signal, coredump: bool) -> String {
@@ -190,7 +191,7 @@ impl ShellCore {
     pub fn jobtable_print_status_change(&mut self) {
         for e in self.job_table.iter_mut() {
             if e.change {
-                e.print(&self.job_table_priority);
+                e.print(&self.job_table_priority, false);
                 e.change = false;
             }
         }
