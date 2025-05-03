@@ -141,18 +141,40 @@ fn jobspec_choice(core: &mut ShellCore, jobspec: &String) -> Vec<usize> {
         return (0..core.job_table.len()).collect();
     }
 
+    if core.job_table.is_empty() {
+        return vec![];
+    }
+
     let s = &jobspec[1..];
+    let mut ans = vec![];
 
     if let Ok(n) = s.parse::<usize>() {
         for (i, job) in core.job_table.iter_mut().enumerate() {
             if n == job.id {
-                return vec![i];
+                ans.push(i);
+            }
+        }
+    }else if s == "%" || s == "+" {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if job.id == core.job_table_priority[0] {
+                ans.push(i);
+            }
+        }
+    }else if s == "-" {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if core.job_table_priority.len() < 2 {
+                if job.id == core.job_table_priority[0] {
+                    ans.push(i);
+                }
+            }else {
+                if job.id == core.job_table_priority[1] {
+                    ans.push(i);
+                }
             }
         }
     }
 
-
-    vec![]
+    ans
 }
 
 pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -170,6 +192,12 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let ids = jobspec_choice(core, &jobspec);
 
     if ids.is_empty() {
+        let msg = format!("{}: no such job", &jobspec);
+        return super::error_exit(1, "jobs", &msg, core);
+    }
+    if ids.len() > 1 && ! jobspec.is_empty() {
+        let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
+        super::error_exit(1, "jobs", &msg, core);
         let msg = format!("{}: no such job", &jobspec);
         return super::error_exit(1, "jobs", &msg, core);
     }
