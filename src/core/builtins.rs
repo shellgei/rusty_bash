@@ -55,6 +55,7 @@ impl ShellCore {
         self.builtins.insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("declare".to_string(), parameter::declare);
         self.builtins.insert("debug".to_string(), debug);
+        self.builtins.insert("disown".to_string(), job_commands::disown);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec);
         self.builtins.insert("exit".to_string(), exit);

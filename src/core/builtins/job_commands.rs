@@ -358,3 +358,19 @@ pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     args.insert(0, "eval".to_string());
     super::eval(core, args)
 }
+
+pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let args = arg::dissolve_options(args);
+
+    if args.len() == 1 {
+        let ids = jobspec_choice(core, "%%");
+
+        if ids.len() == 1 {
+            core.job_table.remove(ids[0]);
+        }
+
+        return 1;
+    }
+
+    0
+}
