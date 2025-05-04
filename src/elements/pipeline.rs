@@ -77,6 +77,10 @@ impl Pipeline {
         Ok(())
     }
 
+    pub fn get_one_line_text(&self) -> String {
+        self.text.replace("\n", "")
+    }
+
     fn eat_exclamation(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match feeder.starts_with("!") {
             true  => ans.text += &feeder.consume(1),

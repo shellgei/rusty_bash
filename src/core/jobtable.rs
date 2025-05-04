@@ -119,7 +119,7 @@ impl JobEntry {
         };
 
         if add_amp {
-            println!("[{}]{} {} {}                 {} &", self.id, &symbol, &pid, 
+            println!("[{}]{} {} {}                 {}&", self.id, &symbol, &pid, 
                 &self.display_status, &self.text);
         }else{
             println!("[{}]{} {} {}                 {}", self.id, &symbol, &pid, 

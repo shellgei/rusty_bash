@@ -55,7 +55,7 @@ impl Job {
                 let (pids, exclamation, time, err) = pipeline.exec(core, pgid);
                 let waitstatuses = proc_ctrl::wait_pipeline(core, pids.clone(), exclamation, time);
 
-                Self::check_stop(core, &pipeline.text, &pids, &waitstatuses);
+                Self::check_stop(core, &pipeline.get_one_line_text(), &pids, &waitstatuses);
 
                 if err.is_some() {
                     return Err(err.unwrap());
@@ -113,7 +113,7 @@ impl Job {
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);
         core.job_table.push(JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ],
-                &self.text, "Running", new_job_id));
+                &self.get_one_line_text(), "Running", new_job_id));
 
         core.tty_fd = backup;
     }
@@ -132,6 +132,10 @@ impl Job {
                 Ok(Some(child))
             },
         }
+    }
+
+    fn get_one_line_text(&self) -> String {
+        self.text.replace("\n", "")
     }
 
     fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {

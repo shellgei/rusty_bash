@@ -97,6 +97,7 @@ pub trait Command {
 
     fn run(&mut self, _: &mut ShellCore, fork: bool) -> Result<(), ExecError>;
     fn get_text(&self) -> String;
+    fn get_one_line_text(&self) -> String {self.get_text().replace("\n", ";")}
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
