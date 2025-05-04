@@ -248,13 +248,17 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
+        let mut exit_status = 0;
         for job in core.job_table.iter_mut() {
-            if let Err(e) = job.update_status(true) {
-                e.print(core);
-                return 1;
+            match job.update_status(true) {
+                Ok(n) => exit_status = n,
+                Err(e) => {
+                    e.print(core);
+                    return 1;
+                },
             }
         }
-        return 0;
+        return exit_status;
     }
 
     if args[1].starts_with("%") {
@@ -268,22 +272,19 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return super::error_exit(1, "jobs", &msg, core);
         }
 
-        if let Err(e) = core.job_table[ids[0]].update_status(true) {
-            e.print(core);
-            return 1;
-        }
-        return 0;
+        return match core.job_table[ids[0]].update_status(true) {
+            Ok(n) => n,
+            Err(e) => { e.print(core); 1 },
+        };
     }
 
     if let Ok(pid) = args[1].parse::<i32>() {
         match pid_to_job(pid, &mut core.job_table) {
             Some(job) => {
-                if let Err(e) = job.update_status(true) {
-                    e.print(core);
-                    return 1;
-                }else{
-                    return 0;
-                }
+                return match job.update_status(true) {
+                    Ok(n) => n,
+                    Err(e) => { e.print(core); 1 },
+                };
             }
             _ => return 1, 
         }
@@ -296,13 +297,14 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return 1;
         },
     };
+
     match id_to_job(id, &mut core.job_table) {
-        Some(job) => if let Err(e) = job.update_status(true) {
-            e.print(core);
-            return 1;
+        Some(job) => {
+            return match job.update_status(true) {
+                Ok(n) => n,
+                Err(e) => { e.print(core); 1 },
+            };
         }
         _ => return 1, 
     }
-
-    0
 }
