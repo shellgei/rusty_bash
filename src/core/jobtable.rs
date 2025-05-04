@@ -118,12 +118,15 @@ impl JobEntry {
             false => "",
         };
 
+        let tmp = self.text.clone();
+        let text = tmp.trim_end();
+
         if add_amp {
-            println!("[{}]{} {} {}                 {}&", self.id, &symbol, &pid, 
-                &self.display_status, &self.text);
+            println!("[{}]{} {} {}                 {} &", self.id, &symbol, &pid, 
+                &self.display_status, &text);
         }else{
             println!("[{}]{} {} {}                 {}", self.id, &symbol, &pid, 
-                &self.display_status, &self.text);
+                &self.display_status, &text);
         }
     }
 
