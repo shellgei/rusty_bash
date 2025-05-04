@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::{error, signal};
+use crate::{error, signal, utils};
 use crate::core::JobEntry;
 use crate::utils::arg;
 use nix::sys::signal::Signal;
@@ -307,4 +307,33 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         _ => return 1, 
     }
+}
+
+/* TODO: implement original kill */
+pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let path = utils::get_command_path(&args[0], core);
+
+    match path.is_empty() {
+        true  => return 1,
+        false => args[0] = path,
+    }
+
+    if args.len() >= 3 && args[2].starts_with("%") {
+        let ids = jobspec_choice(core, &args[2]);
+
+        if ids.is_empty() {
+            let msg = format!("{}: no such job", &args[2]);
+            return super::error_exit(1, "jobs", &msg, core);
+        }
+        if ids.len() > 1 {
+            let msg = format!("{}: ambiguous job spec", &args[2][1..]);
+            return super::error_exit(1, "jobs", &msg, core);
+        }
+
+        args[2] = core.job_table[ids[0]].pids[0].to_string();
+    }
+
+    dbg!("{:?}", &args);
+    args.insert(0, "eval".to_string());
+    super::eval(core, args)
 }

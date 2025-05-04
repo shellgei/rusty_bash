@@ -65,6 +65,7 @@ impl ShellCore {
         self.builtins.insert("hash".to_string(), hash::hash);
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
+        self.builtins.insert("kill".to_string(), job_commands::kill);
         self.builtins.insert("let".to_string(), let_);
         self.builtins.insert("local".to_string(), parameter::local);
         self.builtins.insert("printf".to_string(), printf::printf);
