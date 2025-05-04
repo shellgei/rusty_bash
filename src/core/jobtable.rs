@@ -60,7 +60,7 @@ impl JobEntry {
             pids: pids.into_iter().flatten().collect(),
             proc_statuses: statuses.to_vec(),
             display_status: status.to_string(),
-            text: text.to_string(),
+            text: text.to_string() + "&",
             change: false,
         }
     }
@@ -118,7 +118,7 @@ impl JobEntry {
             false => "",
         };
 
-        println!("[{}]{} {} {}     {}", self.id, &symbol, &pid, 
+        println!("[{}]{} {} {}                 {}", self.id, &symbol, &pid, 
             &self.display_status, &self.text);
     }
 
