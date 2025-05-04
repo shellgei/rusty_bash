@@ -240,7 +240,7 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let r_opt = arg::consume_option("-r", &mut args);
     let s_opt = arg::consume_option("-s", &mut args);
     for id in ids {
-        core.job_table[id].print(&core.job_table_priority, l_opt, r_opt, s_opt);
+        core.job_table[id].print(&core.job_table_priority, l_opt, r_opt, s_opt, true);
     }
 
     0

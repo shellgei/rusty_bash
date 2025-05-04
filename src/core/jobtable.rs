@@ -60,7 +60,7 @@ impl JobEntry {
             pids: pids.into_iter().flatten().collect(),
             proc_statuses: statuses.to_vec(),
             display_status: status.to_string(),
-            text: text.to_string() + "&",
+            text: text.to_string(),
             change: false,
         }
     }
@@ -103,7 +103,7 @@ impl JobEntry {
         println!("{}", self.pids[0]);
     }
 
-    pub fn print(&self, priority: &Vec<usize>, l_opt: bool, r_opt: bool, s_opt: bool) {
+    pub fn print(&self, priority: &Vec<usize>, l_opt: bool, r_opt: bool, s_opt: bool, add_amp: bool) {
         if r_opt && self.display_status != "Running"
         || s_opt && self.display_status != "Stopped" {
             return;
@@ -118,8 +118,13 @@ impl JobEntry {
             false => "",
         };
 
-        println!("[{}]{} {} {}                 {}", self.id, &symbol, &pid, 
-            &self.display_status, &self.text);
+        if add_amp {
+            println!("[{}]{} {} {}                 {} &", self.id, &symbol, &pid, 
+                &self.display_status, &self.text);
+        }else{
+            println!("[{}]{} {} {}                 {}", self.id, &symbol, &pid, 
+                &self.display_status, &self.text);
+        }
     }
 
     fn display_status_on_signal(signal: &signal::Signal, coredump: bool) -> String {
@@ -196,7 +201,7 @@ impl ShellCore {
     pub fn jobtable_print_status_change(&mut self) {
         for e in self.job_table.iter_mut() {
             if e.change {
-                e.print(&self.job_table_priority, false, false, false);
+                e.print(&self.job_table_priority, false, false, false, false);
                 e.change = false;
             }
         }
