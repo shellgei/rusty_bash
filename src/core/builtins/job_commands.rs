@@ -257,6 +257,24 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
+    if args[1].starts_with("%") {
+        let ids = jobspec_choice(core, &args[1]);
+        if ids.is_empty() {
+            let msg = format!("{}: no such job", &args[1]);
+            return super::error_exit(1, "jobs", &msg, core);
+        }
+        if ids.len() > 1 {
+            let msg = format!("{}: ambiguous job spec", &args[1][1..]);
+            return super::error_exit(1, "jobs", &msg, core);
+        }
+
+        if let Err(e) = core.job_table[ids[0]].update_status(true) {
+            e.print(core);
+            return 1;
+        }
+        return 0;
+    }
+
     if let Ok(pid) = args[1].parse::<i32>() {
         match pid_to_job(pid, &mut core.job_table) {
             Some(job) => {
