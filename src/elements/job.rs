@@ -135,7 +135,12 @@ impl Job {
     }
 
     fn get_one_line_text(&self) -> String {
-        self.text.replace("\n", "")
+        let mut ans = String::new();
+        for (i, p) in self.pipelines.iter().enumerate() {
+            ans += &p.get_one_line_text();
+            ans += &self.pipeline_ends[i];
+        }
+        ans
     }
 
     fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {

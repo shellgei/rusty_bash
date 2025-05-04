@@ -78,7 +78,27 @@ impl Pipeline {
     }
 
     pub fn get_one_line_text(&self) -> String {
-        self.text.replace("\n", "")
+        /*
+    pub commands: Vec<Box<dyn Command>>,
+    pub pipes: Vec<Pipe>,
+        */
+        let mut ans = String::new();
+
+        if self.exclamation {
+            ans += "! ";
+        }
+
+        for (i, c) in self.commands.iter().enumerate() {
+            ans += &c.get_one_line_text();
+
+            if i < self.pipes.len() {
+                ans += &self.pipes[i].text;
+            }
+        }
+
+
+       // self.text.replace("\n", "")
+       ans
     }
 
     fn eat_exclamation(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

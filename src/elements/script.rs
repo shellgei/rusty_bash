@@ -62,6 +62,10 @@ impl Script {
         println!("");
     }
 
+    pub fn get_one_line_text(&self) -> String {
+        self.text.replace("\n", "")
+    }
+
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> Result<bool, ParseError> {
         if let Some(job) = Job::parse(feeder, core)? {
             ans.text += &job.text.clone();

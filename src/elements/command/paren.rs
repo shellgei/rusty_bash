@@ -38,6 +38,13 @@ impl Command for ParenCommand {
     fn set_force_fork(&mut self) { }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { true }
+
+    fn get_one_line_text(&self) -> String {
+        return match &self.script {
+            Some(s) => format!("( {} )", s.get_one_line_text()),
+            None => "()".to_string(),
+        }
+    }
 }
 
 impl ParenCommand {
