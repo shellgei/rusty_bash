@@ -63,7 +63,19 @@ impl Script {
     }
 
     pub fn get_one_line_text(&self) -> String {
-        self.text.replace("\n", "")
+        /*
+    pub jobs: Vec<Job>,
+    pub job_ends: Vec<String>,
+        */
+        //self.text.replace("\n", "")
+        let mut ans = String::new();
+        for (i, j) in self.jobs.iter().enumerate() {
+            ans += &j.get_one_line_text();
+            ans += &self.job_ends[i];
+            ans += " ";
+        }
+        ans.pop();
+        ans
     }
 
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> Result<bool, ParseError> {

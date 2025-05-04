@@ -134,10 +134,10 @@ impl Job {
         }
     }
 
-    fn get_one_line_text(&self) -> String {
+    pub fn get_one_line_text(&self) -> String {
         let mut ans = String::new();
         for (i, p) in self.pipelines.iter().enumerate() {
-            ans += &p.get_one_line_text();
+            ans += &p.get_one_line_text().trim_end();
             ans += &self.pipeline_ends[i];
         }
         ans
