@@ -14,6 +14,7 @@ impl Options {
     pub fn new_as_basic_opts() -> Options {
         let mut options = Options::default();
         options.opts.insert("pipefail".to_string(), false);
+        options.opts.insert("monitor".to_string(), true);
         options.opts.insert("noglob".to_string(), false);
         options.opts.insert("posix".to_string(), false); //TODO: still dummy
         options.opts.insert("history".to_string(), false); //TODO: still dummy

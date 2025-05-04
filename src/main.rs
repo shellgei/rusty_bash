@@ -139,7 +139,7 @@ fn main_loop(core: &mut ShellCore) {
             e.print(core);
         }
 
-        if core.db.flags.contains('i') {
+        if core.db.flags.contains('i') && core.options.query("monitor") {
             core.jobtable_print_status_change();
         }
 
@@ -221,7 +221,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
             e.print(&mut core);
         }
 
-        if core.db.flags.contains('i') {
+        if core.db.flags.contains('i') && core.options.query("monitor") {
             core.jobtable_print_status_change();
         }
 
