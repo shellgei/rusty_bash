@@ -355,7 +355,6 @@ pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         args[2] = core.job_table[ids[0]].pids[0].to_string();
     }
 
-    dbg!("{:?}", &args);
     args.insert(0, "eval".to_string());
     super::eval(core, args)
 }

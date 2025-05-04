@@ -95,7 +95,8 @@ impl SimpleCommand {
         core.break_counter > 0 || core.continue_counter > 0 
     }
 
-    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe)
+    -> Result<Option<Pid>, ExecError> {
         Self::check_sigint(core)?;
 
         core.db.last_arg = self.args.last().unwrap().clone();
@@ -114,6 +115,11 @@ impl SimpleCommand {
            && ! core.db.functions.contains_key(&self.args[0]) ) {
             self.command_path = self.hash_control(core)?;
             self.fork_exec(core, pipe)
+        }else if self.args.len() == 1 && self.args[0] == "exec" {
+            for r in self.get_redirects().iter_mut() {
+                r.connect(true, core)?;
+            }
+            Ok(None)
         }else{
             self.nofork_exec(core)
         }

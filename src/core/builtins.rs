@@ -212,7 +212,7 @@ pub fn exec(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() == 1 {
-        args.push("/proc/self/exe".to_string());
+        return 0;
     }
     proc_ctrl::exec_command(&args[1..].to_vec(), core, &"".to_string())
 }
