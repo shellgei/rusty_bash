@@ -295,8 +295,9 @@ fn wait_next(core: &mut ShellCore, var_name: &Option<String>) -> i32 {
         }
     }
 
+    let job_id = core.job_table[drop].id;
     core.job_table.remove(drop);
-    core.job_table_priority.retain(|id| *id != drop+1);
+    core.job_table_priority.retain(|id| *id != job_id);
     exit_status
 }
 
@@ -370,6 +371,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return wait_pid(core, pid);
     }
 
+    /*
     let id = match job_to_id(&args[1], &core.job_table_priority, &core.job_table) {
         Ok(n)  => n,
         Err(s) => {
@@ -387,6 +389,8 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         _ => return 1, 
     }
+    */
+    1
 }
 
 /* TODO: implement original kill */
