@@ -245,7 +245,7 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-fn wait_jobspec(core: &mut ShellCore, jobspec: &str) -> i32 {
+fn wait_jobspec(core: &mut ShellCore, jobspec: &str, var_name: &Option<String>) -> i32 {
     let ids = jobspec_choice(core, jobspec);
     if ids.is_empty() {
         let msg = format!("{}: no such job", &jobspec);
@@ -256,10 +256,10 @@ fn wait_jobspec(core: &mut ShellCore, jobspec: &str) -> i32 {
         return super::error_exit(1, "jobs", &msg, core);
     }
 
-    wait_a_job(core, ids[0])
+    wait_a_job(core, ids[0], var_name)
 }
 
-fn wait_next(core: &mut ShellCore) -> i32 {
+fn wait_next(core: &mut ShellCore, var_name: &Option<String>) -> i32 {
     if core.job_table_priority.is_empty() {
         return 127;
     }
@@ -267,6 +267,7 @@ fn wait_next(core: &mut ShellCore) -> i32 {
     let mut exit_status = 0;
     let mut drop = 0;
     let mut end = false;
+    let mut pid = String::new();
     loop {
         thread::sleep(time::Duration::from_millis(10)); //0.1秒周期に変更
         for (i, job) in core.job_table.iter_mut().enumerate() {
@@ -276,6 +277,7 @@ fn wait_next(core: &mut ShellCore) -> i32 {
                     exit_status = es;
                     drop = i;
                     end = true;
+                    pid = job.pids[0].to_string();
                     break;
                 }
             }
@@ -286,29 +288,50 @@ fn wait_next(core: &mut ShellCore) -> i32 {
         }
     }
 
+    if let Some(var) = var_name {
+        core.db.unset(&var);
+        if let Err(e) = core.db.set_param(&var, &pid, None) {
+            e.print(core);
+        }
+    }
+
     core.job_table.remove(drop);
+    core.job_table_priority.retain(|id| *id != drop+1);
     exit_status
 }
 
 fn wait_pid(core: &mut ShellCore, pid: i32) -> i32 {
     match pid_to_jobid(pid, &core.job_table) {
-        Some(i) => wait_a_job(core, i),
+        Some(i) => wait_a_job(core, i, &None),
         None => 1,
     }
 }
 
-fn wait_a_job(core: &mut ShellCore, id: usize) -> i32 {
+fn wait_a_job(core: &mut ShellCore, id: usize, var_name: &Option<String>) -> i32 {
     if core.job_table.len() < id {
         return super::error_exit(1, "wait", "invalid jobid", core);
     }
 
+    let pid = core.job_table[id].pids[0].to_string();
+
     match core.job_table[id].update_status(true, false) {
-        Ok(n) => n,
+        Ok(n) => {
+            if let Some(var) = var_name {
+                core.db.unset(&var);
+                if let Err(e) = core.db.set_param(&var, &pid, None) {
+                    e.print(core);
+                }
+            }
+            n
+        },
         Err(e) => { e.print(core); 1 },
     }
 }
 
 pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+    let var_name = arg::consume_with_next_arg("-p", &mut args);
+
     if args.len() <= 1 {
         let mut exit_status = 0;
         for job in core.job_table.iter_mut() {
@@ -324,11 +347,23 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args[1] == "-n" {
-        return wait_next(core);
+        let mut jobs = arg::consume_with_subsequents("-n", &mut args);
+        jobs.remove(0);
+        if jobs.is_empty() {
+            return wait_next(core, &var_name);
+        }
+
+        let first = jobs.remove(0);
+        let ans = wait_jobspec(core, &first, &var_name);
+
+        for j in jobs {
+            let _ = wait_jobspec(core, &j, &None);
+        }
+        return ans;
     }
 
     if args[1].starts_with("%") {
-        return wait_jobspec(core, &args[1]);
+        return wait_jobspec(core, &args[1], &var_name);
     }
 
     if let Ok(pid) = args[1].parse::<i32>() {
@@ -390,9 +425,15 @@ pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
         if ids.len() == 1 {
             core.job_table.remove(ids[0]);
+            core.job_table_priority.remove(0);
         }
 
         return 1;
+    }
+
+    if args.len() == 2 || args[1] == "-a" {
+        core.job_table.clear();
+        core.job_table_priority.clear();
     }
 
     0
