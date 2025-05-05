@@ -260,9 +260,10 @@ fn wait_jobspec(core: &mut ShellCore, jobspec: &str, var_name: &Option<String>)
     wait_a_job(core, ids[0], var_name)
 }
 
-fn wait_next(core: &mut ShellCore, var_name: &Option<String>) -> i32 {
+fn wait_next(core: &mut ShellCore, ids: &Vec<usize>, var_name: &Option<String>)
+-> (i32, bool) {
     if core.job_table_priority.is_empty() {
-        return 127;
+        return (127, false);
     }
 
     let mut exit_status = 0;
@@ -272,6 +273,10 @@ fn wait_next(core: &mut ShellCore, var_name: &Option<String>) -> i32 {
     loop {
         thread::sleep(time::Duration::from_millis(10)); //0.1秒周期に変更
         for (i, job) in core.job_table.iter_mut().enumerate() {
+            if ! ids.contains(&i) && ! ids.is_empty() {
+                continue;
+            }
+
             if let Ok(es) = job.update_status(false, true) {
                 if job.display_status == "Done"
                 || job.display_status == "Stopped" {
@@ -299,7 +304,7 @@ fn wait_next(core: &mut ShellCore, var_name: &Option<String>) -> i32 {
     let job_id = core.job_table[drop].id;
     core.job_table.remove(drop);
     core.job_table_priority.retain(|id| *id != job_id);
-    exit_status
+    (exit_status, true)
 }
 
 fn wait_pid(core: &mut ShellCore, pid: i32, var_name: &Option<String>)
@@ -369,9 +374,37 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         let mut jobs = arg::consume_with_subsequents("-n", &mut args);
         jobs.remove(0);
         if jobs.is_empty() {
-            return wait_next(core, &var_name);
+            return wait_next(core, &vec![], &var_name).0;
         }
 
+        let mut ids = vec![];
+        for j in &jobs {
+            if j.starts_with("%") {
+                ids.append(&mut jobspec_choice(core, &j));
+            }else{
+                for (i, job) in core.job_table.iter_mut().enumerate() {
+                    if job.pids[0].to_string() == *j {
+                        ids.push(i);
+                    }
+                }
+            }
+        }
+        ids.sort();
+        ids.dedup();
+        let mut ans = -1;
+
+        for _ in 0..ids.len() {
+            let tmp = match ans {
+                -1 => wait_next(core, &ids, &var_name),
+                _  => wait_next(core, &ids, &None),
+            };
+
+            if tmp.1 == true && ans == -1 {
+                ans = tmp.0;
+            }
+        }
+
+        /*
         let mut ans = 0;
         let mut found;
         while ! jobs.is_empty() {
@@ -384,7 +417,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
         for j in jobs {
             let _ = wait_single_job(core, &j, &None);
-        }
+        }*/
         return ans;
     }
 
