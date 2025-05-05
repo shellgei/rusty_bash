@@ -329,6 +329,18 @@ fn wait_a_job(core: &mut ShellCore, id: usize, var_name: &Option<String>) -> i32
     }
 }
 
+fn wait_single_job(core: &mut ShellCore, arg: &String, var_name: &Option<String>) -> i32 {
+    if arg.starts_with("%") {
+        return wait_jobspec(core, &arg, &var_name);
+    }
+
+    if let Ok(pid) = arg.parse::<i32>() {
+        return wait_pid(core, pid);
+    }
+
+    1
+}
+
 pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
     let var_name = arg::consume_with_next_arg("-p", &mut args);
@@ -355,42 +367,15 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
 
         let first = jobs.remove(0);
-        let ans = wait_jobspec(core, &first, &var_name);
+        let ans = wait_single_job(core, &first, &var_name);
 
         for j in jobs {
-            let _ = wait_jobspec(core, &j, &None);
+            let _ = wait_single_job(core, &j, &None);
         }
         return ans;
     }
 
-    if args[1].starts_with("%") {
-        return wait_jobspec(core, &args[1], &var_name);
-    }
-
-    if let Ok(pid) = args[1].parse::<i32>() {
-        return wait_pid(core, pid);
-    }
-
-    /*
-    let id = match job_to_id(&args[1], &core.job_table_priority, &core.job_table) {
-        Ok(n)  => n,
-        Err(s) => {
-            error::print(&("wait: ".to_owned() + &s), core);
-            return 1;
-        },
-    };
-
-    match id_to_job(id, &mut core.job_table) {
-        Some(job) => {
-            return match job.update_status(true, false) {
-                Ok(n) => n,
-                Err(e) => { e.print(core); 1 },
-            };
-        }
-        _ => return 1, 
-    }
-    */
-    1
+    wait_single_job(core, &args[1], &var_name)
 }
 
 /* TODO: implement original kill */
