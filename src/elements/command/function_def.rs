@@ -62,7 +62,7 @@ impl FunctionDefinition {
 
         core.source_function_level += 1;
         if let Err(e) = self.command.as_mut().unwrap()
-                         .exec(core, &mut dummy) {
+                        .exec(core, &mut dummy) {
             e.print(core);
         }
         core.return_flag = false;
