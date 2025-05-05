@@ -35,9 +35,9 @@ impl Command for FunctionDefinition {
 
 impl FunctionDefinition {
     pub fn run_as_command(&mut self, args: &mut Vec<String>,core: &mut ShellCore)
-    -> Result<Option<Pid>, ExecError> {
+    -> Option<Pid> {
         dbg!("CALLED");
-        Ok(None)
+        None
     }
 
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
