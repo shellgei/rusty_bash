@@ -47,7 +47,7 @@ impl FunctionDefinition {
     }
 
     pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore)
-        -> Result<Option<Pid>, ExecError> {
+    -> Option<Pid> {
         let mut array = core.db.get_array_all("FUNCNAME");
         array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
         let _ = core.db.set_array("FUNCNAME", array.clone(), None);
@@ -62,9 +62,8 @@ impl FunctionDefinition {
         let mut dummy = Pipe::new("|".to_string());
 
         core.source_function_level += 1;
-        let pid = self.command.clone()
-                        .unwrap()
-                        .exec(core, &mut dummy);
+        let result = self.command.as_mut().unwrap()
+                         .exec(core, &mut dummy);
         core.return_flag = false;
         core.source_function_level -= 1;
 
@@ -74,7 +73,14 @@ impl FunctionDefinition {
         source.remove(0);
         let _ = core.db.set_array("FUNCNAME", array, None);
         let _ = core.db.set_array("BASH_SOURCE", source, None);
-        pid
+
+        match result {
+            Ok(pid) => pid,
+            Err(e) => {
+                e.print(core);
+                None
+            },
+        }
     }
 
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {

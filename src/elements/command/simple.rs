@@ -60,7 +60,7 @@ impl Command for SimpleCommand {
 
         if core.db.functions.contains_key(&self.args[0]) {
             let mut f = core.db.functions[&self.args[0]].clone();
-            let _ = f.run_as_command(&mut self.args, core);
+            f.run_as_command(&mut self.args, core);
         } else if core.builtins.contains_key(&self.args[0]) {
             let mut special_args = vec![];
             for sub in &self.substitutions_as_args {
