@@ -21,7 +21,7 @@ pub struct FunctionDefinition {
 impl Command for FunctionDefinition {
     fn exec(&mut self, core: &mut ShellCore, _: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         core.db.functions.insert(self.name.to_string(), self.clone());
-        dbg!("{:?}", &core.db.functions);
+        //dbg!("{:?}", &core.db.functions);
         Ok(None)
     }
 
@@ -34,6 +34,12 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
+    pub fn run_as_command(&mut self, args: &mut Vec<String>,core: &mut ShellCore)
+    -> Result<Option<Pid>, ExecError> {
+        dbg!("CALLED");
+        Ok(None)
+    }
+
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
         let has_function_keyword = feeder.starts_with("function");
         if has_function_keyword {

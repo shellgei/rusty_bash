@@ -26,7 +26,8 @@ pub struct SimpleCommand {
 }
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe)
+    -> Result<Option<Pid>, ExecError> {
         self.args.clear();
         let mut words = self.words.to_vec();
         for w in words.iter_mut() {
@@ -40,7 +41,8 @@ impl Command for SimpleCommand {
 
         if self.force_fork 
         || pipe.is_connected() 
-        || ! core.builtins.contains_key(&self.args[0]) {
+        || ( ! core.builtins.contains_key(&self.args[0]) 
+             && ! core.db.functions.contains_key(&self.args[0]) ) {
             self.fork_exec(core, pipe)
         }else{
             self.nofork_exec(core)
@@ -48,16 +50,18 @@ impl Command for SimpleCommand {
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
-        if ! fork {
-            core.run_builtin(&mut self.args);
-            return Ok(());
-        }
-
-        if core.run_builtin(&mut self.args) {
-            exit::normal(core)
+        if core.db.functions.contains_key(&self.args[0]) {
+            let mut f = core.db.functions[&self.args[0]].clone();
+            let _ = f.run_as_command(&mut self.args, core);
+        }else if core.run_builtin(&mut self.args) {
         }else{
             Self::exec_external_command(&mut self.args)
         }
+
+        if fork {
+            exit::normal(core);
+        }
+        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }
