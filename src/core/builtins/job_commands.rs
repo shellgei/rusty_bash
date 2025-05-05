@@ -245,15 +245,16 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-fn wait_jobspec(core: &mut ShellCore, jobspec: &str, var_name: &Option<String>) -> i32 {
+fn wait_jobspec(core: &mut ShellCore, jobspec: &str, var_name: &Option<String>)
+-> (i32, bool) {
     let ids = jobspec_choice(core, jobspec);
     if ids.is_empty() {
         let msg = format!("{}: no such job", &jobspec);
-        return super::error_exit(1, "jobs", &msg, core);
+        return (super::error_exit(1, "jobs", &msg, core), false);
     }
     if ids.len() > 1 {
         let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
-        return super::error_exit(1, "jobs", &msg, core);
+        return (super::error_exit(1, "jobs", &msg, core), false);
     }
 
     wait_a_job(core, ids[0], var_name)
@@ -301,16 +302,20 @@ fn wait_next(core: &mut ShellCore, var_name: &Option<String>) -> i32 {
     exit_status
 }
 
-fn wait_pid(core: &mut ShellCore, pid: i32) -> i32 {
+fn wait_pid(core: &mut ShellCore, pid: i32, var_name: &Option<String>)
+-> (i32, bool) {
     match pid_to_jobid(pid, &core.job_table) {
-        Some(i) => wait_a_job(core, i, &None),
-        None => 1,
+        Some(i) => {
+            wait_a_job(core, i, var_name)
+        },
+        None => (1, false),
     }
 }
 
-fn wait_a_job(core: &mut ShellCore, id: usize, var_name: &Option<String>) -> i32 {
+fn wait_a_job(core: &mut ShellCore, id: usize, var_name: &Option<String>)
+-> (i32, bool) {
     if core.job_table.len() < id {
-        return super::error_exit(1, "wait", "invalid jobid", core);
+        return (super::error_exit(1, "wait", "invalid jobid", core), false);
     }
 
     let pid = core.job_table[id].pids[0].to_string();
@@ -323,22 +328,23 @@ fn wait_a_job(core: &mut ShellCore, id: usize, var_name: &Option<String>) -> i32
                     e.print(core);
                 }
             }
-            n
+            (n, true)
         },
-        Err(e) => { e.print(core); 1 },
+        Err(e) => { e.print(core); (1, false) },
     }
 }
 
-fn wait_single_job(core: &mut ShellCore, arg: &String, var_name: &Option<String>) -> i32 {
+fn wait_single_job(core: &mut ShellCore, arg: &String, var_name: &Option<String>)
+-> (i32, bool) {
     if arg.starts_with("%") {
         return wait_jobspec(core, &arg, &var_name);
     }
 
     if let Ok(pid) = arg.parse::<i32>() {
-        return wait_pid(core, pid);
+        return wait_pid(core, pid, &var_name);
     }
 
-    1
+    (1, false) 
 }
 
 pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -366,8 +372,15 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return wait_next(core, &var_name);
         }
 
-        let first = jobs.remove(0);
-        let ans = wait_single_job(core, &first, &var_name);
+        let mut ans = 0;
+        let mut found;
+        while ! jobs.is_empty() {
+            let first = jobs.remove(0);
+            (ans, found) = wait_single_job(core, &first, &var_name);
+            if found {
+                break;
+            }
+        }
 
         for j in jobs {
             let _ = wait_single_job(core, &j, &None);
@@ -375,7 +388,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return ans;
     }
 
-    wait_single_job(core, &args[1], &var_name)
+    wait_single_job(core, &args[1], &var_name).0
 }
 
 /* TODO: implement original kill */
