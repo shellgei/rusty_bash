@@ -10,7 +10,7 @@ use nix::unistd;
 use nix::unistd::Pid;
 use std::{thread, time};
 
-fn pid_to_jobid(pid: i32, jobs: &Vec<JobEntry>) -> Option<usize> {
+fn pid_to_array_pos(pid: i32, jobs: &Vec<JobEntry>) -> Option<usize> {
     for i in 0..jobs.len() {
         if jobs[i].pids[0].as_raw() == pid {
             return Some(i);
@@ -19,7 +19,7 @@ fn pid_to_jobid(pid: i32, jobs: &Vec<JobEntry>) -> Option<usize> {
     None
 }
 
-fn id_to_job(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
+fn jobid_to_jobentry(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
     for job in jobs.iter_mut() {
         if job.id == id {
             return Some(job);
@@ -28,7 +28,7 @@ fn id_to_job(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
     None
 }
 
-fn job_to_id(s: &str, priority: &Vec<usize>, table: &Vec<JobEntry>) -> Result<usize, String> {
+fn jobspec_to_jobid(s: &str, priority: &Vec<usize>, table: &Vec<JobEntry>) -> Result<usize, String> {
     if s == "%+" {
         return match priority.len() {
             0 => Err("%+: no such job".to_string()), 
@@ -77,7 +77,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         core.job_table_priority[0]
     }else if args.len() == 2 {
-        match job_to_id(&args[1], &core.job_table_priority, &core.job_table) {
+        match jobspec_to_jobid(&args[1], &core.job_table_priority, &core.job_table) {
             Ok(n) => n,
             Err(s) => {
                 error::print(&("bg: ".to_owned() + &s), core);
@@ -88,7 +88,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    match id_to_job(id, &mut core.job_table) {
+    match jobid_to_jobentry(id, &mut core.job_table) {
         Some(job) => job.send_cont(),
         _ => return 1, 
     }
@@ -107,7 +107,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         core.job_table_priority[0]
     }else if args.len() == 2 {
-        match job_to_id(&args[1], &core.job_table_priority, &core.job_table) {
+        match jobspec_to_jobid(&args[1], &core.job_table_priority, &core.job_table) {
             Ok(n) => n,
             Err(s) => {
                 error::print(&s, core);
@@ -118,7 +118,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    let job = match id_to_job(id, &mut core.job_table) {
+    let job = match jobid_to_jobentry(id, &mut core.job_table) {
         Some(job) => job,
         _ => return 1, 
     };
@@ -145,7 +145,22 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     exit_status
 }
 
-fn jobspec_choice(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
+fn jobspec_to_array_pos(core: &mut ShellCore, jobspec: &str) -> Option<usize> {
+    let poss = jobspec_to_array_poss(core, jobspec);
+    if poss.is_empty() {
+        let msg = format!("{}: no such job", &jobspec);
+        super::error_exit(1, "jobs", &msg, core);
+        return None;
+    }else if poss.len() > 1 {
+        let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
+        super::error_exit(1, "jobs", &msg, core);
+        return None;
+    }
+
+    Some(poss[0])
+}
+
+fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
     if jobspec == "" {
         return (0..core.job_table.len()).collect();
     }
@@ -215,7 +230,7 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    let ids = jobspec_choice(core, &jobspec);
+    let ids = jobspec_to_array_poss(core, &jobspec);
 
     if ids.is_empty() {
         let msg = format!("{}: no such job", &jobspec);
@@ -247,17 +262,10 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 fn wait_jobspec(core: &mut ShellCore, jobspec: &str, var_name: &Option<String>)
 -> (i32, bool) {
-    let ids = jobspec_choice(core, jobspec);
-    if ids.is_empty() {
-        let msg = format!("{}: no such job", &jobspec);
-        return (super::error_exit(1, "jobs", &msg, core), false);
+    match jobspec_to_array_pos(core, jobspec) {
+        Some(id) => wait_a_job(core, id, var_name),
+        None => return (1, false),
     }
-    if ids.len() > 1 {
-        let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
-        return (super::error_exit(1, "jobs", &msg, core), false);
-    }
-
-    wait_a_job(core, ids[0], var_name)
 }
 
 fn wait_next(core: &mut ShellCore, ids: &Vec<usize>, var_name: &Option<String>)
@@ -309,27 +317,25 @@ fn wait_next(core: &mut ShellCore, ids: &Vec<usize>, var_name: &Option<String>)
 
 fn wait_pid(core: &mut ShellCore, pid: i32, var_name: &Option<String>)
 -> (i32, bool) {
-    match pid_to_jobid(pid, &core.job_table) {
-        Some(i) => {
-            wait_a_job(core, i, var_name)
-        },
+    match pid_to_array_pos(pid, &core.job_table) {
+        Some(i) => wait_a_job(core, i, var_name),
         None => (1, false),
     }
 }
 
-fn wait_a_job(core: &mut ShellCore, id: usize, var_name: &Option<String>)
+fn wait_a_job(core: &mut ShellCore, pos: usize, var_name: &Option<String>)
 -> (i32, bool) {
-    if core.job_table.len() < id {
-        return (super::error_exit(1, "wait", "invalid jobid", core), false);
+    if core.job_table.len() < pos {
+        return (super::error_exit(1, "wait", "invalpos jobpos", core), false);
     }
 
-    let pid = core.job_table[id].pids[0].to_string();
+    let ppos = core.job_table[pos].pids[0].to_string();
 
-    match core.job_table[id].update_status(true, false) {
+    match core.job_table[pos].update_status(true, false) {
         Ok(n) => {
             if let Some(var) = var_name {
                 core.db.unset(&var);
-                if let Err(e) = core.db.set_param(&var, &pid, None) {
+                if let Err(e) = core.db.set_param(&var, &ppos, None) {
                     e.print(core);
                 }
             }
@@ -339,7 +345,7 @@ fn wait_a_job(core: &mut ShellCore, id: usize, var_name: &Option<String>)
     }
 }
 
-fn wait_single_job(core: &mut ShellCore, arg: &String, var_name: &Option<String>)
+fn wait_arg_job(core: &mut ShellCore, arg: &String, var_name: &Option<String>)
 -> (i32, bool) {
     if arg.starts_with("%") {
         return wait_jobspec(core, &arg, &var_name);
@@ -380,7 +386,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         let mut ids = vec![];
         for j in &jobs {
             if j.starts_with("%") {
-                ids.append(&mut jobspec_choice(core, &j));
+                ids.append(&mut jobspec_to_array_poss(core, &j));
             }else{
                 for (i, job) in core.job_table.iter_mut().enumerate() {
                     if job.pids[0].to_string() == *j {
@@ -403,25 +409,10 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 ans = tmp.0;
             }
         }
-
-        /*
-        let mut ans = 0;
-        let mut found;
-        while ! jobs.is_empty() {
-            let first = jobs.remove(0);
-            (ans, found) = wait_single_job(core, &first, &var_name);
-            if found {
-                break;
-            }
-        }
-
-        for j in jobs {
-            let _ = wait_single_job(core, &j, &None);
-        }*/
         return ans;
     }
 
-    wait_single_job(core, &args[1], &var_name).0
+    wait_arg_job(core, &args[1], &var_name).0
 }
 
 /* TODO: implement original kill */
@@ -434,18 +425,10 @@ pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() >= 3 && args[2].starts_with("%") {
-        let ids = jobspec_choice(core, &args[2]);
-
-        if ids.is_empty() {
-            let msg = format!("{}: no such job", &args[2]);
-            return super::error_exit(1, "jobs", &msg, core);
+        match jobspec_to_array_pos(core, &args[2]) {
+            Some(id) => args[2] = core.job_table[id].pids[0].to_string(),
+            None => return 1,
         }
-        if ids.len() > 1 {
-            let msg = format!("{}: ambiguous job spec", &args[2][1..]);
-            return super::error_exit(1, "jobs", &msg, core);
-        }
-
-        args[2] = core.job_table[ids[0]].pids[0].to_string();
     }
 
     args.insert(0, "eval".to_string());
@@ -456,7 +439,7 @@ pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let args = arg::dissolve_options(args);
 
     if args.len() == 1 {
-        let ids = jobspec_choice(core, "%%");
+        let ids = jobspec_to_array_poss(core, "%%");
 
         if ids.len() == 1 {
             core.job_table.remove(ids[0]);
