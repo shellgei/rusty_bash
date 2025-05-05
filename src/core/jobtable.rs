@@ -65,7 +65,7 @@ impl JobEntry {
         }
     }
 
-    pub fn update_status(&mut self, wait: bool) -> Result<i32, ExecError> {
+    pub fn update_status(&mut self, wait: bool, check_done: bool) -> Result<i32, ExecError> {
         let mut exit_status = 0;
         let before = self.proc_statuses[0];
         for (status, pid) in self.proc_statuses.iter_mut().zip(&self.pids) {
@@ -81,9 +81,18 @@ impl JobEntry {
         /* check stopped processes */
         let mut stopped = false;
         for s in &self.proc_statuses {
-            if let WaitStatus::Stopped(_, _) = s {
-                stopped = true;
-                break;
+            match s {
+                WaitStatus::Stopped(_, _) => {
+                    stopped = true;
+                    break;
+                },
+                WaitStatus::Exited(_, es) => {
+                    if check_done {
+                        exit_status = *es;
+                        break;
+                    }
+                },
+                _ => {},
             }
         }
 
@@ -196,7 +205,7 @@ impl JobEntry {
 impl ShellCore {
     pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {
         for e in self.job_table.iter_mut() {
-            e.update_status(false)?;
+            e.update_status(false, false)?;
         }
         Ok(())
     }

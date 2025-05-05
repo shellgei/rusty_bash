@@ -8,6 +8,7 @@ use crate::utils::arg;
 use nix::sys::signal::Signal;
 use nix::unistd;
 use nix::unistd::Pid;
+use std::{thread, time};
 
 fn pid_to_jobid(pid: i32, jobs: &Vec<JobEntry>) -> Option<usize> {
     for i in 0..jobs.len() {
@@ -133,7 +134,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if let Ok(_) =  unistd::tcsetpgrp(fd, pgid) {
         eprintln!("{}", &job.text);
         job.send_cont();
-        exit_status = job.update_status(true).unwrap_or(1);
+        exit_status = job.update_status(true, false).unwrap_or(1);
 
         if let Ok(mypgid) = unistd::getpgid(Some(Pid::from_raw(0))) {
             let _ = unistd::tcsetpgrp(fd, mypgid);
@@ -260,11 +261,33 @@ fn wait_jobspec(core: &mut ShellCore, jobspec: &str) -> i32 {
 
 fn wait_next(core: &mut ShellCore) -> i32 {
     if core.job_table_priority.is_empty() {
-        return 1;
+        return 127;
     }
 
-    let id = core.job_table_priority[0] - 1;
-    wait_a_job(core, id)
+    let mut exit_status = 0;
+    let mut drop = 0;
+    let mut end = false;
+    loop {
+        thread::sleep(time::Duration::from_millis(10)); //0.1秒周期に変更
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if let Ok(es) = job.update_status(false, true) {
+                if job.display_status == "Done"
+                || job.display_status == "Stopped" {
+                    exit_status = es;
+                    drop = i;
+                    end = true;
+                    break;
+                }
+            }
+        }
+
+        if end {
+            break;
+        }
+    }
+
+    core.job_table.remove(drop);
+    exit_status
 }
 
 fn wait_pid(core: &mut ShellCore, pid: i32) -> i32 {
@@ -279,7 +302,7 @@ fn wait_a_job(core: &mut ShellCore, id: usize) -> i32 {
         return super::error_exit(1, "wait", "invalid jobid", core);
     }
 
-    match core.job_table[id].update_status(true) {
+    match core.job_table[id].update_status(true, false) {
         Ok(n) => n,
         Err(e) => { e.print(core); 1 },
     }
@@ -289,7 +312,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() <= 1 {
         let mut exit_status = 0;
         for job in core.job_table.iter_mut() {
-            match job.update_status(true) {
+            match job.update_status(true, false) {
                 Ok(n) => exit_status = n,
                 Err(e) => {
                     e.print(core);
@@ -322,7 +345,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     match id_to_job(id, &mut core.job_table) {
         Some(job) => {
-            return match job.update_status(true) {
+            return match job.update_status(true, false) {
                 Ok(n) => n,
                 Err(e) => { e.print(core); 1 },
             };
