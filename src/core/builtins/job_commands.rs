@@ -317,6 +317,10 @@ fn wait_arg_job(core: &mut ShellCore, arg: &String,
 }
 
 pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if core.is_subshell {
+        super::error_exit(1, &args[0], "called from subshell", core);
+    }
+
     let mut args = arg::dissolve_options(args);
     let var_name = arg::consume_with_next_arg("-p", &mut args);
     let f_opt = arg::consume_option("-f", &mut args);

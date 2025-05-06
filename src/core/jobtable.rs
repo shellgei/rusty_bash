@@ -9,7 +9,7 @@ use nix::sys::signal;
 use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct JobEntry {
     pub id: usize,
     pub pids: Vec<Pid>,
@@ -61,7 +61,7 @@ impl JobEntry {
             proc_statuses: statuses.to_vec(),
             display_status: status.to_string(),
             text: text.to_string(),
-            change: false,
+            ..Default::default()
         }
     }
 
@@ -204,6 +204,10 @@ impl JobEntry {
 
 impl ShellCore {
     pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {
+        if self.is_subshell {
+            return Ok(());
+        }
+
         for e in self.job_table.iter_mut() {
             e.update_status(false, false)?;
         }
@@ -211,6 +215,9 @@ impl ShellCore {
     }
 
     pub fn jobtable_print_status_change(&mut self) {
+        if self.is_subshell {
+            return;
+        }
         for e in self.job_table.iter_mut() {
             if e.change {
                 e.print(&self.job_table_priority, false, false, false, false);

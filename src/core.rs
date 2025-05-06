@@ -201,7 +201,7 @@ impl ShellCore {
         self.is_subshell = true;
         proc_ctrl::set_pgid(self, pid, pgid);
         let _ = self.set_subshell_parameters();
-        self.job_table.clear();
+        //self.job_table.clear();
 
         self.exit_script.clear();
     }
