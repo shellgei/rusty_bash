@@ -83,10 +83,31 @@ fn main() {
         show_version();
     }
 
+    let mut options = vec![];
+    loop {
+        if let Some(opt) = arg::consume_with_next_arg("-o", &mut args) {
+            options.push(opt);
+        }else{
+            break;
+        }
+    }
+
     let compat_bash = arg::consume_option("-b", &mut args);
     let c_parts = arg::consume_with_subsequents("-c", &mut args);
     if c_parts.len() != 0 {
-        run_and_exit_c_option(&args, &c_parts, compat_bash);
+        let mut core = ShellCore::new_c_mode();
+        if compat_bash {
+            core.compat_bash = true;
+            core.db.flags += "b";
+        }
+        for opt in &options {
+            if let Err(e) = core.options.set(&opt, true) {
+                e.print(&mut core);
+                process::exit(2);
+            }
+        }
+
+        run_and_exit_c_option(&args, &c_parts, &mut core);
     }
 
     let mut core = configure(&args);
@@ -94,6 +115,14 @@ fn main() {
         core.compat_bash = true;
         core.db.flags += "b";
     }
+
+    for opt in options {
+        if let Err(e) = core.options.set(&opt, true) {
+            e.print(&mut core);
+            process::exit(2);
+        }
+    }
+
     signal::run_signal_check(&mut core);
 
     if core.script_name == "-" {
@@ -177,35 +206,30 @@ fn main_loop(core: &mut ShellCore) {
     exit::normal(core);
 }
 
-fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash: bool) {
+fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut ShellCore) {
     if c_parts.len() < 2 {
         println!("{}: -c: option requires an argument", &args[0]);
         process::exit(2);                
     }
 
-    let mut core = ShellCore::new_c_mode();
-    if compat_bash {
-        core.compat_bash = true;
-        core.db.flags += "b";
-    }
     let parameters = if c_parts.len() > 2 {
         c_parts[2..].to_vec()
     }else{
         vec![args[0].clone()]
     };
 
-    if let Err(e) = parameter::set_positions(&mut core, &parameters) {
-        e.print(&mut core);
+    if let Err(e) = parameter::set_positions(core, &parameters) {
+        e.print(core);
         core.db.exit_status = 2;
-        exit::normal(&mut core);
+        exit::normal(core);
     }
-    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
-        e.print(&mut core);
+    if let Err(e) = option::set_options(core, &mut args[1..].to_vec()) {
+        e.print(core);
         core.db.exit_status = 2;
-        exit::normal(&mut core);
+        exit::normal(core);
     }
 
-    signal::run_signal_check(&mut core);
+    signal::run_signal_check(core);
     core.db.flags.retain(|f| f != 'i');
 
     core.db.flags += "c";
@@ -218,32 +242,32 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
 
     loop {
         if let Err(e) = core.jobtable_check_status() {
-            e.print(&mut core);
+            e.print(core);
         }
 
         if core.db.flags.contains('i') && core.options.query("monitor") {
             core.jobtable_print_status_change();
         }
 
-        match feeder.feed_line(&mut core) {
+        match feeder.feed_line(core) {
             Ok(()) => {}, 
             Err(InputError::Interrupt) => {
-                signal::input_interrupt_check(&mut feeder, &mut core);
-                signal::check_trap(&mut &mut core);
+                signal::input_interrupt_check(&mut feeder, core);
+                signal::check_trap(core);
                 continue;
             },
             _ => break,
         }
 
         core.sigint.store(false, Relaxed);
-        match Script::parse(&mut feeder, &mut core, false){
+        match Script::parse(&mut feeder, core, false){
             Ok(Some(mut s)) => {
-                if let Err(e) = s.exec(&mut core) {
-                    e.print(&mut core);
+                if let Err(e) = s.exec(core) {
+                    e.print(core);
                 }
             },
             Err(e) => {
-                e.print(&mut core);
+                e.print(core);
                 feeder.consume(feeder.len());
                 feeder.nest = vec![("".to_string(), vec![])];
             },
@@ -254,7 +278,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
         }
         core.sigint.store(false, Relaxed);
     }
-    exit::normal(&mut core);
+    exit::normal(core);
 
 
     /*
