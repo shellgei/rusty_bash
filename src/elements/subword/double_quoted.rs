@@ -4,9 +4,8 @@
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use crate::elements::word::{Word, substitution};
-use crate::elements::subword::CommandSubstitution;
-use crate::elements::subword::Arithmetic;
+use crate::elements::word::{Word, WordMode, substitution};
+use crate::elements::subword::{Arithmetic, CommandSubstitution};
 use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone, Default)]
@@ -30,7 +29,15 @@ impl Subword for DoubleQuoted {
 
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
-        self.text = word.text;
+        self.text.clear();
+
+        for (i, sw) in self.subwords.iter_mut().enumerate() {
+            if self.split_points.contains(&i) {
+                self.text += " ";
+            }
+            self.text += sw.get_text();
+        }
+        //dbg!("{:?}", &self.text);
         Ok(())
     }
 
@@ -46,12 +53,17 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
-        let text = self.subwords.iter_mut()
-            .map(|s| s.make_unquoted_string())
-            .filter(|s| *s != None)
-            .map(|s| s.unwrap())
-            .collect::<Vec<String>>()
-            .concat();
+        let mut text = String::new();
+
+        for (i, sw) in self.subwords.iter_mut().enumerate() {
+            if self.split_points.contains(&i) {
+                text += " ";
+            }
+
+            if let Some(txt) = sw.make_unquoted_string() {
+                text += &txt;
+            }
+        }
 
         if text.is_empty() && self.split_points.len() == 1 {
             return None;
@@ -160,12 +172,20 @@ impl DoubleQuoted {
         Ok(false)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("\"") {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+                 mode: &Option<WordMode>) -> Result<Option<Self>, ParseError> {
+        if ! feeder.starts_with("\"") && ! feeder.starts_with("$\"")  {
             return Ok(None);
         }
+        if let Some(WordMode::Heredoc) = mode {
+            return Ok(None);
+        }
+
         let mut ans = Self::default();
-        ans.text = feeder.consume(1);
+
+        let len = if feeder.starts_with("\""){1}else{2};
+
+        ans.text = feeder.consume(len);
 
         while Self::eat_element(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}

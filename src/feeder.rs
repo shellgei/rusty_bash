@@ -4,10 +4,9 @@
 mod terminal;
 mod scanner;
 
-use std::{io, process};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
-use crate::ShellCore;
+use crate::{ShellCore, utils};
 use crate::error::input::InputError;
 use crate::error::parse::ParseError;
 use std::sync::atomic::Ordering::Relaxed;
@@ -18,6 +17,7 @@ pub struct Feeder {
     backup: Vec<String>,
     pub nest: Vec<(String, Vec<String>)>,
     pub lineno: usize,
+    pub lineno_addition: usize,
     script_lines: Option<Lines<BufReader<File>>>,
     pub main_feeder: bool,
 }
@@ -41,7 +41,18 @@ impl Feeder {
         let tail = self.remaining.split_off(cutpos);
         let ans = self.remaining.to_string();
         self.remaining = tail;
+        let lineno_org = self.lineno;
         self.lineno += ans.chars().filter(|c| *c == '\n').count();
+
+        while self.lineno > lineno_org {
+            if self.lineno_addition == 0 {
+                break;
+            }
+
+            self.lineno_addition -= 1;
+            self.lineno -= 1;
+        }
+        
         ans
     }
 
@@ -71,7 +82,7 @@ impl Feeder {
         self.remaining = self.backup.pop().expect("SUSHI INTERNAL ERROR (backup error)");
     }   
 
-    fn read_script(&mut self, core: &mut ShellCore) -> Result<String, InputError> {
+    fn read_script(&mut self) -> Result<String, InputError> {
         if let Some(lines) = self.script_lines.as_mut() {
             match lines.next() {
                 Some(Ok(line)) => return Ok(line + "\n"),
@@ -79,19 +90,7 @@ impl Feeder {
             }
         }
 
-        let mut line = String::new();
-        let len = match io::stdin().read_line(&mut line) {
-            Ok(len)  => len,
-            Err(why) => {
-                eprintln!("sush: {}: {}", &core.script_name, why);
-                process::exit(1)
-            },
-        };
-
-        match len  {
-            0 => Err(InputError::Eof),
-            _ => Ok(line),
-        }
+        utils::read_line_stdin_unbuffered("")
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
@@ -103,9 +102,9 @@ impl Feeder {
             return Err(InputError::Interrupt);
         }
 
-        let line = match ! core.read_stdin && self.script_lines.is_none() {
+        let line = match core.db.flags.contains('i') && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS2"),
-            false => self.read_script(core),
+            false => self.read_script(),
         };
 
         line.map(|ln| {
@@ -117,21 +116,21 @@ impl Feeder {
     pub fn feed_additional_line(&mut self, core: &mut ShellCore) -> Result<(), ParseError> {
         match self.feed_additional_line_core(core) {
             Ok(()) => Ok(()),
-            Err(InputError::Eof) => {
-                core.db.exit_status = 2;
-                return Err(ParseError::Input(InputError::Eof));
-            },
             Err(InputError::Interrupt) => {
                 core.db.exit_status = 130;
                 Err(ParseError::Input(InputError::Interrupt))
+            },
+            Err(e) => {
+                core.db.exit_status = 2;
+                return Err(ParseError::Input(e));
             },
         }
     }
 
     pub fn feed_line(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
-        let line = match ! core.read_stdin && self.script_lines.is_none() {
+        let line = match core.db.flags.contains('i') && self.script_lines.is_none() {
             true  => terminal::read_line(core, "PS1"),
-            false => self.read_script(core),
+            false => self.read_script(),
         };
 
         line.map(|ln| self.add_line(ln, core))
@@ -150,6 +149,8 @@ impl Feeder {
 
     pub fn replace(&mut self, num: usize, to: &str) {
         self.consume(num);
+        self.lineno_addition = to.chars().filter(|c| *c == '\n').count();
+
         self.remaining = to.to_string() + &self.remaining;
     }
 

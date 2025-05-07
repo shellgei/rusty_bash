@@ -11,6 +11,9 @@ pub mod arg;
 pub mod splitter;
 
 use crate::{Feeder, ShellCore};
+use crate::error::input::InputError;
+use io_streams::StreamReader;
+use std::io::Read;
 
 pub fn reserved(w: &str) -> bool {
     match w {
@@ -113,4 +116,45 @@ pub fn is_param(s :&str) -> bool {
     let name_c = |c| ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
                      || ('0' <= c && c <= '9') || '_' == c;
     s.chars().position(|c| !name_c(c)) == None
+}
+
+pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
+    let mut line = vec![];
+    let mut ch: [u8; 1] = Default::default();
+    let mut stdin = StreamReader::stdin().unwrap();
+
+    let mut d = 10; //\n
+    if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+        d = c;    
+    }
+
+    loop {
+        match stdin.read(&mut ch) {
+            Ok(0) => {
+                if line.is_empty() {
+                    return Err(InputError::Eof);
+                }
+                break;
+            },
+            Ok(_) => {
+                line.push(ch[0]);
+                if d == ch[0] {
+                    break;
+                }
+            },
+            Err(_) => return Err(InputError::Eof),
+        }
+    }
+
+    match String::from_utf8(line) {
+        Ok(s) => Ok(s),
+        Err(_) => Err(InputError::NotUtf8),
+    }
+}
+
+pub fn to_ansi_c(s: &String) -> String {
+    if s.contains('\n') { //TODO: add \t \a ...
+        return "$'".to_owned() + &s.replace("\n", "\\n") + "'";
+    }
+    s.clone()
 }

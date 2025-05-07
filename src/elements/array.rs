@@ -12,11 +12,17 @@ use super::word::Word;
 pub struct Array {
     pub text: String,
     pub words: Vec<(Option<Subscript>, Word)>,
+    error_strings: Vec<String>,
 }
 
 impl Array {
     pub fn eval(&mut self, core: &mut ShellCore)
     -> Result<Vec<(Option<Subscript>, String)>, ExecError> {
+
+        if let Some(c) = self.error_strings.last() {
+            return Err(ExecError::SyntaxError(c.to_string()));
+        }
+
         let mut ans = vec![];
 
         for (s, w) in &mut self.words {
@@ -65,21 +71,26 @@ impl Array {
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
         loop {
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+            command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
             let sub = Self::eat_subscript(feeder, core, &mut ans)?;
             if Self::eat_word(feeder, &mut ans, sub, core) {
                 continue;
             }
 
-            if feeder.starts_with(")") {
-                ans.text += &feeder.consume(1);
-                break;
-            }else if feeder.starts_with("\n") {
-                ans.text += &feeder.consume(1);
-            }
+            if feeder.len() != 0 {
+                if feeder.starts_with(")") {
+                    ans.text += &feeder.consume(1);
+                    break;
+                }else if feeder.starts_with("\n") {
+                    ans.text += &feeder.consume(1);
+                }
 
-            if feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
+                let len = feeder.scanner_char();
+                ans.error_strings.push(feeder.consume(len));
+                continue;
+
+            }else if ! feeder.feed_additional_line(core).is_ok() {
                 return Ok(None);
             }
         }

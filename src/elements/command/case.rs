@@ -41,7 +41,6 @@ impl Command for CaseCommand {
             for pattern in &mut e.0 {
                 let mut exec_script = false;
                 if ! next {
-                    //let p = pattern.eval_for_case_pattern(core)?;
                     let p = match pattern.eval_for_case_pattern(core) {
                         Ok(p) => p, 
                         Err(e) => {

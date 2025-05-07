@@ -42,9 +42,20 @@ impl Command for FunctionDefinition {
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
+
+    fn pretty_print(&mut self, indent_num: usize) {
+        self.pretty_print(indent_num);
+    }
 }
 
 impl FunctionDefinition {
+    pub fn pretty_print(&mut self, indent_num: usize) {
+        println!("{} () ", self.name);
+        for com in self.command.iter_mut() {
+            com.pretty_print(indent_num);
+        }
+    }
+
     pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore)
         -> Result<Option<Pid>, ExecError> {
         let mut array = core.db.get_array_all("FUNCNAME");

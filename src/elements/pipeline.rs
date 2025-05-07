@@ -37,6 +37,7 @@ impl Pipeline {
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
+
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
                 Err(e)  => return (pids, self.exclamation, self.time, Some(e)),
@@ -67,6 +68,13 @@ impl Pipeline {
         core.measured_time.user = self_usage.user_time() + children_usage.user_time();
         core.measured_time.sys = self_usage.system_time() + children_usage.system_time();
         core.measured_time.real = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
+    }
+
+    pub fn read_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        for command in self.commands.iter_mut() {
+            command.read_heredoc(feeder, core)?;
+        }
+        Ok(())
     }
 
     fn eat_exclamation(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

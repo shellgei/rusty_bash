@@ -165,6 +165,13 @@ impl Job {
         num != 0 //記号なしの場合にfalseが返る
     }
 
+    pub fn read_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        for pipeline in self.pipelines.iter_mut() {
+            pipeline.read_heredoc(feeder, core)?;
+        }
+        Ok(())
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Job>, ParseError> {
         let mut ans = Self::default();
         while Self::eat_blank_line(feeder, &mut ans, core) {} 

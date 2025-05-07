@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{builtins, ShellCore};
-use crate::core::{CompletionInfo, HashMap};
+use crate::core::{CompletionEntry, HashMap};
 use crate::utils::arg;
 
 fn action_to_reduce_symbol(arg: &str) -> String {
@@ -42,11 +42,11 @@ fn opt_to_action(arg: &str) -> String {
 }
 
 fn print_complete(core: &mut ShellCore) -> i32 {
-    if core.default_completion_functions != "" {
-        println!("complete -F {} -D", &core.default_completion_functions);
+    if core.completion.default_function != "" {
+        println!("complete -F {} -D", &core.completion.default_function);
     }
 
-    for (name, info) in &core.completion_info {
+    for (name, info) in &core.completion.entries {
         if info.function != "" {
             print!("complete -F {} ", &info.function);
         }else if info.action != "" {
@@ -80,16 +80,16 @@ fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<Stri
     }
  
     if d_option {
-        core.default_completion_functions = args[1].clone();
+        core.completion.default_function = args[1].clone();
         return 0;
     }else {
         let func = args[1].clone();
         for command in &args[2..] {
-            if ! core.completion_info.contains_key(command) {
-                core.completion_info.insert(command.clone(), CompletionInfo::default());
+            if ! core.completion.entries.contains_key(command) {
+                core.completion.entries.insert(command.clone(), CompletionEntry::default());
             }
     
-            let info = &mut core.completion_info.get_mut(command).unwrap();
+            let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.function = func.clone();
             info.o_options = o_options.clone();
         }
@@ -100,7 +100,7 @@ fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<Stri
 
 fn complete_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     for command in &mut args[1..] {
-        core.completion_info.remove(command);
+        core.completion.entries.remove(command);
     }
 
     0
@@ -135,11 +135,11 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let action = opt_to_action(&args[1]);
     if action != "" {
         for command in &args[2..] {
-            if ! core.completion_info.contains_key(command) {
-                core.completion_info.insert(command.clone(), CompletionInfo::default());
+            if ! core.completion.entries.contains_key(command) {
+                core.completion.entries.insert(command.clone(), CompletionEntry::default());
             }
     
-            let info = &mut core.completion_info.get_mut(command).unwrap();
+            let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.action = action.clone();
             info.options = options.clone();
         }
@@ -148,11 +148,11 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() > 3 && args[1] == "-A" {
         for command in &args[3..] {
-            if ! core.completion_info.contains_key(command) {
-                core.completion_info.insert(command.clone(), CompletionInfo::default());
+            if ! core.completion.entries.contains_key(command) {
+                core.completion.entries.insert(command.clone(), CompletionEntry::default());
             }
     
-            let info = &mut core.completion_info.get_mut(command).unwrap();
+            let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.action = args[2].clone();
             info.options = options.clone();
         }

@@ -6,6 +6,7 @@ use std::collections::HashMap;
 #[derive(Debug, Default)]
 pub struct Options {
     opts: HashMap<String, bool>,
+    pub implemented: Vec<String>,
 }
 
 impl Options {
@@ -14,6 +15,7 @@ impl Options {
         options.opts.insert("pipefail".to_string(), false);
         options.opts.insert("noglob".to_string(), false);
         options.opts.insert("posix".to_string(), false); //TODO: still dummy
+        options.opts.insert("history".to_string(), false); //TODO: still dummy
         options
     }
 
@@ -39,6 +41,11 @@ impl Options {
         for opt in true_list {
             options.opts.insert(opt.to_string(), true);
         }
+
+        options.implemented = ["extglob", "progcomp", "nullglob", "dotglob", "globstar",
+                               "globskipdots", "nocasematch", "expand_aliases", "xpg_echo"]
+                                   .iter().map(|s| s.to_string()).collect();
+        //TODO: nocasematch and xpg_echo are dummy
 
         options
     }

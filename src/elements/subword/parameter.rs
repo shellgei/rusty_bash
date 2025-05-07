@@ -32,6 +32,10 @@ impl Subword for Parameter {
     fn is_array(&self) -> bool {self.text == "$@"}
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
+        if self.text == "" {
+            return vec![];
+        }
+
         if ifs.starts_with(" ") || self.array.is_none() {
             return splitter::split(&self.get_text(), ifs, prev_char).iter()
                 .map(|s| ( From::from(&s.0), s.1)).collect();

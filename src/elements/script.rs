@@ -29,6 +29,39 @@ impl Script {
 
     pub fn get_text(&self) -> String { self.text.clone() }
 
+    pub fn pretty_print(&mut self, indent_num: usize) {
+        let mut semicolon = false;
+        let mut printed = false;
+        for (i, job) in self.jobs.iter_mut().enumerate() {
+            let tmp = job.text.clone();
+            let job_text = tmp.trim_ascii_end();
+
+            if job_text.is_empty() {
+                semicolon = printed;
+                continue;
+            }
+
+            if semicolon {
+                println!(";");
+                semicolon = false;
+            }else if printed {
+                println!("");
+            }
+
+            let tmp = self.job_ends[i].clone();
+            let job_end = tmp.trim_ascii_end();
+
+            let text = job_text.to_owned() + &job_end;
+
+            for _ in 0..indent_num {
+                print!("    ");
+            }
+            print!("{}", &text);
+            printed = true;
+        }
+        println!("");
+    }
+
     fn eat_job(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Script) -> Result<bool, ParseError> {
         if let Some(job) = Job::parse(feeder, core)? {
             ans.text += &job.text.clone();
@@ -90,6 +123,13 @@ impl Script {
         self.jobs.iter().map(|j| j.pipelines.len()).sum()
     }
 
+    fn read_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        for job in self.jobs.iter_mut() {
+            job.read_heredoc(feeder, core)?;
+        }
+        Ok(())
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
                  permit_empty: bool) -> Result<Option<Script>, ParseError> {
         let mut ans = Self::default();
@@ -100,9 +140,13 @@ impl Script {
             match ans.check_nest(feeder, permit_empty){
                 Status::NormalEnd => {
                     ans.unalias(core);
+                    ans.read_heredoc(feeder, core)?;
                     return Ok(Some(ans))
                 },
-                Status::NeedMoreLine => feeder.feed_additional_line(core)?,
+                Status::NeedMoreLine => {
+                    ans.read_heredoc(feeder, core)?;
+                    feeder.feed_additional_line(core)?
+                },
                 Status::UnexpectedSymbol(s) => { //unexpected symbol
                     let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
                     core.db.exit_status = 2;
