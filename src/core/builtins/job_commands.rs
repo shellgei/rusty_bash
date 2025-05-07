@@ -101,11 +101,11 @@ fn jobspec_to_array_pos(core: &mut ShellCore, jobspec: &str) -> Option<usize> {
     let poss = jobspec_to_array_poss(core, jobspec);
     if poss.is_empty() {
         let msg = format!("{}: no such job", &jobspec);
-        super::error_exit(1, "jobs", &msg, core);
+        super::error_exit(127, "jobs", &msg, core);
         return None;
     }else if poss.len() > 1 {
         let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
-        super::error_exit(1, "jobs", &msg, core);
+        super::error_exit(127, "jobs", &msg, core);
         return None;
     }
 
@@ -186,13 +186,13 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if ids.is_empty() {
         let msg = format!("{}: no such job", &jobspec);
-        return super::error_exit(1, "jobs", &msg, core);
+        return super::error_exit(127, "jobs", &msg, core);
     }
     if ids.len() > 1 && ! jobspec.is_empty() {
         let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
-        super::error_exit(1, "jobs", &msg, core);
+        super::error_exit(127, "jobs", &msg, core);
         let msg = format!("{}: no such job", &jobspec);
-        return super::error_exit(1, "jobs", &msg, core);
+        return super::error_exit(127, "jobs", &msg, core);
     }
 
     if arg::consume_option("-p", &mut args) {
@@ -216,7 +216,7 @@ fn wait_jobspec(core: &mut ShellCore, jobspec: &str,
                 var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
     match jobspec_to_array_pos(core, jobspec) {
         Some(pos) => wait_a_job(core, pos, var_name, f_opt),
-        None => return (1, false),
+        None => return (127, false),
     }
 }
 
@@ -278,7 +278,7 @@ fn wait_pid(core: &mut ShellCore, pid: i32,
 fn wait_a_job(core: &mut ShellCore, pos: usize,
               var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
     if core.job_table.len() < pos {
-        return (super::error_exit(1, "wait", "invalpos jobpos", core), false);
+        return (super::error_exit(127, "wait", "invalpos jobpos", core), false);
     }
 
     let pid = core.job_table[pos].pids[0].to_string();
@@ -318,7 +318,7 @@ fn wait_arg_job(core: &mut ShellCore, arg: &String,
 
 pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if core.is_subshell {
-        super::error_exit(1, &args[0], "called from subshell", core);
+        super::error_exit(127, &args[0], "called from subshell", core);
     }
 
     let mut args = arg::dissolve_options(args);
