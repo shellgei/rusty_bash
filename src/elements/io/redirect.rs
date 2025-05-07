@@ -6,7 +6,7 @@ use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
 use crate::{Feeder, ShellCore};
 use crate::elements::io;
-//use crate::elements::subword::Subword;
+use crate::elements::word::WordMode;
 use crate::elements::subword;
 use crate::elements::subword::filler::FillerSubword;
 use crate::elements::word::Word;
@@ -29,15 +29,16 @@ pub struct Redirect {
     left_backup: RawFd,
     extra_left_backup: RawFd, // &>, &>>用
     here_data: Word,
+    pub called_as_heredoc: bool,
 }
 
 impl Redirect {
     pub fn connect(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.symbol == "<<" {
+        if self.symbol == "<<" || self.symbol == "<<-" {
             return self.redirect_heredocument(core, restore);
         }
         if self.symbol == "<<<" {
-            return self.redirect_here_data(core, restore);
+            return self.redirect_herestring(core, restore);
         }
 
         let args = self.right.eval(core)?;
@@ -91,23 +92,11 @@ impl Redirect {
     fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(0);
         self.connect_to_file(File::open(&self.right.text), restore)
-            /*
-        if ! self.connect_to_file(File::open(&self.right.text), restore) {
-            return Err(ExecError::Other("file error".to_string()));
-        }
-        Ok(())
-            */
     }
 
     fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
         self.set_left_fd(1);
         self.connect_to_file(File::create(&self.right.text), restore)
-            /*
-        if ! self.connect_to_file(File::create(&self.right.text), restore) {
-            return Err(ExecError::Other("file error".to_string()));
-        }
-        Ok(())
-            */
     }
 
     fn redirect_output_fd(&mut self, restore: bool) -> Result<(), ExecError> {
@@ -128,13 +117,6 @@ impl Redirect {
         self.set_left_fd(1);
         self.connect_to_file(OpenOptions::new().create(true)
                 .write(true).append(true).open(&self.right.text), restore)
-            /*
-        if ! self.connect_to_file(OpenOptions::new().create(true)
-                .write(true).append(true).open(&self.right.text), restore) {
-            return Err(ExecError::Other("file error".to_string()));
-        }
-        Ok(())
-            */
     }
 
     fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
@@ -147,7 +129,8 @@ impl Redirect {
         io::share(1, 2)
     }
 
-    fn redirect_heredocument(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+    fn redirect_heredocument(&mut self, core: &mut ShellCore, restore: bool)
+    -> Result<(), ExecError> {
         self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
@@ -157,8 +140,13 @@ impl Redirect {
             self.left_backup = io::backup(0);
         }
 
-        let text = self.here_data.eval_as_value(core)?; // TODO: make it precise based on the rule
-                                                         // of heredocument
+        let right = self.right.make_unquoted_word().unwrap_or("".to_string());
+        let quoted = right != self.right.text;
+
+        let text = match quoted {
+            false => self.here_data.eval_as_value(core)?, // TODO: make it precise
+            true  => self.here_data.text.clone(),
+        };
 
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
@@ -177,7 +165,7 @@ impl Redirect {
         Ok(())
     }
 
-    fn redirect_here_data(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
+    fn redirect_herestring(&mut self, core: &mut ShellCore, restore: bool) -> Result<(), ExecError> {
         self.left_fd = 0;
         let (r, s) = unistd::pipe().expect("Cannot open pipe");
         let recv = r.into_raw_fd();
@@ -187,8 +175,7 @@ impl Redirect {
             self.left_backup = io::backup(0);
         }
 
-        let text = self.right.eval_for_case_word(core)
-                       .unwrap_or("".to_string());
+        let text = self.right.eval_as_herestring(core)?;
 
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
@@ -225,12 +212,16 @@ impl Redirect {
         }
     }
 
-    /* called from elements/command.rs */
-    pub fn eat_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+    pub fn eat_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<(), ParseError> {
+        let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {
-            Ok(s)  => s + "\n",
+            Ok(s)  => s,
             Err(_) => return Err(ParseError::UnexpectedSymbol(self.right.text.clone())),
         };
+
+        let end_return = end.clone() + "\n";
+
         if feeder.starts_with("\n") {
             feeder.consume(1);
         }
@@ -238,13 +229,20 @@ impl Redirect {
         loop {
             if feeder.len() == 0 {
                 feeder.feed_additional_line(core)?;
-                if feeder.starts_with(&end) {
+
+                if remove_tab {
+                    let len = feeder.scanner_tabs();
+                    feeder.consume(len);
+                }
+
+                if feeder.starts_with(&end_return) {
                     feeder.consume(end.len());
                     break;
                 }
             }
 
-            if let Some(sw) = subword::parse(feeder, core, &None)? {
+            if let Some(mut sw) = subword::parse(feeder, core, &Some(WordMode::Heredoc))? {
+                sw.set_heredoc_flag();
                 self.here_data.text += sw.get_text();
                 self.here_data.subwords.push(sw);
             }else{

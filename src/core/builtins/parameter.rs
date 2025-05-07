@@ -81,7 +81,6 @@ fn local_(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<
 }
 
 pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    //dbg!("{:?}", &args);
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2//The last element of data.parameters is for local itself. 
     }else{
@@ -99,7 +98,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 fn declare_set(core: &mut ShellCore, name_and_value: &String,
                args: &mut Vec<String>, read_only: bool) -> Result<(), ExecError> {
     let mut tmp = name_and_value.clone();
-    let (name, value) = match name_and_value.find('=') {
+    let (mut name, value) = match name_and_value.find('=') {
         Some(n) => {
             tmp.remove(n);
             let v = tmp.split_off(n);
@@ -109,6 +108,12 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
         None => (name_and_value.to_string(), "".to_string()),
     };
 
+    if name.contains('[') && read_only {
+        name = name.split('[').next().unwrap().to_string(); 
+        core.db.set_flag(&name, 'r');
+        return Ok(())
+    }
+
     if ! utils::is_name(&name, core) {
         return Err(ExecError::InvalidName(name.to_string()));
     }
@@ -116,7 +121,15 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     let layer = Some(core.db.get_layer_num() - 2);
 
     if args.contains(&"-a".to_string()) {
-        core.db.set_array(&name, vec![], layer)?;
+        let mut v = vec![];
+        if ! core.db.is_array(&name)
+        && ! core.db.is_assoc(&name) {
+            if let Ok(s) = core.db.get_param(&name) {
+                v.push(s);
+            }
+        }
+
+        core.db.set_array(&name, v, layer)?;
     }else if args.contains(&"-A".to_string()) {
         core.db.set_assoc(&name, layer)?;
     }else {
@@ -132,12 +145,83 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     Ok(())
 }
 
-pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() <= 1 {
+fn declare_print(core: &mut ShellCore, names: &[String]) -> i32 {
+    for n in names {
+        let mut opt = if core.db.is_assoc(&n) {
+            "A"
+        }else if core.db.is_array(&n) {
+            "a"
+        }else if core.db.has_value(&n) {
+            ""
+        }else{
+            return error_exit(1, &n, "not found", core);
+        }.to_string();
+
+        if core.db.is_readonly(&n) {
+            opt += "r";
+        }
+
+        if opt.is_empty() {
+            opt += "-";
+        }
+
+        let prefix = format!("declare -{} ", opt);
+        print!("{}", prefix);
+        core.db.print(&n);
+    }
+    0
+}
+
+fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() < 2 {
         return print_all(core);
     }
 
+    if args.len() == 2 && args[1] == "-f" {
+        let mut names: Vec<String> = core.db.functions.keys().map(|k| k.to_string()).collect();
+        names.sort();
+
+        for n in names {
+            core.db.functions.get_mut(&n).unwrap().pretty_print(0); 
+        }
+        return 0;
+    }
+
+    let mut names = core.db.get_keys();
+    let mut options = String::new();
+
+    if arg::consume_option("-a", args) {
+        names.retain(|n| core.db.is_array(n));
+        options += "a";
+    }
+
+    if arg::consume_option("-A", args) {
+        names.retain(|n| core.db.is_assoc(n));
+        options += "A";
+    }
+
+    if arg::consume_option("-r", args) {
+        names.retain(|n| core.db.is_readonly(n));
+        options += "r";
+    }
+
+    let prefix = format!("declare -{} ", options);
+    names.into_iter().for_each(|k| {print!("{}", prefix); core.db.print(&k);});
+
+    0
+}
+
+pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
+
+    if args[1..].iter().all(|a| a.starts_with("-")) {
+        return declare_print_all(core, &mut args);
+    }
+
+    if arg::consume_option("-p", &mut args) {
+        return declare_print(core, &args[1..]);
+    }
+
     let r_flg = arg::consume_option("-r", &mut args);
 
     let mut name_and_values = vec![];
@@ -185,6 +269,25 @@ pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             let msg = format!("parse error");
             return error_exit(1, &args[0], &msg, core);
         }
+    }
+    0
+}
+
+pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    for name in &args[1..] {
+        if name.contains('=') {
+            if let Err(e) = declare_set(core, &name, &mut vec![], true) {
+                e.print(core);
+                return 1;
+            }
+            continue;
+        }
+
+        if ! utils::is_name(&name, core) {
+            let msg = format!("`{}': not a valid identifier", name);
+            return error_exit(1, &args[0], &msg, core);
+        }
+        core.db.set_flag(name, 'r');
     }
     0
 }

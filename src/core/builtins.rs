@@ -25,7 +25,6 @@ use crate::{error, exit, proc_ctrl, Feeder, Script, ShellCore};
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::io::pipe::Pipe;
-use crate::utils;
 use crate::utils::{arg, file};
 
 pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
@@ -68,7 +67,7 @@ impl ShellCore {
         self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
-        self.builtins.insert("readonly".to_string(), readonly);
+        self.builtins.insert("readonly".to_string(), parameter::readonly);
         self.builtins.insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
@@ -242,15 +241,4 @@ pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     last_result
-}
-
-pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    for name in &args[1..] {
-        if ! utils::is_name(&name, core) {
-            let msg = format!("`{}': not a valid identifier", name);
-            return error_exit(1, &args[0], &msg, core);
-        }
-        core.db.set_flag(name, 'r');
-    }
-    0
 }

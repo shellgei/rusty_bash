@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::utils::exit;
 use crate::elements::subword::CommandSubstitution;
-use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
+use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone)]
 pub struct ExtGlob {
@@ -36,7 +36,7 @@ impl ExtGlob {
 
         let txt = feeder.consume(len);
         ans.text += &txt;
-        ans.subwords.push( Box::new(SimpleSubword{ text: txt }) );
+        ans.subwords.push( From::from(&txt) );
         true
     }
 
@@ -129,7 +129,7 @@ impl ExtGlob {
 
         let mut ans = Self::new();
         ans.text = feeder.consume(2);
-        ans.subwords.push( Box::new( SimpleSubword {text: ans.text.clone() } ) );
+        ans.subwords.push( From::from(&ans.text) );
 
         loop {
             while Self::eat_braced_param(feeder, &mut ans, core)?
@@ -144,11 +144,11 @@ impl ExtGlob {
 
             if feeder.starts_with(")") {
                 ans.text += &feeder.consume(1);
-                ans.subwords.push( Box::new( SimpleSubword {text: ")".to_string() } ) );
+                ans.subwords.push( From::from(")") );
                 return Ok(Some(ans));
             }else if feeder.starts_with("|") {
                 ans.text += &feeder.consume(1);
-                ans.subwords.push( Box::new( SimpleSubword {text: "|".to_string() } ) );
+                ans.subwords.push( From::from("|") );
             }else if feeder.len() > 0 {
                 exit::internal("unknown chars in double quoted word");
             }else if ! feeder.feed_additional_line(core).is_ok() {

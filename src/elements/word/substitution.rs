@@ -13,7 +13,8 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
     }
     let mut tmp = vec![];
     for w in word.subwords.iter_mut() {
-        let mut new_objs = w.substitute(core)?;
+        w.substitute(core)?;
+        let mut new_objs = w.alter()?;
         match new_objs.is_empty() {
             true  => tmp.push(w.clone()),
             false => tmp.append(&mut new_objs),
@@ -37,7 +38,9 @@ fn connect_names(subwords: &mut [Box<dyn Subword>]) {
     }
 
     if pos > 1 {
-        subwords[0] = Box::new(Parameter{ text: text });
+        let mut sw = Parameter::default();
+        sw.text = text;
+        subwords[0] = Box::new(sw);
         subwords[1..pos].iter_mut().for_each(|s| s.set_text(""));
     }
 }

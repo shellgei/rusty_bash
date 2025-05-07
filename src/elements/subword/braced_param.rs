@@ -8,6 +8,7 @@ use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
 use crate::elements::subscript::Subscript;
 use crate::utils;
+use crate::utils::splitter;
 use crate::error::exec::ExecError;
 use self::optional_operation::OptionalOperation;
 
@@ -20,7 +21,7 @@ pub struct Param {
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     text: String,
-    array: Vec<String>,
+    array: Option<Vec<String>>,
     param: Param,
     optional_operation: Option<Box<dyn OptionalOperation>>,
     unknown: String,
@@ -33,12 +34,12 @@ impl Subword for BracedParam {
     fn get_text(&self) -> &str { &self.text.as_ref() }
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.check()?;
 
         if self.indirect && self.has_aster_or_atmark_subscript() { // ${!name[@]}, ${!name[*]}
             self.index_replace(core)?;
-            return Ok(vec![]);
+            return Ok(());
         }
 
         if self.indirect {
@@ -50,34 +51,58 @@ impl Subword for BracedParam {
         || self.param.name == "@" 
         || self.param.name == "*" {
             if let Some(s) = self.optional_operation.as_mut() {
-                if s.is_substr() {
-                    s.set_array(&self.param, &mut self.array, &mut self.text, core)?;
-                    return Ok(vec![]);
+                if s.has_array_replace() {
+                    let mut arr = vec![];
+                    s.set_array(&self.param, &mut arr, &mut self.text, core)?;
+                    self.array = Some(arr);
+                    return Ok(());
                 }
             }
         }
 
         match self.param.subscript.is_some() {
-            true  => self.subscript_operation(core)?,
-            false => self.non_subscript_operation(core)?,
+            true  => self.subscript_operation(core),
+            false => self.non_subscript_operation(core),
         }
-        self.ans()
     }
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn is_array(&self) -> bool {self.is_array && ! self.num}
-    fn get_array_elem(&self) -> Vec<String> {self.array.clone()}
-}
+    fn get_array_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
 
-impl BracedParam {
-    fn ans(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         match self.optional_operation.as_mut() {
             Some(op) => Ok(op.get_alternative()),
             None     => Ok(vec![]),
         }
     }
 
+    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{ 
+        if self.text == "" {
+            return vec![];
+        }
+
+        if (self.param.name != "@" && self.param.name != "*")
+        || ifs.starts_with(" ") || self.array.is_none() {
+            return splitter::split(&self.get_text(), ifs, prev_char).iter()
+                .map(|s| ( From::from(&s.0), s.1)).collect();
+        }
+
+        let mut ans = vec![];
+        for p in self.array.clone().unwrap() {
+            ans.push( (From::from(&p), true) );
+        }
+        ans
+    }
+
+    fn set_heredoc_flag(&mut self) {
+        self.optional_operation.iter_mut()
+            .for_each(|e| e.set_heredoc_flag());
+    }
+}
+
+impl BracedParam {
     fn has_aster_or_atmark_subscript(&self) -> bool {
         if self.param.subscript.is_none() {
             return false;
@@ -119,8 +144,9 @@ impl BracedParam {
             return Ok(());
         }
 
-        self.array = core.db.get_indexes_all(&self.param.name);
-        self.text = self.array.join(" ");
+        let arr = core.db.get_indexes_all(&self.param.name);
+        self.array = Some(arr.clone());
+        self.text = arr.join(" ");
 
         Ok(())
     }
@@ -155,6 +181,10 @@ impl BracedParam {
     }
 
     fn non_subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+            if self.param.name == "*" || self.param.name == "@" {
+                self.array = Some(core.db.get_position_params());
+            }
+
             let value = core.db.get_param(&self.param.name).unwrap_or_default();
             self.text = match self.num {
                 true  => value.chars().count().to_string(),
@@ -179,9 +209,10 @@ impl BracedParam {
             return Ok(());
         }
 
-        self.array = core.db.get_array_all(&self.param.name);
+        let arr = core.db.get_array_all(&self.param.name);
         if self.num && (index.as_str() == "@" || index.as_str() == "*" ) {
-            self.text = self.array.len().to_string();
+            self.text = arr.len().to_string();
+            self.array = Some(arr);
             return Ok(());
         }
         if index.as_str() == "@" {
@@ -197,9 +228,10 @@ impl BracedParam {
     }
 
     fn atmark_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        self.array = core.db.get_array_all(&self.param.name);
+        let mut arr = core.db.get_array_all(&self.param.name);
+        self.array = Some(arr.clone());
         if self.num {
-            self.text = self.array.len().to_string();
+            self.text = arr.len().to_string();
             return Ok(());
         }
 
@@ -208,13 +240,14 @@ impl BracedParam {
             false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
         };
 
-        if self.array.len() <= 1 || self.has_value_check() {
+        if arr.len() <= 1 || self.has_value_check() {
             self.text = self.optional_operation(self.text.clone(), core)?;
         }else {
-            for i in 0..self.array.len() {
-                self.array[i] = self.optional_operation(self.array[i].clone(), core)?;
+            for i in 0..arr.len() {
+                arr[i] = self.optional_operation(arr[i].clone(), core)?;
             }
-            self.text = self.array.join(" ");
+            self.text = arr.join(" ");
+            self.array = Some(arr);
         }
         Ok(())
     }

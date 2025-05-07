@@ -3,27 +3,39 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::command;
+use crate::elements::subscript::Subscript;
+use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
 use super::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct Array {
     pub text: String,
-    pub words: Vec<Word>,
+    pub words: Vec<(Option<Subscript>, Word)>,
+    error_strings: Vec<String>,
 }
 
 impl Array {
-    pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, String> {
+    pub fn eval(&mut self, core: &mut ShellCore)
+    -> Result<Vec<(Option<Subscript>, String)>, ExecError> {
+
+        if let Some(c) = self.error_strings.last() {
+            return Err(ExecError::SyntaxError(c.to_string()));
+        }
+
         let mut ans = vec![];
 
-        for w in &mut self.words {
-            let ws = w.eval(core)?;
-            ans.extend(ws);
+        for (s, w) in &mut self.words {
+            for e in w.eval(core)? {
+                ans.push( (s.clone(), e) );
+            }
         }
 
         Ok(ans)
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_word(feeder: &mut Feeder, ans: &mut Self,
+                sub: Option<Subscript>, core: &mut ShellCore) -> bool {
         if feeder.starts_with(")") {
             return false;
         }
@@ -33,35 +45,56 @@ impl Array {
             _       => return false,
         };
         ans.text += &w.text;
-        ans.words.push(w);
+        ans.words.push((sub, w));
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Array> {
+    fn eat_subscript(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self)
+    -> Result<Option<Subscript>, ParseError> {
+        if let Some(s) = Subscript::parse(feeder, core)? {
+            if feeder.starts_with("=") {
+                ans.text += &s.text.clone();
+                ans.text += &feeder.consume(1);
+                return Ok(Some(s));
+            }else{
+                feeder.replace(0, &s.text);
+            }
+        }
+        Ok(None)
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Array>, ParseError> {
         if ! feeder.starts_with("(") {
-            return None;
+            return Ok(None);
         }
 
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
         loop {
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if Self::eat_word(feeder, &mut ans, core) {
+            command::eat_blank_lines(feeder, core, &mut ans.text)?;
+
+            let sub = Self::eat_subscript(feeder, core, &mut ans)?;
+            if Self::eat_word(feeder, &mut ans, sub, core) {
                 continue;
             }
 
-            if feeder.starts_with(")") {
-                ans.text += &feeder.consume(1);
-                break;
-            }else if feeder.starts_with("\n") {
-                ans.text += &feeder.consume(1);
-            }
+            if feeder.len() != 0 {
+                if feeder.starts_with(")") {
+                    ans.text += &feeder.consume(1);
+                    break;
+                }else if feeder.starts_with("\n") {
+                    ans.text += &feeder.consume(1);
+                }
 
-            if feeder.len() != 0 || ! feeder.feed_additional_line(core).is_ok() {
-                return None;
+                let len = feeder.scanner_char();
+                ans.error_strings.push(feeder.consume(len));
+                continue;
+
+            }else if ! feeder.feed_additional_line(core).is_ok() {
+                return Ok(None);
             }
         }
 
-        Some(ans)
+        Ok(Some(ans))
     }
 }

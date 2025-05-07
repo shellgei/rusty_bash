@@ -12,6 +12,11 @@ pub fn normal(core: &mut ShellCore) -> ! {
 }
 
 fn run_script(core: &mut ShellCore) {
+    if core.exit_script_run {
+        return;
+    }
+
+    core.exit_script_run = true;
     if core.exit_script.is_empty() {
         return;
     }

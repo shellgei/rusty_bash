@@ -4,10 +4,9 @@
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use crate::elements::word::{Word, substitution};
-use crate::elements::subword::CommandSubstitution;
-use crate::elements::subword::Arithmetic;
-use super::{BracedParam, EscapedChar, SimpleSubword, Parameter, Subword, VarName};
+use crate::elements::word::{Word, WordMode, substitution};
+use crate::elements::subword::{Arithmetic, CommandSubstitution};
+use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
@@ -20,8 +19,7 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore)
-    -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.connect_array(core)?;
 
         let mut word = match self.subwords.iter().any(|sw| sw.is_array()) {
@@ -31,8 +29,16 @@ impl Subword for DoubleQuoted {
 
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
-        self.text = word.text;
-        Ok(vec![])
+        self.text.clear();
+
+        for (i, sw) in self.subwords.iter_mut().enumerate() {
+            if self.split_points.contains(&i) {
+                self.text += " ";
+            }
+            self.text += sw.get_text();
+        }
+        //dbg!("{:?}", &self.text);
+        Ok(())
     }
 
     fn make_glob_string(&mut self) -> String {
@@ -47,12 +53,17 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
-        let text = self.subwords.iter_mut()
-            .map(|s| s.make_unquoted_string())
-            .filter(|s| *s != None)
-            .map(|s| s.unwrap())
-            .collect::<Vec<String>>()
-            .concat();
+        let mut text = String::new();
+
+        for (i, sw) in self.subwords.iter_mut().enumerate() {
+            if self.split_points.contains(&i) {
+                text += " ";
+            }
+
+            if let Some(txt) = sw.make_unquoted_string() {
+                text += &txt;
+            }
+        }
 
         if text.is_empty() && self.split_points.len() == 1 {
             return None;
@@ -78,15 +89,9 @@ impl DoubleQuoted {
     fn connect_array(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for sw in self.subwords.iter_mut() {
             if sw.get_text() == "$*" || sw.get_text() == "${*}" {
-                let ifs = core.db.get_param("IFS").unwrap_or(" ".to_string());
                 let params = core.db.get_position_params();
-
-                let mut joint = "".to_string();
-                if ! ifs.is_empty() {
-                    joint = ifs.chars().nth(0).unwrap().to_string();
-                }
-
-                *sw = Box::new(SimpleSubword{ text: params.join(&joint) });
+                let joint = core.db.get_ifs_head();
+                *sw = From::from(&params.join(&joint));
             }
         }
         Ok(())
@@ -110,7 +115,7 @@ impl DoubleQuoted {
             };
 
             for text in array {
-                ans.push(SimpleSubword{text}.boxed_clone());
+                ans.push(From::from(&text));
                 self.split_points.push(ans.len());
             }
             self.split_points.pop();
@@ -161,18 +166,26 @@ impl DoubleQuoted {
         let ch = feeder.consume(len);
         ans.text += &ch.clone();
         if ch != "\"" {
-            ans.subwords.push( Box::new(SimpleSubword{ text: ch }) );
+            ans.subwords.push( From::from(&ch) );
             return Ok(true);
         }
         Ok(false)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("\"") {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+                 mode: &Option<WordMode>) -> Result<Option<Self>, ParseError> {
+        if ! feeder.starts_with("\"") && ! feeder.starts_with("$\"")  {
             return Ok(None);
         }
+        if let Some(WordMode::Heredoc) = mode {
+            return Ok(None);
+        }
+
         let mut ans = Self::default();
-        ans.text = feeder.consume(1);
+
+        let len = if feeder.starts_with("\""){1}else{2};
+
+        ans.text = feeder.consume(len);
 
         while Self::eat_element(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}

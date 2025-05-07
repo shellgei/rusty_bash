@@ -106,9 +106,9 @@ impl Job {
                     return;
                 },
             }
-            //vec![self.exec_fork_bg(core, pgid)]
         };
         eprintln!("{}", &pids[0].unwrap().as_raw());
+        let _ = core.db.set_param("!", &pids[0].unwrap().to_string(), None);
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);
@@ -163,6 +163,13 @@ impl Job {
         ans.pipeline_ends.push(end.clone());
         ans.text += &end;
         num != 0 //記号なしの場合にfalseが返る
+    }
+
+    pub fn read_heredoc(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
+        for pipeline in self.pipelines.iter_mut() {
+            pipeline.read_heredoc(feeder, core)?;
+        }
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Job>, ParseError> {

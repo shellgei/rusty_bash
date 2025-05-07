@@ -19,7 +19,7 @@ use self::data::array::ArrayData;
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
-    params: Vec<HashMap<String, Box<dyn Data>>>,
+    pub params: Vec<HashMap<String, Box<dyn Data>>>,
     pub param_options: Vec<HashMap<String, String>>,
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
@@ -48,6 +48,10 @@ impl DataBase {
         Ok(())
     }
 
+    pub fn is_readonly(&mut self, name: &str) -> bool {
+        self.has_flag(name, 'r')
+    }
+
     fn write_check(&mut self, name: &str) -> Result<(), ExecError> {
         if self.has_flag(name, 'r') {
             self.exit_status = 1;
@@ -64,7 +68,7 @@ impl DataBase {
         }
 
         if name == "@" || name == "*" {   // $@ should return an array in a double quoted
-            return getter::connected_position_params(self);  // subword. Therefore another 
+            return getter::connected_position_params(self, name == "*");  // subword. Therefore another 
         }                                                   //access method should be used there. 
 
         if let Ok(n) = name.parse::<usize>() {
@@ -150,7 +154,6 @@ impl DataBase {
             return self.position_parameters[layer].clone();
         }
 
-        //match getter::clone(self, name).as_mut() {
         match self.get_ref(name) {
             Some(d) => {
                 if let Ok(v) = d.get_all_as_array() {
@@ -197,7 +200,6 @@ impl DataBase {
     }
 
     pub fn is_single_num(&mut self, name: &str) -> bool {
-        //match getter::clone(self, name).as_mut() {
         match self.get_ref(name) {
             Some(d) => return d.is_single_num(),
             _ => false,
@@ -331,6 +333,12 @@ impl DataBase {
         ans
     }
 
+    pub fn init(&mut self, name: &str, layer: usize) {
+        if let Some(d) = self.params[layer].get_mut(name) {
+            d.clear();
+        }
+    }
+
     pub fn unset_var(&mut self, name: &str) {
         for layer in &mut self.params {
             layer.remove(name);
@@ -369,5 +377,13 @@ impl DataBase {
             }
         }
         None
+    }
+
+    pub fn get_ifs_head(&mut self) -> String {
+        let ifs = self.get_param("IFS").unwrap_or(" ".to_string());
+        match ifs.as_str() {
+            "" => "".to_string(), 
+            s => s.chars().next().unwrap().to_string(),
+        }
     }
 }

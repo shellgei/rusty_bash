@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::utils;
 use crate::core::HashMap;
 use crate::error::exec::ExecError;
 use std::env;
@@ -18,6 +19,13 @@ impl Body {
             Self::Str(s) => s.clone(),
             Self::Num(None) => "".to_string(),
             Self::Num(Some(n)) => n.to_string(),
+        }
+    }
+
+    fn clear(&mut self) {
+        *self = match &self {
+            Self::Str(_) => Self::Str(String::new()),
+            _ => Self::Num(None),
         }
     }
 
@@ -73,7 +81,11 @@ impl From<&str> for SingleData {
 
 impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
-    fn print_body(&self) -> String { self.body.to_string() }
+    fn print_body(&self) -> String { 
+        utils::to_ansi_c(&self.body.to_string())
+    }
+
+    fn clear(&mut self) { self.body.clear(); }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body.set(value)
@@ -84,7 +96,7 @@ impl Data for SingleData {
         Ok(())
     }
 
-    fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.print_body()) }
+    fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.body.to_string()) }
 
     fn get_as_single_num(&mut self) -> Result<isize, ExecError> {
         self.body.get_as_num()

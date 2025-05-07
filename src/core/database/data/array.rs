@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::utils;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
 use super::Data;
@@ -27,7 +28,12 @@ impl Data for ArrayData {
         let mut formatted = String::new();
         formatted += "(";
         for i in self.keys() {
-            formatted += &format!("[{}]=\"{}\" ", i, &self.body[&i]).clone();
+            let ansi = utils::to_ansi_c(&self.body[&i]);
+            if ansi == self.body[&i] {
+                formatted += &format!("[{}]=\"{}\" ", i, &ansi);
+            }else{
+                formatted += &format!("[{}]={} ", i, &ansi);
+            }
         };
         if formatted.ends_with(" ") {
             formatted.pop();
@@ -35,6 +41,8 @@ impl Data for ArrayData {
         formatted += ")";
         formatted
     }
+
+    fn clear(&mut self) { self.body.clear(); }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body.insert(0, value.to_string());

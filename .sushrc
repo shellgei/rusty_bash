@@ -67,11 +67,15 @@ command_not_found_handle() { #command_not_found should be loaded before bash-com
 
 if [ "$(uname)" = "Darwin" -a -f /opt/homebrew/Cellar/bash-completion/1.3_3/etc/bash_completion ]; then
 	source /opt/homebrew/Cellar/bash-completion/1.3_3/etc/bash_completion
+	complete -d cd
 elif [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
     _comp_complete_load scp #for completion of rsync
+    # . /usr/share/bash-completion/completions/git # for git-completion on WSL
+    complete -d cd
 elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
+    complete -d cd
 fi
 
 
