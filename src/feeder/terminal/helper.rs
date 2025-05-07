@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use rustyline::{Context, Helper};
-use rustyline::completion::{Completer, FilenameCompleter, Pair};
+use rustyline::completion::{Completer, FilenameCompleter, Pair, Candidate};
 use rustyline::highlight::{Highlighter, MatchingBracketHighlighter, CmdKind};
 use rustyline::hint::Hinter;
 use rustyline::validate::{Validator, MatchingBracketValidator, ValidationContext, ValidationResult};
@@ -38,15 +38,48 @@ impl Completer for SushHelper {
     type Candidate = Pair;
 
     fn complete(&self, line: &str, pos: usize, ctx: &Context<'_>) -> rustyline::Result<(usize, Vec<Pair>)> {
-        let text = &line[..pos];
-        let tokens: Vec<&str> = text.split_whitespace().collect();
-        if tokens.is_empty() || (tokens.len() == 1 && !tokens[0].contains('/')) {
-            let prefix = tokens.get(0).copied().unwrap_or("");
-            let comps = completion::get_commands(prefix);
-            let start = text.find(prefix).unwrap_or(0);
-            Ok((start, comps))
-        } else {
-            self.completer.complete(line, pos, ctx)
+        let prefix = &line[..pos];
+        // 最初のword
+        let word_st = prefix.find(|c: char| !c.is_whitespace()).unwrap_or(pos);
+        let after_st = &prefix[word_st..];
+        let word_len = after_st.find(char::is_whitespace).unwrap_or(after_st.len());
+        let word_end = word_st + word_len;
+        let first_w = &line[word_st..word_end];
+
+        if pos <= word_end {
+            let cmd_pref = &prefix[word_st..pos];
+            if !cmd_pref.contains('/') {
+                // '/'なしならコマンド補完
+                let comps = completion::get_commands(cmd_pref);
+                Ok((word_st, comps))
+            } else {
+                // '/'ありならファイル名補完
+                self.completer.complete(line, pos, ctx)
+            }
+        } else { // 2番目以降の引数はファイル名補完
+            let (start, mut cands) = self.completer.complete(line, pos, ctx)?;
+            
+            // 'cd' コマンドの場合はディレクトリのみ
+            if first_w == "cd" {
+                cands.retain(|p| {
+                    // line="cd ", start=3, p.replacement()="dir/" -> res_line="cd dir/"
+                    let res_line = format!("{}{}", &line[0..start], p.replacement());
+                    let cmd_len = first_w.len();
+
+                    if res_line.len() > cmd_len && 
+                       res_line.as_bytes().get(cmd_len) == Some(&b' ') {
+                        // "cd dir/" -> " dir/" -> "dir/"
+                        let arg_str = res_line[cmd_len..].trim_start();
+
+                        if !arg_str.is_empty() {
+                            let pth = std::path::Path::new(arg_str.trim_end_matches('/'));
+                            return pth.is_dir();
+                        }
+                    }
+                    false
+                });
+            }
+            Ok((start, cands))
         }
     }
 }
