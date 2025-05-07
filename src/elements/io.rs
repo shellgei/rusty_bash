@@ -52,6 +52,9 @@ fn share(from: RawFd, to: RawFd) -> Result<(), ExecError> {
 }
 
 pub fn backup(from: RawFd) -> RawFd {
+    if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
+        return from;
+    }
     fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(10))
            .expect("Can't allocate fd for backup")
 }

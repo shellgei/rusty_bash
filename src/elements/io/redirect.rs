@@ -206,7 +206,11 @@ impl Redirect {
 
     pub fn restore(&mut self) {
         if self.left_backup >= 0 && self.left_fd >= 0 {
-            io::replace(self.left_backup, self.left_fd);
+            if self.left_backup == self.left_fd {
+                io::close(self.left_fd, "cannot close");
+            }else{
+                io::replace(self.left_backup, self.left_fd);
+            }
         }
         if self.extra_left_backup >= 0 {
             io::replace(self.extra_left_backup, 2);
