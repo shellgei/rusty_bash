@@ -24,11 +24,13 @@ pub struct SimpleCommand {
     substitutions_as_args: Vec<Substitution>,
     command_name: String,
     lineno: usize,
+    continue_alias_check: bool,
 }
 
 
 impl Command for SimpleCommand {
-    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+    fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe)
+    -> Result<Option<Pid>, ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         if Self::break_continue_or_return(core) {
             return Ok(None);
@@ -62,7 +64,7 @@ impl Command for SimpleCommand {
                     _ => special_args.push(sub.text.clone()),
                 }
             }
-            core.run_builtin(&mut self.args, &mut special_args)?;
+            core.run_builtin(&mut self.args, &mut special_args);
         } else {
             let _ = self.set_environment_variables(core);
             proc_ctrl::exec_command(&self.args, core);
@@ -116,8 +118,12 @@ impl SimpleCommand {
         core.db.last_arg = String::new();
         self.option_x_output(core);
         
-        self.substitutions.iter_mut()
-            .for_each(|s| {let _ = s.eval(core, None, false);});
+        for s in self.substitutions.iter_mut() {
+            if let Err(e) = s.eval(core, None, false) {
+                e.print(core);
+                core.db.exit_status = 1;
+            }
+        }
 
         Ok(None)
     }

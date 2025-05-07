@@ -12,13 +12,13 @@ use crate::elements::subword;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
-use super::subword::simple::SimpleSubword;
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
     Arithmetric,
     CompgenF,
     ReadCommand,
+    Heredoc,
     ParamOption(Vec<String>),
 }
 
@@ -33,7 +33,7 @@ impl From<&String> for Word {
     fn from(s: &String) -> Self {
         Self {
             text: s.to_string(),
-            subwords: vec![Box::new(SimpleSubword{text: s.to_string() })],
+            subwords: vec![From::from(s)],
             do_not_erase: false,
         }
     }
@@ -74,13 +74,18 @@ impl Word {
         Ok( Self::make_args(&mut ws) )
     }
 
+    pub fn eval_as_herestring(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.eval_as_value(core)
+    }
+
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ws = match self.tilde_and_dollar_expansion(core) {
             Ok(w)  => w.path_expansion(core),
             Err(e) => return Err(e),
         };
 
-        Ok( Self::make_args(&mut ws).join(" ") )
+        let joint = core.db.get_ifs_head();
+        Ok( Self::make_args(&mut ws).join(&joint) )
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
@@ -113,14 +118,9 @@ impl Word {
         }
     }
 
-    pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Option<String> {
-        match self.tilde_and_dollar_expansion(core) {
-            Ok(mut w) => Some(w.make_glob_string()),
-            Err(e)    => {
-                e.print(core);
-                return None;
-            },
-        }
+    pub fn eval_for_case_pattern(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let mut w = self.tilde_and_dollar_expansion(core)?;
+        Ok(w.make_glob_string())
     }
 
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
@@ -159,9 +159,7 @@ impl Word {
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
         words.iter_mut()
-              .map(|w| w.make_unquoted_word())
-              .filter(|w| *w != None)
-              .map(|w| w.unwrap())
+              .filter_map(|w| w.make_unquoted_word())
               .collect()
     }
 
@@ -196,6 +194,10 @@ impl Word {
             .map(|s| s.make_glob_string())
             .collect::<Vec<String>>()
             .concat()
+    }
+
+    pub fn set_heredoc_flag(&mut self) {
+        self.subwords.iter_mut().for_each(|e| e.set_heredoc_flag());
     }
 
     fn scan_pos(&self, s: &str) -> Vec<usize> {

@@ -31,6 +31,23 @@ impl OptionalOperation for Replace {
     }
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+
+    fn set_array(&mut self, param: &Param, array: &mut Vec<String>,
+                    text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
+        *array = match param.name.as_str() {
+            "@" | "*" => core.db.get_position_params(),
+            _ => core.db.get_array_all(&param.name),
+        };
+
+        for i in 0..array.len() {
+            array[i] = self.get_text(&array[i], core)?;
+        }
+
+        *text = array.join(" ");
+        Ok(())
+    }
+
+    fn has_array_replace(&self) -> bool {true}
 }
 
 impl Replace {

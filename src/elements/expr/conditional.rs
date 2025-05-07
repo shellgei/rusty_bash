@@ -27,10 +27,13 @@ fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore, glob: bool) -> R
         Some(CondElem::InParen(mut expr)) => expr.eval(core),
         Some(CondElem::Word(mut w)) => {
             if glob {
+                let p = w.eval_for_case_pattern(core)?;
+                return Ok(CondElem::Operand(p));
+                /*
                 return match w.eval_for_case_pattern(core) {
                     Some(v) => Ok(CondElem::Operand(v)),
                     None => Ok(CondElem::Operand("".to_string())),
-                };
+                };*/
             }
             to_operand(&mut w)
         },

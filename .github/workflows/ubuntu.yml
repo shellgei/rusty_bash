@@ -2,7 +2,7 @@ name: ubuntu-latest
 
 on:
   push:
-    branches: [ main, beta, sd/* ]
+    branches: [ main, alpha, beta, sd/* ]
     paths: ['src/**', 'test/**', '!README.md' ]
   pull_request:
     branches: [ main ]
@@ -18,4 +18,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Bash tests
-      run: bash -xv ./test/test.bash
+      run: |
+        dir=$PWD
+        git clone https://github.com/shellgei/rusty_bash_test -b v1.1.5 --depth 1
+        cd rusty_bash_test
+        ./test.bash $dir

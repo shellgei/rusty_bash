@@ -25,7 +25,7 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
         let pm = a.chars().nth(0).unwrap();
         let ch = a.chars().nth(1).unwrap();
 
-        if (pm != '-' && pm != '+') || "xveB".find(ch).is_none() {
+        if (pm != '-' && pm != '+') || "xveBH".find(ch).is_none() {
             return Err(ExecError::InvalidOption(a.to_string()));
         }
 
@@ -39,6 +39,15 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() <= 1 {
         return parameter::print_all(core);
+    }
+
+    if arg::consume_option("-m", &mut args) {
+        if ! core.db.flags.contains('m') {
+            core.db.flags += "m";
+        }
+        if args.len() <= 1 {
+            return 0;
+        }
     }
 
     if args[1].starts_with("--") {
@@ -143,24 +152,43 @@ pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i
 pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
     let print = arg::consume_option("-p", &mut args);
+    let o_opt = arg::consume_option("-o", &mut args);
+    let q_opt = arg::consume_option("-q", &mut args);
 
-    if print && args.contains(&"-o".to_string()) {
-        if args.len() >= 3 {
-            core.options.print_opt(&args[2], true);
-        }else{
+    /* print section */
+    if print && o_opt {
+        if args.len() >= 2 && ! q_opt {
+            core.options.print_opt(&args[1], true);
+        }else if ! q_opt {
             core.options.print_all(false);
         }
         return 0;
     }
 
-    if args.len() < 3 {
-        let len = args.len();
-        return shopt_print(core, &mut args, len < 2);
+    if args.len() < 3 { // "shopt" or "shopt option"
+        if ! q_opt {
+            let len = args.len();
+            return shopt_print(core, &mut args, len < 2);
+        }
+        return 0;
+    }
+    /* end of print section */
+
+    if o_opt {
+        let opt = match args[1].as_str() {
+            "-s" => "-o",
+            "-u" => "+o",
+            other => other,
+        }.to_string();
+        let mut args_for_set = vec!["set".to_string(), opt];
+        args_for_set.append(&mut args[2..].to_vec());
+
+        return set(core, &mut args_for_set);
     }
 
-    let res = match args[1].as_str() {
+    let res = match args[1].as_str() { //TODO: args[3..] must to be set
         "-s" => {
-            if ["extglob", "progcomp", "nullglob", "dotglob", "globstar", "globskipdots"].iter().any(|&e| e == args[2]) {
+            if core.shopts.implemented.contains(&args[2]) {
                 core.shopts.set(&args[2], true)
             }else{
                 let msg = format!("shopt: {}: not supported yet", &args[2]);

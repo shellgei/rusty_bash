@@ -23,7 +23,6 @@ pub enum ExecError {
     InvalidArithmeticOperator(String, String),
     InvalidName(String),
     InvalidNumber(String),
-    //InvalidIdentifier(String),
     InvalidOption(String),
     Interrupted,
     ValidOnlyInFunction(String),
