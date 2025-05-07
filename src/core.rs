@@ -195,12 +195,10 @@ impl ShellCore {
     }
 
     pub fn run_function(&mut self, args: &mut Vec<String>) -> bool {
-        if self.db.functions.contains_key(&args[0]) {
-            let mut f = self.db.functions[&args[0]].clone();
-            f.run_as_command(args, self);
-            return true;
+        match self.db.functions.get_mut(&args[0]) {
+            Some(f) => {f.clone().run_as_command(args, self); true},
+            None => false,
         }
-        false
     }
 
     fn set_subshell_parameters(&mut self) -> Result<(), String> {
