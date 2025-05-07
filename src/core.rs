@@ -148,6 +148,13 @@ impl ShellCore {
         true
     }
 
+    pub fn run_function(&mut self, args: &mut Vec<String>) -> bool {
+        match self.db.functions.get_mut(&args[0]) {
+            Some(f) => {f.clone().run_as_command(args, self); true},
+            None => false,
+        }
+    }
+
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
         self.db.parameters.insert("BASHPID".to_string(), pid.to_string());

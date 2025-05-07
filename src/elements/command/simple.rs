@@ -50,18 +50,15 @@ impl Command for SimpleCommand {
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
-        if core.db.functions.contains_key(&self.args[0]) {
-            let mut f = core.db.functions[&self.args[0]].clone();
-            f.run_as_command(&mut self.args, core);
-        }else if core.run_builtin(&mut self.args) {
-        }else{
+        if ! core.run_function(&mut self.args) 
+        && ! core.run_builtin(&mut self.args) {
             Self::exec_external_command(&mut self.args)
         }
 
-        if fork {
-            exit::normal(core);
+        match fork {
+            true  => exit::normal(core),
+            false => Ok(()),
         }
-        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }

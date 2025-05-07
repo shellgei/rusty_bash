@@ -34,7 +34,7 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
-    pub fn run_as_command(&mut self, args: &mut Vec<String>,core: &mut ShellCore) {
+    pub fn run_as_command(&mut self, _: &mut Vec<String>, _: &mut ShellCore) {
         dbg!("CALLED");
     }
 
