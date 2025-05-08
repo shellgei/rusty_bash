@@ -356,17 +356,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         for pos in remove_list.into_iter().rev() {
             core.job_table.remove(pos);
         }
-            /*
-        for job in core.job_table.iter_mut() {
-            match job.update_status(true, false) {
-                Ok(n) => exit_status = n,
-                Err(e) => {
-                    e.print(core);
-                    return 1;
-                },
-            }
-        }
-            */
+
         return exit_status;
     }
 
