@@ -14,6 +14,7 @@ use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
 use crate::elements::script::Script;
+use crate::error::parse::ParseError;
 use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
 use error::input::InputError;
@@ -156,7 +157,10 @@ fn main_loop(core: &mut ShellCore) {
 
     if core.script_name != "-" {
         core.db.flags.retain(|f| f != 'i');
-        feeder.set_file(&core.script_name);
+        if let Err(e) = feeder.set_file(&core.script_name) {
+            ParseError::Input(e).print(core);
+            process::exit(2);
+        }
     }
 
     if core.db.flags.contains('i') {

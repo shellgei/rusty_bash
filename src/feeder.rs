@@ -44,9 +44,13 @@ impl Feeder {
         }
     }
 
-    pub fn set_file(&mut self, s: &str) {
-        let file = File::open(s).unwrap();
+    pub fn set_file(&mut self, s: &str) -> Result<(), InputError> {
+        let file = match File::open(s) {
+            Ok(f)  => f,
+            Err(_) => return Err(InputError::NoSuchFile(s.to_string())),
+        };
         self.script_lines = Some(BufReader::new(file).lines());
+        Ok(())
     }
 
     pub fn consume(&mut self, cutpos: usize) -> String {

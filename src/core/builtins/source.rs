@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{file_check, Script, ShellCore, Feeder};
+use crate::error::parse::ParseError;
 
 fn check_error(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if core.db.flags.contains('r') {
@@ -30,6 +31,12 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return check;
     }
 
+    let mut feeder = Feeder::new("");
+    if let Err(e) = feeder.set_file(&args[1]) {
+        ParseError::Input(e).print(core);
+        return 1;
+    }
+
     core.source_function_level += 1;
     core.source_files.push(args[1].to_string());
 
@@ -39,8 +46,6 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     source.insert(0, args[1].clone());
     let _ = core.db.set_array("BASH_SOURCE", source.clone(), None);
 
-    let mut feeder = Feeder::new("");
-    feeder.set_file(&args[1]);
     feeder.main_feeder = true;
     loop {
         match feeder.feed_line(core) {
