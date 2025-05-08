@@ -205,8 +205,15 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let l_opt = arg::consume_option("-l", &mut args);
     let r_opt = arg::consume_option("-r", &mut args);
     let s_opt = arg::consume_option("-s", &mut args);
+    let mut remove = vec![];
     for id in ids {
-        core.job_table[id].print(&core.job_table_priority, l_opt, r_opt, s_opt, true);
+        if core.job_table[id].print(&core.job_table_priority, l_opt, r_opt, s_opt, true) {
+            remove.push(id);
+        }
+    }
+
+    for id in remove.into_iter().rev() {
+        core.job_table.remove(id);
     }
 
     0
@@ -299,6 +306,7 @@ fn wait_a_job(core: &mut ShellCore, pos: usize,
     if f_opt && core.job_table[pos].display_status == "Stopped" {
         wait_a_job(core, pos, var_name, f_opt)
     }else{
+        core.job_table.remove(pos);
         ans
     }
 }
@@ -327,6 +335,28 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() <= 1 {
         let mut exit_status = 0;
+        let mut remove_list = vec![];
+        for pos in 0..core.job_table.len() {
+            match core.job_table[pos].update_status(true, false) {
+                Ok(n) => {
+                    //if core.job_table[pos].print(&core.job_table_priority, false, false, false, false) {
+                    if core.job_table[pos].display_status == "Done" {
+                        remove_list.push(pos);
+                    }
+                    exit_status = n;
+                },
+                Err(e) => {
+                    e.print(core);
+                    exit_status = 1;
+                    break;
+                },
+            }
+        }
+
+        for pos in remove_list.into_iter().rev() {
+            core.job_table.remove(pos);
+        }
+            /*
         for job in core.job_table.iter_mut() {
             match job.update_status(true, false) {
                 Ok(n) => exit_status = n,
@@ -336,6 +366,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 },
             }
         }
+            */
         return exit_status;
     }
 

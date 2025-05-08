@@ -112,10 +112,11 @@ impl JobEntry {
         println!("{}", self.pids[0]);
     }
 
-    pub fn print(&self, priority: &Vec<usize>, l_opt: bool, r_opt: bool, s_opt: bool, add_amp: bool) {
+    pub fn print(&self, priority: &Vec<usize>, l_opt: bool, r_opt: bool, s_opt: bool, add_amp: bool) 
+    -> bool {
         if r_opt && self.display_status != "Running"
         || s_opt && self.display_status != "Stopped" {
-            return;
+            return false;
         }
 
         let symbol = if priority[0] == self.id {"+"}
@@ -137,6 +138,8 @@ impl JobEntry {
             println!("[{}]{} {} {}                 {}", self.id, &symbol, &pid, 
                 &self.display_status, &text);
         }
+
+        self.display_status == "Done"
     }
 
     fn display_status_on_signal(signal: &signal::Signal, coredump: bool) -> String {
@@ -218,6 +221,7 @@ impl ShellCore {
         if self.is_subshell {
             return;
         }
+
         for e in self.job_table.iter_mut() {
             if e.change {
                 e.print(&self.job_table_priority, false, false, false, false);
