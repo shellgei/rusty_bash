@@ -5,6 +5,7 @@ pub mod arithmetic;
 pub mod case;
 pub mod simple;
 pub mod paren;
+pub mod repeat;
 pub mod brace;
 pub mod r#for;
 pub mod test;
@@ -22,6 +23,7 @@ use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
 use self::function_def::FunctionDefinition;
+use self::repeat::RepeatCommand;
 use self::r#while::WhileCommand;
 use self::r#for::ForCommand;
 use self::r#if::IfCommand;
@@ -203,6 +205,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = BraceCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = ForCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = WhileCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = RepeatCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = CaseCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = TestCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else{ Ok(None) }

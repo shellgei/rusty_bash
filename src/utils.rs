@@ -19,7 +19,7 @@ use std::path::Path;
 
 pub fn reserved(w: &str) -> bool {
     match w {
-        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" | "esac" => true,
+        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" | "esac" | "repeat" => true,
         _ => false,
     }
 }

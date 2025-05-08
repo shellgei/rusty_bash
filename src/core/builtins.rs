@@ -55,6 +55,7 @@ impl ShellCore {
         self.builtins.insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("declare".to_string(), parameter::declare);
         self.builtins.insert("debug".to_string(), debug);
+        self.builtins.insert("disown".to_string(), job_commands::disown);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec);
         self.builtins.insert("exit".to_string(), exit);
@@ -65,6 +66,7 @@ impl ShellCore {
         self.builtins.insert("hash".to_string(), hash::hash);
         self.builtins.insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
+        self.builtins.insert("kill".to_string(), job_commands::kill);
         self.builtins.insert("let".to_string(), let_);
         self.builtins.insert("local".to_string(), parameter::local);
         self.builtins.insert("printf".to_string(), printf::printf);
@@ -211,7 +213,7 @@ pub fn exec(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() == 1 {
-        args.push("sush".to_string());
+        return 0;
     }
     proc_ctrl::exec_command(&args[1..].to_vec(), core, &"".to_string())
 }

@@ -10,6 +10,8 @@ pub mod jobtable;
 pub mod options;
 
 use crate::{error, proc_ctrl, signal};
+use crate::error::exec::ExecError;
+use crate::elements::substitution::Substitution;
 use self::database::DataBase;
 use self::options::Options;
 use self::completion::{Completion, CompletionEntry};
@@ -167,20 +169,36 @@ impl ShellCore {
         self.db.exit_status = if self.db.exit_status == 0 { 1 } else { 0 };
     }
 
-    pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
+    pub fn run_builtin(&mut self, args: &mut Vec<String>, substitutions: &Vec<Substitution>)
+    -> Result<bool, ExecError> {
         if args.is_empty() {
             eprintln!("ShellCore::run_builtin");
-            return false;
+            return Ok(false);
         }
 
-        if self.builtins.contains_key(&args[0]) {
-            let func = self.builtins[&args[0]];
-            args.append(special_args);
-            self.db.exit_status = func(self, args);
-            return true;
+        if ! self.builtins.contains_key(&args[0]) {
+            return Ok(false);
         }
 
-        false
+        let mut special_args = vec![];
+        for sub in substitutions {
+            match args[0].as_ref() {
+                "eval" => special_args.push(sub.get_string_for_eval(self)?),
+                _ => special_args.push(sub.text.clone()),
+            }
+        }
+
+        let func = self.builtins[&args[0]];
+        args.append(&mut special_args);
+        self.db.exit_status = func(self, args);
+        Ok(true)
+    }
+
+    pub fn run_function(&mut self, args: &mut Vec<String>) -> bool {
+        match self.db.functions.get_mut(&args[0]) {
+            Some(f) => {f.clone().run_as_command(args, self); true},
+            None => false,
+        }
     }
 
     fn set_subshell_parameters(&mut self) -> Result<(), String> {
@@ -201,7 +219,7 @@ impl ShellCore {
         self.is_subshell = true;
         proc_ctrl::set_pgid(self, pid, pgid);
         let _ = self.set_subshell_parameters();
-        self.job_table.clear();
+        //self.job_table.clear();
 
         self.exit_script.clear();
     }

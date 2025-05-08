@@ -9,7 +9,7 @@ use nix::sys::signal;
 use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct JobEntry {
     pub id: usize,
     pub pids: Vec<Pid>,
@@ -61,11 +61,11 @@ impl JobEntry {
             proc_statuses: statuses.to_vec(),
             display_status: status.to_string(),
             text: text.to_string(),
-            change: false,
+            ..Default::default()
         }
     }
 
-    pub fn update_status(&mut self, wait: bool) -> Result<i32, ExecError> {
+    pub fn update_status(&mut self, wait: bool, check_done: bool) -> Result<i32, ExecError> {
         let mut exit_status = 0;
         let before = self.proc_statuses[0];
         for (status, pid) in self.proc_statuses.iter_mut().zip(&self.pids) {
@@ -81,9 +81,18 @@ impl JobEntry {
         /* check stopped processes */
         let mut stopped = false;
         for s in &self.proc_statuses {
-            if let WaitStatus::Stopped(_, _) = s {
-                stopped = true;
-                break;
+            match s {
+                WaitStatus::Stopped(_, _) => {
+                    stopped = true;
+                    break;
+                },
+                WaitStatus::Exited(_, es) => {
+                    if check_done {
+                        exit_status = *es;
+                        break;
+                    }
+                },
+                _ => {},
             }
         }
 
@@ -195,13 +204,20 @@ impl JobEntry {
 
 impl ShellCore {
     pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {
+        if self.is_subshell {
+            return Ok(());
+        }
+
         for e in self.job_table.iter_mut() {
-            e.update_status(false)?;
+            e.update_status(false, false)?;
         }
         Ok(())
     }
 
     pub fn jobtable_print_status_change(&mut self) {
+        if self.is_subshell {
+            return;
+        }
         for e in self.job_table.iter_mut() {
             if e.change {
                 e.print(&self.job_table_priority, false, false, false, false);

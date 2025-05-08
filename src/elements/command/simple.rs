@@ -58,29 +58,18 @@ impl Command for SimpleCommand {
         let layer = core.db.get_layer_num()-1;
         let _ = self.set_local_params(core, layer);
 
-        if core.db.functions.contains_key(&self.args[0]) {
-            let mut f = core.db.functions[&self.args[0]].clone();
-            let _ = f.run_as_command(&mut self.args, core);
-        } else if core.builtins.contains_key(&self.args[0]) {
-            let mut special_args = vec![];
-            for sub in &self.substitutions_as_args {
-                match self.command_name.as_ref() {
-                    "eval" => special_args.push(sub.get_string_for_eval(core)?),
-                    _ => special_args.push(sub.text.clone()),
-                }
-            }
-            core.run_builtin(&mut self.args, &mut special_args);
-        } else {
-            let _ = self.set_environment_variables(core);
+        if ! core.run_function(&mut self.args) 
+        && ! core.run_builtin(&mut self.args, &self.substitutions_as_args)? {
+            self.set_environment_variables(core)?;
             proc_ctrl::exec_command(&self.args, core, &self.command_path);
-        }
+        };
 
         core.db.pop_local();
 
-        if fork {
-            exit::normal(core);
+        match fork {
+            true  => exit::normal(core),
+            false => Ok(()),
         }
-        Ok(())
     }
 
     fn get_text(&self) -> String { self.text.clone() }
@@ -95,7 +84,8 @@ impl SimpleCommand {
         core.break_counter > 0 || core.continue_counter > 0 
     }
 
-    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+    pub fn exec_command(&mut self, core: &mut ShellCore, pipe: &mut Pipe)
+    -> Result<Option<Pid>, ExecError> {
         Self::check_sigint(core)?;
 
         core.db.last_arg = self.args.last().unwrap().clone();
@@ -114,6 +104,11 @@ impl SimpleCommand {
            && ! core.db.functions.contains_key(&self.args[0]) ) {
             self.command_path = self.hash_control(core)?;
             self.fork_exec(core, pipe)
+        }else if self.args.len() == 1 && self.args[0] == "exec" {
+            for r in self.get_redirects().iter_mut() {
+                r.connect(true, core)?;
+            }
+            Ok(None)
         }else{
             self.nofork_exec(core)
         }
