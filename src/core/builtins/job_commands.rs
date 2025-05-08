@@ -50,6 +50,10 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if ! core.db.flags.contains('m') {
+        return super::error_exit(1, "fg", "no job control", core);
+    }
+
     let id = if args.len() == 1 {
         if core.job_table_priority.is_empty() {
             return 1;

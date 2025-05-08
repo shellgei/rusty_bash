@@ -130,13 +130,17 @@ impl ShellCore {
             ..Default::default()
         };
 
+        if unistd::isatty(0) == Ok(true) {
+            let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
+                .expect("sush(fatal): Can't allocate fd for tty FD");
+            core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+        }
+
         core.init_current_directory();
         core.set_initial_parameters();
         core.set_builtins();
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
-
-        core.db.flags += "m";
 
         match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
             Ok("1") => core.compat_bash = true,
