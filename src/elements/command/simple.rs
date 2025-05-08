@@ -47,6 +47,10 @@ impl Command for SimpleCommand {
             self.set_arg(w, core)?;
         }
 
+        if ! self.args.is_empty() && self.args[0].starts_with("%") {
+            self.args.insert(0, "fg".to_string());
+        }
+
         match self.args.len() {
             0 => self.exec_set_param(core),
             _ => self.exec_command(core, pipe),
