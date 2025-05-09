@@ -278,11 +278,12 @@ fn wait_next(core: &mut ShellCore, ids: &Vec<usize>,
 
             if let Ok(es) = job.update_status(false, true) {
                 if job.display_status == "Done"
+                || job.display_status == "Killed"
                 || (job.display_status == "Stopped" && ! f_opt) {
                     exit_status = es;
                     drop = i;
                     end = true;
-                    remove_job = job.display_status == "Done";
+                    remove_job = job.display_status == "Done" || job.display_status == "Killed";
                     pid = job.pids[0].to_string();
                     break;
                 }
@@ -363,7 +364,8 @@ fn wait_all(core: &mut ShellCore) -> i32 {
     for pos in 0..core.job_table.len() {
         match core.job_table[pos].update_status(true, false) {
             Ok(n) => {
-                if core.job_table[pos].display_status == "Done" {
+                if core.job_table[pos].display_status == "Done"
+                || core.job_table[pos].display_status == "Killed" {
                     remove_list.push(pos);
                 }
                 exit_status = n;
