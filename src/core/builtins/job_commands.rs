@@ -33,6 +33,15 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
+    let mut args = arg::dissolve_options(args);
+    if ! core.db.flags.contains('m') {
+        return super::error_exit(1, &args[0], "no job control", core);
+    }
+
+    if arg::consume_option("-s", &mut args) {
+        return super::error_exit(1, &args[0], "-s: invalid option", core);
+    }
+
     if args.len() == 1 {
         let id = core.job_table_priority[0];
         match jobid_to_jobentry(id, &mut core.job_table) {
@@ -50,8 +59,13 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
     if ! core.db.flags.contains('m') {
-        return super::error_exit(1, "fg", "no job control", core);
+        return super::error_exit(1, &args[0], "no job control", core);
+    }
+
+    if arg::consume_option("-s", &mut args) {
+        return super::error_exit(1, &args[0], "-s: invalid option", core);
     }
 
     let id = if args.len() == 1 {
@@ -88,7 +102,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut exit_status = 1;
     if let Ok(_) =  unistd::tcsetpgrp(fd, pgid) {
-        eprintln!("{}", &job.text);
+        println!("{}", &job.text);
         job.send_cont();
         exit_status = job.update_status(true, false).unwrap_or(1);
 

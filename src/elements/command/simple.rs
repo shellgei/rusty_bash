@@ -48,6 +48,7 @@ impl Command for SimpleCommand {
         }
 
         if ! self.args.is_empty() && self.args[0].starts_with("%") {
+            self.redirects.clear();
             self.args.insert(0, "fg".to_string());
         }
 
