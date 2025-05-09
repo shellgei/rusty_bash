@@ -19,16 +19,6 @@ fn pid_to_array_pos(pid: i32, jobs: &Vec<JobEntry>) -> Option<usize> {
     None
 }
 
-/*
-fn jobid_to_jobentry(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
-    for job in jobs.iter_mut() {
-        if job.id == id {
-            return Some(job);
-        }
-    }
-    None
-}*/
-
 fn jobid_to_pos(id: usize, jobs: &mut Vec<JobEntry>) -> Option<usize> {
     for (i, job) in jobs.iter_mut().enumerate() {
         if job.id == id {
@@ -121,12 +111,7 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         exit_status = core.job_table[pos].update_status(true, false).unwrap_or(1);
     }
     
-    let job_id = core.job_table[pos].id;
-    core.job_table.remove(pos);
-    core.job_table_priority.retain(|id| *id != job_id);
-
-    //remove_done(core, &mut args, false);
-
+    remove(core, pos);
     signal::restore(Signal::SIGTTOU);
     exit_status
 }
@@ -236,36 +221,33 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    remove_done(core, &mut args, true);
+    print(core, &mut args);
     0
 }
 
-fn remove_done(core: &mut ShellCore, args: &mut Vec<String>, print: bool) {
+fn print(core: &mut ShellCore, args: &mut Vec<String>) {
     let l_opt = arg::consume_option("-l", args);
     let r_opt = arg::consume_option("-r", args);
     let s_opt = arg::consume_option("-s", args);
 
-    let mut remove = vec![];
+    let mut rem = vec![];
     for id in 0..core.job_table.len() {
-        if print {
-            if core.job_table[id].print(&core.job_table_priority,
-                                    l_opt, r_opt, s_opt, true) {
-                remove.push(id);
-            }
-        }else{
-            if core.job_table[id].display_status == "Done" {
-                remove.push(id);
-            }
+        if core.job_table[id].print(&core.job_table_priority,
+                                l_opt, r_opt, s_opt, true) {
+            rem.push(id);
         }
     }
 
-    for pos in remove.into_iter().rev() {
-        let job_id = core.job_table[pos].id;
-        core.job_table.remove(pos);
-        core.job_table_priority.retain(|id| *id != job_id);
+    for pos in rem.into_iter().rev() {
+        remove(core, pos);
     }
 }
                 
+fn remove(core: &mut ShellCore, pos: usize) {
+    let job_id = core.job_table[pos].id;
+    core.job_table.remove(pos);
+    core.job_table_priority.retain(|id| *id != job_id);
+}
 
 fn wait_jobspec(core: &mut ShellCore, jobspec: &str,
                 var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
@@ -285,6 +267,8 @@ fn wait_next(core: &mut ShellCore, ids: &Vec<usize>,
     let mut drop = 0;
     let mut end = false;
     let mut pid = String::new();
+    let mut remove_job = false;
+
     loop {
         thread::sleep(time::Duration::from_millis(10)); //0.1秒周期に変更
         for (i, job) in core.job_table.iter_mut().enumerate() {
@@ -298,6 +282,7 @@ fn wait_next(core: &mut ShellCore, ids: &Vec<usize>,
                     exit_status = es;
                     drop = i;
                     end = true;
+                    remove_job = job.display_status == "Done";
                     pid = job.pids[0].to_string();
                     break;
                 }
@@ -316,9 +301,9 @@ fn wait_next(core: &mut ShellCore, ids: &Vec<usize>,
         }
     }
 
-    let job_id = core.job_table[drop].id;
-    core.job_table.remove(drop);
-    core.job_table_priority.retain(|id| *id != job_id);
+    if remove_job { 
+        remove(core, drop);
+    }
     (exit_status, true)
 }
 
@@ -326,7 +311,7 @@ fn wait_pid(core: &mut ShellCore, pid: i32,
             var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
     match pid_to_array_pos(pid, &core.job_table) {
         Some(i) => wait_a_job(core, i, var_name, f_opt),
-        None => (1, false),
+        None => (127, false),
     }
 }
 
@@ -354,7 +339,7 @@ fn wait_a_job(core: &mut ShellCore, pos: usize,
     if f_opt && core.job_table[pos].display_status == "Stopped" {
         wait_a_job(core, pos, var_name, f_opt)
     }else{
-        core.job_table.remove(pos);
+        remove(core, pos);
         ans
     }
 }
@@ -369,7 +354,70 @@ fn wait_arg_job(core: &mut ShellCore, arg: &String,
         return wait_pid(core, pid, &var_name, f_opt);
     }
 
-    (1, false) 
+    (127, false) 
+}
+
+fn wait_all(core: &mut ShellCore) -> i32 {
+    let mut exit_status = 0;
+    let mut remove_list = vec![];
+    for pos in 0..core.job_table.len() {
+        match core.job_table[pos].update_status(true, false) {
+            Ok(n) => {
+                if core.job_table[pos].display_status == "Done" {
+                    remove_list.push(pos);
+                }
+                exit_status = n;
+            },
+            Err(e) => {
+                e.print(core);
+                exit_status = 1;
+                break;
+            },
+        }
+    }
+
+    for pos in remove_list.into_iter().rev() {
+        remove(core, pos);
+    }
+
+    return exit_status;
+}
+
+fn wait_n(core: &mut ShellCore, args: &mut Vec<String>,
+          var_name: &Option<String>, f_opt: bool) -> i32 {
+    let mut jobs = arg::consume_with_subsequents("-n", args);
+    jobs.remove(0);
+    if jobs.is_empty() {
+        return wait_next(core, &vec![], &var_name, f_opt).0;
+    }
+
+    let mut ids = vec![];
+    for j in &jobs {
+        if j.starts_with("%") {
+            ids.append(&mut jobspec_to_array_poss(core, &j));
+        }else{
+            for (i, job) in core.job_table.iter_mut().enumerate() {
+                if job.pids[0].to_string() == *j {
+                    ids.push(i);
+                }
+            }
+        }
+    }
+    ids.sort();
+    ids.dedup();
+    let mut ans = -1;
+
+    for _ in 0..ids.len() {
+        let tmp = match ans {
+            -1 => wait_next(core, &ids, &var_name, f_opt),
+            _  => wait_next(core, &ids, &None, f_opt),
+        };
+
+        if tmp.1 == true && ans == -1 {
+            ans = tmp.0;
+        }
+    }
+    return ans;
 }
 
 pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -377,73 +425,16 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         super::error_exit(127, &args[0], "called from subshell", core);
     }
 
+    if args.len() <= 1 {
+        return wait_all(core);
+    }
+
     let mut args = arg::dissolve_options(args);
     let var_name = arg::consume_with_next_arg("-p", &mut args);
     let f_opt = arg::consume_option("-f", &mut args);
 
-    if args.len() <= 1 {
-        let mut exit_status = 0;
-        let mut remove_list = vec![];
-        for pos in 0..core.job_table.len() {
-            match core.job_table[pos].update_status(true, false) {
-                Ok(n) => {
-                    //if core.job_table[pos].print(&core.job_table_priority, false, false, false, false) {
-                    if core.job_table[pos].display_status == "Done" {
-                        remove_list.push(pos);
-                    }
-                    exit_status = n;
-                },
-                Err(e) => {
-                    e.print(core);
-                    exit_status = 1;
-                    break;
-                },
-            }
-        }
-
-        for pos in remove_list.into_iter().rev() {
-            let job_id = core.job_table[pos].id;
-            core.job_table.remove(pos);
-            core.job_table_priority.retain(|id| *id != job_id);
-        }
-
-        return exit_status;
-    }
-
     if args[1] == "-n" {
-        let mut jobs = arg::consume_with_subsequents("-n", &mut args);
-        jobs.remove(0);
-        if jobs.is_empty() {
-            return wait_next(core, &vec![], &var_name, f_opt).0;
-        }
-
-        let mut ids = vec![];
-        for j in &jobs {
-            if j.starts_with("%") {
-                ids.append(&mut jobspec_to_array_poss(core, &j));
-            }else{
-                for (i, job) in core.job_table.iter_mut().enumerate() {
-                    if job.pids[0].to_string() == *j {
-                        ids.push(i);
-                    }
-                }
-            }
-        }
-        ids.sort();
-        ids.dedup();
-        let mut ans = -1;
-
-        for _ in 0..ids.len() {
-            let tmp = match ans {
-                -1 => wait_next(core, &ids, &var_name, f_opt),
-                _  => wait_next(core, &ids, &None, f_opt),
-            };
-
-            if tmp.1 == true && ans == -1 {
-                ans = tmp.0;
-            }
-        }
-        return ans;
+        return wait_n(core, &mut args, &var_name, f_opt);
     }
 
     wait_arg_job(core, &args[1], &var_name, f_opt).0
@@ -478,6 +469,7 @@ pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ids.len() == 1 {
             core.job_table.remove(ids[0]);
             core.job_table_priority.remove(0);
+            return 0;
         }
 
         return 1;
