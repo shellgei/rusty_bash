@@ -442,6 +442,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 /* TODO: implement original kill */
 pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
     let path = utils::get_command_path(&args[0], core);
 
     match path.is_empty() {
@@ -456,8 +457,22 @@ pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
+    for arg in args.iter_mut() {
+        if arg == "-n" {
+            *arg = "-s".to_string();
+        }
+        if arg.starts_with("%") {
+            if let Some(pos) = jobspec_to_array_pos(core, &arg) {
+                *arg = core.job_table[pos].pids[0].to_string();
+            }else{
+                let msg = format!("{}: no such job", &arg);
+                return super::error_exit(127, "jobs", &msg, core);
+            }
+        }
+    }
+
     args.insert(0, "eval".to_string());
-    super::eval(core, args)
+    super::eval(core, &mut args)
 }
 
 pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
