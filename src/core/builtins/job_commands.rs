@@ -42,13 +42,13 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return super::error_exit(1, &args[0], "-s: invalid option", core);
     }
 
-    let pos = if args.len() == 1 {
-        let id = core.job_table_priority[0];
-        jobid_to_pos(id, &mut core.job_table)
-    }else if args.len() == 2 {
-        jobspec_to_array_pos(core, &args[1])
-    }else {
-        None
+    let pos = match args.len() {
+        1 => {
+            let id = core.job_table_priority[0];
+            jobid_to_pos(id, &mut core.job_table)
+        },
+        2 => jobspec_to_array_pos(core, &args[1]),
+        _ => None,
     };
 
     match pos {
