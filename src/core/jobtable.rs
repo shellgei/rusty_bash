@@ -139,7 +139,7 @@ impl JobEntry {
                 &self.display_status, &text);
         }
 
-        self.display_status == "Done"
+        self.display_status == "Done" || self.display_status == "Killed"
     }
 
     fn display_status_on_signal(signal: &signal::Signal, coredump: bool) -> String {

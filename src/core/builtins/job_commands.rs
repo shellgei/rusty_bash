@@ -201,13 +201,13 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    let ids = jobspec_to_array_poss(core, &jobspec);
+    let poss = jobspec_to_array_poss(core, &jobspec);
 
-    if ids.is_empty() {
+    if poss.is_empty() {
         let msg = format!("{}: no such job", &jobspec);
         return super::error_exit(127, "jobs", &msg, core);
     }
-    if ids.len() > 1 && ! jobspec.is_empty() {
+    if poss.len() > 1 && ! jobspec.is_empty() {
         let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
         super::error_exit(127, "jobs", &msg, core);
         let msg = format!("{}: no such job", &jobspec);
@@ -215,8 +215,19 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if arg::consume_option("-p", &mut args) {
-        for id in ids {
+        for id in poss {
             core.job_table[id].print_p();
+        }
+        return 0;
+    }
+
+    if ! jobspec.is_empty() {
+        let l_opt = arg::consume_option("-l", &mut args);
+        let r_opt = arg::consume_option("-r", &mut args);
+        let s_opt = arg::consume_option("-s", &mut args);
+        if core.job_table[poss[0]].print(&core.job_table_priority,
+                                l_opt, r_opt, s_opt, true) {
+            remove(core, poss[0]);
         }
         return 0;
     }
