@@ -503,9 +503,16 @@ pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
-    if args.len() == 2 || args[1] == "-a" {
+    if args.len() == 2 && args[1] == "-a" {
         core.job_table.clear();
         core.job_table_priority.clear();
+        return 0;
+    }
+
+    for a in &args[1..] {
+        if let Some(pos) = jobspec_to_array_pos(core, &a) {
+            remove(core, pos);
+        }
     }
 
     0
