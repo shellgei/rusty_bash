@@ -455,7 +455,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 /* TODO: implement original kill */
 pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut args = arg::dissolve_options(args);
+    //let mut args = arg::dissolve_options(args);
     let path = utils::get_command_path(&args[0], core);
 
     match path.is_empty() {
@@ -485,7 +485,7 @@ pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     args.insert(0, "eval".to_string());
-    super::eval(core, &mut args)
+    super::eval(core, args)
 }
 
 pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

@@ -211,9 +211,19 @@ impl ShellCore {
             return Ok(());
         }
 
-        for e in self.job_table.iter_mut() {
-            e.update_status(false, false)?;
+        let mut stopped = vec![];
+        for i in 0..self.job_table.len() {
+            if self.job_table[i].update_status(false, false)? == 148 {
+                stopped.push(i);
+            }
         }
+
+        for i in stopped {
+            let job_id = self.job_table[i].id;
+            self.job_table_priority.retain(|id| *id != job_id);
+            self.job_table_priority.insert(0, job_id);
+        }
+
         Ok(())
     }
 
