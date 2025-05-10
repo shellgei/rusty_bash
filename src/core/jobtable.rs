@@ -131,7 +131,10 @@ impl JobEntry {
         let tmp = self.text.clone();
         let text = tmp.trim_end();
 
-        if add_amp && self.display_status != "Done" {
+        if s_opt {
+            println!("[{}]{} {} {}                 {}", self.id, &symbol, &pid, 
+                &self.display_status, &text);
+        }else if add_amp && self.display_status != "Done" {
             println!("[{}]{} {} {}                 {} &", self.id, &symbol, &pid, 
                 &self.display_status, &text);
         }else{
