@@ -20,6 +20,7 @@ pub enum WordMode {
     CompgenF,
     ReadCommand,
     Heredoc,
+    RightOfSubstitution,
     ParamOption(Vec<String>),
 }
 
@@ -28,6 +29,7 @@ pub struct Word {
     pub text: String,
     pub do_not_erase: bool,
     pub subwords: Vec<Box<dyn Subword>>,
+    pub mode: Option<WordMode>,
 }
 
 impl From<&String> for Word {
@@ -35,7 +37,7 @@ impl From<&String> for Word {
         Self {
             text: s.to_string(),
             subwords: vec![From::from(s)],
-            do_not_erase: false,
+            ..Default::default()
         }
     }
 }
@@ -45,7 +47,7 @@ impl From<Box::<dyn Subword>> for Word {
         Self {
             text: subword.get_text().to_string(),
             subwords: vec![subword],
-            do_not_erase: false,
+            ..Default::default()
         }
     }
 }
@@ -55,7 +57,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
         Self {
             text: subwords.iter().map(|s| s.get_text()).collect(),
             subwords: subwords,
-            do_not_erase: false,
+            ..Default::default()
         }
     }
 }

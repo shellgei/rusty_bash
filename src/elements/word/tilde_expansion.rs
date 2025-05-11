@@ -4,9 +4,15 @@
 use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::elements::word::Word;
+//use crate::elements::subword::Subword;
 use nix::unistd::User;
+use super::WordMode;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
+    if let Some(WordMode::RightOfSubstitution) = word.mode {
+        return eval_multi(word, core);
+    }
+
     let length = match prefix_length(word) {
         0 => return,
         n => n,
@@ -24,6 +30,30 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
     word.text = value.clone();
     word.subwords[0] = From::from(&value);
     word.subwords[1..length].iter_mut().for_each(|w| w.set_text(""));
+}
+
+pub fn eval_multi(word: &mut Word, core: &mut ShellCore) {
+    let mut ans_sws = vec![];
+    let mut tmp = vec![];
+    for sw in &word.subwords {
+        if sw.get_text() == ":" {
+            let mut w = Word::from(tmp.clone());
+            eval(&mut w, core);
+            ans_sws.append(&mut w.subwords);
+            tmp.clear();
+            ans_sws.push(sw.clone());
+        }else{
+            tmp.push(sw.clone());
+        }
+    }
+
+    if ! tmp.is_empty() {
+        let mut w = Word::from(tmp.clone());
+        eval(&mut w, core);
+        ans_sws.append(&mut w.subwords);
+    }
+
+    word.subwords = ans_sws;
 }
 
 fn prefix_length(word: &Word) -> usize {

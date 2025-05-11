@@ -36,9 +36,9 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
 
 fn gen_word(sws: Vec<Box<dyn Subword>>, remain: bool) -> Word {
     Word {
-        text: String::new(),
         subwords: sws,
         do_not_erase: remain,
+        ..Default::default()
     }
 }
 

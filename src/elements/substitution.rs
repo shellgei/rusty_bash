@@ -3,6 +3,7 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::elements::word::WordMode;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use std::env;
@@ -55,7 +56,10 @@ impl Substitution {
     -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         let result = match self.value.clone() {
-            ParsedDataType::Single(v) => self.eval_as_value(&v, core),
+            ParsedDataType::Single(mut v) => {
+                v.mode = Some(WordMode::RightOfSubstitution);
+                self.eval_as_value(&v, core)
+            },
             ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core),
             ParsedDataType::None => {
                 self.evaluated_string = Some("".to_string());
