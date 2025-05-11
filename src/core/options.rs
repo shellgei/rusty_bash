@@ -128,6 +128,7 @@ impl Options {
         }
 
         self.opts.insert(opt.to_string(), onoff);
+
         Ok(())
     }
 

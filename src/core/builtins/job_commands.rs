@@ -53,8 +53,15 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     match pos {
         Some(p) => {
+            let id = core.job_table[p].id; 
+
+            if core.job_table[p].no_control {
+                let msg = format!("job {} started without job control", &id);
+                return super::error_exit(1, &args[0], &msg, core);
+            }
+
             if core.job_table[p].display_status == "Running" {
-                let msg = format!("job {} already in background", &core.job_table[p].id);
+                let msg = format!("job {} already in background", &id);
                 return super::error_exit(0, &args[0], &msg, core);
             }
 
@@ -64,7 +71,7 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 1 => "-",
                 _ => " ",
             };
-            println!("[{}]{} {} &", &core.job_table[p].id, &symbol, &core.job_table[p].text);
+            println!("[{}]{} {} &", &id, &symbol, &core.job_table[p].text);
             core.job_table[p].send_cont()
         },
         None    => return 1,
@@ -100,6 +107,12 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         Some(i) => i,
         _ => return 1, 
     };
+
+    if core.job_table[pos].no_control {
+        let id = core.job_table[pos].id; 
+        let msg = format!("job {} started without job control", &id);
+        return super::error_exit(1, &args[0], &msg, core);
+    }
 
     let pgid = core.job_table[pos].solve_pgid();
     if pgid.as_raw() == 0 {

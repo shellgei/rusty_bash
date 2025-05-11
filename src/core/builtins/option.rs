@@ -9,6 +9,9 @@ use super::parameter;
 fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     if pm == '+' {
         core.db.flags.retain(|e| e != opt);
+        if opt == 'm' {
+            let _ = core.options.set("monitor", false);
+        }
     }else{
         if ! core.db.flags.contains(opt) {
             core.db.flags.push(opt);
@@ -55,6 +58,15 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if ! core.db.flags.contains('m') {
             core.db.flags += "m";
         }
+        let _ = core.options.set("monitor", true);
+        if args.len() <= 1 {
+            return 0;
+        }
+    }
+
+    if arg::consume_option("+m", &mut args) {
+        core.db.flags.retain(|f| f != 'm');
+        let _ = core.options.set("monitor", false);
         if args.len() <= 1 {
             return 0;
         }
@@ -77,6 +89,14 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             core.options.print_all(positive);
             return 0;
         }else{
+            if args[2] == "monitor" {
+                if positive && ! core.db.flags.contains('m') {
+                    core.db.flags.push('m');
+                }else if ! positive {
+                    core.db.flags.retain(|f| f != 'm');
+                }
+            }
+
             return match core.options.set(&args[2], positive) {
                 Ok(())  => 0,
                 Err(e) => {

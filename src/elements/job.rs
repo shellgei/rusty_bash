@@ -112,8 +112,14 @@ impl Job {
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);
-        core.job_table.push(JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ],
-                &self.get_one_line_text(), "Running", new_job_id));
+        let mut entry = JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ],
+                &self.get_one_line_text(), "Running", new_job_id);
+
+        if ! core.options.query("monitor") {
+            entry.no_control = true;
+        }
+
+        core.job_table.push(entry);
 
         core.tty_fd = backup;
     }

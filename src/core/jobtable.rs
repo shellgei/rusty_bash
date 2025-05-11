@@ -17,6 +17,7 @@ pub struct JobEntry {
     pub display_status: String,
     pub text: String,
     change: bool,
+    pub no_control: bool,
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) -> Result<(), ExecError> {
