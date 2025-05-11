@@ -51,19 +51,14 @@ impl Pipeline {
 
         let lastpipe = (! core.db.flags.contains('m')) && core.shopts.query("lastpipe");
         let mut lastp = Pipe::end(prev, pgid, lastpipe);
-
-        match self.commands[self.pipes.len()].exec(core, &mut lastp) {
-            Ok(pid) => pids.push(pid),
-            Err(e) => {
-                if lastpipe {
-                    lastp.restore_lastpipe();
-                }
-                return (pids, self.exclamation, self.time, Some(e));
-            },
-        }
-
+        let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
         if lastpipe {
             lastp.restore_lastpipe();
+        }
+
+        match result {
+            Ok(pid) => pids.push(pid),
+            Err(e) => return (pids, self.exclamation, self.time, Some(e)),
         }
 
         (pids, self.exclamation, self.time, None)
