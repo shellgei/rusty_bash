@@ -19,7 +19,6 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct CommandSubstitution {
     pub text: String,
     command: ParenCommand,
-//    old_style: bool,
 }
 
 impl Subword for CommandSubstitution {
@@ -33,6 +32,7 @@ impl Subword for CommandSubstitution {
         let result = self.read(pipe.recv, core);
         proc_ctrl::wait_pipeline(core, vec![pid], false, false);
         result?;
+        self.text = self.text.trim_end_matches("\n").to_string();
         Ok(())
     }
 }
@@ -71,30 +71,6 @@ impl CommandSubstitution {
         self.text.pop();
         Ok(())
     }
-
-    /*
-    pub fn parse_old_style(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if feeder.nest.last().unwrap().0 == "`" {
-            return Ok(None);
-        }
-        if ! feeder.starts_with("`") {
-            return Ok(None);
-        }
-        let mut script = Some(Script::default());
-
-        if command::eat_inner_script(feeder, core, "`", vec!["`"], &mut script, false)? {
-            let mut ans = Self::default();
-            ans.old_style = true;
-            ans.text.push_str("`");
-            ans.text.push_str(&script.as_ref().expect("").get_text());
-            ans.text.push_str(&feeder.consume(1));
-            ans.command = ParenCommand::new(&ans.text, script);
-
-            Ok(Some(ans))
-        }else{
-            Ok(None)
-        }
-    }*/
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         /*
