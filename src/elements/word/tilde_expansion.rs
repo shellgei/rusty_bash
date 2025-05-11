@@ -9,10 +9,19 @@ use nix::unistd::User;
 use super::WordMode;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
+    if word.subwords.len() > 1 
+    && word.subwords[1..].iter().any(|sw| sw.get_text() == "=") 
+    && ! core.options.query("posix") {
+        return eval_multi(word, core);
+    }
     if let Some(WordMode::RightOfSubstitution) = word.mode {
         return eval_multi(word, core);
     }
 
+    eval_single(word, core)
+}
+
+fn eval_single(word: &mut Word, core: &mut ShellCore) {
     let length = match prefix_length(word) {
         0 => return,
         n => n,
@@ -35,10 +44,16 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
 pub fn eval_multi(word: &mut Word, core: &mut ShellCore) {
     let mut ans_sws = vec![];
     let mut tmp = vec![];
+    let mut equal = 0;
     for sw in &word.subwords {
-        if sw.get_text() == ":" {
+        if sw.get_text() == "=" {
+            equal += 1;
+        }
+
+        if sw.get_text() == ":" 
+        || (sw.get_text() == "=" && equal < 2) {
             let mut w = Word::from(tmp.clone());
-            eval(&mut w, core);
+            eval_single(&mut w, core);
             ans_sws.append(&mut w.subwords);
             tmp.clear();
             ans_sws.push(sw.clone());
@@ -49,11 +64,15 @@ pub fn eval_multi(word: &mut Word, core: &mut ShellCore) {
 
     if ! tmp.is_empty() {
         let mut w = Word::from(tmp.clone());
-        eval(&mut w, core);
+        eval_single(&mut w, core);
         ans_sws.append(&mut w.subwords);
     }
 
     word.subwords = ans_sws;
+    word.text = word.subwords.iter()
+               .map(|e| e.get_text().to_string())
+               .collect::<Vec<String>>()
+               .concat();
 }
 
 fn prefix_length(word: &Word) -> usize {

@@ -56,10 +56,7 @@ impl Substitution {
     -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         let result = match self.value.clone() {
-            ParsedDataType::Single(mut v) => {
-                v.mode = Some(WordMode::RightOfSubstitution);
-                self.eval_as_value(&v, core)
-            },
+            ParsedDataType::Single(v) => self.eval_as_value(&v, core),
             ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core),
             ParsedDataType::None => {
                 self.evaluated_string = Some("".to_string());
@@ -73,7 +70,7 @@ impl Substitution {
         }
 
         if env {
-            return self.set_to_env();
+            self.set_to_env()?;
         }
 
         let ans = self.set_to_shell(core, layer);
@@ -253,7 +250,8 @@ impl Substitution {
         if let Some(a) = Array::parse(feeder, core)? {
             ans.text += &a.text;
             ans.value = ParsedDataType::Array(a);
-        }else if let Ok(Some(w)) = Word::parse(feeder, core, None) {
+        }else if let Ok(Some(mut w)) = Word::parse(feeder, core, None) {
+            w.mode = Some(WordMode::RightOfSubstitution);
             ans.text += &w.text;
             ans.value = ParsedDataType::Single(w);
         }

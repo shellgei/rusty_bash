@@ -13,7 +13,7 @@ impl SimpleCommand {
         if let Some(s) = Substitution::parse(feeder, core)? {
             ans.text += &s.text;
             match ans.command_name.as_ref() {
-                "local" | "eval" | "export"  => ans.substitutions_as_args.push(s),
+                "local" | "eval" | "export" | "declare"  => ans.substitutions_as_args.push(s),
                 _ => ans.substitutions.push(s),
             }
             Ok(true)
@@ -72,7 +72,7 @@ impl SimpleCommand {
             if let Some(s) = Substitution::parse(&mut feeder_local, core)? {
                 self.text += &s.text;
                 match self.command_name.as_ref() {
-                    "local" | "eval" | "export"  => self.substitutions_as_args.push(s),
+                    "local" | "eval" | "export" | "declare"  => self.substitutions_as_args.push(s),
                     _ => self.substitutions.push(s),
                 }
                 command::eat_blank_with_comment(&mut feeder_local, core, &mut self.text);
@@ -123,7 +123,7 @@ impl SimpleCommand {
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-            if ( ans.command_name == "local" || ans.command_name == "eval" || ans.command_name == "export")
+            if ( ans.command_name == "local" || ans.command_name == "eval" || ans.command_name == "export" || ans.command_name == "declare" )
             && Self::eat_substitution(feeder, &mut ans, core)? {
                 continue;
             }

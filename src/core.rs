@@ -187,7 +187,7 @@ impl ShellCore {
         let mut special_args = vec![];
         for sub in substitutions {
             match args[0].as_ref() {
-                "eval" => special_args.push(sub.get_string_for_eval(self)?),
+                "eval" | "declare" => special_args.push(sub.get_string_for_eval(self)?),
                 _ => special_args.push(sub.text.clone()),
             }
         }

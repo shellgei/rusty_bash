@@ -209,7 +209,6 @@ impl DataBase {
     }
 
     pub fn is_array(&mut self, name: &str) -> bool {
-        //match getter::clone(self, name).as_mut() {
         match self.get_ref(name) {
             Some(d) => return d.is_array(),
             _ => false,

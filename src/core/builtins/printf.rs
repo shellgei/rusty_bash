@@ -145,7 +145,7 @@ impl PrintfToken {
             Self::Q => {
                 let a = pop(args);
                 let q = a.replace("\\", "\\\\").replace("$", "\\$").replace("|", "\\|")
-                    .replace("\"", "\\\"").replace("'", "\\\'")
+                    .replace("\"", "\\\"").replace("'", "\\\'").replace("~", "\\~")
                     .replace("(", "\\(").replace(")", "\\)")
                     .replace("{", "\\{").replace("}", "\\}")
                     .replace("!", "\\!").replace("&", "\\&");
