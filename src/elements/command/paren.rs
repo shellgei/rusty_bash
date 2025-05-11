@@ -48,6 +48,7 @@ impl Command for ParenCommand {
 }
 
 impl ParenCommand {
+    /*
     pub fn new(text: &str, script: Option<Script>) -> Self {
         Self {
             text: text.to_string(),
@@ -55,7 +56,7 @@ impl ParenCommand {
             redirects: vec![],
         }
     }
-
+*/
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, substitution: bool)
         -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();

@@ -6,6 +6,7 @@ pub mod simple;
 pub mod single_quoted;
 mod braced_param;
 mod command_sub;
+mod command_sub_old;
 mod escaped_char;
 mod file_input;
 mod ext_glob;
@@ -25,6 +26,7 @@ use self::arithmetic::Arithmetic;
 use self::simple::SimpleSubword;
 use self::braced_param::BracedParam;
 use self::command_sub::CommandSubstitution;
+use self::command_sub_old::CommandSubstitutionOld;
 use self::escaped_char::EscapedChar;
 use self::ext_glob::ExtGlob;
 use self::filler::FillerSubword;
@@ -175,6 +177,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
     else if let Some(a) = Arithmetic::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = FileInput::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = CommandSubstitutionOld::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = ProcessSubstitution::parse(feeder, core, mode)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core, mode)? { Ok(Some(Box::new(a))) }

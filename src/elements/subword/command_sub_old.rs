@@ -16,13 +16,12 @@ use std::os::fd::{FromRawFd, RawFd};
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
-pub struct CommandSubstitution {
+pub struct CommandSubstitutionOld {
     pub text: String,
     command: ParenCommand,
-//    old_style: bool,
 }
 
-impl Subword for CommandSubstitution {
+impl Subword for CommandSubstitutionOld {
     fn get_text(&self) -> &str {&self.text.as_ref()}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
@@ -37,7 +36,7 @@ impl Subword for CommandSubstitution {
     }
 }
 
-impl CommandSubstitution {
+impl CommandSubstitutionOld {
     fn set_line(&mut self, line: Result<String, Error>) -> bool {
         if let Ok(ln) = line {
             self.text.push_str(&ln);
@@ -72,48 +71,50 @@ impl CommandSubstitution {
         Ok(())
     }
 
-    /*
-    pub fn parse_old_style(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if feeder.nest.last().unwrap().0 == "`" {
-            return Ok(None);
-        }
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("`") {
             return Ok(None);
         }
-        let mut script = Some(Script::default());
 
-        if command::eat_inner_script(feeder, core, "`", vec!["`"], &mut script, false)? {
-            let mut ans = Self::default();
-            ans.old_style = true;
-            ans.text.push_str("`");
-            ans.text.push_str(&script.as_ref().expect("").get_text());
-            ans.text.push_str(&feeder.consume(1));
-            ans.command = ParenCommand::new(&ans.text, script);
-
-            Ok(Some(ans))
-        }else{
-            Ok(None)
-        }
-    }*/
-
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        /*
-        if let Some(ans) = Self::parse_old_style(feeder, core)? {
-            return Ok(Some(ans));
-        }*/
-        
-        if ! feeder.starts_with("$(") {
-            return Ok(None);
-        }
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
+        let mut esc = false;
+        while esc || ! feeder.starts_with("`") {
+            if feeder.is_empty() {
+                feeder.feed_additional_line(core)?;
+                continue;
+            }
 
-        if let Some(pc) = ParenCommand::parse(feeder, core, true)? {
-            ans.text += &pc.get_text();
-            ans.command = pc;
-            Ok(Some(ans))
-        }else{
-            Ok(None)
+            let len = feeder.scanner_char();
+            let c = feeder.consume(len);
+
+            if esc && (c == "$" || c == "\\" || c == "`") {
+                ans.text.pop();
+            }
+
+            ans.text += &c;
+
+            if ! esc && c == "\\" {
+                esc = true;
+                continue;
+            }
+
+            esc = false;
         }
+
+        ans.text += &feeder.consume(1);
+        let mut paren = ans.text.clone();
+        paren.remove(0);
+        paren.insert(0, '(');
+        paren.pop();
+        paren.push(')');
+
+        let mut f = Feeder::new(&paren);
+        if let Some(s) = ParenCommand::parse(&mut f, core, false)? {
+            ans.command = s;
+            return Ok(Some(ans));
+        }
+
+        Ok(None)
     }
 }
