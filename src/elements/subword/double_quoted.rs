@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use crate::elements::word::{Word, WordMode, substitution};
-use crate::elements::subword::{Arithmetic, CommandSubstitution, CommandSubstitutionOld};
+use crate::elements::subword::{Arithmetic, CommandSubstitution};
 use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone, Default)]
@@ -130,7 +130,7 @@ impl DoubleQuoted {
             = if let Some(a) = BracedParam::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Arithmetic::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
-            else if let Some(a) = CommandSubstitutionOld::parse(feeder, core)? {Box::new(a)}
+            //else if let Some(a) = CommandSubstitutionOld::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
             else if let Some(a) = Self::parse_escaped_char(feeder) { Box::new(a) }
             else if let Some(a) = Self::parse_name(feeder, core) { Box::new(a) }

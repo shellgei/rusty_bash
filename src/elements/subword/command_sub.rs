@@ -72,11 +72,58 @@ impl CommandSubstitution {
         Ok(())
     }
 
+    pub fn parse_old_style(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
+        if ! feeder.starts_with("`") {
+            return Ok(None);
+        }
+
+        let mut ans = Self::default();
+        ans.text = feeder.consume(1);
+        let mut esc = false;
+        while esc || ! feeder.starts_with("`") {
+            if feeder.is_empty() {
+                feeder.feed_additional_line(core)?;
+                continue;
+            }
+
+            let len = feeder.scanner_char();
+            let c = feeder.consume(len);
+
+            if esc && (c == "$" || c == "\\" || c == "`") {
+                ans.text.pop();
+            }
+
+            ans.text += &c;
+
+            if ! esc && c == "\\" {
+                esc = true;
+                continue;
+            }
+
+            esc = false;
+        }
+
+        ans.text += &feeder.consume(1);
+        let mut paren = ans.text.clone();
+        paren.remove(0);
+        paren.insert(0, '(');
+        paren.pop();
+        paren.push(')');
+
+        let mut f = Feeder::new(&paren);
+        if let Some(s) = ParenCommand::parse(&mut f, core, false)? {
+            ans.command = s;
+            return Ok(Some(ans));
+        }
+
+        Ok(None)
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        /*
         if let Some(ans) = Self::parse_old_style(feeder, core)? {
             return Ok(Some(ans));
-        }*/
+        }
         
         if ! feeder.starts_with("$(") {
             return Ok(None);
