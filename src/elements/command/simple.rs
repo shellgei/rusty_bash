@@ -103,8 +103,8 @@ impl SimpleCommand {
             }
         }
 
-        if self.force_fork 
-        || pipe.is_connected() 
+        if self.force_fork
+        || pipe.is_connected()
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.db.functions.contains_key(&self.args[0]) ) {
             self.command_path = self.hash_control(core)?;

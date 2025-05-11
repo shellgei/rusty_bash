@@ -31,9 +31,10 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
     let mut pipestatus = vec![];
     let mut ans = vec![];
     for pid in &pids {
-        let ws = wait_process(core, pid.expect("SUSHI INTERNAL ERROR (no pid)"));
-        ans.push(ws);
-
+        if pid.is_some() { //None: lastpipe
+            let ws = wait_process(core, pid.unwrap());
+            ans.push(ws);
+        }
         pipestatus.push(core.db.exit_status);
     }
 
@@ -91,7 +92,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     ws.expect("SUSH INTERNAL ERROR: no wait status")
 }
 
-pub fn set_foreground(core: &ShellCore) {
+fn set_foreground(core: &ShellCore) {
     let fd = match core.tty_fd.as_ref() {
         Some(fd) => fd,
         _        => return,
@@ -112,7 +113,9 @@ pub fn set_foreground(core: &ShellCore) {
 
 pub fn set_pgid(core :&ShellCore, pid: Pid, pgid: Pid) {
     let _ = unistd::setpgid(pid, pgid);
-    if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
+    let lastpipe = ! core.db.flags.contains('m') && core.shopts.query("lastpipe");
+
+    if ! lastpipe && pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
         set_foreground(core);
     }
 }
