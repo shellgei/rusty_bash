@@ -158,25 +158,11 @@ fn main_loop(core: &mut ShellCore) {
     }
 
     loop {
-        if let Err(e) = core.jobtable_check_status() {
-            e.print(core);
+        match feed_script(&mut feeder, core) {
+            (true, false) => {},
+            (false, true) => break,
+            _ => parse_and_exec(&mut feeder, core, true),
         }
-
-        if core.db.flags.contains('i') && core.options.query("monitor") {
-            core.jobtable_print_status_change();
-        }
-
-        match feeder.feed_line(core) {
-            Ok(()) => {}, 
-            Err(InputError::Interrupt) => {
-                signal::input_interrupt_check(&mut feeder, core);
-                signal::check_trap(core);
-                continue;
-            },
-            _ => break,
-        }
-
-        parse_and_exec(&mut feeder, core, true);
     }
     core.write_history_to_file();
     exit::normal(core);
@@ -217,27 +203,34 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut S
     feeder.main_feeder = true;
 
     loop {
-        if let Err(e) = core.jobtable_check_status() {
-            e.print(core);
+        match feed_script(&mut feeder, core) {
+            (true, false) => {},
+            (false, true) => break,
+            _ => parse_and_exec(&mut feeder, core, false),
         }
-
-        if core.db.flags.contains('i') && core.options.query("monitor") {
-            core.jobtable_print_status_change();
-        }
-
-        match feeder.feed_line(core) {
-            Ok(()) => {}, 
-            Err(InputError::Interrupt) => {
-                signal::input_interrupt_check(&mut feeder, core);
-                signal::check_trap(core);
-                continue;
-            },
-            _ => break,
-        }
-
-        parse_and_exec(&mut feeder, core, false);
     }
     exit::normal(core);
+}
+
+
+fn feed_script(feeder: &mut Feeder, core: &mut ShellCore) -> (bool, bool) {
+    if let Err(e) = core.jobtable_check_status() {          //(continue, break)
+        e.print(core);
+    }
+
+    if core.db.flags.contains('i') && core.options.query("monitor") {
+        core.jobtable_print_status_change();
+    }
+
+    match feeder.feed_line(core) {
+        Ok(()) => (false, false),
+        Err(InputError::Interrupt) => {
+            signal::input_interrupt_check(feeder, core);
+            signal::check_trap(core);
+            (true, false)
+        },
+        _ => (false, true),
+    }
 }
 
 fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
