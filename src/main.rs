@@ -176,25 +176,7 @@ fn main_loop(core: &mut ShellCore) {
             _ => break,
         }
 
-        core.sigint.store(false, Relaxed);
-        match Script::parse(&mut feeder, core, false){
-            Ok(Some(mut s)) => {
-                if let Err(e) = s.exec(core) {
-                    e.print(core);
-                }
-                set_history(core, &s.get_text());
-            },
-            Err(e) => {
-                e.print(core);
-                feeder.consume(feeder.len());
-                feeder.nest = vec![("".to_string(), vec![])];
-            },
-            _ => {
-                feeder.consume(feeder.len());
-                feeder.nest = vec![("".to_string(), vec![])];
-            },
-        }
-        core.sigint.store(false, Relaxed);
+        parse_and_exec(&mut feeder, core, true);
     }
     core.write_history_to_file();
     exit::normal(core);
@@ -253,24 +235,31 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut S
             _ => break,
         }
 
-        core.sigint.store(false, Relaxed);
-        match Script::parse(&mut feeder, core, false){
-            Ok(Some(mut s)) => {
-                if let Err(e) = s.exec(core) {
-                    e.print(core);
-                }
-            },
-            Err(e) => {
-                e.print(core);
-                feeder.consume(feeder.len());
-                feeder.nest = vec![("".to_string(), vec![])];
-            },
-            _ => {
-                feeder.consume(feeder.len());
-                feeder.nest = vec![("".to_string(), vec![])];
-            },
-        }
-        core.sigint.store(false, Relaxed);
+        parse_and_exec(&mut feeder, core, false);
     }
     exit::normal(core);
+}
+
+fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
+    core.sigint.store(false, Relaxed);
+    match Script::parse(feeder, core, false){
+        Ok(Some(mut s)) => {
+            if let Err(e) = s.exec(core) {
+                e.print(core);
+            }
+            if set_hist {
+                set_history(core, &s.get_text());
+            }
+        },
+        Err(e) => {
+            e.print(core);
+            feeder.consume(feeder.len());
+            feeder.nest = vec![("".to_string(), vec![])];
+        },
+        _ => {
+            feeder.consume(feeder.len());
+            feeder.nest = vec![("".to_string(), vec![])];
+        },
+    }
+    core.sigint.store(false, Relaxed);
 }
