@@ -50,7 +50,7 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn configure(args: &Vec<String>) -> ShellCore {
-    let mut core = ShellCore::new();
+    let mut core = ShellCore::configure();
     let mut parameters = vec![args[0].clone()];
     let mut options = vec![];
 
@@ -96,7 +96,7 @@ fn main() {
     let compat_bash = arg::consume_option("-b", &mut args);
     let c_parts = arg::consume_with_subsequents("-c", &mut args);
     if c_parts.len() != 0 {
-        let mut core = ShellCore::new_c_mode();
+        let mut core = ShellCore::configure_c_mode();
         if compat_bash {
             core.compat_bash = true;
             core.db.flags += "b";
@@ -283,19 +283,4 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut S
         core.sigint.store(false, Relaxed);
     }
     exit::normal(core);
-
-
-    /*
-
-    match Script::parse(&mut feeder, &mut core, false){
-        Ok(Some(mut s)) => {
-            if let Err(e) = s.exec(&mut core) {
-                e.print(&mut core);
-            }
-        },
-        Err(e) => e.print(&mut core),
-        _ => {},
-    }
-    exit::normal(&mut core)
-    */
 }

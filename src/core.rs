@@ -76,15 +76,8 @@ pub struct ShellCore {
 }
 
 impl ShellCore {
-    pub fn new() -> ShellCore {
-        let mut core = ShellCore{
-            db: DataBase::new(),
-            sigint: Arc::new(AtomicBool::new(false)),
-            options: Options::new_as_basic_opts(),
-            shopts: Options::new_as_shopts(),
-            script_name: "-".to_string(),
-            ..Default::default()
-        };
+    pub fn configure() -> ShellCore {
+        let mut core = Self::new();
 
         core.init_current_directory();
         core.set_initial_parameters();
@@ -120,15 +113,19 @@ impl ShellCore {
         core
     }
 
-    pub fn new_c_mode() -> ShellCore {
-        let mut core = ShellCore{
+    pub fn new() -> Self {
+        ShellCore{
             db: DataBase::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             script_name: "-".to_string(),
             ..Default::default()
-        };
+        }
+    }
+
+    pub fn configure_c_mode() -> ShellCore {
+        let mut core = Self::new();
 
         if unistd::isatty(0) == Ok(true) {
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
