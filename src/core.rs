@@ -120,27 +120,23 @@ impl ShellCore {
         }
     }
 
-    pub fn configure_c_mode() -> ShellCore {
-        let mut core = Self::new();
-
+    pub fn configure_c_mode(&mut self) {
         if unistd::isatty(0) == Ok(true) {
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
-            core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+            self.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
-        core.init_current_directory();
-        core.set_initial_parameters();
-        core.set_builtins();
+        self.init_current_directory();
+        self.set_initial_parameters();
+        self.set_builtins();
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
 
         match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-            Ok("1") => core.compat_bash = true,
+            Ok("1") => self.compat_bash = true,
             _ => {},
         };
-
-        core
     }
 
     fn set_initial_parameters(&mut self) {

@@ -49,8 +49,7 @@ fn read_rc_file(core: &mut ShellCore) {
     }
 }
 
-fn configure(args: &Vec<String>) -> ShellCore {
-    let mut core = ShellCore::new();
+fn configure(args: &Vec<String>, core: &mut ShellCore) {
     core.configure();
     let mut parameters = vec![args[0].clone()];
     let mut options = vec![];
@@ -65,18 +64,16 @@ fn configure(args: &Vec<String>) -> ShellCore {
         }
     }
 
-    if let Err(e) = parameter::set_positions(&mut core, &parameters) {
-        e.print(&mut core);
+    if let Err(e) = parameter::set_positions(core, &parameters) {
+        e.print(core);
         core.db.exit_status = 2;
-        exit::normal(&mut core);
+        exit::normal(core);
     }
-    if let Err(e) = option::set_options(&mut core, &options) {
-        e.print(&mut core);
+    if let Err(e) = option::set_options(core, &options) {
+        e.print(core);
         core.db.exit_status = 2;
-        exit::normal(&mut core);
+        exit::normal(core);
     }
-
-    core
 }
 
 fn main() {
@@ -94,14 +91,16 @@ fn main() {
         }
     }
 
+    let mut core = ShellCore::new();
     let compat_bash = arg::consume_option("-b", &mut args);
+    if compat_bash {
+        core.compat_bash = true;
+        core.db.flags += "b";
+    }
+
     let c_parts = arg::consume_with_subsequents("-c", &mut args);
     if c_parts.len() != 0 {
-        let mut core = ShellCore::configure_c_mode();
-        if compat_bash {
-            core.compat_bash = true;
-            core.db.flags += "b";
-        }
+        core.configure_c_mode();
         for opt in &options {
             if let Err(e) = core.options.set(&opt, true) {
                 e.print(&mut core);
@@ -112,11 +111,7 @@ fn main() {
         run_and_exit_c_option(&args, &c_parts, &mut core);
     }
 
-    let mut core = configure(&args);
-    if compat_bash {
-        core.compat_bash = true;
-        core.db.flags += "b";
-    }
+    configure(&args, &mut core);
 
     for opt in options {
         if let Err(e) = core.options.set(&opt, true) {
