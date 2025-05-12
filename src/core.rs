@@ -76,41 +76,37 @@ pub struct ShellCore {
 }
 
 impl ShellCore {
-    pub fn configure() -> ShellCore {
-        let mut core = Self::new();
-
-        core.init_current_directory();
-        core.set_initial_parameters();
-        core.set_builtins();
+    pub fn configure(&mut self) {
+        self.init_current_directory();
+        self.set_initial_parameters();
+        self.set_builtins();
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
 
-        let _ = core.db.set_param("PS4", "+ ", None);
+        let _ = self.db.set_param("PS4", "+ ", None);
 
         if unistd::isatty(0) == Ok(true) {
-            core.db.flags += "imH";
-            let _ = core.db.set_param("PS1", "🍣 ", None);
-            let _ = core.db.set_param("PS2", "> ", None);
+            self.db.flags += "imH";
+            let _ = self.db.set_param("PS1", "🍣 ", None);
+            let _ = self.db.set_param("PS2", "> ", None);
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
-            core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+            self.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
         }
 
-        let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
-        let _ = core.db.set_param("HISTFILE", &(home + "/.sush_history"), None);
-        let _ = core.db.set_param("HISTFILESIZE", "2000", None);
+        let home = self.db.get_param("HOME").unwrap_or(String::new()).to_string();
+        let _ = self.db.set_param("HISTFILE", &(home + "/.sush_history"), None);
+        let _ = self.db.set_param("HISTFILESIZE", "2000", None);
 
         match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
             Ok("1") => {
-                if core.db.flags.contains('i') {
+                if self.db.flags.contains('i') {
                     eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
                 }
-                core.compat_bash = true;
+                self.compat_bash = true;
             },
             _ => {},
         };
-
-        core
     }
 
     pub fn new() -> Self {

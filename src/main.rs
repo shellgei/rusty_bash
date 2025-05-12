@@ -50,7 +50,8 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn configure(args: &Vec<String>) -> ShellCore {
-    let mut core = ShellCore::configure();
+    let mut core = ShellCore::new();
+    core.configure();
     let mut parameters = vec![args[0].clone()];
     let mut options = vec![];
 
