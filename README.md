@@ -228,6 +228,9 @@ Partially in Japanese.
     * [原理原則で理解するフォアグラウンドプロセスとバックグラウンドプロセスの違い | @tajima_taso](https://qiita.com/tajima_taso/items/c5553762af5e1a599fed)
     * [Bashタブ補完自作入門 | Cybouzu Inside Out](https://blog.cybozu.io/entry/2016/09/26/080000)
 
+## Attempts by other groups
+
+- [reubeno/brush](https://github.com/reubeno/brush)
 
 ## Copyright
 
