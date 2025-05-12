@@ -98,27 +98,21 @@ fn main() {
         core.db.flags += "b";
     }
 
-    let c_parts = arg::consume_with_subsequents("-c", &mut args);
-    if c_parts.len() != 0 {
-        core.configure_c_mode();
-        for opt in &options {
-            if let Err(e) = core.options.set(&opt, true) {
-                e.print(&mut core);
-                process::exit(2);
-            }
-        }
-
-        run_and_exit_c_option(&args, &c_parts, &mut core);
-    }
-
-    configure(&args, &mut core);
-
     for opt in options {
         if let Err(e) = core.options.set(&opt, true) {
             e.print(&mut core);
             process::exit(2);
         }
     }
+
+    let c_parts = arg::consume_with_subsequents("-c", &mut args);
+    if c_parts.len() != 0 {
+        core.configure_c_mode();
+
+        run_and_exit_c_option(&args, &c_parts, &mut core);
+    }
+
+    configure(&args, &mut core);
 
     signal::run_signal_check(&mut core);
 
