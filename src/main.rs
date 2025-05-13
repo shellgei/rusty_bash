@@ -50,7 +50,6 @@ fn read_rc_file(core: &mut ShellCore) {
 }
 
 fn configure(args: &Vec<String>, core: &mut ShellCore) {
-    core.configure();
     let mut parameters = vec![args[0].clone()];
     let mut options = vec![];
 
@@ -74,6 +73,7 @@ fn configure(args: &Vec<String>, core: &mut ShellCore) {
         core.db.exit_status = 2;
         exit::normal(core);
     }
+    core.configure();
 }
 
 fn main() {
@@ -113,7 +113,6 @@ fn main() {
     }
 
     configure(&args, &mut core);
-
     signal::run_signal_check(&mut core);
 
     if core.script_name == "-" {

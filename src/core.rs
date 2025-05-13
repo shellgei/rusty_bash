@@ -85,13 +85,15 @@ impl ShellCore {
 
         let _ = self.db.set_param("PS4", "+ ", None);
 
-        if unistd::isatty(0) == Ok(true) {
-            self.db.flags += "imH";
+        if unistd::isatty(0) == Ok(true) && self.script_name == "-" {
+            self.db.flags += "himH";
             let _ = self.db.set_param("PS1", "🍣 ", None);
             let _ = self.db.set_param("PS2", "> ", None);
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             self.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+        }else{
+            self.db.flags += "h";
         }
 
         let home = self.db.get_param("HOME").unwrap_or(String::new()).to_string();
