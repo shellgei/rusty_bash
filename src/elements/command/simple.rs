@@ -104,7 +104,6 @@ impl SimpleCommand {
         }
 
         if self.force_fork
-        //|| pipe.is_connected()
         || ( ! pipe.lastpipe && pipe.is_connected() ) 
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.db.functions.contains_key(&self.args[0]) ) {
@@ -116,6 +115,7 @@ impl SimpleCommand {
             }
             Ok(None)
         }else{
+            pipe.connect_lastpipe();
             self.nofork_exec(core)
         }
     }

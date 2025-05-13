@@ -35,16 +35,17 @@ impl Pipe {
 
     pub fn end(prev: RawFd, pgid: Pid, lastpipe: bool) -> Pipe {
         let mut p = Pipe::new(String::new());
-
-        if lastpipe {
-            p.lastpipe_backup = io::backup(0);
-            io::replace(prev, 0);
-        }
-
         p.lastpipe = lastpipe;
         p.prev = prev;
         p.pgid = pgid;
         p
+    }
+
+    pub fn connect_lastpipe(&mut self) {
+        if self.lastpipe {
+            self.lastpipe_backup = io::backup(0);
+            io::replace(self.prev, 0);
+        }
     }
 
     pub fn restore_lastpipe(&mut self) {
@@ -83,8 +84,8 @@ impl Pipe {
     }
 
     pub fn parent_close(&mut self) {
-        io::close(self.send, "Cannot close parent pipe out");
-        io::close(self.prev,"Cannot close parent prev pipe out");
+            io::close(self.send, "Cannot close parent pipe out");
+            io::close(self.prev,"Cannot close parent prev pipe out");
     }
 
     pub fn is_connected(&self) -> bool {

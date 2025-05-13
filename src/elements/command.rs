@@ -53,6 +53,7 @@ pub trait Command {
         if self.force_fork() || ( ! pipe.lastpipe && pipe.is_connected() ) {
             self.fork_exec(core, pipe)
         }else{
+            pipe.connect_lastpipe();
             self.nofork_exec(core)
         }
     }
