@@ -28,14 +28,18 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         return vec![];
     }
 
+    let last_exit_status = core.db.exit_status;
     let mut pipestatus = vec![];
     let mut ans = vec![];
     for pid in &pids {
         if pid.is_some() { //None: lastpipe
             let ws = wait_process(core, pid.unwrap());
             ans.push(ws);
+            pipestatus.push(core.db.exit_status);
+        }else{
+            pipestatus.push(last_exit_status);
+            core.db.exit_status = last_exit_status;
         }
-        pipestatus.push(core.db.exit_status);
     }
 
     if time {
