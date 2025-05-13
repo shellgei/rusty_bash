@@ -236,7 +236,7 @@ impl DataBase {
         }
     }
 
-    fn has_flag(&mut self, name: &str, flag: char) -> bool {
+    pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
         let layer = self.param_options.len() - 1;
         match self.param_options[layer].get(name) {
             None => false,
@@ -276,6 +276,10 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
+        match self.param_options[layer].get_mut(name) {
+            Some(e) => *e += "i",
+            None => {self.param_options[layer].insert(name.to_string(), "i".to_string());},
+        }
         SingleData::init_as_num(&mut self.params[layer], name, value)
     }
 

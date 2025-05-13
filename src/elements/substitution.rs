@@ -179,13 +179,31 @@ impl Substitution {
     }
 
     fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore) -> Result<(), ExecError> {
+
         let prev = match self.append {
             true  => core.db.get_param(&self.name).unwrap_or(String::new()),
             false => "".to_string(),
         };
 
         let s = w.eval_as_value(core)?;
-        self.evaluated_string = Some(prev + &s);
+
+        if core.db.has_flag(&self.name, 'i') {
+            let prev_num = match prev.as_str() {
+                "" => 0,
+                n => n.parse::<i64>()?,
+            };
+
+            let append_num = match s.as_str() {
+                "" => 0,
+                n => n.parse::<i64>()?,
+            };
+
+            self.evaluated_string = Some((prev_num + append_num).to_string());
+
+        }else{
+            self.evaluated_string = Some(prev + &s);
+        }
+
         Ok(())
     }
 
