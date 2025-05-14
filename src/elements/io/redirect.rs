@@ -62,6 +62,7 @@ impl Redirect {
             "<" => self.redirect_simple_input(restore), // < 
             ">" => self.redirect_simple_output(restore), // > 
             ">&" => self.redirect_output_fd(restore), // >&2
+            "<&" => self.redirect_input_fd(restore), // <&2
             ">>" => self.redirect_append(restore),
             "&>" => self.redirect_both_output(restore),
             _ => exit::internal(" (Unknown redirect symbol)"),
@@ -115,6 +116,20 @@ impl Redirect {
             _     => return Err(ExecError::AmbiguousRedirect(self.right.text.clone())),
         };
         self.set_left_fd(1);
+
+        if restore {
+            self.left_backup = io::backup(self.left_fd);
+        }
+
+        io::share(right_fd, self.left_fd)
+    }
+
+    fn redirect_input_fd(&mut self, restore: bool) -> Result<(), ExecError> {
+        let right_fd = match self.right.text.parse::<RawFd>() {
+            Ok(n) => n,
+            _     => return Err(ExecError::AmbiguousRedirect(self.right.text.clone())),
+        };
+        self.set_left_fd(0);
 
         if restore {
             self.left_backup = io::backup(self.left_fd);
