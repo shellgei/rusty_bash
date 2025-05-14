@@ -9,6 +9,7 @@ mod split;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
@@ -89,6 +90,17 @@ impl Word {
 
         let joint = core.db.get_ifs_head();
         Ok( Self::make_args(&mut ws).join(&joint) )
+    }
+
+    pub fn eval_as_integer(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let mut f = Feeder::new(&self.text);
+        if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
+            if f.is_empty() {
+                return a.eval(core);
+            }
+        }
+ 
+        Err(ExecError::SyntaxError(f.consume(f.len())))
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {

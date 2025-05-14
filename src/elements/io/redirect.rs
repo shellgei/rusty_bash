@@ -111,6 +111,12 @@ impl Redirect {
     }
 
     fn redirect_output_fd(&mut self, restore: bool) -> Result<(), ExecError> {
+        if self.right.text == "-" {
+            self.set_left_fd(1);
+            io::close(self.left_fd, "cannot close");
+            return Ok(());
+        }
+
         let right_fd = match self.right.text.parse::<RawFd>() {
             Ok(n) => n,
             _     => return Err(ExecError::AmbiguousRedirect(self.right.text.clone())),
@@ -125,6 +131,12 @@ impl Redirect {
     }
 
     fn redirect_input_fd(&mut self, restore: bool) -> Result<(), ExecError> {
+        if self.right.text == "-" {
+            self.set_left_fd(0);
+            io::close(self.left_fd, "cannot close");
+            return Ok(());
+        }
+
         let right_fd = match self.right.text.parse::<RawFd>() {
             Ok(n) => n,
             _     => return Err(ExecError::AmbiguousRedirect(self.right.text.clone())),
