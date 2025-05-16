@@ -17,7 +17,6 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_param("$", &process::id().to_string(), None)?;
     db.set_param("BASHPID", &process::id().to_string(), None)?;
     db.set_param("BASH_SUBSHELL", "0", None)?;
-    //db.set_param("COMP_WORDBREAKS", "\"'><=;|&(:", None)?;
     db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
     db.set_param("OPTIND", "1", None)?;
     db.set_param("IFS", " \t\n", None)?;
@@ -29,6 +28,11 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.params[0].insert( "EPOCHREALTIME".to_string(), Box::new(EpochRealTime{} ) );
 
     db.set_array("FUNCNAME", vec![], None)?;
+    db.set_array("BASH_SOURCE", vec![], None)?;
+    db.set_array("BASH_ARGC", vec![], None)?;
+    db.set_array("BASH_ARGV", vec![], None)?;
+    db.set_array("BASH_LINENO", vec![], None)?;
+    db.set_array("DIRSTACK", vec![], None)?;
     db.set_assoc("BASH_CMDS", None)?;
     Ok(())
 }
