@@ -92,4 +92,6 @@ pub trait Data {
     fn len(&mut self) -> usize;
 
     fn init_as_num(&mut self) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call init_as_num".to_string()))}
+
+    fn remove_elem(&mut self, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call remove_elem".to_string()))}
 }

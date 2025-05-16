@@ -431,6 +431,14 @@ impl DataBase {
         self.unset_function(name);
     }
 
+    pub fn unset_array_elem(&mut self, name: &str, key: &str) {
+        for layer in &mut self.params {
+            if let Some(d) = layer.get_mut(name) {
+                let _ = d.remove_elem(key);
+            }
+        }
+    }
+
     pub fn set_flag(&mut self, name: &str, flag: char) {
         setter::flag(self, name, flag)
     }

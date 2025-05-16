@@ -93,6 +93,11 @@ impl Data for AssocData {
         }
         Ok(ans)
     }
+
+    fn remove_elem(&mut self, key: &str) -> Result<(), ExecError> {
+        self.body.remove(key);
+        return Ok(());
+    }
 }
 
 impl AssocData {

@@ -93,6 +93,14 @@ impl Data for ArrayData {
 
     fn is_array(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
+
+    fn remove_elem(&mut self, key: &str) -> Result<(), ExecError> {
+        if let Ok(n) = key.parse::<usize>() {
+            self.body.remove(&n);
+            return Ok(());
+        }
+        Err(ExecError::Other("invalid index".to_string()))
+    }
 }
 
 impl ArrayData {

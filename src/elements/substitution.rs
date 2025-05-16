@@ -42,7 +42,7 @@ impl ParsedDataType {
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
-    name: String,
+    pub name: String,
     index: Option<Subscript>,
     value: ParsedDataType,
     evaluated_string: Option<String>,
