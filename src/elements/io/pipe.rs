@@ -42,7 +42,7 @@ impl Pipe {
     }
 
     pub fn connect_lastpipe(&mut self) {
-        if self.lastpipe {
+        if self.lastpipe && self.prev != 0 {
             self.lastpipe_backup = io::backup(0);
             io::replace(self.prev, 0);
         }
