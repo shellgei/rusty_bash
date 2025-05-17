@@ -34,8 +34,13 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
-    pub fn run_as_command(&mut self, _: &mut Vec<String>, _: &mut ShellCore) {
-        dbg!("CALLED");
+    pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+        let mut dummy = Pipe::new("|".to_string());
+
+        if let Err(e) = self.command.as_mut().unwrap()
+                        .exec(core, &mut dummy) {
+            e.print(core);
+        }
     }
 
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
