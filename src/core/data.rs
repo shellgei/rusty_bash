@@ -8,6 +8,7 @@ use std::env;
 
 #[derive(Debug, Default)]
 pub struct Data {
+    pub position_parameters: Vec<Vec<String>>,
     pub parameters: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
 }
