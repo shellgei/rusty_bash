@@ -17,13 +17,27 @@ pub struct ArithmeticCommand {
 
 impl Command for ArithmeticCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
-        let exit_status = match self.eval(core).as_deref() {
-            Ok("0") => 1,
-            Ok(_) => 0,
-            Err(e) => { e.print(core); 1 },
+        let mut err = None;
+
+        let exit_status = match self.eval(core) {
+            Ok(n) => if n == "0" { 1 } else {0},
+            Err(e) => {err = Some(e); 1},
         };
+
         core.db.exit_status = exit_status;
-        Ok(())
+
+        match err {
+            Some(ExecError::ArithError(s, e)) => {
+                let err_with_com = ExecError::ArithError("((:".to_owned() + &s, e);
+                err_with_com.print(core);
+                Err(err_with_com)
+            }
+            Some(e) => {
+                e.print(core);
+                Err(e.clone())
+            },
+            _ => Ok(()),
+        }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
