@@ -74,7 +74,7 @@ impl ArithmeticExpr {
             Err(ExecError::InvalidBase(_)) => {
                 return Err(ExecError::InvalidBase(w));
             },
-            Err(_) => {},
+            Err(e) => {dbg!("{:?}", &e);},
         }
 
         if let Ok(f) = float::parse(&w) {

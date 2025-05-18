@@ -132,7 +132,7 @@ fn get_base(s: &mut String) -> Result<i128, ExecError> {
         return Ok(16);
     }
 
-    if s.starts_with("0") && s.len() > 1 {
+    if s.starts_with("0") && s.len() > 1 && ! s.contains('#') {
         s.remove(0);
         return Ok(8);
     }
@@ -166,11 +166,11 @@ pub fn parse(s: &str) -> Result<i128, ExecError> {
     let mut sw = s.to_string();
     let sign = variable::get_sign(&mut sw);
     let base = get_base(&mut sw)?;
+    let n = parse_with_base(base, &mut sw)?;
 
-    match ( parse_with_base(base, &mut sw), sign.as_str() ) {
-        (Ok(n), "-") => Ok(-n), 
-        (Ok(n), _)   => Ok(n), 
-        (Err(e), _)  => Err(ExecError::Other(format!("{:?}", e))),
+    match sign.as_str() {
+        "-" => Ok(-n), 
+        _   => Ok(n), 
     }
 }
 
