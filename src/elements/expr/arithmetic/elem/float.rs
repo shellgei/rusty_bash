@@ -58,10 +58,7 @@ pub fn substitute(op: &str, name: &String, index: &String,
         "*=" => cur * right,
         "/=" => {
             match right == 0.0 {
-                true  => {
-                    let expr = format!("{} /= {}", &cur, &right);
-                    return Err(ArithError::DivZero(expr, right.to_string()).into());
-                },
+                true  => return Err(ArithError::DivZero(right.to_string()).into()),
                 false => cur / right,
             }
         },

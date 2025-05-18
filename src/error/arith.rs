@@ -3,7 +3,7 @@
 
 #[derive(Debug, Clone)]
 pub enum ArithError {
-    DivZero(String, String),
+    DivZero(String),
     Exponent(i128),
     InvalidBase(String),
     InvalidNumber(String),
@@ -20,12 +20,12 @@ impl From<ArithError> for String {
 impl From<&ArithError> for String {
     fn from(e: &ArithError) -> String {
         match e {
-            ArithError::DivZero(expr, token) => format!("{}: division by 0 (error token is \"{}\")", expr, token),
+            ArithError::DivZero(token) => format!("division by 0 (error token is \"{}\")", token),
             ArithError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
-            ArithError::InvalidBase(b) => format!("{0}: invalid arithmetic base (error token is \"{0}\")", b),
-            ArithError::InvalidNumber(name) => format!("{0}: invalid number (error token is \"{0}\")", name),
+            ArithError::InvalidBase(b) => format!("invalid arithmetic base (error token is \"{}\")", b),
+            ArithError::InvalidNumber(name) => format!("invalid number (error token is \"{}\")", name),
             ArithError::InvalidOperator(s, tok) => format!("{}: syntax error: invalid arithmetic operator (error token is \"{}\")", s, tok),
-            ArithError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
+            ArithError::OperandExpected(token) => format!("syntax error: operand expected (error token is \"{}\")", token),
         }
     }
 }

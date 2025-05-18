@@ -57,10 +57,22 @@ impl ArithmeticExpr {
         let mut cp = self.clone();
         cp.eval_doller(core)?;
 
-        match cp.eval_elems(core, true)? {
-            ArithElem::Integer(n) => self.ans_to_string(n),
+        let ans = match cp.eval_elems(core, true) {
+            Ok(a) => a, 
+            Err(ExecError::ArithError(_, a)) => return Err(ExecError::ArithError(self.text.clone(), a)),
+            Err(e) => return Err(e),
+        };
+
+        match ans {
+            ArithElem::Integer(n) => {
+                match self.ans_to_string(n) {
+                    Ok(ans) => Ok(ans),
+                    Err(a) => return Err(ExecError::ArithError(self.text.clone(), a)),
+                }
+            },
             ArithElem::Float(f)   => Ok(f.to_string()),
-            e => return Err(ArithError::OperandExpected(e.to_string()).into()),
+            e => return Err(ExecError::ArithError(self.text.clone(),
+                            ArithError::OperandExpected(e.to_string()).into())),
         }
     }
 
@@ -115,7 +127,7 @@ impl ArithmeticExpr {
         calculate(&es, core)
     }
 
-    fn ans_to_string(&self, n: i128) -> Result<String, ExecError> {
+    fn ans_to_string(&self, n: i128) -> Result<String, ArithError> {
         let base_str = self.output_base.clone();
 
         if base_str == "10" {
@@ -125,12 +137,12 @@ impl ArithmeticExpr {
         let base = match base_str.parse::<i128>() {
             Ok(b) => b,
             _     => {
-                return Err(ExecError::InvalidBase(base_str));
+                return Err(ArithError::InvalidBase(base_str));
             },
         };
 
         if base <= 1 || base > 64 {
-            return Err(ExecError::InvalidBase(base_str));
+            return Err(ArithError::InvalidBase(base_str));
         }
 
         let mut tmp = n.abs();
