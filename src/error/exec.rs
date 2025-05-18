@@ -75,7 +75,7 @@ impl From<&ExecError> for String {
             ExecError::DivZero(expr, token) => format!("{}: division by 0 (error token is \"{}\")", expr, token),
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
-            ExecError::InvalidNumber(name) => format!("`{}': invalid number", name),
+            ExecError::InvalidNumber(name) => format!("{0}: invalid number (error token is \"{0}\")", name),
             ExecError::InvalidBase(b) => format!("{0}: invalid arithmetic base (error token is \"{0}\")", b),
             ExecError::InvalidArithmeticOperator(s, tok) => format!("{}: syntax error: invalid arithmetic operator (error token is \"{}\")", s, tok),
             ExecError::InvalidOption(opt) => format!("{}: invalid option", opt),

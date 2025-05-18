@@ -132,7 +132,10 @@ fn get_base(s: &mut String) -> Result<i128, ExecError> {
         return Ok(16);
     }
 
-    if s.starts_with("0") && s.len() > 1 && ! s.contains('#') {
+    if s.starts_with("0") && s.len() > 1 {
+        if s.contains('#') {
+            return Err(ExecError::InvalidNumber(s.clone()));
+        }
         s.remove(0);
         return Ok(8);
     }
