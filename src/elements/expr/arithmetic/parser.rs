@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::elements::subscript::Subscript;
 use crate::elements::word::{Word, WordMode};
@@ -56,29 +57,37 @@ impl ArithmeticExpr {
         false
     }
 
-    fn eat_num(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_num(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    -> Result<bool, ExecError> {
         let len = feeder.scanner_arith_number(core);
         if len == 0 {
-            return false;
+            return Ok(false);
         }
 
         let w = feeder.consume(len);
         ans.text += &w.clone();
-        if let Ok(n) = int::parse(&w) {
-            ans.elements.push( ArithElem::Integer(n) );
-            return true;
-        }else if let Ok(f) = float::parse(&w) {
-            ans.elements.push( ArithElem::Float(f) );
-            return true;
+        match int::parse(&w) {
+            Ok(n) => {
+                ans.elements.push( ArithElem::Integer(n) );
+                return Ok(true);
+            },
+            Err(ExecError::InvalidBase(_)) => {
+                return Err(ExecError::InvalidBase(w));
+            },
+            Err(_) => {},
         }
 
-        //ans.elements.push( ArithElem::Word(Word::from(&w), 0) );
+        if let Ok(f) = float::parse(&w) {
+            ans.elements.push( ArithElem::Float(f) );
+            return Ok(true);
+        }
+
         ans.elements.push( ArithElem::Variable(w.clone(), None, 0) );
-        true
+        Ok(true)
     }
 
-    fn eat_conditional_op(feeder: &mut Feeder,
-        ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+    fn eat_conditional_op(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    -> Result<bool, ExecError> {
         if ! feeder.starts_with("?") {
             return Ok(false);
         }
@@ -196,7 +205,8 @@ impl ArithmeticExpr {
         true
     }
 
-    fn eat_paren_internal(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self) -> Result<bool, ParseError> {
+    fn eat_paren_internal(feeder: &mut Feeder, core: &mut ShellCore, ans: &mut Self)
+    -> Result<bool, ExecError> {
         if ! feeder.starts_with("(") {
             return Ok(false);
         }
@@ -257,7 +267,7 @@ impl ArithmeticExpr {
     }
 
     pub fn parse_after_eval(feeder: &mut Feeder, core: &mut ShellCore, left: &str)
-        -> Result<Option<Self>, ParseError> {
+        -> Result<Option<Self>, ExecError> {
         let mut ans = ArithmeticExpr::new();
 
         loop {
@@ -276,7 +286,7 @@ impl ArithmeticExpr {
             || Self::eat_paren_internal(feeder, core, &mut ans)?
             || Self::eat_binary_operator(feeder, &mut ans, core, left)
             || Self::eat_array_elem(feeder, &mut ans, core, true)?
-            || Self::eat_num(feeder, &mut ans, core)
+            || Self::eat_num(feeder, &mut ans, core)?
             || Self::eat_word(feeder, &mut ans, core, true) { 
                 continue;
             }

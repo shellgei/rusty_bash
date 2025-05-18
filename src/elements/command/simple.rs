@@ -167,7 +167,7 @@ impl SimpleCommand {
                 Ok(())
             },
             Err(e) => {
-                e.print(core);
+             //   e.print(core);
                 if ! core.sigint.load(Relaxed) {
                     core.db.exit_status = 1;
                 }
