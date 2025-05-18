@@ -20,7 +20,7 @@ impl Command for ArithmeticCommand {
         let exit_status = match self.eval(core).as_deref() {
             Ok("0") => 1,
             Ok(_) => 0,
-            Err(e) => {e.print(core); 1 },
+            Err(e) => { e.print(core); 1 },
         };
         core.db.exit_status = exit_status;
         Ok(())

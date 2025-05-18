@@ -72,7 +72,7 @@ impl From<&ExecError> for String {
             ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
             ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
             ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
-            ExecError::DivZero(expr, token) => format!("{}: division by 0 (error token is \"{}\"", expr, token),
+            ExecError::DivZero(expr, token) => format!("{}: division by 0 (error token is \"{}\")", expr, token),
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
             ExecError::InvalidNumber(name) => format!("`{}': invalid number", name),
