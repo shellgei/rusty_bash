@@ -153,15 +153,13 @@ impl ArithmeticExpr {
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore, internal: bool) -> bool {
         if let Ok(Some(mut w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
-            //if internal { // add blank for error message
-                let len = feeder.scanner_blank(core);
-                if len > 0 {
-                    let blank = feeder.consume(len);
-                    let sw = From::from(&blank);
-                    w.text += &blank.clone();
-                    w.subwords.push(sw);
-                }
-            //}
+            let len = feeder.scanner_blank(core); // add blank for error message
+            if len > 0 {
+                let blank = feeder.consume(len);
+                let sw = From::from(&blank);
+                w.text += &blank.clone();
+                w.subwords.push(sw);
+            }
 
             ans.text += &w.text.clone();
             let sp = Self::eat_space(feeder, ans, core);
@@ -249,8 +247,6 @@ impl ArithmeticExpr {
         ans.text += &arith.as_ref().unwrap().text;
         ans.elements.append(&mut arith.unwrap().elements);
 
-        //ans.elements.push( ArithElem::InParen(arith.unwrap()) );
-
         let paren = feeder.consume(1);
         ans.text += &paren.clone();
         ans.elements.push(ArithElem::Symbol(paren));
@@ -258,16 +254,10 @@ impl ArithmeticExpr {
     }
 
     fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self,
-                           core: &mut ShellCore, left: &str) -> bool {
+                           core: &mut ShellCore) -> bool {
         let len = feeder.scanner_binary_operator(core);
         if len == 0 {
             return false;
-        }
-
-        if left == ":" 
-        && ! feeder.starts_with("==")
-        && feeder.scanner_substitution(core) > 0 {
-                return false;
         }
 
         let s = feeder.consume(len);
@@ -289,12 +279,19 @@ impl ArithmeticExpr {
                 break;
             }
 
+            if left == ":" { //substitution cannot exist after ":" of a ternary
+                if ! feeder.starts_with("==")
+                && feeder.scanner_substitution(core) > 0 {
+                    break;
+                }
+            }
+
             if Self::eat_output_format(feeder, &mut ans, core) 
             || Self::eat_conditional_op(feeder, &mut ans, core)?
             || Self::eat_incdec(feeder, &mut ans) 
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren_internal(feeder, core, &mut ans)?
-            || Self::eat_binary_operator(feeder, &mut ans, core, left)
+            || Self::eat_binary_operator(feeder, &mut ans, core)
             || Self::eat_array_elem(feeder, &mut ans, core, true)?
             || Self::eat_num(feeder, &mut ans, core)?
             || Self::eat_word(feeder, &mut ans, core, true) { 
@@ -327,7 +324,7 @@ impl ArithmeticExpr {
             || Self::eat_ternary_symbol(feeder, &mut ans)
             || Self::eat_unary_operator(feeder, &mut ans, core)
             || Self::eat_paren(feeder, core, &mut ans)?
-            || Self::eat_binary_operator(feeder, &mut ans, core, left)
+            || Self::eat_binary_operator(feeder, &mut ans, core)
             || Self::eat_array_elem(feeder, &mut ans, core, false)?
             || Self::eat_word(feeder, &mut ans, core, false) { 
                 continue;
