@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::ArithElem;
@@ -18,7 +19,7 @@ pub fn unary_calc(op: &str, num: i128, stack: &mut Vec<ArithElem>) -> Result<(),
     Ok(())
 }
 
-pub fn bin_calc(op: &str, left: i128, right: i128, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
+pub fn bin_calc(op: &str, left: i128, right: i128, stack: &mut Vec<ArithElem>) -> Result<(), ArithError> {
     let bool_to_01 = |b| { if b { 1 } else { 0 } };
 
     let ans = match op {
@@ -41,7 +42,7 @@ pub fn bin_calc(op: &str, left: i128, right: i128, stack: &mut Vec<ArithElem>) -
         "%" | "/" => {
             if right == 0 {
                 let expr = format!("{} / {}", &left, &right);
-                return Err(ExecError::DivZero(expr, right.to_string()));
+                return Err(ArithError::DivZero(expr, right.to_string()));
             }
             match op {
                 "%" => left % right,
@@ -53,7 +54,7 @@ pub fn bin_calc(op: &str, left: i128, right: i128, stack: &mut Vec<ArithElem>) -
                 let r = right.try_into().unwrap();
                 left.pow(r)
             }else{
-                return Err(ExecError::Exponent(right));
+                return Err(ArithError::Exponent(right));
             }
         },
         _    => exit::internal("unknown binary operator"),
@@ -77,23 +78,23 @@ pub fn substitute(op: &str, name: &String, index: &String,
         "/=" | "%=" => {
             if right == 0 {
                 let expr = format!("{} {} {}", &cur, &op, &right);
-                return Err(ExecError::DivZero(expr, right.to_string()));
+                return Err(ArithError::DivZero(expr, right.to_string()).into());
             }
             match op == "%=" {
                 true  => cur % right,
                 false => cur / right,
             }
         },
-        _   => return Err(ExecError::OperandExpected(op.to_string())),
+        _   => return Err(ArithError::OperandExpected(op.to_string()).into()),
     };
 
     core.db.set_param2(&name, index, &new_value.to_string(), None)?;
     Ok(ArithElem::Integer(new_value))
 }
 
-fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ExecError> {
+fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ArithError> {
     if s.is_empty() {
-        return Err(ExecError::InvalidArithmeticOperator(s.clone(), s.clone()));
+        return Err(ArithError::InvalidOperator(s.clone(), s.clone()));
     }
 
     let mut ans = 0;
@@ -113,19 +114,19 @@ fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ExecError> {
         }else if ch == '_' {
             63
         }else{
-            return Err(ExecError::InvalidArithmeticOperator(s.clone(), ch.to_string()));
+            return Err(ArithError::InvalidOperator(s.clone(), ch.to_string()));
         };
 
         match num < base {
             true  => ans += num,
-            false => return Err(ExecError::InvalidBase(base.to_string())),
+            false => return Err(ArithError::InvalidBase(base.to_string())),
         }
     }
 
     Ok(ans)
 }
 
-fn get_base(s: &mut String) -> Result<i128, ExecError> {
+fn get_base(s: &mut String) -> Result<i128, ArithError> {
     if s.starts_with("0x") || s.starts_with("0X") {
         s.remove(0);
         s.remove(0);
@@ -134,7 +135,7 @@ fn get_base(s: &mut String) -> Result<i128, ExecError> {
 
     if s.starts_with("0") && s.len() > 1 {
         if s.contains('#') {
-            return Err(ExecError::InvalidNumber(s.clone()));
+            return Err(ArithError::InvalidNumber(s.clone()));
         }
         s.remove(0);
         return Ok(8);
@@ -147,20 +148,20 @@ fn get_base(s: &mut String) -> Result<i128, ExecError> {
             Ok(n) => {
                 match n <= 64 {
                     true  => Ok(n),
-                    false => Err(ExecError::InvalidBase(base_str)),
+                    false => Err(ArithError::InvalidBase(base_str)),
                 }
             },
-            _     => Err(ExecError::InvalidBase(base_str)),
+            _     => Err(ArithError::InvalidBase(base_str)),
         };
     }
 
     Ok(10)
 }
 
-pub fn parse(s: &str) -> Result<i128, ExecError> {
+pub fn parse(s: &str) -> Result<i128, ArithError> {
     if s.find('\'').is_some() 
     || s.find('.').is_some() {
-        return Err(ExecError::Other("invalid number".to_string()));
+        return Err(ArithError::InvalidNumber(s.to_string()));
     }
     if s.is_empty() {
         return Ok(0);

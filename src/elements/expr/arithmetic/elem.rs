@@ -9,6 +9,7 @@ pub mod variable;
 use super::ArithmeticExpr;
 use super::Word;
 use crate::{ShellCore, utils};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::elements::subscript::Subscript;
 
@@ -128,7 +129,7 @@ impl ArithElem {
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
             ArithElem::Variable(name, s, inc) => {
                 if add != 0 && *inc != 0 || ! utils::is_name(&name, core) {
-                    return Err(ExecError::OperandExpected(name.to_string()));
+                    return Err(ArithError::OperandExpected(name.to_string()).into());
                 }
 
                 let index = match s {

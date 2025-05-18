@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::elem::ArithElem;
@@ -46,11 +47,11 @@ fn bin_calc_and_or(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
     -> Result<(), ExecError> {
     let mut right = match stack.pop() {
         Some(e) => e,
-        None => return Err(ExecError::OperandExpected(op.to_string())),
+        None => return Err(ArithError::OperandExpected(op.to_string()).into()),
     };
     let mut left = match stack.pop() {
         Some(e) => e,
-        None => return Err(ExecError::OperandExpected(op.to_string())),
+        None => return Err(ArithError::OperandExpected(op.to_string()).into()),
     };
 
     left.change_to_value(0, core)?;
@@ -88,13 +89,15 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
         return Ok(());
     }
 
-    return match (left, right) {
-        (ArithElem::Float(fl), ArithElem::Float(fr)) => float::bin_calc(op, fl, fr, stack),
-        (ArithElem::Float(fl), ArithElem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack),
-        (ArithElem::Integer(nl), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack),
-        (ArithElem::Integer(nl), ArithElem::Integer(nr)) => int::bin_calc(op, nl, nr, stack),
+    let ans = match (left, right) {
+        (ArithElem::Float(fl), ArithElem::Float(fr)) => float::bin_calc(op, fl, fr, stack)?,
+        (ArithElem::Float(fl), ArithElem::Integer(nr)) => float::bin_calc(op, fl, nr as f64, stack)?,
+        (ArithElem::Integer(nl), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack)?,
+        (ArithElem::Integer(nl), ArithElem::Integer(nr)) => int::bin_calc(op, nl, nr, stack)?,
         _ => exit::internal("invalid operand"),
     };
+
+    Ok(ans)
 }
 
 fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -148,15 +151,15 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
     }
 
     if stack.is_empty() {
-        return Err( ExecError::OperandExpected(String::new()));
+        return Err( ArithError::OperandExpected(String::new()).into());
     }
     if stack.len() != 1 {
-        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
+        return Err( ArithError::OperandExpected(stack.last().unwrap().to_string()).into());
     }
     pop_operand(&mut stack, core)
 }
 
-fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
+fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ArithError> {
     let mut stack = vec![];
 
     for e in rev_pol {
@@ -164,13 +167,13 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
             ArithElem::BinaryOp(_) => {
                 stack.pop();
                 if stack.is_empty() {
-                    return Err( ExecError::OperandExpected(e.to_string()));
+                    return Err( ArithError::OperandExpected(e.to_string()));
                 }
             },
             ArithElem::UnaryOp(_) | ArithElem::Increment(_) => { },
             ArithElem::Ternary(_, _) => {
                 if stack.is_empty() {
-                    return Err( ExecError::OperandExpected(e.to_string()));
+                    return Err( ArithError::OperandExpected(e.to_string()));
                 }
             },
             //ArithElem::Delimiter(_) => {},
@@ -179,10 +182,10 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ExecError> {
     }
 
     if stack.is_empty() {
-        return Err( ExecError::OperandExpected(String::new()));
+        return Err( ArithError::OperandExpected(String::new()));
     }
     if stack.len() != 1 {
-        return Err( ExecError::OperandExpected(stack.last().unwrap().to_string()));
+        return Err( ArithError::OperandExpected(stack.last().unwrap().to_string()));
     }
     Ok(())
 }
@@ -193,6 +196,6 @@ fn inc(inc: i128, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<()
         stack.push(op);
         Ok(())
     }else{
-        Err(ExecError::OperandExpected("".to_string()))
+        Err(ArithError::OperandExpected("".to_string()).into())
     }
 }

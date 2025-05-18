@@ -3,6 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
@@ -11,7 +12,7 @@ use super::{float, int};
 
 fn to_num(w: &str, sub: &String, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if w.find('\'').is_some() {
-        return Err(ExecError::OperandExpected(w.to_string()));
+        return Err(ArithError::OperandExpected(w.to_string()).into());
     }
 
     let name = w.to_string();//w.eval_as_value(core)?;
@@ -46,7 +47,7 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
         Ok(Some(p)) => p,
-        _    => return Err(ExecError::OperandExpected(name.to_string())),
+        _    => return Err(ArithError::OperandExpected(name.to_string()).into()),
     };
 
 
@@ -105,7 +106,7 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 -> Result<(), ExecError> {
     let mut right = match stack.pop() {
         Some(mut e) => { e.change_to_value(0, core)?; e },
-        _ => return Err(ExecError::OperandExpected(op.to_string())),
+        _ => return Err(ArithError::OperandExpected(op.to_string()).into()),
     };
 
     if let Some(ArithElem::Variable(w, s, 0)) = stack.pop() {
@@ -123,7 +124,7 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut ShellCore)
                                       -> Result<ArithElem, ExecError> {
     if w.find('\'').is_some() {
-        return Err(ExecError::OperandExpected(w.to_string()));
+        return Err(ArithError::OperandExpected(w.to_string()).into());
     }
 
     let name = w.to_string();//w.eval_as_value(core)?;

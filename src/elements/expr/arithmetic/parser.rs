@@ -66,18 +66,15 @@ impl ArithmeticExpr {
 
         let w = feeder.consume(len);
         ans.text += &w.clone();
-        match int::parse(&w) {
-            Ok(n) => {
-                ans.elements.push( ArithElem::Integer(n) );
-                return Ok(true);
-            },
-            Err(ExecError::InvalidBase(_)) => {
-                return Err(ExecError::InvalidBase(w));
-            },
-            Err(ExecError::InvalidNumber(_)) => {
-                return Err(ExecError::InvalidNumber(w));
-            },
-            Err(_) => {/*dbg!("{:?}", &e);*/},
+
+        if ! w.contains('.') {
+            match int::parse(&w) {
+                Ok(n) => {
+                    ans.elements.push( ArithElem::Integer(n) );
+                    return Ok(true);
+                },
+                Err(e) => return Err(e.into()),
+            }
         }
 
         if let Ok(f) = float::parse(&w) {

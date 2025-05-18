@@ -7,6 +7,7 @@ mod parser;
 mod rev_polish;
 
 use crate::{Feeder, ShellCore};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use self::calculator::calculate;
@@ -29,7 +30,7 @@ impl ArithmeticExpr {
             match e {
                 ArithElem::Word(w, inc) => {
                     if w.text.contains("'") {
-                        return Err(ExecError::OperandExpected(w.text.clone()));
+                        return Err(ArithError::OperandExpected(w.text.clone()).into());
                     }
                     let text = w.eval_as_value(core)?;
                     let word = ArithElem::Word( Word::from(&text), *inc);
@@ -59,7 +60,7 @@ impl ArithmeticExpr {
         match cp.eval_elems(core, true)? {
             ArithElem::Integer(n) => self.ans_to_string(n),
             ArithElem::Float(f)   => Ok(f.to_string()),
-            e => return Err(ExecError::OperandExpected(e.to_string())),
+            e => return Err(ArithError::OperandExpected(e.to_string()).into()),
         }
     }
 
@@ -104,7 +105,7 @@ impl ArithmeticExpr {
 
     pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<ArithElem, ExecError> {
         if self.elements.is_empty() && ! permit_empty {
-            return Err(ExecError::OperandExpected("\")\"".to_string()));
+            return Err(ArithError::OperandExpected("\")\"".to_string()).into());
         }
         let es = match self.decompose_increments() {
             Ok(data)     => data, 
@@ -218,8 +219,8 @@ impl ArithmeticExpr {
         }
 
         match pre_increment {
-            1  => Err(ExecError::OperandExpected("++".to_string())),
-            -1 => Err(ExecError::OperandExpected("--".to_string())),
+            1  => Err(ArithError::OperandExpected("++".to_string()).into()),
+            -1 => Err(ArithError::OperandExpected("--".to_string()).into()),
             _  => Ok(ans),
         }
     }

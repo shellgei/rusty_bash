@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use super::super::{ArithmeticExpr, ArithElem};
 use super::super::calculator;
@@ -15,7 +16,7 @@ pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
 
     if left.elements.is_empty() || right.elements.is_empty() {
         let msg = format!(": {}", &right.text);
-        return Err(ExecError::OperandExpected(msg));
+        return Err(ArithError::OperandExpected(msg).into());
     }
 
     let ans = match calculator::pop_operand(stack, core)? {

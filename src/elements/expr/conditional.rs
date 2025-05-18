@@ -7,6 +7,7 @@ mod parser;
 use crate::{Feeder, ShellCore, utils};
 use crate::elements::expr::arithmetic::elem::{int, float};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
@@ -29,16 +30,11 @@ fn pop_operand(stack: &mut Vec<CondElem>, core: &mut ShellCore, glob: bool) -> R
             if glob {
                 let p = w.eval_for_case_pattern(core)?;
                 return Ok(CondElem::Operand(p));
-                /*
-                return match w.eval_for_case_pattern(core) {
-                    Some(v) => Ok(CondElem::Operand(v)),
-                    None => Ok(CondElem::Operand("".to_string())),
-                };*/
             }
             to_operand(&mut w)
         },
         Some(elem) => Ok(elem),
-        None => return Err(ExecError::OperandExpected("".to_string())),
+        None => return Err(ArithError::OperandExpected("".to_string()).into()),
     }
 }
 
@@ -155,7 +151,7 @@ impl ConditionalExpr {
                     _ => Err(ExecError::Other("no operand to negate".to_string())),
                 },
                // _ => Err(ExecError::Other( error::syntax("TODO"))),
-                _ => Err(ExecError::OperandExpected("TODO".to_string())),
+                _ => Err(ArithError::OperandExpected("TODO".to_string()).into()),
             };
     
             if let Err(err_msg) = result {
@@ -242,26 +238,21 @@ impl ConditionalExpr {
         return Ok(());
     }
 
-    fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+    fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ArithError> {
         let mut f = Feeder::new(&name);
         let mut parsed = match ArithmeticExpr::parse(&mut f, core, false, "") {
             Ok(Some(p)) => p,
-            _    => return Err(ExecError::OperandExpected(name.to_string())),
+            _    => return Err(ArithError::OperandExpected(name.to_string())),
         };
 
-        /*
-        if parsed.elements.len() == 1 { // In this case, the element is not changed by the evaluation.
-            return Err(ExecError::OperandExpected(name.to_string()));
-        }*/
-    
         if let Ok(eval) = parsed.eval(core) {
             return Self::single_str_to_num(&eval, core);
         }
     
-        Err(ExecError::OperandExpected(name.to_string()))
+        Err(ArithError::OperandExpected(name.to_string()))
     }
 
-    fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+    fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ArithError> {
         if name.contains('.') {
             let f = float::parse(&name)?;
             return Ok(ArithElem::Float(f));
@@ -304,15 +295,13 @@ impl ConditionalExpr {
         }
 
         if op == "-eq" || op == "-ne" || op == "-lt" || op == "-le" || op == "-gt" || op == "-ge" {
-            let lnum = match Self::resolve_arithmetic_op(&left, core) {
-                Ok(ArithElem::Integer(n)) => n,
-                Ok(_) => return Err(ExecError::Other("non integer number is not supported".to_string())),
-                Err(msg) => return Err(msg),
+            let lnum = match Self::resolve_arithmetic_op(&left, core)? {
+                ArithElem::Integer(n) => n,
+                _ => return Err(ExecError::Other("non integer number is not supported".to_string())),
             };
-            let rnum = match Self::resolve_arithmetic_op(&right, core) {
-                Ok(ArithElem::Integer(n)) => n,
-                Ok(_) => return Err(ExecError::Other("non integer number is not supported".to_string())),
-                Err(msg) => return Err(msg),
+            let rnum = match Self::resolve_arithmetic_op(&right, core)? {
+                ArithElem::Integer(n) => n,
+                _ => return Err(ExecError::Other("non integer number is not supported".to_string())),
             };
 
             let ans = match op {

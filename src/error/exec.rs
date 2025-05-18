@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use nix::errno::Errno;
 use nix::sys::wait::WaitStatus;
@@ -17,7 +18,6 @@ pub enum ExecError {
     BadSubstitution(String),
     BadFd(RawFd),
     Bug(String),
-    DivZero(String, String),
     Exponent(i128),
     InvalidBase(String),
     InvalidArithmeticOperator(String, String),
@@ -28,8 +28,6 @@ pub enum ExecError {
     ValidOnlyInFunction(String),
     VariableReadOnly(String),
     VariableInvalid(String),
-    OperandExpected(String),
-    ParseError(ParseError),
     ParseIntError(String),
     SyntaxError(String),
     Restricted(String),
@@ -37,7 +35,11 @@ pub enum ExecError {
     SubstringMinus(i128),
     UnsupportedWaitStatus(WaitStatus),
     Errno(Errno),
+    OperandExpected(String),
     Other(String),
+
+    ParseError(ParseError),
+    ArithError(String, ArithError),
 }
 
 impl From<Errno> for ExecError {
@@ -58,6 +60,12 @@ impl From<ParseError> for ExecError {
     }
 }
 
+impl From<ArithError> for ExecError {
+    fn from(e: ArithError) -> ExecError {
+        ExecError::ArithError(String::new(), e)
+    }
+}
+
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         Self::from(&e)
@@ -72,7 +80,6 @@ impl From<&ExecError> for String {
             ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
             ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
             ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
-            ExecError::DivZero(expr, token) => format!("{}: division by 0 (error token is \"{}\")", expr, token),
             ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
             ExecError::InvalidNumber(name) => format!("{0}: invalid number (error token is \"{0}\")", name),
@@ -84,8 +91,6 @@ impl From<&ExecError> for String {
             ExecError::ValidOnlyInFunction(com) => format!("{}: can only be used in a function", &com),
             ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
-            ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
-            ExecError::ParseError(p) => From::from(p),
             ExecError::ParseIntError(e) => e.to_string(),
             ExecError::SyntaxError(near) => format!("syntax error near {}", &near),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
@@ -95,6 +100,10 @@ impl From<&ExecError> for String {
             ExecError::Errno(e) => format!("system error {:?}", e),
             ExecError::Bug(msg) => format!("INTERNAL BUG: {}", msg),
             ExecError::Other(name) => name.to_string(),
+
+            ExecError::ArithError(s, a) =>  format!("{}: {}", s, String::from(a)),
+            ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
+            ExecError::ParseError(p) => From::from(p),
         }
     }
 }

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, ShellCore};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use super::ArithElem;
 use super::variable;
@@ -59,25 +60,25 @@ pub fn substitute(op: &str, name: &String, index: &String,
             match right == 0.0 {
                 true  => {
                     let expr = format!("{} /= {}", &cur, &right);
-                    return Err(ExecError::DivZero(expr, right.to_string()));
+                    return Err(ArithError::DivZero(expr, right.to_string()).into());
                 },
                 false => cur / right,
             }
         },
-        _   => return Err(ExecError::OperandExpected(op.to_string())),
+        _   => return Err(ArithError::OperandExpected(op.to_string()).into()),
     };
 
     core.db.set_param2(&name, index, &new_value.to_string(), None)?;
     Ok(ArithElem::Float(new_value))
 }
 
-pub fn parse(s: &str) -> Result<f64, ExecError> {
+pub fn parse(s: &str) -> Result<f64, ArithError> {
     let mut sw = s.to_string();
     let sign = variable::get_sign(&mut sw);
 
     match (sw.parse::<f64>(), sign.as_str()) {
         (Ok(f), "-") => Ok(-f),
         (Ok(f), _)   => Ok(f),
-        (Err(e), _)  => Err(ExecError::Other(e.to_string())),
+        (Err(_), _)  => Err(ArithError::InvalidNumber(s.to_string())),
     }
 }
