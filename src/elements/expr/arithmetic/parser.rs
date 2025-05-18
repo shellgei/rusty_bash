@@ -152,7 +152,17 @@ impl ArithmeticExpr {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore, internal: bool) -> bool {
-        if let Ok(Some(w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
+        if let Ok(Some(mut w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
+            //if internal { // add blank for error message
+                let len = feeder.scanner_blank(core);
+                if len > 0 {
+                    let blank = feeder.consume(len);
+                    let sw = From::from(&blank);
+                    w.text += &blank.clone();
+                    w.subwords.push(sw);
+                }
+            //}
+
             ans.text += &w.text.clone();
             let sp = Self::eat_space(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
