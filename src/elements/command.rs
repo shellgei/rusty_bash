@@ -49,7 +49,7 @@ impl Clone for Box::<dyn Command> {
 
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        // TODO: set LINENO here (maybe each command must have the lineno field and get_lineno)
+        core.db.set_param("LINENO", &self.get_lineno().to_string(), None)?;
         if self.force_fork() || ( ! pipe.lastpipe && pipe.is_connected() ) {
             self.fork_exec(core, pipe)
         }else{
@@ -102,6 +102,7 @@ pub trait Command {
     fn get_text(&self) -> String;
     fn get_one_line_text(&self) -> String {self.get_text().replace("\n", " ")}
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
+    fn get_lineno(&mut self) -> usize {panic!("IMPLEMENT!!")}
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
     fn force_fork(&self) -> bool;

@@ -18,6 +18,7 @@ pub struct FunctionDefinition {
     command: Option<Box<dyn Command>>,
     force_fork: bool,
     _dummy: Vec<Redirect>,
+    lineno: usize,
 }
 
 impl Command for FunctionDefinition {
@@ -29,6 +30,7 @@ impl Command for FunctionDefinition {
     fn run(&mut self, _: &mut ShellCore, _: bool) -> Result<(), ExecError> {Ok(())}
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self._dummy }
+    fn get_lineno(&mut self) -> usize { self.lineno }
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
@@ -118,6 +120,7 @@ impl FunctionDefinition {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         feeder.set_backup();
+        ans.lineno = feeder.lineno;
 
         if ! ans.eat_header(feeder, core) {
             feeder.rewind();

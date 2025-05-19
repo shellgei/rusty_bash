@@ -66,6 +66,7 @@ impl Command for CaseCommand {
 
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn get_lineno(&mut self) -> usize { self.lineno }
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
@@ -133,9 +134,8 @@ impl CaseCommand {
             return Ok(None);
         }
 
-        //dbg!("{:?}", &core.db.get_param("LINENO"));
-
         let mut ans = Self::default();
+        ans.lineno = feeder.lineno;
         ans.text = feeder.consume(4);
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;

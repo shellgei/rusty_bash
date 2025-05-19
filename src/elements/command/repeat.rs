@@ -16,6 +16,7 @@ pub struct RepeatCommand {
     times: Word,
     job: Job,
     force_fork: bool,
+    lineno: usize,
     _dummy: Vec<Redirect>,
 }
 
@@ -37,6 +38,7 @@ impl Command for RepeatCommand {
 
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self._dummy }
+    fn get_lineno(&mut self) -> usize { self.lineno }
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
@@ -49,6 +51,7 @@ impl RepeatCommand {
         }
 
         let mut ans = Self::default();
+        ans.lineno = feeder.lineno;
         ans.text = feeder.consume(6);
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
         
