@@ -28,7 +28,7 @@ impl Command for ArithmeticCommand {
 
         match err {
             Some(ExecError::ArithError(s, e)) => {
-                let err_with_com = ExecError::ArithError("((:".to_owned() + &s, e);
+                let err_with_com = ExecError::ArithError("((: ".to_owned() + &s.trim_start(), e);
                 err_with_com.print(core);
                 Err(err_with_com)
             }
