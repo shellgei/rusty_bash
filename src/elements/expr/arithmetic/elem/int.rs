@@ -125,6 +125,7 @@ fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ArithError> {
 }
 
 fn get_base(s: &mut String) -> Result<i128, ArithError> {
+    let s_org = s.to_string();
     if s.starts_with("0x") || s.starts_with("0X") {
         s.remove(0);
         s.remove(0);
@@ -146,10 +147,10 @@ fn get_base(s: &mut String) -> Result<i128, ArithError> {
             Ok(n) => {
                 match n <= 64 {
                     true  => Ok(n),
-                    false => Err(ArithError::InvalidBase(base_str)),
+                    false => Err(ArithError::InvalidBase(s_org.to_string())),
                 }
             },
-            _     => Err(ArithError::InvalidBase(base_str)),
+            _     => Err(ArithError::InvalidBase(s_org.to_string())),
         };
     }
 
