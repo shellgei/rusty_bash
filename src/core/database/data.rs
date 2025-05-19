@@ -11,6 +11,7 @@ pub mod single;
 //pub mod special;
 pub mod srandom;
 
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use std::fmt;
 use std::fmt::Debug;
@@ -47,11 +48,13 @@ pub trait Data {
     fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("not an associative table".to_string()))}
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {Err(ExecError::Other("not a single variable".to_string()))}
-    fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> {
-        Err(ExecError::OperandExpected(key.to_string()))
+    fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> { //TODO: change to ArithError
+        let err = ArithError::OperandExpected(key.to_string());
+        Err(ExecError::ArithError(key.to_string(), err)) 
     }
     fn get_as_assoc(&mut self, key: &str) -> Result<String, ExecError> {
-        Err(ExecError::OperandExpected(key.to_string()))
+        let err = ArithError::OperandExpected(key.to_string());
+        Err(ExecError::ArithError(key.to_string(), err)) 
     }
 
     fn get_as_array_or_assoc(&mut self, pos: &str) -> Result<String, ExecError> {

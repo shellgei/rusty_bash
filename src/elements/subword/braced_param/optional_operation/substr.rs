@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use super::super::Param;
@@ -116,7 +117,8 @@ impl Substr {
         let offset = self.offset.as_mut().unwrap();
     
         if offset.text == "" {
-            return Err(ExecError::OperandExpected("".to_string()));
+            let err = ArithError::OperandExpected("".to_string());
+            return Err(ExecError::ArithError("".to_string(), err));
         }
     
         let mut ans;

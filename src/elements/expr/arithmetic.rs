@@ -59,7 +59,10 @@ impl ArithmeticExpr {
 
         let ans = match cp.eval_elems(core, true) {
             Ok(a) => a, 
-            Err(ExecError::ArithError(_, a)) => return Err(ExecError::ArithError(self.text.clone(), a)),
+            Err(ExecError::ArithError(_, a)) => {
+                let text = self.text.trim_start().to_string();
+                return Err(ExecError::ArithError(text, a))
+            },
             Err(e) => return Err(e),
         };
 

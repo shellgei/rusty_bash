@@ -34,7 +34,7 @@ pub enum ExecError {
     SubstringMinus(i128),
     UnsupportedWaitStatus(WaitStatus),
     Errno(Errno),
-    OperandExpected(String),
+    //OperandExpected(String),
     Other(String),
 
     ParseError(ParseError),
@@ -99,7 +99,7 @@ impl From<&ExecError> for String {
             ExecError::Other(name) => name.to_string(),
 
             ExecError::ArithError(s, a) =>  format!("{}: {}", s, String::from(a)),
-            ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
+            //ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
             ExecError::ParseError(p) => From::from(p),
         }
     }

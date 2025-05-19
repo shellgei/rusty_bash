@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::word::WordMode;
+use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use std::env;
@@ -121,7 +122,10 @@ impl Substitution {
     -> Result<(), ExecError> {
         let s = match &self.evaluated_string {
             Some(s) => s,
-            None => return Err(ExecError::OperandExpected("".to_string())),
+            None => {
+                let err = ArithError::OperandExpected("".to_string());
+                return Err(ExecError::ArithError("".to_string(), err));
+            },
         };
 
         let mut feeder = Feeder::new(&s);
@@ -133,7 +137,8 @@ impl Substitution {
             return core.db.set_param(&self.name, &ans, Some(layer));
         }
 
-        return Err(ExecError::OperandExpected("".to_string()));
+        let err = ArithError::OperandExpected("".to_string());
+        return Err(ExecError::ArithError("".to_string(), err));
     }
  
     fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>)
