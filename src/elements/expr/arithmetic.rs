@@ -30,7 +30,9 @@ impl ArithmeticExpr {
             match e {
                 ArithElem::Word(w, inc) => {
                     if w.text.contains("'") {
-                        return Err(ArithError::OperandExpected(w.text.clone()).into());
+                        let err = ArithError::OperandExpected(w.text.clone());
+                        let arith_txt = self.text.trim_start().to_string();
+                        return Err(ExecError::ArithError(arith_txt, err));
                     }
                     let text = w.eval_as_value(core)?;
                     let word = ArithElem::Word( Word::from(&text), *inc);
@@ -79,7 +81,8 @@ impl ArithmeticExpr {
         }
     }
 
-    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore)
+    -> Result<String, ExecError> {
         self.eval_doller(core)?;
         let mut ans = String::new();
 

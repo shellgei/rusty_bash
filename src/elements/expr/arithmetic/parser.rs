@@ -73,7 +73,9 @@ impl ArithmeticExpr {
                     ans.elements.push( ArithElem::Integer(n) );
                     return Ok(true);
                 },
-                Err(e) => return Err(e.into()),
+                Err(e) => {
+                    return Err(ExecError::ArithError(w.to_string(), e));
+                },
             }
         }
 
