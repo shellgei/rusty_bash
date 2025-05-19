@@ -3,6 +3,7 @@
 
 #[derive(Debug, Clone)]
 pub enum ArithError {
+    AssignmentToNonVariable(String),
     DivZero(String),
     Exponent(i128),
     InvalidBase(String),
@@ -21,6 +22,7 @@ impl From<ArithError> for String {
 impl From<&ArithError> for String {
     fn from(e: &ArithError) -> String {
         match e {
+            ArithError::AssignmentToNonVariable(right) => format!("attempted assignment to non-variable (error token is \"{}\")", right),
             ArithError::DivZero(token) => format!("division by 0 (error token is \"{}\")", token),
             ArithError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
             ArithError::InvalidBase(b) => format!("invalid arithmetic base (error token is \"{}\")", b),

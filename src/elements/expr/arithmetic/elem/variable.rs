@@ -118,7 +118,7 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
         return Ok(());
     }
 
-    Err(ExecError::AssignmentToNonVariable(op.to_string() + &right.to_string()) )
+    Err(ArithError::AssignmentToNonVariable(op.to_string() + &right.to_string()).into() )
 }
 
 fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut ShellCore)
