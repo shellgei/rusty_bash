@@ -3,6 +3,7 @@
 
 use crate::utils;
 use crate::core::HashMap;
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use std::env;
 use super::Data;
@@ -31,7 +32,7 @@ impl Body {
 
     fn get_as_num(&mut self) -> Result<isize, ExecError> {
         match self {
-            Self::Str(s) => Err(ExecError::InvalidNumber(s.to_string())),
+            Self::Str(s) => Err(ArithError::InvalidNumber(s.to_string()).into()),
             Self::Num(None) => Ok(0),
             Self::Num(Some(n)) => Ok(*n),
         }
@@ -51,7 +52,7 @@ impl Body {
             Self::Num(_) => {
                 match value.parse::<isize>() {
                     Ok(n) => *self = Self::Num(Some(n)),
-                    _ => return Err(ExecError::InvalidNumber(value.to_string())),
+                    _ => return Err(ArithError::InvalidNumber(value.to_string()).into()),
                 }
             },
         }

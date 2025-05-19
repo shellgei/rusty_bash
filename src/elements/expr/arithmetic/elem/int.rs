@@ -92,7 +92,7 @@ pub fn substitute(op: &str, name: &String, index: &String,
 
 fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ArithError> {
     if s.is_empty() {
-        return Err(ArithError::InvalidOperator(s.clone(), s.clone()));
+        return Err(ArithError::InvalidOperator(s.clone()));
     }
 
     let mut ans = 0;
@@ -112,7 +112,7 @@ fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ArithError> {
         }else if ch == '_' {
             63
         }else{
-            return Err(ArithError::InvalidOperator(s.clone(), ch.to_string()));
+            return Err(ArithError::InvalidOperator(ch.to_string()));
         };
 
         match num < base {

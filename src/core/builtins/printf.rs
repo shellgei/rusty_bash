@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{error, Feeder, ShellCore};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
 use std::io::{stdout, Write};
@@ -33,14 +34,14 @@ impl PrintfToken {
     fn to_int(s: &String) -> Result<isize, ExecError> {
         match s.parse::<isize>() {
             Ok(n) => Ok(n),
-            Err(_) => Err(ExecError::InvalidNumber(s.to_string())),
+            Err(_) => Err(ArithError::InvalidNumber(s.to_string()).into()),
         }
     }
 
     fn to_float(s: &String) -> Result<f64, ExecError> {
         match s.parse::<f64>() {
             Ok(n) => Ok(n),
-            Err(_) => Err(ExecError::InvalidNumber(s.to_string())),
+            Err(_) => Err(ArithError::InvalidNumber(s.to_string()).into()),
         }
     }
 

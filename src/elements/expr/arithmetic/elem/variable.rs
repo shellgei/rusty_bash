@@ -28,7 +28,7 @@ pub fn str_to_num(name: &str, sub: &String,
     for i in 0..RESOLVE_LIMIT {
         if utils::is_name(&name, core) {
             if i == RESOLVE_LIMIT - 1 {
-                return Err(ExecError::Recursion(name.clone()));
+                return Err(ArithError::Recursion(name.clone()).into());
             }
             name = core.db.get_param2(&name, sub)?;
             continue;

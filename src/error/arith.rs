@@ -8,8 +8,9 @@ pub enum ArithError {
     Exponent(i128),
     InvalidBase(String),
     InvalidNumber(String),
-    InvalidOperator(String, String),
+    InvalidOperator(String),
     OperandExpected(String),
+    Recursion(String),
     SyntaxError(String),
 }
 
@@ -22,14 +23,28 @@ impl From<ArithError> for String {
 impl From<&ArithError> for String {
     fn from(e: &ArithError) -> String {
         match e {
-            ArithError::AssignmentToNonVariable(right) => format!("attempted assignment to non-variable (error token is \"{}\")", right),
-            ArithError::DivZero(token) => format!("division by 0 (error token is \"{}\")", token),
-            ArithError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
-            ArithError::InvalidBase(b) => format!("invalid arithmetic base (error token is \"{}\")", b),
-            ArithError::InvalidNumber(name) => format!("invalid number (error token is \"{}\")", name),
-            ArithError::InvalidOperator(s, tok) => format!("{}: syntax error: invalid arithmetic operator (error token is \"{}\")", s, tok),
-            ArithError::OperandExpected(token) => format!("syntax error: operand expected (error token is \"{}\")", token),
-            ArithError::SyntaxError(token) => format!("syntax error in expression (error token is \"{}\")", token),
+            ArithError::AssignmentToNonVariable(right)
+                => error_msg("attempted assignment to non-variable", right),
+            ArithError::DivZero(token)
+                => error_msg("division by 0", token),
+            ArithError::Exponent(s)
+                => error_msg("exponent less than 0", &s.to_string()),
+            ArithError::InvalidBase(b)
+                => error_msg("invalid arithmetic base", b),
+            ArithError::InvalidNumber(name)
+                => error_msg("invalid number", name),
+            ArithError::InvalidOperator(tok)
+                => error_msg("invalid arithmetic operator", tok),
+            ArithError::OperandExpected(token)
+                => error_msg("syntax error: operand expected", token),
+            ArithError::Recursion(token)
+                => error_msg("expression recursion level exceeded", token), 
+            ArithError::SyntaxError(token)
+                => error_msg("syntax error in expression", token),
         }
     }
+}
+
+fn error_msg(msg: &str, token: &str) -> String {
+    msg.to_string() + &format!(" (error token is \"{}\")", token)
 }
