@@ -9,6 +9,7 @@ pub enum ArithError {
     InvalidNumber(String),
     InvalidOperator(String, String),
     OperandExpected(String),
+    SyntaxError(String),
 }
 
 impl From<ArithError> for String {
@@ -26,6 +27,7 @@ impl From<&ArithError> for String {
             ArithError::InvalidNumber(name) => format!("invalid number (error token is \"{}\")", name),
             ArithError::InvalidOperator(s, tok) => format!("{}: syntax error: invalid arithmetic operator (error token is \"{}\")", s, tok),
             ArithError::OperandExpected(token) => format!("syntax error: operand expected (error token is \"{}\")", token),
+            ArithError::SyntaxError(token) => format!("syntax error in expression (error token is \"{}\")", token),
         }
     }
 }

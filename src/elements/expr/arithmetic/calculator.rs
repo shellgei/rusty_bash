@@ -176,7 +176,6 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ArithError> {
                     return Err( ArithError::OperandExpected(e.to_string()));
                 }
             },
-            //ArithElem::Delimiter(_) => {},
             _ => { stack.push(e.clone()) },
         }
     }
@@ -185,7 +184,8 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ArithError> {
         return Err( ArithError::OperandExpected(String::new()));
     }
     if stack.len() != 1 {
-        return Err( ArithError::OperandExpected(stack.last().unwrap().to_string()));
+        //return Err( ArithError::OperandExpected(stack.last().unwrap().to_string()));
+        return Err( ArithError::SyntaxError(stack.last().unwrap().to_string()));
     }
     Ok(())
 }
