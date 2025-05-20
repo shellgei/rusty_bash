@@ -16,9 +16,9 @@ pub struct Data {
 impl Data {
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
         if let Ok(n) = name.parse::<usize>() {
-            let layer_num = self.position_parameters.len();
-            if  n < layer_num {
-                return Ok(self.position_parameters[layer_num-1][n].to_string());
+            let layer = &self.position_parameters.last().unwrap();
+            if  n < layer.len() {
+                return Ok(layer[n].to_string());
             }
             return Ok("".to_string());
         }
