@@ -35,12 +35,18 @@ impl Command for FunctionDefinition {
 
 impl FunctionDefinition {
     pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+        let len = core.db.position_parameters.len();
+        args[0] = core.db.position_parameters[len-1][0].clone();
+        core.db.position_parameters.push(args.to_vec());
+
         let mut dummy = Pipe::new("|".to_string());
 
         if let Err(e) = self.command.as_mut().unwrap()
                         .exec(core, &mut dummy) {
             e.print(core);
         }
+
+        core.db.position_parameters.pop();
     }
 
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
