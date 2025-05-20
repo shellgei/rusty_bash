@@ -15,6 +15,14 @@ pub struct Data {
 
 impl Data {
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
+        if let Ok(n) = name.parse::<usize>() {
+            let layer_num = self.position_parameters.len();
+            return match n < layer_num {
+                true  => Ok(self.position_parameters[layer_num-1][n].to_string()),
+                false => Ok("".to_string()),
+            };
+        }
+
         if ! self.parameters.contains_key(name) {
             if let Ok(val) = env::var(name) {
                 self.set_param(name, &val)?;
