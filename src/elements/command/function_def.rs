@@ -56,8 +56,7 @@ impl FunctionDefinition {
         source.insert(0, self.file.clone());
         let _ = core.db.set_array("BASH_SOURCE", source.clone(), None);
 
-        let len = core.db.position_parameters.len();
-        args[0] = core.db.position_parameters[len-1][0].clone();
+        args[0] = core.db.position_parameters[0][0].clone();
         core.db.position_parameters.push(args.to_vec());
 
         let mut dummy = Pipe::new("|".to_string());
