@@ -68,7 +68,7 @@ impl ArithElem {
             ArithElem::Space(s) => s.to_string(),
             ArithElem::Symbol(s) => s.to_string(),
             ArithElem::InParen(a) => a.text.to_string(),
-            ArithElem::Integer(n, None) => n.to_string(),
+            ArithElem::Integer(n, _) => n.to_string(),
             ArithElem::Float(f) => {
                 let mut ans = f.to_string();
                 if ! ans.contains('.') {

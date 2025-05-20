@@ -296,11 +296,11 @@ impl ConditionalExpr {
 
         if op == "-eq" || op == "-ne" || op == "-lt" || op == "-le" || op == "-gt" || op == "-ge" {
             let lnum = match Self::resolve_arithmetic_op(&left, core)? {
-                ArithElem::Integer(n, None) => n,
+                ArithElem::Integer(n, _) => n,
                 _ => return Err(ExecError::Other("non integer number is not supported".to_string())),
             };
             let rnum = match Self::resolve_arithmetic_op(&right, core)? {
-                ArithElem::Integer(n, None) => n,
+                ArithElem::Integer(n, _) => n,
                 _ => return Err(ExecError::Other("non integer number is not supported".to_string())),
             };
 

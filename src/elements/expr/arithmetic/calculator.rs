@@ -56,7 +56,7 @@ fn bin_calc_and_or(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 
     left.change_to_value(0, core)?;
 
-    if let ArithElem::Integer(n, None) = left {
+    if let ArithElem::Integer(n, _) = left {
         if n == 0 && op == "&&" {
             stack.push(ArithElem::Integer(0, None));
             return Ok(())
@@ -70,7 +70,7 @@ fn bin_calc_and_or(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 
     right.change_to_value(0, core)?;
 
-    if let ArithElem::Integer(n, None) = right {
+    if let ArithElem::Integer(n, _) = right {
         if n == 0 {
             stack.push(ArithElem::Integer(0, None));
         }else{
@@ -91,9 +91,9 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
 
     let ans = match (left, right) {
         (ArithElem::Float(fl), ArithElem::Float(fr)) => float::bin_calc(op, fl, fr, stack)?,
-        (ArithElem::Float(fl), ArithElem::Integer(nr, None)) => float::bin_calc(op, fl, nr as f64, stack)?,
-        (ArithElem::Integer(nl, None), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack)?,
-        (ArithElem::Integer(nl, None), ArithElem::Integer(nr, None)) => int::bin_calc(op, nl, nr, stack)?,
+        (ArithElem::Float(fl), ArithElem::Integer(nr, _)) => float::bin_calc(op, fl, nr as f64, stack)?,
+        (ArithElem::Integer(nl, _), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack)?,
+        (ArithElem::Integer(nl, _), ArithElem::Integer(nr, _)) => int::bin_calc(op, nl, nr, stack)?,
         _ => exit::internal("invalid operand"),
     };
 
@@ -108,7 +108,7 @@ fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -
 
     match operand {
         ArithElem::Float(num)   => float::unary_calc(op, num, stack),
-        ArithElem::Integer(num, None) => int::unary_calc(op, num ,stack),
+        ArithElem::Integer(num, _) => int::unary_calc(op, num ,stack),
         _ => exit::internal("unknown operand"),
     }
 }
