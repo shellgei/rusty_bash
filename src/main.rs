@@ -34,6 +34,7 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
+    core.db.position_parameters.push(vec!["sush".to_string()]);
     signal::run_signal_check(&mut core);
     main_loop(&mut core);
 }

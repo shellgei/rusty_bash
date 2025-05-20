@@ -35,8 +35,7 @@ impl Command for FunctionDefinition {
 
 impl FunctionDefinition {
     pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
-        let len = core.db.position_parameters.len();
-        args[0] = core.db.position_parameters[len-1][0].clone();
+        args[0] = core.db.position_parameters[0][0].clone();
         core.db.position_parameters.push(args.to_vec());
 
         let mut dummy = Pipe::new("|".to_string());
