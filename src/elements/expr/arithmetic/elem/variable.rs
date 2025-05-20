@@ -60,20 +60,20 @@ fn try_parse_to_num(name: &str) -> Result<ArithElem, ExecError> {
         Ok(ArithElem::Float(f))
     }else{
         let n = int::parse(&name)?;
-        Ok( ArithElem::Integer(n) )
+        Ok( ArithElem::Integer(n, None) )
     }
 }
 
 pub fn set_and_to_value(name: &str, sub: &String, core: &mut ShellCore,
                         inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
     match str_to_num(&name, sub, core) {
-        Ok(ArithElem::Integer(n))        => {
+        Ok(ArithElem::Integer(n, None))        => {
             if inc != 0 {
                 core.db.set_param2(&name, sub, &(n + inc).to_string(), None)?;
             }
             match pre {
-                true  => Ok(ArithElem::Integer(n+inc)),
-                false => Ok(ArithElem::Integer(n)),
+                true  => Ok(ArithElem::Integer(n+inc, None)),
+                false => Ok(ArithElem::Integer(n, None)),
             }
         },
         Ok(ArithElem::Float(n))        => {
@@ -142,9 +142,9 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
             }
             if let Ok(left) = val_str.parse::<i128>() {
                 match right_value {
-                    ArithElem::Integer(n) => {
+                    ArithElem::Integer(n, None) => {
                         core.db.set_param2(&name, sub, &(left + *n).to_string(), None)?;
-                        return Ok(ArithElem::Integer(left + *n));
+                        return Ok(ArithElem::Integer(left + *n, None));
                     },
                     _ => {},
                 }
@@ -159,10 +159,10 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
     }
 
     match (to_num(w, sub, core)?, right_value) {
-        (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, sub, cur, *right, core)?),
-        (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, sub, cur, *right as f64, core)?),
+        (ArithElem::Integer(cur, None), ArithElem::Integer(right, None)) => Ok(int::substitute(op, &name, sub, cur, *right, core)?),
+        (ArithElem::Float(cur), ArithElem::Integer(right, None)) => Ok(float::substitute(op, &name, sub, cur, *right as f64, core)?),
         (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, sub, cur, *right, core)?),
-        (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, sub, cur as f64, *right, core)?),
+        (ArithElem::Integer(cur, None), ArithElem::Float(right)) => Ok(float::substitute(op, &name, sub, cur as f64, *right, core)?),
         _ => Err(ExecError::Other("not supported yet".to_string())),
     }
 }

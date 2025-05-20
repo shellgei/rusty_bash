@@ -67,10 +67,17 @@ impl ArithmeticExpr {
         let w = feeder.consume(len);
         ans.text += &w.clone();
 
+        /*
+        let sp_len = feeder.scanner_blank(core);
+        let sp = feeder.consume(sp_len);
+        if sp_len > 0 {
+            ans.text += &sp.clone();
+        }*/
+
         if ! w.contains('.') {
             match int::parse(&w) {
                 Ok(n) => {
-                    ans.elements.push( ArithElem::Integer(n) );
+                    ans.elements.push( ArithElem::Integer(n, None/*Some(w + &sp)*/) );
                     return Ok(true);
                 },
                 Err(e) => {
@@ -196,7 +203,7 @@ impl ArithmeticExpr {
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
-            Some(ArithElem::Integer(_)) 
+            Some(ArithElem::Integer(_, None)) 
             | Some(ArithElem::Float(_)) 
             | Some(ArithElem::ArrayElem(_, _, _)) 
             | Some(ArithElem::Word(_, _)) 

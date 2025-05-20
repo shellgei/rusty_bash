@@ -259,11 +259,11 @@ impl ConditionalExpr {
         }
     
         if utils::is_name(&name, core) {
-            return Ok( ArithElem::Integer(0) );
+            return Ok( ArithElem::Integer(0, None) );
         }
     
         let n = int::parse(&name)?;
-        Ok( ArithElem::Integer(n) )
+        Ok( ArithElem::Integer(n, None) )
     }
 
     fn bin_operation(op: &str, stack: &mut Vec<CondElem>,
@@ -296,11 +296,11 @@ impl ConditionalExpr {
 
         if op == "-eq" || op == "-ne" || op == "-lt" || op == "-le" || op == "-gt" || op == "-ge" {
             let lnum = match Self::resolve_arithmetic_op(&left, core)? {
-                ArithElem::Integer(n) => n,
+                ArithElem::Integer(n, None) => n,
                 _ => return Err(ExecError::Other("non integer number is not supported".to_string())),
             };
             let rnum = match Self::resolve_arithmetic_op(&right, core)? {
-                ArithElem::Integer(n) => n,
+                ArithElem::Integer(n, None) => n,
                 _ => return Err(ExecError::Other("non integer number is not supported".to_string())),
             };
 

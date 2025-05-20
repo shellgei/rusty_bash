@@ -18,7 +18,7 @@ pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), 
 
 pub fn bin_calc(op: &str, left: f64, right: f64,
                 stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
-    let bool_to_01 = |b| { if b { ArithElem::Integer(1) } else { ArithElem::Integer(0) } };
+    let bool_to_01 = |b| { if b { ArithElem::Integer(1, None) } else { ArithElem::Integer(0, None) } };
 
     match op {
         "+"  => stack.push(ArithElem::Float(left + right)),

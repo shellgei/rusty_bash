@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use super::elem::ArithElem;
 
@@ -10,16 +9,10 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
     let mut stack: Vec<ArithElem> = vec![];
 
     for e in elements {
-        let ok = match e {
-            ArithElem::Float(_) | ArithElem::Integer(_) |
-            ArithElem::Variable(_, _, _) | ArithElem::InParen(_)
-                             => { ans.push(e.clone()); true },
-            op               => rev_polish_op(&op, &mut stack, &mut ans),
+        match e.is_operand() {
+            true  => ans.push(e.clone()),
+            false => rev_polish_op(&e, &mut stack, &mut ans),
         };
-
-        if !ok {
-            return Err(ArithError::OperandExpected(e.to_string()).into());
-        }
     }
 
     while stack.len() > 0 {
@@ -29,8 +22,8 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
     Ok(ans)
 }
 
-fn rev_polish_op(elem: &ArithElem,
-                 stack: &mut Vec<ArithElem>, ans: &mut Vec<ArithElem>) -> bool {
+fn rev_polish_op(elem: &ArithElem, stack: &mut Vec<ArithElem>,
+                 ans: &mut Vec<ArithElem>) {
     loop {
         match stack.last() {
             None => {
@@ -48,5 +41,4 @@ fn rev_polish_op(elem: &ArithElem,
             },
         }
     }
-    true
 }

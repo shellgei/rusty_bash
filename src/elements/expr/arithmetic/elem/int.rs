@@ -10,10 +10,10 @@ use super::variable;
 
 pub fn unary_calc(op: &str, num: i128, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
-        "+"  => stack.push( ArithElem::Integer(num) ),
-        "-"  => stack.push( ArithElem::Integer(-num) ),
-        "!"  => stack.push( ArithElem::Integer(if num == 0 { 1 } else { 0 }) ),
-        "~"  => stack.push( ArithElem::Integer( !num ) ),
+        "+"  => stack.push( ArithElem::Integer(num, None) ),
+        "-"  => stack.push( ArithElem::Integer(-num, None) ),
+        "!"  => stack.push( ArithElem::Integer(if num == 0 { 1 } else { 0 }, None) ),
+        "~"  => stack.push( ArithElem::Integer( !num , None) ),
         _ => exit::internal("unknown unary operator"),
     }
     Ok(())
@@ -59,7 +59,7 @@ pub fn bin_calc(op: &str, left: i128, right: i128, stack: &mut Vec<ArithElem>) -
         _    => exit::internal("unknown binary operator"),
     };
 
-    stack.push(ArithElem::Integer(ans));
+    stack.push(ArithElem::Integer(ans, None));
     Ok(())
 }
 
@@ -87,7 +87,7 @@ pub fn substitute(op: &str, name: &String, index: &String,
     };
 
     core.db.set_param2(&name, index, &new_value.to_string(), None)?;
-    Ok(ArithElem::Integer(new_value))
+    Ok(ArithElem::Integer(new_value, None))
 }
 
 fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ArithError> {
