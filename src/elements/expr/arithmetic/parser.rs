@@ -86,7 +86,7 @@ impl ArithmeticExpr {
         }
 
         if let Ok(f) = float::parse(&w) {
-            ans.elements.push( ArithElem::Float(f) );
+            ans.elements.push( ArithElem::Float(f, Some(w + &sp)) );
             return Ok(true);
         }
 
@@ -203,7 +203,7 @@ impl ArithmeticExpr {
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         match &ans.elements.last() {
             Some(ArithElem::Integer(_, _)) 
-            | Some(ArithElem::Float(_)) 
+            | Some(ArithElem::Float(_, _)) 
             | Some(ArithElem::ArrayElem(_, _, _)) 
             | Some(ArithElem::Word(_, _)) 
             | Some(ArithElem::Variable(_, _, _)) 

@@ -90,9 +90,9 @@ fn bin_calc_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore
     }
 
     let ans = match (left, right) {
-        (ArithElem::Float(fl), ArithElem::Float(fr)) => float::bin_calc(op, fl, fr, stack)?,
-        (ArithElem::Float(fl), ArithElem::Integer(nr, _)) => float::bin_calc(op, fl, nr as f64, stack)?,
-        (ArithElem::Integer(nl, _), ArithElem::Float(fr)) => float::bin_calc(op, nl as f64, fr, stack)?,
+        (ArithElem::Float(fl, _), ArithElem::Float(fr, _)) => float::bin_calc(op, fl, fr, stack)?,
+        (ArithElem::Float(fl, _), ArithElem::Integer(nr, _)) => float::bin_calc(op, fl, nr as f64, stack)?,
+        (ArithElem::Integer(nl, _), ArithElem::Float(fr, _)) => float::bin_calc(op, nl as f64, fr, stack)?,
         (ArithElem::Integer(nl, _), ArithElem::Integer(nr, _)) => int::bin_calc(op, nl, nr, stack)?,
         _ => exit::internal("invalid operand"),
     };
@@ -107,7 +107,7 @@ fn unary_operation(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore) -
     };
 
     match operand {
-        ArithElem::Float(num)   => float::unary_calc(op, num, stack),
+        ArithElem::Float(num, _)   => float::unary_calc(op, num, stack),
         ArithElem::Integer(num, _) => int::unary_calc(op, num ,stack),
         _ => exit::internal("unknown operand"),
     }

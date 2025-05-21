@@ -255,7 +255,7 @@ impl ConditionalExpr {
     fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ArithError> {
         if name.contains('.') {
             let f = float::parse(&name)?;
-            return Ok(ArithElem::Float(f));
+            return Ok(ArithElem::Float(f, None));
         }
     
         if utils::is_name(&name, core) {

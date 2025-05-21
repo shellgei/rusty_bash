@@ -17,8 +17,8 @@ use crate::elements::subscript::Subscript;
 pub enum ArithElem {
     UnaryOp(String),
     BinaryOp(String),
-    Integer(i128, Option<String>),
-    Float(f64),
+    Integer(i128, Option<String>), //Option<String>: original string with space
+    Float(f64, Option<String>),
     Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     Variable(String, Option<Subscript>, i128), // name + subscript + post increment or decrement
     InParen(ArithmeticExpr),
@@ -63,13 +63,21 @@ impl ArithElem {
         }
     }
 
+    pub fn get_org_string(&self) -> String {
+        match self {
+            ArithElem::Integer(_, Some(txt)) => txt.clone(),
+            ArithElem::Float(_, Some(txt)) => txt.clone(),
+            _ => "".to_string(), 
+        }
+    }
+
     pub fn to_string(&self) -> String {
         match self {
             ArithElem::Space(s) => s.to_string(),
             ArithElem::Symbol(s) => s.to_string(),
             ArithElem::InParen(a) => a.text.to_string(),
             ArithElem::Integer(n, _) => n.to_string(),
-            ArithElem::Float(f) => {
+            ArithElem::Float(f, _) => {
                 let mut ans = f.to_string();
                 if ! ans.contains('.') {
                     ans += ".0";
@@ -149,7 +157,7 @@ impl ArithElem {
 
     pub fn is_operand(&self) -> bool {
         match &self {
-            ArithElem::Float(_) | ArithElem::Integer(_, _) |
+            ArithElem::Float(_, _) | ArithElem::Integer(_, _) |
             ArithElem::Variable(_, _, _) | ArithElem::InParen(_) => true,
             _ => false,
         }
