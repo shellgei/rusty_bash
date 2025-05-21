@@ -236,9 +236,9 @@ impl ArithmeticExpr {
             };
         }
 
-        match pre_increment {
-            1  => Err(ArithError::OperandExpected("++".to_string()).into()),
-            -1 => Err(ArithError::OperandExpected("--".to_string()).into()),
+        match pre_increment { //↓treated as + or - in error messages
+            1  => Err(ArithError::OperandExpected("+".to_string()).into()),
+            -1 => Err(ArithError::OperandExpected("-".to_string()).into()),
             _  => Ok(ans),
         }
     }
