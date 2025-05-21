@@ -33,7 +33,7 @@ pub fn false_(_: &mut ShellCore, _: &mut [String]) -> i32 {
     1
 }
 
-pub fn return_(core: &mut ShellCore, args: &mut [String]) -> i32 {
+pub fn return_(core: &mut ShellCore, args: &mut[String]) -> i32 {
     if core.source_function_level <= 0 {
         eprintln!("sush: return: can only `return' from a function or sourced script");
         return 2;
@@ -42,15 +42,12 @@ pub fn return_(core: &mut ShellCore, args: &mut [String]) -> i32 {
 
     if args.len() < 2 {
         return 0;
+    }else if let Ok(n) = args[1].parse::<i32>() {
+        return n%256;
     }
 
-    match args[1].parse::<i32>() {
-        Ok(n)  => n%256,
-        Err(_) => {
-            eprintln!("sush: return: {}: numeric argument required", args[1]);
-            2
-        },
-    }
+    eprintln!("sush: return: {}: numeric argument required", args[1]);
+    2
 }
 
 pub fn true_(_: &mut ShellCore, _: &mut [String]) -> i32 {
