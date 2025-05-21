@@ -72,11 +72,11 @@ impl ArithmeticExpr {
             ArithElem::Integer(n, _) => {
                 match self.ans_to_string(n) {
                     Ok(ans) => Ok(ans),
-                    Err(a) => return Err(ExecError::ArithError(self.text.clone(), a)),
+                    Err(a) => return Err(ExecError::ArithError(cp.text, a)),
                 }
             },
             ArithElem::Float(f, _)   => Ok(f.to_string()),
-            e => return Err(ExecError::ArithError(self.text.clone(),
+            e => return Err(ExecError::ArithError(cp.text,
                             ArithError::OperandExpected(e.to_string()).into())),
         }
     }
