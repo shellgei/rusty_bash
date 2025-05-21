@@ -34,6 +34,10 @@ impl Job {
         let mut do_next = true;
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
+            if core.return_flag {
+                continue;
+            }
+
             if do_next {
                 core.jobtable_check_status();
                 let (pids, err) = pipeline.exec(core, pgid);

@@ -743,4 +743,40 @@ res=$($com <<< 'echo "" a')
 #res=$($com <<< 'echo a"$@"c')
 #[ "$res" == "ac" ] || err $LINENO
 
+### return ###
+
+res=$($com <<< 'function f () { return; echo NG; } ; f')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'function f () { echo ok && return 3; } ; f')
+[ "$?" = "3" ] || err $LINENO
+[ "$res" = "ok" ] || err $LINENO
+
+res=$($com <<< 'f () { g () { return; echo NG; } ; g ; echo OK; } ; f')
+[ "$res" = "OK" ] || err $LINENO
+
+res=$($com <<< '
+f () {
+        g () {
+                h () {
+                        return
+                        echo NG
+                }
+                h
+                echo OK
+        }
+        g
+        echo OK
+        return
+        echo NG
+}
+f
+')
+[ "$res" = "OK
+OK" ] || err $LINENO
+
+res=$($com <<< 'function f () { echo a; if true ; then return ; fi ; echo b; } ; f')
+[ "$res" = "a" ] || err $LINENO
+
+
 echo OK $0

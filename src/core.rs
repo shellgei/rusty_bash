@@ -32,6 +32,8 @@ pub struct ShellCore {
     pub builtins: HashMap<String, BuiltinFunc>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
+    pub source_function_level: i32,
+    pub return_flag: bool,
     pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory

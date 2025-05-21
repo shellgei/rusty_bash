@@ -16,6 +16,7 @@ impl ShellCore {
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
+        self.builtins.insert("return".to_string(), return_);
         self.builtins.insert("true".to_string(), true_);
     }
 }
@@ -30,6 +31,26 @@ pub fn exit(core: &mut ShellCore, args: &mut [String]) -> i32 {
 
 pub fn false_(_: &mut ShellCore, _: &mut [String]) -> i32 {
     1
+}
+
+pub fn return_(core: &mut ShellCore, args: &mut [String]) -> i32 {
+    if core.source_function_level <= 0 {
+        eprintln!("sush: return: can only `return' from a function or sourced script");
+        return 2;
+    }
+    core.return_flag = true;
+
+    if args.len() < 2 {
+        return 0;
+    }
+
+    match args[1].parse::<i32>() {
+        Ok(n)  => n%256,
+        Err(_) => {
+            eprintln!("sush: return: {}: numeric argument required", args[1]);
+            2
+        },
+    }
 }
 
 pub fn true_(_: &mut ShellCore, _: &mut [String]) -> i32 {

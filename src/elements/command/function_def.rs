@@ -40,10 +40,13 @@ impl FunctionDefinition {
 
         let mut dummy = Pipe::new("|".to_string());
 
+        core.source_function_level += 1;
         if let Err(e) = self.command.as_mut().unwrap()
                         .exec(core, &mut dummy) {
             e.print(core);
         }
+        core.return_flag = false;
+        core.source_function_level -= 1;
 
         core.db.position_parameters.pop();
     }
