@@ -195,14 +195,10 @@ impl ArithmeticExpr {
     }
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        match &ans.elements.last() {
-            Some(ArithElem::Integer(_)) 
-            | Some(ArithElem::Float(_)) 
-            | Some(ArithElem::ArrayElem(_, _, _)) 
-            | Some(ArithElem::Word(_, _)) 
-            | Some(ArithElem::Variable(_, _, _)) 
-            | Some(ArithElem::InParen(_)) => return false,
-            _ => {},
+        if let Some(e) = ans.elements.last() {
+            if e.is_operand() {
+                return false;
+            }
         }
 
         let s = match feeder.scanner_unary_operator(core) {

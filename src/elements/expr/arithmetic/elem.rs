@@ -150,6 +150,7 @@ impl ArithElem {
     pub fn is_operand(&self) -> bool {
         match &self {
             ArithElem::Float(_) | ArithElem::Integer(_) |
+            ArithElem::ArrayElem(_, _, _) | ArithElem::Word(_, _) |
             ArithElem::Variable(_, _, _) | ArithElem::InParen(_) => true,
             _ => false,
         }
