@@ -9,7 +9,9 @@ pub enum ArithError {
     NoColon(String),
     ExpressionExpected(String),
     InvalidBase(String),
+    ValueTooGreatForBase(String),
     InvalidNumber(String),
+    InvalidIntConst(String),
     InvalidOperator(String),
     OperandExpected(String),
     Recursion(String),
@@ -37,8 +39,12 @@ impl From<&ArithError> for String {
                 => error_msg("expression expected", token),
             ArithError::InvalidBase(b)
                 => error_msg("invalid arithmetic base", b),
+            ArithError::ValueTooGreatForBase(num)
+                => error_msg("value too great for base", num),
             ArithError::InvalidNumber(name)
                 => error_msg("invalid number", name),
+            ArithError::InvalidIntConst(tok)
+                => error_msg("invalid integer constant", tok),
             ArithError::InvalidOperator(tok)
                 => error_msg("invalid arithmetic operator", tok),
             ArithError::OperandExpected(token)
