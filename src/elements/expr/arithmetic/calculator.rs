@@ -7,7 +7,7 @@ use crate::error::exec::ExecError;
 use crate::utils::exit;
 use super::elem::ArithElem;
 use super::{rev_polish};
-use super::elem::{float, int, trenary, variable};
+use super::elem::{float, int, ternary, variable};
 
 pub fn pop_operand(stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if let Some(mut e) = stack.pop() {
@@ -145,7 +145,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
                 }
             },
             ArithElem::Increment(n)     => inc(n, &mut stack, core)?,
-            ArithElem::Ternary(left, right) => trenary::operation(&left, &right, &mut stack, core)?,
+            ArithElem::Ternary(left, right) => ternary::operation(&left, &right, &mut stack, core)?,
             _ => stack.push(e.clone()),
         }
     }

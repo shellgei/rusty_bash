@@ -3,7 +3,7 @@
 
 pub mod int;
 pub mod float;
-pub mod trenary;
+pub mod ternary;
 pub mod variable;
 
 use super::ArithmeticExpr;

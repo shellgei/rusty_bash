@@ -10,9 +10,16 @@ use super::super::calculator;
 pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     stack: &mut Vec<ArithElem>, core: &mut ShellCore) -> Result<(), ExecError> {
 
-    let e = ExecError::Other("expr not found".to_string());
-    let mut left = left.clone().ok_or(e.clone())?;
-    let mut right = right.clone().ok_or(e.clone())?;
+    if left.is_none() {
+        return Err(ArithError::ExpressionExpected(":".to_string()).into());
+    }
+    let mut left = left.clone().unwrap();
+
+    if right.is_none() {
+        return Err(ArithError::NoColon(left.text.trim().to_string()).into());
+    }
+
+    let mut right = right.clone().unwrap();
 
     if left.elements.is_empty() {
         let msg = format!(":{}", &right.text.trim_end());
