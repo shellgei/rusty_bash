@@ -9,8 +9,8 @@ use super::variable;
 
 pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
-        "+"  => stack.push( ArithElem::Float(num, None) ),
-        "-"  => stack.push( ArithElem::Float(-num, None) ),
+        "+"  => stack.push( ArithElem::Float(num) ),
+        "-"  => stack.push( ArithElem::Float(-num) ),
         _ => return Err(ExecError::Other("not supported operator for float number".to_string())),
     }
     Ok(())
@@ -18,12 +18,12 @@ pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), 
 
 pub fn bin_calc(op: &str, left: f64, right: f64,
                 stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
-    let bool_to_01 = |b| { if b { ArithElem::Integer(1, None) } else { ArithElem::Integer(0, None) } };
+    let bool_to_01 = |b| { if b { ArithElem::Integer(1) } else { ArithElem::Integer(0) } };
 
     match op {
-        "+"  => stack.push(ArithElem::Float(left + right, None)),
-        "-"  => stack.push(ArithElem::Float(left - right, None)),
-        "*"  => stack.push(ArithElem::Float(left * right, None)),
+        "+"  => stack.push(ArithElem::Float(left + right)),
+        "-"  => stack.push(ArithElem::Float(left - right)),
+        "*"  => stack.push(ArithElem::Float(left * right)),
         "<="  => stack.push(bool_to_01( left <= right )),
         ">="  => stack.push(bool_to_01( left >= right )),
         "<"  => stack.push(bool_to_01( left < right )),
@@ -34,12 +34,12 @@ pub fn bin_calc(op: &str, left: f64, right: f64,
             if right == 0.0 {
                 return Err(ExecError::Other("divided by 0".to_string()));
             }
-            stack.push(ArithElem::Float(left / right, None));
+            stack.push(ArithElem::Float(left / right));
         },
         "**" => {
             if right >= 0.0 {
                 let r = right.try_into().unwrap();
-                stack.push(ArithElem::Float(left.powf(r), None));
+                stack.push(ArithElem::Float(left.powf(r)));
             }else{
                 return Err( ExecError::Other(error::exponent(&right.to_string()) ));
             }
@@ -66,7 +66,7 @@ pub fn substitute(op: &str, name: &String, index: &String,
     };
 
     core.db.set_param2(&name, index, &new_value.to_string(), None)?;
-    Ok(ArithElem::Float(new_value, None))
+    Ok(ArithElem::Float(new_value))
 }
 
 pub fn parse(s: &str) -> Result<f64, ArithError> {

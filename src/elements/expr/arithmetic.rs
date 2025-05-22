@@ -69,13 +69,13 @@ impl ArithmeticExpr {
         };
 
         match ans {
-            ArithElem::Integer(n, _) => {
+            ArithElem::Integer(n) => {
                 match self.ans_to_string(n) {
                     Ok(ans) => Ok(ans),
                     Err(a) => return Err(ExecError::ArithError(cp.text, a)),
                 }
             },
-            ArithElem::Float(f, _)   => Ok(f.to_string()),
+            ArithElem::Float(f)   => Ok(f.to_string()),
             e => return Err(ExecError::ArithError(cp.text,
                             ArithError::OperandExpected(e.to_string()).into())),
         }
@@ -112,8 +112,8 @@ impl ArithmeticExpr {
         let _ = self.eval_doller(core);
 
         match self.eval_elems(core, true)? {
-            ArithElem::Integer(n, _) => Ok(n),
-            ArithElem::Float(f, _)   => {
+            ArithElem::Integer(n) => Ok(n),
+            ArithElem::Float(f)   => {
                 let msg = format!("sush: {}: Not integer. {}", &self.text, f);
                 Err(ExecError::Other(msg))
             },
@@ -205,8 +205,8 @@ impl ArithmeticExpr {
                                      => ans.push(ArithElem::BinaryOp(pm.clone())),
             (_, None)
             | (_, Some(&ArithElem::Variable(_, _, _))) => return inc,
-            (Some(&ArithElem::Integer(_, _)), _)
-            | (Some(&ArithElem::Float(_, _)), _)   => ans.push(ArithElem::BinaryOp(pm.clone())),
+            (Some(&ArithElem::Integer(_)), _)
+            | (Some(&ArithElem::Float(_)), _)   => ans.push(ArithElem::BinaryOp(pm.clone())),
             _                              => ans.push(ArithElem::UnaryOp(pm.clone())),
         }
         ans.push(ArithElem::UnaryOp(pm));

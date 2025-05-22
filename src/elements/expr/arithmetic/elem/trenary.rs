@@ -20,8 +20,8 @@ pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     }
 
     let ans = match calculator::pop_operand(stack, core)? {
-        ArithElem::Integer(0, _) => right.eval_in_cond(core)?,
-        ArithElem::Float(_, _) => return Err(ExecError::Other("float condition is not permitted".to_string())),
+        ArithElem::Integer(0) => right.eval_in_cond(core)?,
+        ArithElem::Float(_) => return Err(ExecError::Other("float condition is not permitted".to_string())),
         _ => left.eval_in_cond(core)?,
     };
 

@@ -255,15 +255,15 @@ impl ConditionalExpr {
     fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ArithError> {
         if name.contains('.') {
             let f = float::parse(&name)?;
-            return Ok(ArithElem::Float(f, None));
+            return Ok(ArithElem::Float(f));
         }
     
         if utils::is_name(&name, core) {
-            return Ok( ArithElem::Integer(0, None) );
+            return Ok( ArithElem::Integer(0) );
         }
     
         let n = int::parse(&name)?;
-        Ok( ArithElem::Integer(n, None) )
+        Ok( ArithElem::Integer(n) )
     }
 
     fn bin_operation(op: &str, stack: &mut Vec<CondElem>,
@@ -296,11 +296,11 @@ impl ConditionalExpr {
 
         if op == "-eq" || op == "-ne" || op == "-lt" || op == "-le" || op == "-gt" || op == "-ge" {
             let lnum = match Self::resolve_arithmetic_op(&left, core)? {
-                ArithElem::Integer(n, _) => n,
+                ArithElem::Integer(n) => n,
                 _ => return Err(ExecError::Other("non integer number is not supported".to_string())),
             };
             let rnum = match Self::resolve_arithmetic_op(&right, core)? {
-                ArithElem::Integer(n, _) => n,
+                ArithElem::Integer(n) => n,
                 _ => return Err(ExecError::Other("non integer number is not supported".to_string())),
             };
 
