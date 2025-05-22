@@ -46,7 +46,7 @@ This graph shows the test result with the script in `./sush_test/bash_genuine_te
 
 ![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
 
-### strange behavior of Bash that we don't want to follow
+### Bash behavior that we don't want to follow
 
 The following behavior of Bash will not be imitated by `sush`. So we alter the right output file (e.g `globstar.right`) for comparision. 
 
@@ -64,6 +64,15 @@ The following behavior of Bash will not be imitated by `sush`. So we alter the r
     🍣 echo $(( -9223372036854775807 * -1 ))
     9223372036854775807
     ```
+* Bash includes spaces to each token and displays them in error messages. These spaces are elliminated in our shell.
+    ```bash
+    ### Bash ###
+    $ (( 1++     ))
+    bash: ((: 1++     : syntax error: operand expected (error token is "+     ")
+    ### Sush ###
+    🍣 (( 1++     ))
+    sush: ((: 1++     : syntax error: operand expected (error token is "+")
+    ```   
 
 ## Contribution
 
