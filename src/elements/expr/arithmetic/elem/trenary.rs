@@ -14,9 +14,13 @@ pub fn operation(left: &Option<ArithmeticExpr>, right: &Option<ArithmeticExpr>,
     let mut left = left.clone().ok_or(e.clone())?;
     let mut right = right.clone().ok_or(e.clone())?;
 
-    if left.elements.is_empty() || right.elements.is_empty() {
-        let msg = format!(":{}", &right.text);
-        return Err(ArithError::OperandExpected(msg).into());
+    if left.elements.is_empty() {
+        let msg = format!(":{}", &right.text.trim_end());
+        return Err(ArithError::ExpressionExpected(msg).into());
+    }
+
+    if right.elements.is_empty() {
+        return Err(ArithError::ExpressionExpected(":".to_string()).into());
     }
 
     let ans = match calculator::pop_operand(stack, core)? {

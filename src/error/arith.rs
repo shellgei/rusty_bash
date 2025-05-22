@@ -6,6 +6,7 @@ pub enum ArithError {
     AssignmentToNonVariable(String),
     DivZero(String),
     Exponent(i128),
+    ExpressionExpected(String),
     InvalidBase(String),
     InvalidNumber(String),
     InvalidOperator(String),
@@ -29,6 +30,8 @@ impl From<&ArithError> for String {
                 => error_msg("division by 0", token),
             ArithError::Exponent(s)
                 => error_msg("exponent less than 0", &s.to_string()),
+            ArithError::ExpressionExpected(token)
+                => error_msg("expression expected", token),
             ArithError::InvalidBase(b)
                 => error_msg("invalid arithmetic base", b),
             ArithError::InvalidNumber(name)
