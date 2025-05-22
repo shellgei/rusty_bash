@@ -1,15 +1,23 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use super::elem::ArithElem;
 
 pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
     let mut ans = vec![];
     let mut stack: Vec<ArithElem> = vec![];
+    let mut prev_is_op = false;
 
     for e in elements {
-        match e.is_operand() {
+        let is_op = e.is_operand();
+        if prev_is_op && is_op {
+            return Err(ArithError::SyntaxError(e.to_string()).into());
+        }
+        prev_is_op = is_op;
+
+        match is_op {
             true  => ans.push(e.clone()),
             false => rev_polish_op(&e, &mut stack, &mut ans),
         };
