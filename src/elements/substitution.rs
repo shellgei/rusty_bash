@@ -2,9 +2,9 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::expr::arithmetic::ArithmeticExpr;
+//use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::word::WordMode;
-use crate::error::arith::ArithError;
+//use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use std::env;
@@ -118,38 +118,17 @@ impl Substitution {
         }
     }
 
-    fn set_number_param(&mut self, core: &mut ShellCore, layer: usize)
-    -> Result<(), ExecError> {
-        let s = match &self.evaluated_string {
-            Some(s) => s,
-            None => {
-                let err = ArithError::OperandExpected("".to_string());
-                return Err(ExecError::ArithError("".to_string(), err));
-            },
-        };
-
-        let mut feeder = Feeder::new(&s);
-        if let Some(mut exp) = ArithmeticExpr::parse(&mut feeder, core, false, "")? {
-            if feeder.len() > 0 {
-                return Err(ExecError::SyntaxError(feeder.consume(feeder.len())));
-            }
-            let ans = exp.eval(core)?;
-            return core.db.set_param(&self.name, &ans, Some(layer));
-        }
-
-        let err = ArithError::OperandExpected("".to_string());
-        return Err(ExecError::ArithError("".to_string(), err));
-    }
- 
     fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>)
     -> Result<(), ExecError> {
         let layer = core.db.get_target_layer(&self.name, layer);
 
-        if core.db.is_single_num(&self.name) {
-            return self.set_number_param(core, layer);
-        }else if self.evaluated_string.is_some() && self.index.is_none() {
+        if self.evaluated_string.is_some() && self.index.is_none() {
             let data = self.evaluated_string.clone().unwrap();
-            return core.db.set_param(&self.name, &data, Some(layer));
+            if self.append {
+                return core.db.append_param(&self.name, &data, Some(layer));
+            }else{
+                return core.db.set_param(&self.name, &data, Some(layer));
+            }
         }
 
         self.set_array(core, layer)
@@ -157,7 +136,8 @@ impl Substitution {
 
     pub fn set_to_env(&mut self) -> Result<(), ExecError> {
         match &self.evaluated_string {
-            Some(v) => env::set_var(&self.name, &v),
+            Some(_) => env::set_var(&self.name, ""), //actual value is set to set_param or
+                                                     //append_param
             _ => return Err(ExecError::Other(format!("{}: invalid environmental variable", &self.name))),
         }
         Ok(())
@@ -184,28 +164,10 @@ impl Substitution {
     }
 
     fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore) -> Result<(), ExecError> {
-        let prev = match self.append {
-            true  => core.db.get_param(&self.name).unwrap_or(String::new()),
-            false => "".to_string(),
-        };
-
         if core.db.has_flag(&self.name, 'i') {
-            let prev_num = match prev.as_str() {
-                "" => 0,
-                n => n.parse::<i64>()?,
-            };
-
-            let s = w.eval_as_integer(core)?;
-            let append_num = match s.as_str() {
-                "" => 0,
-                n => n.parse::<i64>()?,
-            };
-
-            self.evaluated_string = Some((prev_num + append_num).to_string());
-
+            self.evaluated_string = Some(w.eval_as_integer(core)?);
         }else{
-            let s = w.eval_as_value(core)?;
-            self.evaluated_string = Some(prev + &s);
+            self.evaluated_string = Some(w.eval_as_value(core)?);
         }
 
         Ok(())
