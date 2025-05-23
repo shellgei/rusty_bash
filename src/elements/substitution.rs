@@ -7,7 +7,6 @@ use crate::elements::word::WordMode;
 //use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use std::env;
 use std::collections::HashMap;
 use super::array::Array;
 use super::subscript::Subscript;
@@ -53,7 +52,7 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>/*, env: bool*/)
+    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>)
     -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         let result = match self.value.clone() {
@@ -69,11 +68,6 @@ impl Substitution {
             core.db.exit_status = 1;
             return result;
         }
-        /*
-
-        if env {
-            self.set_to_env()?;
-        }*/
 
         let ans = self.set_to_shell(core, layer);
         if ! ans.is_ok() {
@@ -133,15 +127,6 @@ impl Substitution {
         }
 
         self.set_array(core, layer)
-    }
-
-    pub fn set_to_env(&mut self) -> Result<(), ExecError> {
-        match &self.evaluated_string {
-            Some(_) => env::set_var(&self.name, ""), //actual value is set to set_param or
-                                                     //append_param
-            _ => return Err(ExecError::Other(format!("{}: invalid environmental variable", &self.name))),
-        }
-        Ok(())
     }
 
     pub fn get_index(&mut self, core: &mut ShellCore) -> Result<Option<String>, ExecError> {
