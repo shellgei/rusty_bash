@@ -49,9 +49,30 @@ impl Data for ArrayData {
         Ok(())
     }
 
+    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        if let Some(v) = self.body.get(&0) {
+            self.body.insert(0, v.to_owned() + value);
+        }else {
+            self.body.insert(0, value.to_string());
+        }
+        Ok(())
+    }
+
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         if let Ok(n) = key.parse::<usize>() {
             self.body.insert(n, value.to_string());
+            return Ok(());
+        }
+        Err(ExecError::Other("invalid index".to_string()))
+    }
+
+    fn append_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+        if let Ok(n) = key.parse::<usize>() {
+            if let Some(v) = self.body.get(&n) {
+                self.body.insert(n, v.to_owned() + value);
+            }else{
+                self.body.insert(n, value.to_string());
+            }
             return Ok(());
         }
         Err(ExecError::Other("invalid index".to_string()))
@@ -121,6 +142,25 @@ impl ArrayData {
                 ArrayData::set_new_entry(db_layer, name, vec![])?;
                 Self::set_elem(db_layer, name, 0, &data)?;
                 Self::set_elem(db_layer, name, pos, val)
+            }
+        }else{
+            ArrayData::set_new_entry(db_layer, name, vec![])?;
+            Self::set_elem(db_layer, name, pos, val)
+        }
+    }
+
+    pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
+                        name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
+        if let Some(d) = db_layer.get_mut(name) {
+            if d.is_array() {
+                return d.append_as_array(&pos.to_string(), val);
+            }else if d.is_assoc() {
+                return d.append_as_assoc(&pos.to_string(), val);
+            }else{
+                let data = d.get_as_single()?;
+                ArrayData::set_new_entry(db_layer, name, vec![])?;
+                Self::append_elem(db_layer, name, 0, &data)?;
+                Self::append_elem(db_layer, name, pos, val)
             }
         }else{
             ArrayData::set_new_entry(db_layer, name, vec![])?;

@@ -59,6 +59,25 @@ impl Body {
         Ok(())
     }
 
+    fn append(&mut self, value: &str) -> Result<(), ExecError> {
+        match self {
+            Self::Str(s) => *self = Self::Str(s.to_owned() + &value),
+            Self::Num(Some(n)) => {
+                match value.parse::<isize>() {
+                    Ok(m) => *self = Self::Num(Some(*n + m)),
+                    _ => return Err(ArithError::InvalidNumber(value.to_string()).into()),
+                }
+            },
+            Self::Num(None) => {
+                match value.parse::<isize>() {
+                    Ok(m) => *self = Self::Num(Some(m)),
+                    _ => return Err(ArithError::InvalidNumber(value.to_string()).into()),
+                }
+            },
+        }
+        Ok(())
+    }
+
     fn is_num(&self) -> bool {
         match self {
             Self::Num(_) => true,
@@ -90,6 +109,10 @@ impl Data for SingleData {
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body.set(value)
+    }
+
+    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        self.body.append(value)
     }
 
     fn init_as_num(&mut self) -> Result<(), ExecError> {
@@ -130,6 +153,25 @@ impl SingleData {
         }
      
         d.set_as_single(val)
+    }
+
+    pub fn append_value(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, val: &str)
+    -> Result<(), ExecError> {
+        if let Ok(v) = env::var(name) {
+            env::set_var(name, v + val);
+        }
+
+        if db_layer.get(name).is_none() {
+            SingleData::set_new_entry(db_layer, name, "")?;
+        }
+
+        let d = db_layer.get_mut(name).unwrap();
+
+        if d.is_array() {
+            return d.append_as_array("0", val);
+        }
+     
+        d.append_as_single(val)
     }
 
     pub fn init_as_num(db_layer: &mut HashMap<String, Box<dyn Data>>,

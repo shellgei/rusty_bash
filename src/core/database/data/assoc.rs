@@ -50,6 +50,16 @@ impl Data for AssocData {
         Ok(())
     }
 
+    fn append_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+        if let Some(v) = self.body.get(key) {
+            self.body.insert(key.to_string(), v.to_owned() + value);
+        }else{
+            self.body.insert(key.to_string(), value.to_string());
+        }
+        self.last = Some(value.to_string());
+        Ok(())
+    }
+
     fn get_as_assoc(&mut self, key: &str) -> Result<String, ExecError> {
         if key == "@" || key == "*" {
             return Ok(self.values().join(" "));
@@ -110,6 +120,14 @@ impl AssocData {
                      key: &String, val: &String) -> Result<(), ExecError> {
         match db_layer.get_mut(name) {
             Some(v) => v.set_as_assoc(key, val), 
+            _ => Err(ExecError::Other("TODO".to_string())),
+        }
+    }
+
+    pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
+                     key: &String, val: &String) -> Result<(), ExecError> {
+        match db_layer.get_mut(name) {
+            Some(v) => v.append_as_assoc(key, val), 
             _ => Err(ExecError::Other("TODO".to_string())),
         }
     }
