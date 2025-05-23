@@ -6,7 +6,7 @@ pub mod parser;
 use crate::{proc_ctrl, ShellCore};
 
 use crate::error::exec::ExecError;
-use crate::utils;
+use crate::{env, utils};
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -133,7 +133,7 @@ impl SimpleCommand {
         self.option_x_output(core);
         
         for s in self.substitutions.iter_mut() {
-            if let Err(e) = s.eval(core, None, false) {
+            if let Err(e) = s.eval(core, None/*, false*/) {
                 e.print(core);
                 core.db.exit_status = 1;
             }
@@ -148,14 +148,15 @@ impl SimpleCommand {
             layer = None;
         }
         for s in self.substitutions.iter_mut() {
-            s.eval(core, layer, false)?;
+            s.eval(core, layer/*, false*/)?;
         }
         Ok(())
     }
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for s in self.substitutions.iter_mut() {
-            s.eval(core, None, true)?;
+            env::set_var(&s.name, "");
+            s.eval(core, None/*, true*/)?;
         }
         Ok(())
     }

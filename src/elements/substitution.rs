@@ -53,7 +53,7 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, env: bool)
+    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>/*, env: bool*/)
     -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         let result = match self.value.clone() {
@@ -69,10 +69,11 @@ impl Substitution {
             core.db.exit_status = 1;
             return result;
         }
+        /*
 
         if env {
             self.set_to_env()?;
-        }
+        }*/
 
         let ans = self.set_to_shell(core, layer);
         if ! ans.is_ok() {

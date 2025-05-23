@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, utils, Feeder};
+use crate::{env, ShellCore, utils, Feeder};
 use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
@@ -39,7 +39,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
     }
 
     match Substitution::parse(&mut feeder, core) {
-        Ok(ans) => ans.unwrap().eval(core, Some(layer), false),
+        Ok(ans) => ans.unwrap().eval(core, Some(layer)/*, false*/),
         Err(e) => Err(ExecError::ParseError(e)),
     }
 }
@@ -56,7 +56,7 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
         _ => return Err(ExecError::VariableInvalid(arg.to_string())),
     };
 
-    sub.eval(core, Some(layer), false)
+    sub.eval(core, Some(layer)/*, false*/)
 }
 
 fn local_(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<(), ExecError> {
@@ -259,7 +259,11 @@ fn export_var(arg: &str, core: &mut ShellCore) -> Result<(), ExecError> {
     }
 
     match Substitution::parse(&mut feeder, core) {
-        Ok(ans) => ans.unwrap().eval(core, None, true),
+        Ok(Some(mut ans)) => {
+            env::set_var(&ans.name, "");
+            ans.eval(core, None/*, true*/)
+        },
+        Ok(None)  => Err(ExecError::VariableInvalid(arg.to_string())),
         Err(e)  => Err(ExecError::ParseError(e)),
     }
 }
