@@ -60,20 +60,20 @@ fn try_parse_to_num(name: &str) -> Result<ArithElem, ExecError> {
         Ok(ArithElem::Float(f))
     }else{
         let n = int::parse(&name)?;
-        Ok( ArithElem::Integer(n, None) )
+        Ok( ArithElem::Integer(n) )
     }
 }
 
 pub fn set_and_to_value(name: &str, sub: &String, core: &mut ShellCore,
                         inc: i128, pre: bool) -> Result<ArithElem, ExecError> {
     match str_to_num(&name, sub, core) {
-        Ok(ArithElem::Integer(n, _))        => {
+        Ok(ArithElem::Integer(n))        => {
             if inc != 0 {
                 core.db.set_param2(&name, sub, &(n + inc).to_string(), None)?;
             }
             match pre {
-                true  => Ok(ArithElem::Integer(n+inc, None)),
-                false => Ok(ArithElem::Integer(n, None)),
+                true  => Ok(ArithElem::Integer(n+inc)),
+                false => Ok(ArithElem::Integer(n)),
             }
         },
         Ok(ArithElem::Float(n))        => {
@@ -104,13 +104,11 @@ pub fn get_sign(s: &mut String) -> String {
 
 pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 -> Result<(), ExecError> {
-    let mut err_text = String::new();
     let mut right = match stack.pop() {
-        Some(ArithElem::Integer(n, Some(txt))) => {
-            err_text = txt.clone();
-            ArithElem::Integer(n, Some(txt))
+        Some(mut e) => {
+            e.change_to_value(0, core)?;
+            e
         },
-        Some(mut e) => { e.change_to_value(0, core)?; e },
         _ => return Err(ArithError::OperandExpected(op.to_string()).into()),
     };
 
@@ -123,7 +121,7 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
         return Ok(());
     }
 
-    Err(ArithError::AssignmentToNonVariable(op.to_string() + &err_text).into() )
+    Err(ArithError::AssignmentToNonVariable(op.to_string() + &right.to_string()).into() )
 }
 
 fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut ShellCore)
@@ -147,9 +145,9 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
             }
             if let Ok(left) = val_str.parse::<i128>() {
                 match right_value {
-                    ArithElem::Integer(n, _) => {
+                    ArithElem::Integer(n) => {
                         core.db.set_param2(&name, sub, &(left + *n).to_string(), None)?;
-                        return Ok(ArithElem::Integer(left + *n, None));
+                        return Ok(ArithElem::Integer(left + *n));
                     },
                     _ => {},
                 }
@@ -164,10 +162,10 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
     }
 
     match (to_num(w, sub, core)?, right_value) {
-        (ArithElem::Integer(cur, _), ArithElem::Integer(right, _)) => Ok(int::substitute(op, &name, sub, cur, *right, core)?),
-        (ArithElem::Float(cur), ArithElem::Integer(right, _)) => Ok(float::substitute(op, &name, sub, cur, *right as f64, core)?),
+        (ArithElem::Integer(cur), ArithElem::Integer(right)) => Ok(int::substitute(op, &name, sub, cur, *right, core)?),
+        (ArithElem::Float(cur), ArithElem::Integer(right)) => Ok(float::substitute(op, &name, sub, cur, *right as f64, core)?),
         (ArithElem::Float(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, sub, cur, *right, core)?),
-        (ArithElem::Integer(cur, _), ArithElem::Float(right)) => Ok(float::substitute(op, &name, sub, cur as f64, *right, core)?),
+        (ArithElem::Integer(cur), ArithElem::Float(right)) => Ok(float::substitute(op, &name, sub, cur as f64, *right, core)?),
         _ => Err(ExecError::Other("not supported yet".to_string())),
     }
 }

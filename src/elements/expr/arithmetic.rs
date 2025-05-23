@@ -62,21 +62,21 @@ impl ArithmeticExpr {
         let ans = match cp.eval_elems(core, true) {
             Ok(a) => a, 
             Err(ExecError::ArithError(_, a)) => {
-                let text = self.text.trim_start().to_string();
+                let text = cp.text.trim_start().to_string();
                 return Err(ExecError::ArithError(text, a))
             },
             Err(e) => return Err(e),
         };
 
         match ans {
-            ArithElem::Integer(n, _) => {
+            ArithElem::Integer(n) => {
                 match self.ans_to_string(n) {
                     Ok(ans) => Ok(ans),
-                    Err(a) => return Err(ExecError::ArithError(self.text.clone(), a)),
+                    Err(a) => return Err(ExecError::ArithError(cp.text, a)),
                 }
             },
             ArithElem::Float(f)   => Ok(f.to_string()),
-            e => return Err(ExecError::ArithError(self.text.clone(),
+            e => return Err(ExecError::ArithError(cp.text,
                             ArithError::OperandExpected(e.to_string()).into())),
         }
     }
@@ -112,7 +112,7 @@ impl ArithmeticExpr {
         let _ = self.eval_doller(core);
 
         match self.eval_elems(core, true)? {
-            ArithElem::Integer(n, _) => Ok(n),
+            ArithElem::Integer(n) => Ok(n),
             ArithElem::Float(f)   => {
                 let msg = format!("sush: {}: Not integer. {}", &self.text, f);
                 Err(ExecError::Other(msg))
@@ -205,7 +205,7 @@ impl ArithmeticExpr {
                                      => ans.push(ArithElem::BinaryOp(pm.clone())),
             (_, None)
             | (_, Some(&ArithElem::Variable(_, _, _))) => return inc,
-            (Some(&ArithElem::Integer(_, _)), _)
+            (Some(&ArithElem::Integer(_)), _)
             | (Some(&ArithElem::Float(_)), _)   => ans.push(ArithElem::BinaryOp(pm.clone())),
             _                              => ans.push(ArithElem::UnaryOp(pm.clone())),
         }
@@ -236,9 +236,9 @@ impl ArithmeticExpr {
             };
         }
 
-        match pre_increment {
-            1  => Err(ArithError::OperandExpected("++".to_string()).into()),
-            -1 => Err(ArithError::OperandExpected("--".to_string()).into()),
+        match pre_increment { //↓treated as + or - in error messages
+            1  => Err(ArithError::OperandExpected("+".to_string()).into()),
+            -1 => Err(ArithError::OperandExpected("-".to_string()).into()),
             _  => Ok(ans),
         }
     }

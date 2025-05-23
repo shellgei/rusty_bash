@@ -67,16 +67,10 @@ impl ArithmeticExpr {
         let w = feeder.consume(len);
         ans.text += &w.clone();
 
-        let sp_len = feeder.scanner_blank(core);
-        let sp = feeder.consume(sp_len);
-        if sp_len > 0 {
-            ans.text += &sp.clone();
-        }
-
         if ! w.contains('.') {
             match int::parse(&w) {
                 Ok(n) => {
-                    ans.elements.push( ArithElem::Integer(n, Some(w + &sp)) );
+                    ans.elements.push( ArithElem::Integer(n) );
                     return Ok(true);
                 },
                 Err(e) => {
@@ -90,7 +84,7 @@ impl ArithmeticExpr {
             return Ok(true);
         }
 
-        ans.elements.push( ArithElem::Variable(w.clone()/* + &sp*/, None, 0) );
+        ans.elements.push( ArithElem::Variable(w.clone(), None, 0) );
         Ok(true)
     }
 
@@ -160,26 +154,19 @@ impl ArithmeticExpr {
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore, internal: bool) -> bool {
-        if let Ok(Some(mut w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
-            let len = feeder.scanner_blank(core); // add blank for error message
-            if len > 0 {
-                let blank = feeder.consume(len);
-                let sw = From::from(&blank);
-                w.text += &blank.clone();
-                w.subwords.push(sw);
-            }
-
+        if let Ok(Some(w)) = Word::parse(feeder, core, Some(WordMode::Arithmetric)) {
             ans.text += &w.text.clone();
-            let sp = Self::eat_space(feeder, ans, core);
+            //let sp = Self::eat_space(feeder, ans, core);
             let suffix = Self::eat_suffix(feeder, ans);
             if internal {
                 ans.elements.push( ArithElem::Variable(w.text.clone(), None, suffix) );
             }else {
                 ans.elements.push( ArithElem::Word(w, suffix) );
             }
+            /*
             if ! internal && sp.is_some() {
                 ans.elements.push(sp.unwrap());
-            }
+            }*/
             return true;
         }
 
@@ -201,14 +188,10 @@ impl ArithmeticExpr {
     }
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        match &ans.elements.last() {
-            Some(ArithElem::Integer(_, _)) 
-            | Some(ArithElem::Float(_)) 
-            | Some(ArithElem::ArrayElem(_, _, _)) 
-            | Some(ArithElem::Word(_, _)) 
-            | Some(ArithElem::Variable(_, _, _)) 
-            | Some(ArithElem::InParen(_)) => return false,
-            _ => {},
+        if let Some(e) = ans.elements.last() {
+            if e.is_operand() {
+                return false;
+            }
         }
 
         let s = match feeder.scanner_unary_operator(core) {

@@ -3,7 +3,7 @@
 
 pub mod int;
 pub mod float;
-pub mod trenary;
+pub mod ternary;
 pub mod variable;
 
 use super::ArithmeticExpr;
@@ -17,7 +17,7 @@ use crate::elements::subscript::Subscript;
 pub enum ArithElem {
     UnaryOp(String),
     BinaryOp(String),
-    Integer(i128, Option<String>),
+    Integer(i128),
     Float(f64),
     Ternary(Box<Option<ArithmeticExpr>>, Box<Option<ArithmeticExpr>>),
     Variable(String, Option<Subscript>, i128), // name + subscript + post increment or decrement
@@ -68,7 +68,7 @@ impl ArithElem {
             ArithElem::Space(s) => s.to_string(),
             ArithElem::Symbol(s) => s.to_string(),
             ArithElem::InParen(a) => a.text.to_string(),
-            ArithElem::Integer(n, _) => n.to_string(),
+            ArithElem::Integer(n) => n.to_string(),
             ArithElem::Float(f) => {
                 let mut ans = f.to_string();
                 if ! ans.contains('.') {
@@ -149,7 +149,8 @@ impl ArithElem {
 
     pub fn is_operand(&self) -> bool {
         match &self {
-            ArithElem::Float(_) | ArithElem::Integer(_, _) |
+            ArithElem::Float(_) | ArithElem::Integer(_) |
+            ArithElem::ArrayElem(_, _, _) | ArithElem::Word(_, _) |
             ArithElem::Variable(_, _, _) | ArithElem::InParen(_) => true,
             _ => false,
         }

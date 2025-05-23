@@ -10,10 +10,10 @@ use super::variable;
 
 pub fn unary_calc(op: &str, num: i128, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
-        "+"  => stack.push( ArithElem::Integer(num, None) ),
-        "-"  => stack.push( ArithElem::Integer(-num, None) ),
-        "!"  => stack.push( ArithElem::Integer(if num == 0 { 1 } else { 0 }, None) ),
-        "~"  => stack.push( ArithElem::Integer( !num , None) ),
+        "+"  => stack.push( ArithElem::Integer(num) ),
+        "-"  => stack.push( ArithElem::Integer(-num) ),
+        "!"  => stack.push( ArithElem::Integer(if num == 0 { 1 } else { 0 }) ),
+        "~"  => stack.push( ArithElem::Integer( !num) ),
         _ => exit::internal("unknown unary operator"),
     }
     Ok(())
@@ -59,7 +59,7 @@ pub fn bin_calc(op: &str, left: i128, right: i128, stack: &mut Vec<ArithElem>) -
         _    => exit::internal("unknown binary operator"),
     };
 
-    stack.push(ArithElem::Integer(ans, None));
+    stack.push(ArithElem::Integer(ans));
     Ok(())
 }
 
@@ -87,12 +87,12 @@ pub fn substitute(op: &str, name: &String, index: &String,
     };
 
     core.db.set_param2(&name, index, &new_value.to_string(), None)?;
-    Ok(ArithElem::Integer(new_value, None))
+    Ok(ArithElem::Integer(new_value))
 }
 
-fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ArithError> {
+fn parse_with_base(base: i128, s: &mut String, org: &str) -> Result<i128, ArithError> {
     if s.is_empty() {
-        return Err(ArithError::InvalidOperator(s.clone()));
+        return Err(ArithError::InvalidIntConst(org.to_string()));
     }
 
     let mut ans = 0;
@@ -112,12 +112,12 @@ fn parse_with_base(base: i128, s: &mut String) -> Result<i128, ArithError> {
         }else if ch == '_' {
             63
         }else{
-            return Err(ArithError::InvalidOperator(ch.to_string()));
+            return Err(ArithError::InvalidNumber(org.to_string()));
         };
 
         match num < base {
             true  => ans += num,
-            false => return Err(ArithError::InvalidBase(base.to_string())),
+            false => return Err(ArithError::ValueTooGreatForBase(org.to_string())),
         }
     }
 
@@ -169,7 +169,7 @@ pub fn parse(s: &str) -> Result<i128, ArithError> {
     let mut sw = s.to_string();
     let sign = variable::get_sign(&mut sw);
     let base = get_base(&mut sw)?;
-    let n = parse_with_base(base, &mut sw)?;
+    let n = parse_with_base(base, &mut sw, s)?;
 
     match sign.as_str() {
         "-" => Ok(-n), 
