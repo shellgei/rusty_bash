@@ -14,7 +14,6 @@ use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
 use crate::elements::script::Script;
-use crate::error::parse::ParseError;
 use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
 use error::input::InputError;
@@ -78,6 +77,7 @@ fn configure(args: &Vec<String>, core: &mut ShellCore) {
 
 fn main() {
     let mut args = arg::dissolve_options(&env::args().collect());
+    let command = args[0].clone();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
@@ -118,7 +118,7 @@ fn main() {
     if core.script_name == "-" {
         read_rc_file(&mut core);
     }
-    main_loop(&mut core);
+    main_loop(&mut core, &command);
 }
 
 fn set_history(core: &mut ShellCore, s: &str) {
@@ -140,14 +140,14 @@ fn show_message() {
     eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
 }
 
-fn main_loop(core: &mut ShellCore) {
+fn main_loop(core: &mut ShellCore, command: &String) {
     let mut feeder = Feeder::new("");
     feeder.main_feeder = true;
 
     if core.script_name != "-" {
         core.db.flags.retain(|f| f != 'i');
-        if let Err(e) = feeder.set_file(&core.script_name) {
-            ParseError::Input(e).print(core);
+        if let Err(_) = feeder.set_file(&core.script_name) {
+            eprintln!("{}: {}: No such file or directory", command, &core.script_name); 
             process::exit(2);
         }
     }

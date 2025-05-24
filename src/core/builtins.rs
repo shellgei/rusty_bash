@@ -7,6 +7,7 @@ mod cd;
 pub mod compgen;
 pub mod complete;
 mod compopt;
+mod exec;
 mod getopts;
 mod hash;
 mod history;
@@ -57,7 +58,7 @@ impl ShellCore {
         self.builtins.insert("debug".to_string(), debug);
         self.builtins.insert("disown".to_string(), job_commands::disown);
         self.builtins.insert("eval".to_string(), eval);
-        self.builtins.insert("exec".to_string(), exec);
+        self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("export".to_string(), parameter::export);
         self.builtins.insert("false".to_string(), false_);
@@ -205,17 +206,6 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     core.eval_level -= 1;
     core.db.exit_status
-}
-
-pub fn exec(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if core.db.flags.contains('r') {
-        return error_exit(1, &args[0], "restricted", core);
-    }
-
-    if args.len() == 1 {
-        return 0;
-    }
-    proc_ctrl::exec_command(&args[1..].to_vec(), core, &"".to_string())
 }
 
 pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

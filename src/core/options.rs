@@ -46,7 +46,7 @@ impl Options {
 
         options.implemented = ["extglob", "progcomp", "nullglob", "dotglob", "globstar",
                                "globskipdots", "nocasematch", "expand_aliases", "xpg_echo",
-                               "lastpipe"]
+                               "lastpipe", "execfail"]
                                    .iter().map(|s| s.to_string()).collect();
         //TODO: nocasematch and xpg_echo are dummy
 
