@@ -245,7 +245,7 @@ pub fn consume_ifs(remaining: &mut String, ifs: &str, limit: &mut usize) {
     let mut special_ifs_exist = false;
 
     for ch in remaining.chars() {
-        if ! ifs.contains(ch) {
+        if ! ifs.contains(ch) || *limit == 0 {
             break;
         }
 
