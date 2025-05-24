@@ -299,7 +299,8 @@ impl DataBase {
             self.position_parameters[n][0] = val.to_string();
         }
 
-        if self.flags.contains('a') {
+        if ! self.flags.contains('r')
+        && self.flags.contains('a') {
             env::set_var(name, "");
         }
 
@@ -324,7 +325,8 @@ impl DataBase {
         }
 
 
-        if self.flags.contains('a')
+        if ! self.flags.contains('r')
+        && self.flags.contains('a')
         && ! env::var(name).is_ok() {
             env::set_var(name, "");
         }
