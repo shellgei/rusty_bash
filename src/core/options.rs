@@ -15,6 +15,7 @@ impl Options {
         let mut options = Options::default();
         options.opts.insert("pipefail".to_string(), false);
         options.opts.insert("monitor".to_string(), true);
+        options.opts.insert("noclobber".to_string(), false);
         options.opts.insert("noglob".to_string(), false);
         options.opts.insert("onecmd".to_string(), false);
         options.opts.insert("posix".to_string(), false);

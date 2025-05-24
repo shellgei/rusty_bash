@@ -12,7 +12,7 @@ use crate::elements::subword::filler::FillerSubword;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::utils::exit;
+use crate::utils::{exit, file_check};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::os::fd::FromRawFd;
@@ -57,6 +57,12 @@ impl Redirect {
         }
 
         self.right.text = args[0].clone();
+
+        if core.options.query("noclobber") 
+        && (self.symbol.as_str() == ">" || self.symbol.as_str() == ">>")
+        && file_check::exists(&self.right.text) {
+            return Err(ExecError::CannotOverwriteExistingFile(self.right.text.clone()));
+        }
 
         match self.symbol.as_str() {
             "<" => self.redirect_simple_input(restore), // < 
