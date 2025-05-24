@@ -17,7 +17,7 @@ pub fn exec(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     exec_command(&args[1..].to_vec(), core, &"".to_string())
 }
 
-fn exec_command(args: &Vec<String>, _: &mut ShellCore, fullpath: &String) -> i32 {
+fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> i32 {
     let cargs: Vec<CString> = args.iter().map(|a| CString::new(a.to_string()).unwrap()).collect();
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
@@ -28,12 +28,15 @@ fn exec_command(args: &Vec<String>, _: &mut ShellCore, fullpath: &String) -> i32
     let result = unistd::execvp(&cargs[0], &cargs);
 
     match result {
-        Err(Errno::E2BIG) => return 126,
-        Err(Errno::EACCES) => return 126,
-        Err(Errno::ENOENT) => return 127,
-        Err(_) => {
-            //eprintln!("Failed to execute. {:?}", err);
-            return 127;
+        Err(Errno::E2BIG) => 
+            return super::error_exit(126, &args[0], "Arg list too long", core),
+        Err(Errno::EACCES) => 
+            return super::error_exit(126, &args[0], "cannot execute: Permission denied", core),
+        Err(Errno::ENOENT) =>
+            return super::error_exit(127, &args[0], "not found", core),
+        Err(e) => {
+            let msg = format!("{:?}", &e);
+            return super::error_exit(127, &args[0], &msg, core);
         },
         _ => return 127,
     }
