@@ -92,6 +92,7 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
+
     let compat_bash = arg::consume_option("-b", &mut args);
     if compat_bash {
         core.compat_bash = true;
