@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{proc_ctrl, ShellCore};
 use nix::unistd;
 use nix::errno::Errno;
 use std::ffi::CString;
@@ -14,7 +14,12 @@ pub fn exec(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 {
         return 0;
     }
-    exec_command(&args[1..].to_vec(), core, &"".to_string())
+
+    if core.db.flags.contains('i') || core.shopts.query("execfail") {
+        exec_command(&args[1..].to_vec(), core, &"".to_string())
+    }else{
+        proc_ctrl::exec_command(&args[1..].to_vec(), core, &"".to_string())
+    }
 }
 
 fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> i32 {
