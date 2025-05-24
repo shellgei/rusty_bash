@@ -2,8 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::DataBase;
-//use crate::utils::clock;
-//use super::SpecialData;
+use nix::unistd;
 use super::data::random::RandomVar;
 use super::data::srandom::SRandomVar;
 use super::data::seconds::Seconds;
@@ -20,6 +19,7 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
     db.set_param("OPTIND", "1", None)?;
     db.set_param("IFS", " \t\n", None)?;
+    db.set_param("UID", &unistd::getuid().to_string(), None)?;
 
     db.params[0].insert( "RANDOM".to_string(), Box::new(RandomVar::new()) );
     db.params[0].insert( "SRANDOM".to_string(), Box::new(SRandomVar::new()) );
