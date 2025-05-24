@@ -44,18 +44,6 @@ pub fn consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<S
     }
 }
 
-/*
-pub fn replace_to_short_opt(opt1: &str, opt2: &str, to: &str, args: &mut Vec<String>) {
-    if let Some(pos) = args.iter().position(|a| a == opt1) {
-        if args.len() > pos+1 && args[pos+1] == opt2 {
-            args.remove(pos);
-            args.remove(pos);
-            args.insert(pos, to.to_string());
-        }
-    }
-}
-*/
-
 fn dissolve_option(opt: &str) -> Vec<String> {
     if opt.starts_with("-") {
         opt[1..].chars().map(|c| ("-".to_owned() + &c.to_string()).to_string()).collect()
@@ -64,39 +52,23 @@ fn dissolve_option(opt: &str) -> Vec<String> {
     }else {
         vec![opt.to_string()]
     }
-    /*
-    if opt.starts_with("--") || ! opt.starts_with("-") {
-        return vec![opt.to_string()];
-    }
-
-    opt[1..].chars().map(|c| ("-".to_owned() + &c.to_string()).to_string()).collect()
-    */
 }
 
 pub fn dissolve_options(args: &Vec<String>) -> Vec<String> {
-    args.iter().map(|a| dissolve_option(a)).collect::<Vec<Vec<String>>>().concat()
-}
+    //args.iter().map(|a| dissolve_option(a)).collect::<Vec<Vec<String>>>().concat()
 
-/*
-pub fn consume_after_options(args: &mut Vec<String>, start: usize) -> Vec<String> {
-    let mut has_option = false;
-
-    for (i, arg) in args[start..].iter().enumerate() {
-        if arg == "--" {
-            args.remove(i+start);
-            return args.split_off(i+start);
+    let mut ans = vec![];
+    let mut after_double_hyphen = false;
+    for a in args {
+        if a == "--" {
+            after_double_hyphen = true;
         }
 
-        if arg.starts_with("-") {
-            has_option = true;
-            continue;
-        }
-
-        if has_option {
-            return args.split_off(i+start);
+        match after_double_hyphen {
+            true => ans.push(a.to_string()),
+            false => ans.append(&mut dissolve_option(a)),
         }
     }
 
-    args.split_off(start)
+    ans
 }
-*/

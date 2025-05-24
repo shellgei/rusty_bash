@@ -73,6 +73,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args[1].starts_with("--") {
+        args[1] = args[0].clone();
         args.remove(0);
         return match parameter::set_positions(core, &args) {
             Ok(()) => 0,
