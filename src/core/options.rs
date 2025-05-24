@@ -16,6 +16,7 @@ impl Options {
         options.opts.insert("pipefail".to_string(), false);
         options.opts.insert("monitor".to_string(), true);
         options.opts.insert("noglob".to_string(), false);
+        options.opts.insert("onecmd".to_string(), false);
         options.opts.insert("posix".to_string(), false);
         options.opts.insert("history".to_string(), false); //TODO: still dummy
         options

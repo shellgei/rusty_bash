@@ -82,7 +82,7 @@ fn run_thread(signal_nums: Vec<i32>, script: &String, core: &mut ShellCore) {
                           .expect("sush(fatal): cannot prepare signal data");
 
         loop {
-            thread::sleep(time::Duration::from_millis(100));
+            thread::sleep(time::Duration::from_millis(5));
             for signal in signals.pending() {
                 if signal_nums.contains(&signal) {
                     trap.store(true, Relaxed);

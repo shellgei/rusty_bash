@@ -19,7 +19,10 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     }
 }
 
-pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
+pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), ExecError> {
+    set_t(core, args);
+    set_m(core, args);
+
     for a in args {
         if a.len() != 2 {
             return Err(ExecError::InvalidOption("set: ".to_owned() + &a.to_string()));
@@ -39,6 +42,29 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
     Ok(())
 }
 
+pub fn set_t(core: &mut ShellCore, args: &mut Vec<String>) {
+    if arg::consume_option("-t", args) {
+        if ! core.db.flags.contains('t') {
+            core.db.flags += "t";
+        }
+        let _ = core.options.set("onecmd", true);
+    }
+}
+
+pub fn set_m(core: &mut ShellCore, args: &mut Vec<String>) {
+    if arg::consume_option("-m", args) {
+        if ! core.db.flags.contains('m') {
+            core.db.flags += "m";
+        }
+        let _ = core.options.set("monitor", true);
+    }
+
+    if arg::consume_option("+m", args) {
+        core.db.flags.retain(|f| f != 'm');
+        let _ = core.options.set("monitor", false);
+    }
+}
+
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
@@ -54,22 +80,11 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return parameter::print_all(core);
     }
 
-    if arg::consume_option("-m", &mut args) {
-        if ! core.db.flags.contains('m') {
-            core.db.flags += "m";
-        }
-        let _ = core.options.set("monitor", true);
-        if args.len() <= 1 {
-            return 0;
-        }
-    }
+    set_t(core, &mut args);
+    set_m(core, &mut args);
 
-    if arg::consume_option("+m", &mut args) {
-        core.db.flags.retain(|f| f != 'm');
-        let _ = core.options.set("monitor", false);
-        if args.len() <= 1 {
-            return 0;
-        }
+    if args.len() < 2 {
+        return 0;
     }
 
     if args[1].starts_with("--") {
@@ -108,7 +123,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     match args[1].starts_with("-") || args[1].starts_with("+") {
-        true  => if let Err(e) = set_options(core, &args[1..]) {
+        true  => if let Err(e) = set_options(core, &mut args[1..].to_vec()) {
             e.print(core);
             return 2;
         },

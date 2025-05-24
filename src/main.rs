@@ -67,7 +67,7 @@ fn configure(args: &Vec<String>, core: &mut ShellCore) {
         core.db.exit_status = 2;
         exit::normal(core);
     }
-    if let Err(e) = option::set_options(core, &options) {
+    if let Err(e) = option::set_options(core, &mut options) {
         e.print(core);
         core.db.exit_status = 2;
         exit::normal(core);
@@ -161,6 +161,10 @@ fn main_loop(core: &mut ShellCore, command: &String) {
             (true, false) => {},
             (false, true) => break,
             _ => parse_and_exec(&mut feeder, core, true),
+        }
+
+        if core.options.query("onecmd") {
+            break;
         }
     }
     core.write_history_to_file();

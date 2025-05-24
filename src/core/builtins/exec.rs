@@ -38,7 +38,7 @@ fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> 
         Err(Errno::EACCES) => 
             return super::error_exit(126, &args[0], "cannot execute: Permission denied", core),
         Err(Errno::ENOENT) =>
-            return super::error_exit(127, &args[0], "not found", core),
+            return super::error_exit(127, &args[0], "No such file or directory", core),
         Err(e) => {
             let msg = format!("{:?}", &e);
             return super::error_exit(127, &args[0], &msg, core);
