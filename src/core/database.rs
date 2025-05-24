@@ -283,7 +283,8 @@ impl DataBase {
         SingleData::init_as_num(&mut self.params[layer], name, value)
     }
 
-    pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>)
+    -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
@@ -298,6 +299,9 @@ impl DataBase {
             self.position_parameters[n][0] = val.to_string();
         }
 
+        if self.flags.contains('a') {
+            env::set_var(name, "");
+        }
 
         let layer = self.get_target_layer(name, layer);
         SingleData::set_value(&mut self.params[layer], name, val)
@@ -317,6 +321,12 @@ impl DataBase {
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
             self.position_parameters[n][0] += val;
+        }
+
+
+        if self.flags.contains('a')
+        && ! env::var(name).is_ok() {
+            env::set_var(name, "");
         }
 
         let layer = self.get_target_layer(name, layer);
@@ -483,6 +493,8 @@ impl DataBase {
     }
 
     pub fn unset_var(&mut self, name: &str) {
+        env::remove_var(name);
+
         for layer in &mut self.params {
             layer.remove(name);
         }

@@ -20,9 +20,7 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) {
 }
 
 pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), ExecError> {
-    set_t(core, args);
-    set_m(core, args);
-    set_large_c(core, args);
+    set_options2(core, args);
 
     for a in args {
         if a.len() != 2 {
@@ -43,6 +41,29 @@ pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), E
     Ok(())
 }
 
+pub fn set_options2(core: &mut ShellCore, args: &mut Vec<String>) {
+    for (short, long) in [('t', "onecmd"), ('m', "monitor"),
+                          ('C', "noclobber"), ('a', "allexport"),
+                          ('B', "braceexpand")] {
+        let minus_opt = format!("-{}", short);
+        let plus_opt = format!("+{}", short);
+
+        if arg::consume_option(&minus_opt, args) {
+            if ! core.db.flags.contains(short) {
+                core.db.flags += &minus_opt[1..];
+            }
+            let _ = core.options.set(long, true);
+        }
+    
+        if arg::consume_option(&plus_opt, args) {
+            core.db.flags.retain(|f| f != short);
+            let _ = core.options.set(long, false);
+        }
+    }
+}
+
+
+/*
 pub fn set_t(core: &mut ShellCore, args: &mut Vec<String>) {
     if arg::consume_option("-t", args) {
         if ! core.db.flags.contains('t') {
@@ -78,7 +99,7 @@ pub fn set_large_c(core: &mut ShellCore, args: &mut Vec<String>) {
         core.db.flags.retain(|f| f != 'C');
         let _ = core.options.set("noclobber", false);
     }
-}
+}*/
 
 
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -96,9 +117,12 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return parameter::print_all(core);
     }
 
+    /*
     set_t(core, &mut args);
     set_m(core, &mut args);
     set_large_c(core, &mut args);
+    */
+    set_options2(core, &mut args);
 
     if args.len() < 2 {
         return 0;
