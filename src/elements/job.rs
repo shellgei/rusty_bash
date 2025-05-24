@@ -35,7 +35,7 @@ impl Job {
         for (pipeline, end) in self.pipelines.iter_mut()
                           .zip(self.pipeline_ends.iter()) {
             if core.return_flag {
-                break;
+                continue;
             }
 
             if do_next {
