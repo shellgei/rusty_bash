@@ -122,8 +122,7 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
 
     if args.contains(&"-a".to_string()) {
         let mut v = vec![];
-        if ! core.db.is_array(&name)
-        && ! core.db.is_assoc(&name) {
+        if core.db.is_single(&name) {
             if let Ok(s) = core.db.get_param(&name) {
                 v.push(s);
             }

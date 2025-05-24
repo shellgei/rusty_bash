@@ -196,7 +196,6 @@ impl DataBase {
             return self.position_parameters[layer].clone();
         }
 
-        //match getter::clone(self, name).as_mut() {
         match self.get_ref(name) {
             Some(d) => {
                 match d.get_all_indexes_as_array() {
@@ -219,6 +218,13 @@ impl DataBase {
         match self.get_ref(name) {
             Some(d) => d.is_assoc(),
             None => false,
+        }
+    }
+
+    pub fn is_single(&mut self, name: &str) -> bool {
+        match self.get_ref(name) {
+            Some(d) => return d.is_single(),
+            _ => false,
         }
     }
 
