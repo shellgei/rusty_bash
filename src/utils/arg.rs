@@ -2,8 +2,16 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub fn consume_option(opt: &str, args: &mut Vec<String>) -> bool {
+    let end = args.iter().position(|a| a == "--");
+
     match args.iter().position(|a| a == opt) {
         Some(pos) => {
+            if let Some(e) = end {
+                if e < pos {
+                    return false;
+                }
+            }
+
             args.remove(pos);
             true
         },
