@@ -45,7 +45,7 @@ impl Substitution {
     }
 
     fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        match self.get_index(core)? {
+        match self.left_hand.get_index(core, self.right_hand.evaluated_array.is_some(), self.append)? {
             None => {
                 if let Some(a) = &self.right_hand.evaluated_array {
                     if a.is_empty() {
@@ -87,20 +87,6 @@ impl Substitution {
         }
 
         self.set_array(core, layer)
-    }
-
-    pub fn get_index(&mut self, core: &mut ShellCore) -> Result<Option<String>, ExecError> {
-        match self.left_hand.get_index(core)? {
-            Some(s) => return Ok(Some(s)),
-            None => {
-                if core.db.is_array(&self.left_hand.name)
-                    && ! self.append
-                    && self.right_hand.evaluated_array.is_none() {
-                    return Ok(Some("0".to_string()));
-                }
-            },
-        }
-        Ok(None)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

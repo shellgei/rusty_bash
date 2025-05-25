@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::substitution::Substitution;
+use crate::elements::substitution::variable::Variable;
 
 fn unset_all(core: &mut ShellCore, name: &str) -> i32 {
     core.db.unset(name);
@@ -37,10 +37,10 @@ pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         },
         name => {
             if name.contains("[") {
-                let mut f = Feeder::new(&(name.to_owned() + "="));
-                if let Ok(Some(mut sub)) = Substitution::parse(&mut f, core) {
-                    if let Ok(Some(key)) = sub.get_index(core) {
-                        let nm = sub.left_hand.name.clone();
+                let mut f = Feeder::new(&(name.to_owned()));
+                if let Ok(Some(mut sub)) = Variable::parse(&mut f, core) {
+                    if let Ok(Some(key)) = sub.get_index(core, false, false) {
+                        let nm = sub.name.clone();
                         core.db.unset_array_elem(&nm, &key);
                         return 0;
                     }
