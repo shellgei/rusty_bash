@@ -306,7 +306,7 @@ impl DataBase {
         }
 
         if ! self.flags.contains('r')
-        && self.flags.contains('a') {
+        && ( self.flags.contains('a') || self.has_flag(name, 'x') ) {
             env::set_var(name, "");
         }
 
@@ -332,7 +332,7 @@ impl DataBase {
 
 
         if ! self.flags.contains('r')
-        && self.flags.contains('a')
+        && ( self.flags.contains('a') || self.has_flag(name, 'x') )
         && ! env::var(name).is_ok() {
             env::set_var(name, "");
         }

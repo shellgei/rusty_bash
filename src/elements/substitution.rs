@@ -187,7 +187,7 @@ impl Substitution {
         Ok(())
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse_left_hand(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {
             return Ok(None);
@@ -204,6 +204,15 @@ impl Substitution {
         if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text.clone();
             ans.index = Some(s);
+        };
+
+        Ok(Some(ans))
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        let mut ans = match Self::parse_left_hand(feeder, core)? {
+            Some(a) => a,
+            None => return Ok(None),
         };
 
         if feeder.starts_with("+=") {

@@ -96,7 +96,10 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 fn declare_set(core: &mut ShellCore, name_and_value: &String,
-               args: &mut Vec<String>, read_only: bool) -> Result<(), ExecError> {
+               args: &mut Vec<String>) -> Result<(), ExecError> {
+    let read_only = arg::consume_option("-r", args);
+    let export_opt = arg::consume_option("-x", args);
+
     let mut tmp = name_and_value.clone();
     let (mut name, value) = match name_and_value.find('=') {
         Some(n) => {
@@ -111,6 +114,9 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     if name.contains('[') && read_only {
         name = name.split('[').next().unwrap().to_string(); 
         core.db.set_flag(&name, 'r');
+        if export_opt {
+            core.db.set_flag(&name, 'x');
+        }
         return Ok(())
     }
 
@@ -140,6 +146,9 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
 
     if read_only {
         core.db.set_flag(&name, 'r');
+    }
+    if export_opt {
+        core.db.set_flag(&name, 'x');
     }
     Ok(())
 }
@@ -205,14 +214,20 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let prefix = format!("declare -{} ", options);
-    names.into_iter().for_each(|k| {print!("{}", prefix); core.db.print(&k);});
+    for name in names {
+        print!("{}", prefix);
+        if core.db.is_readonly(&name) {
+            print!("r");
+        }
+        core.db.print(&name);
+    }
+
 
     0
 }
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
-    let _x_opt = arg::consume_option("-x", &mut args); //TODO: use -x
 
     if args[1..].iter().all(|a| a.starts_with("-")) {
         return declare_print_all(core, &mut args);
@@ -221,8 +236,6 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if arg::consume_option("-p", &mut args) {
         return declare_print(core, &args[1..]);
     }
-
-    let r_flg = arg::consume_option("-r", &mut args);
 
     let mut name_and_values = vec![];
     while args.len() > 1 {
@@ -236,7 +249,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     for name_and_value in name_and_values.iter().rev() {
-        if let Err(e) = declare_set(core, &name_and_value, &mut args, r_flg) {
+        if let Err(e) = declare_set(core, &name_and_value, &mut args) {
             e.print(core);
             return 1;
         }
@@ -280,7 +293,7 @@ pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     for name in &args[1..] {
         if name.contains('=') {
-            if let Err(e) = declare_set(core, &name, &mut vec![], true) {
+            if let Err(e) = declare_set(core, &name, &mut vec!["-r".to_string()]) {
                 e.print(core);
                 return 1;
             }
