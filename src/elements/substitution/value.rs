@@ -56,7 +56,8 @@ impl Value {
         }
     }
 
-    pub fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore, name: &str) -> Result<(), ExecError> {
+    fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore, name: &str)
+    -> Result<(), ExecError> {
         self.evaluated_string = match core.db.has_flag(&name, 'i') {
             true  => Some(w.eval_as_integer(core)?),
             false => Some(w.eval_as_value(core)?),
@@ -65,7 +66,8 @@ impl Value {
         Ok(())
     }
 
-    pub fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore, name: &str, append: bool) -> Result<(), ExecError> {
+    fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore,
+                     name: &str, append: bool) -> Result<(), ExecError> {
         let prev = match append {
             true  => core.db.get_array_all(&name),
             false => vec![],

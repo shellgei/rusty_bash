@@ -21,21 +21,18 @@ impl Variable {
 
     pub fn get_index(&mut self, core: &mut ShellCore,
                      right_is_array: bool, append: bool) -> Result<Option<String>, ExecError> {
-        match self.index.clone() {
-            Some(mut s) => {
-                if s.text.chars().all(|c| " \n\t[]".contains(c)) {
-                    return Ok(Some("".to_string()));
-                }
-                let index = s.eval(core, &self.name)?;
-                Ok(Some(index)) 
-            },
-            None => {
-                if core.db.is_array(&self.name) && ! append && ! right_is_array {
-                    Ok(Some("0".to_string()))
-                }else{
-                    Ok(None)
-                }
-            },
+        if let Some(mut s) = self.index.clone() {
+            if s.text.chars().all(|c| " \n\t[]".contains(c)) {
+                return Ok(Some("".to_string()));
+            }
+            let index = s.eval(core, &self.name)?;
+            return Ok(Some(index));
+        }
+
+        if core.db.is_array(&self.name) && ! append && ! right_is_array {
+            Ok(Some("0".to_string()))
+        }else{
+            Ok(None)
         }
     }
 

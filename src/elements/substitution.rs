@@ -73,20 +73,25 @@ impl Substitution {
         }
     }
 
+    fn set_single(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        let data = self.right_hand.evaluated_string.clone().unwrap();
+        if self.append {
+            core.db.append_param(&self.left_hand.name, &data, Some(layer))
+        }else{
+            core.db.set_param(&self.left_hand.name, &data, Some(layer))
+        }
+    }
+
     fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>)
     -> Result<(), ExecError> {
         let layer = core.db.get_target_layer(&self.left_hand.name, layer);
 
-        if self.right_hand.evaluated_string.is_some() && self.left_hand.index.is_none() {
-            let data = self.right_hand.evaluated_string.clone().unwrap();
-            if self.append {
-                return core.db.append_param(&self.left_hand.name, &data, Some(layer));
-            }else{
-                return core.db.set_param(&self.left_hand.name, &data, Some(layer));
-            }
+        if self.right_hand.evaluated_string.is_some()
+        && self.left_hand.index.is_none() {
+            self.set_single(core, layer)
+        }else{
+            self.set_array(core, layer)
         }
-
-        self.set_array(core, layer)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
