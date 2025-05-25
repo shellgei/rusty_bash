@@ -39,6 +39,8 @@ pub trait Data {
         println!("{}={}", name, self.print_body());
     }
 
+    //fn push_elems(&mut self, _: Vec<String>) -> Result<(), ExecError> { Err(ExecError::Other("Undefined call push_elems".to_string())) }
+
     fn clear(&mut self) {}
     fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call set_as_single".to_string()))}
     fn append_as_single(&mut self, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call set_as_single".to_string()))}
@@ -46,14 +48,14 @@ pub trait Data {
     fn set_as_array(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("not an array".to_string()))
     }
-    fn append_as_array(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("not an array".to_string()))
     }
 
     fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("not an associative table".to_string()))
     }
-    fn append_as_assoc(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("not an associative table".to_string()))
     }
 

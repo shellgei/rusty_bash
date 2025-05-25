@@ -66,7 +66,21 @@ impl Data for ArrayData {
         Err(ExecError::Other("invalid index".to_string()))
     }
 
-    fn append_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    /*
+    fn push_elems(&mut self, values: Vec<String>) -> Result<(), ExecError> {
+        let mut index = match self.body.is_empty() {
+            true  => 0,
+            false => *self.keys().iter().max().unwrap(),
+        };
+
+        for v in values {
+            self.body.insert(index, v);
+            index += 1;
+        }
+        Ok(())
+    }*/
+
+    fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         if let Ok(n) = key.parse::<usize>() {
             if let Some(v) = self.body.get(&n) {
                 self.body.insert(n, v.to_owned() + value);
@@ -153,9 +167,9 @@ impl ArrayData {
                         name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
-                return d.append_as_array(&pos.to_string(), val);
+                return d.append_to_array_elem(&pos.to_string(), val);
             }else if d.is_assoc() {
-                return d.append_as_assoc(&pos.to_string(), val);
+                return d.append_to_assoc_elem(&pos.to_string(), val);
             }else{
                 let data = d.get_as_single()?;
                 ArrayData::set_new_entry(db_layer, name, vec![])?;
@@ -167,6 +181,22 @@ impl ArrayData {
             Self::set_elem(db_layer, name, pos, val)
         }
     }
+
+    /*
+    pub fn append_elems(db_layer: &mut HashMap<String, Box<dyn Data>>,
+                        name: &str, values: Vec<String>) -> Result<(), ExecError> {
+        if let Some(d) = db_layer.get_mut(name) {
+            if d.is_array() || d.is_assoc() {
+                d.push_elems(values)
+            }else{
+                let data = d.get_as_single()?;
+                ArrayData::set_new_entry(db_layer, name, vec![data])?;
+                Self::append_elems(db_layer, name, values)
+            }
+        }else{
+            ArrayData::set_new_entry(db_layer, name, values.to_vec())
+        }
+    }*/
 
     pub fn values(&self) -> Vec<String> {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();

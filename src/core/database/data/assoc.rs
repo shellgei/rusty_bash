@@ -50,7 +50,7 @@ impl Data for AssocData {
         Ok(())
     }
 
-    fn append_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         if let Some(v) = self.body.get(key) {
             self.body.insert(key.to_string(), v.to_owned() + value);
         }else{
@@ -124,13 +124,43 @@ impl AssocData {
         }
     }
 
+    /*
+    fn push_elems(&mut self, values: Vec<String>) -> Result<(), ExecError> {
+        let mut index = 0;
+
+        for v in values {
+            while self.body.contains_key(&index.to_string()) {
+                index += 1;
+            }
+            
+            self.body.insert(index.to_string(), v);
+        }
+        Ok(())
+    }*/
+
     pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
                      key: &String, val: &String) -> Result<(), ExecError> {
         match db_layer.get_mut(name) {
-            Some(v) => v.append_as_assoc(key, val), 
+            Some(v) => v.append_to_assoc_elem(key, val), 
             _ => Err(ExecError::Other("TODO".to_string())),
         }
     }
+
+    /*
+    pub fn append_elems(db_layer: &mut HashMap<String, Box<dyn Data>>,
+                        name: &str, values: HashMap<String, String>) -> Result<(), ExecError> {
+        if let Some(d) = db_layer.get_mut(name) {
+            if d.is_array() || d.is_assoc() {
+                d.push_elems(values)
+            }else{
+                let data = d.get_as_single()?;
+                ArrayData::set_new_entry(db_layer, name, vec![data])?;
+                Self::append_elems(db_layer, name, values)
+            }
+        }else{
+            ArrayData::set_new_entry(db_layer, name, values.to_vec())
+        }
+    }*/
 
     pub fn get(&self, key: &str) -> Option<String> {
         self.body.get(key).cloned()

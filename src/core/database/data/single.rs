@@ -168,7 +168,7 @@ impl SingleData {
         let d = db_layer.get_mut(name).unwrap();
 
         if d.is_array() {
-            return d.append_as_array("0", val);
+            return d.append_to_array_elem("0", val);
         }
      
         d.append_as_single(val)

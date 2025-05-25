@@ -370,14 +370,14 @@ impl DataBase {
 
         if self.is_array(name) {
             if let Ok(n) = index.parse::<usize>() {
-                self.append_array_elem(&name, val, n, layer)?;
+                self.append_to_array_elem(&name, val, n, layer)?;
             }
         }else if self.is_assoc(name) {
-            self.append_assoc_elem(&name, &index, val, layer)?;
+            self.append_to_assoc_elem(&name, &index, val, layer)?;
         }else{
             match index.parse::<usize>() {
-                Ok(n) => {self.append_array_elem(&name, val, n, layer)?;},
-                _ => {self.append_assoc_elem(&name, &index, val, layer)?;},
+                Ok(n) => {self.append_to_array_elem(&name, val, n, layer)?;},
+                _ => {self.append_to_assoc_elem(&name, &index, val, layer)?;},
             }
         }
         Ok(())
@@ -397,7 +397,7 @@ impl DataBase {
         ArrayData::set_elem(&mut self.params[layer], name, pos, val)
     }
 
-    pub fn append_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn append_to_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
@@ -425,7 +425,7 @@ impl DataBase {
         AssocData::set_elem(&mut self.params[layer], name, key, val)
     }
 
-    pub fn append_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn append_to_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
@@ -454,6 +454,25 @@ impl DataBase {
         let layer = self.get_target_layer(name, layer);
         ArrayData::set_new_entry(&mut self.params[layer], name, v)
     }
+
+/*
+    pub fn append_to_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), ExecError> {
+        Self::name_check(name)?;
+        self.write_check(name)?;
+        if self.flags.contains('r') {
+            if name == "BASH_CMDS" {
+                for val in &v{
+                    self.rsh_cmd_check(&vec![val.to_string()])?;
+                }
+            }
+            self.rsh_check(name)?;
+        }
+
+        let layer = self.get_target_layer(name, layer);
+        ArrayData::append_elems(&mut self.params[layer], name, v)?;
+        Ok(())
+    }
+*/
 
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
