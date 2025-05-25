@@ -44,32 +44,41 @@ impl Substitution {
         Ok(front + &rear)
     }
 
-    fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        match self.left_hand.get_index(core, self.right_hand.evaluated_array.is_some(), self.append)? {
-            None => {
-                if let Some(a) = &self.right_hand.evaluated_array {
-                    if a.is_empty() {
-                        core.db.set_array(&self.left_hand.name, vec![], Some(layer))?;
-                        return Ok(());
-                    }
+    fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        if let Some(a) = &self.right_hand.evaluated_array {
+            if a.is_empty() {
+                core.db.set_array(&self.left_hand.name, vec![], Some(layer))?;
+                return Ok(());
+            }
 
-                    core.db.init(&self.left_hand.name, layer);
-                    for e in a {
-                        core.db.set_param2(&self.left_hand.name, &e.0, &e.1, Some(layer))?;
-                    }
-                    return Ok(());
-                }
-                return Err(ExecError::Other("no array and no index".to_string()));
-            },
-            Some(index) => {
-                if index.is_empty() {
-                    return Err(ExecError::Other(format!("{}[]: invalid index", &self.left_hand.name)));
-                }
-                if let Some(v) = &self.right_hand.evaluated_string {
-                    return core.db.set_param2(&self.left_hand.name, &index, &v, Some(layer));
-                }
-                return Err(ExecError::Other("indexed to non array variable".to_string()));
-            },
+            core.db.init(&self.left_hand.name, layer);
+            for e in a {
+                core.db.set_param2(&self.left_hand.name, &e.0, &e.1, Some(layer))?;
+            }
+            return Ok(());
+        }
+        Err(ExecError::Other("no array and no index".to_string()))
+    }
+
+    fn set_array_elem(&mut self, core: &mut ShellCore, layer: usize, index: &String)
+    -> Result<(), ExecError> {
+        if index.is_empty() {
+            return Err(ExecError::ArrayIndexInvalid(self.left_hand.name.clone()));
+        }
+        if let Some(v) = &self.right_hand.evaluated_string {
+            return core.db.set_param2(&self.left_hand.name, index, &v, Some(layer));
+        }
+
+        let msg = format!("{}: cannot assign list to array member", &self.left_hand.text);
+        Err(ExecError::Other(msg))
+    }
+
+    fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+        let rhs_is_array = self.right_hand.evaluated_array.is_some();
+
+        match self.left_hand.get_index(core, rhs_is_array, self.append)? {
+            Some(index) => self.set_array_elem(core, layer, &index),
+            None        => self.set_whole_array(core, layer),
         }
     }
 

@@ -15,10 +15,6 @@ pub struct Variable {
 }
 
 impl Variable {
-    pub fn eval(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {
-        Ok(())
-    }
-
     pub fn get_index(&mut self, core: &mut ShellCore,
                      right_is_array: bool, append: bool) -> Result<Option<String>, ExecError> {
         if let Some(mut s) = self.index.clone() {
