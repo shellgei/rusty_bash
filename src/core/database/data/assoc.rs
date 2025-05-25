@@ -93,7 +93,6 @@ impl Data for AssocData {
         
         let mut keys = self.keys();
         keys.sort();
-        //let max = *keys.iter().max().unwrap() as usize;
         let mut ans = vec![];
         for i in keys {
             match self.body.get(&i) {

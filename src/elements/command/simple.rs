@@ -133,9 +133,10 @@ impl SimpleCommand {
         self.option_x_output(core);
         
         for s in self.substitutions.iter_mut() {
-            if let Err(e) = s.eval(core, None/*, false*/) {
+            if let Err(e) = s.eval(core, None) {
                 e.print(core);
                 core.db.exit_status = 1;
+                return Err(e);
             }
         }
 

@@ -4,6 +4,7 @@
 use crate::{env, ShellCore, utils, Feeder};
 use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
+use crate::elements::substitution::variable::Variable;
 use crate::utils::arg;
 use super::error_exit;
 
@@ -116,68 +117,6 @@ fn declare_set_has_equal(core: &mut ShellCore, name_and_value: &String,
     }
 
     return Err(ExecError::BadSubstitution(name_and_value.clone()));
-/*
-    let mut tmp = name_and_value.clone();
-    let (mut name, value) = match name_and_value.find('=') {
-        Some(n) => {
-            tmp.remove(n);
-            let v = tmp.split_off(n);
-            let n = tmp;
-
-            if read_only {
-                return Err(ExecError::VariableReadOnly(n));
-            }
-
-            (n, v)
-        },
-        None => (name_and_value.to_string(), "".to_string()),
-    };
-
-    if name.contains('[') && read_only {
-        name = name.split('[').next().unwrap().to_string(); 
-        core.db.set_flag(&name, 'r');
-        if export_opt {
-            core.db.set_flag(&name, 'x');
-        }
-        return Ok(())
-    }
-
-    if ! utils::is_name(&name, core) {
-        return Err(ExecError::InvalidName(name.to_string()));
-    }
-
-    let layer = Some(core.db.get_layer_num() - 2);
-
-    if args.contains(&"-a".to_string()) {
-        let mut v = vec![];
-        if core.db.is_single(&name) {
-            if let Ok(s) = core.db.get_param(&name) {
-                v.push(s);
-            }
-        }
-
-        if v.is_empty() {
-            core.db.set_array(&name, None, layer)?;
-        }else{
-            core.db.set_array(&name, Some(v), layer)?;
-        }
-    }else if args.contains(&"-A".to_string()) {
-        core.db.set_assoc(&name, layer)?;
-    }else {
-        match args.contains(&"-i".to_string()) {
-            false => core.db.set_param(&name, &value, layer)?,
-            true  => core.db.init_as_num(&name, &value, layer)?,
-        };
-    }
-
-    if read_only {
-        core.db.set_flag(&name, 'r');
-    }
-    if export_opt {
-        core.db.set_flag(&name, 'x');
-    }
-    Ok(())
-*/
 }
 
 fn declare_set(core: &mut ShellCore, name_and_value: &String,
@@ -189,47 +128,32 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
 
+    let escaped = name_and_value.replace("~", "\\~");
+    let mut feeder = Feeder::new(&escaped);
+    let var = Variable::parse(&mut feeder, core)?;
+
+    if var.is_none() {
+        return Err(ExecError::InvalidName(name_and_value.to_string()));
+    }
+
     let layer = Some(core.db.get_layer_num() - 2);
-    let mut name = name_and_value.clone();
-
-    if name.contains('[') && read_only {
-        name = name.split('[').next().unwrap().to_string(); 
-
-        if args.contains(&"-A".to_string()) {
-            core.db.set_assoc(&name, layer)?;
-        }else{
-            core.db.set_array(&name, None, layer)?;
-        }
-
-        core.db.set_flag(&name, 'r');
-        return Ok(())
-    }
-
-    if ! utils::is_name(&name, core) {
-        return Err(ExecError::InvalidName(name.to_string()));
-    }
-
+    let name = var.unwrap().name;
 
     if args.contains(&"-a".to_string()) {
-        let mut v = vec![];
-        if core.db.is_single(&name) {
-            if let Ok(s) = core.db.get_param(&name) {
-                v.push(s);
-            }
-        }
-
-        if v.is_empty() {
+        if ! core.db.has_value_layer(&name, layer.unwrap()) {
             core.db.set_array(&name, None, layer)?;
-        }else{
-            core.db.set_array(&name, Some(v), layer)?;
         }
     }else if args.contains(&"-A".to_string()) {
-        core.db.set_assoc(&name, layer)?;
-    }else {
-        match args.contains(&"-i".to_string()) {
-            false => core.db.set_param(&name, "", layer)?,
-            true  => core.db.init_as_num(&name, "", layer)?,
-        };
+        if ! core.db.has_value_layer(&name, layer.unwrap()) {
+            core.db.set_assoc(&name, layer)?;
+        }
+    }else if args.contains(&"-i".to_string()) {
+        if core.db.has_value_layer(&name, layer.unwrap()) {
+            let d = core.db.get_param(&name)?;
+            core.db.init_as_num(&name, &d, layer)?;
+        }else{
+            core.db.init_as_num(&name, "", layer)?;
+        }
     }
 
     if read_only {

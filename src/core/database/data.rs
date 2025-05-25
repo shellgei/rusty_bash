@@ -36,7 +36,13 @@ pub trait Data {
         if self.is_special() {
             return;
         }
-        println!("{}={}", name, self.print_body());
+
+        let body = self.print_body();
+        if self.is_array() && body == "" {
+            println!("{}", name);
+        }else{
+            println!("{}={}", name, body);
+        }
     }
 
     fn is_initialized(&self) -> bool {true}
