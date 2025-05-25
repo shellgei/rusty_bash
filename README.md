@@ -73,23 +73,7 @@ The following behavior of Bash will not be imitated by `sush`. So we alter the r
     🍣 (( 1++     ))
     sush: ((: 1++     : syntax error: operand expected (error token is "+")
     ```
-* Bash distinguishes non-initialized arrays from empty arrays. Our shell doesn't do that.
-    ```bash
-    ### Bash ###
-    $ declare -a A
-    $ B=()
-    $ declare -a 
-    declare -a A
-    declare -a B=()
-    ...
-    ### sush ###
-    🍣 declare -a A
-    🍣 B=()
-    🍣 declare -a
-    declare -a A=()
-    declare -a B=()
-    ...
-    ```  
+
 
 ## Contribution
 
