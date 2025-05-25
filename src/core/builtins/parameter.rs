@@ -94,8 +94,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
     0
 }
-
-fn declare_set(core: &mut ShellCore, name_and_value: &String,
+fn declare_set_has_equal(core: &mut ShellCore, name_and_value: &String,
                args: &mut Vec<String>) -> Result<(), ExecError> {
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
@@ -106,6 +105,11 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
             tmp.remove(n);
             let v = tmp.split_off(n);
             let n = tmp;
+
+            if read_only {
+                return Err(ExecError::VariableReadOnly(n));
+            }
+
             (n, v)
         },
         None => (name_and_value.to_string(), "".to_string()),
@@ -141,6 +145,63 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
         match args.contains(&"-i".to_string()) {
             false => core.db.set_param(&name, &value, layer)?,
             true  => core.db.init_as_num(&name, &value, layer)?,
+        };
+    }
+
+    if read_only {
+        core.db.set_flag(&name, 'r');
+    }
+    if export_opt {
+        core.db.set_flag(&name, 'x');
+    }
+    Ok(())
+}
+
+fn declare_set(core: &mut ShellCore, name_and_value: &String,
+               args: &mut Vec<String>) -> Result<(), ExecError> {
+    if name_and_value.contains('=') {
+        return declare_set_has_equal(core, name_and_value, args);
+    }
+
+    let read_only = arg::consume_option("-r", args);
+    let export_opt = arg::consume_option("-x", args);
+
+    let layer = Some(core.db.get_layer_num() - 2);
+    let mut name = name_and_value.clone();
+
+    if name.contains('[') && read_only {
+        name = name.split('[').next().unwrap().to_string(); 
+
+        if args.contains(&"-A".to_string()) {
+            core.db.set_assoc(&name, layer)?;
+        }else{
+            core.db.set_array(&name, vec![], layer)?;
+        }
+
+        core.db.set_flag(&name, 'r');
+        return Ok(())
+    }
+
+    if ! utils::is_name(&name, core) {
+        return Err(ExecError::InvalidName(name.to_string()));
+    }
+
+
+    if args.contains(&"-a".to_string()) {
+        let mut v = vec![];
+        if core.db.is_single(&name) {
+            if let Ok(s) = core.db.get_param(&name) {
+                v.push(s);
+            }
+        }
+
+        core.db.set_array(&name, v, layer)?;
+    }else if args.contains(&"-A".to_string()) {
+        core.db.set_assoc(&name, layer)?;
+    }else {
+        match args.contains(&"-i".to_string()) {
+            false => core.db.set_param(&name, "", layer)?,
+            true  => core.db.init_as_num(&name, "", layer)?,
         };
     }
 
@@ -249,7 +310,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     for name_and_value in name_and_values.iter().rev() {
-        if let Err(e) = declare_set(core, &name_and_value, &mut args) {
+        if let Err(e) = declare_set(core, &name_and_value, &mut args.clone()) {
             e.print(core);
             return 1;
         }
@@ -273,7 +334,7 @@ fn export_var(arg: &str, core: &mut ShellCore) -> Result<(), ExecError> {
     match Substitution::parse(&mut feeder, core) {
         Ok(Some(mut ans)) => {
             env::set_var(&ans.left_hand.name, "");
-            ans.eval(core, None/*, true*/)
+            ans.eval(core, None)
         },
         Ok(None)  => Err(ExecError::VariableInvalid(arg.to_string())),
         Err(e)  => Err(ExecError::ParseError(e)),
@@ -291,20 +352,25 @@ pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    for name in &args[1..] {
-        if name.contains('=') {
-            if let Err(e) = declare_set(core, &name, &mut vec!["-r".to_string()]) {
+    for name_or_subs in &args[1..] {
+        if name_or_subs.contains('=') {
+            if let Err(e) = declare_set(core, &name_or_subs, &mut vec![]) {
                 e.print(core);
                 return 1;
             }
+
+            let lhs = name_or_subs.split('=').nth(0).unwrap();
+            let name = lhs.split('[').nth(0).unwrap();
+
+            core.db.set_flag(name, 'r');
             continue;
         }
 
-        if ! utils::is_name(&name, core) {
-            let msg = format!("`{}': not a valid identifier", name);
+        if ! utils::is_name(&name_or_subs, core) {
+            let msg = format!("`{}': not a valid identifier", name_or_subs);
             return error_exit(1, &args[0], &msg, core);
         }
-        core.db.set_flag(name, 'r');
+        core.db.set_flag(name_or_subs, 'r');
     }
     0
 }
