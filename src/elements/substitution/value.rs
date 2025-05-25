@@ -45,6 +45,54 @@ pub struct Value {
 }
 
 impl Value {
+    pub fn eval(&mut self, core: &mut ShellCore, name: &str, append: bool) -> Result<(), ExecError> {
+        match self.value.clone() {
+            ParsedDataType::Single(v) => self.eval_as_value(&v, core, name),
+            ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core, name, append),
+            ParsedDataType::None => {
+                self.evaluated_string = Some("".to_string());
+                Ok(())
+            },
+        }
+    }
+
+    pub fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore, name: &str) -> Result<(), ExecError> {
+        self.evaluated_string = match core.db.has_flag(&name, 'i') {
+            true  => Some(w.eval_as_integer(core)?),
+            false => Some(w.eval_as_value(core)?),
+        };
+
+        Ok(())
+    }
+
+    pub fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore, name: &str, append: bool) -> Result<(), ExecError> {
+        let prev = match append {
+            true  => core.db.get_array_all(&name),
+            false => vec![],
+        };
+
+        let mut i = 0;
+        let mut hash = HashMap::new();
+        for e in prev {
+            hash.insert(i.to_string(), e);
+            i += 1;
+        }
+
+        let values = a.eval(core)?;
+        for (s, v) in values {
+            match s {
+                Some(mut sub) => {
+                    let index = sub.eval(core, &name)?;
+                    hash.insert(index, v)
+                },
+                None => hash.insert(i.to_string(), v),
+            };
+            i += 1;
+        }
+        self.evaluated_array = Some(hash);
+        Ok(())
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 

@@ -9,12 +9,8 @@ pub mod value;
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use std::collections::HashMap;
-use self::array::Array;
 use self::value::Value;
 use self::variable::Variable;
-use self::value::ParsedDataType;
-use super::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
@@ -26,21 +22,11 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>)
-    -> Result<(), ExecError> {
+    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>) -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
-        let result = match self.right_hand.value.clone() {
-            ParsedDataType::Single(v) => self.eval_as_value(&v, core),
-            ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core),
-            ParsedDataType::None => {
-                self.right_hand.evaluated_string = Some("".to_string());
-                Ok(())
-            },
-        };
-
-        if result.is_err() {
+        if let Err(e) = self.right_hand.eval(core, &self.left_hand.name, self.append) {
             core.db.exit_status = 1;
-            return result;
+            return Err(e);
         }
 
         let ans = self.set_to_shell(core, layer);
@@ -115,44 +101,6 @@ impl Substitution {
             },
         }
         Ok(None)
-    }
-
-    fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore) -> Result<(), ExecError> {
-        if core.db.has_flag(&self.left_hand.name, 'i') {
-            self.right_hand.evaluated_string = Some(w.eval_as_integer(core)?);
-        }else{
-            self.right_hand.evaluated_string = Some(w.eval_as_value(core)?);
-        }
-
-        Ok(())
-    }
-
-    fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore) -> Result<(), ExecError> {
-        let prev = match self.append {
-            true  => core.db.get_array_all(&self.left_hand.name),
-            false => vec![],
-        };
-
-        let mut i = 0;
-        let mut hash = HashMap::new();
-        for e in prev {
-            hash.insert(i.to_string(), e);
-            i += 1;
-        }
-
-        let values = a.eval(core)?;
-        for (s, v) in values {
-            match s {
-                Some(mut sub) => {
-                    let index = sub.eval(core, &self.left_hand.name)?;
-                    hash.insert(index, v)
-                },
-                None => hash.insert(i.to_string(), v),
-            };
-            i += 1;
-        }
-        self.right_hand.evaluated_array = Some(hash);
-        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
