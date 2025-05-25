@@ -1,15 +1,19 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod array;
+pub mod subscript;
+pub mod variable;
+
 use crate::{ShellCore, Feeder};
-//use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::word::WordMode;
 //use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
-use super::array::Array;
-use super::subscript::Subscript;
+use self::array::Array;
+use self::subscript::Subscript;
+use self::variable::Variable;
 use super::word::Word;
 
 #[derive(Debug, Clone, Default)]
@@ -42,8 +46,11 @@ impl ParsedDataType {
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
+    /*
     pub name: String,
     index: Option<Subscript>,
+    */
+    pub left_hand: Variable,
     value: ParsedDataType,
     evaluated_string: Option<String>,
     evaluated_array: Option<HashMap<String, String>>,
@@ -89,13 +96,13 @@ impl Substitution {
             None => {
                 if let Some(a) = &self.evaluated_array {
                     if a.is_empty() {
-                        core.db.set_array(&self.name, vec![], Some(layer))?;
+                        core.db.set_array(&self.left_hand.name, vec![], Some(layer))?;
                         return Ok(());
                     }
 
-                    core.db.init(&self.name, layer);
+                    core.db.init(&self.left_hand.name, layer);
                     for e in a {
-                        core.db.set_param2(&self.name, &e.0, &e.1, Some(layer))?;
+                        core.db.set_param2(&self.left_hand.name, &e.0, &e.1, Some(layer))?;
                     }
                     return Ok(());
                 }
@@ -103,10 +110,10 @@ impl Substitution {
             },
             Some(index) => {
                 if index.is_empty() {
-                    return Err(ExecError::Other(format!("{}[]: invalid index", &self.name)));
+                    return Err(ExecError::Other(format!("{}[]: invalid index", &self.left_hand.name)));
                 }
                 if let Some(v) = &self.evaluated_string {
-                    return core.db.set_param2(&self.name, &index, &v, Some(layer));
+                    return core.db.set_param2(&self.left_hand.name, &index, &v, Some(layer));
                 }
                 return Err(ExecError::Other("indexed to non array variable".to_string()));
             },
@@ -115,14 +122,14 @@ impl Substitution {
 
     fn set_to_shell(&mut self, core: &mut ShellCore, layer: Option<usize>)
     -> Result<(), ExecError> {
-        let layer = core.db.get_target_layer(&self.name, layer);
+        let layer = core.db.get_target_layer(&self.left_hand.name, layer);
 
-        if self.evaluated_string.is_some() && self.index.is_none() {
+        if self.evaluated_string.is_some() && self.left_hand.index.is_none() {
             let data = self.evaluated_string.clone().unwrap();
             if self.append {
-                return core.db.append_param(&self.name, &data, Some(layer));
+                return core.db.append_param(&self.left_hand.name, &data, Some(layer));
             }else{
-                return core.db.set_param(&self.name, &data, Some(layer));
+                return core.db.set_param(&self.left_hand.name, &data, Some(layer));
             }
         }
 
@@ -130,16 +137,16 @@ impl Substitution {
     }
 
     pub fn get_index(&mut self, core: &mut ShellCore) -> Result<Option<String>, ExecError> {
-        match self.index.clone() {
+        match self.left_hand.index.clone() {
             Some(mut s) => {
                 if s.text.chars().all(|c| " \n\t[]".contains(c)) {
                     return Ok(Some("".to_string()));
                 }
-                let index = s.eval(core, &self.name)?;
+                let index = s.eval(core, &self.left_hand.name)?;
                 Ok(Some(index)) 
             },
             None => {
-                match core.db.is_array(&self.name)
+                match core.db.is_array(&self.left_hand.name)
                     && ! self.append
                     && self.evaluated_array == None {
                     true  => Ok(Some("0".to_string())),
@@ -150,7 +157,7 @@ impl Substitution {
     }
 
     fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore) -> Result<(), ExecError> {
-        if core.db.has_flag(&self.name, 'i') {
+        if core.db.has_flag(&self.left_hand.name, 'i') {
             self.evaluated_string = Some(w.eval_as_integer(core)?);
         }else{
             self.evaluated_string = Some(w.eval_as_value(core)?);
@@ -161,7 +168,7 @@ impl Substitution {
 
     fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore) -> Result<(), ExecError> {
         let prev = match self.append {
-            true  => core.db.get_array_all(&self.name),
+            true  => core.db.get_array_all(&self.left_hand.name),
             false => vec![],
         };
 
@@ -176,7 +183,7 @@ impl Substitution {
         for (s, v) in values {
             match s {
                 Some(mut sub) => {
-                    let index = sub.eval(core, &self.name)?;
+                    let index = sub.eval(core, &self.left_hand.name)?;
                     hash.insert(index, v)
                 },
                 None => hash.insert(i.to_string(), v),
@@ -198,22 +205,25 @@ impl Substitution {
 
         feeder.set_backup();
         let name = feeder.consume(len);
-        ans.name = name.clone();
+        ans.left_hand.name = name.clone();
         ans.text += &name;
 
         if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text.clone();
-            ans.index = Some(s);
+            ans.left_hand.index = Some(s);
         };
 
         Ok(Some(ans))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let mut ans = match Self::parse_left_hand(feeder, core)? {
+        let mut ans = Self::default();
+        ans.left_hand = match Variable::parse(feeder, core)? {
             Some(a) => a,
             None => return Ok(None),
         };
+        ans.text = ans.left_hand.text.clone();
+        ans.lineno = ans.left_hand.lineno;
 
         if feeder.starts_with("+=") {
             ans.append = true;

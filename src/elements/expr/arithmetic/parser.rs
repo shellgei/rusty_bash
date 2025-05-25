@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::elements::subscript::Subscript;
+use crate::elements::substitution::subscript::Subscript;
 use crate::elements::word::{Word, WordMode};
 use super::{ArithmeticExpr, ArithElem};
 use super::elem::{int, float};

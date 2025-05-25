@@ -40,7 +40,7 @@ pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 let mut f = Feeder::new(&(name.to_owned() + "="));
                 if let Ok(Some(mut sub)) = Substitution::parse(&mut f, core) {
                     if let Ok(Some(key)) = sub.get_index(core) {
-                        let nm = sub.name.clone();
+                        let nm = sub.left_hand.name.clone();
                         core.db.unset_array_elem(&nm, &key);
                         return 0;
                     }

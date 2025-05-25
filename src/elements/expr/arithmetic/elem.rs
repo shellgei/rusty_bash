@@ -11,7 +11,7 @@ use super::Word;
 use crate::{ShellCore, utils};
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::elements::subscript::Subscript;
+use crate::elements::substitution::subscript::Subscript;
 
 #[derive(Debug, Clone)]
 pub enum ArithElem {

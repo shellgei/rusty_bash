@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subscript::Subscript;
+use crate::elements::substitution::subscript::Subscript;
 use crate::error::parse::ParseError;
 use super::{BracedParam, Param};
 use super::optional_operation;

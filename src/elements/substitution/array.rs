@@ -3,10 +3,10 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::command;
-use crate::elements::subscript::Subscript;
+use super::subscript::Subscript;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use super::word::Word;
+use crate::elements::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct Array {

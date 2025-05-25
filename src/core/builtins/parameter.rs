@@ -272,7 +272,7 @@ fn export_var(arg: &str, core: &mut ShellCore) -> Result<(), ExecError> {
 
     match Substitution::parse(&mut feeder, core) {
         Ok(Some(mut ans)) => {
-            env::set_var(&ans.name, "");
+            env::set_var(&ans.left_hand.name, "");
             ans.eval(core, None/*, true*/)
         },
         Ok(None)  => Err(ExecError::VariableInvalid(arg.to_string())),

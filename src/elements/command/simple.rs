@@ -155,7 +155,7 @@ impl SimpleCommand {
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for s in self.substitutions.iter_mut() {
-            env::set_var(&s.name, "");
+            env::set_var(&s.left_hand.name, "");
             s.eval(core, None/*, true*/)?;
         }
         Ok(())
