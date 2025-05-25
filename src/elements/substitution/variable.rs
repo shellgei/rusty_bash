@@ -19,6 +19,19 @@ impl Variable {
         Ok(())
     }
 
+    pub fn get_index(&mut self, core: &mut ShellCore) -> Result<Option<String>, ExecError> {
+        match self.index.clone() {
+            Some(mut s) => {
+                if s.text.chars().all(|c| " \n\t[]".contains(c)) {
+                    return Ok(Some("".to_string()));
+                }
+                let index = s.eval(core, &self.name)?;
+                Ok(Some(index)) 
+            },
+            None => Ok(None),
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {
@@ -28,7 +41,6 @@ impl Variable {
         let mut ans = Self::default();
         ans.lineno = feeder.lineno;
 
-        feeder.set_backup();
         let name = feeder.consume(len);
         ans.name = name.clone();
         ans.text += &name;

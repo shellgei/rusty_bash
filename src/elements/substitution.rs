@@ -4,56 +4,23 @@
 pub mod array;
 pub mod subscript;
 pub mod variable;
+pub mod value;
 
 use crate::{ShellCore, Feeder};
-use crate::elements::word::WordMode;
-//use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
 use self::array::Array;
-use self::subscript::Subscript;
+use self::value::Value;
 use self::variable::Variable;
+use self::value::ParsedDataType;
 use super::word::Word;
-
-#[derive(Debug, Clone, Default)]
-pub enum ParsedDataType {
-    #[default]
-    None,
-    Single(Word),
-    Array(Array),
-}
-
-impl ParsedDataType {
-    pub fn get_evaluated_text(&self, core: &mut ShellCore) -> Result<String, ExecError> {
-        match self {
-            Self::None      => Ok("".to_string()),
-            Self::Single(s) => Ok(s.eval_as_value(core)?),
-            Self::Array(a) => {
-                let mut ans = "(".to_string();
-                let mut ws = vec![];
-                for (_, w) in &a.words {
-                    ws.push( w.eval_as_value(core)? );
-                }
-                ans += &ws.join(" ");
-                ans += ")";
-                Ok(ans)
-            },
-        }
-    }
-}
 
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
-    /*
-    pub name: String,
-    index: Option<Subscript>,
-    */
     pub left_hand: Variable,
-    value: ParsedDataType,
-    evaluated_string: Option<String>,
-    evaluated_array: Option<HashMap<String, String>>,
+    right_hand: Value,
     append: bool,
     lineno: usize,
 }
@@ -62,11 +29,11 @@ impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>)
     -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
-        let result = match self.value.clone() {
+        let result = match self.right_hand.value.clone() {
             ParsedDataType::Single(v) => self.eval_as_value(&v, core),
             ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core),
             ParsedDataType::None => {
-                self.evaluated_string = Some("".to_string());
+                self.right_hand.evaluated_string = Some("".to_string());
                 Ok(())
             },
         };
@@ -86,7 +53,7 @@ impl Substitution {
     pub fn get_string_for_eval(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut splits = self.text.split("=");
         let front = splits.nth(0).unwrap().to_owned() + "=";
-        let rear = self.value.get_evaluated_text(core)?;
+        let rear = self.right_hand.value.get_evaluated_text(core)?;
 
         Ok(front + &rear)
     }
@@ -94,7 +61,7 @@ impl Substitution {
     fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         match self.get_index(core)? {
             None => {
-                if let Some(a) = &self.evaluated_array {
+                if let Some(a) = &self.right_hand.evaluated_array {
                     if a.is_empty() {
                         core.db.set_array(&self.left_hand.name, vec![], Some(layer))?;
                         return Ok(());
@@ -112,7 +79,7 @@ impl Substitution {
                 if index.is_empty() {
                     return Err(ExecError::Other(format!("{}[]: invalid index", &self.left_hand.name)));
                 }
-                if let Some(v) = &self.evaluated_string {
+                if let Some(v) = &self.right_hand.evaluated_string {
                     return core.db.set_param2(&self.left_hand.name, &index, &v, Some(layer));
                 }
                 return Err(ExecError::Other("indexed to non array variable".to_string()));
@@ -124,8 +91,8 @@ impl Substitution {
     -> Result<(), ExecError> {
         let layer = core.db.get_target_layer(&self.left_hand.name, layer);
 
-        if self.evaluated_string.is_some() && self.left_hand.index.is_none() {
-            let data = self.evaluated_string.clone().unwrap();
+        if self.right_hand.evaluated_string.is_some() && self.left_hand.index.is_none() {
+            let data = self.right_hand.evaluated_string.clone().unwrap();
             if self.append {
                 return core.db.append_param(&self.left_hand.name, &data, Some(layer));
             }else{
@@ -137,30 +104,24 @@ impl Substitution {
     }
 
     pub fn get_index(&mut self, core: &mut ShellCore) -> Result<Option<String>, ExecError> {
-        match self.left_hand.index.clone() {
-            Some(mut s) => {
-                if s.text.chars().all(|c| " \n\t[]".contains(c)) {
-                    return Ok(Some("".to_string()));
-                }
-                let index = s.eval(core, &self.left_hand.name)?;
-                Ok(Some(index)) 
-            },
+        match self.left_hand.get_index(core)? {
+            Some(s) => return Ok(Some(s)),
             None => {
-                match core.db.is_array(&self.left_hand.name)
+                if core.db.is_array(&self.left_hand.name)
                     && ! self.append
-                    && self.evaluated_array == None {
-                    true  => Ok(Some("0".to_string())),
-                    false => Ok(None),
+                    && self.right_hand.evaluated_array.is_none() {
+                    return Ok(Some("0".to_string()));
                 }
             },
         }
+        Ok(None)
     }
 
     fn eval_as_value(&mut self, w: &Word, core: &mut ShellCore) -> Result<(), ExecError> {
         if core.db.has_flag(&self.left_hand.name, 'i') {
-            self.evaluated_string = Some(w.eval_as_integer(core)?);
+            self.right_hand.evaluated_string = Some(w.eval_as_integer(core)?);
         }else{
-            self.evaluated_string = Some(w.eval_as_value(core)?);
+            self.right_hand.evaluated_string = Some(w.eval_as_value(core)?);
         }
 
         Ok(())
@@ -190,34 +151,15 @@ impl Substitution {
             };
             i += 1;
         }
-        self.evaluated_array = Some(hash);
+        self.right_hand.evaluated_array = Some(hash);
         Ok(())
     }
 
-    pub fn parse_left_hand(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let len = feeder.scanner_name(core);
-        if len == 0 {
-            return Ok(None);
-        }
-
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
-
-        feeder.set_backup();
-        let name = feeder.consume(len);
-        ans.left_hand.name = name.clone();
-        ans.text += &name;
-
-        if let Some(s) = Subscript::parse(feeder, core)? {
-            ans.text += &s.text.clone();
-            ans.left_hand.index = Some(s);
-        };
-
-        Ok(Some(ans))
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        feeder.set_backup();
+
         let mut ans = Self::default();
+
         ans.left_hand = match Variable::parse(feeder, core)? {
             Some(a) => a,
             None => return Ok(None),
@@ -236,14 +178,11 @@ impl Substitution {
         }
         feeder.pop_backup();
 
-        if let Some(a) = Array::parse(feeder, core)? {
-            ans.text += &a.text;
-            ans.value = ParsedDataType::Array(a);
-        }else if let Ok(Some(mut w)) = Word::parse(feeder, core, None) {
-            w.mode = Some(WordMode::RightOfSubstitution);
-            ans.text += &w.text;
-            ans.value = ParsedDataType::Single(w);
+        if let Some(a) = Value::parse(feeder, core)? {
+            ans.text += &a.text.clone();
+            ans.right_hand = a;
         }
+
         Ok(Some(ans))
     }
 }
