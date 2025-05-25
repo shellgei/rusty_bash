@@ -39,6 +39,8 @@ pub trait Data {
         println!("{}={}", name, self.print_body());
     }
 
+    fn is_initialized(&self) -> bool {true}
+
     //fn push_elems(&mut self, _: Vec<String>) -> Result<(), ExecError> { Err(ExecError::Other("Undefined call push_elems".to_string())) }
 
     fn clear(&mut self) {}

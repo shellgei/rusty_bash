@@ -8,13 +8,18 @@ use super::Data;
 
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData {
+    initialized: bool,
     body: HashMap<usize, String>,
 }
 
-impl From<Vec<String>> for ArrayData {
-    fn from(v: Vec<String>) -> Self {
-        let mut ans = Self { body: HashMap::new() };
-        v.into_iter()
+impl From<Option<Vec<String>>> for ArrayData {
+    fn from(v: Option<Vec<String>>) -> Self {
+        if v.is_none() {
+            return Self { body: HashMap::new(), initialized: false };
+        }
+
+        let mut ans = Self { body: HashMap::new(), initialized: true };
+        v.unwrap().into_iter()
          .enumerate()
          .for_each(|(i, e)| {ans.body.insert(i, e);});
         ans
@@ -25,8 +30,11 @@ impl Data for ArrayData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
 
     fn print_body(&self) -> String {
-        let mut formatted = String::new();
-        formatted += "(";
+        if ! self.initialized {
+            return "".to_string();
+        }
+
+        let mut formatted = "(".to_string();
         for i in self.keys() {
             let ansi = utils::to_ansi_c(&self.body[&i]);
             if ansi == self.body[&i] {
@@ -43,13 +51,16 @@ impl Data for ArrayData {
     }
 
     fn clear(&mut self) { self.body.clear(); }
+    fn is_initialized(&self) -> bool { self.initialized }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        self.initialized = true;
         self.body.insert(0, value.to_string());
         Ok(())
     }
 
     fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        self.initialized = true;
         if let Some(v) = self.body.get(&0) {
             self.body.insert(0, v.to_owned() + value);
         }else {
@@ -59,6 +70,7 @@ impl Data for ArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+        self.initialized = true;
         if let Ok(n) = key.parse::<usize>() {
             self.body.insert(n, value.to_string());
             return Ok(());
@@ -81,6 +93,7 @@ impl Data for ArrayData {
     }*/
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+        self.initialized = true;
         if let Ok(n) = key.parse::<usize>() {
             if let Some(v) = self.body.get(&n) {
                 self.body.insert(n, v.to_owned() + value);
@@ -139,7 +152,8 @@ impl Data for ArrayData {
 }
 
 impl ArrayData {
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, v: Vec<String>) -> Result<(), ExecError> {
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, v: Option<Vec<String>>)
+    -> Result<(), ExecError> {
         db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
         Ok(())
     }
@@ -153,12 +167,12 @@ impl ArrayData {
                 return d.set_as_assoc(&pos.to_string(), val);
             }else{
                 let data = d.get_as_single()?;
-                ArrayData::set_new_entry(db_layer, name, vec![])?;
+                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
                 Self::set_elem(db_layer, name, 0, &data)?;
                 Self::set_elem(db_layer, name, pos, val)
             }
         }else{
-            ArrayData::set_new_entry(db_layer, name, vec![])?;
+            ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
             Self::set_elem(db_layer, name, pos, val)
         }
     }
@@ -172,12 +186,12 @@ impl ArrayData {
                 return d.append_to_assoc_elem(&pos.to_string(), val);
             }else{
                 let data = d.get_as_single()?;
-                ArrayData::set_new_entry(db_layer, name, vec![])?;
+                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
                 Self::append_elem(db_layer, name, 0, &data)?;
                 Self::append_elem(db_layer, name, pos, val)
             }
         }else{
-            ArrayData::set_new_entry(db_layer, name, vec![])?;
+            ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
             Self::set_elem(db_layer, name, pos, val)
         }
     }

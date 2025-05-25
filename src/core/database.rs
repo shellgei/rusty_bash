@@ -439,13 +439,15 @@ impl DataBase {
         AssocData::append_elem(&mut self.params[layer], name, key, val)
     }
 
-    pub fn set_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn set_array(&mut self, name: &str, v: Option<Vec<String>>, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
-                for val in &v{
-                    self.rsh_cmd_check(&vec![val.to_string()])?;
+                if v.is_some() {
+                    for val in v.as_ref().unwrap() {
+                        self.rsh_cmd_check(&vec![val.to_string()])?;
+                    }
                 }
             }
             self.rsh_check(name)?;

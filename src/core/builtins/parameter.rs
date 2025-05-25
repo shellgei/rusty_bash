@@ -48,7 +48,7 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     let mut feeder = Feeder::new(arg);
     if feeder.scanner_name(core) == feeder.len() { // name only
         let name = feeder.consume(feeder.len());
-        return core.db.set_array(&name, vec![], Some(layer));
+        return core.db.set_array(&name, None, Some(layer));
     }
 
     let mut sub = match Substitution::parse(&mut feeder, core) {
@@ -99,6 +99,24 @@ fn declare_set_has_equal(core: &mut ShellCore, name_and_value: &String,
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
 
+    let layer = Some(core.db.get_layer_num() - 2);
+    let escaped = name_and_value.replace("~", "\\~");
+    let mut feeder = Feeder::new(&escaped);
+    if let Some(mut s) = Substitution::parse(&mut feeder, core)? {
+        if read_only {
+            core.db.set_flag(&s.left_hand.name, 'r');
+            return Err(ExecError::VariableReadOnly(s.left_hand.name));
+        }
+
+        if export_opt {
+            core.db.set_flag(&s.left_hand.name, 'x');
+        }
+
+        return s.eval(core, layer);
+    }
+
+    return Err(ExecError::BadSubstitution(name_and_value.clone()));
+/*
     let mut tmp = name_and_value.clone();
     let (mut name, value) = match name_and_value.find('=') {
         Some(n) => {
@@ -138,7 +156,11 @@ fn declare_set_has_equal(core: &mut ShellCore, name_and_value: &String,
             }
         }
 
-        core.db.set_array(&name, v, layer)?;
+        if v.is_empty() {
+            core.db.set_array(&name, None, layer)?;
+        }else{
+            core.db.set_array(&name, Some(v), layer)?;
+        }
     }else if args.contains(&"-A".to_string()) {
         core.db.set_assoc(&name, layer)?;
     }else {
@@ -155,6 +177,7 @@ fn declare_set_has_equal(core: &mut ShellCore, name_and_value: &String,
         core.db.set_flag(&name, 'x');
     }
     Ok(())
+*/
 }
 
 fn declare_set(core: &mut ShellCore, name_and_value: &String,
@@ -175,7 +198,7 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
         if args.contains(&"-A".to_string()) {
             core.db.set_assoc(&name, layer)?;
         }else{
-            core.db.set_array(&name, vec![], layer)?;
+            core.db.set_array(&name, None, layer)?;
         }
 
         core.db.set_flag(&name, 'r');
@@ -195,7 +218,11 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
             }
         }
 
-        core.db.set_array(&name, v, layer)?;
+        if v.is_empty() {
+            core.db.set_array(&name, None, layer)?;
+        }else{
+            core.db.set_array(&name, Some(v), layer)?;
+        }
     }else if args.contains(&"-A".to_string()) {
         core.db.set_assoc(&name, layer)?;
     }else {

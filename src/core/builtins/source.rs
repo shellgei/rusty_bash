@@ -44,7 +44,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut source = core.db.get_array_all("BASH_SOURCE");
     source.insert(0, args[1].clone());
-    let _ = core.db.set_array("BASH_SOURCE", source.clone(), None);
+    let _ = core.db.set_array("BASH_SOURCE", Some(source.clone()), None);
 
     feeder.main_feeder = true;
     loop {
@@ -65,7 +65,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     source.remove(0);
-    let _ = core.db.set_array("BASH_SOURCE", source, None);
+    let _ = core.db.set_array("BASH_SOURCE", Some(source), None);
     core.db.position_parameters.pop();
     core.source_function_level -= 1;
     core.source_files.pop();

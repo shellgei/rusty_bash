@@ -46,7 +46,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         show_time(core);
     }
     set_foreground(core);
-    let _ = core.db.set_array("PIPESTATUS", pipestatus.iter().map(|e|e.to_string()).collect(), None);
+    let _ = core.db.set_array("PIPESTATUS", Some(pipestatus.iter().map(|e|e.to_string()).collect()), None);
 
     if core.options.query("pipefail") {
         pipestatus.retain(|e| *e != 0);

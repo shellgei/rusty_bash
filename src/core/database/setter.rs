@@ -27,12 +27,12 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.params[0].insert( "EPOCHSECONDS".to_string(), Box::new(EpochSeconds{} ) );
     db.params[0].insert( "EPOCHREALTIME".to_string(), Box::new(EpochRealTime{} ) );
 
-    db.set_array("FUNCNAME", vec![], None)?;
-    db.set_array("BASH_SOURCE", vec![], None)?;
-    db.set_array("BASH_ARGC", vec![], None)?;
-    db.set_array("BASH_ARGV", vec![], None)?;
-    db.set_array("BASH_LINENO", vec![], None)?;
-    db.set_array("DIRSTACK", vec![], None)?;
+    db.set_array("FUNCNAME", None, None)?;
+    db.set_array("BASH_SOURCE", Some(vec![]), None)?;
+    db.set_array("BASH_ARGC", Some(vec![]), None)?;
+    db.set_array("BASH_ARGV", Some(vec![]), None)?;
+    db.set_array("BASH_LINENO", Some(vec![]), None)?;
+    db.set_array("DIRSTACK", Some(vec![]), None)?;
     db.set_assoc("BASH_CMDS", None)?;
     Ok(())
 }

@@ -71,7 +71,7 @@ fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &Vec<Stri
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
-        let _ = core.db.set_array("COMPREPLY", vec![], None);
+        let _ = core.db.set_array("COMPREPLY", Some(vec![]), None);
         self.set_completion_info(core)?;
 
         if ! self.set_custom_compreply(core).is_ok()
@@ -178,7 +178,7 @@ impl Terminal {
         }
 
         let tmp: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
-        core.db.set_array("COMPREPLY", tmp, None)
+        core.db.set_array("COMPREPLY", Some(tmp), None)
     }
 
     fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
@@ -372,7 +372,7 @@ impl Terminal {
 
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
-        let _ = core.db.set_array("COMP_WORDS", words_all, None);
+        let _ = core.db.set_array("COMP_WORDS", Some(words_all), None);
 
         let mut num = words_left.len();
         match left_string.chars().last() {

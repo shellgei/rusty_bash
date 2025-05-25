@@ -51,10 +51,10 @@ impl FunctionDefinition {
     pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
         let mut array = core.db.get_array_all("FUNCNAME");
         array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
-        let _ = core.db.set_array("FUNCNAME", array.clone(), None);
+        let _ = core.db.set_array("FUNCNAME", Some(array.clone()), None);
         let mut source = core.db.get_array_all("BASH_SOURCE");
         source.insert(0, self.file.clone());
-        let _ = core.db.set_array("BASH_SOURCE", source.clone(), None);
+        let _ = core.db.set_array("BASH_SOURCE", Some(source.clone()), None);
 
         args[0] = core.db.position_parameters[0][0].clone();
         core.db.position_parameters.push(args.to_vec());
@@ -73,8 +73,8 @@ impl FunctionDefinition {
 
         array.remove(0);
         source.remove(0);
-        let _ = core.db.set_array("FUNCNAME", array, None);
-        let _ = core.db.set_array("BASH_SOURCE", source, None);
+        let _ = core.db.set_array("FUNCNAME", Some(array), None);
+        let _ = core.db.set_array("BASH_SOURCE", Some(source), None);
     }
 
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
