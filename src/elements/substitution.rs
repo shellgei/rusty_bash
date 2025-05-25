@@ -45,19 +45,22 @@ impl Substitution {
     }
 
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        if let Some(a) = &self.right_hand.evaluated_array {
-            if a.is_empty() {
-                core.db.set_array(&self.left_hand.name, vec![], Some(layer))?;
-                return Ok(());
-            }
+        if self.right_hand.evaluated_array.is_none() {
+            return Err(ExecError::Other("no array and no index".to_string()));
+        }
 
-            core.db.init(&self.left_hand.name, layer);
-            for e in a {
-                core.db.set_param2(&self.left_hand.name, &e.0, &e.1, Some(layer))?;
-            }
+        let a = self.right_hand.evaluated_array.as_ref().unwrap();
+
+        if a.is_empty() {
+            core.db.set_array(&self.left_hand.name, vec![], Some(layer))?;
             return Ok(());
         }
-        Err(ExecError::Other("no array and no index".to_string()))
+
+        core.db.init(&self.left_hand.name, layer);
+        for e in a {
+            core.db.set_param2(&self.left_hand.name, &e.0, &e.1, Some(layer))?;
+        }
+        Ok(())
     }
 
     fn set_array_elem(&mut self, core: &mut ShellCore, layer: usize, index: &String)
