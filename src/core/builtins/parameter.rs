@@ -274,12 +274,13 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         options += "r";
     }
 
-    let prefix = format!("declare -{} ", options);
+    let prefix = format!("declare -{}", options);
     for name in names {
         print!("{}", prefix);
         if core.db.is_readonly(&name) {
             print!("r");
         }
+        print!(" ");
         core.db.print(&name);
     }
 
