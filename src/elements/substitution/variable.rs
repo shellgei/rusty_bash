@@ -32,6 +32,15 @@ impl Variable {
         }
     }
 
+    /*
+    pub fn init_if_not_exist(&mut self, flags: &str, core: &mut ShellCore)
+    -> Result<(), ExecError> {
+        if core.db.has_value(&self.name) {
+        }
+
+        Ok(())
+    }*/
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {

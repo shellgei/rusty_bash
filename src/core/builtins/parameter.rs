@@ -119,25 +119,10 @@ fn declare_set_has_equal(core: &mut ShellCore, name_and_value: &String,
     return Err(ExecError::BadSubstitution(name_and_value.clone()));
 }
 
-fn declare_set(core: &mut ShellCore, name_and_value: &String,
+fn init_var(core: &mut ShellCore, var: &mut Variable,
                args: &mut Vec<String>) -> Result<(), ExecError> {
-    if name_and_value.contains('=') {
-        return declare_set_has_equal(core, name_and_value, args);
-    }
-
-    let read_only = arg::consume_option("-r", args);
-    let export_opt = arg::consume_option("-x", args);
-
-    let escaped = name_and_value.replace("~", "\\~");
-    let mut feeder = Feeder::new(&escaped);
-    let var = Variable::parse(&mut feeder, core)?;
-
-    if var.is_none() {
-        return Err(ExecError::InvalidName(name_and_value.to_string()));
-    }
-
     let layer = Some(core.db.get_layer_num() - 2);
-    let name = var.as_ref().unwrap().name.clone();
+    let name = var.name.clone();
 
     if args.contains(&"-a".to_string()) {
         if ! core.db.has_value_layer(&name, layer.unwrap()) {
@@ -155,11 +140,70 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
             core.db.init_as_num(&name, "", layer)?;
         }
     }else {
-        if var.unwrap().index.is_none() {
+        if var.index.is_none() {
             core.db.set_param(&name, "", layer)?;
         }else{
             core.db.set_array(&name, None, layer)?;
         }
+    }
+    Ok(())
+}
+
+fn change_attr(core: &mut ShellCore, var: &mut Variable,
+               args: &mut Vec<String>) -> Result<(), ExecError> {
+    let layer = Some(core.db.get_layer_num() - 2);
+    let name = var.name.clone();
+
+    if args.contains(&"-a".to_string()) {
+        if ! core.db.has_value_layer(&name, layer.unwrap()) {
+            core.db.set_array(&name, None, layer)?;
+        }
+    }else if args.contains(&"-A".to_string()) {
+        if ! core.db.has_value_layer(&name, layer.unwrap()) {
+            core.db.set_assoc(&name, layer)?;
+        }
+    }else if args.contains(&"-i".to_string()) {
+        if core.db.has_value_layer(&name, layer.unwrap()) {
+            let d = core.db.get_param(&name)?;
+            core.db.init_as_num(&name, &d, layer)?;
+        }else{
+            core.db.init_as_num(&name, "", layer)?;
+        }
+    }else {
+        if var.index.is_none() {
+            core.db.set_param(&name, "", layer)?;
+        }else{
+            core.db.set_array(&name, None, layer)?;
+        }
+    }
+    Ok(())
+}
+
+fn declare_set(core: &mut ShellCore, name_and_value: &String,
+               args: &mut Vec<String>) -> Result<(), ExecError> {
+    if name_and_value.contains('=') {
+        return declare_set_has_equal(core, name_and_value, args);
+    }
+
+    let read_only = arg::consume_option("-r", args);
+    let export_opt = arg::consume_option("-x", args);
+
+    let escaped = name_and_value.replace("~", "\\~");
+    let mut feeder = Feeder::new(&escaped);
+    let var = Variable::parse(&mut feeder, core)?;
+
+    if var.is_none() {
+        return Err(ExecError::InvalidName(name_and_value.to_string()));
+    }
+
+    let mut var = var.unwrap();
+    let name = var.name.clone();
+    let layer = Some(core.db.get_layer_num() - 2);
+
+    if core.db.has_value_layer(&name, layer.unwrap()) {
+        change_attr(core, &mut var, args)?;
+    }else{
+        init_var(core, &mut var, args)?;
     }
 
     if read_only {
