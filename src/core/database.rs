@@ -78,7 +78,6 @@ impl DataBase {
 
     fn write_check(&mut self, name: &str) -> Result<(), ExecError> {
         if self.has_flag(name, 'r') {
-            self.exit_status = 1;
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
