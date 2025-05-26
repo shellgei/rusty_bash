@@ -44,6 +44,7 @@ impl Command for CaseCommand {
                     let p = match pattern.eval_for_case_pattern(core) {
                         Ok(p) => p, 
                         Err(e) => {
+                            core.db.exit_status = 1;
                             e.print(core); //TODO: it should be output at a higher level
                             return Err(e);
                         },

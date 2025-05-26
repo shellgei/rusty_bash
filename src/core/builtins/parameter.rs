@@ -152,14 +152,6 @@ fn change_attr(core: &mut ShellCore, var: &mut Variable,
         core.db.init_as_num(&name, &d, layer)?;
     }
 
-    /*
-    else {
-        if var.index.is_none() {
-            core.db.set_param(&name, "", layer)?;
-        }else{
-            core.db.set_array(&name, None, layer)?;
-        }
-    }*/
     Ok(())
 }
 
