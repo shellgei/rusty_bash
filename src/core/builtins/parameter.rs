@@ -137,7 +137,7 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     }
 
     let layer = Some(core.db.get_layer_num() - 2);
-    let name = var.unwrap().name;
+    let name = var.as_ref().unwrap().name.clone();
 
     if args.contains(&"-a".to_string()) {
         if ! core.db.has_value_layer(&name, layer.unwrap()) {
@@ -153,6 +153,12 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
             core.db.init_as_num(&name, &d, layer)?;
         }else{
             core.db.init_as_num(&name, "", layer)?;
+        }
+    }else {
+        if var.unwrap().index.is_none() {
+            core.db.set_param(&name, "", layer)?;
+        }else{
+            core.db.set_array(&name, None, layer)?;
         }
     }
 
