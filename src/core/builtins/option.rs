@@ -63,45 +63,6 @@ pub fn set_options2(core: &mut ShellCore, args: &mut Vec<String>) {
 }
 
 
-/*
-pub fn set_t(core: &mut ShellCore, args: &mut Vec<String>) {
-    if arg::consume_option("-t", args) {
-        if ! core.db.flags.contains('t') {
-            core.db.flags += "t";
-        }
-        let _ = core.options.set("onecmd", true);
-    }
-}
-
-pub fn set_m(core: &mut ShellCore, args: &mut Vec<String>) {
-    if arg::consume_option("-m", args) {
-        if ! core.db.flags.contains('m') {
-            core.db.flags += "m";
-        }
-        let _ = core.options.set("monitor", true);
-    }
-
-    if arg::consume_option("+m", args) {
-        core.db.flags.retain(|f| f != 'm');
-        let _ = core.options.set("monitor", false);
-    }
-}
-
-pub fn set_large_c(core: &mut ShellCore, args: &mut Vec<String>) {
-    if arg::consume_option("-C", args) {
-        if ! core.db.flags.contains('C') {
-            core.db.flags += "C";
-        }
-        let _ = core.options.set("noclobber", true);
-    }
-
-    if arg::consume_option("+C", args) {
-        core.db.flags.retain(|f| f != 'C');
-        let _ = core.options.set("noclobber", false);
-    }
-}*/
-
-
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 

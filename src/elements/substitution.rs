@@ -24,16 +24,8 @@ pub struct Substitution {
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>) -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
-        if let Err(e) = self.right_hand.eval(core, &self.left_hand.name, self.append) {
-            core.db.exit_status = 1;
-            return Err(e);
-        }
-
-        let ans = self.set_to_shell(core, layer);
-        if ! ans.is_ok() {
-            core.db.exit_status = 1;
-        }
-        ans
+        self.right_hand.eval(core, &self.left_hand.name, self.append)?;
+        self.set_to_shell(core, layer)
     }
 
     pub fn get_string_for_eval(&self, core: &mut ShellCore) -> Result<String, ExecError> {
