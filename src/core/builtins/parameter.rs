@@ -125,20 +125,11 @@ fn init_var(core: &mut ShellCore, var: &mut Variable,
     let name = var.name.clone();
 
     if args.contains(&"-a".to_string()) {
-        if ! core.db.has_value_layer(&name, layer.unwrap()) {
-            core.db.set_array(&name, None, layer)?;
-        }
+        core.db.set_array(&name, None, layer)?;
     }else if args.contains(&"-A".to_string()) {
-        if ! core.db.has_value_layer(&name, layer.unwrap()) {
-            core.db.set_assoc(&name, layer)?;
-        }
+        core.db.set_assoc(&name, layer)?;
     }else if args.contains(&"-i".to_string()) {
-        if core.db.has_value_layer(&name, layer.unwrap()) {
-            let d = core.db.get_param(&name)?;
-            core.db.init_as_num(&name, &d, layer)?;
-        }else{
-            core.db.init_as_num(&name, "", layer)?;
-        }
+        core.db.init_as_num(&name, "", layer)?;
     }else {
         if var.index.is_none() {
             core.db.set_param(&name, "", layer)?;
@@ -155,27 +146,20 @@ fn change_attr(core: &mut ShellCore, var: &mut Variable,
     let name = var.name.clone();
 
     if args.contains(&"-a".to_string()) {
-        if ! core.db.has_value_layer(&name, layer.unwrap()) {
-            core.db.set_array(&name, None, layer)?;
-        }
     }else if args.contains(&"-A".to_string()) {
-        if ! core.db.has_value_layer(&name, layer.unwrap()) {
-            core.db.set_assoc(&name, layer)?;
-        }
     }else if args.contains(&"-i".to_string()) {
-        if core.db.has_value_layer(&name, layer.unwrap()) {
-            let d = core.db.get_param(&name)?;
-            core.db.init_as_num(&name, &d, layer)?;
-        }else{
-            core.db.init_as_num(&name, "", layer)?;
-        }
-    }else {
+        let d = core.db.get_param(&name)?;
+        core.db.init_as_num(&name, &d, layer)?;
+    }
+
+    /*
+    else {
         if var.index.is_none() {
             core.db.set_param(&name, "", layer)?;
         }else{
             core.db.set_array(&name, None, layer)?;
         }
-    }
+    }*/
     Ok(())
 }
 
