@@ -146,6 +146,10 @@ fn change_attr(core: &mut ShellCore, var: &mut Variable,
     let name = var.name.clone();
 
     if args.contains(&"-a".to_string()) {
+        if core.db.is_single(&var.name) {
+            let d = core.db.get_param(&var.name)?;
+            core.db.set_array(&name, Some(vec![d]), layer)?;
+        }
     }else if args.contains(&"-A".to_string()) {
     }else if args.contains(&"-i".to_string()) {
         let d = core.db.get_param(&name)?;
