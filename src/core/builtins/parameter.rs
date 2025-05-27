@@ -151,6 +151,11 @@ fn change_attr(core: &mut ShellCore, var: &mut Variable,
             core.db.set_array(&name, Some(vec![d]), layer)?;
         }
     }else if args.contains(&"-A".to_string()) {
+        if core.db.is_single(&var.name) {
+            let d = core.db.get_param(&var.name)?;
+            core.db.set_assoc(&name, layer)?;
+            core.db.set_assoc_elem(&name, &"0".to_string(), &d, layer)?;
+        }
     }else if args.contains(&"-i".to_string()) {
         let d = core.db.get_param(&name)?;
         core.db.init_as_num(&name, &d, layer)?;

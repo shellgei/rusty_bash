@@ -35,9 +35,10 @@ impl Data for AssocData {
                 formatted += &format!("[{}]={} ", k, &ansi);
             }
         }
+        /*
         if formatted.ends_with(" ") {
             formatted.pop();
-        }
+        }*/
         formatted += ")";
         formatted
     }
