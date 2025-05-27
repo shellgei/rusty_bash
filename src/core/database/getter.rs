@@ -31,21 +31,6 @@ pub fn connected_position_params(db :&mut DataBase, aster: bool) -> Result<Strin
     }
 }
 
-/*
-pub fn connected_position_params(db :&mut DataBase) -> Result<String, ExecError> {
-    let ifs = db.get_param("IFS").unwrap_or(" \t\n".to_string());
-    let joint = match ifs.chars().nth(0) {
-        None => "".to_string(),
-        Some(c) => c.to_string(),
-    };
-
-    match db.position_parameters.last() {
-        Some(a) => Ok(a[1..].join(&joint)),
-        _       => Ok("".to_string()),
-    }
-}
-*/
-
 pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
     let layer = db.position_parameters.len();
     return match db.position_parameters[layer-1].len() > pos {

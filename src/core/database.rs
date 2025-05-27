@@ -120,12 +120,45 @@ impl DataBase {
         Ok("".to_string())
     }
 
+    pub fn get_len(&mut self, name: &str) -> Result<usize, ExecError> {
+        Self::name_check(name)?;
+
+        if name == "@" || name == "*" {
+            let layer = self.position_parameters.len();
+            return Ok(self.position_parameters[layer-1].len() - 1);
+        }
+
+        if let Ok(n) = name.parse::<usize>() {
+            return Ok(getter::position_param(self, n)?.chars().count());
+        }
+
+        if let Some(v) = self.get_ref(name) {
+            return v.elem_len("0");
+        }
+
+        if let Ok(v) = env::var(name) {
+            return Ok(v.chars().count());
+        }
+
+        Ok(0)
+    }
+
+    pub fn get_elem_len(&mut self, name: &str, key: &str) -> Result<usize, ExecError> {
+        Self::name_check(name)?;
+
+        if let Some(v) = self.get_ref(name) {
+            return v.elem_len(key);
+        }
+
+        Ok(0)
+    }
+
     pub fn get_param2(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
         match index.is_empty() {
             true  => self.get_param(&name),
             false => self.get_array_elem(&name, &index),
         }
-}
+    }
 
     pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;

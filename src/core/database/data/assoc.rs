@@ -82,6 +82,16 @@ impl Data for AssocData {
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 
+    fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(self.len());
+        }
+
+        let s = self.body.get(key).unwrap_or(&"".to_string()).clone();
+
+        Ok(s.chars().count())
+    }
+
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
         Ok(self.keys().clone())
     }

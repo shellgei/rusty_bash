@@ -142,6 +142,17 @@ impl Data for ArrayData {
     fn is_array(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 
+    fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(self.len());
+        }
+
+        let n = key.parse::<usize>().map_err(|_| ExecError::ArrayIndexInvalid(key.to_string()))?;
+        let s = self.body.get(&n).unwrap_or(&"".to_string()).clone();
+
+        Ok(s.chars().count())
+    }
+
     fn remove_elem(&mut self, key: &str) -> Result<(), ExecError> {
         if let Ok(n) = key.parse::<usize>() {
             self.body.remove(&n);

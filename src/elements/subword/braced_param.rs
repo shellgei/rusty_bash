@@ -187,7 +187,7 @@ impl BracedParam {
 
             let value = core.db.get_param(&self.param.name).unwrap_or_default();
             self.text = match self.num {
-                true  => value.chars().count().to_string(),
+                true  => core.db.get_len(&self.param.name)?.to_string(),//value.chars().count().to_string(),
                 false => value.to_string(),
             };
     
@@ -197,6 +197,11 @@ impl BracedParam {
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
+
+        if self.num {
+            self.text = core.db.get_elem_len(&self.param.name, &index)?.to_string();
+            return Ok(());
+        }
 
         if core.db.has_value(&self.param.name)
         && ! core.db.is_array(&self.param.name)
@@ -209,20 +214,11 @@ impl BracedParam {
             return Ok(());
         }
 
-        let arr = core.db.get_array_all(&self.param.name);
-        if self.num && (index.as_str() == "@" || index.as_str() == "*" ) {
-            self.text = arr.len().to_string();
-            self.array = Some(arr);
-            return Ok(());
-        }
         if index.as_str() == "@" {
             self.atmark_operation(core)
         }else{
-            self.text = core.db.get_array_elem(&self.param.name, &index).unwrap();
-            if self.num {
-                self.text = self.text.chars().count().to_string();
-            }
-            self.text = self.optional_operation(self.text.clone(), core)?;
+            let tmp = core.db.get_array_elem(&self.param.name, &index).unwrap();
+            self.text = self.optional_operation(tmp, core)?;
             Ok(())
         }
     }
