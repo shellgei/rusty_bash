@@ -3,11 +3,14 @@
 
 use crate::utils;
 use crate::core::HashMap;
-use crate::error::arith::ArithError;
+//use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use std::env;
 use super::Data;
+use super::single_int::IntData;
+//use super::single_int::IntBody;
 
+/*
 #[derive(Debug, Clone)]
 enum Body {
     Str(String),
@@ -85,17 +88,16 @@ impl Body {
         }
     }
 }
+*/
 
 #[derive(Debug, Clone)]
 pub struct SingleData {
-    body: Body,
+    body: String,
 }
 
 impl From<&str> for SingleData {
     fn from(s: &str) -> Self {
-        Self {
-            body: Body::Str(s.to_string()),
-        }
+        Self { body: s.to_string() }
     }
 }
 
@@ -108,27 +110,30 @@ impl Data for SingleData {
     fn clear(&mut self) { self.body.clear(); }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.body.set(value)
-    }
-
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.body.append(value)
-    }
-
-    fn init_as_num(&mut self) -> Result<(), ExecError> {
-        self.body = Body::Num(None);
+        self.body = value.to_string();
         Ok(())
     }
 
-    fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.body.to_string()) }
-
-    fn get_as_single_num(&mut self) -> Result<isize, ExecError> {
-        self.body.get_as_num()
+    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        self.body += &value;
+        Ok(())
     }
 
-    fn len(&mut self) -> usize { self.body.len() }
+    /*
+    fn init_as_num(&mut self) -> Result<(), ExecError> {
+        self.body = Body::Num(None);
+        Ok(())
+    }*/
+
+    fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.body.to_string()) }
+
+    /*
+    fn get_as_single_num(&mut self) -> Result<isize, ExecError> {
+        self.body.get_as_num()
+    }*/
+
+    fn len(&mut self) -> usize { self.body.chars().count() }
     fn is_single(&self) -> bool {true}
-    fn is_single_num(&self) -> bool { self.body.is_num() }
 }
 
 impl SingleData {
@@ -176,11 +181,11 @@ impl SingleData {
 
     pub fn init_as_num(db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str, value: &str)-> Result<(), ExecError> {
-        let mut data = SingleData{body: Body::Num(None)};
+        let mut data = IntData{body: 0};
 
         if value != "" {
             match value.parse::<isize>() {
-                Ok(n) => data.body = Body::Num(Some(n)),
+                Ok(n) => data.body = n,
                 Err(e) => {
                     return Err(ExecError::Other(e.to_string()));
                 },

@@ -8,6 +8,7 @@ pub mod epochrealtime;
 pub mod random;
 pub mod seconds;
 pub mod single;
+pub mod single_int;
 //pub mod special;
 pub mod srandom;
 
