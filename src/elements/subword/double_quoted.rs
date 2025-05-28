@@ -34,8 +34,6 @@ impl Subword for DoubleQuoted {
         Some(text)
     }
 
-    fn make_glob_string(&mut self) -> String {self.text.clone()}
-
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
 }
 
