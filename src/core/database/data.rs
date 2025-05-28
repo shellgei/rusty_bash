@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 pub mod array;
+pub mod array_uninit;
 pub mod assoc;
 pub mod epochseconds;
 pub mod epochrealtime;

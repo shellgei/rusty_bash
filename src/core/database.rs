@@ -360,19 +360,21 @@ impl DataBase {
 
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
-        //SingleData::set_value(&mut self.params[layer], name, val)
+
         if env::var(name).is_ok() {
             env::set_var(name, val);
         }
 
         if db_layer.get(name).is_none() {
             db_layer.insert( name.to_string(), Box::new(SingleData::from("")) );
-           // SingleData::set_new_entry(db_layer, name, "")?;
         }
 
         let d = db_layer.get_mut(name).unwrap();
 
         if d.is_array() {
+            if ! d.is_initialized() {
+                *d = ArrayData::default().boxed_clone();
+            }
             return d.set_as_array("0", val);
         }
      

@@ -5,6 +5,7 @@ use crate::utils;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
 use super::Data;
+use super::array_uninit::UninitArray;
 
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData {
@@ -165,7 +166,11 @@ impl Data for ArrayData {
 impl ArrayData {
     pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, v: Option<Vec<String>>)
     -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
+        if v.is_none() {
+            db_layer.insert(name.to_string(), UninitArray{}.boxed_clone());
+        }else {
+            db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
+        }
         Ok(())
     }
 
@@ -173,6 +178,10 @@ impl ArrayData {
                         name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
+                if ! d.is_initialized() {
+                    *d = ArrayData::default().boxed_clone();
+                }
+                
                 return d.set_as_array(&pos.to_string(), val);
             }else if d.is_assoc() {
                 return d.set_as_assoc(&pos.to_string(), val);
