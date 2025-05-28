@@ -40,7 +40,7 @@ pub trait Data {
         }
 
         let body = self.print_body();
-        if self.is_array() && body == "" {
+        if ! self.is_initialized() {
             println!("{}", name);
         }else{
             println!("{}={}", name, body);
