@@ -9,17 +9,12 @@ use super::array_uninit::UninitArray;
 
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData {
-    initialized: bool,
     body: HashMap<usize, String>,
 }
 
 impl From<Option<Vec<String>>> for ArrayData {
     fn from(v: Option<Vec<String>>) -> Self {
-        if v.is_none() {
-            return Self { body: HashMap::new(), initialized: false };
-        }
-
-        let mut ans = Self { body: HashMap::new(), initialized: true };
+        let mut ans = Self::default();
         v.unwrap().into_iter()
          .enumerate()
          .for_each(|(i, e)| {ans.body.insert(i, e);});
@@ -31,10 +26,6 @@ impl Data for ArrayData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
 
     fn print_body(&self) -> String {
-        if ! self.initialized {
-            return "".to_string();
-        }
-
         let mut formatted = "(".to_string();
         for i in self.keys() {
             let ansi = utils::to_ansi_c(&self.body[&i]);
@@ -52,16 +43,14 @@ impl Data for ArrayData {
     }
 
     fn clear(&mut self) { self.body.clear(); }
-    fn is_initialized(&self) -> bool { self.initialized }
+    fn is_initialized(&self) -> bool { true }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.initialized = true;
         self.body.insert(0, value.to_string());
         Ok(())
     }
 
     fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.initialized = true;
         if let Some(v) = self.body.get(&0) {
             self.body.insert(0, v.to_owned() + value);
         }else {
@@ -71,7 +60,6 @@ impl Data for ArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        self.initialized = true;
         if let Ok(n) = key.parse::<usize>() {
             self.body.insert(n, value.to_string());
             return Ok(());
@@ -94,7 +82,6 @@ impl Data for ArrayData {
     }*/
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        self.initialized = true;
         if let Ok(n) = key.parse::<usize>() {
             if let Some(v) = self.body.get(&n) {
                 self.body.insert(n, v.to_owned() + value);
@@ -201,6 +188,10 @@ impl ArrayData {
                         name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
+                if ! d.is_initialized() {
+                    *d = ArrayData::default().boxed_clone();
+                }
+
                 return d.append_to_array_elem(&pos.to_string(), val);
             }else if d.is_assoc() {
                 return d.append_to_assoc_elem(&pos.to_string(), val);
