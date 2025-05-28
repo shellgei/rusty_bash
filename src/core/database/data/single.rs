@@ -2,93 +2,8 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::utils;
-use crate::core::HashMap;
-//use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use std::env;
 use super::Data;
-use super::single_int::IntData;
-//use super::single_int::IntBody;
-
-/*
-#[derive(Debug, Clone)]
-enum Body {
-    Str(String),
-    Num(Option<isize>),
-}
-
-impl Body {
-    fn to_string(&self) -> String {
-        match &self {
-            Self::Str(s) => s.clone(),
-            Self::Num(None) => "".to_string(),
-            Self::Num(Some(n)) => n.to_string(),
-        }
-    }
-
-    fn clear(&mut self) {
-        *self = match &self {
-            Self::Str(_) => Self::Str(String::new()),
-            _ => Self::Num(None),
-        }
-    }
-
-    fn get_as_num(&mut self) -> Result<isize, ExecError> {
-        match self {
-            Self::Str(s) => Err(ArithError::InvalidNumber(s.to_string()).into()),
-            Self::Num(None) => Ok(0),
-            Self::Num(Some(n)) => Ok(*n),
-        }
-    }
-
-    fn len(&self) -> usize {
-        match &self {
-            Self::Str(s) => s.chars().count(),
-            Self::Num(None) => 0,
-            Self::Num(Some(n)) => n.to_string().len(),
-        }
-    }
-
-    fn set(&mut self, value: &str) -> Result<(), ExecError> {
-        match self {
-            Self::Str(_) => *self = Self::Str(value.to_string()),
-            Self::Num(_) => {
-                match value.parse::<isize>() {
-                    Ok(n) => *self = Self::Num(Some(n)),
-                    _ => return Err(ArithError::InvalidNumber(value.to_string()).into()),
-                }
-            },
-        }
-        Ok(())
-    }
-
-    fn append(&mut self, value: &str) -> Result<(), ExecError> {
-        match self {
-            Self::Str(s) => *self = Self::Str(s.to_owned() + &value),
-            Self::Num(Some(n)) => {
-                match value.parse::<isize>() {
-                    Ok(m) => *self = Self::Num(Some(*n + m)),
-                    _ => return Err(ArithError::InvalidNumber(value.to_string()).into()),
-                }
-            },
-            Self::Num(None) => {
-                match value.parse::<isize>() {
-                    Ok(m) => *self = Self::Num(Some(m)),
-                    _ => return Err(ArithError::InvalidNumber(value.to_string()).into()),
-                }
-            },
-        }
-        Ok(())
-    }
-
-    fn is_num(&self) -> bool {
-        match self {
-            Self::Num(_) => true,
-            Self::Str(_) => false,
-        }
-    }
-}
-*/
 
 #[derive(Debug, Clone)]
 pub struct SingleData {
@@ -119,80 +34,16 @@ impl Data for SingleData {
         Ok(())
     }
 
-    /*
-    fn init_as_num(&mut self) -> Result<(), ExecError> {
-        self.body = Body::Num(None);
-        Ok(())
-    }*/
-
     fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.body.to_string()) }
-
-    /*
-    fn get_as_single_num(&mut self) -> Result<isize, ExecError> {
-        self.body.get_as_num()
-    }*/
-
     fn len(&mut self) -> usize { self.body.chars().count() }
     fn is_single(&self) -> bool {true}
 }
 
+    /*
 impl SingleData {
     pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, value: &str)-> Result<(), ExecError> {
         db_layer.insert( name.to_string(), Box::new(SingleData::from(value)) );
         Ok(())
     }
-
-    pub fn set_value(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, val: &str) -> Result<(), ExecError> {
-        if env::var(name).is_ok() {
-            env::set_var(name, val);
-        }
-
-        if db_layer.get(name).is_none() {
-            SingleData::set_new_entry(db_layer, name, "")?;
-        }
-
-        let d = db_layer.get_mut(name).unwrap();
-
-        if d.is_array() {
-            return d.set_as_array("0", val);
-        }
-     
-        d.set_as_single(val)
-    }
-
-    pub fn append_value(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, val: &str)
-    -> Result<(), ExecError> {
-        if let Ok(v) = env::var(name) {
-            env::set_var(name, v + val);
-        }
-
-        if db_layer.get(name).is_none() {
-            SingleData::set_new_entry(db_layer, name, "")?;
-        }
-
-        let d = db_layer.get_mut(name).unwrap();
-
-        if d.is_array() {
-            return d.append_to_array_elem("0", val);
-        }
-     
-        d.append_as_single(val)
-    }
-
-    pub fn init_as_num(db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str, value: &str)-> Result<(), ExecError> {
-        let mut data = IntData{body: 0};
-
-        if value != "" {
-            match value.parse::<isize>() {
-                Ok(n) => data.body = n,
-                Err(e) => {
-                    return Err(ExecError::Other(e.to_string()));
-                },
-            }
-        }
-
-        db_layer.insert( name.to_string(), Box::new(data) );
-        Ok(())
-    }
 }
+    */

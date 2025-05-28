@@ -207,22 +207,6 @@ impl ArrayData {
         }
     }
 
-    /*
-    pub fn append_elems(db_layer: &mut HashMap<String, Box<dyn Data>>,
-                        name: &str, values: Vec<String>) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
-            if d.is_array() || d.is_assoc() {
-                d.push_elems(values)
-            }else{
-                let data = d.get_as_single()?;
-                ArrayData::set_new_entry(db_layer, name, vec![data])?;
-                Self::append_elems(db_layer, name, values)
-            }
-        }else{
-            ArrayData::set_new_entry(db_layer, name, values.to_vec())
-        }
-    }*/
-
     pub fn values(&self) -> Vec<String> {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
         keys.sort();

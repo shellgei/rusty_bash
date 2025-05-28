@@ -15,6 +15,7 @@ use self::data::Data;
 use self::data::assoc::AssocData;
 use self::data::single::SingleData;
 use self::data::array::ArrayData;
+use self::data::single_int::IntData;
 //use self::data::special::SpecialData;
 
 #[derive(Debug, Default)]
@@ -318,7 +319,22 @@ impl DataBase {
             Some(e) => *e += "i",
             None => {self.param_options[layer].insert(name.to_string(), "i".to_string());},
         }
-        SingleData::init_as_num(&mut self.params[layer], name, value)
+        let db_layer = &mut self.params[layer];
+//        SingleData::init_as_num(&mut self.params[layer], name, value)
+
+        let mut data = IntData{body: 0};
+
+        if value != "" {
+            match value.parse::<isize>() {
+                Ok(n) => data.body = n,
+                Err(e) => {
+                    return Err(ExecError::Other(e.to_string()));
+                },
+            }
+        }
+
+        db_layer.insert( name.to_string(), Box::new(data) );
+        Ok(())
     }
 
     pub fn set_param(&mut self, name: &str, val: &str, layer: Option<usize>)
@@ -343,7 +359,24 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
-        SingleData::set_value(&mut self.params[layer], name, val)
+        let db_layer = &mut self.params[layer];
+        //SingleData::set_value(&mut self.params[layer], name, val)
+        if env::var(name).is_ok() {
+            env::set_var(name, val);
+        }
+
+        if db_layer.get(name).is_none() {
+            db_layer.insert( name.to_string(), Box::new(SingleData::from("")) );
+           // SingleData::set_new_entry(db_layer, name, "")?;
+        }
+
+        let d = db_layer.get_mut(name).unwrap();
+
+        if d.is_array() {
+            return d.set_as_array("0", val);
+        }
+     
+        d.set_as_single(val)
     }
 
     pub fn append_param(&mut self, name: &str, val: &str, layer: Option<usize>)
@@ -370,7 +403,24 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
-        SingleData::append_value(&mut self.params[layer], name, val)
+        let db_layer = &mut self.params[layer];
+        //SingleData::append_value(&mut self.params[layer], name, val)
+        if let Ok(v) = env::var(name) {
+            env::set_var(name, v + val);
+        }
+
+        if db_layer.get(name).is_none() {
+            db_layer.insert( name.to_string(), Box::new(SingleData::from("")) );
+            //SingleData::set_new_entry(db_layer, name, "")?;
+        }
+
+        let d = db_layer.get_mut(name).unwrap();
+
+        if d.is_array() {
+            return d.append_to_array_elem("0", val);
+        }
+     
+        d.append_as_single(val)
     }
 
     pub fn set_param2(&mut self, name: &str, index: &String, val: &String,
