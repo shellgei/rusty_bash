@@ -44,8 +44,8 @@ pub trait Data {
         let body = self.print_body();
         if ! self.is_initialized() {
             println!("{}", name);
-        }else if self.is_single() {
-            println!("{}=\"{}\"", name, body);
+        //}else if self.is_single() {  TODO: add " to declare print 
+        //    println!("{}=\"{}\"", name, body); but don't add " to set output
         }else{
             println!("{}={}", name, body);
         }
