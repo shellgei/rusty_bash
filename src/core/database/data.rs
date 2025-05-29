@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 pub mod array;
+pub mod array_int;
 pub mod array_uninit;
 pub mod assoc;
 pub mod epochseconds;
@@ -36,12 +37,15 @@ pub trait Data {
 
     fn print_with_name(&self, name: &str) {
         if self.is_special() {
+            println!("{}", name);
             return;
         }
 
         let body = self.print_body();
         if ! self.is_initialized() {
             println!("{}", name);
+        }else if self.is_single() {
+            println!("{}=\"{}\"", name, body);
         }else{
             println!("{}={}", name, body);
         }

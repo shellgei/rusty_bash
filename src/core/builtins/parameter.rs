@@ -123,12 +123,17 @@ fn init_var(core: &mut ShellCore, var: &mut Variable,
                args: &mut Vec<String>) -> Result<(), ExecError> {
     let layer = Some(core.db.get_layer_num() - 2);
     let name = var.name.clone();
+    let i_opt = arg::consume_option("-i", args);
 
     if args.contains(&"-a".to_string()) {
-        core.db.set_array(&name, None, layer)?;
+        if i_opt {
+            core.db.set_int_array(&name, None, layer)?;
+        }else{
+            core.db.set_array(&name, None, layer)?;
+        }
     }else if args.contains(&"-A".to_string()) {
         core.db.set_assoc(&name, layer)?;
-    }else if args.contains(&"-i".to_string()) {
+    }else if i_opt {
         core.db.init_as_num(&name, "", layer)?;
     }else {
         if var.index.is_none() {
@@ -202,18 +207,17 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
 
 fn declare_print(core: &mut ShellCore, names: &[String]) -> i32 {
     for n in names {
-        let mut opt = if core.db.is_assoc(&n) {
-            "A"
-        }else if core.db.is_array(&n) {
-            "a"
-        }else if core.db.has_value(&n) {
-            ""
-        }else{
+        let mut opt = if core.db.is_assoc(&n) { "A" }
+        else if core.db.is_array(&n) { "a" }
+        else if core.db.has_value(&n) { "" }
+        else{
             return error_exit(1, &n, "not found", core);
         }.to_string();
 
         if core.db.is_readonly(&n) {
-            opt += "r";
+            if ! opt.contains('r') {
+                opt += "r";
+            }
         }
 
         if opt.is_empty() {
@@ -245,6 +249,11 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut names = core.db.get_keys();
     let mut options = String::new();
 
+    if arg::consume_option("-i", args) {
+        names.retain(|n| core.db.has_flag(n, 'i'));
+        options += "i";
+    }
+
     if arg::consume_option("-a", args) {
         names.retain(|n| core.db.is_array(n));
         options += "a";
@@ -263,7 +272,7 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let prefix = format!("declare -{}", options);
     for name in names {
         print!("{}", prefix);
-        if core.db.is_readonly(&name) {
+        if core.db.is_readonly(&name) && ! options.contains('r') {
             print!("r");
         }
         print!(" ");
@@ -339,6 +348,33 @@ pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+    let array_opt = arg::consume_option("-a", &mut args);
+    let assoc_opt = arg::consume_option("-A", &mut args);
+    let int_opt = arg::consume_option("-i", &mut args);
+
+    if args.len() == 1 {
+        let mut names: Vec<String> = core.db.get_keys()
+            .iter()
+            .filter(|e| core.db.is_readonly(&e))
+            .map(|e| e.to_string())
+            .collect();
+
+        if array_opt {
+            names.retain(|e| core.db.is_array(&e));
+        }
+        if assoc_opt {
+            names.retain(|e| core.db.is_assoc(&e));
+        }
+        if int_opt {
+            names.retain(|e| core.db.is_single_num(&e));
+        }
+
+        declare_print(core, &names);
+        
+        return 0;
+    }
+
     for name_or_subs in &args[1..] {
         if name_or_subs.contains('=') {
             if let Err(e) = declare_set(core, &name_or_subs, &mut vec![]) {

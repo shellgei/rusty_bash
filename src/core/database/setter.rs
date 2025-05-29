@@ -19,10 +19,17 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
     db.set_param("OPTIND", "1", None)?;
     db.set_param("IFS", " \t\n", None)?;
-    db.set_param("UID", &unistd::getuid().to_string(), None)?;
+
+    db.init_as_num("UID", &unistd::getuid().to_string(), None)?;
+    //db.set_param("UID", &unistd::getuid().to_string(), None)?;
+    db.param_options[0].insert( "UID".to_string(), "ir".to_string());
 
     db.params[0].insert( "RANDOM".to_string(), Box::new(RandomVar::new()) );
+    db.param_options[0].insert( "RANDOM".to_string(), "i".to_string());
+
     db.params[0].insert( "SRANDOM".to_string(), Box::new(SRandomVar::new()) );
+    db.param_options[0].insert( "SRANDOM".to_string(), "i".to_string());
+
     db.params[0].insert( "SECONDS".to_string(), Box::new(Seconds::new()) );
     db.params[0].insert( "EPOCHSECONDS".to_string(), Box::new(EpochSeconds{} ) );
     db.params[0].insert( "EPOCHREALTIME".to_string(), Box::new(EpochRealTime{} ) );

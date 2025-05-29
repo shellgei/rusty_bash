@@ -15,6 +15,8 @@ use self::data::Data;
 use self::data::assoc::AssocData;
 use self::data::single::SingleData;
 use self::data::array::ArrayData;
+use self::data::array_int::IntArrayData;
+use self::data::array_uninit::UninitArray;
 use self::data::single_int::IntData;
 //use self::data::special::SpecialData;
 
@@ -320,7 +322,6 @@ impl DataBase {
             None => {self.param_options[layer].insert(name.to_string(), "i".to_string());},
         }
         let db_layer = &mut self.params[layer];
-//        SingleData::init_as_num(&mut self.params[layer], name, value)
 
         let mut data = IntData{body: 0};
 
@@ -481,7 +482,8 @@ impl DataBase {
         ArrayData::set_elem(&mut self.params[layer], name, pos, val)
     }
 
-    pub fn append_to_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn append_to_array_elem(&mut self, name: &str, val: &String,
+            pos: usize, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
@@ -495,7 +497,8 @@ impl DataBase {
         ArrayData::append_elem(&mut self.params[layer], name, pos, val)
     }
 
-    pub fn set_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn set_assoc_elem(&mut self, name: &str, key: &String,
+            val: &String, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
@@ -523,7 +526,8 @@ impl DataBase {
         AssocData::append_elem(&mut self.params[layer], name, key, val)
     }
 
-    pub fn set_array(&mut self, name: &str, v: Option<Vec<String>>, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn set_array(&mut self, name: &str, v: Option<Vec<String>>,
+                     layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
@@ -538,7 +542,48 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
-        ArrayData::set_new_entry(&mut self.params[layer], name, v)
+        let db_layer = &mut self.params[layer];
+
+        if v.is_none() {
+            db_layer.insert(name.to_string(), UninitArray{}.boxed_clone());
+        }else {
+            db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
+        }
+        Ok(())
+    }
+
+    pub fn set_int_array(&mut self, name: &str, v: Option<Vec<String>>,
+                     layer: Option<usize>) -> Result<(), ExecError> {
+        Self::name_check(name)?;
+        self.write_check(name)?;
+        if self.flags.contains('r') {
+            if name == "BASH_CMDS" {
+                if v.is_some() {
+                    for val in v.as_ref().unwrap() {
+                        self.rsh_cmd_check(&vec![val.to_string()])?;
+                    }
+                }
+            }
+            self.rsh_check(name)?;
+        }
+
+        let layer = self.get_target_layer(name, layer);
+
+        match self.param_options[layer].get_mut(name) {
+            Some(e) => *e += "i",
+            None => {self.param_options[layer].insert(name.to_string(), "i".to_string());},
+        }
+
+        let db_layer = &mut self.params[layer];
+        db_layer.insert(name.to_string(), IntArrayData::default().boxed_clone());
+        
+        if v.is_some() {
+            for (i, e) in v.unwrap().into_iter().enumerate() {
+                self.set_array_elem(&name, &e, i, Some(layer))?;
+            }
+        }
+
+        Ok(())
     }
 
 /*
@@ -636,6 +681,16 @@ impl DataBase {
     pub fn set_flag(&mut self, name: &str, flag: char) {
         setter::flag(self, name, flag)
     }
+
+    /*
+    pub fn set_flag_layer(&mut self, name: &str, flag: char, layer: usize) {
+        let db_layer = &mut self.param_options[layer];
+        if let Some(d) = db_layer.get_mut(name) {
+            *d += &flag.to_string();
+        }else{
+            db_layer.insert(name.to_string(), flag.to_string());
+        }
+    }*/
 
     pub fn print(&mut self, name: &str) {
         if let Some(d) = self.get_ref(name) {

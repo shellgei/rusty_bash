@@ -159,6 +159,7 @@ impl ShellCore {
         let _ = self.db.set_param("HOSTTYPE", &t_arch, None);
         let _ = self.db.set_param("OSTYPE", &t_os, None);
         let _ = self.db.set_array("BASH_VERSINFO", Some(versinfo), None);
+        let _ = self.db.set_flag("BASH_VERSINFO", 'r');
     }
 
     pub fn flip_exit_status(&mut self) {
@@ -199,7 +200,7 @@ impl ShellCore {
 
     fn set_subshell_parameters(&mut self) -> Result<(), String> {
         let pid = nix::unistd::getpid();
-        self.db.set_param("BASHPID", &pid.to_string(), Some(0))?;
+        self.db.init_as_num("BASHPID", &pid.to_string(), Some(0))?;
         match self.db.get_param("BASH_SUBSHELL").unwrap().parse::<usize>() {
             Ok(num) => self.db.set_param("BASH_SUBSHELL", &(num+1).to_string(), Some(0))?,
             Err(_) =>  self.db.set_param("BASH_SUBSHELL", "0", Some(0))?,

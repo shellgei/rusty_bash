@@ -62,7 +62,6 @@ pub fn set_options2(core: &mut ShellCore, args: &mut Vec<String>) {
     }
 }
 
-
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
