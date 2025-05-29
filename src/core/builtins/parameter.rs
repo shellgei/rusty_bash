@@ -40,7 +40,7 @@ fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecEr
     }
 
     match Substitution::parse(&mut feeder, core) {
-        Ok(ans) => ans.unwrap().eval(core, Some(layer)/*, false*/),
+        Ok(ans) => ans.unwrap().eval(core, Some(layer), false),
         Err(e) => Err(ExecError::ParseError(e)),
     }
 }
@@ -57,7 +57,7 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
         _ => return Err(ExecError::VariableInvalid(arg.to_string())),
     };
 
-    sub.eval(core, Some(layer)/*, false*/)
+    sub.eval(core, Some(layer), false)
 }
 
 fn local_(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<(), ExecError> {
@@ -113,7 +113,7 @@ fn declare_set_has_equal(core: &mut ShellCore, name_and_value: &String,
             core.db.set_flag(&s.left_hand.name, 'x');
         }
 
-        return s.eval(core, layer);
+        return s.eval(core, layer, true);
     }
 
     return Err(ExecError::BadSubstitution(name_and_value.clone()));
@@ -205,7 +205,7 @@ fn declare_set(core: &mut ShellCore, name_and_value: &String,
     Ok(())
 }
 
-fn declare_print(core: &mut ShellCore, names: &[String]) -> i32 {
+fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
     for n in names {
         let mut opt = if core.db.is_assoc(&n) { "A" }
         else if core.db.is_array(&n) { "a" }
@@ -215,7 +215,8 @@ fn declare_print(core: &mut ShellCore, names: &[String]) -> i32 {
         }.to_string();
 
         if core.db.is_readonly(&n) {
-            if ! opt.contains('r') {
+            if ! opt.contains('r') 
+            && ! core.options.query("posix") {
                 opt += "r";
             }
         }
@@ -224,7 +225,10 @@ fn declare_print(core: &mut ShellCore, names: &[String]) -> i32 {
             opt += "-";
         }
 
-        let prefix = format!("declare -{} ", opt);
+        let prefix = match core.options.query("posix") {
+            false => format!("declare -{} ", opt),
+            true  => format!("{} -{} ", com, opt),
+        };
         print!("{}", prefix);
         core.db.print(&n);
     }
@@ -266,13 +270,17 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if arg::consume_option("-r", args) {
         names.retain(|n| core.db.is_readonly(n));
-        options += "r";
+        if ! core.options.query("posix") {
+            options += "r";
+        }
     }
 
     let prefix = format!("declare -{}", options);
     for name in names {
         print!("{}", prefix);
-        if core.db.is_readonly(&name) && ! options.contains('r') {
+        if core.db.is_readonly(&name)
+        && ! options.contains('r')
+        && ! core.options.query("posix") {
             print!("r");
         }
         print!(" ");
@@ -291,7 +299,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if arg::consume_option("-p", &mut args) {
-        return declare_print(core, &args[1..]);
+        return declare_print(core, &args[1..], &args[0]);
     }
 
     let mut name_and_values = vec![];
@@ -330,7 +338,7 @@ fn export_var(arg: &str, core: &mut ShellCore) -> Result<(), ExecError> {
     match Substitution::parse(&mut feeder, core) {
         Ok(Some(mut ans)) => {
             env::set_var(&ans.left_hand.name, "");
-            ans.eval(core, None)
+            ans.eval(core, None, false)
         },
         Ok(None)  => Err(ExecError::VariableInvalid(arg.to_string())),
         Err(e)  => Err(ExecError::ParseError(e)),
@@ -370,7 +378,7 @@ pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             names.retain(|e| core.db.is_single_num(&e));
         }
 
-        declare_print(core, &names);
+        declare_print(core, &names, &args[0]);
         
         return 0;
     }

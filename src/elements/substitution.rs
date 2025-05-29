@@ -22,9 +22,14 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, declare: bool) -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         self.right_hand.eval(core, &self.left_hand.name, self.append)?;
+
+        if declare && self.right_hand.evaluated_array.is_some() {
+            self.left_hand.index = None;
+        }
+
         self.set_to_shell(core, layer)
     }
 

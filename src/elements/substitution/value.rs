@@ -85,6 +85,9 @@ impl Value {
             match s {
                 Some(mut sub) => {
                     let index = sub.eval(core, &name)?;
+                    if let Ok(j) = index.parse::<usize>() {
+                        i = j;
+                    }
                     hash.insert(index, v)
                 },
                 None => hash.insert(i.to_string(), v),

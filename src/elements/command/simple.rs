@@ -133,7 +133,7 @@ impl SimpleCommand {
         self.option_x_output(core);
         
         for s in self.substitutions.iter_mut() {
-            if let Err(e) = s.eval(core, None) {
+            if let Err(e) = s.eval(core, None, false) {
                 core.db.exit_status = 1;
                 return Err(e);
             }
@@ -148,7 +148,7 @@ impl SimpleCommand {
             layer = None;
         }
         for s in self.substitutions.iter_mut() {
-            s.eval(core, layer/*, false*/)?;
+            s.eval(core, layer, false)?;
         }
         Ok(())
     }
@@ -156,7 +156,7 @@ impl SimpleCommand {
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for s in self.substitutions.iter_mut() {
             env::set_var(&s.left_hand.name, "");
-            s.eval(core, None/*, true*/)?;
+            s.eval(core, None, false)?;
         }
         Ok(())
     }
