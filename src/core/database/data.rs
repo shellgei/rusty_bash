@@ -35,7 +35,7 @@ pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
     fn print_body(&self) -> String;
 
-    fn print_with_name(&self, name: &str) {
+    fn print_with_name(&self, name: &str, declare_print: bool) {
         if self.is_special() {
             println!("{}", name);
             return;
@@ -44,8 +44,8 @@ pub trait Data {
         let body = self.print_body();
         if ! self.is_initialized() {
             println!("{}", name);
-        //}else if self.is_single() {  TODO: add " to declare print 
-        //    println!("{}=\"{}\"", name, body); but don't add " to set output
+        }else if declare_print && self.is_single() {
+            println!("{}=\"{}\"", name, body);
         }else{
             println!("{}={}", name, body);
         }

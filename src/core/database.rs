@@ -694,7 +694,15 @@ impl DataBase {
 
     pub fn print(&mut self, name: &str) {
         if let Some(d) = self.get_ref(name) {
-            d.print_with_name(name);
+            d.print_with_name(name, false);
+        }else if let Some(f) = self.functions.get(name) {
+            println!("{}", &f.text);
+        }
+    }
+
+    pub fn declare_print(&mut self, name: &str) {
+        if let Some(d) = self.get_ref(name) {
+            d.print_with_name(name, true);
         }else if let Some(f) = self.functions.get(name) {
             println!("{}", &f.text);
         }

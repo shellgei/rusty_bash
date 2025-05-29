@@ -276,7 +276,7 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             print!("r");
         }
         print!(" ");
-        core.db.print(&name);
+        core.db.declare_print(&name);
     }
 
 
