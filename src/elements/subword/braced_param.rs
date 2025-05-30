@@ -17,11 +17,10 @@ use self::optional_operation::OptionalOperation;
 pub struct BracedParam {
     text: String,
     array: Option<Vec<String>>,
-    //param: Param,
     param: Variable,
     optional_operation: Option<Box<dyn OptionalOperation>>,
     unknown: String,
-    is_array: bool,
+    treat_as_array: bool,
     num: bool,
     indirect: bool,
 }
@@ -64,7 +63,7 @@ impl Subword for BracedParam {
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
-    fn is_array(&self) -> bool {self.is_array && ! self.num}
+    fn is_array(&self) -> bool {self.treat_as_array }
     fn get_array_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
 
     fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
@@ -151,7 +150,7 @@ impl BracedParam {
         let mut sw = self.clone();
         sw.indirect = false;
         sw.unknown = String::new();
-        sw.is_array = false;
+        sw.treat_as_array = false;
         sw.num = false;
 
         sw.substitute(core)?;

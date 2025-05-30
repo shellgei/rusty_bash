@@ -11,8 +11,8 @@ impl BracedParam {
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text;
-            if s.text.contains('@') {
-                ans.is_array = true;
+            if s.text.contains('@') && ! ans.num {
+                ans.treat_as_array = true;
             }
             ans.param.index = Some(s);
             return Ok(true);
@@ -36,10 +36,9 @@ impl BracedParam {
         }
 
         if len != 0 {
-            //ans.param = Param {name: feeder.consume(len), subscript: None};
             ans.param = Variable::default();
             ans.param.name = feeder.consume(len);
-            ans.is_array = ans.param.name == "@";
+            ans.treat_as_array = ans.param.name == "@" && ! ans.num;
             ans.text += &ans.param.name;
             return true;
         }
