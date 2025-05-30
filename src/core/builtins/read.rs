@@ -1,8 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{arg, error, Feeder, ShellCore, utils};
-use crate::error::exec::ExecError;
+use crate::{arg, error, ShellCore, utils};
 use crate::elements::substitution::variable::Variable;
 use super::error_exit;
 
@@ -22,7 +21,8 @@ fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
 
 pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
              ignore_escape: bool, limit: &mut usize, delim: &String) -> i32 {
-    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+    let mut remaining = utils::read_line_stdin_unbuffered(delim)
+                        .unwrap_or("".to_string());
     if remaining.is_empty() {
         return 1;
     }
@@ -62,36 +62,16 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
 
         consume_tail_ifs(&mut word, &tail_space);
         
-        if let Err(e) = set_param(&args[0], &word, core) {
+        if let Err(e) = Variable::parse_and_set(&args[0], &word, core) {
             e.print(core);
             return 1;
         }
-        /*
-        if let Err(e) = core.db.set_param(&args[0], &word, None) {
-            let msg = format!("{:?}", &e);
-            error::print(&msg, core);
-            return 1;
-        }*/
+
         args.remove(0);
         consume_ifs(&mut remaining, &ifs, limit);
     }
 
     0
-}
-
-fn set_param(arg: &str, word: &str, core: &mut ShellCore) -> Result<(), ExecError> {
-    let mut f = Feeder::new(arg);
-    let var = match Variable::parse(&mut f, core)? {
-        Some(v) => v,
-        None => return Err(ExecError::InvalidName(arg.to_string())),
-    };
-
-    if var.index.is_none() {
-        return core.db.set_param(&arg, &word, None);
-    }
-
-    let index = var.index.unwrap().eval(core, &var.name)?;
-    core.db.set_param2(&var.name, &index, &word.to_string(), None)
 }
 
 pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool,

@@ -32,14 +32,28 @@ impl Variable {
         }
     }
 
-    /*
-    pub fn init_if_not_exist(&mut self, flags: &str, core: &mut ShellCore)
+    fn set_value(&mut self, value: &String, core: &mut ShellCore)
     -> Result<(), ExecError> {
-        if core.db.has_value(&self.name) {
+        if self.index.is_none() {
+            return core.db.set_param(&self.name, value, None);
         }
+    
+        let index = self.index.clone().unwrap().eval(core, &self.name)?;
+        core.db.set_param2(&self.name, &index, value, None)
+    }
 
-        Ok(())
-    }*/
+    pub fn parse_and_set(arg: &str, value: &str, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut f = Feeder::new(arg);
+        match Self::parse(&mut f, core)? {
+            Some(mut v) => {
+                if ! f.is_empty() {
+                    return Err(ExecError::InvalidName(arg.to_string()));
+                }
+                v.set_value(&value.to_string(), core)
+            },
+            None => Err(ExecError::InvalidName(arg.to_string())),
+        }
+    }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_name(core);
