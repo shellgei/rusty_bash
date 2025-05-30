@@ -20,7 +20,9 @@ impl Data for UninitArray {
 
     fn clear(&mut self) { }
     fn is_initialized(&self) -> bool { false }
-    fn get_as_array(&mut self, _: &str) -> Result<String, ExecError> { Ok( "".to_string() ) }
+    fn get_as_array(&mut self, _: &str, _: &str) -> Result<String, ExecError> {
+        Ok( "".to_string() )
+    }
     fn get_all_as_array(&mut self, _: bool) -> Result<Vec<String>, ExecError> { Ok(vec![]) }
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> { Ok(vec![]) }
     fn get_as_single(&mut self) -> Result<String, ExecError> { Ok("".to_string()) }

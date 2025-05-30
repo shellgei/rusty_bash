@@ -37,7 +37,6 @@ impl Subword for DoubleQuoted {
             }
             self.text += sw.get_text();
         }
-        //dbg!("{:?}", &self.text);
         Ok(())
     }
 

@@ -32,7 +32,7 @@ impl Subword for BracedParam {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.check()?;
 
-        if self.indirect && self.has_aster_or_atmark_subscript() { // ${!name[@]}, ${!name[*]}
+        if self.indirect && self.param.is_var_array() { // ${!name[@]}, ${!name[*]}
             self.index_replace(core)?;
             return Ok(());
         }
@@ -42,9 +42,7 @@ impl Subword for BracedParam {
             self.check()?;
         }
 
-        if self.has_aster_or_atmark_subscript()
-        || self.param.name == "@" 
-        || self.param.name == "*" {
+        if self.param.is_array() {
             if let Some(s) = self.optional_operation.as_mut() {
                 if s.has_array_replace() {
                     let mut arr = vec![];
@@ -98,14 +96,6 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn has_aster_or_atmark_subscript(&self) -> bool {
-        if self.param.index.is_none() {
-            return false;
-        }
-        let sub = &self.param.index.as_ref().unwrap().text;
-        sub == "[*]" || sub == "[@]"
-    }
-
     fn check(&mut self) -> Result<(), ExecError> {
         if self.param.name.is_empty() || ! utils::is_param(&self.param.name) {
             return Err(ExecError::BadSubstitution(self.text.clone()));
@@ -115,10 +105,8 @@ impl BracedParam {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
 
-        if self.param.index.is_some() {
-            if self.param.name == "@" || self.param.name == "*" {
-                return Err(ExecError::BadSubstitution(self.param.name.clone()));
-            }
+        if self.param.index.is_some() && self.param.is_pos_param_array() {
+            return Err(ExecError::BadSubstitution(self.param.name.clone()));
         }
         Ok(())
     }
@@ -198,9 +186,7 @@ impl BracedParam {
             return Ok(());
         }
 
-        if core.db.has_value(&self.param.name)
-        && ! core.db.is_array(&self.param.name)
-        && ! core.db.is_assoc(&self.param.name) {
+        if core.db.is_single(&self.param.name) {
             let param = core.db.get_param(&self.param.name);
             self.text = match index.as_str() { //case: a=aaa; echo ${a[@]}; (output: aaa)
                 "@" | "*" | "0" => param.unwrap_or("".to_string()),

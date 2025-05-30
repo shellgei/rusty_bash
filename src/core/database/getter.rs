@@ -45,5 +45,6 @@ pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> Result<String, Ex
         _ => return Ok("".to_string()),
     };
 
-    db.params[layer].get_mut(name).unwrap().get_as_array_or_assoc(pos)
+    let ifs = db.get_ifs_head();
+    db.params[layer].get_mut(name).unwrap().get_as_array_or_assoc(pos, &ifs)
 }

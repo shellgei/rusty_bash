@@ -75,7 +75,7 @@ pub trait Data {
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {Err(ExecError::Other("not a single variable".to_string()))}
-    fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> { //TODO: change to ArithError
+    fn get_as_array(&mut self, key: &str, _: &str) -> Result<String, ExecError> { //TODO: change to ArithError
         let err = ArithError::OperandExpected(key.to_string());
         Err(ExecError::ArithError(key.to_string(), err)) 
     }
@@ -84,7 +84,7 @@ pub trait Data {
         Err(ExecError::ArithError(key.to_string(), err)) 
     }
 
-    fn get_as_array_or_assoc(&mut self, pos: &str) -> Result<String, ExecError> {
+    fn get_as_array_or_assoc(&mut self, pos: &str, ifs: &str) -> Result<String, ExecError> {
         if self.is_assoc() {
             return match self.get_as_assoc(pos) {
                 Ok(d)  => Ok(d),
@@ -92,7 +92,7 @@ pub trait Data {
             }
         }
         if self.is_array() {
-            return match self.get_as_array(pos) {
+            return match self.get_as_array(pos, ifs) {
                 Ok(d)  => Ok(d),
                 Err(_) => Ok("".to_string()),
             }

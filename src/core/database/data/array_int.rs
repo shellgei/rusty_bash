@@ -97,9 +97,12 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn get_as_array(&mut self, key: &str) -> Result<String, ExecError> {
-        if key == "@" || key == "*" {
+    fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
+        if key == "@" {
             return Ok(self.values().join(" "));
+        }
+        if key == "@" {
+            return Ok(self.values().join(ifs));
         }
 
         let n = key.parse::<usize>()

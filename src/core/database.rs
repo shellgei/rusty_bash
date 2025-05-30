@@ -195,7 +195,7 @@ impl DataBase {
         for layer in (0..num).rev()  {
             if let Some(e) = self.params[layer].get(name) {
                 let mut a = e.clone();
-                return a.get_as_array_or_assoc(index).is_ok();
+                return a.get_as_array_or_assoc(index, "").is_ok();
             }
         }
         false

@@ -32,6 +32,22 @@ impl Variable {
         }
     }
 
+    pub fn is_array(&mut self) -> bool {
+        self.is_pos_param_array() || self.is_var_array()
+    }
+
+    pub fn is_pos_param_array(&mut self) -> bool {
+        self.name == "@" || self.name == "*"
+    }
+
+    pub fn is_var_array(&mut self) -> bool {
+        if self.index.is_none() {
+            return false;
+        }
+        let sub = &self.index.as_ref().unwrap().text;
+        sub == "[*]" || sub == "[@]"
+    }
+
     fn set_value(&mut self, value: &String, core: &mut ShellCore)
     -> Result<(), ExecError> {
         if self.index.is_none() {
