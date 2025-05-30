@@ -1,26 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use crate::utils;
-use crate::{arg, error};
+use crate::{arg, error, Feeder, ShellCore, utils};
+use crate::error::exec::ExecError;
+use crate::elements::substitution::Substitution;
 use super::error_exit;
-
-fn is_varname(s :&String) -> bool {
-    if s.is_empty() {
-        return false;
-    }
-
-    let first_ch = s.chars().nth(0).unwrap();
-
-    if '0' <= first_ch && first_ch <= '9' {
-        return false;
-    }
-
-    let name_c = |c| ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
-                     || ('0' <= c && c <= '9') || '_' == c;
-    s.chars().position(|c| !name_c(c)) == None
-}
 
 fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
     let mut pos = 0;
@@ -77,12 +61,17 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
         }
 
         consume_tail_ifs(&mut word, &tail_space);
-
+        
+        if let Err(e) = set_param(&args[0], &word, core) {
+            e.print(core);
+            return 1;
+        }
+        /*
         if let Err(e) = core.db.set_param(&args[0], &word, None) {
             let msg = format!("{:?}", &e);
             error::print(&msg, core);
             return 1;
-        }
+        }*/
         args.remove(0);
         consume_ifs(&mut remaining, &ifs, limit);
     }
@@ -90,11 +79,13 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
     0
 }
 
-/*
-fn read_line(_: &mut ShellCore, buffer: &mut String) -> usize {
-    *buffer = utils::read_line_stdin_unbuffered().unwrap_or("".to_string());
-    buffer.len()
-}*/
+fn set_param(arg: &str, word: &str, core: &mut ShellCore) -> Result<(), ExecError> {
+    let mut f = Feeder::new(&(arg.to_owned() + "='" + word + "'"));
+    match Substitution::parse(&mut f, core)? {
+        Some(mut s) => s.eval(core, None, false),
+        None =>Err(ExecError::InvalidName(arg.to_string())),
+    }
+}
 
 pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool,
               limit: &mut usize, delim: &String) -> i32 {
@@ -161,19 +152,6 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
         return read_a(core, &a, r_opt, &mut limit, &delim);
-    }
-
-    for a in &args[1..] {
-        if ! is_varname(&a) {
-            eprintln!("bash: read: `{}': not a valid identifier", &a);
-            return 1;
-        }else{
-            if let Err(e) = core.db.set_param(&a, "", None) {
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
-                return 1;
-            }
-        }
     }
 
     read_(core, &mut args, r_opt, &mut limit, &delim)

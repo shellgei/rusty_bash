@@ -682,16 +682,6 @@ impl DataBase {
         setter::flag(self, name, flag)
     }
 
-    /*
-    pub fn set_flag_layer(&mut self, name: &str, flag: char, layer: usize) {
-        let db_layer = &mut self.param_options[layer];
-        if let Some(d) = db_layer.get_mut(name) {
-            *d += &flag.to_string();
-        }else{
-            db_layer.insert(name.to_string(), flag.to_string());
-        }
-    }*/
-
     pub fn print(&mut self, name: &str) {
         if let Some(d) = self.get_ref(name) {
             d.print_with_name(name, false);

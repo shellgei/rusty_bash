@@ -146,6 +146,11 @@ impl Data for ArrayData {
     }
 
     fn remove_elem(&mut self, key: &str) -> Result<(), ExecError> {
+        if key == "*" || key == "@" {
+            self.body.clear();
+            return Ok(());
+        }
+
         if let Ok(n) = key.parse::<usize>() {
             self.body.remove(&n);
             return Ok(());

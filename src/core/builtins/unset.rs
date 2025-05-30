@@ -36,21 +36,21 @@ pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
         },
         name => {
-            if name.contains("[") {
-                let mut f = Feeder::new(&(name.to_owned()));
-                if let Ok(Some(mut sub)) = Variable::parse(&mut f, core) {
-                    if let Ok(Some(key)) = sub.get_index(core, false, false) {
-                        let nm = sub.name.clone();
-                        core.db.unset_array_elem(&nm, &key);
-                        return 0;
-                    }
-                }
-
-                let msg = format!("{}: invalid variable", &name);
-                return super::error_exit(1, &args[0], &msg, core);
+            if ! name.contains("[") {
+                return unset_all(core, name);
             }
 
-            return unset_all(core, name);
+            let mut f = Feeder::new(&(name.to_owned()));
+            if let Ok(Some(mut sub)) = Variable::parse(&mut f, core) {
+                if let Ok(Some(key)) = sub.get_index(core, false, false) {
+                    let nm = sub.name.clone();
+                    core.db.unset_array_elem(&nm, &key);
+                    return 0;
+                }
+            }
+
+            let msg = format!("{}: invalid variable", &name);
+            return super::error_exit(1, &args[0], &msg, core);
         },
     }
     0

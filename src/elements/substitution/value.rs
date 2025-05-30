@@ -81,17 +81,32 @@ impl Value {
         }
 
         let values = a.eval(core)?;
+
         for (s, v) in values {
             match s {
                 Some(mut sub) => {
-                    let index = sub.eval(core, &name)?;
-                    if let Ok(j) = index.parse::<usize>() {
-                        i = j;
+                    let index = match sub.eval(core, &name) {
+                        Ok(i) => i,
+                        Err(e) => {
+                            e.print(core);
+                            continue;
+                        },
+                    };
+                    if core.db.is_assoc(&name) {
+                        hash.insert(index, v);
+                    }else{
+                        match index.parse::<usize>() {
+                            Ok(j) => i = j,
+                            Err(e) => {
+                                eprintln!("{:?}", &e);
+                                continue;
+                            },
+                        }
+                        hash.insert(index, v);
                     }
-                    hash.insert(index, v)
                 },
-                None => hash.insert(i.to_string(), v),
-            };
+                None => {hash.insert(i.to_string(), v);},
+            }
             i += 1;
         }
         self.evaluated_array = Some(hash);
