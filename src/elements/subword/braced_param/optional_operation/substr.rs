@@ -5,7 +5,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use super::super::Param;
+use super::super::Variable;
 use super::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
@@ -17,14 +17,14 @@ pub struct Substr {
 
 impl OptionalOperation for Substr {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn exec(&mut self, _: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         self.get(text, core)
     }
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
     fn has_array_replace(&self) -> bool {true}
 
-    fn set_array(&mut self, param: &Param, array: &mut Vec<String>,
+    fn set_array(&mut self, param: &Variable, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         match param.name.as_str() {
             "@" | "*" => self.set_partial_position_params(array, text, core),

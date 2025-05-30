@@ -7,7 +7,7 @@ use crate::elements::word::{Word, WordMode};
 use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::super::{Subscript, Param};
+use super::super::{Subscript, Variable};
 use super::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
@@ -20,8 +20,8 @@ pub struct ValueCheck {
 
 impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.set(&param.name, &param.subscript, text, core)
+    fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.set(&param.name, &param.index, text, core)
     }
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}

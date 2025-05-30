@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::elements::substitution::subscript::Subscript;
 use crate::error::parse::ParseError;
-use super::{BracedParam, Param};
+use super::{BracedParam, Variable};
 use super::optional_operation;
 
 impl BracedParam {
@@ -14,7 +14,7 @@ impl BracedParam {
             if s.text.contains('@') {
                 ans.is_array = true;
             }
-            ans.param.subscript = Some(s);
+            ans.param.index = Some(s);
             return Ok(true);
         }
 
@@ -24,7 +24,8 @@ impl BracedParam {
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
         if len != 0 {
-            ans.param = Param{ name: feeder.consume(len), subscript: None};
+            ans.param = Variable::default();
+            ans.param.name = feeder.consume(len);
             ans.text += &ans.param.name;
             return true;
         }
@@ -35,7 +36,9 @@ impl BracedParam {
         }
 
         if len != 0 {
-            ans.param = Param {name: feeder.consume(len), subscript: None};
+            //ans.param = Param {name: feeder.consume(len), subscript: None};
+            ans.param = Variable::default();
+            ans.param.name = feeder.consume(len);
             ans.is_array = ans.param.name == "@";
             ans.text += &ans.param.name;
             return true;

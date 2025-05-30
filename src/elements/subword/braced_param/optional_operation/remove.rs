@@ -6,18 +6,18 @@ use crate::elements::word::{Word, WordMode};
 use crate::utils::glob;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::super::Param;
+use super::super::Variable;
 use super::OptionalOperation;
 
 impl OptionalOperation for Remove {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn exec(&mut self, _: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         self.set(text, core)
     }
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
 
-    fn set_array(&mut self, param: &Param, array: &mut Vec<String>,
+    fn set_array(&mut self, param: &Variable, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         *array = match param.name.as_str() {
             "@" | "*" => core.db.get_position_params(),
