@@ -20,6 +20,9 @@ impl Subscript {
         }
 
         if let Some(a) = self.inner.as_mut() {
+            if a.text.is_empty() {
+                return Err(ExecError::ArrayIndexInvalid(a.text.clone()));
+            }
             return match core.db.is_assoc(param_name) {
                 true  => {
                     match self.inner.as_mut() {
