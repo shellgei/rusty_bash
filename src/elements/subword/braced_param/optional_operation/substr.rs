@@ -42,7 +42,7 @@ impl Substr {
             return Err(ExecError::BadSubstitution(String::new()));
         }
     
-        *array = core.db.get_array_all("@");
+        *array = core.db.get_array_all("@", true);
         let n = offset.eval_as_int(core)?;
         let mut start = std::cmp::max(0, n) as usize;
         start = std::cmp::min(start, array.len()) as usize;
@@ -82,7 +82,7 @@ impl Substr {
             return Err(ExecError::BadSubstitution(String::new()));
         }
     
-        *array = core.db.get_array_all(name);
+        *array = core.db.get_array_all(name, false);
         let n = offset.eval_as_int(core)?;
         let mut start = std::cmp::max(0, n) as usize;
         start = std::cmp::min(start, array.len()) as usize;

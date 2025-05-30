@@ -208,7 +208,7 @@ impl DataBase {
         0
     }
 
-    pub fn get_array_all(&mut self, name: &str) -> Vec<String> {
+    pub fn get_array_all(&mut self, name: &str, flatten: bool) -> Vec<String> {
         let layer = self.position_parameters.len() - 1;
         if name == "@" {
             return self.position_parameters[layer].clone();
@@ -216,7 +216,7 @@ impl DataBase {
 
         match self.get_ref(name) {
             Some(d) => {
-                if let Ok(v) = d.get_all_as_array() {
+                if let Ok(v) = d.get_all_as_array(flatten) {
                     return v;
                 }
                 vec![]

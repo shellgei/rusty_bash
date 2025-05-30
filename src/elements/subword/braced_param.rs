@@ -130,7 +130,7 @@ impl BracedParam {
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.optional_operation.is_some() {
-            let msg = core.db.get_array_all(&self.param.name).join(" ");
+            let msg = core.db.get_array_all(&self.param.name, true).join(" ");
             return Err(ExecError::InvalidName(msg));
         }
 
@@ -224,7 +224,7 @@ impl BracedParam {
     }
 
     fn atmark_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut arr = core.db.get_array_all(&self.param.name);
+        let mut arr = core.db.get_array_all(&self.param.name, true);
         self.array = Some(arr.clone());
         if self.num {
             self.text = arr.len().to_string();

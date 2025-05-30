@@ -110,7 +110,10 @@ pub trait Data {
         //Err(ExecError::ArrayIndexInvalid(pos.to_string()))
     }
 
-    fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {Err(ExecError::Other("not an array".to_string()))}
+    fn get_all_as_array(&mut self, _: bool) -> Result<Vec<String>, ExecError> {
+        Err(ExecError::Other("not an array".to_string()))
+    }
+
 
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {Err(ExecError::Other("not an array".to_string()))}
 

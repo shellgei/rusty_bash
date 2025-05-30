@@ -97,7 +97,7 @@ impl Data for AssocData {
         Ok(self.keys().clone())
     }
 
-    fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {
+    fn get_all_as_array(&mut self, skip_none: bool) -> Result<Vec<String>, ExecError> {
         if self.body.is_empty() {
             return Ok(vec![]);
         }
@@ -108,7 +108,9 @@ impl Data for AssocData {
         for i in keys {
             match self.body.get(&i) {
                 Some(s) => ans.push(s.clone()),
-                None => ans.push("".to_string()),
+                None => if ! skip_none {
+                    ans.push("".to_string());
+                },
             }
         }
         Ok(ans)

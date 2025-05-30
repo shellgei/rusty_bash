@@ -108,7 +108,7 @@ impl Data for IntArrayData {
         Ok( self.body.get(&n).unwrap_or(&0).to_string() )
     }
 
-    fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {
+    fn get_all_as_array(&mut self, skip_none: bool) -> Result<Vec<String>, ExecError> {
         if self.body.is_empty() {
             return Ok(vec![]);
         }
@@ -119,7 +119,11 @@ impl Data for IntArrayData {
         for i in 0..(max+1) {
             match self.body.get(&i) {
                 Some(s) => ans.push(s.to_string()),
-                None => ans.push("".to_string()),
+                None => {
+                    if ! skip_none {
+                        ans.push("".to_string());
+                    }
+                },
             }
         }
         Ok(ans)

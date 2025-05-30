@@ -42,7 +42,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     core.db.position_parameters.push(args[1..].to_vec());
 
-    let mut source = core.db.get_array_all("BASH_SOURCE");
+    let mut source = core.db.get_array_all("BASH_SOURCE", false);
     source.insert(0, args[1].clone());
     let _ = core.db.set_array("BASH_SOURCE", Some(source.clone()), None);
 
