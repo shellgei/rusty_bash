@@ -3,7 +3,7 @@
 
 use crate::{arg, error, Feeder, ShellCore, utils};
 use crate::error::exec::ExecError;
-use crate::elements::substitution::Substitution;
+use crate::elements::substitution::variable::Variable;
 use super::error_exit;
 
 fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
@@ -80,16 +80,24 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
 }
 
 fn set_param(arg: &str, word: &str, core: &mut ShellCore) -> Result<(), ExecError> {
-    let mut f = Feeder::new(&(arg.to_owned() + "='" + word + "'"));
-    match Substitution::parse(&mut f, core)? {
-        Some(mut s) => s.eval(core, None, false),
-        None =>Err(ExecError::InvalidName(arg.to_string())),
+    let mut f = Feeder::new(arg);
+    let var = match Variable::parse(&mut f, core)? {
+        Some(v) => v,
+        None => return Err(ExecError::InvalidName(arg.to_string())),
+    };
+
+    if var.index.is_none() {
+        return core.db.set_param(&arg, &word, None);
     }
+
+    let index = var.index.unwrap().eval(core, &var.name)?;
+    core.db.set_param2(&var.name, &index, &word.to_string(), None)
 }
 
 pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool,
               limit: &mut usize, delim: &String) -> i32 {
-    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+    let mut remaining = utils::read_line_stdin_unbuffered(delim)
+                        .unwrap_or("".to_string());
     if remaining.is_empty() {
         return 1;
     }
