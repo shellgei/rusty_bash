@@ -5,6 +5,7 @@ use crate::{env, ShellCore, utils, Feeder};
 use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
 use crate::elements::substitution::variable::Variable;
+use crate::elements::word::Word;
 use crate::utils::arg;
 use super::error_exit;
 
@@ -96,10 +97,36 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
+fn reparse(core: &mut ShellCore, sub: &mut Substitution) {
+    let mut f = Feeder::new(&sub.text);
+    let text = if let Ok(Some(s)) = Word::parse(&mut f, core, None) {
+        if ! f.is_empty() {
+            return;
+        }
+
+        match s.eval_as_value(core) {
+            Ok(txt) => txt,
+            _ => return,
+        }
+    }else{
+        return;
+    };
+
+    let mut f = Feeder::new(&text);
+    if let Ok(Some(s)) = Substitution::parse(&mut f, core) {
+        if ! f.is_empty() {
+            return;
+        }
+
+        *sub = s;
+    }
+}
+
 fn declare_set_has_equal(core: &mut ShellCore, sub: &mut Substitution,
                args: &mut Vec<String>) -> Result<(), ExecError> {
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
+    reparse(core, sub);
 
     let layer = Some(core.db.get_layer_num() - 2);
 
