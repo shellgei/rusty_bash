@@ -52,7 +52,6 @@ impl ShellCore {
         self.builtins.insert("complete".to_string(), complete::complete);
         self.builtins.insert("compopt".to_string(), compopt::compopt);
         self.builtins.insert("continue".to_string(), loop_control::continue_);
-        self.builtins.insert("declare".to_string(), parameter::declare);
         self.builtins.insert("debug".to_string(), debug);
         self.builtins.insert("disown".to_string(), job_commands::disown);
         self.builtins.insert("eval".to_string(), eval);
@@ -76,7 +75,6 @@ impl ShellCore {
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
         self.builtins.insert("type".to_string(), type_::type_);
-        self.builtins.insert("typeset".to_string(), parameter::declare);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
         self.builtins.insert("unalias".to_string(), alias::unalias);
@@ -85,6 +83,9 @@ impl ShellCore {
         self.builtins.insert(".".to_string(), source::source);
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("wait".to_string(), job_commands::wait);
+
+        self.substitution_builtins.insert("typeset".to_string(), parameter::declare);
+        self.substitution_builtins.insert("declare".to_string(), parameter::declare);
     }
 }
 

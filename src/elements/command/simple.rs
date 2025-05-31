@@ -64,6 +64,7 @@ impl Command for SimpleCommand {
         let _ = self.set_local_params(core, layer);
 
         if ! core.run_function(&mut self.args) 
+        && ! core.run_substitution_builtin(&mut self.args, &self.substitutions_as_args)?
         && ! core.run_builtin(&mut self.args, &self.substitutions_as_args)? {
             self.set_environment_variables(core)?;
             proc_ctrl::exec_command(&self.args, core, &self.command_path);

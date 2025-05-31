@@ -50,6 +50,7 @@ pub struct ShellCore {
     pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
+    pub substitution_builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>, &mut Vec<Substitution>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
     pub traplist: Vec<(i32, String)>,
@@ -188,6 +189,31 @@ impl ShellCore {
         let func = self.builtins[&args[0]];
         args.append(&mut special_args);
         self.db.exit_status = func(self, args);
+        Ok(true)
+    }
+
+    pub fn run_substitution_builtin(&mut self, args: &mut Vec<String>, substitutions: &Vec<Substitution>)
+    -> Result<bool, ExecError> {
+        if args.is_empty() {
+            eprintln!("ShellCore::run_builtin");
+            return Ok(false);
+        }
+
+        if ! self.substitution_builtins.contains_key(&args[0]) {
+            return Ok(false);
+        }
+
+        let mut special_args = vec![];
+        for sub in substitutions {
+            match args[0].as_ref() {
+                "eval" | "declare" => special_args.push(sub.get_string_for_eval(self)?),
+                _ => special_args.push(sub.text.clone()),
+            }
+        }
+
+        let func = self.substitution_builtins[&args[0]];
+        args.append(&mut special_args);
+        self.db.exit_status = func(self, args, &mut vec![]);
         Ok(true)
     }
 

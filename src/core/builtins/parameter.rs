@@ -291,7 +291,7 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn declare(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
     if args[1..].iter().all(|a| a.starts_with("-")) {
