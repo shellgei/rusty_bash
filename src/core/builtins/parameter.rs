@@ -112,7 +112,7 @@ fn reparse(core: &mut ShellCore, sub: &mut Substitution) {
         return;
     };
 
-    let mut f = Feeder::new(&text);
+    let mut f = Feeder::new(&text.replace("~", "\\~"));
     if let Ok(Some(s)) = Substitution::parse(&mut f, core) {
         if ! f.is_empty() {
             return;
