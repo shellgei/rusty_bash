@@ -70,7 +70,6 @@ impl ShellCore {
         self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
-        self.builtins.insert("readonly".to_string(), parameter::readonly);
         self.builtins.insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
@@ -84,6 +83,7 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("wait".to_string(), job_commands::wait);
 
+        self.substitution_builtins.insert("readonly".to_string(), parameter::readonly);
         self.substitution_builtins.insert("typeset".to_string(), parameter::declare);
         self.substitution_builtins.insert("declare".to_string(), parameter::declare);
     }

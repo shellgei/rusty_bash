@@ -192,7 +192,7 @@ impl ShellCore {
         Ok(true)
     }
 
-    pub fn run_substitution_builtin(&mut self, args: &mut Vec<String>, substitutions: &Vec<Substitution>)
+    pub fn run_substitution_builtin(&mut self, args: &mut Vec<String>, substitutions: &mut Vec<Substitution>)
     -> Result<bool, ExecError> {
         if args.is_empty() {
             eprintln!("ShellCore::run_builtin");
@@ -203,17 +203,8 @@ impl ShellCore {
             return Ok(false);
         }
 
-        let mut special_args = vec![];
-        for sub in substitutions {
-            match args[0].as_ref() {
-                "eval" | "declare" => special_args.push(sub.get_string_for_eval(self)?),
-                _ => special_args.push(sub.text.clone()),
-            }
-        }
-
         let func = self.substitution_builtins[&args[0]];
-        args.append(&mut special_args);
-        self.db.exit_status = func(self, args, &mut vec![]);
+        self.db.exit_status = func(self, args, substitutions);
         Ok(true)
     }
 

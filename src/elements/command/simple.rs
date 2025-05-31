@@ -64,7 +64,7 @@ impl Command for SimpleCommand {
         let _ = self.set_local_params(core, layer);
 
         if ! core.run_function(&mut self.args) 
-        && ! core.run_substitution_builtin(&mut self.args, &self.substitutions_as_args)?
+        && ! core.run_substitution_builtin(&mut self.args, &mut self.substitutions_as_args)?
         && ! core.run_builtin(&mut self.args, &self.substitutions_as_args)? {
             self.set_environment_variables(core)?;
             proc_ctrl::exec_command(&self.args, core, &self.command_path);
@@ -107,6 +107,7 @@ impl SimpleCommand {
         if self.force_fork
         || ( ! pipe.lastpipe && pipe.is_connected() ) 
         || ( ! core.builtins.contains_key(&self.args[0]) 
+           && ! core.substitution_builtins.contains_key(&self.args[0]) 
            && ! core.db.functions.contains_key(&self.args[0]) ) {
             self.command_path = self.hash_control(core)?;
             self.fork_exec(core, pipe)

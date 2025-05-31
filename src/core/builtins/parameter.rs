@@ -95,28 +95,24 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
     0
 }
-fn declare_set_has_equal(core: &mut ShellCore, name_and_value: &String,
+
+fn declare_set_has_equal(core: &mut ShellCore, sub: &mut Substitution,
                args: &mut Vec<String>) -> Result<(), ExecError> {
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
 
     let layer = Some(core.db.get_layer_num() - 2);
-    let escaped = name_and_value.replace("~", "\\~");
-    let mut feeder = Feeder::new(&escaped);
-    if let Some(mut s) = Substitution::parse(&mut feeder, core)? {
-        if read_only {
-            core.db.set_flag(&s.left_hand.name, 'r');
-            return Err(ExecError::VariableReadOnly(s.left_hand.name));
-        }
 
-        if export_opt {
-            core.db.set_flag(&s.left_hand.name, 'x');
-        }
-
-        return s.eval(core, layer, true);
+    if read_only {
+        core.db.set_flag(&sub.left_hand.name, 'r');
+        return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
     }
 
-    return Err(ExecError::BadSubstitution(name_and_value.clone()));
+    if export_opt {
+        core.db.set_flag(&sub.left_hand.name, 'x');
+    }
+
+    sub.eval(core, layer, true)
 }
 
 fn init_var(core: &mut ShellCore, var: &mut Variable,
@@ -171,9 +167,10 @@ fn change_attr(core: &mut ShellCore, var: &mut Variable,
 
 fn declare_set(core: &mut ShellCore, name_and_value: &String,
                args: &mut Vec<String>) -> Result<(), ExecError> {
+    /*
     if name_and_value.contains('=') {
         return declare_set_has_equal(core, name_and_value, args);
-    }
+    }*/
 
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
@@ -294,7 +291,7 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if args[1..].iter().all(|a| a.starts_with("-")) {
+    if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
         return declare_print_all(core, &mut args);
     }
 
@@ -315,6 +312,13 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Subs
 
     for name_and_value in name_and_values.iter().rev() {
         if let Err(e) = declare_set(core, &name_and_value, &mut args.clone()) {
+            e.print(core);
+            return 1;
+        }
+    }
+
+    for sub in subs {
+        if let Err(e) = declare_set_has_equal(core, sub, &mut args.clone()) {
             e.print(core);
             return 1;
         }
@@ -355,13 +359,13 @@ pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
     let mut args = arg::dissolve_options(args);
     let array_opt = arg::consume_option("-a", &mut args);
     let assoc_opt = arg::consume_option("-A", &mut args);
     let int_opt = arg::consume_option("-i", &mut args);
 
-    if args.len() == 1 {
+    if args.len() == 1 && subs.is_empty() {
         let mut names: Vec<String> = core.db.get_keys()
             .iter()
             .filter(|e| core.db.is_readonly(&e))
@@ -383,20 +387,15 @@ pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    for name_or_subs in &args[1..] {
-        if name_or_subs.contains('=') {
-            if let Err(e) = declare_set(core, &name_or_subs, &mut vec![]) {
-                e.print(core);
-                return 1;
-            }
-
-            let lhs = name_or_subs.split('=').nth(0).unwrap();
-            let name = lhs.split('[').nth(0).unwrap();
-
-            core.db.set_flag(name, 'r');
-            continue;
+    for sub in subs {
+        if let Err(e) = declare_set_has_equal(core, sub, &mut args.clone()) {
+            e.print(core);
+            return 1;
         }
+        core.db.set_flag(&sub.left_hand.name, 'r');
+    }
 
+    for name_or_subs in &args[1..] {
         if ! utils::is_name(&name_or_subs, core) {
             let msg = format!("`{}': not a valid identifier", name_or_subs);
             return error_exit(1, &args[0], &msg, core);
