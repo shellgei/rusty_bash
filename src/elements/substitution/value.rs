@@ -80,7 +80,8 @@ impl Value {
             i += 1;
         }
 
-        let values = a.eval(core)?;
+        let i_flag = core.db.has_flag(&name, 'i');
+        let values = a.eval(core, i_flag)?;
 
         for (s, v) in values {
             match s {
