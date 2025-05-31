@@ -194,11 +194,6 @@ fn change_attr(core: &mut ShellCore, var: &mut Variable,
 
 fn declare_set(core: &mut ShellCore, name_and_value: &String,
                args: &mut Vec<String>) -> Result<(), ExecError> {
-    /*
-    if name_and_value.contains('=') {
-        return declare_set_has_equal(core, name_and_value, args);
-    }*/
-
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
 
@@ -317,6 +312,8 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
     let mut args = arg::dissolve_options(args);
+    dbg!("{:?}", &args);
+    dbg!("{:?}", &subs);
 
     if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
         return declare_print_all(core, &mut args);
