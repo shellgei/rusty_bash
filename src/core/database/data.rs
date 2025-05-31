@@ -127,6 +127,7 @@ pub trait Data {
     fn is_assoc(&self) -> bool {false}
     fn is_array(&self) -> bool {false}
     fn len(&mut self) -> usize;
+    fn index_based_len(&mut self) -> usize {self.len()}
 
     fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
         match key {

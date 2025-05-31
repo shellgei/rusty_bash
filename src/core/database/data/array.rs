@@ -160,6 +160,13 @@ impl Data for ArrayData {
     fn is_array(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 
+    fn index_based_len(&mut self) -> usize {
+        match self.body.iter().map(|e| e.0).max() {
+            Some(n) => *n+1,
+            None    => 0,
+        }
+    }
+
     fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
         if key == "@" || key == "*" {
             return Ok(self.len());

@@ -95,7 +95,7 @@ impl Substr {
         }
     
         let mut n = offset.eval_as_int(core)?;
-        let len = core.db.len(name);
+        let len = core.db.index_based_len(name);
         if n < 0 {
             n += len as i128;
             if n < 0 {

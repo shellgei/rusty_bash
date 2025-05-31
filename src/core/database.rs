@@ -232,6 +232,13 @@ impl DataBase {
         0
     }
 
+    pub fn index_based_len(&mut self, name: &str) -> usize {
+        if let Some(d) = self.get_ref(name) {
+            return d.index_based_len();
+        }
+        0
+    }
+
     pub fn get_array_all(&mut self, name: &str, flatten: bool) -> Result<Vec<String>, ExecError> {
         self.get_array_from(name, 0, flatten)
         /*
