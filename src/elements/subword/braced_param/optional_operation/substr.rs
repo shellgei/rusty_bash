@@ -43,7 +43,19 @@ impl Substr {
         }
     
         *array = core.db.get_array_all("@", false)?;
-        let n = offset.eval_as_int(core)?;
+        let mut n = offset.eval_as_int(core)?;
+        let len = array.len();
+
+        if n < 0 {
+            n += len as i128;
+            if n < 0 {
+                *text = "".to_string();
+                *array = vec![];
+                return Ok(());
+            }
+        }
+
+
         let mut start = std::cmp::max(0, n) as usize;
         start = std::cmp::min(start, array.len()) as usize;
         *array = array.split_off(start);
@@ -82,9 +94,20 @@ impl Substr {
             return Err(ExecError::BadSubstitution(String::new()));
         }
     
-        let n = offset.eval_as_int(core)?;
-        let start = std::cmp::max(0, n) as usize;
-        *array = core.db.get_array_from(name, start, true)?;
+        let mut n = offset.eval_as_int(core)?;
+        let len = core.db.len(name);
+        if n < 0 {
+            n += len as i128;
+            if n < 0 {
+                *text = "".to_string();
+                *array = vec![];
+                return Ok(());
+            }
+        }
+
+        //let start = std::cmp::max(0, n) as usize;
+        //*array = core.db.get_array_from(name, start, true)?;
+        *array = core.db.get_array_from(name, n as usize, true)?;
 
         if self.length.is_none() {
             *text = array.join(" ");
@@ -120,7 +143,16 @@ impl Substr {
         }
     
         let mut ans;
-        let n = offset.eval_as_int(core)?;
+        let mut n = offset.eval_as_int(core)?;
+        let len = text.chars().count();
+
+        if n < 0 {
+            n += len as i128;
+            if n < 0 {
+                return Ok("".to_string());
+            }
+        }
+
         ans = text.chars().enumerate()
             .filter(|(i, _)| (*i as i128) >= n)
             .map(|(_, c)| c).collect();
