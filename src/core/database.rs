@@ -528,7 +528,8 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>)
+    -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {

@@ -214,10 +214,16 @@ impl ArrayData {
                 return d.set_as_array(&pos.to_string(), val);
             }else if d.is_assoc() {
                 return d.set_as_assoc(&pos.to_string(), val);
-            }else{
+            }else if d.is_single() {
                 let data = d.get_as_single()?;
                 ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-                Self::set_elem(db_layer, name, 0, &data)?;
+                
+                if data != "" {
+                    Self::set_elem(db_layer, name, 0, &data)?;
+                }
+                Self::set_elem(db_layer, name, pos, val)
+            }else {
+                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
                 Self::set_elem(db_layer, name, pos, val)
             }
         }else{
