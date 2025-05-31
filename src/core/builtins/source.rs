@@ -37,12 +37,17 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
+    let mut source = match core.db.get_array_all("BASH_SOURCE", false) {
+        Ok(s) => s,
+        Err(e) => {
+            e.print(core);
+            return 1;
+        },
+    };
+
     core.source_function_level += 1;
     core.source_files.push(args[1].to_string());
-
     core.db.position_parameters.push(args[1..].to_vec());
-
-    let mut source = core.db.get_array_all("BASH_SOURCE", false);
     source.insert(0, args[1].clone());
     let _ = core.db.set_array("BASH_SOURCE", Some(source.clone()), None);
 

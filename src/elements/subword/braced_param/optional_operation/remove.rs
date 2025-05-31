@@ -21,7 +21,7 @@ impl OptionalOperation for Remove {
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         *array = match param.name.as_str() {
             "@" | "*" => core.db.get_position_params(),
-            _ => core.db.get_array_all(&param.name, true),
+            _ => core.db.get_array_all(&param.name, true)?,
         };
 
         for i in 0..array.len() {

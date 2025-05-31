@@ -29,6 +29,7 @@ pub enum ExecError {
     Restricted(String),
     SubstringMinus(i128),
     UnsupportedWaitStatus(WaitStatus),
+    UnboundVariable(String),
     Errno(Errno),
     Other(String),
 
@@ -86,6 +87,7 @@ impl From<&ExecError> for String {
             ExecError::Restricted(com) => format!("{}: restricted", com), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
             ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {:?}", ws),
+            ExecError::UnboundVariable(name) => format!("{}: unbound variable", name),
             ExecError::Errno(e) => format!("system error {:?}", e),
             ExecError::Bug(msg) => format!("INTERNAL BUG: {}", msg),
             ExecError::Other(name) => name.to_string(),

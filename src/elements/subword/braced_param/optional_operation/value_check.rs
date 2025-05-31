@@ -75,7 +75,7 @@ impl ValueCheck {
 
     fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> { 
         if core.db.is_array(&name) {
-            if core.db.get_array_all(&name, false).is_empty() {
+            if core.db.get_array_all(&name, false)?.is_empty() {
                 self.alternative_value = None;
                 return Ok(text.clone());
             }

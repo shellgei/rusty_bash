@@ -113,7 +113,7 @@ impl BracedParam {
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.optional_operation.is_some() {
-            let msg = core.db.get_array_all(&self.param.name, true).join(" ");
+            let msg = core.db.get_array_all(&self.param.name, true)?.join(" ");
             return Err(ExecError::InvalidName(msg));
         }
 
@@ -187,9 +187,9 @@ impl BracedParam {
         }
 
         if core.db.is_single(&self.param.name) {
-            let param = core.db.get_param(&self.param.name);
+            let param = core.db.get_param(&self.param.name)?;
             self.text = match index.as_str() { //case: a=aaa; echo ${a[@]}; (output: aaa)
-                "@" | "*" | "0" => param.unwrap_or("".to_string()),
+                "@" | "*" | "0" => param,//.unwrap_or("".to_string()),
                  _ => "".to_string(),
             };
             return Ok(());
@@ -198,14 +198,14 @@ impl BracedParam {
         if index.as_str() == "@" {
             self.atmark_operation(core)
         }else{
-            let tmp = core.db.get_array_elem(&self.param.name, &index).unwrap();
+            let tmp = core.db.get_array_elem(&self.param.name, &index)?;
             self.text = self.optional_operation(tmp, core)?;
             Ok(())
         }
     }
 
     fn atmark_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut arr = core.db.get_array_all(&self.param.name, true);
+        let mut arr = core.db.get_array_all(&self.param.name, true)?;
         self.array = Some(arr.clone());
         if self.num {
             self.text = arr.len().to_string();

@@ -120,6 +120,10 @@ impl DataBase {
             return Ok(v);
         }
 
+        if self.flags.contains('u') {
+            return Err(ExecError::UnboundVariable(name.to_string()));
+        }
+
         Ok("".to_string())
     }
 
@@ -143,6 +147,10 @@ impl DataBase {
             return Ok(v.chars().count());
         }
 
+        if self.flags.contains('u') {
+            return Err(ExecError::UnboundVariable(name.to_string()));
+        }
+
         Ok(0)
     }
 
@@ -151,6 +159,10 @@ impl DataBase {
 
         if let Some(v) = self.get_ref(name) {
             return v.elem_len(key);
+        }
+
+        if self.flags.contains('u') {
+            return Err(ExecError::UnboundVariable(name.to_string()));
         }
 
         Ok(0)
@@ -165,7 +177,19 @@ impl DataBase {
 
     pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
-        getter::array_elem(self, name, pos)
+
+        let layer = match self.get_layer_pos(name) {
+            Some(n) => n,
+            _ => {
+                return match self.flags.contains('u') {
+                    true => Err(ExecError::UnboundVariable(name.to_string())),
+                    false => Ok("".to_string()),
+                };
+            },
+        };
+    
+        let ifs = self.get_ifs_head();
+        self.params[layer].get_mut(name).unwrap().get_as_array_or_assoc(pos, &ifs)
     }
 
     pub fn has_value_layer(&mut self, name: &str, layer: usize) -> bool {
@@ -208,20 +232,49 @@ impl DataBase {
         0
     }
 
-    pub fn get_array_all(&mut self, name: &str, flatten: bool) -> Vec<String> {
+    pub fn get_array_all(&mut self, name: &str, flatten: bool) -> Result<Vec<String>, ExecError> {
+        self.get_array_from(name, 0, flatten)
+        /*
         let layer = self.position_parameters.len() - 1;
         if name == "@" {
-            return self.position_parameters[layer].clone();
+            return Ok(self.position_parameters[layer].clone());
         }
 
         match self.get_ref(name) {
             Some(d) => {
                 if let Ok(v) = d.get_all_as_array(flatten) {
-                    return v;
+                    return Ok(v);
                 }
-                vec![]
+                Ok(vec![])
             },
-            None => vec![],
+            None => {
+                if self.flags.contains('u') {
+                    return Err(ExecError::UnboundVariable(name.to_string()));
+                }
+                Ok(vec![])
+            },
+        }*/
+    }
+
+    pub fn get_array_from(&mut self, name: &str, pos: usize, flatten: bool) -> Result<Vec<String>, ExecError> {
+        let layer = self.position_parameters.len() - 1;
+        if name == "@" {
+            return Ok(self.position_parameters[layer].clone());
+        }
+
+        match self.get_ref(name) {
+            Some(d) => {
+                if let Ok(v) = d.get_array_from(pos, flatten) {
+                    return Ok(v);
+                }
+                Ok(vec![])
+            },
+            None => {
+                if self.flags.contains('u') {
+                    return Err(ExecError::UnboundVariable(name.to_string()));
+                }
+                Ok(vec![])
+            },
         }
     }
 

@@ -44,7 +44,7 @@ pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), E
 pub fn set_options2(core: &mut ShellCore, args: &mut Vec<String>) {
     for (short, long) in [('t', "onecmd"), ('m', "monitor"),
                           ('C', "noclobber"), ('a', "allexport"),
-                          ('B', "braceexpand")] {
+                          ('B', "braceexpand"), ('u', "")] {
         let minus_opt = format!("-{}", short);
         let plus_opt = format!("+{}", short);
 
@@ -52,12 +52,16 @@ pub fn set_options2(core: &mut ShellCore, args: &mut Vec<String>) {
             if ! core.db.flags.contains(short) {
                 core.db.flags += &minus_opt[1..];
             }
-            let _ = core.options.set(long, true);
+            if long != "" {
+                let _ = core.options.set(long, true);
+            }
         }
     
         if arg::consume_option(&plus_opt, args) {
             core.db.flags.retain(|f| f != short);
-            let _ = core.options.set(long, false);
+            if long != "" {
+                let _ = core.options.set(long, false);
+            }
         }
     }
 }
@@ -77,11 +81,6 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return parameter::print_all(core);
     }
 
-    /*
-    set_t(core, &mut args);
-    set_m(core, &mut args);
-    set_large_c(core, &mut args);
-    */
     set_options2(core, &mut args);
 
     if args.len() < 2 {
