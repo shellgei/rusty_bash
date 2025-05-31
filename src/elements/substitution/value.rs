@@ -26,7 +26,9 @@ impl ParsedDataType {
                 let mut ans = "(".to_string();
                 let mut ws = vec![];
                 for (_, w) in &a.words {
-                    ws.push( w.eval_as_value(core)? );
+                    let tmp = w.eval_as_value(core)?;
+                    let escaped = tmp.replace("(", "'('").replace(")", "')'");
+                    ws.push( escaped );
                 }
                 ans += &ws.join(" ");
                 ans += ")";

@@ -13,7 +13,8 @@ impl SimpleCommand {
         if let Some(s) = Substitution::parse(feeder, core)? {
             ans.text += &s.text;
             match ans.command_name.as_ref() {
-                "local" | "eval" | "export" | "declare"  => ans.substitutions_as_args.push(s),
+                "local" | "eval" | "export" | "declare"
+                  => ans.substitutions_as_args.push(s),
                 _ => ans.substitutions.push(s),
             }
             Ok(true)

@@ -48,6 +48,7 @@ impl Substitution {
 
         let a = self.right_hand.evaluated_array.as_ref().unwrap();
 
+        core.db.init(&self.left_hand.name, layer);
         if a.is_empty() {
             core.db.set_array(&self.left_hand.name, None, Some(layer))?;
             return Ok(());
