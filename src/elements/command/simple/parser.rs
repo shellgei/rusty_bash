@@ -68,17 +68,8 @@ impl SimpleCommand {
         self.continue_alias_check = w.ends_with(" ");
         let mut feeder_local = Feeder::new(&mut w);
 
-        loop {
-            if let Some(s) = Substitution::parse(&mut feeder_local, core)? {
-                self.text += &s.text;
-                match self.command_name.as_ref() {
-                    "local" | "eval" | "export" | "declare" | "readonly" | "typeset"  => self.substitutions_as_args.push(s),
-                    _ => self.substitutions.push(s),
-                }
-                command::eat_blank_with_comment(&mut feeder_local, core, &mut self.text);
-            }else{
-                break;
-            }
+        while Self::eat_substitution(&mut feeder_local, self, core)? {
+            command::eat_blank_with_comment(&mut feeder_local, core, &mut self.text);
         }
 
         loop {
