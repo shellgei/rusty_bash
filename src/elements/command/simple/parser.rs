@@ -31,9 +31,7 @@ impl SimpleCommand {
                 feeder.rewind();
                 return Err(e);
             },
-            _       => {
-                return Ok(false);
-            },
+            _ => return Ok(false),
         };
 
         if ans.words.is_empty() {
@@ -66,7 +64,6 @@ impl SimpleCommand {
         }
 
         self.continue_alias_check = w.ends_with(" ");
-
         let mut feeder_local = Feeder::new(&mut w);
 
         loop {

@@ -61,8 +61,14 @@ fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), 
     sub.eval(core, Some(layer), false)
 }
 
-fn local_(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<(), ExecError> {
-    if args.len() >= 3 && args[1] == "-a" {
+fn local_(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>,
+          layer: usize) -> Result<(), ExecError> {
+
+    for sub in subs.iter_mut() {
+        set_substitution(core, sub, &mut args.clone(), layer)?;
+    }
+
+    if args.len() + subs.len() >= 3 && args[1] == "-a" {
         for a in &args[2..] {
             set_local_array(a, core, layer)?;
         }
@@ -82,7 +88,8 @@ fn local_(core: &mut ShellCore, args: &mut Vec<String>, layer: usize) -> Result<
     Ok(())
 }
 
-pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn local(core: &mut ShellCore,
+             args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2//The last element of data.parameters is for local itself. 
     }else{
@@ -90,7 +97,7 @@ pub fn local(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     };
 
-    if let Err(e) = local_(core, args, layer) {
+    if let Err(e) = local_(core, args, subs, layer) {
          e.print(core);
          return 1;
     };
@@ -122,13 +129,33 @@ fn reparse(core: &mut ShellCore, sub: &mut Substitution) {
     }
 }
 
-fn declare_set_has_equal(core: &mut ShellCore, sub: &mut Substitution,
-               args: &mut Vec<String>) -> Result<(), ExecError> {
+fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec<String>,
+                    layer: usize) -> Result<(), ExecError> {
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
     reparse(core, sub);
 
-    let layer = Some(core.db.get_layer_num() - 2);
+    if read_only {
+        core.db.set_flag(&sub.left_hand.name, 'r');
+        return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
+    }
+
+    if export_opt {
+        core.db.set_flag(&sub.left_hand.name, 'x');
+    }
+
+    sub.eval(core, Some(layer), true)
+}
+
+fn declare_set_has_equal(core: &mut ShellCore, sub: &mut Substitution,
+               args: &mut Vec<String>) -> Result<(), ExecError> {
+    let layer = core.db.get_layer_num() - 2;
+    set_substitution(core, sub, args, layer)
+    /*
+    let read_only = arg::consume_option("-r", args);
+    let export_opt = arg::consume_option("-x", args);
+    reparse(core, sub);
+
 
     if read_only {
         core.db.set_flag(&sub.left_hand.name, 'r');
@@ -140,6 +167,7 @@ fn declare_set_has_equal(core: &mut ShellCore, sub: &mut Substitution,
     }
 
     sub.eval(core, layer, true)
+    */
 }
 
 fn init_var(core: &mut ShellCore, var: &mut Variable,
