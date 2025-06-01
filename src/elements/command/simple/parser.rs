@@ -12,10 +12,12 @@ impl SimpleCommand {
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if let Some(s) = Substitution::parse(feeder, core)? {
             ans.text += &s.text;
-            match ans.command_name.as_ref() {
-                "local" | "eval" | "export" | "declare" | "readonly" | "typeset"
-                  => ans.substitutions_as_args.push(s),
-                _ => ans.substitutions.push(s),
+
+            if core.substitution_builtins.contains_key(&ans.command_name) 
+            || ans.command_name == "eval" {
+                ans.substitutions_as_args.push(s);
+            }else{
+                ans.substitutions.push(s);
             }
             Ok(true)
         }else{
@@ -121,9 +123,12 @@ impl SimpleCommand {
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-            if ( ans.command_name == "local" || ans.command_name == "eval" || ans.command_name == "export" || ans.command_name == "declare" || ans.command_name == "readonly" || ans.command_name == "typeset" )
-            && Self::eat_substitution(feeder, &mut ans, core)? {
-                continue;
+
+            if core.substitution_builtins.contains_key(&ans.command_name) 
+            || ans.command_name == "eval" {
+                if Self::eat_substitution(feeder, &mut ans, core)? {
+                    continue;
+                }
             }
 
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
