@@ -177,25 +177,22 @@ impl DataBase {
     pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
 
-        let layer = match self.get_layer_pos(name) {
-            Some(n) => n,
-            _ => {
-                return match self.flags.contains('u') {
-                    true => Err(ExecError::UnboundVariable(name.to_string())),
-                    false => Ok("".to_string()),
-                };
-            },
-        };
-    
+        let layer = self.get_layer_pos(name);
+
+        if layer.is_none() {
+            return match self.flags.contains('u') {
+                true => Err(ExecError::UnboundVariable(name.to_string())),
+                false => Ok("".to_string()),
+            };
+        }
+
         let ifs = self.get_ifs_head();
-        self.params[layer].get_mut(name).unwrap().get_as_array_or_assoc(pos, &ifs)
+        self.params[layer.unwrap()].get_mut(name)
+            .unwrap().get_as_array_or_assoc(pos, &ifs)
     }
 
     pub fn has_value_layer(&mut self, name: &str, layer: usize) -> bool {
-        if let Some(_) = self.params[layer].get(name) {
-            return true;
-        }
-        false
+        self.params[layer].get(name).is_some()
     }
 
     pub fn has_value(&mut self, name: &str) -> bool {
