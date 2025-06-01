@@ -183,6 +183,9 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Subs
     }
 
     if arg::consume_option("-p", &mut args) {
+        for sub in subs {
+            args.push(sub.text.clone());
+        }
         return declare_print(core, &args[1..], &args[0]);
     }
 
