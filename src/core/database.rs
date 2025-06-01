@@ -191,10 +191,6 @@ impl DataBase {
             .unwrap().get_as_array_or_assoc(pos, &ifs)
     }
 
-    pub fn has_value_layer(&mut self, name: &str, layer: usize) -> bool {
-        self.params[layer].get(name).is_some()
-    }
-
     pub fn has_value(&mut self, name: &str) -> bool {
         if let Ok(n) = name.parse::<usize>() {
             let layer = self.position_parameters.len() - 1;
@@ -203,7 +199,7 @@ impl DataBase {
 
         let num = self.params.len();
         for layer in (0..num).rev()  {
-            if self.has_value_layer(name, layer) {
+            if self.params[layer].get(name).is_some() {
                 return true;
             }
         }
