@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::error::exec::ExecError;
+use std::env;
 use std::collections::HashSet;
 use super::DataBase;
 use super::data::Data;
@@ -55,6 +56,169 @@ impl DataBase {
             Some(v) => v[1..].to_vec(),
             _       => vec![],
         }
+    }
+
+    pub fn get_indexes_all(&mut self, name: &str) -> Vec<String> {
+        let layer = self.position_parameters.len() - 1;
+        if name == "@" {
+            return self.position_parameters[layer].clone();
+        }
+
+        match self.get_ref(name) {
+            Some(d) => {
+                match d.get_all_indexes_as_array() {
+                    Ok(v) => v,
+                    _ => vec![],
+                }
+            },
+            None => vec![],
+        }
+    }
+
+    pub fn get_vec_from(&mut self, name: &str, pos: usize, flatten: bool)
+    -> Result<Vec<String>, ExecError> {
+        let layer = self.position_parameters.len() - 1;
+        if name == "@" {
+            return Ok(self.position_parameters[layer].clone());
+        }
+
+        match self.get_ref(name) {
+            Some(d) => {
+                if let Ok(v) = d.get_vec_from(pos, flatten) {
+                    return Ok(v);
+                }
+                Ok(vec![])
+            },
+            None => {
+                if self.flags.contains('u') {
+                    return Err(ExecError::UnboundVariable(name.to_string()));
+                }
+                Ok(vec![])
+            },
+        }
+    }
+
+    pub fn len(&mut self, name: &str) -> usize {
+        if let Some(d) = self.get_ref(name) {
+            return d.len();
+        }
+        0
+    }
+
+    pub fn index_based_len(&mut self, name: &str) -> usize {
+        if let Some(d) = self.get_ref(name) {
+            return d.index_based_len();
+        }
+        0
+    }
+
+    pub fn get_vec(&mut self, name: &str, flatten: bool)
+    -> Result<Vec<String>, ExecError> {
+        self.get_vec_from(name, 0, flatten)
+    }
+
+    pub fn get_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
+        Self::name_check(name)?;
+
+        let layer = self.get_layer_pos(name);
+
+        if layer.is_none() {
+            return match self.flags.contains('u') {
+                true => Err(ExecError::UnboundVariable(name.to_string())),
+                false => Ok("".to_string()),
+            };
+        }
+
+        let ifs = self.get_ifs_head();
+        self.params[layer.unwrap()].get_mut(name)
+            .unwrap().get_as_array_or_assoc(pos, &ifs)
+    }
+
+    pub fn get_elem_or_param(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
+        match index.is_empty() {
+            true  => self.get_param(&name),
+            false => self.get_elem(&name, &index),
+        }
+    }
+
+    pub fn get_elem_len(&mut self, name: &str, key: &str) -> Result<usize, ExecError> {
+        Self::name_check(name)?;
+
+        if let Some(v) = self.get_ref(name) {
+            return v.elem_len(key);
+        }
+
+        if self.flags.contains('u') {
+            return Err(ExecError::UnboundVariable(name.to_string()));
+        }
+
+        Ok(0)
+    }
+
+    pub fn get_len(&mut self, name: &str) -> Result<usize, ExecError> {
+        Self::name_check(name)?;
+
+        if name == "@" || name == "*" {
+            let layer = self.position_parameters.len();
+            return Ok(self.position_parameters[layer-1].len() - 1);
+        }
+
+        if let Ok(n) = name.parse::<usize>() {
+            return Ok(position_param(self, n)?.chars().count());
+        }
+
+        if let Some(v) = self.get_ref(name) {
+            return v.elem_len("0");
+        }
+
+        if let Ok(v) = env::var(name) {
+            return Ok(v.chars().count());
+        }
+
+        if self.flags.contains('u') {
+            return Err(ExecError::UnboundVariable(name.to_string()));
+        }
+
+        Ok(0)
+    }
+
+    pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
+        Self::name_check(name)?;
+
+        if let Some(val) = special_param(self, name) {
+            return Ok(val);
+        }
+
+        if name == "@" || name == "*" { //return connected position params
+            return connected_position_params(self, name == "*");
+        } //in double quoted subword, this method should not be used
+
+        if let Ok(n) = name.parse::<usize>() {
+            return position_param(self, n);
+        }
+
+        if let Some(v) = self.get_ref(name) {
+            if v.is_special() {
+                return Ok(v.get_as_single()?);
+            }else if v.is_single_num() {
+                let val = v.get_as_single_num()?;//.unwrap_or_default();
+                return Ok(val.to_string());
+            }else{
+                let val = v.get_as_single().unwrap_or_default();
+                return Ok(val);
+            }
+        }
+
+        if let Ok(v) = env::var(name) {
+            let _ = self.set_param(name, &v, Some(0));
+            return Ok(v);
+        }
+
+        if self.flags.contains('u') {
+            return Err(ExecError::UnboundVariable(name.to_string()));
+        }
+
+        Ok("".to_string())
     }
 }
 

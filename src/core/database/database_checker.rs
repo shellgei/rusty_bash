@@ -7,6 +7,40 @@ use crate::error::exec::ExecError;
 use crate::core::DataBase;
 
 impl DataBase {
+    pub fn has_array_value(&mut self, name: &str, index: &str) -> bool {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(e) = self.params[layer].get(name) {
+                let mut a = e.clone();
+                return a.get_as_array_or_assoc(index, "").is_ok();
+            }
+        }
+        false
+    }
+
+    pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
+        let layer = self.param_options.len() - 1;
+        match self.param_options[layer].get(name) {
+            None => false,
+            Some(e) => e.contains(flag),
+        }
+    }
+
+    pub fn has_value(&mut self, name: &str) -> bool {
+        if let Ok(n) = name.parse::<usize>() {
+            let layer = self.position_parameters.len() - 1;
+            return n < self.position_parameters[layer].len();
+        }
+
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if self.params[layer].get(name).is_some() {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn name_check(name: &str) -> Result<(), ExecError> {
         if ! utils::is_param(name) {
             return Err(ExecError::VariableInvalid(name.to_string()));
@@ -64,6 +98,13 @@ impl DataBase {
     pub fn is_single_num(&mut self, name: &str) -> bool {
         match self.get_ref(name) {
             Some(d) => return d.is_single_num(),
+            _ => false,
+        }
+    }
+
+    pub fn is_array(&mut self, name: &str) -> bool {
+        match self.get_ref(name) {
+            Some(d) => return d.is_array(),
             _ => false,
         }
     }
