@@ -80,7 +80,7 @@ impl Terminal {
             return Ok(());
         }
 
-        let mut cands = core.db.get_array_all("COMPREPLY", true)?;
+        let mut cands = core.db.get_vec("COMPREPLY", true)?;
         cands.retain(|c| c != "");
         let o_options = core.completion.current.o_options.clone();
         for cand in cands.iter_mut() {

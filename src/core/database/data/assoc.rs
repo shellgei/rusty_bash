@@ -116,7 +116,7 @@ impl Data for AssocData {
         Ok(ans)
     }
 
-    fn get_array_from(&mut self, _: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
+    fn get_vec_from(&mut self, _: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
         self.get_all_as_array(skip_non)
     }
 

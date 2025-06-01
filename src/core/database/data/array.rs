@@ -128,7 +128,7 @@ impl Data for ArrayData {
     }
     */
 
-    fn get_array_from(&mut self, pos: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
+    fn get_vec_from(&mut self, pos: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
         if self.body.is_empty() {
             return Ok(vec![]);
         }

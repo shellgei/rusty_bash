@@ -94,9 +94,9 @@ impl DataBase {
             return Ok(val);
         }
 
-        if name == "@" || name == "*" {   // $@ should return an array in a double quoted
-            return getter::connected_position_params(self, name == "*");  // subword. Therefore another 
-        }                                                   //access method should be used there. 
+        if name == "@" || name == "*" { //return connected position params
+            return getter::connected_position_params(self, name == "*");
+        } //in double quoted subword, this method should not be used
 
         if let Ok(n) = name.parse::<usize>() {
             return getter::position_param(self, n);
@@ -105,8 +105,7 @@ impl DataBase {
         if let Some(v) = self.get_ref(name) {
             if v.is_special() {
                 return Ok(v.get_as_single()?);
-            }
-            if v.is_single_num() {
+            }else if v.is_single_num() {
                 let val = v.get_as_single_num()?;//.unwrap_or_default();
                 return Ok(val.to_string());
             }else{
@@ -239,31 +238,13 @@ impl DataBase {
         0
     }
 
-    pub fn get_array_all(&mut self, name: &str, flatten: bool) -> Result<Vec<String>, ExecError> {
-        self.get_array_from(name, 0, flatten)
-        /*
-        let layer = self.position_parameters.len() - 1;
-        if name == "@" {
-            return Ok(self.position_parameters[layer].clone());
-        }
-
-        match self.get_ref(name) {
-            Some(d) => {
-                if let Ok(v) = d.get_all_as_array(flatten) {
-                    return Ok(v);
-                }
-                Ok(vec![])
-            },
-            None => {
-                if self.flags.contains('u') {
-                    return Err(ExecError::UnboundVariable(name.to_string()));
-                }
-                Ok(vec![])
-            },
-        }*/
+    pub fn get_vec(&mut self, name: &str, flatten: bool)
+    -> Result<Vec<String>, ExecError> {
+        self.get_vec_from(name, 0, flatten)
     }
 
-    pub fn get_array_from(&mut self, name: &str, pos: usize, flatten: bool) -> Result<Vec<String>, ExecError> {
+    pub fn get_vec_from(&mut self, name: &str, pos: usize, flatten: bool)
+    -> Result<Vec<String>, ExecError> {
         let layer = self.position_parameters.len() - 1;
         if name == "@" {
             return Ok(self.position_parameters[layer].clone());
@@ -271,7 +252,7 @@ impl DataBase {
 
         match self.get_ref(name) {
             Some(d) => {
-                if let Ok(v) = d.get_array_from(pos, flatten) {
+                if let Ok(v) = d.get_vec_from(pos, flatten) {
                     return Ok(v);
                 }
                 Ok(vec![])

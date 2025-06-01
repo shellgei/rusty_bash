@@ -111,10 +111,10 @@ pub trait Data {
     }
 
     fn get_all_as_array(&mut self, flatten: bool) -> Result<Vec<String>, ExecError> {
-        self.get_array_from(0, flatten)
+        self.get_vec_from(0, flatten)
     }
 
-    fn get_array_from(&mut self, _: usize, _: bool) -> Result<Vec<String>, ExecError> {
+    fn get_vec_from(&mut self, _: usize, _: bool) -> Result<Vec<String>, ExecError> {
         Err(ExecError::Other("not an array".to_string()))
     }
 

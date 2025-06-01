@@ -42,7 +42,7 @@ impl Substr {
             return Err(ExecError::BadSubstitution(String::new()));
         }
     
-        *array = core.db.get_array_all("@", false)?;
+        *array = core.db.get_vec("@", false)?;
         let mut n = offset.eval_as_int(core)?;
         let len = array.len();
 
@@ -106,8 +106,8 @@ impl Substr {
         }
 
         //let start = std::cmp::max(0, n) as usize;
-        //*array = core.db.get_array_from(name, start, true)?;
-        *array = core.db.get_array_from(name, n as usize, true)?;
+        //*array = core.db.get_vec_from(name, start, true)?;
+        *array = core.db.get_vec_from(name, n as usize, true)?;
 
         if self.length.is_none() {
             *text = array.join(" ");

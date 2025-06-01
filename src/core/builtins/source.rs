@@ -37,7 +37,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
 
-    let mut source = match core.db.get_array_all("BASH_SOURCE", false) {
+    let mut source = match core.db.get_vec("BASH_SOURCE", false) {
         Ok(s) => s,
         Err(e) => {
             e.print(core);
