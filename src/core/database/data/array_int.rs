@@ -10,22 +10,6 @@ pub struct IntArrayData {
     body: HashMap<usize, isize>,
 }
 
-/*
-impl From<Option<Vec<String>>> for IntArrayData {
-    fn from(v: Option<Vec<String>>) -> Result<Self, ExecError> {
-        let mut ans = Self::default();
-        for (i, value) in v.unwrap().iter().enumerate() {
-            match value.parse::<isize>() {
-                Ok(n) => ans.body.insert(i, n),
-                Err(e) => {
-                    return Err(ExecError::Other(e.to_string()));
-                },
-            }
-        }
-        Ok(ans)
-    }
-}*/
-
 impl Data for IntArrayData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
 
@@ -45,7 +29,7 @@ impl Data for IntArrayData {
     fn is_initialized(&self) -> bool { true }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        let n = Self::to_int(value)?;
+        let n = super::to_int(value)?;
         self.body.insert(0, n);
         Ok(())
     }
@@ -65,8 +49,8 @@ impl Data for IntArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let key = Self::to_key(key)?;
-        let n = Self::to_int(value)?;
+        let key = super::to_key(key)?;
+        let n = super::to_int(value)?;
         self.body.insert(key, n);
         Ok(())
     }
@@ -86,8 +70,8 @@ impl Data for IntArrayData {
     }*/
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let key = Self::to_key(key)?;
-        let n = Self::to_int(value)?;
+        let key = super::to_key(key)?;
+        let n = super::to_int(value)?;
 
         if let Some(prev) = self.body.get(&key) {
             self.body.insert(key, prev + n);
@@ -169,19 +153,6 @@ impl Data for IntArrayData {
 }
 
 impl IntArrayData {
-    fn to_int(s: &str) -> Result<isize, ExecError> {
-        match s.parse::<isize>() {
-            Ok(n) => Ok(n),
-            Err(e) => return Err(ExecError::Other(e.to_string())),
-        }
-    }
-
-    fn to_key(s: &str) -> Result<usize, ExecError> {
-        match s.parse::<usize>() {
-            Ok(n) => Ok(n),
-            Err(_) => return Err(ExecError::ArrayIndexInvalid(s.to_string())),
-        }
-    }
 
     pub fn values(&self) -> Vec<String> {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();

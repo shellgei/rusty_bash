@@ -5,6 +5,8 @@ pub mod array;
 pub mod array_int;
 pub mod array_uninit;
 pub mod assoc;
+pub mod assoc_int;
+pub mod assoc_uninit;
 pub mod epochseconds;
 pub mod epochrealtime;
 pub mod random;
@@ -18,6 +20,20 @@ use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use std::fmt;
 use std::fmt::Debug;
+
+fn to_int(s: &str) -> Result<isize, ExecError> {
+    match s.parse::<isize>() {
+        Ok(n) => Ok(n),
+        Err(e) => return Err(ArithError::OperandExpected(e.to_string()).into()),
+    }
+}
+
+fn to_key(s: &str) -> Result<usize, ExecError> {
+    match s.parse::<usize>() {
+        Ok(n) => Ok(n),
+        Err(_) => return Err(ExecError::ArrayIndexInvalid(s.to_string())),
+    }
+}
 
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {

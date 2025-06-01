@@ -7,18 +7,19 @@ use super::Data;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
-pub struct AssocData {
-    body: HashMap<String, String>,
+pub struct IntAssocData {
+    body: HashMap<String, isize>,
     last: Option<String>,
 }
 
-impl From<HashMap<String, String>> for AssocData {
+/*
+impl From<HashMap<String, String>> for IntAssocData {
     fn from(hm: HashMap<String, String>) -> Self {
         Self { body: hm, last: None, }
     }
-}
+}*/
 
-impl Data for AssocData {
+impl Data for IntAssocData {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
@@ -35,10 +36,7 @@ impl Data for AssocData {
                 formatted += &format!("[{}]={} ", k, &ansi);
             }
         }
-        /*
-        if formatted.ends_with(" ") {
-            formatted.pop();
-        }*/
+
         formatted += ")";
         formatted
     }
@@ -46,16 +44,19 @@ impl Data for AssocData {
     fn clear(&mut self) { self.body.clear(); }
 
     fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        self.body.insert(key.to_string(), value.to_string());
+        let n = super::to_int(value)?;
+        self.body.insert(key.to_string(), n);
         self.last = Some(value.to_string());
         Ok(())
     }
 
     fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+        let n = super::to_int(value)?;
+
         if let Some(v) = self.body.get(key) {
-            self.body.insert(key.to_string(), v.to_owned() + value);
+            self.body.insert(key.to_string(), v + n);
         }else{
-            self.body.insert(key.to_string(), value.to_string());
+            self.body.insert(key.to_string(), n);
         }
         self.last = Some(value.to_string());
         Ok(())
@@ -88,9 +89,9 @@ impl Data for AssocData {
             return Ok(self.len());
         }
 
-        let s = self.body.get(key).unwrap_or(&"".to_string()).clone();
+        let s = self.body.get(key).unwrap_or(&0).clone();
 
-        Ok(s.chars().count())
+        Ok(s.to_string().len())
     }
 
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
@@ -107,7 +108,7 @@ impl Data for AssocData {
         let mut ans = vec![];
         for i in keys {
             match self.body.get(&i) {
-                Some(s) => ans.push(s.clone()),
+                Some(s) => ans.push(s.to_string()),
                 None => if ! skip_none {
                     ans.push("".to_string());
                 },
@@ -131,10 +132,10 @@ impl Data for AssocData {
     }
 }
 
-impl AssocData {
+impl IntAssocData {
     /*
     pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), Box::new(AssocData::default()));
+        db_layer.insert(name.to_string(), Box::new(IntAssocData::default()));
         Ok(())
     }
 
@@ -144,7 +145,7 @@ impl AssocData {
             Some(v) => v.set_as_assoc(key, val), 
             _ => Err(ExecError::Other("TODO".to_string())),
         }
-    }*/
+    }
 
     pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
                      key: &String, val: &String) -> Result<(), ExecError> {
@@ -152,10 +153,10 @@ impl AssocData {
             Some(v) => v.append_to_assoc_elem(key, val), 
             _ => Err(ExecError::Other("TODO".to_string())),
         }
-    }
+    }*/
 
     pub fn get(&self, key: &str) -> Option<String> {
-        self.body.get(key).cloned()
+        Some(self.body.get(key).unwrap_or(&0).to_string())
     }
 
     pub fn keys(&self) -> Vec<String> {
@@ -163,6 +164,6 @@ impl AssocData {
     }
 
     pub fn values(&self) -> Vec<String> {
-        self.body.iter().map(|e| e.1.clone()).collect()
+        self.body.iter().map(|e| e.1.to_string()).collect()
     }
 }

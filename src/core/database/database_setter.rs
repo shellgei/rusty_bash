@@ -1,9 +1,11 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+//The methods of DataBase are distributed in database/database_*.rs files.
+
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
-use super::{ArrayData, AssocData, SingleData, IntData, IntArrayData, Data, UninitArray};
+use super::{ArrayData, AssocData, SingleData, IntData, IntArrayData, IntAssocData, Data, UninitArray, UninitAssoc};
 use nix::unistd;
 use super::data::random::RandomVar;
 use super::data::srandom::SRandomVar;
@@ -214,8 +216,24 @@ impl DataBase {
             self.rsh_check(name)?;
         }
 
+        let i_flag = self.has_flag(name, 'i');
         let layer = self.get_target_layer(name, layer);
-        AssocData::set_elem(&mut self.params[layer], name, key, val)
+        let db_layer = &mut self.params[layer];
+        //AssocData::set_elem(&mut self.params[layer], name, key, val)
+
+        match db_layer.get_mut(name) {
+            Some(v) => {
+                if ! v.is_initialized() {
+                    *v = match i_flag {
+                        true  => IntAssocData::default().boxed_clone(),
+                        false => AssocData::default().boxed_clone(),
+                    };
+                }
+
+                v.set_as_assoc(key, val)
+            }, 
+            _ => Err(ExecError::Other("TODO".to_string())),
+        }
     }
 
     pub fn append_to_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), ExecError> {
@@ -300,7 +318,10 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
-        AssocData::set_new_entry(&mut self.params[layer], name)
+        let db_layer = &mut self.params[layer];
+
+        db_layer.insert(name.to_string(), UninitAssoc{}.boxed_clone());
+        Ok(())
     }
 }
 
@@ -315,7 +336,6 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_param("IFS", " \t\n", None)?;
 
     db.init_as_num("UID", &unistd::getuid().to_string(), None)?;
-    //db.set_param("UID", &unistd::getuid().to_string(), None)?;
     db.param_options[0].insert( "UID".to_string(), "ir".to_string());
 
     db.params[0].insert( "RANDOM".to_string(), Box::new(RandomVar::new()) );

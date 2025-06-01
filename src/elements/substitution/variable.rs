@@ -77,14 +77,12 @@ impl Variable {
         let mut prev = None;
 
         if (layer.is_none() && core.db.has_value(&self.name) )
-        //|| core.db.has_value_layer(&self.name, layer.unwrap()) {
         || core.db.params[layer.unwrap()].get(&self.name).is_some() {
             prev = Some(vec![core.db.get_param(&self.name)?]);
         }
 
         let i_opt = arg::consume_option("-i", args);
         if arg::consume_option("-a", args) {
-            
             return match i_opt { 
                 true  => core.db.set_int_array(&self.name, prev, layer),
                 false => core.db.set_array(&self.name, prev, layer),

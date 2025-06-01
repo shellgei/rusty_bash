@@ -14,7 +14,9 @@ use self::data::assoc::AssocData;
 use self::data::single::SingleData;
 use self::data::array::ArrayData;
 use self::data::array_int::IntArrayData;
+use self::data::assoc_int::IntAssocData;
 use self::data::array_uninit::UninitArray;
+use self::data::assoc_uninit::UninitAssoc;
 use self::data::single_int::IntData;
 //use self::data::special::SpecialData;
 
