@@ -64,7 +64,6 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
                     layer: usize) -> Result<(), ExecError> {
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
-    let int_opt = arg::consume_option("-i", args);
 
     if sub.has_right {
         reparse(core, sub);
@@ -79,7 +78,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         core.db.set_flag(&sub.left_hand.name, 'x');
     }
 
-    if int_opt {
+    if args.contains(&"-i".to_string()) {
         core.db.set_flag(&sub.left_hand.name, 'i');
     }
 
