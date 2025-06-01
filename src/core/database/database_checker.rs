@@ -46,4 +46,25 @@ impl DataBase {
         }
         Ok(())
     }
+
+    pub fn is_assoc(&mut self, name: &str) -> bool {
+        match self.get_ref(name) {
+            Some(d) => d.is_assoc(),
+            None => false,
+        }
+    }
+
+    pub fn is_single(&mut self, name: &str) -> bool {
+        match self.get_ref(name) {
+            Some(d) => return d.is_single(),
+            _ => false,
+        }
+    }
+
+    pub fn is_single_num(&mut self, name: &str) -> bool {
+        match self.get_ref(name) {
+            Some(d) => return d.is_single_num(),
+            _ => false,
+        }
+    }
 }

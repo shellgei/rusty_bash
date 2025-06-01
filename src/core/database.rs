@@ -2,14 +2,13 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 mod data;
-mod getter;
+mod database_checker;
+mod database_getter;
 mod setter;
 
 use crate::{env, exit};
 use crate::elements::command::function_def::FunctionDefinition;
-use std::collections::{HashMap, HashSet};
-use crate::utils;
-use crate::utils::file_check;
+use std::collections::HashMap;
 use crate::error::exec::ExecError;
 use self::data::Data;
 use self::data::assoc::AssocData;
@@ -46,60 +45,19 @@ impl DataBase {
         data
     }
 
-    fn name_check(name: &str) -> Result<(), ExecError> {
-        if ! utils::is_param(name) {
-            return Err(ExecError::VariableInvalid(name.to_string()));
-        }
-        Ok(())
-    }
-
-    pub fn is_readonly(&mut self, name: &str) -> bool {
-        self.has_flag(name, 'r')
-    }
-
-    fn rsh_cmd_check(&mut self, cmds: &Vec<String>) -> Result<(), ExecError> {
-        for c in cmds {
-            if c.contains('/') {
-                let msg = format!("{}: restricted", &c);
-                return Err(ExecError::Other(msg));
-            }
-
-            if file_check::is_executable(&c) {
-                let msg = format!("{}: not found", &c);
-                return Err(ExecError::Other(msg));
-            }
-        }
-        Ok(())
-    }
-
-    fn rsh_check(&mut self, name: &str) -> Result<(), ExecError> {
-        if ["SHELL", "PATH", "ENV", "BASH_ENV"].contains(&name) {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
-        Ok(())
-    }
-
-    fn write_check(&mut self, name: &str) -> Result<(), ExecError> {
-        if self.has_flag(name, 'r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
-
-        Ok(())
-    }
-
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
 
-        if let Some(val) = getter::special_param(self, name) {
+        if let Some(val) = database_getter::special_param(self, name) {
             return Ok(val);
         }
 
         if name == "@" || name == "*" { //return connected position params
-            return getter::connected_position_params(self, name == "*");
+            return database_getter::connected_position_params(self, name == "*");
         } //in double quoted subword, this method should not be used
 
         if let Ok(n) = name.parse::<usize>() {
-            return getter::position_param(self, n);
+            return database_getter::position_param(self, n);
         }
 
         if let Some(v) = self.get_ref(name) {
@@ -135,7 +93,7 @@ impl DataBase {
         }
 
         if let Ok(n) = name.parse::<usize>() {
-            return Ok(getter::position_param(self, n)?.chars().count());
+            return Ok(database_getter::position_param(self, n)?.chars().count());
         }
 
         if let Some(v) = self.get_ref(name) {
@@ -283,34 +241,6 @@ impl DataBase {
         }
     }
 
-    pub fn is_assoc(&mut self, name: &str) -> bool {
-        match self.get_ref(name) {
-            Some(d) => d.is_assoc(),
-            None => false,
-        }
-    }
-
-    pub fn is_single(&mut self, name: &str) -> bool {
-        match self.get_ref(name) {
-            Some(d) => return d.is_single(),
-            _ => false,
-        }
-    }
-
-    pub fn is_single_num(&mut self, name: &str) -> bool {
-        match self.get_ref(name) {
-            Some(d) => return d.is_single_num(),
-            _ => false,
-        }
-    }
-
-    pub fn get_position_params(&self) -> Vec<String> {
-        match self.position_parameters.last() {
-            Some(v) => v[1..].to_vec(),
-            _       => vec![],
-        }
-    }
-
     pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
         let layer = self.param_options.len() - 1;
         match self.param_options[layer].get(name) {
@@ -328,16 +258,6 @@ impl DataBase {
 
     fn solve_layer(&mut self, name: &str) -> usize {
         self.get_layer_pos(name).unwrap_or(0)
-    }
-
-    pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
-        let num = self.params.len();
-        for layer in (0..num).rev()  {
-            if self.params[layer].get(name).is_some() {
-                return Some(layer);
-            }
-        }
-        None
     }
 
     pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>) -> Result<(), ExecError> {
@@ -643,21 +563,6 @@ impl DataBase {
         self.param_options.pop();
     }
 
-    pub fn get_layer_num(&mut self) -> usize { self.params.len() }
-
-    pub fn get_keys(&mut self) -> Vec<String> {
-        let mut keys = HashSet::new();
-        for layer in &self.params {
-            layer.keys().for_each(|k| {keys.insert(k);} );
-        }
-        for f in &self.functions {
-            keys.insert(f.0);
-        }
-        let mut ans: Vec<String> = keys.iter().map(|c| c.to_string()).collect();
-        ans.sort();
-        ans
-    }
-
     pub fn init(&mut self, name: &str, layer: usize) {
         if let Some(d) = self.params[layer].get_mut(name) {
             d.clear();
@@ -709,24 +614,6 @@ impl DataBase {
             d.print_with_name(name, true);
         }else if let Some(f) = self.functions.get(name) {
             println!("{}", &f.text);
-        }
-    }
-
-    fn get_ref(&mut self, name: &str) -> Option<&mut Box<dyn Data>> {
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            if self.params[layer].get_mut(name).is_some() {
-                return self.params[layer].get_mut(name);
-            }
-        }
-        None
-    }
-
-    pub fn get_ifs_head(&mut self) -> String {
-        let ifs = self.get_param("IFS").unwrap_or(" ".to_string());
-        match ifs.as_str() {
-            "" => "".to_string(), 
-            s => s.chars().next().unwrap().to_string(),
         }
     }
 }
