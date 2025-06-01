@@ -211,7 +211,7 @@ impl SimpleCommand {
             return Ok(self.args[0].clone());
         }
 
-        let hash = core.db.get_array_elem("BASH_CMDS", &self.args[0])?;
+        let hash = core.db.get_elem("BASH_CMDS", &self.args[0])?;
 
         let restricted = core.db.flags.contains('r');
         core.db.flags.retain(|f| f != 'r');

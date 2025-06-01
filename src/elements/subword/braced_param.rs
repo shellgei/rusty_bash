@@ -62,7 +62,7 @@ impl Subword for BracedParam {
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn is_array(&self) -> bool {self.treat_as_array }
-    fn get_array_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
+    fn get_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
 
     fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         match self.optional_operation.as_mut() {
@@ -198,7 +198,7 @@ impl BracedParam {
         if index.as_str() == "@" {
             self.atmark_operation(core)
         }else{
-            let tmp = core.db.get_array_elem(&self.param.name, &index)?;
+            let tmp = core.db.get_elem(&self.param.name, &index)?;
             self.text = self.optional_operation(tmp, core)?;
             Ok(())
         }
@@ -214,7 +214,7 @@ impl BracedParam {
 
         self.text = match self.num {
             true  => core.db.len(&self.param.name).to_string(),
-            false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
+            false => core.db.get_elem(&self.param.name, "@").unwrap(),
         };
 
         if arr.len() <= 1 || self.has_value_check() {

@@ -167,14 +167,14 @@ impl DataBase {
         Ok(0)
     }
 
-    pub fn get_elem(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
+    pub fn get_elem_or_param(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
         match index.is_empty() {
             true  => self.get_param(&name),
-            false => self.get_array_elem(&name, &index),
+            false => self.get_elem(&name, &index),
         }
     }
 
-    pub fn get_array_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
+    pub fn get_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
 
         let layer = self.get_layer_pos(name);

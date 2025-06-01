@@ -96,8 +96,8 @@ impl Terminal {
 
     fn exec_complete_function(org_word: &str, prev_pos: i32, cur_pos: i32, 
                               core: &mut ShellCore)-> Result<(), ExecError> {
-        let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
-        let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
+        let prev_word = core.db.get_elem("COMP_WORDS", &prev_pos.to_string())?;
+        let target_word = core.db.get_elem("COMP_WORDS", &cur_pos.to_string())?;
         let info = &core.completion.current;
 
         let command = format!("{} \"{}\" \"{}\" \"{}\"",
@@ -112,7 +112,7 @@ impl Terminal {
     }
 
     fn exec_action(cur_pos: i32, core: &mut ShellCore)-> Result<(), ExecError> {
-        let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
+        let target_word = core.db.get_elem("COMP_WORDS", &cur_pos.to_string())?;
         let info = &core.completion.current;
 
         let command = format!("COMPREPLY=($(compgen -A \"{}\" \"{}\"))",  &info.action, &target_word);
@@ -134,7 +134,7 @@ impl Terminal {
             return Err(ExecError::Other("pos error".to_string()));
         }
 
-        let org_word = core.db.get_array_elem("COMP_WORDS", "0")?;
+        let org_word = core.db.get_elem("COMP_WORDS", "0")?;
 
         let info = match core.completion.entries.get(&org_word) {
             Some(i) => i.clone(),
@@ -164,9 +164,9 @@ impl Terminal {
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let pos = core.db.get_param("COMP_CWORD")?;
-        let last = core.db.get_array_elem("COMP_WORDS", &pos)?;
+        let last = core.db.get_elem("COMP_WORDS", &pos)?;
 
-        let com = core.db.get_array_elem("COMP_WORDS", "0")?;
+        let com = core.db.get_elem("COMP_WORDS", "0")?;
 
         let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
 
@@ -225,7 +225,7 @@ impl Terminal {
 
     pub fn try_completion(&mut self, cands: &mut Vec<String>, core: &mut ShellCore) -> Result<(), String> {
         let pos = core.db.get_param("COMP_CWORD")?;
-        let target = core.db.get_array_elem("COMP_WORDS", &pos)?;
+        let target = core.db.get_elem("COMP_WORDS", &pos)?;
 
         let common = common_string(&cands);
         if common.len() != target.len() && ! common.is_empty() {
