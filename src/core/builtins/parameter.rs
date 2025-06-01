@@ -167,8 +167,6 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         print!(" ");
         core.db.declare_print(&name);
     }
-
-
     0
 }
 

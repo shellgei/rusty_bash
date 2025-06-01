@@ -30,7 +30,7 @@ pub fn str_to_num(name: &str, sub: &String,
             if i == RESOLVE_LIMIT - 1 {
                 return Err(ArithError::Recursion(name.clone()).into());
             }
-            name = core.db.get_param2(&name, sub)?;
+            name = core.db.get_elem(&name, sub)?;
             continue;
         }
         break;
@@ -139,7 +139,7 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
             return Ok(right_value.clone());
         },
         "+=" => {
-            let mut val_str = core.db.get_param2(&name, sub)?;
+            let mut val_str = core.db.get_elem(&name, sub)?;
             if val_str == "" {
                 val_str = "0".to_string();
             }

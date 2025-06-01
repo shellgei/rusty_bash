@@ -167,7 +167,7 @@ impl DataBase {
         Ok(0)
     }
 
-    pub fn get_param2(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
+    pub fn get_elem(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
         match index.is_empty() {
             true  => self.get_param(&name),
             false => self.get_array_elem(&name, &index),
@@ -441,14 +441,12 @@ impl DataBase {
 
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
-        //SingleData::append_value(&mut self.params[layer], name, val)
         if let Ok(v) = env::var(name) {
             env::set_var(name, v + val);
         }
 
         if db_layer.get(name).is_none() {
             db_layer.insert( name.to_string(), Box::new(SingleData::from("")) );
-            //SingleData::set_new_entry(db_layer, name, "")?;
         }
 
         let d = db_layer.get_mut(name).unwrap();
@@ -620,25 +618,6 @@ impl DataBase {
 
         Ok(())
     }
-
-/*
-    pub fn append_to_array(&mut self, name: &str, v: Vec<String>, layer: Option<usize>) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                for val in &v{
-                    self.rsh_cmd_check(&vec![val.to_string()])?;
-                }
-            }
-            self.rsh_check(name)?;
-        }
-
-        let layer = self.get_target_layer(name, layer);
-        ArrayData::append_elems(&mut self.params[layer], name, v)?;
-        Ok(())
-    }
-*/
 
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
