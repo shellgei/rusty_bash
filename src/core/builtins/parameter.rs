@@ -28,66 +28,6 @@ pub fn print_all(core: &mut ShellCore) -> i32 {
     0
 }
 
-fn set_local(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-    let mut feeder = Feeder::new(arg);
-    if feeder.scanner_name(core) == feeder.len() { // name only
-        let name = feeder.consume(feeder.len());
-
-        if ! core.db.has_value_layer(&name, layer) {
-            return core.db.set_param(&name, "", Some(layer));
-        }else{
-            return Ok(());
-        }
-    }
-
-    match Substitution::parse(&mut feeder, core) {
-        Ok(ans) => ans.unwrap().eval(core, Some(layer), false),
-        Err(e) => Err(ExecError::ParseError(e)),
-    }
-}
-
-fn set_local_array(arg: &str, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-    let mut feeder = Feeder::new(arg);
-    if feeder.scanner_name(core) == feeder.len() { // name only
-        let name = feeder.consume(feeder.len());
-        return core.db.set_array(&name, None, Some(layer));
-    }
-
-    let mut sub = match Substitution::parse(&mut feeder, core) {
-        Ok(Some(s)) => s,
-        _ => return Err(ExecError::VariableInvalid(arg.to_string())),
-    };
-
-    sub.eval(core, Some(layer), false)
-}
-
-fn local_(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>,
-          layer: usize) -> Result<(), ExecError> {
-
-    for sub in subs.iter_mut() {
-        set_substitution(core, sub, &mut args.clone(), layer)?;
-    }
-
-    if args.len() + subs.len() >= 3 && args[1] == "-a" {
-        for a in &args[2..] {
-            set_local_array(a, core, layer)?;
-        }
-        return Ok(());
-    }
-
-    if args.len() >= 3 && args[1] == "-A" {
-        for a in &args[2..] {
-            core.db.set_assoc(a, Some(layer))?;
-        }
-        return Ok(());
-    }
-
-    for a in &args[1..] {
-        set_local(a, core, layer)?;
-    }
-    Ok(())
-}
-
 pub fn local(core: &mut ShellCore,
              args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
     let layer = if core.db.get_layer_num() > 2 {
@@ -97,10 +37,13 @@ pub fn local(core: &mut ShellCore,
         return 1;
     };
 
-    if let Err(e) = local_(core, args, subs, layer) {
-         e.print(core);
-         return 1;
-    };
+    for sub in subs.iter_mut() {
+        if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
+            e.print(core);
+            return 1;
+        }
+    }
+
     0
 }
 
@@ -120,7 +63,7 @@ fn reparse(core: &mut ShellCore, sub: &mut Substitution) {
     };
 
     let mut f = Feeder::new(&text.replace("~", "\\~"));
-    if let Ok(Some(s)) = Substitution::parse(&mut f, core) {
+    if let Ok(Some(s)) = Substitution::parse(&mut f, core, false) {
         if ! f.is_empty() {
             return;
         }
@@ -133,7 +76,10 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
                     layer: usize) -> Result<(), ExecError> {
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
-    reparse(core, sub);
+
+    if sub.has_right {
+        reparse(core, sub);
+    }
 
     if read_only {
         core.db.set_flag(&sub.left_hand.name, 'r');
@@ -144,7 +90,10 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         core.db.set_flag(&sub.left_hand.name, 'x');
     }
 
-    sub.eval(core, Some(layer), true)
+    match sub.has_right {
+        true  => sub.eval(core, Some(layer), true),
+        false => sub.left_hand.init_variable(core, Some(layer), args),
+    }
 }
 
 fn declare_set_has_equal(core: &mut ShellCore, sub: &mut Substitution,
@@ -372,7 +321,7 @@ fn export_var(arg: &str, core: &mut ShellCore) -> Result<(), ExecError> {
         }
     }
 
-    match Substitution::parse(&mut feeder, core) {
+    match Substitution::parse(&mut feeder, core, false) {
         Ok(Some(mut ans)) => {
             env::set_var(&ans.left_hand.name, "");
             ans.eval(core, None, false)

@@ -10,7 +10,9 @@ use crate::error::parse::ParseError;
 
 impl SimpleCommand {
     fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
-        if let Some(s) = Substitution::parse(feeder, core)? {
+        let read_var = core.substitution_builtins.contains_key(&ans.command_name);
+
+        if let Some(s) = Substitution::parse(feeder, core, read_var)? {
             ans.text += &s.text;
 
             if core.substitution_builtins.contains_key(&ans.command_name) 

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::utils::arg;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subscript::Subscript;
@@ -68,6 +69,43 @@ impl Variable {
                 v.set_value(&value.to_string(), core)
             },
             None => Err(ExecError::InvalidName(arg.to_string())),
+        }
+    }
+
+    pub fn init_variable(&self, core: &mut ShellCore, layer: Option<usize>, args: &mut Vec<String>)
+    -> Result<(), ExecError> {
+        let mut prev = None;
+
+        if (layer.is_none() && core.db.has_value(&self.name) )
+        || core.db.has_value_layer(&self.name, layer.unwrap()) {
+            prev = Some(vec![core.db.get_param(&self.name)?]);
+        }
+
+        let i_opt = arg::consume_option("-i", args);
+        if arg::consume_option("-a", args) {
+            
+            return match i_opt { 
+                true  => core.db.set_int_array(&self.name, prev, layer),
+                false => core.db.set_array(&self.name, prev, layer),
+            };
+        }
+        if arg::consume_option("-A", args) {
+            core.db.set_assoc(&self.name, layer)?;
+
+            if prev.is_some() {
+                core.db.set_assoc_elem(&self.name, &"0".to_string(), &prev.unwrap()[0], layer)?;
+            }
+            return Ok(());
+        }
+
+        let value = match prev {
+            Some(v) => v[0].clone(),
+            None => "".to_string(),
+        };
+
+        match i_opt { 
+            true  => core.db.init_as_num(&self.name, &value, layer),
+            false => core.db.set_param(&self.name, &value, layer),
         }
     }
 

@@ -19,6 +19,7 @@ pub struct Substitution {
     right_hand: Value,
     append: bool,
     lineno: usize,
+    pub has_right: bool,
 }
 
 impl Substitution {
@@ -103,7 +104,8 @@ impl Substitution {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_no_righthand: bool)
+    -> Result<Option<Self>, ParseError> {
         feeder.set_backup();
 
         let mut ans = Self::default();
@@ -120,12 +122,17 @@ impl Substitution {
             ans.text += &feeder.consume(2);
         }else if feeder.starts_with("=") {
             ans.text += &feeder.consume(1);
+        }else if permit_no_righthand {
+            feeder.pop_backup();
+            ans.has_right = false;
+            return Ok(Some(ans));
         }else {
             feeder.rewind();
             return Ok(None);
         }
         feeder.pop_backup();
 
+        ans.has_right = true;
         if let Some(a) = Value::parse(feeder, core)? {
             ans.text += &a.text.clone();
             ans.right_hand = a;

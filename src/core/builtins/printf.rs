@@ -357,7 +357,7 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args[2].contains("[") {
         let mut f = Feeder::new(&(args[2].clone() + "=" + &s));
-        if let Ok(Some(mut a)) = Substitution::parse(&mut f, core) {
+        if let Ok(Some(mut a)) = Substitution::parse(&mut f, core, false) {
             if let Err(e) = a.eval(core, None, false) {
                 let msg = String::from(&e);
                 return super::error_exit(2, "printf", &msg, core);
