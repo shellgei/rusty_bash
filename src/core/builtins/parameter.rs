@@ -151,23 +151,6 @@ fn declare_set_has_equal(core: &mut ShellCore, sub: &mut Substitution,
                args: &mut Vec<String>) -> Result<(), ExecError> {
     let layer = core.db.get_layer_num() - 2;
     set_substitution(core, sub, args, layer)
-    /*
-    let read_only = arg::consume_option("-r", args);
-    let export_opt = arg::consume_option("-x", args);
-    reparse(core, sub);
-
-
-    if read_only {
-        core.db.set_flag(&sub.left_hand.name, 'r');
-        return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
-    }
-
-    if export_opt {
-        core.db.set_flag(&sub.left_hand.name, 'x');
-    }
-
-    sub.eval(core, layer, true)
-    */
 }
 
 fn init_var(core: &mut ShellCore, var: &mut Variable,
@@ -399,7 +382,21 @@ fn export_var(arg: &str, core: &mut ShellCore) -> Result<(), ExecError> {
     }
 }
 
-pub fn export(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn export(core: &mut ShellCore, args: &mut Vec<String>,
+              subs: &mut Vec<Substitution>) -> i32 {
+
+    let layer = core.db.get_layer_num() - 2;//TODO: it is not tested
+    for sub in subs.iter_mut() {
+        if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
+            e.print(core);
+            return 1;
+        }
+        match core.db.get_param(&sub.left_hand.name) {
+            Ok(v) => env::set_var(&sub.left_hand.name, v),
+            Err(e) => {e.print(core); return 1;},
+        }
+    }
+
     for arg in &args[1..] {
         if export_var(arg, core).is_err() {
             let msg = format!("parse error");

@@ -57,7 +57,6 @@ impl ShellCore {
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);
-        self.builtins.insert("export".to_string(), parameter::export);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("fg".to_string(), job_commands::fg);
         self.builtins.insert("getopts".to_string(), getopts::getopts);
@@ -82,6 +81,7 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("wait".to_string(), job_commands::wait);
 
+        self.substitution_builtins.insert("export".to_string(), parameter::export);
         self.substitution_builtins.insert("readonly".to_string(), parameter::readonly);
         self.substitution_builtins.insert("typeset".to_string(), parameter::declare);
         self.substitution_builtins.insert("declare".to_string(), parameter::declare);
