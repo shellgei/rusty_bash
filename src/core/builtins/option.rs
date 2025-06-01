@@ -78,7 +78,9 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() <= 1 {
-        return parameter::print_all(core);
+        core.db.get_keys().into_iter()
+            .for_each(|k| core.db.print(&k));
+        return 0;
     }
 
     set_options2(core, &mut args);
