@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod parser;
+pub mod run_internal;
 
 use crate::{proc_ctrl, ShellCore};
 
@@ -63,9 +64,7 @@ impl Command for SimpleCommand {
         let layer = core.db.get_layer_num()-1;
         let _ = self.set_local_params(core, layer);
 
-        if ! core.run_function(&mut self.args) 
-        && ! core.run_substitution_builtin(&mut self.args, &mut self.substitutions_as_args)?
-        && ! core.run_builtin(&mut self.args, &self.substitutions_as_args)? {
+        if ! run_internal::run(self, core)? {
             self.set_environment_variables(core)?;
             proc_ctrl::exec_command(&self.args, core, &self.command_path);
         };

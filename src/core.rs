@@ -192,8 +192,8 @@ impl ShellCore {
         Ok(true)
     }
 
-    pub fn run_substitution_builtin(&mut self, args: &mut Vec<String>, substitutions: &mut Vec<Substitution>)
-    -> Result<bool, ExecError> {
+    pub fn run_substitution_builtin(&mut self, args: &mut Vec<String>,
+            substitutions: &mut Vec<Substitution>) -> Result<bool, ExecError> {
         if args.is_empty() {
             eprintln!("ShellCore::run_builtin");
             return Ok(false);
@@ -206,13 +206,6 @@ impl ShellCore {
         let func = self.substitution_builtins[&args[0]];
         self.db.exit_status = func(self, args, substitutions);
         Ok(true)
-    }
-
-    pub fn run_function(&mut self, args: &mut Vec<String>) -> bool {
-        match self.db.functions.get_mut(&args[0]) {
-            Some(f) => {f.clone().run_as_command(args, self); true},
-            None => false,
-        }
     }
 
     fn set_subshell_parameters(&mut self) -> Result<(), String> {
