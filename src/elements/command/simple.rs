@@ -2,12 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod parser;
+pub mod hash;
 pub mod run_internal;
+pub mod replace_alias;
 
 use crate::{proc_ctrl, ShellCore};
 
 use crate::error::exec::ExecError;
-use crate::{env, utils};
+use crate::env;
 use crate::utils::exit;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -108,7 +110,7 @@ impl SimpleCommand {
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.substitution_builtins.contains_key(&self.args[0]) 
            && ! core.db.functions.contains_key(&self.args[0]) ) {
-            self.command_path = self.hash_control(core)?;
+            self.command_path = hash::hash_control(self, core)?;
             self.fork_exec(core, pipe)
         }else if self.args.len() == 1 && self.args[0] == "exec" {
             for r in self.get_redirects().iter_mut() {
@@ -201,42 +203,5 @@ impl SimpleCommand {
         }
 
         eprintln!("");
-    }
-
-    fn hash_control(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        if self.args[0].starts_with("/")
-        || self.args[0].starts_with("./")
-        || self.args[0].starts_with("../") {
-            return Ok(self.args[0].clone());
-        }
-
-        let hash = core.db.get_elem("BASH_CMDS", &self.args[0])?;
-
-        let restricted = core.db.flags.contains('r');
-        core.db.flags.retain(|f| f != 'r');
-        if hash.is_empty() {
-            let path = utils::get_command_path(&self.args[0], core);
-            if path != "" {
-                core.db.set_assoc_elem("BASH_CMDS", &self.args[0], &path, None)?;
-                core.db.hash_counter.insert(self.args[0].clone(), 1);
-                if restricted {
-                    core.db.flags.push('r');
-                }
-                return Ok(path);
-            }
-        }else{
-            match core.db.hash_counter.get_mut(&self.args[0]) {
-                Some(v) => *v += 1,
-                None => {core.db.hash_counter.insert(self.args[0].clone(), 1);},
-            }
-            if restricted {
-                core.db.flags.push('r');
-            }
-            return Ok(hash);
-        }
-        if restricted {
-            core.db.flags.push('r');
-        }
-        Ok(String::new())
     }
 }
