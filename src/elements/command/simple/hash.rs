@@ -7,9 +7,7 @@ use crate::elements::command::ExecError;
 
 pub fn get_and_regist(com: &mut SimpleCommand, core: &mut ShellCore)
 -> Result<String, ExecError> {
-    if com.args[0].starts_with("/")
-    || com.args[0].starts_with("./")
-    || com.args[0].starts_with("../") {
+    if ["/", "./", "../"].iter().any(|p| com.args[0].starts_with(p)) {
         return Ok(com.args[0].clone());
     }
 
