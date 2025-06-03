@@ -9,3 +9,10 @@
 ./test_substitution.bash
 ./test_substitution.bash
 ./test_substitution.bash
+./test_builtins.bash
+./test_builtins.bash
+./test_builtins.bash
+./test_builtins.bash
+./test_builtins.bash
+./test_builtins.bash
+./test_builtins.bash
