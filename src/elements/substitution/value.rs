@@ -17,6 +17,7 @@ pub enum ParsedDataType {
     Array(Array),
 }
 
+    /*
 impl ParsedDataType {
     pub fn get_evaluated_text(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         match self {
@@ -37,7 +38,7 @@ impl ParsedDataType {
             },
         }
     }
-}
+}*/
 
 #[derive(Debug, Clone, Default)]
 pub struct Value {
