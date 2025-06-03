@@ -11,32 +11,36 @@ pub fn get_and_regist(com: &mut SimpleCommand, core: &mut ShellCore)
         return Ok(com.args[0].clone());
     }
 
-    let hash = core.db.get_elem("BASH_CMDS", &com.args[0])?;
+    let mut path = core.db.get_elem("BASH_CMDS", &com.args[0])?;
+
+    if path.is_empty() {
+        path = resolve_path(&com.args[0], core)?;
+    }
+
+    count_up(&com.args[0], core);
+    Ok(path)
+}
+
+fn resolve_path(arg: &String, core: &mut ShellCore)
+-> Result<String, ExecError> {
+    let path = utils::get_command_path(arg, core);
+    if path.is_empty() {
+        return Ok(path);
+    }
 
     let restricted = core.db.flags.contains('r');
     core.db.flags.retain(|f| f != 'r');
-    if hash.is_empty() {
-        let path = utils::get_command_path(&com.args[0], core);
-        if path != "" {
-            core.db.set_assoc_elem("BASH_CMDS", &com.args[0], &path, None)?;
-            core.db.hash_counter.insert(com.args[0].clone(), 1);
-            if restricted {
-                core.db.flags.push('r');
-            }
-            return Ok(path);
-        }
-    }else{
-        match core.db.hash_counter.get_mut(&com.args[0]) {
-            Some(v) => *v += 1,
-            None => {core.db.hash_counter.insert(com.args[0].clone(), 1);},
-        }
-        if restricted {
-            core.db.flags.push('r');
-        }
-        return Ok(hash);
-    }
+    core.db.set_assoc_elem("BASH_CMDS", arg, &path, None)?;
     if restricted {
         core.db.flags.push('r');
     }
-    Ok(String::new())
+
+    Ok(path)
+}
+
+fn count_up(arg: &String, core: &mut ShellCore) {
+    match core.db.hash_counter.get_mut(arg) {
+        Some(v) => *v += 1,
+        None => {core.db.hash_counter.insert(arg.to_string(), 1);},
+    }
 }
