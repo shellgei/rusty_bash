@@ -31,16 +31,7 @@ pub fn run_builtin(com: &mut SimpleCommand, core: &mut ShellCore)
         return Ok(false);
     }
 
-    let mut special_args = vec![];
-    for sub in &com.substitutions_as_args {
-        match com.args[0].as_ref() {
-            "eval" => special_args.push(sub.get_string_for_eval(core)?),
-            _ => special_args.push(sub.text.clone()),
-        }
-    }
-
     let func = core.builtins[&com.args[0]];
-    com.args.append(&mut special_args);
     core.db.exit_status = func(core, &mut com.args);
     Ok(true)
 }

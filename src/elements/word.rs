@@ -19,6 +19,7 @@ pub enum WordMode {
     Alias,
     Arithmetric,
     CompgenF,
+    Eval,
     ReadCommand,
     Heredoc,
     RightOfSubstitution,

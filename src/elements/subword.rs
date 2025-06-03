@@ -135,6 +135,13 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
     mode: &Option<WordMode>) -> Result<Option<Box<dyn Subword>>, ParseError> {
     match mode {
         None => Ok(None),
+        Some(WordMode::Eval) => {
+            if feeder.starts_with("(")
+            || feeder.starts_with(")") {
+                return Ok(Some(From::from(&feeder.consume(1))));
+            }
+            Ok(None)
+        },
         Some(WordMode::ParamOption(ref v)) => {
             if feeder.len() == 0 || feeder.starts_withs2(v) {
                 return Ok(None);
